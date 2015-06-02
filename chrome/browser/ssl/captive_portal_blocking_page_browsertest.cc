@@ -10,9 +10,13 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/cert_report_helper.h"
+#include "chrome/browser/ssl/certificate_reporting_test_utils.h"
+#include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -21,6 +25,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/cert/x509_certificate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -67,7 +72,8 @@ class FakeConnectionInfoDelegate : public CaptivePortalBlockingPage::Delegate {
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionInfoDelegate);
 };
 
-class CaptivePortalBlockingPageTest : public InProcessBrowserTest {
+class CaptivePortalBlockingPageTest
+    : public CertificateReportingTestUtils::CertificateReportingTest {
  public:
   CaptivePortalBlockingPageTest() {}
 
@@ -77,6 +83,7 @@ class CaptivePortalBlockingPageTest : public InProcessBrowserTest {
                         ExpectWiFi expect_wifi,
                         ExpectWiFiSSID expect_wifi_ssid,
                         ExpectLoginURL expect_login_url,
+                        scoped_ptr<SSLCertReporter> ssl_cert_reporter,
                         const std::string& expected_login_hostname);
 
   void TestInterstitial(bool is_wifi_connection,
@@ -85,6 +92,16 @@ class CaptivePortalBlockingPageTest : public InProcessBrowserTest {
                         ExpectWiFi expect_wifi,
                         ExpectWiFiSSID expect_wifi_ssid,
                         ExpectLoginURL expect_login_url);
+
+  void TestInterstitial(bool is_wifi_connection,
+                        const std::string& wifi_ssid,
+                        const GURL& login_url,
+                        ExpectWiFi expect_wifi,
+                        ExpectWiFiSSID expect_wifi_ssid,
+                        ExpectLoginURL expect_login_url,
+                        scoped_ptr<SSLCertReporter> ssl_cert_reporter);
+
+  void TestCertReporting(CertificateReportingTestUtils::OptIn opt_in);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalBlockingPageTest);
@@ -97,6 +114,7 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
     ExpectWiFi expect_wifi,
     ExpectWiFiSSID expect_wifi_ssid,
     ExpectLoginURL expect_login_url,
+    scoped_ptr<SSLCertReporter> ssl_cert_reporter,
     const std::string& expected_login_hostname) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -104,9 +122,14 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   // Delegate is owned by the blocking page.
   FakeConnectionInfoDelegate* delegate =
       new FakeConnectionInfoDelegate(is_wifi_connection, wifi_ssid);
+  net::SSLInfo ssl_info;
+  ssl_info.cert = new net::X509Certificate(
+      login_url.host(), "CA", base::Time::Max(), base::Time::Max());
+
   // Blocking page is owned by the interstitial.
   CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
-      contents, GURL(kBrokenSSL), login_url, base::Callback<void(bool)>());
+      contents, GURL(kBrokenSSL), login_url, ssl_cert_reporter.Pass(), ssl_info,
+      base::Callback<void(bool)>());
   blocking_page->SetDelegateForTesting(delegate);
   blocking_page->Show();
 
@@ -136,17 +159,64 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
     ExpectWiFi expect_wifi,
     ExpectWiFiSSID expect_wifi_ssid,
     ExpectLoginURL expect_login_url) {
-  TestInterstitial(is_wifi_connection, wifi_ssid, login_url,
-                   expect_wifi, expect_wifi_ssid, expect_login_url,
+  TestInterstitial(is_wifi_connection, wifi_ssid, login_url, expect_wifi,
+                   expect_wifi_ssid, expect_login_url, nullptr,
                    login_url.host());
+}
+
+void CaptivePortalBlockingPageTest::TestInterstitial(
+    bool is_wifi_connection,
+    const std::string& wifi_ssid,
+    const GURL& login_url,
+    ExpectWiFi expect_wifi,
+    ExpectWiFiSSID expect_wifi_ssid,
+    ExpectLoginURL expect_login_url,
+    scoped_ptr<SSLCertReporter> ssl_cert_reporter) {
+  TestInterstitial(is_wifi_connection, wifi_ssid, login_url, expect_wifi,
+                   expect_wifi_ssid, expect_login_url, ssl_cert_reporter.Pass(),
+                   login_url.host());
+}
+
+void CaptivePortalBlockingPageTest::TestCertReporting(
+    CertificateReportingTestUtils::OptIn opt_in) {
+  ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());
+
+  CertificateReportingTestUtils::SetCertReportingOptIn(browser(), opt_in);
+  base::RunLoop run_loop;
+  scoped_ptr<SSLCertReporter> ssl_cert_reporter =
+      CertificateReportingTestUtils::SetUpMockSSLCertReporter(
+          &run_loop,
+          opt_in == CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN
+              ? CertificateReportingTestUtils::CERT_REPORT_EXPECTED
+              : CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED);
+
+  const GURL kLandingUrl(captive_portal::CaptivePortalDetector::kDefaultURL);
+  TestInterstitial(true, std::string(), kLandingUrl, EXPECT_WIFI_YES,
+                   EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_NO,
+                   ssl_cert_reporter.Pass());
+
+  EXPECT_EQ(std::string(), GetLatestHostnameReported());
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  tab->GetInterstitialPage()->DontProceed();
+
+  if (opt_in == CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN) {
+    // Check that the mock reporter received a request to send a report.
+    run_loop.Run();
+    EXPECT_EQ(GURL(kBrokenSSL).host(), GetLatestHostnameReported());
+  } else {
+    EXPECT_EQ(std::string(), GetLatestHostnameReported());
+  }
 }
 
 // If the connection is not a Wi-Fi connection, the wired network version of the
 // captive portal interstitial should be displayed.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                        WiredNetwork_LoginURL) {
-  TestInterstitial(false, "", GURL("http://captive.portal/landing_url"),
-                   EXPECT_WIFI_NO, EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_YES);
+  TestInterstitial(false, std::string(),
+                   GURL("http://captive.portal/landing_url"), EXPECT_WIFI_NO,
+                   EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_YES);
 }
 
 // Same as above, but SSID is available, so the connection should be assumed to
@@ -163,8 +233,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
 IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                        WiredNetwork_NoLoginURL) {
   const GURL kLandingUrl(captive_portal::CaptivePortalDetector::kDefaultURL);
-  TestInterstitial(false, "", kLandingUrl, EXPECT_WIFI_NO, EXPECT_WIFI_SSID_NO,
-                   EXPECT_LOGIN_URL_NO);
+  TestInterstitial(false, std::string(), kLandingUrl, EXPECT_WIFI_NO,
+                   EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_NO);
 }
 
 // Same as above, but SSID is available, so the connection should be assumed to
@@ -187,8 +257,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
 // Same as above, with login URL but no SSID.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                        WiFi_NoSSID_LoginURL) {
-  TestInterstitial(true, "", GURL("http://captive.portal/landing_url"),
-                   EXPECT_WIFI_YES, EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_YES);
+  TestInterstitial(true, std::string(),
+                   GURL("http://captive.portal/landing_url"), EXPECT_WIFI_YES,
+                   EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_YES);
 }
 
 // Same as above, with SSID but no login URL.
@@ -203,8 +274,21 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
 IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
                        WiFi_NoSSID_NoLoginURL) {
   const GURL kLandingUrl(captive_portal::CaptivePortalDetector::kDefaultURL);
-  TestInterstitial(true, "", kLandingUrl,
-                   EXPECT_WIFI_YES, EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_NO);
+  TestInterstitial(true, std::string(), kLandingUrl, EXPECT_WIFI_YES,
+                   EXPECT_WIFI_SSID_NO, EXPECT_LOGIN_URL_NO);
+}
+
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, CertReportingOptIn) {
+  CertificateReportingTestUtils::SetCertReportingFinchConfig(
+      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
+  TestCertReporting(CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN);
+}
+
+IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, CertReportingOptOut) {
+  CertificateReportingTestUtils::SetCertReportingFinchConfig(
+      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
+  TestCertReporting(
+      CertificateReportingTestUtils::EXTENDED_REPORTING_DO_NOT_OPT_IN);
 }
 
 class CaptivePortalBlockingPageIDNTest : public SecurityInterstitialIDNTest {
@@ -215,10 +299,12 @@ class CaptivePortalBlockingPageIDNTest : public SecurityInterstitialIDNTest {
       const GURL& request_url) const override {
     // Delegate is owned by the blocking page.
     FakeConnectionInfoDelegate* delegate =
-        new FakeConnectionInfoDelegate(false, "");
+        new FakeConnectionInfoDelegate(false, std::string());
+    net::SSLInfo empty_ssl_info;
     // Blocking page is owned by the interstitial.
     CaptivePortalBlockingPage* blocking_page = new CaptivePortalBlockingPage(
-        contents, GURL(kBrokenSSL), request_url, base::Callback<void(bool)>());
+        contents, GURL(kBrokenSSL), request_url, nullptr, empty_ssl_info,
+        base::Callback<void(bool)>());
     blocking_page->SetDelegateForTesting(delegate);
     return blocking_page;
   }

@@ -98,6 +98,9 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
 
  private:
   scoped_ptr<SecurityInterstitialMetricsHelper> metrics_helper_;
+  // The WebContents with which this interstitial page is
+  // associated. Not available in ~SecurityInterstitialPage, since it
+  // can be destroyed before this class is destroyed.
   content::WebContents* web_contents_;
   const GURL request_url_;
   // Once shown, |interstitial_page| takes ownership of this

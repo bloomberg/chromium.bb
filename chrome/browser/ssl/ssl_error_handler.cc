@@ -193,6 +193,7 @@ void SSLErrorHandler::ShowCaptivePortalInterstitial(const GURL& landing_url) {
                 ? SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE
                 : SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE);
   (new CaptivePortalBlockingPage(web_contents_, request_url_, landing_url,
+                                 ssl_cert_reporter_.Pass(), ssl_info_,
                                  callback_))->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".

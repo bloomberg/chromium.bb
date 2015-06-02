@@ -18,11 +18,10 @@
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/net/certificate_error_reporter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/ping_manager.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/cert_logger.pb.h"
+#include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/certificate_error_report.h"
+#include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
@@ -80,10 +79,6 @@ using web_modal::WebContentsModalDialogManager;
 
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
-
-// Const for the Finch group DontShowDontSend
-const char kHTTPSErrorReporterFinchGroupDontShowDontSend[] =
-    "DontShowAndDontSend";
 
 namespace {
 
@@ -191,88 +186,10 @@ void CheckSecurityState(WebContents* tab,
   AuthState::Check(*entry, expected_authentication_state);
 }
 
-namespace CertificateReporting {
-
-enum OptIn { EXTENDED_REPORTING_OPT_IN, EXTENDED_REPORTING_DO_NOT_OPT_IN };
-
-enum Proceed { SSL_INTERSTITIAL_PROCEED, SSL_INTERSTITIAL_DO_NOT_PROCEED };
-
-enum ExpectReport { CERT_REPORT_EXPECTED, CERT_REPORT_NOT_EXPECTED };
-
-// This class is used to test invalid certificate chain reporting when
-// the user opts in to do so on the interstitial. It keeps track of the
-// most recent hostname for which a report would have been sent over the
-// network.
-class MockReporter : public CertificateErrorReporter {
- public:
-  explicit MockReporter(net::URLRequestContext* request_context,
-                        const GURL& upload_url,
-                        CookiesPreference cookies_preference)
-      : CertificateErrorReporter(request_context,
-                                 upload_url,
-                                 cookies_preference) {}
-
-  void SendReport(CertificateErrorReporter::ReportType type,
-                  const std::string& serialized_report) override {
-    CertificateErrorReport report;
-    ASSERT_TRUE(report.InitializeFromString(serialized_report));
-    EXPECT_EQ(CertificateErrorReporter::REPORT_TYPE_EXTENDED_REPORTING, type);
-    latest_hostname_reported_ = report.hostname();
-  }
-
-  const std::string& latest_hostname_reported() {
-    return latest_hostname_reported_;
-  }
-
- private:
-  std::string latest_hostname_reported_;
-};
-
-void SetUpMockReporter(SafeBrowsingService* safe_browsing_service,
-                       MockReporter* reporter) {
-  safe_browsing_service->ping_manager()->SetCertificateErrorReporterForTesting(
-      scoped_ptr<CertificateErrorReporter>(reporter));
-}
-
-// This is a test implementation of the interface that blocking pages
-// use to send certificate reports. It checks that the blocking page
-// calls the report method when a report should be sent.
-class MockSSLCertReporter : public SSLCertReporter {
- public:
-  MockSSLCertReporter(
-      const scoped_refptr<SafeBrowsingUIManager>& safe_browsing_ui_manager,
-      const base::Closure& report_sent_callback)
-      : safe_browsing_ui_manager_(safe_browsing_ui_manager),
-        reported_(false),
-        expect_report_(false),
-        report_sent_callback_(report_sent_callback) {}
-
-  ~MockSSLCertReporter() override { EXPECT_EQ(expect_report_, reported_); }
-
-  // SSLCertReporter implementation
-  void ReportInvalidCertificateChain(
-      const std::string& serialized_report) override {
-    reported_ = true;
-    if (expect_report_) {
-      safe_browsing_ui_manager_->ReportInvalidCertificateChain(
-          serialized_report, report_sent_callback_);
-    }
-  }
-
-  void set_expect_report(bool expect_report) { expect_report_ = expect_report; }
-
- private:
-  const scoped_refptr<SafeBrowsingUIManager> safe_browsing_ui_manager_;
-  bool reported_;
-  bool expect_report_;
-  base::Closure report_sent_callback_;
-};
-
-}  // namespace CertificateReporting
-
 }  // namespace
 
-class SSLUITest : public InProcessBrowserTest {
+class SSLUITest
+    : public CertificateReportingTestUtils::CertificateReportingTest {
  public:
   SSLUITest()
       : https_server_(net::SpawnedTestServer::TYPE_HTTPS,
@@ -287,24 +204,6 @@ class SSLUITest : public InProcessBrowserTest {
         wss_server_expired_(net::SpawnedTestServer::TYPE_WSS,
                             SSLOptions(SSLOptions::CERT_EXPIRED),
                             net::GetWebSocketTestDataDirectory()) {}
-
-  void SetUpOnMainThread() override {
-    // Set up the mock reporter to track the hostnames that reports get
-    // sent for. The request_context argument is NULL here
-    // because the MockReporter doesn't actually use a
-    // request_context. (In order to pass a real request_context, the
-    // reporter would have to be constructed on the IO thread.)
-    reporter_ = new CertificateReporting::MockReporter(
-        NULL, GURL("http://example.test"),
-        CertificateReporting::MockReporter::DO_NOT_SEND_COOKIES);
-    scoped_refptr<SafeBrowsingService> safe_browsing_service =
-        g_browser_process->safe_browsing_service();
-    ASSERT_TRUE(safe_browsing_service);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(CertificateReporting::SetUpMockReporter,
-                   safe_browsing_service, reporter_));
-  }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Browser will both run and display insecure content.
@@ -472,19 +371,17 @@ class SSLUITest : public InProcessBrowserTest {
 
   // Helper function for testing invalid certificate chain reporting.
   void TestBrokenHTTPSReporting(
-      CertificateReporting::OptIn opt_in,
-      CertificateReporting::Proceed proceed,
-      CertificateReporting::ExpectReport expect_report,
+      CertificateReportingTestUtils::OptIn opt_in,
+      CertificateReportingTestUtils::Proceed proceed,
+      CertificateReportingTestUtils::ExpectReport expect_report,
       Browser* browser) {
     base::RunLoop run_loop;
-    bool report_expected =
-        expect_report == CertificateReporting::CERT_REPORT_EXPECTED;
     ASSERT_TRUE(https_server_expired_.Start());
 
+    ASSERT_NO_FATAL_FAILURE(SetUpMockReporter());
+
     // Opt in to sending reports for invalid certificate chains.
-    browser->profile()->GetPrefs()->SetBoolean(
-        prefs::kSafeBrowsingExtendedReportingEnabled,
-        opt_in == CertificateReporting::EXTENDED_REPORTING_OPT_IN);
+    CertificateReportingTestUtils::SetCertReportingOptIn(browser, opt_in);
 
     ui_test_utils::NavigateToURL(browser, https_server_expired_.GetURL("/"));
 
@@ -492,26 +389,18 @@ class SSLUITest : public InProcessBrowserTest {
     CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
                                    AuthState::SHOWING_INTERSTITIAL);
 
-    // Set up a MockSSLCertReporter to keep track of when the blocking
-    // page invokes the cert reporter.
-    SafeBrowsingService* sb_service =
-        g_browser_process->safe_browsing_service();
-    ASSERT_TRUE(sb_service);
-    scoped_ptr<CertificateReporting::MockSSLCertReporter> ssl_cert_reporter(
-        new CertificateReporting::MockSSLCertReporter(
-            sb_service->ui_manager(), report_expected
-                                          ? run_loop.QuitClosure()
-                                          : base::Bind(&base::DoNothing)));
-    ssl_cert_reporter->set_expect_report(report_expected);
+    scoped_ptr<SSLCertReporter> ssl_cert_reporter =
+        CertificateReportingTestUtils::SetUpMockSSLCertReporter(&run_loop,
+                                                                expect_report);
 
     SSLBlockingPage* interstitial_page = static_cast<SSLBlockingPage*>(
         tab->GetInterstitialPage()->GetDelegateForTesting());
     interstitial_page->SetSSLCertReporterForTesting(ssl_cert_reporter.Pass());
 
-    EXPECT_EQ(std::string(), reporter_->latest_hostname_reported());
+    EXPECT_EQ(std::string(), GetLatestHostnameReported());
 
     // Leave the interstitial (either by proceeding or going back)
-    if (proceed == CertificateReporting::SSL_INTERSTITIAL_PROCEED) {
+    if (proceed == CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED) {
       ProceedThroughInterstitial(tab);
     } else {
       // Click "Take me back"
@@ -520,32 +409,14 @@ class SSLUITest : public InProcessBrowserTest {
       interstitial_page->DontProceed();
     }
 
-    if (expect_report == CertificateReporting::CERT_REPORT_EXPECTED) {
+    if (expect_report == CertificateReportingTestUtils::CERT_REPORT_EXPECTED) {
       // Check that the mock reporter received a request to send a report.
       run_loop.Run();
       EXPECT_EQ(https_server_expired_.GetURL("/").host(),
-                reporter_->latest_hostname_reported());
+                GetLatestHostnameReported());
     } else {
-      EXPECT_EQ(std::string(), reporter_->latest_hostname_reported());
+      EXPECT_EQ(std::string(), GetLatestHostnameReported());
     }
-  }
-
-  // Helper function to set the Finch options
-  void SetCertReportingFinchConfig(const std::string& group_name,
-                                   const std::string& param_value) {
-    base::FieldTrialList::CreateFieldTrial(
-        kHTTPSErrorReporterFinchExperimentName, group_name);
-    if (!param_value.empty()) {
-      std::map<std::string, std::string> params;
-      params[kHTTPSErrorReporterFinchParamName] = param_value;
-      variations::AssociateVariationParams(
-          kHTTPSErrorReporterFinchExperimentName, group_name, params);
-    }
-  }
-
-  // Helper function to set the Finch options in case we have no parameter
-  void SetCertReportingFinchConfig(const std::string& group_name) {
-    SetCertReportingFinchConfig(group_name, std::string());
   }
 
   net::SpawnedTestServer https_server_;
@@ -555,7 +426,6 @@ class SSLUITest : public InProcessBrowserTest {
 
  private:
   typedef net::SpawnedTestServer::SSLOptions SSLOptions;
-  CertificateReporting::MockReporter* reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLUITest);
 };
@@ -1197,12 +1067,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestDisplaysInsecureContent) {
 IN_PROC_BROWSER_TEST_F(
     SSLUITestWithExtendedReporting,
     TestBrokenHTTPSProceedWithShowYesCheckYesParamYesReportYes) {
-  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
-                              "1.0");
-  TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
-                           CertificateReporting::SSL_INTERSTITIAL_PROCEED,
-                           CertificateReporting::CERT_REPORT_EXPECTED,
-                           browser());
+  CertificateReportingTestUtils::SetCertReportingFinchConfig(
+      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
+  TestBrokenHTTPSReporting(
+      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
+      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
+      CertificateReportingTestUtils::CERT_REPORT_EXPECTED, browser());
 }
 
 // User goes back, checkbox is shown and checked, Finch parameter is set
@@ -1210,12 +1080,12 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     SSLUITestWithExtendedReporting,
     TestBrokenHTTPSGoBackWithShowYesCheckYesParamYesReportYes) {
-  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
-                              "1.0");
+  CertificateReportingTestUtils::SetCertReportingFinchConfig(
+      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
   TestBrokenHTTPSReporting(
-      CertificateReporting::EXTENDED_REPORTING_OPT_IN,
-      CertificateReporting::SSL_INTERSTITIAL_DO_NOT_PROCEED,
-      CertificateReporting::CERT_REPORT_EXPECTED, browser());
+      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
+      CertificateReportingTestUtils::SSL_INTERSTITIAL_DO_NOT_PROCEED,
+      CertificateReportingTestUtils::CERT_REPORT_EXPECTED, browser());
 }
 
 // User proceeds, checkbox is shown but unchecked, Finch parameter is set
@@ -1223,70 +1093,72 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     SSLUITestWithExtendedReporting,
     TestBrokenHTTPSProceedWithShowYesCheckNoParamYesReportNo) {
-  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
-                              "1.0");
+  CertificateReportingTestUtils::SetCertReportingFinchConfig(
+      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
   TestBrokenHTTPSReporting(
-      CertificateReporting::EXTENDED_REPORTING_DO_NOT_OPT_IN,
-      CertificateReporting::SSL_INTERSTITIAL_PROCEED,
-      CertificateReporting::CERT_REPORT_NOT_EXPECTED, browser());
+      CertificateReportingTestUtils::EXTENDED_REPORTING_DO_NOT_OPT_IN,
+      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
+      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
 // User goes back, checkbox is shown but unchecked, Finch parameter is set
 // -> we expect no report.
 IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
                        TestBrokenHTTPSGoBackShowYesCheckNoParamYesReportNo) {
-  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
-                              "1.0");
+  CertificateReportingTestUtils::SetCertReportingFinchConfig(
+      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
   TestBrokenHTTPSReporting(
-      CertificateReporting::EXTENDED_REPORTING_DO_NOT_OPT_IN,
-      CertificateReporting::SSL_INTERSTITIAL_DO_NOT_PROCEED,
-      CertificateReporting::CERT_REPORT_NOT_EXPECTED, browser());
+      CertificateReportingTestUtils::EXTENDED_REPORTING_DO_NOT_OPT_IN,
+      CertificateReportingTestUtils::SSL_INTERSTITIAL_DO_NOT_PROCEED,
+      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
 // User proceeds, checkbox is shown and checked, Finch parameter is not
 // set -> we expect no report.
 IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
                        TestBrokenHTTPSProceedShowYesCheckYesParamNoReportNo) {
-  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
-                              "-1.0");
-  TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
-                           CertificateReporting::SSL_INTERSTITIAL_PROCEED,
-                           CertificateReporting::CERT_REPORT_NOT_EXPECTED,
-                           browser());
+  CertificateReportingTestUtils::SetCertReportingFinchConfig(
+      CertReportHelper::kFinchGroupShowPossiblySend, "-1.0");
+  TestBrokenHTTPSReporting(
+      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
+      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
+      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
 // User goes back, checkbox is shown and checked, Finch parameter is not set
 // -> we expect no report.
 IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
                        TestBrokenHTTPSGoBackShowYesCheckYesParamNoReportNo) {
-  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
-                              "-1.0");
+  CertificateReportingTestUtils::SetCertReportingFinchConfig(
+      CertReportHelper::kFinchGroupShowPossiblySend, "-1.0");
   TestBrokenHTTPSReporting(
-      CertificateReporting::EXTENDED_REPORTING_OPT_IN,
-      CertificateReporting::SSL_INTERSTITIAL_DO_NOT_PROCEED,
-      CertificateReporting::CERT_REPORT_NOT_EXPECTED, browser());
+      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
+      CertificateReportingTestUtils::SSL_INTERSTITIAL_DO_NOT_PROCEED,
+      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
 // User proceeds, checkbox is not shown but checked -> we expect no report
 IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
                        TestBrokenHTTPSProceedShowNoCheckYesReportNo) {
-  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupDontShowDontSend);
-  TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
-                           CertificateReporting::SSL_INTERSTITIAL_PROCEED,
-                           CertificateReporting::CERT_REPORT_NOT_EXPECTED,
-                           browser());
+  CertificateReportingTestUtils::SetCertReportingFinchConfig(
+      CertReportHelper::kFinchGroupDontShowDontSend);
+  TestBrokenHTTPSReporting(
+      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
+      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
+      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
 // Browser is incognito, user proceeds, checkbox is shown and checked, Finch
 // parameter is set -> we expect no report
 IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
                        TestBrokenHTTPSInIncognitoReportNo) {
-  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
-                              "1.0");
-  TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
-                           CertificateReporting::SSL_INTERSTITIAL_PROCEED,
-                           CertificateReporting::CERT_REPORT_NOT_EXPECTED,
-                           CreateIncognitoBrowser());
+  CertificateReportingTestUtils::SetCertReportingFinchConfig(
+      CertReportHelper::kFinchGroupShowPossiblySend, "1.0");
+  TestBrokenHTTPSReporting(
+      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
+      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
+      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED,
+      CreateIncognitoBrowser());
 }
 
 // User proceeds, checkbox is shown and checked, Finch parameter is invalid
@@ -1294,12 +1166,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
 IN_PROC_BROWSER_TEST_F(
     SSLUITestWithExtendedReporting,
     TestBrokenHTTPSProceedWithShowYesCheckYesParamInvalidReportNo) {
-  SetCertReportingFinchConfig(kHTTPSErrorReporterFinchGroupShowPossiblySend,
-                              "abcdef");
-  TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
-                           CertificateReporting::SSL_INTERSTITIAL_PROCEED,
-                           CertificateReporting::CERT_REPORT_NOT_EXPECTED,
-                           browser());
+  CertificateReportingTestUtils::SetCertReportingFinchConfig(
+      CertReportHelper::kFinchGroupShowPossiblySend, "abcdef");
+  TestBrokenHTTPSReporting(
+      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
+      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
+      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
 // Test that reports don't get sent when extended reporting opt-in is
@@ -1308,10 +1180,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithExtendedReporting,
                        TestBrokenHTTPSNoReportingWhenDisallowed) {
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingExtendedReportingOptInAllowed, false);
-  TestBrokenHTTPSReporting(CertificateReporting::EXTENDED_REPORTING_OPT_IN,
-                           CertificateReporting::SSL_INTERSTITIAL_PROCEED,
-                           CertificateReporting::CERT_REPORT_NOT_EXPECTED,
-                           browser());
+  TestBrokenHTTPSReporting(
+      CertificateReportingTestUtils::EXTENDED_REPORTING_OPT_IN,
+      CertificateReportingTestUtils::SSL_INTERSTITIAL_PROCEED,
+      CertificateReportingTestUtils::CERT_REPORT_NOT_EXPECTED, browser());
 }
 
 // Visits a page that runs insecure content and tries to suppress the insecure

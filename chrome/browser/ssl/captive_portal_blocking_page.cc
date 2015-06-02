@@ -13,6 +13,8 @@
 #include "base/values.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/cert_report_helper.h"
+#include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/common/pref_names.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/wifi/wifi_service.h"
@@ -20,6 +22,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/ssl/ssl_info.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -87,22 +90,25 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     content::WebContents* web_contents,
     const GURL& request_url,
     const GURL& login_url,
+    scoped_ptr<SSLCertReporter> ssl_cert_reporter,
+    const net::SSLInfo& ssl_info,
     const base::Callback<void(bool)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       login_url_(login_url),
       delegate_(new ConnectionInfoDelegate),
       callback_(callback) {
   DCHECK(login_url_.is_valid());
+
+  if (ssl_cert_reporter) {
+    cert_report_helper_.reset(new CertReportHelper(
+        ssl_cert_reporter.Pass(), web_contents, request_url, ssl_info,
+        CertificateErrorReport::INTERSTITIAL_CAPTIVE_PORTAL, false, nullptr));
+  }
+
   RecordUMA(SHOW_ALL);
 }
 
 CaptivePortalBlockingPage::~CaptivePortalBlockingPage() {
-  // Need to explicity deny the certificate via the callback, otherwise memory
-  // is leaked.
-  if (!callback_.is_null()) {
-    callback_.Run(false);
-    callback_.Reset();
-  }
 }
 
 const void* CaptivePortalBlockingPage::GetTypeForTesting() const {
@@ -188,6 +194,9 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
   load_time_data->SetString("closeDetails", base::string16());
   load_time_data->SetString("explanationParagraph", base::string16());
   load_time_data->SetString("finalParagraph", base::string16());
+
+  if (cert_report_helper_)
+    cert_report_helper_->PopulateExtendedReportingOption(load_time_data);
 }
 
 void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
@@ -204,5 +213,30 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
   if (cmd == CMD_OPEN_LOGIN) {
     RecordUMA(OPEN_LOGIN_PAGE);
     CaptivePortalTabHelper::OpenLoginTabForWebContents(web_contents(), true);
+  }
+}
+
+void CaptivePortalBlockingPage::OnProceed() {
+  if (cert_report_helper_) {
+    // Finish collecting information about invalid certificates, if the
+    // user opted in to.
+    cert_report_helper_->FinishCertCollection(
+        CertificateErrorReport::USER_PROCEEDED);
+  }
+}
+
+void CaptivePortalBlockingPage::OnDontProceed() {
+  if (cert_report_helper_) {
+    // Finish collecting information about invalid certificates, if the
+    // user opted in to.
+    cert_report_helper_->FinishCertCollection(
+        CertificateErrorReport::USER_DID_NOT_PROCEED);
+  }
+
+  // Need to explicity deny the certificate via the callback, otherwise memory
+  // is leaked.
+  if (!callback_.is_null()) {
+    callback_.Run(false);
+    callback_.Reset();
   }
 }

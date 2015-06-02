@@ -19,12 +19,6 @@
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
-// Constants for the HTTPSErrorReporter Finch experiment
-extern const char kHTTPSErrorReporterFinchExperimentName[];
-extern const char kHTTPSErrorReporterFinchGroupShowPossiblySend[];
-extern const char kHTTPSErrorReporterFinchGroupDontShowDontSend[];
-extern const char kHTTPSErrorReporterFinchParamName[];
-
 #if defined(ENABLE_EXTENSIONS)
 namespace extensions {
 class ExperienceSamplingEvent;
@@ -35,6 +29,7 @@ namespace policy {
 class PolicyTest_SSLErrorOverridingDisallowed_Test;
 }
 
+class CertReportHelper;
 class SSLErrorClassification;
 
 // This class is responsible for showing/hiding the interstitial page that is
@@ -101,28 +96,13 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
 
-  void PopulateExtendedReportingOption(base::DictionaryValue* load_time_data);
-
  private:
   void NotifyDenyCertificate();
   void NotifyAllowCertificate();
+  CertificateErrorReport::InterstitialReason GetCertReportInterstitialReason();
 
   std::string GetUmaHistogramPrefix() const;
   std::string GetSamplingEventName() const;
-
-  // Send a report about an invalid certificate to the
-  // server. |user_proceeded| indicates whether the user clicked through
-  // the interstitial or not, and will be included in the report.
-  void FinishCertCollection(
-      CertificateErrorReport::ProceedDecision user_proceeded);
-
-  // Check whether a checkbox should be shown on the page that allows
-  // the user to opt in to Safe Browsing extended reporting.
-  bool ShouldShowCertificateReporterCheckbox();
-
-  // Returns true if an certificate report should be sent for the SSL
-  // error for this page.
-  bool ShouldReportCertificateError();
 
   base::Callback<void(bool)> callback_;
 
@@ -148,8 +128,7 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // calculates all times relative to this.
   const base::Time time_triggered_;
 
-  // Handles reports of invalid SSL certificates.
-  scoped_ptr<SSLCertReporter> ssl_cert_reporter_;
+  scoped_ptr<CertReportHelper> cert_report_helper_;
 
   // Which type of interstitial this is.
   enum SSLInterstitialReason {
