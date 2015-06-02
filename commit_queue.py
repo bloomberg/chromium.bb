@@ -23,7 +23,7 @@ import fix_encoding
 import rietveld
 
 THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
-sys.path.append(THIRD_PARTY_DIR)
+sys.path.insert(0, THIRD_PARTY_DIR)
 
 from cq_client import cq_pb2
 from google.protobuf import text_format
