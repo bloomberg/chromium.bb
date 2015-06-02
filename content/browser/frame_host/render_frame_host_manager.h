@@ -227,6 +227,12 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
     return pending_render_frame_host_.get();
   }
 
+  // Returns the speculative RenderFrameHost, or null if there is no speculative
+  // one.
+  RenderFrameHostImpl* speculative_frame_host_for_testing() const {
+    return speculative_render_frame_host_.get();
+  }
+
   // TODO(creis): Remove this when we no longer use RVH for navigation.
   RenderViewHostImpl* pending_render_view_host() const;
 

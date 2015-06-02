@@ -1437,6 +1437,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // message loop, so no IPCs that alter the frame tree can be processed.
   FrameTreeNode* child = root->child_at(1);
   SiteInstance* site = NULL;
+  bool browser_side_navigation =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation);
+  std::string cross_site_rfh_type =
+      browser_side_navigation ? "speculative" : "pending";
   {
     TestNavigationObserver observer(shell()->web_contents());
     TestFrameNavigationObserver navigation_observer(child);
@@ -1445,19 +1450,26 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     params.frame_tree_node_id = child->frame_tree_node_id();
     child->navigator()->GetController()->LoadURLWithParams(params);
 
-    site = child->render_manager()->pending_frame_host()->GetSiteInstance();
+    if (browser_side_navigation) {
+      site = child->render_manager()
+                 ->speculative_frame_host_for_testing()
+                 ->GetSiteInstance();
+    } else {
+      site = child->render_manager()->pending_frame_host()->GetSiteInstance();
+    }
     EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site);
 
-    EXPECT_EQ(
+    std::string tree = base::StringPrintf(
         " Site A ------------ proxies for B\n"
         "   |--Site A ------- proxies for B\n"
-        "   +--Site A (B pending)\n"
+        "   +--Site A (B %s)\n"
         "        |--Site A\n"
         "        +--Site A\n"
         "             +--Site A\n"
         "Where A = http://127.0.0.1/\n"
         "      B = http://foo.com/",
-        DepictFrameTree(root));
+        cross_site_rfh_type.c_str());
+    EXPECT_EQ(tree, DepictFrameTree(root));
 
     // Now that the verification is done, run the message loop and wait for the
     // navigation to complete.
@@ -1491,19 +1503,26 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     params.frame_tree_node_id = child->frame_tree_node_id();
     child->navigator()->GetController()->LoadURLWithParams(params);
 
-    SiteInstance* site2 =
-        child->render_manager()->pending_frame_host()->GetSiteInstance();
+    SiteInstance* site2;
+    if (browser_side_navigation) {
+      site2 = child->render_manager()
+                  ->speculative_frame_host_for_testing()
+                  ->GetSiteInstance();
+    } else {
+      site2 = child->render_manager()->pending_frame_host()->GetSiteInstance();
+    }
     EXPECT_NE(shell()->web_contents()->GetSiteInstance(), site2);
     EXPECT_NE(site, site2);
 
-    EXPECT_EQ(
+    std::string tree = base::StringPrintf(
         " Site A ------------ proxies for B C\n"
         "   |--Site A ------- proxies for B C\n"
-        "   +--Site B (C pending) -- proxies for A\n"
+        "   +--Site B (C %s) -- proxies for A\n"
         "Where A = http://127.0.0.1/\n"
         "      B = http://foo.com/\n"
         "      C = http://bar.com/",
-        DepictFrameTree(root));
+        cross_site_rfh_type.c_str());
+    EXPECT_EQ(tree, DepictFrameTree(root));
 
     navigation_observer.Wait();
     EXPECT_TRUE(observer.last_navigation_succeeded());
