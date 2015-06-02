@@ -160,4 +160,13 @@ amdgpu_bo_alloc_and_map(amdgpu_device_handle dev, unsigned size,
 	return 0;
 }
 
+static inline int
+amdgpu_get_bo_list(amdgpu_device_handle dev, amdgpu_bo_handle bo1,
+		   amdgpu_bo_handle bo2, amdgpu_bo_list_handle *list)
+{
+	amdgpu_bo_handle resources[] = {bo1, bo2};
+
+	return amdgpu_bo_list_create(dev, bo2 ? 2 : 1, resources, NULL, list);
+}
+
 #endif  /* #ifdef _AMDGPU_TEST_H_ */

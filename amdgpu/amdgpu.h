@@ -283,8 +283,8 @@ struct amdgpu_cs_ib_info {
 	/** Special flags */
 	uint64_t      flags;
 
-	/** Handle of command buffer */
-	amdgpu_bo_handle bo_handle;
+	/** Virtual MC address of the command buffer */
+	uint64_t      ib_mc_address;
 
 	/**
 	 * Size of Command Buffer to be submitted.
@@ -293,9 +293,6 @@ struct amdgpu_cs_ib_info {
 	 *   - Could be 0
 	 */
 	uint32_t       size;
-
-	/** Offset in the IB buffer object (in unit of dwords) */
-	uint32_t	offset_dw;
 };
 
 /**

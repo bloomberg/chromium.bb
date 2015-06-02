@@ -224,9 +224,8 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 
 		ib = &ibs_request->ibs[i];
 
-		chunk_data[i].ib_data.handle = ib->bo_handle->handle;
-		chunk_data[i].ib_data.va_start = ib->bo_handle->virtual_mc_base_address
-						+ ib->offset_dw * 4;
+		chunk_data[i].ib_data._pad = 0;
+		chunk_data[i].ib_data.va_start = ib->ib_mc_address;
 		chunk_data[i].ib_data.ib_bytes = ib->size * 4;
 		chunk_data[i].ib_data.ip_type = ibs_request->ip_type;
 		chunk_data[i].ib_data.ip_instance = ibs_request->ip_instance;

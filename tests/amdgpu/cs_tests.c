@@ -41,7 +41,8 @@ static uint32_t family_id;
 
 static amdgpu_context_handle context_handle;
 static amdgpu_bo_handle ib_handle;
-uint32_t *ib_cpu;
+static uint64_t ib_mc_address;
+static uint32_t *ib_cpu;
 
 static amdgpu_bo_handle resources[MAX_RESOURCES];
 static unsigned num_resources;
@@ -83,6 +84,7 @@ int suite_cs_tests_init(void)
 		return CUE_SINIT_FAILED;
 
 	ib_handle = ib_result_handle;
+	ib_mc_address = ib_result_mc_address;
 	ib_cpu = ib_result_cpu;
 
 	return CUE_SUCCESS;
@@ -115,7 +117,7 @@ static int submit(unsigned ndw, unsigned ip)
 	uint32_t expired;
 	int r;
 
-	ib_info.bo_handle = ib_handle;
+	ib_info.ib_mc_address = ib_mc_address;
 	ib_info.size = ndw;
 
 	ibs_request.ip_type = ip;
@@ -183,6 +185,7 @@ static void amdgpu_cs_uvd_create(void)
 
 	num_resources = 0;
 	resources[num_resources++] = res.buf_handle;
+	resources[num_resources++] = ib_handle;
 
 	i = 0;
 	uvd_cmd(res.virtual_mc_base_address, 0x0, &i);
@@ -244,6 +247,7 @@ static void amdgpu_cs_uvd_decode(void)
 
 	num_resources = 0;
 	resources[num_resources++] = res.buf_handle;
+	resources[num_resources++] = ib_handle;
 
 	msg_addr = res.virtual_mc_base_address;
 	fb_addr = msg_addr + 4*1024;
@@ -308,6 +312,7 @@ static void amdgpu_cs_uvd_destroy(void)
 
 	num_resources = 0;
 	resources[num_resources++] = res.buf_handle;
+	resources[num_resources++] = ib_handle;
 
 	i = 0;
 	uvd_cmd(res.virtual_mc_base_address, 0x0, &i);

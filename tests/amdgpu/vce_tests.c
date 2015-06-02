@@ -62,7 +62,8 @@ static uint32_t family_id;
 
 static amdgpu_context_handle context_handle;
 static amdgpu_bo_handle ib_handle;
-uint32_t *ib_cpu;
+static uint64_t ib_mc_address;
+static uint32_t *ib_cpu;
 
 static struct amdgpu_vce_encode enc;
 static amdgpu_bo_handle resources[MAX_RESOURCES];
@@ -133,7 +134,7 @@ static int submit(unsigned ndw, unsigned ip)
 	uint32_t expired;
 	int r;
 
-	ib_info.bo_handle = ib_handle;
+	ib_info.ib_mc_address = ib_mc_address;
 	ib_info.size = ndw;
 
 	ibs_request.ip_type = ip;
@@ -161,6 +162,7 @@ static int submit(unsigned ndw, unsigned ip)
 				    &ib_mc_address);
 	if (r)
 		return r;
+	resources[num_resources-1] = ib_handle;
 
 	fence_status.context = context_handle;
 	fence_status.timeout_ns = AMDGPU_TIMEOUT_INFINITE;
@@ -202,6 +204,7 @@ static void amdgpu_cs_vce_create(void)
 	num_resources  = 0;
 	alloc_resource(&enc.fb[0], 4096, AMDGPU_GEM_DOMAIN_GTT);
 	resources[num_resources++] = enc.fb[0].handle;
+	resources[num_resources++] = ib_handle;
 
 	len = 0;
 	memcpy(ib_cpu, vce_session, sizeof(vce_session));
@@ -385,6 +388,7 @@ static void amdgpu_cs_vce_encode(void)
 	resources[num_resources++] = enc.vbuf.handle;
 	alloc_resource(&enc.cpb, cpb_size, AMDGPU_GEM_DOMAIN_VRAM);
 	resources[num_resources++] = enc.cpb.handle;
+	resources[num_resources++] = ib_handle;
 
 	r = amdgpu_bo_cpu_map(enc.vbuf.handle, (void **)&enc.vbuf.ptr);
 	CU_ASSERT_EQUAL(r, 0);
@@ -423,7 +427,7 @@ static void amdgpu_cs_vce_encode(void)
 		check_result(&enc);
 	}
 
-	for (i = 0; i < num_resources; ++i) {
+	for (i = 0; i < num_resources-1; ++i) {
 		r = amdgpu_bo_free(resources[i]);
 		CU_ASSERT_EQUAL(r, 0);
 	}
@@ -436,6 +440,7 @@ static void amdgpu_cs_vce_destroy(void)
 	num_resources  = 0;
 	alloc_resource(&enc.fb[0], 4096, AMDGPU_GEM_DOMAIN_GTT);
 	resources[num_resources++] = enc.fb[0].handle;
+	resources[num_resources++] = ib_handle;
 
 	len = 0;
 	memcpy(ib_cpu, vce_session, sizeof(vce_session));
