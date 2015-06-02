@@ -5,10 +5,6 @@ KeygenHandlerTest.*ConcurrencyTest
 # Hangs, see http://crbug.com/61908
 DirectoryListerTest.BigDirRecursiveTest
 
-# http://crbug.com/88228
-SSLClientSocketTest.Connect
-SSLClientSocketTest.ConnectClientAuthSendNullCert
-
 # Fails flakily. http://crbug.com/255775
 SimpleIndexFileTest.WriteThenLoadIndex
 
