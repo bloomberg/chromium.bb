@@ -118,7 +118,7 @@ public:
     bool scopeContainsLastMatchedElement() const { return m_scopeContainsLastMatchedElement; }
     bool hasAnyMatchingRules(RuleSet*);
 
-    const MatchResult& matchedResult();
+    const MatchResult& matchedResult() const;
     PassRefPtrWillBeRawPtr<StyleRuleList> matchedStyleRuleList();
     PassRefPtrWillBeRawPtr<CSSRuleList> matchedCSSRuleList();
 

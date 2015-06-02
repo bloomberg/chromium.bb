@@ -62,7 +62,7 @@ ElementRuleCollector::~ElementRuleCollector()
 {
 }
 
-const MatchResult& ElementRuleCollector::matchedResult()
+const MatchResult& ElementRuleCollector::matchedResult() const
 {
     return m_result;
 }
