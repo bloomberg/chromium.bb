@@ -5,6 +5,7 @@
 #ifndef LayoutObjectDrawingRecorder_h
 #define LayoutObjectDrawingRecorder_h
 
+#include "core/layout/LayoutObject.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -12,13 +13,18 @@
 namespace blink {
 
 class GraphicsContext;
-class LayoutObject;
 
 // Convenience constructors for creating DrawingRecorders.
 class LayoutObjectDrawingRecorder final : public DrawingRecorder {
 public:
     LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutRect& clip)
-        : DrawingRecorder(context, layoutObject, displayItemType, pixelSnappedIntRect(clip)) { }
+        : DrawingRecorder(context, layoutObject, displayItemType, pixelSnappedIntRect(clip))
+    {
+#if ENABLE(ASSERT)
+        if (layoutObject.fullPaintInvalidationReason() == PaintInvalidationDelayedFull)
+            setUnderInvalidationCheckingMode(DrawingDisplayItem::DontCheck);
+#endif
+    }
 
     LayoutObjectDrawingRecorder(GraphicsContext& context, const LayoutObject& layoutObject, PaintPhase phase, const FloatRect& clip)
         : DrawingRecorder(context, layoutObject, DisplayItem::paintPhaseToDrawingType(phase), clip) { }
