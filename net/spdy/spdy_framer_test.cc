@@ -567,6 +567,17 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   SpdyHeaderBlock headers_;
 };
 
+class SpdyFramerPeer {
+ public:
+  static size_t kControlFrameBufferSize() {
+    return SpdyFramer::kControlFrameBufferSize;
+  }
+  static size_t GetNumberRequiredContinuationFrames(SpdyFramer* framer,
+                                                    size_t size) {
+    return framer->GetNumberRequiredContinuationFrames(size);
+  }
+};
+
 // Retrieves serialized headers from a HEADERS or SYN_STREAM frame.
 base::StringPiece GetSerializedHeaders(const SpdyFrame* frame,
                                        const SpdyFramer& framer) {
@@ -605,15 +616,6 @@ base::StringPiece GetSerializedHeaders(const SpdyFrame* frame,
                        frame->size() - framer.GetHeadersMinimumSize());
   }
 }
-
-}  // namespace test
-
-using test::SetFrameLength;
-using test::SetFrameFlags;
-using test::CompareCharArraysWithHexError;
-using test::SpdyFramerTestUtil;
-using test::TestSpdyVisitor;
-using test::GetSerializedHeaders;
 
 class SpdyFramerTest : public ::testing::TestWithParam<SpdyMajorVersion> {
  protected:
@@ -3282,8 +3284,10 @@ TEST_P(SpdyFramerTest, GetNumberRequiredContinuationFrames) {
 
   SpdyFramer framer(spdy_version_);
   // Test case from https://crbug.com/464748.
-  EXPECT_EQ(1u, framer.GetNumberRequiredContinuationFrames(2039));
-  EXPECT_EQ(2u, framer.GetNumberRequiredContinuationFrames(2040));
+  EXPECT_EQ(1u,
+            SpdyFramerPeer::GetNumberRequiredContinuationFrames(&framer, 2039));
+  EXPECT_EQ(2u,
+            SpdyFramerPeer::GetNumberRequiredContinuationFrames(&framer, 2040));
 }
 
 TEST_P(SpdyFramerTest, CreateContinuationUncompressed) {
@@ -3777,8 +3781,8 @@ TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
   SpdyFramer framer(spdy_version_);
   // Create a GoAway frame that has a few extra bytes at the end.
   // We create enough overhead to overflow the framer's control frame buffer.
-  ASSERT_LE(SpdyFramer::kControlFrameBufferSize, 250u);
-  const size_t length = SpdyFramer::kControlFrameBufferSize + 1;
+  ASSERT_LE(SpdyFramerPeer::kControlFrameBufferSize(), 250u);
+  const size_t length = SpdyFramerPeer::kControlFrameBufferSize() + 1;
   const unsigned char kV3FrameData[] = {  // Also applies for V2.
     0x80, spdy_version_ch_, 0x00, 0x07,
     0x00, 0x00, 0x00, static_cast<unsigned char>(length),
@@ -3882,8 +3886,7 @@ TEST_P(SpdyFramerTest, ReadLargeSettingsFrame) {
                          7);
 
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeSettings(settings_ir));
-  EXPECT_LT(SpdyFramer::kControlFrameBufferSize,
-            control_frame->size());
+  EXPECT_LT(SpdyFramerPeer::kControlFrameBufferSize(), control_frame->size());
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = false;
 
@@ -5902,5 +5905,7 @@ TEST_P(SpdyFramerTest, ReadIncorrectlySizedPriority) {
             visitor.framer_.error_code())
       << SpdyFramer::ErrorCodeToString(visitor.framer_.error_code());
 }
+
+}  // namespace test
 
 }  // namespace net

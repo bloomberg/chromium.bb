@@ -40,11 +40,11 @@ class SpdyStreamTest;
 
 class SpdyFramer;
 class SpdyFrameBuilder;
-class SpdyFramerTest;
 
 namespace test {
 
 class TestSpdyVisitor;
+class SpdyFramerPeer;
 
 }  // namespace test
 
@@ -579,30 +579,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t header_table_size_bound() const;
 
  protected:
-  // TODO(jgraettinger): Switch to test peer pattern.
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, BasicCompression);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ControlFrameSizesAreValidated);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, HeaderCompression);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, DecompressUncompressedFrame);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ExpandBuffer_HeapSmash);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, HugeHeaderBlock);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, UnclosedStreamDataCompressors);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
-                           UnclosedStreamDataCompressorsOneByteAtATime);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
-                           UncompressLargerThanFrameBufferInitialSize);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, GetNumberRequiredContinuationFrames);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
-                           CreatePushPromiseThenContinuationUncompressed);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ReadLargeSettingsFrame);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
-                           ReadLargeSettingsFrameInSmallChunks);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ControlFrameAtMaxSizeLimit);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest, ControlFrameTooLarge);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
-                           TooLargeHeadersFrameUsesContinuation);
-  FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
-                           TooLargePushPromiseFrameUsesContinuation);
   friend class HttpNetworkLayer;  // This is temporary for the server.
   friend class HttpNetworkTransactionTest;
   friend class HttpProxyClientSocketPoolTest;
@@ -612,6 +588,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   friend class SpdySessionTest;
   friend class SpdyStreamTest;
   friend class test::TestSpdyVisitor;
+  friend class test::SpdyFramerPeer;
 
  private:
   // Internal breakouts from ProcessInput. Each returns the number of bytes
