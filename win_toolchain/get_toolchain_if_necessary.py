@@ -33,13 +33,20 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
+import zipfile
 
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 DEPOT_TOOLS_PATH = os.path.join(BASEDIR, '..')
 sys.path.append(DEPOT_TOOLS_PATH)
-import download_from_google_storage
+try:
+  import download_from_google_storage
+except ImportError:
+  # Allow use of utility functions in this script from package_from_installed
+  # on bare VM that doesn't have a full depot_tools.
+  pass
 
 if sys.platform != 'cygwin':
   import ctypes.wintypes
@@ -186,6 +193,32 @@ def DelayBeforeRemoving(target_dir):
     print
 
 
+def DownloadUsingGsutil(filename):
+  """Downloads the given file from Google Storage chrome-wintoolchain bucket."""
+  temp_dir = tempfile.mkdtemp()
+  assert os.path.basename(filename) == filename
+  target_path = os.path.join(temp_dir, filename)
+  gsutil = download_from_google_storage.Gsutil(
+      download_from_google_storage.GSUTIL_DEFAULT_PATH, boto_path=None)
+  code = gsutil.call('cp', 'gs://chrome-wintoolchain/' + filename, target_path)
+  if code != 0:
+    sys.exit('gsutil failed')
+  return temp_dir, target_path
+
+
+def DoTreeMirror(target_dir, tree_sha1):
+  """In order to save temporary space on bots that do not have enough space to
+  download ISOs, unpack them, and copy to the target location, the whole tree
+  is uploaded as a zip to internal storage, and then mirrored here."""
+  temp_dir, local_zip = DownloadUsingGsutil(tree_sha1 + '.zip')
+  sys.stdout.write('Extracting %s...\n' % local_zip)
+  sys.stdout.flush()
+  with zipfile.ZipFile(local_zip, 'r', zipfile.ZIP_DEFLATED, True) as zf:
+    zf.extractall(target_dir)
+  if temp_dir:
+    subprocess.check_call('rmdir /s/q "%s"' % temp_dir, shell=True)
+
+
 def main():
   if not sys.platform.startswith(('cygwin', 'win32')):
     return 0
@@ -215,7 +248,13 @@ def main():
   # the downloader script is.
   os.chdir(os.path.normpath(os.path.join(BASEDIR)))
   toolchain_dir = '.'
-  target_dir = os.path.normpath(os.path.join(toolchain_dir, 'vs2013_files'))
+  if os.environ.get('GYP_MSVS_VERSION') == '2015':
+    target_dir = os.path.normpath(os.path.join(toolchain_dir, 'vs_files'))
+  else:
+    target_dir = os.path.normpath(os.path.join(toolchain_dir, 'vs2013_files'))
+  abs_target_dir = os.path.abspath(target_dir)
+
+  got_new_toolchain = False
 
   # If the current hash doesn't match what we want in the file, nuke and pave.
   # Typically this script is only run when the .sha1 one file is updated, but
@@ -224,8 +263,8 @@ def main():
   current_hash = CalculateHash(target_dir)
   if current_hash not in desired_hashes:
     should_use_gs = False
-    if (HaveSrcInternalAccess() or 
-        LooksLikeGoogler() or 
+    if (HaveSrcInternalAccess() or
+        LooksLikeGoogler() or
         CanAccessToolchainBucket()):
       should_use_gs = True
       if not CanAccessToolchainBucket():
@@ -246,12 +285,35 @@ def main():
                       stdin=nul, stdout=nul, stderr=nul)
     if os.path.isdir(target_dir):
       subprocess.check_call('rmdir /s/q "%s"' % target_dir, shell=True)
-    args = [sys.executable,
-            'toolchain2013.py',
-            '--targetdir', target_dir,
-            '--sha1', desired_hashes[0],
-            '--use-gs']
-    subprocess.check_call(args)
+
+    DoTreeMirror(target_dir, desired_hashes[0])
+
+    got_new_toolchain = True
+
+  win_sdk = os.path.join(abs_target_dir, 'win_sdk')
+  try:
+    with open(os.path.join(target_dir, 'VS_VERSION'), 'rb') as f:
+      vs_version = f.read().strip()
+  except IOError:
+    # Older toolchains didn't have the VS_VERSION file, and used 'win8sdk'
+    # instead of just 'win_sdk'.
+    vs_version = '2013'
+    win_sdk = os.path.join(abs_target_dir, 'win8sdk')
+
+  data = {
+      'path': abs_target_dir,
+      'version': vs_version,
+      'win_sdk': win_sdk,
+      'wdk': os.path.join(abs_target_dir, 'wdk'),
+      'runtime_dirs': [
+        os.path.join(abs_target_dir, 'sys64'),
+        os.path.join(abs_target_dir, 'sys32'),
+      ],
+  }
+  with open(os.path.join(target_dir, '..', 'data.json'), 'w') as f:
+    json.dump(data, f)
+
+  if got_new_toolchain:
     current_hash = CalculateHash(target_dir)
     if current_hash not in desired_hashes:
       print >> sys.stderr, (
