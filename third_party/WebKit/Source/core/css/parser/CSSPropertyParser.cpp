@@ -110,7 +110,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         parseSuccess = (RuntimeEnabledFeatures::cssViewportEnabled() || isUASheetBehavior(context.mode()))
             && parser.parseViewportProperty(resolvedProperty, important);
     } else if (ruleType == StyleRule::FontFace) {
-        parseSuccess = !important && parser.parseFontFaceDescriptor(resolvedProperty);
+        parseSuccess = parser.parseFontFaceDescriptor(resolvedProperty);
     } else {
         parseSuccess = parser.parseValue(unresolvedProperty, important);
     }

@@ -660,7 +660,6 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
     if (range.consume().type() != ColonToken)
         return; // Parse error
 
-    // FIXME: We shouldn't allow !important in @keyframes or @font-face
     bool important = false;
     const CSSParserToken* declarationValueEnd = range.end();
     const CSSParserToken* last = range.end() - 1;
@@ -675,6 +674,9 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
             declarationValueEnd = last;
         }
     }
+
+    if (important && (ruleType == StyleRule::FontFace || ruleType == StyleRule::Keyframes))
+        return;
 
     if (m_observerWrapper && ruleType == StyleRule::Style) {
         size_t propertiesCount = m_parsedProperties.size();
