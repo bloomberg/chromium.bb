@@ -82,7 +82,7 @@ public:
     InspectedStateAccessCheck inspectedStateAccessCheck() const { return m_inspectedStateAccessCheck; }
 
     static void setWeakCallback(const v8::WeakCallbackInfo<CallbackData>&);
-    CallbackData* createCallbackData(InjectedScriptManager*);
+    CallbackData* createCallbackData();
     void removeCallbackData(CallbackData*);
     void setCustomObjectFormatterEnabled(bool);
 

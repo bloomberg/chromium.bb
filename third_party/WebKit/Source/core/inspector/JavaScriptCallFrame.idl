@@ -28,14 +28,6 @@
     NoInterfaceObject,
     DoNotCheckConstants
 ] interface JavaScriptCallFrame {
-
-    // Scope type
-    const unsigned short GLOBAL_SCOPE = 0;
-    const unsigned short LOCAL_SCOPE = 1;
-    const unsigned short WITH_SCOPE = 2;
-    const unsigned short CLOSURE_SCOPE = 3;
-    const unsigned short CATCH_SCOPE = 4;
-
     [Custom] any evaluateWithExceptionDetails(DOMString script, [Default=Undefined] optional object scopeExtension);
     [Custom] any restart();
 
