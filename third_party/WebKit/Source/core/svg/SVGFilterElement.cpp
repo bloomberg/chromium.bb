@@ -41,7 +41,6 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(SVGLengthMode::Height), ForbidNegativeLengths))
     , m_filterUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::filterUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX))
     , m_primitiveUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::primitiveUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE))
-    , m_filterRes(SVGAnimatedIntegerOptionalInteger::create(this, SVGNames::filterResAttr))
 {
     // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
     // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
@@ -56,7 +55,6 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     addToPropertyMap(m_height);
     addToPropertyMap(m_filterUnits);
     addToPropertyMap(m_primitiveUnits);
-    addToPropertyMap(m_filterRes);
 }
 
 DEFINE_NODE_FACTORY(SVGFilterElement)
@@ -70,20 +68,10 @@ DEFINE_TRACE(SVGFilterElement)
     visitor->trace(m_height);
     visitor->trace(m_filterUnits);
     visitor->trace(m_primitiveUnits);
-    visitor->trace(m_filterRes);
     visitor->trace(m_clientsToAdd);
 #endif
     SVGElement::trace(visitor);
     SVGURIReference::trace(visitor);
-}
-
-void SVGFilterElement::setFilterRes(unsigned x, unsigned y)
-{
-    filterResX()->baseValue()->setValue(x);
-    filterResY()->baseValue()->setValue(y);
-
-    invalidateSVGAttributes();
-    svgAttributeChanged(SVGNames::filterResAttr);
 }
 
 void SVGFilterElement::svgAttributeChanged(const QualifiedName& attrName)
@@ -94,11 +82,8 @@ void SVGFilterElement::svgAttributeChanged(const QualifiedName& attrName)
         || attrName == SVGNames::heightAttr;
     if (isXYWH)
         updateRelativeLengthsInformation();
-    else if (attrName == SVGNames::filterResAttr)
-        UseCounter::count(document(), UseCounter::SVGFilterRes);
 
     if (isXYWH
-        || attrName == SVGNames::filterResAttr
         || attrName == SVGNames::filterUnitsAttr
         || attrName == SVGNames::primitiveUnitsAttr) {
         SVGElement::InvalidationGuard invalidationGuard(this);

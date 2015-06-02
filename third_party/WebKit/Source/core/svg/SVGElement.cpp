@@ -1006,7 +1006,6 @@ bool SVGElement::isAnimatableAttribute(const QualifiedName& name) const
             &SVGNames::edgeModeAttr,
             &SVGNames::elevationAttr,
             &SVGNames::exponentAttr,
-            &SVGNames::filterResAttr,
             &SVGNames::filterUnitsAttr,
             &SVGNames::fxAttr,
             &SVGNames::fyAttr,

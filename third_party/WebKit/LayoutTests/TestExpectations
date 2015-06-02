@@ -1706,7 +1706,10 @@ crbug.com/479181 inspector-protocol/animation/animation-multiple-frames.html [ P
 crbug.com/479202 fast/forms/select/select-typeahead-with-spacekey.html [ Pass Failure ]
 crbug.com/479202 virtual/slimmingpaint/fast/forms/select/select-typeahead-with-spacekey.html [ Skip ]
 
-crbug.com/353272 virtual/slimmingpaint/svg/batik/text/smallFonts.svg [ Timeout Crash ]
+#crbug.com/353272 virtual/slimmingpaint/svg/batik/text/smallFonts.svg [ Timeout Crash ]
+
+crbug.com/353272 svg/batik/text/smallFonts.svg [ NeedsRebaseline ]
+crbug.com/353272 svg/batik/text/textFeatures.svg [ NeedsRebaseline ]
 
 crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-bg-zoom.html [ Failure ]
 crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]

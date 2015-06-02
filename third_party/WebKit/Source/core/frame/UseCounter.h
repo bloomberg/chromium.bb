@@ -653,7 +653,6 @@ public:
         TabStopProperty = 746,
         TabStopAttribute = 747,
         LegacyConst = 748,
-        SVGFilterRes = 749,
         V8Permissions_Query_Method = 750,
         // The above items are available in M43 branch.
 
@@ -700,9 +699,6 @@ public:
         V8SVGAnimationElement_HasExtension_Method = 789,
         V8SVGCursorElement_HasExtension_Method = 790,
         V8SVGFEConvolveMatrixElement_PreserveAlpha_AttributeGetter = 791,
-        V8SVGFilterElement_FilterResX_AttributeGetter = 792,
-        V8SVGFilterElement_FilterResY_AttributeGetter = 793,
-        V8SVGFilterElement_SetFilterRes_Method = 794,
         V8SVGGraphicsElement_HasExtension_Method = 795,
         V8SVGMaskElement_HasExtension_Method = 796,
         V8SVGPatternElement_HasExtension_Method = 797,

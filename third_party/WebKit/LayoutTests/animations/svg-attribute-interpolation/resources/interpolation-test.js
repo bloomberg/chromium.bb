@@ -369,7 +369,6 @@
 
   var animatedNumberOptionalNumberAttributes = [
     'baseFrequency',
-    'filterRes',
     'kernelUnitLength',
     'order',
     'radius',
@@ -410,8 +409,6 @@
       result = element[attributeName].animVal;
 
     if (!result) {
-      if (attributeName === 'filterResX' || attributeName === 'filterResY')
-        return null;
       if (attributeName === 'pathLength')
         return '0';
       if (attributeName === 'preserveAlpha')

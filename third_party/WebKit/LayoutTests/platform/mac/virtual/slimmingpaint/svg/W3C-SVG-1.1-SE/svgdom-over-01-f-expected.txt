@@ -90,7 +90,7 @@ layer at (0,0) size 480x360
         LayoutSVGRect {rect} at (10,191) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
         LayoutSVGText {text} at (10,-1) size 142x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,0) size 142x10
-            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 33 width 141.07: "f.filterResX.baseVal == 0: PASSED"
+            chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 33 width 141.07: "c.targetX.baseVal == 0: PASSED"
       LayoutSVGContainer {g} at (10,199) size 187x10 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,200.00)}]
         LayoutSVGRect {rect} at (10,201) size 5x5 [fill={[type=SOLID] [color=#00FF00]}] [x=0.00] [y=1.00] [width=5.00] [height=5.00]
         LayoutSVGText {text} at (10,-1) size 177x10 contains 1 chunk(s)

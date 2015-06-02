@@ -1053,7 +1053,6 @@
 	y %Coordinate; #IMPLIED
 	width %Length; #IMPLIED
 	height %Length; #IMPLIED
-	filterRes %NumberOptionalNumber; #IMPLIED
 >
 <!ENTITY % filter_primitive_attributes "x %Coordinate; #IMPLIED
    y %Coordinate; #IMPLIED

@@ -17,7 +17,7 @@
       testRunner.dumpAsText();
 
     setTimeout(function() {
-      document.getElementById('filter').setFilterRes(100, 100);
+      document.getElementById('filter').setAttribute('width', 99);
     }, 0);
   </script>
 </svg>

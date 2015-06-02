@@ -80,21 +80,6 @@ static void paintFilteredContent(LayoutObject& object, GraphicsContext* context,
     // Clip drawing of filtered image to the minimum required paint rect.
     FilterEffect* lastEffect = filterData->builder->lastEffect();
     context->clipRect(lastEffect->determineAbsolutePaintRect(lastEffect->maxEffectRect()));
-    if (filterElement->hasAttribute(SVGNames::filterResAttr)) {
-        // Get boundaries in device coords.
-        // FIXME: See crbug.com/382491. Is the use of getCTM OK here, given it does not include device
-        // zoom or High DPI adjustments?
-        FloatSize size = context->getCTM().mapSize(boundaries.size());
-        // Compute the scale amount required so that the resulting offscreen is exactly filterResX by filterResY pixels.
-        float filterResScaleX = filterElement->filterResX()->currentValue()->value() / size.width();
-        float filterResScaleY = filterElement->filterResY()->currentValue()->value() / size.height();
-        // Scale the CTM so the primitive is drawn to filterRes.
-        context->scale(filterResScaleX, filterResScaleY);
-        // Create a resize filter with the inverse scale.
-        AffineTransform resizeMatrix;
-        resizeMatrix.scale(1 / filterResScaleX, 1 / filterResScaleY);
-        imageFilter = builder.buildTransform(resizeMatrix, imageFilter.get());
-    }
 
 #ifdef SK_SUPPORT_LEGACY_IMAGEFILTER_CTM
     // TODO: Remove this workaround once skew/rotation support is added in Skia

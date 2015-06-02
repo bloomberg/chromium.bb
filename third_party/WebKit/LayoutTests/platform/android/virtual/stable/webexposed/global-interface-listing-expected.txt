@@ -4016,8 +4016,6 @@ interface SVGFETurbulenceElement
     getter y
     method constructor
 interface SVGFilterElement
-    getter filterResX
-    getter filterResY
     getter filterUnits
     getter height
     getter href
@@ -4026,7 +4024,6 @@ interface SVGFilterElement
     getter x
     getter y
     method constructor
-    method setFilterRes
 interface SVGForeignObjectElement
     getter height
     getter width
