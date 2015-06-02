@@ -424,9 +424,6 @@ config("compiler") {
       # gcc -- http://gcc.gnu.org/onlinedocs/gcc-4.8.0/gcc/Optimize-Options.html
       "-fuse-ld=gold",
 
-      # TODO(brettw) common.gypi has this only for target toolset.
-      "-Wl,--icf=safe",
-
       # Experimentation found that using four linking threads
       # saved ~20% of link time.
       # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
@@ -437,6 +434,21 @@ config("compiler") {
       #"-Wl,--threads",
       #"-Wl,--thread-count=4",
     ]
+
+    if (!is_asan && !is_msan && !is_lsan && !is_tsan) {
+      # TODO(brettw) common.gypi has this only for target toolset.
+      if (current_cpu == "x64") {
+        # --icf=safe disables much more folding on x86_64 than elsewhere, see
+        # http://crbug.com/492177.  Turning it on saves over 12 MB of binary
+        # size, but it seems to regress cold startup time by over a second
+        # (see http://crbug.com/492809).
+        # TODO(thakis): Check if disabling ICF would inmprove android cold start
+        # times by several seconds too.
+        ldflags += [ "-Wl,--icf=safe" ]
+      } else {
+        ldflags += [ "-Wl,--icf=all" ]
+      }
+    }
 
     # TODO(thestig): Make this flag work with GN.
     #if (!is_official_build && !is_chromeos && !(is_asan || is_lsan || is_tsan || is_msan)) {

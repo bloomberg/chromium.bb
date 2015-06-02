@@ -690,9 +690,6 @@
       'use_lto%': 0,
       'use_lto_o2%': 0,
 
-      # Allowed level of identical code folding in the gold linker.
-      'gold_icf_level%': 'safe',
-
       # Libxkbcommon usage.
       'use_xkbcommon%': 0,
 
@@ -1235,7 +1232,6 @@
     'gomadir%': '<(gomadir)',
     'use_lto%': '<(use_lto)',
     'use_lto_o2%': '<(use_lto_o2)',
-    'gold_icf_level%': '<(gold_icf_level)',
     'video_hole%': '<(video_hole)',
     'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
     'cfi_vptr%': '<(cfi_vptr)',
@@ -2209,9 +2205,21 @@
         'clang%': 1,
         'use_allocator%': 'none',
         'use_sanitizer_options%': 1,
-        # Disable ICF in the linker to avoid debug info loss.
-        'gold_icf_level%': 'none',
       }],
+
+      # Allowed level of identical code folding in the gold linker.
+      ['OS=="linux" and target_arch=="x64"', {
+        # --icf=safe disables much more folding on x86_64 than elsewhere, see
+        # http://crbug.com/492177.  Turning it on saves over 12 MB of binary
+        # size, but it seems to regress cold startup time by over a second
+        # (see http://crbug.com/492809).
+        # TODO(thakis): Check if disabling ICF would inmprove android cold start
+        # times by several seconds too.
+        'gold_icf_level%': 'safe',
+      }, {
+        'gold_icf_level%': 'all',
+      }],
+
       ['OS=="linux" and asan==0 and msan==0 and lsan==0 and tsan==0', {
         # PNaCl toolchain Non-SFI build only supports linux OS build.
         # Also, it does not support sanitizers.
@@ -4602,7 +4610,7 @@
               }],
             ],
             'conditions': [
-              ['release_valgrind_build==0 and order_profiling==0', {
+              ['release_valgrind_build==0 and order_profiling==0 and asan==0 and msan==0 and lsan==0 and tsan==0', {
                 'target_conditions': [
                   ['_toolset=="target"', {
                     'ldflags': [
