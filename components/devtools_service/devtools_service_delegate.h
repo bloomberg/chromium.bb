@@ -13,11 +13,11 @@
 
 namespace devtools_service {
 
-class DevToolsCoordinatorImpl;
+class DevToolsService;
 
 class DevToolsServiceDelegate
     : public mojo::ApplicationDelegate,
-      public mojo::InterfaceFactory<DevToolsAgentClient>,
+      public mojo::InterfaceFactory<DevToolsRegistry>,
       public mojo::InterfaceFactory<DevToolsCoordinator> {
  public:
   DevToolsServiceDelegate();
@@ -30,15 +30,15 @@ class DevToolsServiceDelegate
       mojo::ApplicationConnection* connection) override;
   void Quit() override;
 
-  // mojo::InterfaceFactory<DevToolsAgentClient> implementation.
+  // mojo::InterfaceFactory<DevToolsRegistry> implementation.
   void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<DevToolsAgentClient> request) override;
+              mojo::InterfaceRequest<DevToolsRegistry> request) override;
 
   // mojo::InterfaceFactory<DevToolsCoordinator> implementation.
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<DevToolsCoordinator> request) override;
 
-  scoped_ptr<DevToolsCoordinatorImpl> coordinator_;
+  scoped_ptr<DevToolsService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsServiceDelegate);
 };

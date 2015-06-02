@@ -8,15 +8,11 @@ module devtools_service;
 // - DevToolsCoordinator: Privileged interface used by the shell to setup the
 //   service and perform other control operations. Other applications are not
 //   able to request this interface.
-// - DevToolsAgentClient: Interface that DevTools agents (e.g., Web page
-//   renderers) use to report DevTools command results and events to the
-//   DevTools service.
+// - DevToolsRegistry: Interface that DevTools agents (e.g., Web page renderers)
+//   use to register themselves.
 //
-// DevTools agents need to implement the DevToolsAgent interface in order to
-// receive DevTools commands from the DevTools service. Usually when an agent
-// starts, it connects to the DevTools service, requests the DevToolsAgentClient
-// interface, and then calls DevToolsAgentClient.RegisterAgent() to give the
-// service a DevToolsAgent interface pointer.
+// DevTools agents need to implement the DevToolsAgent interface and register
+// themselves in order to receive DevTools commands from the DevTools service.
 
 interface DevToolsCoordinator {
   // Initializes the DevTools service. An HTTP server will be run on the
@@ -24,12 +20,24 @@ interface DevToolsCoordinator {
   Initialize(uint16 remote_debugging_port);
 };
 
-interface DevToolsAgentClient {
+interface DevToolsRegistry {
+  // Registers a DevTools agent.
   RegisterAgent(DevToolsAgent agent);
-
-  // TODO(yzshen): Add methods to report DevTools command results and events.
 };
 
 interface DevToolsAgent {
-  // TODO(yzshen): Add methods to accept DevTools commands.
+  // Sets/resets a client to receive event notifications and responses for
+  // DispatchProtocolMessage() calls. If a client doesn't want to receive
+  // messages anymore, it could simply close the underlying message pipe of
+  // |client|.
+  SetClient(DevToolsAgentClient client);
+
+  // Sends a command (in remote debugging protocol JSON format) to the agent.
+  DispatchProtocolMessage(string message);
+};
+
+interface DevToolsAgentClient {
+  // Sends a notification or response message (in remote debugging protocol JSON
+  // format) to the client.
+  DispatchProtocolMessage(string message);
 };

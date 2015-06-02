@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_COORDINATOR_IMPL_H_
-#define COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_COORDINATOR_IMPL_H_
+#ifndef COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_SERVICE_H_
+#define COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_SERVICE_H_
 
 #include <set>
 
@@ -20,17 +20,18 @@ class ApplicationImpl;
 
 namespace devtools_service {
 
-// DevToolsCoordinatorImpl is the central control of the DevTools service. It
-// manages the communication with DevTools agents (e.g., Web page renderers). It
-// also starts an HTTP server to speak the Chrome remote debugging protocol.
-class DevToolsCoordinatorImpl : public DevToolsCoordinator,
-                                public mojo::HttpServerDelegate {
+// DevToolsService is the central control. It manages the communication with
+// DevTools agents (e.g., Web page renderers). It also starts an HTTP server to
+// speak the Chrome remote debugging protocol.
+class DevToolsService : public DevToolsRegistry,
+                        public DevToolsCoordinator,
+                        public mojo::HttpServerDelegate {
  public:
   // Doesn't take ownership of |application|, which must outlive this object.
-  explicit DevToolsCoordinatorImpl(mojo::ApplicationImpl* application);
-  ~DevToolsCoordinatorImpl() override;
+  explicit DevToolsService(mojo::ApplicationImpl* application);
+  ~DevToolsService() override;
 
-  void CreateAgentClient(mojo::InterfaceRequest<DevToolsAgentClient> request);
+  void BindToRegistryRequest(mojo::InterfaceRequest<DevToolsRegistry> request);
   void BindToCoordinatorRequest(
       mojo::InterfaceRequest<DevToolsCoordinator> request);
 
@@ -39,6 +40,9 @@ class DevToolsCoordinatorImpl : public DevToolsCoordinator,
 
   // DevToolsCoordinator implementation.
   void Initialize(uint16_t remote_debugging_port) override;
+
+  // DevToolsRegistry implementation.
+  void RegisterAgent(DevToolsAgentPtr agent) override;
 
   // mojo::HttpServerDelegate implementation.
   void OnConnected(
@@ -74,9 +78,9 @@ class DevToolsCoordinatorImpl : public DevToolsCoordinator,
   // Owns the elements.
   std::set<HttpConnectionDelegateImpl*> connections_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsCoordinatorImpl);
+  DISALLOW_COPY_AND_ASSIGN(DevToolsService);
 };
 
 }  // namespace devtools_service
 
-#endif  // COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_COORDINATOR_IMPL_H_
+#endif  // COMPONENTS_DEVTOOLS_SERVICE_DEVTOOLS_SERVICE_H_

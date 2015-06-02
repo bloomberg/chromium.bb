@@ -6,8 +6,8 @@ import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
 source_set("lib") {
   sources = [
-    "devtools_coordinator_impl.cc",
-    "devtools_coordinator_impl.h",
+    "devtools_service.cc",
+    "devtools_service.h",
     "devtools_service_delegate.cc",
     "devtools_service_delegate.h",
   ]

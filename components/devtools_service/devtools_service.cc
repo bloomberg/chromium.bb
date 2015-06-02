@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/devtools_service/devtools_coordinator_impl.h"
+#include "components/devtools_service/devtools_service.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -14,12 +14,12 @@
 
 namespace devtools_service {
 
-class DevToolsCoordinatorImpl::HttpConnectionDelegateImpl
+class DevToolsService::HttpConnectionDelegateImpl
     : public mojo::HttpConnectionDelegate,
       public mojo::ErrorHandler {
  public:
   HttpConnectionDelegateImpl(
-      DevToolsCoordinatorImpl* owner,
+      DevToolsService* owner,
       mojo::HttpConnectionPtr connection,
       mojo::InterfaceRequest<HttpConnectionDelegate> delegate_request)
       : owner_(owner),
@@ -51,25 +51,24 @@ class DevToolsCoordinatorImpl::HttpConnectionDelegateImpl
   // mojo::ErrorHandler implementation.
   void OnConnectionError() override { owner_->OnConnectionClosed(this); }
 
-  DevToolsCoordinatorImpl* const owner_;
+  DevToolsService* const owner_;
   mojo::HttpConnectionPtr connection_;
   mojo::Binding<HttpConnectionDelegate> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpConnectionDelegateImpl);
 };
 
-DevToolsCoordinatorImpl::DevToolsCoordinatorImpl(
-    mojo::ApplicationImpl* application)
+DevToolsService::DevToolsService(mojo::ApplicationImpl* application)
     : application_(application) {
   DCHECK(application_);
 }
 
-DevToolsCoordinatorImpl::~DevToolsCoordinatorImpl() {
+DevToolsService::~DevToolsService() {
   STLDeleteElements(&connections_);
 }
 
-void DevToolsCoordinatorImpl::CreateAgentClient(
-    mojo::InterfaceRequest<DevToolsAgentClient> request) {
+void DevToolsService::BindToRegistryRequest(
+    mojo::InterfaceRequest<DevToolsRegistry> request) {
   if (!IsInitialized()) {
     // Ignore the request if remote debugging is not needed.
     return;
@@ -79,12 +78,12 @@ void DevToolsCoordinatorImpl::CreateAgentClient(
   NOTIMPLEMENTED();
 }
 
-void DevToolsCoordinatorImpl::BindToCoordinatorRequest(
+void DevToolsService::BindToCoordinatorRequest(
     mojo::InterfaceRequest<DevToolsCoordinator> request) {
   coordinator_bindings_.AddBinding(this, request.Pass());
 }
 
-void DevToolsCoordinatorImpl::Initialize(uint16_t remote_debugging_port) {
+void DevToolsService::Initialize(uint16_t remote_debugging_port) {
   if (IsInitialized()) {
     LOG(WARNING) << "DevTools service receives a "
                  << "DevToolsCoordinator.Initialize() call while it has "
@@ -117,14 +116,19 @@ void DevToolsCoordinatorImpl::Initialize(uint16_t remote_debugging_port) {
       mojo::NetworkService::CreateHttpServerCallback());
 }
 
-void DevToolsCoordinatorImpl::OnConnected(
+void DevToolsService::RegisterAgent(DevToolsAgentPtr agent) {
+  // TODO(yzshen): Implement it.
+  NOTIMPLEMENTED();
+}
+
+void DevToolsService::OnConnected(
     mojo::HttpConnectionPtr connection,
     mojo::InterfaceRequest<mojo::HttpConnectionDelegate> delegate) {
   connections_.insert(
       new HttpConnectionDelegateImpl(this, connection.Pass(), delegate.Pass()));
 }
 
-void DevToolsCoordinatorImpl::OnReceivedRequest(
+void DevToolsService::OnReceivedRequest(
     HttpConnectionDelegateImpl* connection,
     mojo::HttpRequestPtr request,
     const OnReceivedRequestCallback& callback) {
@@ -156,7 +160,7 @@ void DevToolsCoordinatorImpl::OnReceivedRequest(
   callback.Run(response.Pass());
 }
 
-void DevToolsCoordinatorImpl::OnReceivedWebSocketRequest(
+void DevToolsService::OnReceivedWebSocketRequest(
     HttpConnectionDelegateImpl* connection,
     mojo::HttpRequestPtr request,
     const OnReceivedWebSocketRequestCallback& callback) {
@@ -166,7 +170,7 @@ void DevToolsCoordinatorImpl::OnReceivedWebSocketRequest(
   NOTIMPLEMENTED();
 }
 
-void DevToolsCoordinatorImpl::OnConnectionClosed(
+void DevToolsService::OnConnectionClosed(
     HttpConnectionDelegateImpl* connection) {
   DCHECK(connections_.find(connection) != connections_.end());
 

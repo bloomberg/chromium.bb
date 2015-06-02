@@ -5,7 +5,7 @@
 #include "components/devtools_service/devtools_service_delegate.h"
 
 #include "base/logging.h"
-#include "components/devtools_service/devtools_coordinator_impl.h"
+#include "components/devtools_service/devtools_service.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/url_type_converters.h"
@@ -30,12 +30,12 @@ DevToolsServiceDelegate::~DevToolsServiceDelegate() {
 }
 
 void DevToolsServiceDelegate::Initialize(mojo::ApplicationImpl* app) {
-  coordinator_.reset(new DevToolsCoordinatorImpl(app));
+  service_.reset(new DevToolsService(app));
 }
 
 bool DevToolsServiceDelegate::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
-  connection->AddService<DevToolsAgentClient>(this);
+  connection->AddService<DevToolsRegistry>(this);
 
   // DevToolsCoordinator is a privileged interface and only allowed for the
   // shell.
@@ -45,19 +45,19 @@ bool DevToolsServiceDelegate::ConfigureIncomingConnection(
 }
 
 void DevToolsServiceDelegate::Quit() {
-  coordinator_.reset();
+  service_.reset();
 }
 
 void DevToolsServiceDelegate::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<DevToolsAgentClient> request) {
-  coordinator_->CreateAgentClient(request.Pass());
+    mojo::InterfaceRequest<DevToolsRegistry> request) {
+  service_->BindToRegistryRequest(request.Pass());
 }
 
 void DevToolsServiceDelegate::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<DevToolsCoordinator> request) {
-  coordinator_->BindToCoordinatorRequest(request.Pass());
+  service_->BindToCoordinatorRequest(request.Pass());
 }
 
 }  // namespace devtools_service
