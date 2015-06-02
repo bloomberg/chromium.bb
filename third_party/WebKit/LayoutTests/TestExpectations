@@ -869,6 +869,8 @@ crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
 
+crbug.com/493516 [ XP ] svg/custom/transformed-outlines.svg [ NeedsRebaseline ]
+
 crbug.com/313846 http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/313846 [ Release XP ] http/tests/images/bmp-partial-load.html [ ImageOnlyFailure Pass ]
 
