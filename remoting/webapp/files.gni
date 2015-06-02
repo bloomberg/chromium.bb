@@ -477,6 +477,7 @@ remoting_webapp_resource_files = [
   "base/resources/open_sans.woff",
   "base/resources/spinner.gif",
   "crd/html/butter_bar.css",
+  "crd/html/crd_main.css",
   "crd/html/toolbar.css",
   "crd/html/menu_button.css",
   "crd/html/window_frame.css",

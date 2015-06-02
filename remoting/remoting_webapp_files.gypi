@@ -492,6 +492,7 @@
       'webapp/base/resources/open_sans.woff',
       'webapp/base/resources/spinner.gif',
       'webapp/crd/html/butter_bar.css',
+      'webapp/crd/html/crd_main.css',
       'webapp/crd/html/toolbar.css',
       'webapp/crd/html/menu_button.css',
       'webapp/crd/html/window_frame.css',
