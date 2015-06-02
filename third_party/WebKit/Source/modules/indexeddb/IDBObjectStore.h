@@ -73,6 +73,8 @@ public:
     IDBRequest* get(ScriptState*, const ScriptValue& key, ExceptionState&);
     IDBRequest* getAll(ScriptState*, const ScriptValue& range, unsigned long maxCount, ExceptionState&);
     IDBRequest* getAll(ScriptState*, const ScriptValue& range, ExceptionState&);
+    IDBRequest* getAllKeys(ScriptState*, const ScriptValue& range, unsigned long maxCount, ExceptionState&);
+    IDBRequest* getAllKeys(ScriptState*, const ScriptValue& range, ExceptionState&);
     IDBRequest* add(ScriptState*, const ScriptValue&, const ScriptValue& key, ExceptionState&);
     IDBRequest* put(ScriptState*, const ScriptValue&, const ScriptValue& key, ExceptionState&);
     IDBRequest* deleteFunction(ScriptState*, const ScriptValue& key, ExceptionState&);

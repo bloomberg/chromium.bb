@@ -155,6 +155,43 @@ IDBRequest* IDBObjectStore::getAll(ScriptState* scriptState, const ScriptValue& 
     return request;
 }
 
+IDBRequest* IDBObjectStore::getAllKeys(ScriptState* scriptState, const ScriptValue& keyRange, ExceptionState& exceptionState)
+{
+    return getAllKeys(scriptState, keyRange, std::numeric_limits<uint32_t>::max(), exceptionState);
+}
+
+IDBRequest* IDBObjectStore::getAllKeys(ScriptState* scriptState, const ScriptValue& keyRange, unsigned long maxCount, ExceptionState& exceptionState)
+{
+    IDB_TRACE("IDBObjectStore::getAll");
+    if (!maxCount) {
+        exceptionState.throwTypeError(IDBDatabase::notValidMaxCountErrorMessage);
+        return 0;
+    }
+    if (isDeleted()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
+        return 0;
+    }
+    if (m_transaction->isFinished() || m_transaction->isFinishing()) {
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        return 0;
+    }
+    if (!m_transaction->isActive()) {
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        return 0;
+    }
+    IDBKeyRange* range = IDBKeyRange::fromScriptValue(scriptState->executionContext(), keyRange, exceptionState);
+    if (exceptionState.hadException())
+        return 0;
+    if (!backendDB()) {
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::databaseClosedErrorMessage);
+        return 0;
+    }
+
+    IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
+    backendDB()->getAll(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, range, maxCount, true, WebIDBCallbacksImpl::create(request).leakPtr());
+    return request;
+}
+
 static void generateIndexKeysForValue(v8::Isolate* isolate, const IDBIndexMetadata& indexMetadata, const ScriptValue& objectValue, IDBObjectStore::IndexKeys* indexKeys)
 {
     ASSERT(indexKeys);
