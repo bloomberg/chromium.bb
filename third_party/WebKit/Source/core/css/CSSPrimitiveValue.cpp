@@ -826,11 +826,11 @@ String CSSPrimitiveValue::getStringValue() const
 
 static String formatNumber(double number, const char* suffix, unsigned suffixLength)
 {
-#if OS(WIN)
+#if OS(WIN) && _MSC_VER < 1900
     unsigned oldFormat = _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
     String result = String::format("%.6g", number);
-#if OS(WIN)
+#if OS(WIN) && _MSC_VER < 1900
     _set_output_format(oldFormat);
 #endif
     result.append(suffix, suffixLength);
