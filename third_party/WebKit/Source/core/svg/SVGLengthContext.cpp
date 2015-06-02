@@ -65,8 +65,8 @@ static const ComputedStyle* computedStyleForLengthResolving(const SVGElement* co
         currentContext = currentContext->parentNode();
     } while (currentContext);
 
-    // There must be at least a LayoutSVGRoot layoutObject, carrying a style.
-    ASSERT_NOT_REACHED();
+    // We can end up here if trying to resolve values for elements in an
+    // inactive document.
     return nullptr;
 }
 
