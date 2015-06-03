@@ -24,16 +24,16 @@ class ComputedStyle;
 class InlineFlowBoxPainter {
 public:
     InlineFlowBoxPainter(InlineFlowBox& inlineFlowBox) : m_inlineFlowBox(inlineFlowBox) { }
-    void paint(const PaintInfo&, const LayoutPoint&, const LayoutUnit lineTop, const LayoutUnit lineBottom);
+    void paint(const PaintInfo&, const LayoutPoint& paintOffset, const LayoutUnit lineTop, const LayoutUnit lineBottom);
 
 private:
-    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
-    void paintMask(const PaintInfo&, const LayoutPoint&);
-    void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
-    void paintFillLayer(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, SkXfermode::Mode);
-    void paintBoxShadow(const PaintInfo&, const ComputedStyle&, ShadowStyle, const LayoutRect&);
+    void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint& paintOffset, const LayoutRect& cullRect);
+    void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);
+    void paintFillLayers(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, SkXfermode::Mode op = SkXfermode::kSrcOver_Mode);
+    void paintFillLayer(const PaintInfo&, const Color&, const FillLayer&, const LayoutRect&, SkXfermode::Mode op);
+    void paintBoxShadow(const PaintInfo&, const ComputedStyle&, ShadowStyle, const LayoutRect& paintRect);
     LayoutRect roundedFrameRectClampedToLineTopAndBottomIfNeeded() const;
-    LayoutRect paintRectForImageStrip(const LayoutPoint&, const LayoutSize&, TextDirection) const;
+    LayoutRect paintRectForImageStrip(const LayoutPoint& paintOffset, const LayoutSize& frameSize, TextDirection) const;
 
     enum BorderPaintingType {
         DontPaintBorders,

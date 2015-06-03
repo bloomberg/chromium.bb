@@ -67,7 +67,7 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
     } else if (paintInfo.phase == PaintPhaseForeground) {
         // Paint our background, border and box-shadow.
-        paintBoxDecorationBackground(paintInfo, paintOffset);
+        paintBoxDecorationBackground(paintInfo, paintOffset, overflowRect);
     }
 
     // Paint our children.
@@ -210,7 +210,7 @@ InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintTyp
     return DontPaintBorders;
 }
 
-void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& cullRect)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground);
     if (!paintInfo.shouldPaintWithinRoot(&m_inlineFlowBox.layoutObject()) || m_inlineFlowBox.layoutObject().style()->visibility() != VISIBLE)
@@ -240,7 +240,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
     LayoutRect adjustedClipRect;
     BorderPaintingType borderPaintingType = getBorderPaintType(adjustedFrameRect, adjustedClipRect);
 
-    DrawingRecorder recorder(*paintInfo.context, m_inlineFlowBox, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(adjustedClipRect));
+    DrawingRecorder recorder(*paintInfo.context, m_inlineFlowBox, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(cullRect));
     if (recorder.canUseCachedDrawing())
         return;
 
