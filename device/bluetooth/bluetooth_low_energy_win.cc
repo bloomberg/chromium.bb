@@ -649,7 +649,7 @@ bool EnumerateKnownBluetoothLowEnergyDevices(
       case kError:
         return false;
       case kOk:
-        devices->push_back(device_info.release());
+        devices->push_back(device_info.Pass());
     }
   }
 }
