@@ -8,10 +8,13 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
+class ScriptPromise;
 class ScriptPromiseResolver;
+class ScriptState;
 
 // BluetoothGATTRemoteServer provides a way to interact with a connected bluetooth peripheral.
 //
@@ -36,6 +39,7 @@ public:
 
     // IDL exposed interface:
     bool connected() { return m_webGATT.connected; }
+    ScriptPromise getPrimaryService(ScriptState*, String serviceUUID);
 
 private:
     WebBluetoothGATTRemoteServer m_webGATT;

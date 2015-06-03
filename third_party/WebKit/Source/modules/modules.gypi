@@ -615,6 +615,7 @@
       'bluetooth/BluetoothError.cpp',
       'bluetooth/BluetoothError.h',
       'bluetooth/BluetoothGATTService.h',
+      'bluetooth/BluetoothGATTService.cpp',
       'bluetooth/BluetoothGATTRemoteServer.h',
       'bluetooth/BluetoothGATTRemoteServer.cpp',
       'bluetooth/NavigatorBluetooth.cpp',

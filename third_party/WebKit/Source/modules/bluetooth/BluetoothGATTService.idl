@@ -12,9 +12,10 @@ typedef DOMString UUID;
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,
 ] interface BluetoothGATTService { // : ServiceEventHandlers {
-    // readonly    attribute UUID            uuid;
-    // readonly    attribute boolean         isPrimary;
-    // readonly    attribute DOMString       instanceID;
+    readonly    attribute UUID            uuid;
+    readonly    attribute boolean         isPrimary;
+    // TODO(ortuno): Once device is implemented test that it matches
+    // the original device.
     // readonly    attribute BluetoothDevice device;
     // Promise<BluetoothGATTCharacteristic>           getCharacteristic(BluetoothCharacteristicUUID characteristic);
     // Promise<sequence<BluetoothGATTCharacteristic>> getCharacteristics(optional BluetoothCharacteristicUUID characteristic);

@@ -7,18 +7,42 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/bluetooth/WebBluetoothGATTService.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
+
+class ScriptPromiseResolver;
 
 // Represents a GATT Service within a Bluetooth Peripheral, a collection of
 // characteristics and relationships to other services that encapsulate the
 // behavior of part of a device.
+//
+// Callbacks providing WebBluetoothGATTService objects are handled by
+// CallbackPromiseAdapter templatized with this class. See this class's
+// "Interface required by CallbackPromiseAdapter" section and the
+// CallbackPromiseAdapter class comments.
 class BluetoothGATTService final
-    : public GarbageCollected<BluetoothGATTService>
+    : public GarbageCollectedFinalized<BluetoothGATTService>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    explicit BluetoothGATTService(const WebBluetoothGATTService&);
+
+    // Interface required by CallbackPromiseAdapter:
+    typedef WebBluetoothGATTService WebType;
+    static BluetoothGATTService* take(ScriptPromiseResolver*, WebBluetoothGATTService*);
+    static void dispose(WebBluetoothGATTService*);
+
+    // Interface required by garbage collection.
     DEFINE_INLINE_TRACE() { }
+
+    // IDL exposed interface:
+    String uuid() { return m_webService.uuid; }
+    bool isPrimary() { return m_webService.isPrimary; }
+
+private:
+    WebBluetoothGATTService m_webService;
 };
 
 } // namespace blink

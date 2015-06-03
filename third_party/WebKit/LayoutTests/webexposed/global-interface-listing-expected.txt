@@ -333,7 +333,10 @@ interface BluetoothDevice
 interface BluetoothGATTRemoteServer
     getter connected
     method constructor
+    method getPrimaryService
 interface BluetoothGATTService
+    getter isPrimary
+    getter uuid
     method constructor
 interface Boolean
     method constructor
