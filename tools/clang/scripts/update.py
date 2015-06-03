@@ -203,15 +203,25 @@ def CreateChromeToolsShim():
 
 def AddCMakeToPath():
   """Download CMake and add it to PATH."""
-  cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'cmake-3.2.2-win32-x86', 'bin')
+  if sys.platform == 'win32':
+    zip_name = 'cmake-3.2.2-win32-x86.zip'
+    cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR,
+                             'cmake-3.2.2-win32-x86', 'bin')
+  else:
+    suffix = 'Darwin' if sys.platform == 'darwin' else 'Linux'
+    zip_name = 'cmake310_%s.tgz' % suffix
+    cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'cmake310', 'bin')
   if not os.path.exists(cmake_dir):
     if not os.path.exists(LLVM_BUILD_TOOLS_DIR):
       os.makedirs(LLVM_BUILD_TOOLS_DIR)
     # The cmake archive is smaller than 20 MB, small enough to keep in memory:
     with contextlib.closing(cStringIO.StringIO()) as f:
-      DownloadUrl(CDS_URL + '/tools/cmake-3.2.2-win32-x86.zip', f)
+      DownloadUrl(CDS_URL + '/tools/' + zip_name, f)
       f.seek(0)
-      zipfile.ZipFile(f).extractall(path=LLVM_BUILD_TOOLS_DIR)
+      if zip_name.endswith('.zip'):
+        zipfile.ZipFile(f).extractall(path=LLVM_BUILD_TOOLS_DIR)
+      else:
+        tarfile.open(mode='r:gz', fileobj=f).extractall(path=LLVM_BUILD_DIR)
   os.environ['PATH'] = cmake_dir + os.pathsep + os.environ.get('PATH', '')
 
 vs_version = None
