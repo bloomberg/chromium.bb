@@ -23,7 +23,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
-#include "net/base/net_util.h"
+#include "net/base/ip_address_number.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)

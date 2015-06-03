@@ -21,8 +21,8 @@
 #include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_openssl_types.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 #include "net/cert/x509_util_openssl.h"
 
 #if defined(OS_ANDROID)

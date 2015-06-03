@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "extensions/browser/api/cast_channel/logger_util.h"

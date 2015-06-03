@@ -23,7 +23,6 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "net/base/address_family.h"
 #include "net/base/escape.h"
-#include "net/base/ip_address_number.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 // TODO(eroman): Remove this header and require consumers to include it
@@ -42,6 +41,10 @@ struct Parsed;
 }
 
 namespace net {
+
+// This is a "forward declaration" to avoid including ip_address_number.h
+// Keep this in sync.
+typedef std::vector<unsigned char> IPAddressNumber;
 
 // Used by FormatUrl to specify handling of certain parts of the url.
 typedef uint32 FormatUrlType;

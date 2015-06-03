@@ -18,7 +18,8 @@ namespace net {
 // network byte ordering.
 //
 // IPv4 addresses will have length 4, whereas IPv6 address will have length 16.
-typedef std::vector<unsigned char> IPAddressNumber;
+typedef std::vector<unsigned char>
+    IPAddressNumber;  // This is also duplicated in net_util.h
 typedef std::vector<IPAddressNumber> IPAddressList;
 
 static const size_t kIPv4AddressSize = 4;

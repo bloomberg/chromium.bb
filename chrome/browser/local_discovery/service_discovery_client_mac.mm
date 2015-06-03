@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "net/base/ip_address_number.h"
 
 using local_discovery::ServiceWatcherImplMac;
 using local_discovery::ServiceResolverImplMac;

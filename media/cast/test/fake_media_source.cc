@@ -4,6 +4,7 @@
 
 #include "media/cast/test/fake_media_source.h"
 
+#include "base/bind.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/rand_util.h"

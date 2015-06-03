@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/net/cast_transport_config.h"

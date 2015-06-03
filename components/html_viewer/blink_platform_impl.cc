@@ -27,6 +27,7 @@
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/common/user_agent.h"
 #include "net/base/data_url.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"

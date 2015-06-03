@@ -26,6 +26,7 @@
 #include "net/base/escape.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_util.h"
 #include "net/base/network_interfaces_posix.h"
 #include "url/gurl.h"
 

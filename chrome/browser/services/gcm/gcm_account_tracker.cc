@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "google_apis/gaia/google_service_auth_error.h"

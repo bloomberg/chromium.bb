@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_packet_reader.h"
 
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "net/base/net_errors.h"
 

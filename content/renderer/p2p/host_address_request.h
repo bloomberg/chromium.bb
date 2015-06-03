@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "net/base/net_util.h"
+#include "net/base/ip_address_number.h"
 #include "third_party/webrtc/base/asyncresolverinterface.h"
 
 namespace base {

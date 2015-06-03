@@ -4,6 +4,7 @@
 
 #include "net/tools/quic/quic_simple_per_connection_packet_writer.h"
 
+#include "base/bind.h"
 #include "net/tools/quic/quic_simple_server_packet_writer.h"
 
 namespace net {

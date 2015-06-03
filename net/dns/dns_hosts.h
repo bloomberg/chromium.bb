@@ -14,8 +14,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "net/base/address_family.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/net_export.h"
-#include "net/base/net_util.h"  // can't forward-declare IPAddressNumber
 
 namespace net {
   typedef std::pair<std::string, AddressFamily> DnsHostsKey;

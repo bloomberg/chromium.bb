@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "net/base/net_util.h"
+#include "net/base/ip_address_number.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"

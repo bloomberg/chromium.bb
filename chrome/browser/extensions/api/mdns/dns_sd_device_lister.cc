@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/mdns/dns_sd_device_lister.h"
 
 #include "chrome/common/extensions/api/mdns.h"
+#include "net/base/ip_address_number.h"
 
 using local_discovery::ServiceDescription;
 

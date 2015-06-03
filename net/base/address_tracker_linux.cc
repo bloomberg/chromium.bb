@@ -13,6 +13,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "net/base/network_interfaces_linux.h"
+#include "net/base/ip_address_number.h"
 
 namespace net {
 namespace internal {

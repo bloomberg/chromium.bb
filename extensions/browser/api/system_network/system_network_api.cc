@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/system_network/system_network_api.h"
 
+#include "net/base/ip_address_number.h"
+
 namespace {
 const char kNetworkListError[] = "Network lookup failed or unsupported";
 }  // namespace

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/scoped_ptr.h"
-#include "net/base/net_util.h"
-#include "net/dns/dns_response.h"
 #include "net/dns/record_rdata.h"
+
+#include "base/memory/scoped_ptr.h"
+#include "net/base/ip_address_number.h"
+#include "net/dns/dns_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

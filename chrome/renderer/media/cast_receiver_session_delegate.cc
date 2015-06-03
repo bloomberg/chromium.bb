@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/media/cast_receiver_session_delegate.h"
 
+#include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 

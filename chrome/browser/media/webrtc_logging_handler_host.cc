@@ -32,6 +32,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "gpu/config/gpu_info.h"
 #include "net/base/address_family.h"
+#include "net/base/ip_address_number.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_LINUX)

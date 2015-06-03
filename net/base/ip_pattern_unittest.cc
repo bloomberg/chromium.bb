@@ -4,6 +4,7 @@
 
 #include "net/base/ip_pattern.h"
 
+#include "net/base/ip_address_number.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

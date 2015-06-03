@@ -10,8 +10,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "net/base/address_family.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/net_export.h"
-#include "net/base/net_util.h"
+#include "net/base/sys_addrinfo.h"
 
 struct sockaddr;
 

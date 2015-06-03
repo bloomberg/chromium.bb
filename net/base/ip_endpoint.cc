@@ -12,6 +12,7 @@
 #elif defined(OS_POSIX)
 #include <netinet/in.h>
 #endif
+#include "net/base/net_util.h"
 
 namespace net {
 

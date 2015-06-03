@@ -13,7 +13,9 @@
 #include "base/sys_byteorder.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/net_util.h"
+#include "net/base/network_change_notifier.h"
 
 namespace content {
 

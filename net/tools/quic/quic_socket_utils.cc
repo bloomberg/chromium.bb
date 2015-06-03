@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "net/base/net_util.h"
 #include "net/quic/quic_protocol.h"
 
 #ifndef SO_RXQ_OVFL

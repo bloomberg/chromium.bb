@@ -5,7 +5,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/network_list_manager.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/net_util.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

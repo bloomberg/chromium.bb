@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_address_number.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {

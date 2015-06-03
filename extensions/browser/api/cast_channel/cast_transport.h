@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_checker.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/common/api/cast_channel.h"

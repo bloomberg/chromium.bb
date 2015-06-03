@@ -19,7 +19,7 @@
 #include "chrome/browser/safe_browsing/chunk.pb.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "crypto/sha2.h"
-#include "net/base/net_util.h"
+#include "net/base/ip_address_number.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"

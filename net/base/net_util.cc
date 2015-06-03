@@ -46,6 +46,7 @@
 #include "base/sys_byteorder.h"
 #include "base/values.h"
 #include "net/base/dns_util.h"
+#include "net/base/ip_address_number.h"
 #include "net/base/net_module.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/grit/net_resources.h"

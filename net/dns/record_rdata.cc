@@ -6,6 +6,7 @@
 
 #include "base/big_endian.h"
 #include "net/base/dns_util.h"
+#include "net/base/ip_address_number.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
 

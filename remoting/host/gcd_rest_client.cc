@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "net/url_request/url_fetcher.h"
