@@ -1523,68 +1523,27 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerNewWebView) {
 // the main browser window to a page that sets a cookie and loads an app with
 // multiple webview tags. Each tag sets a cookie and the test checks the proper
 // storage isolation is enforced.
-// This test is flaky. See http://crbug.com/294196.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_CookieIsolation) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  const std::string kExpire =
-      "var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
-  std::string cookie_script1(kExpire);
-  cookie_script1.append(
-      "document.cookie = 'guest1=true; path=/; expires=' + expire + ';';");
-  std::string cookie_script2(kExpire);
-  cookie_script2.append(
-      "document.cookie = 'guest2=true; path=/; expires=' + expire + ';';");
-
+  // Navigate the browser to a page which writes a sample cookie
+  // The cookie is "testCookie=1"
+  GURL set_cookie_url = embedded_test_server()->GetURL(
+      "/extensions/platform_apps/web_view/cookie_isolation/set_cookie.html");
   GURL::Replacements replace_host;
   replace_host.SetHostStr("localhost");
-
-  GURL set_cookie_url = embedded_test_server()->GetURL(
-      "/extensions/platform_apps/isolation/set_cookie.html");
   set_cookie_url = set_cookie_url.ReplaceComponents(replace_host);
 
-  // The first two partitions will be used to set cookies and ensure they are
-  // shared. The named partition is used to ensure that cookies are isolated
-  // between partitions within the same app.
-  content::WebContents* cookie_contents1;
-  content::WebContents* cookie_contents2;
-  content::WebContents* named_partition_contents1;
-  content::WebContents* named_partition_contents2;
-
-  NavigateAndOpenAppForIsolation(set_cookie_url, &cookie_contents1,
-                                 &cookie_contents2, &named_partition_contents1,
-                                 &named_partition_contents2, NULL, NULL, NULL);
-
-  EXPECT_TRUE(content::ExecuteScript(cookie_contents1, cookie_script1));
-  EXPECT_TRUE(content::ExecuteScript(cookie_contents2, cookie_script2));
-
+  ui_test_utils::NavigateToURL(browser(), set_cookie_url);
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/cookie_isolation"))
+      << message_;
+  // Finally, verify that the browser cookie has not changed.
   int cookie_size;
   std::string cookie_value;
 
-  // Test the regular browser context to ensure we have only one cookie.
   ui_test_utils::GetCookies(GURL("http://localhost"),
                             browser()->tab_strip_model()->GetWebContentsAt(0),
                             &cookie_size, &cookie_value);
   EXPECT_EQ("testCookie=1", cookie_value);
-
-  // The default behavior is to combine webview tags with no explicit partition
-  // declaration into the same in-memory partition. Test the webview tags to
-  // ensure we have properly set the cookies and we have both cookies in both
-  // tags.
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            cookie_contents1,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("guest1=true; guest2=true", cookie_value);
-
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            cookie_contents2,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("guest1=true; guest2=true", cookie_value);
-
-  // The third tag should not have any cookies as it is in a separate partition.
-  ui_test_utils::GetCookies(GURL("http://localhost"),
-                            named_partition_contents1,
-                            &cookie_size, &cookie_value);
-  EXPECT_EQ("", cookie_value);
 }
 
 // This tests that in-memory storage partitions are reset on browser restart,
