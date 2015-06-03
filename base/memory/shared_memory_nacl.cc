@@ -18,7 +18,6 @@ namespace base {
 
 SharedMemory::SharedMemory()
     : mapped_file_(-1),
-      inode_(0),
       mapped_size_(0),
       memory_(NULL),
       read_only_(false),
@@ -27,7 +26,6 @@ SharedMemory::SharedMemory()
 
 SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
     : mapped_file_(handle.fd),
-      inode_(0),
       mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
@@ -37,7 +35,6 @@ SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
 SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only,
                            ProcessHandle process)
     : mapped_file_(handle.fd),
-      inode_(0),
       mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),

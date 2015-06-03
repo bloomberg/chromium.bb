@@ -182,7 +182,6 @@ bool CreateAnonymousSharedMemoryFromBatch(
 SharedMemory::SharedMemory()
     : mapped_file_(-1),
       readonly_mapped_file_(-1),
-      inode_(0),
       mapped_size_(0),
       memory_(NULL),
       read_only_(false),
@@ -192,24 +191,16 @@ SharedMemory::SharedMemory()
 SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only)
     : mapped_file_(handle.fd),
       readonly_mapped_file_(-1),
-      inode_(0),
       mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
       requested_size_(0) {
-  struct stat st;
-  if (fstat(handle.fd, &st) == 0) {
-    // If fstat fails, then the file descriptor is invalid and we'll learn this
-    // fact when Map() fails.
-    inode_ = st.st_ino;
-  }
 }
 
 SharedMemory::SharedMemory(SharedMemoryHandle handle, bool read_only,
                            ProcessHandle process)
     : mapped_file_(handle.fd),
       readonly_mapped_file_(-1),
-      inode_(0),
       mapped_size_(0),
       memory_(NULL),
       read_only_(read_only),
@@ -554,7 +545,6 @@ bool SharedMemory::PrepareMapFile(ScopedFILE fp, ScopedFD readonly_fd) {
       NOTREACHED() << "Call to dup failed, errno=" << errno;
     }
   }
-  inode_ = st.st_ino;
   readonly_mapped_file_ = readonly_fd.release();
 
   return true;

@@ -109,29 +109,6 @@ struct ParamTraits<gfx::NativeWindow> {
   }
 };
 
-#if defined(OS_WIN)
-template<>
-struct ParamTraits<TransportDIB::Id> {
-  typedef TransportDIB::Id param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.handle);
-    WriteParam(m, p.sequence_num);
-  }
-  static bool Read(const Message* m, base::PickleIterator* iter,
-                   param_type* r) {
-    return (ReadParam(m, iter, &r->handle) &&
-            ReadParam(m, iter, &r->sequence_num));
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("TransportDIB(");
-    LogParam(p.handle, l);
-    l->append(", ");
-    LogParam(p.sequence_num, l);
-    l->append(")");
-  }
-};
-#endif
-
 }  // namespace IPC
 
 #endif  // CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_

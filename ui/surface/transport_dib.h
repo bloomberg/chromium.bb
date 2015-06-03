@@ -24,63 +24,19 @@ class SURFACE_EXPORT TransportDIB {
  public:
   ~TransportDIB();
 
-  // Two typedefs are defined. A Handle is the type which can be sent over
-  // the wire so that the remote side can map the transport DIB. The Id typedef
-  // is sufficient to identify the transport DIB when you know that the remote
-  // side already may have it mapped.
+// A Handle is the type which can be sent over the wire so that the remote
+// side can map the transport DIB.
 #if defined(OS_WIN)
   typedef HANDLE Handle;
-  // On Windows, the Id type includes a sequence number (epoch) to solve an ABA
-  // issue:
-  //   1) Process A creates a transport DIB with HANDLE=1 and sends to B.
-  //   2) Process B maps the transport DIB and caches 1 -> DIB.
-  //   3) Process A closes the transport DIB and creates a new one. The new DIB
-  //      is also assigned HANDLE=1.
-  //   4) Process A sends the Handle to B, but B incorrectly believes that it
-  //      already has it cached.
-  struct HandleAndSequenceNum {
-    HandleAndSequenceNum()
-        : handle(NULL),
-          sequence_num(0) {
-    }
-
-    HandleAndSequenceNum(HANDLE h, uint32 seq_num)
-        : handle(h),
-          sequence_num(seq_num) {
-    }
-
-    bool operator==(const HandleAndSequenceNum& other) const {
-      return other.handle == handle && other.sequence_num == sequence_num;
-    }
-
-    bool operator<(const HandleAndSequenceNum& other) const {
-      // Use the lexicographic order on the tuple <handle, sequence_num>.
-      if (other.handle != handle)
-        return other.handle < handle;
-      return other.sequence_num < sequence_num;
-    }
-
-    HANDLE handle;
-    uint32 sequence_num;
-  };
-  typedef HandleAndSequenceNum Id;
-
-  // Returns a default, invalid handle, that is meant to indicate a missing
-  // Transport DIB.
-  static Handle DefaultHandleValue() { return NULL; }
 #else  // OS_POSIX
   typedef base::SharedMemoryHandle Handle;
-  // On POSIX, the inode number of the backing file is used as an id.
-#if defined(OS_ANDROID)
-  typedef base::SharedMemoryHandle Id;
-#else
-  typedef base::SharedMemoryId Id;
 #endif
 
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.
-  static Handle DefaultHandleValue() { return Handle(); }
-#endif
+  static Handle DefaultHandleValue() {
+    return base::SharedMemory::NULLHandle();
+  }
 
   // Create a new TransportDIB, returning NULL on failure.
   //
@@ -103,9 +59,6 @@ class SURFACE_EXPORT TransportDIB {
 
   // Returns true if the handle is valid.
   static bool is_valid_handle(Handle dib);
-
-  // Returns true if the ID refers to a valid dib.
-  static bool is_valid_id(Id id);
 
   // Returns a canvas using the memory of this TransportDIB. The returned
   // pointer will be owned by the caller. The bitmap will be of the given size,
@@ -130,10 +83,6 @@ class SURFACE_EXPORT TransportDIB {
   // data which is valid, you have to know that via other means, this is simply
   // the maximum amount that /could/ be valid.
   size_t size() const { return size_; }
-
-  // Return the identifier which can be used to refer to this shared memory
-  // on the wire.
-  Id id() const;
 
   // Returns a pointer to the SharedMemory object that backs the transport dib.
   base::SharedMemory* shared_memory();

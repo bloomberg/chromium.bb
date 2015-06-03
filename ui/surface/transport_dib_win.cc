@@ -58,11 +58,6 @@ bool TransportDIB::is_valid_handle(Handle dib) {
   return dib != NULL;
 }
 
-// static
-bool TransportDIB::is_valid_id(TransportDIB::Id id) {
-  return is_valid_handle(id.handle);
-}
-
 skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
   // This DIB already mapped the file into this process, but PlatformCanvas
   // will map it again.
@@ -101,8 +96,4 @@ bool TransportDIB::Map() {
 
 void* TransportDIB::memory() const {
   return shared_memory_.memory();
-}
-
-TransportDIB::Id TransportDIB::id() const {
-  return Id(shared_memory_.handle(), sequence_num_);
 }
