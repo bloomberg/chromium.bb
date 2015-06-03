@@ -18,6 +18,10 @@
     'animation': {
       'filepath': '[Aa]nimat|[Tt]ransition',
     },
+    'app_banner': {
+      'filepath': 'Source/modules/app_banner' \
+                  '|public/platform/modules/app_banner',
+    },
     'audio': {
       'filepath': 'Source/platform/audio' \
                   '|Source/modules/webaudio',
@@ -92,6 +96,10 @@
     },
     'paint': {
       'filepath' : 'Source/core/paint/'
+    },
+    'permissions': {
+      'filepath': 'Source/modules/permissions/' \
+                  '|public/platform/modules/permissions/',
     },
     'preloadScanner': {
       'filepath': 'Source/core/html/parser/HTMLPreloadScanner',
@@ -319,6 +327,10 @@
       'filepath': 'Source/modules/device_light/' \
                   '|LayoutTests/fast/dom/DeviceLight/'
     },
+    'screen_orientation': {
+      'filepath': 'Source/modules/screen_orientation/' \
+                  '|public/platform/modules/screen_orientation',
+    },
     'websockets': {
       'filepath': 'Source/modules/websockets/'
     },
@@ -337,6 +349,7 @@
                    'rjwright@chromium.org',
                    'shans@chromium.org',
                    'blink-reviews-animation@chromium.org'],
+    'app_banner': [ 'mlamouri+watch-blink@chromium.org' ],
     'audio': ['rtoy@chromium.org'],
     'devtools': [ 'pfeldman+blink@chromium.org',
                   'apavlov+blink@chromium.org',
@@ -403,6 +416,7 @@
                 'dongseong.hwang@intel.com' ],
     'compositing': [ ],
     'content_security_policy': [ 'mkwst+watchlist-csp@chromium.org' ],
+    'permissions': [ 'mlamouri+watch-blink@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org',
                    'yoav@yoav.ws' ],
     'preloadScanner': [ 'yoav@yoav.ws' ],
@@ -410,7 +424,7 @@
     'client_hints': [ 'yoav@yoav.ws' ],
     'scheduler': [ 'scheduler-bugs@chromium.org' ],
     'track': [ 'vcarbune@chromium.org', 'silviapf@chromium.org', 'philipj@opera.com', 'glenn@chromium.org', 'fs@opera.com', 'eric.carlson@apple.com' ],
-    'media': [ 'feature-media-reviews@chromium.org', 'philipj@opera.com', 'eric.carlson@apple.com' ],
+    'media': [ 'feature-media-reviews@chromium.org', 'philipj@opera.com', 'eric.carlson@apple.com', 'mlamouri+watch-blink@chromium.org' ],
     'media_queries': [ 'kenneth.christiansen@gmail.com',
                        'yoav@yoav.ws' ],
     'fileapi': [ 'kinuko+fileapi@chromium.org',
@@ -467,6 +481,7 @@
                                'mlamouri+watch-blink@chromium.org' ],
     'device_light': [ 'timvolodine@chromium.org',
                       'mlamouri+watch-blink@chromium.org' ],
+    'screen_orientation': [ 'mlamouri+watch-blink@chromium.org' ],
     'websockets': [ 'tyoshino+watch@chromium.org', 'yhirano+watch@chromium.org' ],
     'xmlhttprequest': [ 'tyoshino+watch@chromium.org' ],
   },
