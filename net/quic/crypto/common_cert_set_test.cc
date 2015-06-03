@@ -4,6 +4,8 @@
 
 #include "net/quic/crypto/common_cert_set.h"
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -104,7 +106,7 @@ TEST(CommonCertSets, FindGIA_1) {
                   sizeof(kGIACertificate1));
 
   const CommonCertSets* sets(CommonCertSets::GetInstanceQUIC());
-  const uint64 in_hash = GG_UINT64_C(0xff715ce4e7e9267b);
+  const uint64 in_hash = UINT64_C(0xff715ce4e7e9267b);
   uint64 hash;
   uint32 index;
   ASSERT_TRUE(sets->MatchCert(
@@ -122,7 +124,7 @@ TEST(CommonCertSets, FindGIA_1) {
 TEST(CommonCertSets, NonMatch) {
   const CommonCertSets* sets(CommonCertSets::GetInstanceQUIC());
   StringPiece not_a_cert("hello");
-  const uint64 in_hash = GG_UINT64_C(0xc9fef74053f99f39);
+  const uint64 in_hash = UINT64_C(0xc9fef74053f99f39);
   uint64 hash;
   uint32 index;
   EXPECT_FALSE(sets->MatchCert(

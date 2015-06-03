@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/simple/simple_version_upgrade.h"
 
+#include <stdint.h>
+
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -22,7 +24,7 @@
 namespace {
 
 // Same as |disk_cache::kSimpleInitialMagicNumber|.
-const uint64 kSimpleInitialMagicNumber = GG_UINT64_C(0xfcfb6d1ba7725c30);
+const uint64 kSimpleInitialMagicNumber = UINT64_C(0xfcfb6d1ba7725c30);
 
 // The "fake index" file that cache backends use to distinguish whether the
 // cache belongs to one backend or another.

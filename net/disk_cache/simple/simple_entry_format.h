@@ -5,9 +5,9 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_FORMAT_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_FORMAT_H_
 
+#include <stdint.h>
 
 #include "base/basictypes.h"
-#include "base/port.h"
 #include "net/base/net_export.h"
 
 namespace base {
@@ -16,9 +16,9 @@ class Time;
 
 namespace disk_cache {
 
-const uint64 kSimpleInitialMagicNumber = GG_UINT64_C(0xfcfb6d1ba7725c30);
-const uint64 kSimpleFinalMagicNumber = GG_UINT64_C(0xf4fa6f45970d41d8);
-const uint64 kSimpleSparseRangeMagicNumber = GG_UINT64_C(0xeb97bf016553676b);
+const uint64 kSimpleInitialMagicNumber = UINT64_C(0xfcfb6d1ba7725c30);
+const uint64 kSimpleFinalMagicNumber = UINT64_C(0xf4fa6f45970d41d8);
+const uint64 kSimpleSparseRangeMagicNumber = UINT64_C(0xeb97bf016553676b);
 
 // A file containing stream 0 and stream 1 in the Simple cache consists of:
 //   - a SimpleFileHeader.

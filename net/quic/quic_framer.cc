@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_framer.h"
 
+#include <stdint.h>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -31,16 +33,16 @@ namespace {
 
 // Mask to select the lowest 48 bits of a sequence number.
 const QuicPacketSequenceNumber k6ByteSequenceNumberMask =
-    GG_UINT64_C(0x0000FFFFFFFFFFFF);
+    UINT64_C(0x0000FFFFFFFFFFFF);
 const QuicPacketSequenceNumber k4ByteSequenceNumberMask =
-    GG_UINT64_C(0x00000000FFFFFFFF);
+    UINT64_C(0x00000000FFFFFFFF);
 const QuicPacketSequenceNumber k2ByteSequenceNumberMask =
-    GG_UINT64_C(0x000000000000FFFF);
+    UINT64_C(0x000000000000FFFF);
 const QuicPacketSequenceNumber k1ByteSequenceNumberMask =
-    GG_UINT64_C(0x00000000000000FF);
+    UINT64_C(0x00000000000000FF);
 
-const QuicConnectionId k1ByteConnectionIdMask = GG_UINT64_C(0x00000000000000FF);
-const QuicConnectionId k4ByteConnectionIdMask = GG_UINT64_C(0x00000000FFFFFFFF);
+const QuicConnectionId k1ByteConnectionIdMask = UINT64_C(0x00000000000000FF);
+const QuicConnectionId k4ByteConnectionIdMask = UINT64_C(0x00000000FFFFFFFF);
 
 // Number of bits the sequence number length bits are shifted from the right
 // edge of the public header.
@@ -810,7 +812,7 @@ const QuicTime::Delta QuicFramer::CalculateTimestampFromWire(
   //
   // epoch_delta is the delta between epochs. A delta is 4 bytes of
   // microseconds.
-  const uint64 epoch_delta = GG_UINT64_C(1) << 32;
+  const uint64 epoch_delta = UINT64_C(1) << 32;
   uint64 epoch = last_timestamp_.ToMicroseconds() & ~(epoch_delta - 1);
   // Wrapping is safe here because a wrapped value will not be ClosestTo below.
   uint64 prev_epoch = epoch - epoch_delta;
@@ -837,7 +839,7 @@ QuicPacketSequenceNumber QuicFramer::CalculatePacketSequenceNumberFromWire(
   // with, so the correct value is likely the same epoch as the last sequence
   // number or an adjacent epoch.
   const QuicPacketSequenceNumber epoch_delta =
-      GG_UINT64_C(1) << (8 * sequence_number_length);
+      UINT64_C(1) << (8 * sequence_number_length);
   QuicPacketSequenceNumber next_sequence_number = last_sequence_number_ + 1;
   QuicPacketSequenceNumber epoch = last_sequence_number_ & ~(epoch_delta - 1);
   QuicPacketSequenceNumber prev_epoch = epoch - epoch_delta;
@@ -955,7 +957,7 @@ QuicSequenceNumberLength QuicFramer::GetMinSequenceNumberLength(
   } else if (sequence_number < 1 << (PACKET_2BYTE_SEQUENCE_NUMBER * 8)) {
     return PACKET_2BYTE_SEQUENCE_NUMBER;
   } else if (sequence_number <
-             GG_UINT64_C(1) << (PACKET_4BYTE_SEQUENCE_NUMBER * 8)) {
+             UINT64_C(1) << (PACKET_4BYTE_SEQUENCE_NUMBER * 8)) {
     return PACKET_4BYTE_SEQUENCE_NUMBER;
   } else {
     return PACKET_6BYTE_SEQUENCE_NUMBER;
@@ -2100,7 +2102,7 @@ bool QuicFramer::AppendTimestampToAckFrame(const QuicAckFrame& frame,
   }
 
   // Use the lowest 4 bytes of the time delta from the creation_time_.
-  const uint64 time_epoch_delta_us = GG_UINT64_C(1) << 32;
+  const uint64 time_epoch_delta_us = UINT64_C(1) << 32;
   uint32 time_delta_us =
       static_cast<uint32>(it->second.Subtract(creation_time_).ToMicroseconds()
                           & (time_epoch_delta_us - 1));

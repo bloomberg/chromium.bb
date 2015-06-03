@@ -4,6 +4,7 @@
 
 #include "net/websockets/websocket_frame.h"
 
+#include <stdint.h>
 #include <algorithm>
 #include <vector>
 
@@ -23,13 +24,13 @@ TEST(WebSocketFrameHeaderTest, FrameLengths) {
     uint64 frame_length;
   };
   static const TestCase kTests[] = {
-    { "\x81\x00", 2, GG_UINT64_C(0) },
-    { "\x81\x7D", 2, GG_UINT64_C(125) },
-    { "\x81\x7E\x00\x7E", 4, GG_UINT64_C(126) },
-    { "\x81\x7E\xFF\xFF", 4, GG_UINT64_C(0xFFFF) },
-    { "\x81\x7F\x00\x00\x00\x00\x00\x01\x00\x00", 10, GG_UINT64_C(0x10000) },
+    { "\x81\x00", 2, UINT64_C(0) },
+    { "\x81\x7D", 2, UINT64_C(125) },
+    { "\x81\x7E\x00\x7E", 4, UINT64_C(126) },
+    { "\x81\x7E\xFF\xFF", 4, UINT64_C(0xFFFF) },
+    { "\x81\x7F\x00\x00\x00\x00\x00\x01\x00\x00", 10, UINT64_C(0x10000) },
     { "\x81\x7F\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF", 10,
-      GG_UINT64_C(0x7FFFFFFFFFFFFFFF) }
+      UINT64_C(0x7FFFFFFFFFFFFFFF) }
   };
   static const int kNumTests = arraysize(kTests);
 
@@ -61,14 +62,14 @@ TEST(WebSocketFrameHeaderTest, FrameLengthsWithMasking) {
     uint64 frame_length;
   };
   static const TestCase kTests[] = {
-    { "\x81\x80\xDE\xAD\xBE\xEF", 6, GG_UINT64_C(0) },
-    { "\x81\xFD\xDE\xAD\xBE\xEF", 6, GG_UINT64_C(125) },
-    { "\x81\xFE\x00\x7E\xDE\xAD\xBE\xEF", 8, GG_UINT64_C(126) },
-    { "\x81\xFE\xFF\xFF\xDE\xAD\xBE\xEF", 8, GG_UINT64_C(0xFFFF) },
+    { "\x81\x80\xDE\xAD\xBE\xEF", 6, UINT64_C(0) },
+    { "\x81\xFD\xDE\xAD\xBE\xEF", 6, UINT64_C(125) },
+    { "\x81\xFE\x00\x7E\xDE\xAD\xBE\xEF", 8, UINT64_C(126) },
+    { "\x81\xFE\xFF\xFF\xDE\xAD\xBE\xEF", 8, UINT64_C(0xFFFF) },
     { "\x81\xFF\x00\x00\x00\x00\x00\x01\x00\x00\xDE\xAD\xBE\xEF", 14,
-      GG_UINT64_C(0x10000) },
+      UINT64_C(0x10000) },
     { "\x81\xFF\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xDE\xAD\xBE\xEF", 14,
-      GG_UINT64_C(0x7FFFFFFFFFFFFFFF) }
+      UINT64_C(0x7FFFFFFFFFFFFFFF) }
   };
   static const int kNumTests = arraysize(kTests);
 
@@ -183,18 +184,18 @@ TEST(WebSocketFrameHeaderTest, InsufficientBufferSize) {
     size_t expected_header_size;
   };
   static const TestCase kTests[] = {
-    { GG_UINT64_C(0), false, 2u },
-    { GG_UINT64_C(125), false, 2u },
-    { GG_UINT64_C(126), false, 4u },
-    { GG_UINT64_C(0xFFFF), false, 4u },
-    { GG_UINT64_C(0x10000), false, 10u },
-    { GG_UINT64_C(0x7FFFFFFFFFFFFFFF), false, 10u },
-    { GG_UINT64_C(0), true, 6u },
-    { GG_UINT64_C(125), true, 6u },
-    { GG_UINT64_C(126), true, 8u },
-    { GG_UINT64_C(0xFFFF), true, 8u },
-    { GG_UINT64_C(0x10000), true, 14u },
-    { GG_UINT64_C(0x7FFFFFFFFFFFFFFF), true, 14u }
+    { UINT64_C(0), false, 2u },
+    { UINT64_C(125), false, 2u },
+    { UINT64_C(126), false, 4u },
+    { UINT64_C(0xFFFF), false, 4u },
+    { UINT64_C(0x10000), false, 10u },
+    { UINT64_C(0x7FFFFFFFFFFFFFFF), false, 10u },
+    { UINT64_C(0), true, 6u },
+    { UINT64_C(125), true, 6u },
+    { UINT64_C(126), true, 8u },
+    { UINT64_C(0xFFFF), true, 8u },
+    { UINT64_C(0x10000), true, 14u },
+    { UINT64_C(0x7FFFFFFFFFFFFFFF), true, 14u }
   };
   static const int kNumTests = arraysize(kTests);
 

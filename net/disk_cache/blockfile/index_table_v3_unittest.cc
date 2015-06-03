@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "net/disk_cache/blockfile/addr.h"
@@ -226,22 +228,22 @@ TEST(DiskCacheIndexTable, EntryCellSum) {
   source.last_part = 0;
   EXPECT_EQ(1, GetChecksum(source));
 
-  source.first_part = GG_UINT64_C(0x8000000080000000);
+  source.first_part = UINT64_C(0x8000000080000000);
   EXPECT_EQ(0, GetChecksum(source));
 
-  source.first_part = GG_UINT64_C(0x4000000040000000);
+  source.first_part = UINT64_C(0x4000000040000000);
   EXPECT_EQ(2, GetChecksum(source));
 
-  source.first_part = GG_UINT64_C(0x200000020000000);
+  source.first_part = UINT64_C(0x200000020000000);
   EXPECT_EQ(1, GetChecksum(source));
 
-  source.first_part = GG_UINT64_C(0x100000010010000);
+  source.first_part = UINT64_C(0x100000010010000);
   EXPECT_EQ(3, GetChecksum(source));
 
   source.first_part = 0x80008000;
   EXPECT_EQ(0, GetChecksum(source));
 
-  source.first_part = GG_UINT64_C(0x800000008000);
+  source.first_part = UINT64_C(0x800000008000);
   EXPECT_EQ(1, GetChecksum(source));
 
   source.first_part = 0x8080;

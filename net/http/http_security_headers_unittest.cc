@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
 #include <algorithm>
 
 #include "base/base64.h"
@@ -330,7 +331,7 @@ TEST_F(HttpSecurityHeadersTest, ValidSTSHeaders) {
       "max-age=39408299  ;incLudesUbdOmains", &max_age,
       &include_subdomains));
   expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64>(GG_INT64_C(39408299))));
+      std::min(kMaxHSTSAgeSecs, static_cast<int64>(INT64_C(39408299))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
@@ -338,7 +339,7 @@ TEST_F(HttpSecurityHeadersTest, ValidSTSHeaders) {
       "max-age=394082038  ; incLudesUbdOmains", &max_age,
       &include_subdomains));
   expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64>(GG_INT64_C(394082038))));
+      std::min(kMaxHSTSAgeSecs, static_cast<int64>(INT64_C(394082038))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
@@ -346,7 +347,7 @@ TEST_F(HttpSecurityHeadersTest, ValidSTSHeaders) {
       "max-age=394082038  ; incLudesUbdOmains;", &max_age,
       &include_subdomains));
   expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64>(GG_INT64_C(394082038))));
+      std::min(kMaxHSTSAgeSecs, static_cast<int64>(INT64_C(394082038))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
@@ -354,7 +355,7 @@ TEST_F(HttpSecurityHeadersTest, ValidSTSHeaders) {
       ";; max-age=394082038  ; incLudesUbdOmains; ;", &max_age,
       &include_subdomains));
   expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64>(GG_INT64_C(394082038))));
+      std::min(kMaxHSTSAgeSecs, static_cast<int64>(INT64_C(394082038))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
@@ -362,7 +363,7 @@ TEST_F(HttpSecurityHeadersTest, ValidSTSHeaders) {
       ";; max-age=394082038  ;", &max_age,
       &include_subdomains));
   expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64>(GG_INT64_C(394082038))));
+      std::min(kMaxHSTSAgeSecs, static_cast<int64>(INT64_C(394082038))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
 
@@ -370,7 +371,7 @@ TEST_F(HttpSecurityHeadersTest, ValidSTSHeaders) {
       ";;    ; ; max-age=394082038;;; includeSubdomains     ;;  ;", &max_age,
       &include_subdomains));
   expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64>(GG_INT64_C(394082038))));
+      std::min(kMaxHSTSAgeSecs, static_cast<int64>(INT64_C(394082038))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
@@ -378,7 +379,7 @@ TEST_F(HttpSecurityHeadersTest, ValidSTSHeaders) {
       "incLudesUbdOmains   ; max-age=394082038 ;;", &max_age,
       &include_subdomains));
   expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64>(GG_INT64_C(394082038))));
+      std::min(kMaxHSTSAgeSecs, static_cast<int64>(INT64_C(394082038))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 
@@ -455,7 +456,7 @@ static void TestValidPKPHeaders(HashValueTag tag) {
       "max-age=39408299  ;" + backup_pin + ";" + good_pin + ";  ",
       chain_hashes, &max_age, &include_subdomains, &hashes));
   expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64>(GG_INT64_C(39408299))));
+      std::min(kMaxHSTSAgeSecs, static_cast<int64>(INT64_C(39408299))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_FALSE(include_subdomains);
 
@@ -464,7 +465,7 @@ static void TestValidPKPHeaders(HashValueTag tag) {
           good_pin + ";" + backup_pin + ";   ",
       chain_hashes, &max_age, &include_subdomains, &hashes));
   expect_max_age = base::TimeDelta::FromSeconds(
-      std::min(kMaxHSTSAgeSecs, static_cast<int64>(GG_INT64_C(394082038))));
+      std::min(kMaxHSTSAgeSecs, static_cast<int64>(INT64_C(394082038))));
   EXPECT_EQ(expect_max_age, max_age);
   EXPECT_TRUE(include_subdomains);
 

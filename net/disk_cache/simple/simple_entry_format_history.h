@@ -5,16 +5,17 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_FORMAT_HISTORY_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_ENTRY_FORMAT_HISTORY_H_
 
+#include <stdint.h>
+
 #include "base/basictypes.h"
-#include "base/port.h"
 #include "net/base/net_export.h"
 
 namespace disk_cache {
 
 namespace simplecache_v5 {
 
-const uint64 kSimpleInitialMagicNumber = GG_UINT64_C(0xfcfb6d1ba7725c30);
-const uint64 kSimpleFinalMagicNumber = GG_UINT64_C(0xf4fa6f45970d41d8);
+const uint64 kSimpleInitialMagicNumber = UINT64_C(0xfcfb6d1ba7725c30);
+const uint64 kSimpleFinalMagicNumber = UINT64_C(0xf4fa6f45970d41d8);
 
 // A file containing stream 0 and stream 1 in the Simple cache consists of:
 //   - a SimpleFileHeader.

@@ -6,6 +6,7 @@
 #define NET_QUIC_QUIC_PROTOCOL_H_
 
 #include <stddef.h>
+#include <stdint.h>
 #include <limits>
 #include <list>
 #include <map>
@@ -169,7 +170,7 @@ const int kUFloat16MaxExponent = (1 << kUFloat16ExponentBits) - 2;  // 30
 const int kUFloat16MantissaBits = 16 - kUFloat16ExponentBits;  // 11
 const int kUFloat16MantissaEffectiveBits = kUFloat16MantissaBits + 1;  // 12
 const uint64 kUFloat16MaxValue =  // 0x3FFC0000000
-    ((GG_UINT64_C(1) << kUFloat16MantissaEffectiveBits) - 1) <<
+    ((UINT64_C(1) << kUFloat16MantissaEffectiveBits) - 1) <<
     kUFloat16MaxExponent;
 
 enum TransmissionType {

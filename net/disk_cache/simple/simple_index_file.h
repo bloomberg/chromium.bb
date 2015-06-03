@@ -5,6 +5,7 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_FILE_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_INDEX_FILE_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/pickle.h"
-#include "base/port.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/simple/simple_index.h"
@@ -27,7 +27,7 @@ class TaskRunner;
 
 namespace disk_cache {
 
-const uint64 kSimpleIndexMagicNumber = GG_UINT64_C(0x656e74657220796f);
+const uint64 kSimpleIndexMagicNumber = UINT64_C(0x656e74657220796f);
 
 struct NET_EXPORT_PRIVATE SimpleIndexLoadResult {
   SimpleIndexLoadResult();

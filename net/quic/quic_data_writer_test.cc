@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_data_writer.h"
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/test/gtest_util.h"
@@ -19,7 +21,7 @@ TEST(QuicDataWriterTest, SanityCheckUFloat16Consts) {
   EXPECT_EQ(30, kUFloat16MaxExponent);
   EXPECT_EQ(11, kUFloat16MantissaBits);
   EXPECT_EQ(12, kUFloat16MantissaEffectiveBits);
-  EXPECT_EQ(GG_UINT64_C(0x3FFC0000000), kUFloat16MaxValue);
+  EXPECT_EQ(UINT64_C(0x3FFC0000000), kUFloat16MaxValue);
 }
 
 TEST(QuicDataWriterTest, WriteUFloat16) {
@@ -118,7 +120,7 @@ TEST(QuicDataWriterTest, RoundTripUFloat16) {
     if (i > 2000)
       EXPECT_GT(previous_value * 1005, value * 1000);
     // Check we're always within the promised range.
-    EXPECT_LT(value, GG_UINT64_C(0x3FFC0000000));
+    EXPECT_LT(value, UINT64_C(0x3FFC0000000));
     previous_value = value;
     char buffer[6];
     QuicDataWriter writer(6, buffer);

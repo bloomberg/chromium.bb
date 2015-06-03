@@ -4,12 +4,12 @@
 
 #include "net/websockets/websocket_frame_parser.h"
 
+#include <stdint.h>
 #include <algorithm>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
-#include "base/port.h"
 #include "net/base/io_buffer.h"
 #include "net/websockets/websocket_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,18 +35,18 @@ struct FrameHeaderTestCase {
 };
 
 const FrameHeaderTestCase kFrameHeaderTests[] = {
-  { "\x81\x00", 2, GG_UINT64_C(0), kWebSocketNormalClosure },
-  { "\x81\x7D", 2, GG_UINT64_C(125), kWebSocketNormalClosure },
-  { "\x81\x7E\x00\x7E", 4, GG_UINT64_C(126), kWebSocketNormalClosure },
-  { "\x81\x7E\xFF\xFF", 4, GG_UINT64_C(0xFFFF), kWebSocketNormalClosure },
-  { "\x81\x7F\x00\x00\x00\x00\x00\x01\x00\x00", 10, GG_UINT64_C(0x10000),
+  { "\x81\x00", 2, UINT64_C(0), kWebSocketNormalClosure },
+  { "\x81\x7D", 2, UINT64_C(125), kWebSocketNormalClosure },
+  { "\x81\x7E\x00\x7E", 4, UINT64_C(126), kWebSocketNormalClosure },
+  { "\x81\x7E\xFF\xFF", 4, UINT64_C(0xFFFF), kWebSocketNormalClosure },
+  { "\x81\x7F\x00\x00\x00\x00\x00\x01\x00\x00", 10, UINT64_C(0x10000),
     kWebSocketNormalClosure },
-  { "\x81\x7F\x00\x00\x00\x00\x7F\xFF\xFF\xFF", 10, GG_UINT64_C(0x7FFFFFFF),
+  { "\x81\x7F\x00\x00\x00\x00\x7F\xFF\xFF\xFF", 10, UINT64_C(0x7FFFFFFF),
     kWebSocketNormalClosure },
-  { "\x81\x7F\x00\x00\x00\x00\x80\x00\x00\x00", 10, GG_UINT64_C(0x80000000),
+  { "\x81\x7F\x00\x00\x00\x00\x80\x00\x00\x00", 10, UINT64_C(0x80000000),
     kWebSocketErrorMessageTooBig },
   { "\x81\x7F\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF", 10,
-    GG_UINT64_C(0x7FFFFFFFFFFFFFFF), kWebSocketErrorMessageTooBig }
+    UINT64_C(0x7FFFFFFFFFFFFFFF), kWebSocketErrorMessageTooBig }
 };
 const int kNumFrameHeaderTests = arraysize(kFrameHeaderTests);
 

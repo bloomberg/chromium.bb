@@ -4,10 +4,10 @@
 
 #include "net/base/network_activity_monitor.h"
 
+#include <stdint.h>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/port.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
@@ -101,8 +101,8 @@ TEST_F(NetworkActivityMontiorTest, Threading) {
   }
 
   size_t num_increments = 157;
-  uint64_t bytes_received = GG_UINT64_C(7294954321);
-  uint64_t bytes_sent = GG_UINT64_C(91294998765);
+  uint64_t bytes_received = UINT64_C(7294954321);
+  uint64_t bytes_sent = UINT64_C(91294998765);
   for (size_t i = 0; i < num_increments; ++i) {
     size_t thread_num = i % threads.size();
     threads[thread_num]->task_runner()->PostTask(

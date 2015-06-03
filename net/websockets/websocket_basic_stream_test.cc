@@ -8,13 +8,13 @@
 
 #include "net/websockets/websocket_basic_stream.h"
 
+#include <stdint.h>
 #include <string.h>  // for memcpy() and memset().
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/big_endian.h"
-#include "base/port.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/socket_test_util.h"
@@ -272,7 +272,7 @@ TEST_F(WebSocketBasicStreamSocketSingleReadTest, SyncReadWorks) {
   int result = stream_->ReadFrames(&frames_, cb_.callback());
   EXPECT_EQ(OK, result);
   ASSERT_EQ(1U, frames_.size());
-  EXPECT_EQ(GG_UINT64_C(6), frames_[0]->header.payload_length);
+  EXPECT_EQ(UINT64_C(6), frames_[0]->header.payload_length);
   EXPECT_TRUE(frames_[0]->header.final);
 }
 
@@ -282,7 +282,7 @@ TEST_F(WebSocketBasicStreamSocketSingleReadTest, AsyncReadWorks) {
   ASSERT_EQ(ERR_IO_PENDING, result);
   EXPECT_EQ(OK, cb_.WaitForResult());
   ASSERT_EQ(1U, frames_.size());
-  EXPECT_EQ(GG_UINT64_C(6), frames_[0]->header.payload_length);
+  EXPECT_EQ(UINT64_C(6), frames_[0]->header.payload_length);
   // Don't repeat all the tests from SyncReadWorks; just enough to be sure the
   // frame was really read.
 }
@@ -294,7 +294,7 @@ TEST_F(WebSocketBasicStreamSocketChunkedReadTest, HeaderFragmentedSync) {
   int result = stream_->ReadFrames(&frames_, cb_.callback());
   EXPECT_EQ(OK, result);
   ASSERT_EQ(1U, frames_.size());
-  EXPECT_EQ(GG_UINT64_C(6), frames_[0]->header.payload_length);
+  EXPECT_EQ(UINT64_C(6), frames_[0]->header.payload_length);
 }
 
 // The same behaviour applies to asynchronous reads.
@@ -305,7 +305,7 @@ TEST_F(WebSocketBasicStreamSocketChunkedReadTest, HeaderFragmentedAsync) {
   ASSERT_EQ(ERR_IO_PENDING, result);
   EXPECT_EQ(OK, cb_.WaitForResult());
   ASSERT_EQ(1U, frames_.size());
-  EXPECT_EQ(GG_UINT64_C(6), frames_[0]->header.payload_length);
+  EXPECT_EQ(UINT64_C(6), frames_[0]->header.payload_length);
 }
 
 // If it receives an incomplete header in a synchronous call, then has to wait
@@ -318,7 +318,7 @@ TEST_F(WebSocketBasicStreamSocketTest, HeaderFragmentedSyncAsync) {
   ASSERT_EQ(ERR_IO_PENDING, result);
   EXPECT_EQ(OK, cb_.WaitForResult());
   ASSERT_EQ(1U, frames_.size());
-  EXPECT_EQ(GG_UINT64_C(6), frames_[0]->header.payload_length);
+  EXPECT_EQ(UINT64_C(6), frames_[0]->header.payload_length);
 }
 
 // An extended header should also return ERR_IO_PENDING if it is not completely
@@ -638,7 +638,7 @@ TEST_F(WebSocketBasicStreamSocketTest, HttpReadBufferIsUsed) {
   EXPECT_EQ(OK, stream_->ReadFrames(&frames_, cb_.callback()));
   ASSERT_EQ(1U, frames_.size());
   ASSERT_TRUE(frames_[0]->data.get());
-  EXPECT_EQ(GG_UINT64_C(6), frames_[0]->header.payload_length);
+  EXPECT_EQ(UINT64_C(6), frames_[0]->header.payload_length);
 }
 
 // Check that a frame whose header partially arrived at the end of the response
@@ -652,7 +652,7 @@ TEST_F(WebSocketBasicStreamSocketSingleReadTest,
   EXPECT_EQ(OK, cb_.WaitForResult());
   ASSERT_EQ(1U, frames_.size());
   ASSERT_TRUE(frames_[0]->data.get());
-  EXPECT_EQ(GG_UINT64_C(6), frames_[0]->header.payload_length);
+  EXPECT_EQ(UINT64_C(6), frames_[0]->header.payload_length);
   EXPECT_EQ(WebSocketFrameHeader::kOpCodeText, frames_[0]->header.opcode);
 }
 

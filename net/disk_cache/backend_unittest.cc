@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/basictypes.h"
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
-#include "base/port.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -3330,7 +3331,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheOpenBadFile) {
       disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, 0));
 
   disk_cache::SimpleFileHeader header;
-  header.initial_magic_number = GG_UINT64_C(0xbadf00d);
+  header.initial_magic_number = UINT64_C(0xbadf00d);
   EXPECT_EQ(
       implicit_cast<int>(sizeof(header)),
       base::WriteFile(entry_file1_path, reinterpret_cast<char*>(&header),

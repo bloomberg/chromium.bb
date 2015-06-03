@@ -126,11 +126,11 @@ bool ExaminePublicKeys(const scoped_refptr<X509Certificate>& cert,
   // The effective date of the CA/Browser Forum's Baseline Requirements -
   // 2012-07-01 00:00:00 UTC.
   const base::Time kBaselineEffectiveDate =
-      base::Time::FromInternalValue(GG_INT64_C(12985574400000000));
+      base::Time::FromInternalValue(INT64_C(12985574400000000));
   // The effective date of the key size requirements from Appendix A, v1.1.5
   // 2014-01-01 00:00:00 UTC.
   const base::Time kBaselineKeysizeEffectiveDate =
-      base::Time::FromInternalValue(GG_INT64_C(13033008000000000));
+      base::Time::FromInternalValue(INT64_C(13033008000000000));
 
   size_t size_bits = 0;
   X509Certificate::PublicKeyType type = X509Certificate::kPublicKeyTypeUnknown;

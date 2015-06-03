@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/logging.h"
-#include "base/port.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,46 +19,46 @@ class SimpleUtilTest : public testing::Test {};
 
 TEST_F(SimpleUtilTest, ConvertEntryHashKeyToHexString) {
   EXPECT_EQ("0000000005f5e0ff",
-            ConvertEntryHashKeyToHexString(GG_UINT64_C(99999999)));
+            ConvertEntryHashKeyToHexString(UINT64_C(99999999)));
   EXPECT_EQ("7fffffffffffffff",
-            ConvertEntryHashKeyToHexString(GG_UINT64_C(9223372036854775807)));
+            ConvertEntryHashKeyToHexString(UINT64_C(9223372036854775807)));
   EXPECT_EQ("8000000000000000",
-            ConvertEntryHashKeyToHexString(GG_UINT64_C(9223372036854775808)));
+            ConvertEntryHashKeyToHexString(UINT64_C(9223372036854775808)));
   EXPECT_EQ("ffffffffffffffff",
-            ConvertEntryHashKeyToHexString(GG_UINT64_C(18446744073709551615)));
+            ConvertEntryHashKeyToHexString(UINT64_C(18446744073709551615)));
 }
 
 TEST_F(SimpleUtilTest, GetEntryHashKey) {
   EXPECT_EQ("7ac408c1dff9c84b",
             GetEntryHashKeyAsHexString("http://www.amazon.com/"));
-  EXPECT_EQ(GG_UINT64_C(0x7ac408c1dff9c84b),
+  EXPECT_EQ(UINT64_C(0x7ac408c1dff9c84b),
             GetEntryHashKey("http://www.amazon.com/"));
 
   EXPECT_EQ("9fe947998c2ccf47",
             GetEntryHashKeyAsHexString("www.amazon.com"));
-  EXPECT_EQ(GG_UINT64_C(0x9fe947998c2ccf47), GetEntryHashKey("www.amazon.com"));
+  EXPECT_EQ(UINT64_C(0x9fe947998c2ccf47), GetEntryHashKey("www.amazon.com"));
 
   EXPECT_EQ("0d4b6b5eeea339da", GetEntryHashKeyAsHexString(""));
-  EXPECT_EQ(GG_UINT64_C(0x0d4b6b5eeea339da), GetEntryHashKey(""));
+  EXPECT_EQ(UINT64_C(0x0d4b6b5eeea339da), GetEntryHashKey(""));
 
   EXPECT_EQ("a68ac2ecc87dfd04", GetEntryHashKeyAsHexString("http://www.domain.com/uoQ76Kb2QL5hzaVOSAKWeX0W9LfDLqphmRXpsfHN8tgF5lCsfTxlOVWY8vFwzhsRzoNYKhUIOTc5TnUlT0vpdQflPyk2nh7vurXOj60cDnkG3nsrXMhFCsPjhcZAic2jKpF9F9TYRYQwJo81IMi6gY01RK3ZcNl8WGfqcvoZ702UIdetvR7kiaqo1czwSJCMjRFdG6EgMzgXrwE8DYMz4fWqoa1F1c1qwTCBk3yOcmGTbxsPSJK5QRyNea9IFLrBTjfE7ZlN2vZiI7adcDYJef.htm"));
 
-  EXPECT_EQ(GG_UINT64_C(0xa68ac2ecc87dfd04), GetEntryHashKey("http://www.domain.com/uoQ76Kb2QL5hzaVOSAKWeX0W9LfDLqphmRXpsfHN8tgF5lCsfTxlOVWY8vFwzhsRzoNYKhUIOTc5TnUlT0vpdQflPyk2nh7vurXOj60cDnkG3nsrXMhFCsPjhcZAic2jKpF9F9TYRYQwJo81IMi6gY01RK3ZcNl8WGfqcvoZ702UIdetvR7kiaqo1czwSJCMjRFdG6EgMzgXrwE8DYMz4fWqoa1F1c1qwTCBk3yOcmGTbxsPSJK5QRyNea9IFLrBTjfE7ZlN2vZiI7adcDYJef.htm"));
+  EXPECT_EQ(UINT64_C(0xa68ac2ecc87dfd04), GetEntryHashKey("http://www.domain.com/uoQ76Kb2QL5hzaVOSAKWeX0W9LfDLqphmRXpsfHN8tgF5lCsfTxlOVWY8vFwzhsRzoNYKhUIOTc5TnUlT0vpdQflPyk2nh7vurXOj60cDnkG3nsrXMhFCsPjhcZAic2jKpF9F9TYRYQwJo81IMi6gY01RK3ZcNl8WGfqcvoZ702UIdetvR7kiaqo1czwSJCMjRFdG6EgMzgXrwE8DYMz4fWqoa1F1c1qwTCBk3yOcmGTbxsPSJK5QRyNea9IFLrBTjfE7ZlN2vZiI7adcDYJef.htm"));
 }
 
 TEST_F(SimpleUtilTest, GetEntryHashKeyFromHexString) {
   uint64 hash_key = 0;
   EXPECT_TRUE(GetEntryHashKeyFromHexString("0000000005f5e0ff", &hash_key));
-  EXPECT_EQ(GG_UINT64_C(99999999), hash_key);
+  EXPECT_EQ(UINT64_C(99999999), hash_key);
 
   EXPECT_TRUE(GetEntryHashKeyFromHexString("7ffffffffffffffF", &hash_key));
-  EXPECT_EQ(GG_UINT64_C(9223372036854775807), hash_key);
+  EXPECT_EQ(UINT64_C(9223372036854775807), hash_key);
 
   EXPECT_TRUE(GetEntryHashKeyFromHexString("8000000000000000", &hash_key));
-  EXPECT_EQ(GG_UINT64_C(9223372036854775808), hash_key);
+  EXPECT_EQ(UINT64_C(9223372036854775808), hash_key);
 
   EXPECT_TRUE(GetEntryHashKeyFromHexString("FFFFFFFFFFFFFFFF", &hash_key));
-  EXPECT_EQ(GG_UINT64_C(18446744073709551615), hash_key);
+  EXPECT_EQ(UINT64_C(18446744073709551615), hash_key);
 
   // Wrong hash string size.
   EXPECT_FALSE(GetEntryHashKeyFromHexString("FFFFFFFFFFFFFFF", &hash_key));

@@ -4,6 +4,7 @@
 
 #include "net/test/ct_test_util.h"
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -204,7 +205,7 @@ void GetX509CertSCT(scoped_refptr<SignedCertificateTimestamp>* sct_ref) {
   // Time the log issued a SCT for this certificate, which is
   // Fri Apr  5 10:04:16.089 2013
   sct->timestamp = base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(GG_INT64_C(1365181456089));
+      base::TimeDelta::FromMilliseconds(INT64_C(1365181456089));
   sct->extensions.clear();
 
   sct->signature.hash_algorithm = ct::DigitallySigned::HASH_ALGO_SHA256;
@@ -221,7 +222,7 @@ void GetPrecertSCT(scoped_refptr<SignedCertificateTimestamp>* sct_ref) {
   // Time the log issued a SCT for this Precertificate, which is
   // Fri Apr  5 10:04:16.275 2013
   sct->timestamp = base::Time::UnixEpoch() +
-    base::TimeDelta::FromMilliseconds(GG_INT64_C(1365181456275));
+    base::TimeDelta::FromMilliseconds(INT64_C(1365181456275));
   sct->extensions.clear();
 
   sct->signature.hash_algorithm = ct::DigitallySigned::HASH_ALGO_SHA256;

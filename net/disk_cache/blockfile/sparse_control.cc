@@ -4,6 +4,8 @@
 
 #include "net/disk_cache/blockfile/sparse_control.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
@@ -253,7 +255,7 @@ int SparseControl::StartIO(SparseOperation op, int64 offset, net::IOBuffer* buf,
 
   // We only support up to 64 GB.
   if (static_cast<uint64>(offset) + static_cast<unsigned int>(buf_len) >=
-      GG_UINT64_C(0x1000000000)) {
+      UINT64_C(0x1000000000)) {
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
   }
 

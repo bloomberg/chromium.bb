@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_packet_creator.h"
 
+#include <stdint.h>
+
 #include "base/stl_util.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
@@ -854,7 +856,7 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
 
   QuicPacketCreatorPeer::SetSequenceNumber(
       &creator_,
-      GG_UINT64_C(64) * 256 * 256 * 256 * 256 - max_packets_per_fec_group);
+      UINT64_C(64) * 256 * 256 * 256 * 256 - max_packets_per_fec_group);
   creator_.UpdateSequenceNumberLength(2, 10000 / kDefaultMaxPacketSize);
   EXPECT_EQ(PACKET_6BYTE_SEQUENCE_NUMBER,
             QuicPacketCreatorPeer::NextSequenceNumberLength(&creator_));
@@ -878,7 +880,7 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthBandwidth) {
             QuicPacketCreatorPeer::NextSequenceNumberLength(&creator_));
 
   creator_.UpdateSequenceNumberLength(
-      1, GG_UINT64_C(1000) * 256 * 256 * 256 * 256 / kDefaultMaxPacketSize);
+      1, UINT64_C(1000) * 256 * 256 * 256 * 256 / kDefaultMaxPacketSize);
   EXPECT_EQ(PACKET_6BYTE_SEQUENCE_NUMBER,
             QuicPacketCreatorPeer::NextSequenceNumberLength(&creator_));
 }
@@ -1084,7 +1086,7 @@ TEST_P(QuicPacketCreatorTest, EntropyFlag) {
           creator_.SerializeAllFrames(frames_, buffer, kMaxPacketSize);
       // Verify both BoolSource and hash algorithm.
       bool expected_rand_bool =
-          (mock_random_.RandUint64() & (GG_UINT64_C(1) << j)) != 0;
+          (mock_random_.RandUint64() & (UINT64_C(1) << j)) != 0;
       bool observed_rand_bool =
           (serialized.entropy_hash & (1 << ((j+1) % 8))) != 0;
       uint8 rest_of_hash = serialized.entropy_hash & ~(1 << ((j+1) % 8));
