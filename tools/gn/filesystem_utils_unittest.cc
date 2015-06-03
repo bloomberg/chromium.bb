@@ -236,6 +236,11 @@ TEST(FilesystemUtils, NormalizePath) {
   input = "foo\\..\\..\\bar";
   NormalizePath(&input);
   EXPECT_EQ("../bar", input);
+
+  // Trailing slashes should get preserved.
+  input = "//foo/bar/";
+  NormalizePath(&input);
+  EXPECT_EQ("//foo/bar/", input);
 }
 
 TEST(FilesystemUtils, RebasePath) {

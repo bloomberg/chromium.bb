@@ -491,10 +491,12 @@ Value RunImport(Scope* scope,
 
   const SourceDir& input_dir = scope->GetSourceDir();
   SourceFile import_file =
-      input_dir.ResolveRelativeFile(args[0].string_value(),
+      input_dir.ResolveRelativeFile(args[0], err,
           scope->settings()->build_settings()->root_path_utf8());
-  scope->settings()->import_manager().DoImport(import_file, function,
-                                               scope, err);
+  if (!err->has_error()) {
+    scope->settings()->import_manager().DoImport(import_file, function,
+                                                 scope, err);
+  }
   return Value();
 }
 

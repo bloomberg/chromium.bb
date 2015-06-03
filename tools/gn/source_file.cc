@@ -18,7 +18,7 @@ void AssertValueSourceFileString(const std::string& s) {
 #else
   DCHECK(s[0] == '/');
 #endif
-  DCHECK(!EndsWithSlash(s));
+  DCHECK(!EndsWithSlash(s)) << s;
 }
 
 }  // namespace

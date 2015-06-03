@@ -1012,7 +1012,14 @@ int RunFormat(const std::vector<std::string>& args) {
   Setup setup;
   SourceDir source_dir =
       SourceDirForCurrentDirectory(setup.build_settings().root_path());
-  SourceFile file = source_dir.ResolveRelativeFile(args[0]);
+
+  Err err;
+  SourceFile file = source_dir.ResolveRelativeFile(Value(nullptr, args[0]),
+                                                   &err);
+  if (err.has_error()) {
+    err.PrintToStdout();
+    return 1;
+  }
 
   std::string output_string;
   if (FormatFileToString(&setup, file, dump_tree, &output_string)) {

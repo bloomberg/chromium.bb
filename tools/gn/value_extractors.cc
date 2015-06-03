@@ -65,11 +65,9 @@ struct RelativeFileConverter {
         current_dir(current_dir_in) {
   }
   bool operator()(const Value& v, SourceFile* out, Err* err) const {
-    if (!v.VerifyTypeIs(Value::STRING, err))
-      return false;
-    *out = current_dir.ResolveRelativeFile(v.string_value(),
+    *out = current_dir.ResolveRelativeFile(v, err,
                                            build_settings->root_path_utf8());
-    return true;
+    return !err->has_error();
   }
   const BuildSettings* build_settings;
   const SourceDir& current_dir;
@@ -82,9 +80,7 @@ struct RelativeDirConverter {
         current_dir(current_dir_in) {
   }
   bool operator()(const Value& v, SourceDir* out, Err* err) const {
-    if (!v.VerifyTypeIs(Value::STRING, err))
-      return false;
-    *out = current_dir.ResolveRelativeDir(v.string_value(),
+    *out = current_dir.ResolveRelativeDir(v, err,
                                           build_settings->root_path_utf8());
     return true;
   }

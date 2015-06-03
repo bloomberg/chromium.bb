@@ -18,7 +18,7 @@ void AssertValueSourceDirString(const std::string& s) {
 #else
     DCHECK(s[0] == '/');
 #endif
-    DCHECK(EndsWithSlash(s));
+    DCHECK(EndsWithSlash(s)) << s;
   }
 }
 
@@ -45,32 +45,44 @@ SourceDir::~SourceDir() {
 }
 
 SourceFile SourceDir::ResolveRelativeFile(
-    const base::StringPiece& p,
+    const Value& p,
+    Err* err,
     const base::StringPiece& source_root) const {
   SourceFile ret;
-
-  DCHECK(source_root.empty() || !source_root.ends_with("/"));
+  if (!p.VerifyTypeIs(Value::STRING, err))
+    return ret;
 
   // It's an error to resolve an empty string or one that is a directory
   // (indicated by a trailing slash) because this is the function that expects
   // to return a file.
-  if (p.empty() || (p.size() > 0 && p[p.size() - 1] == '/'))
-    return SourceFile();
-  if (p.size() >= 2 && p[0] == '/' && p[1] == '/') {
+  const std::string& str = p.string_value();
+  if (str.empty()) {
+    *err = Err(p, "Empty file path.",
+               "You can't use empty strings as file paths. That's just wrong.");
+    return ret;
+  } else if (str[str.size() - 1] == '/') {
+    *err = Err(p, "File path ends in a slash.",
+               "You specified the path\n  " + str + "\n"
+               "and it ends in a slash, indicating you think it's a directory."
+               "\nBut here you're supposed to be listing a file.");
+    return ret;
+  }
+
+  if (str.size() >= 2 && str[0] == '/' && str[1] == '/') {
     // Source-relative.
-    ret.value_.assign(p.data(), p.size());
+    ret.value_.assign(str.data(), str.size());
     NormalizePath(&ret.value_);
     return ret;
-  } else if (IsPathAbsolute(p)) {
+  } else if (IsPathAbsolute(str)) {
     if (source_root.empty() ||
-        !MakeAbsolutePathRelativeIfPossible(source_root, p, &ret.value_)) {
+        !MakeAbsolutePathRelativeIfPossible(source_root, str, &ret.value_)) {
 #if defined(OS_WIN)
       // On Windows we'll accept "C:\foo" as an absolute path, which we want
       // to convert to "/C:..." here.
-      if (p[0] != '/')
+      if (str[0] != '/')
         ret.value_ = "/";
 #endif
-      ret.value_.append(p.data(), p.size());
+      ret.value_.append(str.data(), str.size());
     }
     NormalizePath(&ret.value_);
     return ret;
@@ -79,7 +91,7 @@ SourceFile SourceDir::ResolveRelativeFile(
   if (!source_root.empty()) {
     std::string absolute =
         FilePathToUTF8(Resolve(UTF8ToFilePath(source_root)).AppendASCII(
-            p.as_string()).value());
+            str).value());
     NormalizePath(&absolute);
     if (!MakeAbsolutePathRelativeIfPossible(source_root, absolute,
                                             &ret.value_)) {
@@ -97,38 +109,52 @@ SourceFile SourceDir::ResolveRelativeFile(
   // With no source_root_, there's nothing we can do about
   // e.g. p=../../../path/to/file and value_=//source and we'll
   // errornously return //file.
-  ret.value_.reserve(value_.size() + p.size());
+  ret.value_.reserve(value_.size() + str.size());
   ret.value_.assign(value_);
-  ret.value_.append(p.data(), p.size());
+  ret.value_.append(str.data(), str.size());
 
   NormalizePath(&ret.value_);
   return ret;
 }
 
 SourceDir SourceDir::ResolveRelativeDir(
-    const base::StringPiece& p,
+    const Value& p,
+    Err* err,
+    const base::StringPiece& source_root) const {
+  if (!p.VerifyTypeIs(Value::STRING, err))
+    return SourceDir();
+  return ResolveRelativeDir(p, p.string_value(), err, source_root);
+}
+
+SourceDir SourceDir::ResolveRelativeDir(
+    const Value& blame_but_dont_use,
+    const base::StringPiece& str,
+    Err* err,
     const base::StringPiece& source_root) const {
   SourceDir ret;
 
-  DCHECK(source_root.empty() || !source_root.ends_with("/"));
-
-  if (p.empty())
+  if (str.empty()) {
+    *err = Err(blame_but_dont_use, "Empty directory path.",
+               "You can't use empty strings as directories. "
+               "That's just wrong.");
     return ret;
-  if (p.size() >= 2 && p[0] == '/' && p[1] == '/') {
+  }
+
+  if (str.size() >= 2 && str[0] == '/' && str[1] == '/') {
     // Source-relative.
-    ret.value_.assign(p.data(), p.size());
+    ret.value_.assign(str.data(), str.size());
     if (!EndsWithSlash(ret.value_))
       ret.value_.push_back('/');
     NormalizePath(&ret.value_);
     return ret;
-  } else if (IsPathAbsolute(p)) {
+  } else if (IsPathAbsolute(str)) {
     if (source_root.empty() ||
-        !MakeAbsolutePathRelativeIfPossible(source_root, p, &ret.value_)) {
+        !MakeAbsolutePathRelativeIfPossible(source_root, str, &ret.value_)) {
 #if defined(OS_WIN)
-      if (p[0] != '/')  // See the file case for why we do this check.
+      if (str[0] != '/')  // See the file case for why we do this check.
         ret.value_ = "/";
 #endif
-      ret.value_.append(p.data(), p.size());
+      ret.value_.append(str.data(), str.size());
     }
     NormalizePath(&ret.value_);
     if (!EndsWithSlash(ret.value_))
@@ -139,7 +165,7 @@ SourceDir SourceDir::ResolveRelativeDir(
   if (!source_root.empty()) {
     std::string absolute =
         FilePathToUTF8(Resolve(UTF8ToFilePath(source_root)).AppendASCII(
-            p.as_string()).value());
+            str.as_string()).value());
     NormalizePath(&absolute);
     if (!MakeAbsolutePathRelativeIfPossible(source_root, absolute,
                                             &ret.value_)) {
@@ -154,9 +180,9 @@ SourceDir SourceDir::ResolveRelativeDir(
     return ret;
   }
 
-  ret.value_.reserve(value_.size() + p.size());
+  ret.value_.reserve(value_.size() + str.size());
   ret.value_.assign(value_);
-  ret.value_.append(p.data(), p.size());
+  ret.value_.append(str.data(), str.size());
 
   NormalizePath(&ret.value_);
   if (!EndsWithSlash(ret.value_))

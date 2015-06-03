@@ -76,12 +76,11 @@ bool ActionTargetGenerator::FillScript() {
     return false;
 
   SourceFile script_file =
-      scope_->GetSourceDir().ResolveRelativeFile(value->string_value(),
+      scope_->GetSourceDir().ResolveRelativeFile(
+          *value, err_,
           scope_->settings()->build_settings()->root_path_utf8());
-  if (script_file.value().empty()) {
-    *err_ = Err(*value, "script name is empty");
+  if (err_->has_error())
     return false;
-  }
   target_->action_values().set_script(script_file);
   return true;
 }

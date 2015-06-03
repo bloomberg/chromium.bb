@@ -100,11 +100,11 @@ Value RunWriteFile(Scope* scope,
   }
 
   // Compute the file name and make sure it's in the output dir.
-  if (!args[0].VerifyTypeIs(Value::STRING, err))
-    return Value();
   const SourceDir& cur_dir = scope->GetSourceDir();
-  SourceFile source_file = cur_dir.ResolveRelativeFile(args[0].string_value(),
+  SourceFile source_file = cur_dir.ResolveRelativeFile(args[0], err,
       scope->settings()->build_settings()->root_path_utf8());
+  if (err->has_error())
+    return Value();
   if (!EnsureStringIsInOutputDir(
           scope->settings()->build_settings()->build_dir(),
           source_file.value(), args[0].origin(), err))

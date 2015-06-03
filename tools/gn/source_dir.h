@@ -13,7 +13,9 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 
+class Err;
 class SourceFile;
+class Value;
 
 // Represents a directory within the source tree. Source dirs begin and end in
 // slashes.
@@ -34,18 +36,28 @@ class SourceDir {
   ~SourceDir();
 
   // Resolves a file or dir name relative to this source directory. Will return
-  // an empty SourceDir/File on error. Empty input is always an error (it's
-  // possible we should say ResolveRelativeDir vs. an empty string should be
-  // the source dir, but we require "." instead).
+  // an empty SourceDir/File on error and set the give *err pointer (required).
+  // Empty input is always an error.
   //
   // If source_root is supplied, these functions will additionally handle the
   // case where the input is a system-absolute but still inside the source
   // tree. This is the case for some external tools.
   SourceFile ResolveRelativeFile(
-      const base::StringPiece& p,
+      const Value& p,
+      Err* err,
       const base::StringPiece& source_root = base::StringPiece()) const;
   SourceDir ResolveRelativeDir(
+      const Value& p,
+      Err* err,
+      const base::StringPiece& source_root = base::StringPiece()) const;
+
+  // Like ResolveRelativeDir but takes a separate value (which gets blamed)
+  // and string to use (in cases where a substring has been extracted from the
+  // value, as with label resolution).
+  SourceDir ResolveRelativeDir(
+      const Value& blame_but_dont_use,
       const base::StringPiece& p,
+      Err* err,
       const base::StringPiece& source_root = base::StringPiece()) const;
 
   // Resolves this source file relative to some given source root. Returns

@@ -133,11 +133,11 @@ Value RunExecScript(Scope* scope,
     return Value();
 
   // Find the python script to run.
-  if (!args[0].VerifyTypeIs(Value::STRING, err))
-    return Value();
   SourceFile script_source =
-      cur_dir.ResolveRelativeFile(args[0].string_value(),
+      cur_dir.ResolveRelativeFile(args[0], err,
           scope->settings()->build_settings()->root_path_utf8());
+  if (err->has_error())
+    return Value();
   base::FilePath script_path = build_settings->GetFullPath(script_source);
   if (!build_settings->secondary_source_path().empty() &&
       !base::PathExists(script_path)) {
@@ -161,8 +161,10 @@ Value RunExecScript(Scope* scope,
         return Value();
       g_scheduler->AddGenDependency(
           build_settings->GetFullPath(cur_dir.ResolveRelativeFile(
-              dep.string_value(),
+              dep, err,
               scope->settings()->build_settings()->root_path_utf8())));
+      if (err->has_error())
+        return Value();
     }
   }
 

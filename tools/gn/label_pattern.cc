@@ -183,13 +183,9 @@ LabelPattern LabelPattern::GetPattern(const SourceDir& current_dir,
     }
 
     // Resolve the non-wildcard stuff.
-    dir = current_dir.ResolveRelativeDir(path);
-    if (dir.is_null()) {
-      *err = Err(value, "Label pattern didn't resolve to a dir.",
-          "The directory name \"" + path.as_string() + "\" didn't\n"
-          "resolve to a directory.");
+    dir = current_dir.ResolveRelativeDir(value, path, err);
+    if (err->has_error())
       return LabelPattern();
-    }
   }
 
   // Resolve the name. At this point, we're doing wildcard matches so the

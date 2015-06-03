@@ -447,13 +447,13 @@ bool Setup::FillSourceDir(const base::CommandLine& cmdline) {
 }
 
 bool Setup::FillBuildDir(const std::string& build_dir, bool require_exists) {
+  Err err;
   SourceDir resolved =
       SourceDirForCurrentDirectory(build_settings_.root_path()).
-    ResolveRelativeDir(build_dir, build_settings_.root_path_utf8());
-  if (resolved.is_null()) {
-    Err(Location(), "Couldn't resolve build directory.",
-        "The build directory supplied (\"" + build_dir + "\") was not valid.").
-        PrintToStdout();
+    ResolveRelativeDir(Value(nullptr, build_dir), &err,
+        build_settings_.root_path_utf8());
+  if (err.has_error()) {
+    err.PrintToStdout();
     return false;
   }
 
@@ -622,7 +622,11 @@ bool Setup::FillOtherConfig(const base::CommandLine& cmdline) {
         err.PrintToStdout();
         return false;
       }
-      whitelist->insert(current_dir.ResolveRelativeFile(item.string_value()));
+      whitelist->insert(current_dir.ResolveRelativeFile(item, &err));
+      if (err.has_error()) {
+        err.PrintToStdout();
+        return false;
+      }
     }
     build_settings_.set_exec_script_whitelist(whitelist.Pass());
   }

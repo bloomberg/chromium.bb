@@ -90,8 +90,13 @@ bool ResolveStringFromCommandLineInput(
                                Value(nullptr, input), &err);
   if (err.has_error()) {
     // Not a valid label, assume this must be a file.
+    err = Err();
     file_matches->push_back(current_dir.ResolveRelativeFile(
-        input, setup->build_settings().root_path_utf8()));
+        Value(nullptr, input), &err, setup->build_settings().root_path_utf8()));
+    if (err.has_error()) {
+      err.PrintToStdout();
+      return false;
+    }
     return true;
   }
 
@@ -106,7 +111,11 @@ bool ResolveStringFromCommandLineInput(
   } else {
     // Not an item, assume this must be a file.
     file_matches->push_back(current_dir.ResolveRelativeFile(
-        input, setup->build_settings().root_path_utf8()));
+        Value(nullptr, input), &err, setup->build_settings().root_path_utf8()));
+    if (err.has_error()) {
+      err.PrintToStdout();
+      return false;
+    }
   }
 
   return true;

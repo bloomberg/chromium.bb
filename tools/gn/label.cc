@@ -37,7 +37,7 @@ bool ComputeBuildLocationFromDep(const Value& input_value,
     return true;
   }
 
-  *result = current_dir.ResolveRelativeDir(input);
+  *result = current_dir.ResolveRelativeDir(input_value, input, err);
   return true;
 }
 
