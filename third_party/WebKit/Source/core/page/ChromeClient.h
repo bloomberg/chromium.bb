@@ -60,7 +60,6 @@ class IntRect;
 class LocalFrame;
 class Node;
 class Page;
-class PagePopupDriver;
 class PopupMenuClient;
 class PopupOpeningObserver;
 class WebCompositorAnimationTimeline;

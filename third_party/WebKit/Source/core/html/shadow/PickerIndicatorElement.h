@@ -84,7 +84,6 @@ private:
 
     RawPtrWillBeMember<PickerIndicatorOwner> m_pickerIndicatorOwner;
     RefPtr<DateTimeChooser> m_chooser;
-    bool m_isInOpenPopup;
 };
 
 DEFINE_TYPE_CASTS(PickerIndicatorElement, Element, element, element->isPickerIndicatorElement(), element.isPickerIndicatorElement());

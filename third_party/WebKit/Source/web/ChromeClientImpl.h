@@ -190,8 +190,6 @@ private:
 
     WebViewImpl* m_webView;  // weak pointer
     WindowFeatures m_windowFeatures;
-
-    PagePopupDriver* m_pagePopupDriver;
     Vector<PopupOpeningObserver*> m_popupOpeningObservers;
 };
 
