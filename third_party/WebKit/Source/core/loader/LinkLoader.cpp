@@ -131,7 +131,7 @@ static void dnsPrefetchIfNeeded(const LinkRelAttribute& relAttribute, const KURL
 
 static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const CrossOriginAttributeValue crossOrigin)
 {
-    if (relAttribute.isPreconnect() && href.isValid()) {
+    if (relAttribute.isPreconnect() && href.isValid() && href.protocolIsInHTTPFamily()) {
         ASSERT(RuntimeEnabledFeatures::linkPreconnectEnabled());
         Settings* settings = document.settings();
         if (settings && settings->logDnsPrefetchAndPreconnect()) {
