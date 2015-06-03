@@ -802,20 +802,30 @@ V8_SET_RETURN_VALUE = {
     'DOMWrapperForMainWorld': 'v8SetReturnValueForMainWorld(info, WTF::getPtr({cpp_value}))',
     'DOMWrapperFast': 'v8SetReturnValueFast(info, WTF::getPtr({cpp_value}), {script_wrappable})',
     'DOMWrapperDefault': 'v8SetReturnValue(info, {cpp_value})',
+    # Note that static attributes and operations do not check whether |this| is
+    # an instance of the interface nor |this|'s creation context is the same as
+    # the current context.  So we must always use the current context as the
+    # creation context of the DOM wrapper for the return value.
+    'DOMWrapperStatic': 'v8SetReturnValue(info, {cpp_value}, info.GetIsolate()->GetCurrentContext()->Global())',
     # Generic dictionary type
     'Dictionary': 'v8SetReturnValue(info, {cpp_value})',
+    'DictionaryStatic': '#error not implemented yet',
     # Nullable dictionaries
     'NullableDictionary': 'v8SetReturnValue(info, result.get())',
+    'NullableDictionaryStatic': '#error not implemented yet',
     # Union types or dictionaries
     'DictionaryOrUnion': 'v8SetReturnValue(info, result)',
+    'DictionaryOrUnionStatic': '#error not implemented yet',
 }
 
 
-def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wrappable='', release=False, for_main_world=False):
+def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wrappable='', release=False, for_main_world=False, is_static=False):
     """Returns a statement that converts a C++ value to a V8 value and sets it as a return value.
 
     """
     def dom_wrapper_conversion_type():
+        if is_static:
+            return 'DOMWrapperStatic'
         if not script_wrappable:
             return 'DOMWrapperDefault'
         if for_main_world:
@@ -830,6 +840,8 @@ def v8_set_return_value(idl_type, cpp_value, extended_attributes=None, script_wr
         cpp_value = idl_type.cpp_value_to_v8_value(cpp_value, extended_attributes=extended_attributes)
     if this_v8_conversion_type == 'DOMWrapper':
         this_v8_conversion_type = dom_wrapper_conversion_type()
+    if is_static and this_v8_conversion_type in ('Dictionary', 'NullableDictionary', 'DictionaryOrUnion'):
+        this_v8_conversion_type += 'Static'
 
     format_string = V8_SET_RETURN_VALUE[this_v8_conversion_type]
     # FIXME: oilpan: Remove .release() once we remove all RefPtrs from generated code.

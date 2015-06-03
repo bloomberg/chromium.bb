@@ -361,7 +361,7 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
         release = idl_type.release
 
     script_wrappable = 'impl' if inherits_interface(interface_name, 'Node') else ''
-    return idl_type.v8_set_return_value(cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world)
+    return idl_type.v8_set_return_value(cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world, is_static=method.is_static)
 
 
 def v8_value_to_local_cpp_variadic_value(method, argument, index, return_promise):

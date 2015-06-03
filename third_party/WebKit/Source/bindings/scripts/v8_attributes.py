@@ -210,7 +210,7 @@ def getter_context(interface, attribute, context):
             return 'v8SetReturnValue(info, v8Value)'
         return idl_type.v8_set_return_value(
             cpp_value, extended_attributes=extended_attributes, script_wrappable='impl',
-            release=release, for_main_world=for_main_world)
+            release=release, for_main_world=for_main_world, is_static=attribute.is_static)
 
     context.update({
         'cpp_value': cpp_value,

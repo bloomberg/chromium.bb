@@ -192,7 +192,7 @@ inline void v8SetReturnValueStringOrUndefined(const CallbackInfo& info, const St
 }
 
 template<typename CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappable* impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappable* impl, v8::Local<v8::Object> creationContext)
 {
     if (UNLIKELY(!impl)) {
         v8SetReturnValueNull(callbackInfo);
@@ -200,8 +200,14 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappable* 
     }
     if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
         return;
-    v8::Local<v8::Object> wrapper = impl->wrap(callbackInfo.GetIsolate(), callbackInfo.Holder());
+    v8::Local<v8::Object> wrapper = impl->wrap(callbackInfo.GetIsolate(), creationContext);
     v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappable* impl)
+{
+    v8SetReturnValue(callbackInfo, impl, callbackInfo.Holder());
 }
 
 template<typename CallbackInfo>

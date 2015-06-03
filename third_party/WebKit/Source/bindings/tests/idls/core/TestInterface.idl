@@ -61,6 +61,7 @@
     attribute TestEnum testEnumAttribute;
     attribute DOMStringOrDouble stringOrDoubleAttribute;
     static attribute DOMString staticStringAttribute;
+    static attribute TestInterface staticReturnDOMWrapperAttribute;
     [LegacyInterfaceTypeChecking] attribute TestInterfaceEmpty legacyInterfaceTypeCheckingAttribute;
 
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
@@ -90,6 +91,7 @@
     static void alwaysExposedStaticMethod();
     [Exposed=Worker] static void workerExposedStaticMethod();
     [Exposed=Window] static void windowExposedStaticMethod();
+    static TestInterface staticReturnDOMWrapperMethod();
 
     attribute long alwaysExposedAttribute;
     [Exposed=Worker] attribute long workerExposedAttribute;
