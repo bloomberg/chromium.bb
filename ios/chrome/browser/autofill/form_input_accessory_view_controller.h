@@ -12,13 +12,11 @@
 
 @protocol CRWWebViewProxy;
 
-namespace ios_internal {
 namespace autofill {
 extern NSString* const kFormSuggestionAssistButtonPreviousElement;
 extern NSString* const kFormSuggestionAssistButtonNextElement;
 extern NSString* const kFormSuggestionAssistButtonDone;
 }  // namespace autofill
-}  // namespace ios_internal
 
 @protocol FormInputAccessoryViewProvider;
 @class FormInputAccessoryViewController;

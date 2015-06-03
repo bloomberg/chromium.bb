@@ -21,13 +21,11 @@
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
-namespace ios_internal {
 namespace autofill {
 NSString* const kFormSuggestionAssistButtonPreviousElement = @"previousTap";
 NSString* const kFormSuggestionAssistButtonNextElement = @"nextTap";
 NSString* const kFormSuggestionAssistButtonDone = @"done";
 }  // namespace autofill
-}  // namespace ios_internal
 
 namespace {
 
@@ -283,8 +281,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 
 - (void)closeKeyboard {
   BOOL performedAction =
-      [self executeFormAssistAction:ios_internal::autofill::
-                                        kFormSuggestionAssistButtonDone];
+      [self executeFormAssistAction:autofill::kFormSuggestionAssistButtonDone];
 
   if (!performedAction) {
     // We could not find the built-in form assist controls, so try to focus
@@ -325,9 +322,9 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 #pragma mark FormInputAccessoryViewDelegate
 
 - (void)selectPreviousElement {
-  BOOL performedAction = [self
-      executeFormAssistAction:ios_internal::autofill::
-                                  kFormSuggestionAssistButtonPreviousElement];
+  BOOL performedAction =
+      [self executeFormAssistAction:
+                autofill::kFormSuggestionAssistButtonPreviousElement];
   if (!performedAction) {
     // We could not find the built-in form assist controls, so try to focus
     // the next or previous control using JavaScript.
@@ -338,9 +335,8 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 }
 
 - (void)selectNextElement {
-  BOOL performedAction =
-      [self executeFormAssistAction:ios_internal::autofill::
-                                        kFormSuggestionAssistButtonNextElement];
+  BOOL performedAction = [self
+      executeFormAssistAction:autofill::kFormSuggestionAssistButtonNextElement];
 
   if (!performedAction) {
     // We could not find the built-in form assist controls, so try to focus
