@@ -1883,7 +1883,7 @@ crbug.com/488185 [ Debug ] fast/layers/layer-visibility-sublayer.html [ Pass Fai
 crbug.com/481896 http/tests/inspector/compiler-source-mapping-debug.html [ NeedsManualRebaseline ]
 
 crbug.com/488445 [ Win7 Debug ] http/tests/fetch/window/request.html [ Pass Failure ]
-crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Slow ]
+crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Timeout ]
 crbug.com/474798 fast/repaint/align-self-change-keeping-geometry-grid.html [ Failure ]
 crbug.com/474798 fast/repaint/justify-self-change-keeping-geometry.html [ Failure ]
 crbug.com/474798 virtual/slimmingpaint/fast/repaint/align-self-change-keeping-geometry-grid.html [ Skip ]
