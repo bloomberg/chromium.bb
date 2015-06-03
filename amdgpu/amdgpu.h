@@ -516,6 +516,10 @@ struct amdgpu_gpu_info {
 	uint32_t cu_active_number;
 	uint32_t cu_ao_mask;
 	uint32_t cu_bitmap[4][4];
+	/* video memory type info*/
+	uint32_t vram_type;
+	/* video memory bit width*/
+	uint32_t vram_bit_width;
 };
 
 

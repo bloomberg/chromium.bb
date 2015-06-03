@@ -540,6 +540,15 @@ struct drm_amdgpu_info_firmware {
 	uint32_t feature;
 };
 
+#define AMDGPU_VRAM_TYPE_UNKNOWN 0
+#define AMDGPU_VRAM_TYPE_GDDR1 1
+#define AMDGPU_VRAM_TYPE_DDR2  2
+#define AMDGPU_VRAM_TYPE_GDDR3 3
+#define AMDGPU_VRAM_TYPE_GDDR4 4
+#define AMDGPU_VRAM_TYPE_GDDR5 5
+#define AMDGPU_VRAM_TYPE_HBM   6
+#define AMDGPU_VRAM_TYPE_DDR3  7
+
 struct drm_amdgpu_info_device {
 	/** PCI Device ID */
 	uint32_t device_id;
@@ -573,6 +582,10 @@ struct drm_amdgpu_info_device {
 	/** Page table entry - fragment size */
 	uint32_t pte_fragment_size;
 	uint32_t gart_page_size;
+	/** video memory type information*/
+	uint32_t vram_type;
+	/** video memory bit width*/
+	uint32_t vram_bit_width;
 };
 
 struct drm_amdgpu_info_hw_ip {
