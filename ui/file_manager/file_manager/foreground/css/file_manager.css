@@ -1290,7 +1290,7 @@ html[dir='rtl'] .badge {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: pre;
 }
 
 /* Text box used for renaming in the detail list. */
