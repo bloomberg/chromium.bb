@@ -37,6 +37,9 @@ public:
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const T* t)
     {
+#if ENABLE(ASSERT)
+        assertObjectHasGCInfo(const_cast<T*>(t), GCInfoTrait<T>::index());
+#endif
         // Default mark method of the trait just calls the two-argument mark
         // method on the visitor. The second argument is the static trace method
         // of the trait, which by default calls the instance method
@@ -67,13 +70,6 @@ public:
         }
         visitor->mark(const_cast<T*>(t), &TraceTrait<T>::trace);
     }
-
-#if ENABLE(ASSERT)
-    static void checkGCInfo(const T* t)
-    {
-        assertObjectHasGCInfo(const_cast<T*>(t), GCInfoTrait<T>::index());
-    }
-#endif
 };
 
 template<typename T>
@@ -95,10 +91,6 @@ public:
         ASSERT(!pageFromObject(self)->orphaned());
         self->adjustAndMark(visitor);
     }
-
-#if ENABLE(ASSERT)
-    static void checkGCInfo(const T*) { }
-#endif
 };
 
 template<typename T, bool needsTracing>
@@ -158,13 +150,6 @@ public:
     {
         DefaultTraceTrait<T>::mark(visitor, t);
     }
-
-#if ENABLE(ASSERT)
-    static void checkGCInfo(const T* t)
-    {
-        DefaultTraceTrait<T>::checkGCInfo(t);
-    }
-#endif
 };
 
 template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
@@ -203,12 +188,6 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
     {
         DefaultTraceTrait<Backing>::mark(visitor, backing);
     }
-    static void checkGCInfo(Visitor* visitor, const Backing* backing)
-    {
-#if ENABLE(ASSERT)
-        DefaultTraceTrait<Backing>::checkGCInfo(backing);
-#endif
-    }
 };
 
 // The trace trait for the heap hashtable backing is used when we find a
@@ -233,12 +212,6 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
     static void mark(VisitorDispatcher visitor, const Backing* backing)
     {
         DefaultTraceTrait<Backing>::mark(visitor, backing);
-    }
-    static void checkGCInfo(Visitor* visitor, const Backing* backing)
-    {
-#if ENABLE(ASSERT)
-        DefaultTraceTrait<Backing>::checkGCInfo(backing);
-#endif
     }
 };
 

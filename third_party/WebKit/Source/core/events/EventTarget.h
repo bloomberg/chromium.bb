@@ -147,14 +147,6 @@ public:
 
     virtual bool keepEventInNode(Event*) { return false; };
 
-#if ENABLE(OILPAN)
-    // Needed for TraceTrait<> specialization; see below.
-    void mark(Visitor*) const;
-#if ENABLE(ASSERT)
-    void checkGCInfo() const;
-#endif
-#endif
-
 protected:
     EventTarget();
 

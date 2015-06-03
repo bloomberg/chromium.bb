@@ -159,9 +159,6 @@ public:
         static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
         if (!t)
             return;
-#if ENABLE(ASSERT)
-        TraceTrait<T>::checkGCInfo(t);
-#endif
         TraceTrait<T>::mark(Derived::fromHelper(this), t);
     }
 
