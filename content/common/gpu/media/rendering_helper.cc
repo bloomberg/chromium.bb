@@ -68,6 +68,13 @@ static void CreateShader(GLuint program,
 }
 
 namespace content {
+namespace {
+
+void WaitForSwapAck(const base::Closure& callback, gfx::SwapResult result) {
+  callback.Run();
+}
+
+}  // namespace
 
 #if defined(USE_OZONE)
 
@@ -509,7 +516,15 @@ void RenderingHelper::WarmUpRendering(int warm_up_iterations) {
                emptyData.get());
   for (int i = 0; i < warm_up_iterations; ++i) {
     RenderTexture(GL_TEXTURE_2D, texture_id);
-    gl_surface_->SwapBuffers();
+
+    // Need to allow nestable tasks since WarmUpRendering() is called from
+    // within another task on the renderer thread.
+    base::MessageLoop::ScopedNestableTaskAllower allow(
+        base::MessageLoop::current());
+    base::RunLoop wait_for_swap_ack;
+    gl_surface_->SwapBuffersAsync(
+        base::Bind(&WaitForSwapAck, wait_for_swap_ack.QuitClosure()));
+    wait_for_swap_ack.Run();
   }
   glDeleteTextures(1, &texture_id);
 }
@@ -758,10 +773,12 @@ void RenderingHelper::RenderContent() {
     }
   }
 
-  if (need_swap_buffer)
-    gl_surface_->SwapBuffers();
-
-  ScheduleNextRenderContent();
+  base::Closure schedule_frame = base::Bind(
+      &RenderingHelper::ScheduleNextRenderContent, base::Unretained(this));
+  if (!need_swap_buffer ||
+      !gl_surface_->SwapBuffersAsync(
+          base::Bind(&WaitForSwapAck, schedule_frame)))
+    schedule_frame.Run();
 }
 
 // Helper function for the LayoutRenderingAreas(). The |lengths| are the
