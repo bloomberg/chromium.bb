@@ -193,7 +193,7 @@ void DisplayListRecordingSource::DetermineIfSolidColor() {
 
   gfx::Size layer_size = GetSize();
   skia::AnalysisCanvas canvas(layer_size.width(), layer_size.height());
-  display_list_->Raster(&canvas, nullptr, 1.f);
+  display_list_->Raster(&canvas, nullptr, gfx::Rect(), 1.f);
   is_solid_color_ = canvas.GetColorIfSolid(&solid_color_);
 }
 

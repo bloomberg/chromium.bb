@@ -26,6 +26,7 @@ class CC_EXPORT ClipDisplayItem : public DisplayItem {
               const std::vector<SkRRect>& rounded_clip_rects);
 
   void Raster(SkCanvas* canvas,
+              const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
@@ -40,6 +41,7 @@ class CC_EXPORT EndClipDisplayItem : public DisplayItem {
   ~EndClipDisplayItem() override;
 
   void Raster(SkCanvas* canvas,
+              const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };

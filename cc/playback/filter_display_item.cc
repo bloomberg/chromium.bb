@@ -34,6 +34,7 @@ void FilterDisplayItem::SetNew(const FilterOperations& filters,
 }
 
 void FilterDisplayItem::Raster(SkCanvas* canvas,
+                               const gfx::Rect& canvas_target_playback_rect,
                                SkPicture::AbortCallback* callback) const {
   canvas->save();
   canvas->translate(bounds_.x(), bounds_.y());
@@ -68,6 +69,7 @@ EndFilterDisplayItem::~EndFilterDisplayItem() {
 }
 
 void EndFilterDisplayItem::Raster(SkCanvas* canvas,
+                                  const gfx::Rect& canvas_target_playback_rect,
                                   SkPicture::AbortCallback* callback) const {
   canvas->restore();
   canvas->restore();

@@ -26,6 +26,7 @@ void FloatClipDisplayItem::SetNew(const gfx::RectF& clip_rect) {
 }
 
 void FloatClipDisplayItem::Raster(SkCanvas* canvas,
+                                  const gfx::Rect& canvas_target_playback_rect,
                                   SkPicture::AbortCallback* callback) const {
   canvas->save();
   canvas->clipRect(gfx::RectFToSkRect(clip_rect_));
@@ -45,8 +46,10 @@ EndFloatClipDisplayItem::EndFloatClipDisplayItem() {
 EndFloatClipDisplayItem::~EndFloatClipDisplayItem() {
 }
 
-void EndFloatClipDisplayItem::Raster(SkCanvas* canvas,
-                                     SkPicture::AbortCallback* callback) const {
+void EndFloatClipDisplayItem::Raster(
+    SkCanvas* canvas,
+    const gfx::Rect& canvas_target_playback_rect,
+    SkPicture::AbortCallback* callback) const {
   canvas->restore();
 }
 

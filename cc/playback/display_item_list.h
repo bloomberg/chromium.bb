@@ -42,6 +42,7 @@ class CC_EXPORT DisplayItemList
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback,
+              const gfx::Rect& canvas_target_playback_rect,
               float contents_scale) const;
 
   template <typename DisplayItemType>

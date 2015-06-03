@@ -24,6 +24,7 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
   void SetNew(skia::RefPtr<SkPicture> picture);
 
   void Raster(SkCanvas* canvas,
+              const gfx::Rect& canvas_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 

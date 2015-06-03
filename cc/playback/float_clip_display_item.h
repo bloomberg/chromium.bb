@@ -24,6 +24,7 @@ class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
   void SetNew(const gfx::RectF& clip_rect);
 
   void Raster(SkCanvas* canvas,
+              const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
@@ -41,6 +42,7 @@ class CC_EXPORT EndFloatClipDisplayItem : public DisplayItem {
   }
 
   void Raster(SkCanvas* canvas,
+              const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };

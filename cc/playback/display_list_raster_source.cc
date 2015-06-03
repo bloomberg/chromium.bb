@@ -114,7 +114,10 @@ void DisplayListRasterSource::RasterCommon(
   canvas->clipRect(gfx::RectToSkRect(content_rect), SkRegion::kIntersect_Op);
 
   DCHECK(display_list_.get());
-  display_list_->Raster(canvas, callback, contents_scale);
+  gfx::Rect canvas_target_playback_rect =
+      canvas_playback_rect - canvas_bitmap_rect.OffsetFromOrigin();
+  display_list_->Raster(canvas, callback, canvas_target_playback_rect,
+                        contents_scale);
 }
 
 skia::RefPtr<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {

@@ -23,6 +23,7 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
   void SetNew(const SkPath& path, SkRegion::Op clip_op, bool antialias);
 
   void Raster(SkCanvas* canvas,
+              const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
@@ -42,6 +43,7 @@ class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
   }
 
   void Raster(SkCanvas* canvas,
+              const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };

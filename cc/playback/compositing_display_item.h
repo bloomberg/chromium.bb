@@ -29,6 +29,7 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
               skia::RefPtr<SkColorFilter> color_filter);
 
   void Raster(SkCanvas* canvas,
+              const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 
@@ -50,6 +51,7 @@ class CC_EXPORT EndCompositingDisplayItem : public DisplayItem {
   }
 
   void Raster(SkCanvas* canvas,
+              const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
 };
