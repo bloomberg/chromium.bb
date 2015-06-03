@@ -88,7 +88,8 @@ void OmniboxImpl::OnEmbed(mojo::View* root,
   edit_->RequestFocus();
 }
 
-void OmniboxImpl::OnViewManagerDisconnected(mojo::ViewManager* view_manager) {}
+void OmniboxImpl::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxImpl, views::LayoutManager implementation:

@@ -252,7 +252,7 @@ class ViewManagerTest : public test::ApplicationTestBase,
     on_will_embed_count_++;
     return on_will_embed_return_value_;
   }
-  void OnViewManagerDisconnected(ViewManager* view_manager) override {
+  void OnViewManagerDestroyed(ViewManager* view_manager) override {
     got_disconnect_ = true;
   }
 

@@ -184,7 +184,7 @@ void HTMLDocument::OnEmbed(
   InitSetupAndLoadIfNecessary();
 }
 
-void HTMLDocument::OnViewManagerDisconnected(ViewManager* view_manager) {
+void HTMLDocument::OnViewManagerDestroyed(ViewManager* view_manager) {
   delete this;
 }
 

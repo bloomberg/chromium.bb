@@ -26,7 +26,7 @@ class ViewManager;
 //
 // When the ViewManager is deleted all views are deleted (and observers
 // notified). This is followed by notifying the delegate by way of
-// OnViewManagerDisconnected().
+// OnViewManagerDestroyed().
 class ViewManagerDelegate {
  public:
   // Called when the application implementing this interface is embedded at
@@ -57,9 +57,9 @@ class ViewManagerDelegate {
                            InterfaceRequest<ServiceProvider>* services,
                            ServiceProviderPtr* exposed_services);
 
-  // Called when a connection to the view manager service is closed.
-  // |view_manager| is not valid after this function returns.
-  virtual void OnViewManagerDisconnected(ViewManager* view_manager) = 0;
+  // Called from the destructor of ViewManager after all the Views have been
+  // destroyed. |view_manager| is no longer valid after this call.
+  virtual void OnViewManagerDestroyed(ViewManager* view_manager) = 0;
 
  protected:
   virtual ~ViewManagerDelegate() {}

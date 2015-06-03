@@ -63,7 +63,7 @@ class Browser : public mojo::ApplicationDelegate,
   bool OnWillEmbed(mojo::View* view,
                    mojo::InterfaceRequest<mojo::ServiceProvider>* services,
                    mojo::ServiceProviderPtr* exposed_services) override;
-  void OnViewManagerDisconnected(mojo::ViewManager* view_manager) override;
+  void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
 
   // Overridden from ViewManagerRootClient:
   void OnAccelerator(mojo::EventPtr event) override;

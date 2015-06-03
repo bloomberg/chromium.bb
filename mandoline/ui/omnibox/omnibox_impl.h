@@ -44,7 +44,7 @@ class OmniboxImpl : public mojo::ApplicationDelegate,
   void OnEmbed(mojo::View* root,
                mojo::InterfaceRequest<mojo::ServiceProvider> services,
                mojo::ServiceProviderPtr exposed_services) override;
-  void OnViewManagerDisconnected(mojo::ViewManager* view_manager) override;
+  void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
 
   // Overridden from views::LayoutManager:
   gfx::Size GetPreferredSize(const views::View* view) const override;

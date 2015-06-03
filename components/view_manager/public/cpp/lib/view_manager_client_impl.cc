@@ -135,7 +135,7 @@ ViewManagerClientImpl::~ViewManagerClientImpl() {
   for (size_t i = 0; i < non_owned.size(); ++i)
     delete non_owned[i];
 
-  delegate_->OnViewManagerDisconnected(this);
+  delegate_->OnViewManagerDestroyed(this);
 }
 
 void ViewManagerClientImpl::DestroyView(Id view_id) {

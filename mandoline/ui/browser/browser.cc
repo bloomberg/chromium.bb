@@ -43,7 +43,7 @@ Browser::Browser()
 
 Browser::~Browser() {
   // Destruct ui_ manually while |this| is alive and reset the pointer first.
-  // This is to avoid a double delete when OnViewManagerDisconnected gets
+  // This is to avoid a double delete when OnViewManagerDestroyed gets
   // called.
   delete ui_.release();
 }
@@ -146,8 +146,7 @@ bool Browser::OnWillEmbed(
   return true;
 }
 
-void Browser::OnViewManagerDisconnected(
-    mojo::ViewManager* view_manager) {
+void Browser::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
   ui_.reset();
   root_ = nullptr;
   app_->Terminate();
