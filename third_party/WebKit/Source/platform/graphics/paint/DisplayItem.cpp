@@ -10,15 +10,12 @@ namespace blink {
 struct SameSizeAsDisplayItem {
     virtual ~SameSizeAsDisplayItem() { } // Allocate vtable pointer.
     void* pointers[2];
-    int m_int; // Make sure m_int and m_type are next to each other so they are packed on 64-bit.
-    DisplayItem::Type m_type;
+    int ints[2]; // Make sure other fields are packed into two ints.
 #ifndef NDEBUG
     WTF::String m_debugString;
 #endif
 };
-
 static_assert(sizeof(DisplayItem) == sizeof(SameSizeAsDisplayItem), "DisplayItem should stay small");
-static_assert(sizeof(DisplayItem::Type) <= sizeof(int), "DisplayItem::Type should stay small");
 
 #ifndef NDEBUG
 
@@ -204,8 +201,10 @@ void DisplayItem::dumpPropertiesAsDebugString(WTF::StringBuilder& stringBuilder)
     stringBuilder.append("\", type: \"");
     stringBuilder.append(typeAsDebugString(type()));
     stringBuilder.append('"');
-    if (m_id.scopeContainer)
-        stringBuilder.append(String::format(", scope: \"%p,%d\"", m_id.scopeContainer, m_id.scopeId));
+    if (m_skippedCache)
+        stringBuilder.append(", skippedCache: true");
+    if (m_scopeContainer)
+        stringBuilder.append(String::format(", scope: \"%p,%d\"", m_scopeContainer, m_scopeId));
 }
 
 #endif

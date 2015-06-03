@@ -26,7 +26,7 @@
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
 #include "wtf/Optional.h"
 
@@ -101,6 +101,7 @@ void DeprecatedPaintLayerPainter::paintLayerContentsAndReflection(GraphicsContex
 
     // Paint the reflection first if we have one.
     if (m_paintLayer.reflectionInfo()) {
+        DisplayItemCacheSkipper skipper(*context);
         ScopeRecorder scopeRecorder(*context, *m_paintLayer.layoutObject());
         m_paintLayer.reflectionInfo()->paint(context, paintingInfo, localPaintFlags | PaintLayerPaintingReflection);
     }

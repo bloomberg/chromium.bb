@@ -36,6 +36,7 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
     ASSERT(!m_constructionDisabled);
+    ASSERT(!skippingCache() || !displayItem->isCached());
 
     if (displayItem->isEnd()) {
         ASSERT(!m_newDisplayItems.isEmpty());
@@ -70,7 +71,11 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
         ASSERT_NOT_REACHED();
     }
     addItemToIndex(*displayItem, m_newDisplayItems.size(), m_newDisplayItemIndicesByClient);
-#endif
+#endif // ENABLE(ASSERT)
+
+    ASSERT(!displayItem->skippedCache()); // Only DisplayItemList can set the flag.
+    if (skippingCache())
+        displayItem->setSkippedCache();
 
     m_newDisplayItems.append(displayItem);
 }
@@ -114,6 +119,8 @@ void DisplayItemList::invalidateAll()
 
 bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
 {
+    if (skippingCache())
+        return false;
     updateValidlyCachedClientsIfNeeded();
     return m_validlyCachedClients.contains(client);
 }
@@ -194,6 +201,7 @@ void DisplayItemList::commitNewDisplayItems()
     m_clientScopeIdMap.clear();
     ASSERT(m_scopeStack.isEmpty());
     m_scopeStack.clear();
+    ASSERT(!skippingCache());
 #if ENABLE(ASSERT)
     m_newDisplayItemIndicesByClient.clear();
 #endif
@@ -253,7 +261,7 @@ void DisplayItemList::commitNewDisplayItems()
             if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
                 checkCachedDisplayItemIsUnchanged(*newDisplayItem, displayItemIndicesByClient);
             else
-                ASSERT(!newDisplayItem->isDrawing() || !clientCacheIsValid(newDisplayItem->client()));
+                ASSERT(!newDisplayItem->isDrawing() || newDisplayItem->skippedCache() || !clientCacheIsValid(newDisplayItem->client()));
 #endif // ENABLE(ASSERT)
             updatedList.append(newDisplayItem.release());
         }
@@ -286,7 +294,8 @@ void DisplayItemList::updateValidlyCachedClientsIfNeeded() const
         if (displayItem->client() == lastClient)
             continue;
         lastClient = displayItem->client();
-        m_validlyCachedClients.add(lastClient);
+        if (!displayItem->skippedCache())
+            m_validlyCachedClients.add(lastClient);
     }
 }
 
@@ -322,7 +331,11 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displ
     if (!displayItem.isDrawing() || !clientCacheIsValid(displayItem.client()))
         return;
 
-    DrawingDisplayItem::UnderInvalidationCheckingMode mode = static_cast<const DrawingDisplayItem&>(displayItem).underInvalidationCheckingMode();
+    const DrawingDisplayItem& drawingDisplayItem = static_cast<const DrawingDisplayItem&>(displayItem);
+    if (drawingDisplayItem.skippedCache())
+        return;
+
+    DrawingDisplayItem::UnderInvalidationCheckingMode mode = drawingDisplayItem.underInvalidationCheckingMode();
     if (mode == DrawingDisplayItem::DontCheck)
         return;
 
@@ -336,7 +349,7 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displ
         return;
     }
 
-    RefPtr<const SkPicture> newPicture = static_cast<const DrawingDisplayItem&>(displayItem).picture();
+    RefPtr<const SkPicture> newPicture = drawingDisplayItem.picture();
     RefPtr<const SkPicture> oldPicture = static_cast<const DrawingDisplayItem&>(*m_currentDisplayItems[index]).picture();
     // Remove the display item from cache so that we can check if there are any remaining cached display items after merging.
     m_currentDisplayItems[index] = nullptr;

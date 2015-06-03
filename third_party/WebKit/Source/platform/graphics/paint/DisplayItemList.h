@@ -35,6 +35,10 @@ public:
     void beginScope(DisplayItemClient);
     void endScope(DisplayItemClient);
 
+    void beginSkippingCache() { ++m_skippingCacheCount; }
+    void endSkippingCache() { ASSERT(m_skippingCacheCount > 0); --m_skippingCacheCount; }
+    bool skippingCache() const { return m_skippingCacheCount; }
+
     // Must be called when a painting is finished.
     void commitNewDisplayItems();
 
@@ -64,7 +68,8 @@ public:
 protected:
     DisplayItemList()
         : m_validlyCachedClientsDirty(false)
-        , m_constructionDisabled(false) { }
+        , m_constructionDisabled(false)
+        , m_skippingCacheCount(0) { }
 
 private:
     friend class DisplayItemListTest;
@@ -108,6 +113,8 @@ private:
     // Allow display item construction to be disabled to isolate the costs of construction
     // in performance metrics.
     bool m_constructionDisabled;
+
+    int m_skippingCacheCount;
 
     // Scope ids are allocated per client to ensure that the ids are stable for non-invalidated
     // clients between frames, so that we can use the id to match new display items to cached

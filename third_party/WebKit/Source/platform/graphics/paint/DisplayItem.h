@@ -180,21 +180,25 @@ public:
 
     virtual void replay(GraphicsContext&) { }
 
-    DisplayItemClient client() const { return m_id.client; }
-    Type type() const { return m_id.type; }
+    DisplayItemClient client() const { return m_client; }
+    Type type() const { return m_type; }
     bool idsEqual(const DisplayItem& other, Type overrideType) const
     {
-        return m_id.client == other.m_id.client
-            && m_id.type == overrideType
-            && m_id.scopeId == other.m_id.scopeId
-            && m_id.scopeContainer == other.m_id.scopeContainer;
+        return m_client == other.m_client
+            && m_type == overrideType
+            && m_scopeId == other.m_scopeId
+            && m_scopeContainer == other.m_scopeContainer;
     }
 
     void setScope(int scopeId, DisplayItemClient scopeContainer)
     {
-        m_id.scopeId = scopeId;
-        m_id.scopeContainer = scopeContainer;
+        m_scopeId = scopeId;
+        m_scopeContainer = scopeContainer;
     }
+
+    // For DisplayItemList only. Painters should use DisplayItemCacheSkipper instead.
+    void setSkippedCache() { m_skippedCache = true; }
+    bool skippedCache() const { return m_skippedCache; }
 
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const { }
 
@@ -276,24 +280,23 @@ public:
 
 protected:
     DisplayItem(const DisplayItemClientWrapper& client, Type type)
-        : m_id(client.displayItemClient(), type)
+        : m_client(client.displayItemClient())
+        , m_scopeContainer(nullptr)
+        , m_scopeId(0)
+        , m_type(type)
+        , m_skippedCache(false)
 #ifndef NDEBUG
         , m_clientDebugString(client.debugName())
 #endif
     { }
 
 private:
-    struct Id {
-        Id(DisplayItemClient c, Type t) : client(c), type(t), scopeId(0), scopeContainer(nullptr)
-        {
-            ASSERT(c);
-        }
-
-        const DisplayItemClient client;
-        const Type type;
-        int scopeId;
-        DisplayItemClient scopeContainer;
-    } m_id;
+    const DisplayItemClient m_client;
+    DisplayItemClient m_scopeContainer;
+    int m_scopeId;
+    static_assert(TypeLast < (1 << 16), "DisplayItem::Type should fit in 16 bits");
+    const Type m_type : 16;
+    unsigned m_skippedCache : 1;
 
 #ifndef NDEBUG
     WTF::String m_clientDebugString;
