@@ -100,6 +100,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
         #                 android_commands refactor?
         self.device.RunShellCommand('stop')
         self.device.RunShellCommand('start')
+        self.device.WaitUntilFullyBooted()
 
     # We give different default value to launch HTTP server based on shard index
     # because it may have race condition when multiple processes are trying to
