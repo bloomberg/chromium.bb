@@ -262,6 +262,7 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
   void FinishInstallation() {
     std::map<int, BookmarkAppHelper::BitmapAndSource> size_map =
         BookmarkAppHelper::ResizeIconsAndGenerateMissing(downloaded_bitmaps_,
+                                                         SizesToGenerate(),
                                                          &web_app_info_);
     BookmarkAppHelper::UpdateWebAppIconsWithoutChangingLinks(size_map,
                                                              &web_app_info_);
@@ -368,6 +369,7 @@ void BookmarkAppHelper::GenerateIcon(
 std::map<int, BookmarkAppHelper::BitmapAndSource>
 BookmarkAppHelper::ResizeIconsAndGenerateMissing(
     std::vector<BookmarkAppHelper::BitmapAndSource> icons,
+    std::set<int> sizes_to_generate,
     WebApplicationInfo* web_app_info) {
   // Add the downloaded icons. Extensions only allow certain icon sizes. First
   // populate icons that match the allowed sizes exactly and then downscale
@@ -391,9 +393,13 @@ BookmarkAppHelper::ResizeIconsAndGenerateMissing(
             resized_bitmaps.begin()->second.bitmap);
   }
 
+  // Work out what icons we need to generate here. Icons are only generated if:
+  // a. there is no icon in the required size, AND
+  // b. there is no icon LARGER than the required size.
+  // Larger icons will be scaled down and used at display time.
   std::set<int> generate_sizes;
-  for (int size : SizesToGenerate()) {
-    if (resized_bitmaps.find(size) == resized_bitmaps.end())
+  for (int size : sizes_to_generate) {
+    if (resized_bitmaps.lower_bound(size) == resized_bitmaps.end())
       generate_sizes.insert(size);
   }
   GenerateIcons(generate_sizes, web_app_info->app_url,
@@ -548,7 +554,8 @@ void BookmarkAppHelper::OnIconsDownloaded(
 
   web_app_info_.generated_icon_color = SK_ColorTRANSPARENT;
   std::map<int, BitmapAndSource> size_to_icons =
-      ResizeIconsAndGenerateMissing(downloaded_icons, &web_app_info_);
+      ResizeIconsAndGenerateMissing(downloaded_icons, SizesToGenerate(),
+                                    &web_app_info_);
   ReplaceWebAppIcons(size_to_icons, &web_app_info_);
   favicon_downloader_.reset();
 

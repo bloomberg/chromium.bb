@@ -81,6 +81,7 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // not update |web_app_info| except to update |generated_icon_color|.
   static std::map<int, BitmapAndSource> ResizeIconsAndGenerateMissing(
       std::vector<BitmapAndSource> icons,
+      std::set<int> sizes_to_generate,
       WebApplicationInfo* web_app_info);
 
   // It is important that the linked app information in any extension that
