@@ -5,20 +5,6 @@
 
 Import('env')
 
-
-# TLS variable alignments larger than 16 do not work with NaCl's
-# original linker scripts for static linking, for which nacl/tls.c
-# uses TLS_PRESUMED_ALIGNMENT == 16.
-# See https://code.google.com/p/nativeclient/issues/detail?id=1240
-large_alignments_work = (
-    # With dynamic linking, the runtime reads the TLS alignment from
-    # the PT_TLS segment header.
-    env.Bit('nacl_glibc') or
-    # With PNaCl pexes, the TLS alignment is stored in
-    # __tls_template_alignment by the ExpandTls LLVM pass.
-    env.Bit('bitcode'))
-
-
 defines_map = {
     'tdata1' : ['WITH_PTHREAD'],
     'tdata2' : ['MORE_TDATA', 'WITH_PTHREAD'],
@@ -33,8 +19,13 @@ if not env.Bit('bitcode'):
   pic_list.append(('_pic', ['-fPIC']))
 
 for case_name, defines in sorted(defines_map.iteritems()):
-  if case_name in ['largealign', 'nopthread'] and not large_alignments_work:
-    continue
+  # The large alignment cases are broken by an ARM assembler bug
+  # that only shows up when using GCC.
+  # See https://sourceware.org/bugzilla/show_bug.cgi?id=18481 for GAS bug.
+  # TODO(mcgrathr): Re-enable when the assembler is fixed.
+  broken = (env.Bit('build_arm') and
+            not env.Bit('nacl_clang') and not env.Bit('bitcode') and
+            case_name in ['largealign', 'nopthread'])
   if 'WITH_PTHREAD' in defines:
     libs = ['${PTHREAD_LIBS}']
   else:
@@ -49,4 +40,5 @@ for case_name, defines in sorted(defines_map.iteritems()):
     prog = env_test.ComponentProgram(full_name, obj, EXTRA_LIBS=libs)
     node = env_test.CommandSelLdrTestNacl(full_name + '.out', prog,
                                           size='small')
-    env_test.AddNodeToTestSuite(node, ['small_tests'], 'run_' + full_name)
+    env_test.AddNodeToTestSuite(node, ['small_tests'], 'run_' + full_name,
+                                is_broken=broken)
