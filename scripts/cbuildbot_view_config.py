@@ -6,9 +6,9 @@
 
 from __future__ import print_function
 
-from chromite.cbuildbot import generate_chromeos_config
+from chromite.cbuildbot import chromeos_config
 
 
 def main(_argv):
-  config = generate_chromeos_config.GetConfig()
+  config = chromeos_config.GetConfig()
   print(config.SaveConfigToString())

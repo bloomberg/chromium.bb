@@ -7,18 +7,18 @@
 from __future__ import print_function
 
 from chromite.cbuildbot import cbuildbot_config
-from chromite.cbuildbot import generate_chromeos_config
+from chromite.cbuildbot import chromeos_config
 from chromite.lib import cros_test_lib
 
 class LoadChromeOsConfigTest(cros_test_lib.TestCase):
   """Tests that load the production Chrome OS config."""
 
   def testGeneralLoad(self):
-    """This test compares generate_chromeos_config to config_dump.json."""
+    """This test compares chromeos_config to config_dump.json."""
     # If there is a test failure, the diff will be big.
     self.maxDiff = None
 
-    src = generate_chromeos_config.GetConfig()
+    src = chromeos_config.GetConfig()
     new = cbuildbot_config.GetConfig()
 
     self.assertDictEqual(src.GetDefault(),

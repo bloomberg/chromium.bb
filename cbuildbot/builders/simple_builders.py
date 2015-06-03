@@ -11,7 +11,7 @@ import collections
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import generate_chromeos_config
+from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import results_lib
 from chromite.cbuildbot.builders import generic_builders
@@ -248,7 +248,7 @@ class SimpleBuilder(generic_builders.Builder):
             self._RunStage(artifact_stages.UploadTestArtifactsStage, board,
                            builder_run=builder_run,
                            suffix='[afdo_generate_min]')
-            suite = generate_chromeos_config.HWTestList.AFDORecordTest()
+            suite = chromeos_config.HWTestList.AFDORecordTest()
             self._RunStage(test_stages.HWTestStage, board, suite,
                            builder_run=builder_run)
             self._RunStage(afdo_stages.AFDODataGenerateStage, board,

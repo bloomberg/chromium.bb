@@ -6,18 +6,18 @@
 
 *** UPDATE NOTICE ***
 
-Not finding what you're expecting here? Please see generate_chromeos_config.py
+Not finding what you're expecting here? Please see chromeos_config.py
 for Chrome OS build configuration.
 """
 
 from __future__ import print_function
 
 from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import generate_chromeos_config
+from chromite.cbuildbot import chromeos_config
 from chromite.lib import factory
 
 
 @factory.CachedFunctionCall
 def GetConfig():
   """Fetch the global cbuildbot config."""
-  return config_lib.CreateConfigFromFile(generate_chromeos_config.CONFIG_FILE)
+  return config_lib.CreateConfigFromFile(chromeos_config.CONFIG_FILE)

@@ -11,7 +11,7 @@ import re
 import cPickle
 
 from chromite.cbuildbot import builders
-from chromite.cbuildbot import generate_chromeos_config
+from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot.builders import generic_builders
@@ -28,23 +28,23 @@ CHROMIUM_WATCHING_URL = (
 
 
 class GenerateChromeosConfigTestBase(cros_test_lib.TestCase):
-  """Base class for tests of generate_chromeos_config.."""
+  """Base class for tests of chromeos_config.."""
 
   def setUp(self):
-    self.all_configs = generate_chromeos_config.GetConfig()
+    self.all_configs = chromeos_config.GetConfig()
 
 
 class ConfigDumpTest(GenerateChromeosConfigTestBase):
-  """Tests related to config_dump.json & generate_chromeos_config.py"""
+  """Tests related to config_dump.json & chromeos_config.py"""
 
   def testDump(self):
     """Make sure the json & config are kept in sync"""
     new_dump = self.all_configs.SaveConfigToString()
-    old_dump = osutils.ReadFile(generate_chromeos_config.CONFIG_FILE).rstrip()
+    old_dump = osutils.ReadFile(chromeos_config.CONFIG_FILE).rstrip()
 
     self.assertTrue(
         new_dump == old_dump, 'config_dump.json does not match the '
-        'configs defined in generate_chromeos_config.py. Run '
+        'configs defined in chromeos_config.py. Run '
         'bin/cbuildbot_view_config > cbuildbot/config_dump.json')
 
   def testSaveLoadReload(self):
@@ -71,16 +71,16 @@ class ConfigClassTest(GenerateChromeosConfigTestBase):
   def testAppendUseflags(self):
     base_config = config_lib.BuildConfig()
     inherited_config_1 = base_config.derive(
-        useflags=generate_chromeos_config.append_useflags(
+        useflags=chromeos_config.append_useflags(
             ['foo', 'bar', '-baz']))
     inherited_config_2 = inherited_config_1.derive(
-        useflags=generate_chromeos_config.append_useflags(['-bar', 'baz']))
+        useflags=chromeos_config.append_useflags(['-bar', 'baz']))
     self.assertEqual(inherited_config_1.useflags, ['-baz', 'bar', 'foo'])
     self.assertEqual(inherited_config_2.useflags, ['-bar', 'baz', 'foo'])
 
 
 class CBuildBotTest(GenerateChromeosConfigTestBase):
-  """General tests of generate_chromeos_config."""
+  """General tests of chromeos_config."""
 
   def testConfigsKeysMismatch(self):
     """Verify that all configs contain exactly the default keys.
@@ -404,16 +404,15 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
                           child_name.endswith(use_suffix),
                           'Config %s has wrong %s child' %
                           (build_name, child_config))
-      chromeos_config = self.all_configs
       if build_name.endswith(generate_suffix):
         parent_config_name = build_name.replace(generate_suffix,
                                                 parent_suffix)
-        self.assertTrue(parent_config_name in chromeos_config,
+        self.assertTrue(parent_config_name in self.all_configs,
                         msg % (build_name, parent_config_name))
       if build_name.endswith(use_suffix):
         parent_config_name = build_name.replace(use_suffix,
                                                 parent_suffix)
-        self.assertTrue(parent_config_name in chromeos_config,
+        self.assertTrue(parent_config_name in self.all_configs,
                         msg % (build_name, parent_config_name))
 
   def testNoGrandChildConfigs(self):
@@ -531,7 +530,7 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
     for build_name, config in self.all_configs.iteritems():
       for board in config['boards']:
         # pylint: disable=protected-access
-        self.assertIn(board, generate_chromeos_config._all_boards,
+        self.assertIn(board, chromeos_config._all_boards,
                       'Config %s has unknown board %s.' %
                       (build_name, board))
 
@@ -668,9 +667,9 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
   def testDistinctBoardSets(self):
     """Verify that distinct board sets are distinct."""
     # Every board should be in exactly one of the distinct board sets.
-    for board in generate_chromeos_config._all_boards:
+    for board in chromeos_config._all_boards:
       found = False
-      for s in generate_chromeos_config._distinct_board_sets:
+      for s in chromeos_config._distinct_board_sets:
         if board in s:
           if found:
             assert False, '%s in multiple board sets.' % board
@@ -678,8 +677,8 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
             found = True
       if not found:
         assert False, '%s in no board sets' % board
-    for s in generate_chromeos_config._distinct_board_sets:
-      for board in s - generate_chromeos_config._all_boards:
+    for s in chromeos_config._distinct_board_sets:
+      for board in s - chromeos_config._all_boards:
         assert False, ('%s in _distinct_board_sets but not in _all_boards' %
                        board)
 
@@ -693,7 +692,7 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
       mock_options.setattr(k, v)
 
     for config in self.all_configs.itervalues():
-      generate_chromeos_config.OverrideConfigForTrybot(config, mock_options)
+      chromeos_config.OverrideConfigForTrybot(config, mock_options)
 
   def testLocalTrybot(self):
     """Override each config for local trybot."""
@@ -713,7 +712,7 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
     mock_options.remote_trybot = False
     mock_options.hw_test = False
     old = self.all_configs['x86-mario-paladin']
-    new = generate_chromeos_config.OverrideConfigForTrybot(old, mock_options)
+    new = chromeos_config.OverrideConfigForTrybot(old, mock_options)
     self.assertTrue(constants.USE_CHROME_INTERNAL in old['useflags'])
     self.assertFalse(constants.USE_CHROME_INTERNAL in new['useflags'])
 
@@ -721,19 +720,19 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
     """Verify that vm_tests override for trybots pay heed to original config."""
     mock_options = mock.Mock()
     old = self.all_configs['x86-mario-paladin']
-    new = generate_chromeos_config.OverrideConfigForTrybot(old, mock_options)
+    new = chromeos_config.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], [constants.SMOKE_SUITE_TEST_TYPE,
                                         constants.SIMPLE_AU_TEST_TYPE,
                                         constants.CROS_VM_TEST_TYPE])
 
     # Don't override vm tests for arm boards.
     old = self.all_configs['daisy-paladin']
-    new = generate_chromeos_config.OverrideConfigForTrybot(old, mock_options)
+    new = chromeos_config.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], old['vm_tests'])
 
     # Don't override vm tests for brillo boards.
     old = self.all_configs['storm-paladin']
-    new = generate_chromeos_config.OverrideConfigForTrybot(old, mock_options)
+    new = chromeos_config.OverrideConfigForTrybot(old, mock_options)
     self.assertEquals(new['vm_tests'], old['vm_tests'])
 
   # pylint: disable=protected-access
@@ -742,7 +741,7 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
     all_build_names = set(self.all_configs.iterkeys())
     redundant = set()
     seen = set()
-    waterfall_iter = generate_chromeos_config._waterfall_config_map.iteritems()
+    waterfall_iter = chromeos_config._waterfall_config_map.iteritems()
     for waterfall, names in waterfall_iter:
       for build_name in names:
         # Every build in the configuration map must be valid.
@@ -763,7 +762,7 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
                          "configuration for: %s" % (build_name,))
 
 
-        default_waterfall = generate_chromeos_config.GetDefaultWaterfall(config)
+        default_waterfall = chromeos_config.GetDefaultWaterfall(config)
         if config['active_waterfall'] == default_waterfall:
           redundant.add(build_name)
 
