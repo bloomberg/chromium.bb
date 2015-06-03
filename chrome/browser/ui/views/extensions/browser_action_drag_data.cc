@@ -50,7 +50,7 @@ bool BrowserActionDragData::IsFromProfile(const Profile* profile) const {
 void BrowserActionDragData::Write(
     Profile* profile, ui::OSExchangeData* data) const {
   DCHECK(data);
-  Pickle data_pickle;
+  base::Pickle data_pickle;
   WriteToPickle(profile, &data_pickle);
   data->SetPickledData(GetBrowserActionCustomFormat(), data_pickle);
 }
@@ -59,7 +59,7 @@ bool BrowserActionDragData::Read(const ui::OSExchangeData& data) {
   if (!data.HasCustomFormat(GetBrowserActionCustomFormat()))
     return false;
 
-  Pickle drag_data_pickle;
+  base::Pickle drag_data_pickle;
   if (!data.GetPickledData(GetBrowserActionCustomFormat(), &drag_data_pickle))
     return false;
 
@@ -81,15 +81,15 @@ BrowserActionDragData::GetBrowserActionCustomFormat() {
 }
 #endif
 
-void BrowserActionDragData::WriteToPickle(
-    Profile* profile, base::Pickle* pickle) const {
+void BrowserActionDragData::WriteToPickle(Profile* profile,
+                                          base::Pickle* pickle) const {
   pickle->WriteBytes(&profile, sizeof(profile));
   pickle->WriteString(id_);
   pickle->WriteUInt64(index_);
 }
 
-bool BrowserActionDragData::ReadFromPickle(Pickle* pickle) {
-  PickleIterator data_iterator(*pickle);
+bool BrowserActionDragData::ReadFromPickle(base::Pickle* pickle) {
+  base::PickleIterator data_iterator(*pickle);
 
   const char* tmp;
   if (!data_iterator.ReadBytes(&tmp, sizeof(profile_)))

@@ -63,7 +63,7 @@ void OSExchangeDataProviderMac::SetFilenames(
 
 void OSExchangeDataProviderMac::SetPickledData(
     const OSExchangeData::CustomFormat& format,
-    const Pickle& data) {
+    const base::Pickle& data) {
   NSData* ns_data = [NSData dataWithBytes:data.data() length:data.size()];
   [pasteboard_ setData:ns_data forType:format.ToNSString()];
 }
@@ -126,13 +126,14 @@ bool OSExchangeDataProviderMac::GetFilenames(
 
 bool OSExchangeDataProviderMac::GetPickledData(
     const OSExchangeData::CustomFormat& format,
-    Pickle* data) const {
+    base::Pickle* data) const {
   DCHECK(data);
   NSData* ns_data = [pasteboard_ dataForType:format.ToNSString()];
   if (!ns_data)
     return false;
 
-  *data = Pickle(static_cast<const char*>([ns_data bytes]), [ns_data length]);
+  *data =
+      base::Pickle(static_cast<const char*>([ns_data bytes]), [ns_data length]);
   return true;
 }
 

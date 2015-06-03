@@ -110,7 +110,7 @@ class NET_EXPORT X509Certificate
 
   // PickleType is intended for deserializing certificates that were pickled
   // by previous releases as part of a net::HttpResponseInfo.
-  // When serializing certificates to a new Pickle,
+  // When serializing certificates to a new base::Pickle,
   // PICKLETYPE_CERTIFICATE_CHAIN_V3 is always used.
   enum PickleType {
     // When reading a certificate from a Pickle, the Pickle only contains a

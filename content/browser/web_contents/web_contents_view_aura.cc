@@ -229,7 +229,7 @@ const ui::OSExchangeData::CustomFormat& GetFileSystemFileCustomFormat() {
 // Writes file system files to the pickle.
 void WriteFileSystemFilesToPickle(
     const std::vector<DropData::FileSystemFileInfo>& file_system_files,
-    Pickle* pickle) {
+    base::Pickle* pickle) {
   pickle->WriteSizeT(file_system_files.size());
   for (size_t i = 0; i < file_system_files.size(); ++i) {
     pickle->WriteString(file_system_files[i].url.spec());
@@ -239,9 +239,9 @@ void WriteFileSystemFilesToPickle(
 
 // Reads file system files from the pickle.
 bool ReadFileSystemFilesFromPickle(
-    const Pickle& pickle,
+    const base::Pickle& pickle,
     std::vector<DropData::FileSystemFileInfo>* file_system_files) {
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
 
   size_t num_files = 0;
   if (!iter.ReadSizeT(&num_files))
@@ -295,12 +295,12 @@ void PrepareDragData(const DropData& drop_data,
   if (!drop_data.filenames.empty())
     provider->SetFilenames(drop_data.filenames);
   if (!drop_data.file_system_files.empty()) {
-    Pickle pickle;
+    base::Pickle pickle;
     WriteFileSystemFilesToPickle(drop_data.file_system_files, &pickle);
     provider->SetPickledData(GetFileSystemFileCustomFormat(), pickle);
   }
   if (!drop_data.custom_data.empty()) {
-    Pickle pickle;
+    base::Pickle pickle;
     ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
     provider->SetPickledData(ui::Clipboard::GetWebCustomDataFormatType(),
                              pickle);
@@ -335,7 +335,7 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
 
   data.GetFilenames(&drop_data->filenames);
 
-  Pickle pickle;
+  base::Pickle pickle;
   std::vector<DropData::FileSystemFileInfo> file_system_files;
   if (data.GetPickledData(GetFileSystemFileCustomFormat(), &pickle) &&
       ReadFileSystemFilesFromPickle(pickle, &file_system_files))

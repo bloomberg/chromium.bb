@@ -14,7 +14,7 @@ SessionCommand::SessionCommand(id_type id, size_type size)
       contents_(size, 0) {
 }
 
-SessionCommand::SessionCommand(id_type id, const Pickle& pickle)
+SessionCommand::SessionCommand(id_type id, const base::Pickle& pickle)
     : id_(id),
       contents_(pickle.size(), 0) {
   DCHECK(pickle.size() < std::numeric_limits<size_type>::max());
@@ -28,8 +28,8 @@ bool SessionCommand::GetPayload(void* dest, size_t count) const {
   return true;
 }
 
-Pickle* SessionCommand::PayloadAsPickle() const {
-  return new Pickle(contents(), static_cast<int>(size()));
+base::Pickle* SessionCommand::PayloadAsPickle() const {
+  return new base::Pickle(contents(), static_cast<int>(size()));
 }
 
 }  // namespace sessions

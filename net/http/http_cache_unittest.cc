@@ -5467,7 +5467,7 @@ TEST(HttpCache, PersistHttpResponseInfo) {
   response1.headers = new HttpResponseHeaders("HTTP/1.1 200 OK");
 
   // Pickle.
-  Pickle pickle;
+  base::Pickle pickle;
   response1.Persist(&pickle, false, false);
 
   // Unpickle.

@@ -31,10 +31,10 @@ class SignedCertificateTimestampTest : public ::testing::Test {
 };
 
 TEST_F(SignedCertificateTimestampTest, PicklesAndUnpickles) {
-  Pickle pickle;
+  base::Pickle pickle;
 
   sample_sct_->Persist(&pickle);
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
 
   scoped_refptr<SignedCertificateTimestamp> unpickled_sct(
       SignedCertificateTimestamp::CreateFromPickle(&iter));

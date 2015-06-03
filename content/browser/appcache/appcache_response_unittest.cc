@@ -265,21 +265,22 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   int GetHttpResponseInfoSize(const net::HttpResponseInfo* info) {
-    Pickle pickle;
+    base::Pickle pickle;
     return PickleHttpResonseInfo(&pickle, info);
   }
 
   bool CompareHttpResponseInfos(const net::HttpResponseInfo* info1,
                                 const net::HttpResponseInfo* info2) {
-    Pickle pickle1;
-    Pickle pickle2;
+    base::Pickle pickle1;
+    base::Pickle pickle2;
     PickleHttpResonseInfo(&pickle1, info1);
     PickleHttpResonseInfo(&pickle2, info2);
     return (pickle1.size() == pickle2.size()) &&
            (0 == memcmp(pickle1.data(), pickle2.data(), pickle1.size()));
   }
 
-  int PickleHttpResonseInfo(Pickle* pickle, const net::HttpResponseInfo* info) {
+  int PickleHttpResonseInfo(base::Pickle* pickle,
+                            const net::HttpResponseInfo* info) {
     const bool kSkipTransientHeaders = true;
     const bool kTruncated = false;
     info->Persist(pickle, kSkipTransientHeaders, kTruncated);

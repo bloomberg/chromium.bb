@@ -17,7 +17,7 @@ namespace {
 const uint32 kHeaderMagic = 0xBEEFCAFE;
 
 #pragma pack(push, 4)
-struct Header : public Pickle::Header {
+struct Header : public base::Pickle::Header {
   uint32 magic;
   int32 type;
 };
@@ -61,7 +61,7 @@ bool GinJavaBridgeValue::ContainsGinJavaBridgeValue(const base::Value* value) {
       reinterpret_cast<const base::BinaryValue*>(value);
   if (binary_value->GetSize() < sizeof(Header))
     return false;
-  Pickle pickle(binary_value->GetBuffer(), binary_value->GetSize());
+  base::Pickle pickle(binary_value->GetBuffer(), binary_value->GetSize());
   // Broken binary value: payload or header size is wrong
   if (!pickle.data() || pickle.size() - pickle.payload_size() != sizeof(Header))
     return false;
@@ -92,7 +92,7 @@ bool GinJavaBridgeValue::IsType(Type type) const {
 
 bool GinJavaBridgeValue::GetAsNonFinite(float* out_value) const {
   if (GetType() == TYPE_NONFINITE) {
-    PickleIterator iter(pickle_);
+    base::PickleIterator iter(pickle_);
     return iter.ReadFloat(out_value);
   } else {
     return false;
@@ -101,7 +101,7 @@ bool GinJavaBridgeValue::GetAsNonFinite(float* out_value) const {
 
 bool GinJavaBridgeValue::GetAsObjectID(int32* out_object_id) const {
   if (GetType() == TYPE_OBJECT_ID) {
-    PickleIterator iter(pickle_);
+    base::PickleIterator iter(pickle_);
     return iter.ReadInt(out_object_id);
   } else {
     return false;

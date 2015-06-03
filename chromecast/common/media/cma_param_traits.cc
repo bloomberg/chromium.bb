@@ -45,7 +45,8 @@ void ParamTraits<media::AudioDecoderConfig>::Write(
 }
 
 bool ParamTraits<media::AudioDecoderConfig>::Read(
-    const Message* m, PickleIterator* iter,
+    const Message* m,
+    base::PickleIterator* iter,
     media::AudioDecoderConfig* r) {
   media::AudioCodec codec;
   media::SampleFormat sample_format;
@@ -96,7 +97,8 @@ void ParamTraits<media::VideoDecoderConfig>::Write(
 }
 
 bool ParamTraits<media::VideoDecoderConfig>::Read(
-    const Message* m, PickleIterator* iter,
+    const Message* m,
+    base::PickleIterator* iter,
     media::VideoDecoderConfig* r) {
   media::VideoCodec codec;
   media::VideoCodecProfile profile;

@@ -322,7 +322,7 @@ TEST_F(PageStateSerializationTest, BasicFrameSetPOST) {
 }
 
 TEST_F(PageStateSerializationTest, BadMessagesTest1) {
-  Pickle p;
+  base::Pickle p;
   // Version 14
   p.WriteInt(14);
   // Empty strings.
@@ -339,7 +339,7 @@ TEST_F(PageStateSerializationTest, BadMessagesTest1) {
 
 TEST_F(PageStateSerializationTest, BadMessagesTest2) {
   double d = 0;
-  Pickle p;
+  base::Pickle p;
   // Version 14
   p.WriteInt(14);
   // Empty strings.

@@ -495,7 +495,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
 
   DelegatedFrameData frame_out;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   EXPECT_TRUE(IPC::ParamTraits<DelegatedFrameData>::Read(&msg,
       &iter, &frame_out));
 
@@ -617,7 +617,7 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
   IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
 
   DelegatedFrameData frame_out;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   EXPECT_TRUE(
       IPC::ParamTraits<DelegatedFrameData>::Read(&msg, &iter, &frame_out));
 
@@ -685,7 +685,7 @@ TEST_F(CCMessagesTest, Resources) {
   IPC::ParamTraits<DelegatedFrameData>::Write(&msg, frame_in);
 
   DelegatedFrameData frame_out;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   EXPECT_TRUE(IPC::ParamTraits<DelegatedFrameData>::Read(&msg,
       &iter, &frame_out));
 
@@ -707,7 +707,7 @@ TEST_F(CCMessagesTest, SoftwareFrameData) {
 
   // Read the frame.
   cc::SoftwareFrameData frame_out;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   EXPECT_TRUE(
       IPC::ParamTraits<SoftwareFrameData>::Read(&msg, &iter, &frame_out));
   EXPECT_EQ(frame_in.id, frame_out.id);
@@ -731,7 +731,7 @@ TEST_F(CCMessagesTest, SoftwareFrameDataMaxInt) {
     IPC::WriteParam(&msg, frame_in.damage_rect);
     IPC::WriteParam(&msg, frame_in.bitmap_id);
     SoftwareFrameData frame_out;
-    PickleIterator iter(msg);
+    base::PickleIterator iter(msg);
     EXPECT_TRUE(
         IPC::ParamTraits<SoftwareFrameData>::Read(&msg, &iter, &frame_out));
   }
@@ -752,7 +752,7 @@ TEST_F(CCMessagesTest, SoftwareFrameDataMaxInt) {
     IPC::WriteParam(&msg, frame_in.damage_rect);
     IPC::WriteParam(&msg, frame_in.bitmap_id);
     SoftwareFrameData frame_out;
-    PickleIterator iter(msg);
+    base::PickleIterator iter(msg);
     EXPECT_EQ(
         expect_read,
         IPC::ParamTraits<SoftwareFrameData>::Read(&msg, &iter, &frame_out));

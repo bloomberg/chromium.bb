@@ -157,11 +157,12 @@ class AppCacheServiceImplTest : public testing::Test {
   }
 
   int GetResponseInfoSize(const net::HttpResponseInfo* info) {
-    Pickle pickle;
+    base::Pickle pickle;
     return PickleResponseInfo(&pickle, info);
   }
 
-  int PickleResponseInfo(Pickle* pickle, const net::HttpResponseInfo* info) {
+  int PickleResponseInfo(base::Pickle* pickle,
+                         const net::HttpResponseInfo* info) {
     const bool kSkipTransientHeaders = true;
     const bool kTruncated = false;
     info->Persist(pickle, kSkipTransientHeaders, kTruncated);

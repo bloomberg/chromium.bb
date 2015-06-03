@@ -53,7 +53,7 @@ TEST(SecureHashTest, TestSerialization) {
       crypto::SecureHash::SHA256));
   scoped_ptr<crypto::SecureHash> ctx2(crypto::SecureHash::Create(
       crypto::SecureHash::SHA256));
-  Pickle pickle;
+  base::Pickle pickle;
   ctx1->Update(input1.data(), input1.size());
   ctx1->Update(input2.data(), input2.size());
   ctx1->Update(input3.data(), input3.size());
@@ -64,7 +64,7 @@ TEST(SecureHashTest, TestSerialization) {
 
   ctx1->Finish(output1, sizeof(output1));
 
-  PickleIterator data_iterator(pickle);
+  base::PickleIterator data_iterator(pickle);
   EXPECT_TRUE(ctx2->Deserialize(&data_iterator));
   ctx2->Update(input4.data(), input4.size());
   ctx2->Update(input5.data(), input5.size());

@@ -564,7 +564,7 @@ bool MockHttpCache::WriteResponseInfo(disk_cache::Entry* disk_entry,
                                       const HttpResponseInfo* response_info,
                                       bool skip_transient_headers,
                                       bool response_truncated) {
-  Pickle pickle;
+  base::Pickle pickle;
   response_info->Persist(
       &pickle, skip_transient_headers, response_truncated);
 

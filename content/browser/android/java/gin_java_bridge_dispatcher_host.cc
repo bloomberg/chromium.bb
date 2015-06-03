@@ -325,7 +325,7 @@ base::TaskRunner* GinJavaBridgeDispatcherHost::OverrideTaskRunnerForMessage(
     case GinJavaBridgeHostMsg_HasMethod::ID:
     case GinJavaBridgeHostMsg_InvokeMethod::ID: {
       DCHECK(message.is_sync());
-      PickleIterator message_reader =
+      base::PickleIterator message_reader =
           IPC::SyncMessage::GetDataIterator(&message);
       if (!IPC::ReadParam(&message, &message_reader, &object_id))
         return NULL;
@@ -333,7 +333,7 @@ base::TaskRunner* GinJavaBridgeDispatcherHost::OverrideTaskRunnerForMessage(
     }
     case GinJavaBridgeHostMsg_ObjectWrapperDeleted::ID: {
       DCHECK(!message.is_sync());
-      PickleIterator message_reader(message);
+      base::PickleIterator message_reader(message);
       if (!IPC::ReadParam(&message, &message_reader, &object_id))
         return NULL;
       break;

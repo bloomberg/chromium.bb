@@ -235,7 +235,8 @@ class UserScript {
   void Unpickle(const base::Pickle& pickle, base::PickleIterator* iter);
 
  private:
-  // Pickle helper functions used to pickle the individual types of components.
+  // base::Pickle helper functions used to pickle the individual types of
+  // components.
   void PickleGlobs(base::Pickle* pickle,
                    const std::vector<std::string>& globs) const;
   void PickleHostID(base::Pickle* pickle, const HostID& host_id) const;

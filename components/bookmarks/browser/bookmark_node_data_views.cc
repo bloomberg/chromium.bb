@@ -37,7 +37,7 @@ void BookmarkNodeData::Write(const base::FilePath& profile_path,
     }
   }
 
-  Pickle data_pickle;
+  base::Pickle data_pickle;
   WriteToPickle(profile_path, &data_pickle);
 
   data->SetPickledData(GetBookmarkCustomFormat(), data_pickle);
@@ -49,7 +49,7 @@ bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
   profile_path_.clear();
 
   if (data.HasCustomFormat(GetBookmarkCustomFormat())) {
-    Pickle drag_data_pickle;
+    base::Pickle drag_data_pickle;
     if (data.GetPickledData(GetBookmarkCustomFormat(), &drag_data_pickle)) {
       if (!ReadFromPickle(&drag_data_pickle))
         return false;

@@ -45,7 +45,7 @@ class AppListModelPicklerUnitTest : public testing::Test {
   }
 
   scoped_ptr<AppListModel> CopyViaPickle(AppListModel* model) {
-    scoped_ptr<Pickle> pickle(
+    scoped_ptr<base::Pickle> pickle(
         FastShowPickler::PickleAppListModelForFastShow(model));
     return FastShowPickler::UnpickleAppListModelForFastShow(pickle.get());
   }

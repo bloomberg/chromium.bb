@@ -15,7 +15,7 @@ void ParamTraits<WebInputEventPointer>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<WebInputEventPointer>::Read(const Message* m,
-                                             PickleIterator* iter,
+                                             base::PickleIterator* iter,
                                              param_type* r) {
   const char* data;
   int data_length;

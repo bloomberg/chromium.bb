@@ -60,7 +60,7 @@ void BrowserPluginMessageFilter::ForwardMessageToGuest(
 
   int browser_plugin_instance_id = browser_plugin::kInstanceIDNone;
   // All allowed messages must have instance_id as their first parameter.
-  PickleIterator iter(message);
+  base::PickleIterator iter(message);
   bool success = iter.ReadInt(&browser_plugin_instance_id);
   DCHECK(success);
 

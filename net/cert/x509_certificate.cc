@@ -312,8 +312,9 @@ X509Certificate* X509Certificate::CreateFromBytes(const char* data,
 }
 
 // static
-X509Certificate* X509Certificate::CreateFromPickle(PickleIterator* pickle_iter,
-                                                   PickleType type) {
+X509Certificate* X509Certificate::CreateFromPickle(
+    base::PickleIterator* pickle_iter,
+    PickleType type) {
   if (type == PICKLETYPE_CERTIFICATE_CHAIN_V3) {
     int chain_length = 0;
     if (!pickle_iter->ReadLength(&chain_length))
@@ -359,7 +360,7 @@ X509Certificate* X509Certificate::CreateFromPickle(PickleIterator* pickle_iter,
     // bits of zeroes. Now we always write 32 bits, so after a while, these old
     // cached pickles will all get replaced.
     // TODO(mdm): remove this compatibility code in April 2013 or so.
-    PickleIterator saved_iter = *pickle_iter;
+    base::PickleIterator saved_iter = *pickle_iter;
     uint32 zero_check = 0;
     if (!pickle_iter->ReadUInt32(&zero_check)) {
       // This may not be an error. If there are no intermediates, and we're
@@ -473,7 +474,7 @@ CertificateList X509Certificate::CreateCertificateListFromBytes(
   return results;
 }
 
-void X509Certificate::Persist(Pickle* pickle) {
+void X509Certificate::Persist(base::Pickle* pickle) {
   DCHECK(cert_handle_);
   // This would be an absolutely insane number of intermediates.
   if (intermediate_ca_certs_.size() > static_cast<size_t>(INT_MAX) - 1) {

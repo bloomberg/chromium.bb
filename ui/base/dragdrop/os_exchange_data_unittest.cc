@@ -147,7 +147,7 @@ TEST_F(OSExchangeDataTest, TestPickledData) {
   const OSExchangeData::CustomFormat kTestFormat =
       ui::Clipboard::GetFormatType("application/vnd.chromium.test");
 
-  Pickle saved_pickle;
+  base::Pickle saved_pickle;
   saved_pickle.WriteInt(1);
   saved_pickle.WriteInt(2);
   OSExchangeData data;
@@ -156,9 +156,9 @@ TEST_F(OSExchangeDataTest, TestPickledData) {
   OSExchangeData copy(data.provider().Clone());
   EXPECT_TRUE(copy.HasCustomFormat(kTestFormat));
 
-  Pickle restored_pickle;
+  base::Pickle restored_pickle;
   EXPECT_TRUE(copy.GetPickledData(kTestFormat, &restored_pickle));
-  PickleIterator iterator(restored_pickle);
+  base::PickleIterator iterator(restored_pickle);
   int value;
   EXPECT_TRUE(iterator.ReadInt(&value));
   EXPECT_EQ(1, value);

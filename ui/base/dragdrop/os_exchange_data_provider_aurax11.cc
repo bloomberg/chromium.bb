@@ -206,7 +206,7 @@ void OSExchangeDataProviderAuraX11::SetFilenames(
 
 void OSExchangeDataProviderAuraX11::SetPickledData(
     const OSExchangeData::CustomFormat& format,
-    const Pickle& pickle) {
+    const base::Pickle& pickle) {
   const unsigned char* data =
       reinterpret_cast<const unsigned char*>(pickle.data());
 
@@ -324,7 +324,7 @@ bool OSExchangeDataProviderAuraX11::GetFilenames(
 
 bool OSExchangeDataProviderAuraX11::GetPickledData(
     const OSExchangeData::CustomFormat& format,
-    Pickle* pickle) const {
+    base::Pickle* pickle) const {
   std::vector< ::Atom> requested_types;
   requested_types.push_back(atom_cache_.GetAtom(format.ToString().c_str()));
 
@@ -332,8 +332,8 @@ bool OSExchangeDataProviderAuraX11::GetPickledData(
   if (data.IsValid()) {
     // Note that the pickle object on the right hand side of the assignment
     // only refers to the bytes in |data|. The assignment copies the data.
-    *pickle = Pickle(reinterpret_cast<const char*>(data.GetData()),
-                     static_cast<int>(data.GetSize()));
+    *pickle = base::Pickle(reinterpret_cast<const char*>(data.GetData()),
+                           static_cast<int>(data.GetSize()));
     return true;
   }
 

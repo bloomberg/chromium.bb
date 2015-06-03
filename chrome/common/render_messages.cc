@@ -14,7 +14,9 @@ void ParamTraits<ContentSettingsPattern>::Write(
 }
 
 bool ParamTraits<ContentSettingsPattern>::Read(
-    const Message* m, PickleIterator* iter, ContentSettingsPattern* pattern) {
+    const Message* m,
+    base::PickleIterator* iter,
+    ContentSettingsPattern* pattern) {
   return ContentSettingsPatternSerializer::ReadFromMessage(m, iter, pattern);
 }
 

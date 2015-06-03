@@ -53,7 +53,7 @@ void OSExchangeData::SetFilenames(
 }
 
 void OSExchangeData::SetPickledData(const CustomFormat& format,
-                                    const Pickle& data) {
+                                    const base::Pickle& data) {
   provider_->SetPickledData(format, data);
 }
 
@@ -77,7 +77,7 @@ bool OSExchangeData::GetFilenames(
 }
 
 bool OSExchangeData::GetPickledData(const CustomFormat& format,
-                                    Pickle* data) const {
+                                    base::Pickle* data) const {
   return provider_->GetPickledData(format, data);
 }
 

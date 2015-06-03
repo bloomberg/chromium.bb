@@ -613,10 +613,10 @@ TEST(X509CertificateTest, Pickle) {
   X509Certificate::FreeOSCertHandle(google_cert_handle);
   X509Certificate::FreeOSCertHandle(thawte_cert_handle);
 
-  Pickle pickle;
+  base::Pickle pickle;
   cert->Persist(&pickle);
 
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   scoped_refptr<X509Certificate> cert_from_pickle =
       X509Certificate::CreateFromPickle(
           &iter, X509Certificate::PICKLETYPE_CERTIFICATE_CHAIN_V3);

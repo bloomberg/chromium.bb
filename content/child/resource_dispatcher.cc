@@ -84,7 +84,7 @@ bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
 
   int request_id;
 
-  PickleIterator iter(message);
+  base::PickleIterator iter(message);
   if (!iter.ReadInt(&request_id)) {
     NOTREACHED() << "malformed resource message";
     return true;
@@ -699,7 +699,7 @@ bool ResourceDispatcher::IsResourceDispatcherMessage(
 // static
 void ResourceDispatcher::ReleaseResourcesInDataMessage(
     const IPC::Message& message) {
-  PickleIterator iter(message);
+  base::PickleIterator iter(message);
   int request_id;
   if (!iter.ReadInt(&request_id)) {
     NOTREACHED() << "malformed resource message";

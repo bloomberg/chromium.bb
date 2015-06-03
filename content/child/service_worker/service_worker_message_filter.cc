@@ -56,7 +56,7 @@ void ServiceWorkerMessageFilter::OnFilteredMessageReceived(
 bool ServiceWorkerMessageFilter::GetWorkerThreadIdForMessage(
     const IPC::Message& msg,
     int* ipc_thread_id) {
-  return PickleIterator(msg).ReadInt(ipc_thread_id);
+  return base::PickleIterator(msg).ReadInt(ipc_thread_id);
 }
 
 void ServiceWorkerMessageFilter::OnStaleMessageReceived(

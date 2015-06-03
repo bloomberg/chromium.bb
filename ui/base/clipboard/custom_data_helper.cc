@@ -16,17 +16,17 @@ namespace ui {
 
 namespace {
 
-class SkippablePickle : public Pickle {
+class SkippablePickle : public base::Pickle {
  public:
   SkippablePickle(const void* data, size_t data_len);
-  bool SkipString16(PickleIterator* iter);
+  bool SkipString16(base::PickleIterator* iter);
 };
 
 SkippablePickle::SkippablePickle(const void* data, size_t data_len)
-    : Pickle(reinterpret_cast<const char*>(data), data_len) {
+    : base::Pickle(reinterpret_cast<const char*>(data), data_len) {
 }
 
-bool SkippablePickle::SkipString16(PickleIterator* iter) {
+bool SkippablePickle::SkipString16(base::PickleIterator* iter) {
   DCHECK(iter);
 
   int len;
@@ -41,7 +41,7 @@ void ReadCustomDataTypes(const void* data,
                          size_t data_length,
                          std::vector<base::string16>* types) {
   SkippablePickle pickle(data, data_length);
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
 
   size_t size = 0;
   if (!iter.ReadSizeT(&size))
@@ -66,7 +66,7 @@ void ReadCustomDataForType(const void* data,
                            const base::string16& type,
                            base::string16* result) {
   SkippablePickle pickle(data, data_length);
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
 
   size_t size = 0;
   if (!iter.ReadSizeT(&size))
@@ -88,8 +88,8 @@ void ReadCustomDataForType(const void* data,
 void ReadCustomDataIntoMap(const void* data,
                            size_t data_length,
                            std::map<base::string16, base::string16>* result) {
-  Pickle pickle(reinterpret_cast<const char*>(data), data_length);
-  PickleIterator iter(pickle);
+  base::Pickle pickle(reinterpret_cast<const char*>(data), data_length);
+  base::PickleIterator iter(pickle);
 
   size_t size = 0;
   if (!iter.ReadSizeT(&size))
@@ -114,7 +114,7 @@ void ReadCustomDataIntoMap(const void* data,
 
 void WriteCustomDataToPickle(
     const std::map<base::string16, base::string16>& data,
-    Pickle* pickle) {
+    base::Pickle* pickle) {
   pickle->WriteSizeT(data.size());
   for (std::map<base::string16, base::string16>::const_iterator it =
            data.begin();

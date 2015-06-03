@@ -59,7 +59,7 @@ void ParamTraits<IndexedDBKey>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<IndexedDBKey>::Read(const Message* m,
-                                     PickleIterator* iter,
+                                     base::PickleIterator* iter,
                                      param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type))
@@ -171,7 +171,7 @@ void ParamTraits<IndexedDBKeyPath>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<IndexedDBKeyPath>::Read(const Message* m,
-                                         PickleIterator* iter,
+                                         base::PickleIterator* iter,
                                          param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type))
@@ -238,7 +238,7 @@ void ParamTraits<IndexedDBKeyRange>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<IndexedDBKeyRange>::Read(const Message* m,
-                                          PickleIterator* iter,
+                                          base::PickleIterator* iter,
                                           param_type* r) {
   IndexedDBKey lower;
   if (!ReadParam(m, iter, &lower))

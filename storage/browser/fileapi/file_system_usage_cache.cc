@@ -38,8 +38,7 @@ const int FileSystemUsageCache::kUsageFileHeaderSize = 4;
 
 // Pickle::{Read,Write}Bool treat bool as int
 const int FileSystemUsageCache::kUsageFileSize =
-    sizeof(Pickle::Header) +
-    FileSystemUsageCache::kUsageFileHeaderSize +
+    sizeof(base::Pickle::Header) + FileSystemUsageCache::kUsageFileHeaderSize +
     sizeof(int) + sizeof(int32) + sizeof(int64);  // NOLINT
 
 bool FileSystemUsageCache::GetUsage(const base::FilePath& usage_file_path,
@@ -176,8 +175,8 @@ bool FileSystemUsageCache::Read(const base::FilePath& usage_file_path,
   if (usage_file_path.empty() ||
       !ReadBytes(usage_file_path, buffer, kUsageFileSize))
     return false;
-  Pickle read_pickle(buffer, kUsageFileSize);
-  PickleIterator iter(read_pickle);
+  base::Pickle read_pickle(buffer, kUsageFileSize);
+  base::PickleIterator iter(read_pickle);
   uint32 dirty = 0;
   int64 usage = 0;
 
@@ -204,7 +203,7 @@ bool FileSystemUsageCache::Write(const base::FilePath& usage_file_path,
                                  int64 usage) {
   TRACE_EVENT0("FileSystem", "UsageCache::Write");
   DCHECK(CalledOnValidThread());
-  Pickle write_pickle;
+  base::Pickle write_pickle;
   write_pickle.WriteBytes(kUsageFileHeader, kUsageFileHeaderSize);
   write_pickle.WriteBool(is_valid);
   write_pickle.WriteUInt32(dirty);

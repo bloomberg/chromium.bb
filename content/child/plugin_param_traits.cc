@@ -62,7 +62,7 @@ void ParamTraits<NPVariant_Param>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<NPVariant_Param>::Read(const Message* m,
-                                        PickleIterator* iter,
+                                        base::PickleIterator* iter,
                                         param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type))
@@ -117,7 +117,7 @@ void ParamTraits<NPIdentifier_Param>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<NPIdentifier_Param>::Read(const Message* m,
-                                           PickleIterator* iter,
+                                           base::PickleIterator* iter,
                                            param_type* r) {
   return content::DeserializeNPIdentifier(iter, &r->identifier);
 }

@@ -109,7 +109,7 @@ APIPermission* SettingsOverrideAPIPermission::Intersect(
 void SettingsOverrideAPIPermission::Write(IPC::Message* m) const {}
 
 bool SettingsOverrideAPIPermission::Read(const IPC::Message* m,
-                                         PickleIterator* iter) {
+                                         base::PickleIterator* iter) {
   return true;
 }
 

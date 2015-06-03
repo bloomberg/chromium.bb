@@ -141,8 +141,8 @@ void SandboxIPCHandler::HandleRequestFromRenderer(int fd) {
   if (fds.empty())
     return;
 
-  Pickle pickle(buf, len);
-  PickleIterator iter(pickle);
+  base::Pickle pickle(buf, len);
+  base::PickleIterator iter(pickle);
 
   int kind;
   if (!iter.ReadInt(&kind))
@@ -177,7 +177,7 @@ int SandboxIPCHandler::FindOrAddPath(const SkString& path) {
 
 void SandboxIPCHandler::HandleFontMatchRequest(
     int fd,
-    PickleIterator iter,
+    base::PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   uint32_t requested_style;
   std::string family;
@@ -196,7 +196,7 @@ void SandboxIPCHandler::HandleFontMatchRequest(
                           &result_family,
                           &result_style);
 
-  Pickle reply;
+  base::Pickle reply;
   if (!r) {
     reply.WriteBool(false);
   } else {
@@ -215,7 +215,7 @@ void SandboxIPCHandler::HandleFontMatchRequest(
 
 void SandboxIPCHandler::HandleFontOpenRequest(
     int fd,
-    PickleIterator iter,
+    base::PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   uint32_t index;
   if (!iter.ReadUInt32(&index))
@@ -224,7 +224,7 @@ void SandboxIPCHandler::HandleFontOpenRequest(
     return;
   const int result_fd = open(paths_[index]->c_str(), O_RDONLY);
 
-  Pickle reply;
+  base::Pickle reply;
   if (result_fd == -1) {
     reply.WriteBool(false);
   } else {
@@ -243,7 +243,7 @@ void SandboxIPCHandler::HandleFontOpenRequest(
 
 void SandboxIPCHandler::HandleGetFallbackFontForChar(
     int fd,
-    PickleIterator iter,
+    base::PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   // The other side of this call is
   // content/common/child_process_sandbox_support_impl_linux.cc
@@ -263,7 +263,7 @@ void SandboxIPCHandler::HandleGetFallbackFontForChar(
   int pathIndex = FindOrAddPath(SkString(fallbackFont.filename.data()));
   fallbackFont.fontconfigInterfaceId = pathIndex;
 
-  Pickle reply;
+  base::Pickle reply;
   if (fallbackFont.name.data()) {
     reply.WriteString(fallbackFont.name.data());
   } else {
@@ -283,7 +283,7 @@ void SandboxIPCHandler::HandleGetFallbackFontForChar(
 
 void SandboxIPCHandler::HandleGetStyleForStrike(
     int fd,
-    PickleIterator iter,
+    base::PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   std::string family;
   bool bold, italic;
@@ -307,7 +307,7 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
 
   // These are passed as ints since they're interpreted as tri-state chars in
   // Blink.
-  Pickle reply;
+  base::Pickle reply;
   reply.WriteInt(params.use_bitmaps);
   reply.WriteInt(params.autohinter);
   reply.WriteInt(params.hinting != gfx::FontRenderParams::HINTING_NONE);
@@ -321,7 +321,7 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
 
 void SandboxIPCHandler::HandleLocaltime(
     int fd,
-    PickleIterator iter,
+    base::PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   // The other side of this call is in zygote_main_linux.cc
 
@@ -343,7 +343,7 @@ void SandboxIPCHandler::HandleLocaltime(
     time_zone_string = expanded_time->tm_zone;
   }
 
-  Pickle reply;
+  base::Pickle reply;
   reply.WriteString(result_string);
   reply.WriteString(time_zone_string);
   SendRendererReply(fds, reply, -1);
@@ -351,7 +351,7 @@ void SandboxIPCHandler::HandleLocaltime(
 
 void SandboxIPCHandler::HandleMakeSharedMemorySegment(
     int fd,
-    PickleIterator iter,
+    base::PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   base::SharedMemoryCreateOptions options;
   uint32_t size;
@@ -364,13 +364,13 @@ void SandboxIPCHandler::HandleMakeSharedMemorySegment(
   base::SharedMemory shm;
   if (shm.Create(options))
     shm_fd = shm.handle().fd;
-  Pickle reply;
+  base::Pickle reply;
   SendRendererReply(fds, reply, shm_fd);
 }
 
 void SandboxIPCHandler::HandleMatchWithFallback(
     int fd,
-    PickleIterator iter,
+    base::PickleIterator iter,
     const std::vector<base::ScopedFD*>& fds) {
   std::string face;
   bool is_bold, is_italic;
@@ -387,7 +387,7 @@ void SandboxIPCHandler::HandleMatchWithFallback(
   int font_fd = MatchFontFaceWithFallback(
       face, is_bold, is_italic, charset, fallback_family);
 
-  Pickle reply;
+  base::Pickle reply;
   SendRendererReply(fds, reply, font_fd);
 
   if (font_fd >= 0) {
@@ -398,7 +398,7 @@ void SandboxIPCHandler::HandleMatchWithFallback(
 
 void SandboxIPCHandler::SendRendererReply(
     const std::vector<base::ScopedFD*>& fds,
-    const Pickle& reply,
+    const base::Pickle& reply,
     int reply_fd) {
   struct msghdr msg;
   memset(&msg, 0, sizeof(msg));

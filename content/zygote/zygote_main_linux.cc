@@ -93,7 +93,7 @@ void RunTwoClosures(const base::Closure* first, const base::Closure* second) {
 static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
                                         char* timezone_out,
                                         size_t timezone_out_len) {
-  Pickle request;
+  base::Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_LOCALTIME);
   request.WriteString(
       std::string(reinterpret_cast<char*>(&input), sizeof(input)));
@@ -106,8 +106,8 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
     return;
   }
 
-  Pickle reply(reinterpret_cast<char*>(reply_buf), r);
-  PickleIterator iter(reply);
+  base::Pickle reply(reinterpret_cast<char*>(reply_buf), r);
+  base::PickleIterator iter(reply);
   std::string result, timezone;
   if (!iter.ReadString(&result) ||
       !iter.ReadString(&timezone) ||

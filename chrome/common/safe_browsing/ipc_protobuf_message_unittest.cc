@@ -45,7 +45,7 @@ TEST_P(IPCProtobufMessageTest, FundamentalField) {
   IPC::WriteParam(&msg, input);
 
   TestMessage output;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   ASSERT_TRUE(IPC::ReadParam(&msg, &iter, &output));
 
   if (field_is_present_) {
@@ -67,7 +67,7 @@ TEST_P(IPCProtobufMessageTest, StringField) {
   IPC::WriteParam(&msg, input);
 
   TestMessage output;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   ASSERT_TRUE(IPC::ReadParam(&msg, &iter, &output));
 
   if (field_is_present_) {
@@ -89,7 +89,7 @@ TEST_P(IPCProtobufMessageTest, BytesField) {
   IPC::WriteParam(&msg, input);
 
   TestMessage output;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   ASSERT_TRUE(IPC::ReadParam(&msg, &iter, &output));
 
   if (field_is_present_) {
@@ -111,7 +111,7 @@ TEST_P(IPCProtobufMessageTest, OptionalSubmessage) {
   IPC::WriteParam(&msg, input);
 
   TestMessage output;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   ASSERT_TRUE(IPC::ReadParam(&msg, &iter, &output));
 
   if (field_is_present_) {
@@ -137,7 +137,7 @@ TEST_P(IPCProtobufMessageTest, RepeatedSubmessage) {
   IPC::WriteParam(&msg, input);
 
   TestMessage output;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   ASSERT_TRUE(IPC::ReadParam(&msg, &iter, &output));
 
   if (field_is_present_) {

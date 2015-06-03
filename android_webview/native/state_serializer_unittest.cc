@@ -22,11 +22,11 @@ using std::string;
 namespace android_webview {
 
 TEST(AndroidWebViewStateSerializerTest, TestHeaderSerialization) {
-  Pickle pickle;
+  base::Pickle pickle;
   bool result = internal::WriteHeaderToPickle(&pickle);
   EXPECT_TRUE(result);
 
-  PickleIterator iterator(pickle);
+  base::PickleIterator iterator(pickle);
   result = internal::RestoreHeaderFromPickle(&iterator);
   EXPECT_TRUE(result);
 }
@@ -68,12 +68,12 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   entry->SetTimestamp(timestamp);
   entry->SetHttpStatusCode(http_status_code);
 
-  Pickle pickle;
+  base::Pickle pickle;
   bool result = internal::WriteNavigationEntryToPickle(*entry, &pickle);
   EXPECT_TRUE(result);
 
   scoped_ptr<content::NavigationEntry> copy(content::NavigationEntry::Create());
-  PickleIterator iterator(pickle);
+  base::PickleIterator iterator(pickle);
   result = internal::RestoreNavigationEntryFromPickle(&iterator, copy.get());
   EXPECT_TRUE(result);
 

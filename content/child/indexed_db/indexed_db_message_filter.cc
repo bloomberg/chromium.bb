@@ -32,7 +32,7 @@ void IndexedDBMessageFilter::OnFilteredMessageReceived(
 bool IndexedDBMessageFilter::GetWorkerThreadIdForMessage(
     const IPC::Message& msg,
     int* ipc_thread_id) {
-  return PickleIterator(msg).ReadInt(ipc_thread_id);
+  return base::PickleIterator(msg).ReadInt(ipc_thread_id);
 }
 
 void IndexedDBMessageFilter::OnStaleMessageReceived(const IPC::Message& msg) {

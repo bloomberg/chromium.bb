@@ -239,7 +239,7 @@ X509Certificate::OSCertHandles CreateOSCertHandlesFromBytes(
 }
 
 X509Certificate::OSCertHandle ReadOSCertHandleFromPickle(
-    PickleIterator* pickle_iter) {
+    base::PickleIterator* pickle_iter) {
   const char* data;
   int length;
   if (!pickle_iter->ReadData(&data, &length))

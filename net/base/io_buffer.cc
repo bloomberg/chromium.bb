@@ -167,13 +167,16 @@ GrowableIOBuffer::~GrowableIOBuffer() {
   data_ = NULL;
 }
 
-PickledIOBuffer::PickledIOBuffer() : IOBuffer() {}
+PickledIOBuffer::PickledIOBuffer() : IOBuffer() {
+}
 
 void PickledIOBuffer::Done() {
   data_ = const_cast<char*>(static_cast<const char*>(pickle_.data()));
 }
 
-PickledIOBuffer::~PickledIOBuffer() { data_ = NULL; }
+PickledIOBuffer::~PickledIOBuffer() {
+  data_ = NULL;
+}
 
 WrappedIOBuffer::WrappedIOBuffer(const char* data)
     : IOBuffer(const_cast<char*>(data)) {

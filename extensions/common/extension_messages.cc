@@ -95,7 +95,9 @@ struct ParamTraits<Manifest::Location> {
     int val = static_cast<int>(p);
     WriteParam(m, val);
   }
-  static bool Read(const Message* m, PickleIterator* iter, param_type* p) {
+  static bool Read(const Message* m,
+                   base::PickleIterator* iter,
+                   param_type* p) {
     int val = 0;
     if (!ReadParam(m, iter, &val) ||
         val < Manifest::INVALID_LOCATION ||
@@ -114,7 +116,8 @@ void ParamTraits<URLPattern>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.GetAsString());
 }
 
-bool ParamTraits<URLPattern>::Read(const Message* m, PickleIterator* iter,
+bool ParamTraits<URLPattern>::Read(const Message* m,
+                                   base::PickleIterator* iter,
                                    param_type* p) {
   int valid_schemes;
   std::string spec;
@@ -141,8 +144,9 @@ void ParamTraits<URLPatternSet>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.patterns());
 }
 
-bool ParamTraits<URLPatternSet>::Read(const Message* m, PickleIterator* iter,
-                                        param_type* p) {
+bool ParamTraits<URLPatternSet>::Read(const Message* m,
+                                      base::PickleIterator* iter,
+                                      param_type* p) {
   std::set<URLPattern> patterns;
   if (!ReadParam(m, iter, &patterns))
     return false;
@@ -162,8 +166,9 @@ void ParamTraits<APIPermission::ID>::Write(
   WriteParam(m, static_cast<int>(p));
 }
 
-bool ParamTraits<APIPermission::ID>::Read(
-    const Message* m, PickleIterator* iter, param_type* p) {
+bool ParamTraits<APIPermission::ID>::Read(const Message* m,
+                                          base::PickleIterator* iter,
+                                          param_type* p) {
   int api_id = -2;
   if (!ReadParam(m, iter, &api_id))
     return false;
@@ -188,8 +193,9 @@ void ParamTraits<APIPermissionSet>::Write(
   }
 }
 
-bool ParamTraits<APIPermissionSet>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<APIPermissionSet>::Read(const Message* m,
+                                         base::PickleIterator* iter,
+                                         param_type* r) {
   size_t size;
   if (!ReadParam(m, iter, &size))
     return false;
@@ -225,8 +231,9 @@ void ParamTraits<ManifestPermissionSet>::Write(
   }
 }
 
-bool ParamTraits<ManifestPermissionSet>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<ManifestPermissionSet>::Read(const Message* m,
+                                              base::PickleIterator* iter,
+                                              param_type* r) {
   size_t size;
   if (!ReadParam(m, iter, &size))
     return false;
@@ -255,8 +262,9 @@ void ParamTraits<HostID>::Write(
   WriteParam(m, p.id());
 }
 
-bool ParamTraits<HostID>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<HostID>::Read(const Message* m,
+                               base::PickleIterator* iter,
+                               param_type* r) {
   HostID::HostType type;
   std::string id;
   if (!ReadParam(m, iter, &type))
@@ -281,9 +289,10 @@ void ParamTraits<ExtensionMsg_PermissionSetStruct>::Write(Message* m,
   WriteParam(m, p.scriptable_hosts);
 }
 
-bool ParamTraits<ExtensionMsg_PermissionSetStruct>::Read(const Message* m,
-                                                         PickleIterator* iter,
-                                                         param_type* p) {
+bool ParamTraits<ExtensionMsg_PermissionSetStruct>::Read(
+    const Message* m,
+    base::PickleIterator* iter,
+    param_type* p) {
   return ReadParam(m, iter, &p->apis) &&
          ReadParam(m, iter, &p->manifest_permissions) &&
          ReadParam(m, iter, &p->explicit_hosts) &&
@@ -309,7 +318,7 @@ void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,
 }
 
 bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const Message* m,
-                                                   PickleIterator* iter,
+                                                   base::PickleIterator* iter,
                                                    param_type* p) {
   p->manifest.reset(new base::DictionaryValue());
   return ReadParam(m, iter, &p->location) && ReadParam(m, iter, &p->path) &&

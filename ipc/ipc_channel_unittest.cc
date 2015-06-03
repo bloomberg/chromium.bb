@@ -34,7 +34,7 @@ TEST_F(IPCChannelTest, BasicMessageTest) {
   EXPECT_TRUE(m.WriteString(v2));
   EXPECT_TRUE(m.WriteString16(v3));
 
-  PickleIterator iter(m);
+  base::PickleIterator iter(m);
 
   int vi;
   std::string vs;

@@ -161,7 +161,7 @@ bool ChannelWin::WillDispatchInputMessage(Message* msg) {
 void ChannelWin::HandleInternalMessage(const Message& msg) {
   DCHECK_EQ(msg.type(), static_cast<unsigned>(Channel::HELLO_MESSAGE_TYPE));
   // The hello message contains one parameter containing the PID.
-  PickleIterator it(msg);
+  base::PickleIterator it(msg);
   int32 claimed_pid;
   bool failed = !it.ReadInt(&claimed_pid);
 

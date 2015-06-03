@@ -315,10 +315,10 @@ TEST_P(PersistenceTest, Persist) {
   HeadersToRaw(&headers);
   scoped_refptr<HttpResponseHeaders> parsed1(new HttpResponseHeaders(headers));
 
-  Pickle pickle;
+  base::Pickle pickle;
   parsed1->Persist(&pickle, test.options);
 
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   scoped_refptr<HttpResponseHeaders> parsed2(new HttpResponseHeaders(&iter));
 
   std::string h2;

@@ -275,7 +275,7 @@ void UserScriptLoader::StartLoad() {
 // static
 scoped_ptr<base::SharedMemory> UserScriptLoader::Serialize(
     const UserScriptList& scripts) {
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteSizeT(scripts.size());
   for (const UserScript& script : scripts) {
     // TODO(aa): This can be replaced by sending content script metadata to

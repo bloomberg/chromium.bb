@@ -110,7 +110,7 @@ void Logging::SetIPCSender(IPC::Sender* sender) {
 
 void Logging::OnReceivedLoggingMessage(const Message& message) {
   std::vector<LogData> data;
-  PickleIterator iter(message);
+  base::PickleIterator iter(message);
   if (!ReadParam(&message, &iter, &data))
     return;
 

@@ -196,10 +196,10 @@ TEST(ExtensionUserScriptTest, Pickle) {
   HostID id(HostID::EXTENSIONS, kExtensionId);
   script1.set_host_id(id);
 
-  Pickle pickle;
+  base::Pickle pickle;
   script1.Pickle(&pickle);
 
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   UserScript script2;
   script2.Unpickle(pickle, &iter);
 

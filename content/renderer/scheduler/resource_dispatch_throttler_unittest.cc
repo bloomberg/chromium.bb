@@ -22,7 +22,7 @@ int GetRequestId(const IPC::Message& msg) {
   int request_id = -1;
   switch (msg.type()) {
     case ResourceHostMsg_RequestResource::ID: {
-      PickleIterator iter(msg);
+      base::PickleIterator iter(msg);
       int routing_id = -1;
       if (!iter.ReadInt(&routing_id) || !iter.ReadInt(&request_id))
         NOTREACHED() << "Invalid id for resource request message.";
@@ -31,7 +31,7 @@ int GetRequestId(const IPC::Message& msg) {
     case ResourceHostMsg_DidChangePriority::ID:
     case ResourceHostMsg_ReleaseDownloadedFile::ID:
     case ResourceHostMsg_CancelRequest::ID:
-      if (!PickleIterator(msg).ReadInt(&request_id))
+      if (!base::PickleIterator(msg).ReadInt(&request_id))
         NOTREACHED() << "Invalid id for resource message.";
       break;
 
@@ -172,7 +172,7 @@ class ResourceDispatchThrottlerTest : public testing::Test, public IPC::Sender {
 
     int routing_id = -1;
     int request_id = -1;
-    PickleIterator iter(*msg);
+    base::PickleIterator iter(*msg);
     CHECK(IPC::ReadParam(msg, &iter, &routing_id));
     CHECK(IPC::ReadParam(msg, &iter, &request_id));
     return request_id;

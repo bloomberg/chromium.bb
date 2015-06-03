@@ -57,7 +57,8 @@ void ParamTraits<gfx::Point>::Write(Message* m, const gfx::Point& p) {
   m->WriteInt(p.y());
 }
 
-bool ParamTraits<gfx::Point>::Read(const Message* m, PickleIterator* iter,
+bool ParamTraits<gfx::Point>::Read(const Message* m,
+                                   base::PickleIterator* iter,
                                    gfx::Point* r) {
   int x, y;
   if (!iter->ReadInt(&x) ||
@@ -78,8 +79,8 @@ void ParamTraits<gfx::PointF>::Write(Message* m, const gfx::PointF& v) {
 }
 
 bool ParamTraits<gfx::PointF>::Read(const Message* m,
-                                      PickleIterator* iter,
-                                      gfx::PointF* r) {
+                                    base::PickleIterator* iter,
+                                    gfx::PointF* r) {
   float x, y;
   if (!ParamTraits<float>::Read(m, iter, &x) ||
       !ParamTraits<float>::Read(m, iter, &y))
@@ -101,7 +102,7 @@ void ParamTraits<gfx::Size>::Write(Message* m, const gfx::Size& p) {
 }
 
 bool ParamTraits<gfx::Size>::Read(const Message* m,
-                                  PickleIterator* iter,
+                                  base::PickleIterator* iter,
                                   gfx::Size* r) {
   const char* char_values;
   if (!iter->ReadBytes(&char_values, sizeof(int) * 2))
@@ -124,7 +125,7 @@ void ParamTraits<gfx::SizeF>::Write(Message* m, const gfx::SizeF& p) {
 }
 
 bool ParamTraits<gfx::SizeF>::Read(const Message* m,
-                                   PickleIterator* iter,
+                                   base::PickleIterator* iter,
                                    gfx::SizeF* r) {
   const char* char_values;
   if (!iter->ReadBytes(&char_values, sizeof(float) * 2))
@@ -145,7 +146,7 @@ void ParamTraits<gfx::Vector2d>::Write(Message* m, const gfx::Vector2d& p) {
 }
 
 bool ParamTraits<gfx::Vector2d>::Read(const Message* m,
-                                      PickleIterator* iter,
+                                      base::PickleIterator* iter,
                                       gfx::Vector2d* r) {
   const char* char_values;
   if (!iter->ReadBytes(&char_values, sizeof(int) * 2))
@@ -166,8 +167,8 @@ void ParamTraits<gfx::Vector2dF>::Write(Message* m, const gfx::Vector2dF& p) {
 }
 
 bool ParamTraits<gfx::Vector2dF>::Read(const Message* m,
-                                      PickleIterator* iter,
-                                      gfx::Vector2dF* r) {
+                                       base::PickleIterator* iter,
+                                       gfx::Vector2dF* r) {
   const char* char_values;
   if (!iter->ReadBytes(&char_values, sizeof(float) * 2))
     return false;
@@ -187,7 +188,7 @@ void ParamTraits<gfx::Rect>::Write(Message* m, const gfx::Rect& p) {
 }
 
 bool ParamTraits<gfx::Rect>::Read(const Message* m,
-                                  PickleIterator* iter,
+                                  base::PickleIterator* iter,
                                   gfx::Rect* r) {
   const char* char_values;
   if (!iter->ReadBytes(&char_values, sizeof(int) * 4))
@@ -210,7 +211,7 @@ void ParamTraits<gfx::RectF>::Write(Message* m, const gfx::RectF& p) {
 }
 
 bool ParamTraits<gfx::RectF>::Read(const Message* m,
-                                   PickleIterator* iter,
+                                   base::PickleIterator* iter,
                                    gfx::RectF* r) {
   const char* char_values;
   if (!iter->ReadBytes(&char_values, sizeof(float) * 4))
@@ -238,7 +239,7 @@ void ParamTraits<SkBitmap>::Write(Message* m, const SkBitmap& p) {
 }
 
 bool ParamTraits<SkBitmap>::Read(const Message* m,
-                                 PickleIterator* iter,
+                                 base::PickleIterator* iter,
                                  SkBitmap* r) {
   const char* fixed_data;
   int fixed_data_size = 0;
@@ -272,7 +273,7 @@ void ParamTraits<gfx::Range>::Write(Message* m, const gfx::Range& r) {
 }
 
 bool ParamTraits<gfx::Range>::Read(const Message* m,
-                                   PickleIterator* iter,
+                                   base::PickleIterator* iter,
                                    gfx::Range* r) {
   size_t start, end;
   if (!iter->ReadSizeT(&start) || !iter->ReadSizeT(&end))

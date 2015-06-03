@@ -72,8 +72,8 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
 }  // namespace
 
 // Serialization routines for vectors implemented in login_database.cc.
-Pickle SerializeVector(const std::vector<base::string16>& vec);
-std::vector<base::string16> DeserializeVector(const Pickle& pickle);
+base::Pickle SerializeVector(const std::vector<base::string16>& vec);
+std::vector<base::string16> DeserializeVector(const base::Pickle& pickle);
 
 class LoginDatabaseTest : public testing::Test {
  protected:
@@ -765,7 +765,7 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
 TEST_F(LoginDatabaseTest, VectorSerialization) {
   // Empty vector.
   std::vector<base::string16> vec;
-  Pickle temp = SerializeVector(vec);
+  base::Pickle temp = SerializeVector(vec);
   std::vector<base::string16> output = DeserializeVector(temp);
   EXPECT_THAT(output, Eq(vec));
 

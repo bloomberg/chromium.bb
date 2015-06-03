@@ -16,7 +16,7 @@ void ParamTraits<network_hints::LookupRequest>::Write(
 
 bool ParamTraits<network_hints::LookupRequest>::Read(
     const Message* m,
-    PickleIterator* iter,
+    base::PickleIterator* iter,
     network_hints::LookupRequest* request) {
   // Verify the hostname limits after deserialization success.
   if (IPC::ReadParam(m, iter, &request->hostname_list)) {

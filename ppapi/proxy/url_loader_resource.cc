@@ -265,7 +265,7 @@ void URLLoaderResource::OnPluginMsgReceivedResponse(
 void URLLoaderResource::OnPluginMsgSendData(
     const ResourceMessageReplyParams& params,
     const IPC::Message& message) {
-  PickleIterator iter(message);
+  base::PickleIterator iter(message);
   const char* data;
   int data_length;
   if (!iter.ReadData(&data, &data_length)) {

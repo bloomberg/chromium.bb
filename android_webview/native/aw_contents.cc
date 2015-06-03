@@ -846,7 +846,7 @@ AwContents::GetOpaqueState(JNIEnv* env, jobject obj) {
   if (!web_contents_->GetController().GetEntryCount())
     return ScopedJavaLocalRef<jbyteArray>();
 
-  Pickle pickle;
+  base::Pickle pickle;
   if (!WriteToPickle(*web_contents_, &pickle)) {
     return ScopedJavaLocalRef<jbyteArray>();
   } else {
@@ -863,9 +863,9 @@ jboolean AwContents::RestoreFromOpaqueState(
   std::vector<uint8> state_vector;
   base::android::JavaByteArrayToByteVector(env, state, &state_vector);
 
-  Pickle pickle(reinterpret_cast<const char*>(state_vector.data()),
-                state_vector.size());
-  PickleIterator iterator(pickle);
+  base::Pickle pickle(reinterpret_cast<const char*>(state_vector.data()),
+                      state_vector.size());
+  base::PickleIterator iterator(pickle);
 
   return RestoreFromPickle(&iterator, web_contents_.get());
 }

@@ -41,7 +41,7 @@ bool NotificationDispatcher::GetWorkerThreadIdForMessage(
     const IPC::Message& msg,
     int* ipc_thread_id) {
   int notification_id = -1;
-  const bool success = PickleIterator(msg).ReadInt(&notification_id);
+  const bool success = base::PickleIterator(msg).ReadInt(&notification_id);
   DCHECK(success);
 
   base::AutoLock lock(notification_id_map_lock_);

@@ -46,7 +46,7 @@ SetupListener::~SetupListener() {
 }
 
 bool SetupListener::OnMessageReceived(const IPC::Message& msg) {
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   std::string json_string;
   if (!iter.ReadString(&json_string))
     return false;

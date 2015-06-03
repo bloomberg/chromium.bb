@@ -485,7 +485,7 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
   // Handle PpapiHostMsg_OpenResource outside the lock as it requires sending
   // IPC to handle properly.
   if (type == PpapiHostMsg_OpenResource::ID) {
-    PickleIterator iter = IPC::SyncMessage::GetDataIterator(&msg);
+    base::PickleIterator iter = IPC::SyncMessage::GetDataIterator(&msg);
     ppapi::proxy::SerializedHandle sh;
     uint64_t token_lo;
     uint64_t token_hi;
@@ -639,7 +639,7 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
     // The file token didn't resolve successfully, so we give the
     // original FD to the client without making a validated NaClDesc.
     // However, we must rewrite the message to clear the file tokens.
-    PickleIterator iter = IPC::SyncMessage::GetDataIterator(&orig_msg);
+    base::PickleIterator iter = IPC::SyncMessage::GetDataIterator(&orig_msg);
     ppapi::proxy::SerializedHandle sh;
 
     // We know that this can be read safely; see the original read in

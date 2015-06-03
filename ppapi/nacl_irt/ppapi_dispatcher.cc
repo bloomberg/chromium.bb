@@ -202,7 +202,7 @@ void PpapiDispatcher::OnMsgInitializeNaClDispatcher(
 void PpapiDispatcher::OnPluginDispatcherMessageReceived(
     const IPC::Message& msg) {
   // The first parameter should be a plugin dispatcher ID.
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   uint32 id = 0;
   if (!iter.ReadUInt32(&id)) {
     NOTREACHED();

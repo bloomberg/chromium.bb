@@ -11,7 +11,7 @@ using blink::WebBindings;
 
 namespace content {
 
-bool SerializeNPIdentifier(NPIdentifier identifier, Pickle* pickle) {
+bool SerializeNPIdentifier(NPIdentifier identifier, base::Pickle* pickle) {
   const NPUTF8* string;
   int32_t number;
   bool is_string;
@@ -26,7 +26,7 @@ bool SerializeNPIdentifier(NPIdentifier identifier, Pickle* pickle) {
   return pickle->WriteInt(number);
 }
 
-bool DeserializeNPIdentifier(PickleIterator* pickle_iter,
+bool DeserializeNPIdentifier(base::PickleIterator* pickle_iter,
                              NPIdentifier* identifier) {
   bool is_string;
   if (!pickle_iter->ReadBool(&is_string))

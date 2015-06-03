@@ -46,7 +46,7 @@ void ResourceMessageParams::Serialize(IPC::Message* msg) const {
 }
 
 bool ResourceMessageParams::Deserialize(const IPC::Message* msg,
-                                        PickleIterator* iter) {
+                                        base::PickleIterator* iter) {
   return ReadHeader(msg, iter) && ReadHandles(msg, iter);
 }
 
@@ -61,7 +61,7 @@ void ResourceMessageParams::WriteHandles(IPC::Message* msg) const {
 }
 
 bool ResourceMessageParams::ReadHeader(const IPC::Message* msg,
-                                       PickleIterator* iter) {
+                                       base::PickleIterator* iter) {
   DCHECK(handles_->data().empty());
   handles_->set_should_close(true);
   return IPC::ParamTraits<PP_Resource>::Read(msg, iter, &pp_resource_) &&
@@ -69,7 +69,7 @@ bool ResourceMessageParams::ReadHeader(const IPC::Message* msg,
 }
 
 bool ResourceMessageParams::ReadHandles(const IPC::Message* msg,
-                                        PickleIterator* iter) {
+                                        base::PickleIterator* iter) {
   return IPC::ParamTraits<std::vector<SerializedHandle> >::Read(
              msg, iter, &handles_->data());
 }
@@ -159,7 +159,7 @@ void ResourceMessageCallParams::Serialize(IPC::Message* msg) const {
 }
 
 bool ResourceMessageCallParams::Deserialize(const IPC::Message* msg,
-                                            PickleIterator* iter) {
+                                            base::PickleIterator* iter) {
   if (!ResourceMessageParams::Deserialize(msg, iter))
     return false;
   return IPC::ParamTraits<bool>::Read(msg, iter, &has_callback_);
@@ -189,7 +189,7 @@ void ResourceMessageReplyParams::Serialize(IPC::Message* msg) const {
 }
 
 bool ResourceMessageReplyParams::Deserialize(const IPC::Message* msg,
-                                             PickleIterator* iter) {
+                                             base::PickleIterator* iter) {
   return (ReadHeader(msg, iter) &&
           IPC::ParamTraits<int32_t>::Read(msg, iter, &result_) &&
           ReadHandles(msg, iter));

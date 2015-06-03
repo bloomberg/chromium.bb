@@ -261,14 +261,14 @@ SHA1HashValue X509Certificate::CalculateCAFingerprint(
 }
 
 // static
-X509Certificate::OSCertHandle
-X509Certificate::ReadOSCertHandleFromPickle(PickleIterator* pickle_iter) {
+X509Certificate::OSCertHandle X509Certificate::ReadOSCertHandleFromPickle(
+    base::PickleIterator* pickle_iter) {
   return x509_util::ReadOSCertHandleFromPickle(pickle_iter);
 }
 
 // static
 bool X509Certificate::WriteOSCertHandleToPickle(OSCertHandle cert_handle,
-                                                Pickle* pickle) {
+                                                base::Pickle* pickle) {
   return pickle->WriteData(
       reinterpret_cast<const char*>(cert_handle->derCert.data),
       cert_handle->derCert.len);

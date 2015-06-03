@@ -36,7 +36,7 @@ TEST(IPCMessageTest, ListValue) {
   IPC::WriteParam(&msg, input);
 
   base::ListValue output;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   EXPECT_TRUE(IPC::ReadParam(&msg, &iter, &output));
 
   EXPECT_TRUE(input.Equals(&output));
@@ -44,7 +44,7 @@ TEST(IPCMessageTest, ListValue) {
   // Also test the corrupt case.
   IPC::Message bad_msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   bad_msg.WriteInt(99);
-  iter = PickleIterator(bad_msg);
+  iter = base::PickleIterator(bad_msg);
   EXPECT_FALSE(IPC::ReadParam(&bad_msg, &iter, &output));
 }
 
@@ -71,7 +71,7 @@ TEST(IPCMessageTest, DictionaryValue) {
   IPC::WriteParam(&msg, input);
 
   base::DictionaryValue output;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   EXPECT_TRUE(IPC::ReadParam(&msg, &iter, &output));
 
   EXPECT_TRUE(input.Equals(&output));
@@ -79,7 +79,7 @@ TEST(IPCMessageTest, DictionaryValue) {
   // Also test the corrupt case.
   IPC::Message bad_msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   bad_msg.WriteInt(99);
-  iter = PickleIterator(bad_msg);
+  iter = base::PickleIterator(bad_msg);
   EXPECT_FALSE(IPC::ReadParam(&bad_msg, &iter, &output));
 }
 

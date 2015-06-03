@@ -74,7 +74,7 @@ void OSExchangeDataProviderAura::SetFilenames(
 
 void OSExchangeDataProviderAura::SetPickledData(
     const OSExchangeData::CustomFormat& format,
-    const Pickle& data) {
+    const base::Pickle& data) {
   pickle_data_[format] = data;
   formats_ |= OSExchangeData::PICKLED_DATA;
 }
@@ -122,7 +122,7 @@ bool OSExchangeDataProviderAura::GetFilenames(
 
 bool OSExchangeDataProviderAura::GetPickledData(
     const OSExchangeData::CustomFormat& format,
-    Pickle* data) const {
+    base::Pickle* data) const {
   PickleData::const_iterator i = pickle_data_.find(format);
   if (i == pickle_data_.end())
     return false;

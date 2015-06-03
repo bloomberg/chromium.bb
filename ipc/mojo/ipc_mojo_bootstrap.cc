@@ -141,7 +141,7 @@ bool MojoClientBootstrap::OnMessageReceived(const Message& message) {
   }
 
   PlatformFileForTransit pipe;
-  PickleIterator iter(message);
+  base::PickleIterator iter(message);
   if (!ParamTraits<PlatformFileForTransit>::Read(&message, &iter, &pipe)) {
     LOG(WARNING) << "Failed to read a file handle from bootstrap channel.";
     message.set_dispatch_error();

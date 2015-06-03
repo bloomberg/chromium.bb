@@ -57,7 +57,7 @@ bool WriteAndRead(const PP_Var& var, PP_Var* result) {
     return false;
   IPC::Message m;
   expected_data->Write(&m, base::Bind(&DefaultHandleWriter));
-  PickleIterator iter(m);
+  base::PickleIterator iter(m);
   scoped_ptr<RawVarDataGraph> actual_data(RawVarDataGraph::Read(&m, &iter));
   *result = actual_data->CreatePPVar(dummy_instance);
   return true;

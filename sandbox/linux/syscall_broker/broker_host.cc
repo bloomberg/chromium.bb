@@ -59,7 +59,7 @@ int sys_open(const char* pathname, int flags) {
 void OpenFileForIPC(const BrokerPolicy& policy,
                     const std::string& requested_filename,
                     int flags,
-                    Pickle* write_pickle,
+                    base::Pickle* write_pickle,
                     std::vector<int>* opened_files) {
   DCHECK(write_pickle);
   DCHECK(opened_files);
@@ -91,7 +91,7 @@ void OpenFileForIPC(const BrokerPolicy& policy,
 void AccessFileForIPC(const BrokerPolicy& policy,
                       const std::string& requested_filename,
                       int mode,
-                      Pickle* write_pickle) {
+                      base::Pickle* write_pickle) {
   DCHECK(write_pickle);
   const char* file_to_access = NULL;
   const bool safe_to_access_file = policy.GetFileNameIfAllowedToAccess(
@@ -116,14 +116,14 @@ void AccessFileForIPC(const BrokerPolicy& policy,
 bool HandleRemoteCommand(const BrokerPolicy& policy,
                          IPCCommand command_type,
                          int reply_ipc,
-                         PickleIterator iter) {
+                         base::PickleIterator iter) {
   // Currently all commands have two arguments: filename and flags.
   std::string requested_filename;
   int flags = 0;
   if (!iter.ReadString(&requested_filename) || !iter.ReadInt(&flags))
     return false;
 
-  Pickle write_pickle;
+  base::Pickle write_pickle;
   std::vector<int> opened_files;
 
   switch (command_type) {
@@ -194,8 +194,8 @@ BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
 
   base::ScopedFD temporary_ipc(fds[0]->Pass());
 
-  Pickle pickle(buf, msg_len);
-  PickleIterator iter(pickle);
+  base::Pickle pickle(buf, msg_len);
+  base::PickleIterator iter(pickle);
   int command_type;
   if (iter.ReadInt(&command_type)) {
     bool command_handled = false;

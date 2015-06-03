@@ -569,7 +569,7 @@ disk_cache::Backend* HttpCache::GetCurrentBackend() const {
 bool HttpCache::ParseResponseInfo(const char* data, int len,
                                   HttpResponseInfo* response_info,
                                   bool* response_truncated) {
-  Pickle pickle(data, len);
+  base::Pickle pickle(data, len);
   return response_info->InitFromPickle(pickle, response_truncated);
 }
 

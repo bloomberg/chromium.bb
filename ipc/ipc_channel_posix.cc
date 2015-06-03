@@ -901,7 +901,7 @@ void ChannelPosix::QueueCloseFDMessage(int fd, int hops) {
 
 void ChannelPosix::HandleInternalMessage(const Message& msg) {
   // The Hello message contains only the process id.
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
 
   switch (msg.type()) {
     default:

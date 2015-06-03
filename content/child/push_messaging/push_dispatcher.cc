@@ -47,7 +47,7 @@ bool PushDispatcher::GetWorkerThreadIdForMessage(const IPC::Message& msg,
                                                  int* ipc_thread_id) {
   int request_id = -1;
 
-  const bool success = PickleIterator(msg).ReadInt(&request_id);
+  const bool success = base::PickleIterator(msg).ReadInt(&request_id);
   DCHECK(success);
 
   base::AutoLock lock(request_id_map_lock_);

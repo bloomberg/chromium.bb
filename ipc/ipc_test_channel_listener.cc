@@ -32,7 +32,7 @@ void TestChannelListener::SendOneMessage(IPC::Sender* sender,
 
 
 bool TestChannelListener::OnMessageReceived(const IPC::Message& message) {
-  PickleIterator iter(message);
+  base::PickleIterator iter(message);
 
   int ignored;
   EXPECT_TRUE(iter.ReadInt(&ignored));

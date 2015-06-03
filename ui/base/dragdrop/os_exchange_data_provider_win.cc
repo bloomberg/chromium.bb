@@ -364,7 +364,7 @@ void OSExchangeDataProviderWin::SetFilenames(
 
 void OSExchangeDataProviderWin::SetPickledData(
     const OSExchangeData::CustomFormat& format,
-    const Pickle& data) {
+    const base::Pickle& data) {
   STGMEDIUM* storage = GetStorageForBytes(data.data(), data.size());
   data_->contents_.push_back(
       new DataObjectImpl::StoredDataInfo(format.ToFormatEtc(), storage));
@@ -449,7 +449,7 @@ bool OSExchangeDataProviderWin::GetFilenames(
 
 bool OSExchangeDataProviderWin::GetPickledData(
     const OSExchangeData::CustomFormat& format,
-    Pickle* data) const {
+    base::Pickle* data) const {
   DCHECK(data);
   bool success = false;
   STGMEDIUM medium;
@@ -458,7 +458,7 @@ bool OSExchangeDataProviderWin::GetPickledData(
     if (medium.tymed & TYMED_HGLOBAL) {
       base::win::ScopedHGlobal<char*> c_data(medium.hGlobal);
       DCHECK_GT(c_data.Size(), 0u);
-      *data = Pickle(c_data.get(), static_cast<int>(c_data.Size()));
+      *data = base::Pickle(c_data.get(), static_cast<int>(c_data.Size()));
       success = true;
     }
     ReleaseStgMedium(&medium);

@@ -90,7 +90,7 @@ void SerializedHandle::Close() {
 }
 
 // static
-bool SerializedHandle::WriteHeader(const Header& hdr, Pickle* pickle) {
+bool SerializedHandle::WriteHeader(const Header& hdr, base::Pickle* pickle) {
   if (!pickle->WriteInt(hdr.type))
     return false;
   if (hdr.type == SHARED_MEMORY) {
@@ -105,7 +105,7 @@ bool SerializedHandle::WriteHeader(const Header& hdr, Pickle* pickle) {
 }
 
 // static
-bool SerializedHandle::ReadHeader(PickleIterator* iter, Header* hdr) {
+bool SerializedHandle::ReadHeader(base::PickleIterator* iter, Header* hdr) {
   *hdr = Header(INVALID, 0, 0, 0);
   int type = 0;
   if (!iter->ReadInt(&type))

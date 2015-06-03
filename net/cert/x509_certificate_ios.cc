@@ -225,14 +225,14 @@ SHA1HashValue X509Certificate::CalculateCAFingerprint(
 }
 
 // static
-X509Certificate::OSCertHandle
-X509Certificate::ReadOSCertHandleFromPickle(PickleIterator* pickle_iter) {
+X509Certificate::OSCertHandle X509Certificate::ReadOSCertHandleFromPickle(
+    base::PickleIterator* pickle_iter) {
   return x509_util::ReadOSCertHandleFromPickle(pickle_iter);
 }
 
 // static
 bool X509Certificate::WriteOSCertHandleToPickle(OSCertHandle cert_handle,
-                                                Pickle* pickle) {
+                                                base::Pickle* pickle) {
   ScopedCFTypeRef<CFDataRef> cert_data(SecCertificateCopyData(cert_handle));
   if (!cert_data)
     return false;

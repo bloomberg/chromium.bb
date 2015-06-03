@@ -84,7 +84,7 @@ class SimpleAPIPermission : public APIPermission {
 
   void Write(IPC::Message* m) const override {}
 
-  bool Read(const IPC::Message* m, PickleIterator* iter) override {
+  bool Read(const IPC::Message* m, base::PickleIterator* iter) override {
     return true;
   }
 

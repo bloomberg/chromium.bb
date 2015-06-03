@@ -38,7 +38,7 @@ class ListenerThatExpectsOK : public IPC::Listener {
   ~ListenerThatExpectsOK() override {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
-    PickleIterator iter(message);
+    base::PickleIterator iter(message);
     std::string should_be_ok;
     EXPECT_TRUE(iter.ReadString(&should_be_ok));
     EXPECT_EQ(should_be_ok, "OK");
@@ -325,7 +325,7 @@ class HandleSendingHelper {
   }
 
   static void ReadReceivedPipe(const IPC::Message& message,
-                               PickleIterator* iter) {
+                               base::PickleIterator* iter) {
     mojo::ScopedMessagePipeHandle pipe;
     EXPECT_TRUE(
         IPC::MojoMessageHelper::ReadMessagePipeFrom(&message, iter, &pipe));
@@ -372,7 +372,7 @@ class HandleSendingHelper {
   }
 
   static void ReadReceivedFile(const IPC::Message& message,
-                               PickleIterator* iter) {
+                               base::PickleIterator* iter) {
     base::ScopedFD fd;
     scoped_refptr<IPC::MessageAttachment> attachment;
     EXPECT_TRUE(message.ReadAttachment(iter, &attachment));
@@ -391,7 +391,7 @@ class ListenerThatExpectsMessagePipe : public IPC::Listener {
   ~ListenerThatExpectsMessagePipe() override {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
-    PickleIterator iter(message);
+    base::PickleIterator iter(message);
     HandleSendingHelper::ReadReceivedPipe(message, &iter);
     base::MessageLoop::current()->Quit();
     ListenerThatExpectsOK::SendOK(sender_);
@@ -461,7 +461,7 @@ class ListenerThatExpectsMessagePipeUsingParamTrait : public IPC::Listener {
   ~ListenerThatExpectsMessagePipeUsingParamTrait() override {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
-    PickleIterator iter(message);
+    base::PickleIterator iter(message);
     mojo::MessagePipeHandle handle;
     EXPECT_TRUE(IPC::ParamTraits<mojo::MessagePipeHandle>::Read(&message, &iter,
                                                                 &handle));
@@ -622,7 +622,7 @@ class ListenerThatExpectsFile : public IPC::Listener {
   ~ListenerThatExpectsFile() override {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
-    PickleIterator iter(message);
+    base::PickleIterator iter(message);
     HandleSendingHelper::ReadReceivedFile(message, &iter);
     base::MessageLoop::current()->Quit();
     ListenerThatExpectsOK::SendOK(sender_);
@@ -681,7 +681,7 @@ class ListenerThatExpectsFileAndPipe : public IPC::Listener {
   ~ListenerThatExpectsFileAndPipe() override {}
 
   bool OnMessageReceived(const IPC::Message& message) override {
-    PickleIterator iter(message);
+    base::PickleIterator iter(message);
     HandleSendingHelper::ReadReceivedFile(message, &iter);
     HandleSendingHelper::ReadReceivedPipe(message, &iter);
     base::MessageLoop::current()->Quit();

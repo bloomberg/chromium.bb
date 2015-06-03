@@ -119,14 +119,14 @@ void EntryMetadata::SetEntrySize(uint64 entry_size) {
   entry_size_ = base::checked_cast<int32>(entry_size);
 }
 
-void EntryMetadata::Serialize(Pickle* pickle) const {
+void EntryMetadata::Serialize(base::Pickle* pickle) const {
   DCHECK(pickle);
   int64 internal_last_used_time = GetLastUsedTime().ToInternalValue();
   pickle->WriteInt64(internal_last_used_time);
   pickle->WriteUInt64(entry_size_);
 }
 
-bool EntryMetadata::Deserialize(PickleIterator* it) {
+bool EntryMetadata::Deserialize(base::PickleIterator* it) {
   DCHECK(it);
   int64 tmp_last_used_time;
   uint64 tmp_entry_size;

@@ -169,8 +169,8 @@ void ChildNaClLoaderInit(ScopedVector<base::ScopedFD> child_fds,
 bool HandleForkRequest(ScopedVector<base::ScopedFD> child_fds,
                        const NaClLoaderSystemInfo& system_info,
                        nacl::NaClSandbox* nacl_sandbox,
-                       PickleIterator* input_iter,
-                       Pickle* output_pickle) {
+                       base::PickleIterator* input_iter,
+                       base::Pickle* output_pickle) {
   bool uses_nonsfi_mode;
   if (!input_iter->ReadBool(&uses_nonsfi_mode)) {
     LOG(ERROR) << "Could not read uses_nonsfi_mode status";
@@ -215,8 +215,8 @@ bool HandleForkRequest(ScopedVector<base::ScopedFD> child_fds,
   return true;
 }
 
-bool HandleGetTerminationStatusRequest(PickleIterator* input_iter,
-                                       Pickle* output_pickle) {
+bool HandleGetTerminationStatusRequest(base::PickleIterator* input_iter,
+                                       base::Pickle* output_pickle) {
   pid_t child_to_wait;
   if (!input_iter->ReadInt(&child_to_wait)) {
     LOG(ERROR) << "Could not read pid to wait for";
@@ -253,8 +253,8 @@ bool HonorRequestAndReply(int reply_fd,
                           ScopedVector<base::ScopedFD> attached_fds,
                           const NaClLoaderSystemInfo& system_info,
                           nacl::NaClSandbox* nacl_sandbox,
-                          PickleIterator* input_iter) {
-  Pickle write_pickle;
+                          base::PickleIterator* input_iter) {
+  base::Pickle write_pickle;
   bool have_to_reply = false;
   // Commands must write anything to send back to |write_pickle|.
   switch (command_type) {
@@ -309,8 +309,8 @@ bool HandleZygoteRequest(int zygote_ipc_fd,
     return false;
   }
 
-  Pickle read_pickle(buf, msglen);
-  PickleIterator read_iter(read_pickle);
+  base::Pickle read_pickle(buf, msglen);
+  base::PickleIterator read_iter(read_pickle);
   int command_type;
   if (!read_iter.ReadInt(&command_type)) {
     LOG(ERROR) << "Unable to read command from Zygote";

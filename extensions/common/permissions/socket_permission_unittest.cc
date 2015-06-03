@@ -275,7 +275,7 @@ TEST(SocketPermissionTest, IPC) {
         permission_info->CreateAPIPermission());
 
     permission1->Write(&m);
-    PickleIterator iter(m);
+    base::PickleIterator iter(m);
     permission2->Read(&m, &iter);
 
     EXPECT_TRUE(permission1->Equal(permission2.get()));
@@ -298,7 +298,7 @@ TEST(SocketPermissionTest, IPC) {
     EXPECT_FALSE(permission1->Equal(permission2.get()));
 
     permission1->Write(&m);
-    PickleIterator iter(m);
+    base::PickleIterator iter(m);
     permission2->Read(&m, &iter);
     EXPECT_TRUE(permission1->Equal(permission2.get()));
   }

@@ -17,14 +17,14 @@ namespace {
 const int kPickleVersion = 2;
 
 void AddVectorToPickle(std::vector<base::string16> strings,
-                       Pickle* pickle) {
+                       base::Pickle* pickle) {
   pickle->WriteInt(static_cast<int>(strings.size()));
   for (size_t i = 0; i < strings.size(); ++i) {
     pickle->WriteString16(strings[i]);
   }
 }
 
-bool ReadStringVector(PickleIterator* iter,
+bool ReadStringVector(base::PickleIterator* iter,
                       std::vector<base::string16>* strings) {
   int size;
   if (!iter->ReadInt(&size))
@@ -41,7 +41,7 @@ bool ReadStringVector(PickleIterator* iter,
 }
 
 template <typename T>
-bool ReadAsInt(PickleIterator* iter, T* target_value) {
+bool ReadAsInt(base::PickleIterator* iter, T* target_value) {
   int pickle_data;
   if (!iter->ReadInt(&pickle_data))
     return false;
@@ -50,7 +50,7 @@ bool ReadAsInt(PickleIterator* iter, T* target_value) {
   return true;
 }
 
-bool DeserializeCommonSection1(PickleIterator* iter,
+bool DeserializeCommonSection1(base::PickleIterator* iter,
                                FormFieldData* field_data) {
   return iter->ReadString16(&field_data->label) &&
          iter->ReadString16(&field_data->name) &&
@@ -65,14 +65,14 @@ bool DeserializeCommonSection1(PickleIterator* iter,
          iter->ReadBool(&field_data->should_autocomplete);
 }
 
-bool DeserializeCommonSection2(PickleIterator* iter,
+bool DeserializeCommonSection2(base::PickleIterator* iter,
                                FormFieldData* field_data) {
   return ReadAsInt(iter, &field_data->text_direction) &&
          ReadStringVector(iter, &field_data->option_values) &&
          ReadStringVector(iter, &field_data->option_contents);
 }
 
-bool DeserializeVersion2Specific(PickleIterator* iter,
+bool DeserializeVersion2Specific(base::PickleIterator* iter,
                                  FormFieldData* field_data) {
   return ReadAsInt(iter, &field_data->role);
 }
@@ -143,7 +143,7 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
 }
 
 void SerializeFormFieldData(const FormFieldData& field_data,
-                            Pickle* pickle) {
+                            base::Pickle* pickle) {
   pickle->WriteInt(kPickleVersion);
   pickle->WriteString16(field_data.label);
   pickle->WriteString16(field_data.name);
@@ -162,7 +162,7 @@ void SerializeFormFieldData(const FormFieldData& field_data,
   AddVectorToPickle(field_data.option_contents, pickle);
 }
 
-bool DeserializeFormFieldData(PickleIterator* iter,
+bool DeserializeFormFieldData(base::PickleIterator* iter,
                               FormFieldData* field_data) {
   int version;
   FormFieldData temp_form_field_data;

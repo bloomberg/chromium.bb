@@ -41,7 +41,7 @@ void WriteHeaders(disk_cache::Entry* entry, int flags,
   if (data.empty())
     return;
 
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteInt(flags | 1);  // Version 1.
   pickle.WriteInt64(0);
   pickle.WriteInt64(0);

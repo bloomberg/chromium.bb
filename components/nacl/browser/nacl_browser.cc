@@ -86,7 +86,7 @@ void ReadCache(const base::FilePath& filename, std::string* data) {
   }
 }
 
-void WriteCache(const base::FilePath& filename, const Pickle* pickle) {
+void WriteCache(const base::FilePath& filename, const base::Pickle* pickle) {
   base::WriteFile(filename, static_cast<const char*>(pickle->data()),
                        pickle->size());
 }
@@ -359,7 +359,7 @@ void NaClBrowser::OnValidationCacheLoaded(const std::string *data) {
     // No file found.
     validation_cache_.Reset();
   } else {
-    Pickle pickle(data->data(), data->size());
+    base::Pickle pickle(data->data(), data->size());
     validation_cache_.Deserialize(&pickle);
   }
   validation_cache_state_ = NaClResourceReady;
@@ -529,7 +529,7 @@ void NaClBrowser::PersistValidationCache() {
   // validation_cache_file_path_ may be empty if something went wrong during
   // initialization.
   if (validation_cache_is_modified_ && !validation_cache_file_path_.empty()) {
-    Pickle* pickle = new Pickle();
+    base::Pickle* pickle = new base::Pickle();
     validation_cache_.Serialize(pickle);
 
     // Pass the serialized data to another thread to write to disk.  File IO is

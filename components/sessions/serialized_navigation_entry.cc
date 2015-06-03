@@ -144,7 +144,7 @@ namespace {
 //
 // TODO(akalin): Unify this with the same function in
 // base_session_service.cc.
-void WriteStringToPickle(Pickle* pickle,
+void WriteStringToPickle(base::Pickle* pickle,
                          int* bytes_written,
                          int max_bytes,
                          const std::string& str) {
@@ -160,7 +160,7 @@ void WriteStringToPickle(Pickle* pickle,
 // base::string16 version of WriteStringToPickle.
 //
 // TODO(akalin): Unify this, too.
-void WriteString16ToPickle(Pickle* pickle,
+void WriteString16ToPickle(base::Pickle* pickle,
                            int* bytes_written,
                            int max_bytes,
                            const base::string16& str) {
@@ -206,7 +206,7 @@ enum TypeMask {
 // referrer_policy_
 
 void SerializedNavigationEntry::WriteToPickle(int max_size,
-                                              Pickle* pickle) const {
+                                              base::Pickle* pickle) const {
   pickle->WriteInt(index_);
 
   int bytes_written = 0;
@@ -250,7 +250,7 @@ void SerializedNavigationEntry::WriteToPickle(int max_size,
   pickle->WriteInt(referrer_policy_);
 }
 
-bool SerializedNavigationEntry::ReadFromPickle(PickleIterator* iterator) {
+bool SerializedNavigationEntry::ReadFromPickle(base::PickleIterator* iterator) {
   *this = SerializedNavigationEntry();
   std::string virtual_url_spec;
   int transition_type_int = 0;

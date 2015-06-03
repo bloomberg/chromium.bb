@@ -32,7 +32,7 @@ void CacheStorageMessageFilter::OnFilteredMessageReceived(
 bool CacheStorageMessageFilter::GetWorkerThreadIdForMessage(
     const IPC::Message& msg,
     int* ipc_thread_id) {
-  return PickleIterator(msg).ReadInt(ipc_thread_id);
+  return base::PickleIterator(msg).ReadInt(ipc_thread_id);
 }
 
 }  // namespace content

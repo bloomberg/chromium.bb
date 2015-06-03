@@ -47,7 +47,7 @@ static_assert(kNumFDsToSend ==
 class MyChannelDescriptorListenerBase : public IPC::Listener {
  public:
   bool OnMessageReceived(const IPC::Message& message) override {
-    PickleIterator iter(message);
+    base::PickleIterator iter(message);
     base::FileDescriptor descriptor;
     while (IPC::ParamTraits<base::FileDescriptor>::Read(
                &message, &iter, &descriptor)) {

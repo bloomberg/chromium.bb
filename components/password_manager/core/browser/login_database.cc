@@ -32,19 +32,19 @@ namespace password_manager {
 const int kCurrentVersionNumber = 13;
 static const int kCompatibleVersionNumber = 1;
 
-Pickle SerializeVector(const std::vector<base::string16>& vec) {
-  Pickle p;
+base::Pickle SerializeVector(const std::vector<base::string16>& vec) {
+  base::Pickle p;
   for (size_t i = 0; i < vec.size(); ++i) {
     p.WriteString16(vec[i]);
   }
   return p;
 }
 
-std::vector<base::string16> DeserializeVector(const Pickle& p) {
+std::vector<base::string16> DeserializeVector(const base::Pickle& p) {
   std::vector<base::string16> ret;
   base::string16 str;
 
-  PickleIterator iterator(p);
+  base::PickleIterator iterator(p);
   while (iterator.ReadString16(&str)) {
     ret.push_back(str);
   }
@@ -98,12 +98,13 @@ void BindAddStatement(const PasswordForm& form,
   s->BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
   s->BindInt(COLUMN_SCHEME, form.scheme);
   s->BindInt(COLUMN_PASSWORD_TYPE, form.type);
-  Pickle usernames_pickle = SerializeVector(form.other_possible_usernames);
+  base::Pickle usernames_pickle =
+      SerializeVector(form.other_possible_usernames);
   s->BindBlob(COLUMN_POSSIBLE_USERNAMES,
               usernames_pickle.data(),
               usernames_pickle.size());
   s->BindInt(COLUMN_TIMES_USED, form.times_used);
-  Pickle form_data_pickle;
+  base::Pickle form_data_pickle;
   autofill::SerializeFormData(form.form_data, &form_data_pickle);
   s->BindBlob(COLUMN_FORM_DATA,
               form_data_pickle.data(),
@@ -612,7 +613,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
              static_cast<int>(encrypted_password.length()));
   s.BindInt(2, form.ssl_valid);
   s.BindInt(3, form.preferred);
-  Pickle pickle = SerializeVector(form.other_possible_usernames);
+  base::Pickle pickle = SerializeVector(form.other_possible_usernames);
   s.BindBlob(4, pickle.data(), pickle.size());
   s.BindInt(5, form.times_used);
   s.BindString16(6, form.submit_element);
@@ -729,17 +730,17 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   DCHECK(type_int >= 0 && type_int <= PasswordForm::TYPE_GENERATED);
   form->type = static_cast<PasswordForm::Type>(type_int);
   if (s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES)) {
-    Pickle pickle(
+    base::Pickle pickle(
         static_cast<const char*>(s.ColumnBlob(COLUMN_POSSIBLE_USERNAMES)),
         s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES));
     form->other_possible_usernames = DeserializeVector(pickle);
   }
   form->times_used = s.ColumnInt(COLUMN_TIMES_USED);
   if (s.ColumnByteLength(COLUMN_FORM_DATA)) {
-    Pickle form_data_pickle(
+    base::Pickle form_data_pickle(
         static_cast<const char*>(s.ColumnBlob(COLUMN_FORM_DATA)),
         s.ColumnByteLength(COLUMN_FORM_DATA));
-    PickleIterator form_data_iter(form_data_pickle);
+    base::PickleIterator form_data_iter(form_data_pickle);
     bool success =
         autofill::DeserializeFormData(&form_data_iter, &form->form_data);
     metrics_util::FormDeserializationStatus status =

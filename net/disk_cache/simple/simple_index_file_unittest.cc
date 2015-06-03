@@ -50,9 +50,9 @@ TEST(IndexMetadataTest, Basics) {
 
 TEST(IndexMetadataTest, Serialize) {
   SimpleIndexFile::IndexMetadata index_metadata(123, 456);
-  Pickle pickle;
+  base::Pickle pickle;
   index_metadata.Serialize(&pickle);
-  PickleIterator it(pickle);
+  base::PickleIterator it(pickle);
   SimpleIndexFile::IndexMetadata new_index_metadata;
   new_index_metadata.Deserialize(&it);
 
@@ -114,8 +114,8 @@ TEST_F(SimpleIndexFileTest, Serialize) {
     SimpleIndex::InsertInEntrySet(hash, metadata_entries[i], &entries);
   }
 
-  scoped_ptr<Pickle> pickle = WrappedSimpleIndexFile::Serialize(
-      index_metadata, entries);
+  scoped_ptr<base::Pickle> pickle =
+      WrappedSimpleIndexFile::Serialize(index_metadata, entries);
   EXPECT_TRUE(pickle.get() != NULL);
   base::Time now = base::Time::Now();
   EXPECT_TRUE(WrappedSimpleIndexFile::SerializeFinalData(now, pickle.get()));

@@ -80,7 +80,7 @@ void WebCursor::GetCursorInfo(CursorInfo* cursor_info) const {
 #endif
 }
 
-bool WebCursor::Deserialize(PickleIterator* iter) {
+bool WebCursor::Deserialize(base::PickleIterator* iter) {
   int type, hotspot_x, hotspot_y, size_x, size_y, data_len;
   float scale;
   const char* data;
@@ -132,7 +132,7 @@ bool WebCursor::Deserialize(PickleIterator* iter) {
   return DeserializePlatformData(iter);
 }
 
-bool WebCursor::Serialize(Pickle* pickle) const {
+bool WebCursor::Serialize(base::Pickle* pickle) const {
   if (!pickle->WriteInt(type_) ||
       !pickle->WriteInt(hotspot_.x()) ||
       !pickle->WriteInt(hotspot_.y()) ||

@@ -108,7 +108,7 @@ class InputParamTraitsTest : public testing::Test {
     IPC::ParamTraits<InputEvents>::Write(&msg, events_in);
 
     InputEvents events_out;
-    PickleIterator iter(msg);
+    base::PickleIterator iter(msg);
     EXPECT_TRUE(IPC::ParamTraits<InputEvents>::Read(&msg, &iter, &events_out));
 
     Compare(&events_in, &events_out);
@@ -127,7 +127,7 @@ class InputParamTraitsTest : public testing::Test {
     IPC::ParamTraits<SyntheticGesturePacket>::Write(&msg, packet_in);
 
     SyntheticGesturePacket packet_out;
-    PickleIterator iter(msg);
+    base::PickleIterator iter(msg);
     EXPECT_TRUE(IPC::ParamTraits<SyntheticGesturePacket>::Read(&msg, &iter,
                                                                &packet_out));
 
@@ -151,7 +151,7 @@ TEST_F(InputParamTraitsTest, UninitializedEvents) {
   IPC::WriteParam(&msg, event);
 
   InputEvent event_out;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   EXPECT_FALSE(IPC::ReadParam(&msg, &iter, &event_out));
 }
 
@@ -197,7 +197,7 @@ TEST_F(InputParamTraitsTest, InvalidSyntheticGestureParams) {
   WriteParam(&msg, -3);
 
   SyntheticGesturePacket packet_out;
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   ASSERT_FALSE(
       IPC::ParamTraits<SyntheticGesturePacket>::Read(&msg, &iter, &packet_out));
 }

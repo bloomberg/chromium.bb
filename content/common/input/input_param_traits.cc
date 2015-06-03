@@ -13,11 +13,10 @@
 
 namespace IPC {
 namespace {
-template<typename GestureType>
+template <typename GestureType>
 scoped_ptr<content::SyntheticGestureParams> ReadGestureParams(
     const Message* m,
-    PickleIterator* iter)
-{
+    base::PickleIterator* iter) {
   scoped_ptr<GestureType> gesture_params(new GestureType);
   if (!ReadParam(m, iter, gesture_params.get()))
     return scoped_ptr<content::SyntheticGestureParams>();
@@ -35,7 +34,7 @@ void ParamTraits<content::ScopedWebInputEvent>::Write(Message* m,
 }
 
 bool ParamTraits<content::ScopedWebInputEvent>::Read(const Message* m,
-                                                     PickleIterator* iter,
+                                                     base::PickleIterator* iter,
                                                      param_type* p) {
   bool valid_web_event = false;
   WebInputEventPointer web_event_pointer = NULL;
@@ -78,9 +77,10 @@ void ParamTraits<content::SyntheticGesturePacket>::Write(Message* m,
   }
 }
 
-bool ParamTraits<content::SyntheticGesturePacket>::Read(const Message* m,
-                                                        PickleIterator* iter,
-                                                        param_type* p) {
+bool ParamTraits<content::SyntheticGesturePacket>::Read(
+    const Message* m,
+    base::PickleIterator* iter,
+    param_type* p) {
   content::SyntheticGestureParams::GestureType gesture_type;
   if (!ReadParam(m, iter, &gesture_type))
     return false;

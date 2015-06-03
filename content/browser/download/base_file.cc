@@ -47,8 +47,9 @@ BaseFile::BaseFile(const base::FilePath& full_path,
     secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
     if ((bytes_so_far_ > 0) &&  // Not starting at the beginning.
         (!IsEmptyHash(hash_state_bytes))) {
-      Pickle hash_state(hash_state_bytes.c_str(), hash_state_bytes.size());
-      PickleIterator data_iterator(hash_state);
+      base::Pickle hash_state(hash_state_bytes.c_str(),
+                              hash_state_bytes.size());
+      base::PickleIterator data_iterator(hash_state);
       secure_hash_->Deserialize(&data_iterator);
     }
   }
@@ -225,7 +226,7 @@ std::string BaseFile::GetHashState() {
   if (!calculate_hash_)
     return std::string();
 
-  Pickle hash_state;
+  base::Pickle hash_state;
   if (!secure_hash_->Serialize(&hash_state))
     return std::string();
 

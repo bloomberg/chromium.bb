@@ -54,8 +54,9 @@ void ParamTraits<cc::FilterOperation>::Write(
   }
 }
 
-bool ParamTraits<cc::FilterOperation>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<cc::FilterOperation>::Read(const Message* m,
+                                            base::PickleIterator* iter,
+                                            param_type* r) {
   cc::FilterOperation::FilterType type;
   float amount;
   gfx::Point drop_shadow_offset;
@@ -188,8 +189,9 @@ void ParamTraits<cc::FilterOperations>::Write(
   }
 }
 
-bool ParamTraits<cc::FilterOperations>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<cc::FilterOperations>::Read(const Message* m,
+                                             base::PickleIterator* iter,
+                                             param_type* r) {
   size_t count;
   if (!ReadParam(m, iter, &count))
     return false;
@@ -226,8 +228,9 @@ void ParamTraits<skia::RefPtr<SkImageFilter> >::Write(
   }
 }
 
-bool ParamTraits<skia::RefPtr<SkImageFilter> >::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<skia::RefPtr<SkImageFilter>>::Read(const Message* m,
+                                                    base::PickleIterator* iter,
+                                                    param_type* r) {
   const char* data = 0;
   int length = 0;
   if (!iter->ReadData(&data, &length))
@@ -261,8 +264,9 @@ void ParamTraits<gfx::Transform>::Write(
   m->WriteBytes(&column_major_data, sizeof(SkMScalar) * 16);
 }
 
-bool ParamTraits<gfx::Transform>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<gfx::Transform>::Read(const Message* m,
+                                       base::PickleIterator* iter,
+                                       param_type* r) {
   const char* column_major_data;
   if (!iter->ReadBytes(&column_major_data, sizeof(SkMScalar) * 16))
     return false;
@@ -387,7 +391,7 @@ static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
 
 template <typename QuadType>
 static cc::DrawQuad* ReadDrawQuad(const Message* m,
-                                  PickleIterator* iter,
+                                  base::PickleIterator* iter,
                                   cc::RenderPass* render_pass) {
   QuadType* quad = render_pass->CreateAndAppendDrawQuad<QuadType>();
   if (!ReadParam(m, iter, quad))
@@ -395,8 +399,9 @@ static cc::DrawQuad* ReadDrawQuad(const Message* m,
   return quad;
 }
 
-bool ParamTraits<cc::RenderPass>::Read(
-    const Message* m, PickleIterator* iter, param_type* p) {
+bool ParamTraits<cc::RenderPass>::Read(const Message* m,
+                                       base::PickleIterator* iter,
+                                       param_type* p) {
   cc::RenderPassId id(-1, -1);
   gfx::Rect output_rect;
   gfx::Rect damage_rect;
@@ -420,7 +425,7 @@ bool ParamTraits<cc::RenderPass>::Read(
 
   for (size_t i = 0; i < quad_list_size; ++i) {
     cc::DrawQuad::Material material;
-    PickleIterator temp_iter = *iter;
+    base::PickleIterator temp_iter = *iter;
     if (!ReadParam(m, &temp_iter, &material))
       return false;
 
@@ -590,7 +595,7 @@ void ParamTraits<cc::CompositorFrame>::Write(Message* m,
 }
 
 bool ParamTraits<cc::CompositorFrame>::Read(const Message* m,
-                                            PickleIterator* iter,
+                                            base::PickleIterator* iter,
                                             param_type* p) {
   if (!ReadParam(m, iter, &p->metadata))
     return false;
@@ -650,7 +655,7 @@ void ParamTraits<cc::CompositorFrameAck>::Write(Message* m,
 }
 
 bool ParamTraits<cc::CompositorFrameAck>::Read(const Message* m,
-                                               PickleIterator* iter,
+                                               base::PickleIterator* iter,
                                                param_type* p) {
   if (!ReadParam(m, iter, &p->resources))
     return false;
@@ -712,7 +717,7 @@ void ParamTraits<cc::DelegatedFrameData>::Write(Message* m,
 }
 
 bool ParamTraits<cc::DelegatedFrameData>::Read(const Message* m,
-                                               PickleIterator* iter,
+                                               base::PickleIterator* iter,
                                                param_type* p) {
   if (!ReadParam(m, iter, &p->device_scale_factor))
     return false;
@@ -782,7 +787,7 @@ void ParamTraits<cc::SoftwareFrameData>::Write(Message* m,
 }
 
 bool ParamTraits<cc::SoftwareFrameData>::Read(const Message* m,
-                                              PickleIterator* iter,
+                                              base::PickleIterator* iter,
                                               param_type* p) {
   if (!ReadParam(m, iter, &p->id))
     return false;

@@ -107,11 +107,11 @@ TEST(SerializedNavigationEntryTest, Pickle) {
   const SerializedNavigationEntry old_navigation =
       SerializedNavigationEntryTestHelper::CreateNavigationForTest();
 
-  Pickle pickle;
+  base::Pickle pickle;
   old_navigation.WriteToPickle(30000, &pickle);
 
   SerializedNavigationEntry new_navigation;
-  PickleIterator pickle_iterator(pickle);
+  base::PickleIterator pickle_iterator(pickle);
   EXPECT_TRUE(new_navigation.ReadFromPickle(&pickle_iterator));
 
   // Fields that are written to the pickle.

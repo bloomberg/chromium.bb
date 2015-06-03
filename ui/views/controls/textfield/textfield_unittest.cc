@@ -1017,7 +1017,7 @@ TEST_F(TextfieldTest, DragAndDrop_AcceptDrop) {
   ui::OSExchangeData bad_data;
   bad_data.SetFilename(base::FilePath(FILE_PATH_LITERAL("x")));
   ui::OSExchangeData::CustomFormat fmt = ui::Clipboard::GetBitmapFormatType();
-  bad_data.SetPickledData(fmt, Pickle());
+  bad_data.SetPickledData(fmt, base::Pickle());
   bad_data.SetFileContents(base::FilePath(L"x"), "x");
   bad_data.SetHtml(base::string16(ASCIIToUTF16("x")), GURL("x.org"));
   ui::OSExchangeData::DownloadFileInfo download(base::FilePath(), NULL);

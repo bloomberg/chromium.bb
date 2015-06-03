@@ -115,7 +115,8 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
                                base::Time* out_last_cache_seen_by_index,
                                SimpleIndexLoadResult* out_result);
 
-  // Returns a scoped_ptr for a newly allocated Pickle containing the serialized
+  // Returns a scoped_ptr for a newly allocated base::Pickle containing the
+  // serialized
   // data to be written to a file. Note: the pickle is not in a consistent state
   // immediately after calling this menthod, one needs to call
   // SerializeFinalData to make it ready to write to a file.

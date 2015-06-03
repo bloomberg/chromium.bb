@@ -332,8 +332,8 @@ class ServerDelegate : public Daemon::ServerDelegate {
       has_failed_ = true;
       return;
     }
-    const Pickle command_pickle(buf, bytes_read);
-    PickleIterator pickle_it(command_pickle);
+    const base::Pickle command_pickle(buf, bytes_read);
+    base::PickleIterator pickle_it(command_pickle);
     std::string device_serial;
     CHECK(pickle_it.ReadString(&device_serial));
     int device_port;
@@ -358,10 +358,8 @@ class ServerDelegate : public Daemon::ServerDelegate {
 
 class ClientDelegate : public Daemon::ClientDelegate {
  public:
-  ClientDelegate(const Pickle& command_pickle)
-      : command_pickle_(command_pickle),
-        has_failed_(false) {
-  }
+  ClientDelegate(const base::Pickle& command_pickle)
+      : command_pickle_(command_pickle), has_failed_(false) {}
 
   bool has_failed() const { return has_failed_; }
 
@@ -387,7 +385,7 @@ class ClientDelegate : public Daemon::ClientDelegate {
   }
 
  private:
-  const Pickle command_pickle_;
+  const base::Pickle command_pickle_;
   bool has_failed_;
 };
 
@@ -419,7 +417,7 @@ int RunHostForwarder(int argc, char** argv) {
   std::string adb_path = "adb";
   bool kill_server = false;
 
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteString(
       cmd_line.HasSwitch("serial-id") ?
           cmd_line.GetSwitchValueASCII("serial-id") : std::string());

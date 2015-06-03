@@ -14,7 +14,9 @@ namespace {
 // Helper used by CreateUpdateTabNavigationCommand(). It writes |str| to
 // |pickle|, if and only if |str| fits within (|max_bytes| - |*bytes_written|).
 // |bytes_written| is incremented to reflect the data written.
-void WriteStringToPickle(Pickle& pickle, int* bytes_written, int max_bytes,
+void WriteStringToPickle(base::Pickle& pickle,
+                         int* bytes_written,
+                         int max_bytes,
                          const std::string& str) {
   int num_bytes = str.size() * sizeof(char);
   if (*bytes_written + num_bytes < max_bytes) {
@@ -32,7 +34,7 @@ scoped_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
     SessionID::id_type tab_id,
     const sessions::SerializedNavigationEntry& navigation) {
   // Use pickle to handle marshalling.
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteInt(tab_id);
   // We only allow navigations up to 63k (which should be completely
   // reasonable).
@@ -47,7 +49,7 @@ scoped_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
     SessionID::id_type tab_id,
     const std::string& extension_id) {
   // Use pickle to handle marshalling.
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteInt(tab_id);
 
   // Enforce a max for ids. They should never be anywhere near this size.
@@ -66,7 +68,7 @@ scoped_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
     SessionID::id_type tab_id,
     const std::string& user_agent_override) {
   // Use pickle to handle marshalling.
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteInt(tab_id);
 
   // Enforce a max for the user agent length.  They should never be anywhere
@@ -87,7 +89,7 @@ scoped_ptr<SessionCommand> CreateSetWindowAppNameCommand(
     SessionID::id_type window_id,
     const std::string& app_name) {
   // Use pickle to handle marshalling.
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteInt(window_id);
 
   // Enforce a max for ids. They should never be anywhere near this size.
@@ -105,43 +107,43 @@ bool RestoreUpdateTabNavigationCommand(
     const SessionCommand& command,
     sessions::SerializedNavigationEntry* navigation,
     SessionID::id_type* tab_id) {
-  scoped_ptr<Pickle> pickle(command.PayloadAsPickle());
+  scoped_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
-  PickleIterator iterator(*pickle);
+  base::PickleIterator iterator(*pickle);
   return iterator.ReadInt(tab_id) && navigation->ReadFromPickle(&iterator);
 }
 
 bool RestoreSetTabExtensionAppIDCommand(const SessionCommand& command,
                                         SessionID::id_type* tab_id,
                                         std::string* extension_app_id) {
-  scoped_ptr<Pickle> pickle(command.PayloadAsPickle());
+  scoped_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
 
-  PickleIterator iterator(*pickle);
+  base::PickleIterator iterator(*pickle);
   return iterator.ReadInt(tab_id) && iterator.ReadString(extension_app_id);
 }
 
 bool RestoreSetTabUserAgentOverrideCommand(const SessionCommand& command,
                                            SessionID::id_type* tab_id,
                                            std::string* user_agent_override) {
-  scoped_ptr<Pickle> pickle(command.PayloadAsPickle());
+  scoped_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
 
-  PickleIterator iterator(*pickle);
+  base::PickleIterator iterator(*pickle);
   return iterator.ReadInt(tab_id) && iterator.ReadString(user_agent_override);
 }
 
 bool RestoreSetWindowAppNameCommand(const SessionCommand& command,
                                     SessionID::id_type* window_id,
                                     std::string* app_name) {
-  scoped_ptr<Pickle> pickle(command.PayloadAsPickle());
+  scoped_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
 
-  PickleIterator iterator(*pickle);
+  base::PickleIterator iterator(*pickle);
   return iterator.ReadInt(window_id) && iterator.ReadString(app_name);
 }
 

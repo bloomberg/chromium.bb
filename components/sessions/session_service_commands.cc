@@ -541,10 +541,10 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       }
 
       case kCommandSessionStorageAssociated: {
-        scoped_ptr<Pickle> command_pickle(command->PayloadAsPickle());
+        scoped_ptr<base::Pickle> command_pickle(command->PayloadAsPickle());
         SessionID::id_type command_tab_id;
         std::string session_storage_persistent_id;
-        PickleIterator iter(*command_pickle.get());
+        base::PickleIterator iter(*command_pickle.get());
         if (!iter.ReadInt(&command_tab_id) ||
             !iter.ReadString(&session_storage_persistent_id))
           return true;
@@ -705,7 +705,7 @@ scoped_ptr<SessionCommand> CreatePinnedStateCommand(
 scoped_ptr<SessionCommand> CreateSessionStorageAssociatedCommand(
     const SessionID& tab_id,
     const std::string& session_storage_persistent_id) {
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteInt(tab_id.id());
   pickle.WriteString(session_storage_persistent_id);
   return scoped_ptr<SessionCommand>(
@@ -806,8 +806,8 @@ bool ReplacePendingCommand(BaseSessionService* base_session_service,
     SessionCommand* existing_command = *i;
     if ((*command)->id() == kCommandUpdateTabNavigation &&
         existing_command->id() == kCommandUpdateTabNavigation) {
-      scoped_ptr<Pickle> command_pickle((*command)->PayloadAsPickle());
-      PickleIterator iterator(*command_pickle);
+      scoped_ptr<base::Pickle> command_pickle((*command)->PayloadAsPickle());
+      base::PickleIterator iterator(*command_pickle);
       SessionID::id_type command_tab_id;
       int command_nav_index;
       if (!iterator.ReadInt(&command_tab_id) ||
@@ -820,8 +820,9 @@ bool ReplacePendingCommand(BaseSessionService* base_session_service,
         // Creating a pickle like this means the Pickle references the data from
         // the command. Make sure we delete the pickle before the command, else
         // the pickle references deleted memory.
-        scoped_ptr<Pickle> existing_pickle(existing_command->PayloadAsPickle());
-        iterator = PickleIterator(*existing_pickle);
+        scoped_ptr<base::Pickle> existing_pickle(
+            existing_command->PayloadAsPickle());
+        iterator = base::PickleIterator(*existing_pickle);
         if (!iterator.ReadInt(&existing_tab_id) ||
             !iterator.ReadInt(&existing_nav_index)) {
           return false;

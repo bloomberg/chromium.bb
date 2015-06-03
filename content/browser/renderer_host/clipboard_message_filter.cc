@@ -230,7 +230,7 @@ void ClipboardMessageFilter::OnWriteSmartPasteMarker(
 void ClipboardMessageFilter::OnWriteCustomData(
     ui::ClipboardType clipboard_type,
     const std::map<base::string16, base::string16>& data) {
-  Pickle pickle;
+  base::Pickle pickle;
   ui::WriteCustomDataToPickle(data, &pickle);
   clipboard_writer_->WritePickledData(
       pickle, ui::Clipboard::GetWebCustomDataFormatType());

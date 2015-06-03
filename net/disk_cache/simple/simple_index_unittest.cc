@@ -188,10 +188,10 @@ TEST_F(EntryMetadataTest, Basics) {
 TEST_F(EntryMetadataTest, Serialize) {
   EntryMetadata entry_metadata = NewEntryMetadataWithValues();
 
-  Pickle pickle;
+  base::Pickle pickle;
   entry_metadata.Serialize(&pickle);
 
-  PickleIterator it(pickle);
+  base::PickleIterator it(pickle);
   EntryMetadata new_entry_metadata;
   new_entry_metadata.Deserialize(&it);
   CheckEntryMetadataValues(new_entry_metadata);

@@ -190,7 +190,7 @@ bool ReadImagesFromFile(const base::FilePath& extension_path,
     return false;
 
   IPC::Message pickle(file_str.data(), file_str.size());
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   return IPC::ReadParam(&pickle, &iter, images);
 }
 
@@ -206,7 +206,7 @@ bool ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
     return false;
 
   IPC::Message pickle(file_str.data(), file_str.size());
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   return IPC::ReadParam(&pickle, &iter, catalogs);
 }
 

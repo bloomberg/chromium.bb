@@ -144,7 +144,7 @@ TEST_F(NaClValidationCacheTest, SerializeDeserialize) {
   cache1.SetKnownToValidate(sig1);
   cache1.SetKnownToValidate(sig2);
 
-  Pickle pickle;
+  base::Pickle pickle;
   cache1.Serialize(&pickle);
   ASSERT_TRUE(cache2.Deserialize(&pickle));
   ASSERT_EQ(2, (int) cache2.size());
@@ -157,9 +157,10 @@ TEST_F(NaClValidationCacheTest, SerializeDeserializeTruncated) {
   cache1.SetKnownToValidate(sig1);
   cache1.SetKnownToValidate(sig2);
 
-  Pickle pickle;
+  base::Pickle pickle;
   cache1.Serialize(&pickle);
-  Pickle truncated(static_cast<const char*>(pickle.data()), pickle.size()-20);
+  base::Pickle truncated(static_cast<const char*>(pickle.data()),
+                         pickle.size() - 20);
   ASSERT_FALSE(cache2.Deserialize(&truncated));
   ASSERT_EQ(0, (int) cache2.size());
 }
@@ -170,7 +171,7 @@ TEST_F(NaClValidationCacheTest, DeserializeBadKey) {
   cache1.SetKnownToValidate(sig1);
   cache1.SetKnownToValidate(sig2);
 
-  Pickle pickle;
+  base::Pickle pickle;
   cache1.Serialize(&pickle);
   ASSERT_FALSE(cache2.Deserialize(&pickle));
   ASSERT_EQ(0, (int) cache2.size());
@@ -178,14 +179,14 @@ TEST_F(NaClValidationCacheTest, DeserializeBadKey) {
 
 TEST_F(NaClValidationCacheTest, DeserializeNothing) {
   cache1.SetKnownToValidate(sig1);
-  Pickle pickle("", 0);
+  base::Pickle pickle("", 0);
   ASSERT_FALSE(cache1.Deserialize(&pickle));
   ASSERT_EQ(0, (int) cache1.size());
 }
 
 TEST_F(NaClValidationCacheTest, DeserializeJunk) {
   cache1.SetKnownToValidate(sig1);
-  Pickle pickle(key1, strlen(key1));
+  base::Pickle pickle(key1, strlen(key1));
   ASSERT_FALSE(cache1.Deserialize(&pickle));
   ASSERT_EQ(0, (int) cache1.size());
 }

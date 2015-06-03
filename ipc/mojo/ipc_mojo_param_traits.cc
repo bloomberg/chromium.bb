@@ -17,7 +17,7 @@ void ParamTraits<mojo::MessagePipeHandle>::Write(Message* m,
 }
 
 bool ParamTraits<mojo::MessagePipeHandle>::Read(const Message* m,
-                                                PickleIterator* iter,
+                                                base::PickleIterator* iter,
                                                 param_type* r) {
   bool is_valid;
   if (!ReadParam(m, iter, &is_valid))

@@ -28,7 +28,7 @@ void ParamTraits<AudioParameters>::Write(Message* m,
 }
 
 bool ParamTraits<AudioParameters>::Read(const Message* m,
-                                        PickleIterator* iter,
+                                        base::PickleIterator* iter,
                                         AudioParameters* r) {
   int format, channel_layout, sample_rate, bits_per_sample,
       frames_per_buffer, channels, effects;
@@ -66,7 +66,7 @@ void ParamTraits<VideoCaptureFormat>::Write(Message* m,
 }
 
 bool ParamTraits<VideoCaptureFormat>::Read(const Message* m,
-                                           PickleIterator* iter,
+                                           base::PickleIterator* iter,
                                            VideoCaptureFormat* r) {
   int frame_size_width, frame_size_height, pixel_format;
   if (!iter->ReadInt(&frame_size_width) ||

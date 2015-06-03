@@ -16,7 +16,8 @@ namespace {
 // This function serializes the form data into the pickle in version one format.
 // It should always be possible to deserialize it using DeserializeFormData(),
 // even when version changes. See kPickleVersion in form_data.cc.
-void SerializeInVersion1Format(const FormData& form_data, Pickle* pickle) {
+void SerializeInVersion1Format(const FormData& form_data,
+                               base::Pickle* pickle) {
   DCHECK_EQ(true, form_data.is_form_tag);
   pickle->WriteInt(1);
   pickle->WriteString16(form_data.name);
@@ -31,7 +32,8 @@ void SerializeInVersion1Format(const FormData& form_data, Pickle* pickle) {
   }
 }
 
-void SerializeInVersion2Format(const FormData& form_data, Pickle* pickle) {
+void SerializeInVersion2Format(const FormData& form_data,
+                               base::Pickle* pickle) {
   DCHECK_EQ(true, form_data.is_form_tag);
   pickle->WriteInt(2);
   pickle->WriteString16(form_data.name);
@@ -46,7 +48,7 @@ void SerializeInVersion2Format(const FormData& form_data, Pickle* pickle) {
 
 // This function serializes the form data into the pickle in incorrect format
 // (no version number).
-void SerializeIncorrectFormat(const FormData& form_data, Pickle* pickle) {
+void SerializeIncorrectFormat(const FormData& form_data, base::Pickle* pickle) {
   pickle->WriteString16(form_data.name);
   pickle->WriteString(form_data.origin.spec());
   pickle->WriteString(form_data.action.spec());
@@ -97,10 +99,10 @@ TEST(FormDataTest, SerializeAndDeserialize) {
   FillInDummyFormData(&data);
   data.is_form_tag = false;
 
-  Pickle pickle;
+  base::Pickle pickle;
   SerializeFormData(data, &pickle);
 
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   FormData actual;
   EXPECT_TRUE(DeserializeFormData(&iter, &actual));
 
@@ -111,10 +113,10 @@ TEST(FormDataTest, Serialize_v1_Deserialize_vCurrent) {
   FormData data;
   FillInDummyFormData(&data);
 
-  Pickle pickle;
+  base::Pickle pickle;
   SerializeInVersion1Format(data, &pickle);
 
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   FormData actual;
   EXPECT_TRUE(DeserializeFormData(&iter, &actual));
 
@@ -125,10 +127,10 @@ TEST(FormDataTest, Serialize_v2_Deserialize_vCurrent) {
   FormData data;
   FillInDummyFormData(&data);
 
-  Pickle pickle;
+  base::Pickle pickle;
   SerializeInVersion2Format(data, &pickle);
 
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   FormData actual;
   EXPECT_TRUE(DeserializeFormData(&iter, &actual));
 
@@ -139,10 +141,10 @@ TEST(FormDataTest, SerializeIncorrectFormatAndDeserialize) {
   FormData data;
   FillInDummyFormData(&data);
 
-  Pickle pickle;
+  base::Pickle pickle;
   SerializeIncorrectFormat(data, &pickle);
 
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   FormData actual;
   EXPECT_FALSE(DeserializeFormData(&iter, &actual));
 

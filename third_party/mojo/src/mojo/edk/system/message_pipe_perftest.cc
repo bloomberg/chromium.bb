@@ -40,7 +40,7 @@ class MultiprocessMessagePipePerfTest
   void SetUpMeasurement(int message_count, size_t message_size) {
     message_count_ = message_count;
     message_size_ = message_size;
-    payload_ = Pickle();
+    payload_ = base::Pickle();
     payload_.WriteString(std::string(message_size, '*'));
     read_buffer_.resize(message_size * 2);
   }
@@ -86,7 +86,7 @@ class MultiprocessMessagePipePerfTest
  private:
   int message_count_;
   size_t message_size_;
-  Pickle payload_;
+  base::Pickle payload_;
   std::string read_buffer_;
   scoped_ptr<base::PerfTimeLogger> perf_logger_;
 };

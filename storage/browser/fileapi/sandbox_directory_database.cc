@@ -25,7 +25,7 @@
 namespace {
 
 bool PickleFromFileInfo(const storage::SandboxDirectoryDatabase::FileInfo& info,
-                        Pickle* pickle) {
+                        base::Pickle* pickle) {
   DCHECK(pickle);
   std::string data_path;
   // Round off here to match the behavior of the filesystem on real files.
@@ -46,9 +46,9 @@ bool PickleFromFileInfo(const storage::SandboxDirectoryDatabase::FileInfo& info,
   return false;
 }
 
-bool FileInfoFromPickle(const Pickle& pickle,
+bool FileInfoFromPickle(const base::Pickle& pickle,
                         storage::SandboxDirectoryDatabase::FileInfo* info) {
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   std::string data_path;
   std::string name;
   int64 internal_time;
@@ -62,7 +62,7 @@ bool FileInfoFromPickle(const Pickle& pickle,
     info->modification_time = base::Time::FromInternalValue(internal_time);
     return true;
   }
-  LOG(ERROR) << "Pickle could not be digested!";
+  LOG(ERROR) << "base::Pickle could not be digested!";
   return false;
 }
 
@@ -224,7 +224,8 @@ bool DatabaseCheckHelper::ScanDatabase() {
       // value: "<pickled FileInfo>"
       FileInfo file_info;
       if (!FileInfoFromPickle(
-              Pickle(itr->value().data(), itr->value().size()), &file_info))
+              base::Pickle(itr->value().data(), itr->value().size()),
+              &file_info))
         return false;
 
       FileId file_id = -1;
@@ -498,7 +499,7 @@ bool SandboxDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
       db_->Get(leveldb::ReadOptions(), file_key, &file_data_string);
   if (status.ok()) {
     bool success = FileInfoFromPickle(
-        Pickle(file_data_string.data(), file_data_string.length()), info);
+        base::Pickle(file_data_string.data(), file_data_string.length()), info);
     if (!success)
       return false;
     if (!VerifyDataPath(info->data_path)) {
@@ -621,7 +622,7 @@ bool SandboxDirectoryDatabase::UpdateModificationTime(
   if (!GetFileInfo(file_id, &info))
     return false;
   info.modification_time = modification_time;
-  Pickle pickle;
+  base::Pickle pickle;
   if (!PickleFromFileInfo(info, &pickle))
     return false;
   leveldb::Status status = db_->Put(
@@ -653,7 +654,7 @@ bool SandboxDirectoryDatabase::OverwritingMoveFile(
   dest_file_info.data_path = src_file_info.data_path;
   if (!RemoveFileInfoHelper(src_file_id, &batch))
     return false;
-  Pickle pickle;
+  base::Pickle pickle;
   if (!PickleFromFileInfo(dest_file_info, &pickle))
     return false;
   batch.Put(
@@ -899,7 +900,7 @@ bool SandboxDirectoryDatabase::AddFileInfoHelper(
     std::string child_key = GetChildLookupKey(info.parent_id, info.name);
     batch->Put(child_key, id_string);
   }
-  Pickle pickle;
+  base::Pickle pickle;
   if (!PickleFromFileInfo(info, &pickle))
     return false;
   batch->Put(

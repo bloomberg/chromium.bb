@@ -36,7 +36,7 @@ void ParamTraits<gpu::CommandBuffer::State> ::Write(Message* m,
 }
 
 bool ParamTraits<gpu::CommandBuffer::State> ::Read(const Message* m,
-                                                   PickleIterator* iter,
+                                                   base::PickleIterator* iter,
                                                    param_type* p) {
   int32 temp;
   if (ReadParam(m, iter, &p->get_offset) &&
@@ -59,9 +59,9 @@ void ParamTraits<gpu::Mailbox>::Write(Message* m, const param_type& p) {
   m->WriteBytes(p.name, sizeof(p.name));
 }
 
-bool ParamTraits<gpu::Mailbox>::Read(const Message* m,
-                                     PickleIterator* iter,
-                                     param_type* p) {
+bool ParamTraits<gpu::Mailbox> ::Read(const Message* m,
+                                      base::PickleIterator* iter,
+                                      param_type* p) {
   const char* bytes = NULL;
   if (!iter->ReadBytes(&bytes, sizeof(p->name)))
     return false;
@@ -81,9 +81,9 @@ void ParamTraits<gpu::MailboxHolder>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.sync_point);
 }
 
-bool ParamTraits<gpu::MailboxHolder>::Read(const Message* m,
-                                           PickleIterator* iter,
-                                           param_type* p) {
+bool ParamTraits<gpu::MailboxHolder> ::Read(const Message* m,
+                                            base::PickleIterator* iter,
+                                            param_type* p) {
   if (!ReadParam(m, iter, &p->mailbox) ||
       !ReadParam(m, iter, &p->texture_target) ||
       !ReadParam(m, iter, &p->sync_point))
@@ -101,9 +101,9 @@ void ParamTraits<gpu::ValueState>::Write(Message* m, const param_type& p) {
                sizeof(gpu::ValueState));
 }
 
-bool ParamTraits<gpu::ValueState>::Read(const Message* m,
-                                        PickleIterator* iter,
-                                        param_type* p) {
+bool ParamTraits<gpu::ValueState> ::Read(const Message* m,
+                                         base::PickleIterator* iter,
+                                         param_type* p) {
   int length;
   const char* data = NULL;
   if (!iter->ReadData(&data, &length) || length != sizeof(gpu::ValueState))

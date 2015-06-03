@@ -43,8 +43,7 @@ namespace IPC {
 Message::~Message() {
 }
 
-Message::Message()
-    : Pickle(sizeof(Header)) {
+Message::Message() : base::Pickle(sizeof(Header)) {
   header()->routing = header()->type = 0;
   header()->flags = GetRefNumUpper24();
 #if defined(OS_POSIX)
@@ -55,7 +54,7 @@ Message::Message()
 }
 
 Message::Message(int32 routing_id, uint32 type, PriorityValue priority)
-    : Pickle(sizeof(Header)) {
+    : base::Pickle(sizeof(Header)) {
   header()->routing = routing_id;
   header()->type = type;
   DCHECK((priority & 0xffffff00) == 0);
@@ -67,11 +66,12 @@ Message::Message(int32 routing_id, uint32 type, PriorityValue priority)
   Init();
 }
 
-Message::Message(const char* data, int data_len) : Pickle(data, data_len) {
+Message::Message(const char* data, int data_len)
+    : base::Pickle(data, data_len) {
   Init();
 }
 
-Message::Message(const Message& other) : Pickle(other) {
+Message::Message(const Message& other) : base::Pickle(other) {
   Init();
 #if defined(OS_POSIX)
   attachment_set_ = other.attachment_set_;
@@ -88,7 +88,7 @@ void Message::Init() {
 }
 
 Message& Message::operator=(const Message& other) {
-  *static_cast<Pickle*>(this) = other;
+  *static_cast<base::Pickle*>(this) = other;
 #if defined(OS_POSIX)
   attachment_set_ = other.attachment_set_;
 #endif
@@ -138,7 +138,7 @@ bool Message::WriteAttachment(scoped_refptr<MessageAttachment> attachment) {
 }
 
 bool Message::ReadAttachment(
-    PickleIterator* iter,
+    base::PickleIterator* iter,
     scoped_refptr<MessageAttachment>* attachment) const {
   int descriptor_index;
   if (!iter->ReadInt(&descriptor_index))

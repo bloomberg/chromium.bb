@@ -90,7 +90,7 @@ bool FontConfigIPC::matchFamilyName(const char familyName[],
   if (familyNameLen > kMaxFontFamilyLength)
     return false;
 
-  Pickle request;
+  base::Pickle request;
   request.WriteInt(METHOD_MATCH);
   request.WriteData(familyName, familyNameLen);
   request.WriteUInt32(requestedStyle);
@@ -101,8 +101,8 @@ bool FontConfigIPC::matchFamilyName(const char familyName[],
   if (r == -1)
     return false;
 
-  Pickle reply(reinterpret_cast<char*>(reply_buf), r);
-  PickleIterator iter(reply);
+  base::Pickle reply(reinterpret_cast<char*>(reply_buf), r);
+  base::PickleIterator iter(reply);
   bool result;
   if (!iter.ReadBool(&result))
     return false;
@@ -138,7 +138,7 @@ SkStreamAsset* FontConfigIPC::openStream(const FontIdentity& identity) {
       return mapped_font_files_it->second->CreateMemoryStream();
   }
 
-  Pickle request;
+  base::Pickle request;
   request.WriteInt(METHOD_OPEN);
   request.WriteUInt32(identity.fID);
 
@@ -149,9 +149,9 @@ SkStreamAsset* FontConfigIPC::openStream(const FontIdentity& identity) {
   if (r == -1)
     return NULL;
 
-  Pickle reply(reinterpret_cast<char*>(reply_buf), r);
+  base::Pickle reply(reinterpret_cast<char*>(reply_buf), r);
   bool result;
-  PickleIterator iter(reply);
+  base::PickleIterator iter(reply);
   if (!iter.ReadBool(&result) || !result) {
     if (result_fd)
       CloseFD(result_fd);

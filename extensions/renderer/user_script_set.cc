@@ -98,21 +98,22 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
     return false;
 
   // First get the size of the memory block.
-  if (!shared_memory_->Map(sizeof(Pickle::Header)))
+  if (!shared_memory_->Map(sizeof(base::Pickle::Header)))
     return false;
-  Pickle::Header* pickle_header =
-      reinterpret_cast<Pickle::Header*>(shared_memory_->memory());
+  base::Pickle::Header* pickle_header =
+      reinterpret_cast<base::Pickle::Header*>(shared_memory_->memory());
 
   // Now map in the rest of the block.
-  int pickle_size = sizeof(Pickle::Header) + pickle_header->payload_size;
+  int pickle_size = sizeof(base::Pickle::Header) + pickle_header->payload_size;
   shared_memory_->Unmap();
   if (!shared_memory_->Map(pickle_size))
     return false;
 
   // Unpickle scripts.
   size_t num_scripts = 0;
-  Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()), pickle_size);
-  PickleIterator iter(pickle);
+  base::Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()),
+                      pickle_size);
+  base::PickleIterator iter(pickle);
   CHECK(iter.ReadSizeT(&num_scripts));
 
   scripts_.clear();

@@ -103,7 +103,8 @@ void ScopedClipboardWriter::WriteImage(const SkBitmap& bitmap) {
 }
 
 void ScopedClipboardWriter::WritePickledData(
-    const Pickle& pickle, const Clipboard::FormatType& format) {
+    const base::Pickle& pickle,
+    const Clipboard::FormatType& format) {
   std::string format_string = format.Serialize();
   Clipboard::ObjectMapParam format_parameter(format_string.begin(),
                                              format_string.end());

@@ -20,7 +20,7 @@ class HttpResponseInfoTest : public testing::Test {
 
   void PickleAndRestore(const HttpResponseInfo& response_info,
                         HttpResponseInfo* restored_response_info) const {
-    Pickle pickle;
+    base::Pickle pickle;
     response_info.Persist(&pickle, false, false);
     bool truncated = false;
     restored_response_info->InitFromPickle(pickle, &truncated);

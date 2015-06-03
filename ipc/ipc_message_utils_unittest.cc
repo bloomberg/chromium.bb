@@ -29,7 +29,7 @@ TEST(IPCMessageUtilsTest, NestedMessages) {
   ParamTraits<Message>::Write(&outer_msg, nested_msg);
 
   // Read back the nested message.
-  PickleIterator iter(outer_msg);
+  base::PickleIterator iter(outer_msg);
   IPC::Message result_msg;
   ASSERT_TRUE(ParamTraits<Message>::Read(&outer_msg, &iter, &result_msg));
 
@@ -40,7 +40,7 @@ TEST(IPCMessageUtilsTest, NestedMessages) {
   EXPECT_EQ(nested_msg.flags(), result_msg.flags());
 
   // Verify nested message content
-  PickleIterator nested_iter(nested_msg);
+  base::PickleIterator nested_iter(nested_msg);
   int result_content = 0;
   ASSERT_TRUE(ParamTraits<int>::Read(&nested_msg, &nested_iter,
                                      &result_content));
@@ -63,7 +63,7 @@ TEST(IPCMessageUtilsTest, ParameterValidation) {
   ParamTraits<base::FilePath::StringType>::Write(&message, ok_string);
   ParamTraits<base::FilePath::StringType>::Write(&message, bad_string);
 
-  PickleIterator iter(message);
+  base::PickleIterator iter(message);
   base::FilePath ok_path;
   base::FilePath bad_path;
   ASSERT_TRUE(ParamTraits<base::FilePath>::Read(&message, &iter, &ok_path));

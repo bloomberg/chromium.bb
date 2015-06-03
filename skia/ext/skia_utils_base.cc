@@ -6,7 +6,7 @@
 
 namespace skia {
 
-bool ReadSkString(PickleIterator* iter, SkString* str) {
+bool ReadSkString(base::PickleIterator* iter, SkString* str) {
   int reply_length;
   const char* reply_text;
 
@@ -18,7 +18,7 @@ bool ReadSkString(PickleIterator* iter, SkString* str) {
   return true;
 }
 
-bool ReadSkFontIdentity(PickleIterator* iter,
+bool ReadSkFontIdentity(base::PickleIterator* iter,
                         SkFontConfigInterface::FontIdentity* identity) {
   uint32_t reply_id;
   uint32_t reply_ttcIndex;
@@ -38,11 +38,11 @@ bool ReadSkFontIdentity(PickleIterator* iter,
   return true;
 }
 
-bool WriteSkString(Pickle* pickle, const SkString& str) {
+bool WriteSkString(base::Pickle* pickle, const SkString& str) {
   return pickle->WriteData(str.c_str(), str.size());
 }
 
-bool WriteSkFontIdentity(Pickle* pickle,
+bool WriteSkFontIdentity(base::Pickle* pickle,
                          const SkFontConfigInterface::FontIdentity& identity) {
   return pickle->WriteUInt32(identity.fID) &&
          pickle->WriteUInt32(identity.fTTCIndex) &&

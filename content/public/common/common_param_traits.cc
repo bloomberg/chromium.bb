@@ -36,7 +36,9 @@ void ParamTraits<GURL>::Write(Message* m, const GURL& p) {
   // TODO(brettw) bug 684583: Add encoding for query params.
 }
 
-bool ParamTraits<GURL>::Read(const Message* m, PickleIterator* iter, GURL* p) {
+bool ParamTraits<GURL>::Read(const Message* m,
+                             base::PickleIterator* iter,
+                             GURL* p) {
   std::string s;
   if (!iter->ReadString(&s) || s.length() > content::GetMaxURLChars()) {
     *p = GURL();
@@ -60,7 +62,7 @@ void ParamTraits<url::Origin>::Write(Message* m,
 }
 
 bool ParamTraits<url::Origin>::Read(const Message* m,
-                                    PickleIterator* iter,
+                                    base::PickleIterator* iter,
                                     url::Origin* p) {
   std::string s;
   if (!iter->ReadString(&s)) {
@@ -81,7 +83,7 @@ void ParamTraits<net::HostPortPair>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<net::HostPortPair>::Read(const Message* m,
-                                          PickleIterator* iter,
+                                          base::PickleIterator* iter,
                                           param_type* r) {
   std::string host;
   uint16 port;
@@ -102,7 +104,8 @@ void ParamTraits<net::IPEndPoint>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.port());
 }
 
-bool ParamTraits<net::IPEndPoint>::Read(const Message* m, PickleIterator* iter,
+bool ParamTraits<net::IPEndPoint>::Read(const Message* m,
+                                        base::PickleIterator* iter,
                                         param_type* p) {
   net::IPAddressNumber address;
   uint16 port;
@@ -126,8 +129,9 @@ void ParamTraits<content::PageState>::Write(
   WriteParam(m, p.ToEncodedData());
 }
 
-bool ParamTraits<content::PageState>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<content::PageState>::Read(const Message* m,
+                                           base::PickleIterator* iter,
+                                           param_type* r) {
   std::string data;
   if (!ReadParam(m, iter, &data))
     return false;

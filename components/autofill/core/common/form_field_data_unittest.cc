@@ -32,7 +32,7 @@ void FillCommonFields(FormFieldData* data) {
   data->option_contents.push_back(base::ASCIIToUTF16("Second"));
 }
 
-void WriteCommonSection1(const FormFieldData& data, Pickle* pickle) {
+void WriteCommonSection1(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteString16(data.label);
   pickle->WriteString16(data.name);
   pickle->WriteString16(data.value);
@@ -46,7 +46,7 @@ void WriteCommonSection1(const FormFieldData& data, Pickle* pickle) {
   pickle->WriteBool(data.should_autocomplete);
 }
 
-void WriteCommonSection2(const FormFieldData& data, Pickle* pickle) {
+void WriteCommonSection2(const FormFieldData& data, base::Pickle* pickle) {
   pickle->WriteInt(data.text_direction);
   pickle->WriteInt(static_cast<int>(data.option_values.size()));
   for (auto s : data.option_values)
@@ -63,10 +63,10 @@ TEST(FormFieldDataTest, SerializeAndDeserialize) {
   FillCommonFields(&data);
   data.role = FormFieldData::ROLE_ATTRIBUTE_PRESENTATION;
 
-  Pickle pickle;
+  base::Pickle pickle;
   SerializeFormFieldData(data, &pickle);
 
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   FormFieldData actual;
   EXPECT_TRUE(DeserializeFormFieldData(&iter, &actual));
 
@@ -77,12 +77,12 @@ TEST(FormFieldDataTest, DeserializeVersion1) {
   FormFieldData data;
   FillCommonFields(&data);
 
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteInt(1);
   WriteCommonSection1(data, &pickle);
   WriteCommonSection2(data, &pickle);
 
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   FormFieldData actual;
   EXPECT_TRUE(DeserializeFormFieldData(&iter, &actual));
 
@@ -92,12 +92,12 @@ TEST(FormFieldDataTest, DeserializeVersion1) {
 // Verify that if the data isn't valid, the FormFieldData isn't populated
 // during deserialization.
 TEST(FormFieldDataTest, DeserializeBadData) {
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteInt(255);
   pickle.WriteString16(base::ASCIIToUTF16("random"));
   pickle.WriteString16(base::ASCIIToUTF16("data"));
 
-  PickleIterator iter(pickle);
+  base::PickleIterator iter(pickle);
   FormFieldData actual;
   EXPECT_FALSE(DeserializeFormFieldData(&iter, &actual));
 

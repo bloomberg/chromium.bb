@@ -195,8 +195,8 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
     return false;
   }
 
-  Pickle pickle(buf, len);
-  PickleIterator iter(pickle);
+  base::Pickle pickle(buf, len);
+  base::PickleIterator iter(pickle);
 
   int kind;
   if (iter.ReadInt(&kind)) {
@@ -236,8 +236,7 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
 }
 
 // TODO(jln): remove callers to this broken API. See crbug.com/274855.
-void Zygote::HandleReapRequest(int fd,
-                               PickleIterator iter) {
+void Zygote::HandleReapRequest(int fd, base::PickleIterator iter) {
   base::ProcessId child;
 
   if (!iter.ReadInt(&child)) {
@@ -324,8 +323,7 @@ bool Zygote::GetTerminationStatus(base::ProcessHandle real_pid,
   return true;
 }
 
-void Zygote::HandleGetTerminationStatus(int fd,
-                                        PickleIterator iter) {
+void Zygote::HandleGetTerminationStatus(int fd, base::PickleIterator iter) {
   bool known_dead;
   base::ProcessHandle child_requested;
 
@@ -348,7 +346,7 @@ void Zygote::HandleGetTerminationStatus(int fd,
     exit_code = RESULT_CODE_NORMAL_EXIT;
   }
 
-  Pickle write_pickle;
+  base::Pickle write_pickle;
   write_pickle.WriteInt(static_cast<int>(status));
   write_pickle.WriteInt(exit_code);
   ssize_t written =
@@ -461,8 +459,8 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     CHECK_GT(len, 0);
     CHECK(recv_fds.empty());
 
-    Pickle pickle(buf, len);
-    PickleIterator iter(pickle);
+    base::Pickle pickle(buf, len);
+    base::PickleIterator iter(pickle);
 
     int kind;
     CHECK(iter.ReadInt(&kind));
@@ -503,7 +501,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
   return real_pid;
 }
 
-base::ProcessId Zygote::ReadArgsAndFork(PickleIterator iter,
+base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
                                         ScopedVector<base::ScopedFD> fds,
                                         std::string* uma_name,
                                         int* uma_sample,
@@ -589,7 +587,7 @@ base::ProcessId Zygote::ReadArgsAndFork(PickleIterator iter,
 }
 
 bool Zygote::HandleForkRequest(int fd,
-                               PickleIterator iter,
+                               base::PickleIterator iter,
                                ScopedVector<base::ScopedFD> fds) {
   std::string uma_name;
   int uma_sample;
@@ -605,7 +603,7 @@ bool Zygote::HandleForkRequest(int fd,
         &uma_name, &uma_sample, &uma_boundary_value);
   }
   // Must always send reply, as ZygoteHost blocks while waiting for it.
-  Pickle reply_pickle;
+  base::Pickle reply_pickle;
   reply_pickle.WriteInt(child_pid);
   reply_pickle.WriteString(uma_name);
   if (!uma_name.empty()) {
@@ -618,8 +616,7 @@ bool Zygote::HandleForkRequest(int fd,
   return false;
 }
 
-bool Zygote::HandleGetSandboxStatus(int fd,
-                                    PickleIterator iter) {
+bool Zygote::HandleGetSandboxStatus(int fd, base::PickleIterator iter) {
   if (HANDLE_EINTR(write(fd, &sandbox_flags_, sizeof(sandbox_flags_))) !=
                    sizeof(sandbox_flags_)) {
     PLOG(ERROR) << "write";

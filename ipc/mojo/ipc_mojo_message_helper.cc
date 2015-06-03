@@ -20,7 +20,7 @@ bool MojoMessageHelper::WriteMessagePipeTo(
 // static
 bool MojoMessageHelper::ReadMessagePipeFrom(
     const Message* message,
-    PickleIterator* iter,
+    base::PickleIterator* iter,
     mojo::ScopedMessagePipeHandle* handle) {
   scoped_refptr<MessageAttachment> attachment;
   if (!message->ReadAttachment(iter, &attachment)) {

@@ -156,14 +156,15 @@ HttpResponseHeaders::HttpResponseHeaders(const std::string& raw_input)
                                    HttpUtil::GetStatusCodesForHistogram());
 }
 
-HttpResponseHeaders::HttpResponseHeaders(PickleIterator* iter)
+HttpResponseHeaders::HttpResponseHeaders(base::PickleIterator* iter)
     : response_code_(-1) {
   std::string raw_input;
   if (iter->ReadString(&raw_input))
     Parse(raw_input);
 }
 
-void HttpResponseHeaders::Persist(Pickle* pickle, PersistOptions options) {
+void HttpResponseHeaders::Persist(base::Pickle* pickle,
+                                  PersistOptions options) {
   if (options == PERSIST_RAW) {
     pickle->WriteString(raw_headers_);
     return;  // Done.

@@ -194,7 +194,7 @@ TEST(SocketsManifestPermissionTest, Empty) {
 
   IPC::Message m;
   ipc_perm->Write(&m);
-  PickleIterator iter(m);
+  base::PickleIterator iter(m);
   EXPECT_TRUE(ipc_perm2->Read(&m, &iter));
   AssertEmptyPermission(ipc_perm2.get());
 }
@@ -399,7 +399,7 @@ TEST(SocketsManifestPermissionTest, IPC) {
 
   IPC::Message m;
   ipc_perm->Write(&m);
-  PickleIterator iter(m);
+  base::PickleIterator iter(m);
   EXPECT_TRUE(ipc_perm2->Read(&m, &iter));
   EXPECT_TRUE(permission->Equal(ipc_perm2.get()));
 }

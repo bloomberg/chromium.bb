@@ -217,7 +217,7 @@ static const char kFakeVideoBufferHeader[] = "FakeVideoBufferForTest";
 scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
     const VideoDecoderConfig& config,
     base::TimeDelta timestamp, base::TimeDelta duration) {
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteString(kFakeVideoBufferHeader);
   pickle.WriteInt(config.coded_size().width());
   pickle.WriteInt(config.coded_size().height());
@@ -237,8 +237,8 @@ bool VerifyFakeVideoBufferForTest(
     const scoped_refptr<DecoderBuffer>& buffer,
     const VideoDecoderConfig& config) {
   // Check if the input |buffer| matches the |config|.
-  PickleIterator pickle(Pickle(reinterpret_cast<const char*>(buffer->data()),
-                               buffer->data_size()));
+  base::PickleIterator pickle(base::Pickle(
+      reinterpret_cast<const char*>(buffer->data()), buffer->data_size()));
   std::string header;
   int width = 0;
   int height = 0;

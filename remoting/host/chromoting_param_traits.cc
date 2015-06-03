@@ -18,7 +18,7 @@ void ParamTraits<webrtc::DesktopVector>::Write(Message* m,
 
 // static
 bool ParamTraits<webrtc::DesktopVector>::Read(const Message* m,
-                                              PickleIterator* iter,
+                                              base::PickleIterator* iter,
                                               webrtc::DesktopVector* r) {
   int x, y;
   if (!iter->ReadInt(&x) || !iter->ReadInt(&y))
@@ -43,7 +43,7 @@ void ParamTraits<webrtc::DesktopSize>::Write(Message* m,
 
 // static
 bool ParamTraits<webrtc::DesktopSize>::Read(const Message* m,
-                                            PickleIterator* iter,
+                                            base::PickleIterator* iter,
                                             webrtc::DesktopSize* r) {
   int width, height;
   if (!iter->ReadInt(&width) || !iter->ReadInt(&height))
@@ -70,7 +70,7 @@ void ParamTraits<webrtc::DesktopRect>::Write(Message* m,
 
 // static
 bool ParamTraits<webrtc::DesktopRect>::Read(const Message* m,
-                                            PickleIterator* iter,
+                                            base::PickleIterator* iter,
                                             webrtc::DesktopRect* r) {
   int left, right, top, bottom;
   if (!iter->ReadInt(&left) || !iter->ReadInt(&top) ||
@@ -110,10 +110,9 @@ void ParamTraits<webrtc::MouseCursor>::Write(
 }
 
 // static
-bool ParamTraits<webrtc::MouseCursor>::Read(
-    const Message* m,
-    PickleIterator* iter,
-    webrtc::MouseCursor* r) {
+bool ParamTraits<webrtc::MouseCursor>::Read(const Message* m,
+                                            base::PickleIterator* iter,
+                                            webrtc::MouseCursor* r) {
   webrtc::DesktopSize size;
   if (!ParamTraits<webrtc::DesktopSize>::Read(m, iter, &size) ||
       size.width() <= 0 || size.width() > (SHRT_MAX / 2) ||
@@ -163,7 +162,7 @@ void ParamTraits<remoting::ScreenResolution>::Write(
 // static
 bool ParamTraits<remoting::ScreenResolution>::Read(
     const Message* m,
-    PickleIterator* iter,
+    base::PickleIterator* iter,
     remoting::ScreenResolution* r) {
   webrtc::DesktopSize size;
   webrtc::DesktopVector dpi;

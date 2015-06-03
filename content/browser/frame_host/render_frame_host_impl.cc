@@ -797,7 +797,7 @@ void RenderFrameHostImpl::OnDidFailLoadWithError(
 void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // Read the parameters out of the IPC message directly to avoid making another
   // copy when we filter the URLs.
-  PickleIterator iter(msg);
+  base::PickleIterator iter(msg);
   FrameHostMsg_DidCommitProvisionalLoad_Params validated_params;
   if (!IPC::ParamTraits<FrameHostMsg_DidCommitProvisionalLoad_Params>::
       Read(&msg, &iter, &validated_params))

@@ -98,7 +98,7 @@ bool NonZeroSegmentBaseIsSlow() {
 // requests.
 bool SendIPCRequestAndReadReply(int ipc_channel,
                                 const std::vector<int>& attached_fds,
-                                const Pickle& request_pickle,
+                                const base::Pickle& request_pickle,
                                 char* reply_data_buffer,
                                 size_t reply_data_buffer_size,
                                 ssize_t* reply_size) {
@@ -367,7 +367,7 @@ pid_t NaClForkDelegate::Fork(const std::string& process_type,
   }
 
   // First, send a remote fork request.
-  Pickle write_pickle;
+  base::Pickle write_pickle;
   write_pickle.WriteInt(nacl::kNaClForkRequest);
   // TODO(hamaji): When we split the helper binary for non-SFI mode
   // from nacl_helper, stop sending this information.
@@ -385,8 +385,8 @@ pid_t NaClForkDelegate::Fork(const std::string& process_type,
   }
 
   // Now see if the other end managed to fork.
-  Pickle reply_pickle(reply_buf, reply_size);
-  PickleIterator iter(reply_pickle);
+  base::Pickle reply_pickle(reply_buf, reply_size);
+  base::PickleIterator iter(reply_pickle);
   pid_t nacl_child;
   if (!iter.ReadInt(&nacl_child)) {
     LOG(ERROR) << "NaClForkDelegate::Fork: pickle failed";
@@ -403,7 +403,7 @@ bool NaClForkDelegate::GetTerminationStatus(pid_t pid, bool known_dead,
   DCHECK(status);
   DCHECK(exit_code);
 
-  Pickle write_pickle;
+  base::Pickle write_pickle;
   write_pickle.WriteInt(nacl::kNaClGetTerminationStatusRequest);
   write_pickle.WriteInt(pid);
   write_pickle.WriteBool(known_dead);
@@ -419,8 +419,8 @@ bool NaClForkDelegate::GetTerminationStatus(pid_t pid, bool known_dead,
     return false;
   }
 
-  Pickle reply_pickle(reply_buf, reply_size);
-  PickleIterator iter(reply_pickle);
+  base::Pickle reply_pickle(reply_buf, reply_size);
+  base::PickleIterator iter(reply_pickle);
   int termination_status;
   if (!iter.ReadInt(&termination_status) ||
       termination_status < 0 ||

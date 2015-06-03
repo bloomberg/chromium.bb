@@ -157,7 +157,7 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
     } else {
       continue;
     }
-    PickleIterator iter(pickle);
+    base::PickleIterator iter(pickle);
     SkBitmap bitmap;
     if (!IPC::ReadParam(&pickle, &iter, &bitmap))
       return false;

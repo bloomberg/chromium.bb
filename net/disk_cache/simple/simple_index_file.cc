@@ -33,7 +33,7 @@ const int kEntryFilesSuffixLength = 2;
 
 const uint64 kMaxEntiresInIndex = 100000000;
 
-uint32 CalculatePickleCRC(const Pickle& pickle) {
+uint32 CalculatePickleCRC(const base::Pickle& pickle) {
   return crc32(crc32(0, Z_NULL, 0),
                reinterpret_cast<const Bytef*>(pickle.payload()),
                pickle.payload_size());
@@ -68,7 +68,7 @@ void UmaRecordIndexInitMethod(IndexInitMethod method,
                    method, INITIALIZE_METHOD_MAX);
 }
 
-bool WritePickleFile(Pickle* pickle, const base::FilePath& file_name) {
+bool WritePickleFile(base::Pickle* pickle, const base::FilePath& file_name) {
   File file(
       file_name,
       File::FLAG_CREATE | File::FLAG_WRITE | File::FLAG_SHARE_DELETE);
@@ -166,7 +166,7 @@ SimpleIndexFile::IndexMetadata::IndexMetadata(
       number_of_entries_(number_of_entries),
       cache_size_(cache_size) {}
 
-void SimpleIndexFile::IndexMetadata::Serialize(Pickle* pickle) const {
+void SimpleIndexFile::IndexMetadata::Serialize(base::Pickle* pickle) const {
   DCHECK(pickle);
   pickle->WriteUInt64(magic_number_);
   pickle->WriteUInt32(version_);
@@ -176,7 +176,7 @@ void SimpleIndexFile::IndexMetadata::Serialize(Pickle* pickle) const {
 
 // static
 bool SimpleIndexFile::SerializeFinalData(base::Time cache_modified,
-                                         Pickle* pickle) {
+                                         base::Pickle* pickle) {
   if (!pickle->WriteInt64(cache_modified.ToInternalValue()))
     return false;
   SimpleIndexFile::PickleHeader* header_p = pickle->headerT<PickleHeader>();
@@ -184,7 +184,7 @@ bool SimpleIndexFile::SerializeFinalData(base::Time cache_modified,
   return true;
 }
 
-bool SimpleIndexFile::IndexMetadata::Deserialize(PickleIterator* it) {
+bool SimpleIndexFile::IndexMetadata::Deserialize(base::PickleIterator* it) {
   DCHECK(it);
   return it->ReadUInt64(&magic_number_) &&
       it->ReadUInt32(&version_) &&
@@ -196,7 +196,7 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
                                       const base::FilePath& cache_directory,
                                       const base::FilePath& index_filename,
                                       const base::FilePath& temp_index_filename,
-                                      scoped_ptr<Pickle> pickle,
+                                      scoped_ptr<base::Pickle> pickle,
                                       const base::TimeTicks& start_time,
                                       bool app_on_background) {
   DCHECK_EQ(index_filename.DirName().value(),
@@ -281,7 +281,7 @@ void SimpleIndexFile::WriteToDisk(const SimpleIndex::EntrySet& entry_set,
                                   bool app_on_background,
                                   const base::Closure& callback) {
   IndexMetadata index_metadata(entry_set.size(), cache_size);
-  scoped_ptr<Pickle> pickle = Serialize(index_metadata, entry_set);
+  scoped_ptr<base::Pickle> pickle = Serialize(index_metadata, entry_set);
   base::Closure task =
       base::Bind(&SimpleIndexFile::SyncWriteToDisk,
                  cache_type_, cache_directory_, index_file_, temp_index_file_,
@@ -369,10 +369,11 @@ void SimpleIndexFile::SyncLoadFromDisk(const base::FilePath& index_filename,
 }
 
 // static
-scoped_ptr<Pickle> SimpleIndexFile::Serialize(
+scoped_ptr<base::Pickle> SimpleIndexFile::Serialize(
     const SimpleIndexFile::IndexMetadata& index_metadata,
     const SimpleIndex::EntrySet& entries) {
-  scoped_ptr<Pickle> pickle(new Pickle(sizeof(SimpleIndexFile::PickleHeader)));
+  scoped_ptr<base::Pickle> pickle(
+      new base::Pickle(sizeof(SimpleIndexFile::PickleHeader)));
 
   index_metadata.Serialize(pickle.get());
   for (SimpleIndex::EntrySet::const_iterator it = entries.begin();
@@ -392,13 +393,13 @@ void SimpleIndexFile::Deserialize(const char* data, int data_len,
   out_result->Reset();
   SimpleIndex::EntrySet* entries = &out_result->entries;
 
-  Pickle pickle(data, data_len);
+  base::Pickle pickle(data, data_len);
   if (!pickle.data()) {
     LOG(WARNING) << "Corrupt Simple Index File.";
     return;
   }
 
-  PickleIterator pickle_it(pickle);
+  base::PickleIterator pickle_it(pickle);
   SimpleIndexFile::PickleHeader* header_p =
       pickle.headerT<SimpleIndexFile::PickleHeader>();
   const uint32 crc_read = header_p->crc;

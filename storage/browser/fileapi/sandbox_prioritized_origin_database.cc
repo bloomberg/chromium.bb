@@ -30,7 +30,7 @@ bool WritePrimaryOriginFile(const base::FilePath& path,
     return false;
   if (!file.created())
     file.SetLength(0);
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteString(origin);
   file.Write(0, static_cast<const char*>(pickle.data()), pickle.size());
   file.Flush();
@@ -42,8 +42,8 @@ bool ReadPrimaryOriginFile(const base::FilePath& path,
   std::string buffer;
   if (!base::ReadFileToString(path, &buffer))
     return false;
-  Pickle pickle(buffer.data(), buffer.size());
-  PickleIterator iter(pickle);
+  base::Pickle pickle(buffer.data(), buffer.size());
+  base::PickleIterator iter(pickle);
   return iter.ReadString(origin) && !origin->empty();
 }
 

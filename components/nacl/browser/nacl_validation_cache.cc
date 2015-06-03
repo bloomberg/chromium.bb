@@ -52,7 +52,7 @@ void NaClValidationCache::SetKnownToValidate(const std::string& signature) {
   }
 }
 
-void NaClValidationCache::Serialize(Pickle* pickle) const {
+void NaClValidationCache::Serialize(base::Pickle* pickle) const {
   // Mark the beginning of the data stream.
   pickle->WriteString(kValidationCacheBeginMagic);
   pickle->WriteString(validation_cache_key_);
@@ -76,7 +76,7 @@ void NaClValidationCache::Reset() {
   validation_cache_.Clear();
 }
 
-bool NaClValidationCache::Deserialize(const Pickle* pickle) {
+bool NaClValidationCache::Deserialize(const base::Pickle* pickle) {
   bool success = DeserializeImpl(pickle);
   if (!success) {
     Reset();
@@ -84,8 +84,8 @@ bool NaClValidationCache::Deserialize(const Pickle* pickle) {
   return success;
 }
 
-bool NaClValidationCache::DeserializeImpl(const Pickle* pickle) {
-  PickleIterator iter(*pickle);
+bool NaClValidationCache::DeserializeImpl(const base::Pickle* pickle) {
+  base::PickleIterator iter(*pickle);
   std::string buffer;
   int count;
 

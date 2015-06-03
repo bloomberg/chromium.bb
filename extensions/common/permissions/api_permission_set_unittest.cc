@@ -280,7 +280,7 @@ TEST(APIPermissionSetTest, IPC) {
 
   IPC::Message m;
   WriteParam(&m, apis);
-  PickleIterator iter(m);
+  base::PickleIterator iter(m);
   CHECK(ReadParam(&m, &iter, &expected_apis));
   EXPECT_EQ(apis, expected_apis);
 }

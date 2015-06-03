@@ -63,8 +63,8 @@ bool QuicServerInfo::ParseInner(const string& data) {
     return false;
   }
 
-  Pickle p(data.data(), data.size());
-  PickleIterator iter(p);
+  base::Pickle p(data.data(), data.size());
+  base::PickleIterator iter(p);
 
   int version = -1;
   if (!iter.ReadInt(&version)) {
@@ -116,7 +116,7 @@ string QuicServerInfo::Serialize() {
 }
 
 string QuicServerInfo::SerializeInner() const {
-  Pickle p(sizeof(Pickle::Header));
+  base::Pickle p(sizeof(base::Pickle::Header));
 
   if (!p.WriteInt(kQuicCryptoConfigVersion) ||
       !p.WriteString(state_.server_config) ||

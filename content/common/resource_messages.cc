@@ -18,8 +18,10 @@ void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Write(
   }
 }
 
-bool ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Read(
+    const Message* m,
+    base::PickleIterator* iter,
+    param_type* r) {
   bool has_object;
   if (!ReadParam(m, iter, &has_object))
     return false;
@@ -65,7 +67,7 @@ void ParamTraits<storage::DataElement>::Write(Message* m, const param_type& p) {
 }
 
 bool ParamTraits<storage::DataElement>::Read(const Message* m,
-                                             PickleIterator* iter,
+                                             base::PickleIterator* iter,
                                              param_type* r) {
   int type;
   if (!ReadParam(m, iter, &type))
@@ -146,8 +148,10 @@ void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> >::Write(
   }
 }
 
-bool ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> >::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<scoped_refptr<content::ResourceDevToolsInfo>>::Read(
+    const Message* m,
+    base::PickleIterator* iter,
+    param_type* r) {
   bool has_object;
   if (!ReadParam(m, iter, &has_object))
     return false;
@@ -196,8 +200,9 @@ void ParamTraits<net::LoadTimingInfo>::Write(
   WriteParam(m, p.receive_headers_end);
 }
 
-bool ParamTraits<net::LoadTimingInfo>::Read(
-    const Message* m, PickleIterator* iter, param_type* r) {
+bool ParamTraits<net::LoadTimingInfo>::Read(const Message* m,
+                                            base::PickleIterator* iter,
+                                            param_type* r) {
   bool has_no_times;
   if (!ReadParam(m, iter, &r->socket_log_id) ||
       !ReadParam(m, iter, &r->socket_reused) ||
@@ -268,9 +273,9 @@ void ParamTraits<scoped_refptr<content::ResourceRequestBody> >::Write(
   }
 }
 
-bool ParamTraits<scoped_refptr<content::ResourceRequestBody> >::Read(
+bool ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Read(
     const Message* m,
-    PickleIterator* iter,
+    base::PickleIterator* iter,
     param_type* r) {
   bool has_object;
   if (!ReadParam(m, iter, &has_object))

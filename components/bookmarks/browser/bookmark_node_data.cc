@@ -37,7 +37,7 @@ BookmarkNodeData::Element::Element(const BookmarkNode* node)
 BookmarkNodeData::Element::~Element() {
 }
 
-void BookmarkNodeData::Element::WriteToPickle(Pickle* pickle) const {
+void BookmarkNodeData::Element::WriteToPickle(base::Pickle* pickle) const {
   pickle->WriteBool(is_url);
   pickle->WriteString(url.spec());
   pickle->WriteString16(title);
@@ -57,7 +57,7 @@ void BookmarkNodeData::Element::WriteToPickle(Pickle* pickle) const {
   }
 }
 
-bool BookmarkNodeData::Element::ReadFromPickle(PickleIterator* iterator) {
+bool BookmarkNodeData::Element::ReadFromPickle(base::PickleIterator* iterator) {
   std::string url_spec;
   if (!iterator->ReadBool(&is_url) ||
       !iterator->ReadString(&url_spec) ||
@@ -194,7 +194,7 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType clipboard_type) {
     scw.WriteText(text);
   }
 
-  Pickle pickle;
+  base::Pickle pickle;
   WriteToPickle(base::FilePath(), &pickle);
   scw.WritePickledData(pickle,
                        ui::Clipboard::GetFormatType(kClipboardFormatString));
@@ -208,7 +208,7 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
                       &data);
 
   if (!data.empty()) {
-    Pickle pickle(data.data(), static_cast<int>(data.size()));
+    base::Pickle pickle(data.data(), static_cast<int>(data.size()));
     if (ReadFromPickle(&pickle))
       return true;
   }
@@ -232,7 +232,7 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
 #endif
 
 void BookmarkNodeData::WriteToPickle(const base::FilePath& profile_path,
-                                     Pickle* pickle) const {
+                                     base::Pickle* pickle) const {
   profile_path.WriteToPickle(pickle);
   pickle->WriteSizeT(size());
 
@@ -240,8 +240,8 @@ void BookmarkNodeData::WriteToPickle(const base::FilePath& profile_path,
     elements[i].WriteToPickle(pickle);
 }
 
-bool BookmarkNodeData::ReadFromPickle(Pickle* pickle) {
-  PickleIterator data_iterator(*pickle);
+bool BookmarkNodeData::ReadFromPickle(base::Pickle* pickle) {
+  base::PickleIterator data_iterator(*pickle);
   size_t element_count;
   if (profile_path_.ReadFromPickle(&data_iterator) &&
       data_iterator.ReadSizeT(&element_count)) {

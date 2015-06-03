@@ -982,7 +982,7 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
   IPC_END_MESSAGE_MAP()
 
   if (!handled && IPC_MESSAGE_ID_CLASS(message.type()) == ResourceMsgStart) {
-    PickleIterator iter(message);
+    base::PickleIterator iter(message);
     int request_id = -1;
     bool ok = iter.ReadInt(&request_id);
     DCHECK(ok);

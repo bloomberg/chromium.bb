@@ -185,7 +185,7 @@ void RawVarDataGraph::Write(IPC::Message* m,
 
 // static
 scoped_ptr<RawVarDataGraph> RawVarDataGraph::Read(const IPC::Message* m,
-                                                  PickleIterator* iter) {
+                                                  base::PickleIterator* iter) {
   scoped_ptr<RawVarDataGraph> result(new RawVarDataGraph);
   uint32_t size = 0;
   if (!iter->ReadUInt32(&size))
@@ -312,7 +312,7 @@ void BasicRawVarData::Write(
 
 bool BasicRawVarData::Read(PP_VarType type,
                            const IPC::Message* m,
-                           PickleIterator* iter) {
+                           base::PickleIterator* iter) {
   PP_Var result;
   result.type = type;
   switch (type) {
@@ -384,7 +384,7 @@ void StringRawVarData::Write(IPC::Message* m,
 
 bool StringRawVarData::Read(PP_VarType type,
                             const IPC::Message* m,
-                            PickleIterator* iter) {
+                            base::PickleIterator* iter) {
   if (!iter->ReadString(&data_))
     return false;
   return true;
@@ -501,7 +501,7 @@ void ArrayBufferRawVarData::Write(
 
 bool ArrayBufferRawVarData::Read(PP_VarType type,
                                  const IPC::Message* m,
-                                 PickleIterator* iter) {
+                                 base::PickleIterator* iter) {
   int shmem_type;
   if (!iter->ReadInt(&shmem_type))
     return false;
@@ -582,7 +582,7 @@ void ArrayRawVarData::Write(IPC::Message* m,
 
 bool ArrayRawVarData::Read(PP_VarType type,
                            const IPC::Message* m,
-                           PickleIterator* iter) {
+                           base::PickleIterator* iter) {
   uint32_t size;
   if (!iter->ReadUInt32(&size))
     return false;
@@ -648,7 +648,7 @@ void DictionaryRawVarData::Write(
 
 bool DictionaryRawVarData::Read(PP_VarType type,
                                 const IPC::Message* m,
-                                PickleIterator* iter) {
+                                base::PickleIterator* iter) {
   uint32_t size;
   if (!iter->ReadUInt32(&size))
     return false;
@@ -725,7 +725,7 @@ void ResourceRawVarData::Write(IPC::Message* m,
 
 bool ResourceRawVarData::Read(PP_VarType type,
                               const IPC::Message* m,
-                              PickleIterator* iter) {
+                              base::PickleIterator* iter) {
   int value;
   if (!iter->ReadInt(&value))
     return false;

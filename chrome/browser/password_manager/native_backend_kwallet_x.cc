@@ -67,8 +67,8 @@ bool CompareForms(const autofill::PasswordForm& a,
 bool CheckSerializedValue(const uint8_t* byte_array,
                           size_t length,
                           const std::string& realm) {
-  const Pickle::Header* header =
-      reinterpret_cast<const Pickle::Header*>(byte_array);
+  const base::Pickle::Header* header =
+      reinterpret_cast<const base::Pickle::Header*>(byte_array);
   if (length < sizeof(*header) ||
       header->payload_size > length - sizeof(*header)) {
     LOG(WARNING) << "Invalid KWallet entry detected (realm: " << realm << ")";
@@ -79,7 +79,7 @@ bool CheckSerializedValue(const uint8_t* byte_array,
 
 // Convenience function to read a GURL from a Pickle. Assumes the URL has
 // been written as a UTF-8 string. Returns true on success.
-bool ReadGURL(PickleIterator* iter, bool warn_only, GURL* url) {
+bool ReadGURL(base::PickleIterator* iter, bool warn_only, GURL* url) {
   std::string url_string;
   if (!iter->ReadString(&url_string)) {
     if (!warn_only)
@@ -113,12 +113,12 @@ void LogDeserializationWarning(int version,
 // as either size when reading old pickles that fail to deserialize using the
 // native size. Returns true on success.
 bool DeserializeValueSize(const std::string& signon_realm,
-                          const PickleIterator& init_iter,
+                          const base::PickleIterator& init_iter,
                           int version,
                           bool size_32,
                           bool warn_only,
                           ScopedVector<autofill::PasswordForm>* forms) {
-  PickleIterator iter = init_iter;
+  base::PickleIterator iter = init_iter;
 
   size_t count = 0;
   if (size_32) {
@@ -235,7 +235,7 @@ bool DeserializeValueSize(const std::string& signon_realm,
 
 // Serializes a list of PasswordForms to be stored in the wallet.
 void SerializeValue(const std::vector<autofill::PasswordForm*>& forms,
-                    Pickle* pickle) {
+                    base::Pickle* pickle) {
   pickle->WriteInt(kPickleVersion);
   pickle->WriteSizeT(forms.size());
   for (autofill::PasswordForm* form : forms) {
@@ -637,7 +637,7 @@ bool NativeBackendKWallet::GetLoginsList(
     }
 
     // Can't we all just agree on whether bytes are signed or not? Please?
-    Pickle pickle(reinterpret_cast<const char*>(bytes), length);
+    base::Pickle pickle(reinterpret_cast<const char*>(bytes), length);
     *forms = DeserializeValue(signon_realm, pickle);
   }
 
@@ -719,7 +719,7 @@ bool NativeBackendKWallet::GetAllLogins(
       continue;
 
     // Can't we all just agree on whether bytes are signed or not? Please?
-    Pickle pickle(reinterpret_cast<const char*>(bytes), length);
+    base::Pickle pickle(reinterpret_cast<const char*>(bytes), length);
     AppendSecondToFirst(forms, DeserializeValue(signon_realm, pickle));
   }
   return true;
@@ -756,7 +756,7 @@ bool NativeBackendKWallet::SetLoginsList(
     return ret == 0;
   }
 
-  Pickle value;
+  base::Pickle value;
   SerializeValue(forms, &value);
 
   dbus::MethodCall method_call(kKWalletInterface, "writeEntry");
@@ -856,7 +856,7 @@ bool NativeBackendKWallet::RemoveLoginsBetween(
       continue;
 
     // Can't we all just agree on whether bytes are signed or not? Please?
-    Pickle pickle(reinterpret_cast<const char*>(bytes), length);
+    base::Pickle pickle(reinterpret_cast<const char*>(bytes), length);
     ScopedVector<autofill::PasswordForm> all_forms =
         DeserializeValue(signon_realm, pickle);
 
@@ -888,8 +888,8 @@ bool NativeBackendKWallet::RemoveLoginsBetween(
 // static
 ScopedVector<autofill::PasswordForm> NativeBackendKWallet::DeserializeValue(
     const std::string& signon_realm,
-    const Pickle& pickle) {
-  PickleIterator iter(pickle);
+    const base::Pickle& pickle) {
+  base::PickleIterator iter(pickle);
 
   int version = -1;
   if (!iter.ReadInt(&version) ||

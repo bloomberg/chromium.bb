@@ -16,7 +16,7 @@ std::string SerializeSecurityInfo(
     int ssl_connection_status,
     const SignedCertificateTimestampIDStatusList&
         signed_certificate_timestamp_ids) {
-  Pickle pickle;
+  base::Pickle pickle;
   pickle.WriteInt(cert_id);
   pickle.WriteUInt32(cert_status);
   pickle.WriteInt(security_bits);
@@ -51,8 +51,8 @@ bool DeserializeSecurityInfo(
     return false;
   }
 
-  Pickle pickle(state.data(), static_cast<int>(state.size()));
-  PickleIterator iter(pickle);
+  base::Pickle pickle(state.data(), static_cast<int>(state.size()));
+  base::PickleIterator iter(pickle);
   int num_scts_to_read;
   if (!iter.ReadInt(cert_id) ||
       !iter.ReadUInt32(cert_status) ||

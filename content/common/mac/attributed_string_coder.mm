@@ -128,7 +128,9 @@ void ParamTraits<AttributedStringCoder::EncodedString>::Write(
 }
 
 bool ParamTraits<AttributedStringCoder::EncodedString>::Read(
-    const Message* m, PickleIterator* iter, param_type* p) {
+    const Message* m,
+    base::PickleIterator* iter,
+    param_type* p) {
   bool success = true;
 
   base::string16 result;
@@ -151,7 +153,9 @@ void ParamTraits<AttributedStringCoder::FontAttribute>::Write(
 }
 
 bool ParamTraits<AttributedStringCoder::FontAttribute>::Read(
-    const Message* m, PickleIterator* iter, param_type* p) {
+    const Message* m,
+    base::PickleIterator* iter,
+    param_type* p) {
   bool success = true;
 
   FontDescriptor font;

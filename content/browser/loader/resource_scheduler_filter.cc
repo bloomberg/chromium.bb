@@ -37,7 +37,7 @@ bool ResourceSchedulerFilter::OnMessageReceived(const IPC::Message& message) {
 
   switch (message.type()) {
     case FrameHostMsg_DidCommitProvisionalLoad::ID: {
-      PickleIterator iter(message);
+      base::PickleIterator iter(message);
       FrameHostMsg_DidCommitProvisionalLoad_Params params;
       if (!IPC::ParamTraits<FrameHostMsg_DidCommitProvisionalLoad_Params>::Read(
           &message, &iter, &params)) {

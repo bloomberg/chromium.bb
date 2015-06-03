@@ -16,7 +16,7 @@ namespace {
 
 const int kPickleVersion = 3;
 
-bool ReadGURL(PickleIterator* iter, GURL* url) {
+bool ReadGURL(base::PickleIterator* iter, GURL* url) {
   std::string spec;
   if (!iter->ReadString(&spec))
     return false;
@@ -26,14 +26,14 @@ bool ReadGURL(PickleIterator* iter, GURL* url) {
 }
 
 void SerializeFormFieldDataVector(const std::vector<FormFieldData>& fields,
-                                  Pickle* pickle) {
+                                  base::Pickle* pickle) {
   pickle->WriteInt(static_cast<int>(fields.size()));
   for (size_t i = 0; i < fields.size(); ++i) {
     SerializeFormFieldData(fields[i], pickle);
   }
 }
 
-bool DeserializeFormFieldDataVector(PickleIterator* iter,
+bool DeserializeFormFieldDataVector(base::PickleIterator* iter,
                                     std::vector<FormFieldData>* fields) {
   int size;
   if (!iter->ReadInt(&size))
@@ -115,7 +115,7 @@ std::ostream& operator<<(std::ostream& os, const FormData& form) {
   return os;
 }
 
-void SerializeFormData(const FormData& form_data, Pickle* pickle) {
+void SerializeFormData(const FormData& form_data, base::Pickle* pickle) {
   pickle->WriteInt(kPickleVersion);
   pickle->WriteString16(form_data.name);
   pickle->WriteString(form_data.origin.spec());
@@ -127,14 +127,14 @@ void SerializeFormData(const FormData& form_data, Pickle* pickle) {
 
 void SerializeFormDataToBase64String(const FormData& form_data,
                                      std::string* output) {
-  Pickle pickle;
+  base::Pickle pickle;
   SerializeFormData(form_data, &pickle);
   Base64Encode(
       base::StringPiece(static_cast<const char*>(pickle.data()), pickle.size()),
       output);
 }
 
-bool DeserializeFormData(PickleIterator* iter, FormData* form_data) {
+bool DeserializeFormData(base::PickleIterator* iter, FormData* form_data) {
   int version;
   FormData temp_form_data;
   if (!iter->ReadInt(&version)) {
@@ -187,8 +187,8 @@ bool DeserializeFormDataFromBase64String(const base::StringPiece& input,
     return false;
   std::string pickle_data;
   Base64Decode(input, &pickle_data);
-  Pickle pickle(pickle_data.data(), static_cast<int>(pickle_data.size()));
-  PickleIterator iter(pickle);
+  base::Pickle pickle(pickle_data.data(), static_cast<int>(pickle_data.size()));
+  base::PickleIterator iter(pickle);
   return DeserializeFormData(&iter, form_data);
 }
 

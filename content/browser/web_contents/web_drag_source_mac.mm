@@ -200,7 +200,7 @@ void PromiseWriterHelper(const DropData& drop_data,
 
   // Custom MIME data.
   } else if ([type isEqualToString:ui::kWebCustomDataPboardType]) {
-    Pickle pickle;
+    base::Pickle pickle;
     ui::WriteCustomDataToPickle(dropData_->custom_data, &pickle);
     [pboard setData:[NSData dataWithBytes:pickle.data() length:pickle.size()]
             forType:ui::kWebCustomDataPboardType];
