@@ -211,20 +211,20 @@ Status ExecuteWindowCommand(
     return Status(kUnexpectedAlertOpen);
 
   Status nav_status(kOk);
-  for (int attempt = 0; attempt < 2; attempt++) {
-    if (attempt == 1) {
-      if (status.code() == kNoSuchExecutionContext)
-        // Switch to main frame and retry command if subframe no longer exists.
-        session->SwitchToTopFrame();
-      else
-        break;
+  for (int attempt = 0; attempt < 3; attempt++) {
+    if (attempt == 2) {
+      // Switch to main frame and retry command if subframe no longer exists.
+      session->SwitchToTopFrame();
     }
+
     nav_status = web_view->WaitForPendingNavigations(
         session->GetCurrentFrameId(), session->page_load_timeout, true);
     if (nav_status.IsError())
       return nav_status;
 
     status = command.Run(session, web_view, params, value);
+    if (status.code() != kNoSuchExecutionContext)
+      break;
   }
 
   nav_status = web_view->WaitForPendingNavigations(
