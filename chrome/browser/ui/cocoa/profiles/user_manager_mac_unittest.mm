@@ -22,6 +22,9 @@ class UserManagerMacTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     ASSERT_TRUE(testing_profile_manager_.SetUp());
+    // Create a user to make sure the System Profile isn't the only one since it
+    // shouldn't be added to the ProfileInfoCache.
+    testing_profile_manager_.CreateTestingProfile("Default");
     // Pre-load the system profile so we don't have to wait for the User Manager
     // to asynchronously create it.
     testing_profile_manager_.CreateSystemProfile();

@@ -216,8 +216,9 @@ bool IsValidProfileName(const std::string& profile_name) {
   if (profile_name.empty())
     return false;
 
-  return profile_name !=
-         base::FilePath(chrome::kGuestProfileDir).AsUTF8Unsafe();
+  return
+      profile_name != base::FilePath(chrome::kGuestProfileDir).AsUTF8Unsafe() &&
+      profile_name != base::FilePath(chrome::kSystemProfileDir).AsUTF8Unsafe();
 }
 
 }  // namespace

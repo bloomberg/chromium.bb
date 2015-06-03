@@ -346,7 +346,7 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
   base::Time start = base::Time::Now();
   if (profiles::IsMultipleProfilesEnabled() &&
       parsed_command_line.HasSwitch(switches::kProfileDirectory)) {
-    g_browser_process->local_state()->SetString(prefs::kProfileLastUsed,
+    profiles::SetLastUsedProfile(
         parsed_command_line.GetSwitchValueASCII(switches::kProfileDirectory));
     // Clear kProfilesLastActive since the user only wants to launch a specific
     // profile.

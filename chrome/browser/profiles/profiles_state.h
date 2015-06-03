@@ -99,6 +99,10 @@ void SetFastUserSwitchingTutorialDismissedState(bool dismissed);
 // dismissed by a user, false otherwise.
 bool GetFastUserSwitchingTutorialDismissedState();
 
+// Sets the last used profile pref to |profile_dir|, unless |profile_dir| is the
+// System Profile directory, which is an invalid last used profile.
+void SetLastUsedProfile(const std::string& profile_dir);
+
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILES_STATE_H_

@@ -212,11 +212,8 @@ bool SetActiveProfileToGuestIfLocked() {
   if (!cache.ProfileIsSigninRequiredAtIndex(index))
     return false;
 
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  local_state->SetString(
-      prefs::kProfileLastUsed,
-      guest_path.BaseName().MaybeAsASCII());
+  SetLastUsedProfile(guest_path.BaseName().MaybeAsASCII());
+
   return true;
 }
 
@@ -238,6 +235,17 @@ void RemoveBrowsingDataForProfile(const base::FilePath& profile_path) {
   BrowsingDataRemover::CreateForUnboundedRange(profile)->Remove(
       BrowsingDataRemover::REMOVE_ALL, BrowsingDataHelper::ALL);
   // BrowsingDataRemover deletes itself.
+}
+
+void SetLastUsedProfile(const std::string& profile_dir) {
+  // We should never be saving the System Profile as the last one used since it
+  // shouldn't have a browser.
+  if (profile_dir == base::FilePath(chrome::kSystemProfileDir).AsUTF8Unsafe())
+    return;
+
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  local_state->SetString(prefs::kProfileLastUsed, profile_dir);
 }
 
 }  // namespace profiles
