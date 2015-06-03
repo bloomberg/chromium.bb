@@ -281,10 +281,6 @@ void EncryptedMediaPlayerSupport::SetInitDataType(
     init_data_type_ = init_data_type;
 }
 
-void EncryptedMediaPlayerSupport::OnPipelineDecryptError() {
-  EmeUMAHistogramCounts(current_key_system_, "DecryptError", 1);
-}
-
 void EncryptedMediaPlayerSupport::OnKeyAdded(const std::string& session_id) {
   EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
   client_->keyAdded(

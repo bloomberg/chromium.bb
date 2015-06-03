@@ -44,7 +44,6 @@ class MEDIA_EXPORT DecoderStream {
     ABORTED,  // Read aborted due to Reset() during pending read.
     DEMUXER_READ_ABORTED,  // Demuxer returned aborted read.
     DECODE_ERROR,  // Decoder returned decode error.
-    DECRYPT_ERROR  // Decoder returned decrypt error.
   };
 
   // Indicates completion of a DecoderStream read.

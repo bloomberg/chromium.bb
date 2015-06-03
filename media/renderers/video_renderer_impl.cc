@@ -461,12 +461,9 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
     CHECK(pending_read_);
     pending_read_ = false;
 
-    if (status == VideoFrameStream::DECODE_ERROR ||
-        status == VideoFrameStream::DECRYPT_ERROR) {
+    if (status == VideoFrameStream::DECODE_ERROR) {
       DCHECK(!frame.get());
       PipelineStatus error = PIPELINE_ERROR_DECODE;
-      if (status == VideoFrameStream::DECRYPT_ERROR)
-        error = PIPELINE_ERROR_DECRYPT;
       task_runner_->PostTask(FROM_HERE, base::Bind(error_cb_, error));
       return;
     }

@@ -756,9 +756,6 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   }
 
   SetNetworkState(PipelineErrorToNetworkState(error));
-
-  if (error == PIPELINE_ERROR_DECRYPT)
-    encrypted_media_support_.OnPipelineDecryptError();
 }
 
 void WebMediaPlayerImpl::OnPipelineMetadata(

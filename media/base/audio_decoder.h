@@ -28,8 +28,7 @@ class MEDIA_EXPORT AudioDecoder {
   enum Status {
     kOk,  // We're all good.
     kAborted,  // We aborted as a result of Reset() or destruction.
-    kDecodeError,  // A decoding error occurred.
-    kDecryptError  // Decrypting error happened.
+    kDecodeError  // A decoding error occurred.
   };
 
   // Callback for AudioDecoder to return a decoded frame whenever it becomes

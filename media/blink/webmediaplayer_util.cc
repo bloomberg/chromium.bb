@@ -66,11 +66,6 @@ blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
     case PIPELINE_ERROR_INVALID_STATE:
       return blink::WebMediaPlayer::NetworkStateDecodeError;
 
-    case PIPELINE_ERROR_DECRYPT:
-      // TODO(xhwang): Change to use NetworkStateDecryptError once it's added in
-      // Webkit (see http://crbug.com/124486).
-      return blink::WebMediaPlayer::NetworkStateDecodeError;
-
     case PIPELINE_OK:
       NOTREACHED() << "Unexpected status! " << error;
   }

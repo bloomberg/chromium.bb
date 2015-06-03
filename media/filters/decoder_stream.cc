@@ -337,7 +337,6 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
 
   switch (status) {
     case Decoder::kDecodeError:
-    case Decoder::kDecryptError:
       state_ = STATE_ERROR;
       ready_outputs_.clear();
       if (!read_cb_.is_null())

@@ -125,7 +125,6 @@ class FFmpegVideoDecoderTest : public testing::Test {
         case VideoDecoder::kAborted:
           NOTREACHED();
         case VideoDecoder::kDecodeError:
-        case VideoDecoder::kDecryptError:
           DCHECK(output_frames_.empty());
           return status;
       }

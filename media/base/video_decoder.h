@@ -27,8 +27,7 @@ class MEDIA_EXPORT VideoDecoder {
   enum Status {
     kOk,  // Everything went as planned.
     kAborted,  // Decode was aborted as a result of Reset() being called.
-    kDecodeError,  // Decoding error happened.
-    kDecryptError  // Decrypting error happened.
+    kDecodeError  // Decoding error happened.
   };
 
   // Callback for VideoDecoder to return a decoded frame whenever it becomes

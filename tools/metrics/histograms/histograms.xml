@@ -15201,13 +15201,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>cancelKeyRequest result using the Clear Key key system.</summary>
 </histogram>
 
-<histogram name="Media.EME.ClearKey.DecryptError">
-  <owner>xhwang@chromium.org</owner>
-  <summary>
-    Decryption error event count using the Clear Key key system.
-  </summary>
-</histogram>
-
 <histogram name="Media.EME.ClearKey.generateKeyRequest"
     enum="MediaKeyException">
   <owner>xhwang@chromium.org</owner>
@@ -15274,11 +15267,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>cancelKeyRequest result using an unknown key system.</summary>
 </histogram>
 
-<histogram name="Media.EME.Unknown.DecryptError">
-  <owner>xhwang@chromium.org</owner>
-  <summary>Decryption error event count using an unknown key system.</summary>
-</histogram>
-
 <histogram name="Media.EME.Unknown.generateKeyRequest" enum="MediaKeyException">
   <owner>xhwang@chromium.org</owner>
   <summary>generateKeyRequest result using an unknown key system.</summary>
@@ -15315,11 +15303,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Media.EME.Widevine.cancelKeyRequest" enum="MediaKeyException">
   <owner>xhwang@chromium.org</owner>
   <summary>cancelKeyRequest result using the Widevine key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine.DecryptError">
-  <owner>xhwang@chromium.org</owner>
-  <summary>Decryption error event count using the Widevine key system.</summary>
 </histogram>
 
 <histogram name="Media.EME.Widevine.generateKeyRequest"
@@ -61877,7 +61860,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="PIPELINE_ERROR_URL_NOT_FOUND"/>
   <int value="2" label="PIPELINE_ERROR_NETWORK"/>
   <int value="3" label="PIPELINE_ERROR_DECODE"/>
-  <int value="4" label="PIPELINE_ERROR_DECRYPT"/>
   <int value="5" label="PIPELINE_ERROR_ABORT"/>
   <int value="6" label="PIPELINE_ERROR_INITIALIZATION_FAILED"/>
   <int value="7" label="PIPELINE_ERROR_REQUIRED_FILTER_MISSING"/>

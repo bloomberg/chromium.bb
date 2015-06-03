@@ -66,8 +66,6 @@ class EncryptedMediaPlayerSupport
 
   void SetInitDataType(EmeInitDataType init_data_type);
 
-  void OnPipelineDecryptError();
-
  private:
   blink::WebMediaPlayer::MediaKeyException GenerateKeyRequestInternal(
       blink::WebLocalFrame* frame,
