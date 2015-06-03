@@ -520,6 +520,8 @@ struct amdgpu_gpu_info {
 	uint32_t vram_type;
 	/* video memory bit width*/
 	uint32_t vram_bit_width;
+	/** constant engine ram size*/
+	uint32_t ce_ram_size;
 };
 
 

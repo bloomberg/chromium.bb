@@ -160,6 +160,7 @@ int amdgpu_query_gpu_info_init(amdgpu_device_handle dev)
 		dev->dev_info.num_shader_arrays_per_engine;
 	dev->info.vram_type = dev->dev_info.vram_type;
 	dev->info.vram_bit_width = dev->dev_info.vram_bit_width;
+	dev->info.ce_ram_size = dev->dev_info.ce_ram_size;
 
 	for (i = 0; i < (int)dev->info.num_shader_engines; i++) {
 		unsigned instance = (i << AMDGPU_INFO_MMR_SE_INDEX_SHIFT) |

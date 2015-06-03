@@ -586,6 +586,8 @@ struct drm_amdgpu_info_device {
 	uint32_t vram_type;
 	/** video memory bit width*/
 	uint32_t vram_bit_width;
+	/** constant engine ram size*/
+	uint32_t ce_ram_size;
 };
 
 struct drm_amdgpu_info_hw_ip {
