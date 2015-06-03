@@ -60,7 +60,6 @@ class JavaScriptCallFrame;
 class JSONObject;
 class ScriptAsyncCallStack;
 class ScriptRegexp;
-class ScriptSourceCode;
 class V8AsyncCallTracker;
 class V8Debugger;
 

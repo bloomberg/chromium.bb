@@ -223,9 +223,4 @@ v8::Local<v8::Object> JavaScriptCallFrame::createExceptionDetails(v8::Isolate* i
     return exceptionDetails;
 }
 
-DEFINE_TRACE(JavaScriptCallFrame)
-{
-    visitor->trace(m_caller);
-}
-
 } // namespace blink

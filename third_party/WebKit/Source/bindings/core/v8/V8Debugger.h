@@ -154,6 +154,7 @@ private:
     v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::UniquePersistent<v8::Object> m_debuggerScript;
     v8::UniquePersistent<v8::Context> m_debuggerContext;
+    v8::UniquePersistent<v8::FunctionTemplate> m_callFrameWrapperTemplate;
     v8::Local<v8::Object> m_executionState;
     RefPtr<ScriptState> m_pausedScriptState;
     bool m_runningNestedMessageLoop;

@@ -186,6 +186,8 @@
             'WrapCanvasContext.h',
             'WrapperTypeInfo.cpp',
             'WrapperTypeInfo.h',
+            'inspector/V8JavaScriptCallFrame.cpp',
+            'inspector/V8JavaScriptCallFrame.h',
             'npruntime.cpp',
             'npruntime_impl.h',
             'npruntime_priv.h',

@@ -32,8 +32,9 @@
 #include "bindings/core/v8/V8Debugger.h"
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8JavaScriptCallFrame.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
+#include "bindings/core/v8/inspector/V8JavaScriptCallFrame.h"
 #include "core/inspector/JavaScriptCallFrame.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "platform/JSONValues.h"
@@ -79,6 +80,7 @@ void V8Debugger::enable()
     v8::HandleScope scope(m_isolate);
     v8::Debug::SetDebugEventListener(&V8Debugger::v8DebugEventCallback, v8::External::New(m_isolate, this));
     m_debuggerContext.Reset(m_isolate, v8::Debug::GetDebugContext());
+    m_callFrameWrapperTemplate.Reset(m_isolate, V8JavaScriptCallFrame::createWrapperTemplate(m_isolate));
     compileDebuggerScript();
 }
 
@@ -88,6 +90,7 @@ void V8Debugger::disable()
     clearBreakpoints();
     m_debuggerScript.Reset();
     m_debuggerContext.Reset();
+    m_callFrameWrapperTemplate.Reset();
     v8::Debug::SetDebugEventListener(nullptr);
 }
 
@@ -384,7 +387,7 @@ PassRefPtrWillBeRawPtr<JavaScriptCallFrame> V8Debugger::toJavaScriptCallFrameUns
         return nullptr;
     ScriptState::Scope scope(scriptState);
     ASSERT(value.isObject());
-    return V8JavaScriptCallFrame::toImpl(v8::Local<v8::Object>::Cast(value.v8ValueUnsafe()));
+    return V8JavaScriptCallFrame::unwrap(v8::Local<v8::Object>::Cast(value.v8ValueUnsafe()));
 }
 
 PassRefPtrWillBeRawPtr<JavaScriptCallFrame> V8Debugger::wrapCallFrames(int maximumLimit, ScopeInfoDetails scopeDetails)
@@ -423,9 +426,11 @@ ScriptValue V8Debugger::currentCallFramesInner(ScopeInfoDetails scopeDetails)
     if (!currentCallFrame)
         return ScriptValue();
 
+    v8::Local<v8::FunctionTemplate> wrapperTemplate = v8::Local<v8::FunctionTemplate>::New(m_isolate, m_callFrameWrapperTemplate);
     ScriptState* scriptState = m_pausedScriptState ? m_pausedScriptState.get() : ScriptState::current(m_isolate);
     ScriptState::Scope scope(scriptState);
-    return ScriptValue(scriptState, toV8(currentCallFrame.release(), scriptState->context()->Global(), m_isolate));
+    v8::Local<v8::Object> wrapper = V8JavaScriptCallFrame::wrap(wrapperTemplate, scriptState->context(), currentCallFrame.release());
+    return ScriptValue(scriptState, wrapper);
 }
 
 ScriptValue V8Debugger::currentCallFrames()

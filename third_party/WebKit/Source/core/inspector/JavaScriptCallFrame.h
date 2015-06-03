@@ -34,22 +34,19 @@
 
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
 
-class JavaScriptCallFrame : public RefCountedWillBeGarbageCollectedFinalized<JavaScriptCallFrame>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class JavaScriptCallFrame : public RefCounted<JavaScriptCallFrame> {
 public:
     static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> create(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
     {
         return adoptRefWillBeNoop(new JavaScriptCallFrame(debuggerContext, callFrame));
     }
     ~JavaScriptCallFrame();
-    DECLARE_TRACE();
 
     JavaScriptCallFrame* caller();
 
@@ -74,6 +71,10 @@ public:
 
     static v8::Local<v8::Object> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
+    // FIXME: store this template in per isolate data
+    void setWrapperTemplate(v8::Local<v8::FunctionTemplate> wrapperTemplate, v8::Isolate* isolate) { m_wrapperTemplate.Reset(isolate, wrapperTemplate); }
+    v8::Local<v8::FunctionTemplate> wrapperTemplate(v8::Isolate* isolate) { return v8::Local<v8::FunctionTemplate>::New(isolate, m_wrapperTemplate); }
+
 private:
     JavaScriptCallFrame(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame);
 
@@ -84,6 +85,7 @@ private:
     RefPtrWillBeMember<JavaScriptCallFrame> m_caller;
     ScopedPersistent<v8::Context> m_debuggerContext;
     ScopedPersistent<v8::Object> m_callFrame;
+    v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };
 
 } // namespace blink

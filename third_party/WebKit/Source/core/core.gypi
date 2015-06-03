@@ -285,7 +285,6 @@
             'html/track/vtt/VTTRegionList.idl',
             'inspector/InjectedScriptHost.idl',
             'inspector/InspectorOverlayHost.idl',
-            'inspector/JavaScriptCallFrame.idl',
             'loader/appcache/ApplicationCache.idl',
             'page/EventSource.idl',
             'page/PagePopupController.idl',
