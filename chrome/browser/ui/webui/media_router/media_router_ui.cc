@@ -107,19 +107,19 @@ void MediaRouterUI::UIInitialized() {
   ui_initialized_ = true;
 }
 
-bool MediaRouterUI::CreateRoute(const MediaSinkId& sink_id) {
+bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id) {
   return DoCreateRoute(sink_id, GetPreferredCastMode(cast_modes_));
 }
 
 bool MediaRouterUI::CreateRouteWithCastModeOverride(
-    const MediaSinkId& sink_id,
+    const MediaSink::Id& sink_id,
     MediaCastMode cast_mode_override) {
   // NOTE: It's actually not an override if
   // |cast_mode_override| == |GetPreferredCastMode(cast_modes_)|.
   return DoCreateRoute(sink_id, cast_mode_override);
 }
 
-void MediaRouterUI::CloseRoute(const MediaRouteId& route_id) {
+void MediaRouterUI::CloseRoute(const MediaRoute::Id& route_id) {
   router_->CloseRoute(route_id);
 }
 
@@ -165,7 +165,7 @@ void MediaRouterUI::OnRouteResponseReceived(scoped_ptr<MediaRoute> route,
   has_pending_route_request_ = false;
 }
 
-bool MediaRouterUI::DoCreateRoute(const MediaSinkId& sink_id,
+bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
                                   MediaCastMode cast_mode) {
   DCHECK(query_result_manager_.get());
 

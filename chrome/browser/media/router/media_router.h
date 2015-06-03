@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_route.h"
-#include "chrome/browser/media/router/media_route_id.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
 
@@ -40,21 +39,21 @@ class MediaRouter {
 
   // Creates a media route from |source_id| to |sink_id|.
   // |callback| is invoked with a response indicating success or failure.
-  virtual void CreateRoute(const MediaSourceId& source_id,
-                           const MediaSinkId& sink_id,
+  virtual void CreateRoute(const MediaSource::Id& source_id,
+                           const MediaSink::Id& sink_id,
                            const MediaRouteResponseCallback& callback) = 0;
 
   // Closes the media route specified by |route_id|.
-  virtual void CloseRoute(const MediaRouteId& route_id) = 0;
+  virtual void CloseRoute(const MediaRoute::Id& route_id) = 0;
 
   // Posts |message| to a MediaSink connected via MediaRoute with |route_id|.
   // TODO(imcheng): Support additional data types: Blob, ArrayBuffer,
   // ArrayBufferView.
-  virtual void PostMessage(const MediaRouteId& route_id,
+  virtual void PostMessage(const MediaRoute::Id& route_id,
                            const std::string& message) = 0;
 
   // Clears the issue with the id |issue_id|.
-  virtual void ClearIssue(const Issue::IssueId& issue_id) = 0;
+  virtual void ClearIssue(const Issue::Id& issue_id) = 0;
 
   // Receives updates from a MediaRouter instance.
   class Delegate {
@@ -62,7 +61,7 @@ class MediaRouter {
     // Called when there is a message from a route.
     // |route_id|: The route ID.
     // |message|: The message.
-    virtual void OnMessage(const MediaRouteId& route_id,
+    virtual void OnMessage(const MediaRoute::Id& route_id,
                            const std::string& message) = 0;
   };
 

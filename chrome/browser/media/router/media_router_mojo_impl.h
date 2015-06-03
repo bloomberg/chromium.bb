@@ -59,13 +59,13 @@ class MediaRouterMojoImpl : public MediaRouter,
   // MediaRouter implementation.
   // Execution of the requests is delegated to the Do* methods, which can be
   // enqueued for later use if the extension is temporarily suspended.
-  void CreateRoute(const MediaSourceId& source_id,
-                   const MediaSinkId& sink_id,
+  void CreateRoute(const MediaSource::Id& source_id,
+                   const MediaSink::Id& sink_id,
                    const MediaRouteResponseCallback& callback) override;
-  void CloseRoute(const MediaRouteId& route_id) override;
-  void PostMessage(const MediaRouteId& route_id,
+  void CloseRoute(const MediaRoute::Id& route_id) override;
+  void PostMessage(const MediaRoute::Id& route_id,
                    const std::string& message) override;
-  void ClearIssue(const Issue::IssueId& issue_id) override;
+  void ClearIssue(const Issue::Id& issue_id) override;
   void RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
   void UnregisterMediaSinksObserver(MediaSinksObserver* observer) override;
   void RegisterMediaRoutesObserver(MediaRoutesObserver* observer) override;
@@ -107,12 +107,13 @@ class MediaRouterMojoImpl : public MediaRouter,
   void ExecutePendingRequests();
 
   // These calls invoke methods in the component extension via Mojo.
-  void DoCreateRoute(const MediaSourceId& source_id,
-                     const MediaSinkId& sink_id,
+  void DoCreateRoute(const MediaSource::Id& source_id,
+                     const MediaSink::Id& sink_id,
                      const MediaRouteResponseCallback& callback);
-  void DoCloseRoute(const MediaRouteId& route_id);
-  void DoPostMessage(const MediaRouteId& route_id, const std::string& message);
-  void DoClearIssue(const Issue::IssueId& issue_id);
+  void DoCloseRoute(const MediaRoute::Id& route_id);
+  void DoPostMessage(const MediaRoute::Id& route_id,
+                     const std::string& message);
+  void DoClearIssue(const Issue::Id& issue_id);
   void DoStartObservingMediaSinks(const std::string& source_id);
   void DoStopObservingMediaSinks(const std::string& source_id);
   void DoStartObservingMediaRoutes();
@@ -139,7 +140,7 @@ class MediaRouterMojoImpl : public MediaRouter,
   // becomes ready.
   std::vector<base::Closure> pending_requests_;
 
-  base::ScopedPtrHashMap<MediaSourceId,
+  base::ScopedPtrHashMap<MediaSource::Id,
                          scoped_ptr<base::ObserverList<MediaSinksObserver>>>
       sinks_observers_;
 

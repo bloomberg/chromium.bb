@@ -24,7 +24,7 @@ namespace {
 
 // Converts the callback result of calling Mojo CreateRoute() into a local
 // callback.
-void CreateRouteFinished(const MediaSinkId& sink_id,
+void CreateRouteFinished(const MediaSink::Id& sink_id,
                          const MediaRouteResponseCallback& callback,
                          interfaces::MediaRoutePtr media_route,
                          const mojo::String& error_text) {
@@ -158,8 +158,8 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
 }
 
 void MediaRouterMojoImpl::CreateRoute(
-    const MediaSourceId& source_id,
-    const MediaSinkId& sink_id,
+    const MediaSource::Id& source_id,
+    const MediaSink::Id& sink_id,
     const MediaRouteResponseCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -167,14 +167,14 @@ void MediaRouterMojoImpl::CreateRoute(
                         base::Unretained(this), source_id, sink_id, callback));
 }
 
-void MediaRouterMojoImpl::CloseRoute(const MediaRouteId& route_id) {
+void MediaRouterMojoImpl::CloseRoute(const MediaRoute::Id& route_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoCloseRoute,
                         base::Unretained(this), route_id));
 }
 
-void MediaRouterMojoImpl::PostMessage(const MediaRouteId& route_id,
+void MediaRouterMojoImpl::PostMessage(const MediaRoute::Id& route_id,
                                       const std::string& message) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -182,7 +182,7 @@ void MediaRouterMojoImpl::PostMessage(const MediaRouteId& route_id,
                         base::Unretained(this), route_id, message));
 }
 
-void MediaRouterMojoImpl::ClearIssue(const Issue::IssueId& issue_id) {
+void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoClearIssue,
@@ -268,26 +268,26 @@ void MediaRouterMojoImpl::RemoveIssuesObserver(IssuesObserver* observer) {
 }
 
 void MediaRouterMojoImpl::DoCreateRoute(
-    const MediaSourceId& source_id,
-    const MediaSinkId& sink_id,
+    const MediaSource::Id& source_id,
+    const MediaSink::Id& sink_id,
     const MediaRouteResponseCallback& callback) {
   DVLOG_WITH_INSTANCE(1) << "CreateRoute " << source_id << "=>" << sink_id;
   mojo_media_router_->CreateRoute(
       source_id, sink_id, base::Bind(&CreateRouteFinished, sink_id, callback));
 }
 
-void MediaRouterMojoImpl::DoCloseRoute(const MediaRouteId& route_id) {
+void MediaRouterMojoImpl::DoCloseRoute(const MediaRoute::Id& route_id) {
   DVLOG_WITH_INSTANCE(1) << "CloseRoute " << route_id;
   mojo_media_router_->CloseRoute(route_id);
 }
 
-void MediaRouterMojoImpl::DoPostMessage(const MediaRouteId& route_id,
+void MediaRouterMojoImpl::DoPostMessage(const MediaRoute::Id& route_id,
                                         const std::string& message) {
   DVLOG_WITH_INSTANCE(1) << "PostMessage " << route_id;
   mojo_media_router_->PostMessage(route_id, message);
 }
 
-void MediaRouterMojoImpl::DoClearIssue(const Issue::IssueId& issue_id) {
+void MediaRouterMojoImpl::DoClearIssue(const Issue::Id& issue_id) {
   DVLOG_WITH_INSTANCE(1) << "ClearIssue " << issue_id;
   mojo_media_router_->ClearIssue(issue_id);
 }

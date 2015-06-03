@@ -31,11 +31,10 @@ using content::RenderFrameHost;
 
 namespace media_router {
 
-using RenderFrameHostId = std::pair<int, int>;
-
 namespace {
 
 using DelegateObserver = content::PresentationServiceDelegate::Observer;
+using RenderFrameHostId = std::pair<int, int>;
 
 // Returns the unique identifier for the supplied RenderViewHost.
 RenderFrameHostId GetRenderFrameHostId(RenderFrameHost* render_view_host) {
@@ -72,7 +71,7 @@ class PresentationFrame {
   bool RemoveScreenAvailabilityListener(
       content::PresentationScreenAvailabilityListener* listener);
   bool HasScreenAvailabilityListenerForTest(
-      const MediaSourceId& source_id) const;
+      const MediaSource::Id& source_id) const;
   void SetDefaultPresentationInfo(const std::string& default_presentation_url,
                                   const std::string& default_presentation_id);
   std::string GetDefaultPresentationId() const;
@@ -144,7 +143,7 @@ bool PresentationFrame::RemoveScreenAvailabilityListener(
 }
 
 bool PresentationFrame::HasScreenAvailabilityListenerForTest(
-    const MediaSourceId& source_id) const {
+    const MediaSource::Id& source_id) const {
   return sinks_observer_ && sinks_observer_->source().id() == source_id;
 }
 
@@ -202,7 +201,7 @@ class PresentationFrameManager {
   void Reset(const RenderFrameHostId& render_frame_host_id);
   bool HasScreenAvailabilityListenerForTest(
       const RenderFrameHostId& render_frame_host_id,
-      const MediaSourceId& source_id) const;
+      const MediaSource::Id& source_id) const;
   void SetMediaRouterForTest(MediaRouter* router);
 
   // Returns default presentation ID, or empty string if no default
@@ -268,7 +267,7 @@ bool PresentationFrameManager::RemoveScreenAvailabilityListener(
 
 bool PresentationFrameManager::HasScreenAvailabilityListenerForTest(
     const RenderFrameHostId& render_frame_host_id,
-    const MediaSourceId& source_id) const {
+    const MediaSource::Id& source_id) const {
   auto presentation_frame = presentation_frames_.get(render_frame_host_id);
   return presentation_frame &&
          presentation_frame->HasScreenAvailabilityListenerForTest(source_id);
@@ -507,7 +506,7 @@ PresentationServiceDelegateImpl::GetWeakPtr() {
 bool PresentationServiceDelegateImpl::HasScreenAvailabilityListenerForTest(
     int render_process_id,
     int render_frame_id,
-    const MediaSourceId& source_id) const {
+    const MediaSource::Id& source_id) const {
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
   return frame_manager_->HasScreenAvailabilityListenerForTest(
       render_frame_host_id, source_id);

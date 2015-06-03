@@ -42,19 +42,19 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // Returns false if unable to request the route.
   // |OnRouteResponseReceived()| will be invoked when the route request
   // completes.
-  bool CreateRoute(const MediaSinkId& sink_id);
+  bool CreateRoute(const MediaSink::Id& sink_id);
 
   // Requests a route be created from the source mapped to
   // |cast_mode_override|, to the sink given by |sink_id|.
   // Returns true if a route request is successfully submitted.
-  bool CreateRouteWithCastModeOverride(const MediaSinkId& sink_id,
+  bool CreateRouteWithCastModeOverride(const MediaSink::Id& sink_id,
                                        MediaCastMode cast_mode_override);
 
   // Calls MediaRouter to close the given route.
-  void CloseRoute(const MediaRouteId& route_id);
+  void CloseRoute(const MediaRoute::Id& route_id);
 
   // Calls MediaRouter to clear the given issue.
-  void ClearIssue(const Issue::IssueId& issue_id);
+  void ClearIssue(const Issue::Id& issue_id);
 
   // Returns the header text that should be displayed in the UI when it is
   // initially loaded. The header text is determined by the preferred cast mode.
@@ -86,7 +86,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   void OnRouteResponseReceived(scoped_ptr<MediaRoute> route,
                                const std::string& error);
 
-  bool DoCreateRoute(const MediaSinkId& sink_id, MediaCastMode cast_mode);
+  bool DoCreateRoute(const MediaSink::Id& sink_id, MediaCastMode cast_mode);
 
   // Owned by the |web_ui| passed in the ctor, and guaranteed to be deleted
   // only after it has deleted |this|.

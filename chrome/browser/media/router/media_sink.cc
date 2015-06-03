@@ -6,7 +6,7 @@
 
 namespace media_router {
 
-MediaSink::MediaSink(const MediaSinkId& sink_id, const std::string& name)
+MediaSink::MediaSink(const MediaSink::Id& sink_id, const std::string& name)
     : sink_id_(sink_id), name_(name) {
 }
 

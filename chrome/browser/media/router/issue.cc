@@ -17,7 +17,7 @@ Issue::Issue(const std::string& title,
              const std::string& message,
              const IssueAction& default_action,
              const std::vector<IssueAction>& secondary_actions,
-             const MediaRouteId& route_id,
+             const MediaRoute::Id& route_id,
              const Issue::Severity severity,
              bool is_blocking,
              const std::string& help_url)

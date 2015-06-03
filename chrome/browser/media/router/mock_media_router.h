@@ -24,13 +24,14 @@ class MockMediaRouter : public MediaRouter {
   virtual ~MockMediaRouter();
 
   MOCK_METHOD3(CreateRoute,
-               void(const MediaSourceId& source_id,
-                    const MediaSinkId& sink_id,
+               void(const MediaSource::Id& source,
+                    const MediaSink::Id& sink_id,
                     const MediaRouteResponseCallback& callback));
-  MOCK_METHOD1(CloseRoute, void(const MediaRouteId& route_id));
+  MOCK_METHOD1(CloseRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD2(PostMessage,
-               void(const MediaRouteId& route_id, const std::string& message));
-  MOCK_METHOD1(ClearIssue, void(const Issue::IssueId& issue_id));
+               void(const MediaRoute::Id& route_id,
+                    const std::string& message));
+  MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
   MOCK_METHOD1(AddIssuesObserver, void(IssuesObserver* observer));
   MOCK_METHOD1(RemoveIssuesObserver, void(IssuesObserver* observer));
 

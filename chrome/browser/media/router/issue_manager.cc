@@ -25,7 +25,7 @@ void IssueManager::AddIssue(const Issue& issue) {
   MaybeUpdateTopIssue();
 }
 
-void IssueManager::ClearIssue(const Issue::IssueId& issue_id) {
+void IssueManager::ClearIssue(const Issue::Id& issue_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   issues_.erase(std::remove_if(issues_.begin(), issues_.end(),
                                [&issue_id](const Issue& issue) {
@@ -55,7 +55,7 @@ void IssueManager::ClearGlobalIssues() {
   MaybeUpdateTopIssue();
 }
 
-void IssueManager::ClearIssuesWithRouteId(const MediaRouteId& route_id) {
+void IssueManager::ClearIssuesWithRouteId(const MediaRoute::Id& route_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   issues_.erase(std::remove_if(issues_.begin(), issues_.end(),
                                [&route_id](const Issue& issue) {

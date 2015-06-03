@@ -9,7 +9,7 @@
 
 namespace media_router {
 
-MediaRoute::MediaRoute(const MediaRouteId& media_route_id,
+MediaRoute::MediaRoute(const MediaRoute::Id& media_route_id,
                        const MediaSource& media_source,
                        const MediaSink& media_sink,
                        const std::string& description,

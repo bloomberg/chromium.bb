@@ -8,7 +8,7 @@
 
 namespace media_router {
 
-MediaSource::MediaSource(const MediaSourceId& source_id) : id_(source_id) {
+MediaSource::MediaSource(const MediaSource::Id& source_id) : id_(source_id) {
 }
 
 MediaSource::MediaSource() {
@@ -16,7 +16,7 @@ MediaSource::MediaSource() {
 
 MediaSource::~MediaSource() {}
 
-MediaSourceId MediaSource::id() const {
+MediaSource::Id MediaSource::id() const {
   return id_;
 }
 

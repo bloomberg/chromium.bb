@@ -124,7 +124,7 @@ class PresentationServiceDelegateImpl
   bool HasScreenAvailabilityListenerForTest(
       int render_process_id,
       int render_frame_id,
-      const MediaSourceId& source_id) const;
+      const MediaSource::Id& source_id) const;
 
   base::WeakPtr<PresentationServiceDelegateImpl> GetWeakPtr();
 

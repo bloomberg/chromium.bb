@@ -12,16 +12,17 @@
 
 namespace media_router {
 
-using MediaSourceId = std::string;
 
 class MediaSource {
  public:
-  explicit MediaSource(const MediaSourceId& id);
+  using Id = std::string;
+
+  explicit MediaSource(const MediaSource::Id& id);
   MediaSource();
   ~MediaSource();
 
   // Gets the ID of the media source.
-  MediaSourceId id() const;
+  MediaSource::Id id() const;
 
   // Returns true if two MediaSource objects use the same media ID.
   bool Equals(const MediaSource& other) const;
@@ -40,7 +41,7 @@ class MediaSource {
   };
 
  private:
-  MediaSourceId id_;
+  MediaSource::Id id_;
 };
 
 }  // namespace media_router

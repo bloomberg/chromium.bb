@@ -39,7 +39,7 @@ class QueryResultManager::CastModeMediaSinksObserver
   }
 
   // Returns the most recent sink IDs that were passed to |OnSinksReceived|.
-  void GetLatestSinkIds(std::vector<MediaSinkId>* sink_ids) const {
+  void GetLatestSinkIds(std::vector<MediaSink::Id>* sink_ids) const {
     DCHECK(sink_ids);
     *sink_ids = latest_sink_ids_;
   }
@@ -48,7 +48,7 @@ class QueryResultManager::CastModeMediaSinksObserver
 
  private:
   MediaCastMode cast_mode_;
-  std::vector<MediaSinkId> latest_sink_ids_;
+  std::vector<MediaSink::Id> latest_sink_ids_;
   QueryResultManager* result_manager_;
 };
 
@@ -119,7 +119,7 @@ bool QueryResultManager::IsValid(const MediaSinkWithCastModes& entry) const {
 void QueryResultManager::UpdateWithSinksQueryResult(
     MediaCastMode cast_mode,
     const std::vector<MediaSink>& result) {
-  base::hash_set<MediaSinkId> result_sink_ids;
+  base::hash_set<MediaSink::Id> result_sink_ids;
   for (const MediaSink& sink : result)
     result_sink_ids.insert(sink.id());
 

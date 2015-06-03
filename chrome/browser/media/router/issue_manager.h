@@ -28,8 +28,8 @@ class IssueManager {
   void AddIssue(const Issue& issue);
 
   // Removes an issue when user has noted it is resolved.
-  // |issue_id|: Issue::IssueId of the issue to be removed.
-  void ClearIssue(const Issue::IssueId& issue_id);
+  // |issue_id|: Issue::Id of the issue to be removed.
+  void ClearIssue(const Issue::Id& issue_id);
 
   // Gets the number of unresolved issues.
   size_t GetIssueCount() const;
@@ -41,8 +41,8 @@ class IssueManager {
   void ClearGlobalIssues();
 
   // Removes all unresolved issues with RouteId.
-  // |route_id|: MediaRouteId of the issues to be removed.
-  void ClearIssuesWithRouteId(const MediaRouteId& route_id);
+  // |route_id|: ID of the media route whose issues are to be cleared.
+  void ClearIssuesWithRouteId(const MediaRoute::Id& route_id);
 
   // Registers an issue observer |observer|. The observer will be triggered
   // when the highest priority issue changes.
@@ -67,7 +67,7 @@ class IssueManager {
   base::ObserverList<IssuesObserver> issues_observers_;
 
   // The ID of the current top issue.
-  Issue::IssueId top_issue_id_;
+  Issue::Id top_issue_id_;
 
   base::ThreadChecker thread_checker_;
 

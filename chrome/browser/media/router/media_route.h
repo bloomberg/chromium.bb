@@ -10,7 +10,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chrome/browser/media/router/media_route_id.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
 #include "url/gurl.h"
@@ -33,13 +32,15 @@ enum MediaRouteState {
 // be retrieved as new MediaRoute objects from the Media Router.
 class MediaRoute {
  public:
+  using Id = std::string;
+
   // |media_route_id|: ID of the route. New route IDs should be created
   //                   by the RouteIdManager class.
   // |media_source|: Description of source of the route.
   // |media_sink|: The sink that is receiving the media.
   // |description|: Description of the route to be displayed.
   // |is_local|: true if the route was created from this browser.
-  MediaRoute(const MediaRouteId& media_route_id,
+  MediaRoute(const MediaRoute::Id& media_route_id,
              const MediaSource& media_source,
              const MediaSink& media_sink,
              const std::string& description,
@@ -47,7 +48,7 @@ class MediaRoute {
   ~MediaRoute();
 
   // The media route identifier.
-  const MediaRouteId& media_route_id() const { return media_route_id_; }
+  const MediaRoute::Id& media_route_id() const { return media_route_id_; }
 
   // The state of the media route.
   MediaRouteState state() const { return state_; }
@@ -70,7 +71,7 @@ class MediaRoute {
   bool Equals(const MediaRoute& other) const;
 
  private:
-  MediaRouteId media_route_id_;
+  MediaRoute::Id media_route_id_;
   MediaSource media_source_;
   MediaSink media_sink_;
   std::string description_;
