@@ -24,7 +24,7 @@ function set_command_line() {
 
   if [ $# -eq 0 ] ; then
     # If nothing specified, print the command line (stripping off "chrome ")
-    adb shell "cat $CMD_LINE_FILE 2>/dev/null | cut -d ' ' -s -f2-"
+    adb shell "cat $CMD_LINE_FILE 2>/dev/null" | cut -d ' ' -s -f2-
   elif [ $# -eq 1 ] && [ "$1" = '' ] ; then
     # If given an empty string, delete the command line.
     set -x
