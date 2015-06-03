@@ -159,8 +159,8 @@ base::string16 V8StringToUTF16(v8::Local<v8::String> s) {
 v8::Local<v8::String> ASCIIStringToV8String(v8::Isolate* isolate,
                                             const std::string& s) {
   DCHECK(base::IsStringASCII(s));
-  return v8::String::NewFromUtf8(isolate, s.data(), v8::String::kNormalString,
-                                 s.size());
+  return v8::String::NewFromUtf8(isolate, s.data(), v8::NewStringType::kNormal,
+                                 s.size()).ToLocalChecked();
 }
 
 // Converts a UTF16 base::string16 (warpped by a ProxyResolverScriptData) to a
@@ -169,13 +169,11 @@ v8::Local<v8::String> ScriptDataToV8String(
     v8::Isolate* isolate, const scoped_refptr<ProxyResolverScriptData>& s) {
   if (s->utf16().size() * 2 <= kMaxStringBytesForCopy) {
     return v8::String::NewFromTwoByte(
-        isolate,
-        reinterpret_cast<const uint16_t*>(s->utf16().data()),
-        v8::String::kNormalString,
-        s->utf16().size());
+               isolate, reinterpret_cast<const uint16_t*>(s->utf16().data()),
+               v8::NewStringType::kNormal, s->utf16().size()).ToLocalChecked();
   }
-  return v8::String::NewExternal(isolate,
-                                 new V8ExternalStringFromScriptData(s));
+  return v8::String::NewExternalTwoByte(
+             isolate, new V8ExternalStringFromScriptData(s)).ToLocalChecked();
 }
 
 // Converts an ASCII string literal to a V8 string.
@@ -184,10 +182,11 @@ v8::Local<v8::String> ASCIILiteralToV8String(v8::Isolate* isolate,
   DCHECK(base::IsStringASCII(ascii));
   size_t length = strlen(ascii);
   if (length <= kMaxStringBytesForCopy)
-    return v8::String::NewFromUtf8(isolate, ascii, v8::String::kNormalString,
-                                   length);
-  return v8::String::NewExternal(isolate,
-                                 new V8ExternalASCIILiteral(ascii, length));
+    return v8::String::NewFromUtf8(isolate, ascii, v8::NewStringType::kNormal,
+                                   length).ToLocalChecked();
+  return v8::String::NewExternalOneByte(
+             isolate, new V8ExternalASCIILiteral(ascii, length))
+      .ToLocalChecked();
 }
 
 // Stringizes a V8 object by calling its toString() method. Returns true
@@ -199,8 +198,8 @@ bool V8ObjectToUTF16String(v8::Local<v8::Value> object,
     return false;
 
   v8::HandleScope scope(isolate);
-  v8::Local<v8::String> str_object = object->ToString(isolate);
-  if (str_object.IsEmpty())
+  v8::Local<v8::String> str_object;
+  if (!object->ToString(isolate->GetCurrentContext()).ToLocal(&str_object))
     return false;
   *utf16_result = V8StringToUTF16(str_object);
   return true;
@@ -443,11 +442,12 @@ class ProxyResolverV8::Context {
       ASCIIStringToV8String(isolate_, query_url.HostNoBrackets()),
     };
 
-    v8::TryCatch try_catch;
-    v8::Local<v8::Value> ret = v8::Function::Cast(*function)->Call(
-        context->Global(), arraysize(argv), argv);
-
-    if (try_catch.HasCaught()) {
+    v8::TryCatch try_catch(isolate_);
+    v8::Local<v8::Value> ret;
+    if (!v8::Function::Cast(*function)
+             ->Call(context, context->Global(), arraysize(argv), argv)
+             .ToLocal(&ret)) {
+      DCHECK(try_catch.HasCaught());
       HandleError(try_catch.Message());
       return ERR_PAC_SCRIPT_FAILED;
     }
@@ -572,14 +572,14 @@ class ProxyResolverV8::Context {
     v8::Local<v8::Context> context =
         v8::Local<v8::Context>::New(isolate_, v8_context_);
 
-    v8::TryCatch try_catch;
+    v8::TryCatch try_catch(isolate_);
 
-    *function =
-        context->Global()->Get(
-            ASCIILiteralToV8String(isolate_, "FindProxyForURL"));
-
-    if (try_catch.HasCaught())
+    if (!context->Global()
+             ->Get(context, ASCIILiteralToV8String(isolate_, "FindProxyForURL"))
+             .ToLocal(function)) {
+      DCHECK(try_catch.HasCaught());
       HandleError(try_catch.Message());
+    }
 
     // The value should only be empty if an exception was thrown. Code
     // defensively just in case.
@@ -603,11 +603,15 @@ class ProxyResolverV8::Context {
 
   // Handle an exception thrown by V8.
   void HandleError(v8::Local<v8::Message> message) {
+    v8::Local<v8::Context> context =
+        v8::Local<v8::Context>::New(isolate_, v8_context_);
     base::string16 error_message;
     int line_number = -1;
 
     if (!message.IsEmpty()) {
-      line_number = message->GetLineNumber();
+      auto maybe = message->GetLineNumber(context);
+      if (maybe.IsJust())
+        line_number = maybe.FromJust();
       V8ObjectToUTF16String(message->Get(), &error_message, isolate_);
     }
 
@@ -617,19 +621,24 @@ class ProxyResolverV8::Context {
   // Compiles and runs |script| in the current V8 context.
   // Returns OK on success, otherwise an error code.
   int RunScript(v8::Local<v8::String> script, const char* script_name) {
-    v8::TryCatch try_catch;
+    v8::Local<v8::Context> context =
+        v8::Local<v8::Context>::New(isolate_, v8_context_);
+    v8::TryCatch try_catch(isolate_);
 
     // Compile the script.
     v8::ScriptOrigin origin =
         v8::ScriptOrigin(ASCIILiteralToV8String(isolate_, script_name));
-    v8::Local<v8::Script> code = v8::Script::Compile(script, &origin);
+    v8::Local<v8::Script> code;
+    if (!v8::Script::Compile(context, script, &origin).ToLocal(&code)) {
+      DCHECK(try_catch.HasCaught());
+      HandleError(try_catch.Message());
+      return ERR_PAC_SCRIPT_FAILED;
+    }
 
     // Execute.
-    if (!code.IsEmpty())
-      code->Run();
-
-    // Check for errors.
-    if (try_catch.HasCaught()) {
+    auto result = code->Run(context);
+    if (result.IsEmpty()) {
+      DCHECK(try_catch.HasCaught());
       HandleError(try_catch.Message());
       return ERR_PAC_SCRIPT_FAILED;
     }
@@ -709,7 +718,7 @@ class ProxyResolverV8::Context {
     }
 
     if (terminate)
-      v8::V8::TerminateExecution(args.GetIsolate());
+      args.GetIsolate()->TerminateExecution();
 
     if (success) {
       args.GetReturnValue().Set(
