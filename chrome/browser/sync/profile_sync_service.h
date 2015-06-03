@@ -490,13 +490,11 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);
 
-  // Returns whether sync is enabled.  Sync can be enabled/disabled both
-  // at compile time (e.g., on a per-OS basis) or at run time (e.g.,
-  // command-line switches).
+  // Returns whether sync is allowed to run based on command-line switches.
   // Profile::IsSyncAccessible() is probably a better signal than this function.
   // This function can be called from any thread, and the implementation doesn't
   // assume it's running on the UI thread.
-  static bool IsSyncEnabled();
+  static bool IsSyncAllowedByFlag();
 
   // Returns whether sync is managed, i.e. controlled by configuration
   // management. If so, the user is not allowed to configure sync.

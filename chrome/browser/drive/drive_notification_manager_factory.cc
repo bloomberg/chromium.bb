@@ -27,7 +27,7 @@ DriveNotificationManagerFactory::FindForBrowserContext(
 DriveNotificationManager*
 DriveNotificationManagerFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  if (!ProfileSyncService::IsSyncEnabled())
+  if (!ProfileSyncService::IsSyncAllowedByFlag())
     return NULL;
   if (!invalidation::ProfileInvalidationProviderFactory::GetForProfile(
           Profile::FromBrowserContext(context))) {

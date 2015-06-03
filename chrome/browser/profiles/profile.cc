@@ -189,7 +189,7 @@ bool Profile::IsSyncAccessible() {
   // No ProfileSyncService created yet - we don't want to create one, so just
   // infer the accessible state by looking at prefs/command line flags.
   sync_driver::SyncPrefs prefs(GetPrefs());
-  return ProfileSyncService::IsSyncEnabled() && !prefs.IsManaged();
+  return ProfileSyncService::IsSyncAllowedByFlag() && !prefs.IsManaged();
 }
 
 void Profile::MaybeSendDestroyedNotification() {

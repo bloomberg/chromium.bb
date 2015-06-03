@@ -48,7 +48,7 @@ ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
 // static
 ProfileSyncService* ProfileSyncServiceFactory::GetForProfile(
     Profile* profile) {
-  if (!ProfileSyncService::IsSyncEnabled())
+  if (!ProfileSyncService::IsSyncAllowedByFlag())
     return NULL;
 
   // Disable sync experimentally to measure impact on startup time. Supervised
