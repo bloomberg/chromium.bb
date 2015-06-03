@@ -28,7 +28,7 @@ class DrmGpuDisplayManager {
 
   // Takes/releases the control of the DRM devices.
   bool TakeDisplayControl();
-  bool RelinquishDisplayControl();
+  void RelinquishDisplayControl();
 
   bool ConfigureDisplay(int64_t id,
                         const DisplayMode_Params& mode,

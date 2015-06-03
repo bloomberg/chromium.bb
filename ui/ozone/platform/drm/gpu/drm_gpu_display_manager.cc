@@ -97,26 +97,23 @@ std::vector<DisplaySnapshot_Params> DrmGpuDisplayManager::GetDisplays() {
 
 bool DrmGpuDisplayManager::TakeDisplayControl() {
   const DrmDeviceVector& devices = drm_device_manager_->GetDrmDevices();
-  for (const auto& drm : devices) {
-    if (!drm->SetMaster()) {
-      LOG(ERROR) << "Failed to take control of the display";
-      return false;
-    }
+  bool status = true;
+  for (const auto& drm : devices)
+    status &= drm->SetMaster();
+
+  // Roll-back any successful operation.
+  if (!status) {
+    LOG(ERROR) << "Failed to take control of the display";
+    RelinquishDisplayControl();
   }
 
-  return true;
+  return status;
 }
 
-bool DrmGpuDisplayManager::RelinquishDisplayControl() {
+void DrmGpuDisplayManager::RelinquishDisplayControl() {
   const DrmDeviceVector& devices = drm_device_manager_->GetDrmDevices();
-  for (const auto& drm : devices) {
-    if (!drm->DropMaster()) {
-      LOG(ERROR) << "Failed to relinquish control of the display";
-      return false;
-    }
-  }
-
-  return true;
+  for (const auto& drm : devices)
+    drm->DropMaster();
 }
 
 bool DrmGpuDisplayManager::ConfigureDisplay(

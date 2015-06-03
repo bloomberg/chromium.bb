@@ -152,14 +152,18 @@ void DrmDisplayHostManager::RemoveDelegate(DrmNativeDisplayDelegate* delegate) {
   delegate_ = nullptr;
 }
 
-bool DrmDisplayHostManager::TakeDisplayControl() {
-  proxy_->Send(new OzoneGpuMsg_TakeDisplayControl());
-  return true;
+void DrmDisplayHostManager::TakeDisplayControl(
+    const DisplayControlCallback& callback) {
+  take_display_control_callback_ = callback;
+  if (!proxy_->Send(new OzoneGpuMsg_TakeDisplayControl()))
+    OnTakeDisplayControl(false);
 }
 
-bool DrmDisplayHostManager::RelinquishDisplayControl() {
-  proxy_->Send(new OzoneGpuMsg_RelinquishDisplayControl());
-  return true;
+void DrmDisplayHostManager::RelinquishDisplayControl(
+    const DisplayControlCallback& callback) {
+  relinquish_display_control_callback_ = callback;
+  if (!proxy_->Send(new OzoneGpuMsg_RelinquishDisplayControl()))
+    OnRelinquishDisplayControl(false);
 }
 
 void DrmDisplayHostManager::UpdateDisplays(
@@ -263,6 +267,14 @@ void DrmDisplayHostManager::OnChannelEstablished(
     get_displays_callback_.Reset();
   }
 
+  // Signal that we're taking DRM master since we're going through the
+  // initialization process again and we'll take all the available resources.
+  if (!take_display_control_callback_.is_null())
+    OnTakeDisplayControl(true);
+
+  if (!relinquish_display_control_callback_.is_null())
+    OnRelinquishDisplayControl(false);
+
   drm_devices_.clear();
   drm_devices_.insert(primary_graphics_card_path_);
   scoped_ptr<DrmDeviceHandle> handle = primary_drm_device_handle_.Pass();
@@ -293,6 +305,9 @@ bool DrmDisplayHostManager::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayConfigured, OnDisplayConfigured)
   IPC_MESSAGE_HANDLER(OzoneHostMsg_HDCPStateReceived, OnHDCPStateReceived)
   IPC_MESSAGE_HANDLER(OzoneHostMsg_HDCPStateUpdated, OnHDCPStateUpdated)
+  IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayControlTaken, OnTakeDisplayControl)
+  IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayControlRelinquished,
+                      OnRelinquishDisplayControl)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -350,6 +365,26 @@ void DrmDisplayHostManager::OnHDCPStateUpdated(int64_t display_id,
     display->OnHDCPStateUpdated(status);
   else
     LOG(ERROR) << "Couldn't find display with id=" << display_id;
+}
+
+void DrmDisplayHostManager::OnTakeDisplayControl(bool status) {
+  if (!take_display_control_callback_.is_null()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(take_display_control_callback_, status));
+    take_display_control_callback_.Reset();
+  } else {
+    LOG(ERROR) << "No callback for take display control";
+  }
+}
+
+void DrmDisplayHostManager::OnRelinquishDisplayControl(bool status) {
+  if (!relinquish_display_control_callback_.is_null()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(relinquish_display_control_callback_, status));
+    relinquish_display_control_callback_.Reset();
+  } else {
+    LOG(ERROR) << "No callback for relinquish display control";
+  }
 }
 
 void DrmDisplayHostManager::RunUpdateDisplaysCallback(

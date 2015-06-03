@@ -38,8 +38,8 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   void AddDelegate(DrmNativeDisplayDelegate* delegate);
   void RemoveDelegate(DrmNativeDisplayDelegate* delegate);
 
-  bool TakeDisplayControl();
-  bool RelinquishDisplayControl();
+  void TakeDisplayControl(const DisplayControlCallback& callback);
+  void RelinquishDisplayControl(const DisplayControlCallback& callback);
   void UpdateDisplays(const GetDisplaysCallback& callback);
 
   // DeviceEventObserver overrides:
@@ -81,6 +81,9 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   void OnHDCPStateReceived(int64_t display_id, bool status, HDCPState state);
   void OnHDCPStateUpdated(int64_t display_id, bool status);
 
+  void OnTakeDisplayControl(bool status);
+  void OnRelinquishDisplayControl(bool status);
+
   void RunUpdateDisplaysCallback(const GetDisplaysCallback& callback) const;
 
   void NotifyDisplayDelegate() const;
@@ -102,6 +105,10 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   ScopedVector<DrmDisplayHost> displays_;
 
   GetDisplaysCallback get_displays_callback_;
+
+  DisplayControlCallback take_display_control_callback_;
+
+  DisplayControlCallback relinquish_display_control_callback_;
 
   // Used to serialize display event processing. This is done since
   // opening/closing DRM devices cannot be done on the UI thread and are handled

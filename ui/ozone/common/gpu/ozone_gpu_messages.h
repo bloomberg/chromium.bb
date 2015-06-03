@@ -150,3 +150,10 @@ IPC_MESSAGE_CONTROL3(OzoneHostMsg_HDCPStateReceived,
 IPC_MESSAGE_CONTROL2(OzoneHostMsg_HDCPStateUpdated,
                      int64_t /* display_id */,
                      bool /* success */)
+
+// Response to OzoneGpuMsg_TakeDisplayControl.
+IPC_MESSAGE_CONTROL1(OzoneHostMsg_DisplayControlTaken, bool /* success */)
+
+// Response to OzoneGpuMsg_RelinquishDisplayControl.
+IPC_MESSAGE_CONTROL1(OzoneHostMsg_DisplayControlRelinquished,
+                     bool /* success */)

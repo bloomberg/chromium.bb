@@ -37,12 +37,12 @@ void DrmNativeDisplayDelegate::UngrabServer() {
 
 void DrmNativeDisplayDelegate::TakeDisplayControl(
     const DisplayControlCallback& callback) {
-  callback.Run(display_manager_->TakeDisplayControl());
+  display_manager_->TakeDisplayControl(callback);
 }
 
 void DrmNativeDisplayDelegate::RelinquishDisplayControl(
     const DisplayControlCallback& callback) {
-  callback.Run(display_manager_->RelinquishDisplayControl());
+  display_manager_->RelinquishDisplayControl(callback);
 }
 
 void DrmNativeDisplayDelegate::SyncWithServer() {

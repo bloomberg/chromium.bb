@@ -279,11 +279,13 @@ void DrmGpuPlatformSupport::OnDisableNativeDisplay(int64_t id) {
 }
 
 void DrmGpuPlatformSupport::OnTakeDisplayControl() {
-  display_manager_->TakeDisplayControl();
+  sender_->Send(new OzoneHostMsg_DisplayControlTaken(
+      display_manager_->TakeDisplayControl()));
 }
 
 void DrmGpuPlatformSupport::OnRelinquishDisplayControl() {
   display_manager_->RelinquishDisplayControl();
+  sender_->Send(new OzoneHostMsg_DisplayControlRelinquished(true));
 }
 
 void DrmGpuPlatformSupport::OnAddGraphicsDevice(
