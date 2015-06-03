@@ -230,7 +230,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickCredential) {
   EXPECT_FALSE(controller()->choose_credential());
   autofill::PasswordForm form;
   model_->OnChooseCredentials(
-      form, password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
+      form, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_CREDENTIAL);

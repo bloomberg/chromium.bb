@@ -246,7 +246,7 @@ TEST_F(ManagePasswordsStateTest, OnRequestCredentials) {
 
   password_manager::CredentialInfo credential_info(
       test_local_form(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
+      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
   EXPECT_CALL(*this, OnChooseCredential(_))
       .WillOnce(testing::SaveArg<0>(&credential_info));
   passwords_data().TransitionToState(password_manager::ui::MANAGE_STATE);
@@ -469,7 +469,7 @@ TEST_F(ManagePasswordsStateTest, RequestCredentialsToBlacklisted) {
       password_manager::PasswordStoreChange::ADD, blacklisted));
   password_manager::CredentialInfo credential_info(
       test_local_form(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
+      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
   EXPECT_CALL(*this, OnChooseCredential(_))
       .WillOnce(testing::SaveArg<0>(&credential_info));
   passwords_data().ProcessLoginsChanged(list);

@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
 #include "third_party/WebKit/public/platform/WebFederatedCredential.h"
-#include "third_party/WebKit/public/platform/WebLocalCredential.h"
+#include "third_party/WebKit/public/platform/WebPasswordCredential.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 namespace password_manager {
@@ -87,8 +87,8 @@ void CredentialManagerClient::OnSendCredential(int request_id,
       credential.reset(new blink::WebFederatedCredential(
           info.id, info.federation, info.name, info.avatar));
       break;
-    case CredentialType::CREDENTIAL_TYPE_LOCAL:
-      credential.reset(new blink::WebLocalCredential(
+    case CredentialType::CREDENTIAL_TYPE_PASSWORD:
+      credential.reset(new blink::WebPasswordCredential(
           info.id, info.password, info.name, info.avatar));
       break;
     case CredentialType::CREDENTIAL_TYPE_EMPTY:

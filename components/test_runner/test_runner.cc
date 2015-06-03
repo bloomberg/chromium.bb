@@ -22,7 +22,7 @@
 #include "third_party/WebKit/public/platform/WebBatteryStatus.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebData.h"
-#include "third_party/WebKit/public/platform/WebLocalCredential.h"
+#include "third_party/WebKit/public/platform/WebPasswordCredential.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRegistration.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
@@ -2901,10 +2901,10 @@ void TestRunner::AddMockCredentialManagerResponse(const std::string& id,
                                                   const std::string& avatar,
                                                   const std::string& password) {
   proxy_->GetCredentialManagerClientMock()->SetResponse(
-      new WebLocalCredential(WebString::fromUTF8(id),
-                             WebString::fromUTF8(name),
-                             WebURL(GURL(avatar)),
-                             WebString::fromUTF8(password)));
+      new WebPasswordCredential(WebString::fromUTF8(id),
+                                WebString::fromUTF8(password),
+                                WebString::fromUTF8(name),
+                                WebURL(GURL(avatar))));
 }
 
 void TestRunner::AddWebPageOverlay() {

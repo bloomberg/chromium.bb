@@ -13,7 +13,7 @@ namespace web {
 // Indicates the specific type of a Credential object.
 enum CredentialType {
   CREDENTIAL_TYPE_EMPTY = 0,
-  CREDENTIAL_TYPE_LOCAL,
+  CREDENTIAL_TYPE_PASSWORD,
   CREDENTIAL_TYPE_FEDERATED,
   CREDENTIAL_TYPE_LAST = CREDENTIAL_TYPE_FEDERATED
 };

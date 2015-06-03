@@ -218,16 +218,16 @@ void ManagePasswordsUIController::ChooseCredential(
   // a FederatedCredential in order to prevent password information leaking
   // cross-origin.
   //
-  // If |credential_type| is local, the credential MIGHT be a LocalCredential
+  // If |credential_type| is local, the credential MIGHT be a PasswordCredential
   // or it MIGHT be a FederatedCredential. We inspect the |federation_url|
   // field to determine which we should return.
   //
   // TODO(mkwst): Clean this up. It is confusing.
   password_manager::CredentialType type_to_return;
   if (credential_type ==
-          password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL &&
+          password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD &&
       form.federation_url.is_empty()) {
-    type_to_return = password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL;
+    type_to_return = password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD;
   } else if (credential_type ==
              password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY) {
     type_to_return = password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY;

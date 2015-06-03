@@ -78,7 +78,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
                         zero_click_form_to_return);
     CredentialInfo info(*zero_click_form_to_return,
                         zero_click_form_to_return->federation_url.is_empty()
-                            ? CredentialType::CREDENTIAL_TYPE_LOCAL
+                            ? CredentialType::CREDENTIAL_TYPE_PASSWORD
                             : CredentialType::CREDENTIAL_TYPE_FEDERATED);
     DCHECK(it != local_results.end());
     std::swap(*it, local_results[0]);

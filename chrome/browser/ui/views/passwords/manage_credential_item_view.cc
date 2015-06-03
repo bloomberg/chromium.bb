@@ -58,7 +58,7 @@ ManageCredentialItemView::ManageCredentialItemView(
   net::URLRequestContextGetter* request_context =
       model_->GetProfile()->GetRequestContext();
   credential_button_.reset(new CredentialsItemView(
-      this, form_, password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL,
+      this, form_, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD,
       CredentialsItemView::ACCOUNT_CHOOSER, request_context));
   credential_button_->set_owned_by_client();
   credential_button_->SetEnabled(false);

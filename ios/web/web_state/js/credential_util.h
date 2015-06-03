@@ -17,7 +17,7 @@ struct Credential;
 // otherwise. |value| must contain the following string->string key/value
 // pairs:
 //
-//     "type": one of "LocalCredential" of "FederatedCredential"
+//     "type": one of "PasswordCredential" of "FederatedCredential"
 //     "id": a string (possibly empty)
 //
 // The following pairs are optional:
@@ -25,7 +25,7 @@ struct Credential;
 //     "name": a string (possibly empty)
 //     "avatarURL": a valid URL as a string
 //
-// If "type" is "LocalCredential", then |value| must contain
+// If "type" is "PasswordCredential", then |value| must contain
 //
 //     "password" a string (possibly empty)
 //

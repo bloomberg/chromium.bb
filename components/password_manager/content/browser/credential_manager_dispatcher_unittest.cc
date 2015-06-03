@@ -83,7 +83,7 @@ class MockPasswordManagerClient
         local_forms.empty() ? *federated_forms[0] : *local_forms[0],
         local_forms.empty()
             ? password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED
-            : password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
+            : password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, info));
     PromptUserToChooseCredentialsPtr(local_forms.get(), federated_forms.get(),
@@ -216,7 +216,7 @@ class CredentialManagerDispatcherTest
 
 TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifyFailedSignIn) {
   CredentialInfo info;
-  info.type = CredentialType::CREDENTIAL_TYPE_LOCAL;
+  info.type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
   dispatcher()->OnNotifyFailedSignIn(kRequestId, info);
 
   const uint32 kMsgID = CredentialManagerMsg_AcknowledgeFailedSignIn::ID;
@@ -227,8 +227,8 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifyFailedSignIn) {
 }
 
 TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedIn) {
-  CredentialInfo info(form_,
-                      password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
+  CredentialInfo info(
+      form_, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
   EXPECT_CALL(
       *client_,
       PromptUserToSavePasswordPtr(
@@ -261,7 +261,7 @@ TEST_F(CredentialManagerDispatcherTest, CredentialManagerOnNotifySignedIn) {
 
 TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerSignInWithSavingDisabledForCurrentPage) {
-  CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_LOCAL);
+  CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
   EXPECT_CALL(*client_, IsSavingEnabledForCurrentPage())
       .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(
@@ -427,7 +427,7 @@ TEST_F(CredentialManagerDispatcherTest,
   EXPECT_TRUE(message);
   CredentialManagerMsg_SendCredential::Param send_param;
   CredentialManagerMsg_SendCredential::Read(message, &send_param);
-  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_LOCAL,
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_PASSWORD,
             base::get<1>(send_param).type);
 }
 
@@ -481,7 +481,7 @@ TEST_F(CredentialManagerDispatcherTest,
 
   // We should get |origin_path_form_| back, as |form_| is marked as skipping
   // zero-click.
-  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_LOCAL,
+  EXPECT_EQ(CredentialType::CREDENTIAL_TYPE_PASSWORD,
             base::get<1>(send_param).type);
   EXPECT_EQ(origin_path_form_.username_value, base::get<1>(send_param).id);
   EXPECT_EQ(origin_path_form_.display_name, base::get<1>(send_param).name);

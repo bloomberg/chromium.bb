@@ -67,7 +67,7 @@ TEST_F(CredentialManagerTypesTest, CreatePasswordFormLocal) {
   info.name = base::ASCIIToUTF16("name");
   info.avatar = avatar_;
   info.password = base::ASCIIToUTF16("password");
-  info.type = CredentialType::CREDENTIAL_TYPE_LOCAL;
+  info.type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
 
   form = CreatePasswordFormFromCredentialInfo(info, origin_);
   ASSERT_NE(nullptr, form.get());

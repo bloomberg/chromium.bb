@@ -17,8 +17,8 @@
 namespace web {
 namespace {
 
-// "type" value for a DictionaryValue representation of LocalCredential.
-const char* kTestCredentialTypeLocal = "LocalCredential";
+// "type" value for a DictionaryValue representation of PasswordCredential.
+const char* kTestCredentialTypePassword = "PasswordCredential";
 
 // "type" value for a DictionaryValue representation of FederatedCredential.
 const char* kTestCredentialTypeFederated = "FederatedCredential";
@@ -38,10 +38,10 @@ const char* kTestCredentialPassword = "baz";
 // "federationURL" value for a DictionaryValue representation of a credential.
 const char* kTestCredentialFederationURL = "https://foo.com/";
 
-// Returns a Credential with Local type.
-Credential GetTestLocalCredential() {
+// Returns a Credential with Password type.
+Credential GetTestPasswordCredential() {
   Credential credential;
-  credential.type = CredentialType::CREDENTIAL_TYPE_LOCAL;
+  credential.type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
   credential.id = base::ASCIIToUTF16(kTestCredentialID);
   credential.name = base::ASCIIToUTF16(kTestCredentialName);
   credential.avatar_url = GURL(kTestCredentialAvatarURL);
@@ -61,10 +61,10 @@ Credential GetTestFederatedCredential() {
 }
 
 // Returns a value representing the credential returned by
-// |GetTestLocalCredential()|.
-scoped_ptr<base::DictionaryValue> GetTestLocalCredentialDictionaryValue() {
+// |GetTestPasswordCredential()|.
+scoped_ptr<base::DictionaryValue> GetTestPasswordCredentialDictionaryValue() {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
-  value->SetString("type", kTestCredentialTypeLocal);
+  value->SetString("type", kTestCredentialTypePassword);
   value->SetString("id", kTestCredentialID);
   value->SetString("name", kTestCredentialName);
   value->SetString("avatarURL", kTestCredentialAvatarURL);
@@ -99,40 +99,40 @@ TEST(CredentialUtilTest, ParsingValueWithBadTypeFails) {
   EXPECT_FALSE(DictionaryValueToCredential(*value, &credential));
 }
 
-// Tests that parsing a correctly-formed value representing a LocalCredential
+// Tests that parsing a correctly-formed value representing a PasswordCredential
 // succeeds.
-TEST(CredentialUtilTest, ParsingLocalCredentialSucceeds) {
+TEST(CredentialUtilTest, ParsingPasswordCredentialSucceeds) {
   Credential credential;
   EXPECT_TRUE(DictionaryValueToCredential(
-      *GetTestLocalCredentialDictionaryValue(), &credential));
-  EXPECT_TRUE(CredentialsEqual(GetTestLocalCredential(), credential));
+      *GetTestPasswordCredentialDictionaryValue(), &credential));
+  EXPECT_TRUE(CredentialsEqual(GetTestPasswordCredential(), credential));
 }
 
-// Tests that parsing a value representing a LocalCredential but with no ID
+// Tests that parsing a value representing a PasswordCredential but with no ID
 // specified fails.
-TEST(CredentialUtilTest, ParsingLocalCredentialWithNoIDFails) {
+TEST(CredentialUtilTest, ParsingPasswordCredentialWithNoIDFails) {
   scoped_ptr<base::DictionaryValue> value(
-      GetTestLocalCredentialDictionaryValue().Pass());
+      GetTestPasswordCredentialDictionaryValue().Pass());
   value->RemoveWithoutPathExpansion("id", nullptr);
   Credential credential;
   EXPECT_FALSE(DictionaryValueToCredential(*value, &credential));
 }
 
-// Tests that parsing a value representing a LocalCredential with a badly-
+// Tests that parsing a value representing a PasswordCredential with a badly-
 // formed avatarURL fails.
-TEST(CredentialUtilTest, ParsingLocalCredentialWithBadAvatarURLFails) {
+TEST(CredentialUtilTest, ParsingPasswordCredentialWithBadAvatarURLFails) {
   scoped_ptr<base::DictionaryValue> value(
-      GetTestLocalCredentialDictionaryValue().Pass());
+      GetTestPasswordCredentialDictionaryValue().Pass());
   value->SetString("avatarURL", "foo");
   Credential credential;
   EXPECT_FALSE(DictionaryValueToCredential(*value, &credential));
 }
 
-// Tests that parsing a value representing a LocalCredential with no password
+// Tests that parsing a value representing a PasswordCredential with no password
 // specified fails.
-TEST(CredentialUtilTest, ParsingLocalCredentialWithNoPasswordFails) {
+TEST(CredentialUtilTest, ParsingPasswordCredentialWithNoPasswordFails) {
   scoped_ptr<base::DictionaryValue> value(
-      GetTestLocalCredentialDictionaryValue().Pass());
+      GetTestPasswordCredentialDictionaryValue().Pass());
   value->Remove("password", nullptr);
   Credential credential;
   EXPECT_FALSE(DictionaryValueToCredential(*value, &credential));
@@ -196,13 +196,14 @@ TEST(CredentialUtilTest, SerializeFederatedCredential) {
   EXPECT_TRUE(GetTestFederatedCredentialDictionaryValue()->Equals(&value));
 }
 
-// Tests that serializing a LocalCredential to a DictionaryValue results in the
+// Tests that serializing a PasswordCredential to a DictionaryValue results in
+// the
 // expected structure.
-TEST(CredentialUtilTest, SerializeLocalCredential) {
+TEST(CredentialUtilTest, SerializePasswordCredential) {
   base::DictionaryValue value;
-  Credential credential(GetTestLocalCredential());
+  Credential credential(GetTestPasswordCredential());
   CredentialToDictionaryValue(credential, &value);
-  EXPECT_TRUE(GetTestLocalCredentialDictionaryValue()->Equals(&value));
+  EXPECT_TRUE(GetTestPasswordCredentialDictionaryValue()->Equals(&value));
 }
 
 TEST(CredentialUtilTest, SerializeEmptyCredential) {

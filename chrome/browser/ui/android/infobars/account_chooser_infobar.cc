@@ -107,7 +107,7 @@ AccountChooserInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       CreateNativeCredentialArray(env, credential_array_size);
   AddElementsToJavaCredentialArray(
       env, java_credentials_array, GetDelegate()->local_credentials_forms(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
+      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
   AddElementsToJavaCredentialArray(
       env, java_credentials_array, GetDelegate()->federated_credentials_forms(),
       password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED,

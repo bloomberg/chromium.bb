@@ -34,10 +34,10 @@ void AccountChooserInfoBarDelegateAndroid::ChooseCredential(
     ui_controller_->ChooseCredential(autofill::PasswordForm(), credential_type);
     return;
   }
-  DCHECK(credential_type == CredentialType::CREDENTIAL_TYPE_LOCAL ||
+  DCHECK(credential_type == CredentialType::CREDENTIAL_TYPE_PASSWORD ||
          credential_type == CredentialType::CREDENTIAL_TYPE_FEDERATED);
   const auto& credentials_forms =
-      (credential_type == CredentialType::CREDENTIAL_TYPE_LOCAL)
+      (credential_type == CredentialType::CREDENTIAL_TYPE_PASSWORD)
           ? ui_controller_->GetCurrentForms()
           : ui_controller_->GetFederatedForms();
   if (credential_index < credentials_forms.size()) {

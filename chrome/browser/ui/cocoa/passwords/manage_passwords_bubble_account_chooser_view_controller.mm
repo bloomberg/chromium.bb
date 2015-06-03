@@ -224,7 +224,7 @@
     base::scoped_nsobject<CredentialItemView> item([[CredentialItemView alloc]
         initWithPasswordForm:*form
               credentialType:password_manager::CredentialType::
-                                 CREDENTIAL_TYPE_LOCAL
+                                 CREDENTIAL_TYPE_PASSWORD
                        style:password_manager_mac::CredentialItemStyle::
                                  ACCOUNT_CHOOSER
                     delegate:delegate]);

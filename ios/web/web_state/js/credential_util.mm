@@ -13,8 +13,8 @@
 
 namespace {
 
-// "type" value for a DictionaryValue representation of LocalCredential.
-const char* kLocalCredentialType = "LocalCredential";
+// "type" value for a DictionaryValue representation of PasswordCredential.
+const char* kPasswordCredentialType = "PasswordCredential";
 
 // "type" value for a DictionaryValue representation of FederatedCredential.
 const char* kFederatedCredentialType = "FederatedCredential";
@@ -31,8 +31,8 @@ bool DictionaryValueToCredential(const base::DictionaryValue& value,
   if (!value.GetString("type", &type))
     return false;
   CredentialType credential_type;
-  if (type == base::ASCIIToUTF16(kLocalCredentialType))
-    credential_type = CredentialType::CREDENTIAL_TYPE_LOCAL;
+  if (type == base::ASCIIToUTF16(kPasswordCredentialType))
+    credential_type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
   else if (type == base::ASCIIToUTF16(kFederatedCredentialType))
     credential_type = CredentialType::CREDENTIAL_TYPE_FEDERATED;
   else
@@ -54,7 +54,7 @@ bool DictionaryValueToCredential(const base::DictionaryValue& value,
   }
 
   base::string16 password;
-  if (credential_type == CredentialType::CREDENTIAL_TYPE_LOCAL &&
+  if (credential_type == CredentialType::CREDENTIAL_TYPE_PASSWORD &&
       !value.GetString("password", &password)) {
     return false;
   }
@@ -87,8 +87,8 @@ void CredentialToDictionaryValue(const Credential& credential,
       // the JavaScript Promise resolver.
       value->Clear();
       return;
-    case CredentialType::CREDENTIAL_TYPE_LOCAL:
-      value->SetString("type", kLocalCredentialType);
+    case CredentialType::CREDENTIAL_TYPE_PASSWORD:
+      value->SetString("type", kPasswordCredentialType);
       value->SetString("password", credential.password);
       break;
     case CredentialType::CREDENTIAL_TYPE_FEDERATED:

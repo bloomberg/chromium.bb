@@ -218,7 +218,7 @@ ManagePasswordsBubbleView::AccountChooserView::AccountChooserView(
 
   AddCredentialItemsWithType(
       layout, parent_->model()->local_credentials(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
+      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
 
   AddCredentialItemsWithType(
       layout, parent_->model()->federated_credentials(),
@@ -307,9 +307,8 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
       observed_browser_(this) {
   SetLayoutManager(new views::FillLayout);
   CredentialsItemView* credential = new CredentialsItemView(
-      this,
-      &parent_->model()->pending_password(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL,
+      this, &parent_->model()->pending_password(),
+      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD,
       CredentialsItemView::AUTO_SIGNIN,
       parent_->model()->GetProfile()->GetRequestContext());
   AddChildView(credential);

@@ -25,7 +25,7 @@ CredentialInfo::CredentialInfo(const autofill::PasswordForm& form,
       password = base::string16();
       federation = GURL();
       break;
-    case CredentialType::CREDENTIAL_TYPE_LOCAL:
+    case CredentialType::CREDENTIAL_TYPE_PASSWORD:
       federation = GURL();
       break;
     case CredentialType::CREDENTIAL_TYPE_FEDERATED:
@@ -54,7 +54,7 @@ scoped_ptr<autofill::PasswordForm> CreatePasswordFormFromCredentialInfo(
   form->scheme = autofill::PasswordForm::SCHEME_HTML;
 
   form->signon_realm =
-      info.type == CredentialType::CREDENTIAL_TYPE_LOCAL
+      info.type == CredentialType::CREDENTIAL_TYPE_PASSWORD
           ? origin.spec()
           : "federation://" + origin.host() + "/" + info.federation.host();
   form->username_value = info.id;

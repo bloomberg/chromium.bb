@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebFederatedCredential.h"
-#include "third_party/WebKit/public/platform/WebLocalCredential.h"
+#include "third_party/WebKit/public/platform/WebPasswordCredential.h"
 
 namespace password_manager {
 
@@ -17,13 +17,13 @@ CredentialInfo WebCredentialToCredentialInfo(
   credential_info.id = credential.id();
   credential_info.name = credential.name();
   credential_info.avatar = credential.avatarURL();
-  credential_info.type = credential.isLocalCredential()
-                             ? CredentialType::CREDENTIAL_TYPE_LOCAL
+  credential_info.type = credential.isPasswordCredential()
+                             ? CredentialType::CREDENTIAL_TYPE_PASSWORD
                              : CredentialType::CREDENTIAL_TYPE_FEDERATED;
-  if (credential_info.type == CredentialType::CREDENTIAL_TYPE_LOCAL) {
-    DCHECK(credential.isLocalCredential());
+  if (credential_info.type == CredentialType::CREDENTIAL_TYPE_PASSWORD) {
+    DCHECK(credential.isPasswordCredential());
     credential_info.password =
-        static_cast<const blink::WebLocalCredential&>(credential).password();
+        static_cast<const blink::WebPasswordCredential&>(credential).password();
   } else {
     DCHECK(credential.isFederatedCredential());
     credential_info.federation =

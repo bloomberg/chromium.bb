@@ -51,7 +51,7 @@ const int kAutoSigninToastTimeoutSeconds = 3;
     credentialView_.reset([[CredentialItemView alloc]
         initWithPasswordForm:model->pending_password()
               credentialType:password_manager::CredentialType::
-                                 CREDENTIAL_TYPE_LOCAL
+                                 CREDENTIAL_TYPE_PASSWORD
                        style:password_manager_mac::CredentialItemStyle::
                                  AUTO_SIGNIN
                     delegate:self]);

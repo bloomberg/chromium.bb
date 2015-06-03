@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerError.h"
-#include "third_party/WebKit/public/platform/WebLocalCredential.h"
+#include "third_party/WebKit/public/platform/WebPasswordCredential.h"
 
 namespace password_manager {
 
@@ -33,7 +33,7 @@ class MAYBE_CredentialManagerClientTest : public content::RenderViewTest {
 
   void SetUp() override {
     content::RenderViewTest::SetUp();
-    credential_.reset(new blink::WebLocalCredential("", "", GURL(), ""));
+    credential_.reset(new blink::WebPasswordCredential("", "", "", GURL()));
     client_.reset(new CredentialManagerClient(view_));
   }
 
@@ -112,7 +112,7 @@ class MAYBE_CredentialManagerClientTest : public content::RenderViewTest {
   bool callback_errored_;
   bool callback_succeeded_;
 
-  scoped_ptr<blink::WebLocalCredential> credential_;
+  scoped_ptr<blink::WebPasswordCredential> credential_;
 };
 
 class TestNotificationCallbacks
@@ -219,7 +219,7 @@ TEST_F(MAYBE_CredentialManagerClientTest, SendRequestCredential) {
                                request_id));
 
   CredentialInfo info;
-  info.type = CredentialType::CREDENTIAL_TYPE_LOCAL;
+  info.type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
   client_->OnSendCredential(request_id, info);
   EXPECT_TRUE(callback_succeeded());
   EXPECT_FALSE(callback_errored());
