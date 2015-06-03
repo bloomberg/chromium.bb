@@ -98,7 +98,7 @@ if (!is_component_build) {
         "//media/base:test_support",
         "//media/mojo/interfaces",
         "//media/mojo/services:media",
-        "//media/mojo/services:renderer_proxy",
+        "//media/mojo/services:proxy",
         "//media/mojo/services:renderer_service",
         "//mojo/application/public/cpp:test_support",
         "//testing/gtest",

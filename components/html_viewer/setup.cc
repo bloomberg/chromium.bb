@@ -150,7 +150,7 @@ void Setup::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   compositor_thread_.Start();
 
   media_factory_.reset(
-      new MediaFactory(compositor_thread_.message_loop_proxy()));
+      new MediaFactory(compositor_thread_.message_loop_proxy(), app_->shell()));
 
   if (command_line->HasSwitch(kJavaScriptFlags)) {
     std::string flags(command_line->GetSwitchValueASCII(kJavaScriptFlags));

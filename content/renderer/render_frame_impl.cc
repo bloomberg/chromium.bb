@@ -180,7 +180,7 @@
 #endif
 
 #if defined(ENABLE_MEDIA_MOJO_RENDERER)
-#include "content/renderer/media/media_renderer_service_provider.h"
+#include "content/renderer/media/content_media_service_provider.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
 #else
 #include "media/renderers/default_renderer_factory.h"
@@ -636,6 +636,9 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       notification_permission_dispatcher_(NULL),
       web_user_media_client_(NULL),
       media_permission_dispatcher_(NULL),
+#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+      content_media_service_provider_(NULL),
+#endif
       midi_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
@@ -1969,8 +1972,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 
 #if defined(ENABLE_MEDIA_MOJO_RENDERER)
   scoped_ptr<media::RendererFactory> media_renderer_factory(
-      new media::MojoRendererFactory(make_scoped_ptr(
-          new MediaRendererServiceProvider(GetServiceRegistry()))));
+      new media::MojoRendererFactory(GetMediaServiceProvider()));
 #else
   scoped_ptr<media::RendererFactory> media_renderer_factory =
       GetContentClient()->renderer()->CreateMediaRendererFactory(this,
@@ -4876,6 +4878,16 @@ media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
     media_permission_dispatcher_ = new MediaPermissionDispatcher(this);
   return media_permission_dispatcher_;
 }
+
+#if defined(ENABLE_MEDIA_MOJO_RENDERER)
+media::MediaServiceProvider* RenderFrameImpl::GetMediaServiceProvider() {
+  if (!content_media_service_provider_) {
+    content_media_service_provider_ =
+        new ContentMediaServiceProvider(this, GetServiceRegistry());
+  }
+  return content_media_service_provider_;
+}
+#endif
 
 bool RenderFrameImpl::AreSecureCodecsSupported() {
 #if defined(OS_ANDROID)

@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_output_stream_sink.h"
@@ -21,13 +22,12 @@
 #include "media/cdm/default_cdm_factory.h"
 #include "media/filters/default_media_permission.h"
 #include "media/mojo/interfaces/media_renderer.mojom.h"
+#include "media/mojo/services/media_service_provider.h"
 #include "media/mojo/services/mojo_renderer_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
-
-using mojo::ServiceProviderPtr;
 
 namespace html_viewer {
 
@@ -38,25 +38,31 @@ namespace {
 // TODO(xhwang): Move this to media_switches.h.
 const char kEnableMojoMediaRenderer[] = "enable-mojo-media-renderer";
 
-#if !defined(OS_ANDROID)
-class RendererServiceProvider
-    : public media::MojoRendererFactory::ServiceProvider {
+// A media::MediaServiceProvider implementation based on mojo::ServiceProvider.
+class MojoMediaServiceProvider : public media::MediaServiceProvider {
  public:
-  explicit RendererServiceProvider(ServiceProviderPtr service_provider_ptr)
-      : service_provider_ptr_(service_provider_ptr.Pass()) {}
-  ~RendererServiceProvider() final {}
+  explicit MojoMediaServiceProvider(
+      mojo::ServiceProvider* mojo_service_provider)
+      : mojo_service_provider_(mojo_service_provider) {
+    DCHECK(mojo_service_provider_);
+  }
+  ~MojoMediaServiceProvider() final {}
 
   void ConnectToService(
       mojo::InterfacePtr<mojo::MediaRenderer>* media_renderer_ptr) final {
-    mojo::ConnectToService(service_provider_ptr_.get(), media_renderer_ptr);
+    mojo::ConnectToService(mojo_service_provider_, media_renderer_ptr);
+  }
+
+  void ConnectToService(
+      mojo::InterfacePtr<mojo::ContentDecryptionModule>* cdm_ptr) final {
+    mojo::ConnectToService(mojo_service_provider_, cdm_ptr);
   }
 
  private:
-  ServiceProviderPtr service_provider_ptr_;
+  mojo::ServiceProvider* mojo_service_provider_;
 
-  DISALLOW_COPY_AND_ASSIGN(RendererServiceProvider);
+  DISALLOW_COPY_AND_ASSIGN(MojoMediaServiceProvider);
 };
-#endif
 
 bool AreSecureCodecsSupported() {
   // Hardware-secure codecs are not currently supported by HTML Viewer on any
@@ -67,7 +73,8 @@ bool AreSecureCodecsSupported() {
 }  // namespace
 
 MediaFactory::MediaFactory(
-    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+    mojo::Shell* shell)
     :
 #if !defined(OS_ANDROID)
       media_thread_("Media"),
@@ -79,7 +86,8 @@ MediaFactory::MediaFactory(
 #endif
       enable_mojo_media_renderer_(base::CommandLine::ForCurrentProcess()
                                       ->HasSwitch(kEnableMojoMediaRenderer)),
-      compositor_task_runner_(compositor_task_runner) {
+      compositor_task_runner_(compositor_task_runner),
+      shell_(shell) {
   if (!media::IsMediaLibraryInitialized()) {
     base::FilePath module_dir;
     CHECK(PathService::Get(base::DIR_EXE, &module_dir));
@@ -104,13 +112,8 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   scoped_ptr<media::RendererFactory> media_renderer_factory;
 
   if (enable_mojo_media_renderer_) {
-    ServiceProviderPtr media_renderer_service_provider;
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:media");
-    shell->ConnectToApplication(
-        request.Pass(), GetProxy(&media_renderer_service_provider), nullptr);
-    media_renderer_factory.reset(new media::MojoRendererFactory(make_scoped_ptr(
-        new RendererServiceProvider(media_renderer_service_provider.Pass()))));
+    media_renderer_factory.reset(
+        new media::MojoRendererFactory(GetMediaServiceProvider()));
   } else {
     media_renderer_factory.reset(
         new media::DefaultRendererFactory(media_log,
@@ -138,6 +141,22 @@ blink::WebEncryptedMediaClient* MediaFactory::GetEncryptedMediaClient() {
         GetMediaPermission()));
   }
   return web_encrypted_media_client_.get();
+}
+
+media::MediaServiceProvider* MediaFactory::GetMediaServiceProvider() {
+  if (!media_service_provider_) {
+    if (!mojo_service_provider_ptr_) {
+      mojo::URLRequestPtr request(mojo::URLRequest::New());
+      request->url = mojo::String::From("mojo:media");
+      shell_->ConnectToApplication(
+          request.Pass(), GetProxy(&mojo_service_provider_ptr_), nullptr);
+    }
+
+    media_service_provider_.reset(
+        new MojoMediaServiceProvider(mojo_service_provider_ptr_.get()));
+  }
+
+  return media_service_provider_.get();
 }
 
 media::MediaPermission* MediaFactory::GetMediaPermission() {

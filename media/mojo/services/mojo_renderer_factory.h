@@ -12,23 +12,12 @@
 
 namespace media {
 
+class MediaServiceProvider;
+
 // The default factory class for creating MojoRendererImpl.
 class MEDIA_EXPORT MojoRendererFactory : public RendererFactory {
  public:
-  // A class that can help get a mojo::MediaRenderer service for
-  // MojoRendererFactory.
-  class ServiceProvider {
-   public:
-    ServiceProvider() {};
-    virtual ~ServiceProvider() {};
-    virtual void ConnectToService(
-        mojo::InterfacePtr<mojo::MediaRenderer>* media_renderer_ptr) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ServiceProvider);
-  };
-
-  explicit MojoRendererFactory(scoped_ptr<ServiceProvider> service_provider);
+  explicit MojoRendererFactory(MediaServiceProvider* media_service_provider);
   ~MojoRendererFactory() final;
 
   scoped_ptr<Renderer> CreateRenderer(
@@ -37,7 +26,7 @@ class MEDIA_EXPORT MojoRendererFactory : public RendererFactory {
       VideoRendererSink* video_renderer_sink) final;
 
  private:
-  scoped_ptr<ServiceProvider> service_provider_;
+  MediaServiceProvider* media_service_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRendererFactory);
 };

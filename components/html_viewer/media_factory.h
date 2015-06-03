@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/audio_hardware_config.h"
+#include "mojo/application/public/interfaces/service_provider.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -30,10 +31,12 @@ class AudioManager;
 class AudioRendererSink;
 class CdmFactory;
 class MediaPermission;
+class MediaServiceProvider;
 class WebEncryptedMediaClientImpl;
 }
 
 namespace mojo {
+class ServiceProvider;
 class Shell;
 }
 
@@ -44,8 +47,9 @@ namespace html_viewer {
 // instances.
 class MediaFactory {
  public:
-  explicit MediaFactory(const scoped_refptr<base::SingleThreadTaskRunner>&
-                            compositor_task_runner);
+  MediaFactory(
+      const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+      mojo::Shell* shell);
   ~MediaFactory();
 
   blink::WebMediaPlayer* CreateMediaPlayer(
@@ -58,6 +62,7 @@ class MediaFactory {
   blink::WebEncryptedMediaClient* GetEncryptedMediaClient();
 
  private:
+  media::MediaServiceProvider* GetMediaServiceProvider();
   media::MediaPermission* GetMediaPermission();
   media::CdmFactory* GetCdmFactory();
 
@@ -74,8 +79,11 @@ class MediaFactory {
 
   const bool enable_mojo_media_renderer_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  mojo::Shell* shell_;
 
   // Lazily initialized objects.
+  mojo::ServiceProviderPtr mojo_service_provider_ptr_;
+  scoped_ptr<media::MediaServiceProvider> media_service_provider_;
   scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
   scoped_ptr<media::MediaPermission> media_permission_;
   scoped_ptr<media::CdmFactory> cdm_factory_;
