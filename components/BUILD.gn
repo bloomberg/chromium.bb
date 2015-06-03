@@ -66,6 +66,7 @@ group("all_components") {
     "//components/navigation_interception",
     "//components/navigation_metrics",
     "//components/network_time",
+    "//components/offline_pages",
     "//components/omnibox",
     "//components/onc",
     "//components/os_crypt",

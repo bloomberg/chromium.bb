@@ -44,6 +44,7 @@
     'navigation_metrics.gypi',
     'network_hints.gypi',
     'network_time.gypi',
+    'offline_pages.gypi',
     'omnibox.gypi',
     'onc.gypi',
     'os_crypt.gypi',
