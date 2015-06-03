@@ -1276,9 +1276,9 @@ update_keymap(struct weston_seat *seat)
 	xkb_state_unref(keyboard->xkb_state.state);
 	keyboard->xkb_state.state = state;
 
-	wl_resource_for_each(resource, &seat->keyboard->resource_list)
+	wl_resource_for_each(resource, &keyboard->resource_list)
 		send_keymap(resource, xkb_info);
-	wl_resource_for_each(resource, &seat->keyboard->focus_resource_list)
+	wl_resource_for_each(resource, &keyboard->focus_resource_list)
 		send_keymap(resource, xkb_info);
 
 	notify_modifiers(seat, wl_display_next_serial(seat->compositor->wl_display));
@@ -1286,10 +1286,10 @@ update_keymap(struct weston_seat *seat)
 	if (!latched_mods && !locked_mods)
 		return;
 
-	wl_resource_for_each(resource, &seat->keyboard->resource_list)
-		send_modifiers(resource, wl_display_get_serial(seat->compositor->wl_display), seat->keyboard);
-	wl_resource_for_each(resource, &seat->keyboard->focus_resource_list)
-		send_modifiers(resource, wl_display_get_serial(seat->compositor->wl_display), seat->keyboard);
+	wl_resource_for_each(resource, &keyboard->resource_list)
+		send_modifiers(resource, wl_display_get_serial(seat->compositor->wl_display), keyboard);
+	wl_resource_for_each(resource, &keyboard->focus_resource_list)
+		send_modifiers(resource, wl_display_get_serial(seat->compositor->wl_display), keyboard);
 }
 #else
 WL_EXPORT void
