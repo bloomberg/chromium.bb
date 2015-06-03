@@ -50,12 +50,13 @@ const String& styleNodeCloseTag(bool isBlock)
 
 using namespace HTMLNames;
 
-StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized)
+StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized, ConvertBlocksToInlines convertBlocksToInlines)
     : m_accumulator(shouldResolveURLs)
     , m_start(start)
     , m_end(end)
     , m_document(document)
     , m_shouldAnnotate(shouldAnnotate)
+    , m_convertBlocksToInlines(convertBlocksToInlines)
     , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
 {
 }
@@ -212,9 +213,38 @@ void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePr
     out.appendLiteral("\">");
 }
 
-void StyledMarkupAccumulator::concatenateMarkup(StringBuilder& result) const
+void StyledMarkupAccumulator::wrapWithNode(ContainerNode& node, RangeFullySelectsNode rangeFullySelectsNode)
 {
+    StringBuilder markup;
+    if (node.isElementNode())
+        appendElement(markup, toElement(node), convertBlocksToInlines() && isBlock(&node), rangeFullySelectsNode);
+    else
+        appendStartMarkup(markup, node);
+    m_reversedPrecedingMarkup.append(markup.toString());
+    if (node.isElementNode())
+        appendEndTag(toElement(node));
+}
+
+void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style, bool isBlock)
+{
+    StringBuilder openTag;
+    appendStyleNodeOpenTag(openTag, style, isBlock);
+    m_reversedPrecedingMarkup.append(openTag.toString());
+    appendString(styleNodeCloseTag(isBlock));
+}
+
+String StyledMarkupAccumulator::takeResults()
+{
+    StringBuilder result;
+    result.reserveCapacity(MarkupAccumulator::totalLength(m_reversedPrecedingMarkup) + m_accumulator.length());
+
+    for (size_t i = m_reversedPrecedingMarkup.size(); i > 0; --i)
+        result.append(m_reversedPrecedingMarkup[i - 1]);
+
     m_accumulator.concatenateMarkup(result);
+
+    // We remove '\0' characters because they are not visibly rendered to the user.
+    return result.toString().replace(0, "");
 }
 
 String StyledMarkupAccumulator::renderedText(Text& textNode)

@@ -46,17 +46,13 @@ class StyledMarkupAccumulator final {
 public:
     enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
 
-    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, Node*);
+    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, Node*, ConvertBlocksToInlines);
+
+    bool convertBlocksToInlines() const { return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert; }
 
     void appendString(const String&);
     void appendStartTag(Node&);
     void appendEndTag(const Element&);
-    void appendStartMarkup(StringBuilder&, Node&);
-    void appendEndMarkup(StringBuilder&, const Element&);
-
-    void appendElement(StringBuilder&, Element&);
-    void appendElement(StringBuilder&, Element&, bool, RangeFullySelectsNode);
-    void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, bool isBlock = false);
 
     // TODO(hajimehoshi): These functions are called from the serializer, but
     // should not.
@@ -64,8 +60,9 @@ public:
     void setHighestNodeToBeSerialized(Node* highestNodeToBeSerialized) { m_highestNodeToBeSerialized = highestNodeToBeSerialized; }
     void setWrappingStyle(PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyle) { m_wrappingStyle = wrappingStyle; }
 
-    size_t length() const { return m_accumulator.length(); }
-    void concatenateMarkup(StringBuilder&) const;
+    void wrapWithNode(ContainerNode&, RangeFullySelectsNode = DoesFullySelectNode);
+    void wrapWithStyleNode(StylePropertySet*, bool isBlock = false);
+    String takeResults();
 
 private:
     void appendText(StringBuilder&, Text&);
@@ -77,13 +74,21 @@ private:
 
     bool shouldAnnotate() const;
 
+    void appendElement(StringBuilder&, Element&);
+    void appendElement(StringBuilder&, Element&, bool, RangeFullySelectsNode);
+    void appendStartMarkup(StringBuilder&, Node&);
+    void appendEndMarkup(StringBuilder&, const Element&);
+    void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, bool isBlock = false);
+
     MarkupAccumulator m_accumulator;
     const TextOffset m_start;
     const TextOffset m_end;
     const RefPtrWillBeMember<Document> m_document;
     const EAnnotateForInterchange m_shouldAnnotate;
+    const ConvertBlocksToInlines m_convertBlocksToInlines;
     RawPtrWillBeMember<Node> m_highestNodeToBeSerialized;
     RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
+    Vector<String> m_reversedPrecedingMarkup;
 };
 
 } // namespace blink

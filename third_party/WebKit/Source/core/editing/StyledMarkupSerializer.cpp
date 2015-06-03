@@ -47,13 +47,6 @@ namespace blink {
 
 namespace {
 
-const String& styleNodeCloseTag(bool isBlock)
-{
-    DEFINE_STATIC_LOCAL(const String, divClose, ("</div>"));
-    DEFINE_STATIC_LOCAL(const String, styleSpanClose, ("</span>"));
-    return isBlock ? divClose : styleSpanClose;
-}
-
 template<typename PositionType>
 TextOffset toTextOffset(const PositionType& position)
 {
@@ -77,12 +70,11 @@ static Position toPositionInDOMTree(const Position& position)
 
 template<typename Strategy>
 StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const PositionType& start, const PositionType& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines convertBlocksToInlines)
-    : m_markupAccumulator(shouldResolveURLs, toTextOffset(start.parentAnchoredEquivalent()), toTextOffset(end.parentAnchoredEquivalent()), start.document(), shouldAnnotate, highestNodeToBeSerialized)
+    : m_markupAccumulator(shouldResolveURLs, toTextOffset(start.parentAnchoredEquivalent()), toTextOffset(end.parentAnchoredEquivalent()), start.document(), shouldAnnotate, highestNodeToBeSerialized, convertBlocksToInlines)
     , m_start(start)
     , m_end(end)
     , m_shouldAnnotate(shouldAnnotate)
     , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
-    , m_convertBlocksToInlines(convertBlocksToInlines)
 {
 }
 
@@ -159,7 +151,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
         // Also include all of the ancestors of lastClosed up to this special ancestor.
         // FIXME: What is ancestor?
         for (ContainerNode* ancestor = Strategy::parent(*lastClosed); ancestor; ancestor = Strategy::parent(*ancestor)) {
-            if (ancestor == fullySelectedRoot && !convertBlocksToInlines()) {
+            if (ancestor == fullySelectedRoot && !m_markupAccumulator.convertBlocksToInlines()) {
                 RefPtrWillBeRawPtr<EditingStyle> fullySelectedRootStyle = styleFromMatchedRulesAndInlineDecl(fullySelectedRoot);
 
                 // Bring the background attribute over, but not as an attribute because a background attribute on a div
@@ -176,12 +168,12 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
                         fullySelectedRootStyle->style()->setProperty(CSSPropertyTextDecoration, CSSValueNone);
                     if (!propertyMissingOrEqualToNone(fullySelectedRootStyle->style(), CSSPropertyWebkitTextDecorationsInEffect))
                         fullySelectedRootStyle->style()->setProperty(CSSPropertyWebkitTextDecorationsInEffect, CSSValueNone);
-                    wrapWithStyleNode(fullySelectedRootStyle->style(), true);
+                    m_markupAccumulator.wrapWithStyleNode(fullySelectedRootStyle->style(), true);
                 }
             } else {
                 // Since this node and all the other ancestors are not in the selection we want to set RangeFullySelectsNode to DoesNotFullySelectNode
                 // so that styles that affect the exterior of the node are not included.
-                wrapWithNode(*ancestor, StyledMarkupAccumulator::DoesNotFullySelectNode);
+                m_markupAccumulator.wrapWithNode(*ancestor, StyledMarkupAccumulator::DoesNotFullySelectNode);
             }
 
             if (ancestor == m_highestNodeToBeSerialized)
@@ -193,44 +185,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
     if (m_shouldAnnotate == AnnotateForInterchange && needInterchangeNewlineAt(visibleEnd))
         m_markupAccumulator.appendString(interchangeNewlineString);
 
-    return takeResults();
-}
-
-template<typename Strategy>
-void StyledMarkupSerializer<Strategy>::wrapWithNode(ContainerNode& node, typename StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
-{
-    StringBuilder markup;
-    if (node.isElementNode())
-        m_markupAccumulator.appendElement(markup, toElement(node), convertBlocksToInlines() && isBlock(&node), rangeFullySelectsNode);
-    else
-        m_markupAccumulator.appendStartMarkup(markup, node);
-    m_reversedPrecedingMarkup.append(markup.toString());
-    if (node.isElementNode())
-        m_markupAccumulator.appendEndTag(toElement(node));
-}
-
-template<typename Strategy>
-void StyledMarkupSerializer<Strategy>::wrapWithStyleNode(StylePropertySet* style, bool isBlock)
-{
-    StringBuilder openTag;
-    m_markupAccumulator.appendStyleNodeOpenTag(openTag, style, isBlock);
-    m_reversedPrecedingMarkup.append(openTag.toString());
-    m_markupAccumulator.appendString(styleNodeCloseTag(isBlock));
-}
-
-template<typename Strategy>
-String StyledMarkupSerializer<Strategy>::takeResults()
-{
-    StringBuilder result;
-    result.reserveCapacity(MarkupAccumulator::totalLength(m_reversedPrecedingMarkup) + m_markupAccumulator.length());
-
-    for (size_t i = m_reversedPrecedingMarkup.size(); i > 0; --i)
-        result.append(m_reversedPrecedingMarkup[i - 1]);
-
-    m_markupAccumulator.concatenateMarkup(result);
-
-    // We remove '\0' characters because they are not visibly rendered to the user.
-    return result.toString().replace(0, "");
+    return m_markupAccumulator.takeResults();
 }
 
 template<typename Strategy>
@@ -326,7 +281,7 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
             ASSERT(startNode);
             ASSERT(Strategy::isDescendantOf(*startNode, *parent));
             if (shouldEmit)
-                wrapWithNode(*parent);
+                m_markupAccumulator.wrapWithNode(*parent);
             lastClosed = parent;
         }
     }

@@ -53,23 +53,14 @@ private:
     enum class NodeTraversalMode { EmitString, DoNotEmitString };
 
     Node* serializeNodes(Node* startNode, Node* pastEnd);
-    String takeResults();
 
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode);
-
-    // TODO(hajimehoshi): These functions should be at the accumulator.
-    void wrapWithNode(ContainerNode&, StyledMarkupAccumulator::RangeFullySelectsNode = StyledMarkupAccumulator::DoesFullySelectNode);
-    void wrapWithStyleNode(StylePropertySet*, bool isBlock = false);
-
-    bool convertBlocksToInlines() const { return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert; }
 
     StyledMarkupAccumulator m_markupAccumulator;
     const PositionType m_start;
     const PositionType m_end;
     const EAnnotateForInterchange m_shouldAnnotate;
     const RefPtrWillBeMember<Node> m_highestNodeToBeSerialized;
-    const ConvertBlocksToInlines m_convertBlocksToInlines;
-    Vector<String> m_reversedPrecedingMarkup;
 };
 
 extern template class StyledMarkupSerializer<EditingStrategy>;
