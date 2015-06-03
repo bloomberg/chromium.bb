@@ -26,8 +26,6 @@
 #ifndef WebCompositorSupport_h
 #define WebCompositorSupport_h
 
-#define WEB_COMPOSITOR_SUPPORT_CREATE_ANIMATION_SUPPORTS_GROUP 1
-
 #include "WebCommon.h"
 #include "WebCompositorAnimation.h"
 #include "WebCompositorAnimationCurve.h"
