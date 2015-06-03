@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/renderer/extensions/extension_localization_peer.h"
-#include "content/public/child/fixed_received_data.h"
 #include "extensions/common/message_bundle.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
@@ -16,8 +15,6 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
 
 using testing::_;
 using testing::DoAll;
@@ -65,14 +62,9 @@ class MockRequestPeer : public content::RequestPeer {
   MOCK_METHOD1(OnReceivedResponse,
                void(const content::ResourceResponseInfo& info));
   MOCK_METHOD2(OnDownloadedData, void(int len, int encoded_data_length));
-  void OnReceivedData(scoped_ptr<RequestPeer::ReceivedData> data) override {
-    OnReceivedDataInternal(data->payload(), data->length(),
-                           data->encoded_length());
-  }
-  MOCK_METHOD3(OnReceivedDataInternal,
-               void(const char* data,
-                    int data_length,
-                    int encoded_data_length));
+  MOCK_METHOD3(OnReceivedData, void(const char* data,
+                                    int data_length,
+                                    int encoded_data_length));
   MOCK_METHOD6(OnCompletedRequest, void(
       int error_code,
       bool was_ignored_by_handler,
@@ -84,8 +76,6 @@ class MockRequestPeer : public content::RequestPeer {
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRequestPeer);
 };
-
-}  // namespace
 
 class ExtensionLocalizationPeerTest : public testing::Test {
  protected:
@@ -135,13 +125,11 @@ TEST_F(ExtensionLocalizationPeerTest, OnReceivedData) {
   EXPECT_TRUE(GetData(filter_peer_.get()).empty());
 
   const std::string data_chunk("12345");
-  filter_peer_->OnReceivedData(make_scoped_ptr(new content::FixedReceivedData(
-      data_chunk.data(), data_chunk.length(), -1)));
+  filter_peer_->OnReceivedData(data_chunk.c_str(), data_chunk.length(), -1);
 
   EXPECT_EQ(data_chunk, GetData(filter_peer_.get()));
 
-  filter_peer_->OnReceivedData(make_scoped_ptr(new content::FixedReceivedData(
-      data_chunk.data(), data_chunk.length(), -1)));
+  filter_peer_->OnReceivedData(data_chunk.c_str(), data_chunk.length(), -1);
   EXPECT_EQ(data_chunk + data_chunk, GetData(filter_peer_.get()));
 }
 
@@ -163,7 +151,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
   // It will self-delete once it exits OnCompletedRequest.
   ExtensionLocalizationPeer* filter_peer = filter_peer_.release();
 
-  EXPECT_CALL(*original_peer_, OnReceivedDataInternal(_, _, _)).Times(0);
+  EXPECT_CALL(*original_peer_, OnReceivedData(_, _, _)).Times(0);
   EXPECT_CALL(*sender_, Send(_)).Times(0);
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
@@ -184,8 +172,8 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
 
   std::string data = GetData(filter_peer);
   EXPECT_CALL(*original_peer_,
-              OnReceivedDataInternal(StrEq(data.c_str()), data.length(), -1))
-      .Times(2);
+              OnReceivedData(StrEq(data.data()), data.length(), -1)).Times(2);
+
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_)).Times(2);
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
       net::OK, false, false, "", base::TimeTicks(), -1)).Times(2);
@@ -221,7 +209,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
   // __MSG_text__ gets replaced with "new text".
   std::string data("some new text");
   EXPECT_CALL(*original_peer_,
-              OnReceivedDataInternal(StrEq(data.c_str()), data.length(), -1));
+              OnReceivedData(StrEq(data.data()), data.length(), -1));
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(
@@ -249,8 +237,8 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
   EXPECT_CALL(*sender_, Send(_)).Times(0);
 
   // __MSG_missing_message__ is missing, so message stays the same.
-  EXPECT_CALL(*original_peer_, OnReceivedDataInternal(StrEq(message.c_str()),
-                                                      message.length(), -1));
+  EXPECT_CALL(*original_peer_,
+              OnReceivedData(StrEq(message.data()), message.length(), -1));
 
   EXPECT_CALL(*original_peer_, OnReceivedResponse(_));
   EXPECT_CALL(*original_peer_, OnCompletedRequest(

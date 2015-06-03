@@ -27,8 +27,6 @@
   'variables': {
     'public_child_sources': [
       'public/child/child_thread.h',
-      'public/child/fixed_received_data.cc',
-      'public/child/fixed_received_data.h',
       'public/child/image_decoder_utils.h',
       'public/child/request_peer.h',
       'public/child/resource_dispatcher_delegate.h',
@@ -207,8 +205,6 @@
       'child/runtime_features.h',
       'child/scoped_child_process_reference.cc',
       'child/scoped_child_process_reference.h',
-      'child/shared_memory_received_data_factory.cc',
-      'child/shared_memory_received_data_factory.h',
       'child/service_worker/service_worker_dispatcher.cc',
       'child/service_worker/service_worker_dispatcher.h',
       'child/service_worker/service_worker_handle_reference.cc',

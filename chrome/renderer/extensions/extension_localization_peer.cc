@@ -14,25 +14,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 
-namespace {
-
-class StringData final : public content::RequestPeer::ReceivedData {
- public:
-  explicit StringData(const std::string& data) : data_(data) {}
-  void Append(const char* data, int length) { data_.append(data, length); }
-
-  const char* payload() const override { return data_.data(); }
-  int length() const override { return data_.size(); }
-  int encoded_length() const override { return -1; }
-
- private:
-  std::string data_;
-
-  DISALLOW_COPY_AND_ASSIGN(StringData);
-};
-
-}  // namespace
-
 ExtensionLocalizationPeer::ExtensionLocalizationPeer(
     content::RequestPeer* peer,
     IPC::Sender* message_sender,
@@ -76,8 +57,10 @@ void ExtensionLocalizationPeer::OnReceivedResponse(
   response_info_ = info;
 }
 
-void ExtensionLocalizationPeer::OnReceivedData(scoped_ptr<ReceivedData> data) {
-  data_.append(data->payload(), data->length());
+void ExtensionLocalizationPeer::OnReceivedData(const char* data,
+                                               int data_length,
+                                               int encoded_data_length) {
+  data_.append(data, data_length);
 }
 
 void ExtensionLocalizationPeer::OnCompletedRequest(
@@ -105,7 +88,9 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
 
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty())
-    original_peer_->OnReceivedData(make_scoped_ptr(new StringData(data_)));
+    original_peer_->OnReceivedData(data_.data(),
+                                   static_cast<int>(data_.size()),
+                                   -1);
   original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
                                      stale_copy_in_cache,
                                      security_info, completion_time,
