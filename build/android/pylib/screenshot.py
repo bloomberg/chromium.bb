@@ -8,7 +8,6 @@ import tempfile
 import time
 
 from pylib import cmd_helper
-from pylib import constants
 from pylib import device_signal
 from pylib.device import device_errors
 
@@ -41,7 +40,7 @@ class VideoRecorder(object):
     self._recorder_stdout = None
     self._is_started = False
 
-    self._args = [constants.GetAdbPath()]
+    self._args = ['adb']
     if str(self._device):
       self._args += ['-s', str(self._device)]
     self._args += ['shell', 'screenrecord', '--verbose']
