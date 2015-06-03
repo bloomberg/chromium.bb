@@ -379,7 +379,6 @@
     'remoting_webapp_background_html_all_js_files': [
       '<@(remoting_webapp_background_html_js_files)',
       'webapp/base/js/base.js',
-      'webapp/base/js/client_session.js',
       'webapp/base/js/error.js',
       'webapp/base/js/identity.js',
       'webapp/base/js/ipc.js',
