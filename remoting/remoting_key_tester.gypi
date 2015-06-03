@@ -55,8 +55,6 @@
                   'action_name': 'jscompile remoting_key_tester',
                   'inputs': [
                     '<@(remoting_key_tester_js_files)',
-                    'webapp/js_proto/chrome_proto.js',
-                    'webapp/js_proto/chrome_event_proto.js',
                   ],
                   'outputs': [
                     '<(success_stamp)',
@@ -65,10 +63,9 @@
                     'python', '../third_party/closure_compiler/compile.py',
                     '--strict',
                     '--no-single-file',
+                    '--externs', '<(DEPTH)/third_party/closure_compiler/externs/chrome_extensions.js',
                     '--success-stamp', '<(success_stamp)',
                     '<@(remoting_key_tester_js_files)',
-                    'webapp/js_proto/chrome_proto.js',
-                    'webapp/js_proto/chrome_event_proto.js',
                   ],
                 },
               ],  # actions
