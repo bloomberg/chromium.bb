@@ -85,11 +85,13 @@ class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
                scoped_ptr<base::SharedMemory> memory,
                size_t size,
                int id)
-      : SharedMemory(memory->memory(), size,
+      : SharedMemory(memory->memory(),
+                     size,
 #if defined(OS_WIN)
                      memory->handle(),
 #else
-                     memory->handle().fd,
+                     base::SharedMemory::GetFdFromSharedMemoryHandle(
+                         memory->handle()),
 #endif
                      id),
         agent_(agent),

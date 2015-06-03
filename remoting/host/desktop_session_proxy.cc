@@ -58,7 +58,8 @@ class DesktopSessionProxy::IpcSharedBufferCore
 #if defined(OS_WIN)
                  << ", handle=" << handle
 #else
-                 << ", handle.fd=" << handle.fd
+                 << ", handle.fd="
+                 << base::SharedMemory::GetFdFromSharedMemoryHandle(handle)
 #endif
                  << ", size=" << size;
     }
@@ -71,7 +72,8 @@ class DesktopSessionProxy::IpcSharedBufferCore
 #if defined(OS_WIN)
     return shared_memory_.handle();
 #else
-    return shared_memory_.handle().fd;
+    return base::SharedMemory::GetFdFromSharedMemoryHandle(
+        shared_memory_.handle());
 #endif
   }
 
@@ -478,8 +480,9 @@ void DesktopSessionProxy::OnCreateSharedBuffer(
     uint32 size) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
+  base::SharedMemoryHandle shm_handle = base::SharedMemoryHandle(handle);
   scoped_refptr<IpcSharedBufferCore> shared_buffer =
-      new IpcSharedBufferCore(id, handle, desktop_process_.Handle(), size);
+      new IpcSharedBufferCore(id, shm_handle, desktop_process_.Handle(), size);
 
   if (shared_buffer->memory() != nullptr &&
       !shared_buffers_.insert(std::make_pair(id, shared_buffer)).second) {
