@@ -34264,6 +34264,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SadTab.Created" enum="SadTabKind">
+  <obsolete>
+    Replaced with Tabs.SadTab.* in R20.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Track number of times we built a sad tab page for a renderer crash or kill.
+    The user may not have seen the page if it was not the frontmost tab.
+  </summary>
+</histogram>
+
+<histogram name="SadTab.Displayed" enum="SadTabKind">
+  <obsolete>
+    Replaced with Tabs.SadTab.* in R20.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Track number of times the user actually saw a sad tab page for a renderer
+    crash or kill.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.EnabledSettingChanged" enum="BooleanEnabled">
   <owner>feng@chromium.org</owner>
   <summary>
@@ -43491,11 +43513,235 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Tabs.CountAtResume" units="tabs">
+  <owner>lliabraa@chromium.org</owner>
+  <summary>
+    The number of tabs open when the app comes out of the background.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.CountAtStartup" units="tabs">
+  <owner>lliabraa@chromium.org</owner>
+  <owner>ppi@chromium.org</owner>
+  <summary>The number of tabs open at cold launch.</summary>
+</histogram>
+
+<histogram name="Tabs.Discard.DiscardCount">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Cumulative number of tabs discarded due to low memory conditions, recorded
+    once per tab discard event.  For example, a user who had 3 tabs discarded
+    records a count in the 1 bin, 2 bin and 3 bin.  Thus each bin N is the
+    number of sessions where users experienced N or more tab discard events.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.DiscardInLastMinute" enum="BooleanTabDiscard">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Whether or not a tab was discarded in the last minute of usage. Total count
+    is number of minutes of device usage. 100 / discard percentage gives the
+    average number of minutes between discard events.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.InitialTime" units="seconds">
+  <obsolete>
+    Deprecated May 4, 2012.  Replaced by Tabs.Discard.InitialTime2 because this
+    stat had too low of a range maximum.  No longer tracked.
+  </obsolete>
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Time in seconds between system startup and when the first tab is discarded
+    due to low memory conditions.  Higher is better.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.InitialTime2" units="seconds">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Time in seconds between system startup and when the first tab is discarded
+    due to low memory conditions.  Higher is better.  Range maximum is
+    approximately one day.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.IntervalTime" units="seconds">
+  <obsolete>
+    Deprecated May 4, 2012.  Replaced by Tabs.Discard.IntervalTime2 because this
+    stat had too low of a range maximum.  No longer tracked.
+  </obsolete>
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Time in seconds between tab discard events after the first one, recorded
+    once per discard event.  Higher is better.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.IntervalTime2" units="ms">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Time in milliseconds between tab discard events after the first one,
+    recorded once per discard event.  Should occur no faster than once every 750
+    ms.  Higher is better.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.MemAllocatedMB" units="MB">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    System-wide memory allocation at the time a tab was discarded, roughly
+    equivalent to the sum of memory allocated with malloc() in userspace plus
+    graphics driver memory.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.MemAnonymousMB" units="MB">
+  <obsolete>
+    Deprecated December 7, 2012.  Replaced by Tabs.Discard.MemAllocatedMB
+    because this stat has insufficient precision in the 2-4 GB range and does
+    not properly account for graphics memory on ARM.
+  </obsolete>
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    System-wide anonymous memory allocation at the time a tab was discarded,
+    roughly equivalent to memory allocated with malloc().
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.MemAvailableMB" units="MB">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    System-wide file-backed memory plus free memory, roughly equivalent to what
+    the kernel uses to trigger low-memory notifications for tab discards. If
+    lower than the kernel's threshold then we are not effectively freeing memory
+    in response to the initial notification and are repeatedly being notified.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.MemGraphicsMB" units="MB">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Graphics driver (GEM object) memory at the time of a tab discard.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.MemShmemMB" units="MB">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    System-wide shared memory at the time of a tab discard. Used primarily for
+    shared buffers in the graphics system. Tracked because it's a historical
+    source of leaks on Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.ReloadCount">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Cumulative number of times a tab was reloaded because it was discarded and
+    the user clicked on it later, recorded once per reload event.  For example,
+    a user who clicks on 3 discarded tabs will record a count in the 1 bin, 2
+    bin, and 3 bin.  Thus each bin N is the number of sessions where users
+    experienced N or more reload events.  Compare to Tabs.Discard.DiscardCount.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.Discard.TabCount" units="tabs">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    The number of tabs open across all browser windows when a tab was discarded
+    due to low memory conditions.
+  </summary>
+</histogram>
+
 <histogram name="Tabs.ForegroundTabAgeAtStartup" units="minutes">
   <owner>lliabraa@chromium.org</owner>
   <summary>
     Age (time since the last display in previous sessions) of the foreground tab
     being restored on the browser cold start.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.iOS_PostRedirectPLT" units="milliseconds">
+  <owner>pauljensen@chromium.org</owner>
+  <summary>
+    Page load time (PLT) for iOS that does not include time spent following
+    redirects. On other platforms this is calculated from Navigation Timings but
+    on iOS Navigation Timings are not available so we're recreating a
+    calculation similar to PLT.PT_RequestToFinish but not including time spent
+    following redirects. This metric represents the time between when navigation
+    is initiated (prior to DNS, TCP connect, etc but after following redirects)
+    until loading ends (i.e. JS onload event). On non-iOS Chrome this is
+    (performance.timing.loadEventEnd - performance.timing.redirectEnd). On
+    Chrome for iOS we're calculating the time between the creation of the
+    top-level URLRequest and when webDidFinishWithURL is called.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SadTab.CrashCreated">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Cumulative number of times a tab crashed with &quot;Aw, Snap!&quot;,
+    recorded once per tab crash event.  For example, a user who crashed 3 tabs
+    will record a count in the 1 bin, 2 bin, and 3 bin.  Thus each bin N is the
+    number of sessions where users experienced N or more crash events.  The user
+    may not have actually seen the sad tab page, as it might have been an
+    inactive tab. Compare to Tabs.SadTab.CrashDisplayed.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SadTab.CrashDisplayed">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Cumulative number of times a tab crashed with &quot;Aw, Snap!&quot; and the
+    user saw the page, recorded once per tab crash event.  For example, a user
+    who crashed 3 tabs will record a count in the 1 bin, 2 bin, and 3 bin.  Thus
+    each bin N is the number of sessions where users experienced N or more crash
+    events.  Compare to Tabs.SadTab.CrashCreated.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SadTab.KillCreated">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Cumulative number of times a tab was killed with a &quot;He's dead,
+    Jim!&quot; page, which is usually due to the kernel out-of-memory killer
+    running, recorded once per tab kill event.  For example, a user who loses 3
+    tabs will record a count in the 1 bin, 2 bin, and 3 bin.  Thus each bin N is
+    the number of sessions where users experienced N or more kill events.  The
+    user may not have actually seen the sad tab page, as it might have been an
+    inactive tab.  Compare to Tabs.SadTab.KillDisplayed.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SadTab.KillDisplayed">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Cumulative number of times a tab was killed with a &quot;He's dead,
+    Jim!&quot; page and the user saw the page, recorded once per tab kill event.
+    For example, a user who loses 3 tabs will record a count in the 1 bin, 2
+    bin, and 3 bin. Thus each bin N is the number of sessions where users
+    experienced N or more kill events.  Compare to Tabs.SadTab.CrashCreated.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SadTab.ReloadCount">
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    The number of times a tab was reloaded because it was killed (usually by the
+    kernel OOM killer) and the user clicked on it later, recorded once per
+    reload event.  For example, a user who clicks on 3 discarded tabs will
+    record a count in the 1 bin, 2 bin, and 3 bin.  Thus each bin N is the
+    number of sessions where users experienced N or more reload events.  Compare
+    to Tabs.Discard.DiscardCount.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.ScrubDistance" units="tabs">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    The distance a user 3 finger scrubbed to change tabs. Always positive
+    (ignores left / right).
   </summary>
 </histogram>
 
@@ -63537,6 +63783,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Tabbed Mode"/>
 </enum>
 
+<enum name="SadTabKind" type="int">
+  <int value="0" label="Crash (Aw, Snap!)"/>
+  <int value="1" label="Kill (He's dead, Jim!)"/>
+</enum>
+
 <enum name="SavePasswordPromptResponseType" type="int">
   <int value="0" label="NO_RESPONSE"/>
   <int value="1" label="REMEMBER_PASSWORD"/>
@@ -68820,6 +69071,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Net.QuicSession.PacketWriteTime"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="iOS_PLT" separator="">
+  <owner>pauljensen@chromium.org</owner>
+  <suffix name="" label="not using Data Reduction Proxy"/>
+  <suffix name="_DataReductionProxy" label="using Data Reduction Proxy"/>
+  <affected-histogram name="Tabs.iOS_PostRedirectPLT"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="IPProtocolType" separator="_">
   <suffix name="UDP"/>
   <suffix name="TCP"/>
@@ -68947,6 +69205,24 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="1MBTo5MB" label="DB size between 1MB and 5MB"/>
   <affected-histogram name="LocalStorage.BrowserTimeToPrimeLocalStorage"/>
   <affected-histogram name="LocalStorage.RendererTimeToPrimeLocalStorage"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="LowMemoryMargin">
+  <suffix name="default" label="Low memory margin set to the system default"/>
+  <suffix name="off" label="Low memory notification disabled"/>
+  <suffix name="0mb" label="Low memory margin set to 0MB"/>
+  <suffix name="25mb" label="Low memory margin set to 25MB"/>
+  <suffix name="50mb" label="Low memory margin set to 50MB"/>
+  <suffix name="100mb" label="Low memory margin set to 100MB"/>
+  <suffix name="200mb" label="Low memory margin set to 200MB"/>
+  <affected-histogram name="Tabs.Discard.DiscardCount"/>
+  <affected-histogram name="Tabs.Discard.InitialTime2"/>
+  <affected-histogram name="Tabs.Discard.IntervalTime2"/>
+  <affected-histogram name="Tabs.Discard.MemAnonymousMB"/>
+  <affected-histogram name="Tabs.Discard.MemAvailableMB"/>
+  <affected-histogram name="Tabs.Discard.TabCount"/>
+  <affected-histogram name="Tabs.SadTab.CrashCreated"/>
+  <affected-histogram name="Tabs.SadTab.KillCreated"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ManifestProperties" separator=".">
