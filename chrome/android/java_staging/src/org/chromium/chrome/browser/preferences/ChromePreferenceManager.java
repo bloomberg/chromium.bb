@@ -24,6 +24,8 @@ public class ChromePreferenceManager {
     private static final String MIGRATION_ON_UPGRADE_ATTEMPTED = "migration_on_upgrade_attempted";
     private static final String ALLOW_LOW_END_DEVICE_UI = "allow_low_end_device_ui";
     private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
+    private static final String CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT =
+            "contextual_search_promo_open_count";
     private static final String CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT =
             "contextual_search_tap_triggered_promo_count";
     private static final String CONTEXTUAL_SEARCH_TAP_COUNT = "contextual_search_tap_count";
@@ -200,7 +202,22 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * @return Number of times the promo was triggered by a tap gesture, or a negative value
+     * @return Number of times the panel was opened with the promo visible.
+     */
+    public int getContextualSearchPromoOpenCount() {
+        return mSharedPreferences.getInt(CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT, 0);
+    }
+
+    /**
+     * Sets the number of times the panel was opened with the promo visible.
+     * @param count Number of times the panel was opened with a promo visible.
+     */
+    public void setContextualSearchPromoOpenCount(int count) {
+        writeInt(CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT, count);
+    }
+
+    /**
+     * @return Number of times the promo was triggered to peek by a tap gesture, or a negative value
      *         if in the disabled state.
      */
     public int getContextualSearchTapTriggeredPromoCount() {
@@ -208,15 +225,13 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * Sets the number of times the promo was triggered by a tap gesture.  Use a negative value
-     * to record that the counter has been disabled.
+     * Sets the number of times the promo was triggered to peek by a tap gesture.
+     * Use a negative value to record that the counter has been disabled.
      * @param count Number of times the promo was triggered by a tap gesture, or a negative value
      *        to record that the counter has been disabled.
      */
     public void setContextualSearchTapTriggeredPromoCount(int count) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putInt(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, count);
-        ed.apply();
+        writeInt(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, count);
     }
 
     /**
@@ -231,8 +246,18 @@ public class ChromePreferenceManager {
      * @param count Number of taps that have been received when not waiting for the promo.
      */
     public void setContextualSearchTapCount(int count) {
+        writeInt(CONTEXTUAL_SEARCH_TAP_COUNT, count);
+    }
+
+    /**
+     * Writes the given int value to the named shared preference.
+     *
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     */
+    private void writeInt(String key, int value) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putInt(CONTEXTUAL_SEARCH_TAP_COUNT, count);
+        ed.putInt(key, value);
         ed.apply();
     }
 }

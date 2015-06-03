@@ -12,8 +12,10 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionCon
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.NetworkPredictionOptions;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.content.browser.ContentViewCore;
 
 import java.net.URL;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -22,8 +24,8 @@ import javax.annotation.Nullable;
  * Handles policy decisions for the {@code ContextualSearchManager}.
  */
 class ContextualSearchPolicy {
-    private static final int PROMO_TAPS_NOT_LIMITED = -1;
-    private static final int PROMO_TAPS_DISABLED_BIAS = -2;
+    private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern.compile("\\s");
+    private static final int REMAINING_NOT_APPLICABLE = -1;
 
     private static ContextualSearchPolicy sInstance;
 
@@ -32,7 +34,7 @@ class ContextualSearchPolicy {
     // Members used only for testing purposes.
     private boolean mDidOverrideDecidedStateForTesting;
     private boolean mDecidedStateForTesting;
-    private boolean mDidResetTapCounters;
+    private boolean mDidResetCounters;
 
     static ContextualSearchPolicy getInstance(Context context) {
         if (sInstance == null) {
@@ -42,9 +44,10 @@ class ContextualSearchPolicy {
     }
 
     /**
+     * Private constructor -- use {@link #getInstance} to get the singleton instance.
      * @param context The Android Context.
      */
-    ContextualSearchPolicy(Context context) {
+    private ContextualSearchPolicy(Context context) {
         mPreferenceManager = ChromePreferenceManager.getInstance(context);
     }
 
@@ -54,20 +57,27 @@ class ContextualSearchPolicy {
 
     /**
      * @return The number of additional times to show the promo on tap, 0 if it should not be shown,
-     *         or a negative value if the counter has been disabled.
+     *         or a negative value if the counter has been disabled or the user has accepted
+     *         the promo.
      */
     int getPromoTapsRemaining() {
-        if (ContextualSearchFieldTrial.isPromoLimitedByTapCounts()) {
-            int count = mPreferenceManager.getContextualSearchTapTriggeredPromoCount();
+        if (!isUserUndecided()) return REMAINING_NOT_APPLICABLE;
 
-            // Return a negative value if opt-out promo counter has been disabled.
-            if (isOptOutPromoAvailable() && !isOptOutPromoCounterEnabled(count)) return count;
-
+        // Return a non-negative value if opt-out promo counter is enabled, and there's a limit.
+        DisableablePromoTapCounter counter = getPromoTapCounter();
+        if (counter.isEnabled()) {
             int limit = ContextualSearchFieldTrial.getPromoTapTriggeredLimit();
-            if (limit >= 0) return Math.max(0, limit - count);
+            if (limit >= 0) return Math.max(0, limit - counter.getCount());
         }
 
-        return PROMO_TAPS_NOT_LIMITED;
+        return REMAINING_NOT_APPLICABLE;
+    }
+
+    /**
+     * @return the {@link DisableablePromoTapCounter}.
+     */
+    DisableablePromoTapCounter getPromoTapCounter() {
+        return DisableablePromoTapCounter.getInstance(mPreferenceManager);
     }
 
     /**
@@ -78,7 +88,8 @@ class ContextualSearchPolicy {
 
         if (ContextualSearchFieldTrial.isPromoLongpressTriggeredOnly()) return false;
 
-        return getPromoTapsRemaining() != 0;
+        return !ContextualSearchFieldTrial.isPromoLimitedByTapCounts()
+                || getPromoTapsRemaining() != 0;
     }
 
     /**
@@ -149,42 +160,40 @@ class ContextualSearchPolicy {
      * Registers that a tap has taken place by incrementing tap-tracking counters.
      */
     void registerTap() {
-        if (isOptInPromoAvailable() || isOptOutPromoAvailable()) {
-            int count = mPreferenceManager.getContextualSearchTapTriggeredPromoCount();
+        if (isOptOutPromoAvailable()) {
+            DisableablePromoTapCounter promoTapCounter = getPromoTapCounter();
             // Bump the counter only when it is still enabled.
-            if (isOptInPromoAvailable() || isOptOutPromoCounterEnabled(count)) {
-                mPreferenceManager.setContextualSearchTapTriggeredPromoCount(++count);
+            if (promoTapCounter.isEnabled()) {
+                promoTapCounter.increment();
             }
         }
-        if (isTapLimited()) {
-            int count = mPreferenceManager.getContextualSearchTapCount();
-            mPreferenceManager.setContextualSearchTapCount(++count);
+        int tapsSinceOpen = mPreferenceManager.getContextualSearchTapCount();
+        mPreferenceManager.setContextualSearchTapCount(++tapsSinceOpen);
+        if (isUserUndecided()) {
+            ContextualSearchUma.logTapsSinceOpenForUndecided(tapsSinceOpen);
+        } else {
+            ContextualSearchUma.logTapsSinceOpenForDecided(tapsSinceOpen);
         }
     }
 
     /**
-     * Resets all the "tap" counters.
+     * Updates all the counters to account for an open-action on the panel.
      */
-    void resetTapCounters() {
-        // Always completely reset the tap counters, since tests push beyond limits: this
-        // would affect subsequent tests unless they can reset without having a limit.
+    void updateCountersForOpen() {
+        // Always completely reset the tap counter, since it just counts taps
+        // since the last open.
         mPreferenceManager.setContextualSearchTapCount(0);
 
         // Disable the "promo tap" counter, but only if we're using the Opt-out onboarding.
         // For Opt-in, we never disable the promo tap counter.
-        if (isOptOutPromoAvailable()) disableOptOutPromoCounter();
-        mDidResetTapCounters = true;
-    }
+        if (isOptOutPromoAvailable()) {
+            getPromoTapCounter().disable();
 
-    @VisibleForTesting
-    void overrideDecidedStateForTesting(boolean decidedState) {
-        mDidOverrideDecidedStateForTesting = true;
-        mDecidedStateForTesting = decidedState;
-    }
-
-    @VisibleForTesting
-    boolean didResetTapCounters() {
-        return mDidResetTapCounters;
+            // Bump the total-promo-opens counter.
+            int count = mPreferenceManager.getContextualSearchPromoOpenCount();
+            mPreferenceManager.setContextualSearchPromoOpenCount(++count);
+            ContextualSearchUma.logPromoOpenCount(count);
+        }
     }
 
     /**
@@ -209,46 +218,109 @@ class ContextualSearchPolicy {
         return !(ChromeVersionInfo.isStableBuild() || ChromeVersionInfo.isBetaBuild());
     }
 
-    // --------------------------------------------------------------------------------------------
-    // Opt-out style Promo counter
-    //
-    // The Opt-out style promo tap counter needs to do two things:
-    // 1) Count Taps that trigger the promo, so they can be limited.
-    // 2) Support a "disabled" state; when the user opens the panel then Taps trigger from then on.
-    // We use a single persistent setting to record both meanings by using a negative value to
-    // indicate disabled.
-    //
-    // TODO(donnd): make a separate class for this kind of counter.
-    // --------------------------------------------------------------------------------------------
-
     /**
-     * Determines if the given Opt-out style promo counter represents a count of promo taps in
-     * the enabled state.
-     * @param counter The persistent counter value to consider.
-     * @return Whether the given counter is enabled.
+     * Logs the current user's state, including preference, tap and open counters, etc.
      */
-    private boolean isOptOutPromoCounterEnabled(int counter) {
-        return counter >= 0;
-    }
-
-    /**
-     * Generates an equivalent counter value with the enabled state opposite of the given value.
-     * @param count The current value of the counter.
-     * @return The equivalent value in with its enabled/disabled state toggled.
-     */
-    private int toggleOptOutPromoCounterEnabled(int count) {
-        return PROMO_TAPS_DISABLED_BIAS - count;
-    }
-
-    /**
-     * Disables the Opt-out promo counter, unless it is already disabled.
-     */
-    private void disableOptOutPromoCounter() {
-        int count = mPreferenceManager.getContextualSearchTapTriggeredPromoCount();
-        if (isOptOutPromoCounterEnabled(count)) {
-            count = toggleOptOutPromoCounterEnabled(count);
-            mPreferenceManager.setContextualSearchTapTriggeredPromoCount(count);
+    void logCurrentState(@Nullable ContentViewCore cvc) {
+        if (cvc == null || !ContextualSearchFieldTrial.isEnabled(
+                cvc.getContext().getApplicationContext())) {
+            return;
         }
+
+        ContextualSearchUma.logPreferenceState();
+
+        // Log the number of promo taps remaining.
+        int promoTapsRemaining = getPromoTapsRemaining();
+        if (promoTapsRemaining >= 0) ContextualSearchUma.logPromoTapsRemaining(promoTapsRemaining);
+
+        // Also log the total number of taps before opening the promo, even for those
+        // that are no longer tap limited. That way we'll know the distribution of the
+        // number of taps needed before opening the promo.
+        DisableablePromoTapCounter promoTapCounter = getPromoTapCounter();
+        boolean wasOpened = !promoTapCounter.isEnabled();
+        int count = promoTapCounter.getCount();
+        if (wasOpened) {
+            ContextualSearchUma.logPromoTapsBeforeFirstOpen(count);
+        } else {
+            ContextualSearchUma.logPromoTapsForNeverOpened(count);
+        }
+    }
+
+    /**
+     * Logs details about the Search Term Resolution.
+     * Should only be called when a search term has been resolved.
+     * @param searchTerm The Resolved Search Term.
+     * @param basePageUrl The URL of the base page.
+     */
+    void logSearchTermResolutionDetails(String searchTerm, @Nullable URL basePageUrl) {
+        // Only log for decided users so the data reflect fully-enabled behavior.
+        // Otherwise we'll get skewed data; more HTTP pages than HTTPS (since those don't resolve),
+        // and it's also possible that public pages, e.g. news, have more searches for multi-word
+        // entities like people.
+        if (!isUserUndecided()) {
+            ContextualSearchUma.logBasePageProtocol(isBasePageHTTP(basePageUrl));
+            boolean isSingleWord = !CONTAINS_WHITESPACE_PATTERN.matcher(searchTerm.trim()).find();
+            ContextualSearchUma.logSearchTermResolvedWords(isSingleWord);
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Testing support.
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Resets all policy counters.
+     */
+    @VisibleForTesting
+    void resetCounters() {
+        updateCountersForOpen();
+
+        mPreferenceManager.setContextualSearchPromoOpenCount(0);
+        mDidResetCounters = true;
+    }
+
+    /**
+     * Overrides the decided/undecided state for the user preference.
+     * @param decidedState Whether the user has decided or not.
+     */
+    @VisibleForTesting
+    void overrideDecidedStateForTesting(boolean decidedState) {
+        mDidOverrideDecidedStateForTesting = true;
+        mDecidedStateForTesting = decidedState;
+    }
+
+    /**
+     * @return Whether counters have been reset yet (by resetCounters) or not.
+     */
+    @VisibleForTesting
+    boolean didResetCounters() {
+        return mDidResetCounters;
+    }
+
+    /**
+     * @return count of times the panel with the promo has been opened.
+     */
+    @VisibleForTesting
+    int getPromoOpenCount() {
+        return mPreferenceManager.getContextualSearchPromoOpenCount();
+    }
+
+    /**
+     * @return The number of times the user has tapped since the last panel open.
+     */
+    @VisibleForTesting
+    int getTapCount() {
+        return mPreferenceManager.getContextualSearchTapCount();
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Persistent "promo opens" counter.
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Updates a persistent counter of how many times the promo was opened.
+     */
+    private void incrementPromoOpenedCount() {
     }
 
     // --------------------------------------------------------------------------------------------
@@ -281,23 +353,14 @@ class ContextualSearchPolicy {
      * @return Whether the tap resolve limit has been exceeded.
      */
     private boolean isTapResolveBeyondTheLimit() {
-        return isTapResolveLimited()
-                && mPreferenceManager.getContextualSearchTapCount() > getTapResolveLimit();
+        return isTapResolveLimited() && getTapCount() > getTapResolveLimit();
     }
 
     /**
      * @return Whether the tap resolve limit has been exceeded.
      */
     private boolean isTapPrefetchBeyondTheLimit() {
-        return isTapPrefetchLimited()
-                && mPreferenceManager.getContextualSearchTapCount() > getTapPrefetchLimit();
-    }
-
-    /**
-     * Whether taps for decided users are limited, either for prefetch or resolve.
-     */
-    private boolean isTapLimited() {
-        return isTapPrefetchLimited() || isTapResolveLimited();
+        return isTapPrefetchLimited() && getTapCount() > getTapPrefetchLimit();
     }
 
     /**
@@ -305,8 +368,8 @@ class ContextualSearchPolicy {
      */
     private boolean isTapResolveLimited() {
         return isUserUndecided()
-                ? isTapResolveLimitedForUndecided()
-                : isTapResolveLimitedForDecided();
+                ? ContextualSearchFieldTrial.isTapResolveLimitedForUndecided()
+                : ContextualSearchFieldTrial.isTapResolveLimitedForDecided();
     }
 
     /**
@@ -314,8 +377,8 @@ class ContextualSearchPolicy {
      */
     private boolean isTapPrefetchLimited() {
         return isUserUndecided()
-                ? isTapPrefetchLimitedForUndecided()
-                : isTapPrefetchLimitedForDecided();
+                ? ContextualSearchFieldTrial.isTapPrefetchLimitedForUndecided()
+                : ContextualSearchFieldTrial.isTapPrefetchLimitedForDecided();
     }
 
     /**
@@ -334,39 +397,5 @@ class ContextualSearchPolicy {
         return isUserUndecided()
                 ? ContextualSearchFieldTrial.getTapResolveLimitForUndecided()
                 : ContextualSearchFieldTrial.getTapResolveLimitForDecided();
-    }
-
-    /**
-     * @return Whether Search Term Resolution in response to a Tap gesture is limited for decided
-     *         users.
-     */
-    private boolean isTapResolveLimitedForDecided() {
-        return ContextualSearchFieldTrial.getTapResolveLimitForDecided()
-                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
-    }
-
-    /**
-     * @return Whether prefetch in response to a Tap gesture is limited for decided users.
-     */
-    private boolean isTapPrefetchLimitedForDecided() {
-        return ContextualSearchFieldTrial.getTapPrefetchLimitForDecided()
-                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
-    }
-
-    /**
-     * @return Whether Search Term Resolution in response to a Tap gesture is limited for undecided
-     *         users.
-     */
-    private boolean isTapResolveLimitedForUndecided() {
-        return ContextualSearchFieldTrial.getTapResolveLimitForUndecided()
-                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
-    }
-
-    /**
-     * @return Whether prefetch in response to a Tap gesture is limited for undecided users.
-     */
-    private boolean isTapPrefetchLimitedForUndecided() {
-        return ContextualSearchFieldTrial.getTapPrefetchLimitForUndecided()
-                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
     }
 }

@@ -21,7 +21,6 @@ import java.util.Locale;
  * Provides Field Trial support for the Contextual Search application within Chrome for Android.
  */
 public class ContextualSearchFieldTrial {
-
     private static final String CONTEXTUAL_SEARCH_FIELD_TRIAL_NAME = "ContextualSearch";
     private static final String CONTEXTUAL_SEARCH_ENABLED_PARAM = "enabled";
     private static final String CONTEXTUAL_SEARCH_ENABLED_VALUE = "true";
@@ -53,7 +52,7 @@ public class ContextualSearchFieldTrial {
     // The default navigation-detection-delay in milliseconds.
     private static final int DEFAULT_TAP_NAVIGATION_DETECTION_DELAY = 16;
 
-    static final int UNLIMITED_TAPS = -1;
+    private static final int UNLIMITED_TAPS = -1;
     private static final int DEFAULT_TAP_RESOLVE_LIMIT_FOR_DECIDED = UNLIMITED_TAPS;
     private static final int DEFAULT_TAP_PREFETCH_LIMIT_FOR_DECIDED = UNLIMITED_TAPS;
     private static final int DEFAULT_TAP_RESOLVE_LIMIT_FOR_UNDECIDED = 100;
@@ -159,6 +158,39 @@ public class ContextualSearchFieldTrial {
                 DEFAULT_TAP_NAVIGATION_DETECTION_DELAY);
     }
 
+    /**
+     * @return Whether Search Term Resolution in response to a Tap gesture is limited for decided
+     *         users.
+     */
+    static boolean isTapResolveLimitedForDecided() {
+        return getTapResolveLimitForDecided()
+                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
+    }
+
+    /**
+     * @return Whether prefetch in response to a Tap gesture is limited for decided users.
+     */
+    static boolean isTapPrefetchLimitedForDecided() {
+        return getTapPrefetchLimitForDecided()
+                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
+    }
+
+    /**
+     * @return Whether Search Term Resolution in response to a Tap gesture is limited for undecided
+     *         users.
+     */
+    static boolean isTapResolveLimitedForUndecided() {
+        return getTapResolveLimitForUndecided()
+                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
+    }
+
+    /**
+     * @return Whether prefetch in response to a Tap gesture is limited for undecided users.
+     */
+    static boolean isTapPrefetchLimitedForUndecided() {
+        return getTapPrefetchLimitForUndecided()
+                != ContextualSearchFieldTrial.UNLIMITED_TAPS;
+    }
     /**
      * @return The limit on the number of taps to resolve for decided users, or the default if no
      *         value is present in the Finch configuration.

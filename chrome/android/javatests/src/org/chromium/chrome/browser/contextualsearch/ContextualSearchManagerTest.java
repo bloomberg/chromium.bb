@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -71,7 +70,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private ContextualSearchPanelDelegate mPanelDelegate;
     private ContextualSearchSelectionController mSelectionController;
     private ContextualSearchPolicy mPolicy;
-    private ChromePreferenceManager mPreferenceManager;
 
     public ContextualSearchManagerTest() {
         super(ChromeActivity.class);
@@ -92,10 +90,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             mPanelDelegate = mManager.getContextualSearchPanelDelegate();
             mSelectionController = mManager.getSelectionController();
             mPolicy = ContextualSearchPolicy.getInstance(getActivity());
-            mPreferenceManager = ChromePreferenceManager.getInstance(getActivity());
 
             mPolicy.overrideDecidedStateForTesting(true);
-            resetTapCounters();
+            resetCounters();
         }
     }
 
@@ -267,6 +264,22 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     private void assertNoContentViewCore() {
         assertFalse(mFakeServer.isSearchContentViewCreated());
+    }
+
+    /**
+     * Asserts that the tap triggered promo counter is enabled and at the specified count.
+     */
+    private void assertTapPromoCounterEnabledAt(int expectedCount) {
+        assertTrue(mPolicy.getPromoTapCounter().isEnabled());
+        assertEquals(expectedCount, mPolicy.getPromoTapCounter().getCount());
+    }
+
+    /**
+     * Asserts that the tap triggered promo counter is disabled and at the specified count.
+     */
+    private void assertTapPromoCounterDisabledAt(int expectedCount) {
+        assertFalse(mPolicy.getPromoTapCounter().isEnabled());
+        assertEquals(expectedCount, mPolicy.getPromoTapCounter().getCount());
     }
 
     /**
@@ -515,6 +528,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         fakeResponse(false, 200, "States", "display-text", "alternate-term", false);
         waitForPanelToPeekAndAssert();
         clickNode("states-far");
+        waitForPanelToCloseAndAssert();
     }
 
     /**
@@ -534,23 +548,23 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Resets the tap counters on the UI thread.
      */
-    private void resetTapCounters() throws InterruptedException {
+    private void resetCounters() throws InterruptedException {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mPolicy.resetTapCounters();
                 // The "Promo" tap counter is never reset outside of testing because it
                 // is used to persistently count the number of peeks *ever* seen by the user
                 // before the first open, and is then frozen in a disabled state to record that
                 // value rather than being reset.
                 // We reset it here to simulate a new user for our feature.
-                mPreferenceManager.setContextualSearchTapTriggeredPromoCount(0);
+                mPolicy.getPromoTapCounter().reset();
+                mPolicy.resetCounters();
             }
         });
         CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mPolicy.didResetTapCounters();
+                return mPolicy.didResetCounters();
             }
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
@@ -1174,13 +1188,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that taps can be resolve-limited for decided users.
-     * @CommandLineFlags.Add(
-     *         ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_RESOLVE_LIMIT_FOR_DECIDED + "=2")
+     *
      * @SmallTest
      * @Feature({"ContextualSearch"})
-     * @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
      * crbug.com/487759
      */
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @CommandLineFlags.Add(
+            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_RESOLVE_LIMIT_FOR_DECIDED + "=2")
     @FlakyTest
     public void testTapResolveLimitForDecided() throws InterruptedException, TimeoutException {
         clickToTriggerSearchTermResolution();
@@ -1201,13 +1216,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that taps can be resolve-limited for undecided users.
-     * @CommandLineFlags.Add({
-     *         ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_RESOLVE_LIMIT_FOR_UNDECIDED + "=2"})
+     *
      * @SmallTest
      * @Feature({"ContextualSearch"})
-     * @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
      * crbug.com/487759
      */
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @CommandLineFlags.Add({
+            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_RESOLVE_LIMIT_FOR_UNDECIDED + "=2"})
     @FlakyTest
     public void testTapResolveLimitForUndecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
@@ -1230,13 +1246,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that taps can be preload-limited for decided users.
-     * @CommandLineFlags.Add(
-     *         ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
+     *
      * @SmallTest
      * @Feature({"ContextualSearch"})
-     * @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
      * crbug.com/487759
      */
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @CommandLineFlags.Add(
+            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
     @FlakyTest
     public void testTapPrefetchLimitForDecided() throws InterruptedException, TimeoutException {
         clickToTriggerPrefetch();
@@ -1257,13 +1274,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that taps can be preload-limited for undecided users.
-     * @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-     * @CommandLineFlags.Add(
-     *         ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_UNDECIDED + "=2")
+     *
      * @SmallTest
      * @Feature({"ContextualSearch"})
      * crbug.com/487759
      */
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @CommandLineFlags.Add(
+            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_UNDECIDED + "=2")
     @FlakyTest
     public void testTapPrefetchLimitForUndecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
@@ -1286,14 +1304,15 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests the tap triggered promo limit for opt-out.
-     * @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-     * @CommandLineFlags.Add({
-     *         ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_PROMO_ON_LIMITED_TAPS + "=true",
-     *         ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_LIMIT + "=2"})
+     *
      * @SmallTest
      * @Feature({"ContextualSearch"})
      * crbug.com/487759
      */
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @CommandLineFlags.Add({
+            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_PROMO_ON_LIMITED_TAPS + "=true",
+            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_LIMIT + "=2"})
     @FlakyTest
     public void testTapTriggeredPromoLimitForOptOut()
             throws InterruptedException, TimeoutException {
@@ -1338,9 +1357,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @Feature({"ContextualSearch"})
      */
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @FlakyTest
     @CommandLineFlags.Add(
             ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
+    @FlakyTest
     public void testDisembodiedBar() throws InterruptedException, TimeoutException {
         clickToTriggerPrefetch();
         assertLoadedLowPriorityUrl();
@@ -1519,5 +1538,129 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
         pressAppMenuKey();
         assertAppMenuVisibility(true);
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Promo tap count - the number of promo peeks.
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Tests the TapN-promo-limit feature, which disables the promo on tap after N taps if
+     * the user has never ever opened the panel.  Once the panel is opened, this limiting-feature
+     * is permanently disabled.
+     *
+     * This test is very similar to an existing test for this same feature, so I'm proactively
+     * marking this as a FlakyTest too (since we're landing right before upstreaming).
+     *
+     * @SmallTest
+     * @Feature({"ContextualSearch"})
+     */
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @CommandLineFlags.Add({
+            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_PROMO_ON_LIMITED_TAPS + "=true",
+            ContextualSearchFieldTrial.CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_LIMIT + "=2"})
+    @FlakyTest
+    public void testPromoTapCount() throws InterruptedException, TimeoutException {
+        // Note that this tests the basic underlying counter used by
+        // testTapTriggeredPromoLimitForOptOut.
+        // TODO(donnd): consider removing either this test or testTapTriggeredPromoLimitForOptOut.
+        mPolicy.overrideDecidedStateForTesting(false);
+        assertTapPromoCounterEnabledAt(0);
+
+        // A simple Tap should change the counter.
+        clickToTriggerPrefetch();
+        assertTapPromoCounterEnabledAt(1);
+
+        // Another Tap should increase the counter.
+        clickToTriggerPrefetch();
+        assertTapPromoCounterEnabledAt(2);
+
+        // Now we're at the limit, a tap should be ignored.
+        clickNode("states");
+        waitForPanelToCloseAndAssert();
+        assertTapPromoCounterEnabledAt(2);
+
+        // An open should disable the counter, but we need to use long-press (tap is now disabled).
+        longPressNode("states-far");
+        tapPeekingBarToExpandAndAssert();
+        tapBasePage();
+        waitForPanelToCloseAndAssert();
+        assertTapPromoCounterDisabledAt(2);
+
+        // Even though we closed the panel, the long-press selection is still there.
+        // Tap on the question mark to dismiss the long-press selection.
+        clickNode("question-mark");
+        waitForSelectionToBe(null);
+
+        // Now taps should work and not change the counter.
+        clickToTriggerPrefetch();
+        assertTapPromoCounterDisabledAt(2);
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Promo open count
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Tests the promo open counter.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    public void testPromoOpenCountForUndecided() throws InterruptedException, TimeoutException {
+        mPolicy.overrideDecidedStateForTesting(false);
+
+        // A simple click / resolve / prefetch sequence without open should not change the counter.
+        clickToTriggerPrefetch();
+        assertEquals(0, mPolicy.getPromoOpenCount());
+
+        // An open should count.
+        clickToExpandAndClosePanel();
+        assertEquals(1, mPolicy.getPromoOpenCount());
+
+        // Another open should count.
+        clickToExpandAndClosePanel();
+        assertEquals(2, mPolicy.getPromoOpenCount());
+
+        // Once the user has decided, we should stop counting.
+        mPolicy.overrideDecidedStateForTesting(true);
+        clickToExpandAndClosePanel();
+        assertEquals(2, mPolicy.getPromoOpenCount());
+    }
+
+    /**
+     * Tests the promo open counter.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    public void testPromoOpenCountForDecided() throws InterruptedException, TimeoutException {
+        mPolicy.overrideDecidedStateForTesting(true);
+
+        // An open should not count for decided users.
+        clickToExpandAndClosePanel();
+        assertEquals(0, mPolicy.getPromoOpenCount());
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Tap count - number of taps between opens.
+    // --------------------------------------------------------------------------------------------
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    public void testTapCount() throws InterruptedException, TimeoutException {
+        assertEquals(0, mPolicy.getTapCount());
+
+        // A simple Tap should change the counter.
+        clickToTriggerPrefetch();
+        assertEquals(1, mPolicy.getTapCount());
+
+        // Another Tap should increase the counter.
+        clickToTriggerPrefetch();
+        assertEquals(2, mPolicy.getTapCount());
+
+        // An open should reset the counter.
+        clickToExpandAndClosePanel();
+        assertEquals(0, mPolicy.getTapCount());
     }
 }

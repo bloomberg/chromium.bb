@@ -126,10 +126,6 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
      * @param cvc The content view core to attach the gesture state listener to.
      */
     private void addContextualSearchHooks(ContentViewCore cvc) {
-        if (ContextualSearchFieldTrial.isEnabled(cvc.getContext().getApplicationContext())) {
-            ContextualSearchUma.logPreferenceState(
-                    ContextualSearchPolicy.getInstance(cvc.getContext()).getPromoTapsRemaining());
-        }
         if (mGestureStateListener == null) {
             mGestureStateListener = getContextualSearchManager(cvc).getGestureStateListener();
             cvc.addGestureStateListener(mGestureStateListener);
@@ -145,10 +141,6 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
     private void removeContextualSearchHooks(ContentViewCore cvc) {
         if (cvc == null) return;
 
-        if (ContextualSearchFieldTrial.isEnabled(cvc.getContext().getApplicationContext())) {
-            ContextualSearchUma.logPreferenceState(
-                    ContextualSearchPolicy.getInstance(cvc.getContext()).getPromoTapsRemaining());
-        }
         if (mGestureStateListener != null) {
             cvc.removeGestureStateListener(mGestureStateListener);
             mGestureStateListener = null;

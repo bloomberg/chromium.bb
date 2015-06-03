@@ -648,6 +648,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
         if (newState == ActivityState.RESUMED || newState == ActivityState.STOPPED
                 || newState == ActivityState.DESTROYED) {
             hideContextualSearch(StateChangeReason.UNKNOWN);
+        } else if (newState == ActivityState.PAUSED) {
+            mPolicy.logCurrentState(getBaseContentView());
         }
     }
 
@@ -756,6 +758,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
             if (mIsSearchContentViewShowing || shouldPreload) {
                 loadSearchUrl();
             }
+            mPolicy.logSearchTermResolutionDetails(searchTerm,
+                    mNetworkCommunicator.getBasePageUrl());
         }
     }
 
@@ -1204,7 +1208,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
             createNewSearchContentViewCoreIfNeeded();
             if (mSearchContentViewCore != null) mSearchContentViewCore.onShow();
             mSearchPanelDelegate.setWasSearchContentViewSeen();
-            mPolicy.resetTapCounters();
+            mPolicy.updateCountersForOpen();
         } else {
             if (mSearchContentViewCore != null) mSearchContentViewCore.onHide();
         }
