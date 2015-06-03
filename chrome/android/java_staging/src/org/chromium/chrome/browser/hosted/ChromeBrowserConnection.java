@@ -50,10 +50,28 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     private final Application mApplication;
     private final AtomicBoolean mWarmupHasBeenCalled;
 
+    /** Per-sessionId values. */
+    private static class SessionParams {
+        public final int mUid;
+        private ServiceConnection mServiceConnection;
+
+        public SessionParams(int uid) {
+            mUid = uid;
+            mServiceConnection = null;
+        }
+
+        public ServiceConnection getServiceConnection() {
+            return mServiceConnection;
+        }
+
+        public void setServiceConnection(ServiceConnection serviceConnection) {
+            mServiceConnection = serviceConnection;
+        }
+    }
+
     private final Object mLock;
     private final SparseArray<IBrowserConnectionCallback> mUidToCallback;
-    private final LongSparseArray<Integer> mSessionIdToUid;
-    private final LongSparseArray<ServiceConnection> mSessionIdToServiceConnection;
+    private final LongSparseArray<SessionParams> mSessionParams;
 
     private ChromeBrowserConnection(Application application) {
         super();
@@ -61,8 +79,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         mWarmupHasBeenCalled = new AtomicBoolean();
         mLock = new Object();
         mUidToCallback = new SparseArray<IBrowserConnectionCallback>();
-        mSessionIdToUid = new LongSparseArray<Integer>();
-        mSessionIdToServiceConnection = new LongSparseArray<ServiceConnection>();
+        mSessionParams = new LongSparseArray<SessionParams>();
     }
 
     /**
@@ -145,8 +162,8 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
                 // Because Math.abs(Long.MIN_VALUE) == Long.MIN_VALUE.
                 if (sessionId == Long.MIN_VALUE) continue;
                 sessionId = Math.abs(sessionId);
-            } while (sessionId == 0 || mSessionIdToUid.get(sessionId) != null);
-            mSessionIdToUid.put(sessionId, Binder.getCallingUid());
+            } while (sessionId == 0 || mSessionParams.get(sessionId) != null);
+            mSessionParams.put(sessionId, new SessionParams(Binder.getCallingUid()));
             return sessionId;
         }
     }
@@ -163,9 +180,8 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         }
         if (!isUidForeground(uid)) return RESULT_ERROR;
         synchronized (mLock) {
-            if (mSessionIdToUid.get(sessionId) == null || mSessionIdToUid.get(sessionId) != uid) {
-                return RESULT_ERROR;
-            }
+            SessionParams sessionParams = mSessionParams.get(sessionId);
+            if (sessionParams == null || sessionParams.mUid != uid) return RESULT_ERROR;
         }
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
@@ -206,9 +222,9 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
      */
     boolean deliverOnUserNavigationCallback(long sessionId, String url, Bundle extras) {
         synchronized (mLock) {
-            if (mSessionIdToUid.get(sessionId) == null) return false;
-            int uid = mSessionIdToUid.get(sessionId);
-            IBrowserConnectionCallback cb = mUidToCallback.get(uid);
+            SessionParams sessionParams = mSessionParams.get(sessionId);
+            if (sessionParams == null) return false;
+            IBrowserConnectionCallback cb = mUidToCallback.get(sessionParams.mUid);
             if (cb == null) return false;
             try {
                 cb.onUserNavigation(sessionId, url, extras);
@@ -235,16 +251,16 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         // be at least equal to the application's one. This binds to a dummy
         // service (no calls to this service are made).
         if (intent == null || intent.getComponent() == null) return false;
-        int uid;
+        SessionParams sessionParams;
         synchronized (mLock) {
-            if (mSessionIdToUid.get(sessionId) == null) return false;
-            uid = mSessionIdToUid.get(sessionId);
+            sessionParams = mSessionParams.get(sessionId);
+            if (sessionParams == null) return false;
         }
         String packageName = intent.getComponent().getPackageName();
         PackageManager pm = mApplication.getApplicationContext().getPackageManager();
         // Only binds to the application associated to this session ID.
+        int uid = sessionParams.mUid;
         if (!Arrays.asList(pm.getPackagesForUid(uid)).contains(packageName)) return false;
-
         Intent serviceIntent = new Intent().setComponent(intent.getComponent());
         // This ServiceConnection doesn't handle disconnects. This is on
         // purpose, as it occurs when the remote process has died. Since the
@@ -264,7 +280,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         } catch (SecurityException e) {
             return false;
         }
-        if (ok) mSessionIdToServiceConnection.put(sessionId, connection);
+        if (ok) sessionParams.setServiceConnection(connection);
         return ok;
     }
 
@@ -276,10 +292,14 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
      * @param sessionId Session ID, as provided to {@link keepAliveForSessionId}.
      */
     void dontKeepAliveForSessionId(long sessionId) {
-        ServiceConnection connection = mSessionIdToServiceConnection.get(sessionId);
-        if (connection == null) return;
-        mSessionIdToServiceConnection.remove(sessionId);
-        mApplication.getApplicationContext().unbindService(connection);
+        SessionParams sessionParams;
+        synchronized (mLock) {
+            sessionParams = mSessionParams.get(sessionId);
+        }
+        if (sessionParams == null || sessionParams.getServiceConnection() == null) return;
+        ServiceConnection serviceConnection = sessionParams.getServiceConnection();
+        sessionParams.setServiceConnection(null);
+        mApplication.getApplicationContext().unbindService(serviceConnection);
     }
 
     /**
@@ -304,11 +324,11 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         List<Long> keysToRemove = new ArrayList<Long>();
         // TODO(lizeb): If iterating through all the session IDs is too costly,
         // use two mappings.
-        for (int i = 0; i < mSessionIdToUid.size(); i++) {
-            if (mSessionIdToUid.valueAt(i) == uid) keysToRemove.add(mSessionIdToUid.keyAt(i));
+        for (int i = 0; i < mSessionParams.size(); i++) {
+            if (mSessionParams.valueAt(i).mUid == uid) keysToRemove.add(mSessionParams.keyAt(i));
         }
         for (Long sessionId : keysToRemove) {
-            mSessionIdToUid.remove(sessionId);
+            mSessionParams.remove(sessionId);
         }
         mUidToCallback.remove(uid);
     }
