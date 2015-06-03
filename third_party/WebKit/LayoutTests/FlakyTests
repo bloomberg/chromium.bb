@@ -50,6 +50,7 @@ crbug.com/365340 [ Release Mavericks ] editing/pasteboard/paste-noscript-xhtml.x
 crbug.com/365340 [ Release Win7 ] editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
 crbug.com/365340 [ Debug Win7 ] editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
 crbug.com/365340 [ Release XP ] editing/pasteboard/paste-noscript-xhtml.xhtml [ Failure Pass ]
+crbug.com/496171 virtual/threaded/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Failure Pass ]
 crbug.com/393094 [ Release Win7 ] editing/selection/move-by-line-006.html [ Failure Pass ]
 crbug.com/393094 [ Debug Win7 ] editing/selection/move-by-line-006.html [ Failure Pass ]
 crbug.com/445100 [ Release SnowLeopard ] fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure Pass ]
