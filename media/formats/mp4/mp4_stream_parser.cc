@@ -307,11 +307,23 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   if (moov_->extends.header.fragment_duration > 0) {
     params.duration = TimeDeltaFromRational(
         moov_->extends.header.fragment_duration, moov_->header.timescale);
+    params.liveness = DemuxerStream::LIVENESS_RECORDED;
   } else if (moov_->header.duration > 0 &&
              moov_->header.duration != kuint64max) {
     params.duration =
         TimeDeltaFromRational(moov_->header.duration, moov_->header.timescale);
+    params.liveness = DemuxerStream::LIVENESS_RECORDED;
+  } else {
+    // In ISO/IEC 14496-12:2005(E), 8.30.2: ".. If an MP4 file is created in
+    // real-time, such as used in live streaming, it is not likely that the
+    // fragment_duration is known in advance and this (mehd) box may be
+    // omitted."
+    // TODO(wolenetz): Investigate gating liveness detection on timeline_offset
+    // when it's populated. See http://crbug.com/312699
+    params.liveness = DemuxerStream::LIVENESS_LIVE;
   }
+
+  DVLOG(1) << "liveness: " << params.liveness;
 
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(params);
