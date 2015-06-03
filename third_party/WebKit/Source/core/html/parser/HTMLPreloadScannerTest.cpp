@@ -9,6 +9,7 @@
 #include "core/css/MediaValuesCached.h"
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/frame/Settings.h"
+#include "core/html/CrossOriginAttribute.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/testing/DummyPageHolder.h"
@@ -26,14 +27,32 @@ typedef struct {
     ClientHintsPreferences preferences;
 } TestCase;
 
+typedef struct {
+    const char* baseURL;
+    const char* inputHTML;
+    const char* preconnectedHost;
+    CrossOriginAttributeValue crossOrigin;
+} PreconnectTestCase;
+
 class MockHTMLResourcePreloader : public ResourcePreloader {
 public:
     void preloadRequestVerification(Resource::Type type, const String& url, const String& baseURL, int width)
     {
+        EXPECT_FALSE(m_preloadRequest->isPreconnect());
         EXPECT_EQ(m_preloadRequest->resourceType(), type);
         EXPECT_STREQ(m_preloadRequest->resourceURL().ascii().data(),  url.ascii().data());
-        EXPECT_STREQ(m_preloadRequest->baseURL().ascii().data(), baseURL.ascii().data());
+        EXPECT_STREQ(m_preloadRequest->baseURL().string().ascii().data(), baseURL.ascii().data());
         EXPECT_EQ(m_preloadRequest->resourceWidth(), width);
+    }
+
+    void preconnectRequestVerification(const String& host, CrossOriginAttributeValue crossOrigin)
+    {
+        if (!host.isNull()) {
+            EXPECT_TRUE(m_preloadRequest->isPreconnect());
+            EXPECT_STREQ(m_preloadRequest->resourceURL().ascii().data(), host.ascii().data());
+            EXPECT_EQ(m_preloadRequest->isCORS(), crossOrigin != CrossOriginAttributeNotSet);
+            EXPECT_EQ(m_preloadRequest->isAllowCredentials(), crossOrigin == CrossOriginAttributeUseCredentials);
+        }
     }
 
 protected:
@@ -97,6 +116,15 @@ protected:
         preloader.preloadRequestVerification(testCase.type, testCase.preloadedURL, testCase.outputBaseURL, testCase.resourceWidth);
     }
 
+    void test(PreconnectTestCase testCase)
+    {
+        MockHTMLResourcePreloader preloader;
+        KURL baseURL(ParsedURLString, testCase.baseURL);
+        m_scanner->appendToEnd(String(testCase.inputHTML));
+        m_scanner->scan(&preloader, baseURL);
+        preloader.preconnectRequestVerification(testCase.preconnectedHost, testCase.crossOrigin);
+    }
+
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
     OwnPtr<HTMLPreloadScanner> m_scanner;
@@ -120,7 +148,7 @@ TEST_F(HTMLPreloadScannerTest, testImages)
         {"http://example.test", "<img srcset='bla2.gif 100w, bla3.gif 250w, bla4.gif 500w' sizes='50vw' src='bla.gif'>", "bla4.gif", "http://example.test/", Resource::Image, 250},
     };
 
-    for (auto testCase : testCases)
+    for (const auto& testCase : testCases)
         test(testCase);
 }
 
@@ -142,7 +170,7 @@ TEST_F(HTMLPreloadScannerTest, testImagesWithViewport)
         {"http://example.test", "<img srcset='bla2.gif 160w, bla3.gif 250w, bla4.gif 500w' sizes='50vw' src='bla.gif'>", "bla2.gif", "http://example.test/", Resource::Image, 80},
     };
 
-    for (auto testCase : testCases)
+    for (const auto& testCase : testCases)
         test(testCase);
 }
 
@@ -165,7 +193,7 @@ TEST_F(HTMLPreloadScannerTest, testImagesWithViewportDisabled)
         {"http://example.test", "<img srcset='bla2.gif 100w, bla3.gif 250w, bla4.gif 500w' sizes='50vw' src='bla.gif'>", "bla4.gif", "http://example.test/", Resource::Image, 250},
     };
 
-    for (auto testCase : testCases)
+    for (const auto& testCase : testCases)
         test(testCase);
 }
 
@@ -176,7 +204,7 @@ TEST_F(HTMLPreloadScannerTest, testViewportNoContent)
         {"http://example.test", "<meta name=viewport content=sdkbsdkjnejjha><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0},
     };
 
-    for (auto testCase : testCases)
+    for (const auto& testCase : testCases)
         test(testCase);
 }
 
@@ -200,7 +228,21 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCH)
         {"http://example.test", "<meta http-equiv='accept-ch' content='  rw  , wutever, dpr \t'><img srcset='bla.gif 320w, blabla.gif 640w'>", "blabla.gif", "http://example.test/", Resource::Image, 0, dprAndRw},
     };
 
-    for (auto testCase : testCases)
+    for (const auto& testCase : testCases)
+        test(testCase);
+}
+
+TEST_F(HTMLPreloadScannerTest, testPreconnect)
+{
+    PreconnectTestCase testCases[] = {
+        {"http://example.test", "<link rel=preconnect href=http://example2.test>", "http://example2.test", CrossOriginAttributeNotSet},
+        {"http://example.test", "<link rel=preconnect href=http://example2.test crossorigin=anonymous>", "http://example2.test", CrossOriginAttributeAnonymous},
+        {"http://example.test", "<link rel=preconnect href=http://example2.test crossorigin='use-credentials'>", "http://example2.test", CrossOriginAttributeUseCredentials},
+        {"http://example.test", "<link rel=preconnected href=http://example2.test crossorigin='use-credentials'>", nullptr, CrossOriginAttributeNotSet},
+        {"http://example.test", "<link rel=preconnect href=ws://example2.test crossorigin='use-credentials'>", nullptr, CrossOriginAttributeNotSet},
+    };
+
+    for (const auto& testCase : testCases)
         test(testCase);
 }
 

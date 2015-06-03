@@ -29,6 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "platform/network/NetworkHints.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -48,8 +49,29 @@ DEFINE_TRACE(HTMLResourcePreloader)
     visitor->trace(m_document);
 }
 
+static void preconnectHost(PreloadRequest* request)
+{
+    ASSERT(request);
+    ASSERT(request->isPreconnect());
+    KURL host(request->baseURL(), request->resourceURL());
+    if (!host.isValid() || !host.protocolIsInHTTPFamily())
+        return;
+    CrossOriginAttributeValue crossOrigin = CrossOriginAttributeNotSet;
+    if (request->isCORS()) {
+        if (request->isAllowCredentials())
+            crossOrigin = CrossOriginAttributeUseCredentials;
+        else
+            crossOrigin = CrossOriginAttributeAnonymous;
+    }
+    preconnect(host, crossOrigin);
+}
+
 void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
 {
+    if (preload->isPreconnect()) {
+        preconnectHost(preload.get());
+        return;
+    }
     FetchRequest request = preload->resourceRequest(m_document);
     Platform::current()->histogramCustomCounts("WebCore.PreloadDelayMs", static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime())), 0, 2000, 20);
     m_document->fetcher()->preload(preload->resourceType(), request, preload->charset());

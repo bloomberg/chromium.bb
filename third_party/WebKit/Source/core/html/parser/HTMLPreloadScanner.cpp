@@ -111,6 +111,7 @@ public:
     StartTagScanner(const StringImpl* tagImpl, PassRefPtr<MediaValues> mediaValues)
         : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
+        , m_linkIsPreconnect(false)
         , m_matchedMediaAttribute(true)
         , m_inputIsImage(false)
         , m_sourceSize(0)
@@ -168,7 +169,10 @@ public:
 
     PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source, const ClientHintsPreferences& clientHintsPreferences)
     {
-        if (!shouldPreload() || !m_matchedMediaAttribute)
+        PreloadRequest::RequestType requestType = PreloadRequest::RequestTypePreload;
+        if (shouldPreconnect())
+            requestType = PreloadRequest::RequestTypePreconnect;
+        else if (!shouldPreload() || !m_matchedMediaAttribute)
             return nullptr;
 
         TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
@@ -177,7 +181,7 @@ public:
             resourceWidth.width = m_sourceSize;
             resourceWidth.isSet = true;
         }
-        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), resourceWidth, clientHintsPreferences);
+        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), resourceWidth, clientHintsPreferences, requestType);
         if (isCORSEnabled())
             request->setCrossOriginEnabled(allowStoredCredentials());
         request->setCharset(charset());
@@ -226,14 +230,17 @@ private:
     void processLinkAttribute(const NameType& attributeName, const String& attributeValue)
     {
         // FIXME - Don't set rel/media/crossorigin multiple times.
-        if (match(attributeName, hrefAttr))
+        if (match(attributeName, hrefAttr)) {
             setUrlToLoad(attributeValue, DisallowURLReplacement);
-        else if (match(attributeName, relAttr))
-            m_linkIsStyleSheet = relAttributeIsStyleSheet(attributeValue);
-        else if (match(attributeName, mediaAttr))
+        } else if (match(attributeName, relAttr)) {
+            LinkRelAttribute rel(attributeValue);
+            m_linkIsStyleSheet = rel.isStyleSheet() && !rel.isAlternate() && rel.iconType() == InvalidIcon && !rel.isDNSPrefetch();
+            m_linkIsPreconnect = rel.isPreconnect();
+        } else if (match(attributeName, mediaAttr)) {
             m_matchedMediaAttribute = mediaAttributeMatches(*m_mediaValues, attributeValue);
-        else if (match(attributeName, crossoriginAttr))
+        } else if (match(attributeName, crossoriginAttr)) {
             setCrossOriginAllowed(attributeValue);
+        }
     }
 
     template<typename NameType>
@@ -291,12 +298,6 @@ private:
             processVideoAttribute(attributeName, attributeValue);
     }
 
-    static bool relAttributeIsStyleSheet(const String& attributeValue)
-    {
-        LinkRelAttribute rel(attributeValue);
-        return rel.isStyleSheet() && !rel.isAlternate() && rel.iconType() == InvalidIcon && !rel.isDNSPrefetch();
-    }
-
     void setUrlToLoad(const String& value, URLReplacement replacement)
     {
         // We only respect the first src/href, per HTML5:
@@ -325,8 +326,15 @@ private:
             return Resource::Image;
         if (match(m_tagImpl, linkTag) && m_linkIsStyleSheet)
             return Resource::CSSStyleSheet;
+        if (m_linkIsPreconnect)
+            return Resource::Raw;
         ASSERT_NOT_REACHED();
         return Resource::Raw;
+    }
+
+    bool shouldPreconnect() const
+    {
+        return match(m_tagImpl, linkTag) && m_linkIsPreconnect && !m_urlToLoad.isEmpty();
     }
 
     bool shouldPreload() const
@@ -374,6 +382,7 @@ private:
     ImageCandidate m_srcsetImageCandidate;
     String m_charset;
     bool m_linkIsStyleSheet;
+    bool m_linkIsPreconnect;
     bool m_matchedMediaAttribute;
     bool m_inputIsImage;
     String m_imgSrcUrl;

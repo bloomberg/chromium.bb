@@ -16,9 +16,11 @@ class Document;
 
 class PreloadRequest {
 public:
-    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const FetchRequest::ResourceWidth& resourceWidth = FetchRequest::ResourceWidth(), const ClientHintsPreferences& clientHintsPreferences = ClientHintsPreferences())
+    enum RequestType { RequestTypePreload, RequestTypePreconnect };
+
+    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const FetchRequest::ResourceWidth& resourceWidth = FetchRequest::ResourceWidth(), const ClientHintsPreferences& clientHintsPreferences = ClientHintsPreferences(), RequestType requestType = RequestTypePreload)
     {
-        return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, resourceWidth, clientHintsPreferences));
+        return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, resourceWidth, clientHintsPreferences, requestType));
     }
 
     bool isSafeToSendToAnotherThread() const;
@@ -39,7 +41,10 @@ public:
 
     const String& resourceURL() const { return m_resourceURL; }
     float resourceWidth() const { return m_resourceWidth.isSet ? m_resourceWidth.width : 0; }
-    const String& baseURL() const { return m_baseURL.string(); }
+    const KURL& baseURL() const { return m_baseURL; }
+    bool isPreconnect() const { return m_requestType == RequestTypePreconnect; }
+    bool isCORS() const { return m_isCORSEnabled; }
+    bool isAllowCredentials() const { return m_allowCredentials == AllowStoredCredentials; }
 
 private:
     PreloadRequest(const String& initiatorName,
@@ -48,7 +53,8 @@ private:
         const KURL& baseURL,
         Resource::Type resourceType,
         const FetchRequest::ResourceWidth& resourceWidth,
-        const ClientHintsPreferences& clientHintsPreferences)
+        const ClientHintsPreferences& clientHintsPreferences,
+        RequestType requestType)
         : m_initiatorName(initiatorName)
         , m_initiatorPosition(initiatorPosition)
         , m_resourceURL(resourceURL.isolatedCopy())
@@ -60,6 +66,7 @@ private:
         , m_defer(FetchRequest::NoDefer)
         , m_resourceWidth(resourceWidth)
         , m_clientHintsPreferences(clientHintsPreferences)
+        , m_requestType(requestType)
     {
     }
 
@@ -77,6 +84,7 @@ private:
     FetchRequest::DeferOption m_defer;
     FetchRequest::ResourceWidth m_resourceWidth;
     ClientHintsPreferences m_clientHintsPreferences;
+    RequestType m_requestType;
 };
 
 typedef Vector<OwnPtr<PreloadRequest>> PreloadRequestStream;
