@@ -110,6 +110,18 @@ scoped_ptr<base::Value> UrlBypassTypeCallback(
   return dict.Pass();
 }
 
+// A callback that creates a base::Value containing information about a proxy
+// fallback event for a Data Reduction Proxy.
+scoped_ptr<base::Value> FallbackCallback(
+    const std::string& proxy_url,
+    int net_error,
+    net::NetLogCaptureMode /* capture_mode */) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("proxy", proxy_url);
+  dict->SetInteger("net_error", net_error);
+  return dict.Pass();
+}
+
 // A callback which creates a base::Value containing information about
 // completing the Data Reduction Proxy secure proxy check.
 scoped_ptr<base::Value> EndCanaryRequestCallback(
@@ -209,6 +221,17 @@ void DataReductionProxyEventCreator::AddBypassTypeEvent(
       net::NetLog::PHASE_NONE, expiration_ticks, parameters_callback);
 }
 
+void DataReductionProxyEventCreator::AddProxyFallbackEvent(
+    net::NetLog* net_log,
+    const std::string& proxy_url,
+    int net_error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  const net::NetLog::ParametersCallback& parameters_callback =
+      base::Bind(&FallbackCallback, proxy_url, net_error);
+  PostEvent(net_log, net::NetLog::TYPE_DATA_REDUCTION_PROXY_FALLBACK,
+            parameters_callback);
+}
+
 void DataReductionProxyEventCreator::BeginSecureProxyCheck(
     const net::BoundNetLog& net_log,
     const GURL& url) {
@@ -263,6 +286,19 @@ void DataReductionProxyEventCreator::EndConfigRequest(
   PostBoundNetLogConfigRequestEvent(
       net_log, net::NetLog::TYPE_DATA_REDUCTION_PROXY_CONFIG_REQUEST,
       net::NetLog::PHASE_END, parameters_callback);
+}
+
+void DataReductionProxyEventCreator::PostEvent(
+    net::NetLog* net_log,
+    net::NetLog::EventType type,
+    const net::NetLog::ParametersCallback& callback) {
+  scoped_ptr<base::Value> event = BuildDataReductionProxyEvent(
+      type, net::NetLog::Source(), net::NetLog::PHASE_NONE, callback);
+  if (event)
+    storage_delegate_->AddEvent(event.Pass());
+
+  if (net_log)
+    net_log->AddGlobalEntry(type, callback);
 }
 
 void DataReductionProxyEventCreator::PostEnabledEvent(

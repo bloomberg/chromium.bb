@@ -174,6 +174,7 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
       scoped_ptr<DataReductionProxyConfigurator> configurator,
       scoped_ptr<DataReductionProxyConfigServiceClient> config_client,
       scoped_ptr<DataReductionProxyExperimentsStats> experiments_stats,
+      net::NetLog* net_log,
       bool enabled);
   ~TestDataReductionProxyIOData() override;
 

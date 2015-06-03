@@ -231,8 +231,8 @@ DataReductionProxyIOData::CreateNetworkDelegate(
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate(
       new DataReductionProxyNetworkDelegate(
           wrapped_network_delegate.Pass(), config_.get(),
-          request_options_.get(), configurator_.get(),
-          experiments_stats_.get()));
+          request_options_.get(), configurator_.get(), experiments_stats_.get(),
+          net_log_, event_creator_.get()));
   if (track_proxy_bypass_statistics)
     network_delegate->InitIODataAndUMA(this, bypass_stats_.get());
   return network_delegate.Pass();

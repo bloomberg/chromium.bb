@@ -15,6 +15,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -78,7 +79,9 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
     DataReductionProxyConfig* config,
     DataReductionProxyRequestOptions* request_options,
     const DataReductionProxyConfigurator* configurator,
-    DataReductionProxyExperimentsStats* experiments_stats)
+    DataReductionProxyExperimentsStats* experiments_stats,
+    net::NetLog* net_log,
+    DataReductionProxyEventCreator* event_creator)
     : LayeredNetworkDelegate(network_delegate.Pass()),
       received_content_length_(0),
       original_content_length_(0),
@@ -87,11 +90,15 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
       data_reduction_proxy_request_options_(request_options),
       data_reduction_proxy_io_data_(nullptr),
       configurator_(configurator),
-      experiments_stats_(experiments_stats) {
+      experiments_stats_(experiments_stats),
+      net_log_(net_log),
+      event_creator_(event_creator) {
   DCHECK(data_reduction_proxy_config_);
   DCHECK(data_reduction_proxy_request_options_);
   DCHECK(configurator_);
   DCHECK(experiments_stats_);
+  DCHECK(net_log_);
+  DCHECK(event_creator_);
 }
 
 DataReductionProxyNetworkDelegate::~DataReductionProxyNetworkDelegate() {
@@ -129,6 +136,13 @@ void DataReductionProxyNetworkDelegate::OnResolveProxyInternal(
 void DataReductionProxyNetworkDelegate::OnProxyFallbackInternal(
     const net::ProxyServer& bad_proxy,
     int net_error) {
+  if (bad_proxy.is_valid() &&
+      data_reduction_proxy_config_->IsDataReductionProxy(
+          bad_proxy.host_port_pair(), nullptr)) {
+    event_creator_->AddProxyFallbackEvent(net_log_, bad_proxy.ToURI(),
+                                          net_error);
+  }
+
   if (data_reduction_proxy_bypass_stats_) {
     data_reduction_proxy_bypass_stats_->OnProxyFallback(
         bad_proxy, net_error);

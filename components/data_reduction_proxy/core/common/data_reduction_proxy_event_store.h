@@ -63,18 +63,6 @@ class DataReductionProxyEventStore
 
  private:
   friend class DataReductionProxyEventStoreTest;
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyEventStoreTest,
-                           TestAddProxyEnabledEvent);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyEventStoreTest,
-                           TestAddProxyDisabledEvent);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyEventStoreTest,
-                           TestAddBypassActionEvent);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyEventStoreTest,
-                           TestAddBypassTypeEvent);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyEventStoreTest,
-                           TestBeginSecureProxyCheck);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyEventStoreTest,
-                           TestEndSecureProxyCheck);
 
   // A deque of data reduction proxy related events. It is used as a circular
   // buffer to prevent unbounded memory utilization.

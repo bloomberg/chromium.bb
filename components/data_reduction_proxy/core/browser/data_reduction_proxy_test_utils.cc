@@ -191,6 +191,7 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
     scoped_ptr<DataReductionProxyConfigurator> configurator,
     scoped_ptr<DataReductionProxyConfigServiceClient> config_client,
     scoped_ptr<DataReductionProxyExperimentsStats> experiments_stats,
+    net::NetLog* net_log,
     bool enabled)
     : DataReductionProxyIOData(), service_set_(false) {
   io_task_runner_ = task_runner;
@@ -201,6 +202,7 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
   configurator_ = configurator.Pass();
   config_client_ = config_client.Pass();
   experiments_stats_ = experiments_stats.Pass();
+  net_log_ = net_log;
   bypass_stats_.reset(new DataReductionProxyBypassStats(
       config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
                                 base::Unretained(this))));
@@ -423,7 +425,7 @@ DataReductionProxyTestContext::Builder::Build() {
       new TestDataReductionProxyIOData(
           task_runner, config.Pass(), event_creator.Pass(),
           request_options.Pass(), configurator.Pass(), config_client.Pass(),
-          experiments_stats.Pass(), true /* enabled */));
+          experiments_stats.Pass(), net_log.get(), true /* enabled */));
   io_data->SetSimpleURLRequestContextGetter(request_context_getter);
 
   scoped_ptr<DataReductionProxyTestContext> test_context(

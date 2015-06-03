@@ -18,6 +18,7 @@ class GURL;
 namespace net {
 class HttpResponseHeaders;
 class HttpRequestHeaders;
+class NetLog;
 class NetworkDelegate;
 class ProxyConfig;
 class ProxyInfo;
@@ -31,6 +32,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyBypassStats;
 class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
+class DataReductionProxyEventCreator;
 class DataReductionProxyExperimentsStats;
 class DataReductionProxyIOData;
 class DataReductionProxyRequestOptions;
@@ -45,7 +47,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   typedef base::Callback<const net::ProxyConfig&()> ProxyConfigGetter;
 
   // Constructs a DataReductionProxyNetworkdelegate object with the given
-  // |network_delegate|, |config|, |handler|, and |getter|. Takes ownership of
+  // |network_delegate|, |config|, |handler|, |configurator|,
+  // |experiments_stats|, |net_log|, and |event_creator|. Takes ownership of
   // and wraps the |network_delegate|, calling an internal implementation for
   // each delegate method. For example, the implementation of
   // OnHeadersReceived() calls OnHeadersReceivedInternal().
@@ -54,7 +57,9 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
       DataReductionProxyConfig* config,
       DataReductionProxyRequestOptions* handler,
       const DataReductionProxyConfigurator* configurator,
-      DataReductionProxyExperimentsStats* experiments_stats);
+      DataReductionProxyExperimentsStats* experiments_stats,
+      net::NetLog* net_log,
+      DataReductionProxyEventCreator* event_creator);
   ~DataReductionProxyNetworkDelegate() override;
 
   // Initializes member variables to record data reduction proxy prefs and
@@ -125,6 +130,10 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   const DataReductionProxyConfigurator* configurator_;
 
   DataReductionProxyExperimentsStats* experiments_stats_;
+
+  net::NetLog* net_log_;
+
+  DataReductionProxyEventCreator* event_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyNetworkDelegate);
 };
