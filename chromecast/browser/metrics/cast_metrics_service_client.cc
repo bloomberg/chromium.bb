@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/thread_task_runner_handle.h"
 #include "chromecast/base/chromecast_switches.h"
@@ -47,6 +48,10 @@ scoped_ptr<CastMetricsServiceClient> CastMetricsServiceClient::Create(
   return make_scoped_ptr(new CastMetricsServiceClient(io_task_runner,
                                                       pref_service,
                                                       request_context));
+}
+
+void CastMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(kMetricsOldClientID, std::string());
 }
 
 void CastMetricsServiceClient::SetMetricsClientId(

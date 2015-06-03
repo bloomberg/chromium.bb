@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/metrics/metrics_service_client.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -45,6 +46,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
       base::TaskRunner* io_task_runner,
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   void Initialize(CastService* cast_service);
   void Finalize();
