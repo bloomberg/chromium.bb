@@ -28,7 +28,30 @@ std::string IntVectorToString(const std::vector<int>& items) {
   return str;
 }
 
-}  // Anonymous namespace
+// Predicate that returns true if the first value of a pair is |first|.
+template<typename FirstType, typename SecondType>
+struct FirstIs {
+  FirstIs(FirstType first)
+      : first_(first) {}
+  bool operator()(std::pair<FirstType, SecondType> const& p) {
+    return p.first == first_;
+  }
+  FirstType first_;
+};
+
+// Helper function that finds a key in a vector of pairs by matching on the
+// first value, and returns an iterator.
+template<typename FirstType, typename SecondType>
+typename std::vector<std::pair<FirstType, SecondType>>::const_iterator
+    FindInVectorOfPairs(
+        FirstType first,
+        const std::vector<std::pair<FirstType, SecondType>>& vector) {
+  return std::find_if(vector.begin(),
+                      vector.end(),
+                      FirstIs<FirstType, SecondType>(first));
+}
+
+}  // namespace
 
 AXNodeData::AXNodeData()
     : id(-1),
@@ -37,6 +60,163 @@ AXNodeData::AXNodeData()
 }
 
 AXNodeData::~AXNodeData() {
+}
+
+bool AXNodeData::HasBoolAttribute(AXBoolAttribute attribute) const {
+  auto iter = FindInVectorOfPairs(attribute, bool_attributes);
+  return iter != bool_attributes.end();
+}
+
+bool AXNodeData::GetBoolAttribute(AXBoolAttribute attribute) const {
+  bool result;
+  if (GetBoolAttribute(attribute, &result))
+    return result;
+  return false;
+}
+
+bool AXNodeData::GetBoolAttribute(
+    AXBoolAttribute attribute, bool* value) const {
+  auto iter = FindInVectorOfPairs(attribute, bool_attributes);
+  if (iter != bool_attributes.end()) {
+    *value = iter->second;
+    return true;
+  }
+
+  return false;
+}
+
+bool AXNodeData::HasFloatAttribute(AXFloatAttribute attribute) const {
+  auto iter = FindInVectorOfPairs(attribute, float_attributes);
+  return iter != float_attributes.end();
+}
+
+float AXNodeData::GetFloatAttribute(AXFloatAttribute attribute) const {
+  float result;
+  if (GetFloatAttribute(attribute, &result))
+    return result;
+  return 0.0;
+}
+
+bool AXNodeData::GetFloatAttribute(
+    AXFloatAttribute attribute, float* value) const {
+  auto iter = FindInVectorOfPairs(attribute, float_attributes);
+  if (iter != float_attributes.end()) {
+    *value = iter->second;
+    return true;
+  }
+
+  return false;
+}
+
+bool AXNodeData::HasIntAttribute(AXIntAttribute attribute) const {
+  auto iter = FindInVectorOfPairs(attribute, int_attributes);
+  return iter != int_attributes.end();
+}
+
+int AXNodeData::GetIntAttribute(AXIntAttribute attribute) const {
+  int result;
+  if (GetIntAttribute(attribute, &result))
+    return result;
+  return 0;
+}
+
+bool AXNodeData::GetIntAttribute(
+    AXIntAttribute attribute, int* value) const {
+  auto iter = FindInVectorOfPairs(attribute, int_attributes);
+  if (iter != int_attributes.end()) {
+    *value = iter->second;
+    return true;
+  }
+
+  return false;
+}
+
+bool AXNodeData::HasStringAttribute(AXStringAttribute attribute) const {
+  auto iter = FindInVectorOfPairs(attribute, string_attributes);
+  return iter != string_attributes.end();
+}
+
+const std::string& AXNodeData::GetStringAttribute(
+    AXStringAttribute attribute) const {
+  CR_DEFINE_STATIC_LOCAL(std::string, empty_string, ());
+  auto iter = FindInVectorOfPairs(attribute, string_attributes);
+  return iter != string_attributes.end() ? iter->second : empty_string;
+}
+
+bool AXNodeData::GetStringAttribute(
+    AXStringAttribute attribute, std::string* value) const {
+  auto iter = FindInVectorOfPairs(attribute, string_attributes);
+  if (iter != string_attributes.end()) {
+    *value = iter->second;
+    return true;
+  }
+
+  return false;
+}
+
+base::string16 AXNodeData::GetString16Attribute(
+    AXStringAttribute attribute) const {
+  std::string value_utf8;
+  if (!GetStringAttribute(attribute, &value_utf8))
+    return base::string16();
+  return base::UTF8ToUTF16(value_utf8);
+}
+
+bool AXNodeData::GetString16Attribute(
+    AXStringAttribute attribute,
+    base::string16* value) const {
+  std::string value_utf8;
+  if (!GetStringAttribute(attribute, &value_utf8))
+    return false;
+  *value = base::UTF8ToUTF16(value_utf8);
+  return true;
+}
+
+bool AXNodeData::HasIntListAttribute(AXIntListAttribute attribute) const {
+  auto iter = FindInVectorOfPairs(attribute, intlist_attributes);
+  return iter != intlist_attributes.end();
+}
+
+const std::vector<int32>& AXNodeData::GetIntListAttribute(
+    AXIntListAttribute attribute) const {
+  CR_DEFINE_STATIC_LOCAL(std::vector<int32>, empty_vector, ());
+  auto iter = FindInVectorOfPairs(attribute, intlist_attributes);
+  if (iter != intlist_attributes.end())
+    return iter->second;
+  return empty_vector;
+}
+
+bool AXNodeData::GetIntListAttribute(
+    AXIntListAttribute attribute, std::vector<int32>* value) const {
+  auto iter = FindInVectorOfPairs(attribute, intlist_attributes);
+  if (iter != intlist_attributes.end()) {
+    *value = iter->second;
+    return true;
+  }
+
+  return false;
+}
+
+bool AXNodeData::GetHtmlAttribute(
+    const char* html_attr, std::string* value) const {
+  for (size_t i = 0; i < html_attributes.size(); ++i) {
+    const std::string& attr = html_attributes[i].first;
+    if (LowerCaseEqualsASCII(attr, html_attr)) {
+      *value = html_attributes[i].second;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool AXNodeData::GetHtmlAttribute(
+    const char* html_attr, base::string16* value) const {
+  std::string value_utf8;
+  if (!GetHtmlAttribute(html_attr, &value_utf8))
+    return false;
+  *value = base::UTF8ToUTF16(value_utf8);
+  return true;
 }
 
 void AXNodeData::AddStringAttribute(
@@ -78,47 +258,47 @@ std::string AXNodeData::ToString() const {
   result += "id=" + IntToString(id);
   result += " " + ui::ToString(role);
 
-  if (state & (1 << ui::AX_STATE_BUSY))
+  if (state & (1 << AX_STATE_BUSY))
     result += " BUSY";
-  if (state & (1 << ui::AX_STATE_CHECKED))
+  if (state & (1 << AX_STATE_CHECKED))
     result += " CHECKED";
-  if (state & (1 << ui::AX_STATE_COLLAPSED))
+  if (state & (1 << AX_STATE_COLLAPSED))
     result += " COLLAPSED";
-  if (state & (1 << ui::AX_STATE_EXPANDED))
+  if (state & (1 << AX_STATE_EXPANDED))
     result += " EXPANDED";
-  if (state & (1 << ui::AX_STATE_FOCUSABLE))
+  if (state & (1 << AX_STATE_FOCUSABLE))
     result += " FOCUSABLE";
-  if (state & (1 << ui::AX_STATE_FOCUSED))
+  if (state & (1 << AX_STATE_FOCUSED))
     result += " FOCUSED";
-  if (state & (1 << ui::AX_STATE_HASPOPUP))
+  if (state & (1 << AX_STATE_HASPOPUP))
     result += " HASPOPUP";
-  if (state & (1 << ui::AX_STATE_HOVERED))
+  if (state & (1 << AX_STATE_HOVERED))
     result += " HOVERED";
-  if (state & (1 << ui::AX_STATE_INDETERMINATE))
+  if (state & (1 << AX_STATE_INDETERMINATE))
     result += " INDETERMINATE";
-  if (state & (1 << ui::AX_STATE_INVISIBLE))
+  if (state & (1 << AX_STATE_INVISIBLE))
     result += " INVISIBLE";
-  if (state & (1 << ui::AX_STATE_LINKED))
+  if (state & (1 << AX_STATE_LINKED))
     result += " LINKED";
-  if (state & (1 << ui::AX_STATE_MULTISELECTABLE))
+  if (state & (1 << AX_STATE_MULTISELECTABLE))
     result += " MULTISELECTABLE";
-  if (state & (1 << ui::AX_STATE_OFFSCREEN))
+  if (state & (1 << AX_STATE_OFFSCREEN))
     result += " OFFSCREEN";
-  if (state & (1 << ui::AX_STATE_PRESSED))
+  if (state & (1 << AX_STATE_PRESSED))
     result += " PRESSED";
-  if (state & (1 << ui::AX_STATE_PROTECTED))
+  if (state & (1 << AX_STATE_PROTECTED))
     result += " PROTECTED";
-  if (state & (1 << ui::AX_STATE_READ_ONLY))
+  if (state & (1 << AX_STATE_READ_ONLY))
     result += " READONLY";
-  if (state & (1 << ui::AX_STATE_REQUIRED))
+  if (state & (1 << AX_STATE_REQUIRED))
     result += " REQUIRED";
-  if (state & (1 << ui::AX_STATE_SELECTABLE))
+  if (state & (1 << AX_STATE_SELECTABLE))
     result += " SELECTABLE";
-  if (state & (1 << ui::AX_STATE_SELECTED))
+  if (state & (1 << AX_STATE_SELECTED))
     result += " SELECTED";
-  if (state & (1 << ui::AX_STATE_VERTICAL))
+  if (state & (1 << AX_STATE_VERTICAL))
     result += " VERTICAL";
-  if (state & (1 << ui::AX_STATE_VISITED))
+  if (state & (1 << AX_STATE_VISITED))
     result += " VISITED";
 
   result += " (" + IntToString(location.x()) + ", " +

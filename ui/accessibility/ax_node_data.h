@@ -24,6 +24,54 @@ struct AX_EXPORT AXNodeData {
   AXNodeData();
   virtual ~AXNodeData();
 
+  // Accessing accessibility attributes:
+  //
+  // There are dozens of possible attributes for an accessibility node,
+  // but only a few tend to apply to any one object, so we store them
+  // in sparse arrays of <attribute id, attribute value> pairs, organized
+  // by type (bool, int, float, string, int list).
+  //
+  // There are three accessors for each type of attribute: one that returns
+  // true if the attribute is present and false if not, one that takes a
+  // pointer argument and returns true if the attribute is present (if you
+  // need to distinguish between the default value and a missing attribute),
+  // and another that returns the default value for that type if the
+  // attribute is not present. In addition, strings can be returned as
+  // either std::string or base::string16, for convenience.
+
+  bool HasBoolAttribute(AXBoolAttribute attr) const;
+  bool GetBoolAttribute(AXBoolAttribute attr) const;
+  bool GetBoolAttribute(AXBoolAttribute attr, bool* value) const;
+
+  bool HasFloatAttribute(AXFloatAttribute attr) const;
+  float GetFloatAttribute(AXFloatAttribute attr) const;
+  bool GetFloatAttribute(AXFloatAttribute attr, float* value) const;
+
+  bool HasIntAttribute(AXIntAttribute attribute) const;
+  int GetIntAttribute(AXIntAttribute attribute) const;
+  bool GetIntAttribute(AXIntAttribute attribute, int* value) const;
+
+  bool HasStringAttribute(
+      AXStringAttribute attribute) const;
+  const std::string& GetStringAttribute(AXStringAttribute attribute) const;
+  bool GetStringAttribute(AXStringAttribute attribute,
+                          std::string* value) const;
+
+  bool GetString16Attribute(AXStringAttribute attribute,
+                            base::string16* value) const;
+  base::string16 GetString16Attribute(
+      AXStringAttribute attribute) const;
+
+  bool HasIntListAttribute(AXIntListAttribute attribute) const;
+  const std::vector<int32>& GetIntListAttribute(
+      AXIntListAttribute attribute) const;
+  bool GetIntListAttribute(AXIntListAttribute attribute,
+                           std::vector<int32>* value) const;
+
+  bool GetHtmlAttribute(const char* attr, base::string16* value) const;
+  bool GetHtmlAttribute(const char* attr, std::string* value) const;
+
+  // Setting accessibility attributes.
   void AddStringAttribute(AXStringAttribute attribute,
                           const std::string& value);
   void AddIntAttribute(AXIntAttribute attribute, int value);

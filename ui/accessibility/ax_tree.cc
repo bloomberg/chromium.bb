@@ -166,7 +166,8 @@ bool AXTree::UpdateNode(const AXNodeData& src,
     update_state->pending_nodes.erase(node);
     node->SetData(src);
   } else {
-    if (src.role != AX_ROLE_ROOT_WEB_AREA) {
+    if (src.role != AX_ROLE_ROOT_WEB_AREA &&
+        src.role != AX_ROLE_DESKTOP) {
       error_ = base::StringPrintf(
           "%d is not in the tree and not the new root", src.id);
       return false;
@@ -201,7 +202,7 @@ bool AXTree::UpdateNode(const AXNodeData& src,
   node->SwapChildren(new_children);
 
   // Update the root of the tree if needed.
-  if (src.role == AX_ROLE_ROOT_WEB_AREA &&
+  if ((src.role == AX_ROLE_ROOT_WEB_AREA || src.role == AX_ROLE_DESKTOP) &&
       (!root_ || root_->id() != src.id)) {
     if (root_)
       DestroySubtree(root_, update_state);
