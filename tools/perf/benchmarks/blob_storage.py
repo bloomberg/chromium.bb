@@ -7,6 +7,7 @@
 
 from core import perf_benchmark
 
+from telemetry import benchmark
 from telemetry.core.platform import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
@@ -17,6 +18,7 @@ BLOB_CATEGORY = 'Blob'
 TIMELINE_REQUIRED_CATEGORY = 'blink.console'
 
 
+@benchmark.Disabled('reference')  # http://crbug.com/496155
 class BlobStorage(perf_benchmark.PerfBenchmark):
   """Timeline based measurement benchmark for Blob Storage."""
 
