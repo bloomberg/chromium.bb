@@ -422,8 +422,8 @@ def buildWebApp(buildtype, version, destination, zip_path,
         'XMPP_SERVER': xmppServer,
     }
     if 'GOOGLE_DRIVE' in app_capabilities:
-      context['OAUTH_GDRIVE_SCOPE'] = ('https://docs.google.com/feeds/ '
-                                       'https://www.googleapis.com/auth/drive')
+      context['OAUTH_GDRIVE_SCOPE'] = ('"https://docs.google.com/feeds/", '
+                                       '"https://www.googleapis.com/auth/drive",')
     processJinjaTemplate(manifest_template,
                          jinja_paths,
                          os.path.join(destination, 'manifest.json'),
