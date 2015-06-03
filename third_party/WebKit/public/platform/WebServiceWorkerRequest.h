@@ -8,7 +8,6 @@
 #include "WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
 #include "public/platform/WebReferrerPolicy.h"
-#include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
@@ -76,9 +75,6 @@ public:
 
     void setIsReload(bool);
     bool isReload() const;
-
-    void setClient(const WebServiceWorkerClientInfo&);
-    WebServiceWorkerClientInfo& client() const;
 
 #if INSIDE_BLINK
     const HTTPHeaderMap& headers() const;

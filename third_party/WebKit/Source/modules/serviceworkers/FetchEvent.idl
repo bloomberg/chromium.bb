@@ -10,7 +10,6 @@
     TypeChecking=Interface,
 ] interface FetchEvent : ExtendableEvent {
     readonly attribute Request request;
-    readonly attribute Client client;
     readonly attribute boolean isReload;
 
     [CallWith=ScriptState, RaisesException] void respondWith(any value);

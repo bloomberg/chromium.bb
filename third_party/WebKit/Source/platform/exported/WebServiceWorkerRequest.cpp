@@ -32,7 +32,6 @@ public:
     WebURLRequest::RequestContext m_requestContext;
     WebURLRequest::FrameType m_frameType;
     bool m_isReload;
-    WebServiceWorkerClientInfo m_client;
 };
 
 WebServiceWorkerRequest::WebServiceWorkerRequest()
@@ -175,16 +174,6 @@ void WebServiceWorkerRequest::setIsReload(bool isReload)
 bool WebServiceWorkerRequest::isReload() const
 {
     return m_private->m_isReload;
-}
-
-void WebServiceWorkerRequest::setClient(const WebServiceWorkerClientInfo& client)
-{
-    m_private->m_client = client;
-}
-
-WebServiceWorkerClientInfo& WebServiceWorkerRequest::client() const
-{
-    return m_private->m_client;
 }
 
 } // namespace blink

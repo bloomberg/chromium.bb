@@ -6,6 +6,5 @@
 
 dictionary FetchEventInit : ExtendableEventInit {
   Request request;
-  Client client;
   boolean isReload = false;    
 };
