@@ -8,12 +8,10 @@ function go() {
 
   // Ideally we would use the dump-as-markup test framework for this test, but
   // the contortions we go through here are too tricky for dump-as-markup.
-
-  var firstChildHTML = document.firstChild.outerHTML;
-  var secondChildHTML = document.firstChild.nextSibling.outerHTML;
-
-  alert("document.firstChild.outerHTML: " + firstChildHTML + "\n" +
-        "document.firstChild.nextSibling.outerHTML: " + secondChildHTML);
+  // TODO(esprehn): Is this really true?
+  alert("document.documentElement.outerHTML: " + document.documentElement.outerHTML + "\n" +
+        "document.childNodes.length: " + document.childNodes.length + "\n" +
+        "b element: " + b + "\n");
 }
 
 window.addEventListener("load", go, false);

@@ -85,8 +85,11 @@ void ContainerNode::removeDetachedChildren()
 
 void ContainerNode::parserTakeAllChildrenFrom(ContainerNode& oldParent)
 {
-    while (RefPtrWillBeRawPtr<Node> child = oldParent.firstChild())
+    while (RefPtrWillBeRawPtr<Node> child = oldParent.firstChild()) {
+        // Explicitly remove since appending can fail, but this loop shouldn't be infinite.
+        oldParent.parserRemoveChild(*child);
         parserAppendChild(child.get());
+    }
 }
 
 ContainerNode::~ContainerNode()
@@ -289,6 +292,15 @@ void ContainerNode::appendChildCommon(Node& child)
     setLastChild(&child);
 }
 
+bool ContainerNode::checkParserAcceptChild(const Node& newChild) const
+{
+    if (!isDocumentNode())
+        return true;
+    // TODO(esprehn): Are there other conditions where the parser can create
+    // invalid trees?
+    return toDocument(*this).canAcceptChild(newChild, nullptr, IGNORE_EXCEPTION);
+}
+
 void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node& nextChild)
 {
     ASSERT(newChild);
@@ -297,6 +309,9 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
     ASSERT(!isHTMLTemplateElement(this));
 
     if (nextChild.previousSibling() == newChild || &nextChild == newChild) // nothing to do
+        return;
+
+    if (!checkParserAcceptChild(*newChild))
         return;
 
     RefPtrWillBeRawPtr<Node> protect(this);
@@ -762,6 +777,9 @@ void ContainerNode::parserAppendChild(PassRefPtrWillBeRawPtr<Node> newChild)
     ASSERT(newChild);
     ASSERT(!newChild->isDocumentFragment());
     ASSERT(!isHTMLTemplateElement(this));
+
+    if (!checkParserAcceptChild(*newChild))
+        return;
 
     RefPtrWillBeRawPtr<Node> protect(this);
 

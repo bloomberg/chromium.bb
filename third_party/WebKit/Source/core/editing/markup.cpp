@@ -287,9 +287,9 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document& docu
 
 static const char fragmentMarkerTag[] = "webkit-fragment-marker";
 
-static bool findNodesSurroundingContext(Document* document, RefPtrWillBeRawPtr<Comment>& nodeBeforeContext, RefPtrWillBeRawPtr<Comment>& nodeAfterContext)
+static bool findNodesSurroundingContext(DocumentFragment* fragment, RefPtrWillBeRawPtr<Comment>& nodeBeforeContext, RefPtrWillBeRawPtr<Comment>& nodeAfterContext)
 {
-    for (Node& node : NodeTraversal::startsAt(document->firstChild())) {
+    for (Node& node : NodeTraversal::startsAt(fragment->firstChild())) {
         if (node.nodeType() == Node::COMMENT_NODE && toComment(node).data() == fragmentMarkerTag) {
             if (!nodeBeforeContext)
                 nodeBeforeContext = &toComment(node);
@@ -337,17 +337,18 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Doc
     taggedMarkup.append(markup.substring(fragmentEnd));
 
     RefPtrWillBeRawPtr<DocumentFragment> taggedFragment = createFragmentFromMarkup(document, taggedMarkup.toString(), baseURL, parserContentPolicy);
-    RefPtrWillBeRawPtr<Document> taggedDocument = Document::create();
-    taggedDocument->setContextFeatures(document.contextFeatures());
-
-    // FIXME: It's not clear what this code is trying to do. It puts nodes as direct children of a
-    // Document that are not normally allowed by using the parser machinery.
-    taggedDocument->parserTakeAllChildrenFrom(*taggedFragment);
 
     RefPtrWillBeRawPtr<Comment> nodeBeforeContext = nullptr;
     RefPtrWillBeRawPtr<Comment> nodeAfterContext = nullptr;
-    if (!findNodesSurroundingContext(taggedDocument.get(), nodeBeforeContext, nodeAfterContext))
+    if (!findNodesSurroundingContext(taggedFragment.get(), nodeBeforeContext, nodeAfterContext))
         return nullptr;
+
+    RefPtrWillBeRawPtr<Document> taggedDocument = Document::create();
+    taggedDocument->setContextFeatures(document.contextFeatures());
+
+    RefPtrWillBeRawPtr<Element> root = Element::create(QualifiedName::null(), taggedDocument.get());
+    root->appendChild(taggedFragment.get());
+    taggedDocument->appendChild(root);
 
     RefPtrWillBeRawPtr<Range> range = Range::create(*taggedDocument.get(),
         positionAfterNode(nodeBeforeContext.get()).parentAnchoredEquivalent(),
