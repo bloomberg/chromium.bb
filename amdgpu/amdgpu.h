@@ -478,6 +478,8 @@ struct amdgpu_gpu_info {
 	uint64_t ids_flags;
 	/** max engine clock*/
 	uint64_t max_engine_clk;
+	/** max memory clock */
+	uint64_t max_memory_clk;
 	/** number of shader engines */
 	uint32_t num_shader_engines;
 	/** number of shader arrays per engine */

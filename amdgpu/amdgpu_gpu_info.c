@@ -149,6 +149,7 @@ int amdgpu_query_gpu_info_init(amdgpu_device_handle dev)
 	dev->info.chip_external_rev = dev->dev_info.external_rev;
 	dev->info.family_id = dev->dev_info.family;
 	dev->info.max_engine_clk = dev->dev_info.max_engine_clock;
+	dev->info.max_memory_clk = dev->dev_info.max_memory_clock;
 	dev->info.gpu_counter_freq = dev->dev_info.gpu_counter_freq;
 	dev->info.enabled_rb_pipes_mask = dev->dev_info.enabled_rb_pipes_mask;
 	dev->info.rb_pipes = dev->dev_info.num_rb_pipes;
