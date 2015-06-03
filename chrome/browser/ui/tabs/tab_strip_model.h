@@ -25,36 +25,28 @@ class WebContents;
 //
 // TabStripModel
 //
-//  A model & low level controller of a Browser Window tabstrip. Holds a vector
-//  of WebContentses, and provides an API for adding, removing and
-//  shuffling them, as well as a higher level API for doing specific Browser-
-//  related tasks like adding new Tabs from just a URL, etc.
+// A model & low level controller of a Browser Window tabstrip. Holds a vector
+// of WebContentses, and provides an API for adding, removing and
+// shuffling them, as well as a higher level API for doing specific Browser-
+// related tasks like adding new Tabs from just a URL, etc.
 //
-// Each tab may be any one of the following states:
-// . Mini-tab. Mini tabs are locked to the left side of the tab strip and
-//   rendered differently (small tabs with only a favicon). The model makes
-//   sure all mini-tabs are at the beginning of the tab strip. For example,
-//   if a non-mini tab is added it is forced to be with non-mini tabs. Requests
-//   to move tabs outside the range of the tab type are ignored. For example,
-//   a request to move a mini-tab after non-mini-tabs is ignored.
-//   You'll notice there is no explicit api for making a tab a mini-tab, rather
-//   there are two tab types that are implicitly mini-tabs:
-//   . App. Corresponds to an extension that wants an app tab. App tabs are
-//     identified by extensions::TabHelper::is_app().
-//     App tabs are always pinned (you can't unpin them).
-//   . Pinned. Any tab can be pinned. Non-app tabs whose pinned state is changed
-//     are moved to be with other mini-tabs or non-mini tabs.
+// Each tab may be pinned. Pinned tabs are locked to the left side of the tab
+// strip and rendered differently (small tabs with only a favicon). The model
+// makes sure all pinned tabs are at the beginning of the tab strip. For
+// example, if a non-pinned tab is added it is forced to be with non-pinned
+// tabs. Requests to move tabs outside the range of the tab type are ignored.
+// For example, a request to move a pinned tab after non-pinned tabs is ignored.
 //
-//  A TabStripModel has one delegate that it relies on to perform certain tasks
-//  like creating new TabStripModels (probably hosted in Browser windows) when
-//  required. See TabStripDelegate above for more information.
+// A TabStripModel has one delegate that it relies on to perform certain tasks
+// like creating new TabStripModels (probably hosted in Browser windows) when
+// required. See TabStripDelegate above for more information.
 //
-//  A TabStripModel also has N observers (see TabStripModelObserver above),
-//  which can be registered via Add/RemoveObserver. An Observer is notified of
-//  tab creations, removals, moves, and other interesting events. The
-//  TabStrip implements this interface to know when to create new tabs in
-//  the View, and the Browser object likewise implements to be able to update
-//  its bookkeeping when such events happen.
+// A TabStripModel also has N observers (see TabStripModelObserver above),
+// which can be registered via Add/RemoveObserver. An Observer is notified of
+// tab creations, removals, moves, and other interesting events. The
+// TabStrip implements this interface to know when to create new tabs in
+// the View, and the Browser object likewise implements to be able to update
+// its bookkeeping when such events happen.
 //
 ////////////////////////////////////////////////////////////////////////////////
 class TabStripModel {
@@ -171,7 +163,7 @@ class TabStripModel {
   // NOTE: adding a tab using this method does NOT query the order controller,
   // as such the ADD_FORCE_INDEX AddTabTypes is meaningless here.  The only time
   // the |index| is changed is if using the index would result in breaking the
-  // constraint that all mini-tabs occur before non-mini-tabs.
+  // constraint that all pinned tabs occur before non-pinned tabs.
   // See also AddWebContents.
   void InsertWebContentsAt(int index,
                            content::WebContents* contents,
@@ -220,26 +212,24 @@ class TabStripModel {
   // If |select_after_move| is false, whatever tab was selected before the move
   // will still be selected, but its index may have incremented or decremented
   // one slot.
-  // NOTE: This respects basic ordering constraints and thus does nothing if the
-  // move would result in app tabs and non-app tabs mixing.
   void MoveWebContentsAt(int index, int to_position, bool select_after_move);
 
   // Moves the selected tabs to |index|. |index| is treated as if the tab strip
   // did not contain any of the selected tabs. For example, if the tabstrip
   // contains [A b c D E f] (upper case selected) and this is invoked with 1 the
   // result is [b A D E c f].
-  // This method maintains that all mini-tabs occur before non-mini-tabs.  When
-  // mini-tabs are selected the move is processed in two chunks: first mini-tabs
-  // are moved, then non-mini-tabs are moved. If the index is after
-  // (mini-tab-count - selected-mini-tab-count), then the index the non-mini
-  // selected tabs are moved to is (index + selected-mini-tab-count). For
-  // example, if the model consists of [A b c D E f] (A b c are mini) and this
-  // is invoked with 2, the result is [b c A D E f]. In this example nothing
-  // special happened because the target index was <= (mini-tab-count -
-  // selected-mini-tab-count). If the target index were 3, then the result would
-  // be [b c A f D F]. A, being mini, can move no further than index 2. The
-  // non-mini-tabs are moved to the target index + selected-mini-tab-count (3 +
-  // 1)
+  // This method maintains that all pinned tabs occur before non-pinned tabs.
+  // When pinned tabs are selected the move is processed in two chunks: first
+  // pinned tabs are moved, then non-pinned tabs are moved. If the index is
+  // after (pinned-tab-count - selected-pinned-tab-count), then the index the
+  // non-pinned selected tabs are moved to is (index +
+  // selected-pinned-tab-count). For example, if the model consists of
+  // [A b c D E f] (A b c are pinned) and this is invoked with 2, the result is
+  // [b c A D E f]. In this example nothing special happened because the target
+  // index was <= (pinned-tab-count - selected-pinned-tab-count). If the target
+  // index were 3, then the result would be [b c A f D F]. A, being pinned, can
+  // move no further than index 2. The non-pinned tabs are moved to the target
+  // index + selected-pinned tab-count (3 + 1).
   void MoveSelectedTabsTo(int index);
 
   // Returns the currently active WebContents, or NULL if there is none.
@@ -325,14 +315,6 @@ class TabStripModel {
   // See description above class for details on pinned tabs.
   bool IsTabPinned(int index) const;
 
-  // Is the tab a mini-tab?
-  // See description above class for details on this.
-  bool IsMiniTab(int index) const;
-
-  // Is the tab at |index| an app?
-  // See description above class for details on app tabs.
-  bool IsAppTab(int index) const;
-
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
   bool IsTabBlocked(int index) const;
 
@@ -340,17 +322,17 @@ class TabStripModel {
   // save memory.  See DiscardWebContentsAt() for details.
   bool IsTabDiscarded(int index) const;
 
-  // Returns the index of the first tab that is not a mini-tab. This returns
-  // |count()| if all of the tabs are mini-tabs, and 0 if none of the tabs are
-  // mini-tabs.
-  int IndexOfFirstNonMiniTab() const;
+  // Returns the index of the first tab that is not a pinned tab. This returns
+  // |count()| if all of the tabs are pinned tabs, and 0 if none of the tabs are
+  // pinned tabs.
+  int IndexOfFirstNonPinnedTab() const;
 
   // Returns a valid index for inserting a new tab into this model. |index| is
-  // the proposed index and |mini_tab| is true if inserting a tab will become
-  // mini (pinned or app). If |mini_tab| is true, the returned index is between
-  // 0 and IndexOfFirstNonMiniTab. If |mini_tab| is false, the returned index
-  // is between IndexOfFirstNonMiniTab and count().
-  int ConstrainInsertionIndex(int index, bool mini_tab);
+  // the proposed index and |pinned_tab| is true if inserting a tab will become
+  // pinned (pinned). If |pinned_tab| is true, the returned index is between 0
+  // and IndexOfFirstNonPinnedTab. If |pinned_tab| is false, the returned index
+  // is between IndexOfFirstNonPinnedTab and count().
+  int ConstrainInsertionIndex(int index, bool pinned_tab);
 
   // Extends the selection from the anchor to |index|.
   void ExtendSelectionTo(int index);

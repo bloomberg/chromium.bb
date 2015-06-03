@@ -94,8 +94,6 @@ class BrowserTabStripController : public TabStripController,
                      int model_index) override;
   void TabPinnedStateChanged(content::WebContents* contents,
                              int model_index) override;
-  void TabMiniStateChanged(content::WebContents* contents,
-                           int model_index) override;
   void TabBlockedStateChanged(content::WebContents* contents,
                               int model_index) override;
 

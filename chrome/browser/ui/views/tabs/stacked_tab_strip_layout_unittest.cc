@@ -21,7 +21,7 @@ struct CommonTestData {
   const int tab_size;
   const int tab_padding;
   const int stacked_offset;
-  const int mini_tab_count;
+  const int pinned_tab_count;
   const int active_index;
   const std::string start_bounds;
   const std::string expected_bounds;
@@ -37,9 +37,9 @@ class StackedTabStripLayoutTest : public testing::Test {
   void Reset(StackedTabStripLayout* layout,
              int x,
              int width,
-             int mini_tab_count,
+             int pinned_tab_count,
              int active_index) {
-    layout->Reset(x, width, mini_tab_count, active_index);
+    layout->Reset(x, width, pinned_tab_count, active_index);
   }
 
   void CreateLayout(const CommonTestData& data) {
@@ -52,11 +52,11 @@ class StackedTabStripLayoutTest : public testing::Test {
                      data.stacked_offset, 4, &view_model_));
     if (data.start_bounds.empty()) {
       PrepareChildViewsFromString(data.expected_bounds);
-      layout_->Reset(data.initial_x, data.width, data.mini_tab_count,
+      layout_->Reset(data.initial_x, data.width, data.pinned_tab_count,
                      data.active_index);
     } else {
       ASSERT_NO_FATAL_FAILURE(SetBoundsFromString(data.start_bounds));
-      layout_->Reset(data.initial_x, data.width, data.mini_tab_count,
+      layout_->Reset(data.initial_x, data.width, data.pinned_tab_count,
                      data.active_index);
       ASSERT_NO_FATAL_FAILURE(SetBoundsFromString(data.start_bounds));
     }
@@ -185,7 +185,8 @@ TEST_F(StackedTabStripLayoutTest, DragActiveTabExisting) {
     // The following set of tests create 6 tabs, the first two are pinned and
     // the 2nd tab is selected.
     //
-    // 1 pixel to the right, should push only mini-tabs and first non-mini-tab.
+    // 1 pixel to the right, should push only pinned tabs and first non-pinned
+    // tab.
     { { 10, 240, 100, -10, 2, 2, 1, "0 5 10 100 138 140",
         "1 6 11 101 138 140" }, 1 },
     // Push enough to collapse the 4th tab.
@@ -293,7 +294,7 @@ TEST_F(StackedTabStripLayoutTest, AddTab) {
     CommonTestData common_data;
     int add_index;
     bool add_active;
-    bool add_mini;
+    bool add_pinned;
   } test_data[] = {
     // Adding a background tab test cases.
     { { 0, 300, 100, -10, 2, 0, 1, "0 90 180 198 200", "0 16 106 196 198 200"},
@@ -335,12 +336,12 @@ TEST_F(StackedTabStripLayoutTest, AddTab) {
     int add_types = 0;
     if (test_data[i].add_active)
       add_types |= StackedTabStripLayout::kAddTypeActive;
-    if (test_data[i].add_mini)
-      add_types |= StackedTabStripLayout::kAddTypeMini;
+    if (test_data[i].add_pinned)
+      add_types |= StackedTabStripLayout::kAddTypePinned;
     AddViewToViewModel(test_data[i].add_index);
     layout_->AddTab(test_data[i].add_index, add_types,
                     test_data[i].common_data.initial_x +
-                    (test_data[i].add_mini ? 4 : 0));
+                    (test_data[i].add_pinned ? 4 : 0));
     EXPECT_EQ(test_data[i].common_data.expected_bounds, BoundsString()) <<
         " at " << i;
   }
@@ -348,7 +349,7 @@ TEST_F(StackedTabStripLayoutTest, AddTab) {
 
 // Assertions around removing tabs.
 TEST_F(StackedTabStripLayoutTest, RemoveTab) {
-  // TODO: add coverage of removing mini tabs!
+  // TODO: add coverage of removing pinned tabs!
   struct TestData {
     struct CommonTestData common_data;
     const int remove_index;
@@ -367,7 +368,7 @@ TEST_F(StackedTabStripLayoutTest, RemoveTab) {
         "0 2 4 6 10 80 98 100" },
       4, 0 },
 
-    // Mini-tabs.
+    // Pinned tabs.
     { { 8, 200, 100, -10, 2, 1, 0, "0 8 94 96 98 100", "0 86 88 90 100" },
       0, 0 },
     { { 16, 200, 100, -10, 2, 2, 0, "0 8 16 94 96 98 100", "8 8 86 88 90 100" },
@@ -464,14 +465,14 @@ TEST_F(StackedTabStripLayoutTest, EmptyTest) {
 
 // Assertions around removing tabs.
 TEST_F(StackedTabStripLayoutTest, MoveTab) {
-  // TODO: add coverage of removing mini tabs!
+  // TODO: add coverage of removing pinned tabs!
   struct TestData {
     struct CommonTestData common_data;
     const int from;
     const int to;
     const int new_active_index;
     const int new_start_x;
-    const int new_mini_tab_count;
+    const int new_pinned_tab_count;
   } test_data[] = {
     // Moves and unpins.
     { { 10, 300, 100, -10, 2, 2, 0, "", "0 5 10 100 190 198 200" },
@@ -491,14 +492,14 @@ TEST_F(StackedTabStripLayoutTest, MoveTab) {
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     CreateLayout(test_data[i].common_data);
     view_model_.MoveViewOnly(test_data[i].from, test_data[i].to);
-    for (int j = 0; j < test_data[i].new_mini_tab_count; ++j) {
+    for (int j = 0; j < test_data[i].new_pinned_tab_count; ++j) {
       gfx::Rect bounds;
       bounds.set_x(j * 5);
       view_model_.set_ideal_bounds(j, bounds);
     }
     layout_->MoveTab(test_data[i].from, test_data[i].to,
                      test_data[i].new_active_index, test_data[i].new_start_x,
-                     test_data[i].new_mini_tab_count);
+                     test_data[i].new_pinned_tab_count);
     EXPECT_EQ(test_data[i].common_data.expected_bounds, BoundsString()) <<
         " at " << i;
   }
@@ -525,17 +526,17 @@ TEST_F(StackedTabStripLayoutTest, IsStacked) {
   EXPECT_TRUE(layout_->IsStacked(0));
 }
 
-// Assertions around SetXAndMiniCount.
-TEST_F(StackedTabStripLayoutTest, SetXAndMiniCount) {
-  // Verifies we don't crash when transitioning to all mini-tabs.
+// Assertions around SetXAndPinnedCount.
+TEST_F(StackedTabStripLayoutTest, SetXAndPinnedCount) {
+  // Verifies we don't crash when transitioning to all pinned tabs.
   PrepareChildViews(1);
   layout_.reset(new StackedTabStripLayout(
                     gfx::Size(100, 10), -10, 2, 4, &view_model_));
   Reset(layout_.get(), 0, 400, 0, 0);
-  layout_->SetXAndMiniCount(0, 1);
+  layout_->SetXAndPinnedCount(0, 1);
 }
 
-// Assertions around SetXAndMiniCount.
+// Assertions around SetXAndPinnedCount.
 TEST_F(StackedTabStripLayoutTest, SetActiveTabLocation) {
   struct TestData {
     struct CommonTestData common_data;

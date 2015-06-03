@@ -78,14 +78,14 @@ static const int kFaviconTitleSpacing = 4;
 static const int kViewSpacing = 3;
 static const int kStandardTitleWidth = 175;
 
-// Width of mini-tabs.
-const int kMiniTabWidth = 64;
+// Width of pinned-tabs.
+const int kPinnedTabWidth = 64;
 
-// When a non-mini-tab becomes a mini-tab the width of the tab animates. If
-// the width of a mini-tab is >= kMiniTabRendererAsNormalTabWidth then the tab
-// is rendered as a normal tab. This is done to avoid having the title
-// immediately disappear when transitioning a tab from normal to mini-tab.
-static const int kMiniTabRendererAsNormalTabWidth = kMiniTabWidth + 30;
+// When a non-pinned tab becomes a pinned tab the width of the tab animates. If
+// the width of a pinned tab is >= kPinnedTabRendererAsNormalTabWidth then the
+// tab is rendered as a normal tab. This is done to avoid having the title
+// immediately disappear when transitioning a tab from normal to pinned tab.
+static const int kPinnedTabRendererAsNormalTabWidth = kPinnedTabWidth + 30;
 
 // How opaque to make the hover state (out of 1).
 static const double kHoverOpacity = 0.33;
@@ -96,25 +96,26 @@ static const double kSelectedTabOpacity = .45;
 // Selected (but not active) tabs have their throb value scaled down by this.
 static const double kSelectedTabThrobScale = .5;
 
-// Durations for the various parts of the mini tab title animation.
-static const int kMiniTitleChangeAnimationDuration1MS = 1600;
-static const int kMiniTitleChangeAnimationStart1MS = 0;
-static const int kMiniTitleChangeAnimationEnd1MS = 1900;
-static const int kMiniTitleChangeAnimationDuration2MS = 0;
-static const int kMiniTitleChangeAnimationDuration3MS = 550;
-static const int kMiniTitleChangeAnimationStart3MS = 150;
-static const int kMiniTitleChangeAnimationEnd3MS = 800;
-static const int kMiniTitleChangeAnimationIntervalMS = 40;
+// Durations for the various parts of the pinned tab title animation.
+static const int kPinnedTitleChangeAnimationDuration1MS = 1600;
+static const int kPinnedTitleChangeAnimationStart1MS = 0;
+static const int kPinnedTitleChangeAnimationEnd1MS = 1900;
+static const int kPinnedTitleChangeAnimationDuration2MS = 0;
+static const int kPinnedTitleChangeAnimationDuration3MS = 550;
+static const int kPinnedTitleChangeAnimationStart3MS = 150;
+static const int kPinnedTitleChangeAnimationEnd3MS = 800;
+static const int kPinnedTitleChangeAnimationIntervalMS = 40;
 
-// Offset from the right edge for the start of the mini title change animation.
-static const int kMiniTitleChangeInitialXOffset = 6;
+// Offset from the right edge for the start of the pinned title change
+// animation.
+static const int kPinnedTitleChangeInitialXOffset = 6;
 
-// Radius of the radial gradient used for mini title change animation.
-static const int kMiniTitleChangeGradientRadius = 20;
+// Radius of the radial gradient used for pinned title change animation.
+static const int kPinnedTitleChangeGradientRadius = 20;
 
-// Colors of the gradient used during the mini title change animation.
-static const SkColor kMiniTitleChangeGradientColor1 = SK_ColorWHITE;
-static const SkColor kMiniTitleChangeGradientColor2 =
+// Colors of the gradient used during the pinned title change animation.
+static const SkColor kPinnedTitleChangeGradientColor1 = SK_ColorWHITE;
+static const SkColor kPinnedTitleChangeGradientColor2 =
     SkColorSetARGB(0, 255, 255, 255);
 
 // Max number of images to cache. This has to be at least two since rounding
@@ -521,8 +522,8 @@ void Tab::SetData(const TabRendererData& data) {
   if (data_.media_state != old.media_state)
     GetMediaIndicatorButton()->TransitionToMediaState(data_.media_state);
 
-  if (old.mini != data_.mini) {
-    StopAndDeleteAnimation(mini_title_change_animation_.Pass());
+  if (old.pinned != data_.pinned) {
+    StopAndDeleteAnimation(pinned_title_change_animation_.Pass());
   }
 
   DataChanged(old);
@@ -556,36 +557,37 @@ void Tab::StopPulse() {
   StopAndDeleteAnimation(pulse_animation_.Pass());
 }
 
-void Tab::StartMiniTabTitleAnimation() {
-  if (!data().mini)
+void Tab::StartPinnedTabTitleAnimation() {
+  if (!data().pinned)
     return;
-  if (!mini_title_change_animation_) {
+  if (!pinned_title_change_animation_) {
     gfx::MultiAnimation::Parts parts;
     parts.push_back(
-        gfx::MultiAnimation::Part(kMiniTitleChangeAnimationDuration1MS,
+        gfx::MultiAnimation::Part(kPinnedTitleChangeAnimationDuration1MS,
                                  gfx::Tween::EASE_OUT));
     parts.push_back(
-        gfx::MultiAnimation::Part(kMiniTitleChangeAnimationDuration2MS,
+        gfx::MultiAnimation::Part(kPinnedTitleChangeAnimationDuration2MS,
                                  gfx::Tween::ZERO));
     parts.push_back(
-        gfx::MultiAnimation::Part(kMiniTitleChangeAnimationDuration3MS,
+        gfx::MultiAnimation::Part(kPinnedTitleChangeAnimationDuration3MS,
                                  gfx::Tween::EASE_IN));
-    parts[0].start_time_ms = kMiniTitleChangeAnimationStart1MS;
-    parts[0].end_time_ms = kMiniTitleChangeAnimationEnd1MS;
-    parts[2].start_time_ms = kMiniTitleChangeAnimationStart3MS;
-    parts[2].end_time_ms = kMiniTitleChangeAnimationEnd3MS;
-    base::TimeDelta timeout =
-        base::TimeDelta::FromMilliseconds(kMiniTitleChangeAnimationIntervalMS);
-    mini_title_change_animation_.reset(new gfx::MultiAnimation(parts, timeout));
+    parts[0].start_time_ms = kPinnedTitleChangeAnimationStart1MS;
+    parts[0].end_time_ms = kPinnedTitleChangeAnimationEnd1MS;
+    parts[2].start_time_ms = kPinnedTitleChangeAnimationStart3MS;
+    parts[2].end_time_ms = kPinnedTitleChangeAnimationEnd3MS;
+    base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
+        kPinnedTitleChangeAnimationIntervalMS);
+    pinned_title_change_animation_.reset(
+        new gfx::MultiAnimation(parts, timeout));
     if (animation_container_.get())
-      mini_title_change_animation_->SetContainer(animation_container_.get());
-    mini_title_change_animation_->set_delegate(this);
+      pinned_title_change_animation_->SetContainer(animation_container_.get());
+    pinned_title_change_animation_->set_delegate(this);
   }
-  mini_title_change_animation_->Start();
+  pinned_title_change_animation_->Start();
 }
 
-void Tab::StopMiniTabTitleAnimation() {
-  StopAndDeleteAnimation(mini_title_change_animation_.Pass());
+void Tab::StopPinnedTabTitleAnimation() {
+  StopAndDeleteAnimation(pinned_title_change_animation_.Pass());
 }
 
 // static
@@ -626,8 +628,8 @@ int Tab::GetTouchWidth() {
 }
 
 // static
-int Tab::GetMiniWidth() {
-  return kMiniTabWidth;
+int Tab::GetPinnedWidth() {
+  return kPinnedTabWidth;
 }
 
 // static
@@ -724,7 +726,7 @@ bool Tab::GetHitTestMask(gfx::Path* mask) const {
 void Tab::OnPaint(gfx::Canvas* canvas) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
-  if (width() < GetMinimumUnselectedSize().width() && !data().mini)
+  if (width() < GetMinimumUnselectedSize().width() && !data().pinned)
     return;
 
   gfx::Rect clip;
@@ -755,7 +757,7 @@ void Tab::Layout() {
   if (showing_icon_) {
     favicon_bounds_.set_size(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
     favicon_bounds_.set_y(lb.y() + (lb.height() - gfx::kFaviconSize + 1) / 2);
-    MaybeAdjustLeftForMiniTab(&favicon_bounds_);
+    MaybeAdjustLeftForPinnedTab(&favicon_bounds_);
   }
 
   showing_close_button_ = ShouldShowCloseBox();
@@ -792,7 +794,7 @@ void Tab::Layout() {
         lb.y() + (lb.height() - image_size.height() + 1) / 2,
         image_size.width(),
         image_size.height());
-    MaybeAdjustLeftForMiniTab(&bounds);
+    MaybeAdjustLeftForPinnedTab(&bounds);
     button->SetBoundsRect(bounds);
     button->SetVisible(true);
   } else if (media_indicator_button_) {
@@ -800,7 +802,8 @@ void Tab::Layout() {
   }
 
   // Size the title to fill the remaining width and use all available height.
-  bool show_title = !data().mini || width() >= kMiniTabRendererAsNormalTabWidth;
+  bool show_title =
+      !data().pinned || width() >= kPinnedTabRendererAsNormalTabWidth;
   if (show_title) {
     int title_left = favicon_bounds_.right() + kFaviconTitleSpacing;
     int title_width = lb.width() - title_left;
@@ -993,14 +996,15 @@ void Tab::GetAccessibleState(ui::AXViewState* state) {
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, private
 
-void Tab::MaybeAdjustLeftForMiniTab(gfx::Rect* bounds) const {
-  if (!data().mini || width() >= kMiniTabRendererAsNormalTabWidth)
+void Tab::MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds) const {
+  if (!data().pinned || width() >= kPinnedTabRendererAsNormalTabWidth)
     return;
-  const int mini_delta = kMiniTabRendererAsNormalTabWidth - GetMiniWidth();
-  const int ideal_delta = width() - GetMiniWidth();
-  const int ideal_x = (GetMiniWidth() - bounds->width()) / 2;
+  const int pinned_delta =
+      kPinnedTabRendererAsNormalTabWidth - GetPinnedWidth();
+  const int ideal_delta = width() - GetPinnedWidth();
+  const int ideal_x = (GetPinnedWidth() - bounds->width()) / 2;
   bounds->set_x(bounds->x() + static_cast<int>(
-      (1 - static_cast<float>(ideal_delta) / static_cast<float>(mini_delta)) *
+      (1 - static_cast<float>(ideal_delta) / static_cast<float>(pinned_delta)) *
       (ideal_x - bounds->x())));
 }
 
@@ -1033,8 +1037,8 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
   const SkColor title_color = GetThemeProvider()->GetColor(IsSelected() ?
       ThemeProperties::COLOR_TAB_TEXT :
       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
-  title_->SetVisible(!data().mini ||
-                     width() > kMiniTabRendererAsNormalTabWidth);
+  title_->SetVisible(!data().pinned ||
+                     width() > kPinnedTabRendererAsNormalTabWidth);
   title_->SetEnabledColor(title_color);
 
   if (show_icon)
@@ -1053,12 +1057,12 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
 void Tab::PaintImmersiveTab(gfx::Canvas* canvas) {
   // Use transparency for the draw-attention animation.
   int alpha = 255;
-  if (pulse_animation_ && pulse_animation_->is_animating() && !data().mini) {
+  if (pulse_animation_ && pulse_animation_->is_animating() && !data().pinned) {
     alpha = pulse_animation_->CurrentValueBetween(
         255, static_cast<int>(255 * kImmersiveTabMinThrobOpacity));
   }
 
-  // Draw a gray rectangle to represent the tab. This works for mini-tabs as
+  // Draw a gray rectangle to represent the tab. This works for pinned tabs as
   // well as regular ones. The active tab has a brigher bar.
   SkColor color =
       IsActive() ? kImmersiveActiveTabColor : kImmersiveInactiveTabColor;
@@ -1098,8 +1102,8 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas) {
   if (IsActive()) {
     PaintActiveTabBackground(canvas);
   } else {
-    if (mini_title_change_animation_ &&
-        mini_title_change_animation_->is_animating()) {
+    if (pinned_title_change_animation_ &&
+        pinned_title_change_animation_->is_animating()) {
       PaintInactiveTabBackgroundWithTitleChange(canvas);
     } else {
       PaintInactiveTabBackground(canvas);
@@ -1124,22 +1128,22 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
 
   // Draw a radial gradient to hover_canvas.
   gfx::Canvas hover_canvas(size(), canvas->image_scale(), false);
-  int radius = kMiniTitleChangeGradientRadius;
-  int x0 = width() + radius - kMiniTitleChangeInitialXOffset;
+  int radius = kPinnedTitleChangeGradientRadius;
+  int x0 = width() + radius - kPinnedTitleChangeInitialXOffset;
   int x1 = radius;
   int x2 = -radius;
   int x;
-  if (mini_title_change_animation_->current_part_index() == 0) {
-    x = mini_title_change_animation_->CurrentValueBetween(x0, x1);
-  } else if (mini_title_change_animation_->current_part_index() == 1) {
+  if (pinned_title_change_animation_->current_part_index() == 0) {
+    x = pinned_title_change_animation_->CurrentValueBetween(x0, x1);
+  } else if (pinned_title_change_animation_->current_part_index() == 1) {
     x = x1;
   } else {
-    x = mini_title_change_animation_->CurrentValueBetween(x1, x2);
+    x = pinned_title_change_animation_->CurrentValueBetween(x1, x2);
   }
   SkPoint center_point;
   center_point.iset(x, 0);
-  SkColor colors[2] = { kMiniTitleChangeGradientColor1,
-                        kMiniTitleChangeGradientColor2 };
+  SkColor colors[2] = { kPinnedTitleChangeGradientColor1,
+                        kPinnedTitleChangeGradientColor2 };
   skia::RefPtr<SkShader> shader = skia::AdoptRef(
       SkGradientShader::CreateRadial(
           center_point, SkIntToScalar(radius), colors, NULL, 2,
@@ -1157,8 +1161,8 @@ void Tab::PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas) {
   canvas->DrawImageInt(background_image, 0, 0);
 
   // And then the gradient on top of that.
-  if (mini_title_change_animation_->current_part_index() == 2) {
-    uint8 alpha = mini_title_change_animation_->CurrentValueBetween(255, 0);
+  if (pinned_title_change_animation_->current_part_index() == 2) {
+    uint8 alpha = pinned_title_change_animation_->CurrentValueBetween(255, 0);
     canvas->DrawImageInt(hover_image, 0, 0, alpha);
   } else {
     canvas->DrawImageInt(hover_image, 0, 0);
@@ -1408,14 +1412,14 @@ int Tab::IconCapacity() const {
 
 bool Tab::ShouldShowIcon() const {
   return chrome::ShouldTabShowFavicon(
-      IconCapacity(), data().mini, IsActive(), data().show_icon,
+      IconCapacity(), data().pinned, IsActive(), data().show_icon,
       media_indicator_button_ ? media_indicator_button_->showing_media_state() :
                                 data_.media_state);
 }
 
 bool Tab::ShouldShowMediaIndicator() const {
   return chrome::ShouldTabShowMediaIndicator(
-      IconCapacity(), data().mini, IsActive(), data().show_icon,
+      IconCapacity(), data().pinned, IsActive(), data().show_icon,
       media_indicator_button_ ? media_indicator_button_->showing_media_state() :
                                 data_.media_state);
 }
@@ -1425,7 +1429,7 @@ bool Tab::ShouldShowCloseBox() const {
     return false;
 
   return chrome::ShouldTabShowCloseButton(
-      IconCapacity(), data().mini, IsActive());
+      IconCapacity(), data().pinned, IsActive());
 }
 
 double Tab::GetThrobValue() {
@@ -1436,8 +1440,8 @@ double Tab::GetThrobValue() {
   // Showing both the pulse and title change animation at the same time is too
   // much.
   if (pulse_animation_ && pulse_animation_->is_animating() &&
-      (!mini_title_change_animation_ ||
-       !mini_title_change_animation_->is_animating())) {
+      (!pinned_title_change_animation_ ||
+       !pinned_title_change_animation_->is_animating())) {
     return pulse_animation_->GetCurrentValue() * kHoverOpacity * scale + min;
   }
 

@@ -18,15 +18,8 @@ struct StartupTab {
   // The url to load.
   GURL url;
 
-  // If true, the tab corresponds to an app an |app_id| gives the id of the
-  // app.
-  bool is_app;
-
   // True if the is tab pinned.
   bool is_pinned;
-
-  // Id of the app.
-  std::string app_id;
 };
 
 typedef std::vector<StartupTab> StartupTabs;

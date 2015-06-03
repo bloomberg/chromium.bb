@@ -112,9 +112,8 @@ content::WebContents* AddRestoredTab(
   int add_types = select ? TabStripModel::ADD_ACTIVE
                          : TabStripModel::ADD_NONE;
   if (pin) {
-    int first_mini_tab_idx =
-        browser->tab_strip_model()->IndexOfFirstNonMiniTab();
-    tab_index = std::min(tab_index, first_mini_tab_idx);
+    tab_index = std::min(
+        tab_index, browser->tab_strip_model()->IndexOfFirstNonPinnedTab());
     add_types |= TabStripModel::ADD_PINNED;
   }
   browser->tab_strip_model()->InsertWebContentsAt(tab_index, web_contents,

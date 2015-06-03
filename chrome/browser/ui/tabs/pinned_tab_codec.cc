@@ -22,9 +22,6 @@
 
 using content::NavigationEntry;
 
-// Key used in dictionaries for the app id.
-static const char kAppID[] = "app_id";
-
 // Key used in dictionaries for the url.
 static const char kURL[] = "url";
 
@@ -42,8 +39,6 @@ static bool HasPinnedTabs(Browser* browser) {
 static void EncodeTab(const StartupTab& tab, base::ListValue* values) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   value->SetString(kURL, tab.url.spec());
-  if (tab.is_app)
-    value->SetString(kAppID, tab.app_id);
   values->Append(value.release());
 }
 
@@ -55,25 +50,12 @@ static void EncodePinnedTab(TabStripModel* model,
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
   content::WebContents* web_contents = model->GetWebContentsAt(index);
-  if (model->IsAppTab(index)) {
-    const extensions::Extension* extension =
-        extensions::TabHelper::FromWebContents(web_contents)->extension_app();
-    DCHECK(extension);
-    value->SetString(kAppID, extension->id());
-    // For apps we use the launch url. We do this because the user is
-    // effectively restarting the app, so returning them to the app's launch
-    // page seems closest to what they expect.
-    value->SetString(
-        kURL, extensions::AppLaunchInfo::GetFullLaunchURL(extension).spec());
+  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
+  if (!entry && web_contents->GetController().GetEntryCount())
+    entry = web_contents->GetController().GetEntryAtIndex(0);
+  if (entry) {
+    value->SetString(kURL, entry->GetURL().spec());
     values->Append(value.release());
-  } else {
-    NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
-    if (!entry && web_contents->GetController().GetEntryCount())
-      entry = web_contents->GetController().GetEntryAtIndex(0);
-    if (entry) {
-      value->SetString(kURL, entry->GetURL().spec());
-      values->Append(value.release());
-    }
   }
 }
 
@@ -87,15 +69,10 @@ static void EncodePinnedTabs(Browser* browser, base::ListValue* values) {
 // Decodes the previously written values in |value| to |tab|, returning true
 // on success.
 static bool DecodeTab(const base::DictionaryValue& value, StartupTab* tab) {
-  tab->is_app = false;
-
   std::string url_string;
   if (!value.GetString(kURL, &url_string))
     return false;
   tab->url = GURL(url_string);
-
-  if (value.GetString(kAppID, &(tab->app_id)))
-    tab->is_app = true;
 
   return true;
 }

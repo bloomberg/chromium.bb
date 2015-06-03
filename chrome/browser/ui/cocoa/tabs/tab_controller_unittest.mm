@@ -108,7 +108,7 @@ class TabControllerTest : public CocoaTest {
     // given Tab size and TabRendererData state.
     const TabMediaState indicatorState =
         [[controller mediaIndicatorButton] showingMediaState];
-    if ([controller mini]) {
+    if ([controller pinned]) {
       EXPECT_EQ(1, [controller iconCapacity]);
       if (indicatorState != TAB_MEDIA_STATE_NONE) {
         EXPECT_FALSE([controller shouldShowIcon]);
@@ -144,7 +144,7 @@ class TabControllerTest : public CocoaTest {
             EXPECT_FALSE([controller shouldShowMediaIndicator]);
           break;
       }
-    } else {  // Tab not selected/active and not mini tab.
+    } else {  // Tab not selected/active and not pinned tab.
       switch ([controller iconCapacity]) {
         case 0:
           EXPECT_FALSE([controller shouldShowCloseButton]);
@@ -175,7 +175,7 @@ class TabControllerTest : public CocoaTest {
     // Make sure the NSView's "isHidden" state jives with the "shouldShowXXX."
     EXPECT_TRUE([controller shouldShowIcon] ==
                 (!![controller iconView] && ![[controller iconView] isHidden]));
-    EXPECT_TRUE([controller mini] == [[controller tabView] titleHidden]);
+    EXPECT_TRUE([controller pinned] == [[controller tabView] titleHidden]);
     EXPECT_TRUE([controller shouldShowMediaIndicator] ==
                     ![[controller mediaIndicatorButton] isHidden]);
     EXPECT_TRUE([controller shouldShowCloseButton] !=
@@ -502,7 +502,7 @@ TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
 
   // Perform layout over all possible combinations, checking for correct
   // results.
-  for (int isMiniTab = 0; isMiniTab < 2; ++isMiniTab) {
+  for (int isPinnedTab = 0; isPinnedTab < 2; ++isPinnedTab) {
     for (int isActiveTab = 0; isActiveTab < 2; ++isActiveTab) {
       for (size_t mediaStateIndex = 0;
            mediaStateIndex < arraysize(kMediaStatesToTest);
@@ -510,12 +510,12 @@ TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
         const TabMediaState mediaState = kMediaStatesToTest[mediaStateIndex];
         SCOPED_TRACE(::testing::Message()
                      << (isActiveTab ? "Active" : "Inactive") << ' '
-                     << (isMiniTab ? "Mini " : "")
+                     << (isPinnedTab ? "Pinned " : "")
                      << "Tab with media indicator state " << mediaState);
 
         // Simulate what tab_strip_controller would do to set up the
         // TabController state.
-        [controller setMini:(isMiniTab ? YES : NO)];
+        [controller setPinned:(isPinnedTab ? YES : NO)];
         [controller setActive:(isActiveTab ? YES : NO)];
         [controller setIconImage:favicon];
         [controller setMediaState:mediaState];
@@ -524,8 +524,8 @@ TEST_F(TabControllerTest, DISABLED_LayoutAndVisibilityOfSubviews) {
         // Test layout for every width from maximum to minimum.
         NSRect tabFrame = [[controller view] frame];
         int minWidth;
-        if (isMiniTab) {
-          tabFrame.size.width = minWidth = [TabController miniTabWidth];
+        if (isPinnedTab) {
+          tabFrame.size.width = minWidth = [TabController pinnedTabWidth];
         } else {
           tabFrame.size.width = [TabController maxTabWidth];
           minWidth = isActiveTab ? [TabController minActiveTabWidth] :

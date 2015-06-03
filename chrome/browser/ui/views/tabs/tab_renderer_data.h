@@ -46,7 +46,7 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
   base::TerminationStatus crashed_status;
   bool incognito;
   bool show_icon;
-  bool mini;
+  bool pinned;
   bool blocked;
   bool app;
   TabMediaState media_state;

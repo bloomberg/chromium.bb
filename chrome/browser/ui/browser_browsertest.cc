@@ -1480,28 +1480,18 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
   ASSERT_TRUE(test_server()->Start());
 
-  // Add an pinned app tab.
+  // Add a pinned tab.
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL url(test_server()->GetURL("empty.html"));
   TabStripModel* model = browser()->tab_strip_model();
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
-  const Extension* extension_app = GetExtension();
   ui_test_utils::NavigateToURL(browser(), url);
-  WebContents* app_contents = WebContents::Create(
-      WebContents::CreateParams(browser()->profile()));
-  extensions::TabHelper::CreateForWebContents(app_contents);
-  extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(app_contents);
-  extensions_tab_helper->SetExtensionApp(extension_app);
-  model->AddWebContents(app_contents, 0, ui::PageTransitionFromInt(0),
-                        TabStripModel::ADD_NONE);
   model->SetTabPinned(0, true);
-  ui_test_utils::NavigateToURL(browser(), url);
 
   // Add a non pinned tab.
   chrome::NewTab(browser());
+  ui_test_utils::NavigateToURL(browser(), url);
 
-  // Add a pinned non-app tab.
+  // Add another pinned tab.
   chrome::NewTab(browser());
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
   model->SetTabPinned(2, true);
@@ -1537,20 +1527,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 
   // Make sure the state matches.
   TabStripModel* new_model = new_browser->tab_strip_model();
-  EXPECT_TRUE(new_model->IsAppTab(0));
-  EXPECT_FALSE(new_model->IsAppTab(1));
-  EXPECT_FALSE(new_model->IsAppTab(2));
-
   EXPECT_TRUE(new_model->IsTabPinned(0));
   EXPECT_TRUE(new_model->IsTabPinned(1));
   EXPECT_FALSE(new_model->IsTabPinned(2));
 
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             new_model->GetWebContentsAt(2)->GetURL());
-
-  EXPECT_TRUE(
-      extensions::TabHelper::FromWebContents(
-          new_model->GetWebContentsAt(0))->extension_app() == extension_app);
 }
 #endif  // !defined(OS_CHROMEOS)
 

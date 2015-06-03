@@ -112,12 +112,12 @@ void TabStripModelObserverBridge::TabReplacedAt(TabStripModel* tab_strip_model,
   }
 }
 
-void TabStripModelObserverBridge::TabMiniStateChanged(WebContents* contents,
-                                                      int index) {
+void TabStripModelObserverBridge::TabPinnedStateChanged(WebContents* contents,
+                                                        int index) {
   if ([controller_ respondsToSelector:
-          @selector(tabMiniStateChangedWithContents:atIndex:)]) {
-    [controller_ tabMiniStateChangedWithContents:contents
-                                         atIndex:index];
+          @selector(tabPinnedStateChangedWithContents:atIndex:)]) {
+    [controller_ tabPinnedStateChangedWithContents:contents
+                                           atIndex:index];
   }
 }
 

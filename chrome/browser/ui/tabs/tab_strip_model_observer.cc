@@ -54,10 +54,6 @@ void TabStripModelObserver::TabPinnedStateChanged(WebContents* contents,
                                                   int index) {
 }
 
-void TabStripModelObserver::TabMiniStateChanged(WebContents* contents,
-                                                int index) {
-}
-
 void TabStripModelObserver::TabBlockedStateChanged(WebContents* contents,
                                                    int index) {
 }

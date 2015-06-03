@@ -125,15 +125,8 @@ class TabStripModelObserver {
                              content::WebContents* new_contents,
                              int index);
 
-  // Invoked when the pinned state of a tab changes. See note in
-  // TabMiniStateChanged as to how this relates to TabMiniStateChanged.
+  // Invoked when the pinned state of a tab changes.
   virtual void TabPinnedStateChanged(content::WebContents* contents, int index);
-
-  // Invoked if the mini state of a tab changes.
-  // NOTE: This is sent when the pinned state of a non-app tab changes and is
-  // sent in addition to TabPinnedStateChanged. UI code typically need not care
-  // about TabPinnedStateChanged, but instead this.
-  virtual void TabMiniStateChanged(content::WebContents* contents, int index);
 
   // Invoked when the blocked state of a tab changes.
   // NOTE: This is invoked when a tab becomes blocked/unblocked by a tab modal

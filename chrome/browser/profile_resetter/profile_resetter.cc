@@ -288,7 +288,7 @@ void ProfileResetter::ResetPinnedTabs() {
       // If we unpin the tab, it can be moved to the right. Thus traversing in
       // reverse direction is correct.
       for (int i = tab_model->count() - 1; i >= 0; --i) {
-        if (tab_model->IsTabPinned(i) && !tab_model->IsAppTab(i))
+        if (tab_model->IsTabPinned(i))
           tab_model->SetTabPinned(i, false);
       }
     }

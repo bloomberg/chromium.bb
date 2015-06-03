@@ -39,7 +39,7 @@ gfx::Point TabScrubber::GetStartPoint(
     TabStrip* tab_strip,
     int index,
     TabScrubber::Direction direction) {
-  int initial_tab_offset = Tab::GetMiniWidth() / 2;
+  int initial_tab_offset = Tab::GetPinnedWidth() / 2;
   gfx::Rect tab_bounds = tab_strip->tab_at(index)->bounds();
   float x = direction == LEFT ?
       tab_bounds.x() + initial_tab_offset :

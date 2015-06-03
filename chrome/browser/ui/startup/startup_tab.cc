@@ -5,8 +5,7 @@
 #include "chrome/browser/ui/startup/startup_tab.h"
 
 StartupTab::StartupTab()
-    : is_app(false),
-      is_pinned(true) {
+    : is_pinned(true) {
 }
 
 StartupTab::~StartupTab() {

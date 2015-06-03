@@ -277,11 +277,8 @@ void TabStripModel::InsertWebContentsAt(int index,
                                         int add_types) {
   delegate_->WillAddWebContents(contents);
 
-  bool active = add_types & ADD_ACTIVE;
-  // Force app tabs to be pinned.
-  extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(contents);
-  bool pin = extensions_tab_helper->is_app() || add_types & ADD_PINNED;
+  bool active = (add_types & ADD_ACTIVE) != 0;
+  bool pin = (add_types & ADD_PINNED) != 0;
   index = ConstrainInsertionIndex(index, pin);
 
   // In tab dragging situations, if the last tab in the window was detached
@@ -466,11 +463,11 @@ void TabStripModel::MoveWebContentsAt(int index,
   if (index == to_position)
     return;
 
-  int first_non_mini_tab = IndexOfFirstNonMiniTab();
-  if ((index < first_non_mini_tab && to_position >= first_non_mini_tab) ||
-      (to_position < first_non_mini_tab && index >= first_non_mini_tab)) {
-    // This would result in mini tabs mixed with non-mini tabs. We don't allow
-    // that.
+  int first_non_pinned_tab = IndexOfFirstNonPinnedTab();
+  if ((index < first_non_pinned_tab && to_position >= first_non_pinned_tab) ||
+      (to_position < first_non_pinned_tab && index >= first_non_pinned_tab)) {
+    // This would result in pinned tabs mixed with non-pinned tabs. We don't
+    // allow that.
     return;
   }
 
@@ -478,36 +475,36 @@ void TabStripModel::MoveWebContentsAt(int index,
 }
 
 void TabStripModel::MoveSelectedTabsTo(int index) {
-  int total_mini_count = IndexOfFirstNonMiniTab();
-  int selected_mini_count = 0;
+  int total_pinned_count = IndexOfFirstNonPinnedTab();
+  int selected_pinned_count = 0;
   int selected_count =
       static_cast<int>(selection_model_.selected_indices().size());
   for (int i = 0; i < selected_count &&
-           IsMiniTab(selection_model_.selected_indices()[i]); ++i) {
-    selected_mini_count++;
+           IsTabPinned(selection_model_.selected_indices()[i]); ++i) {
+    selected_pinned_count++;
   }
 
-  // To maintain that all mini-tabs occur before non-mini-tabs we move them
+  // To maintain that all pinned tabs occur before non-pinned tabs we move them
   // first.
-  if (selected_mini_count > 0) {
+  if (selected_pinned_count > 0) {
     MoveSelectedTabsToImpl(
-        std::min(total_mini_count - selected_mini_count, index), 0u,
-        selected_mini_count);
-    if (index > total_mini_count - selected_mini_count) {
-      // We're being told to drag mini-tabs to an invalid location. Adjust the
-      // index such that non-mini-tabs end up at a location as though we could
-      // move the mini-tabs to index. See description in header for more
+        std::min(total_pinned_count - selected_pinned_count, index), 0u,
+        selected_pinned_count);
+    if (index > total_pinned_count - selected_pinned_count) {
+      // We're being told to drag pinned tabs to an invalid location. Adjust the
+      // index such that non-pinned tabs end up at a location as though we could
+      // move the pinned tabs to index. See description in header for more
       // details.
-      index += selected_mini_count;
+      index += selected_pinned_count;
     }
   }
-  if (selected_mini_count == selected_count)
+  if (selected_pinned_count == selected_count)
     return;
 
   // Then move the non-pinned tabs.
-  MoveSelectedTabsToImpl(std::max(index, total_mini_count),
-                         selected_mini_count,
-                         selected_count - selected_mini_count);
+  MoveSelectedTabsToImpl(std::max(index, total_pinned_count),
+                         selected_pinned_count,
+                         selected_count - selected_pinned_count);
 }
 
 WebContents* TabStripModel::GetActiveWebContents() const {
@@ -677,34 +674,17 @@ void TabStripModel::SetTabPinned(int index, bool pinned) {
   if (contents_data_[index]->pinned() == pinned)
     return;
 
-  if (IsAppTab(index)) {
-    if (!pinned) {
-      // App tabs should always be pinned.
-      NOTREACHED();
-      return;
-    }
-    // Changing the pinned state of an app tab doesn't affect its mini-tab
-    // status.
-    contents_data_[index]->set_pinned(pinned);
-  } else {
-    // The tab is not an app tab, its position may have to change as the
-    // mini-tab state is changing.
-    int non_mini_tab_index = IndexOfFirstNonMiniTab();
-    contents_data_[index]->set_pinned(pinned);
-    if (pinned && index != non_mini_tab_index) {
-      MoveWebContentsAtImpl(index, non_mini_tab_index, false);
-      index = non_mini_tab_index;
-    } else if (!pinned && index + 1 != non_mini_tab_index) {
-      MoveWebContentsAtImpl(index, non_mini_tab_index - 1, false);
-      index = non_mini_tab_index - 1;
-    }
-
-    FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      TabMiniStateChanged(contents_data_[index]->web_contents(),
-                                          index));
+  // The tab's position may have to change as the pinned tab state is changing.
+  int non_pinned_tab_index = IndexOfFirstNonPinnedTab();
+  contents_data_[index]->set_pinned(pinned);
+  if (pinned && index != non_pinned_tab_index) {
+    MoveWebContentsAtImpl(index, non_pinned_tab_index, false);
+    index = non_pinned_tab_index;
+  } else if (!pinned && index + 1 != non_pinned_tab_index) {
+    MoveWebContentsAtImpl(index, non_pinned_tab_index - 1, false);
+    index = non_pinned_tab_index - 1;
   }
 
-  // else: the tab was at the boundary and its position doesn't need to change.
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                     TabPinnedStateChanged(contents_data_[index]->web_contents(),
                                           index));
@@ -715,15 +695,6 @@ bool TabStripModel::IsTabPinned(int index) const {
   return contents_data_[index]->pinned();
 }
 
-bool TabStripModel::IsMiniTab(int index) const {
-  return IsTabPinned(index) || IsAppTab(index);
-}
-
-bool TabStripModel::IsAppTab(int index) const {
-  WebContents* contents = GetWebContentsAt(index);
-  return contents && extensions::TabHelper::FromWebContents(contents)->is_app();
-}
-
 bool TabStripModel::IsTabBlocked(int index) const {
   return contents_data_[index]->blocked();
 }
@@ -732,18 +703,18 @@ bool TabStripModel::IsTabDiscarded(int index) const {
   return contents_data_[index]->discarded();
 }
 
-int TabStripModel::IndexOfFirstNonMiniTab() const {
+int TabStripModel::IndexOfFirstNonPinnedTab() const {
   for (size_t i = 0; i < contents_data_.size(); ++i) {
-    if (!IsMiniTab(static_cast<int>(i)))
+    if (!IsTabPinned(static_cast<int>(i)))
       return static_cast<int>(i);
   }
-  // No mini-tabs.
+  // No pinned tabs.
   return count();
 }
 
-int TabStripModel::ConstrainInsertionIndex(int index, bool mini_tab) {
-  return mini_tab ? std::min(std::max(0, index), IndexOfFirstNonMiniTab()) :
-      std::min(count(), std::max(index, IndexOfFirstNonMiniTab()));
+int TabStripModel::ConstrainInsertionIndex(int index, bool pinned_tab) {
+  return pinned_tab ? std::min(std::max(0, index), IndexOfFirstNonPinnedTab()) :
+      std::min(count(), std::max(index, IndexOfFirstNonPinnedTab()));
 }
 
 void TabStripModel::ExtendSelectionTo(int index) {
@@ -924,15 +895,6 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return delegate_->GetRestoreTabType() !=
           TabStripModelDelegate::RESTORE_NONE;
 
-    case CommandTogglePinned: {
-      std::vector<int> indices = GetIndicesForCommand(context_index);
-      for (size_t i = 0; i < indices.size(); ++i) {
-        if (!IsAppTab(indices[i]))
-          return true;
-      }
-      return false;
-    }
-
     case CommandToggleTabAudioMuted: {
       std::vector<int> indices = GetIndicesForCommand(context_index);
       for (size_t i = 0; i < indices.size(); ++i) {
@@ -946,6 +908,7 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return browser_defaults::bookmarks_enabled &&
           delegate_->CanBookmarkAllTabs();
 
+    case CommandTogglePinned:
     case CommandSelectByDomain:
     case CommandSelectByOpener:
       return true;
@@ -1034,17 +997,13 @@ void TabStripModel::ExecuteContextMenuCommand(
       std::vector<int> indices = GetIndicesForCommand(context_index);
       bool pin = WillContextMenuPin(context_index);
       if (pin) {
-        for (size_t i = 0; i < indices.size(); ++i) {
-          if (!IsAppTab(indices[i]))
-            SetTabPinned(indices[i], true);
-        }
+        for (size_t i = 0; i < indices.size(); ++i)
+          SetTabPinned(indices[i], true);
       } else {
         // Unpin from the back so that the order is maintained (unpinning can
         // trigger moving a tab).
-        for (size_t i = indices.size(); i > 0; --i) {
-          if (!IsAppTab(indices[i - 1]))
-            SetTabPinned(indices[i - 1], false);
-        }
+        for (size_t i = indices.size(); i > 0; --i)
+          SetTabPinned(indices[i - 1], false);
       }
       break;
     }
@@ -1112,7 +1071,7 @@ std::vector<int> TabStripModel::GetIndicesClosedByCommand(
   // NOTE: callers expect the vector to be sorted in descending order.
   std::vector<int> indices;
   for (int i = count() - 1; i >= start; --i) {
-    if (i != index && !IsMiniTab(i) && (!is_selected || !IsTabSelected(i)))
+    if (i != index && !IsTabPinned(i) && (!is_selected || !IsTabSelected(i)))
       indices.push_back(i);
   }
   return indices;
@@ -1122,10 +1081,8 @@ bool TabStripModel::WillContextMenuPin(int index) {
   std::vector<int> indices = GetIndicesForCommand(index);
   // If all tabs are pinned, then we unpin, otherwise we pin.
   bool all_pinned = true;
-  for (size_t i = 0; i < indices.size() && all_pinned; ++i) {
-    if (!IsAppTab(index))  // We never change app tabs.
-      all_pinned = IsTabPinned(indices[i]);
-  }
+  for (size_t i = 0; i < indices.size() && all_pinned; ++i)
+    all_pinned = IsTabPinned(indices[i]);
   return !all_pinned;
 }
 

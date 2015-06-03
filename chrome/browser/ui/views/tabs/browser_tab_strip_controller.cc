@@ -482,11 +482,6 @@ void BrowserTabStripController::TabReplacedAt(TabStripModel* tab_strip_model,
 
 void BrowserTabStripController::TabPinnedStateChanged(WebContents* contents,
                                                       int model_index) {
-  // Currently none of the renderers render pinned state differently.
-}
-
-void BrowserTabStripController::TabMiniStateChanged(WebContents* contents,
-                                                    int model_index) {
   SetTabDataAt(contents, model_index);
 }
 
@@ -510,8 +505,8 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->loading = contents->IsLoading();
   data->crashed_status = contents->GetCrashedStatus();
   data->incognito = contents->GetBrowserContext()->IsOffTheRecord();
-  data->mini = model_->IsMiniTab(model_index);
-  data->show_icon = data->mini || favicon::ShouldDisplayFavicon(contents);
+  data->pinned = model_->IsTabPinned(model_index);
+  data->show_icon = data->pinned || favicon::ShouldDisplayFavicon(contents);
   data->blocked = model_->IsTabBlocked(model_index);
   data->app = extensions::TabHelper::FromWebContents(contents)->is_app();
   data->media_state = chrome::GetTabMediaStateForContents(contents);

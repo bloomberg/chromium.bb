@@ -23,9 +23,7 @@
 @implementation TabController
 
 @synthesize action = action_;
-@synthesize app = app_;
 @synthesize loadingState = loadingState_;
-@synthesize mini = mini_;
 @synthesize pinned = pinned_;
 @synthesize target = target_;
 @synthesize url = url_;
@@ -74,8 +72,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 + (CGFloat)minTabWidth { return 36; }
 + (CGFloat)minActiveTabWidth { return 52; }
 + (CGFloat)maxTabWidth { return 214; }
-+ (CGFloat)miniTabWidth { return 58; }
-+ (CGFloat)appTabWidth { return 66; }
++ (CGFloat)pinnedTabWidth { return 58; }
 
 - (TabView*)tabView {
   DCHECK([[self view] isKindOfClass:[TabView class]]);
@@ -213,7 +210,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   TabView* tabView = [self tabView];
   [tabView setTitle:title];
 
-  if ([self mini] && ![self active]) {
+  if ([self pinned] && ![self active]) {
     [tabView startAlert];
   }
   [super setTitle:title];
@@ -299,21 +296,21 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 - (BOOL)shouldShowIcon {
   return chrome::ShouldTabShowFavicon(
-      [self iconCapacity], [self mini], [self active], iconView_ != nil,
+      [self iconCapacity], [self pinned], [self active], iconView_ != nil,
       !mediaIndicatorButton_ ? TAB_MEDIA_STATE_NONE :
           [mediaIndicatorButton_ showingMediaState]);
 }
 
 - (BOOL)shouldShowMediaIndicator {
   return chrome::ShouldTabShowMediaIndicator(
-      [self iconCapacity], [self mini], [self active], iconView_ != nil,
+      [self iconCapacity], [self pinned], [self active], iconView_ != nil,
       !mediaIndicatorButton_ ? TAB_MEDIA_STATE_NONE :
           [mediaIndicatorButton_ showingMediaState]);
 }
 
 - (BOOL)shouldShowCloseButton {
   return chrome::ShouldTabShowCloseButton(
-      [self iconCapacity], [self mini], [self active]);
+      [self iconCapacity], [self pinned], [self active]);
 }
 
 - (void)setIconImage:(NSImage*)image {
@@ -332,12 +329,11 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
     [iconView_ setImage:image withToastAnimation:animate];
 
-    if ([self app] || [self mini]) {
+    if ([self pinned]) {
       NSRect appIconFrame = [iconView_ frame];
       appIconFrame.origin = originalIconFrame_.origin;
 
-      const CGFloat tabWidth = [self app] ? [TabController appTabWidth]
-                                          : [TabController miniTabWidth];
+      const CGFloat tabWidth = [TabController pinnedTabWidth];
 
       // Center the icon.
       appIconFrame.origin.x =
@@ -358,9 +354,9 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   [iconView_ setHidden:!newShowIcon];
   isIconShowing_ = newShowIcon;
 
-  // If the tab is a mini-tab, hide the title.
+  // If the tab is a pinned-tab, hide the title.
   TabView* tabView = [self tabView];
-  [tabView setTitleHidden:[self mini]];
+  [tabView setTitleHidden:[self pinned]];
 
   BOOL newShowCloseButton = [self shouldShowCloseButton];
 
@@ -373,10 +369,9 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   if (newShowMediaIndicator) {
     NSRect newFrame = [mediaIndicatorButton_ frame];
     newFrame.size = [[mediaIndicatorButton_ image] size];
-    if ([self app] || [self mini]) {
+    if ([self pinned]) {
       // Tab is pinned: Position the media indicator in the center.
-      const CGFloat tabWidth = [self app] ?
-          [TabController appTabWidth] : [TabController miniTabWidth];
+      const CGFloat tabWidth = [TabController pinnedTabWidth];
       newFrame.origin.x = std::floor((tabWidth - NSWidth(newFrame)) / 2);
       newFrame.origin.y = NSMinY(originalIconFrame_) -
           std::floor((NSHeight(newFrame) - NSHeight(originalIconFrame_)) / 2);

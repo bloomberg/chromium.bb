@@ -18,11 +18,11 @@ class Tab;
 // tabs. StackedTabStripLayout differs from the normal layout in that it stacks
 // tabs. Stacked tabs are tabs placed nearly on top of each other, and if enough
 // consecutive stacked tabs exist they are placed on top of each other. Normally
-// stacked tabs are placed after mini-tabs, or at the end of the tabstrip, but
+// stacked tabs are placed after pinned tabs, or at the end of the tabstrip, but
 // during dragging tabs may be stacked before or after the active tab.
 class StackedTabStripLayout {
  public:
-  static const int kAddTypeMini   = 1 << 0;
+  static const int kAddTypePinned   = 1 << 0;
   static const int kAddTypeActive = 1 << 1;
 
   // |size| is the size for tabs, |padding| the padding between consecutive
@@ -37,9 +37,9 @@ class StackedTabStripLayout {
                         views::ViewModelBase* view_model);
   ~StackedTabStripLayout();
 
-  // Sets the x-coordinate the normal tabs start at as well as the mini-tab
-  // count. This is only useful if the mini-tab count or x-coordinate change.
-  void SetXAndMiniCount(int x, int mini_tab_count);
+  // Sets the x-coordinate the normal tabs start at as well as the pinned tab
+  // count. This is only useful if the pinned tab count or x-coordinate change.
+  void SetXAndPinnedCount(int x, int pinned_tab_count);
 
   // Sets the width available for sizing the tabs to.
   void SetWidth(int width);
@@ -57,7 +57,7 @@ class StackedTabStripLayout {
   void SizeToFit();
 
   // Adds a new tab at the specified index. |add_types| is a bitmask of
-  // kAddType*. |start_x| is the new x-coordinate non-mini tabs start at.
+  // kAddType*. |start_x| is the new x-coordinate non-pinned tabs start at.
   void AddTab(int index, int add_types, int start_x);
 
   // Removes the tab at the specified index. |start_x| is the new x-coordinate
@@ -71,16 +71,17 @@ class StackedTabStripLayout {
                int to,
                int new_active_index,
                int start_x,
-               int mini_tab_count);
+               int pinned_tab_count);
 
   // Returns the active index as used by this class. The active index dictates
-  // stacking and what tabs are visible. As mini-tabs are never stacked,
+  // stacking and what tabs are visible. As pinned tabs are never stacked,
   // StackedTabStripLayout forces the active index to be in the normal tabs.
   int active_index() const {
-    return active_index_ < mini_tab_count_ ? mini_tab_count_ : active_index_;
+    return active_index_ < pinned_tab_count_ ? pinned_tab_count_
+                                             : active_index_;
   }
 
-  int mini_tab_count() const { return mini_tab_count_; }
+  int pinned_tab_count() const { return pinned_tab_count_; }
 
   // Returns true if the tab at index is stacked.
   bool IsStacked(int index) const;
@@ -95,9 +96,9 @@ class StackedTabStripLayout {
  private:
   friend class StackedTabStripLayoutTest;
 
-  // Sets the x-coordinate normal tabs start at, width mini-tab count and
+  // Sets the x-coordinate normal tabs start at, width pinned tab count and
   // active index at once.
-  void Reset(int x, int width, int mini_tab_count, int active_index);
+  void Reset(int x, int width, int pinned_tab_count, int active_index);
 
   // Resets to an ideal layout state.
   void ResetToIdealState();
@@ -120,7 +121,7 @@ class StackedTabStripLayout {
   void LayoutByTabOffsetAfter(int index);
 
   // Same as LayoutByTabOffsetAfter(), but iterates toward
-  // |mini_tab_count_|.
+  // |pinned_tab_count_|.
   void LayoutByTabOffsetBefore(int index);
 
   // Similar to LayoutByTabOffsetAfter(), but uses the current x-coordinate
@@ -189,15 +190,15 @@ class StackedTabStripLayout {
 
   // Returns true if some of the tabs need to be stacked.
   bool requires_stacking() const {
-    return tab_count() != mini_tab_count_ &&
-        x_ + width_for_count(tab_count() - mini_tab_count_) > width_;
+    return tab_count() != pinned_tab_count_ &&
+        x_ + width_for_count(tab_count() - pinned_tab_count_) > width_;
   }
 
   // Number of tabs.
   int tab_count() const { return view_model_->view_size(); }
 
-  // Number of normal (non-mini) tabs.
-  int normal_tab_count() const { return tab_count() - mini_tab_count_; }
+  // Number of normal (non-pinned) tabs.
+  int normal_tab_count() const { return tab_count() - pinned_tab_count_; }
 
   // Distance between one tab to the next.
   int tab_offset() const { return size_.width() + padding_; }
@@ -225,17 +226,17 @@ class StackedTabStripLayout {
   // Available width.
   int width_;
 
-  // Number of mini-tabs.
-  int mini_tab_count_;
+  // Number of pinned tabs.
+  int pinned_tab_count_;
 
-  // Distance from the last mini-tab to the first non-mini-tab.
-  int mini_tab_to_non_mini_tab_;
+  // Distance from the last pinned tab to the first non-pinned tab.
+  int pinned_tab_to_non_pinned_tab_;
 
   // Index of the active tab.
   int active_index_;
 
   // X-coordinate of the first tab. This is either |x_| if there are no
-  // mini-tabs, or the x-coordinate of the first mini-tab.
+  // pinned tabs, or the x-coordinate of the first pinned tab.
   int first_tab_x_;
 
   DISALLOW_COPY_AND_ASSIGN(StackedTabStripLayout);

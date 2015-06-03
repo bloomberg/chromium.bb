@@ -208,8 +208,6 @@ class TabScrubberTest : public InProcessBrowserTest,
                      int index) override {}
   void TabPinnedStateChanged(content::WebContents* contents,
                              int index) override {}
-  void TabMiniStateChanged(content::WebContents* contents, int index) override {
-  }
   void TabBlockedStateChanged(content::WebContents* contents,
                               int index) override {}
   void TabStripEmpty() override {}

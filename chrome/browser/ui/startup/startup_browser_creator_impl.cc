@@ -785,7 +785,6 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
                                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
     params.disposition = first_tab ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
     params.tabstrip_add_types = add_types;
-    params.extension_app_id = tabs[i].app_id;
 
 #if defined(ENABLE_RLZ) && !defined(OS_IOS)
     if (process_startup && google_util::IsGoogleHomePageUrl(tabs[i].url)) {

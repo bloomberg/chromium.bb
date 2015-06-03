@@ -45,7 +45,7 @@ TEST_F(PinnedTabCodecTest, PinnedAndNonPinned) {
 
   StartupTabs pinned_tabs = PinnedTabCodec::ReadPinnedTabs(profile());
   std::string result = PinnedTabTestUtils::TabsToString(pinned_tabs);
-  EXPECT_EQ("http://www.google.com/::pinned:", result);
+  EXPECT_EQ("http://www.google.com/:pinned", result);
 
   // Update pinned tabs and restore back the old value directly.
   browser()->tab_strip_model()->SetTabPinned(1, true);
@@ -53,11 +53,11 @@ TEST_F(PinnedTabCodecTest, PinnedAndNonPinned) {
   PinnedTabCodec::WritePinnedTabs(profile());
   result = PinnedTabTestUtils::TabsToString(
       PinnedTabCodec::ReadPinnedTabs(profile()));
-  EXPECT_EQ("http://www.google.com/::pinned: http://www.google.com/2::pinned:",
+  EXPECT_EQ("http://www.google.com/:pinned http://www.google.com/2:pinned",
             result);
 
   PinnedTabCodec::WritePinnedTabs(profile(), pinned_tabs);
   result = PinnedTabTestUtils::TabsToString(
       PinnedTabCodec::ReadPinnedTabs(profile()));
-  EXPECT_EQ("http://www.google.com/::pinned:", result);
+  EXPECT_EQ("http://www.google.com/:pinned", result);
 }

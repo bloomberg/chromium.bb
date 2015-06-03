@@ -7,8 +7,7 @@
 namespace {
 
 std::string TabToString(const StartupTab& tab) {
-  return tab.url.spec() + ":" + (tab.is_app ? "app" : "") + ":" +
-      (tab.is_pinned ? "pinned" : "") + ":" + tab.app_id;
+  return tab.url.spec() + ":" + (tab.is_pinned ? "pinned" : "");
 }
 
 }  // namespace

@@ -51,7 +51,8 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                      content::WebContents* old_contents,
                      content::WebContents* new_contents,
                      int index) override;
-  void TabMiniStateChanged(content::WebContents* contents, int index) override;
+  void TabPinnedStateChanged(content::WebContents* contents,
+                             int index) override;
   void TabStripEmpty() override;
   void TabStripModelDeleted() override;
 
@@ -85,8 +86,8 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
 - (void)tabReplacedWithContents:(content::WebContents*)newContents
                previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)index;
-- (void)tabMiniStateChangedWithContents:(content::WebContents*)contents
-                                atIndex:(NSInteger)index;
+- (void)tabPinnedStateChangedWithContents:(content::WebContents*)contents
+                                  atIndex:(NSInteger)index;
 - (void)tabStripEmpty;
 - (void)tabStripModelDeleted;
 - (void)tabSelectionChanged;

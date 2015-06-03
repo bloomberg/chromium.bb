@@ -63,7 +63,7 @@ TEST_F(PinnedTabServiceTest, Popup) {
 
   std::string result = PinnedTabTestUtils::TabsToString(
       PinnedTabCodec::ReadPinnedTabs(profile()));
-  EXPECT_EQ("http://www.google.com/::pinned:", result);
+  EXPECT_EQ("http://www.google.com/:pinned", result);
 
   // Close the popup. This shouldn't reset the saved state.
   popup->tab_strip_model()->CloseAllTabs();
@@ -72,7 +72,7 @@ TEST_F(PinnedTabServiceTest, Popup) {
   // Check the state to make sure it hasn't changed.
   result = PinnedTabTestUtils::TabsToString(
       PinnedTabCodec::ReadPinnedTabs(profile()));
-  EXPECT_EQ("http://www.google.com/::pinned:", result);
+  EXPECT_EQ("http://www.google.com/:pinned", result);
 }
 
 }  // namespace

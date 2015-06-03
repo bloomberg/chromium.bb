@@ -24,8 +24,8 @@ StackedTabStripLayout::StackedTabStripLayout(const gfx::Size& size,
       view_model_(view_model),
       x_(0),
       width_(0),
-      mini_tab_count_(0),
-      mini_tab_to_non_mini_tab_(0),
+      pinned_tab_count_(0),
+      pinned_tab_to_non_pinned_tab_(0),
       active_index_(-1),
       first_tab_x_(0) {
 }
@@ -33,17 +33,17 @@ StackedTabStripLayout::StackedTabStripLayout(const gfx::Size& size,
 StackedTabStripLayout::~StackedTabStripLayout() {
 }
 
-void StackedTabStripLayout::SetXAndMiniCount(int x, int mini_tab_count) {
+void StackedTabStripLayout::SetXAndPinnedCount(int x, int pinned_tab_count) {
   first_tab_x_ = x;
   x_ = x;
-  mini_tab_count_ = mini_tab_count;
-  mini_tab_to_non_mini_tab_ = 0;
-  if (!requires_stacking() || tab_count() == mini_tab_count) {
+  pinned_tab_count_ = pinned_tab_count;
+  pinned_tab_to_non_pinned_tab_ = 0;
+  if (!requires_stacking() || tab_count() == pinned_tab_count) {
     ResetToIdealState();
     return;
   }
-  if (mini_tab_count > 0) {
-    mini_tab_to_non_mini_tab_ = x - ideal_x(mini_tab_count - 1);
+  if (pinned_tab_count > 0) {
+    pinned_tab_to_non_pinned_tab_ = x - ideal_x(pinned_tab_count - 1);
     first_tab_x_ = ideal_x(0);
   }
   SetIdealBoundsAt(active_index(), ConstrainActiveX(ideal_x(active_index())));
@@ -124,10 +124,10 @@ void StackedTabStripLayout::SizeToFit() {
     // to fill in space.
     int delta = ideal_x(0) - first_tab_x_;
     int i = 0;
-    for (; i < mini_tab_count_; ++i) {
-      gfx::Rect mini_bounds(view_model_->ideal_bounds(i));
-      mini_bounds.set_x(ideal_x(i) - delta);
-      view_model_->set_ideal_bounds(i, mini_bounds);
+    for (; i < pinned_tab_count_; ++i) {
+      gfx::Rect pinned_bounds(view_model_->ideal_bounds(i));
+      pinned_bounds.set_x(ideal_x(i) - delta);
+      view_model_->set_ideal_bounds(i, pinned_bounds);
     }
     for (; delta > 0 && i < tab_count() - 1; ++i) {
       const int exposed = tab_offset() - (ideal_x(i + 1) - ideal_x(i));
@@ -145,7 +145,7 @@ void StackedTabStripLayout::SizeToFit() {
   // Tabs have been dragged to the left. Pull in tabs from right to left to fill
   // in space.
   SetIdealBoundsAt(tab_count() - 1, max_x);
-  for (int i = tab_count() - 2; i > mini_tab_count_ &&
+  for (int i = tab_count() - 2; i > pinned_tab_count_ &&
            ideal_x(i + 1) - ideal_x(i) > tab_offset(); --i) {
     SetIdealBoundsAt(i, ideal_x(i + 1) - tab_offset());
   }
@@ -157,8 +157,8 @@ void StackedTabStripLayout::AddTab(int index, int add_types, int start_x) {
     active_index_ = index;
   else if (active_index_ >= index)
     active_index_++;
-  if (add_types & kAddTypeMini)
-    mini_tab_count_++;
+  if (add_types & kAddTypePinned)
+    pinned_tab_count_++;
   x_ = start_x;
   if (!requires_stacking() || normal_tab_count() <= 1) {
     ResetToIdealState();
@@ -180,10 +180,10 @@ void StackedTabStripLayout::RemoveTab(int index, int start_x, int old_x) {
     active_index_ = std::min(active_index_, tab_count() - 1);
   else if (index < active_index_)
     active_index_--;
-  bool removed_mini_tab = index < mini_tab_count_;
-  if (removed_mini_tab) {
-    mini_tab_count_--;
-    DCHECK_GE(mini_tab_count_, 0);
+  bool removed_pinned_tab = index < pinned_tab_count_;
+  if (removed_pinned_tab) {
+    pinned_tab_count_--;
+    DCHECK_GE(pinned_tab_count_, 0);
   }
   int delta = start_x - x_;
   x_ = start_x;
@@ -191,8 +191,8 @@ void StackedTabStripLayout::RemoveTab(int index, int start_x, int old_x) {
     ResetToIdealState();
     return;
   }
-  if (removed_mini_tab) {
-    for (int i = mini_tab_count_; i < tab_count(); ++i)
+  if (removed_pinned_tab) {
+    for (int i = pinned_tab_count_; i < tab_count(); ++i)
       SetIdealBoundsAt(i, ideal_x(i) + delta);
   }
   SetActiveBoundsAndLayoutFromActiveTab();
@@ -203,11 +203,11 @@ void StackedTabStripLayout::MoveTab(int from,
                                     int to,
                                     int new_active_index,
                                     int start_x,
-                                    int mini_tab_count) {
+                                    int pinned_tab_count) {
   x_ = start_x;
-  mini_tab_count_ = mini_tab_count;
+  pinned_tab_count_ = pinned_tab_count;
   active_index_ = new_active_index;
-  if (!requires_stacking() || tab_count() == mini_tab_count_) {
+  if (!requires_stacking() || tab_count() == pinned_tab_count_) {
     ResetToIdealState();
   } else {
     SetIdealBoundsAt(active_index(),
@@ -216,14 +216,14 @@ void StackedTabStripLayout::MoveTab(int from,
     LayoutByTabOffsetBefore(active_index());
     AdjustStackedTabs();
   }
-  mini_tab_to_non_mini_tab_ = mini_tab_count > 0 ?
-      start_x - ideal_x(mini_tab_count - 1) : 0;
-  first_tab_x_ = mini_tab_count > 0 ? ideal_x(0) : start_x;
+  pinned_tab_to_non_pinned_tab_ = pinned_tab_count > 0 ?
+      start_x - ideal_x(pinned_tab_count - 1) : 0;
+  first_tab_x_ = pinned_tab_count > 0 ? ideal_x(0) : start_x;
 }
 
 bool StackedTabStripLayout::IsStacked(int index) const {
-  if (index == active_index() || tab_count() == mini_tab_count_ ||
-      index < mini_tab_count_)
+  if (index == active_index() || tab_count() == pinned_tab_count_ ||
+      index < pinned_tab_count_)
     return false;
   if (index > active_index())
     return ideal_x(index) != ideal_x(index - 1) + tab_offset();
@@ -235,7 +235,7 @@ void StackedTabStripLayout::SetActiveTabLocation(int x) {
     return;
 
   const int index = active_index();
-  if (index <= mini_tab_count_)
+  if (index <= pinned_tab_count_)
     return;
 
   x = std::min(GetMaxX(index), std::max(x, GetMinX(index)));
@@ -265,41 +265,41 @@ std::string StackedTabStripLayout::BoundsString() const {
 
 void StackedTabStripLayout::Reset(int x,
                                   int width,
-                                  int mini_tab_count,
+                                  int pinned_tab_count,
                                   int active_index) {
   x_ = x;
   width_ = width;
-  mini_tab_count_ = mini_tab_count;
-  mini_tab_to_non_mini_tab_ = mini_tab_count > 0 ?
-      x - ideal_x(mini_tab_count - 1) : 0;
-  first_tab_x_ = mini_tab_count > 0 ? ideal_x(0) : x;
+  pinned_tab_count_ = pinned_tab_count;
+  pinned_tab_to_non_pinned_tab_ = pinned_tab_count > 0 ?
+      x - ideal_x(pinned_tab_count - 1) : 0;
+  first_tab_x_ = pinned_tab_count > 0 ? ideal_x(0) : x;
   active_index_ = active_index;
   ResetToIdealState();
 }
 
 void StackedTabStripLayout::ResetToIdealState() {
-  if (tab_count() == mini_tab_count_)
+  if (tab_count() == pinned_tab_count_)
     return;
 
   if (!requires_stacking()) {
-    SetIdealBoundsAt(mini_tab_count_, x_);
-    LayoutByTabOffsetAfter(mini_tab_count_);
+    SetIdealBoundsAt(pinned_tab_count_, x_);
+    LayoutByTabOffsetAfter(pinned_tab_count_);
     return;
   }
 
   if (normal_tab_count() == 1) {
     // TODO: might want to shrink the tab here.
-    SetIdealBoundsAt(mini_tab_count_, 0);
+    SetIdealBoundsAt(pinned_tab_count_, 0);
     return;
   }
 
   int available_width = width_ - x_;
-  int leading_count = active_index() - mini_tab_count_;
+  int leading_count = active_index() - pinned_tab_count_;
   int trailing_count = tab_count() - active_index();
   if (width_for_count(leading_count + 1) + max_stacked_width() <
       available_width) {
-    SetIdealBoundsAt(mini_tab_count_, x_);
-    LayoutByTabOffsetAfter(mini_tab_count_);
+    SetIdealBoundsAt(pinned_tab_count_, x_);
+    LayoutByTabOffsetAfter(pinned_tab_count_);
   } else if (width_for_count(trailing_count) + max_stacked_width() <
              available_width) {
     SetIdealBoundsAt(tab_count() - 1, width_ - size_.width());
@@ -307,12 +307,13 @@ void StackedTabStripLayout::ResetToIdealState() {
   } else {
     int index = active_index();
     do {
-      int stacked_padding = stacked_padding_for_count(index - mini_tab_count_);
+      int stacked_padding =
+          stacked_padding_for_count(index - pinned_tab_count_);
       SetIdealBoundsAt(index, x_ + stacked_padding);
       LayoutByTabOffsetAfter(index);
       LayoutByTabOffsetBefore(index);
       index--;
-    } while (index >= mini_tab_count_ && ideal_x(mini_tab_count_) != x_ &&
+    } while (index >= pinned_tab_count_ && ideal_x(pinned_tab_count_) != x_ &&
              ideal_x(tab_count() - 1) != width_ - size_.width());
   }
   AdjustStackedTabs();
@@ -375,8 +376,8 @@ void StackedTabStripLayout::LayoutByTabOffsetAfter(int index) {
 }
 
 void StackedTabStripLayout::LayoutByTabOffsetBefore(int index) {
-  for (int i = index - 1; i >= mini_tab_count_; --i) {
-    int min_x = x_ + stacked_padding_for_count(i - mini_tab_count_);
+  for (int i = index - 1; i >= pinned_tab_count_; --i) {
+    int min_x = x_ + stacked_padding_for_count(i - pinned_tab_count_);
     int x = std::max(min_x, ideal_x(i + 1) - (tab_offset()));
     SetIdealBoundsAt(i, x);
   }
@@ -393,9 +394,9 @@ void StackedTabStripLayout::LayoutUsingCurrentAfter(int index) {
 }
 
 void StackedTabStripLayout::LayoutUsingCurrentBefore(int index) {
-  for (int i = index - 1; i >= mini_tab_count_; --i) {
-    int max_x = x_ + width_for_count(i - mini_tab_count_);
-    if (i > mini_tab_count_)
+  for (int i = index - 1; i >= pinned_tab_count_; --i) {
+    int max_x = x_ + width_for_count(i - pinned_tab_count_);
+    if (i > pinned_tab_count_)
       max_x += padding_;
     max_x = std::min(max_x, ideal_x(i + 1) - stacked_padding_);
     SetIdealBoundsAt(
@@ -410,7 +411,7 @@ void StackedTabStripLayout::PushTabsAfter(int index, int delta) {
 }
 
 void StackedTabStripLayout::PushTabsBefore(int index, int delta) {
-  for (int i = index - 1; i > mini_tab_count_; --i)
+  for (int i = index - 1; i > pinned_tab_count_; --i)
     SetIdealBoundsAt(i, std::max(ideal_x(i) - delta, GetMinDragX(i)));
 }
 
@@ -424,30 +425,30 @@ void StackedTabStripLayout::LayoutForDragAfter(int index) {
 }
 
 void StackedTabStripLayout::LayoutForDragBefore(int index) {
-  for (int i = index - 1; i >= mini_tab_count_; --i) {
+  for (int i = index - 1; i >= pinned_tab_count_; --i) {
     const int max_x = ideal_x(i + 1) - stacked_padding_;
     const int min_x = ideal_x(i + 1) - tab_offset();
     SetIdealBoundsAt(
         i, std::max(min_x, std::min(ideal_x(i), max_x)));
   }
 
-  if (mini_tab_count_ == 0)
+  if (pinned_tab_count_ == 0)
     return;
 
-  // Pull in the mini-tabs.
-  const int delta = (mini_tab_count_ > 1) ? ideal_x(1) - ideal_x(0) : 0;
-  for (int i = mini_tab_count_ - 1; i >= 0; --i) {
-    gfx::Rect mini_bounds(view_model_->ideal_bounds(i));
-    if (i == mini_tab_count_ - 1)
-      mini_bounds.set_x(ideal_x(i + 1) - mini_tab_to_non_mini_tab_);
+  // Pull in the pinned tabs.
+  const int delta = (pinned_tab_count_ > 1) ? ideal_x(1) - ideal_x(0) : 0;
+  for (int i = pinned_tab_count_ - 1; i >= 0; --i) {
+    gfx::Rect pinned_bounds(view_model_->ideal_bounds(i));
+    if (i == pinned_tab_count_ - 1)
+      pinned_bounds.set_x(ideal_x(i + 1) - pinned_tab_to_non_pinned_tab_);
     else
-      mini_bounds.set_x(ideal_x(i + 1) - delta);
-    view_model_->set_ideal_bounds(i, mini_bounds);
+      pinned_bounds.set_x(ideal_x(i + 1) - delta);
+    view_model_->set_ideal_bounds(i, pinned_bounds);
   }
 }
 
 void StackedTabStripLayout::ExpandTabsBefore(int index, int delta) {
-  for (int i = index - 1; i >= mini_tab_count_ && delta > 0; --i) {
+  for (int i = index - 1; i >= pinned_tab_count_ && delta > 0; --i) {
     const int max_x = ideal_x(active_index()) -
         stacked_padding_for_count(active_index() - i);
     int to_resize = std::min(delta, max_x - ideal_x(i));
@@ -477,7 +478,7 @@ void StackedTabStripLayout::ExpandTabsAfter(int index, int delta) {
 }
 
 void StackedTabStripLayout::AdjustStackedTabs() {
-  if (!requires_stacking() || tab_count() <= mini_tab_count_ + 1)
+  if (!requires_stacking() || tab_count() <= pinned_tab_count_ + 1)
     return;
 
   AdjustLeadingStackedTabs();
@@ -485,7 +486,7 @@ void StackedTabStripLayout::AdjustStackedTabs() {
 }
 
 void StackedTabStripLayout::AdjustLeadingStackedTabs() {
-  int index = mini_tab_count_ + 1;
+  int index = pinned_tab_count_ + 1;
   while (index < active_index() &&
          ideal_x(index) - ideal_x(index - 1) <= stacked_padding_ &&
          ideal_x(index) <= x_ + max_stacked_width()) {
@@ -495,11 +496,11 @@ void StackedTabStripLayout::AdjustLeadingStackedTabs() {
       ideal_x(index) <= x_ + max_stacked_width()) {
     index++;
   }
-  if (index <= mini_tab_count_ + max_stacked_count_ - 1)
+  if (index <= pinned_tab_count_ + max_stacked_count_ - 1)
     return;
   int max_stacked = index;
   int x = x_;
-  index = mini_tab_count_;
+  index = pinned_tab_count_;
   for (; index < max_stacked - max_stacked_count_ - 1; ++index)
     SetIdealBoundsAt(index, x);
   for (; index < max_stacked; ++index, x += stacked_padding_)
@@ -538,14 +539,14 @@ void StackedTabStripLayout::SetIdealBoundsAt(int index, int x) {
 }
 
 int StackedTabStripLayout::GetMinX(int index) const {
-  int leading_count = index - mini_tab_count_;
+  int leading_count = index - pinned_tab_count_;
   int trailing_count = tab_count() - index;
   return std::max(x_ + stacked_padding_for_count(leading_count),
                   width_ - width_for_count(trailing_count));
 }
 
 int StackedTabStripLayout::GetMaxX(int index) const {
-  int leading_count = index - mini_tab_count_;
+  int leading_count = index - pinned_tab_count_;
   int trailing_count = tab_count() - index - 1;
   int trailing_offset = stacked_padding_for_count(trailing_count);
   int leading_size = width_for_count(leading_count) + x_;
@@ -555,7 +556,7 @@ int StackedTabStripLayout::GetMaxX(int index) const {
 }
 
 int StackedTabStripLayout::GetMinDragX(int index) const {
-  return x_ + stacked_padding_for_count(index - mini_tab_count_);
+  return x_ + stacked_padding_for_count(index - pinned_tab_count_);
 }
 
 int StackedTabStripLayout::GetMaxDragX(int index) const {

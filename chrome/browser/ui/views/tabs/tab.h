@@ -89,9 +89,9 @@ class Tab : public gfx::AnimationDelegate,
   void StartPulse();
   void StopPulse();
 
-  // Start/stop the mini-tab title animation.
-  void StartMiniTabTitleAnimation();
-  void StopMiniTabTitleAnimation();
+  // Start/stop the pinned tab title animation.
+  void StartPinnedTabTitleAnimation();
+  void StopPinnedTabTitleAnimation();
 
   // Set the background offset used to match the image in the inactive tab
   // to the frame image.
@@ -135,8 +135,8 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the width for touch tabs.
   static int GetTouchWidth();
 
-  // Returns the width for mini-tabs. Mini-tabs always have this width.
-  static int GetMiniWidth();
+  // Returns the width for pinned tabs. Pinned tabs always have this width.
+  static int GetPinnedWidth();
 
   // Returns the height for immersive mode tabs.
   static int GetImmersiveHeight();
@@ -208,8 +208,8 @@ class Tab : public gfx::AnimationDelegate,
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Invoked from Layout to adjust the position of the favicon or media
-  // indicator for mini tabs.
-  void MaybeAdjustLeftForMiniTab(gfx::Rect* bounds) const;
+  // indicator for pinned tabs.
+  void MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds) const;
 
   // Invoked from SetData after |data_| has been updated to the new data.
   void DataChanged(const TabRendererData& old);
@@ -336,7 +336,7 @@ class Tab : public gfx::AnimationDelegate,
   // Whole-tab throbbing "pulse" animation.
   scoped_ptr<gfx::ThrobAnimation> pulse_animation_;
 
-  scoped_ptr<gfx::MultiAnimation> mini_title_change_animation_;
+  scoped_ptr<gfx::MultiAnimation> pinned_title_change_animation_;
 
   // Crash icon animation (in place of favicon).
   scoped_ptr<gfx::LinearAnimation> crash_icon_animation_;

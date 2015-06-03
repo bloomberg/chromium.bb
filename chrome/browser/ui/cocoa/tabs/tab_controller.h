@@ -50,8 +50,6 @@ class MenuDelegate;
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
   BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
 
-  BOOL app_;
-  BOOL mini_;
   BOOL pinned_;
   BOOL active_;
   BOOL selected_;
@@ -67,8 +65,6 @@ class MenuDelegate;
 @property(assign, nonatomic) TabLoadingState loadingState;
 
 @property(assign, nonatomic) SEL action;
-@property(assign, nonatomic) BOOL app;
-@property(assign, nonatomic) BOOL mini;
 @property(assign, nonatomic) BOOL pinned;
 @property(assign, nonatomic) NSString* toolTip;
 // Note that |-selected| will return YES if the controller is |-active|, too.
@@ -91,8 +87,7 @@ class MenuDelegate;
 + (CGFloat)minTabWidth;
 + (CGFloat)maxTabWidth;
 + (CGFloat)minActiveTabWidth;
-+ (CGFloat)miniTabWidth;
-+ (CGFloat)appTabWidth;
++ (CGFloat)pinnedTabWidth;
 
 // The view associated with this controller, pre-casted as a TabView
 - (TabView*)tabView;

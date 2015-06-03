@@ -732,16 +732,7 @@ TEST_F(ProfileResetterTest, ResetStartPagePartially) {
 }
 
 TEST_F(PinnedTabsResetTest, ResetPinnedTabs) {
-  scoped_refptr<Extension> extension_app = CreateExtension(
-      base::ASCIIToUTF16("hello!"),
-      base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
-      Manifest::INVALID_LOCATION,
-      extensions::Manifest::TYPE_HOSTED_APP,
-      false);
   scoped_ptr<content::WebContents> contents1(CreateWebContents());
-  extensions::TabHelper::CreateForWebContents(contents1.get());
-  extensions::TabHelper::FromWebContents(contents1.get())->
-      SetExtensionApp(extension_app.get());
   scoped_ptr<content::WebContents> contents2(CreateWebContents());
   scoped_ptr<content::WebContents> contents3(CreateWebContents());
   scoped_ptr<content::WebContents> contents4(CreateWebContents());
@@ -756,17 +747,17 @@ TEST_F(PinnedTabsResetTest, ResetPinnedTabs) {
 
   EXPECT_EQ(contents2, tab_strip_model->GetWebContentsAt(0));
   EXPECT_EQ(contents1, tab_strip_model->GetWebContentsAt(1));
-  EXPECT_EQ(contents3, tab_strip_model->GetWebContentsAt(2));
-  EXPECT_EQ(contents4, tab_strip_model->GetWebContentsAt(3));
-  EXPECT_EQ(3, tab_strip_model->IndexOfFirstNonMiniTab());
+  EXPECT_EQ(contents4, tab_strip_model->GetWebContentsAt(2));
+  EXPECT_EQ(contents3, tab_strip_model->GetWebContentsAt(3));
+  EXPECT_EQ(2, tab_strip_model->IndexOfFirstNonPinnedTab());
 
   ResetAndWait(ProfileResetter::PINNED_TABS);
 
-  EXPECT_EQ(contents1, tab_strip_model->GetWebContentsAt(0));
-  EXPECT_EQ(contents2, tab_strip_model->GetWebContentsAt(1));
-  EXPECT_EQ(contents3, tab_strip_model->GetWebContentsAt(2));
-  EXPECT_EQ(contents4, tab_strip_model->GetWebContentsAt(3));
-  EXPECT_EQ(1, tab_strip_model->IndexOfFirstNonMiniTab());
+  EXPECT_EQ(contents2, tab_strip_model->GetWebContentsAt(0));
+  EXPECT_EQ(contents1, tab_strip_model->GetWebContentsAt(1));
+  EXPECT_EQ(contents4, tab_strip_model->GetWebContentsAt(2));
+  EXPECT_EQ(contents3, tab_strip_model->GetWebContentsAt(3));
+  EXPECT_EQ(0, tab_strip_model->IndexOfFirstNonPinnedTab());
 }
 
 TEST_F(ProfileResetterTest, ResetShortcuts) {

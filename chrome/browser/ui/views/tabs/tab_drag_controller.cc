@@ -676,7 +676,7 @@ void TabDragController::MoveAttachedToNextStackedIndex(
 void TabDragController::MoveAttachedToPreviousStackedIndex(
     const gfx::Point& point_in_screen) {
   int index = attached_tabstrip_->touch_layout_->active_index();
-  if (index <= attached_tabstrip_->GetMiniTabCount())
+  if (index <= attached_tabstrip_->GetPinnedTabCount())
     return;
 
   GetModel(attached_tabstrip_)->MoveSelectedTabsTo(index - 1);
@@ -1230,7 +1230,7 @@ bool TabDragController::ShouldDragToNextStackedTab(
 bool TabDragController::ShouldDragToPreviousStackedTab(
     const gfx::Rect& dragged_bounds,
     int index) const {
-  if (index - 1 < attached_tabstrip_->GetMiniTabCount() ||
+  if (index - 1 < attached_tabstrip_->GetPinnedTabCount() ||
       !attached_tabstrip_->touch_layout_->IsStacked(index - 1) ||
       (mouse_move_direction_ & kMovedMouseLeft) == 0)
     return false;

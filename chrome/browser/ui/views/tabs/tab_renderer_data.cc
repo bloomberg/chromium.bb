@@ -10,7 +10,7 @@ TabRendererData::TabRendererData()
       crashed_status(base::TERMINATION_STATUS_STILL_RUNNING),
       incognito(false),
       show_icon(true),
-      mini(false),
+      pinned(false),
       blocked(false),
       app(false),
       media_state(TAB_MEDIA_STATE_NONE) {
@@ -28,7 +28,7 @@ bool TabRendererData::Equals(const TabRendererData& data) {
       crashed_status == data.crashed_status &&
       incognito == data.incognito &&
       show_icon == data.show_icon &&
-      mini == data.mini &&
+      pinned == data.pinned &&
       blocked == data.blocked &&
       app == data.app &&
       media_state == data.media_state;

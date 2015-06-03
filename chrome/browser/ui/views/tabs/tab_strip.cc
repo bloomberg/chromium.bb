@@ -533,10 +533,10 @@ const int TabStrip::kNewTabButtonAssetWidth = 34;
 const int TabStrip::kNewTabButtonAssetHeight = 18;
 #if defined(OS_MACOSX)
 const int TabStrip::kNewTabButtonHorizontalOffset = -8;
-const int TabStrip::kMiniToNonMiniGap = 2;
+const int TabStrip::kPinnedToNonPinnedGap = 2;
 #else
 const int TabStrip::kNewTabButtonHorizontalOffset = -11;
-const int TabStrip::kMiniToNonMiniGap = 3;
+const int TabStrip::kPinnedToNonPinnedGap = 3;
 #endif
 
 TabStrip::TabStrip(TabStripController* controller)
@@ -637,10 +637,10 @@ void TabStrip::AddTabAt(int model_index,
   AddChildView(tab);
 
   if (touch_layout_) {
-    GenerateIdealBoundsForMiniTabs(NULL);
+    GenerateIdealBoundsForPinnedTabs(NULL);
     int add_types = 0;
-    if (data.mini)
-      add_types |= StackedTabStripLayout::kAddTypeMini;
+    if (data.pinned)
+      add_types |= StackedTabStripLayout::kAddTypePinned;
     if (is_active)
       add_types |= StackedTabStripLayout::kAddTypeActive;
     touch_layout_->AddTab(model_index, add_types, GetStartXForNormalTabs());
@@ -681,11 +681,11 @@ void TabStrip::MoveTab(int from_model_index,
   tab_at(from_model_index)->SetData(data);
   if (touch_layout_) {
     tabs_.MoveViewOnly(from_model_index, to_model_index);
-    int mini_count = 0;
-    GenerateIdealBoundsForMiniTabs(&mini_count);
+    int pinned_count = 0;
+    GenerateIdealBoundsForPinnedTabs(&pinned_count);
     touch_layout_->MoveTab(
         from_model_index, to_model_index, controller_->GetActiveIndex(),
-        GetStartXForNormalTabs(), mini_count);
+        GetStartXForNormalTabs(), pinned_count);
   } else {
     tabs_.Move(from_model_index, to_model_index);
   }
@@ -708,8 +708,8 @@ void TabStrip::RemoveTabAt(int model_index) {
     // We still need to paint the tab until we actually remove it. Put it in
     // tabs_closing_map_ so we can find it.
     RemoveTabFromViewModel(model_index);
-    touch_layout_->RemoveTab(model_index, GenerateIdealBoundsForMiniTabs(NULL),
-                             old_x);
+    touch_layout_->RemoveTab(model_index,
+                             GenerateIdealBoundsForPinnedTabs(NULL), old_x);
     ScheduleRemoveTabAnimation(tab);
   } else if (in_tab_close_ && model_index != GetModelCount()) {
     StartMouseInitiatedRemoveTabAnimation(model_index);
@@ -724,17 +724,17 @@ void TabStrip::RemoveTabAt(int model_index) {
 
 void TabStrip::SetTabData(int model_index, const TabRendererData& data) {
   Tab* tab = tab_at(model_index);
-  bool mini_state_changed = tab->data().mini != data.mini;
+  bool pinned_state_changed = tab->data().pinned != data.pinned;
   tab->SetData(data);
 
-  if (mini_state_changed) {
+  if (pinned_state_changed) {
     if (touch_layout_) {
-      int mini_tab_count = 0;
-      int start_x = GenerateIdealBoundsForMiniTabs(&mini_tab_count);
-      touch_layout_->SetXAndMiniCount(start_x, mini_tab_count);
+      int pinned_tab_count = 0;
+      int start_x = GenerateIdealBoundsForPinnedTabs(&pinned_tab_count);
+      touch_layout_->SetXAndPinnedCount(start_x, pinned_tab_count);
     }
     if (GetWidget() && GetWidget()->IsVisible())
-      StartMiniTabAnimation();
+      StartPinnedTabAnimation();
     else
       DoLayout();
   }
@@ -778,9 +778,9 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   // become clipped if we changed the active tab, widening either this tab or
   // the tabstrip portion before it.
 
-  // Mini tabs don't change size when activated, so any tab in the mini tab
+  // Pinned tabs don't change size when activated, so any tab in the pinned tab
   // region is safe.
-  if (tab->data().mini)
+  if (tab->data().pinned)
     return true;
 
   // If the active tab is on or before this tab, we're safe.
@@ -813,9 +813,9 @@ void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
     Tab* tab_being_removed = tab_at(model_index);
     available_width_for_tabs_ = last_tab->x() + last_tab->width() -
         tab_being_removed->width() - kTabHorizontalOffset;
-    if (model_index == 0 && tab_being_removed->data().mini &&
-        !tab_at(1)->data().mini) {
-      available_width_for_tabs_ -= kMiniToNonMiniGap;
+    if (model_index == 0 && tab_being_removed->data().pinned &&
+        !tab_at(1)->data().pinned) {
+      available_width_for_tabs_ -= kPinnedToNonPinnedGap;
     }
   }
 
@@ -861,9 +861,9 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
           old_selection.selected_indices());
 
   // Fire accessibility events that reflect the changes to selection, and
-  // stop the mini tab title animation on tabs no longer selected.
+  // stop the pinned tab title animation on tabs no longer selected.
   for (size_t i = 0; i < no_longer_selected.size(); ++i) {
-    tab_at(no_longer_selected[i])->StopMiniTabTitleAnimation();
+    tab_at(no_longer_selected[i])->StopPinnedTabTitleAnimation();
     tab_at(no_longer_selected[i])->NotifyAccessibilityEvent(
         ui::AX_EVENT_SELECTION_REMOVE, true);
   }
@@ -877,8 +877,8 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
 
 void TabStrip::TabTitleChangedNotLoading(int model_index) {
   Tab* tab = tab_at(model_index);
-  if (tab->data().mini && !tab->IsActive())
-    tab->StartMiniTabTitleAnimation();
+  if (tab->data().pinned && !tab->IsActive())
+    tab->StartPinnedTabTitleAnimation();
 }
 
 int TabStrip::GetModelIndexOfTab(const Tab* tab) const {
@@ -1373,13 +1373,13 @@ gfx::Size TabStrip::GetPreferredSize() const {
         Tab::GetTouchWidth() + (2 * kStackedPadding * kMaxStackedCount);
   } else {
     // Otherwise the minimum width is based on the actual number of tabs.
-    const int mini_tab_count = GetMiniTabCount();
-    needed_tab_width = mini_tab_count * Tab::GetMiniWidth();
-    const int remaining_tab_count = tab_count() - mini_tab_count;
+    const int pinned_tab_count = GetPinnedTabCount();
+    needed_tab_width = pinned_tab_count * Tab::GetPinnedWidth();
+    const int remaining_tab_count = tab_count() - pinned_tab_count;
     const int min_selected_width = Tab::GetMinimumSelectedSize().width();
     const int min_unselected_width = Tab::GetMinimumUnselectedSize().width();
     if (remaining_tab_count > 0) {
-      needed_tab_width += kMiniToNonMiniGap + min_selected_width +
+      needed_tab_width += kPinnedToNonPinnedGap + min_selected_width +
           ((remaining_tab_count - 1) * min_unselected_width);
     }
     if (tab_count() > 1)
@@ -1696,14 +1696,14 @@ void TabStrip::StackDraggedTabs(int delta) {
       new_bounds.set_x(std::max(min_x, new_bounds.x() - adjusted_delta));
       tabs_.set_ideal_bounds(i, new_bounds);
     }
-    const bool is_active_mini = tab_at(active_index)->data().mini;
+    const bool is_active_pinned = tab_at(active_index)->data().pinned;
     const int active_width = ideal_bounds(active_index).width();
     for (int i = active_index + 1; i < tab_count(); ++i) {
       const int max_x = ideal_bounds(active_index).x() +
           (kStackedPadding * std::min(i - active_index, kMaxStackedCount));
       gfx::Rect new_bounds(ideal_bounds(i));
       int new_x = std::max(new_bounds.x() + delta, max_x);
-      if (new_x == max_x && !tab_at(i)->data().mini && !is_active_mini &&
+      if (new_x == max_x && !tab_at(i)->data().pinned && !is_active_pinned &&
           new_bounds.width() != active_width)
         new_x += (active_width - new_bounds.width());
       new_bounds.set_x(new_x);
@@ -1730,7 +1730,7 @@ void TabStrip::StackDraggedTabs(int delta) {
       int new_x = std::min(max_x, new_bounds.x() + adjusted_delta);
       // Because of rounding not all tabs are the same width. Adjust the
       // position to accommodate this, otherwise the stacking is off.
-      if (new_x == max_x && !tab_at(i)->data().mini &&
+      if (new_x == max_x && !tab_at(i)->data().pinned &&
           new_bounds.width() != last_tab_width)
         new_x += (last_tab_width - new_bounds.width());
       new_bounds.set_x(new_x);
@@ -1795,8 +1795,8 @@ void TabStrip::CalculateBoundsForDraggedTabs(const Tabs& tabs,
   int x = 0;
   for (size_t i = 0; i < tabs.size(); ++i) {
     Tab* tab = tabs[i];
-    if (i > 0 && tab->data().mini != tabs[i - 1]->data().mini)
-      x += kMiniToNonMiniGap;
+    if (i > 0 && tab->data().pinned != tabs[i - 1]->data().pinned)
+      x += kPinnedToNonPinnedGap;
     gfx::Rect new_bounds = tab->bounds();
     new_bounds.set_origin(gfx::Point(x, 0));
     bounds->push_back(new_bounds);
@@ -1809,19 +1809,19 @@ int TabStrip::GetSizeNeededForTabs(const Tabs& tabs) {
   for (size_t i = 0; i < tabs.size(); ++i) {
     Tab* tab = tabs[i];
     width += tab->width();
-    if (i > 0 && tab->data().mini != tabs[i - 1]->data().mini)
-      width += kMiniToNonMiniGap;
+    if (i > 0 && tab->data().pinned != tabs[i - 1]->data().pinned)
+      width += kPinnedToNonPinnedGap;
   }
   if (tabs.size() > 0)
     width += kTabHorizontalOffset * static_cast<int>(tabs.size() - 1);
   return width;
 }
 
-int TabStrip::GetMiniTabCount() const {
-  int mini_count = 0;
-  while (mini_count < tab_count() && tab_at(mini_count)->data().mini)
-    mini_count++;
-  return mini_count;
+int TabStrip::GetPinnedTabCount() const {
+  int pinned_count = 0;
+  while (pinned_count < tab_count() && tab_at(pinned_count)->data().pinned)
+    pinned_count++;
+  return pinned_count;
 }
 
 const Tab* TabStrip::GetLastVisibleTab() const {
@@ -2084,10 +2084,11 @@ void TabStrip::GetCurrentTabWidths(double* unselected_width,
 }
 
 void TabStrip::GetDesiredTabWidths(int tab_count,
-                                   int mini_tab_count,
+                                   int pinned_tab_count,
                                    double* unselected_width,
                                    double* selected_width) const {
-  DCHECK(tab_count >= 0 && mini_tab_count >= 0 && mini_tab_count <= tab_count);
+  DCHECK(tab_count >= 0 && pinned_tab_count >= 0 &&
+         pinned_tab_count <= tab_count);
   const double min_unselected_width = Tab::GetMinimumUnselectedSize().width();
   const double min_selected_width = Tab::GetMinimumSelectedSize().width();
 
@@ -2102,16 +2103,16 @@ void TabStrip::GetDesiredTabWidths(int tab_count,
   // Determine how much space we can actually allocate to tabs.
   int available_width = (available_width_for_tabs_ < 0) ?
       tab_area_width() : available_width_for_tabs_;
-  if (mini_tab_count > 0) {
+  if (pinned_tab_count > 0) {
     available_width -=
-        mini_tab_count * (Tab::GetMiniWidth() + kTabHorizontalOffset);
-    tab_count -= mini_tab_count;
+        pinned_tab_count * (Tab::GetPinnedWidth() + kTabHorizontalOffset);
+    tab_count -= pinned_tab_count;
     if (tab_count == 0) {
       *selected_width = *unselected_width = Tab::GetStandardSize().width();
       return;
     }
-    // Account for gap between the last mini-tab and first non-mini-tab.
-    available_width -= kMiniToNonMiniGap;
+    // Account for gap between the last pinned tab and first non-pinned tab.
+    available_width -= kPinnedToNonPinnedGap;
   }
 
   // Calculate the desired tab widths by dividing the available space into equal
@@ -2156,10 +2157,10 @@ void TabStrip::ResizeLayoutTabs() {
 
   in_tab_close_ = false;
   available_width_for_tabs_ = -1;
-  int mini_tab_count = GetMiniTabCount();
-  if (mini_tab_count == tab_count()) {
-    // Only mini-tabs, we know the tab widths won't have changed (all
-    // mini-tabs have the same width), so there is nothing to do.
+  int pinned_tab_count = GetPinnedTabCount();
+  if (pinned_tab_count == tab_count()) {
+    // Only pinned tabs, we know the tab widths won't have changed (all
+    // pinned tabs have the same width), so there is nothing to do.
     return;
   }
   // Don't try and avoid layout based on tab sizes. If tabs are small enough
@@ -2250,8 +2251,8 @@ void TabStrip::UpdateDropIndex(const DropTargetEvent& event) {
   // coordinates since we calculate the drop index based on the
   // original (and therefore non-mirrored) positions of the tabs.
   const int x = GetMirroredXInView(event.x());
-  // We don't allow replacing the urls of mini-tabs.
-  for (int i = GetMiniTabCount(); i < tab_count(); ++i) {
+  // We don't allow replacing the urls of pinned tabs.
+  for (int i = GetPinnedTabCount(); i < tab_count(); ++i) {
     Tab* tab = tab_at(i);
     const int tab_max_x = tab->x() + tab->width();
     const int hot_width = tab->width() / kTabEdgeRatioInverse;
@@ -2374,17 +2375,17 @@ void TabStrip::GenerateIdealBounds() {
     return;
   }
 
-  GetDesiredTabWidths(tab_count(), GetMiniTabCount(),
+  GetDesiredTabWidths(tab_count(), GetPinnedTabCount(),
                       &current_unselected_width_, &current_selected_width_);
 
   // NOTE: This currently assumes a tab's height doesn't differ based on
   // selected state or the number of tabs in the strip!
   int tab_height = Tab::GetStandardSize().height();
-  int first_non_mini_index = 0;
-  double tab_x = GenerateIdealBoundsForMiniTabs(&first_non_mini_index);
-  for (int i = first_non_mini_index; i < tab_count(); ++i) {
+  int first_non_pinned_index = 0;
+  double tab_x = GenerateIdealBoundsForPinnedTabs(&first_non_pinned_index);
+  for (int i = first_non_pinned_index; i < tab_count(); ++i) {
     Tab* tab = tab_at(i);
-    DCHECK(!tab->data().mini);
+    DCHECK(!tab->data().pinned);
     double tab_width =
         tab->IsActive() ? current_selected_width_ : current_unselected_width_;
     double end_of_tab = tab_x + tab_width;
@@ -2411,19 +2412,20 @@ void TabStrip::GenerateIdealBounds() {
   newtab_button_bounds_.set_origin(gfx::Point(new_tab_x, new_tab_y));
 }
 
-int TabStrip::GenerateIdealBoundsForMiniTabs(int* first_non_mini_index) {
+int TabStrip::GenerateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
   int next_x = 0;
-  int mini_width = Tab::GetMiniWidth();
+  int pinned_width = Tab::GetPinnedWidth();
   int tab_height = Tab::GetStandardSize().height();
   int index = 0;
-  for (; index < tab_count() && tab_at(index)->data().mini; ++index) {
-    tabs_.set_ideal_bounds(index, gfx::Rect(next_x, 0, mini_width, tab_height));
-    next_x += mini_width + kTabHorizontalOffset;
+  for (; index < tab_count() && tab_at(index)->data().pinned; ++index) {
+    tabs_.set_ideal_bounds(index,
+                           gfx::Rect(next_x, 0, pinned_width, tab_height));
+    next_x += pinned_width + kTabHorizontalOffset;
   }
   if (index > 0 && index < tab_count())
-    next_x += kMiniToNonMiniGap;
-  if (first_non_mini_index)
-    *first_non_mini_index = index;
+    next_x += kPinnedToNonPinnedGap;
+  if (first_non_pinned_index)
+    *first_non_pinned_index = index;
   return next_x;
 }
 
@@ -2433,7 +2435,7 @@ void TabStrip::StartResizeLayoutAnimation() {
   AnimateToIdealBounds();
 }
 
-void TabStrip::StartMiniTabAnimation() {
+void TabStrip::StartPinnedTabAnimation() {
   in_tab_close_ = false;
   available_width_for_tabs_ = -1;
 
@@ -2448,11 +2450,11 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
   // existing tabs, so we manually shift ideal_bounds then animate.
   Tab* tab_closing = tab_at(model_index);
   int delta = tab_closing->width() + kTabHorizontalOffset;
-  // If the tab being closed is a mini-tab next to a non-mini-tab, be sure to
-  // add the extra padding.
+  // If the tab being closed is a pinned tab next to a non-pinned tab, be sure
+  // to add the extra padding.
   DCHECK_LT(model_index, tab_count() - 1);
-  if (tab_closing->data().mini && !tab_at(model_index + 1)->data().mini)
-    delta += kMiniToNonMiniGap;
+  if (tab_closing->data().pinned && !tab_at(model_index + 1)->data().pinned)
+    delta += kPinnedToNonPinnedGap;
 
   for (int i = model_index + 1; i < tab_count(); ++i) {
     gfx::Rect bounds = ideal_bounds(i);
@@ -2497,11 +2499,11 @@ bool TabStrip::IsPointInTab(Tab* tab,
 }
 
 int TabStrip::GetStartXForNormalTabs() const {
-  int mini_tab_count = GetMiniTabCount();
-  if (mini_tab_count == 0)
+  int pinned_tab_count = GetPinnedTabCount();
+  if (pinned_tab_count == 0)
     return 0;
-  return mini_tab_count * (Tab::GetMiniWidth() + kTabHorizontalOffset) +
-      kMiniToNonMiniGap;
+  return pinned_tab_count * (Tab::GetPinnedWidth() + kTabHorizontalOffset) +
+      kPinnedToNonPinnedGap;
 }
 
 Tab* TabStrip::FindTabForEvent(const gfx::Point& point) {
@@ -2577,11 +2579,11 @@ void TabStrip::SwapLayoutIfNecessary() {
                             &tabs_));
     touch_layout_->SetWidth(tab_area_width());
     // This has to be after SetWidth() as SetWidth() is going to reset the
-    // bounds of the mini-tabs (since StackedTabStripLayout doesn't yet know how
-    // many mini-tabs there are).
-    GenerateIdealBoundsForMiniTabs(NULL);
-    touch_layout_->SetXAndMiniCount(GetStartXForNormalTabs(),
-                                    GetMiniTabCount());
+    // bounds of the pinned tabs (since StackedTabStripLayout doesn't yet know
+    // how many pinned tabs there are).
+    GenerateIdealBoundsForPinnedTabs(NULL);
+    touch_layout_->SetXAndPinnedCount(GetStartXForNormalTabs(),
+                                    GetPinnedTabCount());
     touch_layout_->SetActiveIndex(controller_->GetActiveIndex());
 
     content::RecordAction(UserMetricsAction("StackedTab_EnteredStackedLayout"));
@@ -2598,9 +2600,9 @@ bool TabStrip::NeedsTouchLayout() const {
   if (!stacked_layout_)
     return false;
 
-  int mini_tab_count = GetMiniTabCount();
-  int normal_count = tab_count() - mini_tab_count;
-  if (normal_count <= 1 || normal_count == mini_tab_count)
+  int pinned_tab_count = GetPinnedTabCount();
+  int normal_count = tab_count() - pinned_tab_count;
+  if (normal_count <= 1 || normal_count == pinned_tab_count)
     return false;
   int x = GetStartXForNormalTabs();
   int available_width = tab_area_width() - x;
