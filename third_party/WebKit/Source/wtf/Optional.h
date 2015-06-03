@@ -32,34 +32,31 @@ template <typename T>
 class Optional {
     WTF_MAKE_NONCOPYABLE(Optional);
 public:
-    Optional() : m_engaged(false) { }
+    Optional() : m_ptr(nullptr) { }
     ~Optional()
     {
-        if (m_engaged)
-            storage()->~T();
+        if (m_ptr)
+            m_ptr->~T();
     }
 
-    typedef bool Optional::*UnspecifiedBoolType;
-    operator UnspecifiedBoolType() const { return m_engaged ? &Optional::m_engaged : nullptr; }
+    typedef T* Optional::*UnspecifiedBoolType;
+    operator UnspecifiedBoolType() const { return m_ptr ? &Optional::m_ptr : nullptr; }
 
-    T& operator*() { ASSERT(m_engaged); return *storage(); }
-    const T& operator*() const { ASSERT(m_engaged); return *storage(); }
-    T* operator->() { ASSERT(m_engaged); return storage(); }
-    const T* operator->() const { ASSERT(m_engaged); return storage(); }
+    T& operator*() { ASSERT_WITH_SECURITY_IMPLICATION(m_ptr); return *m_ptr; }
+    const T& operator*() const { ASSERT_WITH_SECURITY_IMPLICATION(m_ptr); return *m_ptr; }
+    T* operator->() { ASSERT_WITH_SECURITY_IMPLICATION(m_ptr); return m_ptr; }
+    const T* operator->() const { ASSERT_WITH_SECURITY_IMPLICATION(m_ptr); return m_ptr; }
 
     template <typename... Args>
     void emplace(Args&&... args)
     {
-        ASSERT(!m_engaged);
-        new (storage()) T(forward<Args>(args)...);
-        m_engaged = true;
+        RELEASE_ASSERT(!m_ptr);
+        m_ptr = reinterpret_cast_ptr<T*>(&m_storage.buffer);
+        new (m_ptr) T(forward<Args>(args)...);
     }
 
 private:
-    T* storage() { return reinterpret_cast_ptr<T*>(&m_storage.buffer); }
-    const T* storage() const { return reinterpret_cast_ptr<const T*>(&m_storage.buffer); }
-
-    bool m_engaged;
+    T* m_ptr;
     AlignedBuffer<sizeof(T), WTF_ALIGN_OF(T)> m_storage;
 };
 
