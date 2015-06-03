@@ -40674,9 +40674,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Error codes returned by sqlite for the appcache db.</summary>
 </histogram>
 
+<histogram name="Sqlite.AutoCommitTime" units="milliseconds">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Record times for INSERT/UPDATE/DELETE statements run outside of an explicit
+    transaction.
+  </summary>
+</histogram>
+
 <histogram name="Sqlite.CloseFailure" enum="SqliteErrorCode">
   <owner>shess@chromium.org</owner>
   <summary>Error which prevented database close.</summary>
+</histogram>
+
+<histogram name="Sqlite.CommitTime" units="milliseconds">
+  <owner>shess@chromium.org</owner>
+  <summary>Record time spent in explicit COMMIT statements.</summary>
 </histogram>
 
 <histogram name="Sqlite.Cookie.Error" enum="SqliteErrorCode">
@@ -40752,6 +40765,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Error from first read of the database.</summary>
 </histogram>
 
+<histogram name="Sqlite.QueryTime" units="milliseconds">
+  <owner>shess@chromium.org</owner>
+  <summary>Record times for all statements run against the database.</summary>
+</histogram>
+
 <histogram name="Sqlite.Quota.Error" enum="SqliteErrorCode">
   <obsolete>
     Moved to Sqlite.Error.Quota in M-27.
@@ -40800,6 +40818,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Size in kilobytes of pre-existing database at startup.</summary>
 </histogram>
 
+<histogram name="Sqlite.Stats" enum="SqliteStatsEnum">
+  <owner>shess@chromium.org</owner>
+  <summary>Stats for different API calls in sql/.</summary>
+</histogram>
+
 <histogram name="Sqlite.Text.Error" enum="SqliteErrorCode">
   <obsolete>
     Moved to Sqlite.Error.Text in M-27.
@@ -40814,6 +40837,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Error codes returned by sqlite for the thumbnail db.</summary>
+</histogram>
+
+<histogram name="Sqlite.UpdateTime" units="milliseconds">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    Record times for statements which could update the database file.  Includes
+    commit and autocommit time.
+  </summary>
 </histogram>
 
 <histogram name="Sqlite.Version">
@@ -64956,6 +64987,29 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
 </enum>
 
+<enum name="SqliteStatsEnum" type="int">
+  <summary/>
+  <int value="0" label="EVENT_STATEMENT_RUN">
+    Count statements initiated by Step(), Run(), or Execute*().
+  </int>
+  <int value="1" label="EVENT_STATEMENT_ROWS">
+    Count steps which returned SQLITE_ROW.
+  </int>
+  <int value="2" label="EVENT_STATEMENT_SUCCESS">
+    Count statements which ran to completion with no errors.
+  </int>
+  <int value="3" label="EVENT_EXECUTE">Count calls to Execute*().</int>
+  <int value="4" label="EVENT_CHANGES_AUTOCOMMIT">
+    Count rows changed without an explicit transaction.
+  </int>
+  <int value="5" label="EVENT_CHANGES">
+    Count rows changed in an explicit transaction.
+  </int>
+  <int value="6" label="EVENT_BEGIN">Explicit transactions begun.</int>
+  <int value="7" label="EVENT_COMMIT">Explicit transactions committed.</int>
+  <int value="8" label="EVENT_ROLLBACK">Explicit transactions rolled back.</int>
+</enum>
+
 <enum name="SqliteVersionDeprecation" type="int">
   <summary>Sqlite database version deprecation status</summary>
   <int value="0" label="DEPRECATION_DATABASE_NOT_EMPTY">
@@ -71623,8 +71677,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Thumbnail" label="Thumbnail"/>
   <suffix name="TopSites" label="TopSites"/>
   <suffix name="Web" label="Web"/>
+  <affected-histogram name="Sqlite.AutoCommitTime"/>
+  <affected-histogram name="Sqlite.CommitTime"/>
   <affected-histogram name="Sqlite.Error"/>
+  <affected-histogram name="Sqlite.QueryTime"/>
   <affected-histogram name="Sqlite.SizeKB"/>
+  <affected-histogram name="Sqlite.Stats"/>
+  <affected-histogram name="Sqlite.UpdateTime"/>
   <affected-histogram name="Sqlite.Version"/>
 </histogram_suffixes>
 

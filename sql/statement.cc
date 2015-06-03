@@ -51,34 +51,63 @@ bool Statement::CheckValid() const {
   return is_valid();
 }
 
-bool Statement::Run() {
-  DCHECK(!stepped_);
+int Statement::StepInternal(bool timer_flag) {
   ref_->AssertIOAllowed();
   if (!CheckValid())
-    return false;
+    return SQLITE_ERROR;
 
+  const bool was_stepped = stepped_;
   stepped_ = true;
-  return CheckError(sqlite3_step(ref_->stmt())) == SQLITE_DONE;
+  int ret = SQLITE_ERROR;
+  if (!ref_->connection()) {
+    ret = sqlite3_step(ref_->stmt());
+  } else {
+    if (!timer_flag) {
+      ret = sqlite3_step(ref_->stmt());
+    } else {
+      const base::TimeTicks before = ref_->connection()->Now();
+      ret = sqlite3_step(ref_->stmt());
+      const base::TimeTicks after = ref_->connection()->Now();
+      const bool read_only = !!sqlite3_stmt_readonly(ref_->stmt());
+      ref_->connection()->RecordTimeAndChanges(after - before, read_only);
+    }
+
+    if (!was_stepped)
+      ref_->connection()->RecordOneEvent(Connection::EVENT_STATEMENT_RUN);
+
+    if (ret == SQLITE_ROW)
+      ref_->connection()->RecordOneEvent(Connection::EVENT_STATEMENT_ROWS);
+  }
+  return CheckError(ret);
+}
+
+bool Statement::Run() {
+  DCHECK(!stepped_);
+  return StepInternal(true) == SQLITE_DONE;
+}
+
+bool Statement::RunWithoutTimers() {
+  DCHECK(!stepped_);
+  return StepInternal(false) == SQLITE_DONE;
 }
 
 bool Statement::Step() {
-  ref_->AssertIOAllowed();
-  if (!CheckValid())
-    return false;
-
-  stepped_ = true;
-  return CheckError(sqlite3_step(ref_->stmt())) == SQLITE_ROW;
+  return StepInternal(true) == SQLITE_ROW;
 }
 
 void Statement::Reset(bool clear_bound_vars) {
   ref_->AssertIOAllowed();
   if (is_valid()) {
-    // We don't call CheckError() here because sqlite3_reset() returns
-    // the last error that Step() caused thereby generating a second
-    // spurious error callback.
     if (clear_bound_vars)
       sqlite3_clear_bindings(ref_->stmt());
-    sqlite3_reset(ref_->stmt());
+
+    // StepInternal() cannot track success because statements may be reset
+    // before reaching SQLITE_DONE.  Don't call CheckError() because
+    // sqlite3_reset() returns the last step error, which StepInternal() already
+    // checked.
+    const int rc =sqlite3_reset(ref_->stmt());
+    if (rc == SQLITE_OK && ref_->connection())
+      ref_->connection()->RecordOneEvent(Connection::EVENT_STATEMENT_SUCCESS);
   }
 
   succeeded_ = false;

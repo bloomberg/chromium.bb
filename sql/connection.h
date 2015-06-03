@@ -25,12 +25,20 @@ struct sqlite3_stmt;
 
 namespace base {
 class FilePath;
+class HistogramBase;
 }
 
 namespace sql {
 
 class Recovery;
 class Statement;
+
+// To allow some test classes to be friended.
+namespace test {
+class ScopedCommitHook;
+class ScopedScalarFunction;
+class ScopedMockTimeSource;
+}
 
 // Uniquely identifies a statement. There are two modes of operation:
 //
@@ -79,6 +87,20 @@ class StatementID {
 #define SQL_FROM_HERE sql::StatementID(__FILE__, __LINE__)
 
 class Connection;
+
+// Abstract the source of timing information for metrics (RecordCommitTime, etc)
+// to allow testing control.
+class SQL_EXPORT TimeSource {
+ public:
+  TimeSource() {}
+  virtual ~TimeSource() {}
+
+  // Return the current time (by default base::TimeTicks::Now()).
+  virtual base::TimeTicks Now();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TimeSource);
+};
 
 class SQL_EXPORT Connection {
  private:
@@ -140,16 +162,51 @@ class SQL_EXPORT Connection {
     error_callback_.Reset();
   }
 
-  // Set this tag to enable additional connection-type histogramming
-  // for SQLite error codes and database version numbers.
-  void set_histogram_tag(const std::string& tag) {
-    histogram_tag_ = tag;
-  }
+  // Set this to enable additional per-connection histogramming.  Must be called
+  // before Open().
+  void set_histogram_tag(const std::string& tag);
 
   // Record a sparse UMA histogram sample under
   // |name|+"."+|histogram_tag_|.  If |histogram_tag_| is empty, no
   // histogram is recorded.
   void AddTaggedHistogram(const std::string& name, size_t sample) const;
+
+  // Track various API calls and results.  Values corrospond to UMA
+  // histograms, do not modify, or add or delete other than directly
+  // before EVENT_MAX_VALUE.
+  enum Events {
+    // Number of statements run, either with sql::Statement or Execute*().
+    EVENT_STATEMENT_RUN = 0,
+
+    // Number of rows returned by statements run.
+    EVENT_STATEMENT_ROWS,
+
+    // Number of statements successfully run (all steps returned SQLITE_DONE or
+    // SQLITE_ROW).
+    EVENT_STATEMENT_SUCCESS,
+
+    // Number of statements run by Execute() or ExecuteAndReturnErrorCode().
+    EVENT_EXECUTE,
+
+    // Number of rows changed by autocommit statements.
+    EVENT_CHANGES_AUTOCOMMIT,
+
+    // Number of rows changed by statements in transactions.
+    EVENT_CHANGES,
+
+    // Count actual SQLite transaction statements (not including nesting).
+    EVENT_BEGIN,
+    EVENT_COMMIT,
+    EVENT_ROLLBACK,
+
+    // Leave this at the end.
+    // TODO(shess): |EVENT_MAX| causes compile fail on Windows.
+    EVENT_MAX_VALUE
+  };
+  void RecordEvent(Events event, size_t count);
+  void RecordOneEvent(Events event) {
+    RecordEvent(event, 1);
+  }
 
   // Run "PRAGMA integrity_check" and post each line of
   // results into |messages|.  Returns the success of running the
@@ -415,6 +472,10 @@ class SQL_EXPORT Connection {
   // (they should go through Statement).
   friend class Statement;
 
+  friend class test::ScopedCommitHook;
+  friend class test::ScopedScalarFunction;
+  friend class test::ScopedMockTimeSource;
+
   // Internal initialize function used by both Init and InitInMemory. The file
   // name is always 8 bits since we want to use the 8-bit version of
   // sqlite3_open. The string can also be sqlite's special ":memory:" string.
@@ -548,6 +609,35 @@ class SQL_EXPORT Connection {
       const char* pragma_sql,
       std::vector<std::string>* messages) WARN_UNUSED_RESULT;
 
+  // Record time spent executing explicit COMMIT statements.
+  void RecordCommitTime(const base::TimeDelta& delta);
+
+  // Record time in DML (Data Manipulation Language) statements such as INSERT
+  // or UPDATE outside of an explicit transaction.  Due to implementation
+  // limitations time spent on DDL (Data Definition Language) statements such as
+  // ALTER and CREATE is not included.
+  void RecordAutoCommitTime(const base::TimeDelta& delta);
+
+  // Record all time spent on updating the database.  This includes CommitTime()
+  // and AutoCommitTime(), plus any time spent spilling to the journal if
+  // transactions do not fit in cache.
+  void RecordUpdateTime(const base::TimeDelta& delta);
+
+  // Record all time spent running statements, including time spent doing
+  // updates and time spent on read-only queries.
+  void RecordQueryTime(const base::TimeDelta& delta);
+
+  // Record |delta| as query time if |read_only| (from sqlite3_stmt_readonly) is
+  // true, autocommit time if the database is not in a transaction, or update
+  // time if the database is in a transaction.  Also records change count to
+  // EVENT_CHANGES_AUTOCOMMIT or EVENT_CHANGES_COMMIT.
+  void RecordTimeAndChanges(const base::TimeDelta& delta, bool read_only);
+
+  // Helper to return the current time from the time source.
+  base::TimeTicks Now() {
+    return clock_->Now();
+  }
+
   // The actual sqlite database. Will be NULL before Init has been called or if
   // Init resulted in an error.
   sqlite3* db_;
@@ -593,6 +683,26 @@ class SQL_EXPORT Connection {
 
   // Tag for auxiliary histograms.
   std::string histogram_tag_;
+
+  // Linear histogram for RecordEvent().
+  base::HistogramBase* stats_histogram_;
+
+  // Histogram for tracking time taken in commit.
+  base::HistogramBase* commit_time_histogram_;
+
+  // Histogram for tracking time taken in autocommit updates.
+  base::HistogramBase* autocommit_time_histogram_;
+
+  // Histogram for tracking time taken in updates (including commit and
+  // autocommit).
+  base::HistogramBase* update_time_histogram_;
+
+  // Histogram for tracking time taken in all queries.
+  base::HistogramBase* query_time_histogram_;
+
+  // Source for timing information, provided to allow tests to inject time
+  // changes.
+  scoped_ptr<TimeSource> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(Connection);
 };

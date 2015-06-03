@@ -150,6 +150,8 @@ class SQL_EXPORT Statement {
   const char* GetSQLStatement();
 
  private:
+  friend class Connection;
+
   // This is intended to check for serious errors and report them to the
   // connection object. It takes a sqlite error code, and returns the same
   // code. Currently this function just updates the succeeded flag, but will be
@@ -173,6 +175,16 @@ class SQL_EXPORT Statement {
   // release and test. In test, we're ensuring correct SQL. In release, we're
   // ensuring that contracts are honored in error edge cases.
   bool CheckValid() const;
+
+  // Helper for Run() and Step(), calls sqlite3_step() and then generates
+  // sql::Connection histograms based on the results.  Timing and change count
+  // are only recorded if |timer_flag| is true.  The checked value from
+  // sqlite3_step() is returned.
+  int StepInternal(bool timer_flag);
+
+  // sql::Connection uses cached statments for transactions, but tracks their
+  // runtime independently.
+  bool RunWithoutTimers();
 
   // The actual sqlite statement. This may be unique to us, or it may be cached
   // by the connection, which is why it's refcounted. This pointer is

@@ -7,14 +7,133 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/metrics/statistics_recorder.h"
+#include "base/test/histogram_tester.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
+#include "sql/proxy.h"
 #include "sql/statement.h"
 #include "sql/test/error_callback_support.h"
 #include "sql/test/scoped_error_ignorer.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
+
+namespace sql {
+namespace test {
+
+// Replaces the database time source with an object that steps forward 1ms on
+// each check, and which can be jumped forward an arbitrary amount of time
+// programmatically.
+class ScopedMockTimeSource {
+ public:
+  ScopedMockTimeSource(Connection& db)
+      : db_(db),
+        delta_(base::TimeDelta::FromMilliseconds(1)) {
+    // Save the current source and replace it.
+    save_.swap(db_.clock_);
+    db_.clock_.reset(new MockTimeSource(*this));
+  }
+  ~ScopedMockTimeSource() {
+    // Put original source back.
+    db_.clock_.swap(save_);
+  }
+
+  void adjust(const base::TimeDelta& delta) {
+    current_time_ += delta;
+  }
+
+ private:
+  class MockTimeSource : public TimeSource {
+   public:
+    MockTimeSource(ScopedMockTimeSource& owner)
+        : owner_(owner) {
+    }
+    ~MockTimeSource() override {}
+
+    base::TimeTicks Now() override {
+      base::TimeTicks ret(owner_.current_time_);
+      owner_.current_time_ += owner_.delta_;
+      return ret;
+    }
+
+   private:
+    ScopedMockTimeSource& owner_;
+    DISALLOW_COPY_AND_ASSIGN(MockTimeSource);
+  };
+
+  Connection& db_;
+
+  // Saves original source from |db_|.
+  scoped_ptr<TimeSource> save_;
+
+  // Current time returned by mock.
+  base::TimeTicks current_time_;
+
+  // How far to jump on each Now() call.
+  base::TimeDelta delta_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedMockTimeSource);
+};
+
+// Allow a test to add a SQLite function in a scoped context.
+class ScopedScalarFunction {
+ public:
+  ScopedScalarFunction(
+      sql::Connection& db,
+      const char* function_name,
+      int args,
+      base::Callback<void(sqlite3_context*,int,sqlite3_value**)> cb)
+      : db_(db.db_), function_name_(function_name), cb_(cb) {
+    sql::sqlite3_create_function_v2(db_, function_name, args, SQLITE_UTF8,
+                                    this, &Run, NULL, NULL, NULL);
+  }
+  ~ScopedScalarFunction() {
+    sql::sqlite3_create_function_v2(db_, function_name_, 0, SQLITE_UTF8,
+                                    NULL, NULL, NULL, NULL, NULL);
+  }
+
+ private:
+  static void Run(sqlite3_context* context, int argc, sqlite3_value** argv) {
+    ScopedScalarFunction* t = static_cast<ScopedScalarFunction*>(
+        sqlite3_user_data(context));
+    t->cb_.Run(context, argc, argv);
+  }
+
+  sqlite3* db_;
+  const char* function_name_;
+  base::Callback<void(sqlite3_context*,int,sqlite3_value**)> cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedScalarFunction);
+};
+
+// Allow a test to add a SQLite commit hook in a scoped context.
+class ScopedCommitHook {
+ public:
+  ScopedCommitHook(sql::Connection& db,
+                   base::Callback<int(void)> cb)
+      : db_(db.db_),
+        cb_(cb) {
+    sql::sqlite3_commit_hook(db_, &Run, this);
+  }
+  ~ScopedCommitHook() {
+    sql::sqlite3_commit_hook(db_, NULL, NULL);
+  }
+
+ private:
+  static int Run(void* p) {
+    ScopedCommitHook* t = static_cast<ScopedCommitHook*>(p);
+    return t->cb_.Run();
+  }
+
+  sqlite3* db_;
+  base::Callback<int(void)> cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedCommitHook);
+};
+
+}  // namespace test
+}  // namespace sql
 
 namespace {
 
@@ -91,6 +210,10 @@ class ScopedUmaskSetter {
 class SQLConnectionTest : public testing::Test {
  public:
   void SetUp() override {
+    // Any macro histograms which fire before the recorder is initialized cannot
+    // be tested.  So this needs to be ahead of Open().
+    base::StatisticsRecorder::Initialize();
+
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     db_path_ = temp_dir_.path().AppendASCII("SQLConnectionTest.db");
     ASSERT_TRUE(db_.Open(db_path_));
@@ -903,6 +1026,301 @@ TEST_F(SQLConnectionTest, Basic_FullIntegrityCheck) {
 
   // TODO(shess): CorruptTableOrIndex could be used to produce a
   // file that would pass the quick check and fail the full check.
+}
+
+// Test Sqlite.Stats histogram for execute-oriented calls.
+TEST_F(SQLConnectionTest, EventsExecute) {
+  // Re-open with histogram tag.
+  db().Close();
+  db().set_histogram_tag("Test");
+  ASSERT_TRUE(db().Open(db_path()));
+
+  // Open() uses Execute() extensively, don't track those calls.
+  base::HistogramTester tester;
+
+  const char kHistogramName[] = "Sqlite.Stats.Test";
+  const char kGlobalHistogramName[] = "Sqlite.Stats";
+
+  ASSERT_TRUE(db().BeginTransaction());
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  EXPECT_TRUE(db().Execute(kCreateSql));
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (10, 'text')"));
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (11, 'text')"));
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (12, 'text')"));
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (13, 'text')"));
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (14, 'text')"));
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (15, 'text');"
+                           "INSERT INTO foo VALUES (16, 'text');"
+                           "INSERT INTO foo VALUES (17, 'text');"
+                           "INSERT INTO foo VALUES (18, 'text');"
+                           "INSERT INTO foo VALUES (19, 'text')"));
+  ASSERT_TRUE(db().CommitTransaction());
+  ASSERT_TRUE(db().BeginTransaction());
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (20, 'text')"));
+  db().RollbackTransaction();
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (20, 'text')"));
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (21, 'text')"));
+
+  // The create, 5 inserts, multi-statement insert, rolled-back insert, 2
+  // inserts outside transaction.
+  tester.ExpectBucketCount(kHistogramName, sql::Connection::EVENT_EXECUTE, 10);
+  tester.ExpectBucketCount(kGlobalHistogramName,
+                           sql::Connection::EVENT_EXECUTE, 10);
+
+  // All of the executes, with the multi-statement inserts broken out, plus one
+  // for each begin, commit, and rollback.
+  tester.ExpectBucketCount(kHistogramName,
+                           sql::Connection::EVENT_STATEMENT_RUN, 18);
+  tester.ExpectBucketCount(kGlobalHistogramName,
+                           sql::Connection::EVENT_STATEMENT_RUN, 18);
+
+  tester.ExpectBucketCount(kHistogramName,
+                           sql::Connection::EVENT_STATEMENT_ROWS, 0);
+  tester.ExpectBucketCount(kGlobalHistogramName,
+                           sql::Connection::EVENT_STATEMENT_ROWS, 0);
+  tester.ExpectBucketCount(kHistogramName,
+                           sql::Connection::EVENT_STATEMENT_SUCCESS, 18);
+  tester.ExpectBucketCount(kGlobalHistogramName,
+                           sql::Connection::EVENT_STATEMENT_SUCCESS, 18);
+
+  // The 2 inserts outside the transaction.
+  tester.ExpectBucketCount(kHistogramName,
+                           sql::Connection::EVENT_CHANGES_AUTOCOMMIT, 2);
+  tester.ExpectBucketCount(kGlobalHistogramName,
+                           sql::Connection::EVENT_CHANGES_AUTOCOMMIT, 2);
+
+  // 11 inserts inside transactions.
+  tester.ExpectBucketCount(kHistogramName, sql::Connection::EVENT_CHANGES, 11);
+  tester.ExpectBucketCount(kGlobalHistogramName,
+                           sql::Connection::EVENT_CHANGES, 11);
+
+  tester.ExpectBucketCount(kHistogramName, sql::Connection::EVENT_BEGIN, 2);
+  tester.ExpectBucketCount(kGlobalHistogramName,
+                           sql::Connection::EVENT_BEGIN, 2);
+  tester.ExpectBucketCount(kHistogramName, sql::Connection::EVENT_COMMIT, 1);
+  tester.ExpectBucketCount(kGlobalHistogramName,
+                           sql::Connection::EVENT_COMMIT, 1);
+  tester.ExpectBucketCount(kHistogramName, sql::Connection::EVENT_ROLLBACK, 1);
+  tester.ExpectBucketCount(kGlobalHistogramName,
+                           sql::Connection::EVENT_ROLLBACK, 1);
+}
+
+// Test Sqlite.Stats histogram for prepared statements.
+TEST_F(SQLConnectionTest, EventsStatement) {
+  // Re-open with histogram tag.
+  db().Close();
+  db().set_histogram_tag("Test");
+  ASSERT_TRUE(db().Open(db_path()));
+
+  const char kHistogramName[] = "Sqlite.Stats.Test";
+  const char kGlobalHistogramName[] = "Sqlite.Stats";
+
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  EXPECT_TRUE(db().Execute(kCreateSql));
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (10, 'text')"));
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (11, 'text')"));
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (12, 'text')"));
+
+  {
+    base::HistogramTester tester;
+
+    {
+      sql::Statement s(db().GetUniqueStatement("SELECT value FROM foo"));
+      while (s.Step()) {
+      }
+    }
+
+    tester.ExpectBucketCount(kHistogramName,
+                             sql::Connection::EVENT_STATEMENT_RUN, 1);
+    tester.ExpectBucketCount(kGlobalHistogramName,
+                             sql::Connection::EVENT_STATEMENT_RUN, 1);
+    tester.ExpectBucketCount(kHistogramName,
+                             sql::Connection::EVENT_STATEMENT_ROWS, 3);
+    tester.ExpectBucketCount(kGlobalHistogramName,
+                             sql::Connection::EVENT_STATEMENT_ROWS, 3);
+    tester.ExpectBucketCount(kHistogramName,
+                             sql::Connection::EVENT_STATEMENT_SUCCESS, 1);
+    tester.ExpectBucketCount(kGlobalHistogramName,
+                             sql::Connection::EVENT_STATEMENT_SUCCESS, 1);
+  }
+
+  {
+    base::HistogramTester tester;
+
+    {
+      sql::Statement s(db().GetUniqueStatement(
+          "SELECT value FROM foo WHERE id > 10"));
+      while (s.Step()) {
+      }
+    }
+
+    tester.ExpectBucketCount(kHistogramName,
+                             sql::Connection::EVENT_STATEMENT_RUN, 1);
+    tester.ExpectBucketCount(kGlobalHistogramName,
+                             sql::Connection::EVENT_STATEMENT_RUN, 1);
+    tester.ExpectBucketCount(kHistogramName,
+                             sql::Connection::EVENT_STATEMENT_ROWS, 2);
+    tester.ExpectBucketCount(kGlobalHistogramName,
+                             sql::Connection::EVENT_STATEMENT_ROWS, 2);
+    tester.ExpectBucketCount(kHistogramName,
+                             sql::Connection::EVENT_STATEMENT_SUCCESS, 1);
+    tester.ExpectBucketCount(kGlobalHistogramName,
+                             sql::Connection::EVENT_STATEMENT_SUCCESS, 1);
+  }
+}
+
+// SQLite function to adjust mock time by |argv[0]| milliseconds.
+void sqlite_adjust_millis(sql::test::ScopedMockTimeSource* time_mock,
+                          sqlite3_context* context,
+                          int argc, sqlite3_value** argv) {
+  int64 milliseconds = argc > 0 ? sqlite3_value_int64(argv[0]) : 1000;
+  time_mock->adjust(base::TimeDelta::FromMilliseconds(milliseconds));
+  sqlite3_result_int64(context, milliseconds);
+}
+
+// Adjust mock time by |milliseconds| on commit.
+int adjust_commit_hook(sql::test::ScopedMockTimeSource* time_mock,
+                       int64 milliseconds) {
+  time_mock->adjust(base::TimeDelta::FromMilliseconds(milliseconds));
+  return SQLITE_OK;
+}
+
+const char kCommitTime[] = "Sqlite.CommitTime.Test";
+const char kAutoCommitTime[] = "Sqlite.AutoCommitTime.Test";
+const char kUpdateTime[] = "Sqlite.UpdateTime.Test";
+const char kQueryTime[] = "Sqlite.QueryTime.Test";
+
+// Read-only query allocates time to QueryTime, but not others.
+TEST_F(SQLConnectionTest, TimeQuery) {
+  // Re-open with histogram tag.  Use an in-memory database to minimize variance
+  // due to filesystem.
+  db().Close();
+  db().set_histogram_tag("Test");
+  ASSERT_TRUE(db().OpenInMemory());
+
+  sql::test::ScopedMockTimeSource time_mock(db());
+
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  EXPECT_TRUE(db().Execute(kCreateSql));
+
+  // Function to inject pauses into statements.
+  sql::test::ScopedScalarFunction scoper(
+      db(), "milliadjust", 1, base::Bind(&sqlite_adjust_millis, &time_mock));
+
+  base::HistogramTester tester;
+
+  EXPECT_TRUE(db().Execute("SELECT milliadjust(10)"));
+
+  scoped_ptr<base::HistogramSamples> samples(
+      tester.GetHistogramSamplesSinceCreation(kQueryTime));
+  ASSERT_TRUE(samples);
+  // 10 for the adjust, 1 for the measurement.
+  EXPECT_EQ(11, samples->sum());
+
+  samples = tester.GetHistogramSamplesSinceCreation(kUpdateTime);
+  EXPECT_TRUE(!samples || samples->sum() == 0);
+
+  samples = tester.GetHistogramSamplesSinceCreation(kCommitTime);
+  EXPECT_TRUE(!samples || samples->sum() == 0);
+
+  samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
+  EXPECT_TRUE(!samples || samples->sum() == 0);
+}
+
+// Autocommit update allocates time to QueryTime, UpdateTime, and
+// AutoCommitTime.
+TEST_F(SQLConnectionTest, TimeUpdateAutocommit) {
+  // Re-open with histogram tag.  Use an in-memory database to minimize variance
+  // due to filesystem.
+  db().Close();
+  db().set_histogram_tag("Test");
+  ASSERT_TRUE(db().OpenInMemory());
+
+  sql::test::ScopedMockTimeSource time_mock(db());
+
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  EXPECT_TRUE(db().Execute(kCreateSql));
+
+  // Function to inject pauses into statements.
+  sql::test::ScopedScalarFunction scoper(
+      db(), "milliadjust", 1, base::Bind(&sqlite_adjust_millis, &time_mock));
+
+  base::HistogramTester tester;
+
+  EXPECT_TRUE(db().Execute("INSERT INTO foo VALUES (10, milliadjust(10))"));
+
+  scoped_ptr<base::HistogramSamples> samples(
+      tester.GetHistogramSamplesSinceCreation(kQueryTime));
+  ASSERT_TRUE(samples);
+  // 10 for the adjust, 1 for the measurement.
+  EXPECT_EQ(11, samples->sum());
+
+  samples = tester.GetHistogramSamplesSinceCreation(kUpdateTime);
+  ASSERT_TRUE(samples);
+  // 10 for the adjust, 1 for the measurement.
+  EXPECT_EQ(11, samples->sum());
+
+  samples = tester.GetHistogramSamplesSinceCreation(kCommitTime);
+  EXPECT_TRUE(!samples || samples->sum() == 0);
+
+  samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
+  ASSERT_TRUE(samples);
+  // 10 for the adjust, 1 for the measurement.
+  EXPECT_EQ(11, samples->sum());
+}
+
+// Update with explicit transaction allocates time to QueryTime, UpdateTime, and
+// CommitTime.
+TEST_F(SQLConnectionTest, TimeUpdateTransaction) {
+  // Re-open with histogram tag.  Use an in-memory database to minimize variance
+  // due to filesystem.
+  db().Close();
+  db().set_histogram_tag("Test");
+  ASSERT_TRUE(db().OpenInMemory());
+
+  sql::test::ScopedMockTimeSource time_mock(db());
+
+  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
+  EXPECT_TRUE(db().Execute(kCreateSql));
+
+  // Function to inject pauses into statements.
+  sql::test::ScopedScalarFunction scoper(
+      db(), "milliadjust", 1, base::Bind(&sqlite_adjust_millis, &time_mock));
+
+  base::HistogramTester tester;
+
+  {
+    // Make the commit slow.
+    sql::test::ScopedCommitHook scoped_hook(
+        db(), base::Bind(adjust_commit_hook, &time_mock, 100));
+    ASSERT_TRUE(db().BeginTransaction());
+    EXPECT_TRUE(db().Execute(
+        "INSERT INTO foo VALUES (11, milliadjust(10))"));
+    EXPECT_TRUE(db().Execute(
+        "UPDATE foo SET value = milliadjust(10) WHERE id = 11"));
+    EXPECT_TRUE(db().CommitTransaction());
+  }
+
+  scoped_ptr<base::HistogramSamples> samples(
+      tester.GetHistogramSamplesSinceCreation(kQueryTime));
+  ASSERT_TRUE(samples);
+  // 10 for insert adjust, 10 for update adjust, 100 for commit adjust, 1 for
+  // measuring each of BEGIN, INSERT, UPDATE, and COMMIT.
+  EXPECT_EQ(124, samples->sum());
+
+  samples = tester.GetHistogramSamplesSinceCreation(kUpdateTime);
+  ASSERT_TRUE(samples);
+  // 10 for insert adjust, 10 for update adjust, 100 for commit adjust, 1 for
+  // measuring each of INSERT, UPDATE, and COMMIT.
+  EXPECT_EQ(123, samples->sum());
+
+  samples = tester.GetHistogramSamplesSinceCreation(kCommitTime);
+  ASSERT_TRUE(samples);
+  // 100 for commit adjust, 1 for measuring COMMIT.
+  EXPECT_EQ(101, samples->sum());
+
+  samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
+  EXPECT_TRUE(!samples || samples->sum() == 0);
 }
 
 }  // namespace
