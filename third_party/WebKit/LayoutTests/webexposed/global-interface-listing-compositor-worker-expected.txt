@@ -482,6 +482,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method deleteIndex
 [Worker]     method get
 [Worker]     method getAll
+[Worker]     method getAllKeys
 [Worker]     method index
 [Worker]     method openCursor
 [Worker]     method openKeyCursor

@@ -53,6 +53,16 @@ PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR
 PASS ename is 'InvalidStateError'
 Exception message: Failed to execute 'getAll' on 'IDBObjectStore': The object store has been deleted.
+Expecting exception from deletedStore.getAllKeys(0)
+PASS Exception was thrown.
+PASS code is DOMException.INVALID_STATE_ERR
+PASS ename is 'InvalidStateError'
+Exception message: Failed to execute 'getAllKeys' on 'IDBObjectStore': The object store has been deleted.
+Expecting exception from deletedStore.getAllKeys(IDBKeyRange.only(0))
+PASS Exception was thrown.
+PASS code is DOMException.INVALID_STATE_ERR
+PASS ename is 'InvalidStateError'
+Exception message: Failed to execute 'getAllKeys' on 'IDBObjectStore': The object store has been deleted.
 Expecting exception from deletedStore.clear()
 PASS Exception was thrown.
 PASS code is DOMException.INVALID_STATE_ERR

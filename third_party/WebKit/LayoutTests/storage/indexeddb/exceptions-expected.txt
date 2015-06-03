@@ -242,6 +242,20 @@ PASS code is 0
 PASS ename is 'TransactionInactiveError'
 Exception message: Failed to execute 'getAll' on 'IDBObjectStore': The transaction has finished.
 
+IDBObjectStore.getAllKeys()
+If the key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.
+Expecting exception from store.getAllKeys({})
+PASS Exception was thrown.
+PASS code is 0
+PASS ename is 'DataError'
+Exception message: Failed to execute 'getAllKeys' on 'IDBObjectStore': The parameter is not a valid key.
+The transaction this IDBObjectStore belongs to is not active.
+Expecting exception from storeFromInactiveTransaction.getAllKeys(0)
+PASS Exception was thrown.
+PASS code is 0
+PASS ename is 'TransactionInactiveError'
+Exception message: Failed to execute 'getAllKeys' on 'IDBObjectStore': The transaction has finished.
+
 IDBObjectStore.index()
 There is no index with the given name, compared in a case-sensitive manner, in the connected database.
 Expecting exception from store.index('no-such-index')

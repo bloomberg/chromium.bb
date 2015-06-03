@@ -191,6 +191,14 @@ function testObjectStore()
     // "Occurs if a request is made on a source object that has been deleted or removed." - covered in deleted-objects.html
 
     debug("");
+    debug("IDBObjectStore.getAllKeys()");
+    debug("If the key parameter is not a valid key or a key range, this method throws a DOMException of type DataError.");
+    evalAndExpectException("store.getAllKeys({})", "0", "'DataError'");
+    debug("The transaction this IDBObjectStore belongs to is not active.");
+    evalAndExpectException("storeFromInactiveTransaction.getAllKeys(0)", "0", "'TransactionInactiveError'");
+    // "Occurs if a request is made on a source object that has been deleted or removed." - covered in deleted-objects.html
+    //
+    debug("");
     debug("IDBObjectStore.index()");
     debug("There is no index with the given name, compared in a case-sensitive manner, in the connected database.");
     evalAndExpectException("store.index('no-such-index')", "DOMException.NOT_FOUND_ERR", "'NotFoundError'");
