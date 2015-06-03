@@ -1088,13 +1088,6 @@ void WebTestProxyBase::DidFinishDocumentLoad(blink::WebLocalFrame* frame) {
   if (test_interfaces_->GetTestRunner()->shouldDumpFrameLoadCallbacks()) {
     PrintFrameDescription(delegate_, frame);
     delegate_->PrintMessage(" - didFinishDocumentLoadForFrame\n");
-  } else {
-    unsigned pendingUnloadEvents = frame->unloadListenerCount();
-    if (pendingUnloadEvents) {
-      PrintFrameDescription(delegate_, frame);
-      delegate_->PrintMessage(base::StringPrintf(
-          " - has %u onunload handler(s)\n", pendingUnloadEvents));
-    }
   }
 }
 
