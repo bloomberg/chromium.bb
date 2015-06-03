@@ -5,6 +5,7 @@
 #include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
 
 #include "base/command_line.h"
+#include "components/test_runner/web_test_interfaces.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -12,7 +13,6 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
-#include "content/shell/renderer/test_runner/web_test_interfaces.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebView.h"

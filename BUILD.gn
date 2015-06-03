@@ -748,8 +748,8 @@ if (!is_ios) {
 
     if (is_win) {
       deps += [
+        "//components/test_runner:layout_test_helper",
         "//content/shell:crash_service",
-        "//content/shell:layout_test_helper",
       ]
     }
 
@@ -760,7 +760,7 @@ if (!is_ios) {
     if (is_mac) {
       deps += [
         "//breakpad:dump_syms($host_toolchain)",
-        "//content/shell:layout_test_helper",
+        "//components/test_runner:layout_test_helper",
       ]
     }
 

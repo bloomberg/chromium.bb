@@ -242,6 +242,7 @@ group("all_components") {
       "//components/guest_view/renderer",
       "//components/safe_json_parser",
       "//components/scheduler",
+      "//components/test_runner",
     ]
   }
 

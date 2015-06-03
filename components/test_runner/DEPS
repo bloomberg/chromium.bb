@@ -1,0 +1,11 @@
+include_rules = [
+  "+cc",
+  "+gin",
+  "+skia",
+  "+third_party/skia",
+  "+third_party/WebKit/public/platform",
+  "+third_party/WebKit/public/web",
+  "+ui/events",
+  "+ui/gfx",
+  "+v8/include",
+]

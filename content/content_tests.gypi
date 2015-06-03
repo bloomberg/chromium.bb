@@ -765,6 +765,7 @@
           'dependencies': [
             'content.gyp:content_renderer',
             'test_support_content',
+            '../components/test_runner/test_runner.gyp:test_runner',
             '../skia/skia.gyp:skia',
             '../ui/accessibility/accessibility.gyp:ax_gen',
             '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',

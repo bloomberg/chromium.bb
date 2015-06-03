@@ -533,8 +533,8 @@
             }],
             ['OS=="win"', {
               'dependencies': [
+                '../components/test_runner/test_runner.gyp:layout_test_helper',
                 '../content/content_shell_and_tests.gyp:content_shell_crash_service',
-                '../content/content_shell_and_tests.gyp:layout_test_helper',
               ],
             }],
             ['OS!="win" and OS!="android"', {
@@ -544,8 +544,8 @@
             }],
             ['OS=="mac"', {
               'dependencies': [
+                '../components/test_runner/test_runner.gyp:layout_test_helper',
                 '../breakpad/breakpad.gyp:dump_syms#host',
-                '../content/content_shell_and_tests.gyp:layout_test_helper',
               ],
             }],
             ['OS=="linux"', {
@@ -1144,9 +1144,9 @@
           'target_name': 'chromium_builder_lkgr_drmemory_win',
           'type': 'none',
           'dependencies': [
+            '../components/test_runner/test_runner.gyp:layout_test_helper',
             '../content/content_shell_and_tests.gyp:content_shell',
             '../content/content_shell_and_tests.gyp:content_shell_crash_service',
-            '../content/content_shell_and_tests.gyp:layout_test_helper',
           ],
         },
         {
@@ -1166,10 +1166,10 @@
             '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests',
             '../cloud_print/cloud_print.gyp:cloud_print_unittests',
             '../components/components_tests.gyp:components_unittests',
+            '../components/test_runner/test_runner.gyp:layout_test_helper',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_shell',
             '../content/content_shell_and_tests.gyp:content_shell_crash_service',
-            '../content/content_shell_and_tests.gyp:layout_test_helper',
             '../content/content_shell_and_tests.gyp:content_unittests',
             '../courgette/courgette.gyp:courgette_unittests',
             '../crypto/crypto.gyp:crypto_unittests',

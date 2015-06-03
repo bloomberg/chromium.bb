@@ -16,3 +16,9 @@ include_rules = [
   "+ui/base/resource/resource_bundle.h",
   "!v8/include/v8.h",
 ]
+
+specific_include_rules = {
+  "layouttest_support.cc": [
+    "+components/test_runner",
+  ],
+}

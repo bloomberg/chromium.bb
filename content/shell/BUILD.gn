@@ -144,8 +144,6 @@ static_library("content_shell_lib") {
     "common/shell_switches.h",
     "common/shell_test_configuration.cc",
     "common/shell_test_configuration.h",
-    "common/test_runner/test_preferences.cc",
-    "common/test_runner/test_preferences.h",
     "renderer/ipc_echo.cc",
     "renderer/ipc_echo.h",
     "renderer/layout_test/blink_test_helpers.cc",
@@ -172,69 +170,6 @@ static_library("content_shell_lib") {
     "renderer/shell_content_renderer_client.h",
     "renderer/shell_render_view_observer.cc",
     "renderer/shell_render_view_observer.h",
-    "renderer/test_runner/accessibility_controller.cc",
-    "renderer/test_runner/accessibility_controller.h",
-    "renderer/test_runner/app_banner_client.cc",
-    "renderer/test_runner/app_banner_client.h",
-    "renderer/test_runner/event_sender.cc",
-    "renderer/test_runner/event_sender.h",
-    "renderer/test_runner/gamepad_controller.cc",
-    "renderer/test_runner/gamepad_controller.h",
-    "renderer/test_runner/mock_color_chooser.cc",
-    "renderer/test_runner/mock_color_chooser.h",
-    "renderer/test_runner/mock_constraints.cc",
-    "renderer/test_runner/mock_constraints.h",
-    "renderer/test_runner/mock_credential_manager_client.cc",
-    "renderer/test_runner/mock_credential_manager_client.h",
-    "renderer/test_runner/mock_grammar_check.cc",
-    "renderer/test_runner/mock_grammar_check.h",
-    "renderer/test_runner/mock_screen_orientation_client.cc",
-    "renderer/test_runner/mock_screen_orientation_client.h",
-    "renderer/test_runner/mock_spell_check.cc",
-    "renderer/test_runner/mock_spell_check.h",
-    "renderer/test_runner/mock_web_audio_device.cc",
-    "renderer/test_runner/mock_web_audio_device.h",
-    "renderer/test_runner/mock_web_media_stream_center.cc",
-    "renderer/test_runner/mock_web_media_stream_center.h",
-    "renderer/test_runner/mock_web_midi_accessor.cc",
-    "renderer/test_runner/mock_web_midi_accessor.h",
-    "renderer/test_runner/mock_web_speech_recognizer.cc",
-    "renderer/test_runner/mock_web_speech_recognizer.h",
-    "renderer/test_runner/mock_web_theme_engine.cc",
-    "renderer/test_runner/mock_web_theme_engine.h",
-    "renderer/test_runner/mock_web_user_media_client.cc",
-    "renderer/test_runner/mock_web_user_media_client.h",
-    "renderer/test_runner/mock_webrtc_data_channel_handler.cc",
-    "renderer/test_runner/mock_webrtc_data_channel_handler.h",
-    "renderer/test_runner/mock_webrtc_dtmf_sender_handler.cc",
-    "renderer/test_runner/mock_webrtc_dtmf_sender_handler.h",
-    "renderer/test_runner/mock_webrtc_peer_connection_handler.cc",
-    "renderer/test_runner/mock_webrtc_peer_connection_handler.h",
-    "renderer/test_runner/spell_check_client.cc",
-    "renderer/test_runner/spell_check_client.h",
-    "renderer/test_runner/test_common.cc",
-    "renderer/test_runner/test_common.h",
-    "renderer/test_runner/test_interfaces.cc",
-    "renderer/test_runner/test_interfaces.h",
-    "renderer/test_runner/test_plugin.cc",
-    "renderer/test_runner/test_plugin.h",
-    "renderer/test_runner/test_runner.cc",
-    "renderer/test_runner/test_runner.h",
-    "renderer/test_runner/text_input_controller.cc",
-    "renderer/test_runner/text_input_controller.h",
-    "renderer/test_runner/web_ax_object_proxy.cc",
-    "renderer/test_runner/web_ax_object_proxy.h",
-    "renderer/test_runner/web_content_settings.cc",
-    "renderer/test_runner/web_content_settings.h",
-    "renderer/test_runner/web_frame_test_proxy.h",
-    "renderer/test_runner/web_task.cc",
-    "renderer/test_runner/web_task.h",
-    "renderer/test_runner/web_test_delegate.h",
-    "renderer/test_runner/web_test_interfaces.cc",
-    "renderer/test_runner/web_test_interfaces.h",
-    "renderer/test_runner/web_test_proxy.cc",
-    "renderer/test_runner/web_test_proxy.h",
-    "renderer/test_runner/web_test_runner.h",
   ]
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -262,6 +197,7 @@ static_library("content_shell_lib") {
     "//components/devtools_discovery",
     "//components/devtools_http_handler",
     "//components/plugins/renderer",
+    "//components/test_runner:test_runner",
     "//components/web_cache/renderer",
     "//content:resources",
     "//content/app/resources",
@@ -406,70 +342,13 @@ copy("copy_shell_resources") {
   ]
 }
 
-# Font copies.
-if (!is_mac) {
-  copy("copy_ahem") {
-    visibility = [ ":*" ]
-    sources = [
-      "renderer/test_runner/resources/fonts/AHEM____.TTF",
-    ]
-    outputs = [
-      "$root_out_dir/AHEM____.TTF",
-    ]
-  }
-}
-if (use_x11) {
-  copy("copy_x11_fonts") {
-    visibility = [ ":*" ]
-    sources = [
-      "//third_party/gardiner_mod/GardinerModBug.ttf",
-      "//third_party/gardiner_mod/GardinerModCat.ttf",
-      "renderer/test_runner/resources/fonts/fonts.conf",
-    ]
-    outputs = [
-      "$root_out_dir/{{source_file_part}}",
-    ]
-  }
-}
-if (is_android) {
-  copy("copy_android_fonts") {
-    visibility = [ ":*" ]
-    sources = [
-      "renderer/test_runner/resources/fonts/android_fallback_fonts.xml",
-      "renderer/test_runner/resources/fonts/android_main_fonts.xml",
-    ]
-    outputs = [
-      "$root_out_dir/{{source_file_part}}",
-    ]
-  }
-}
-
 group("resources") {
   public_deps = [
     ":copy_shell_resources",
   ]
-  deps = []
-
-  if (is_mac) {
-    # TODO(GYP) Mac bundle resources.
-    #'all_dependent_settings': {
-    #  'mac_bundle_resources': [
-    #    'shell/renderer/test_runner/resources/fonts/AHEM____.TTF',
-    #    'shell/renderer/test_runner/resources/fonts/ChromiumAATTest.ttf',
-    #    '<(SHARED_INTERMEDIATE_DIR)/webkit/missingImage.png',
-    #    '<(SHARED_INTERMEDIATE_DIR)/webkit/textAreaResizeCorner.png',
-    #  ],
-    #},
-  } else {
-    deps += [ ":copy_ahem" ]
-  }
-
-  if (use_x11) {
-    deps += [ ":copy_x11_fonts" ]
-  }
-  if (is_android) {
-    deps += [ ":copy_android_fonts" ]
-  }
+  deps = [
+    "//components/test_runner:resources",
+  ]
 }
 
 repack("pak") {
@@ -553,20 +432,6 @@ if (!is_android && !is_mac) {
     deps = [
       ":content_shell_lib",
     ]
-  }
-}
-
-if (is_mac || is_win) {
-  # GYP version: content/content_shell_and_tests.gyp:layout_test_helper
-  executable("layout_test_helper") {
-    sources = [
-      "renderer/test_runner/helper/layout_test_helper_mac.mm",
-      "renderer/test_runner/helper/layout_test_helper_win.cc",
-    ]
-
-    if (is_mac) {
-      libs = [ "AppKit.framework" ]
-    }
   }
 }
 

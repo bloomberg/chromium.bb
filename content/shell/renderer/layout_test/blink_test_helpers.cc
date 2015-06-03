@@ -9,10 +9,10 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/test_runner/test_preferences.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/common/test_runner/test_preferences.h"
 
 namespace content {
 

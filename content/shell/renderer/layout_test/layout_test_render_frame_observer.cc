@@ -4,10 +4,10 @@
 
 #include "content/shell/renderer/layout_test/layout_test_render_frame_observer.h"
 
+#include "components/test_runner/web_test_interfaces.h"
+#include "components/test_runner/web_test_runner.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/shell/renderer/layout_test/layout_test_render_process_observer.h"
-#include "content/shell/renderer/test_runner/web_test_interfaces.h"
-#include "content/shell/renderer/test_runner/web_test_runner.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {

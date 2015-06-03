@@ -9,12 +9,12 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/test_runner/test_preferences.h"
+#include "components/test_runner/web_test_delegate.h"
 #include "content/public/common/page_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "content/shell/common/shell_test_configuration.h"
-#include "content/shell/common/test_runner/test_preferences.h"
-#include "content/shell/renderer/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 #include "v8/include/v8.h"
 
