@@ -150,7 +150,3 @@ def CreateNameToSymbolInfo(symbol_infos):
                       ','.join([hex(x.offset) for x in infos])))
   warnings.WriteEnd('symbols at multiple offsets.')
   return symbol_infos_by_name
-
-def DemangleSymbol(mangled_symbol):
-  """Return the demangled form of mangled_symbol."""
-  return symbol.CallCppFilt(mangled_symbol)

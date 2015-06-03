@@ -8,10 +8,8 @@
 
 import logging
 import optparse
-import os
 import sys
 
-import cyglog_to_orderfile
 import cygprofile_utils
 import patch_orderfile
 import symbol_extractor
@@ -79,12 +77,7 @@ def main():
   (binary_filename, orderfile_filename) = argv[1:]
 
   symbol_extractor.SetArchitecture(options.arch)
-  obj_dir = cygprofile_utils.GetObjDir(binary_filename)
-  symbol_to_sections_map = \
-      cyglog_to_orderfile.GetSymbolToSectionsMapFromObjectFiles(obj_dir)
-  section_to_symbols_map = patch_orderfile.InvertMapping(symbol_to_sections_map)
-  symbols = patch_orderfile.GetSymbolsFromOrderfile(orderfile_filename,
-                                                    section_to_symbols_map)
+  symbols = patch_orderfile.GetSymbolsFromOrderfile(orderfile_filename)
   symbol_infos = symbol_extractor.SymbolInfosFromBinary(binary_filename)
   # Missing symbols is not an error since some of them can be eliminated through
   # inlining.

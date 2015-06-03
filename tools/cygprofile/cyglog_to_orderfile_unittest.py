@@ -67,16 +67,15 @@ END""".split('\n')
                   name='Symbol3', offset=0x16, size=0x13, section='dummy'),
               symbol_extractor.SymbolInfo(
                   name='Symbol32', offset=0x16, size=0x13, section='dummy'),]}
-    symbol_to_sections_map = {
-        'Symbol': ['.text.Symbol'],
-        'Symbol2': ['.text.Symbol2', '.text.hot.Symbol2'],
-        'Symbol3': ['.text.Symbol3'],
-        'Symbol32': ['.text.Symbol32']}
+    symbol_to_section_map = {
+        'Symbol': '.text.Symbol',
+        'Symbol2': '.text.Symbol2',
+        'Symbol3': '.text.Symbol3',
+        'Symbol32': '.text.Symbol32'}
     fake_output = FakeOutputFile()
     cyglog_to_orderfile._OutputOrderfile(
-        offsets, offset_to_symbol_infos, symbol_to_sections_map, fake_output)
+        offsets, offset_to_symbol_infos, symbol_to_section_map, fake_output)
     expected = """.text.Symbol2
-.text.hot.Symbol2
 .text.Symbol3
 .text.Symbol32
 """
