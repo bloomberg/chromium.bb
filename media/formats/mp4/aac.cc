@@ -158,8 +158,8 @@ bool AAC::ConvertEsdsToADTS(std::vector<uint8>* buffer) const {
   adts[1] = 0xf1;
   adts[2] = ((profile_ - 1) << 6) + (frequency_index_ << 2) +
       (channel_config_ >> 2);
-  adts[3] = ((channel_config_ & 0x3) << 6) + (size >> 11);
-  adts[4] = (size & 0x7ff) >> 3;
+  adts[3] = static_cast<uint8>(((channel_config_ & 0x3) << 6) + (size >> 11));
+  adts[4] = static_cast<uint8>((size & 0x7ff) >> 3);
   adts[5] = ((size & 7) << 5) + 0x1f;
   adts[6] = 0xfc;
 

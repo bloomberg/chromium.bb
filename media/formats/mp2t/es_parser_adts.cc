@@ -212,12 +212,14 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8* adts_header) {
 
   // The following code is written according to ISO 14496 Part 3 Table 1.13 -
   // Syntax of AudioSpecificConfig.
-  uint16 extra_data_int =
+  uint16 extra_data_int = static_cast<uint16>(
       // Note: adts_profile is in the range [0,3], since the ADTS header only
       // allows two bits for its value.
       ((adts_profile + 1) << 11) +
+      // frequency_index is [0..13], per early out above.
       (frequency_index << 7) +
-      (channel_configuration << 3);
+      // channel_configuration is [0..7], per early out above.
+      (channel_configuration << 3));
   uint8 extra_data[2] = {
       static_cast<uint8>(extra_data_int >> 8),
       static_cast<uint8>(extra_data_int & 0xff)
