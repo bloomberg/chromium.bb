@@ -332,7 +332,11 @@ void RenderFrameProxy::OnDidUpdateOrigin(const url::Origin& origin) {
 }
 
 void RenderFrameProxy::frameDetached() {
-  if (web_frame_->parent()) {
+  frameDetached(DetachType::Remove);
+}
+
+void RenderFrameProxy::frameDetached(DetachType type) {
+  if (type == DetachType::Remove && web_frame_->parent()) {
     web_frame_->parent()->removeChild(web_frame_);
 
     // Let the browser process know this subframe is removed, so that it is

@@ -117,7 +117,9 @@ class CONTENT_EXPORT RenderFrameProxy
   blink::WebRemoteFrame* web_frame() { return web_frame_; }
 
   // blink::WebRemoteFrameClient implementation:
+  // TODO(lfg): Remove this method once the blink patch lands.
   virtual void frameDetached();
+  virtual void frameDetached(DetachType type);
   virtual void postMessageEvent(
       blink::WebLocalFrame* sourceFrame,
       blink::WebRemoteFrame* targetFrame,

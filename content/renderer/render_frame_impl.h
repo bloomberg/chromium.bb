@@ -367,7 +367,9 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& name,
       blink::WebSandboxFlags sandboxFlags);
   virtual void didDisownOpener(blink::WebLocalFrame* frame);
+  // TODO(lfg): Remove this method once the blink patch lands.
   virtual void frameDetached(blink::WebFrame* frame);
+  virtual void frameDetached(blink::WebFrame* frame, DetachType type);
   virtual void frameFocused();
   virtual void willClose(blink::WebFrame* frame);
   virtual void didChangeName(blink::WebLocalFrame* frame,

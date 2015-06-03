@@ -594,7 +594,9 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
       blink::WebSandboxFlags sandboxFlags);
+  // TODO(lfg): Remove this method once the blink patch lands.
   virtual void frameDetached(blink::WebFrame* frame);
+  virtual void frameDetached(blink::WebFrame* frame, DetachType type);
 
  private:
   void CallOnReady();
@@ -745,6 +747,12 @@ blink::WebFrame* PrepareFrameAndViewForPrint::createChildFrame(
 }
 
 void PrepareFrameAndViewForPrint::frameDetached(blink::WebFrame* frame) {
+  frameDetached(frame, DetachType::Remove);
+}
+
+void PrepareFrameAndViewForPrint::frameDetached(blink::WebFrame* frame,
+                                                DetachType type) {
+  DCHECK(type == DetachType::Remove);
   if (frame->parent())
     frame->parent()->removeChild(frame);
   frame->close();

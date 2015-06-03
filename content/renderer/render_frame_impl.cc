@@ -692,7 +692,8 @@ RenderFrameImpl::~RenderFrameImpl() {
     if (render_frame_proxy_) {
       // The following method calls back into this object and clears
       // |render_frame_proxy_|.
-      render_frame_proxy_->frameDetached();
+      render_frame_proxy_->frameDetached(
+          blink::WebRemoteFrameClient::DetachType::Remove);
     }
 
     // Ensure the RenderView doesn't point to this object, once it is destroyed.
@@ -2127,6 +2128,10 @@ void RenderFrameImpl::didDisownOpener(blink::WebLocalFrame* frame) {
 }
 
 void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
+  frameDetached(frame, DetachType::Remove);
+}
+
+void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {
   // NOTE: This function is called on the frame that is being detached and not
   // the parent frame.  This is different from createChildFrame() which is
   // called on the parent frame.
@@ -2137,7 +2142,11 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
                     FrameDetached(frame));
 
-  Send(new FrameHostMsg_Detach(routing_id_));
+  // We only notify the browser process when the frame is being detached for
+  // removal. If the frame is being detached for swap, we don't need to do this
+  // since we are not modifiying the frame tree.
+  if (type == DetachType::Remove)
+    Send(new FrameHostMsg_Detach(routing_id_));
 
   // The |is_detaching_| flag disables Send(). FrameHostMsg_Detach must be
   // sent before setting |is_detaching_| to true.
@@ -2157,7 +2166,12 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
             switches::kSitePerProcess) && render_widget_) {
       render_widget_->UnregisterRenderFrame(this);
     }
-    frame->parent()->removeChild(frame);
+
+    // Only remove the frame from the renderer's frame tree if the frame is
+    // being detached for removal. For swaps, WebFrame::swap already takes care
+    // of replacing the frame with a RemoteFrame.
+    if (type == DetachType::Remove)
+      frame->parent()->removeChild(frame);
   }
 
   // |frame| is invalid after here.  Be sure to clear frame_ as well, since this
