@@ -90,11 +90,7 @@ std::string ConnectionStateToString(protocol::ConnectionToHost::State state) {
     case protocol::ConnectionToHost::CONNECTING:
       return "CONNECTING";
     case protocol::ConnectionToHost::AUTHENTICATED:
-      // Report the authenticated state as 'CONNECTING' to avoid changing
-      // the interface between the plugin and webapp.
-      // TODO(garykac) Change to 'AUTHENTICATED' in M44 or once we've switched
-      // the client to NaCl.
-      return "CONNECTING";
+      return "AUTHENTICATED";
     case protocol::ConnectionToHost::CONNECTED:
       return "CONNECTED";
     case protocol::ConnectionToHost::CLOSED:

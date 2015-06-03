@@ -140,10 +140,6 @@ remoting.ClientSession.State = {
   UNKNOWN: 0,
   INITIALIZING: 1,
   CONNECTING: 2,
-  // We don't currently receive AUTHENTICATED from the host - it comes through
-  // as 'CONNECTING' instead.
-  // TODO(garykac) Update chromoting_instance.cc to send this once we've
-  // shipped a webapp release with support for AUTHENTICATED.
   AUTHENTICATED: 3,
   CONNECTED: 4,
   CLOSED: 5,

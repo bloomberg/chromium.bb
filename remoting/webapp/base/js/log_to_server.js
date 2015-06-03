@@ -118,21 +118,6 @@ remoting.LogToServer.prototype.getSessionId = function() {
 };
 
 /**
- * Whether a session state is one of the states that occurs at the start of
- * a session.
- *
- * @private
- * @param {remoting.ClientSession.State} state
- * @return {boolean}
- */
-remoting.LogToServer.isStartOfSession_ = function(state) {
-  return ((state == remoting.ClientSession.State.CONNECTING) ||
-      (state == remoting.ClientSession.State.INITIALIZING) ||
-      (state == remoting.ClientSession.State.AUTHENTICATED) ||
-      (state == remoting.ClientSession.State.CONNECTED));
-};
-
-/**
  * Whether a session state is one of the states that occurs at the end of
  * a session.
  *
