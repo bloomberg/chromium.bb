@@ -142,25 +142,23 @@ void NotificationConversionHelper::GfxImageToNotificationBitmap(
 bool NotificationConversionHelper::NotificationBitmapToGfxImage(
     float max_scale,
     const gfx::Size& target_size_dips,
-    extensions::api::notifications::NotificationBitmap* notification_bitmap,
+    const extensions::api::notifications::NotificationBitmap&
+        notification_bitmap,
     gfx::Image* return_image) {
-  if (!notification_bitmap)
-    return false;
-
   const int max_device_pixel_width = target_size_dips.width() * max_scale;
   const int max_device_pixel_height = target_size_dips.height() * max_scale;
 
   const int BYTES_PER_PIXEL = 4;
 
-  const int width = notification_bitmap->width;
-  const int height = notification_bitmap->height;
+  const int width = notification_bitmap.width;
+  const int height = notification_bitmap.height;
 
   if (width < 0 || height < 0 || width > max_device_pixel_width ||
       height > max_device_pixel_height)
     return false;
 
   // Ensure we have rgba data.
-  std::vector<char>* rgba_data = notification_bitmap->data.get();
+  std::vector<char>* rgba_data = notification_bitmap.data.get();
   if (!rgba_data)
     return false;
 

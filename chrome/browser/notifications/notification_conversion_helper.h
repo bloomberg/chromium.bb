@@ -42,7 +42,8 @@ class NotificationConversionHelper {
   static bool NotificationBitmapToGfxImage(
       float max_scale,
       const gfx::Size& target_size_dips,
-      extensions::api::notifications::NotificationBitmap* notification_bitmap,
+      const extensions::api::notifications::NotificationBitmap&
+          notification_bitmap,
       gfx::Image* return_image);
 
  private:
