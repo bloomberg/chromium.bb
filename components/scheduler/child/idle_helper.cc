@@ -23,6 +23,7 @@ IdleHelper::IdleHelper(
       delegate_(delegate),
       idle_queue_index_(idle_queue_index),
       state_(helper,
+             delegate,
              tracing_category,
              disabled_by_default_tracing_category,
              idle_period_tracing_name),
@@ -324,10 +325,12 @@ IdleHelper::IdlePeriodState IdleHelper::SchedulerIdlePeriodState() const {
 }
 
 IdleHelper::State::State(SchedulerHelper* helper,
+                         Delegate* delegate,
                          const char* tracing_category,
                          const char* disabled_by_default_tracing_category,
                          const char* idle_period_tracing_name)
     : helper_(helper),
+      delegate_(delegate),
       idle_period_state_(IdlePeriodState::NOT_IN_IDLE_PERIOD),
       nestable_events_started_(false),
       tracing_category_(tracing_category),
@@ -352,6 +355,8 @@ base::TimeTicks IdleHelper::State::idle_period_deadline() const {
 void IdleHelper::State::UpdateState(IdlePeriodState new_state,
                                     base::TimeTicks new_deadline,
                                     base::TimeTicks optional_now) {
+  IdlePeriodState old_idle_period_state = idle_period_state_;
+
   helper_->CheckOnValidThread();
   if (new_state == idle_period_state_) {
     DCHECK_EQ(new_deadline, idle_period_deadline_);
@@ -369,6 +374,14 @@ void IdleHelper::State::UpdateState(IdlePeriodState new_state,
 
   idle_period_state_ = new_state;
   idle_period_deadline_ = new_deadline;
+
+  // Inform the delegate if we are starting or ending an idle period.
+  if (IsInIdlePeriod(new_state) && !IsInIdlePeriod(old_idle_period_state)) {
+    delegate_->OnIdlePeriodStarted();
+  } else if (!IsInIdlePeriod(new_state) &&
+             IsInIdlePeriod(old_idle_period_state)) {
+    delegate_->OnIdlePeriodEnded();
+  }
 }
 
 void IdleHelper::State::TraceIdleIdleTaskStart() {

@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "components/scheduler/child/cancelable_closure_holder.h"
 #include "components/scheduler/child/prioritizing_task_queue_selector.h"
+#include "components/scheduler/child/scheduler_helper.h"
 #include "components/scheduler/child/single_thread_idle_task_runner.h"
 #include "components/scheduler/scheduler_export.h"
 
@@ -36,6 +37,12 @@ class SCHEDULER_EXPORT IdleHelper
     // Signals that the Long Idle Period hasn't started yet because the system
     // isn't quiescent.
     virtual void IsNotQuiescent() = 0;
+
+    // Signals that we have started an Idle Period.
+    virtual void OnIdlePeriodStarted() = 0;
+
+    // Signals that we have finished an Idle Period.
+    virtual void OnIdlePeriodEnded() = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -124,6 +131,7 @@ class SCHEDULER_EXPORT IdleHelper
   class State {
    public:
     State(SchedulerHelper* helper,
+          Delegate* delegate,
           const char* tracing_category,
           const char* disabled_by_default_tracing_category,
           const char* idle_period_tracing_name);
@@ -145,6 +153,7 @@ class SCHEDULER_EXPORT IdleHelper
 
    private:
     SchedulerHelper* helper_;  // NOT OWNED
+    Delegate* delegate_;       // NOT OWNED
 
     IdlePeriodState idle_period_state_;
     base::TimeTicks idle_period_deadline_;

@@ -107,6 +107,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
       base::TimeTicks now,
       base::TimeDelta* next_long_idle_period_delay_out) override;
   void IsNotQuiescent() override {}
+  void OnIdlePeriodStarted() override;
+  void OnIdlePeriodEnded() override;
 
   void EndIdlePeriod();
 
@@ -210,6 +212,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   PollableThreadSafeFlag policy_may_need_update_;
   int timer_queue_suspend_count_;  // TIMER_TASK_QUEUE suspended if non-zero.
 
+  bool in_idle_period_;
   base::WeakPtrFactory<RendererSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImpl);

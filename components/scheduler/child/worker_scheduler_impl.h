@@ -47,6 +47,8 @@ class SCHEDULER_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
       base::TimeTicks now,
       base::TimeDelta* next_long_idle_period_delay_out) override;
   void IsNotQuiescent() override {}
+  void OnIdlePeriodStarted() override {}
+  void OnIdlePeriodEnded() override {}
 
  private:
   enum QueueId {

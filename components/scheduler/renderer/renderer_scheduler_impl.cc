@@ -44,6 +44,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       last_input_type_(blink::WebInputEvent::Undefined),
       policy_may_need_update_(&incoming_signals_lock_),
       timer_queue_suspend_count_(0),
+      in_idle_period_(false),
       weak_factory_(this) {
   update_policy_closure_ = base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                                       weak_factory_.GetWeakPtr());
@@ -594,8 +595,19 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->SetDouble(
       "estimated_next_frame_begin",
       (estimated_next_frame_begin_ - base::TimeTicks()).InMillisecondsF());
+  state->SetBoolean("in_idle_period", in_idle_period_);
 
   return state;
+}
+
+void RendererSchedulerImpl::OnIdlePeriodStarted() {
+  in_idle_period_ = true;
+  // TODO(alexclarke): Force update the policy
+}
+
+void RendererSchedulerImpl::OnIdlePeriodEnded() {
+  in_idle_period_ = false;
+  // TODO(alexclarke): Force update the policy
 }
 
 }  // namespace scheduler
