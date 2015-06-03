@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -15,13 +16,15 @@
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/user_activity/user_activity_detector.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 
 namespace chromeos {
 
 namespace {
 
 // The timeout in ms before the message shows up.
-const int kIdleAppNameNotificationTimeoutMs = 2 * 60 * 1000;
+const int kIdleAppNameNotificationTimeoutMs = 20 * 60 * 1000;
 
 // The duration of visibility for the message.
 const int kMessageVisibilityTimeMs = 3000;
@@ -74,16 +77,20 @@ void KioskModeIdleAppNameNotification::Setup() {
 
 void KioskModeIdleAppNameNotification::OnUserActivity(const ui::Event* event) {
   if (show_notification_upon_next_user_activity_) {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    const std::string app_id =
-        command_line->GetSwitchValueASCII(::switches::kAppId);
-    Profile* profile = ProfileManager::GetActiveUserProfile();
-    notification_.reset(
-        new IdleAppNameNotificationView(
-            kMessageVisibilityTimeMs,
-            kMessageAnimationTimeMs,
-            extensions::ExtensionSystem::Get(profile
-                )->extension_service()->GetInstalledExtension(app_id)));
+    gfx::Display display = ash::Shell::GetScreen()->GetPrimaryDisplay();
+    // Display the notification only on internal display.
+    if (display.IsInternal()) {
+      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+      const std::string app_id =
+          command_line->GetSwitchValueASCII(::switches::kAppId);
+      Profile* profile = ProfileManager::GetActiveUserProfile();
+      notification_.reset(
+          new IdleAppNameNotificationView(
+              kMessageVisibilityTimeMs,
+              kMessageAnimationTimeMs,
+              extensions::ExtensionSystem::Get(profile
+                  )->extension_service()->GetInstalledExtension(app_id)));
+    }
     show_notification_upon_next_user_activity_ = false;
   }
   ResetTimer();
