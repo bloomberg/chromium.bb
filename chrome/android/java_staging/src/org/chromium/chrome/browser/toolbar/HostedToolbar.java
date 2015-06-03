@@ -420,7 +420,7 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         if (changed) {
             final int availWidth = mUrlInfoContainer.getMeasuredWidth()
-                    - mTitleBar.getPaddingEnd() - mTitleBar.getPaddingStart();
+                    - mTitleBar.getPaddingLeft() - mTitleBar.getPaddingRight();
             String currentText = mTitleBar.getText().toString();
             String currentTitle;
             Tab currentTab = getToolbarDataProvider().getTab();
