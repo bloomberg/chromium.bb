@@ -343,6 +343,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       locks_on_frame_count_(0),
       observing_root_window_(false),
       weak_ptr_factory_(this) {
+  if (CompositorImpl::GetSurfaceManager())
+    id_allocator_ = CompositorImpl::CreateSurfaceIdAllocator();
   host_->SetView(this);
   SetContentViewCore(content_view_core);
 }
@@ -1037,7 +1039,6 @@ void RenderWidgetHostViewAndroid::SubmitFrame(
   cc::SurfaceManager* manager = CompositorImpl::GetSurfaceManager();
   if (manager) {
     if (!surface_factory_) {
-      id_allocator_ = CompositorImpl::CreateSurfaceIdAllocator();
       surface_factory_ = make_scoped_ptr(new cc::SurfaceFactory(manager, this));
     }
     if (surface_id_.is_null() ||
@@ -1757,6 +1758,12 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
 void RenderWidgetHostViewAndroid::DidStopFlinging() {
   if (content_view_core_)
     content_view_core_->DidStopFlinging();
+}
+
+uint32_t RenderWidgetHostViewAndroid::GetSurfaceIdNamespace() {
+  if (id_allocator_)
+    return id_allocator_->id_namespace();
+  return 0;
 }
 
 void RenderWidgetHostViewAndroid::SetContentViewCore(

@@ -438,6 +438,13 @@ source_set("browser") {
     deps += [ "//ui/compositor" ]
   }
 
+  if (!is_ios) {
+    sources += [
+      "compositor/surface_utils.cc",
+      "compositor/surface_utils.h",
+    ]
+  }
+
   if (enable_web_speech) {
     deps += [
       "//third_party/flac",

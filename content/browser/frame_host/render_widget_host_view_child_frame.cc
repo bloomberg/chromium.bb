@@ -9,6 +9,7 @@
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -28,12 +29,8 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       ack_pending_count_(0),
       frame_connector_(NULL),
       weak_factory_(this) {
-#if !defined(OS_ANDROID)
-  if (use_surfaces_) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    id_allocator_ = factory->GetContextFactory()->CreateSurfaceIdAllocator();
-  }
-#endif  // !defined(OS_ANDROID)
+  if (use_surfaces_)
+    id_allocator_ = CreateSurfaceIdAllocator();
 
   host_->SetView(this);
 }
@@ -238,7 +235,6 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
     return;
   }
 
-#if !defined(OS_ANDROID)
   cc::RenderPass* root_pass =
       frame->delegated_frame_data->render_pass_list.back();
 
@@ -263,8 +259,7 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
   }
 
   if (!surface_factory_) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    cc::SurfaceManager* manager = factory->GetSurfaceManager();
+    cc::SurfaceManager* manager = GetSurfaceManager();
     surface_factory_ = make_scoped_ptr(new cc::SurfaceFactory(manager, this));
   }
 
@@ -272,14 +267,12 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
     surface_id_ = id_allocator_->GenerateId();
     surface_factory_->Create(surface_id_);
 
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceSequence sequence = cc::SurfaceSequence(
         id_allocator_->id_namespace(), next_surface_sequence_++);
     // The renderer process will satisfy this dependency when it creates a
     // SurfaceLayer.
-    factory->GetSurfaceManager()
-        ->GetSurfaceForId(surface_id_)
-        ->AddDestructionDependency(sequence);
+    cc::SurfaceManager* manager = GetSurfaceManager();
+    manager->GetSurfaceForId(surface_id_)->AddDestructionDependency(sequence);
     frame_connector_->SetChildFrameSurface(surface_id_, frame_size,
                                            scale_factor, sequence);
   }
@@ -291,7 +284,6 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
   // If this value grows very large, something is going wrong.
   DCHECK(ack_pending_count_ < 1000);
   surface_factory_->SubmitFrame(surface_id_, frame.Pass(), ack_callback);
-#endif  // !defined(OS_ANDROID)
 }
 
 void RenderWidgetHostViewChildFrame::GetScreenInfo(

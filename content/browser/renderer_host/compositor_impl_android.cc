@@ -210,14 +210,20 @@ cc::SurfaceManager* CompositorImpl::GetSurfaceManager() {
 
 // static
 scoped_ptr<cc::SurfaceIdAllocator> CompositorImpl::CreateSurfaceIdAllocator() {
-  return make_scoped_ptr(new cc::SurfaceIdAllocator(++g_surface_id_namespace));
+  scoped_ptr<cc::SurfaceIdAllocator> allocator(
+      new cc::SurfaceIdAllocator(++g_surface_id_namespace));
+  cc::SurfaceManager* manager = GetSurfaceManager();
+  DCHECK(manager);
+  allocator->RegisterSurfaceIdNamespace(manager);
+  return allocator.Pass();
 }
 
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
     : root_layer_(cc::Layer::Create(Compositor::LayerSettings())),
       resource_manager_(&ui_resource_provider_),
-      surface_id_allocator_(CreateSurfaceIdAllocator()),
+      surface_id_allocator_(GetSurfaceManager() ? CreateSurfaceIdAllocator()
+                                                : nullptr),
       has_transparent_background_(false),
       device_scale_factor_(1),
       window_(NULL),

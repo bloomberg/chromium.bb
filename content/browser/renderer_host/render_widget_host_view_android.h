@@ -154,6 +154,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                              scoped_ptr<cc::CompositorFrame> frame) override;
   void DidOverscroll(const DidOverscrollParams& params) override;
   void DidStopFlinging() override;
+  uint32_t GetSurfaceIdNamespace() override;
   void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                const SkBitmap& zoomed_bitmap) override;
   scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget() override;

@@ -1819,6 +1819,12 @@
       ]
     }],
     ['OS!="ios"', {
+      'sources': [
+        'browser/compositor/surface_utils.cc',
+        'browser/compositor/surface_utils.h',
+      ]
+    }],
+    ['OS!="ios"', {
       'dependencies': [
         '../third_party/libyuv/libyuv.gyp:libyuv',
       ],

@@ -6,6 +6,7 @@
 
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -94,28 +95,22 @@ void CrossProcessFrameConnector::SetChildFrameSurface(
 
 void CrossProcessFrameConnector::OnSatisfySequence(
     const cc::SurfaceSequence& sequence) {
-#if !defined(OS_ANDROID)
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
-  cc::SurfaceManager* manager =
-      ImageTransportFactory::GetInstance()->GetSurfaceManager();
+  cc::SurfaceManager* manager = GetSurfaceManager();
   manager->DidSatisfySequences(sequence.id_namespace, &sequences);
-#endif
 }
 
 void CrossProcessFrameConnector::OnRequireSequence(
     const cc::SurfaceId& id,
     const cc::SurfaceSequence& sequence) {
-#if !defined(OS_ANDROID)
-  cc::SurfaceManager* manager =
-      ImageTransportFactory::GetInstance()->GetSurfaceManager();
+  cc::SurfaceManager* manager = GetSurfaceManager();
   cc::Surface* surface = manager->GetSurfaceForId(id);
   if (!surface) {
     LOG(ERROR) << "Attempting to require callback on nonexistent surface";
     return;
   }
   surface->AddDestructionDependency(sequence);
-#endif
 }
 
 void CrossProcessFrameConnector::OnCompositorFrameSwappedACK(
