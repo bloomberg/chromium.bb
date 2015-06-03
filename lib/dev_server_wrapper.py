@@ -139,8 +139,12 @@ def GetImagePathWithXbuddy(path, board, version=None,
 
   # If we are using the progress bar, quiet the logging output of cherrypy.
   if command.UseProgressBar():
-    cherrypy.log.access_log.setLevel(logging.NOTICE)
-    cherrypy.log.error_log.setLevel(logging.NOTICE)
+    if (hasattr(cherrypy.log, 'access_log') and
+        hasattr(cherrypy.log, 'error_log')):
+      cherrypy.log.access_log.setLevel(logging.NOTICE)
+      cherrypy.log.error_log.setLevel(logging.NOTICE)
+    else:
+      cherrypy.config.update({'server.log_to_screen': False})
 
   xb = xbuddy.XBuddy(static_dir=static_dir, board=board, version=version,
                      log_screen=False)
