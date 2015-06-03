@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/socket/tcp_listen_socket_unittest.h"
+#include "net/test/embedded_test_server/tcp_listen_socket_unittest.h"
 
 #include <fcntl.h>
 #include <sys/types.h>
@@ -18,14 +18,15 @@
 
 namespace net {
 
+namespace test_server {
+
 const int kReadBufSize = 1024;
 const char kHelloWorld[] = "HELLO, WORLD";
 const char kLoopback[] = "127.0.0.1";
 
 TCPListenSocketTester::TCPListenSocketTester()
-    : loop_(NULL),
-      cv_(&lock_),
-      server_port_(0) {}
+    : loop_(NULL), cv_(&lock_), server_port_(0) {
+}
 
 void TCPListenSocketTester::SetUp() {
   base::Thread::Options options;
@@ -34,8 +35,7 @@ void TCPListenSocketTester::SetUp() {
   thread_->StartWithOptions(options);
   loop_ = reinterpret_cast<base::MessageLoopForIO*>(thread_->message_loop());
 
-  loop_->PostTask(FROM_HERE, base::Bind(
-      &TCPListenSocketTester::Listen, this));
+  loop_->PostTask(FROM_HERE, base::Bind(&TCPListenSocketTester::Listen, this));
 
   // verify Listen succeeded
   NextAction();
@@ -52,9 +52,8 @@ void TCPListenSocketTester::SetUp() {
   client.sin_family = AF_INET;
   client.sin_addr.s_addr = inet_addr(kLoopback);
   client.sin_port = base::HostToNet16(server_port);
-  int ret = HANDLE_EINTR(
-      connect(test_socket_, reinterpret_cast<sockaddr*>(&client),
-              sizeof(client)));
+  int ret = HANDLE_EINTR(connect(
+      test_socket_, reinterpret_cast<sockaddr*>(&client), sizeof(client)));
 #if defined(OS_POSIX)
   // The connect() call may be interrupted by a signal. When connect()
   // is retried on EINTR, it fails with EISCONN.
@@ -78,8 +77,8 @@ void TCPListenSocketTester::TearDown() {
   NextAction();
   ASSERT_EQ(ACTION_CLOSE, last_action_.type());
 
-  loop_->PostTask(FROM_HERE, base::Bind(
-      &TCPListenSocketTester::Shutdown, this));
+  loop_->PostTask(FROM_HERE,
+                  base::Bind(&TCPListenSocketTester::Shutdown, this));
   NextAction();
   ASSERT_EQ(ACTION_SHUTDOWN, last_action_.type());
 
@@ -170,16 +169,16 @@ void TCPListenSocketTester::TestClientSendLong() {
 }
 
 void TCPListenSocketTester::TestServerSend() {
-  loop_->PostTask(FROM_HERE, base::Bind(
-      &TCPListenSocketTester::SendFromTester, this));
+  loop_->PostTask(FROM_HERE,
+                  base::Bind(&TCPListenSocketTester::SendFromTester, this));
   NextAction();
   ASSERT_EQ(ACTION_SEND, last_action_.type());
   const int buf_len = 200;
-  char buf[buf_len+1];
+  char buf[buf_len + 1];
   unsigned recv_len = 0;
   while (recv_len < strlen(kHelloWorld)) {
-    int r = HANDLE_EINTR(recv(test_socket_,
-                              buf + recv_len, buf_len - recv_len, 0));
+    int r =
+        HANDLE_EINTR(recv(test_socket_, buf + recv_len, buf_len - recv_len, 0));
     ASSERT_GE(r, 0);
     recv_len += static_cast<unsigned>(r);
     if (!r)
@@ -192,13 +191,13 @@ void TCPListenSocketTester::TestServerSend() {
 void TCPListenSocketTester::TestServerSendMultiple() {
   // Send enough data to exceed the socket receive window. 20kb is probably a
   // safe bet.
-  int send_count = (1024*20) / (sizeof(kHelloWorld)-1);
+  int send_count = (1024 * 20) / (sizeof(kHelloWorld) - 1);
 
   // Send multiple writes. Since no reading is occurring the data should be
   // buffered in TCPListenSocket.
   for (int i = 0; i < send_count; ++i) {
-    loop_->PostTask(FROM_HERE, base::Bind(
-        &TCPListenSocketTester::SendFromTester, this));
+    loop_->PostTask(FROM_HERE,
+                    base::Bind(&TCPListenSocketTester::SendFromTester, this));
     NextAction();
     ASSERT_EQ(ACTION_SEND, last_action_.type());
   }
@@ -208,9 +207,9 @@ void TCPListenSocketTester::TestServerSendMultiple() {
   const int buf_len = sizeof(kHelloWorld);
   for (int i = 0; i < send_count; ++i) {
     unsigned recv_len = 0;
-    while (recv_len < buf_len-1) {
-      int r = HANDLE_EINTR(recv(test_socket_,
-                                buf + recv_len, buf_len - 1 - recv_len, 0));
+    while (recv_len < buf_len - 1) {
+      int r = HANDLE_EINTR(
+          recv(test_socket_, buf + recv_len, buf_len - 1 - recv_len, 0));
       ASSERT_GE(r, 0);
       recv_len += static_cast<unsigned>(r);
       if (!r)
@@ -252,7 +251,8 @@ void TCPListenSocketTester::DidClose(StreamListenSocket* sock) {
   ReportAction(TCPListenSocketTestAction(ACTION_CLOSE));
 }
 
-TCPListenSocketTester::~TCPListenSocketTester() {}
+TCPListenSocketTester::~TCPListenSocketTester() {
+}
 
 scoped_ptr<TCPListenSocket> TCPListenSocketTester::DoListen() {
   // Let the OS pick a free port.
@@ -271,9 +271,7 @@ void TCPListenSocketTester::SetServerPort(int server_port) {
 
 class TCPListenSocketTest : public PlatformTest {
  public:
-  TCPListenSocketTest() {
-    tester_ = NULL;
-  }
+  TCPListenSocketTest() { tester_ = NULL; }
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -305,5 +303,7 @@ TEST_F(TCPListenSocketTest, ServerSend) {
 TEST_F(TCPListenSocketTest, ServerSendMultiple) {
   tester_->TestServerSendMultiple();
 }
+
+}  // namespace test_server
 
 }  // namespace net

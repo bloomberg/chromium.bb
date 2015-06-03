@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
-#include "net/socket/tcp_listen_socket.h"
+#include "net/test/embedded_test_server/tcp_listen_socket.h"
 #include "url/gurl.h"
 
 namespace base {

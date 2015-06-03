@@ -4,8 +4,8 @@
 
 #include "net/test/embedded_test_server/http_connection.h"
 
-#include "net/socket/stream_listen_socket.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/stream_listen_socket.h"
 
 namespace net {
 namespace test_server {

@@ -394,7 +394,6 @@
               # iOS.
               # OS is not "linux" or "freebsd" or "openbsd".
               'socket/unix_domain_client_socket_posix_unittest.cc',
-              'socket/unix_domain_listen_socket_posix_unittest.cc',
               'socket/unix_domain_server_socket_posix_unittest.cc',
 
               # See bug http://crbug.com/344533.
@@ -574,6 +573,10 @@
         'test/embedded_test_server/http_request.h',
         'test/embedded_test_server/http_response.cc',
         'test/embedded_test_server/http_response.h',
+        'test/embedded_test_server/stream_listen_socket.cc',
+        'test/embedded_test_server/stream_listen_socket.h',
+        'test/embedded_test_server/tcp_listen_socket.cc',
+        'test/embedded_test_server/tcp_listen_socket.h',
         'test/event_waiter.h',
         'test/net_test_suite.cc',
         'test/net_test_suite.h',

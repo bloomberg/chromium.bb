@@ -6,7 +6,6 @@
 #define CHROMECAST_BROWSER_DEVTOOLS_CAST_DEV_TOOLS_DELEGATE_H_
 
 #include "components/devtools_http_handler/devtools_http_handler_delegate.h"
-#include "net/socket/stream_listen_socket.h"
 
 namespace chromecast {
 namespace shell {

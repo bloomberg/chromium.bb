@@ -50,7 +50,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/switches.h"
-#include "net/socket/tcp_listen_socket.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 using app_modal::AppModalDialog;

@@ -12,12 +12,11 @@
 
 namespace net {
 
-class StreamListenSocket;
-
 namespace test_server {
 
 class HttpConnection;
 class HttpResponse;
+class StreamListenSocket;
 
 // Calblack called when a request is parsed. Response should be sent
 // using HttpConnection::SendResponse() on the |connection| argument.

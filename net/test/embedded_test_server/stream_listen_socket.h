@@ -13,8 +13,8 @@
 // thread always and that all other methods (including constructor and
 // destructor) should also be called from the same thread.
 
-#ifndef NET_SOCKET_STREAM_LISTEN_SOCKET_H_
-#define NET_SOCKET_STREAM_LISTEN_SOCKET_H_
+#ifndef NET_TEST_EMBEDDED_TEST_SERVER_STREAM_LISTEN_SOCKET_H_
+#define NET_TEST_EMBEDDED_TEST_SERVER_STREAM_LISTEN_SOCKET_H_
 
 #include "build/build_config.h"
 
@@ -38,12 +38,13 @@ namespace net {
 
 class IPEndPoint;
 
-class NET_EXPORT StreamListenSocket
-    :
+namespace test_server {
+
+class StreamListenSocket :
 #if defined(OS_WIN)
-      public base::win::ObjectWatcher::Delegate {
+    public base::win::ObjectWatcher::Delegate {
 #elif defined(OS_POSIX)
-      public base::MessageLoopForIO::Watcher {
+    public base::MessageLoopForIO::Watcher {
 #endif
 
  public:
@@ -81,11 +82,7 @@ class NET_EXPORT StreamListenSocket
   static const int kSocketError;
 
  protected:
-  enum WaitState {
-    NOT_WAITING      = 0,
-    WAITING_ACCEPT   = 1,
-    WAITING_READ     = 2
-  };
+  enum WaitState { NOT_WAITING = 0, WAITING_ACCEPT = 1, WAITING_READ = 2 };
 
   StreamListenSocket(SocketDescriptor s, Delegate* del);
 
@@ -138,7 +135,7 @@ class NET_EXPORT StreamListenSocket
 
 // Abstract factory that must be subclassed for each subclass of
 // StreamListenSocket.
-class NET_EXPORT StreamListenSocketFactory {
+class StreamListenSocketFactory {
  public:
   virtual ~StreamListenSocketFactory() {}
 
@@ -147,6 +144,8 @@ class NET_EXPORT StreamListenSocketFactory {
       StreamListenSocket::Delegate* delegate) const = 0;
 };
 
+}  // namespace test_server
+
 }  // namespace net
 
-#endif  // NET_SOCKET_STREAM_LISTEN_SOCKET_H_
+#endif  // NET_TEST_EMBEDDED_TEST_SERVER_STREAM_LISTEN_SOCKET_H_

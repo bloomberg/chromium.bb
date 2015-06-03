@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/socket/tcp_listen_socket.h"
+#include "net/test/embedded_test_server/tcp_listen_socket.h"
 
 #if defined(OS_WIN)
 // winsock2.h must be included first in order to ensure it is included before
@@ -29,6 +29,8 @@ using std::string;
 
 namespace net {
 
+namespace test_server {
+
 // static
 scoped_ptr<TCPListenSocket> TCPListenSocket::CreateAndListen(
     const string& ip,
@@ -47,7 +49,8 @@ TCPListenSocket::TCPListenSocket(SocketDescriptor s,
     : StreamListenSocket(s, del) {
 }
 
-TCPListenSocket::~TCPListenSocket() {}
+TCPListenSocket::~TCPListenSocket() {
+}
 
 SocketDescriptor TCPListenSocket::CreateAndBind(const string& ip, uint16 port) {
   SocketDescriptor s = CreatePlatformSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -103,13 +106,13 @@ void TCPListenSocket::Accept() {
   SocketDescriptor conn = AcceptSocket();
   if (conn == kInvalidSocket)
     return;
-  scoped_ptr<TCPListenSocket> sock(
-      new TCPListenSocket(conn, socket_delegate_));
-  // It's up to the delegate to AddRef if it wants to keep it around.
+  scoped_ptr<TCPListenSocket> sock(new TCPListenSocket(conn, socket_delegate_));
 #if defined(OS_POSIX)
   sock->WatchSocket(WAITING_READ);
 #endif
   socket_delegate_->DidAccept(this, sock.Pass());
 }
+
+}  // namespace test_server
 
 }  // namespace net

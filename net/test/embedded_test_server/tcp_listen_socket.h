@@ -2,26 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_TCP_LISTEN_SOCKET_H_
-#define NET_SOCKET_TCP_LISTEN_SOCKET_H_
+#ifndef NET_TEST_EMBEDDED_TEST_SERVER_TCP_LISTEN_SOCKET_H_
+#define NET_TEST_EMBEDDED_TEST_SERVER_TCP_LISTEN_SOCKET_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
 #include "net/socket/socket_descriptor.h"
-#include "net/socket/stream_listen_socket.h"
+#include "net/test/embedded_test_server/stream_listen_socket.h"
 
 namespace net {
 
 namespace test_server {
-class EmbeddedTestServer;
-}
 
-// Implements a TCP socket. This class is deprecated and will be removed
-// once crbug.com/472766 is fixed. There should not be any new consumer of this
-// class.
-class NET_EXPORT TCPListenSocket : public StreamListenSocket {
+// Implements a TCP socket.
+// TODO(xunjieli): Consider making embedded_test_server use HttpServer instead
+// of having its own socket class.
+class TCPListenSocket : public StreamListenSocket {
  public:
   ~TCPListenSocket() override;
 
@@ -32,8 +30,7 @@ class NET_EXPORT TCPListenSocket : public StreamListenSocket {
   void Accept() override;
 
  private:
-  // Note that friend classes are temporary until crbug.com/472766 is fixed.
-  friend class test_server::EmbeddedTestServer;
+  friend class EmbeddedTestServer;
   friend class TCPListenSocketTester;
 
   // Listen on port for the specified IP address.  Use 127.0.0.1 to only
@@ -53,6 +50,8 @@ class NET_EXPORT TCPListenSocket : public StreamListenSocket {
   DISALLOW_COPY_AND_ASSIGN(TCPListenSocket);
 };
 
+}  // namespace test_server
+
 }  // namespace net
 
-#endif  // NET_SOCKET_TCP_LISTEN_SOCKET_H_
+#endif  // NET_TEST_EMBEDDED_TEST_SERVER_TCP_LISTEN_SOCKET_H_

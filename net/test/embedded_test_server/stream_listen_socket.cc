@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/socket/stream_listen_socket.h"
+#include "net/test/embedded_test_server/stream_listen_socket.h"
 
 #if defined(OS_WIN)
 // winsock2.h must be included first in order to ensure it is included before
@@ -36,6 +36,8 @@ typedef int socklen_t;
 #endif  // defined(OS_WIN)
 
 namespace net {
+
+namespace test_server {
 
 namespace {
 
@@ -74,7 +76,8 @@ StreamListenSocket::~StreamListenSocket() {
 #endif
 }
 
-void StreamListenSocket::Send(const char* bytes, int len,
+void StreamListenSocket::Send(const char* bytes,
+                              int len,
                               bool append_linefeed) {
   SendInternal(bytes, len);
   if (append_linefeed)
@@ -127,7 +130,7 @@ SocketDescriptor StreamListenSocket::AcceptSocket() {
 }
 
 void StreamListenSocket::SendInternal(const char* bytes, int len) {
-  char* send_buf = const_cast<char *>(bytes);
+  char* send_buf = const_cast<char*>(bytes);
   int len_left = len;
   while (true) {
     int sent = HANDLE_EINTR(send(socket_, send_buf, len_left, 0));
@@ -186,9 +189,9 @@ void StreamListenSocket::Read() {
         break;
       }
     } else if (len == 0) {
+#if defined(OS_POSIX)
       // In Windows, Close() is called by OnObjectSignaled. In POSIX, we need
       // to call it here.
-#if defined(OS_POSIX)
       Close();
 #endif
     } else {
@@ -321,5 +324,7 @@ void StreamListenSocket::ResumeReads() {
     Read();
   }
 }
+
+}  // namespace test_server
 
 }  // namespace net
