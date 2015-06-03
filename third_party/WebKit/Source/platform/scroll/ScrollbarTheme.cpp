@@ -61,16 +61,16 @@ bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* gra
     IntRect forwardButtonEndPaintRect;
     if (hasButtons(scrollbar)) {
         backButtonStartPaintRect = backButtonRect(scrollbar, BackButtonStartPart, true);
-        if (damageRect.intersects(backButtonStartPaintRect))
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(backButtonStartPaintRect))
             scrollMask |= BackButtonStartPart;
         backButtonEndPaintRect = backButtonRect(scrollbar, BackButtonEndPart, true);
-        if (damageRect.intersects(backButtonEndPaintRect))
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(backButtonEndPaintRect))
             scrollMask |= BackButtonEndPart;
         forwardButtonStartPaintRect = forwardButtonRect(scrollbar, ForwardButtonStartPart, true);
-        if (damageRect.intersects(forwardButtonStartPaintRect))
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(forwardButtonStartPaintRect))
             scrollMask |= ForwardButtonStartPart;
         forwardButtonEndPaintRect = forwardButtonRect(scrollbar, ForwardButtonEndPart, true);
-        if (damageRect.intersects(forwardButtonEndPaintRect))
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(forwardButtonEndPaintRect))
             scrollMask |= ForwardButtonEndPart;
     }
 
@@ -78,17 +78,17 @@ bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* gra
     IntRect thumbRect;
     IntRect endTrackRect;
     IntRect trackPaintRect = trackRect(scrollbar, true);
-    if (damageRect.intersects(trackPaintRect))
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(trackPaintRect))
         scrollMask |= TrackBGPart;
     bool thumbPresent = hasThumb(scrollbar);
     if (thumbPresent) {
         IntRect track = trackRect(scrollbar);
         splitTrack(scrollbar, track, startTrackRect, thumbRect, endTrackRect);
-        if (damageRect.intersects(thumbRect))
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(thumbRect))
             scrollMask |= ThumbPart;
-        if (damageRect.intersects(startTrackRect))
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(startTrackRect))
             scrollMask |= BackTrackPart;
-        if (damageRect.intersects(endTrackRect))
+        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(endTrackRect))
             scrollMask |= ForwardTrackPart;
     }
 

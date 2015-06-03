@@ -168,22 +168,27 @@ void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const In
 {
     IntRect absRect = m_scrollableArea.scrollCornerRect();
     absRect.moveBy(paintOffset);
-    if (!absRect.intersects(damageRect))
-        return;
 
     if (m_scrollableArea.scrollCorner()) {
+        if (!absRect.intersects(damageRect))
+            return;
         ScrollbarPainter::paintIntoRect(m_scrollableArea.scrollCorner(), context, paintOffset, LayoutRect(absRect));
         return;
     }
+
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled() && !absRect.intersects(damageRect))
+        return;
+
+    // We don't want to paint white if we have overlay scrollbars, since we need
+    // to see what is behind it.
+    if (m_scrollableArea.hasOverlayScrollbars())
+        return;
 
     DrawingRecorder recorder(*context, m_scrollableArea.box(), DisplayItem::ScrollbarCorner, absRect);
     if (recorder.canUseCachedDrawing())
         return;
 
-    // We don't want to paint white if we have overlay scrollbars, since we need
-    // to see what is behind it.
-    if (!m_scrollableArea.hasOverlayScrollbars())
-        context->fillRect(absRect, Color::white);
+    context->fillRect(absRect, Color::white);
 }
 
 } // namespace blink

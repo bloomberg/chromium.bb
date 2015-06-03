@@ -250,11 +250,9 @@ void DisplayItemList::commitNewDisplayItems()
                 updatedList.append(m_currentDisplayItems[currentDisplayItemsIndex].release());
             } else {
                 size_t foundIndex = findOutOfOrderCachedItem(currentDisplayItemsIndex, *newDisplayItem, matchingType, displayItemIndicesByClient);
-                if (foundIndex != kNotFound) {
-                    isSynchronized = (foundIndex == currentDisplayItemsIndex);
-                    updatedList.append(m_currentDisplayItems[foundIndex].release());
-                }
-                // else: do nothing because previously the client generated a empty picture which is not stored in the cache.
+                ASSERT(foundIndex != kNotFound);
+                isSynchronized = (foundIndex == currentDisplayItemsIndex);
+                updatedList.append(m_currentDisplayItems[foundIndex].release());
             }
         } else {
 #if ENABLE(ASSERT)
