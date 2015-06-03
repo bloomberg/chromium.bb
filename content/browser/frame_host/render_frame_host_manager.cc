@@ -730,19 +730,23 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;
 
-  // Renderer-initiated navigations that may require a SiteInstance swap are
-  // sent to the browser via the OpenURL IPC and are afterwards treated as
-  // browser-initiated navigations. NavigationRequests marked as
+  // Renderer-initiated main frame navigations that may require a SiteInstance
+  // swap are sent to the browser via the OpenURL IPC and are afterwards treated
+  // as browser-initiated navigations. NavigationRequests marked as
   // renderer-initiated are created by receiving a BeginNavigation IPC, and will
   // then proceed in the same renderer that sent the IPC due to the condition
   // below.
-  // TODO(carlosk): Once there is support for cross-process scripting check for
-  // non-browser-initiated navigations should be removed (see crbug.com/440266).
+  // Subframe navigations will use the current renderer, unless
+  // --site-per-process is enabled.
+  // TODO(carlosk): Have renderer-initated main frame navigations swap processes
+  // if needed when it no longer breaks OAuth popups (see
+  // https://crbug.com/440266).
+  bool site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
+  bool is_main_frame = frame_tree_node_->IsMainFrame();
   if (current_site_instance == dest_site_instance.get() ||
-      !request.browser_initiated() ||
-      (!frame_tree_node_->IsMainFrame() &&
-       !base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kSitePerProcess))) {
+      (!request.browser_initiated() && is_main_frame) ||
+      (!is_main_frame && !site_per_process)) {
     // Reuse the current RFH if its SiteInstance matches the the navigation's
     // or if this is a subframe navigation. We only swap RFHs for subframes when
     // --site-per-process is enabled.

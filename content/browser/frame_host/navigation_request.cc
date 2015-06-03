@@ -147,6 +147,11 @@ NavigationRequest::NavigationRequest(
     restore_type_ = entry->restore_type();
     is_view_source_ = entry->IsViewSourceMode();
     bindings_ = entry->bindings();
+  } else {
+    // This is needed to have about:blank and data URLs commit in the same
+    // SiteInstance as the initiating renderer.
+    source_site_instance_ =
+        frame_tree_node->current_frame_host()->GetSiteInstance();
   }
 
   const GURL& first_party_for_cookies =
