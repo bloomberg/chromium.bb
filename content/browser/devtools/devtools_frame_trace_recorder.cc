@@ -77,20 +77,22 @@ class DevToolsFrameTraceRecorderData
 
   void AppendAsTraceFormat(std::string* out) const override {
     out->append("\"");
-    std::vector<unsigned char> data;
-    SkAutoLockPixels lock_image(frame_);
-    bool encoded = gfx::PNGCodec::Encode(
-        reinterpret_cast<unsigned char*>(frame_.getAddr32(0, 0)),
-        gfx::PNGCodec::FORMAT_SkBitmap,
-        gfx::Size(frame_.width(), frame_.height()),
-        frame_.width() * frame_.bytesPerPixel(),
-        false, std::vector<gfx::PNGCodec::Comment>(), &data);
-    if (encoded) {
-      std::string encoded_data;
-      base::Base64Encode(
-          base::StringPiece(reinterpret_cast<char*>(&data[0]), data.size()),
-          &encoded_data);
-      out->append(encoded_data);
+    if (!frame_.drawsNothing()) {
+      std::vector<unsigned char> data;
+      SkAutoLockPixels lock_image(frame_);
+      bool encoded = gfx::PNGCodec::Encode(
+          reinterpret_cast<unsigned char*>(frame_.getAddr32(0, 0)),
+          gfx::PNGCodec::FORMAT_SkBitmap,
+          gfx::Size(frame_.width(), frame_.height()),
+          frame_.width() * frame_.bytesPerPixel(),
+          false, std::vector<gfx::PNGCodec::Comment>(), &data);
+      if (encoded) {
+        std::string encoded_data;
+        base::Base64Encode(
+            base::StringPiece(reinterpret_cast<char*>(&data[0]), data.size()),
+            &encoded_data);
+        out->append(encoded_data);
+      }
     }
     out->append("\"");
   }
