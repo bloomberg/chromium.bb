@@ -884,7 +884,7 @@ TEST_F(TouchSelectionControllerTest, SelectionDragExtremeLineSize) {
   // offset, allowing seamless transition to neighboring lines with different
   // sizes. The drag coordinate for small lines should have an offset
   // commensurate with the small line size.
-  EXPECT_EQ(large_line_rect.bottom_left() - gfx::Vector2dF(0, 5.f),
+  EXPECT_EQ(large_line_rect.bottom_left() - gfx::Vector2dF(0, 8.f),
             GetLastSelectionStart());
   EXPECT_EQ(small_line_rect.CenterPoint(), GetLastSelectionEnd());
 

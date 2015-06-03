@@ -14,10 +14,10 @@ namespace {
 gfx::Vector2dF ComputeLineOffsetFromBottom(const SelectionBound& bound) {
   gfx::Vector2dF line_offset =
       gfx::ScaleVector2d(bound.edge_top() - bound.edge_bottom(), 0.5f);
-  // An offset of 5 DIPs is sufficient for most line sizes. For small lines,
+  // An offset of 8 DIPs is sufficient for most line sizes. For small lines,
   // using half the line height avoids synthesizing a point on a line above
   // (or below) the intended line.
-  const gfx::Vector2dF kMaxLineOffset(5.f, 5.f);
+  const gfx::Vector2dF kMaxLineOffset(8.f, 8.f);
   line_offset.SetToMin(kMaxLineOffset);
   line_offset.SetToMax(-kMaxLineOffset);
   return line_offset;
