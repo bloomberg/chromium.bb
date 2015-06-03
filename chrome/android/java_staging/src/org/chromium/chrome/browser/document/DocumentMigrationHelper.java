@@ -220,7 +220,8 @@ public class DocumentMigrationHelper {
 
             if (normalTabModel.getCount() != 0) {
                 byte[] listData;
-                listData = TabPersistentStore.serializeTabLists(incognitoTabModel, normalTabModel);
+                listData = TabPersistentStore.serializeTabModelSelector(
+                        ChromeMobileApplication.getDocumentTabModelSelector(), null);
                 ImportantFileWriterAndroid.writeFileAtomically(tabStatefileName, listData);
             }
         } catch (IOException e) {

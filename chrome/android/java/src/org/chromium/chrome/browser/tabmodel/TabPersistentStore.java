@@ -28,7 +28,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -48,6 +50,9 @@ public class TabPersistentStore extends TabPersister {
 
     /** Prevents two copies of the Migration task from being created. */
     private static final Object MIGRATION_LOCK = new Object();
+
+    /** Prevents race conditions when setting the sBaseStateDirectory. */
+    private static final Object BASE_STATE_DIRECTORY_LOCK = new Object();
 
     /**
      * Callback interface to use while reading the persisted TabModelSelector info from disk.
@@ -78,6 +83,12 @@ public class TabPersistentStore extends TabPersister {
         void onInitialized(int tabCountAtStartup);
 
         /**
+         * Called when details about a Tab are read from the metadata file.
+         */
+        void onDetailsRead(int index, int id, String url,
+                boolean isStandardActiveIndex, boolean isIncognitoActiveIndex);
+
+        /**
          * To be called when the TabStates have all been loaded.
          * @param context Context used by the TabPersistentStore.
          */
@@ -85,6 +96,7 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private static FileMigrationTask sMigrationTask = null;
+    private static File sBaseStateDirectory;
 
     private final TabModelSelector mTabModelSelector;
     private final TabCreatorManager mTabCreatorManager;
@@ -152,14 +164,35 @@ public class TabPersistentStore extends TabPersister {
     }
 
     /**
+     * Sets where the base state directory is.  If overridding this value, set it before the
+     * instance's mStateDirectory field is initialized.
+     */
+    @VisibleForTesting
+    public static void setBaseStateDirectory(File directory) {
+        synchronized (BASE_STATE_DIRECTORY_LOCK) {
+            sBaseStateDirectory = directory;
+        }
+    }
+
+    /**
+     * @return Folder that all metadata for the ChromeTabbedActivity TabModels should be located.
+     *         Each subdirectory stores info about different instances of ChromeTabbedActivity.
+     */
+    public static File getBaseStateDirectory(Context context) {
+        if (sBaseStateDirectory == null) {
+            setBaseStateDirectory(context.getDir(BASE_STATE_FOLDER, Context.MODE_PRIVATE));
+        }
+        return sBaseStateDirectory;
+    }
+
+    /**
      * The folder where the state should be saved to.
      * @param context A Context instance.
      * @param index   The TabModelSelector index.
      * @return        A file representing the directory that contains the TabModelSelector state.
      */
     public static File getStateDirectory(Context context, int index) {
-        File file = new File(context.getDir(BASE_STATE_FOLDER, Context.MODE_PRIVATE),
-                Integer.toString(index));
+        File file = new File(getBaseStateDirectory(context), Integer.toString(index));
         if (!file.exists() && !file.mkdirs()) Log.e(TAG, "Failed to create state folder: " + file);
         return file;
     }
@@ -238,7 +271,7 @@ public class TabPersistentStore extends TabPersister {
 
         if (mSaveListTask == null || (mSaveListTask.cancel(false) && !mSaveListTask.mStateSaved)) {
             try {
-                saveListToFile(serializeTabModelSelector(mTabModelSelector));
+                saveListToFile(serializeTabMetadata());
             } catch (IOException e) {
                 logSaveException(e);
             }
@@ -508,6 +541,19 @@ public class TabPersistentStore extends TabPersister {
         // done as part of the standard tab removal process.
     }
 
+    private byte[] serializeTabMetadata() throws IOException {
+        List<TabRestoreDetails> tabsToRestore = new ArrayList<TabRestoreDetails>();
+
+        // The metadata file may be being written out before all of the Tabs have been restored.
+        // Save that information out, as well.
+        if (mLoadTabTask != null) tabsToRestore.add(mLoadTabTask.mTabToRestore);
+        for (TabRestoreDetails details : mTabsToRestore) {
+            tabsToRestore.add(details);
+        }
+
+        return serializeTabModelSelector(mTabModelSelector, tabsToRestore);
+    }
+
     /**
      * Serializes {@code selector} to a byte array, copying out the data pertaining to tab ordering
      * and selected indices.
@@ -515,27 +561,23 @@ public class TabPersistentStore extends TabPersister {
      * @return         A {@code byte[]} containing the serialized state of {@code selector}.
      */
     @VisibleForTesting
-    public static byte[] serializeTabModelSelector(TabModelSelector selector) throws IOException {
-        TabModel incognitoModel = selector.getModel(true);
-        TabModel standardModel = selector.getModel(false);
-        return serializeTabLists(incognitoModel, standardModel);
-    }
-
-    /**
-     * Serializes the given tab lists to a byte array, copying out the data pertaining to
-     * tab ordering and selected indices.
-     * @param incognitoList The incognito {@link TabList} to serialize.
-     * @param standardList    The normal {@link TabList} to serialize.
-     * @return              A {@code byte[]} containing the serialized state of {@code selector}.
-     */
-    public static byte[] serializeTabLists(TabList incognitoList,
-            TabList standardList) throws IOException {
+    public static byte[] serializeTabModelSelector(TabModelSelector selector,
+            List<TabRestoreDetails> tabsToRestore) throws IOException {
         ThreadUtils.assertOnUiThread();
+
+        TabModel incognitoList = selector.getModel(true);
+        TabModel standardList = selector.getModel(false);
+
+        // Determine how many Tabs there are, including those not yet been added to the TabLists.
+        int numAlreadyLoaded = incognitoList.getCount() + standardList.getCount();
+        int numStillBeingLoaded = tabsToRestore == null ? 0 : tabsToRestore.size();
+        int numTabsTotal = numStillBeingLoaded + numAlreadyLoaded;
+
         // Save the index file containing the list of tabs to restore.
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(output);
         stream.writeInt(SAVED_STATE_VERSION);
-        stream.writeInt(incognitoList.getCount() + standardList.getCount());
+        stream.writeInt(numTabsTotal);
         stream.writeInt(incognitoList.index());
         stream.writeInt(standardList.index() + incognitoList.getCount());
         // Save incognito state first, so when we load, if the incognito files are unreadable
@@ -548,6 +590,17 @@ public class TabPersistentStore extends TabPersister {
             stream.writeInt(standardList.getTabAt(i).getId());
             stream.writeUTF(standardList.getTabAt(i).getUrl());
         }
+
+        // Write out information about the tabs that haven't finished being loaded.
+        // We shouldn't have to worry about Tab duplication because the tab details are processed
+        // only on the UI Thread.
+        if (tabsToRestore != null) {
+            for (TabRestoreDetails details : tabsToRestore) {
+                stream.writeInt(details.id);
+                stream.writeUTF(details.url);
+            }
+        }
+
         stream.close();
         return output.toByteArray();
     }
@@ -571,7 +624,7 @@ public class TabPersistentStore extends TabPersister {
         assert  mTabModelSelector.getModel(true).getCount() == 0;
         assert  mTabModelSelector.getModel(false).getCount() == 0;
         int maxId = 0;
-        File[] folders = mContext.getDir(BASE_STATE_FOLDER, Context.MODE_PRIVATE).listFiles();
+        File[] folders = getBaseStateDirectory(mContext).listFiles();
         File stateFolder = getStateDirectory();
         for (File folder : folders) {
             assert folder.isDirectory();
@@ -580,6 +633,9 @@ public class TabPersistentStore extends TabPersister {
             final Deque<TabRestoreDetails> restoreList = readDir ? mTabsToRestore : null;
             final boolean isIncognitoSelected = mTabModelSelector.isIncognitoSelected();
 
+            // TODO(dfalcantara): Store the max tab ID in a shared preference so that it can be
+            //                    shared with all of the other modes that Chrome runs in and to
+            //                    avoid reading in all of the possible app_tabs subdirectories.
             int curId = readSavedStateFile(folder, new OnTabStateReadCallback() {
                 @Override
                 public void onDetailsRead(int index, int id, String url,
@@ -597,6 +653,11 @@ public class TabPersistentStore extends TabPersister {
                         restoreList.addFirst(new TabRestoreDetails(id, index, url));
                     } else {
                         restoreList.addLast(new TabRestoreDetails(id, index, url));
+                    }
+
+                    if (mObserver != null) {
+                        mObserver.onDetailsRead(
+                                index, id, url, isStandardActiveIndex, isIncognitoActiveIndex);
                     }
                 }
             });
@@ -708,7 +769,7 @@ public class TabPersistentStore extends TabPersister {
         protected void onPreExecute() {
             if (mDestroyed || isCancelled()) return;
             try {
-                mListData = serializeTabModelSelector(mTabModelSelector);
+                mListData = serializeTabMetadata();
             } catch (IOException e) {
                 mListData = null;
             }
@@ -761,7 +822,10 @@ public class TabPersistentStore extends TabPersister {
                 }
             }
         }
-        mTabContentManager.cleanupPersistentData(mTabModelSelector);
+
+        if (mTabContentManager != null) {
+            mTabContentManager.cleanupPersistentData(mTabModelSelector);
+        }
     }
 
     private void cleanupPersistentDataAtAndAboveId(int minForbiddenId)  {

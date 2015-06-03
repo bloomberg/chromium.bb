@@ -112,6 +112,11 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             }
 
             @Override
+            public void onDetailsRead(int index, int id, String url, boolean isStandardActiveIndex,
+                    boolean isIncognitoActiveIndex) {
+            }
+
+            @Override
             public void onInitialized(int tabCountAtStartup) {
                 RecordHistogram.recordCountHistogram("Tabs.CountAtStartup", tabCountAtStartup);
             }

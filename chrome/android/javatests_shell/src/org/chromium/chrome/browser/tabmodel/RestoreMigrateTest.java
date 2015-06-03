@@ -30,7 +30,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
                 new Callable<byte[]>() {
                     @Override
                     public byte[] call() throws Exception {
-                        return TabPersistentStore.serializeTabModelSelector(selector);
+                        return TabPersistentStore.serializeTabModelSelector(selector, null);
                     }
                 });
         File f = TabPersistentStore.getStateDirectory(
