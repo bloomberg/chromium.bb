@@ -47,7 +47,6 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passed
 
 WebGL2RenderingContextBase::~WebGL2RenderingContextBase()
 {
-#if !ENABLE(OILPAN)
     m_readFramebufferBinding = nullptr;
 
     m_boundCopyReadBuffer = nullptr;
@@ -56,7 +55,6 @@ WebGL2RenderingContextBase::~WebGL2RenderingContextBase()
     m_boundPixelUnpackBuffer = nullptr;
     m_boundTransformFeedbackBuffer = nullptr;
     m_boundUniformBuffer = nullptr;
-#endif
 }
 
 void WebGL2RenderingContextBase::initializeNewContext()

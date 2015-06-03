@@ -97,7 +97,6 @@ class WebGLRenderbuffer;
 class WebGLShader;
 class WebGLShaderPrecisionFormat;
 class WebGLSharedObject;
-class WebGLSharedWebGraphicsContext3D;
 class WebGLUniformLocation;
 class WebGLVertexArrayObjectBase;
 
@@ -374,6 +373,10 @@ public:
     void populateSubscribedValuesCHROMIUM(GLenum target);
     void uniformValuebufferCHROMIUM(const WebGLUniformLocation*, GLenum target, GLenum subscription);
 
+    // Eagerly finalize WebGLRenderingContextBase in order for it
+    // to (first) be able to detach its WebGLContextObjects, before
+    // they're later swept and finalized.
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
     // Returns approximate gpu memory allocated per pixel.
@@ -412,10 +415,6 @@ protected:
     WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3D>, const WebGLContextAttributes&);
     PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<WebGraphicsContext3D>);
     void setupFlags();
-
-#if ENABLE(OILPAN)
-    PassRefPtr<WebGLSharedWebGraphicsContext3D> sharedWebGraphicsContext3D() const;
-#endif
 
     // CanvasRenderingContext implementation.
     virtual bool is3d() const override { return true; }
@@ -458,11 +457,7 @@ protected:
 
     // Structure for rendering to a DrawingBuffer, instead of directly
     // to the back-buffer of m_context.
-#if ENABLE(OILPAN)
-    RefPtr<WebGLSharedWebGraphicsContext3D> m_sharedWebGraphicsContext3D;
-#else
     RefPtr<DrawingBuffer> m_drawingBuffer;
-#endif
     DrawingBuffer* drawingBuffer() const;
 
     RefPtr<WebGLContextGroup> m_contextGroup;

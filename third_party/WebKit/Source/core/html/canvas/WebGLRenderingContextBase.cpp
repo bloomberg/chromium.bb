@@ -73,7 +73,6 @@
 #include "core/html/canvas/WebGLRenderbuffer.h"
 #include "core/html/canvas/WebGLShader.h"
 #include "core/html/canvas/WebGLShaderPrecisionFormat.h"
-#include "core/html/canvas/WebGLSharedWebGraphicsContext3D.h"
 #include "core/html/canvas/WebGLTexture.h"
 #include "core/html/canvas/WebGLUniformLocation.h"
 #include "core/html/canvas/WebGLVertexArrayObject.h"
@@ -650,11 +649,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
         return;
     }
 
-#if ENABLE(OILPAN)
-    m_sharedWebGraphicsContext3D = WebGLSharedWebGraphicsContext3D::create(buffer.release());
-#else
     m_drawingBuffer = buffer.release();
-#endif
 
     drawingBuffer()->bind();
     setupFlags();
@@ -796,7 +791,6 @@ unsigned WebGLRenderingContextBase::getWebGLVersion(const CanvasRenderingContext
 
 WebGLRenderingContextBase::~WebGLRenderingContextBase()
 {
-#if !ENABLE(OILPAN)
     // Remove all references to WebGLObjects so if they are the last reference
     // they will be freed before the last context is removed from the context group.
     m_boundArrayBuffer = nullptr;
@@ -822,7 +816,6 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
 
     // Release all extensions now.
     m_extensions.clear();
-#endif
 
     // Context must be removed from the group prior to the destruction of the
     // WebGraphicsContext3D, otherwise shared objects may not be properly deleted.
@@ -830,11 +823,9 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
 
     destroyContext();
 
-#if !ENABLE(OILPAN)
     if (m_multisamplingObserverRegistered)
         if (Page* page = canvas()->document().page())
             page->removeMultisamplingChangedObserver(this);
-#endif
 
     willDestroyContext(this);
 }
@@ -850,17 +841,8 @@ void WebGLRenderingContextBase::destroyContext()
     webContext()->setErrorMessageCallback(nullptr);
 
     ASSERT(drawingBuffer());
-#if ENABLE(OILPAN)
-    // The DrawingBuffer ref pointers are cleared, but the
-    // WebGLSharedWebGraphicsContext3D object will hold onto the
-    // DrawingBuffer for as long as needed (== until all
-    // context objects have been finalized), at which point
-    // DrawingBuffer destruction happens.
-    m_sharedWebGraphicsContext3D.clear();
-#else
     m_drawingBuffer->beginDestruction();
     m_drawingBuffer.clear();
-#endif
 }
 
 void WebGLRenderingContextBase::markContextChanged(ContentChangeType changeType)
@@ -5936,12 +5918,8 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
 
     // If the context was lost due to RealLostContext, we need to destroy the old DrawingBuffer before creating new DrawingBuffer to ensure resource budget enough.
     if (drawingBuffer()) {
-#if ENABLE(OILPAN)
-        m_sharedWebGraphicsContext3D->dispose();
-#else
         m_drawingBuffer->beginDestruction();
         m_drawingBuffer.clear();
-#endif
     }
 
     WebGraphicsContext3D::Attributes attributes = toWebGraphicsContext3DAttributes(m_requestedAttributes, canvas()->document().topDocument().url().string(), settings, version());
@@ -5962,14 +5940,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
         return;
     }
 
-#if ENABLE(OILPAN)
-    if (m_sharedWebGraphicsContext3D)
-        m_sharedWebGraphicsContext3D->update(buffer.release());
-    else
-        m_sharedWebGraphicsContext3D = WebGLSharedWebGraphicsContext3D::create(buffer.release());
-#else
     m_drawingBuffer = buffer.release();
-#endif
 
     drawingBuffer()->bind();
     m_lostContextErrors.clear();
@@ -6241,21 +6212,9 @@ int WebGLRenderingContextBase::externallyAllocatedBytesPerPixel()
     return totalBytesPerPixel;
 }
 
-#if ENABLE(OILPAN)
-PassRefPtr<WebGLSharedWebGraphicsContext3D> WebGLRenderingContextBase::sharedWebGraphicsContext3D() const
-{
-    return m_sharedWebGraphicsContext3D;
-}
-
-DrawingBuffer* WebGLRenderingContextBase::drawingBuffer() const
-{
-    return m_sharedWebGraphicsContext3D ? m_sharedWebGraphicsContext3D->drawingBuffer() : 0;
-}
-#else
 DrawingBuffer* WebGLRenderingContextBase::drawingBuffer() const
 {
     return m_drawingBuffer.get();
 }
-#endif
 
 } // namespace blink

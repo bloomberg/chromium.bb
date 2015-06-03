@@ -40,6 +40,7 @@ public:
     virtual String contextName() const override { return "WebGLRenderingContext"; }
     virtual void registerContextExtensions() override;
 
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:

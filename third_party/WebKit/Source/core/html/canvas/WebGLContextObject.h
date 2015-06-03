@@ -35,7 +35,6 @@ class WebGraphicsContext3D;
 namespace blink {
 
 class WebGLRenderingContextBase;
-class WebGLSharedWebGraphicsContext3D;
 
 // WebGLContextObject the base class for objects that are owned by a specific
 // WebGLRenderingContextBase.
@@ -66,9 +65,6 @@ protected:
 
 private:
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
-#if ENABLE(OILPAN)
-    RefPtr<WebGLSharedWebGraphicsContext3D> m_sharedWebGraphicsContext3D;
-#endif
 };
 
 } // namespace blink

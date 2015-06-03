@@ -2886,8 +2886,6 @@
             'html/canvas/WebGLSharedObject.h',
             'html/canvas/WebGLSharedPlatform3DObject.cpp',
             'html/canvas/WebGLSharedPlatform3DObject.h',
-            'html/canvas/WebGLSharedWebGraphicsContext3D.cpp',
-            'html/canvas/WebGLSharedWebGraphicsContext3D.h',
             'html/canvas/WebGLSync.cpp',
             'html/canvas/WebGLSync.h',
             'html/canvas/WebGLTexture.cpp',

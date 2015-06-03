@@ -166,6 +166,7 @@ public:
     ScriptValue getTexParameter(ScriptState*, GLenum target, GLenum pname) override;
     ScriptValue getFramebufferAttachmentParameter(ScriptState*, GLenum target, GLenum attachment, GLenum pname) override;
 
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 protected:

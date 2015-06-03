@@ -28,16 +28,12 @@
 #include "core/html/canvas/WebGLContextObject.h"
 
 #include "core/html/canvas/WebGLRenderingContextBase.h"
-#include "core/html/canvas/WebGLSharedWebGraphicsContext3D.h"
 
 namespace blink {
 
 WebGLContextObject::WebGLContextObject(WebGLRenderingContextBase* context)
     : WebGLObject(context)
     , m_context(context)
-#if ENABLE(OILPAN)
-    , m_sharedWebGraphicsContext3D(context->sharedWebGraphicsContext3D())
-#endif
 {
 }
 
@@ -56,19 +52,12 @@ void WebGLContextObject::detachContext()
         deleteObject(m_context->webContext());
         m_context->removeContextObject(this);
         m_context = nullptr;
-#if ENABLE(OILPAN)
-        m_sharedWebGraphicsContext3D.clear();
-#endif
     }
 }
 
 WebGraphicsContext3D* WebGLContextObject::getAWebGraphicsContext3D() const
 {
-#if ENABLE(OILPAN)
-    return m_sharedWebGraphicsContext3D ? m_sharedWebGraphicsContext3D->webContext() : 0;
-#else
     return m_context ? m_context->webContext() : 0;
-#endif
 }
 
 DEFINE_TRACE(WebGLContextObject)
