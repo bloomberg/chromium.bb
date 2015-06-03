@@ -5,6 +5,7 @@
   "manifest_version": 2,
   "description": "Browser tests for chrome.autotest_private API",
   "background" : {
+    "persistent": false,
     "scripts": ["test.js"]
   },
   "permissions": ["autotestPrivate"]
