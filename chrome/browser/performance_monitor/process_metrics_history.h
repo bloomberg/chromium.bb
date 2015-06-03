@@ -7,6 +7,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/process/process_handle.h"
+#include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/process_type.h"
 
@@ -64,6 +65,8 @@ class ProcessMetricsHistory {
   int last_update_sequence_;
 
   double cpu_usage_;
+
+  content::BackgroundTracingManager::TriggerHandle trace_trigger_handle_;
 
   DISALLOW_ASSIGN(ProcessMetricsHistory);
 };
