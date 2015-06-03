@@ -312,7 +312,6 @@ class ASyncHWTestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
 
 
 class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
-                     generic_stages.ForgivingBuilderStage,
                      generic_stages.ArchivingStageMixin):
   """Stage that launches tests on the produced disk image."""
 
