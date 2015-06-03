@@ -203,7 +203,7 @@ void StyledMarkupSerializer<Strategy>::wrapWithNode(ContainerNode& node, typenam
     if (node.isElementNode())
         m_markupAccumulator.appendElement(markup, toElement(node), convertBlocksToInlines() && isBlock(&node), rangeFullySelectsNode);
     else
-        m_markupAccumulator.appendStartMarkup(markup, node, 0);
+        m_markupAccumulator.appendStartMarkup(markup, node);
     m_reversedPrecedingMarkup.append(markup.toString());
     if (node.isElementNode())
         m_markupAccumulator.appendEndTag(toElement(node));

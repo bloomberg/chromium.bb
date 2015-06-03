@@ -49,12 +49,12 @@ public:
     StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, Node*);
 
     void appendString(const String&);
-    void appendStartTag(Node&, Namespaces* = nullptr);
+    void appendStartTag(Node&);
     void appendEndTag(const Element&);
-    void appendStartMarkup(StringBuilder&, Node&, Namespaces*);
+    void appendStartMarkup(StringBuilder&, Node&);
     void appendEndMarkup(StringBuilder&, const Element&);
 
-    void appendElement(StringBuilder&, Element&, Namespaces*);
+    void appendElement(StringBuilder&, Element&);
     void appendElement(StringBuilder&, Element&, bool, RangeFullySelectsNode);
     void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, bool isBlock = false);
 

@@ -65,10 +65,10 @@ void StyledMarkupAccumulator::appendString(const String& str)
     m_accumulator.appendString(str);
 }
 
-void StyledMarkupAccumulator::appendStartTag(Node& node, Namespaces* namespaces)
+void StyledMarkupAccumulator::appendStartTag(Node& node)
 {
     StringBuilder out;
-    appendStartMarkup(out, node, namespaces);
+    appendStartMarkup(out, node);
     appendString(out.toString());
 }
 
@@ -79,17 +79,17 @@ void StyledMarkupAccumulator::appendEndTag(const Element& element)
     appendString(out.toString());
 }
 
-void StyledMarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node, Namespaces* namespaces)
+void StyledMarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node)
 {
     switch (node.nodeType()) {
     case Node::TEXT_NODE:
         appendText(result, toText(node));
         break;
     case Node::ELEMENT_NODE:
-        appendElement(result, toElement(node), namespaces);
+        appendElement(result, toElement(node));
         break;
     default:
-        m_accumulator.appendStartMarkup(result, node, namespaces);
+        m_accumulator.appendStartMarkup(result, node, nullptr);
         break;
     }
 }
@@ -141,7 +141,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
         out.append(styleNodeCloseTag(false));
 }
 
-void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element, Namespaces*)
+void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element)
 {
     appendElement(out, element, false, DoesFullySelectNode);
 }
