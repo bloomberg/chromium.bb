@@ -1870,6 +1870,7 @@ crbug.com/485332 [ XP ] virtual/gpu/fast/canvas/canvas-as-image.html [ Failure ]
 crbug.com/421771 accessibility/inline-text-box-next-on-line.html [ Skip ]
 
 crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-41-t.svg [ ImageOnlyFailure ]
+crbug.com/486962 [ Win7 Debug ] svg/W3C-SVG-1.1/animate-elem-36-t.svg [ Pass ImageOnlyFailure ]
 #crbug.com/486962 [ Linux Win Debug ] svg/W3C-SVG-1.1/animate-elem-46-t.svg [ ImageOnlyFailure ]
 
 #crbug.com/321237 crbug.com/478014 [ SnowLeopard ] fast/text/international/complex-text-leading-space-wrapping.html [ ImageOnlyFailure ]
