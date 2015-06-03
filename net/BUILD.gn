@@ -1355,6 +1355,7 @@ if (!is_android && !is_mac) {
         "dns/dns_config_service_posix_unittest.cc",
       ]
       deps += [ ":net_test_jni_headers" ]
+      isolate_file = "net_unittests.isolate"
     }
 
     if (v8_use_external_startup_data) {

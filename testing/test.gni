@@ -131,9 +131,25 @@ template("test") {
       }
     }
 
+    test_name = main_target_name
+    if (defined(invoker.output_name)) {
+      test_name = invoker.output_name
+    }
+    test_runner_script_name = "${test_name}__test_runner_script"
+    test_runner_script(test_runner_script_name) {
+      test_name = test_name
+      test_type = "gtest"
+      test_suite = test_name
+      if (defined(invoker.isolate_file)) {
+        isolate_file = invoker.isolate_file
+      }
+    }
+
     group(target_name) {
       testonly = true
-
+      datadeps = [
+        ":$test_runner_script_name",
+      ]
       deps = [
         ":$library_name",
         ":$apk_name",

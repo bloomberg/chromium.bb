@@ -1673,6 +1673,7 @@
           ],
           'variables': {
             'test_suite_name': 'media_unittests',
+            'isolate_file': 'media_unittests.isolate',
           },
           'includes': ['../build/apk_test.gypi'],
         },
@@ -1686,6 +1687,7 @@
           ],
           'variables': {
             'test_suite_name': 'media_perftests',
+            'isolate_file': 'media_perftests.isolate',
           },
           'includes': ['../build/apk_test.gypi'],
         },

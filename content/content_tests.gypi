@@ -1766,6 +1766,7 @@
           ],
           'variables': {
             'test_suite_name': 'content_unittests',
+            'isolate_file': 'content_unittests.isolate',
             'conditions': [
               ['v8_use_external_startup_data==1', {
                 'asset_location': '<(PRODUCT_DIR)/content_unittests_apk/assets',
@@ -1806,6 +1807,7 @@
           ],
           'variables': {
             'test_suite_name': 'content_browsertests',
+            'isolate_file': 'content_browsertests.isolate',
             'java_in_dir': 'shell/android/browsertests_apk',
             'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/content_browsertests_manifest/AndroidManifest.xml',
             'resource_dir': 'shell/android/browsertests_apk/res',
@@ -1987,8 +1989,13 @@
             'resource_dir': 'shell/android/shell_apk/res',
             'additional_src_dirs': ['public/android/javatests/', ],
             'is_test_apk': 1,
+            'test_type': 'instrumentation',
+            'isolate_file': 'content_shell_test_apk.isolate',
           },
-          'includes': [ '../build/java_apk.gypi' ],
+          'includes': [
+            '../build/java_apk.gypi',
+            '../build/android/test_runner.gypi',
+          ],
         },
         {
           # GN: //content/public/android:content_junit_tests

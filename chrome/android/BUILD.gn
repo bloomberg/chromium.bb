@@ -459,19 +459,17 @@ android_library("chrome_shell_test_java") {
 }
 
 # GYP: //chrome/chrome_tests.gypi:chrome_shell_test_apk
-android_apk("chrome_shell_test_apk") {
-  testonly = true
+instrumentation_test_apk("chrome_shell_test_apk") {
   apk_under_test = ":chrome_shell_apk"
   deps = [
     ":chrome_javatests",
     ":chrome_shell_test_java",
     "//sync/android:sync_javatests",
-    "//testing/android/broker:broker_java",
     "//ui/android:ui_javatests",
   ]
-  data_deps = [ "//testing/android/driver:driver_apk" ]
   apk_name = "ChromeShellTest"
   android_manifest = "shell/javatests/AndroidManifest.xml"
+  isolate_file = "../chrome_shell_test_apk.isolate"
 }
 
 # GYP: //chrome/chrome_tests.gypi:chrome_junit_tests
@@ -497,9 +495,8 @@ junit_binary("chrome_junit_tests") {
 if (false) {
   # TODO(GYP): We need sync/sync_tests.gypi:test_support_sync_proto_java to be ported.
   # crbug.com/475612
-  android_apk("chrome_sync_shell_test_apk") {
+  instrumentation_test_apk("chrome_sync_shell_test_apk") {
     apk_under_test = ":chrome_sync_shell_apk"
-    testonly = true
     deps = [
       ":chrome_java",
       ":chrome_shell_java",

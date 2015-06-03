@@ -1327,6 +1327,7 @@ test("base_unittests") {
       ":base_java",
       ":base_java_unittest_support",
     ]
+    isolate_file = "base_unittests.isolate"
   }
 
   if (is_ios) {

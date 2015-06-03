@@ -155,6 +155,10 @@ test("midi_unittests") {
     "//testing/gtest",
   ]
 
+  if (is_android) {
+    isolate_file = "midi_unittests.isolate"
+  }
+
   if (!is_android) {
     sources += usb_midi_sources
   }

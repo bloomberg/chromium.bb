@@ -1559,6 +1559,7 @@
           ],
           'variables': {
             'test_suite_name': 'base_unittests',
+            'isolate_file': 'base_unittests.isolate',
           },
           'includes': [ '../build/apk_test.gypi' ],
         },

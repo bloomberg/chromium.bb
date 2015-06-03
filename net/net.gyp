@@ -1506,6 +1506,7 @@
           ],
           'variables': {
             'test_suite_name': 'net_unittests',
+            'isolate_file': 'net_unittests.isolate',
             'conditions': [
               ['v8_use_external_startup_data==1', {
                 'asset_location': '<(PRODUCT_DIR)/net_unittests_apk/assets',

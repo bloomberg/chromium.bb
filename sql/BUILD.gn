@@ -81,6 +81,10 @@ test("sql_unittests") {
     "//third_party/sqlite",
   ]
 
+  if (is_android) {
+    isolate_file = "sql_unittests.isolate"
+  }
+
   # TODO(GYP)
   #['OS == "android"', {
   #  'dependencies': [

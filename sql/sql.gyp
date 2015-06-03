@@ -134,6 +134,7 @@
           ],
           'variables': {
             'test_suite_name': 'sql_unittests',
+            'isolate_file': 'sql_unittests.isolate',
           },
           'includes': [ '../build/apk_test.gypi' ],
         },

@@ -29,6 +29,7 @@
      ['OS == "android"', {
        'variables': {
          # These are used to configure java_apk.gypi included below.
+         'test_type': 'gtest',
          'apk_name': '<(test_suite_name)',
          'intermediate_dir': '<(PRODUCT_DIR)/<(test_suite_name)_apk',
          'final_apk_path': '<(intermediate_dir)/<(test_suite_name)-debug.apk',
@@ -37,7 +38,7 @@
          # TODO(yfriedman, cjhopman): Support managed installs for gtests.
          'gyp_managed_install': 0,
        },
-       'includes': [ 'java_apk.gypi' ],
+       'includes': [ 'java_apk.gypi', 'android/test_runner.gypi' ],
      }],  # 'OS == "android"
   ],  # conditions
 }

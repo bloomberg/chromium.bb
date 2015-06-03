@@ -567,6 +567,7 @@ test("media_unittests") {
   ]
 
   if (is_android) {
+    isolate_file = "media_unittests.isolate"
     deps += [
       "//media/base/android",
       # TODO(GYP)
@@ -659,6 +660,7 @@ test("media_perftests") {
   ]
   if (is_android) {
     deps += [ "//ui/gl" ]
+    isolate_file = "media_perftests.isolate"
   }
   if (media_use_ffmpeg) {
     deps += [ "//third_party/ffmpeg" ]  # Direct dependency required to inherit config.

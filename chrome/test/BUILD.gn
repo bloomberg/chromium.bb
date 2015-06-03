@@ -1304,6 +1304,7 @@ if (!is_android) {
       # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
       ldflags = [ "-Wl,--gc-sections" ]
       deps += [ "//testing/android/native_test:native_test_native_code" ]
+      isolate_file = "../unit_tests.isolate"
     } else {
       sources +=
           rebase_path(unit_gypi_values.chrome_unit_tests_non_android_sources,

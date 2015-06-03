@@ -618,6 +618,7 @@ if (is_linux) {
       sources += [ "src/common/android/breakpad_getcontext_unittest.cc" ]
       libs = [ "log" ]
       include_dirs += [ "src/common/android/include" ]
+      isolate_file = "breakpad_unittests.isolate"
     }
   }
 

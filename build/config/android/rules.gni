@@ -1644,6 +1644,111 @@ template("android_apk") {
   }
 }
 
+# Declare an Android instrumentation test apk
+#
+# This target creates an Android instrumentation test apk.
+#
+# Variables
+#   android_manifest: Path to AndroidManifest.xml.
+#   data_deps: List of dependencies needed at runtime. These will be built but
+#     won't change the generated .apk in any way (in fact they may be built
+#     after the .apk is).
+#   deps: List of dependencies. All Android java resources and libraries in the
+#     "transitive closure" of these dependencies will be included in the apk.
+#     Note: this "transitive closure" actually only includes such targets if
+#     they are depended on through android_library or android_resources targets
+#     (and so not through builtin targets like 'action', 'group', etc).
+#   java_files: List of .java files to include in the apk.
+#   srcjar_deps: List of srcjar dependencies. The .java files in the srcjars
+#      will be added to java_files and be included in this apk.
+#   apk_name: Name for final apk.
+#   final_apk_path: Path to final built apk. Default is
+#     $root_out_dir/apks/$apk_name.apk. Setting this will override apk_name.
+#   native_libs: List paths of native libraries to include in this apk. If these
+#     libraries depend on other shared_library targets, those dependencies will
+#     also be included in the apk.
+#   apk_under_test: The apk being tested.
+#   isolate_file: Isolate file containing the list of test data dependencies.
+#
+#   DEPRECATED_java_in_dir: Directory containing java files. All .java files in
+#     this directory will be included in the library. This is only supported to
+#     ease the gyp->gn conversion and will be removed in the future.
+#
+# Example
+#   instrumentation_test_apk("foo_test_apk") {
+#     android_manifest = "AndroidManifest.xml"
+#     apk_name = "FooTest"
+#     apk_under_test = "Foo"
+#     java_files = [
+#       "android/org/chromium/foo/FooTestCase.java",
+#       "android/org/chromium/foo/FooExampleTest.java",
+#     ]
+#     deps = [
+#       ":foo_test_support_java"
+#     ]
+#   }
+template("instrumentation_test_apk") {
+  set_sources_assignment_filter([])
+  testonly = true
+  _template_name = target_name
+
+  if (defined(invoker.apk_name)) {
+    test_runner_data_dep = [ ":${_template_name}__test_runner_script" ]
+    test_runner_script("${_template_name}__test_runner_script") {
+      test_name = invoker.target_name
+      test_type = "instrumentation"
+      test_apk = invoker.apk_name
+      if (defined(invoker.isolate_file)) {
+        isolate_file = invoker.isolate_file
+      }
+    }
+  }
+
+  android_apk(target_name) {
+    if (defined(invoker.android_manifest)) {
+      android_manifest = invoker.android_manifest
+    }
+    data_deps = [
+      "//testing/android/driver:driver_apk",
+      "//tools/android/forwarder2",
+      "//tools/android/md5sum",
+    ]
+    if (defined(test_runner_data_dep)) {
+      data_deps += test_runner_data_dep
+    }
+    if (defined(invoker.data_deps)) {
+      data_deps += invoker.data_deps
+    }
+    deps = [
+      "//testing/android/broker:broker_java",
+    ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
+    if (defined(invoker.java_files)) {
+      java_files = invoker.java_files
+    }
+    if (defined(invoker.srcjar_deps)) {
+      srcjar_deps = invoker.srcjar_deps
+    }
+    if (defined(invoker.apk_name)) {
+      apk_name = invoker.apk_name
+    }
+    if (defined(invoker.final_apk_path)) {
+      final_apk_path = invoker.final_apk_path
+    }
+    if (defined(invoker.native_libs)) {
+      native_libs = invoker.native_libs
+    }
+    if (defined(invoker.apk_under_test)) {
+      apk_under_test = invoker.apk_under_test
+    }
+    if (defined(invoker.DEPRECATED_java_in_dir)) {
+      DEPRECATED_java_in_dir = invoker.DEPRECATED_java_in_dir
+    }
+  }
+}
+
 # Declare an Android gtest apk
 #
 # This target creates an Android apk for running gtest-based unittests.

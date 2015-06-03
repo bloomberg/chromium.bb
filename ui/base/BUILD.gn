@@ -761,6 +761,7 @@ test("ui_base_unittests") {
 
   if (is_android) {
     apk_deps = [ "//chrome:resources" ]
+    isolate_file = "ui_base_unittests.isolate"
   }
 
   if (use_pango) {

@@ -149,21 +149,17 @@ android_library("content_shell_test_java") {
   DEPRECATED_java_in_dir = "javatests/src"
 }
 
-android_apk("content_shell_test_apk") {
-  testonly = true
+instrumentation_test_apk("content_shell_test_apk") {
   deps = [
     "//content/public/android:content_javatests",
     "//base:base_javatests",
     "//net/android:net_javatests",
-    "//testing/android/broker:broker_java",
   ]
-  data_deps = [
-    ":content_shell_apk",
-    "//testing/android/driver:driver_apk",
-  ]
+  data_deps = [ ":content_shell_apk" ]
   apk_under_test = ":content_shell_apk"
   apk_name = "ContentShellTest"
   android_manifest = "javatests/AndroidManifest.xml"
+  isolate_file = "../../content_shell_test_apk.isolate"
 }
 
 if (current_cpu != "x64" && current_cpu != "arm64") {

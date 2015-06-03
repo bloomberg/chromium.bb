@@ -962,6 +962,10 @@ test("cc_perftests") {
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
+
+  if (is_android) {
+    isolate_file = "cc_perftests.isolate"
+  }
 }
 # When adding support for isolates, please have a look at run-time dependencies
 # in the cc_unittests_run target in cc_tests.gyp.

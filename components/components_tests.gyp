@@ -1234,6 +1234,7 @@
           ],
           'variables': {
             'test_suite_name': 'components_browsertests',
+            'isolate_file': 'components_browsertests.isolate',
             'java_in_dir': 'test/android/browsertests_apk',
             'android_manifest_path': '<(SHARED_INTERMEDIATE_DIR)/components_browsertests_manifest/AndroidManifest.xml',
             'resource_dir': 'test/android/browsertests_apk/res',
@@ -1451,6 +1452,7 @@
       'targets': [
         {
           'target_name': 'components_unittests_apk',
+          'isolate_file': 'components_unittests.isolate',
           'type': 'none',
           'dependencies': [
             'components_unittests',

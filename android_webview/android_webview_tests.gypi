@@ -102,8 +102,13 @@
         'apk_name': 'AndroidWebViewTest',
         'java_in_dir': '../android_webview/javatests',
         'is_test_apk': 1,
+        'test_type': 'instrumentation',
+        'isolate_file': 'android_webview_test_apk.isolate',
       },
-      'includes': [ '../build/java_apk.gypi' ],
+      'includes': [
+        '../build/java_apk.gypi',
+        '../build/android/test_runner.gypi',
+      ],
     },
     {
       'target_name': 'android_webview_unittests',

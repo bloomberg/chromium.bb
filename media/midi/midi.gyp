@@ -186,6 +186,7 @@
           ],
           'variables': {
             'test_suite_name': 'midi_unittests',
+            'isolate_file': 'midi_unittests.isolate',
           },
           'includes': ['../../build/apk_test.gypi'],
         },

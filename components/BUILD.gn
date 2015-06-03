@@ -304,6 +304,11 @@ test("components_unittests") {
     "//ui/base",
     "//ui/resources:ui_test_pak",
   ]
+
+  if (is_android) {
+    isolate_file = "components_unittests.isolate"
+  }
+
   data_deps = [ ":components_tests_pak" ]
 
   if (is_android) {
@@ -396,8 +401,8 @@ test("components_browsertests") {
     ]
     sources -= [ "autofill/content/browser/risk/fingerprint_browsertest.cc" ]
     deps += [ "//testing/android/native_test:native_test_support" ]
-
     use_launcher = false
+    isolate_file = "components_browsertests.isolate"
   }
 
   if (is_linux) {

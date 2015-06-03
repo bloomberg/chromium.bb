@@ -281,6 +281,7 @@
           ],
           'variables': {
             'test_suite_name': 'ui_base_unittests',
+            'isolate_file': 'ui_base_tests.isolate',
           },
           'includes': [ '../../build/apk_test.gypi' ],
         },

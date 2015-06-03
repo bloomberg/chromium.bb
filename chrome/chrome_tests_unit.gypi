@@ -2791,6 +2791,7 @@
           ],
           'variables': {
             'test_suite_name': 'unit_tests',
+            'isolate_file': 'unit_tests.isolate',
             'android_manifest_path': 'test/android/unit_tests_apk/AndroidManifest.xml',
             'conditions': [
               ['v8_use_external_startup_data==1', {
