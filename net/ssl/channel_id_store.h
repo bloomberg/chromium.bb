@@ -18,10 +18,7 @@
 namespace net {
 
 // An interface for storing and retrieving channel ID keypairs.
-// There isn't a domain bound certs spec yet, but the old origin bound
-// certificates are specified in
-// http://balfanz.github.com/tls-obc-spec/draft-balfanz-tls-obc-01.html.
-// TODO(wtc): Update this comment.
+// See https://tools.ietf.org/html/draft-balfanz-tls-channelid-01
 
 // Owned only by a single ChannelIDService object, which is responsible
 // for deleting it.

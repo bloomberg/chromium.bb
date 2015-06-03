@@ -24,12 +24,11 @@ class ECPrivateKey;
 
 namespace net {
 
-// This class is the system for storing and retrieving server bound certs.
-// Modeled after the CookieMonster class, it has an in-memory cert store,
-// and synchronizes server bound certs to an optional permanent storage that
-// implements the PersistentStore interface. The use case is described in
-// http://balfanz.github.com/tls-obc-spec/draft-balfanz-tls-obc-00.html
-// TODO(wtc): Update this comment.
+// This class is the system for storing and retrieving Channel IDs. Modeled
+// after the CookieMonster class, it has an in-memory store and synchronizes
+// Channel IDs to an optional permanent storage that implements the
+// PersistentStore interface. The use case is described in
+// https://tools.ietf.org/html/draft-balfanz-tls-channelid-01
 class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
  public:
   class PersistentStore;
