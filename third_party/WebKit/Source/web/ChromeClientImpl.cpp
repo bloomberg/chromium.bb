@@ -53,6 +53,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Page.h"
+#include "core/page/PopupOpeningObserver.h"
 #include "modules/accessibility/AXObject.h"
 #include "platform/Cursor.h"
 #include "platform/FileChooser.h"
@@ -380,6 +381,7 @@ bool ChromeClientImpl::canRunBeforeUnloadConfirmPanel()
 
 bool ChromeClientImpl::runBeforeUnloadConfirmPanelInternal(LocalFrame* frame, const String& message)
 {
+    notifyPopupOpeningObservers();
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
 
     bool isReload = false;
@@ -408,6 +410,7 @@ void ChromeClientImpl::closeWindowSoon()
 // already know our own m_webView.
 void ChromeClientImpl::runJavaScriptAlertInternal(LocalFrame* frame, const String& message)
 {
+    notifyPopupOpeningObservers();
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
     if (webframe->client()) {
         if (WebUserGestureIndicator::isProcessingUserGesture())
@@ -419,6 +422,7 @@ void ChromeClientImpl::runJavaScriptAlertInternal(LocalFrame* frame, const Strin
 // See comments for runJavaScriptAlert().
 bool ChromeClientImpl::runJavaScriptConfirmInternal(LocalFrame* frame, const String& message)
 {
+    notifyPopupOpeningObservers();
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
     if (webframe->client()) {
         if (WebUserGestureIndicator::isProcessingUserGesture())
@@ -431,6 +435,7 @@ bool ChromeClientImpl::runJavaScriptConfirmInternal(LocalFrame* frame, const Str
 // See comments for runJavaScriptAlert().
 bool ChromeClientImpl::runJavaScriptPromptInternal(LocalFrame* frame, const String& message, const String& defaultValue, String& result)
 {
+    notifyPopupOpeningObservers();
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
     if (webframe->client()) {
         if (WebUserGestureIndicator::isProcessingUserGesture())
@@ -573,8 +578,9 @@ void ChromeClientImpl::printInternal(LocalFrame* frame)
         m_webView->client()->printPage(WebLocalFrameImpl::fromFrame(frame));
 }
 
-PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClientImpl::createColorChooserInternal(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
+PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClientImpl::createColorChooser(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
 {
+    notifyPopupOpeningObservers();
     OwnPtrWillBeRawPtr<ColorChooserUIController> controller = nullptr;
     if (RuntimeEnabledFeatures::pagePopupEnabled())
         controller = ColorChooserPopupUIController::create(frame, this, chooserClient);
@@ -584,8 +590,9 @@ PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClientImpl::createColorChooserInterna
     return controller.release();
 }
 
-PassRefPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooserInternal(DateTimeChooserClient* pickerClient, const DateTimeChooserParameters& parameters)
+PassRefPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooser(DateTimeChooserClient* pickerClient, const DateTimeChooserParameters& parameters)
 {
+    notifyPopupOpeningObservers();
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     return DateTimeChooserImpl::create(this, pickerClient, parameters);
 #else
@@ -593,8 +600,9 @@ PassRefPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooserInternal(DateTi
 #endif
 }
 
-void ChromeClientImpl::runOpenPanelInternal(LocalFrame* frame, PassRefPtr<FileChooser> fileChooser)
+void ChromeClientImpl::runOpenPanel(LocalFrame* frame, PassRefPtr<FileChooser> fileChooser)
 {
+    notifyPopupOpeningObservers();
     WebViewClient* client = m_webView->client();
     if (!client)
         return;
@@ -764,8 +772,9 @@ bool ChromeClientImpl::hasOpenedPopup() const
     return m_webView->hasOpenedPopup();
 }
 
-PassRefPtrWillBeRawPtr<PopupMenu> ChromeClientImpl::createPopupMenuInternal(LocalFrame& frame, PopupMenuClient* client)
+PassRefPtrWillBeRawPtr<PopupMenu> ChromeClientImpl::createPopupMenu(LocalFrame& frame, PopupMenuClient* client)
 {
+    notifyPopupOpeningObservers();
     if (WebViewImpl::useExternalPopupMenus())
         return adoptRefWillBeNoop(new ExternalPopupMenu(frame, client, *m_webView));
 
@@ -896,8 +905,9 @@ void ChromeClientImpl::didEndEditingOnTextField(HTMLInputElement& inputElement)
         webframe->autofillClient()->textFieldDidEndEditing(WebInputElement(&inputElement));
 }
 
-void ChromeClientImpl::openTextDataListChooserInternal(HTMLInputElement& input)
+void ChromeClientImpl::openTextDataListChooser(HTMLInputElement& input)
 {
+    notifyPopupOpeningObservers();
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(input.document().frame());
     if (webframe->autofillClient())
         webframe->autofillClient()->openTextDataListChooser(WebInputElement(&input));
@@ -926,6 +936,26 @@ void ChromeClientImpl::registerViewportLayers() const
 void ChromeClientImpl::didUpdateTopControls() const
 {
     m_webView->didUpdateTopControls();
+}
+
+void ChromeClientImpl::registerPopupOpeningObserver(PopupOpeningObserver* observer)
+{
+    ASSERT(observer);
+    m_popupOpeningObservers.append(observer);
+}
+
+void ChromeClientImpl::unregisterPopupOpeningObserver(PopupOpeningObserver* observer)
+{
+    size_t index = m_popupOpeningObservers.find(observer);
+    ASSERT(index != kNotFound);
+    m_popupOpeningObservers.remove(index);
+}
+
+void ChromeClientImpl::notifyPopupOpeningObservers() const
+{
+    const Vector<PopupOpeningObserver*> observers(m_popupOpeningObservers);
+    for (size_t i = 0; i < observers.size(); ++i)
+        observers[i]->willOpenPopup();
 }
 
 } // namespace blink

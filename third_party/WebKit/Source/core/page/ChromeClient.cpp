@@ -25,20 +25,14 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/forms/ColorChooser.h"
-#include "core/html/forms/DateTimeChooser.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/HitTestResult.h"
 #include "core/page/FrameTree.h"
-#include "core/page/PopupOpeningObserver.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/WindowFeatures.h"
-#include "platform/FileChooser.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/network/NetworkHints.h"
 #include "public/platform/WebScreenInfo.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
 #include <algorithm>
 
 namespace blink {
@@ -111,7 +105,6 @@ ReturnType openJavaScriptDialog(
     // executing JavaScript.
     ScopedPageLoadDeferrer deferrer;
 
-    chromeClient->notifyPopupOpeningObservers();
     ScopedJavaScriptDialogInstrumentation instrumentation(frame, message);
     return (chromeClient->*function)(&frame, message, parameters...);
 }
@@ -195,30 +188,6 @@ void ChromeClient::print(LocalFrame* frame)
     printInternal(frame);
 }
 
-PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClient::createColorChooser(LocalFrame* frame, ColorChooserClient* client, const Color& initialColor)
-{
-    notifyPopupOpeningObservers();
-    return createColorChooserInternal(frame, client, initialColor);
-}
-
-PassRefPtr<DateTimeChooser> ChromeClient::openDateTimeChooser(DateTimeChooserClient* client, const DateTimeChooserParameters& parameters)
-{
-    notifyPopupOpeningObservers();
-    return openDateTimeChooserInternal(client, parameters);
-}
-
-void ChromeClient::openTextDataListChooser(HTMLInputElement& input)
-{
-    notifyPopupOpeningObservers();
-    openTextDataListChooserInternal(input);
-}
-
-void ChromeClient::runOpenPanel(LocalFrame* frame, PassRefPtr<FileChooser> fileChooser)
-{
-    notifyPopupOpeningObservers();
-    runOpenPanelInternal(frame, fileChooser);
-}
-
 void ChromeClient::setCursor(const Cursor& cursor)
 {
     m_lastSetMouseCursorForTesting = cursor;
@@ -228,34 +197,6 @@ void ChromeClient::setCursor(const Cursor& cursor)
 Cursor ChromeClient::getLastSetCursorForTesting() const
 {
     return m_lastSetMouseCursorForTesting;
-}
-
-// --------
-
-PassRefPtrWillBeRawPtr<PopupMenu> ChromeClient::createPopupMenu(LocalFrame& frame, PopupMenuClient* client)
-{
-    notifyPopupOpeningObservers();
-    return createPopupMenuInternal(frame, client);
-}
-
-void ChromeClient::registerPopupOpeningObserver(PopupOpeningObserver* observer)
-{
-    ASSERT(observer);
-    m_popupOpeningObservers.append(observer);
-}
-
-void ChromeClient::unregisterPopupOpeningObserver(PopupOpeningObserver* observer)
-{
-    size_t index = m_popupOpeningObservers.find(observer);
-    ASSERT(index != kNotFound);
-    m_popupOpeningObservers.remove(index);
-}
-
-void ChromeClient::notifyPopupOpeningObservers() const
-{
-    const Vector<PopupOpeningObserver*> observers(m_popupOpeningObservers);
-    for (size_t i = 0; i < observers.size(); ++i)
-        observers[i]->willOpenPopup();
 }
 
 } // namespace blink

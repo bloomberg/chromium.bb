@@ -120,9 +120,9 @@ public:
     virtual void dispatchViewportPropertiesDidChange(const ViewportDescription&) const override;
     virtual void printInternal(LocalFrame*) override;
     virtual void annotatedRegionsChanged() override;
-    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooserInternal(LocalFrame*, ColorChooserClient*, const Color&) override;
-    virtual PassRefPtr<DateTimeChooser> openDateTimeChooserInternal(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
-    virtual void runOpenPanelInternal(LocalFrame*, PassRefPtr<FileChooser>) override;
+    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
+    virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
+    virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) override;
     virtual void enumerateChosenDirectory(FileChooser*) override;
     virtual void setCursorInternal(const Cursor&) override;
     virtual void needTouchEvents(bool needTouchEvents) override;
@@ -151,7 +151,7 @@ public:
     void setNewWindowNavigationPolicy(WebNavigationPolicy);
 
     virtual bool hasOpenedPopup() const override;
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenuInternal(LocalFrame&, PopupMenuClient*) override;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) override;
     PagePopup* openPagePopup(PagePopupClient*);
     void closePagePopup(PagePopup*);
     virtual DOMWindow* pagePopupWindowForTesting() const override;
@@ -166,7 +166,7 @@ public:
     virtual void handleKeyboardEventOnTextField(HTMLInputElement&, KeyboardEvent&) override;
     virtual void didChangeValueInTextField(HTMLFormControlElement&) override;
     virtual void didEndEditingOnTextField(HTMLInputElement&) override;
-    virtual void openTextDataListChooserInternal(HTMLInputElement&) override;
+    virtual void openTextDataListChooser(HTMLInputElement&) override;
     virtual void textFieldDataListChanged(HTMLInputElement&) override;
     virtual void xhrSucceeded(LocalFrame*) override;
 
@@ -181,14 +181,18 @@ public:
     virtual void didUpdateTopControls() const override;
 
 private:
-    virtual bool isChromeClientImpl() const override { return true; }
+    bool isChromeClientImpl() const override { return true; }
+    void registerPopupOpeningObserver(PopupOpeningObserver*) override;
+    void unregisterPopupOpeningObserver(PopupOpeningObserver*) override;
 
+    void notifyPopupOpeningObservers() const;
     void setCursor(const WebCursorInfo&);
 
     WebViewImpl* m_webView;  // weak pointer
     WindowFeatures m_windowFeatures;
 
     PagePopupDriver* m_pagePopupDriver;
+    Vector<PopupOpeningObserver*> m_popupOpeningObservers;
 };
 
 DEFINE_TYPE_CASTS(ChromeClientImpl, ChromeClient, client, client->isChromeClientImpl(), client.isChromeClientImpl());

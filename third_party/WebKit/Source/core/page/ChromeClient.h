@@ -157,7 +157,7 @@ public:
 
     virtual void annotatedRegionsChanged() = 0;
 
-    PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&);
+    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) = 0;
 
     // This function is used for:
     //  - Mandatory date/time choosers if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
@@ -165,11 +165,11 @@ public:
     //    returns true, if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     //  - <datalist> UI for date/time input types regardless of
     //    ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-    PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&);
+    virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) = 0;
 
-    void openTextDataListChooser(HTMLInputElement&);
+    virtual void openTextDataListChooser(HTMLInputElement&)= 0;
 
-    void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>);
+    virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) = 0;
 
     // Asychronous request to enumerate all files in a directory chosen by the user.
     virtual void enumerateChosenDirectory(FileChooser*) = 0;
@@ -197,7 +197,7 @@ public:
 
     // Checks if there is an opened popup, called by LayoutMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
-    PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*);
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) = 0;
     virtual DOMWindow* pagePopupWindowForTesting() const = 0;
 
     virtual void postAccessibilityNotification(AXObject*, AXObjectCache::AXNotification) { }
@@ -239,9 +239,8 @@ public:
 
     virtual void didUpdateTopControls() const { }
 
-    void registerPopupOpeningObserver(PopupOpeningObserver*);
-    void unregisterPopupOpeningObserver(PopupOpeningObserver*);
-    void notifyPopupOpeningObservers() const;
+    virtual void registerPopupOpeningObserver(PopupOpeningObserver*) = 0;
+    virtual void unregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
 
 protected:
     virtual ~ChromeClient() { }
@@ -256,18 +255,12 @@ protected:
     virtual bool runJavaScriptConfirmInternal(LocalFrame*, const String&) = 0;
     virtual bool runJavaScriptPromptInternal(LocalFrame*, const String& message, const String& defaultValue, String& result) = 0;
     virtual void printInternal(LocalFrame*) = 0;
-    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooserInternal(LocalFrame*, ColorChooserClient*, const Color&) = 0;
-    virtual PassRefPtr<DateTimeChooser> openDateTimeChooserInternal(DateTimeChooserClient*, const DateTimeChooserParameters&) = 0;
-    virtual void openTextDataListChooserInternal(HTMLInputElement&) = 0;
-    virtual void runOpenPanelInternal(LocalFrame*, PassRefPtr<FileChooser>) = 0;
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenuInternal(LocalFrame&, PopupMenuClient*) = 0;
     virtual void setCursorInternal(const Cursor&) = 0;
 
 private:
     bool canRunModalIfDuringPageDismissal(Frame* mainFrame, DialogType, const String& message);
     void setToolTip(const HitTestResult&);
 
-    Vector<PopupOpeningObserver*> m_popupOpeningObservers;
     Cursor m_lastSetMouseCursorForTesting;
 };
 

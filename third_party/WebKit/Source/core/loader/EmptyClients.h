@@ -112,7 +112,7 @@ public:
     virtual bool runJavaScriptPromptInternal(LocalFrame*, const String&, const String&, String&) override { return false; }
 
     virtual bool hasOpenedPopup() const override { return false; }
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenuInternal(LocalFrame&, PopupMenuClient*) override;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) override;
     virtual DOMWindow* pagePopupWindowForTesting() const override { return nullptr; }
 
     virtual void setStatusbarText(const String&) override { }
@@ -136,11 +136,11 @@ public:
 
     virtual void enumerateChosenDirectory(FileChooser*) override { }
 
-    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooserInternal(LocalFrame*, ColorChooserClient*, const Color&) override;
-    virtual PassRefPtr<DateTimeChooser> openDateTimeChooserInternal(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
-    virtual void openTextDataListChooserInternal(HTMLInputElement&) override;
+    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
+    virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
+    virtual void openTextDataListChooser(HTMLInputElement&) override;
 
-    virtual void runOpenPanelInternal(LocalFrame*, PassRefPtr<FileChooser>) override;
+    virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) override;
 
     virtual void setCursorInternal(const Cursor&) override { }
 
@@ -153,6 +153,10 @@ public:
 
     virtual void annotatedRegionsChanged() override { }
     virtual String acceptLanguages() override;
+
+    virtual void registerPopupOpeningObserver(PopupOpeningObserver*) { };
+    virtual void unregisterPopupOpeningObserver(PopupOpeningObserver*) { };
+    virtual void notifyPopupOpeningObservers() const { };
 };
 
 class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
