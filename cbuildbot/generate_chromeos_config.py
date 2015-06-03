@@ -1110,10 +1110,10 @@ def GetConfig():
       git_sync=True,
   )
 
-  full = config_lib.BuildConfig(
+  full = site_config.AddTemplate(
+      'full',
       # Full builds are test builds to show that we can build from scratch,
       # so use settings to build from scratch, and archive the results.
-
       usepkg_build_packages=False,
       chrome_sdk=True,
       chroot_replace=True,
@@ -1279,7 +1279,7 @@ def GetConfig():
   )
 
   chromium_pfq = site_config.AddTemplate(
-      'chromium_pfq',
+      'chromium-pfq',
       build_type=constants.CHROME_PFQ_TYPE,
       important=True,
       uprev=False,
