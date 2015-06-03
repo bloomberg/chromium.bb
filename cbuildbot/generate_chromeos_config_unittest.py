@@ -659,6 +659,24 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
                       msg=('config %s has a broken builder_class_name' %
                            build_name))
 
+  def testDistinctBoardSets(self):
+    """Verify that distinct board sets are distinct."""
+    # Every board should be in exactly one of the distinct board sets.
+    for board in generate_chromeos_config._all_boards:
+      found = False
+      for s in generate_chromeos_config._distinct_board_sets:
+        if board in s:
+          if found:
+            assert False, '%s in multiple board sets.' % board
+          else:
+            found = True
+      if not found:
+        assert False, '%s in no board sets' % board
+    for s in generate_chromeos_config._distinct_board_sets:
+      for board in s - generate_chromeos_config._all_boards:
+        assert False, ('%s in _distinct_board_sets but not in _all_boards' %
+                       board)
+
 
 class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
   """Test config override functionality."""
