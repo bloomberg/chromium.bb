@@ -125,6 +125,39 @@ def BuildFileList():
           to = os.path.join('ucrt', target, combined[len(src) + 1:])
           result.append((combined, to))
 
+    system_crt_files = [
+        'api-ms-win-core-file-l1-2-0.dll',
+        'api-ms-win-core-file-l2-1-0.dll',
+        'api-ms-win-core-localization-l1-2-0.dll',
+        'api-ms-win-core-processthreads-l1-1-1.dll',
+        'api-ms-win-core-synch-l1-2-0.dll',
+        'api-ms-win-core-timezone-l1-1-0.dll',
+        'api-ms-win-core-xstate-l2-1-0.dll',
+        'api-ms-win-crt-conio-l1-1-0.dll',
+        'api-ms-win-crt-convert-l1-1-0.dll',
+        'api-ms-win-crt-environment-l1-1-0.dll',
+        'api-ms-win-crt-filesystem-l1-1-0.dll',
+        'api-ms-win-crt-heap-l1-1-0.dll',
+        'api-ms-win-crt-locale-l1-1-0.dll',
+        'api-ms-win-crt-math-l1-1-0.dll',
+        'api-ms-win-crt-multibyte-l1-1-0.dll',
+        'api-ms-win-crt-private-l1-1-0.dll',
+        'api-ms-win-crt-process-l1-1-0.dll',
+        'api-ms-win-crt-runtime-l1-1-0.dll',
+        'api-ms-win-crt-stdio-l1-1-0.dll',
+        'api-ms-win-crt-string-l1-1-0.dll',
+        'api-ms-win-crt-time-l1-1-0.dll',
+        'api-ms-win-crt-utility-l1-1-0.dll',
+        'api-ms-win-eventing-provider-l1-1-0.dll',
+        'ucrtbase.dll',
+        'ucrtbased.dll',
+    ]
+    for system_crt_file in system_crt_files:
+        result.append((os.path.join(r'C:\Windows\SysWOW64', system_crt_file),
+                       os.path.join('sys32', system_crt_file)))
+        result.append((os.path.join(r'C:\Windows\System32', system_crt_file),
+                       os.path.join('sys64', system_crt_file)))
+
   # Generically drop all arm stuff that we don't need.
   return [(f, t) for f, t in result if 'arm\\' not in f.lower() and
                                        'arm64\\' not in f.lower()]
