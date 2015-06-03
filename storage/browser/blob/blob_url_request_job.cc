@@ -159,7 +159,7 @@ void BlobURLRequestJob::SetExtraRequestHeaders(
 
 BlobURLRequestJob::~BlobURLRequestJob() {
   STLDeleteValues(&index_to_reader_);
-  TRACE_EVENT_ASYNC_END1("Blob", "Request", this, "uuid",
+  TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest", this, "uuid",
                          blob_data_ ? blob_data_->uuid() : "NotFound");
 }
 
