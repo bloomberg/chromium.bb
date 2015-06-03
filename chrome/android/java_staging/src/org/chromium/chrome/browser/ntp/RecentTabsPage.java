@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp;
 import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.os.SystemClock;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -16,20 +17,27 @@ import android.widget.ExpandableListView;
 
 import com.google.android.apps.chrome.R;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.util.ViewUtils;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * The native recent tabs page. Lists recently closed tabs, open windows and tabs from the user's
  * synced devices, and snapshot documents sent from Chrome to Mobile in an expandable list view.
  */
-public class RecentTabsPage implements NativePage,
-        ExpandableListView.OnChildClickListener, ExpandableListView.OnGroupCollapseListener,
-        ExpandableListView.OnGroupExpandListener, RecentTabsManager.UpdatedCallback,
-        View.OnCreateContextMenuListener, InvalidationAwareThumbnailProvider {
-
+public class RecentTabsPage
+        implements NativePage, ApplicationStatus.ActivityStateListener,
+                   ExpandableListView.OnChildClickListener,
+                   ExpandableListView.OnGroupCollapseListener,
+                   ExpandableListView.OnGroupExpandListener, RecentTabsManager.UpdatedCallback,
+                   View.OnAttachStateChangeListener, View.OnCreateContextMenuListener,
+                   InvalidationAwareThumbnailProvider {
     private final Activity mActivity;
     private final ExpandableListView mListView;
     private final String mTitle;
@@ -43,6 +51,18 @@ public class RecentTabsPage implements NativePage,
     private int mSnapshotListTop;
     private int mSnapshotWidth;
     private int mSnapshotHeight;
+
+    /**
+     * Whether the page is in the foreground and is visible.
+     */
+    private boolean mInForeground;
+
+    /**
+     * The time, whichever is most recent, that the page:
+     * - Moved to the foreground
+     * - Became visible
+     */
+    private long mForegroundTimeMs;
 
     /**
      * Constructor returns an instance of RecentTabsPage.
@@ -67,12 +87,38 @@ public class RecentTabsPage implements NativePage,
         mListView.setOnGroupExpandListener(this);
         mListView.setOnCreateContextMenuListener(this);
 
+        mView.addOnAttachStateChangeListener(this);
+        ApplicationStatus.registerStateListenerForActivity(this, activity);
+        // {@link #mInForeground} will be updated once the view is attached to the window.
+
         onUpdated();
     }
 
     private static RecentTabsRowAdapter buildAdapter(Activity activity,
             RecentTabsManager recentTabsManager) {
         return new RecentTabsRowAdapter(activity, recentTabsManager);
+    }
+
+    /**
+     * Updates whether the page is in the foreground based on whether the application is in the
+     * foreground and whether {@link #mView} is attached to the application window. If the page is
+     * no longer in the foreground, records the time that the page spent in the foreground to UMA.
+     * @param isAttachedToWindow whether {@link #mView} is attached to the application window.
+     */
+    private void updateForegroundState(boolean isAttachedToWindow) {
+        boolean inForeground = isAttachedToWindow
+                && ApplicationStatus.getStateForActivity(mActivity) == ActivityState.RESUMED;
+        if (mInForeground == inForeground) {
+            return;
+        }
+
+        mInForeground = inForeground;
+        if (mInForeground) {
+            mForegroundTimeMs = SystemClock.elapsedRealtime();
+        } else {
+            RecordHistogram.recordTimesHistogram("NewTabPage.RecentTabsPage.TimeVisibleAndroid",
+                    SystemClock.elapsedRealtime() - mForegroundTimeMs, TimeUnit.MILLISECONDS);
+        }
     }
 
     // NativePage overrides
@@ -110,10 +156,38 @@ public class RecentTabsPage implements NativePage,
         mAdapter.notifyDataSetInvalidated();
         mAdapter = null;
         mListView.setAdapter((RecentTabsRowAdapter) null);
+
+        mView.removeOnAttachStateChangeListener(this);
+        ApplicationStatus.unregisterActivityStateListener(this);
     }
 
     @Override
     public void updateForUrl(String url) {
+    }
+
+    // ApplicationStatus.ActivityStateListener
+    @Override
+    public void onActivityStateChange(Activity activity, int state) {
+        // Called when the user locks the screen or moves Chrome to the background via the task
+        // switcher.
+        updateForegroundState(mView.isAttachedToWindow());
+    }
+
+    // View.OnAttachStateChangeListener
+    @Override
+    public void onViewAttachedToWindow(View view) {
+        // Called when the user opens the RecentTabsPage or switches back to the RecentTabsPage from
+        // another tab.
+        updateForegroundState(true);
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(View view) {
+        // Called when the user navigates from the RecentTabsPage or switches to another tab.
+        // The value of {@link View#isAttachedToWindow()} changes after the
+        // {@link View.OnAttachStateChangeListener#onViewDetachedFromWindow()} listeners are
+        // notified.
+        updateForegroundState(false);
     }
 
     // ExpandableListView.OnChildClickedListener

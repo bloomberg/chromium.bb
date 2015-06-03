@@ -25544,6 +25544,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Histogram for NTP notification promo activity.</summary>
 </histogram>
 
+<histogram name="NewTabPage.RecentTabsPage.TimeVisibleAndroid"
+    units="milliseconds">
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    Records the amount of time that the &quot;Recent Tabs&quot; page is visible
+    and Chrome is in the foreground on Android. The metric is recorded whenever
+    the &quot;Recent Tabs&quot; page moves out of the foreground. The metric is
+    recorded when the &quot;Recent Tabs&quot; page is closed, when the user
+    switches from the &quot;Recent Tabs&quot; page to a different tab and when
+    Chrome is backgrounded.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.SearchURLs.Total">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>TBD.</summary>
