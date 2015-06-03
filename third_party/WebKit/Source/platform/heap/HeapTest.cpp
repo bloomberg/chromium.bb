@@ -1828,7 +1828,7 @@ TEST(HeapTest, SimpleFinalization)
     EXPECT_EQ(1, SimpleFinalizedObject::s_destructorCalls);
 }
 
-#if ENABLE_LAZY_SWEEPING
+#if ENABLE(LAZY_SWEEPING)
 TEST(HeapTest, LazySweepingPages)
 {
     clearOutOldGarbage();

@@ -72,13 +72,6 @@ using TraceCallback = VisitorCallback;
 using WeakCallback = VisitorCallback;
 using EphemeronCallback = VisitorCallback;
 
-#if ENABLE(OILPAN)
-#define ENABLE_LAZY_SWEEPING 1
-#else
-// TODO(haraken): Enable lazy sweeping on non-oilpan builds.
-#define ENABLE_LAZY_SWEEPING 0
-#endif
-
 // Declare that a class has a pre-finalizer function.  The function is called in
 // the object's owner thread, and can access Member<>s to other
 // garbage-collected objects allocated in the thread.  However we must not

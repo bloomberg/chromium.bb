@@ -530,7 +530,7 @@ bool ThreadState::shouldScheduleIdleGC()
 {
     if (gcState() != NoGCScheduled)
         return false;
-#if ENABLE(OILPAN)
+#if ENABLE(IDLE_GC)
     // The estimated size is updated when the main thread finishes lazy
     // sweeping. If this thread reaches here before the main thread finishes
     // lazy sweeping, the thread will use the estimated size of the last GC.
@@ -554,7 +554,7 @@ bool ThreadState::shouldSchedulePreciseGC()
 {
     if (gcState() != NoGCScheduled)
         return false;
-#if ENABLE(OILPAN)
+#if ENABLE(IDLE_GC)
     return false;
 #else
     // The estimated size is updated when the main thread finishes lazy
@@ -699,7 +699,7 @@ void ThreadState::scheduleIdleLazySweep()
     if (!isMainThread())
         return;
 
-#if ENABLE_LAZY_SWEEPING
+#if ENABLE(LAZY_SWEEPING)
     Platform::current()->currentThread()->scheduler()->postIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleLazySweep, this));
 #endif
 }
@@ -922,7 +922,7 @@ void ThreadState::preSweep()
     poisonEagerHeap(SetPoison);
 #endif
 
-#if ENABLE_LAZY_SWEEPING
+#if ENABLE(LAZY_SWEEPING)
     if (gcState() == EagerSweepScheduled) {
         // Eager sweeping should happen only in testing.
         setGCState(Sweeping);

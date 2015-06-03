@@ -86,6 +86,8 @@
       ['enable_oilpan==1', {
         'feature_defines': [
           'ENABLE_OILPAN=1',
+          'ENABLE_LAZY_SWEEPING=1',
+          'ENABLE_IDLE_GC=1',
           'ENABLE_INLINED_TRACE=1',
         ],
       }],

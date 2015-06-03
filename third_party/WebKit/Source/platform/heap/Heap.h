@@ -830,7 +830,7 @@ public:
     static bool willObjectBeLazilySwept(const T* objectPointer)
     {
         static_assert(IsGarbageCollectedType<T>::value, "only objects deriving from GarbageCollected can be used.");
-#if ENABLE_LAZY_SWEEPING
+#if ENABLE(LAZY_SWEEPING)
         BasePage* page = pageFromObject(objectPointer);
         if (page->hasBeenSwept())
             return false;
@@ -1127,7 +1127,7 @@ inline bool Heap::isNormalHeapIndex(int index)
     return index >= NormalPage1HeapIndex && index <= NormalPage4HeapIndex;
 }
 
-#if ENABLE_LAZY_SWEEPING
+#if ENABLE(LAZY_SWEEPING)
 #define EAGERLY_FINALIZE() typedef int IsEagerlyFinalizedMarker
 #define EAGERLY_FINALIZE_WILL_BE_REMOVED()
 #else
