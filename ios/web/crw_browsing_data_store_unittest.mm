@@ -150,6 +150,7 @@ TEST_F(BrowsingDataStoreTest, MakeActiveAndInactiveOperations) {
     return;
   }
 
+  MakeInactive();
   base::scoped_nsobject<CRWTestBrowsingDataStoreObserver> observer(
       [[CRWTestBrowsingDataStoreObserver alloc]
           initWithBrowsingDataStore:browsing_data_store_]);

@@ -17,9 +17,17 @@
 namespace {
 // Represents the type of operations that a CRWBrowsingDataStore can perform.
 enum OperationType {
-  STASH = 0,
+  // Represents NOP.
+  NONE = 1,
+  // Stash operation involves stashing browsing data that web views create to
+  // the associated BrowserState's state path.
+  STASH,
+  // Restore operation involves restoring browsing data from the
+  // associated BrowserState's state path so that web views (UIWebViews and
+  // WKWebViews) can read from them.
   RESTORE,
-  REMOVE
+  // Remove operation involves removing the data that web views create.
+  REMOVE,
 };
 
 // The name of the NSOperation that performs a restore operation.
@@ -45,7 +53,8 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 - (NSArray*)browsingDataManagersForBrowsingDataTypes:
         (web::BrowsingDataTypes)browsingDataTypes;
 // Returns the selector that needs to be performed on the
-// CRWBrowsingDataManagers for the |operationType|.
+// CRWBrowsingDataManagers for the |operationType|. |operationType| cannot be
+// |NONE|.
 - (SEL)browsingDataManagerSelectorForOperationType:(OperationType)operationType;
 // Returns the selector that needs to be performed on the
 // CRWBrowsingDataManagers for a REMOVE operation.
@@ -60,20 +69,20 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 - (void)finalizeChangeToMode:(CRWBrowsingDataStoreMode)mode
     andCallCompletionHandler:(void (^)(BOOL modeChangeWasSuccessful))handler;
 
+// Changes the mode of the CRWBrowsingDataStore to |mode|. This is an
+// asynchronous operation and the mode is not changed immediately.
+// |completionHandler| can be nil.
+// |completionHandler| is called on the main thread. This block has no return
+// value and takes a single BOOL argument that indicates whether or not the
+// mode change was successfully changed to |mode|.
+- (void)changeMode:(CRWBrowsingDataStoreMode)mode
+    completionHandler:(void (^)(BOOL modeChangeWasSuccessful))completionHandler;
+
 // The number of stash or restore operations that are still pending.
 @property(nonatomic, assign) NSUInteger numberOfPendingStashOrRestoreOperations;
 
 // Performs operations of type |operationType| on each of the
-// |browsingDataManagers|.
-// The kind of operations are:
-// 1) STASH: Stash operation involves stashing browsing data that web views
-// (UIWebViews and WKWebViews) create to the associated BrowserState's state
-// path.
-// 2) RESTORE: Restore operation involves restoring browsing data from the
-// associated BrowserState's state path so that web views (UIWebViews and
-// WKWebViews) can read from them.
-// 3) REMOVE: Remove operation involves removing the data that web views
-// (UIWebViews and WKWebViews) create.
+// |browsingDataManagers|. |operationType| cannot be |NONE|.
 // Precondition: There must be no web views associated with the BrowserState.
 // |completionHandler| is called on the main thread and cannot be nil.
 - (void)performOperationWithType:(OperationType)operationType
@@ -208,6 +217,9 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 - (SEL)browsingDataManagerSelectorForOperationType:
         (OperationType)operationType {
   switch (operationType) {
+    case NONE:
+      NOTREACHED();
+      return nullptr;
     case STASH:
       return @selector(stashData);
     case RESTORE:
@@ -301,32 +313,55 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
         (void (^)(BOOL success))completionHandler {
   DCHECK([NSThread isMainThread]);
 
-  // TODO(shreyasv): Consult the delegate here if it wants to |DELETE| instead.
-  // crbug.com/480654.
-
-  base::WeakNSObject<CRWBrowsingDataStore> weakSelf(self);
-  [self performOperationWithType:RESTORE
-            browsingDataManagers:[self allBrowsingDataManagers]
-               completionHandler:^{
-                 [weakSelf finalizeChangeToMode:ACTIVE
-                       andCallCompletionHandler:completionHandler];
-               }];
+  [self changeMode:ACTIVE completionHandler:completionHandler];
 }
 
 - (void)makeInactiveWithCompletionHandler:
         (void (^)(BOOL success))completionHandler {
   DCHECK([NSThread isMainThread]);
 
-  // TODO(shreyasv): Consult the delegate here if it wants to |DELETE| instead.
-  // crbug.com/480654.
+  [self changeMode:INACTIVE completionHandler:completionHandler];
+}
 
-  base::WeakNSObject<CRWBrowsingDataStore> weakSelf(self);
-  [self performOperationWithType:STASH
+- (void)changeMode:(CRWBrowsingDataStoreMode)mode
+    completionHandler:
+        (void (^)(BOOL modeChangeWasSuccessful))completionHandler {
+  DCHECK([NSThread isMainThread]);
+
+  ProceduralBlock completionHandlerAfterPerformingOperation = ^{
+    [self finalizeChangeToMode:mode andCallCompletionHandler:completionHandler];
+  };
+
+  // Already in the desired mode.
+  if (self.mode == mode) {
+    // As a caller of this API, it is awkward to get the callback before the
+    // method call has completed, hence defer it.
+    dispatch_async(dispatch_get_main_queue(), ^{
+      completionHandlerAfterPerformingOperation();
+    });
+    return;
+  }
+
+  OperationType operationType = NONE;
+  if (mode == ACTIVE) {
+    // By default a |RESTORE| operation is performed when the mode is changed
+    // to |ACTIVE|.
+    operationType = RESTORE;
+    web::BrowsingDataStoreMakeActivePolicy makeActivePolicy =
+        [_delegate decideMakeActiveOperationPolicyForBrowsingDataStore:self];
+    operationType = (makeActivePolicy == web::ADOPT) ? REMOVE : RESTORE;
+  } else {
+    // By default a |STASH| operation is performed when the mode is changed to
+    // |INACTIVE|.
+    operationType = STASH;
+    web::BrowsingDataStoreMakeInactivePolicy makeInactivePolicy =
+        [_delegate decideMakeInactiveOperationPolicyForBrowsingDataStore:self];
+    operationType = (makeInactivePolicy == web::DELETE) ? REMOVE : STASH;
+  }
+  DCHECK_NE(NONE, operationType);
+  [self performOperationWithType:operationType
             browsingDataManagers:[self allBrowsingDataManagers]
-               completionHandler:^{
-                 [weakSelf finalizeChangeToMode:INACTIVE
-                       andCallCompletionHandler:completionHandler];
-               }];
+               completionHandler:completionHandlerAfterPerformingOperation];
 }
 
 - (void)removeDataOfTypes:(web::BrowsingDataTypes)browsingDataTypes
@@ -356,6 +391,7 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
                completionHandler:(ProceduralBlock)completionHandler {
   DCHECK([NSThread isMainThread]);
   DCHECK(completionHandler);
+  DCHECK_NE(NONE, operationType);
 
   SEL selector =
       [self browsingDataManagerSelectorForOperationType:operationType];

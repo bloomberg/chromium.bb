@@ -44,7 +44,7 @@ typedef NS_ENUM(NSUInteger, BrowsingDataStoreMakeInactivePolicy) {
         (CRWBrowsingDataStore*)browsingDataStore;
 
 // Called when a CRWBrowsingDataStore wants to change its mode to |INACTIVE|.
-- (web::BrowsingDataStoreMakeActivePolicy)
+- (web::BrowsingDataStoreMakeInactivePolicy)
     decideMakeInactiveOperationPolicyForBrowsingDataStore:
         (CRWBrowsingDataStore*)browsingDataStore;
 
