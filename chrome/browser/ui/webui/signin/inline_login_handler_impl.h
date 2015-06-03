@@ -12,8 +12,6 @@
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 
-class GaiaAuthFetcher;
-
 // Implementation for the inline login WebUI handler on desktop Chrome. Once
 // CrOS migrates to the same webview approach as desktop Chrome, much of the
 // code in this class should move to its base class |InlineLoginHandler|.

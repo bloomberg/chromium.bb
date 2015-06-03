@@ -33,8 +33,6 @@ static_library("browser") {
     "signin_manager_cookie_helper.h",
     "signin_metrics.cc",
     "signin_metrics.h",
-    "signin_oauth_helper.cc",
-    "signin_oauth_helper.h",
     "signin_tracker.cc",
     "signin_tracker.h",
     "webdata/token_service_table.cc",

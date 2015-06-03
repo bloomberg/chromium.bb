@@ -75,8 +75,6 @@
         'signin/core/browser/signin_manager_cookie_helper.h',
         'signin/core/browser/signin_metrics.cc',
         'signin/core/browser/signin_metrics.h',
-        'signin/core/browser/signin_oauth_helper.cc',
-        'signin/core/browser/signin_oauth_helper.h',
         'signin/core/browser/signin_tracker.cc',
         'signin/core/browser/signin_tracker.h',
         'signin/core/browser/webdata/token_service_table.cc',
