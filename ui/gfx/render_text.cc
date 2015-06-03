@@ -178,17 +178,17 @@ SkPaint::Hinting FontRenderParamsHintingToSkPaintHinting(
 // does break a grapheme in |render_text|, the range will be slightly
 // extended to encompass the grapheme.
 template <typename T>
-void RestoreBreakList(RenderText* render_text, BreakList<T>& break_list) {
-  break_list.SetMax(render_text->text().length());
+void RestoreBreakList(RenderText* render_text, BreakList<T>* break_list) {
+  break_list->SetMax(render_text->text().length());
   Range range;
-  while (range.end() < break_list.max()) {
-    const auto& current_break = break_list.GetBreak(range.end());
-    range = break_list.GetRange(current_break);
-    if (range.end() < break_list.max() &&
+  while (range.end() < break_list->max()) {
+    const auto& current_break = break_list->GetBreak(range.end());
+    range = break_list->GetRange(current_break);
+    if (range.end() < break_list->max() &&
         !render_text->IsValidCursorIndex(range.end())) {
       range.set_end(
           render_text->IndexOfAdjacentGrapheme(range.end(), CURSOR_FORWARD));
-      break_list.ApplyValue(current_break->second, range);
+      break_list->ApplyValue(current_break->second, range);
     }
   }
 }
@@ -820,7 +820,7 @@ void RenderText::DrawCursor(Canvas* canvas, const SelectionModel& position) {
   canvas->FillRect(GetCursorBounds(position, true), cursor_color_);
 }
 
-bool RenderText::IsValidLogicalIndex(size_t index) {
+bool RenderText::IsValidLogicalIndex(size_t index) const {
   // Check that the index is at a valid code point (not mid-surrgate-pair) and
   // that it's not truncated from the display text (its glyph may be shown).
   //
@@ -900,7 +900,7 @@ size_t RenderText::IndexOfAdjacentGrapheme(size_t index,
   return 0;
 }
 
-SelectionModel RenderText::GetSelectionModelForSelectionStart() {
+SelectionModel RenderText::GetSelectionModelForSelectionStart() const {
   const Range& sel = selection();
   if (sel.is_empty())
     return selection_model_;
@@ -1243,7 +1243,7 @@ base::i18n::TextDirection RenderText::GetTextDirection(
 }
 
 size_t RenderText::TextIndexToGivenTextIndex(const base::string16& given_text,
-                                             size_t index) {
+                                             size_t index) const {
   DCHECK(given_text == layout_text() || given_text == display_text());
   DCHECK_LE(index, text().length());
   ptrdiff_t i = obscured() ? UTF16IndexToOffset(text(), 0, index) : index;
@@ -1414,8 +1414,8 @@ base::string16 RenderText::Elide(const base::string16& text,
     // Restore styles and baselines without breaking multi-character graphemes.
     render_text->styles_ = styles_;
     for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
-      RestoreBreakList(render_text.get(), render_text->styles_[style]);
-    RestoreBreakList(render_text.get(), render_text->baselines_);
+      RestoreBreakList(render_text.get(), &render_text->styles_[style]);
+    RestoreBreakList(render_text.get(), &render_text->baselines_);
 
     // We check the width of the whole desired string at once to ensure we
     // handle kerning/ligatures/etc. correctly.

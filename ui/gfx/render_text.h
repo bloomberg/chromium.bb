@@ -416,7 +416,7 @@ class GFX_EXPORT RenderText {
 
   // Returns true if the position is a valid logical index into text(). Indices
   // amid multi-character graphemes are allowed here, unlike IsValidCursorIndex.
-  virtual bool IsValidLogicalIndex(size_t index);
+  virtual bool IsValidLogicalIndex(size_t index) const;
 
   // Get the visual bounds of a cursor at |caret|. These bounds typically
   // represent a vertical line if |insert_mode| is true. Pass false for
@@ -442,7 +442,7 @@ class GFX_EXPORT RenderText {
 
   // Return a SelectionModel with the cursor at the current selection's start.
   // The returned value represents a cursor/caret position without a selection.
-  SelectionModel GetSelectionModelForSelectionStart();
+  SelectionModel GetSelectionModelForSelectionStart() const;
 
   // Sets shadows to drawn with text.
   void set_shadows(const ShadowValues& shadows) { shadows_ = shadows; }
@@ -604,7 +604,7 @@ class GFX_EXPORT RenderText {
   // |given_text| should be either |display_text_| or |layout_text_|
   // depending on the elide state.
   size_t TextIndexToGivenTextIndex(const base::string16& given_text,
-                                   size_t index);
+                                   size_t index) const;
 
   // Adjust ranged styles to accommodate a new text length.
   void UpdateStyleLengths();
