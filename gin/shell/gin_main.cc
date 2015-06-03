@@ -64,11 +64,12 @@ int main(int argc, char** argv) {
   gin::V8Initializer::LoadV8Snapshot();
 #endif
 
+  base::MessageLoop message_loop;
+
   gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
                                  gin::ArrayBufferAllocator::SharedInstance());
   gin::IsolateHolder instance;
 
-  base::MessageLoop message_loop;
 
   gin::GinShellRunnerDelegate delegate;
   gin::ShellRunner runner(&delegate, instance.isolate());
