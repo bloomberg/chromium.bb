@@ -11,8 +11,10 @@ import android.animation.ObjectAnimator;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
 import android.support.v7.widget.AppCompatTextView;
 import android.text.Layout;
 import android.text.Spannable;
@@ -38,8 +40,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityHelper;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
@@ -250,6 +256,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     // Whether the security level of the page was deprecated due to SHA-1.
     private boolean mDeprecatedSHA1Present;
 
+    // Whether to use the read-only permissions list.
+    private boolean mIsReadOnlyDialog;
+
     /**
      * Creates the WebsiteSettingsPopup, but does not display it. Also initializes the corresponding
      * C++ object and saves a pointer to it.
@@ -262,10 +271,14 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         mContext = context;
         mProfile = profile;
         mWebContents = webContents;
+        mIsReadOnlyDialog = enableReadOnlyPopup();
 
         // Find the container and all it's important subviews.
-        mContainer = (LinearLayout) LayoutInflater.from(mContext).inflate(
-                R.layout.website_settings, null);
+        int containerLayout = R.layout.website_settings_editable;
+        if (mIsReadOnlyDialog) {
+            containerLayout = R.layout.website_settings;
+        }
+        mContainer = (LinearLayout) LayoutInflater.from(mContext).inflate(containerLayout, null);
         mContainer.setVisibility(View.INVISIBLE);
         mContainer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
@@ -288,24 +301,30 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         mPermissionsList = (LinearLayout) mContainer
                 .findViewById(R.id.website_settings_permissions_list);
 
-        mCopyUrlButton = (Button) mContainer.findViewById(R.id.website_settings_copy_url_button);
-        mCopyUrlButton.setOnClickListener(this);
-
-        mSiteSettingsButton = (Button) mContainer
-                .findViewById(R.id.website_settings_site_settings_button);
+        mSiteSettingsButton =
+                (Button) mContainer.findViewById(R.id.website_settings_site_settings_button);
         mSiteSettingsButton.setOnClickListener(this);
         // Hide the Site Settings button until there's a link to take it to.
         // TODO(sashab,finnur): Make this button visible for well-formed, non-internal URLs.
         mSiteSettingsButton.setVisibility(View.GONE);
 
-        mHorizontalSeparator = mContainer
-                .findViewById(R.id.website_settings_horizontal_separator);
-        mLowerDialogArea = mContainer.findViewById(R.id.website_settings_lower_dialog_area);
+        if (enableReadOnlyPopup()) {
+            mCopyUrlButton = null;
+            mHorizontalSeparator = null;
+            mLowerDialogArea = null;
+            mSiteSettingsButton.setVisibility(View.VISIBLE);
+        } else {
+            mCopyUrlButton =
+                    (Button) mContainer.findViewById(R.id.website_settings_copy_url_button);
+            mCopyUrlButton.setOnClickListener(this);
 
-        // Hide the horizontal separator for sites with no permissions.
-        // TODO(sashab,finnur): Show this for all sites with either the site settings button or
-        // permissions (ie when the bottom area of the dialog is not empty).
-        setVisibilityOfLowerDialogArea(false);
+            mHorizontalSeparator = mContainer
+                    .findViewById(R.id.website_settings_horizontal_separator);
+            mLowerDialogArea = mContainer.findViewById(R.id.website_settings_lower_dialog_area);
+        }
+
+        // Hide the permissions list for sites with no permissions.
+        setVisibilityOfPermissionsList(false);
 
         // Create the dialog.
         mDialog = new Dialog(mContext) {
@@ -388,17 +407,28 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         // can calculate its ideal height).
         mUrlConnectionMessage.setText(getUrlConnectionMessage());
         if (isConnectionDetailsLinkVisible()) mUrlConnectionMessage.setOnClickListener(this);
+
+        if (mParsedUrl == null || mParsedUrl.getScheme() == null
+                || !(mParsedUrl.getScheme().equals("http")
+                           || mParsedUrl.getScheme().equals("https"))) {
+            mSiteSettingsButton.setEnabled(false);
+        }
     }
 
     /**
-     * Sets the visibility of the lower area of the dialog (containing the permissions and 'Site
-     * Settings' button).
+     * Sets the visibility of the permissions list, which contains padding and borders that should
+     * not be shown if a site has no permissions.
      *
      * @param isVisible Whether to show or hide the dialog area.
      */
-    private void setVisibilityOfLowerDialogArea(boolean isVisible) {
-        mHorizontalSeparator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
-        mLowerDialogArea.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    private void setVisibilityOfPermissionsList(boolean isVisible) {
+        int visibility = isVisible ? View.VISIBLE : View.GONE;
+        if (mLowerDialogArea != null) {
+            mHorizontalSeparator.setVisibility(visibility);
+            mLowerDialogArea.setVisibility(visibility);
+        } else {
+            mPermissionsList.setVisibility(visibility);
+        }
     }
 
     /**
@@ -526,10 +556,15 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     @CalledByNative
     private void addPermissionSection(String name, int type, int currentSetting) {
         // We have at least one permission, so show the lower permissions area.
-        setVisibilityOfLowerDialogArea(true);
+        setVisibilityOfPermissionsList(true);
+
+        if (mIsReadOnlyDialog) {
+            addReadOnlyPermissionSection(name, type, currentSetting);
+            return;
+        }
 
         View permissionRow = LayoutInflater.from(mContext).inflate(
-                R.layout.website_settings_permission_row, null);
+                R.layout.website_settings_permission_row_editable, null);
 
         ImageView permission_icon = (ImageView) permissionRow.findViewById(
                 R.id.website_settings_permission_icon);
@@ -567,6 +602,41 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         permission_spinner.setAdapter(adapter);
         permission_spinner.setSelection(selectedSettingIndex, false);
         permission_spinner.setOnItemSelectedListener(this);
+        mPermissionsList.addView(permissionRow);
+    }
+
+    private void addReadOnlyPermissionSection(String name, int type, int currentSetting) {
+        View permissionRow = LayoutInflater.from(mContext).inflate(
+                R.layout.website_settings_permission_row, null);
+
+        ImageView permissionIcon = (ImageView) permissionRow.findViewById(
+                R.id.website_settings_permission_icon);
+        permissionIcon.setImageResource(getImageResourceForPermission(type));
+
+        TextView permissionStatus = (TextView) permissionRow.findViewById(
+                R.id.website_settings_permission_status);
+        SpannableStringBuilder builder = new SpannableStringBuilder();
+        SpannableString nameString = new SpannableString(name);
+        final StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
+        nameString.setSpan(boldSpan, 0, nameString.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+
+        builder.append(nameString);
+        builder.append(" – ");  // en-dash.
+        String status_text = "";
+        switch (currentSetting) {
+            case ContentSetting.ALLOW:
+                status_text =
+                        mContext.getResources().getString(R.string.page_info_permission_allowed);
+                break;
+            case ContentSetting.BLOCK:
+                status_text =
+                        mContext.getResources().getString(R.string.page_info_permission_blocked);
+                break;
+            default:
+                assert false : "Invalid setting " + currentSetting + " for permission " + type;
+        }
+        builder.append(status_text);
+        permissionStatus.setText(builder);
         mPermissionsList.addView(permissionRow);
     }
 
@@ -622,31 +692,47 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         // Do nothing intentionally.
     }
 
+    /**
+     * Dismiss the popup, and then run a task after the animation has completed (if there is one).
+     */
+    private void runAfterDismiss(Runnable task) {
+        mDialog.dismiss();
+        if (DeviceFormFactor.isTablet(mContext)) {
+            task.run();
+        } else {
+            mContainer.postDelayed(task, FADE_DURATION + CLOSE_CLEANUP_DELAY);
+        }
+    }
+
     @Override
     public void onClick(View view) {
         if (view == mCopyUrlButton) {
             new Clipboard(mContext).setText(mFullUrl, mFullUrl);
             mDialog.dismiss();
         } else if (view == mSiteSettingsButton) {
-            // TODO(sashab,finnur): Make this open the Website Settings dialog.
-            assert false : "No Website Settings here!";
-            mDialog.dismiss();
+            // Delay while the WebsiteSettingsPopup closes.
+            runAfterDismiss(new Runnable() {
+                @Override
+                public void run() {
+                    Bundle fragmentArguments =
+                            SingleWebsitePreferences.createFragmentArgsForSite(mFullUrl);
+                    Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
+                            mContext, SingleWebsitePreferences.class.getName());
+                    preferencesIntent.putExtra(
+                            Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArguments);
+                    mContext.startActivity(preferencesIntent);
+                }
+            });
         } else if (view == mUrlTitle) {
             // Expand/collapse the displayed URL title.
             mUrlTitle.toggleTruncation();
         } else if (view == mUrlConnectionMessage) {
-            if (DeviceFormFactor.isTablet(mContext)) {
-                ConnectionInfoPopup.show(mContext, mWebContents);
-            } else {
-                // Delay while the WebsiteSettingsPopup closes.
-                mContainer.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        ConnectionInfoPopup.show(mContext, mWebContents);
-                    }
-                }, FADE_DURATION + CLOSE_CLEANUP_DELAY);
-            }
-            mDialog.dismiss();
+            runAfterDismiss(new Runnable() {
+                @Override
+                public void run() {
+                    ConnectionInfoPopup.show(mContext, mWebContents);
+                }
+            });
         }
     }
 
@@ -657,10 +743,15 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         List<View> animatableViews = new ArrayList<View>();
         animatableViews.add(mUrlTitle);
         animatableViews.add(mUrlConnectionMessage);
-        animatableViews.add(mCopyUrlButton);
-        animatableViews.add(mHorizontalSeparator);
+        if (!mIsReadOnlyDialog) {
+            animatableViews.add(mCopyUrlButton);
+            animatableViews.add(mHorizontalSeparator);
+        }
         for (int i = 0; i < mPermissionsList.getChildCount(); i++) {
             animatableViews.add(mPermissionsList.getChildAt(i));
+        }
+        if (mIsReadOnlyDialog) {
+            animatableViews.add(mSiteSettingsButton);
         }
 
         return animatableViews;
@@ -740,6 +831,11 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         if (mCurrentAnimation != null) mCurrentAnimation.cancel();
         mCurrentAnimation = animation;
         return animation;
+    }
+
+    private static boolean enableReadOnlyPopup() {
+        return CommandLine.getInstance().hasSwitch(
+                ChromeSwitches.ENABLE_READ_ONLY_WEBSITE_SETTINGS_POPUP);
     }
 
     /**

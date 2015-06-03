@@ -77,6 +77,10 @@ public abstract class ChromeSwitches {
     public static final String ENABLE_CONTEXTUAL_SEARCH_FOR_TESTING =
             "enable-contextual-search-for-testing";
 
+    /** Enable new Website Settings UI, which does not have controls for editing settings */
+    public static final String ENABLE_READ_ONLY_WEBSITE_SETTINGS_POPUP =
+            "enable-read-only-website-settings-popup";
+
     // How many thumbnails should we allow in the cache (per tab stack)?
     public static final String THUMBNAILS = "thumbnails";
 

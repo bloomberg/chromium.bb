@@ -616,8 +616,13 @@ class LocalStorageInfoReadyCallback {
     for (i = local_storage_info.begin(); i != local_storage_info.end(); ++i) {
       ScopedJavaLocalRef<jstring> full_origin =
           ConvertUTF8ToJavaString(env_, i->origin_url.spec());
+      // Remove the trailing backslash so the origin is matched correctly in
+      // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
+      std::string origin_str = i->origin_url.GetOrigin().spec();
+      DCHECK(origin_str[origin_str.size() - 1] == '/');
+      origin_str = origin_str.substr(0, origin_str.size() - 1);
       ScopedJavaLocalRef<jstring> origin =
-          ConvertUTF8ToJavaString(env_, i->origin_url.GetOrigin().spec());
+          ConvertUTF8ToJavaString(env_, origin_str);
       Java_WebsitePreferenceBridge_insertLocalStorageInfoIntoMap(
           env_, map.obj(), origin.obj(), full_origin.obj(), i->size);
     }
