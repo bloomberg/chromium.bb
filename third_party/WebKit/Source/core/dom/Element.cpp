@@ -1450,6 +1450,13 @@ void Element::attach(const AttachContext& context)
 
     addCallbackSelectors();
 
+    if (hasRareData() && !layoutObject()) {
+        if (ElementAnimations* elementAnimations = elementRareData()->elementAnimations()) {
+            elementAnimations->cssAnimations().cancel();
+            elementAnimations->setAnimationStyleChange(false);
+        }
+    }
+
     StyleResolverParentScope parentScope(*this);
 
     createPseudoElementIfNeeded(BEFORE);
@@ -1467,13 +1474,6 @@ void Element::attach(const AttachContext& context)
     // children are attached because the first letter text could come
     // from any of them.
     createPseudoElementIfNeeded(FIRST_LETTER);
-
-    if (hasRareData() && !layoutObject()) {
-        if (ElementAnimations* elementAnimations = elementRareData()->elementAnimations()) {
-            elementAnimations->cssAnimations().cancel();
-            elementAnimations->setAnimationStyleChange(false);
-        }
-    }
 }
 
 void Element::detach(const AttachContext& context)
