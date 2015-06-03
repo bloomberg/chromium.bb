@@ -320,6 +320,9 @@ class ConfigClassTest(cros_test_lib.TestCase):
     self.assertEqual(config, loaded)
     self.assertEqual(config_str, loaded_str)
 
+    # Make sure we can dump debug content without crashing.
+    self.assertNotEqual(config.DumpExpandedConfigToString(), '')
+
   def testSaveLoadComplex(self):
 
     # pylint: disable=line-too-long
@@ -394,6 +397,8 @@ class ConfigClassTest(cros_test_lib.TestCase):
     self.assertEqual(config, loaded)
     self.assertEqual(config_str, loaded_str)
 
+    # Make sure we can dump debug content without crashing.
+    self.assertNotEqual(config.DumpExpandedConfigToString(), '')
 
 class FindConfigsForBoardTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""

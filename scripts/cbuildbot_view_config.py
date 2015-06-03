@@ -7,8 +7,24 @@
 from __future__ import print_function
 
 from chromite.cbuildbot import chromeos_config
+from chromite.lib import commandline
 
+def GetParser():
+  """Creates the argparse parser."""
+  parser = commandline.ArgumentParser(description=__doc__)
 
-def main(_argv):
-  config = chromeos_config.GetConfig()
-  print(config.SaveConfigToString())
+  parser.add_argument('-f', '--full', action='store_true', default=False,
+                      help='Dump fully expanded configs.')
+
+  return parser
+
+def main(argv):
+  parser = GetParser()
+  options = parser.parse_args(argv)
+
+  site_config = chromeos_config.GetConfig()
+
+  if options.full:
+    print(site_config.DumpExpandedConfigToString())
+  else:
+    print(site_config.SaveConfigToString())

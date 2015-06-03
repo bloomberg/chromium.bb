@@ -480,6 +480,12 @@ class SiteConfig(dict):
 
     return cfg
 
+  class _JSONEncoder(json.JSONEncoder):
+    """Json Encoder that encodes objects as their dictionaries."""
+    # pylint: disable=method-hidden
+    def default(self, obj):
+      return self.encode(obj.__dict__)
+
   def SaveConfigToString(self):
     """Save this Config object to a Json format string."""
     default = self.GetDefault()
@@ -491,13 +497,16 @@ class SiteConfig(dict):
     config_dict['_default'] = default
     config_dict['_templates'] = self._templates
 
-    class _JSONEncoder(json.JSONEncoder):
-      """Json Encoder that encodes objects as their dictionaries."""
-      # pylint: disable=E0202
-      def default(self, obj):
-        return self.encode(obj.__dict__)
+    return json.dumps(config_dict, cls=self._JSONEncoder,
+                      sort_keys=True, indent=4, separators=(',', ': '))
 
-    return json.dumps(config_dict, cls=_JSONEncoder,
+  def DumpExpandedConfigToString(self):
+    """Dump the SiteConfig to Json with all configs full expanded.
+
+    This is intended for debugging default/template behavior. The dumped JSON
+    can't be reloaded (at least not reliably).
+    """
+    return json.dumps(self, cls=self._JSONEncoder,
                       sort_keys=True, indent=4, separators=(',', ': '))
 
 #
