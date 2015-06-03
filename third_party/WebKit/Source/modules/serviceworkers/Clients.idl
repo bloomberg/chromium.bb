@@ -10,7 +10,7 @@
     TypeChecking=Interface,
     ImplementedAs=ServiceWorkerClients,
 ] interface Clients {
-    [CallWith=ScriptState] Promise<sequence<Client>?> matchAll(optional ClientQueryOptions options);
+    [CallWith=ScriptState] Promise<sequence<Client>> matchAll(optional ClientQueryOptions options);
     [RuntimeEnabled=ServiceWorkerClientAttributes, CallWith=ScriptState] Promise<WindowClient?> openWindow(USVString url);
     [CallWith=ScriptState] Promise<void> claim();
 };
