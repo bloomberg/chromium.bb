@@ -33,9 +33,6 @@ void SetNaClInterface(const PPB_NaCl_Private* nacl_interface);
 
 void CloseFileHandle(PP_FileHandle file_handle);
 
-// Converts a PP_FileHandle to a POSIX file descriptor.
-int32_t ConvertFileDescriptor(PP_FileHandle handle, bool read_only);
-
 // Debugging print utility
 extern int gNaClPluginDebugPrintEnabled;
 extern int NaClPluginPrintLog(const char *format, ...);

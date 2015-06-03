@@ -43,8 +43,6 @@ namespace plugin {
 class ErrorInfo;
 class Manifest;
 
-int32_t ConvertFileDescriptor(PP_FileHandle handle);
-
 const PP_NaClFileInfo kInvalidNaClFileInfo = {
   PP_kInvalidFileHandle,
   0,  // token_lo
