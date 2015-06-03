@@ -114,32 +114,23 @@ For more information of cros build usage:
     """Run cros deploy."""
     commandline.RunInsideChroot(self)
     self.options.Freeze()
-    try:
-      deploy.Deploy(
-          self.options.device,
-          self.options.packages,
-          board=self.options.board,
-          brick_name=self.options.brick or self.curr_brick_locator,
-          blueprint=self.options.blueprint,
-          emerge=self.options.emerge,
-          update=self.options.update,
-          deep=self.options.deep,
-          deep_rev=self.options.deep_rev,
-          clean_binpkg=self.options.clean_binpkg,
-          root=self.options.root,
-          strip=self.options.strip,
-          emerge_args=self.options.emerge_args,
-          ssh_private_key=self.options.private_key,
-          ping=self.options.ping,
-          reflash=self.options.reflash,
-          force=self.options.force,
-          dry_run=self.options.dry_run)
-    except Exception as e:
-      logging.error(e)
-      logging.error('cros deploy terminated before completing.')
-      if self.options.debug:
-        raise
-      else:
-        raise SystemExit(1)
-    else:
-      logging.info('cros deploy completed successfully.')
+    deploy.Deploy(
+        self.options.device,
+        self.options.packages,
+        board=self.options.board,
+        brick_name=self.options.brick or self.curr_brick_locator,
+        blueprint=self.options.blueprint,
+        emerge=self.options.emerge,
+        update=self.options.update,
+        deep=self.options.deep,
+        deep_rev=self.options.deep_rev,
+        clean_binpkg=self.options.clean_binpkg,
+        root=self.options.root,
+        strip=self.options.strip,
+        emerge_args=self.options.emerge_args,
+        ssh_private_key=self.options.private_key,
+        ping=self.options.ping,
+        reflash=self.options.reflash,
+        force=self.options.force,
+        dry_run=self.options.dry_run)
+    logging.info('cros deploy completed successfully.')

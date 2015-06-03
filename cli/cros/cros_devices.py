@@ -117,24 +117,21 @@ To reset the device to a fresh image for the current SDK version:
     self.options.Freeze()
     self._ReadOptions()
 
-    try:
-      if self.cmd == self.ALIAS_CMD:
-        try:
-          with remote_access.ChromiumOSDeviceHandler(
-              self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
-              private_key=self.ssh_private_key) as device:
-            device.SetAlias(self.alias_name)
-        except remote_access.InvalidDevicePropertyError as e:
-          cros_build_lib.Die('The alias provided is invalid: %s', e)
-      elif self.cmd == self.FULL_RESET_CMD:
-        self._FullReset()
+    if self.cmd == self.ALIAS_CMD:
+      try:
+        with remote_access.ChromiumOSDeviceHandler(
+            self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
+            private_key=self.ssh_private_key) as device:
+          device.SetAlias(self.alias_name)
+      except remote_access.InvalidDevicePropertyError as e:
+        cros_build_lib.Die('The alias provided is invalid: %s', e)
+    elif self.cmd == self.FULL_RESET_CMD:
+      self._FullReset()
+    else:
+      if self.options.device:
+        with remote_access.ChromiumOSDeviceHandler(
+            self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
+            private_key=self.ssh_private_key) as device:
+          self._PrintDeviceInfo([device])
       else:
-        if self.options.device:
-          with remote_access.ChromiumOSDeviceHandler(
-              self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
-              private_key=self.ssh_private_key) as device:
-            self._PrintDeviceInfo([device])
-        else:
-          self._ListDevices()
-    except (Exception, KeyboardInterrupt) as e:
-      cros_build_lib.Die('Command failed: %s', e)
+        self._ListDevices()

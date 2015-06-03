@@ -122,20 +122,10 @@ class CrosFlashTest(cros_test_lib.MockTempDirTestCase,
     self.VerifyFlashParameters(self.DEVICE, self.IMAGE,
                                brick_name='//bricks/foo')
 
-  def testFlashError(self):
-    """Tests that FlashErrors are caught and logged."""
+  def testFlashErrorDebug(self):
+    """Tests that FlashErrors are passed through."""
     with self.OutputCapturer():
       self.SetupCommandMock([self.DEVICE, self.IMAGE])
       self.flash_mock.side_effect = flash.FlashError
-      with self.assertRaises(SystemExit):
-        self.cmd_mock.inst.Run()
-    self.AssertOutputContainsError(check_stderr=True)
-
-  def testFlashErrorDebug(self):
-    """Tests that FlashErrors are passed through with --debug."""
-    with self.OutputCapturer():
-      self.SetupCommandMock([self.DEVICE, self.IMAGE, '--debug'])
-      self.flash_mock.side_effect = flash.FlashError
       with self.assertRaises(flash.FlashError):
         self.cmd_mock.inst.Run()
-    self.AssertOutputContainsError(check_stderr=True)

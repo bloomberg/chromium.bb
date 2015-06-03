@@ -78,8 +78,5 @@ class TestCommand(command.CliCommand):
       logging.error('Nothing to test.')
       return
 
-    try:
-      chroot_util.RunUnittests(self.sysroot, packages_with_tests,
-                               verbose=self.options.verbose, retries=0)
-    except cros_build_lib.RunCommandError as e:
-      cros_build_lib.Die('Unit tests failed: %s' % e)
+    chroot_util.RunUnittests(self.sysroot, packages_with_tests,
+                             verbose=self.options.verbose, retries=0)

@@ -125,20 +125,10 @@ class CrosDeployTest(cros_test_lib.MockTempDirTestCase,
     self.cmd_mock.inst.Run()
     self.VerifyDeployParameters(self.DEVICE, [], brick_name='//bricks/foo')
 
-  def testDeployError(self):
-    """Tests that DeployErrors are caught and logged."""
+  def testDeployErrorDebug(self):
+    """Tests that DeployErrors are passed through."""
     with self.OutputCapturer():
       self.SetupCommandMock([self.DEVICE])
       self.deploy_mock.side_effect = deploy.DeployError
-      with self.assertRaises(SystemExit):
-        self.cmd_mock.inst.Run()
-    self.AssertOutputContainsError(check_stderr=True)
-
-  def testDeployErrorDebug(self):
-    """Tests that DeployErrors are passed through with --debug."""
-    with self.OutputCapturer():
-      self.SetupCommandMock([self.DEVICE, '--debug'])
-      self.deploy_mock.side_effect = deploy.DeployError
       with self.assertRaises(deploy.DeployError):
         self.cmd_mock.inst.Run()
-    self.AssertOutputContainsError(check_stderr=True)

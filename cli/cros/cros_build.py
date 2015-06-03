@@ -170,39 +170,34 @@ To just build a single package:
 
     commandline.RunInsideChroot(self)
 
-    try:
-      if not (self.build_pkgs or self.options.init_only):
-        cros_build_lib.Die('No packages found, nothing to build.')
+    if not (self.build_pkgs or self.options.init_only):
+      cros_build_lib.Die('No packages found, nothing to build.')
 
-      # Set up the sysroots if not building for host.
-      if self.blueprint:
-        if self.chroot_update:
-          chroot_util.UpdateChroot(
-              update_host_packages=self.options.host_packages_update,
-              brick=brick_lib.Brick(self.blueprint.GetBSP()))
-        chroot_util.InitializeSysroots(self.blueprint)
-      elif self.brick or self.board:
-        chroot_util.SetupBoard(
-            brick=self.brick, board=self.board,
-            update_chroot=self.chroot_update,
+    # Set up the sysroots if not building for host.
+    if self.blueprint:
+      if self.chroot_update:
+        chroot_util.UpdateChroot(
             update_host_packages=self.options.host_packages_update,
-            use_binary=self.options.binary)
+            brick=brick_lib.Brick(self.blueprint.GetBSP()))
+      chroot_util.InitializeSysroots(self.blueprint)
+    elif self.brick or self.board:
+      chroot_util.SetupBoard(
+          brick=self.brick, board=self.board,
+          update_chroot=self.chroot_update,
+          update_host_packages=self.options.host_packages_update,
+          use_binary=self.options.binary)
 
-      if not self.options.init_only:
-        # Preliminary: enable all packages that only have a live ebuild.
-        if self.options.enable_only_latest:
-          workon = workon_helper.WorkonHelper(self.sysroot)
-          workon.StartWorkingOnPackages([], use_workon_only=True)
+    if not self.options.init_only:
+      # Preliminary: enable all packages that only have a live ebuild.
+      if self.options.enable_only_latest:
+        workon = workon_helper.WorkonHelper(self.sysroot)
+        workon.StartWorkingOnPackages([], use_workon_only=True)
 
-        if command.UseProgressBar():
-          op = BrilloBuildOperation()
-          op.Run(
-              parallel.RunParallelSteps, [self._CheckDependencies, self._Build],
-              log_level=logging.DEBUG)
-        else:
-          parallel.RunParallelSteps([self._CheckDependencies, self._Build])
-        logging.notice('Build completed successfully.')
-    except Exception as e:
-      logging.error(e)
-      if self.options.debug:
-        raise
+      if command.UseProgressBar():
+        op = BrilloBuildOperation()
+        op.Run(
+            parallel.RunParallelSteps, [self._CheckDependencies, self._Build],
+            log_level=logging.DEBUG)
+      else:
+        parallel.RunParallelSteps([self._CheckDependencies, self._Build])
+      logging.notice('Build completed successfully.')

@@ -8,7 +8,6 @@ from __future__ import print_function
 
 from chromite.cli import command
 from chromite.lib import blueprint_lib
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 
 
@@ -58,10 +57,4 @@ Multiple bricks can be specified by repeating -b/--brick:
   def Run(self):
     """Dispatch the call to the right handler."""
     self.options.Freeze()
-    try:
-      getattr(self, self.options.handler_func)()
-    except Exception as e:
-      if self.options.debug:
-        raise
-      else:
-        cros_build_lib.Die(e)
+    getattr(self, self.options.handler_func)()

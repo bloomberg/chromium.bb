@@ -174,27 +174,19 @@ Quoting can be tricky; the rules are the same as with ssh:
     """Runs `cros shell`."""
     self.options.Freeze()
     self._ReadOptions()
-    # Nested try blocks so the inner can raise to the outer, which handles
-    # overall failures.
     try:
-      try:
-        return self._StartSsh()
-      except remote_access.SSHConnectionError as e:
-        # Handle a mismatched host key; mismatched keys are a bit of a pain to
-        # fix manually since `ssh-keygen -R` doesn't work within the chroot.
-        if e.IsKnownHostsMismatch():
-          # The full SSH error message has extra info for the user.
-          logging.warning('\n%s', e)
-          if self._UserConfirmKeyChange():
-            remote_access.RemoveKnownHost(self.device.hostname)
-            # The user already OK'd so we can skip the additional SSH check.
-            self.host_key_checking = 'no'
-            return self._StartSsh()
-          else:
-            return 1
-        raise
-    except Exception as e:
-      logging.error(e)
-      if self.options.debug:
-        raise
-      return 1
+      return self._StartSsh()
+    except remote_access.SSHConnectionError as e:
+      # Handle a mismatched host key; mismatched keys are a bit of a pain to
+      # fix manually since `ssh-keygen -R` doesn't work within the chroot.
+      if e.IsKnownHostsMismatch():
+        # The full SSH error message has extra info for the user.
+        logging.warning('\n%s', e)
+        if self._UserConfirmKeyChange():
+          remote_access.RemoveKnownHost(self.device.hostname)
+          # The user already OK'd so we can skip the additional SSH check.
+          self.host_key_checking = 'no'
+          return self._StartSsh()
+        else:
+          return 1
+      raise

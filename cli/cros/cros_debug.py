@@ -129,64 +129,56 @@ To debug a process by its pid:
     commandline.RunInsideChroot(self)
     self.options.Freeze()
     self._ReadOptions()
-    try:
-      with remote_access.ChromiumOSDeviceHandler(
-          self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
-          private_key=self.ssh_private_key) as device:
-        self.board = cros_build_lib.GetBoard(device_board=device.board,
-                                             override_board=self.options.board)
-        logging.info('Board is %s', self.board)
+    with remote_access.ChromiumOSDeviceHandler(
+        self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
+        private_key=self.ssh_private_key) as device:
+      self.board = cros_build_lib.GetBoard(device_board=device.board,
+                                           override_board=self.options.board)
+      logging.info('Board is %s', self.board)
 
-        self.gdb_cmd = [
-            'gdb_remote', '--ssh',
-            '--board', self.board,
-            '--remote', self.ssh_hostname,
-        ]
-        if self.ssh_port:
-          self.gdb_cmd.extend(['--ssh_port', str(self.ssh_port)])
+      self.gdb_cmd = [
+          'gdb_remote', '--ssh',
+          '--board', self.board,
+          '--remote', self.ssh_hostname,
+      ]
+      if self.ssh_port:
+        self.gdb_cmd.extend(['--ssh_port', str(self.ssh_port)])
 
-        if not (self.pid or self.exe):
+      if not (self.pid or self.exe):
+        cros_build_lib.Die(
+            'Must use --exe or --pid to specify the process to debug.')
+
+      if self.pid:
+        if self.list or self.exe:
           cros_build_lib.Die(
-              'Must use --exe or --pid to specify the process to debug.')
+              '--list and --exe are disallowed when --pid is used.')
+        self._DebugRunningProcess(self.pid)
+        return
 
-        if self.pid:
-          if self.list or self.exe:
-            cros_build_lib.Die(
-                '--list and --exe are disallowed when --pid is used.')
-          self._DebugRunningProcess(self.pid)
-          return
+      if not self.exe.startswith('/'):
+        cros_build_lib.Die('--exe must have a full pathname.')
+      logging.debug('Executable path is %s', self.exe)
+      if not device.IsFileExecutable(self.exe):
+        cros_build_lib.Die(
+            'File path "%s" does not exist or is not executable on device %s',
+            self.exe, self.ssh_hostname)
 
-        if not self.exe.startswith('/'):
-          cros_build_lib.Die('--exe must have a full pathname.')
-        logging.debug('Executable path is %s', self.exe)
-        if not device.IsFileExecutable(self.exe):
-          cros_build_lib.Die(
-              'File path "%s" does not exist or is not executable on device %s',
-              self.exe, self.ssh_hostname)
+      pids = device.GetRunningPids(self.exe)
+      self._ListProcesses(device, pids)
 
-        pids = device.GetRunningPids(self.exe)
-        self._ListProcesses(device, pids)
+      if self.list:
+        # If '--list' flag is on, do not launch GDB.
+        return
 
-        if self.list:
-          # If '--list' flag is on, do not launch GDB.
-          return
-
-        if pids:
-          choices = ['Start a new process under GDB']
-          choices.extend(pids)
-          idx = cros_build_lib.GetChoice(
-              'Please select the process pid to debug (select [0] to start a '
-              'new process):', choices)
-          if idx == 0:
-            self._DebugNewProcess()
-          else:
-            self._DebugRunningProcess(pids[idx - 1])
-        else:
+      if pids:
+        choices = ['Start a new process under GDB']
+        choices.extend(pids)
+        idx = cros_build_lib.GetChoice(
+            'Please select the process pid to debug (select [0] to start a '
+            'new process):', choices)
+        if idx == 0:
           self._DebugNewProcess()
-
-    except (Exception, KeyboardInterrupt) as e:
-      logging.error(e)
-      if self.options.debug:
-        raise
+        else:
+          self._DebugRunningProcess(pids[idx - 1])
       else:
-        raise SystemExit(1)
+        self._DebugNewProcess()

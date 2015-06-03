@@ -72,7 +72,21 @@ def main(argv):
                      subcommand.upload_stats_timeout])
       # TODO: to make command completion faster, send an interrupt signal to the
       # stats uploader task after the subcommand completes.
-      code = _RunSubCommand(subcommand)
+      try:
+        code = _RunSubCommand(subcommand)
+      except (commandline.ChrootRequiredError, commandline.ExecRequiredError):
+        # The higher levels want these passed back, so oblige.
+        raise
+      except Exception as e:
+        code = 1
+        logging.error('%s %s failed before completing.',
+                      command.GetToolset(),
+                      subcommand.command_name)
+        if namespace.debug:
+          raise
+        else:
+          logging.error(e)
+
       if code is not None:
         return code
 
