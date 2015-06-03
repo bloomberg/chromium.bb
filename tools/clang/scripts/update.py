@@ -32,6 +32,10 @@ use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
   LLVM_WIN_REVISION = 'HEAD'
 
+# This is incremented when pushing a new build of Clang at the same revision.
+CLANG_SUB_REVISION=1
+
+PACKAGE_VERSION = "%s-%s" % (LLVM_WIN_REVISION, CLANG_SUB_REVISION)
 
 # Path constants. (All of these should be absolute paths.)
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -230,8 +234,8 @@ def GetVSVersion():
 
 
 def UpdateClang(args):
-  print 'Updating Clang to %s...' % (LLVM_WIN_REVISION)
-  if LLVM_WIN_REVISION != 'HEAD' and ReadStampFile() == LLVM_WIN_REVISION:
+  print 'Updating Clang to %s...' % PACKAGE_VERSION
+  if ReadStampFile() == PACKAGE_VERSION:
     print 'Already up to date.'
     return 0
 
@@ -239,9 +243,7 @@ def UpdateClang(args):
   WriteStampFile('')
 
   if not args.force_local_build:
-    # TODO(thakis): To make this work on posix, add a -1 suffix and use some
-    # PACKAGE_VERSION-like thing here instead. Also, don't hardcode Win.
-    cds_file = "clang-%s.tgz" %  LLVM_WIN_REVISION
+    cds_file = "clang-%s.tgz" %  PACKAGE_VERSION
     cds_full_url = CDS_URL + '/Win/' + cds_file
 
     # Check if there's a prebuilt binary and if so just fetch that. That's
@@ -255,8 +257,8 @@ def UpdateClang(args):
         DownloadUrl(cds_full_url, f)
         f.seek(0)
         tarfile.open(mode='r:gz', fileobj=f).extractall(path=LLVM_BUILD_DIR)
-        print 'clang %s unpacked' % LLVM_WIN_REVISION
-        WriteStampFile(LLVM_WIN_REVISION)
+        print 'clang %s unpacked' % PACKAGE_VERSION
+        WriteStampFile(PACKAGE_VERSION)
         return 0
       except urllib2.HTTPError:
         print 'Did not find prebuilt clang %s, building locally' % cds_file
@@ -274,11 +276,11 @@ def UpdateClang(args):
   # out code that builds at head, but not at CLANG_REVISION or vice versa.
   cflags = cxxflags = ''
 
-  # TODO(thakis): Set this only conditionally if use_head_revision once posix
-  # and win clang are in sync. At the moment, the plugins only build at clang
-  # head on posix, but they build at both head and the pinned win version :-/
-  cflags += ' -DLLVM_FORCE_HEAD_REVISION'
-  cxxflags += ' -DLLVM_FORCE_HEAD_REVISION'
+  # If building at head, define a macro that plugins can use for #ifdefing
+  # out code that builds at head, but not at LLVM_WIN_REVISION or vice versa.
+  if use_head_revision:
+    cflags += ' -DLLVM_FORCE_HEAD_REVISION'
+    cxxflags += ' -DLLVM_FORCE_HEAD_REVISION'
 
   base_cmake_args = ['-GNinja', '-DCMAKE_BUILD_TYPE=Release',
                       '-DLLVM_ENABLE_ASSERTIONS=ON']
@@ -387,7 +389,7 @@ def UpdateClang(args):
     RunCommand(GetVSVersion().SetupScript('x64') +
                ['&&', 'ninja', 'check-all'])
 
-  WriteStampFile(LLVM_WIN_REVISION)
+  WriteStampFile(PACKAGE_VERSION)
   print 'Clang update was successful.'
   return 0
 
@@ -457,18 +459,19 @@ def main():
     if not is_clang_required:
       return 0
 
-  global LLVM_WIN_REVISION
+  global LLVM_WIN_REVISION, PACKAGE_VERSION
   if args.print_revision:
     if use_head_revision:
       print GetSvnRevision(LLVM_DIR)
     else:
-      print LLVM_WIN_REVISION
+      print PACKAGE_VERSION
     return 0
 
   if LLVM_WIN_REVISION == 'HEAD':
     # Use a real revision number rather than HEAD to make sure that the stamp
     # file logic works.
     LLVM_WIN_REVISION = GetSvnRevision(LLVM_REPO_URL)
+    PACKAGE_VERSION = LLVM_WIN_REVISION + '-0'
 
   return UpdateClang(args)
 
