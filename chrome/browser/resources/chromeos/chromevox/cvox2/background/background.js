@@ -487,7 +487,7 @@ Background.prototype = {
    * @param {?string} opt_prependFormatStr If set, a format string for
    *     cvox2.Output to prepend to the output.
    * @private
-   **/
+   */
   outputLiveRegionChange_: function(node, opt_prependFormatStr) {
     var range = cursors.Range.fromNode(node);
     var output = new Output();
@@ -523,16 +523,13 @@ Background.prototype = {
    * @private
    */
   setupChromeVoxVariants_: function(url) {
-    if (this.mode_ === ChromeVoxMode.FORCE_NEXT)
-      return;
-
     this.compat_.active = this.isWhitelistedForCompat_(url);
     var mode = this.mode_;
     if (this.compat_.active)
       mode = ChromeVoxMode.COMPAT;
     else if (this.isWhitelistedForNext_(url))
       mode = ChromeVoxMode.NEXT;
-    else
+    else if (mode != ChromeVoxMode.FORCE_NEXT)
       mode = ChromeVoxMode.CLASSIC;
 
     this.setChromeVoxMode(mode);
@@ -554,9 +551,6 @@ Background.prototype = {
    * @param {ChromeVoxMode} mode
    */
   setChromeVoxMode: function(mode) {
-    if (mode === this.mode_)
-      return;
-
     if (mode === ChromeVoxMode.NEXT ||
         mode === ChromeVoxMode.COMPAT ||
         mode === ChromeVoxMode.FORCE_NEXT) {
