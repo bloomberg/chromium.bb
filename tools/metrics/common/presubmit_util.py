@@ -7,10 +7,10 @@ import sys
 import logging
 import shutil
 
-import diff_util
-
 sys.path.insert(1, os.path.join(sys.path[0], '..', '..', 'python'))
-from google import path_utils
+import google.path_utils
+
+import diff_util
 
 def DoPresubmitMain(argv, original_filename, backup_filename, script_name,
                     prettyFn):
@@ -34,7 +34,7 @@ def DoPresubmitMain(argv, original_filename, backup_filename, script_name,
   # Otherwise, use the one residing in the same directory as this script.
   xml_dir = os.getcwd()
   if not os.path.isfile(os.path.join(xml_dir, original_filename)):
-    xml_dir = path_utils.ScriptDir()
+    xml_dir = google.path_utils.ScriptDir()
 
   xml_path = os.path.join(xml_dir, original_filename)
 

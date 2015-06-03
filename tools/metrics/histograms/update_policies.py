@@ -16,15 +16,14 @@ from ast import literal_eval
 from optparse import OptionParser
 from xml.dom import minidom
 
-import print_style
-
-# Import the metrics/common module.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 from diff_util import PromptUserToAcceptDiff
+import path_util
 
-HISTOGRAMS_PATH = 'histograms.xml'
-POLICY_TEMPLATES_PATH = (
-    '../../../components/policy/resources/policy_templates.json')
+import print_style
+
+HISTOGRAMS_PATH = path_util.GetHistogramsFile()
+POLICY_TEMPLATES_PATH = 'components/policy/resources/policy_templates.json'
 ENUM_NAME = 'EnterprisePolicies'
 
 class UserError(Exception):
@@ -114,7 +113,7 @@ def main():
     sys.stderr.write(__doc__)
     sys.exit(1)
 
-  with open(POLICY_TEMPLATES_PATH, 'rb') as f:
+  with open(path_util.GetInputFile(POLICY_TEMPLATES_PATH), 'rb') as f:
     policy_templates = literal_eval(f.read())
   with open(HISTOGRAMS_PATH, 'rb') as f:
     histograms_doc = minidom.parse(f)

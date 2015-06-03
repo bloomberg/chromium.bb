@@ -7,7 +7,6 @@
 import os
 import sys
 
-# Import the metrics/common module for pretty print xml.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import pretty_print_xml
 

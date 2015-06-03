@@ -10,14 +10,18 @@ trials are entirely ignored by this script.
 
 """
 
-import commands
-import extract_histograms
 import hashlib
 import logging
 import optparse
 import os
 import re
+import subprocess
 import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+import path_util
+
+import extract_histograms
 
 
 ADJACENT_C_STRING_REGEX = re.compile(r"""
@@ -43,6 +47,17 @@ HISTOGRAM_REGEX = re.compile(r"""
     """, re.VERBOSE)
 
 
+def RunGit(command):
+  """Run a git subcommand, returning its output."""
+  # On Windows, use shell=True to get PATH interpretation.
+  command = ['git'] + command
+  logging.info(' '.join(command))
+  shell = (os.name == 'nt')
+  proc = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE)
+  out = proc.communicate()[0].strip()
+  return out
+
+
 class DirectoryNotFoundException(Exception):
   """Base class to distinguish locally defined exceptions from standard ones."""
   def __init__(self, msg):
@@ -50,27 +65,6 @@ class DirectoryNotFoundException(Exception):
 
   def __str__(self):
     return self.msg
-
-
-def findDefaultRoot():
-  """Find the root of the chromium repo, in case the script is run from the
-  histograms dir.
-
-  Returns:
-    string: path to the src dir of the repo.
-
-  Raises:
-    DirectoryNotFoundException if the target directory cannot be found.
-  """
-  path = os.getcwd()
-  while path:
-    head, tail = os.path.split(path)
-    if tail == 'src':
-      return path
-    if path == head:
-      break
-    path = head
-  raise DirectoryNotFoundException('Could not find src/ dir')
 
 
 def collapseAdjacentCStrings(string):
@@ -130,7 +124,7 @@ def readChromiumHistograms():
   names that might vary during a single run of the app.
 
   Returns:
-    A set cotaining any found literal histogram names.
+    A set containing any found literal histogram names.
   """
   logging.info('Scanning Chromium source for histograms...')
 
@@ -138,7 +132,7 @@ def readChromiumHistograms():
   # Examples:
   #   'path/to/foo.cc:420:  UMA_HISTOGRAM_COUNTS_100("FooGroup.FooName",'
   #   'path/to/bar.cc:632:  UMA_HISTOGRAM_ENUMERATION('
-  locations = commands.getoutput('git gs UMA_HISTOGRAM').split('\n')
+  locations = RunGit(['gs', 'UMA_HISTOGRAM']).split('\n')
   filenames = set([location.split(':')[0] for location in locations])
 
   histograms = set()
@@ -152,7 +146,7 @@ def readChromiumHistograms():
       histogram = collapseAdjacentCStrings(histogram)
 
       # Must begin and end with a quotation mark.
-      if histogram[0] != '"' or histogram[-1] != '"':
+      if not histogram or histogram[0] != '"' or histogram[-1] != '"':
         logNonLiteralHistogram(filename, histogram)
         continue
 
@@ -192,11 +186,11 @@ def hashHistogramName(name):
 
 def main():
   # Find default paths.
-  default_root = findDefaultRoot()
-  default_histograms_path = os.path.join(
-      default_root, 'tools/metrics/histograms/histograms.xml')
-  default_extra_histograms_path = os.path.join(
-      default_root, 'tools/histograms/histograms.xml')
+  default_root = path_util.GetInputFile('/')
+  default_histograms_path = path_util.GetInputFile(
+      'tools/metrics/histograms/histograms.xml')
+  default_extra_histograms_path = path_util.GetInputFile(
+      'tools/histograms/histograms.xml')
 
   # Parse command line options
   parser = optparse.OptionParser()

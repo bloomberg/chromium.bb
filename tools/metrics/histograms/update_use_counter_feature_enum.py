@@ -13,7 +13,6 @@ import optparse
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 from update_histogram_enum import ReadHistogramValues
 from update_histogram_enum import UpdateHistogramEnum
 
@@ -33,8 +32,7 @@ if __name__ == '__main__':
                     'https://github.com/GoogleChrome/chromium-dashboard')
   options, args = parser.parse_args()
 
-  source_path = \
-      '../../../third_party/WebKit/Source/core/frame/UseCounter.h'
+  source_path = 'third_party/WebKit/Source/core/frame/UseCounter.h'
 
   START_MARKER = '^enum Feature {'
   END_MARKER = '^NumberOfFeatures'

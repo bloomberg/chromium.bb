@@ -49150,10 +49150,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="BadMessageReasonChrome" type="int">
+<!-- Generated from chrome/browser/bad_message.h -->
+
   <int value="0" label="WRLHH_LOGGING_STOPPED_BAD_STATE"/>
 </enum>
 
 <enum name="BadMessageReasonContent" type="int">
+<!-- Generated from content/browser/bad_message.h -->
+
   <int value="0" label="NC_IN_PAGE_NAVIGATION"/>
   <int value="1" label="RFH_CAN_COMMIT_URL_BLOCKED"/>
   <int value="2" label="RFH_CAN_ACCESS_FILES_OF_PAGE_STATE"/>
@@ -49235,6 +49239,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
+<!-- Generated from extensions/browser/bad_message.h -->
+
   <int value="0" label="EOG_BAD_ORIGIN"/>
   <int value="1" label="EVG_BAD_ORIGIN"/>
   <int value="2" label="BH_BLOB_NOT_OWNED"/>
@@ -49242,6 +49248,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="BadMessageReasonNaCl" type="int">
+<!-- Generated from components/nacl/browser/bad_message.h -->
+
   <int value="0" label="NFH_OPEN_EXECUTABLE_BAD_ROUTING_ID"/>
   <int value="1" label="NHMF_LAUNCH_CONTINUATION_BAD_ROUTING_ID"/>
   <int value="2" label="NHMF_GET_NEXE_FD_BAD_URL"/>
@@ -50084,7 +50092,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="CombinedHttpResponseAndNetErrorCode" type="int">
-<!-- Generated from ../../../net/base/net_error_list.h -->
+<!-- Generated from net/base/net_error_list.h -->
 
   <int value="-806" label="DNS_SORT_ERROR"/>
   <int value="-805" label="DNS_SEARCH_EMPTY"/>
@@ -52070,11 +52078,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="EnterprisePolicies" type="int">
-<!-- Generated from ../../../components/policy/resources/policy_templates.json -->
+<!-- Generated from components/policy/resources/policy_templates.json -->
 
   <int value="1" label="Configure the home page URL"/>
   <int value="2" label="Use New Tab Page as homepage"/>
-  <int value="3" label="Set Chrome as Default Browser"/>
+  <int value="3" label="Set Google Chrome as Default Browser"/>
   <int value="4" label="Application locale"/>
   <int value="5" label="Enable alternate error pages"/>
   <int value="6" label="Enable search suggestions"/>
@@ -52202,7 +52210,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="115"
       label="Enable reporting memory info (JS heap size) to page (deprecated)"/>
   <int value="116" label="Proxy settings"/>
-  <int value="117" label="Disable Print Preview"/>
+  <int value="117" label="Disable Print Preview (deprecated)"/>
   <int value="118" label="Disable SSL record splitting"/>
   <int value="119" label="Report OS and firmware version"/>
   <int value="120" label="Report device activity times"/>
@@ -52229,10 +52237,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="137" label="Load specified urls on demo login"/>
   <int value="138"
       label="Continue running background apps when Google Chrome is closed"/>
-  <int value="139" label="Disables Drive in the Chrome OS Files app"/>
+  <int value="139" label="Disables Drive in the Google Chrome OS Files app"/>
   <int value="140"
-      label="Disables Google Drive over Cellular connections in the Chrome OS
-             Files app"/>
+      label="Disables Google Drive over cellular connections in the Google
+             Chrome OS Files app"/>
   <int value="141"
       label="Additional command line parameters for Google Chrome"/>
   <int value="142" label="Target Auto Update Version"/>
@@ -52297,9 +52305,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="187" label="Enable deleting browser and download history"/>
   <int value="188" label="Show accessibility options in system tray menu"/>
   <int value="189"
-      label="Hide the web store from the new tab page and app launcher"/>
-  <int value="190" label="Allows sign in to Chrome"/>
-  <int value="191" label="System wide flags to be applied on Chrome start-up"/>
+      label="Hide the web store from the New Tab Page and app launcher"/>
+  <int value="190" label="Allows sign in to Google Chrome"/>
+  <int value="191"
+      label="System wide flags to be applied on Google Chrome start-up"/>
   <int value="192" label="Limit device uptime by automatically rebooting"/>
   <int value="193" label="Automatically reboot after update"/>
   <int value="194" label="Public session for auto-login"/>
@@ -52416,23 +52425,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="267" label="Show the apps shortcut in the bookmark bar"/>
   <int value="268" label="Register protocol handlers"/>
   <int value="269" label="Enable virtual keyboard"/>
-  <int value="270" label="Enable deprecated web platform features"/>
+  <int value="270"
+      label="Enable deprecated web platform features for a limited time"/>
   <int value="271" label="Transfer SAML IdP cookies during login"/>
-  <int value="272" label="Enable EasyUnlock"/>
+  <int value="272" label="Allows Smart Lock to be used"/>
   <int value="273" label="Enable network prediction"/>
   <int value="274" label="Set the recommended locales for a public session"/>
-  <int value="275" label="Enable guest mode in the browser"/>
-  <int value="276" label="Enable add person in the user manager"/>
+  <int value="275" label="Enable guest mode in browser"/>
+  <int value="276" label="Enable add person in profile manager"/>
   <int value="277"
       label="Import autofill form data from default browser on first run"/>
-  <int value="278" label="Extension Settings"/>
-  <int value="279" label="SSL minimum version"/>
-  <int value="280" label="SSL fallback minimum version"/>
-  <int value="281"
-      label="Control the availability of the Contextual Search feature."/>
+  <int value="278" label="Extension management settings"/>
+  <int value="279" label="Minimum SSL version enabled"/>
+  <int value="280" label="Minimum SSL version to fallback to"/>
+  <int value="281" label="Enable Touch to Search"/>
   <int value="282" label="Force Google SafeSearch"/>
   <int value="283" label="Force YouTube Safety Mode"/>
-  <int value="284" label="Allow device shutdown"/>
+  <int value="284" label="Automatic reboot on device shutdown"/>
   <int value="285"
       label="Requires that the name of the local user and the remote access
              host owner match"/>
@@ -52446,22 +52455,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
              RemoteAccessHostTokenValidationUrl"/>
   <int value="289"
       label="Policy overrides for Debug builds of the remote access host"/>
-  <int value="290" label="Report hardware statistics such as CPU/RAM usage."/>
-  <int value="291"
-      label="Report session statistics such as which app was run."/>
-  <int value="292" label="How often the device status reports are uploaded."/>
-  <int value="293"
-      label="Send monitoring heartbeats to the management server."/>
-  <int value="294" label="How often the monitoring heartbeats are sent."/>
+  <int value="290" label="Report hardware status"/>
+  <int value="291" label="Report information about active kiosk sessions"/>
+  <int value="292" label="Frequency of device status report uploads"/>
+  <int value="293" label="Send monitoring heartbeats to the management server"/>
+  <int value="294" label="Frequency of monitoring heartbeats"/>
   <int value="295" label="Captive portal authentication ignores proxy"/>
   <int value="296" label="Set Apps and Extensions cache size (in bytes)"/>
-  <int value="297"
-      label="Show an autocomplete option during user sign-in flow"/>
+  <int value="297" label="Enable domain name autocomplete during user sign in"/>
   <int value="298" label="Maximize the first browser window on first run"/>
   <int value="299"
       label="Allow users to opt in to Safe Browsing extended reporting"/>
   <int value="300" label="Allow proceeding from the SSL warning page"/>
-  <int value="301" label="Allow QUIC protocol"/>
+  <int value="301" label="Allows QUIC protocol"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
@@ -52744,7 +52750,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="ExtensionFunctions" type="int">
-<!-- Generated from ../../../extensions/browser/extension_function_histogram_value.h -->
+<!-- Generated from extensions/browser/extension_function_histogram_value.h -->
 
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="WEBNAVIGATION_GETALLFRAMES"/>
@@ -53933,7 +53939,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="ExtensionPermission2" type="int">
-<!-- Generated from ../../../extensions/common/permissions/permission_message.h -->
+<!-- Generated from extensions/common/permissions/permission_message.h -->
 
   <int value="0" label="kUnknown"/>
   <int value="1" label="kNone"/>
@@ -54023,7 +54029,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="ExtensionPermission3" type="int">
-<!-- Generated from ../../../extensions/common/permissions/api_permission.h -->
+<!-- Generated from extensions/common/permissions/api_permission.h -->
 
   <int value="0" label="kInvalid"/>
   <int value="1" label="kUnknown"/>
@@ -54395,7 +54401,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </enum>
 
 <enum name="FeatureObserver" type="int">
-<!-- Generated from ../../../third_party/WebKit/Source/core/frame/UseCounter.h -->
+<!-- Generated from third_party/WebKit/Source/core/frame/UseCounter.h -->
 
   <int value="0" label="PageDestruction"/>
   <int value="1" label="LegacyNotifications"/>
@@ -55204,6 +55210,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="ElementCreateShadowRootMultipleWithUserAgentShadowRoot"/>
   <int value="801" label="InputTypeFileSecureOrigin"/>
   <int value="802" label="InputTypeFileInsecureOrigin"/>
+  <int value="803" label="V8HashChangeEvent_InitHashChangeEvent_Method"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
@@ -58637,7 +58644,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="MappedCSSProperties" type="int">
-<!-- Generated from ../../../third_party/WebKit/Source/core/frame/UseCounter.cpp -->
+<!-- Generated from third_party/WebKit/Source/core/frame/UseCounter.cpp -->
 
 <!-- See http://src.chromium.org/viewvc/blink/trunk/Source/core/page/UseCounter.cpp -->
 
@@ -58806,22 +58813,22 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="163" label="word-spacing"/>
   <int value="164" label="word-wrap"/>
   <int value="165" label="z-index"/>
-  <int value="166" label="webkit-animation"/>
-  <int value="167" label="webkit-animation-delay"/>
-  <int value="168" label="webkit-animation-direction"/>
-  <int value="169" label="webkit-animation-duration"/>
-  <int value="170" label="webkit-animation-fill-mode"/>
-  <int value="171" label="webkit-animation-iteration-count"/>
-  <int value="172" label="webkit-animation-name"/>
-  <int value="173" label="webkit-animation-play-state"/>
-  <int value="174" label="webkit-animation-timing-function"/>
+  <int value="166" label="alias-webkit-animation"/>
+  <int value="167" label="alias-webkit-animation-delay"/>
+  <int value="168" label="alias-webkit-animation-direction"/>
+  <int value="169" label="alias-webkit-animation-duration"/>
+  <int value="170" label="alias-webkit-animation-fill-mode"/>
+  <int value="171" label="alias-webkit-animation-iteration-count"/>
+  <int value="172" label="alias-webkit-animation-name"/>
+  <int value="173" label="alias-webkit-animation-play-state"/>
+  <int value="174" label="alias-webkit-animation-timing-function"/>
   <int value="175" label="webkit-appearance"/>
   <int value="176" label="webkit-aspect-ratio"/>
-  <int value="177" label="webkit-backface-visibility"/>
+  <int value="177" label="alias-webkit-backface-visibility"/>
   <int value="178" label="webkit-background-clip"/>
   <int value="179" label="webkit-background-composite"/>
   <int value="180" label="webkit-background-origin"/>
-  <int value="181" label="webkit-background-size"/>
+  <int value="181" label="alias-webkit-background-size"/>
   <int value="182" label="webkit-border-after"/>
   <int value="183" label="webkit-border-after-color"/>
   <int value="184" label="webkit-border-after-style"/>
@@ -58837,7 +58844,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="194" label="webkit-border-fit"/>
   <int value="195" label="webkit-border-horizontal-spacing"/>
   <int value="196" label="webkit-border-image"/>
-  <int value="197" label="webkit-border-radius"/>
+  <int value="197" label="alias-webkit-border-radius"/>
   <int value="198" label="webkit-border-start"/>
   <int value="199" label="webkit-border-start-color"/>
   <int value="200" label="webkit-border-start-style"/>
@@ -58852,7 +58859,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="209" label="webkit-box-orient"/>
   <int value="210" label="webkit-box-pack"/>
   <int value="211" label="webkit-box-reflect"/>
-  <int value="212" label="webkit-box-shadow"/>
+  <int value="212" label="alias-webkit-box-shadow"/>
   <int value="213" label="webkit-color-correction"/>
   <int value="214" label="webkit-column-axis"/>
   <int value="215" label="webkit-column-break-after"/>
@@ -58948,8 +58955,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="305" label="webkit-padding-before"/>
   <int value="306" label="webkit-padding-end"/>
   <int value="307" label="webkit-padding-start"/>
-  <int value="308" label="webkit-perspective"/>
-  <int value="309" label="webkit-perspective-origin"/>
+  <int value="308" label="alias-webkit-perspective"/>
+  <int value="309" label="alias-webkit-perspective-origin"/>
   <int value="310" label="webkit-perspective-origin-x"/>
   <int value="311" label="webkit-perspective-origin-y"/>
   <int value="312" label="webkit-print-color-adjust"/>
@@ -58966,17 +58973,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="323" label="webkit-text-stroke"/>
   <int value="324" label="webkit-text-stroke-color"/>
   <int value="325" label="webkit-text-stroke-width"/>
-  <int value="326" label="webkit-transform"/>
-  <int value="327" label="webkit-transform-origin"/>
+  <int value="326" label="alias-webkit-transform"/>
+  <int value="327" label="alias-webkit-transform-origin"/>
   <int value="328" label="webkit-transform-origin-x"/>
   <int value="329" label="webkit-transform-origin-y"/>
   <int value="330" label="webkit-transform-origin-z"/>
-  <int value="331" label="webkit-transform-style"/>
-  <int value="332" label="webkit-transition"/>
-  <int value="333" label="webkit-transition-delay"/>
-  <int value="334" label="webkit-transition-duration"/>
-  <int value="335" label="webkit-transition-property"/>
-  <int value="336" label="webkit-transition-timing-function"/>
+  <int value="331" label="alias-webkit-transform-style"/>
+  <int value="332" label="alias-webkit-transition"/>
+  <int value="333" label="alias-webkit-transition-delay"/>
+  <int value="334" label="alias-webkit-transition-duration"/>
+  <int value="335" label="alias-webkit-transition-property"/>
+  <int value="336" label="alias-webkit-transition-timing-function"/>
   <int value="337" label="webkit-user-drag"/>
   <int value="338" label="webkit-user-modify"/>
   <int value="339" label="webkit-user-select"/>
@@ -59109,10 +59116,40 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="466" label="cx"/>
   <int value="467" label="cy"/>
   <int value="468" label="r"/>
+  <int value="469" label="alias-epub-caption-side"/>
+  <int value="470" label="alias-epub-text-combine"/>
+  <int value="471" label="alias-epub-text-emphasis"/>
+  <int value="472" label="alias-epub-text-emphasis-color"/>
+  <int value="473" label="alias-epub-text-emphasis-style"/>
+  <int value="474" label="alias-epub-text-orientation"/>
+  <int value="475" label="alias-epub-text-transform"/>
+  <int value="476" label="alias-epub-word-break"/>
+  <int value="477" label="alias-epub-writing-mode"/>
+  <int value="478" label="alias-webkit-align-content"/>
+  <int value="479" label="alias-webkit-align-items"/>
+  <int value="480" label="alias-webkit-align-self"/>
+  <int value="481" label="alias-webkit-border-bottom-left-radius"/>
+  <int value="482" label="alias-webkit-border-bottom-right-radius"/>
+  <int value="483" label="alias-webkit-border-top-left-radius"/>
+  <int value="484" label="alias-webkit-border-top-right-radius"/>
+  <int value="485" label="alias-webkit-box-sizing"/>
+  <int value="486" label="alias-webkit-flex"/>
+  <int value="487" label="alias-webkit-flex-basis"/>
+  <int value="488" label="alias-webkit-flex-direction"/>
+  <int value="489" label="alias-webkit-flex-flow"/>
+  <int value="490" label="alias-webkit-flex-grow"/>
+  <int value="491" label="alias-webkit-flex-shrink"/>
+  <int value="492" label="alias-webkit-flex-wrap"/>
+  <int value="493" label="alias-webkit-justify-content"/>
+  <int value="494" label="alias-webkit-opacity"/>
+  <int value="495" label="alias-webkit-order"/>
+  <int value="496" label="alias-webkit-shape-image-threshold"/>
+  <int value="497" label="alias-webkit-shape-margin"/>
+  <int value="498" label="alias-webkit-shape-outside"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">
-<!-- Generated from ../../../third_party/WebKit/Source/core/editing/EditorCommand.cpp -->
+<!-- Generated from third_party/WebKit/Source/core/editing/EditorCommand.cpp -->
 
   <int value="1" label="AlignJustified"/>
   <int value="2" label="AlignLeft"/>
@@ -59782,7 +59819,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="NetErrorCodes" type="int">
-<!-- Generated from ../../../net/base/net_error_list.h -->
+<!-- Generated from net/base/net_error_list.h -->
 
   <int value="0" label="OK"/>
   <int value="1" label="IO_PENDING"/>

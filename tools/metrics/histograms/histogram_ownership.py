@@ -7,12 +7,17 @@
 histograms.
 """
 
+import os
+import sys
 import xml.etree.ElementTree
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+import path_util
 
 DUMMY_OWNER = "Please list the metric's owners. Add more owner tags as needed."
 
 def main():
-  tree = xml.etree.ElementTree.parse('histograms.xml')
+  tree = xml.etree.ElementTree.parse(path_util.GetHistogramsFile())
   root = tree.getroot()
   assert root.tag == 'histogram-configuration'
 

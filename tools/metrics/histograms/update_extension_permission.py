@@ -20,18 +20,14 @@ if __name__ == '__main__':
     sys.stderr.write(__doc__)
     sys.exit(1)
 
+  header_file = 'extensions/common/permissions/permission_message.h'
   UpdateHistogramEnum(histogram_enum_name='ExtensionPermission2',
-                      source_enum_path=os.path.join('..', '..', '..',
-                                                    'extensions', 'common',
-                                                    'permissions',
-                                                    'permission_message.h'),
+                      source_enum_path=header_file,
                       start_marker='^enum ID {',
                       end_marker='^kEnumBoundary')
 
+  header_file = 'extensions/common/permissions/api_permission.h'
   UpdateHistogramEnum(histogram_enum_name='ExtensionPermission3',
-                      source_enum_path=os.path.join('..', '..', '..',
-                                                    'extensions', 'common',
-                                                    'permissions',
-                                                    'api_permission.h'),
+                      source_enum_path=header_file,
                       start_marker='^enum ID {',
                       end_marker='^kEnumBoundary')

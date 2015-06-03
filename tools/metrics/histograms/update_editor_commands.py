@@ -15,18 +15,16 @@ import sys
 
 from xml.dom import minidom
 
-from diffutil import PromptUserToAcceptDiff
-import print_style
-
-# Import the metrics/common module.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 from diff_util import PromptUserToAcceptDiff
+import path_util
 
-HISTOGRAMS_PATH = 'histograms.xml'
+import print_style
+
+HISTOGRAMS_PATH = path_util.GetHistogramsFile()
 ENUM_NAME = 'MappedEditingCommands'
 
-EXTENSION_FUNCTIONS_HISTOGRAM_VALUE_PATH = \
-  '../../../third_party/WebKit/Source/core/editing/EditorCommand.cpp'
+EDITOR_COMMAND_CPP = 'third_party/WebKit/Source/core/editing/EditorCommand.cpp'
 ENUM_START_MARKER = "^    static const CommandEntry commands\[\] = {"
 ENUM_END_MARKER = "^    };"
 
@@ -48,7 +46,7 @@ def ReadHistogramValues(filename):
   """
 
   # Read the file as a list of lines
-  with open(filename) as f:
+  with open(path_util.GetInputFile(filename)) as f:
     content = f.readlines()
 
   # Locate the enum definition and collect all entries in it
@@ -97,8 +95,7 @@ def UpdateHistogramDefinitions(histogram_values, document):
       extension_functions_enum_node.lastChild)
 
   # Add a "Generated from (...)" comment
-  comment = ' Generated from {0} '.format(
-    EXTENSION_FUNCTIONS_HISTOGRAM_VALUE_PATH)
+  comment = ' Generated from {0} '.format(EDITOR_COMMAND_CPP)
   extension_functions_enum_node.appendChild(document.createComment(comment))
 
   # Add values generated from policy templates.
@@ -108,8 +105,10 @@ def UpdateHistogramDefinitions(histogram_values, document):
     node.attributes['label'] = label
     extension_functions_enum_node.appendChild(node)
 
+
 def Log(message):
   logging.info(message)
+
 
 def main():
   if len(sys.argv) > 1:
@@ -117,10 +116,8 @@ def main():
     sys.stderr.write(__doc__)
     sys.exit(1)
 
-  Log('Reading histogram enum definition from "%s".'
-      % (EXTENSION_FUNCTIONS_HISTOGRAM_VALUE_PATH))
-  histogram_values = ReadHistogramValues(
-    EXTENSION_FUNCTIONS_HISTOGRAM_VALUE_PATH)
+  Log('Reading histogram enum definition from "%s".' % EDITOR_COMMAND_CPP)
+  histogram_values = ReadHistogramValues(EDITOR_COMMAND_CPP)
 
   Log('Reading existing histograms from "%s".' % (HISTOGRAMS_PATH))
   with open(HISTOGRAMS_PATH, 'rb') as f:

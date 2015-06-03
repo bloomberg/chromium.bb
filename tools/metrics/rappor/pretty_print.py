@@ -4,10 +4,9 @@
 # found in the LICENSE file.
 
 import logging
-import sys
 import os
+import sys
 
-# Import the metrics/common module for pretty print xml.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import models
 import presubmit_util

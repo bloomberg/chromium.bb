@@ -15,13 +15,13 @@ import re
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
-from update_histogram_enum import ReadHistogramValues
-from update_histogram_enum import UpdateHistogramFromDict
-from update_use_counter_feature_enum import PrintEnumForDashboard
+import path_util
+
+import update_histogram_enum
+import update_use_counter_feature_enum
 
 
-USE_COUNTER_CPP_PATH = \
-    '../../../third_party/WebKit/Source/core/frame/UseCounter.cpp'
+USE_COUNTER_CPP_PATH = 'third_party/WebKit/Source/core/frame/UseCounter.cpp'
 
 
 def EnumToCssProperty(enum_name):
@@ -33,7 +33,7 @@ def EnumToCssProperty(enum_name):
 
 def ReadCssProperties(filename):
   # Read the file as a list of lines
-  with open(filename) as f:
+  with open(path_util.GetInputFile(filename)) as f:
     content = f.readlines()
 
   # Looking for a line like "case CSSPropertyGrid: return 453;".
@@ -64,8 +64,8 @@ if __name__ == '__main__':
 
   if options.dashboard:
     enum_dict = ReadCssProperties(USE_COUNTER_CPP_PATH)
-    PrintEnumForDashboard(enum_dict)
+    update_use_counter_feature_enum.PrintEnumForDashboard(enum_dict)
   else:
-    UpdateHistogramFromDict(
+    update_histogram_enum.UpdateHistogramFromDict(
         'MappedCSSProperties', ReadCssProperties(USE_COUNTER_CPP_PATH),
         USE_COUNTER_CPP_PATH)

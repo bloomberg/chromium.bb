@@ -20,15 +20,11 @@ import shutil
 import sys
 import xml.dom.minidom
 
-import print_style
-
-sys.path.insert(1, os.path.join(sys.path[0], '..', '..', 'python'))
-from google import path_utils
-
-# Import the metrics/common module.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import diff_util
 import presubmit_util
+
+import print_style
 
 # Tags whose children we want to alphabetize. The key is the parent tag name,
 # and the value is a pair of the tag name of the children we want to sort,
@@ -73,7 +69,8 @@ def TransformByAlphabetizing(node):
     directly.
   """
   if node.nodeType != xml.dom.minidom.Node.ELEMENT_NODE:
-    for c in node.childNodes: TransformByAlphabetizing(c)
+    for c in node.childNodes:
+      TransformByAlphabetizing(c)
     return node
 
   # Element node with a tag name that we alphabetize the children of?
@@ -114,7 +111,8 @@ def TransformByAlphabetizing(node):
     return node
 
   # Recursively handle other element nodes and other node types.
-  for c in node.childNodes: TransformByAlphabetizing(c)
+  for c in node.childNodes:
+    TransformByAlphabetizing(c)
   return node
 
 
@@ -130,6 +128,7 @@ def PrettyPrint(raw_xml):
   tree = xml.dom.minidom.parseString(raw_xml)
   tree = TransformByAlphabetizing(tree)
   return print_style.GetPrintStyle().PrettyPrintNode(tree)
+
 
 def main():
   presubmit_util.DoPresubmitMain(sys.argv, 'histograms.xml',

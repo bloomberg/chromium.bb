@@ -19,10 +19,8 @@ if __name__ == '__main__':
     sys.stderr.write(__doc__)
     sys.exit(1)
 
+  source_header = 'extensions/browser/extension_function_histogram_value.h'
   UpdateHistogramEnum(histogram_enum_name='ExtensionFunctions',
-                      source_enum_path=
-                          os.path.join('..', '..', '..', 'extensions',
-                                       'browser',
-                                       'extension_function_histogram_value.h'),
+                      source_enum_path=source_header,
                       start_marker='^enum HistogramValue {',
                       end_marker='^ENUM_BOUNDARY')

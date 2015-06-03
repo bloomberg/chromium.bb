@@ -5,14 +5,17 @@
 
 """Verifies that the histograms XML file is well-formatted."""
 
-import extract_histograms
-import os.path
+import os
+import sys
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+import path_util
+
+import extract_histograms
 
 def main():
   # This will raise an exception if the file is not well-formatted.
-  xml_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                          'histograms.xml')
+  xml_file = path_util.GetHistogramsFile()
   histograms = extract_histograms.ExtractHistograms(xml_file)
 
 
