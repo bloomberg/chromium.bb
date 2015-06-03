@@ -29,6 +29,6 @@
     }, "Test absolute positioned element width with replaced element with intrinsic ratio but no dimensions");
     test(function() {
         var r = document.getElementById('stf3').getBoundingClientRect();
-        assert_equals(r.width, 1); // Unclear if width should be 0 or 1. (Gecko and Blink disagree)
+        assert_equals(r.width, 0);
     }, "Test table cell width with replaced element with intrinsic ratio but no dimensions");
 </script>

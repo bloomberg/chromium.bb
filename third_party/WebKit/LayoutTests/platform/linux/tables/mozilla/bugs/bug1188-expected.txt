@@ -132,9 +132,9 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (0,0) size 0x0
             LayoutTableRow {TR} at (0,180) size 600x3
               LayoutTableCell {TD} at (2,180) size 596x3 [bgcolor=#99CCCC] [r=4 c=0 rs=1 cs=4]
-                LayoutTable {TABLE} at (1,1) size 1x1
-                  LayoutTableSection {TBODY} at (0,0) size 1x1
-                    LayoutTableRow {TR} at (0,0) size 1x1
+                LayoutTable {TABLE} at (1,1) size 0x1
+                  LayoutTableSection {TBODY} at (0,0) size 0x1
+                    LayoutTableRow {TR} at (0,0) size 0x1
                       LayoutTableCell {TD} at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
 layer at (280,77) size 210x16
   LayoutBlockFlow {DIV} at (2,3) size 210x16

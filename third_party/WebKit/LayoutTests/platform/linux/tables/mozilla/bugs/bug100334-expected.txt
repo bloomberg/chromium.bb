@@ -13,8 +13,8 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 96x19
                 text run at (0,0) width 96: "Correct Display"
           LayoutTableRow {TR} at (0,20) size 150x0
-            LayoutTableCell {TD} at (0,20) size 126x0 [r=1 c=0 rs=1 cs=1]
-            LayoutTableCell {TD} at (126,20) size 24x0 [r=1 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (0,20) size 150x0 [r=1 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (150,20) size 0x0 [r=1 c=1 rs=1 cs=1]
       LayoutBlockFlow {P} at (0,36) size 784x0
       LayoutTable {TABLE} at (0,36) size 150x20 [bgcolor=#FFCCCC]
         LayoutTableCol {COLGROUP} at (0,0) size 0x0
