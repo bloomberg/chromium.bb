@@ -34,22 +34,25 @@ private:
 void PartitionStatsDumperImpl::partitionsDumpBucketStats(const char* partitionName, const PartitionBucketMemoryStats* memoryStats)
 {
     ASSERT(memoryStats->isValid);
-    String format;
+    String dumpName;
     if (memoryStats->isDirectMap)
-        format = String::format("partition_alloc/%s/directMap_%zu", partitionName, ++m_uid);
+        dumpName = String::format("partition_alloc/%s/directMap_%zu", partitionName, ++m_uid);
     else
-        format = String::format("partition_alloc/%s/bucket_%zu", partitionName, static_cast<size_t>(memoryStats->bucketSlotSize));
+        dumpName = String::format("partition_alloc/%s/bucket_%zu", partitionName, static_cast<size_t>(memoryStats->bucketSlotSize));
 
-    WebMemoryAllocatorDump* allocatorDump = m_memoryDump->createMemoryAllocatorDump(format);
-    allocatorDump->AddScalar("partition_page_size", "bytes", memoryStats->allocatedPageSize);
+    WebMemoryAllocatorDump* allocatorDump = m_memoryDump->createMemoryAllocatorDump(dumpName);
+    allocatorDump->AddScalar("size", "bytes", memoryStats->residentBytes);
     allocatorDump->AddScalar("waste_size", "bytes", memoryStats->pageWasteSize);
-    allocatorDump->AddScalar("inner_size", "bytes", memoryStats->activeBytes);
-    allocatorDump->AddScalar("outer_size", "bytes", memoryStats->residentBytes);
+    allocatorDump->AddScalar("partition_page_size", "bytes", memoryStats->allocatedPageSize);
     allocatorDump->AddScalar("freeable_size", "bytes", memoryStats->freeableBytes);
     allocatorDump->AddScalar("full_partition_pages", "objects", memoryStats->numFullPages);
     allocatorDump->AddScalar("active_partition_pages", "objects", memoryStats->numActivePages);
     allocatorDump->AddScalar("empty_partition_pages", "objects", memoryStats->numEmptyPages);
     allocatorDump->AddScalar("decommitted_partition_pages", "objects", memoryStats->numDecommittedPages);
+
+    dumpName = dumpName + "/allocated_objects";
+    WebMemoryAllocatorDump* objectsDump = m_memoryDump->createMemoryAllocatorDump(dumpName);
+    objectsDump->AddScalar("size", "bytes", memoryStats->activeBytes);
 }
 
 } // namespace

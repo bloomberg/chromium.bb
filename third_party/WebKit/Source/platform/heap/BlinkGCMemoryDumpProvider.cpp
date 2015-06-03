@@ -21,9 +21,12 @@ BlinkGCMemoryDumpProvider* BlinkGCMemoryDumpProvider::instance()
 bool BlinkGCMemoryDumpProvider::onMemoryDump(blink::WebProcessMemoryDump* memoryDump)
 {
     WebMemoryAllocatorDump* allocatorDump = memoryDump->createMemoryAllocatorDump("blink_gc");
-    allocatorDump->AddScalar("inner_size", "bytes", Heap::allocatedObjectSize());
-    allocatorDump->AddScalar("outer_size", "bytes", Heap::allocatedSpace());
-    allocatorDump->AddScalar("estimated_live_object_size", "bytes", Heap::estimatedLiveObjectSize());
+    allocatorDump->AddScalar("size", "bytes", Heap::allocatedSpace());
+
+    WebMemoryAllocatorDump* objectsDump = memoryDump->createMemoryAllocatorDump("blink_gc/allocated_objects");
+    objectsDump->AddScalar("size", "bytes", Heap::allocatedObjectSize());
+    objectsDump->AddScalar("estimated_live_object_size", "bytes", Heap::estimatedLiveObjectSize());
+
     return true;
 }
 
