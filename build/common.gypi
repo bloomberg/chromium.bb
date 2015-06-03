@@ -306,7 +306,6 @@
 
           ['OS=="linux" and target_arch=="mipsel"', {
             'sysroot%': '<!(cd <(DEPTH) && pwd -P)/mipsel-sysroot/sysroot',
-            'CXX%': '<!(cd <(DEPTH) && pwd -P)/mipsel-sysroot/bin/mipsel-linux-gnu-gcc',
           }],
         ],
       },
@@ -1608,10 +1607,6 @@
             'disable_nacl%': 1,
             'nacl_untrusted_build%': 0,
             'use_allocator%': 'none',
-          }],
-          ['OS=="linux" and target_arch=="mipsel"', {
-            'sysroot%': '<(sysroot)',
-            'CXX%': '<(CXX)',
           }],
           # Use a 64-bit linker to avoid running out of address space. The
           # buildbots should have a 64-bit kernel and a 64-bit libc installed.
