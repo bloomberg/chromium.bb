@@ -38,7 +38,7 @@ file, in types that make this information accessible in Python.
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-from google.protobuf.internal import api_implementation
+from protobuf26.internal import api_implementation
 
 
 if api_implementation.Type() == 'cpp':
@@ -47,9 +47,9 @@ if api_implementation.Type() == 'cpp':
   import uuid
 
   if api_implementation.Version() == 2:
-    from google.protobuf.pyext import _message
+    from protobuf26.pyext import _message
   else:
-    from google.protobuf.internal import cpp_message
+    from protobuf26.internal import cpp_message
 
 
 class Error(Exception):
@@ -106,7 +106,7 @@ class DescriptorBase(object):
     """
     if self._options:
       return self._options
-    from google.protobuf import descriptor_pb2
+    from protobuf26 import descriptor_pb2
     try:
       options_class = getattr(descriptor_pb2, self._options_class_name)
     except AttributeError:
@@ -774,7 +774,7 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True):
     # definition in the C++ descriptor pool. To do this, we build a
     # FileDescriptorProto with the same definition as this descriptor and build
     # it into the pool.
-    from google.protobuf import descriptor_pb2
+    from protobuf26 import descriptor_pb2
     file_descriptor_proto = descriptor_pb2.FileDescriptorProto()
     file_descriptor_proto.message_type.add().MergeFrom(desc_proto)
 

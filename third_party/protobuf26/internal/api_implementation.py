@@ -36,7 +36,7 @@ import sys
 
 try:
   # pylint: disable=g-import-not-at-top
-  from google.protobuf.internal import _api_implementation
+  from protobuf26.internal import _api_implementation
   # The compile-time constants in the _api_implementation module can be used to
   # switch to a certain implementation of the Python API at build time.
   _api_version = _api_implementation.api_version

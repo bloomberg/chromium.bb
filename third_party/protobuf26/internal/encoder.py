@@ -73,7 +73,7 @@ __author__ = 'kenton@google.com (Kenton Varda)'
 import struct
 import sys  ##PY25
 _PY2 = sys.version_info[0] < 3  ##PY25
-from google.protobuf.internal import wire_format
+from protobuf26.internal import wire_format
 
 
 # This will overflow and thus become IEEE-754 "infinity".  We would use

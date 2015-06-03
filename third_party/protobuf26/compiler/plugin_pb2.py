@@ -3,17 +3,17 @@
 
 import sys
 _b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
-from google.protobuf import descriptor as _descriptor
-from google.protobuf import message as _message
-from google.protobuf import reflection as _reflection
-from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
+from protobuf26 import descriptor as _descriptor
+from protobuf26 import message as _message
+from protobuf26 import reflection as _reflection
+from protobuf26 import symbol_database as _symbol_database
+from protobuf26 import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
-import google.protobuf.descriptor_pb2
+import protobuf26.descriptor_pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(

@@ -39,9 +39,9 @@ __author__ = 'kenton@google.com (Kenton Varda)'
 import cStringIO
 import re
 
-from google.protobuf.internal import type_checkers
-from google.protobuf import descriptor
-from google.protobuf import text_encoding
+from protobuf26.internal import type_checkers
+from protobuf26 import descriptor
+from protobuf26 import text_encoding
 
 __all__ = ['MessageToString', 'PrintMessage', 'PrintField',
            'PrintFieldValue', 'Merge']

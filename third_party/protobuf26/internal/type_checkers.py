@@ -51,11 +51,11 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import sys  ##PY25
 if sys.version < '2.6': bytes = str  ##PY25
-from google.protobuf.internal import api_implementation
-from google.protobuf.internal import decoder
-from google.protobuf.internal import encoder
-from google.protobuf.internal import wire_format
-from google.protobuf import descriptor
+from protobuf26.internal import api_implementation
+from protobuf26.internal import decoder
+from protobuf26.internal import encoder
+from protobuf26.internal import wire_format
+from protobuf26 import descriptor
 
 _FieldDescriptor = descriptor.FieldDescriptor
 

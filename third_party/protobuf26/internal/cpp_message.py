@@ -36,9 +36,9 @@ __author__ = 'petar@google.com (Petar Petrov)'
 
 import copy_reg
 import operator
-from google.protobuf.internal import _net_proto2___python
-from google.protobuf.internal import enum_type_wrapper
-from google.protobuf import message
+from protobuf26.internal import _net_proto2___python
+from protobuf26.internal import enum_type_wrapper
+from protobuf26 import message
 
 
 _LABEL_REPEATED = _net_proto2___python.LABEL_REPEATED
@@ -299,7 +299,7 @@ class ExtensionDict(object):
     self._values = {}
 
   def __setitem__(self, extension, value):
-    from google.protobuf import descriptor
+    from protobuf26 import descriptor
     if not isinstance(extension, descriptor.FieldDescriptor):
       raise KeyError('Bad extension %r.' % (extension,))
     cdescriptor = extension._cdescriptor
@@ -311,7 +311,7 @@ class ExtensionDict(object):
     self._values[extension] = value
 
   def __getitem__(self, extension):
-    from google.protobuf import descriptor
+    from protobuf26 import descriptor
     if not isinstance(extension, descriptor.FieldDescriptor):
       raise KeyError('Bad extension %r.' % (extension,))
 
@@ -329,7 +329,7 @@ class ExtensionDict(object):
     return ext
 
   def ClearExtension(self, extension):
-    from google.protobuf import descriptor
+    from protobuf26 import descriptor
     if not isinstance(extension, descriptor.FieldDescriptor):
       raise KeyError('Bad extension %r.' % (extension,))
     self._cmsg.ClearFieldByDescriptor(extension._cdescriptor)
@@ -337,7 +337,7 @@ class ExtensionDict(object):
       del self._values[extension]
 
   def HasExtension(self, extension):
-    from google.protobuf import descriptor
+    from protobuf26 import descriptor
     if not isinstance(extension, descriptor.FieldDescriptor):
       raise KeyError('Bad extension %r.' % (extension,))
     return self._cmsg.HasFieldByDescriptor(extension._cdescriptor)
@@ -627,7 +627,7 @@ def _AddMessageMethods(message_descriptor, cls):
 
   def __unicode__(self):
     # Lazy import to prevent circular import when text_format imports this file.
-    from google.protobuf import text_format
+    from protobuf26 import text_format
     return text_format.MessageToString(self, as_utf8=True).decode('utf-8')
 
   # Attach the local methods to the message class.

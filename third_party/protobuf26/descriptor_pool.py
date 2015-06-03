@@ -59,9 +59,9 @@ __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import sys
 
-from google.protobuf import descriptor
-from google.protobuf import descriptor_database
-from google.protobuf import text_encoding
+from protobuf26 import descriptor
+from protobuf26 import descriptor_database
+from protobuf26 import text_encoding
 
 
 def _NormalizeFullyQualifiedName(name):

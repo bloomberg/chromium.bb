@@ -33,8 +33,8 @@
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import struct
-from google.protobuf import descriptor
-from google.protobuf import message
+from protobuf26 import descriptor
+from protobuf26 import message
 
 
 TAG_TYPE_BITS = 3  # Number of bits used to hold type info in a proto tag.

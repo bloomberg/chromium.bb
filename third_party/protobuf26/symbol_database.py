@@ -60,7 +60,7 @@ Example usage:
 """
 
 
-from google.protobuf import descriptor_pool
+from protobuf26 import descriptor_pool
 
 
 class SymbolDatabase(object):

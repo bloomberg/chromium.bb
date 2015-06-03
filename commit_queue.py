@@ -26,7 +26,7 @@ THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
 sys.path.insert(0, THIRD_PARTY_DIR)
 
 from cq_client import cq_pb2
-from google.protobuf import text_format
+from protobuf26 import text_format
 
 def usage(more):
   def hook(fn):
