@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_NET_UTIL_POSIX_H_
-#define NET_BASE_NET_UTIL_POSIX_H_
+#ifndef NET_BASE_NETWORK_INTERFACES_POSIX_H_
+#define NET_BASE_NETWORK_INTERFACES_POSIX_H_
 
 // This file is only used to expose some of the internals of
-// net_util_posix.cc to net_util_linux.cc and net_util_mac.cc.
+// network_interfaces_posix.cc to network_interfaces_linux.cc and network_interfaces_mac.cc.
 
 #include <string>
 
@@ -22,4 +22,4 @@ bool IsLoopbackOrUnspecifiedAddress(const sockaddr* addr);
 }  // namespace internal
 }  // namespace net
 
-#endif  // NET_BASE_NET_UTIL_POSIX_H_
+#endif  // NET_BASE_NETWORK_INTERFACES_POSIX_H_

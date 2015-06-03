@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_NET_UTIL_MAC_H_
-#define NET_BASE_NET_UTIL_MAC_H_
+#ifndef NET_BASE_NETWORK_INTERFACES_MAC_H_
+#define NET_BASE_NETWORK_INTERFACES_MAC_H_
 
 // This file is only used to expose some of the internals
-// of net_util_mac.cc to tests.
+// of network_interfaces_mac.cc to tests.
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 
 struct ifaddrs;
 struct sockaddr;
@@ -39,4 +39,4 @@ NET_EXPORT bool GetNetworkListImpl(NetworkInterfaceList* networks,
 }  // namespace internal
 }  // namespace net
 
-#endif  // NET_BASE_NET_UTIL_MAC_H_
+#endif  // NET_BASE_NETWORK_INTERFACES_MAC_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/net_util_linux.h"
+#include "net/base/network_interfaces_linux.h"
 
 #if !defined(OS_ANDROID)
 #include <linux/ethtool.h>
@@ -26,7 +26,7 @@
 #include "net/base/escape.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util_posix.h"
+#include "net/base/network_interfaces_posix.h"
 #include "url/gurl.h"
 
 namespace net {

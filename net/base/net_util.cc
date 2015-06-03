@@ -795,30 +795,4 @@ bool HasGoogleHost(const GURL& url) {
   return false;
 }
 
-NetworkInterface::NetworkInterface()
-    : type(NetworkChangeNotifier::CONNECTION_UNKNOWN), prefix_length(0) {
-}
-
-NetworkInterface::NetworkInterface(const std::string& name,
-                                   const std::string& friendly_name,
-                                   uint32 interface_index,
-                                   NetworkChangeNotifier::ConnectionType type,
-                                   const IPAddressNumber& address,
-                                   uint32 prefix_length,
-                                   int ip_address_attributes)
-    : name(name),
-      friendly_name(friendly_name),
-      interface_index(interface_index),
-      type(type),
-      address(address),
-      prefix_length(prefix_length),
-      ip_address_attributes(ip_address_attributes) {
-}
-
-NetworkInterface::~NetworkInterface() {
-}
-
-ScopedWifiOptions::~ScopedWifiOptions() {
-}
-
 }  // namespace net

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_NET_UTIL_WIN_H_
-#define NET_BASE_NET_UTIL_WIN_H_
+#ifndef NET_BASE_NETWORK_INTERFACES_WIN_H_
+#define NET_BASE_NETWORK_INTERFACES_WIN_H_
 
 // This file is only used to expose some of the internals
-// of net_util_win.cc to tests.
+// of network_interfaces_win.cc to tests.
 
 #include <iphlpapi.h>
 #include <wlanapi.h>
 
 #include "base/win/scoped_handle.h"
 #include "net/base/net_export.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 
 namespace net {
 namespace internal {
@@ -90,4 +90,4 @@ NET_EXPORT bool GetNetworkListImpl(
 
 }  // namespace net
 
-#endif   // NET_BASE_NET_UTIL_WIN_H_
+#endif   // NET_BASE_NETWORK_INTERFACES_WIN_H_

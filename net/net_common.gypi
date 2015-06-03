@@ -393,18 +393,18 @@
         ['include', '^base/platform_mime_util_linux\\.cc$'],
         ['include', '^base/address_tracker_linux\\.cc$'],
         ['include', '^base/address_tracker_linux\\.h$'],
-        ['include', '^base/net_util_linux\\.cc$'],
-        ['include', '^base/net_util_linux\\.h$'],
+        ['include', '^base/network_interfaces_linux\\.cc$'],
+        ['include', '^base/network_interfaces_linux\\.h$'],
       ],
     }],
     ['OS == "ios"', {
       'sources/': [
         ['include', '^base/mac/url_conversions\\.h$'],
         ['include', '^base/mac/url_conversions\\.mm$'],
-        ['include', '^base/net_util_mac\\.cc$'],
-        ['include', '^base/net_util_mac\\.h$'],
         ['include', '^base/network_change_notifier_mac\\.cc$'],
         ['include', '^base/network_config_watcher_mac\\.cc$'],
+        ['include', '^base/network_interfaces_mac\\.cc$'],
+        ['include', '^base/network_interfaces_mac\\.h$'],
         ['include', '^base/platform_mime_util_mac\\.mm$'],
         # The iOS implementation only partially uses NSS and thus does not
         # defines |use_nss_certs|. In particular the |USE_NSS_CERTS|

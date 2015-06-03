@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 
 #if !defined(OS_NACL)
-#include "net/base/net_util_posix.h"
+#include "net/base/network_interfaces_posix.h"
 #include <net/if.h>
 #include <netinet/in.h>
 #endif  // !defined(OS_NACL)

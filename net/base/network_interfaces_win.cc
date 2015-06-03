@@ -23,7 +23,7 @@
 #include "net/base/escape.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util_win.h"
+#include "net/base/network_interfaces_win.h"
 #include "url/gurl.h"
 
 namespace net {

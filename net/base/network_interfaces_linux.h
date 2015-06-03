@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_NET_UTIL_LINUX_H_
-#define NET_BASE_NET_UTIL_LINUX_H_
+#ifndef NET_BASE_NETWORK_INTERFACES_LINUX_H_
+#define NET_BASE_NETWORK_INTERFACES_LINUX_H_
 
 // This file is only used to expose some of the internals
-// of net_util_linux.cc to address_tracker_linux and tests.
+// of network_interfaces_linux.cc to address_tracker_linux and tests.
 
 #include <string>
 
 #include "base/containers/hash_tables.h"
 #include "net/base/address_tracker_linux.h"
-#include "net/base/net_util.h"
+#include "net/base/network_interfaces.h"
 
 namespace net {
 namespace internal {
@@ -40,4 +40,4 @@ NET_EXPORT std::string GetWifiSSIDFromInterfaceListInternal(
 }  // namespace internal
 }  // namespace net
 
-#endif  // NET_BASE_NET_UTIL_LINUX_H_
+#endif  // NET_BASE_NETWORK_INTERFACES_LINUX_H_
