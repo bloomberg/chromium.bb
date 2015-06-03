@@ -38,7 +38,10 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
   void DidCommitFrameToCompositor() override;
-  void DidReceiveInputEventOnCompositorThread(
+  void DidHandleInputEventOnCompositorThread(
+      const blink::WebInputEvent& web_input_event,
+      InputEventState event_state) override;
+  void DidHandleInputEventOnMainThread(
       const blink::WebInputEvent& web_input_event) override;
   void DidAnimateForInputOnCompositorThread() override;
   void OnRendererHidden() override;
@@ -81,15 +84,22 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
     FIRST_POLICY = NORMAL,
   };
 
-  // Keep RendererSchedulerImpl::InputStreamStateToString in sync with this
-  // enum.
-  enum class InputStreamState {
-    INACTIVE,
-    ACTIVE,
-    ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE,
-    // Must be the last entry.
-    INPUT_STREAM_STATE_COUNT,
-    FIRST_INPUT_STREAM_STATE = INACTIVE,
+  class PollableNeedsUpdateFlag {
+   public:
+    PollableNeedsUpdateFlag(base::Lock* write_lock);
+    ~PollableNeedsUpdateFlag();
+
+    // Set the flag. May only be called if |write_lock| is held.
+    void SetWhileLocked(bool value);
+
+    // Returns true iff the flag is set to true.
+    bool IsSet() const;
+
+   private:
+    base::subtle::Atomic32 flag_;
+    base::Lock* write_lock_;  // Not owned.
+
+    DISALLOW_COPY_AND_ASSIGN(PollableNeedsUpdateFlag);
   };
 
   // IdleHelper::Delegate implementation:
@@ -107,12 +117,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
       base::TimeTicks optional_now) const;
   static const char* TaskQueueIdToString(QueueId queue_id);
   static const char* PolicyToString(Policy policy);
-  static const char* InputStreamStateToString(InputStreamState state);
 
-  static InputStreamState ComputeNewInputStreamState(
-      InputStreamState current_state,
-      blink::WebInputEvent::Type new_input_event,
-      blink::WebInputEvent::Type last_input_event);
+  static bool ShouldPrioritizeInputEvent(
+      const blink::WebInputEvent& web_input_event);
 
   // The time we should stay in a priority-escalated mode after an input event.
   static const int kPriorityEscalationAfterInputMillis = 100;
@@ -151,23 +158,23 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   virtual void UpdatePolicyLocked(UpdateType update_type);
 
   // Returns the amount of time left in the current input escalated priority
-  // policy.
+  // policy.  Can be called from any thread.
   base::TimeDelta TimeLeftInInputEscalatedPolicy(base::TimeTicks now) const;
 
   // Helper for computing the new policy. |new_policy_duration| will be filled
   // with the amount of time after which the policy should be updated again. If
   // the duration is zero, a new policy update will not be scheduled. Must be
-  // called with |incoming_signals_lock_| held.
+  // called with |incoming_signals_lock_| held. Can be called from any thread.
   Policy ComputeNewPolicy(base::TimeTicks now,
-                          base::TimeDelta* new_policy_duration);
+                          base::TimeDelta* new_policy_duration) const;
+
+  // Works out if compositor tasks would be prioritized based on the current
+  // input signals.  Can be called from any thread.
+  bool InputSignalsSuggestCompositorPriority(base::TimeTicks now) const;
 
   // An input event of some sort happened, the policy may need updating.
-  void UpdateForInputEvent(blink::WebInputEvent::Type type);
-
-  // Called when a previously queued input event was processed.
-  // |begin_frame_time|, if non-zero, identifies the frame time at which the
-  // input was processed.
-  void DidProcessInputEvent(base::TimeTicks begin_frame_time);
+  void UpdateForInputEventOnCompositorThread(blink::WebInputEvent::Type type,
+                                             InputEventState input_event_state);
 
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
@@ -192,10 +199,14 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   // The incoming_signals_lock_ mutex protects access to all variables in the
   // (contiguous) block below.
   mutable base::Lock incoming_signals_lock_;
-  base::TimeTicks last_input_receipt_time_on_compositor_;
-  base::TimeTicks last_input_process_time_on_main_;
+  base::TimeTicks last_input_signal_time_;
+  int pending_main_thread_input_event_count_;
+  bool awaiting_touch_start_response_;
+
+  // Variables in this (contiguous) block are only accessed from the compositor
+  // thread.
   blink::WebInputEvent::Type last_input_type_;
-  InputStreamState input_stream_state_;
+
   PollableThreadSafeFlag policy_may_need_update_;
   int timer_queue_suspend_count_;  // TIMER_TASK_QUEUE suspended if non-zero.
 

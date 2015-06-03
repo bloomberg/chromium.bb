@@ -55,11 +55,6 @@ void InputHandlerWrapper::DidStopFlinging() {
   input_handler_manager_->DidStopFlinging(routing_id_);
 }
 
-void InputHandlerWrapper::DidReceiveInputEvent(
-    const blink::WebInputEvent& web_input_event) {
-  input_handler_manager_->DidReceiveInputEvent(web_input_event);
-}
-
 void InputHandlerWrapper::DidAnimateForInput() {
   input_handler_manager_->DidAnimateForInput();
 }

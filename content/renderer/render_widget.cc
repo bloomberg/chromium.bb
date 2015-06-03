@@ -22,6 +22,7 @@
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
+#include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/npapi/webplugin.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
@@ -1266,6 +1267,11 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     } else {
       Send(response.release());
     }
+  }
+  if (!no_ack && RenderThreadImpl::current()) {
+    RenderThreadImpl::current()
+        ->GetRendererScheduler()
+        ->DidHandleInputEventOnMainThread(*input_event);
   }
   if (input_event->type == WebInputEvent::MouseMove)
     ignore_ack_for_mouse_move_from_debugger_ = false;

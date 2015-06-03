@@ -17,6 +17,7 @@
 #include "content/renderer/input/input_scroll_elasticity_controller.h"
 
 using blink::WebInputEvent;
+using scheduler::RendererScheduler;
 
 namespace content {
 
@@ -146,8 +147,23 @@ InputEventAckState InputHandlerManager::HandleInputEvent(
   }
 
   InputHandlerProxy* proxy = it->second->input_handler_proxy();
-  return InputEventDispositionToAck(
+  InputEventAckState input_event_ack_state = InputEventDispositionToAck(
       proxy->HandleInputEventWithLatencyInfo(*input_event, latency_info));
+  switch (input_event_ack_state) {
+    case INPUT_EVENT_ACK_STATE_CONSUMED:
+      renderer_scheduler_->DidHandleInputEventOnCompositorThread(
+          *input_event,
+          RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+      break;
+    case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
+      renderer_scheduler_->DidHandleInputEventOnCompositorThread(
+          *input_event,
+          RendererScheduler::InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
+      break;
+    default:
+      break;
+  }
+  return input_event_ack_state;
 }
 
 void InputHandlerManager::DidOverscroll(int routing_id,
@@ -157,11 +173,6 @@ void InputHandlerManager::DidOverscroll(int routing_id,
 
 void InputHandlerManager::DidStopFlinging(int routing_id) {
   client_->DidStopFlinging(routing_id);
-}
-
-void InputHandlerManager::DidReceiveInputEvent(
-    const blink::WebInputEvent& web_input_event) {
-  renderer_scheduler_->DidReceiveInputEventOnCompositorThread(web_input_event);
 }
 
 void InputHandlerManager::DidAnimateForInput() {

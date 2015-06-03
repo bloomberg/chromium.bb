@@ -5,6 +5,7 @@
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 
 #include "base/bind.h"
+#include "base/debug/stack_trace.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/begin_frame_args.h"
@@ -38,8 +39,9 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       current_policy_(Policy::NORMAL),
       renderer_hidden_(false),
       was_shutdown_(false),
+      pending_main_thread_input_event_count_(0),
+      awaiting_touch_start_response_(false),
       last_input_type_(blink::WebInputEvent::Undefined),
-      input_stream_state_(InputStreamState::INACTIVE),
       policy_may_need_update_(&incoming_signals_lock_),
       timer_queue_suspend_count_(0),
       weak_factory_(this) {
@@ -123,9 +125,6 @@ void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
 
   EndIdlePeriod();
   estimated_next_frame_begin_ = args.frame_time + args.interval;
-  // TODO(skyostil): Wire up real notification of input events processing
-  // instead of this approximation.
-  DidProcessInputEvent(args.frame_time);
 }
 
 void RendererSchedulerImpl::DidCommitFrameToCompositor() {
@@ -151,10 +150,6 @@ void RendererSchedulerImpl::BeginFrameNotExpectedSoon() {
   helper_.CheckOnValidThread();
   if (helper_.IsShutdown())
     return;
-
-  // TODO(skyostil): Wire up real notification of input events processing
-  // instead of this approximation.
-  DidProcessInputEvent(base::TimeTicks());
 
   idle_helper_.EnableLongIdlePeriod();
 }
@@ -205,16 +200,14 @@ void RendererSchedulerImpl::EndIdlePeriod() {
   idle_helper_.EndIdlePeriod();
 }
 
-void RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread(
+// static
+bool RendererSchedulerImpl::ShouldPrioritizeInputEvent(
     const blink::WebInputEvent& web_input_event) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread");
   // We regard MouseMove events with the left mouse button down as a signal
   // that the user is doing something requiring a smooth frame rate.
   if (web_input_event.type == blink::WebInputEvent::MouseMove &&
       (web_input_event.modifiers & blink::WebInputEvent::LeftButtonDown)) {
-    UpdateForInputEvent(web_input_event.type);
-    return;
+    return true;
   }
   // Ignore all other mouse events because they probably don't signal user
   // interaction needing a smooth framerate. NOTE isMouseEventType returns false
@@ -223,49 +216,93 @@ void RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread(
   // compositor priority for them.
   if (blink::WebInputEvent::isMouseEventType(web_input_event.type) ||
       blink::WebInputEvent::isKeyboardEventType(web_input_event.type)) {
-    return;
+    return false;
   }
-  UpdateForInputEvent(web_input_event.type);
+  return true;
+}
+
+void RendererSchedulerImpl::DidHandleInputEventOnCompositorThread(
+    const blink::WebInputEvent& web_input_event,
+    InputEventState event_state) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::DidHandleInputEventOnCompositorThread");
+  if (!ShouldPrioritizeInputEvent(web_input_event))
+    return;
+
+  UpdateForInputEventOnCompositorThread(web_input_event.type, event_state);
 }
 
 void RendererSchedulerImpl::DidAnimateForInputOnCompositorThread() {
-  UpdateForInputEvent(blink::WebInputEvent::Undefined);
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::DidAnimateForInputOnCompositorThread");
+  UpdateForInputEventOnCompositorThread(
+      blink::WebInputEvent::Undefined,
+      InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
 }
 
-void RendererSchedulerImpl::UpdateForInputEvent(
-    blink::WebInputEvent::Type type) {
+void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
+    blink::WebInputEvent::Type type,
+    InputEventState input_event_state) {
   base::AutoLock lock(incoming_signals_lock_);
+  base::TimeTicks now = helper_.Now();
+  bool was_in_compositor_priority = InputSignalsSuggestCompositorPriority(now);
+  bool was_awaiting_touch_start_response_ = awaiting_touch_start_response_;
 
-  InputStreamState new_input_stream_state =
-      ComputeNewInputStreamState(input_stream_state_, type, last_input_type_);
+  if (type) {
+    switch (type) {
+      case blink::WebInputEvent::TouchStart:
+        awaiting_touch_start_response_ = true;
+        break;
 
-  if (input_stream_state_ != new_input_stream_state) {
-    // Update scheduler policy if we should start a new policy mode.
-    input_stream_state_ = new_input_stream_state;
+      case blink::WebInputEvent::TouchMove:
+        // Observation of consecutive touchmoves is a strong signal that the
+        // page is consuming the touch sequence, in which case touchstart
+        // response prioritization is no longer necessary. Otherwise, the
+        // initial touchmove should preserve the touchstart response pending
+        // state.
+        if (awaiting_touch_start_response_ &&
+            last_input_type_ == blink::WebInputEvent::TouchMove) {
+          awaiting_touch_start_response_ = false;
+        }
+        break;
+
+      case blink::WebInputEvent::GestureTapDown:
+      case blink::WebInputEvent::GestureShowPress:
+      case blink::WebInputEvent::GestureFlingCancel:
+      case blink::WebInputEvent::GestureScrollEnd:
+        // With no observable effect, these meta events do not indicate a
+        // meaningful touchstart response and should not impact task priority.
+        break;
+
+      default:
+        awaiting_touch_start_response_ = false;
+        break;
+    }
+  }
+
+  // Avoid unnecessary policy updates, while in compositor priority.
+  if (!was_in_compositor_priority ||
+      was_awaiting_touch_start_response_ != awaiting_touch_start_response_) {
     EnsureUrgentPolicyUpdatePostedOnMainThread(FROM_HERE);
   }
-  last_input_receipt_time_on_compositor_ = helper_.Now();
-  // Clear the last known input processing time so that we know an input event
-  // is still queued up. This timestamp will be updated the next time the
-  // compositor commits or becomes quiescent. Note that this function is always
-  // called before the input event is processed either on the compositor or
-  // main threads.
-  last_input_process_time_on_main_ = base::TimeTicks();
+  last_input_signal_time_ = now;
   last_input_type_ = type;
+
+  if (input_event_state == InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD)
+    pending_main_thread_input_event_count_++;
 }
 
-void RendererSchedulerImpl::DidProcessInputEvent(
-    base::TimeTicks begin_frame_time) {
+void RendererSchedulerImpl::DidHandleInputEventOnMainThread(
+    const blink::WebInputEvent& web_input_event) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::DidHandleInputEventOnMainThread");
   helper_.CheckOnValidThread();
-  base::AutoLock lock(incoming_signals_lock_);
-  if (input_stream_state_ == InputStreamState::INACTIVE)
-    return;
-  // Avoid marking input that arrived after the BeginFrame as processed.
-  if (!begin_frame_time.is_null() &&
-      begin_frame_time < last_input_receipt_time_on_compositor_)
-    return;
-  last_input_process_time_on_main_ = helper_.Now();
-  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
+  if (ShouldPrioritizeInputEvent(web_input_event)) {
+    base::AutoLock lock(incoming_signals_lock_);
+    last_input_signal_time_ = helper_.Now();
+    if (pending_main_thread_input_event_count_ > 0)
+      pending_main_thread_input_event_count_--;
+  }
 }
 
 bool RendererSchedulerImpl::IsHighPriorityWorkAnticipated() {
@@ -415,60 +452,49 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
                  "RendererScheduler.policy", current_policy_);
 }
 
+bool RendererSchedulerImpl::InputSignalsSuggestCompositorPriority(
+    base::TimeTicks now) const {
+  base::TimeDelta unused_policy_duration;
+  switch (ComputeNewPolicy(now, &unused_policy_duration)) {
+    case Policy::TOUCHSTART_PRIORITY:
+    case Policy::COMPOSITOR_PRIORITY:
+      return true;
+
+    default:
+      break;
+  }
+  return false;
+}
+
 RendererSchedulerImpl::Policy RendererSchedulerImpl::ComputeNewPolicy(
     base::TimeTicks now,
-    base::TimeDelta* new_policy_duration) {
-  helper_.CheckOnValidThread();
+    base::TimeDelta* new_policy_duration) const {
   incoming_signals_lock_.AssertAcquired();
+  *new_policy_duration = TimeLeftInInputEscalatedPolicy(now);
 
-  Policy new_policy = Policy::NORMAL;
-  *new_policy_duration = base::TimeDelta();
+  if (*new_policy_duration == base::TimeDelta())
+    return Policy::NORMAL;
 
-  if (input_stream_state_ == InputStreamState::INACTIVE)
-    return new_policy;
-
-  Policy input_priority_policy =
-      input_stream_state_ ==
-              InputStreamState::ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE
-          ? Policy::TOUCHSTART_PRIORITY
-          : Policy::COMPOSITOR_PRIORITY;
-  base::TimeDelta time_left_in_policy = TimeLeftInInputEscalatedPolicy(now);
-  if (time_left_in_policy > base::TimeDelta()) {
-    new_policy = input_priority_policy;
-    *new_policy_duration = time_left_in_policy;
-  } else {
-    // Reset |input_stream_state_| to ensure
-    // DidReceiveInputEventOnCompositorThread will post an UpdatePolicy task
-    // when it's next called.
-    input_stream_state_ = InputStreamState::INACTIVE;
-  }
-  return new_policy;
+  return awaiting_touch_start_response_ ? Policy::TOUCHSTART_PRIORITY
+                                        : Policy::COMPOSITOR_PRIORITY;
 }
 
 base::TimeDelta RendererSchedulerImpl::TimeLeftInInputEscalatedPolicy(
     base::TimeTicks now) const {
-  helper_.CheckOnValidThread();
-  // TODO(rmcilroy): Change this to DCHECK_EQ when crbug.com/463869 is fixed.
-  DCHECK(input_stream_state_ != InputStreamState::INACTIVE);
   incoming_signals_lock_.AssertAcquired();
 
   base::TimeDelta escalated_priority_duration =
       base::TimeDelta::FromMilliseconds(kPriorityEscalationAfterInputMillis);
-  base::TimeDelta time_left_in_policy;
-  if (last_input_process_time_on_main_.is_null() &&
-      !helper_.IsQueueEmpty(COMPOSITOR_TASK_QUEUE)) {
-    // If the input event is still pending, go into input prioritized policy
-    // and check again later.
-    time_left_in_policy = escalated_priority_duration;
-  } else {
-    // Otherwise make sure the input prioritization policy ends on time.
-    base::TimeTicks new_priority_end(
-        std::max(last_input_receipt_time_on_compositor_,
-                 last_input_process_time_on_main_) +
-        escalated_priority_duration);
-    time_left_in_policy = new_priority_end - now;
+
+  // If the input event is still pending, go into input prioritized policy
+  // and check again later.
+  if (pending_main_thread_input_event_count_ > 0)
+    return escalated_priority_duration;
+  if (last_input_signal_time_.is_null() ||
+      last_input_signal_time_ + escalated_priority_duration < now) {
+    return base::TimeDelta();
   }
-  return time_left_in_policy;
+  return last_input_signal_time_ + escalated_priority_duration - now;
 }
 
 bool RendererSchedulerImpl::CanEnterLongIdlePeriod(
@@ -536,21 +562,6 @@ const char* RendererSchedulerImpl::PolicyToString(Policy policy) {
   }
 }
 
-const char* RendererSchedulerImpl::InputStreamStateToString(
-    InputStreamState state) {
-  switch (state) {
-    case InputStreamState::INACTIVE:
-      return "inactive";
-    case InputStreamState::ACTIVE:
-      return "active";
-    case InputStreamState::ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE:
-      return "active_and_awaiting_touchstart_response";
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
-}
-
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 RendererSchedulerImpl::AsValue(base::TimeTicks optional_now) const {
   base::AutoLock lock(incoming_signals_lock_);
@@ -571,57 +582,20 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->SetString("idle_period_state",
                    IdleHelper::IdlePeriodStateToString(
                        idle_helper_.SchedulerIdlePeriodState()));
-  state->SetBoolean("renderer_hidden_", renderer_hidden_);
-  state->SetString("input_stream_state",
-                   InputStreamStateToString(input_stream_state_));
+  state->SetBoolean("renderer_hidden", renderer_hidden_);
   state->SetDouble("now", (optional_now - base::TimeTicks()).InMillisecondsF());
-  state->SetDouble("last_input_receipt_time_on_compositor_",
-                   (last_input_receipt_time_on_compositor_ - base::TimeTicks())
-                       .InMillisecondsF());
   state->SetDouble(
-      "last_input_process_time_on_main_",
-      (last_input_process_time_on_main_ - base::TimeTicks()).InMillisecondsF());
+      "last_input_signal_time",
+      (last_input_signal_time_ - base::TimeTicks()).InMillisecondsF());
+  state->SetInteger("pending_main_thread_input_event_count",
+                    pending_main_thread_input_event_count_);
+  state->SetBoolean("awaiting_touch_start_response",
+                    awaiting_touch_start_response_);
   state->SetDouble(
       "estimated_next_frame_begin",
       (estimated_next_frame_begin_ - base::TimeTicks()).InMillisecondsF());
 
   return state;
-}
-
-RendererSchedulerImpl::InputStreamState
-RendererSchedulerImpl::ComputeNewInputStreamState(
-    InputStreamState current_state,
-    blink::WebInputEvent::Type new_input_type,
-    blink::WebInputEvent::Type last_input_type) {
-  switch (new_input_type) {
-    case blink::WebInputEvent::TouchStart:
-      return InputStreamState::ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE;
-
-    case blink::WebInputEvent::TouchMove:
-      // Observation of consecutive touchmoves is a strong signal that the page
-      // is consuming the touch sequence, in which case touchstart response
-      // prioritization is no longer necessary. Otherwise, the initial touchmove
-      // should preserve the touchstart response pending state.
-      if (current_state ==
-          InputStreamState::ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE) {
-        return last_input_type == blink::WebInputEvent::TouchMove
-                   ? InputStreamState::ACTIVE
-                   : InputStreamState::ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE;
-      }
-      break;
-
-    case blink::WebInputEvent::GestureTapDown:
-    case blink::WebInputEvent::GestureShowPress:
-    case blink::WebInputEvent::GestureFlingCancel:
-    case blink::WebInputEvent::GestureScrollEnd:
-      // With no observable effect, these meta events do not indicate a
-      // meaningful touchstart response and should not impact task priority.
-      return current_state;
-
-    default:
-      break;
-  }
-  return InputStreamState::ACTIVE;
 }
 
 }  // namespace scheduler

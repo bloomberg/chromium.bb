@@ -45,9 +45,23 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   // called from the main thread.
   virtual void DidCommitFrameToCompositor() = 0;
 
-  // Tells the scheduler that the system received an input event. Called by the
-  // compositor (impl) thread.
-  virtual void DidReceiveInputEventOnCompositorThread(
+  enum class InputEventState {
+    EVENT_CONSUMED_BY_COMPOSITOR,
+    EVENT_FORWARDED_TO_MAIN_THREAD,
+  };
+
+  // Tells the scheduler that the system processed an input event. Called by the
+  // compositor (impl) thread.  Note it's expected that every call to
+  // DidHandleInputEventOnCompositorThread where |event_state| is
+  // EVENT_FORWARDED_TO_MAIN_THREAD will be followed by a corresponding call
+  // to DidHandleInputEventOnMainThread.
+  virtual void DidHandleInputEventOnCompositorThread(
+      const blink::WebInputEvent& web_input_event,
+      InputEventState event_state) = 0;
+
+  // Tells the scheduler that the system processed an input event. Must be
+  // called from the main thread.
+  virtual void DidHandleInputEventOnMainThread(
       const blink::WebInputEvent& web_input_event) = 0;
 
   // Tells the scheduler that the system is displaying an input animation (e.g.

@@ -23,7 +23,10 @@ class NullRendererScheduler : public RendererScheduler {
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
   void DidCommitFrameToCompositor() override;
-  void DidReceiveInputEventOnCompositorThread(
+  void DidHandleInputEventOnCompositorThread(
+      const blink::WebInputEvent& web_input_event,
+      InputEventState event_state) override;
+  void DidHandleInputEventOnMainThread(
       const blink::WebInputEvent& web_input_event) override;
   void OnRendererHidden() override;
   void OnRendererVisible() override;

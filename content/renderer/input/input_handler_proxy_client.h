@@ -38,9 +38,6 @@ class InputHandlerProxyClient {
 
   virtual void DidStopFlinging() = 0;
 
-  virtual void DidReceiveInputEvent(
-      const blink::WebInputEvent& web_input_event) = 0;
-
   virtual void DidAnimateForInput() = 0;
 
  protected:

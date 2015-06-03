@@ -53,7 +53,12 @@ void NullRendererScheduler::BeginFrameNotExpectedSoon() {
 void NullRendererScheduler::DidCommitFrameToCompositor() {
 }
 
-void NullRendererScheduler::DidReceiveInputEventOnCompositorThread(
+void NullRendererScheduler::DidHandleInputEventOnCompositorThread(
+    const blink::WebInputEvent& web_input_event,
+    InputEventState event_state) {
+}
+
+void NullRendererScheduler::DidHandleInputEventOnMainThread(
     const blink::WebInputEvent& web_input_event) {
 }
 

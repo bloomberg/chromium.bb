@@ -46,7 +46,12 @@ void FakeRendererScheduler::BeginFrameNotExpectedSoon() {
 void FakeRendererScheduler::DidCommitFrameToCompositor() {
 }
 
-void FakeRendererScheduler::DidReceiveInputEventOnCompositorThread(
+void FakeRendererScheduler::DidHandleInputEventOnCompositorThread(
+    const blink::WebInputEvent& web_input_event,
+    InputEventState event_state) {
+}
+
+void FakeRendererScheduler::DidHandleInputEventOnMainThread(
     const blink::WebInputEvent& web_input_event) {
 }
 
