@@ -384,7 +384,7 @@ void DefaultChannelIDStore::EnqueueTask(scoped_ptr<Task> task) {
   DCHECK(!loaded_);
   if (waiting_tasks_.empty())
     waiting_tasks_start_time_ = base::TimeTicks::Now();
-  waiting_tasks_.push_back(task.release());
+  waiting_tasks_.push_back(task.Pass());
 }
 
 void DefaultChannelIDStore::RunOrEnqueueTask(scoped_ptr<Task> task) {
