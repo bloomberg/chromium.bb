@@ -38,18 +38,6 @@ import symbol_extractor
 _PREFIXES = ('.text.startup.', '.text.hot.', '.text.unlikely.', '.text.')
 
 
-def UniqueGenerator(generator):
-  """Make the output of a generator unique."""
-  def Wrapper(*args, **kwargs):
-    returned = set()
-    for item in generator(*args, **kwargs):
-      if item in returned:
-        continue
-      returned.add(item)
-      yield item
-  return Wrapper
-
-
 def _RemoveClone(name):
   """Return name up to the ".clone." marker."""
   clone_index = name.find('.clone.')
@@ -114,9 +102,9 @@ def _StripPrefix(line):
 
 def _SectionNameToSymbols(section_name, section_to_symbols_map):
   """Returns all symbols which could be referred to by section_name."""
-  if (not section_name or
-      section_name == '.text' or
-      section_name.endswith('*')):
+  if (section_name == '' or
+      section_name == '.text.*' or
+      section_name == '.text'):
     return  # Don't return anything for catch-all sections
   if section_name in section_to_symbols_map:
     for symbol in section_to_symbols_map[section_name]:
@@ -124,29 +112,37 @@ def _SectionNameToSymbols(section_name, section_to_symbols_map):
   else:
     section_name = _StripPrefix(section_name)
     name = _RemoveClone(section_name)
-    if name:
+    if name != '' and name != '*' and name != '.text':
       yield section_name
 
 
-def GetSectionsFromOrderfile(filename):
-  """Yields the sections from an orderfile.
+def _GetSymbolsFromStream(lines, section_to_symbols_map):
+  """Gets the symbols from an iterable of lines.
+     Filters out wildcards and lines which do not correspond to symbols.
 
   Args:
-    filename: The name of the orderfile.
+    lines: iterable of lines from an orderfile.
+    section_to_symbols_map: The mapping from section to symbol name.  If a
+                            section isn't in the mapping, it is assumed the
+                            section name is the prefixed symbol name.
 
-  Yields:
-    A list of symbol names.
+  Returns:
+    Same as GetSymbolsFromOrderfile
   """
-  with open(filename, 'r') as f:
-    for line in f.xreadlines():
-      line = line.rstrip('\n')
-      if line:
-        yield line
+  # TODO(lizeb): Retain the prefixes later in the processing stages.
+  symbols = []
+  unique_symbols = set()
+  for line in lines:
+    line = line.rstrip('\n')
+    for symbol in _SectionNameToSymbols(line, section_to_symbols_map):
+      if not symbol in unique_symbols:
+        symbols.append(symbol)
+        unique_symbols.add(symbol)
+  return symbols
 
 
-@UniqueGenerator
 def GetSymbolsFromOrderfile(filename, section_to_symbols_map):
-  """Yields the symbols from an orderfile.
+  """Return the symbols from an orderfile.
 
   Args:
     filename: The name of the orderfile.
@@ -154,18 +150,17 @@ def GetSymbolsFromOrderfile(filename, section_to_symbols_map):
                             section isn't in the mapping, it is assumed the
                             section name is the prefixed symbol name.
 
-  Yields:
+  Returns:
     A list of symbol names.
   """
-  for section in GetSectionsFromOrderfile(filename):
-    for symbol in _SectionNameToSymbols(section, section_to_symbols_map):
-      yield symbol
+  with open(filename, 'r') as f:
+    return _GetSymbolsFromStream(f.xreadlines(), section_to_symbols_map)
 
 
 def _SymbolsWithSameOffset(profiled_symbol, name_to_symbol_info,
                            offset_to_symbol_info):
-  """Expand a symbol to include all symbols with the same offset.
-
+  """Expand a profiled symbol to include all symbols which share an offset
+     with that symbol.
   Args:
     profiled_symbol: the string symbol name to be expanded.
     name_to_symbol_info: {name: [symbol_info1], ...}, as returned by
@@ -176,7 +171,7 @@ def _SymbolsWithSameOffset(profiled_symbol, name_to_symbol_info,
     A list of symbol names, or an empty list if profiled_symbol was not in
     name_to_symbol_info.
   """
-  if profiled_symbol not in name_to_symbol_info:
+  if not profiled_symbol in name_to_symbol_info:
     return []
   symbol_infos = name_to_symbol_info[profiled_symbol]
   expanded = []
@@ -184,69 +179,57 @@ def _SymbolsWithSameOffset(profiled_symbol, name_to_symbol_info,
     expanded += (s.name for s in offset_to_symbol_info[symbol_info.offset])
   return expanded
 
-
-@UniqueGenerator
-def _ExpandSection(section_name,
-                   name_to_symbol_infos, offset_to_symbol_infos,
-                   section_to_symbols_map, symbol_to_sections_map):
-  """Get all the sections which might contain the same code as section_name.
+def _ExpandSymbols(profiled_symbols, name_to_symbol_infos,
+                   offset_to_symbol_infos):
+  """Expand all of the symbols in profiled_symbols to include any symbols which
+     share the same address.
 
   Args:
-    section_name: The section to expand.
+    profiled_symbols: Symbols to match
     name_to_symbol_infos: {name: [symbol_info1], ...}, as returned by
-        GetSymbolInfosFromBinary.
+        GetSymbolInfosFromBinary
     offset_to_symbol_infos: {offset: [symbol_info1, ...], ...}
-    section_to_symbols_map: The mapping from section to symbol name.  If a
-        section isn't in the mapping, it is assumed the section name is the
-        prefixed symbol name.
-    symbol_to_sections_map: The mapping from symbol name to names of linker
-        sections containing the symbol.  If a symbol isn't in the mapping, the
-        set of _PREFIXES on symbol is assumed for the section names.
 
-  Yields:
-    Section names including at least section_name.
+  Returns:
+    A list of the symbol names.
   """
-  yield section_name
-  for first_sym in _SectionNameToSymbols(section_name,
-                                         section_to_symbols_map):
-    for symbol in _SymbolsWithSameOffset(first_sym, name_to_symbol_infos,
-                                         offset_to_symbol_infos):
-      if symbol in symbol_to_sections_map:
-        for section in symbol_to_sections_map[symbol]:
-          yield section
-      else:
-        for prefix in _PREFIXES:
-          yield prefix + symbol
+  found_symbols = 0
+  missing_symbols = []
+  all_symbols = []
+  for name in profiled_symbols:
+    expansion = _SymbolsWithSameOffset(name,
+        name_to_symbol_infos, offset_to_symbol_infos)
+    if expansion:
+      found_symbols += 1
+      all_symbols += expansion
+    else:
+      all_symbols.append(name)
+      missing_symbols.append(name)
+  logging.info('symbols found: %d\n' % found_symbols)
+  if missing_symbols > 0:
+    logging.warning('%d missing symbols.' % len(missing_symbols))
+    missing_symbols_to_show = min(100, len(missing_symbols))
+    logging.warning('First %d missing symbols:\n%s' % (
+        missing_symbols_to_show,
+        '\n'.join(missing_symbols[:missing_symbols_to_show])))
+  return all_symbols
 
 
-@UniqueGenerator
-def _ExpandSections(section_names,
-                    name_to_symbol_infos, offset_to_symbol_infos,
-                    section_to_symbols_map, symbol_to_sections_map):
-  """Expand the set of sections with sections which contain the same symbols.
-
-  Args:
-    section_names: The sections to expand.
-    name_to_symbol_infos: {name: [symbol_info1], ...}, as returned by
-        GetSymbolInfosFromBinary.
-    offset_to_symbol_infos: {offset: [symbol_info1, ...], ...}
-    section_to_symbols_map: The mapping from section to symbol names.  If a
-                            section isn't in the mapping, it is assumed the
-                            section name is the prefixed symbol name.
-    symbol_to_sections_map: The mapping from symbol name to names of linker
-                            sections containing the symbol.  If a symbol isn't
-                            in the mapping, the set of _PREFIXES on symbol is
-                            assumed for the section names.
-
-  Yields:
-    Section names including at least section_names.
-  """
-  for profiled_section in section_names:
-    for section in _ExpandSection(
-        profiled_section,
-        name_to_symbol_infos, offset_to_symbol_infos,
-        section_to_symbols_map, symbol_to_sections_map):
-      yield section
+def _PrintSymbolsAsSections(symbol_names, symbol_to_sections_map, output_file):
+  """For each symbol, outputs it to output_file with the prefixes."""
+  unique_outputs = set()
+  for name in symbol_names:
+    if name in symbol_to_sections_map:
+      for linker_section in symbol_to_sections_map[name]:
+        if linker_section != '.text' and not linker_section in unique_outputs:
+          output_file.write(linker_section + '\n')
+          unique_outputs.add(linker_section)
+    else:
+      for prefix in _PREFIXES:
+        linker_section = prefix + name
+        if not linker_section in unique_outputs:
+          output_file.write(linker_section + '\n')
+          unique_outputs.add(linker_section)
 
 
 def InvertMapping(x_to_ys):
@@ -279,17 +262,14 @@ def main(argv):
   symbol_to_sections_map = \
       cyglog_to_orderfile.GetSymbolToSectionsMapFromObjectFiles(obj_dir)
   section_to_symbols_map = InvertMapping(symbol_to_sections_map)
-  profiled_sections = GetSectionsFromOrderfile(orderfile_filename)
-  expanded_sections = _ExpandSections(
-      profiled_sections,
-      name_to_symbol_infos, offset_to_symbol_infos,
-      section_to_symbols_map, symbol_to_sections_map)
-  for section in expanded_sections:
-    print section
+  profiled_symbols = GetSymbolsFromOrderfile(orderfile_filename,
+                                             section_to_symbols_map)
+  expanded_symbols = _ExpandSymbols(profiled_symbols,
+      name_to_symbol_infos, offset_to_symbol_infos)
+  _PrintSymbolsAsSections(expanded_symbols, symbol_to_sections_map, sys.stdout)
   # The following is needed otherwise Gold only applies a partial sort.
-  print '.text'  # gets methods not in a section, such as assembly
-  for prefix in _PREFIXES:
-    print prefix + '*'  # gets everything else
+  print '.text'    # gets methods not in a section, such as assembly
+  print '.text.*'  # gets everything else
   return 0
 
 
