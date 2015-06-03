@@ -98,7 +98,6 @@ class HTMLDocument : public blink::WebViewClient,
       const blink::WebString& frameName,
       blink::WebSandboxFlags sandboxFlags);
   virtual void frameDetached(blink::WebFrame* frame);
-  virtual void frameDetached(blink::WebFrame* frame, DetachType type);
   virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
       const NavigationPolicyInfo& info);
