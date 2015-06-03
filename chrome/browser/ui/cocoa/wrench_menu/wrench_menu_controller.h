@@ -69,6 +69,9 @@ class ZoomLevelObserver;
   // wrench menu.
   // This will only be present if the extension action redesign switch is on.
   base::scoped_nsobject<BrowserActionsController> browserActionsController_;
+
+  // The menu item containing the browser actions overflow container.
+  NSMenuItem* browserActionsMenuItem_;
 }
 
 // Designated initializer.

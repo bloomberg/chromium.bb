@@ -64,6 +64,10 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 
   // The bubble that is actively showing, if any.
   ToolbarActionsBarBubbleMac* activeBubble_;
+
+  // The index of the currently-focused view in the overflow menu, or -1 if
+  // no view is focused.
+  NSInteger focusedViewIndex_;
 }
 
 @property(readonly, nonatomic) BrowserActionsContainerView* containerView;
@@ -112,6 +116,9 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 
 // Returns the associated ToolbarActionsBar.
 - (ToolbarActionsBar*)toolbarActionsBar;
+
+// Sets whether or not the overflow container is focused in the wrench menu.
+- (void)setFocusedInOverflow:(BOOL)focused;
 
 @end  // @interface BrowserActionsController
 

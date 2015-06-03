@@ -44,6 +44,7 @@ using base::UserMetricsAction;
 - (void)adjustPositioning;
 - (void)performCommandDispatch:(NSNumber*)tag;
 - (NSButton*)zoomDisplay;
+- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item;
 - (void)removeAllItems:(NSMenu*)menu;
 - (NSMenu*)recentTabsSubmenu;
 - (RecentTabsSubMenuModel*)recentTabsMenuModel;
@@ -133,6 +134,7 @@ class ZoomLevelObserver {
   MenuTrackedRootView* view = nil;
   switch (command_id) {
     case IDC_EXTENSIONS_OVERFLOW_MENU: {
+      browserActionsMenuItem_ = customItem.get();
       view = [buttonViewController_ toolbarActionsOverflowItem];
       BrowserActionsContainerView* containerView =
           [buttonViewController_ overflowActionsContainerView];
@@ -384,6 +386,13 @@ class ZoomLevelObserver {
 
 - (NSButton*)zoomDisplay {
   return [buttonViewController_ zoomDisplay];
+}
+
+- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem*)item {
+  if (browserActionsController_.get()) {
+    [browserActionsController_ setFocusedInOverflow:
+        (item == browserActionsMenuItem_)];
+  }
 }
 
 // -[NSMenu removeAllItems] is only available on 10.6+.

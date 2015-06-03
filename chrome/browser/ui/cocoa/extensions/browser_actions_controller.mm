@@ -108,6 +108,9 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // ended.
 - (void)containerAnimationEnded:(NSNotification*)notification;
 
+// Processes a key event from the container.
+- (void)containerKeyEvent:(NSNotification*)notification;
+
 // Adjusts the position of the surrounding action buttons depending on where the
 // button is within the container.
 - (void)actionButtonDragging:(NSNotification*)notification;
@@ -166,6 +169,10 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // Called when the window for the active bubble is closing, and sets the active
 // bubble to nil.
 - (void)bubbleWindowClosing:(NSNotification*)notification;
+
+// Sets the current focused view. Should only be used for the overflow
+// container.
+- (void)setFocusedViewIndex:(NSInteger)index;
 
 @end
 
@@ -341,6 +348,11 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
            selector:@selector(containerAnimationEnded:)
                name:kBrowserActionsContainerAnimationEnded
              object:containerView_];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(containerKeyEvent:)
+               name:kBrowserActionsContainerReceivedKeyEvent
+             object:containerView_];
     // Listen for a finished drag from any button to make sure each open window
     // stays in sync.
     [[NSNotificationCenter defaultCenter]
@@ -364,7 +376,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
     toolbarActionsBar_->CreateActions();
     [self showChevronIfNecessaryInFrame:[containerView_ frame]];
     [self updateGrippyCursors];
-    [container setResizable:!isOverflow_];
+    [container setIsOverflow:isOverflow_];
     if (ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
             browser_->profile())) {
       [containerView_ setTrackingEnabled:YES];
@@ -374,6 +386,8 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
                  name:kBrowserActionsContainerMouseEntered
                object:containerView_];
     }
+
+    focusedViewIndex_ = -1;
   }
 
   return self;
@@ -463,6 +477,15 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 
 - (ToolbarActionsBar*)toolbarActionsBar {
   return toolbarActionsBar_.get();
+}
+
+- (void)setFocusedInOverflow:(BOOL)focused {
+  BOOL isFocused = focusedViewIndex_ != -1;
+  if (isFocused != focused) {
+    int index = focused ?
+        [buttons_ count] - toolbarActionsBar_->GetIconCount() : -1;
+    [self setFocusedViewIndex:index];
+  }
 }
 
 #pragma mark -
@@ -722,6 +745,37 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
     toolbarActionsBar_->OnAnimationEnded();
 }
 
+- (void)containerKeyEvent:(NSNotification*)notification {
+  DCHECK(isOverflow_);  // We only manually process key events in overflow.
+
+  NSDictionary* dict = [notification userInfo];
+  BrowserActionsContainerKeyAction action =
+      static_cast<BrowserActionsContainerKeyAction>(
+          [[dict objectForKey:kBrowserActionsContainerKeyEventKey] intValue]);
+  switch (action) {
+    case BROWSER_ACTIONS_DECREMENT_FOCUS:
+    case BROWSER_ACTIONS_INCREMENT_FOCUS: {
+      NSInteger newIndex = focusedViewIndex_ +
+          (action == BROWSER_ACTIONS_INCREMENT_FOCUS ? 1 : -1);
+      NSInteger minIndex =
+          [buttons_ count] - toolbarActionsBar_->GetIconCount();
+      if (newIndex >= minIndex && newIndex < static_cast<int>([buttons_ count]))
+        [self setFocusedViewIndex:newIndex];
+      break;
+    }
+    case BROWSER_ACTIONS_EXECUTE_CURRENT: {
+      if (focusedViewIndex_ != -1) {
+        BrowserActionButton* focusedButton =
+            [self buttonAtIndex:focusedViewIndex_];
+        [focusedButton performClick:focusedButton];
+      }
+      break;
+    }
+    case BROWSER_ACTIONS_INVALID_KEY_ACTION:
+      NOTREACHED();
+  }
+}
+
 - (void)containerMouseEntered:(NSNotification*)notification {
   if (!activeBubble_ &&  // only show one bubble at a time
       ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
@@ -965,6 +1019,11 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 
 - (void)bubbleWindowClosing:(NSNotification*)notification {
   activeBubble_ = nil;
+}
+
+- (void)setFocusedViewIndex:(NSInteger)index {
+  DCHECK(isOverflow_);
+  focusedViewIndex_ = index;
 }
 
 #pragma mark -

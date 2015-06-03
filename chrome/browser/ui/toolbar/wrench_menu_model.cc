@@ -85,6 +85,13 @@ using base::UserMetricsAction;
 using content::WebContents;
 
 namespace {
+
+#if defined(OS_MACOSX)
+// An empty command used because of a bug in AppKit menus.
+// See comment in CreateExtensionToolbarOverflowMenu().
+const int kEmptyMenuItemCommand = 0;
+#endif
+
 // Conditionally return the update app menu item title based on upgrade detector
 // state.
 base::string16 GetUpgradeDialogMenuItemName() {
@@ -775,6 +782,10 @@ bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
   switch (command_id) {
+#if defined(OS_MACOSX)
+    case kEmptyMenuItemCommand:
+      return false;  // Always hidden (see CreateExtensionToolbarOverflowMenu).
+#endif
 #if defined(OS_WIN)
     case IDC_VIEW_INCOMPATIBILITIES: {
       EnumerateModulesModel* loaded_modules =
@@ -1040,6 +1051,14 @@ void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
           all_icons_visible() ||
       ComponentToolbarActionsFactory::GetInstance()->
           GetNumComponentActions() > 0) {
+#if defined(OS_MACOSX)
+    // There's a bug in AppKit menus, where if a menu item with a custom view
+    // (like the extensions overflow menu) is the first menu item, it is not
+    // highlightable or keyboard-selectable.
+    // Adding any menu item before it (even one which is never visible) prevents
+    // it, so add a bogus item here that will always be hidden.
+    AddItem(kEmptyMenuItemCommand, base::string16());
+#endif
     AddItem(IDC_EXTENSIONS_OVERFLOW_MENU, base::string16());
     AddSeparator(ui::UPPER_SEPARATOR);
   }

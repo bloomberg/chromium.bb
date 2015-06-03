@@ -32,6 +32,22 @@ extern NSString* const kBrowserActionsContainerAnimationEnded;
 // Key which is used to notify the translation with delta.
 extern NSString* const kTranslationWithDelta;
 
+// Sent when the container receives a key event that should be processed.
+// The userInfo contains a single entry with the key event.
+extern NSString* const kBrowserActionsContainerReceivedKeyEvent;
+
+// The key into the userInfo dictionary to retrieve the key event (stored as an
+// integer).
+extern NSString* const kBrowserActionsContainerKeyEventKey;
+
+// The possible key actions to process.
+enum BrowserActionsContainerKeyAction {
+  BROWSER_ACTIONS_INCREMENT_FOCUS = 0,
+  BROWSER_ACTIONS_DECREMENT_FOCUS = 1,
+  BROWSER_ACTIONS_EXECUTE_CURRENT = 2,
+  BROWSER_ACTIONS_INVALID_KEY_ACTION = 3,
+};
+
 class BrowserActionsContainerViewSizeDelegate {
  public:
   virtual CGFloat GetMaxAllowedWidth() = 0;
@@ -60,6 +76,10 @@ class BrowserActionsContainerViewSizeDelegate {
   // mode since any changes done in incognito mode are not saved anyway, and
   // also to avoid a crash. http://crbug.com/42848
   BOOL resizable_;
+
+  // Whether or not the container is the overflow container, and is shown in the
+  // wrench menu.
+  BOOL isOverflow_;
 
   // Whether the user is allowed to drag the grippy to the left. NO if all
   // extensions are shown or the location bar has hit its minimum width (handled
@@ -93,6 +113,9 @@ class BrowserActionsContainerViewSizeDelegate {
 // Sets whether or not tracking (for mouseEntered events) is enabled.
 - (void)setTrackingEnabled:(BOOL)enabled;
 
+// Sets whether or not the container is the overflow container.
+- (void)setIsOverflow:(BOOL)isOverflow;
+
 // Sets whether or not the container is highlighting.
 - (void)setIsHighlighting:(BOOL)isHighlighting;
 
@@ -112,7 +135,6 @@ class BrowserActionsContainerViewSizeDelegate {
 @property(nonatomic) BOOL canDragLeft;
 @property(nonatomic) BOOL canDragRight;
 @property(nonatomic) BOOL grippyPinned;
-@property(nonatomic,getter=isResizable) BOOL resizable;
 @property(nonatomic) CGFloat maxDesiredWidth;
 @property(readonly, nonatomic) BOOL userIsResizing;
 @property(nonatomic) BrowserActionsContainerViewSizeDelegate* delegate;

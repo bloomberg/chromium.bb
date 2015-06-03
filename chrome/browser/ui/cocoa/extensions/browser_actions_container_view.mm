@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/theme_resources.h"
 #include "ui/base/cocoa/appkit_utils.h"
+#include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
 NSString* const kBrowserActionGrippyDragStartedNotification =
     @"BrowserActionGrippyDragStartedNotification";
@@ -25,6 +26,10 @@ NSString* const kBrowserActionsContainerAnimationEnded =
     @"BrowserActionsContainerAnimationEnded";
 NSString* const kTranslationWithDelta =
     @"TranslationWithDelta";
+NSString* const kBrowserActionsContainerReceivedKeyEvent =
+    @"BrowserActionsContainerReceivedKeyEvent";
+NSString* const kBrowserActionsContainerKeyEventKey =
+    @"BrowserActionsContainerKeyEventKey";
 
 namespace {
 const CGFloat kAnimationDuration = 0.2;
@@ -85,6 +90,22 @@ const CGFloat kMinimumContainerWidth = 3.0;
   }
 }
 
+- (void)viewDidMoveToWindow {
+  if (isOverflow_) {
+    // Yet another Cocoa oddity: Custom views in menu items in Cocoa, by
+    // default, won't receive key events. However, if we make this the first
+    // responder when it's moved to a window, it will, and it will behave
+    // properly (i.e., will only receive key events if the menu item is
+    // highlighted, not for any key event in the menu). More strangely,
+    // setting this to be first responder at any other time (such as calling
+    // [[containerView window] makeFirstResponder:containerView] when the menu
+    // item is highlighted) does *not* work (it messes up the currently-
+    // highlighted item).
+    // Since this seems to have the right behavior, use it.
+    [[self window] makeFirstResponder:self];
+  }
+}
+
 - (void)setTrackingEnabled:(BOOL)enabled {
   if (enabled) {
     trackingArea_.reset(
@@ -102,6 +123,50 @@ const CGFloat kMinimumContainerWidth = 3.0;
   }
 }
 
+- (void)keyDown:(NSEvent*)theEvent {
+  // If this is the overflow container, we handle three key events: left, right,
+  // and space. Left and right navigate the actions within the container, and
+  // space activates the current one. We have to handle this ourselves, because
+  // Cocoa doesn't treat custom views with subviews in menu items differently
+  // than any other menu item, so it would otherwise be impossible to navigate
+  // to a particular action from the keyboard.
+  ui::KeyboardCode key = ui::KeyboardCodeFromNSEvent(theEvent);
+  BOOL shouldProcess = isOverflow_ &&
+      (key == ui::VKEY_RIGHT || key == ui::VKEY_LEFT || key == ui::VKEY_SPACE);
+
+  // If this isn't the overflow container, or isn't one of the keys we process,
+  // forward the event on.
+  if (!shouldProcess) {
+    [super keyDown:theEvent];
+    return;
+  }
+
+  // TODO(devlin): The keyboard navigation should be adjusted for RTL, but right
+  // now we only ever display the extension items in the same way (LTR) on Mac.
+  BrowserActionsContainerKeyAction action = BROWSER_ACTIONS_INVALID_KEY_ACTION;
+  switch (key) {
+    case ui::VKEY_RIGHT:
+      action = BROWSER_ACTIONS_INCREMENT_FOCUS;
+      break;
+    case ui::VKEY_LEFT:
+      action = BROWSER_ACTIONS_DECREMENT_FOCUS;
+      break;
+    case ui::VKEY_SPACE:
+      action = BROWSER_ACTIONS_EXECUTE_CURRENT;
+      break;
+    default:
+      NOTREACHED();  // Should have weeded this case out above.
+  }
+
+  DCHECK_NE(BROWSER_ACTIONS_INVALID_KEY_ACTION, action);
+  NSDictionary* userInfo = @{ kBrowserActionsContainerKeyEventKey : @(action) };
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kBrowserActionsContainerReceivedKeyEvent
+                    object:self
+                    userInfo:userInfo];
+  [super keyDown:theEvent];
+}
+
 - (void)setIsHighlighting:(BOOL)isHighlighting {
   if (isHighlighting != isHighlighting_) {
     isHighlighting_ = isHighlighting;
@@ -109,15 +174,12 @@ const CGFloat kMinimumContainerWidth = 3.0;
   }
 }
 
-- (void)setResizable:(BOOL)resizable {
-  if (resizable == resizable_)
-    return;
-  resizable_ = resizable;
-  [self setNeedsDisplay:YES];
-}
-
-- (BOOL)isResizable {
-  return resizable_;
+- (void)setIsOverflow:(BOOL)isOverflow {
+  if (isOverflow_ != isOverflow) {
+    isOverflow_ = isOverflow;
+    resizable_ = !isOverflow_;
+    [self setNeedsDisplay:YES];
+  }
 }
 
 - (void)resetCursorRects {

@@ -38,7 +38,6 @@ class BrowserActionsContainerViewTest : public CocoaTest {
 };
 
 TEST_F(BrowserActionsContainerViewTest, BasicTests) {
-  EXPECT_TRUE([view_ isResizable]);
   EXPECT_TRUE([view_ canDragLeft]);
   EXPECT_TRUE([view_ canDragRight]);
   EXPECT_TRUE([view_ isHidden]);
