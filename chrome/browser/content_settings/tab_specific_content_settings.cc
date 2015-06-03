@@ -49,26 +49,11 @@
 using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
-using content::RenderViewHost;
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabSpecificContentSettings);
 
 namespace {
-
-// Returns the object given a render frame's id.
-TabSpecificContentSettings* GetForFrame(int render_process_id,
-                                        int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  content::RenderFrameHost* frame = content::RenderFrameHost::FromID(
-      render_process_id, render_frame_id);
-  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
-  if (!web_contents)
-    return nullptr;
-
-  return TabSpecificContentSettings::FromWebContents(web_contents);
-}
 
 ContentSettingsUsagesState::CommittedDetails GetCommittedDetails(
     const content::LoadCommittedDetails& details) {
@@ -133,19 +118,16 @@ TabSpecificContentSettings::~TabSpecificContentSettings() {
       SiteDataObserver, observer_list_, ContentSettingsDestroyed());
 }
 
-// static
-TabSpecificContentSettings* TabSpecificContentSettings::Get(
-    int render_process_id, int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+TabSpecificContentSettings* TabSpecificContentSettings::GetForFrame(
+    int render_process_id,
+    int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RenderViewHost* view = RenderViewHost::FromID(render_process_id,
-                                                render_view_id);
-  if (!view)
-    return NULL;
-
-  WebContents* web_contents = WebContents::FromRenderViewHost(view);
+  content::RenderFrameHost* frame = content::RenderFrameHost::FromID(
+      render_process_id, render_frame_id);
+  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
   if (!web_contents)
-    return NULL;
+    return nullptr;
 
   return TabSpecificContentSettings::FromWebContents(web_contents);
 }

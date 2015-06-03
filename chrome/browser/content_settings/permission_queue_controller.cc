@@ -31,13 +31,23 @@
 namespace {
 
 InfoBarService* GetInfoBarService(const PermissionRequestID& id) {
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(id.render_process_id(), id.render_view_id());
+  content::WebContents* web_contents = tab_util::GetWebContentsByFrameID(
+      id.render_process_id(), id.render_frame_id());
   return web_contents ? InfoBarService::FromWebContents(web_contents) : NULL;
 }
 
+bool ArePermissionRequestsForSameTab(
+    const PermissionRequestID& request,
+    const PermissionRequestID& other_request) {
+  content::WebContents* web_contents = tab_util::GetWebContentsByFrameID(
+      request.render_process_id(), request.render_frame_id());
+  content::WebContents* other_web_contents = tab_util::GetWebContentsByFrameID(
+      other_request.render_process_id(), other_request.render_frame_id());
+
+  return web_contents == other_web_contents;
 }
 
+}  // anonymous namespace
 
 class PermissionQueueController::PendingInfobarRequest {
  public:
@@ -171,13 +181,15 @@ void PermissionQueueController::CancelInfoBarRequest(
 
   for (PendingInfobarRequests::iterator i(pending_infobar_requests_.begin());
        i != pending_infobar_requests_.end(); ++i) {
-    if (i->id().Equals(id)) {
-      if (i->has_infobar())
-        GetInfoBarService(id)->RemoveInfoBar(i->infobar());
-      else
-        pending_infobar_requests_.erase(i);
-      return;
-    }
+    if (!i->id().Equals(id))
+      continue;
+
+    InfoBarService* infobar_service = GetInfoBarService(id);
+    if (infobar_service && i->has_infobar())
+      infobar_service->RemoveInfoBar(i->infobar());
+    else
+      pending_infobar_requests_.erase(i);
+    return;
   }
 }
 
@@ -287,7 +299,7 @@ bool PermissionQueueController::AlreadyShowingInfoBarForTab(
   for (PendingInfobarRequests::const_iterator i(
            pending_infobar_requests_.begin());
        i != pending_infobar_requests_.end(); ++i) {
-    if (i->id().IsForSameTabAs(id) && i->has_infobar())
+    if (ArePermissionRequestsForSameTab(i->id(), id) && i->has_infobar())
       return true;
   }
   return false;
@@ -314,7 +326,7 @@ void PermissionQueueController::ShowQueuedInfoBarForTab(
 
   for (PendingInfobarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ++i) {
-    if (i->id().IsForSameTabAs(id) && !i->has_infobar()) {
+    if (ArePermissionRequestsForSameTab(i->id(), id) && !i->has_infobar()) {
       RegisterForInfoBarNotifications(infobar_service);
       i->CreateInfoBar(
           this, profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
@@ -329,7 +341,7 @@ void PermissionQueueController::ClearPendingInfobarRequestsForTab(
     const PermissionRequestID& id) {
   for (PendingInfobarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ) {
-    if (i->id().IsForSameTabAs(id)) {
+    if (ArePermissionRequestsForSameTab(i->id(), id)) {
       DCHECK(!i->has_infobar());
       i = pending_infobar_requests_.erase(i);
     } else {

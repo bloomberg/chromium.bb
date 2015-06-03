@@ -7,11 +7,11 @@
 #include "base/strings/stringprintf.h"
 
 PermissionRequestID::PermissionRequestID(int render_process_id,
-                                         int render_view_id,
+                                         int render_frame_id,
                                          int bridge_id,
                                          const GURL& origin)
     : render_process_id_(render_process_id),
-      render_view_id_(render_view_id),
+      render_frame_id_(render_frame_id),
       bridge_id_(bridge_id),
       origin_(origin) {
 }
@@ -20,20 +20,16 @@ PermissionRequestID::~PermissionRequestID() {
 }
 
 bool PermissionRequestID::Equals(const PermissionRequestID& other) const {
-  return IsForSameTabAs(other) && (bridge_id_ == other.bridge_id_) &&
-         (origin_ == other.origin());
-}
-
-bool PermissionRequestID::IsForSameTabAs(
-    const PermissionRequestID& other) const {
-  return (render_process_id_ == other.render_process_id_) &&
-         (render_view_id_ == other.render_view_id_);
+  return render_process_id_ == other.render_process_id_ &&
+         render_frame_id_ == other.render_frame_id_ &&
+         bridge_id_ == other.bridge_id_ &&
+         origin_ == other.origin_;
 }
 
 std::string PermissionRequestID::ToString() const {
   return base::StringPrintf("%d,%d,%d,%s",
                             render_process_id_,
-                            render_view_id_,
+                            render_frame_id_,
                             bridge_id_,
                             origin_.spec().c_str());
 }

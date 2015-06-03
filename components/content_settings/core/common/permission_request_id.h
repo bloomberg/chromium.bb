@@ -13,23 +13,22 @@
 class PermissionRequestID {
  public:
   PermissionRequestID(int render_process_id,
-                      int render_view_id,
+                      int render_frame_id,
                       int bridge_id,
                       const GURL& origin);
   ~PermissionRequestID();
 
   int render_process_id() const { return render_process_id_; }
-  int render_view_id() const { return render_view_id_; }
+  int render_frame_id() const { return render_frame_id_; }
   int bridge_id() const { return bridge_id_; }
   GURL origin() const { return origin_; }
 
   bool Equals(const PermissionRequestID& other) const;
-  bool IsForSameTabAs(const PermissionRequestID& other) const;
   std::string ToString() const;
 
  private:
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
   // Id unique to this instance.
   int bridge_id_;
   // Needed for permission checks that are based on origin.

@@ -78,4 +78,8 @@ GURL PermissionServiceContext::GetEmbeddingOrigin() const {
                         : GURL();
 }
 
+RenderFrameHost* PermissionServiceContext::render_frame_host() const {
+  return render_frame_host_;
+}
+
 } // namespace content

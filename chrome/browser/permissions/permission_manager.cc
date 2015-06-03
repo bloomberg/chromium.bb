@@ -11,8 +11,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
 using content::PermissionStatus;
@@ -97,7 +97,7 @@ PermissionManager::~PermissionManager() {
 
 void PermissionManager::RequestPermission(
     PermissionType permission,
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     int request_id,
     const GURL& requesting_origin,
     bool user_gesture,
@@ -108,36 +108,38 @@ void PermissionManager::RequestPermission(
     return;
   }
 
-  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
-  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  int render_process_id = render_frame_host->GetProcess()->GetID();
+  int render_frame_id = render_frame_host->GetRoutingID();
   const PermissionRequestID request(render_process_id,
-                                    render_view_id,
+                                    render_frame_id,
                                     request_id,
                                     requesting_origin);
 
-  context->RequestPermission(web_contents, request, requesting_origin,
-                             user_gesture,
-                             base::Bind(&PermissionStatusCallbackWrapper,
-                                        callback));
+  context->RequestPermission(
+      content::WebContents::FromRenderFrameHost(render_frame_host),
+      request, requesting_origin, user_gesture,
+      base::Bind(&PermissionStatusCallbackWrapper,
+                 callback));
 }
 
 void PermissionManager::CancelPermissionRequest(
     PermissionType permission,
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     int request_id,
     const GURL& requesting_origin) {
   PermissionContextBase* context = PermissionContext::Get(profile_, permission);
   if (!context)
     return;
 
-  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
-  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  int render_process_id = render_frame_host->GetProcess()->GetID();
+  int render_frame_id = render_frame_host->GetRoutingID();
   const PermissionRequestID request(render_process_id,
-                                    render_view_id,
+                                    render_frame_id,
                                     request_id,
                                     requesting_origin);
 
-  context->CancelPermissionRequest(web_contents, request);
+  context->CancelPermissionRequest(
+      content::WebContents::FromRenderFrameHost(render_frame_host), request);
 }
 
 void PermissionManager::ResetPermission(PermissionType permission,

@@ -20,8 +20,8 @@ void MidiPermissionContext::UpdateTabContext(const PermissionRequestID& id,
                                              const GURL& requesting_frame,
                                              bool allowed) {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::Get(id.render_process_id(),
-                                      id.render_view_id());
+      TabSpecificContentSettings::GetForFrame(id.render_process_id(),
+                                              id.render_frame_id());
   if (!content_settings)
     return;
 

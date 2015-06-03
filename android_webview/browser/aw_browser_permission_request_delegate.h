@@ -14,9 +14,9 @@ namespace android_webview {
 class AwBrowserPermissionRequestDelegate {
  public:
   // Returns the AwBrowserPermissionRequestDelegate instance associated with
-  // the given render_process_id and render_view_id, or NULL.
+  // the given render_process_id and render_frame_id, or NULL.
   static AwBrowserPermissionRequestDelegate* FromID(int render_process_id,
-                                                    int render_view_id);
+                                                    int render_frame_id);
 
   virtual void RequestProtectedMediaIdentifierPermission(
       const GURL& origin,

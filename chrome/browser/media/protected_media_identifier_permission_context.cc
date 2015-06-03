@@ -165,8 +165,8 @@ void ProtectedMediaIdentifierPermissionContext::UpdateTabContext(
 
   // WebContents may have gone away.
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::Get(id.render_process_id(),
-                                      id.render_view_id());
+      TabSpecificContentSettings::GetForFrame(id.render_process_id(),
+                                              id.render_frame_id());
   if (content_settings) {
     content_settings->OnProtectedMediaIdentifierPermissionSet(
         requesting_frame.GetOrigin(), allowed);

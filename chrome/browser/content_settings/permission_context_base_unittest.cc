@@ -16,6 +16,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/permission_request_id.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -108,7 +109,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
-        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        web_contents()->GetMainFrame()->GetRoutingID(),
         -1, GURL());
     permission_context.RequestPermission(
         web_contents(),
@@ -136,7 +137,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
-        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        web_contents()->GetMainFrame()->GetRoutingID(),
         -1, GURL());
     permission_context.RequestPermission(
         web_contents(),
@@ -164,7 +165,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
-        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        web_contents()->GetMainFrame()->GetRoutingID(),
         -1, GURL());
     permission_context.RequestPermission(
         web_contents(),
@@ -190,7 +191,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     const PermissionRequestID id(
         web_contents()->GetRenderProcessHost()->GetID(),
-        web_contents()->GetRenderViewHost()->GetRoutingID(),
+        web_contents()->GetMainFrame()->GetRoutingID(),
         -1, GURL());
     permission_context.RequestPermission(
         web_contents(),

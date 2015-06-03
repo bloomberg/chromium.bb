@@ -19,13 +19,13 @@ class ShellPermissionManager : public PermissionManager {
   // PermissionManager implementation.
   void RequestPermission(
       PermissionType permission,
-      WebContents* web_contents,
+      RenderFrameHost* render_frame_host,
       int request_id,
       const GURL& requesting_origin,
       bool user_gesture,
       const base::Callback<void(PermissionStatus)>& callback) override;
   void CancelPermissionRequest(PermissionType permission,
-                               WebContents* web_contents,
+                               RenderFrameHost* render_frame_host,
                                int request_id,
                                const GURL& requesting_origin) override;
   void ResetPermission(PermissionType permission,

@@ -351,8 +351,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
   // implemented.
   int bridge_id = -1;
 
-  const PermissionRequestID id(
-      renderer_id, web_contents->GetRoutingID(), bridge_id, GURL());
+  const PermissionRequestID id(renderer_id, render_frame_id, bridge_id, GURL());
 
   PushMessagingPermissionContext* permission_context =
       PushMessagingPermissionContextFactory::GetForProfile(profile_);

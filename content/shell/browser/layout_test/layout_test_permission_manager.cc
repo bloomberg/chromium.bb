@@ -63,7 +63,7 @@ LayoutTestPermissionManager::~LayoutTestPermissionManager() {
 
 void LayoutTestPermissionManager::RequestPermission(
     PermissionType permission,
-    WebContents* web_contents,
+    RenderFrameHost* render_frame_host,
     int request_id,
     const GURL& requesting_origin,
     bool user_gesture,
@@ -72,12 +72,13 @@ void LayoutTestPermissionManager::RequestPermission(
 
   callback.Run(GetPermissionStatus(
       permission, requesting_origin,
-      web_contents->GetLastCommittedURL().GetOrigin()));
+      WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetLastCommittedURL().GetOrigin()));
 }
 
 void LayoutTestPermissionManager::CancelPermissionRequest(
     PermissionType permission,
-    WebContents* web_contents,
+    RenderFrameHost* render_frame_host,
     int request_id,
     const GURL& requesting_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

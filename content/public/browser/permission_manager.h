@@ -12,7 +12,7 @@ class GURL;
 
 namespace content {
 enum class PermissionType;
-class WebContents;
+class RenderFrameHost;
 
 class CONTENT_EXPORT PermissionManager {
  public:
@@ -20,14 +20,14 @@ class CONTENT_EXPORT PermissionManager {
 
   virtual void RequestPermission(
       PermissionType permission,
-      WebContents* web_contents,
+      RenderFrameHost* render_frame_host,
       int request_id,
       const GURL& requesting_origin,
       bool user_gesture,
       const base::Callback<void(PermissionStatus)>& callback) = 0;
 
   virtual void CancelPermissionRequest(PermissionType permission,
-                                       WebContents* web_contents,
+                                       RenderFrameHost* render_frame_host,
                                        int request_id,
                                        const GURL& requesting_origin) = 0;
 

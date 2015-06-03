@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
 using content::PermissionStatus;
@@ -168,16 +168,16 @@ AwPermissionManager::~AwPermissionManager() {
 
 void AwPermissionManager::RequestPermission(
     PermissionType permission,
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     int request_id,
     const GURL& origin,
     bool user_gesture,
     const base::Callback<void(PermissionStatus)>& callback) {
-  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
-  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  int render_process_id = render_frame_host->GetProcess()->GetID();
+  int render_frame_id = render_frame_host->GetRoutingID();
   AwBrowserPermissionRequestDelegate* delegate =
       AwBrowserPermissionRequestDelegate::FromID(render_process_id,
-                                                 render_view_id);
+                                                 render_frame_id);
   if (!delegate) {
     DVLOG(0) << "Dropping permission request for "
              << static_cast<int>(permission);
@@ -186,7 +186,8 @@ void AwPermissionManager::RequestPermission(
   }
 
   const GURL& embedding_origin =
-      web_contents->GetLastCommittedURL().GetOrigin();
+      content::WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetLastCommittedURL().GetOrigin();
 
   switch (permission) {
     case PermissionType::GEOLOCATION:
@@ -217,21 +218,22 @@ void AwPermissionManager::RequestPermission(
 
 void AwPermissionManager::CancelPermissionRequest(
     PermissionType permission,
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     int request_id,
     const GURL& origin) {
   // The caller is canceling (presumably) the most recent request. Assuming the
   // request did not complete, the user did not respond to the requset.
   // Thus, assume we do not know the result.
   const GURL& embedding_origin =
-      web_contents->GetLastCommittedURL().GetOrigin();
+      content::WebContents::FromRenderFrameHost(render_frame_host)
+          ->GetLastCommittedURL().GetOrigin();
   result_cache_->ClearResult(permission, origin, embedding_origin);
 
-  int render_process_id = web_contents->GetRenderProcessHost()->GetID();
-  int render_view_id = web_contents->GetRenderViewHost()->GetRoutingID();
+  int render_process_id = render_frame_host->GetProcess()->GetID();
+  int render_frame_id = render_frame_host->GetRoutingID();
   AwBrowserPermissionRequestDelegate* delegate =
       AwBrowserPermissionRequestDelegate::FromID(render_process_id,
-                                                 render_view_id);
+                                                 render_frame_id);
   if (!delegate)
     return;
 

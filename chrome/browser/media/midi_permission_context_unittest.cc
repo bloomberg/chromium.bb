@@ -90,7 +90,7 @@ TEST_F(MidiPermissionContextTests, TestInsecureRequestingUrl) {
 
   const PermissionRequestID id(
       web_contents()->GetRenderProcessHost()->GetID(),
-      web_contents()->GetRenderViewHost()->GetRoutingID(),
+      web_contents()->GetMainFrame()->GetRoutingID(),
       -1, GURL());
   permission_context.RequestPermission(
       web_contents(),

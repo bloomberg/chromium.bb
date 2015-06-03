@@ -83,9 +83,9 @@ class TabSpecificContentSettings
 
   ~TabSpecificContentSettings() override;
 
-  // Returns the object given a render view's id.
-  static TabSpecificContentSettings* Get(int render_process_id,
-                                         int render_view_id);
+  // Returns the object given a RenderFrameHost ids.
+  static TabSpecificContentSettings* GetForFrame(int render_process_id,
+                                                 int render_frame_id);
 
   // Static methods called on the UI threads.
   // Called when cookies for the given URL were read either from within the

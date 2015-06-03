@@ -18,7 +18,7 @@ ShellPermissionManager::~ShellPermissionManager() {
 
 void ShellPermissionManager::RequestPermission(
     PermissionType permission,
-    WebContents* web_contents,
+    RenderFrameHost* render_frame_host,
     int request_id,
     const GURL& requesting_origin,
     bool user_gesture,
@@ -29,7 +29,7 @@ void ShellPermissionManager::RequestPermission(
 
 void ShellPermissionManager::CancelPermissionRequest(
     PermissionType permission,
-    WebContents* web_contents,
+    RenderFrameHost* render_frame_host,
     int request_id,
     const GURL& requesting_origin) {
 }

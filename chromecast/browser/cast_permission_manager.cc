@@ -20,7 +20,7 @@ CastPermissionManager::~CastPermissionManager() {
 
 void CastPermissionManager::RequestPermission(
     content::PermissionType permission,
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     int request_id,
     const GURL& origin,
     bool user_gesture,
@@ -31,7 +31,7 @@ void CastPermissionManager::RequestPermission(
 
 void CastPermissionManager::CancelPermissionRequest(
     content::PermissionType permission,
-    content::WebContents* web_contents,
+    content::RenderFrameHost* render_frame_host,
     int request_id,
     const GURL& origin) {
 }

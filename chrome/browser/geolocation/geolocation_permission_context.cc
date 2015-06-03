@@ -10,6 +10,7 @@
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 
@@ -68,10 +69,12 @@ void GeolocationPermissionContext::UpdateTabContext(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     bool allowed) {
-  // WebContents may have gone away (or not exists for extension).
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::Get(id.render_process_id(),
-                                      id.render_view_id());
+      TabSpecificContentSettings::GetForFrame(id.render_process_id(),
+                                              id.render_frame_id());
+
+  // WebContents might not exist (extensions) or no longer exist. In which case,
+  // TabSpecificContentSettings will be null.
   if (content_settings)
     content_settings->OnGeolocationPermissionSet(
         requesting_frame.GetOrigin(), allowed);

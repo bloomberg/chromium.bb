@@ -36,6 +36,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
@@ -162,7 +163,7 @@ PermissionRequestID GeolocationPermissionContextTests::RequestID(
     int bridge_id) {
   return PermissionRequestID(
       web_contents()->GetRenderProcessHost()->GetID(),
-      web_contents()->GetRenderViewHost()->GetRoutingID(),
+      web_contents()->GetMainFrame()->GetRoutingID(),
       bridge_id,
       GURL());
 }
@@ -172,7 +173,7 @@ PermissionRequestID GeolocationPermissionContextTests::RequestIDForTab(
     int bridge_id) {
   return PermissionRequestID(
       extra_tabs_[tab]->GetRenderProcessHost()->GetID(),
-      extra_tabs_[tab]->GetRenderViewHost()->GetRoutingID(),
+      extra_tabs_[tab]->GetMainFrame()->GetRoutingID(),
       bridge_id,
       GURL());
 }
