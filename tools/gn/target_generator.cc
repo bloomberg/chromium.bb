@@ -201,12 +201,40 @@ bool TargetGenerator::FillData() {
   const Value* value = scope_->GetValue(variables::kData, true);
   if (!value)
     return true;
-
-  Target::FileList dest_data;
-  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
-                                  scope_->GetSourceDir(), &dest_data, err_))
+  if (!value->VerifyTypeIs(Value::LIST, err_))
     return false;
-  target_->data().swap(dest_data);
+
+  const std::vector<Value>& input_list = value->list_value();
+  std::vector<std::string>& output_list = target_->data();
+  output_list.reserve(input_list.size());
+
+  const SourceDir& dir = scope_->GetSourceDir();
+  const std::string& root_path =
+      scope_->settings()->build_settings()->root_path_utf8();
+
+  for (size_t i = 0; i < input_list.size(); i++) {
+    const Value& input = input_list[i];
+    if (!input.VerifyTypeIs(Value::STRING, err_))
+      return false;
+    const std::string& input_str = input.string_value();
+
+    // Treat each input as either a file or a directory, depending on the
+    // last character.
+    if (!input_str.empty() && input_str[input_str.size() - 1] == '/') {
+      // Resolve as directory.
+      SourceDir resolved =
+          dir.ResolveRelativeDir(input, input_str, err_, root_path);
+      if (err_->has_error())
+        return false;
+      output_list.push_back(resolved.value());
+    } else {
+      // Resolve as file.
+      SourceFile resolved = dir.ResolveRelativeFile(input, err_, root_path);
+      if (err_->has_error())
+        return false;
+      output_list.push_back(resolved.value());
+    }
+  }
   return true;
 }
 

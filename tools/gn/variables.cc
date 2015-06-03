@@ -509,11 +509,11 @@ const char kData_HelpShort[] =
 const char kData_Help[] =
     "data: Runtime data file dependencies.\n"
     "\n"
-    "  Lists files required to run the given target. These are typically\n"
-    "  data files. The paths are interpreted as being relative to the current\n"
-    "  build file. Since these are runtime dependencies, they do not affect\n"
-    "  which targets are built or when. To declare input files to a script,\n"
-    "  use \"inputs\".\n"
+    "  Lists files or directories required to run the given target. These are\n"
+    "  typically data files or directories of data files. The paths are\n"
+    "  interpreted as being relative to the current build file. Since these\n"
+    "  are runtime dependencies, they do not affect which targets are built\n"
+    "  or when. To declare input files to a script, use \"inputs\".\n"
     "\n"
     "  Appearing in the \"data\" section does not imply any special handling\n"
     "  such as copying them to the output directory. This is just used for\n"
@@ -525,6 +525,11 @@ const char kData_Help[] =
     "  produce files that are in turn runtime dependencies can list those\n"
     "  generated files both in the \"outputs\" list as well as the \"data\"\n"
     "  list.\n"
+    "\n"
+    "  By convention, directories are be listed with a trailing slash:\n"
+    "    data = [ \"test/data/\" ]\n"
+    "  However, no verification is done on these so GN doesn't enforce this.\n"
+    "  The paths are just rebased and passed along when requested.\n"
     "\n"
     "  See \"gn help runtime_deps\" for how these are used.\n";
 

@@ -36,13 +36,16 @@ void AddIfNew(const OutputFile& output_file,
   deps->push_back(std::make_pair(output_file, source));
 }
 
-// Automatically converts a SourceFile to an OutputFile.
-void AddIfNew(const SourceFile& source_file,
+// Automatically converts a string that looks like a source to an OutputFile.
+void AddIfNew(const std::string& str,
               const Target* source,
               RuntimeDepsVector* deps,
               std::set<OutputFile>* found_file) {
-  AddIfNew(OutputFile(source->settings()->build_settings(), source_file),
-           source, deps, found_file);
+  OutputFile output_file(RebasePath(
+      str,
+      source->settings()->build_settings()->build_dir(),
+      source->settings()->build_settings()->root_path_utf8()));
+  AddIfNew(output_file, source, deps, found_file);
 }
 
 // Returns the output file that the runtime deps considers for the given
@@ -82,7 +85,7 @@ void RecursiveCollectRuntimeDeps(const Target* target,
     std::vector<SourceFile> outputs;
     target->action_values().GetOutputsAsSourceFiles(target, &outputs);
     for (const auto& output_file : outputs)
-      AddIfNew(output_file, target, deps, found_files);
+      AddIfNew(output_file.value(), target, deps, found_files);
   }
 
   // Non-data dependencies (both public and private).
@@ -132,9 +135,9 @@ const char kRuntimeDeps_Help[] =
     "  (see \"gn help --runtime-deps-list-file\").\n"
     "\n"
     "  To a first approximation, the runtime dependencies of a target are\n"
-    "  the set of \"data\" files and the shared libraries from all transitive\n"
-    "  dependencies. Executables and shared libraries are considered runtime\n"
-    "  dependencies of themselves.\n"
+    "  the set of \"data\" files, data directories, and the shared libraries\n"
+    "  from all transitive dependencies. Executables and shared libraries are\n"
+    "  considered runtime dependencies of themselves.\n"
     "\n"
     "Details\n"
     "\n"

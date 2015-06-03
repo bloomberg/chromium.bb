@@ -49,17 +49,17 @@ TEST(RuntimeDeps, Libs) {
 
   Target stat(setup.settings(), Label(SourceDir("//"), "stat"));
   InitTargetWithType(setup, &stat, Target::STATIC_LIBRARY);
-  stat.data().push_back(SourceFile("//stat.dat"));
+  stat.data().push_back("//stat.dat");
   ASSERT_TRUE(stat.OnResolved(&err));
 
   Target shared(setup.settings(), Label(SourceDir("//"), "shared"));
   InitTargetWithType(setup, &shared, Target::SHARED_LIBRARY);
-  shared.data().push_back(SourceFile("//shared.dat"));
+  shared.data().push_back("//shared.dat");
   ASSERT_TRUE(shared.OnResolved(&err));
 
   Target set(setup.settings(), Label(SourceDir("//"), "set"));
   InitTargetWithType(setup, &set, Target::SOURCE_SET);
-  set.data().push_back(SourceFile("//set.dat"));
+  set.data().push_back("//set.dat");
   ASSERT_TRUE(set.OnResolved(&err));
 
   Target main(setup.settings(), Label(SourceDir("//"), "main"));
@@ -67,7 +67,7 @@ TEST(RuntimeDeps, Libs) {
   main.private_deps().push_back(LabelTargetPair(&stat));
   main.private_deps().push_back(LabelTargetPair(&shared));
   main.private_deps().push_back(LabelTargetPair(&set));
-  main.data().push_back(SourceFile("//main.dat"));
+  main.data().push_back("//main.dat");
   ASSERT_TRUE(main.OnResolved(&err));
 
   std::vector<std::pair<OutputFile, const Target*>> result =
@@ -112,7 +112,7 @@ TEST(RuntimeDeps, ExeDataDep) {
 
   Target final_in(setup.settings(), Label(SourceDir("//"), "final_in"));
   InitTargetWithType(setup, &final_in, Target::SOURCE_SET);
-  final_in.data().push_back(SourceFile("//final_in.dat"));
+  final_in.data().push_back("//final_in.dat");
   ASSERT_TRUE(final_in.OnResolved(&err));
 
   Target datadep(setup.settings(), Label(SourceDir("//"), "datadep"));
@@ -122,7 +122,7 @@ TEST(RuntimeDeps, ExeDataDep) {
 
   Target final_out(setup.settings(), Label(SourceDir("//"), "final_out"));
   InitTargetWithType(setup, &final_out, Target::SOURCE_SET);
-  final_out.data().push_back(SourceFile("//final_out.dat"));
+  final_out.data().push_back("//final_out.dat");
   ASSERT_TRUE(final_out.OnResolved(&err));
 
   Target dep(setup.settings(), Label(SourceDir("//"), "dep"));
@@ -168,7 +168,7 @@ TEST(RuntimeDeps, ActionOutputs) {
 
   Target datadep(setup.settings(), Label(SourceDir("//"), "datadep"));
   InitTargetWithType(setup, &datadep, Target::ACTION);
-  datadep.data().push_back(SourceFile("//datadep.data"));
+  datadep.data().push_back("//datadep.data");
   datadep.action_values().outputs() =
       SubstitutionList::MakeForTest("//datadep.output");
   ASSERT_TRUE(datadep.OnResolved(&err));
@@ -176,14 +176,14 @@ TEST(RuntimeDeps, ActionOutputs) {
   Target datadep_copy(setup.settings(), Label(SourceDir("//"), "datadep_copy"));
   InitTargetWithType(setup, &datadep_copy, Target::COPY_FILES);
   datadep_copy.sources().push_back(SourceFile("//input"));
-  datadep_copy.data().push_back(SourceFile("//datadep_copy.data"));
+  datadep_copy.data().push_back("//datadep_copy.data");
   datadep_copy.action_values().outputs() =
       SubstitutionList::MakeForTest("//datadep_copy.output");
   ASSERT_TRUE(datadep_copy.OnResolved(&err));
 
   Target dep(setup.settings(), Label(SourceDir("//"), "dep"));
   InitTargetWithType(setup, &dep, Target::ACTION);
-  dep.data().push_back(SourceFile("//dep.data"));
+  dep.data().push_back("//dep.data");
   dep.action_values().outputs() =
       SubstitutionList::MakeForTest("//dep.output");
   ASSERT_TRUE(dep.OnResolved(&err));
@@ -191,7 +191,7 @@ TEST(RuntimeDeps, ActionOutputs) {
   Target dep_copy(setup.settings(), Label(SourceDir("//"), "dep_copy"));
   InitTargetWithType(setup, &dep_copy, Target::COPY_FILES);
   dep_copy.sources().push_back(SourceFile("//input"));
-  dep_copy.data().push_back(SourceFile("//dep_copy.data"));
+  dep_copy.data().push_back("//dep_copy/data/");  // Tests a directory.
   dep_copy.action_values().outputs() =
       SubstitutionList::MakeForTest("//dep_copy.output");
   ASSERT_TRUE(dep_copy.OnResolved(&err));
@@ -231,7 +231,7 @@ TEST(RuntimeDeps, ActionOutputs) {
                         MakePair("../../dep.data", &dep)) !=
               result.end()) << GetVectorDescription(result);
   EXPECT_TRUE(std::find(result.begin(), result.end(),
-                        MakePair("../../dep_copy.data", &dep_copy)) !=
+                        MakePair("../../dep_copy/data/", &dep_copy)) !=
               result.end()) << GetVectorDescription(result);
 
   // Explicitly asking for the runtime deps of an action target only includes

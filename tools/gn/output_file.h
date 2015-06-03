@@ -17,7 +17,8 @@ class SourceFile;
 class OutputFile {
  public:
   OutputFile();
-  explicit OutputFile(const base::StringPiece& str);
+  explicit OutputFile(std::string&& v);
+  explicit OutputFile(const std::string& v);
   OutputFile(const BuildSettings* build_settings,
              const SourceFile& source_file);
   ~OutputFile();

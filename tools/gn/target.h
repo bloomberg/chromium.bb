@@ -120,9 +120,11 @@ class Target : public Item {
   const FileList& inputs() const { return inputs_; }
   FileList& inputs() { return inputs_; }
 
-  // Runtime dependencies.
-  const FileList& data() const { return data_; }
-  FileList& data() { return data_; }
+  // Runtime dependencies. These are "file-like things" that can either be
+  // directories or files. They do not need to exist, these are just passed as
+  // runtime dependencies to external test systems as necessary.
+  const std::vector<std::string>& data() const { return data_; }
+  std::vector<std::string>& data() { return data_; }
 
   // Returns true if targets depending on this one should have an order
   // dependency.
@@ -270,7 +272,7 @@ class Target : public Item {
   bool complete_static_lib_;
   bool testonly_;
   FileList inputs_;
-  FileList data_;
+  std::vector<std::string> data_;
 
   LabelTargetVector private_deps_;
   LabelTargetVector public_deps_;

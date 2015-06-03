@@ -10,8 +10,12 @@
 OutputFile::OutputFile() : value_() {
 }
 
-OutputFile::OutputFile(const base::StringPiece& str)
-    : value_(str.data(), str.size()) {
+OutputFile::OutputFile(std::string&& v)
+    : value_(v) {
+}
+
+OutputFile::OutputFile(const std::string& v)
+    : value_(v) {
 }
 
 OutputFile::OutputFile(const BuildSettings* build_settings,

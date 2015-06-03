@@ -138,7 +138,7 @@ bool TargetContainsFile(const Target* target, const SourceFile& file) {
       return true;
   }
   for (const auto& cur_file : target->data()) {
-    if (cur_file == file)
+    if (cur_file == file.value())
       return true;
   }
   return false;
