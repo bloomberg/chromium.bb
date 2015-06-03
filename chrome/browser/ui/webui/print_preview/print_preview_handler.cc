@@ -670,6 +670,10 @@ void PrintPreviewHandler::RegisterMessages() {
       "getExtensionPrinterCapabilities",
       base::Bind(&PrintPreviewHandler::HandleGetExtensionPrinterCapabilities,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "grantExtensionPrinterAccess",
+      base::Bind(&PrintPreviewHandler::HandleGrantExtensionPrinterAccess,
+                 base::Unretained(this)));
   RegisterForGaiaCookieChanges();
 }
 
@@ -742,6 +746,18 @@ void PrintPreviewHandler::HandleGetExtensionPrinters(
   extension_printer_handler_->Reset();
   extension_printer_handler_->StartGetPrinters(base::Bind(
       &PrintPreviewHandler::OnGotPrintersForExtension, base::Unretained(this)));
+}
+
+void PrintPreviewHandler::HandleGrantExtensionPrinterAccess(
+    const base::ListValue* args) {
+  std::string printer_id;
+  bool ok = args->GetString(0, &printer_id);
+  DCHECK(ok);
+
+  EnsureExtensionPrinterHandlerSet();
+  extension_printer_handler_->StartGrantPrinterAccess(
+      printer_id, base::Bind(&PrintPreviewHandler::OnGotExtensionPrinterInfo,
+                             base::Unretained(this), printer_id));
 }
 
 void PrintPreviewHandler::HandleGetExtensionPrinterCapabilities(
@@ -1695,6 +1711,20 @@ void PrintPreviewHandler::OnGotPrintersForExtension(
     bool done) {
   web_ui()->CallJavascriptFunction("onExtensionPrintersAdded", printers,
                                    base::FundamentalValue(done));
+}
+
+void PrintPreviewHandler::OnGotExtensionPrinterInfo(
+    const std::string& printer_id,
+    const base::DictionaryValue& printer_info) {
+  if (printer_info.empty()) {
+    web_ui()->CallJavascriptFunction("failedToResolveProvisionalPrinter",
+                                     base::StringValue(printer_id));
+    return;
+  }
+
+  web_ui()->CallJavascriptFunction("onProvisionalPrinterResolved",
+                                   base::StringValue(printer_id),
+                                   printer_info);
 }
 
 void PrintPreviewHandler::OnGotExtensionPrinterCapabilities(

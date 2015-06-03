@@ -70,6 +70,9 @@ class ExtensionPrinterHandler : public PrinterHandler {
                   const gfx::Size& page_size,
                   const scoped_refptr<base::RefCountedMemory>& print_data,
                   const PrinterHandler::PrintCallback& callback) override;
+  void StartGrantPrinterAccess(
+      const std::string& printer_id,
+      const PrinterHandler::GetPrinterInfoCallback& callback) override;
 
  private:
   friend class ExtensionPrinterHandlerTest;
@@ -107,6 +110,9 @@ class ExtensionPrinterHandler : public PrinterHandler {
   void WrapPrintCallback(const PrinterHandler::PrintCallback& callback,
                          bool success,
                          const std::string& status);
+  void WrapGetPrinterInfoCallback(const GetPrinterInfoCallback& callback,
+                                  const base::DictionaryValue& printer_info);
+
   void OnUsbDevicesEnumerated(
       const PrinterHandler::GetPrintersCallback& callback,
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);

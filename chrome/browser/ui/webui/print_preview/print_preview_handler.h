@@ -122,11 +122,15 @@ class PrintPreviewHandler
   // Gets the list of printers. |args| is unused.
   void HandleGetPrinters(const base::ListValue* args);
 
-  // Starts getting all local privet printers. |arg| is unused.
+  // Starts getting all local privet printers. |args| is unused.
   void HandleGetPrivetPrinters(const base::ListValue* args);
 
-  // Starts getting all local extension managed printers. |arg| is unused.
+  // Starts getting all local extension managed printers. |args| is unused.
   void HandleGetExtensionPrinters(const base::ListValue* args);
+
+  // Grants an extension access to a provisional printer.  First element of
+  // |args| is the provisional printer ID.
+  void HandleGrantExtensionPrinterAccess(const base::ListValue* args);
 
   // Stops getting all local privet printers. |arg| is unused.
   void HandleStopGetPrivetPrinters(const base::ListValue* args);
@@ -307,6 +311,13 @@ class PrintPreviewHandler
   // |done|: Whether all the extensions have reported the list of printers
   //     they manage.
   void OnGotPrintersForExtension(const base::ListValue& printers, bool done);
+
+  // Called when an extension reports information requested for a provisional
+  // printer.
+  // |printer_id|: The provisional printer id.
+  // |printer_info|: The data reported by the extension.
+  void OnGotExtensionPrinterInfo(const std::string& printer_id,
+                                 const base::DictionaryValue& printer_info);
 
   // Called when an extension reports the set of print capabilites for a
   // printer.

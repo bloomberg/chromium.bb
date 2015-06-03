@@ -39,6 +39,8 @@ class PrinterHandler {
                           const base::DictionaryValue& capability)>;
   using PrintCallback =
       base::Callback<void(bool success, const std::string& error)>;
+  using GetPrinterInfoCallback =
+      base::Callback<void(const base::DictionaryValue& printer_info)>;
 
   // Creates an instance of an PrinterHandler for extension printers.
   static scoped_ptr<PrinterHandler> CreateForExtensionPrinters(
@@ -58,6 +60,14 @@ class PrinterHandler {
   // |callback| should be called in the response to the request.
   virtual void StartGetCapability(const std::string& destination_id,
                                   const GetCapabilityCallback& callback) = 0;
+
+  // Starts granting access to the given provisional printer. The print handler
+  // will respond with more information about the printer including its non-
+  // provisional printer id.
+  // |callback| should be called in response to the request.
+  virtual void StartGrantPrinterAccess(
+      const std::string& printer_id,
+      const GetPrinterInfoCallback& callback) = 0;
 
   // Starts a print request.
   // |destination_id|: The printer to which print job should be sent.

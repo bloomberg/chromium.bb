@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/string_split.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/local_discovery/pwg_raster_converter.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
@@ -52,6 +53,8 @@ const char kContentTypeAll[] = "*/*";
 const char kInvalidDataPrintError[] = "INVALID_DATA";
 const char kInvalidTicketPrintError[] = "INVALID_TICKET";
 
+const char kProvisionalUsbLabel[] = "provisional-usb";
+
 // Updates |job| with raster file path, size and last modification time.
 // Returns the updated print job.
 scoped_ptr<extensions::PrinterProviderPrintJob> UpdateJobFileInfoOnWorkerThread(
@@ -89,6 +92,29 @@ bool HasUsbPrinterProviderPermissions(const Extension* extension) {
             extensions::APIPermission::kPrinterProvider) &&
         extension->permissions_data()->HasAPIPermission(
             extensions::APIPermission::kUsb);
+}
+
+std::string GenerateProvisionalUsbPrinterId(const Extension* extension,
+                                            const UsbDevice* device) {
+  return base::StringPrintf("%s:%s:%s", kProvisionalUsbLabel,
+                            extension->id().c_str(), device->guid().c_str());
+}
+
+bool ParseProvisionalUsbPrinterId(const std::string& printer_id,
+                                  std::string* extension_id,
+                                  std::string* device_guid) {
+  std::vector<std::string> components;
+  base::SplitString(printer_id, ':', &components);
+
+  if (components.size() != 3)
+    return false;
+
+  if (components[0] != kProvisionalUsbLabel)
+    return false;
+
+  *extension_id = components[1];
+  *device_guid = components[2];
+  return true;
 }
 
 }  // namespace
@@ -198,6 +224,35 @@ void ExtensionPrinterHandler::StartPrint(
                                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void ExtensionPrinterHandler::StartGrantPrinterAccess(
+    const std::string& printer_id,
+    const PrinterHandler::GetPrinterInfoCallback& callback) {
+  std::string extension_id;
+  std::string device_guid;
+  if (!ParseProvisionalUsbPrinterId(printer_id, &extension_id, &device_guid)) {
+    callback.Run(base::DictionaryValue());
+    return;
+  }
+
+  device::UsbService* service = device::DeviceClient::Get()->GetUsbService();
+  scoped_refptr<UsbDevice> device = service->GetDevice(device_guid);
+  if (!device) {
+    callback.Run(base::DictionaryValue());
+    return;
+  }
+
+  DevicePermissionsManager* permissions_manager =
+      DevicePermissionsManager::Get(browser_context_);
+  permissions_manager->AllowUsbDevice(extension_id, device);
+
+  extensions::PrinterProviderAPIFactory::GetInstance()
+      ->GetForBrowserContext(browser_context_)
+      ->DispatchGetUsbPrinterInfoRequested(
+          extension_id, device,
+          base::Bind(&ExtensionPrinterHandler::WrapGetPrinterInfoCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
 void ExtensionPrinterHandler::SetPwgRasterConverterForTesting(
     scoped_ptr<local_discovery::PWGRasterConverter> pwg_raster_converter) {
   pwg_raster_converter_ = pwg_raster_converter.Pass();
@@ -261,6 +316,12 @@ void ExtensionPrinterHandler::WrapPrintCallback(
   callback.Run(success, status);
 }
 
+void ExtensionPrinterHandler::WrapGetPrinterInfoCallback(
+    const PrinterHandler::GetPrinterInfoCallback& callback,
+    const base::DictionaryValue& printer_info) {
+  callback.Run(printer_info);
+}
+
 void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
     const PrinterHandler::GetPrintersCallback& callback,
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
@@ -292,9 +353,8 @@ void ExtensionPrinterHandler::OnUsbDevicesEnumerated(
 
         printer_list.Append(
             DictionaryBuilder()
-                .Set("id", base::StringPrintf("provisional-usb:%s:%s",
-                                              extension->id().c_str(),
-                                              device->guid().c_str()))
+                .Set("id", GenerateProvisionalUsbPrinterId(extension.get(),
+                                                           device.get()))
                 .Set("name",
                      DevicePermissionsManager::GetPermissionMessage(
                          device->vendor_id(), device->product_id(),
