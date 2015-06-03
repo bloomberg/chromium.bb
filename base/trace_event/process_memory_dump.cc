@@ -12,7 +12,12 @@ namespace trace_event {
 
 namespace {
 const char kEdgeTypeOwnership[] = "ownership";
+
+std::string GetSharedGlobalAllocatorDumpName(
+    const MemoryAllocatorDumpGuid& guid) {
+  return "global/" + guid.ToString();
 }
+}  // namespace
 
 ProcessMemoryDump::ProcessMemoryDump(
     const scoped_refptr<MemoryDumpSessionState>& session_state)
@@ -49,6 +54,16 @@ MemoryAllocatorDump* ProcessMemoryDump::GetAllocatorDump(
     const std::string& absolute_name) const {
   auto it = allocator_dumps_.find(absolute_name);
   return it == allocator_dumps_.end() ? nullptr : it->second;
+}
+
+MemoryAllocatorDump* ProcessMemoryDump::CreateSharedGlobalAllocatorDump(
+    const MemoryAllocatorDumpGuid& guid) {
+  return CreateAllocatorDump(GetSharedGlobalAllocatorDumpName(guid), guid);
+}
+
+MemoryAllocatorDump* ProcessMemoryDump::GetSharedGlobalAllocatorDump(
+    const MemoryAllocatorDumpGuid& guid) const {
+  return GetAllocatorDump(GetSharedGlobalAllocatorDumpName(guid));
 }
 
 void ProcessMemoryDump::Clear() {
@@ -120,16 +135,24 @@ void ProcessMemoryDump::AsValueInto(TracedValue* value) const {
   value->EndArray();
 }
 
-void ProcessMemoryDump::AddOwnershipEdge(MemoryAllocatorDumpGuid source,
-                                         MemoryAllocatorDumpGuid target,
+void ProcessMemoryDump::AddOwnershipEdge(const MemoryAllocatorDumpGuid& source,
+                                         const MemoryAllocatorDumpGuid& target,
                                          int importance) {
   allocator_dumps_edges_.push_back(
       {source, target, importance, kEdgeTypeOwnership});
 }
 
-void ProcessMemoryDump::AddOwnershipEdge(MemoryAllocatorDumpGuid source,
-                                         MemoryAllocatorDumpGuid target) {
+void ProcessMemoryDump::AddOwnershipEdge(
+    const MemoryAllocatorDumpGuid& source,
+    const MemoryAllocatorDumpGuid& target) {
   AddOwnershipEdge(source, target, 0 /* importance */);
+}
+
+void ProcessMemoryDump::AddSuballocation(const MemoryAllocatorDumpGuid& source,
+                                         const std::string& target_node_name) {
+  std::string child_mad_name = target_node_name + "/__" + source.ToString();
+  MemoryAllocatorDump* target_child_mad = CreateAllocatorDump(child_mad_name);
+  AddOwnershipEdge(source, target_child_mad->guid());
 }
 
 }  // namespace trace_event

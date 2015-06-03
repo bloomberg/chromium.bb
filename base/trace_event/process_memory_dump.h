@@ -90,6 +90,17 @@ class BASE_EXPORT ProcessMemoryDump {
   // nullptr if not found.
   MemoryAllocatorDump* GetAllocatorDump(const std::string& absolute_name) const;
 
+  // Creates a shared MemoryAllocatorDump, to express cross-process sharing.
+  // Shared allocator dumps are allowed to have duplicate guids within the
+  // global scope, in order to reference the same dump from multiple processes.
+  // See the design doc goo.gl/keU6Bf for reference usage patterns.
+  MemoryAllocatorDump* CreateSharedGlobalAllocatorDump(
+      const MemoryAllocatorDumpGuid& guid);
+
+  // Looks up a shared MemoryAllocatorDump given its guid.
+  MemoryAllocatorDump* GetSharedGlobalAllocatorDump(
+      const MemoryAllocatorDumpGuid& guid) const;
+
   // Returns the map of the MemoryAllocatorDumps added to this dump.
   const AllocatorDumpsMap& allocator_dumps() const { return allocator_dumps_; }
 
@@ -98,15 +109,23 @@ class BASE_EXPORT ProcessMemoryDump {
   // the memory usage of |target| to |source|. |importance| is optional and
   // relevant only for the cases of co-ownership, where it acts as a z-index:
   // the owner with the highest importance will be attributed |target|'s memory.
-  void AddOwnershipEdge(MemoryAllocatorDumpGuid source,
-                        MemoryAllocatorDumpGuid target,
+  void AddOwnershipEdge(const MemoryAllocatorDumpGuid& source,
+                        const MemoryAllocatorDumpGuid& target,
                         int importance);
-  void AddOwnershipEdge(MemoryAllocatorDumpGuid source,
-                        MemoryAllocatorDumpGuid target);
+  void AddOwnershipEdge(const MemoryAllocatorDumpGuid& source,
+                        const MemoryAllocatorDumpGuid& target);
 
   const std::vector<MemoryAllocatorDumpEdge>& allocator_dumps_edges() const {
     return allocator_dumps_edges_;
   }
+
+  // Utility method to add a suballocation relationship with the following
+  // semantics: |source| is suballocated from |target_node_name|.
+  // This creates a child node of |target_node_name| and adds an ownership edge
+  // between |source| and the new child node. As a result, the UI will not
+  // account the memory of |source| in the target node.
+  void AddSuballocation(const MemoryAllocatorDumpGuid& source,
+                        const std::string& target_node_name);
 
   const scoped_refptr<MemoryDumpSessionState>& session_state() const {
     return session_state_;
