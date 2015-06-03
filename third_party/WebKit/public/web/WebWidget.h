@@ -157,7 +157,7 @@ public:
     // thread.
     virtual void applyViewportDeltas(
         const WebFloatSize& pinchViewportDelta,
-        const WebFloatSize& mainFrameDelta,
+        const WebFloatSize& layoutViewportDelta,
         const WebFloatSize& elasticOverscrollDelta,
         float scaleFactor,
         float topControlsShownRatioDelta) { }

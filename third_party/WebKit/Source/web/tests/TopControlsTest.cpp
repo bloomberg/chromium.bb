@@ -483,21 +483,21 @@ TEST_F(TopControlsTest, MAYBE(ScrollUpPastLimitDoesNotHide))
     webView->setPageScaleFactor(2.0);
 
     // Fully scroll frameview but pinchviewport remains scrollable
-    webView->setMainFrameScrollOffset(WebPoint(0, 10000));
+    webView->mainFrame()->setScrollOffset(WebSize(0, 10000));
     pinchViewport().setLocation(FloatPoint(0, 0));
     verticalScroll(-10.f);
     EXPECT_FLOAT_EQ(40, webView->topControls().contentOffset());
 
     webView->topControls().setShownRatio(1);
     // Fully scroll pinch veiwport but frameview remains scrollable
-    webView->setMainFrameScrollOffset(WebPoint(0, 0));
+    webView->mainFrame()->setScrollOffset(WebSize(0, 0));
     pinchViewport().setLocation(FloatPoint(0, 10000));
     verticalScroll(-20.f);
     EXPECT_FLOAT_EQ(30, webView->topControls().contentOffset());
 
     webView->topControls().setShownRatio(1);
     // Fully scroll both frameview and pinch viewort
-    webView->setMainFrameScrollOffset(WebPoint(0, 10000));
+    webView->mainFrame()->setScrollOffset(WebSize(0, 10000));
     pinchViewport().setLocation(FloatPoint(0, 10000));
     verticalScroll(-30.f);
     // Top controls should not move because neither frameview nor pinch viewport

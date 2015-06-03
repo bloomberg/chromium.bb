@@ -691,7 +691,7 @@ WebSize WebLocalFrameImpl::maximumScrollOffset() const
 void WebLocalFrameImpl::setScrollOffset(const WebSize& offset)
 {
     if (FrameView* view = frameView())
-        view->setScrollOffset(IntPoint(offset.width, offset.height));
+        view->notifyScrollPositionChanged(IntPoint(offset.width, offset.height));
 }
 
 WebSize WebLocalFrameImpl::contentsSize() const

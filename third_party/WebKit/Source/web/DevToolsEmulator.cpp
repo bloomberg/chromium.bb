@@ -264,7 +264,7 @@ bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent)
             IntPoint anchorCss(*m_lastPinchAnchorDip.get());
             anchorCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
             m_webViewImpl->setPageScaleFactor(newPageScaleFactor);
-            m_webViewImpl->setMainFrameScrollOffset(*m_lastPinchAnchorCss.get() - toIntSize(anchorCss));
+            m_webViewImpl->mainFrame()->setScrollOffset(toIntSize(*m_lastPinchAnchorCss.get() - toIntSize(anchorCss)));
         }
         if (gestureEvent.type() == PlatformEvent::GesturePinchEnd) {
             m_lastPinchAnchorCss.clear();

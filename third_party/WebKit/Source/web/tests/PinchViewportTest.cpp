@@ -299,7 +299,7 @@ TEST_F(PinchViewportTest, TestResizeAfterVerticalScroll)
     webViewImpl()->resize(IntSize(100, 200));
 
     // Scroll main frame to the bottom of the document
-    webViewImpl()->setMainFrameScrollOffset(WebPoint(0, 400));
+    webViewImpl()->mainFrame()->setScrollOffset(WebSize(0, 400));
     EXPECT_POINT_EQ(IntPoint(0, 400), frame()->view()->scrollPosition());
 
     webViewImpl()->setPageScaleFactor(2.0);

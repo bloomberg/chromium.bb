@@ -1158,7 +1158,7 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState)
 
     // Make the page scale and scroll with the given paremeters.
     webViewImpl->setPageScaleFactor(2.0f);
-    webViewImpl->setMainFrameScrollOffset(WebPoint(94, 111));
+    webViewImpl->mainFrame()->setScrollOffset(WebSize(94, 111));
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(111, webViewImpl->mainFrame()->scrollOffset().height);
@@ -1188,7 +1188,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
     webViewImpl->layout();
 
     // Emulate a user scroll
-    webViewImpl->setMainFrameScrollOffset(WebPoint(0, 900));
+    webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 900));
     LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
     RefPtrWillBePersistent<HistoryItem> item1 = mainFrameLocal->loader().currentItem();
 
@@ -1224,7 +1224,7 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
 
     // Make the page scale and scroll with the given paremeters.
     webViewImpl->setPageScaleFactor(2.0f);
-    webViewImpl->setMainFrameScrollOffset(WebPoint(94, 111));
+    webViewImpl->mainFrame()->setScrollOffset(WebSize(94, 111));
     webViewImpl->setPinchViewportOffset(WebFloatPoint(12, 20));
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);

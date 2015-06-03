@@ -78,7 +78,7 @@ void FullscreenController::didEnterFullScreen()
 
         updatePageScaleConstraints(false);
         m_webViewImpl->setPageScaleFactor(1.0f);
-        m_webViewImpl->setMainFrameScrollOffset(IntPoint());
+        m_webViewImpl->mainFrame()->setScrollOffset(WebSize());
         m_webViewImpl->setPinchViewportOffset(FloatPoint());
     }
 
@@ -121,7 +121,7 @@ void FullscreenController::didExitFullScreen()
                 if (m_exitFullscreenPageScaleFactor) {
                     updatePageScaleConstraints(true);
                     m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor);
-                    m_webViewImpl->setMainFrameScrollOffset(IntPoint(m_exitFullscreenScrollOffset));
+                    m_webViewImpl->mainFrame()->setScrollOffset(WebSize(m_exitFullscreenScrollOffset));
                     m_webViewImpl->setPinchViewportOffset(m_exitFullscreenPinchViewportOffset);
                     m_exitFullscreenPageScaleFactor = 0;
                     m_exitFullscreenScrollOffset = IntSize();

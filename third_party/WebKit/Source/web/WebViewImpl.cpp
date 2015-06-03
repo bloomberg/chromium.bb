@@ -3141,11 +3141,6 @@ void WebViewImpl::setPageScaleFactor(float scaleFactor)
     page()->frameHost().pinchViewport().setScale(scaleFactor);
 }
 
-void WebViewImpl::setMainFrameScrollOffset(const WebPoint& origin)
-{
-    updateLayoutViewportScrollPosition(DoublePoint(origin.x, origin.y), false);
-}
-
 float WebViewImpl::deviceScaleFactor() const
 {
     if (!page())
@@ -3403,11 +3398,17 @@ float WebViewImpl::maximumPageScaleFactor() const
 
 void WebViewImpl::resetScrollAndScaleState()
 {
-    updateLayoutViewportScrollPosition(IntPoint(), true);
     page()->frameHost().pinchViewport().reset();
 
     if (!page()->mainFrame()->isLocalFrame())
         return;
+
+    if (FrameView* frameView = toLocalFrame(page()->mainFrame())->view()) {
+        ScrollableArea* scrollableArea = frameView->layoutViewportScrollableArea();
+
+        if (scrollableArea->scrollPositionDouble() != DoublePoint::zero())
+            scrollableArea->notifyScrollPositionChanged(DoublePoint::zero());
+    }
 
     // Clear out the values for the current history item. This will prevent the history item from clobbering the
     // value determined during page scale initialization, which may be less than 1.
@@ -4248,28 +4249,9 @@ void WebViewImpl::initializeLayerTreeView()
     ASSERT(m_layerTreeView || !m_client || m_client->allowsBrokenNullLayerTreeView());
 }
 
-void WebViewImpl::updateLayoutViewportScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll)
-{
-    if (!page()->mainFrame()->isLocalFrame())
-        return;
-
-    // FIXME(305811): Refactor for OOPI.
-    FrameView* frameView = page()->deprecatedLocalMainFrame()->view();
-    if (!frameView)
-        return;
-
-    ScrollableArea* scrollableArea = frameView->layoutViewportScrollableArea();
-    if (scrollableArea->scrollPositionDouble() == scrollPosition)
-        return;
-
-    scrollableArea->notifyScrollPositionChanged(scrollPosition);
-    if (!programmaticScroll)
-        frameView->setWasScrolledByUser(true);
-}
-
 void WebViewImpl::applyViewportDeltas(
     const WebFloatSize& pinchViewportDelta,
-    const WebFloatSize& outerViewportDelta,
+    const WebFloatSize& layoutViewportDelta,
     const WebFloatSize& elasticOverscrollDelta,
     float pageScaleDelta,
     float topControlsShownRatioDelta)
@@ -4291,8 +4273,15 @@ void WebViewImpl::applyViewportDeltas(
 
     frameView->setElasticOverscroll(elasticOverscrollDelta + frameView->elasticOverscroll());
 
-    updateLayoutViewportScrollPosition(frameView->layoutViewportScrollableArea()->scrollPositionDouble() +
-        DoubleSize(outerViewportDelta.width, outerViewportDelta.height), /* programmaticScroll */ false);
+    ScrollableArea* layoutViewport = frameView->layoutViewportScrollableArea();
+
+    DoublePoint layoutViewportPosition = layoutViewport->scrollPositionDouble()
+        + DoubleSize(layoutViewportDelta.width, layoutViewportDelta.height);
+
+    if (layoutViewport->scrollPositionDouble() != layoutViewportPosition) {
+        layoutViewport->notifyScrollPositionChanged(layoutViewportPosition);
+        frameView->setWasScrolledByUser(true);
+    }
 }
 
 void WebViewImpl::recordFrameTimingEvent(FrameTimingEventType eventType, int64_t FrameId, const WebVector<WebFrameTimingEvent>& events)

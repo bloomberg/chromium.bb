@@ -2186,7 +2186,7 @@ protected:
         {
             webViewHelper.webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height));
             webViewHelper.webViewImpl()->setPageScaleFactor(initialPageScaleFactor);
-            webViewHelper.webViewImpl()->setMainFrameScrollOffset(WebPoint(scrollOffset.width, scrollOffset.height));
+            webViewHelper.webViewImpl()->mainFrame()->setScrollOffset(scrollOffset);
             webViewHelper.webViewImpl()->layout();
             const WebSize expectedScrollOffset = webViewHelper.webViewImpl()->mainFrame()->scrollOffset();
             webViewHelper.webViewImpl()->resize(WebSize(viewportSize.width, viewportSize.height * 0.8f));
@@ -2346,7 +2346,7 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
 void setScaleAndScrollAndLayout(WebViewImpl* webView, WebPoint scroll, float scale)
 {
     webView->setPageScaleFactor(scale);
-    webView->setMainFrameScrollOffset(WebPoint(scroll.x, scroll.y));
+    webView->mainFrame()->setScrollOffset(WebSize(scroll.x, scroll.y));
     webView->layout();
 }
 
@@ -4710,7 +4710,7 @@ TEST_F(WebFrameTest, DisambiguationPopupPinchViewport)
     webViewHelper.webView()->resize(WebSize(100, 200));
 
     // Scroll main frame to the bottom of the document
-    webViewImpl->setMainFrameScrollOffset(WebPoint(0, 400));
+    webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 400));
     EXPECT_POINT_EQ(IntPoint(0, 400), frame->view()->scrollPosition());
 
     webViewImpl->setPageScaleFactor(2.0);
@@ -6143,7 +6143,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForTopControls)
     webView->setPageScaleFactor(2.0f);
     webView->layout();
 
-    webView->setMainFrameScrollOffset(WebPoint(0, 2000));
+    webView->mainFrame()->setScrollOffset(WebSize(0, 2000));
     EXPECT_POINT_EQ(IntPoint(0, 1900), IntPoint(frameView->scrollOffset()));
 
     // Simulate the top controls showing by 20px, thus shrinking the viewport
@@ -6153,7 +6153,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForTopControls)
 
     // Show more, make sure the scroll actually gets clamped.
     webView->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.0f, 20.0f / topControlsHeight);
-    webView->setMainFrameScrollOffset(WebPoint(0, 2000));
+    webView->mainFrame()->setScrollOffset(WebSize(0, 2000));
     EXPECT_POINT_EQ(IntPoint(0, 1940), IntPoint(frameView->scrollOffset()));
 
     // Hide until there's 10px showing.

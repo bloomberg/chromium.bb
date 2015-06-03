@@ -125,7 +125,7 @@ public:
 
     virtual void applyViewportDeltas(
         const WebFloatSize& pinchViewportDelta,
-        const WebFloatSize& mainFrameDelta,
+        const WebFloatSize& layoutViewportDelta,
         const WebFloatSize& elasticOverscrollDelta,
         float pageScaleDelta,
         float topControlsShownRatioDelta) override;
@@ -544,8 +544,6 @@ private:
     void refreshPageScaleFactorAfterLayout();
     void resumeTreeViewCommits();
     IntSize contentsSize() const;
-
-    void updateLayoutViewportScrollPosition(const DoublePoint& scrollPosition, bool programmaticScroll);
 
     void performResize();
     void resizeViewWhileAnchored(FrameView*);
