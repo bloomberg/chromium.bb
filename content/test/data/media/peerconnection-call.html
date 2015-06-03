@@ -551,6 +551,33 @@
     });
   }
 
+  // Loads this page inside itself using an iframe, and ensures we can make a
+  // successful getUserMedia + peerconnection call inside the iframe.
+  function callInsideIframe(constraints) {
+    runInsideIframe(function(iframe) {
+      // Run a regular webrtc call inside the iframe.
+      iframe.contentWindow.call(constraints);
+    });
+  }
+
+  // Func should accept an iframe as its first argument.
+  function runInsideIframe(func) {
+    var iframe = document.createElement('iframe');
+    document.body.appendChild(iframe);
+    iframe.onload = onIframeLoaded;
+    iframe.src = window.location;
+
+    function onIframeLoaded() {
+      var iframe = window.document.querySelector('iframe');
+
+      // Propagate test success out of the iframe.
+      iframe.contentWindow.setAllEventsOccuredHandler(
+          window.parent.reportTestSuccess);
+
+      func(iframe);
+    }
+  }
+
   // This function is used for setting up a test that:
   // 1. Creates a data channel on |gFirstConnection| and sends data to
   //    |gSecondConnection|.

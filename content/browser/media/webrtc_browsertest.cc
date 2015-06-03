@@ -432,4 +432,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CreateOfferWithOfferOptions) {
   MakeTypicalPeerConnectionCall("testCreateOfferOptions();");
 }
 
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CallInsideIframe) {
+  MakeTypicalPeerConnectionCall("callInsideIframe({video: true, audio:true});");
+}
+
 }  // namespace content
