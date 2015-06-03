@@ -38,6 +38,8 @@ namespace blink {
 
 static const int infinity = -1;
 
+class GridItemWithSpan;
+
 class GridTrack {
 public:
     GridTrack()
@@ -264,24 +266,16 @@ void LayoutGrid::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     LayoutBlock::addChild(newChild, beforeChild);
 
-    if (gridIsDirty())
-        return;
-
     // The grid needs to be recomputed as it might contain auto-placed items that will change their position.
     dirtyGrid();
-    return;
 }
 
 void LayoutGrid::removeChild(LayoutObject* child)
 {
     LayoutBlock::removeChild(child);
 
-    if (gridIsDirty())
-        return;
-
     // The grid needs to be recomputed as it might contain auto-placed items that will change their position.
     dirtyGrid();
-    return;
 }
 
 void LayoutGrid::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
@@ -925,15 +919,14 @@ void LayoutGrid::insertItemIntoGrid(LayoutBox& child, const GridCoordinate& coor
 
 void LayoutGrid::placeItemsOnGrid()
 {
-    if (!gridIsDirty())
+    if (!m_gridIsDirty)
         return;
 
     ASSERT(m_gridItemCoordinate.isEmpty());
 
     populateExplicitGridAndOrderIterator();
 
-    // We clear the dirty bit here as the grid sizes have been updated, this means
-    // that we can safely call gridRowCount() / gridColumnCount().
+    // We clear the dirty bit here as the grid sizes have been updated.
     m_gridIsDirty = false;
 
     Vector<LayoutBox*> autoMajorAxisAutoGridItems;
@@ -1122,6 +1115,9 @@ GridTrackSizingDirection LayoutGrid::autoPlacementMinorAxisDirection() const
 
 void LayoutGrid::dirtyGrid()
 {
+    if (m_gridIsDirty)
+        return;
+
     // Even if this could be redundant, it could be seen as a defensive strategy against
     // style changes events happening during the layout phase or even while the painting process
     // is still ongoing.
@@ -1131,9 +1127,9 @@ void LayoutGrid::dirtyGrid()
 
     m_grid.resize(0);
     m_gridItemCoordinate.clear();
-    m_gridIsDirty = true;
     m_gridItemsOverflowingGridArea.resize(0);
     m_gridItemsIndexesMap.clear();
+    m_gridIsDirty = true;
 }
 
 void LayoutGrid::layoutGridItems()

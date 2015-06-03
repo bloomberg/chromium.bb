@@ -41,7 +41,6 @@ public:
 void GridPainter::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(!m_layoutGrid.needsLayout());
-    ASSERT_WITH_SECURITY_IMPLICATION(!m_layoutGrid.gridIsDirty());
 
     LayoutRect localPaintInvalidationRect = LayoutRect(paintInfo.rect);
     localPaintInvalidationRect.moveBy(-paintOffset);

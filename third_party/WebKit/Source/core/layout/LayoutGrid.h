@@ -35,11 +35,10 @@ namespace blink {
 struct GridCoordinate;
 struct GridSpan;
 class GridTrack;
-class GridItemWithSpan;
 
 class LayoutGrid final : public LayoutBlock {
 public:
-    LayoutGrid(Element*);
+    explicit LayoutGrid(Element*);
     virtual ~LayoutGrid();
 
     virtual const char* name() const override { return "LayoutGrid"; }
@@ -50,18 +49,40 @@ public:
 
     void dirtyGrid();
 
-    const Vector<LayoutUnit>& columnPositions() const { return m_columnPositions; }
-    const Vector<LayoutUnit>& rowPositions() const { return m_rowPositions; }
+    const Vector<LayoutUnit>& columnPositions() const
+    {
+        ASSERT(!m_gridIsDirty);
+        return m_columnPositions;
+    }
+
+    const Vector<LayoutUnit>& rowPositions() const
+    {
+        ASSERT(!m_gridIsDirty);
+        return m_rowPositions;
+    }
 
     typedef Vector<LayoutBox*, 1> GridCell;
-    const GridCell& gridCell(int row, int column) { return m_grid[row][column]; }
-    const Vector<LayoutBox*>& itemsOverflowingGridArea() { return m_gridItemsOverflowingGridArea; }
-    int paintIndexForGridItem(const LayoutBox* layoutBox) { return m_gridItemsIndexesMap.get(layoutBox); }
+    const GridCell& gridCell(int row, int column)
+    {
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_gridIsDirty);
+        return m_grid[row][column];
+    }
 
-    bool gridIsDirty() const { return m_gridIsDirty; }
+    const Vector<LayoutBox*>& itemsOverflowingGridArea()
+    {
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_gridIsDirty);
+        return m_gridItemsOverflowingGridArea;
+    }
 
-    typedef void (GridTrack::* AccumulatorGrowFunction)(LayoutUnit);
+    int paintIndexForGridItem(const LayoutBox* layoutBox)
+    {
+        ASSERT_WITH_SECURITY_IMPLICATION(!m_gridIsDirty);
+        return m_gridItemsIndexesMap.get(layoutBox);
+    }
+
 private:
+    typedef void (GridTrack::* AccumulatorGrowFunction)(LayoutUnit);
+
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutGrid || LayoutBlock::isOfType(type); }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
     virtual void computePreferredLogicalWidths() override;
@@ -151,12 +172,12 @@ private:
 
     size_t gridColumnCount() const
     {
-        ASSERT(!gridIsDirty());
+        ASSERT(!m_gridIsDirty);
         return m_grid[0].size();
     }
     size_t gridRowCount() const
     {
-        ASSERT(!gridIsDirty());
+        ASSERT(!m_gridIsDirty);
         return m_grid.size();
     }
 
