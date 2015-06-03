@@ -67,6 +67,15 @@ void SharedMemory::CloseHandle(const SharedMemoryHandle& handle) {
     DPLOG(ERROR) << "close";
 }
 
+// static
+SharedMemoryHandle SharedMemory::DuplicateHandle(
+    const SharedMemoryHandle& handle) {
+  int duped_handle = HANDLE_EINTR(dup(handle.fd));
+  if (duped_handle < 0)
+    return base::SharedMemory::NULLHandle();
+  return base::FileDescriptor(duped_handle, true);
+}
+
 bool SharedMemory::CreateAndMapAnonymous(size_t size) {
   // Untrusted code can't create descriptors or handles.
   return false;

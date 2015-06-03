@@ -498,7 +498,7 @@ static void CopySharedMemoryHandleForMessage(
     base::SharedMemoryHandle* handle_out,
     base::ProcessId peer_pid) {
 #if defined(OS_POSIX)
-  *handle_out = base::SharedMemory::DeepCopyHandle(handle_in, true);
+  *handle_out = base::SharedMemory::DuplicateHandle(handle_in);
 #elif defined(OS_WIN)
   // On Windows we need to duplicate the handle for the plugin process.
   *handle_out = NULL;

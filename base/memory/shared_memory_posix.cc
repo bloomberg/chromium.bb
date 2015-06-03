@@ -247,21 +247,12 @@ size_t SharedMemory::GetHandleLimit() {
 }
 
 // static
-SharedMemoryHandle SharedMemory::ShallowCopyHandle(
+SharedMemoryHandle SharedMemory::DuplicateHandle(
     const SharedMemoryHandle& handle) {
-  SharedMemoryHandle new_handle = handle;
-  new_handle.auto_close = false;
-  return new_handle;
-}
-
-// static
-SharedMemoryHandle SharedMemory::DeepCopyHandle(
-    const SharedMemoryHandle& handle,
-    bool clean_up_resources_on_destruction) {
   int duped_handle = HANDLE_EINTR(dup(handle.fd));
   if (duped_handle < 0)
     return base::SharedMemory::NULLHandle();
-  return base::FileDescriptor(duped_handle, clean_up_resources_on_destruction);
+  return base::FileDescriptor(duped_handle, true);
 }
 
 // static

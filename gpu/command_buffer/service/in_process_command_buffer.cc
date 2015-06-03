@@ -196,23 +196,7 @@ base::LazyInstance<SyncPointManagerWrapper> g_sync_point_manager =
 
 base::SharedMemoryHandle ShareToGpuThread(
     base::SharedMemoryHandle source_handle) {
-#if defined(OS_WIN)
-  // Windows needs to explicitly duplicate the handle to current process.
-  base::SharedMemoryHandle target_handle;
-  if (!DuplicateHandle(GetCurrentProcess(),
-                       source_handle,
-                       GetCurrentProcess(),
-                       &target_handle,
-                       FILE_GENERIC_READ | FILE_GENERIC_WRITE,
-                       FALSE,
-                       0)) {
-    return base::SharedMemory::NULLHandle();
-  }
-
-  return target_handle;
-#else
-  return base::SharedMemory::DeepCopyHandle(source_handle, true);
-#endif
+  return base::SharedMemory::DuplicateHandle(source_handle);
 }
 
 gfx::GpuMemoryBufferHandle ShareGpuMemoryBufferToGpuThread(
