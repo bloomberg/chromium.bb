@@ -1777,7 +1777,7 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 	struct weston_keyboard *keyboard = seat->keyboard;
 	struct wl_resource *cr;
 
-	if (!seat->keyboard)
+	if (!keyboard)
 		return;
 
         cr = wl_resource_create(client, &wl_keyboard_interface,
@@ -1790,7 +1790,7 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 	/* May be moved to focused list later by either
 	 * weston_keyboard_set_focus or directly if this client is already
 	 * focused */
-	wl_list_insert(&seat->keyboard->resource_list, wl_resource_get_link(cr));
+	wl_list_insert(&keyboard->resource_list, wl_resource_get_link(cr));
 	wl_resource_set_implementation(cr, &keyboard_interface,
 				       seat, unbind_resource);
 
@@ -1813,27 +1813,27 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	if (should_send_modifiers_to_client(seat, client)) {
-		send_modifiers_to_resource(seat->keyboard,
+		send_modifiers_to_resource(keyboard,
 					   cr,
-					   seat->keyboard->focus_serial);
+					   keyboard->focus_serial);
 	}
 
-	if (seat->keyboard->focus && seat->keyboard->focus->resource &&
-	    wl_resource_get_client(seat->keyboard->focus->resource) == client) {
+	if (keyboard->focus && keyboard->focus->resource &&
+	    wl_resource_get_client(keyboard->focus->resource) == client) {
 		struct weston_surface *surface =
-			(struct weston_surface *) seat->keyboard->focus;
+			(struct weston_surface *)keyboard->focus;
 
 		wl_list_remove(wl_resource_get_link(cr));
-		wl_list_insert(&seat->keyboard->focus_resource_list,
+		wl_list_insert(&keyboard->focus_resource_list,
 			       wl_resource_get_link(cr));
 		wl_keyboard_send_enter(cr,
-				       seat->keyboard->focus_serial,
+				       keyboard->focus_serial,
 				       surface->resource,
-				       &seat->keyboard->keys);
+				       &keyboard->keys);
 
 		/* If this is the first keyboard resource for this
 		 * client... */
-		if (seat->keyboard->focus_resource_list.prev ==
+		if (keyboard->focus_resource_list.prev ==
 		    wl_resource_get_link(cr))
 			wl_data_device_set_keyboard_focus(seat);
 	}
