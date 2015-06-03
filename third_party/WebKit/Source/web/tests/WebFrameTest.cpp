@@ -411,6 +411,32 @@ TEST_P(ParametrizedWebFrameTest, LocationSetEmptyPort)
     EXPECT_EQ("http://internal.test:0/" + fileName, content);
 }
 
+class EvaluateOnLoadWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+public:
+    EvaluateOnLoadWebFrameClient() : m_executing(false), m_wasExecuted(false) { }
+
+    void didClearWindowObject(WebLocalFrame* frame) override
+    {
+        EXPECT_FALSE(m_executing);
+        m_wasExecuted = true;
+        m_executing = true;
+        v8::HandleScope handleScope(v8::Isolate::GetCurrent());
+        frame->executeScriptAndReturnValue(WebScriptSource(WebString("window.someProperty = 42;")));
+        m_executing = false;
+    }
+
+    bool m_executing;
+    bool m_wasExecuted;
+};
+
+TEST_P(ParametrizedWebFrameTest, DidClearWindowObjectIsNotRecursive)
+{
+    EvaluateOnLoadWebFrameClient webFrameClient;
+    FrameTestHelpers::WebViewHelper webViewHelper(this);
+    webViewHelper.initializeAndLoad("about:blank", true, &webFrameClient);
+    EXPECT_TRUE(webFrameClient.m_wasExecuted);
+}
+
 class CSSCallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     CSSCallbackWebFrameClient() : m_updateCount(0) { }

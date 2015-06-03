@@ -1365,6 +1365,10 @@ void FrameLoader::dispatchDidClearDocumentOfWindowObject()
 
     InspectorInstrumentation::didClearDocumentOfWindowObject(m_frame);
 
+    if (m_dispatchingDidClearWindowObjectInMainWorld)
+        return;
+    TemporaryChange<bool>
+        inDidClearWindowObject(m_dispatchingDidClearWindowObjectInMainWorld, true);
     // We just cleared the document, not the entire window object, but for the
     // embedder that's close enough.
     client()->dispatchDidClearWindowObjectInMainWorld();
