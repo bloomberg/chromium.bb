@@ -42,4 +42,12 @@ bool InitializeSandbox(sandbox::SandboxInterfaceInfo* sandbox_info) {
   return InitTargetServices(target_services);
 }
 
+bool BrokerDuplicateSharedMemoryHandle(
+    const base::SharedMemoryHandle& source_handle,
+    base::ProcessId target_process_id,
+    base::SharedMemoryHandle* target_handle) {
+  return BrokerDuplicateHandle(source_handle, target_process_id, target_handle,
+                               0, DUPLICATE_SAME_ACCESS);
+}
+
 }  // namespace content

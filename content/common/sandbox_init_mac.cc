@@ -74,6 +74,14 @@ bool InitializeSandbox() {
   return InitializeSandbox(sandbox_type, allowed_dir);
 }
 
+bool BrokerDuplicateSharedMemoryHandle(
+    const base::SharedMemoryHandle& source_handle,
+    base::ProcessId target_process_id,
+    base::SharedMemoryHandle* target_handle) {
+  *target_handle = base::SharedMemory::DuplicateHandle(source_handle);
+  return base::SharedMemory::IsHandleValid(*target_handle);
+}
+
 extern const char kBootstrapPortNameForNPAPIPlugins[] =
     "org.chromium.sandbox.real_bootstrap_server";
 
