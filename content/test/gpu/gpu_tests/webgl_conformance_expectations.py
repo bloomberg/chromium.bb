@@ -264,6 +264,20 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android'], bug=478572)
     self.Fail('deqp/data/gles2/shaders/linkage.html',
         ['android'], bug=478572)
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video.html',
+        ['android', 'android-webview-shell'], bug=352645)
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-video-rgb565.html',
+        ['android', 'android-webview-shell'], bug=352645)
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-video-rgba4444.html',
+        ['android', 'android-webview-shell'], bug=352645)
+    self.Fail('conformance/textures/' +
+        'tex-image-and-sub-image-2d-with-video-rgba5551.html',
+        ['android', 'android-webview-shell'], bug=352645)
+    self.Fail('conformance/textures/texture-npot-video.html',
+        ['android', 'android-webview-shell'], bug=352645)
+
 
     # The following test is very slow and therefore times out on Android bot.
     self.Skip('conformance/rendering/multisample-corruption.html',
@@ -275,20 +289,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android'], bug=315976)
     self.Fail('conformance/glsl/misc/gl_position_unset.vert.html',
         ['android'], bug=315976)
-    # The following tests are disabled due to security issues.
-    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-video.html',
-        ['android'], bug=334204)
-    self.Fail('conformance/textures/' +
-        'tex-image-and-sub-image-2d-with-video-rgb565.html',
-        ['android'], bug=334204)
-    self.Fail('conformance/textures/' +
-        'tex-image-and-sub-image-2d-with-video-rgba4444.html',
-        ['android'], bug=334204)
-    self.Fail('conformance/textures/' +
-        'tex-image-and-sub-image-2d-with-video-rgba5551.html',
-        ['android'], bug=334204)
-    self.Fail('conformance/textures/texture-npot-video.html',
-        ['android'], bug=334204)
 
     # ChromeOS: affecting all devices.
     self.Fail('conformance/extensions/webgl-depth-texture.html',

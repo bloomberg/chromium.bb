@@ -1,27 +1,30 @@
 #!/usr/bin/env python
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This script runs unit tests for code in gpu_tests/ that does telemetry
-performance measurement.
+"""This script runs unit tests of the code in the gpu_tests/ directory.
 
-This script DOES NOT run benchmarks. run_gpu_tests does that.
+This script DOES NOT run tests. run_gpu_test does that.
 """
 
 import os
+import subprocess
 import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__),
-    os.pardir, os.pardir, os.pardir, 'tools', 'telemetry'))
-
-from telemetry.unittest_util import gtest_progress_reporter
-from telemetry.unittest_util import run_tests
 
 
 if __name__ == '__main__':
-  base_dir = os.path.dirname(os.path.realpath(__file__))
-  progress_reporters = [
-      gtest_progress_reporter.GTestProgressReporter(sys.stdout)]
-  run_tests.config = run_tests.Config(base_dir, [base_dir], progress_reporters)
-  sys.exit(run_tests.RunTestsCommand.main())
+  gpu_test_dir = os.path.dirname(os.path.realpath(__file__))
+  telemetry_dir = os.path.realpath(
+    os.path.join(gpu_test_dir, '..', '..', '..', 'tools', 'telemetry'))
+
+  env = os.environ.copy()
+  if 'PYTHONPATH' in env:
+    env['PYTHONPATH'] = env['PYTHONPATH'] + os.pathsep + telemetry_dir
+  else:
+    env['PYTHONPATH'] = telemetry_dir
+
+  path_to_run_tests = os.path.join(telemetry_dir, 'telemetry', 'unittest_util',
+                                   'run_tests.py')
+  argv = ['--top-level-dir', gpu_test_dir] + sys.argv[1:]
+  sys.exit(subprocess.call([sys.executable, path_to_run_tests] + argv, env=env))
