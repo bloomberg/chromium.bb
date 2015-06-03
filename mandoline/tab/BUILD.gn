@@ -1,0 +1,19 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("tab") {
+  sources = [
+    "frame.cc",
+    "frame.h",
+    "frame_tree.cc",
+    "frame_tree.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/view_manager/public/cpp",
+    "//mojo/application/public/interfaces",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+  ]
+}

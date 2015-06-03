@@ -5,6 +5,7 @@
 #include "components/html_viewer/html_document.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -19,6 +20,8 @@
 #include "components/html_viewer/web_storage_namespace_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
 #include "components/view_manager/public/cpp/view.h"
+#include "components/view_manager/public/cpp/view_manager.h"
+#include "components/view_manager/public/cpp/view_property.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
@@ -32,6 +35,8 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebRemoteFrame.h"
+#include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -53,6 +58,46 @@ using mojo::WeakBindToRequest;
 
 namespace html_viewer {
 namespace {
+
+// Switch to enable out of process iframes.
+const char kOOPIF[] = "oopifs";
+
+bool EnableOOPIFs() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kOOPIF);
+}
+
+// WebRemoteFrameClient implementation used for OOPIFs.
+// TODO(sky): this needs to talk to browser by way of an interface.
+class RemoteFrameClientImpl : public blink::WebRemoteFrameClient {
+ public:
+  explicit RemoteFrameClientImpl(mojo::View* view) : view_(view) {}
+  ~RemoteFrameClientImpl() {}
+
+  // WebRemoteFrameClient methods:
+  virtual void postMessageEvent(blink::WebLocalFrame* source_frame,
+                                blink::WebRemoteFrame* target_frame,
+                                blink::WebSecurityOrigin target_origin,
+                                blink::WebDOMMessageEvent event) {}
+  virtual void initializeChildFrame(const blink::WebRect& frame_rect,
+                                    float scale_factor) {
+    mojo::Rect rect;
+    rect.x = frame_rect.x;
+    rect.y = frame_rect.y;
+    rect.width = frame_rect.width;
+    rect.height = frame_rect.height;
+    view_->SetBounds(rect);
+  }
+  virtual void navigate(const blink::WebURLRequest& request,
+                        bool should_replace_current_entry) {}
+  virtual void reload(bool ignore_cache, bool is_client_redirect) {}
+
+  virtual void forwardInputEvent(const blink::WebInputEvent* event) {}
+
+ private:
+  mojo::View* const view_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoteFrameClientImpl);
+};
 
 void ConfigureSettings(blink::WebSettings* settings) {
   settings->setCookieEnabled(true);
@@ -80,9 +125,8 @@ mojo::Target WebNavigationPolicyToNavigationTarget(
 bool CanNavigateLocally(blink::WebFrame* frame,
                         const blink::WebURLRequest& request) {
   // For now, we just load child frames locally.
-  // TODO(aa): In the future, this should use embedding to connect to a
-  // different instance of Blink if the frame is cross-origin.
-  if (frame->parent())
+  // TODO(sky): this can be removed once we transition to oopifs.
+  if (!EnableOOPIFs() && frame->parent())
     return true;
 
   // If we have extraData() it means we already have the url response
@@ -179,6 +223,15 @@ void HTMLDocument::Load(URLResponsePtr response) {
   web_view_->mainFrame()->loadRequest(web_request);
 }
 
+void HTMLDocument::ConvertLocalFrameToRemoteFrame(blink::WebLocalFrame* frame) {
+  mojo::View* view = frame_to_view_[frame].view;
+  // TODO(sky): this leaks. Fix it.
+  blink::WebRemoteFrame* remote_frame = blink::WebRemoteFrame::create(
+      frame_to_view_[frame].scope, new RemoteFrameClientImpl(view));
+  remote_frame->initializeFromFrame(frame);
+  frame->swap(remote_frame);
+}
+
 void HTMLDocument::UpdateWebviewSizeFromViewSize() {
   web_view_->setDeviceScaleFactor(setup_->device_pixel_ratio());
   const gfx::Size size_in_pixels(root_->bounds().width, root_->bounds().height);
@@ -248,9 +301,21 @@ blink::WebFrame* HTMLDocument::createChildFrame(
     blink::WebTreeScopeType scope,
     const blink::WebString& frameName,
     blink::WebSandboxFlags sandboxFlags) {
-  blink::WebLocalFrame* web_frame = blink::WebLocalFrame::create(scope, this);
-  parent->appendChild(web_frame);
-  return web_frame;
+  blink::WebLocalFrame* child_frame = blink::WebLocalFrame::create(scope, this);
+  parent->appendChild(child_frame);
+  if (EnableOOPIFs()) {
+    // Create the view that will house the frame now. We embed only once we know
+    // the url.
+    mojo::View* child_frame_view = root_->view_manager()->CreateView();
+    child_frame_view->SetVisible(true);
+    root_->AddChild(child_frame_view);
+
+    ChildFrameData child_frame_data;
+    child_frame_data.view = child_frame_view;
+    child_frame_data.scope = scope;
+    frame_to_view_[child_frame] = child_frame_data;
+  }
+  return child_frame;
 }
 
 void HTMLDocument::frameDetached(blink::WebFrame* frame) {
@@ -274,6 +339,21 @@ blink::WebCookieJar* HTMLDocument::cookieJar(blink::WebLocalFrame* frame) {
 
 blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
     const NavigationPolicyInfo& info) {
+  std::string frame_name = info.frame ? info.frame->assignedName().utf8() : "";
+  if (info.frame->parent() && EnableOOPIFs()) {
+    mojo::View* view = frame_to_view_[info.frame].view;
+    mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
+    view->Embed(url_request.Pass(), nullptr, nullptr);
+    // TODO(sky): I tried swapping the frame types here, but that resulted in
+    // the view never getting sized. Figure out why.
+    // TODO(sky): there are timing conditions here, and we should only do this
+    // once.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&HTMLDocument::ConvertLocalFrameToRemoteFrame,
+                              base::Unretained(this), info.frame));
+    return blink::WebNavigationPolicyIgnore;
+  }
+
   if (CanNavigateLocally(info.frame, info.urlRequest))
     return info.defaultPolicy;
 

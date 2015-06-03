@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_H_
 #define COMPONENTS_HTML_VIEWER_HTML_DOCUMENT_H_
 
+#include <map>
 #include <set>
 
 #include "base/callback.h"
@@ -64,6 +65,14 @@ class HTMLDocument : public blink::WebViewClient,
   ~HTMLDocument() override;
 
  private:
+  // Data associated with a child iframe.
+  struct ChildFrameData {
+    mojo::View* view;
+    blink::WebTreeScopeType scope;
+  };
+
+  using FrameToViewMap = std::map<blink::WebLocalFrame*, ChildFrameData>;
+
   // Updates the size and scale factor of the webview and related classes from
   // |root_|.
   void UpdateWebviewSizeFromViewSize();
@@ -127,6 +136,10 @@ class HTMLDocument : public blink::WebViewClient,
 
   void Load(mojo::URLResponsePtr response);
 
+  // Converts a WebLocalFrame to a WebRemoteFrame. Used once we know the
+  // url of a frame to trigger the navigation.
+  void ConvertLocalFrameToRemoteFrame(blink::WebLocalFrame* frame);
+
   scoped_ptr<mojo::AppRefCount> app_refcount_;
   mojo::URLResponsePtr response_;
   mojo::ServiceProviderImpl exported_services_;
@@ -149,6 +162,8 @@ class HTMLDocument : public blink::WebViewClient,
   Setup* setup_;
 
   scoped_ptr<TouchHandler> touch_handler_;
+
+  FrameToViewMap frame_to_view_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocument);
 };

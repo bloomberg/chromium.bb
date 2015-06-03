@@ -8,6 +8,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
+#include "mandoline/tab/frame.h"
+#include "mandoline/tab/frame_tree.h"
 #include "mandoline/ui/browser/browser_ui.h"
 #include "mandoline/ui/browser/merged_service_provider.h"
 #include "mojo/application/public/cpp/application_runner.h"
@@ -88,6 +90,10 @@ void Browser::OnEmbed(
   // Browser does not support being embedded more than once.
   CHECK(!root_);
 
+  // Make it so we get OnWillEmbed() for any Embed()s done by other apps we
+  // Embed().
+  root->view_manager()->SetEmbedRoot();
+
   // TODO(beng): still unhappy with the fact that both this class & the UI class
   //             know so much about these views. Figure out how to shift more to
   //             the UI class.
@@ -112,6 +118,32 @@ void Browser::OnEmbed(
     request->url = mojo::String::From(default_url_);
     Embed(request.Pass(), services.Pass(), exposed_services.Pass());
   }
+}
+
+bool Browser::OnWillEmbed(
+    mojo::View* view,
+    mojo::InterfaceRequest<mojo::ServiceProvider>* services,
+    mojo::ServiceProviderPtr* exposed_services) {
+  // TODO(sky): move this to Frame/FrameTree.
+  Frame* frame = Frame::FindFirstFrameAncestor(view);
+  if (!frame) {
+    // TODO(sky): add requestor url so that we can return false if it's not
+    // an app we expect.
+    return true;
+  }
+
+  Frame* parent = frame;
+  if (frame->view() == view) {
+    parent = frame->parent();
+    // This is a reembed.
+    delete frame;
+    frame = nullptr;
+  }
+
+  Frame* child_frame = new Frame(frame->tree(), view, ViewOwnership::OWNS_VIEW,
+                                 services, exposed_services);
+  parent->Add(child_frame);
+  return true;
 }
 
 void Browser::OnViewManagerDisconnected(
@@ -157,6 +189,8 @@ void Browser::Embed(mojo::URLRequestPtr request,
   if (changed)
     ui_->OnURLChanged();
 
+  // TODO(sky): move serviceproviders to frame tree.
+  frame_tree_.reset(new FrameTree(content_));
   merged_service_provider_.reset(
       new MergedServiceProvider(exposed_services.Pass(), this));
   content_->Embed(request.Pass(), services.Pass(),

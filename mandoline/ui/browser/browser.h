@@ -27,6 +27,7 @@ class ViewManagerInit;
 namespace mandoline {
 
 class BrowserUI;
+class FrameTree;
 class MergedServiceProvider;
 
 class Browser : public mojo::ApplicationDelegate,
@@ -59,6 +60,9 @@ class Browser : public mojo::ApplicationDelegate,
   void OnEmbed(mojo::View* root,
                mojo::InterfaceRequest<mojo::ServiceProvider> services,
                mojo::ServiceProviderPtr exposed_services) override;
+  bool OnWillEmbed(mojo::View* view,
+                   mojo::InterfaceRequest<mojo::ServiceProvider>* services,
+                   mojo::ServiceProviderPtr* exposed_services) override;
   void OnViewManagerDisconnected(mojo::ViewManager* view_manager) override;
 
   // Overridden from ViewManagerRootClient:
@@ -105,6 +109,8 @@ class Browser : public mojo::ApplicationDelegate,
 
   scoped_ptr<BrowserUI> ui_;
   mojo::ApplicationImpl* app_;
+
+  scoped_ptr<FrameTree> frame_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

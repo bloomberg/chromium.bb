@@ -44,6 +44,7 @@ source_set("lib") {
     "//base",
     "//components/view_manager/public/cpp",
     "//mandoline/services/navigation/public/interfaces",
+    "//mandoline/tab",
     "//mojo/application/public/interfaces",
     "//mojo/converters/geometry",
     "//skia",

@@ -1,0 +1,4 @@
+include_rules = [
+  "+components/view_manager/public",
+  "+mojo/application/public",
+]
