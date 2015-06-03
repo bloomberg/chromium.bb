@@ -135,6 +135,7 @@ public:
     static bool isHeapObjectAlive(T* object)
     {
         ASSERT_NOT_REACHED();
+        return false;
     }
 
     static void markNoTracing(...)
