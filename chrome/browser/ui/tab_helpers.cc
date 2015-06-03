@@ -147,6 +147,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       autofill::ChromeAutofillClient::FromWebContents(web_contents));
   ChromeTranslateClient::CreateForWebContents(web_contents);
   CoreTabHelper::CreateForWebContents(web_contents);
+  ExternalProtocolObserver::CreateForWebContents(web_contents);
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
   FindTabHelper::CreateForWebContents(web_contents);
   history::WebContentsTopSitesObserver::CreateForWebContents(
@@ -195,7 +196,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ThumbnailTabHelper::CreateForWebContents(web_contents);
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);
 #endif
-  ExternalProtocolObserver::CreateForWebContents(web_contents);
 
 #if defined(OS_WIN)
   MetroPinTabHelper::CreateForWebContents(web_contents);
