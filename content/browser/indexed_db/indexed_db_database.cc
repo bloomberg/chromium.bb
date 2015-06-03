@@ -424,10 +424,8 @@ void IndexedDBDatabase::CreateIndexAbortOperation(
     int64 object_store_id,
     int64 index_id,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE1("IndexedDBDatabase::CreateIndexAbortOperation",
-             "txn.id",
-             transaction->id());
   DCHECK(!transaction);
+  IDB_TRACE("IndexedDBDatabase::CreateIndexAbortOperation");
   RemoveIndex(object_store_id, index_id);
 }
 
@@ -491,9 +489,7 @@ void IndexedDBDatabase::DeleteIndexAbortOperation(
     const IndexedDBIndexMetadata& index_metadata,
     IndexedDBTransaction* transaction) {
   DCHECK(!transaction);
-  IDB_TRACE1("IndexedDBDatabase::DeleteIndexAbortOperation",
-             "txn.id",
-             transaction->id());
+  IDB_TRACE("IndexedDBDatabase::DeleteIndexAbortOperation");
   AddIndex(object_store_id, index_metadata, IndexedDBIndexMetadata::kInvalidId);
 }
 
@@ -1949,9 +1945,7 @@ void IndexedDBDatabase::CreateObjectStoreAbortOperation(
     int64 object_store_id,
     IndexedDBTransaction* transaction) {
   DCHECK(!transaction);
-  IDB_TRACE1("IndexedDBDatabase::CreateObjectStoreAbortOperation",
-             "txn.id",
-             transaction->id());
+  IDB_TRACE("IndexedDBDatabase::CreateObjectStoreAbortOperation");
   RemoveObjectStore(object_store_id);
 }
 
@@ -1959,9 +1953,7 @@ void IndexedDBDatabase::DeleteObjectStoreAbortOperation(
     const IndexedDBObjectStoreMetadata& object_store_metadata,
     IndexedDBTransaction* transaction) {
   DCHECK(!transaction);
-  IDB_TRACE1("IndexedDBDatabase::DeleteObjectStoreAbortOperation",
-             "txn.id",
-             transaction->id());
+  IDB_TRACE("IndexedDBDatabase::DeleteObjectStoreAbortOperation");
   AddObjectStore(object_store_metadata,
                  IndexedDBObjectStoreMetadata::kInvalidId);
 }
@@ -1971,9 +1963,7 @@ void IndexedDBDatabase::VersionChangeAbortOperation(
     int64 previous_int_version,
     IndexedDBTransaction* transaction) {
   DCHECK(!transaction);
-  IDB_TRACE1("IndexedDBDatabase::VersionChangeAbortOperation",
-             "txn.id",
-             transaction->id());
+  IDB_TRACE("IndexedDBDatabase::VersionChangeAbortOperation");
   metadata_.version = previous_version;
   metadata_.int_version = previous_int_version;
 }
