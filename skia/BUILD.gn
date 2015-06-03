@@ -528,7 +528,7 @@ component("skia") {
     set_sources_assignment_filter(sources_assignment_filter)
     deps += [
       "//third_party/expat",
-      "//third_party/freetype",
+      "//third_party/freetype-android:freetype",
       "//third_party/android_tools:cpu_features",
     ]
   }

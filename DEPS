@@ -430,7 +430,7 @@ deps_os = {
     'src/third_party/findbugs':
      Var('chromium_git') + '/chromium/deps/findbugs.git' + '@' + '7f69fa78a6db6dc31866d09572a0e356e921bf12',
 
-    'src/third_party/freetype':
+    'src/third_party/freetype-android/src':
      Var('chromium_git') + '/chromium/src/third_party/freetype.git' + '@' + 'd1028db70bea988d1022e4d463de66581c696160',
 
    'src/third_party/elfutils/src':

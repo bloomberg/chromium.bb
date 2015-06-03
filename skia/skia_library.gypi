@@ -246,7 +246,7 @@
     [ 'OS == "android"', {
       'dependencies': [
         '../third_party/expat/expat.gyp:expat',
-        '../third_party/freetype/freetype.gyp:ft2',
+        '../third_party/freetype-android/freetype.gyp:ft2',
       ],
       # This exports a hard dependency because it needs to run its
       # symlink action in order to expose the skia header files.
