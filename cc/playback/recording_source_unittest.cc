@@ -30,8 +30,10 @@ template <>
 scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource<
     FakeDisplayListRecordingSource>(const gfx::Rect& viewport,
                                     const gfx::Size& grid_cell_size) {
+  gfx::Rect layer_rect(viewport.right(), viewport.bottom());
   scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateRecordingSource(viewport);
+      FakeDisplayListRecordingSource::CreateRecordingSource(viewport,
+                                                            layer_rect.size());
   recording_source->SetGridCellSize(grid_cell_size);
 
   return recording_source.Pass();

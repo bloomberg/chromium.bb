@@ -23,6 +23,12 @@ const int kPixelDistanceToRecord = 8000;
 // operations.
 const int kOpCountThatIsOkToAnalyze = 10;
 
+#ifdef NDEBUG
+const bool kDefaultClearCanvasSetting = false;
+#else
+const bool kDefaultClearCanvasSetting = true;
+#endif
+
 DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
     ScopedDisplayListRecordingSourceUpdateTimer,
     "Compositing.DisplayListRecordingSource.UpdateUs",
@@ -38,6 +44,7 @@ DisplayListRecordingSource::DisplayListRecordingSource(
       gather_pixel_refs_(false),
       requires_clear_(false),
       is_solid_color_(false),
+      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       solid_color_(SK_ColorTRANSPARENT),
       background_color_(SK_ColorTRANSPARENT),
       pixel_record_distance_(kPixelDistanceToRecord),
@@ -116,6 +123,7 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
     repeat_count = slow_down_raster_scale_factor_for_debug_;
     painting_control = ContentLayerClient::DISPLAY_LIST_CACHING_DISABLED;
   }
+
   for (int i = 0; i < repeat_count; ++i) {
     display_list_ = painter->PaintContentsToDisplayList(recorded_viewport_,
                                                         painting_control);

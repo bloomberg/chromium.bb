@@ -829,6 +829,7 @@ test("cc_unittests") {
     "output/software_renderer_unittest.cc",
     "output/texture_mailbox_deleter_unittest.cc",
     "playback/display_item_list_unittest.cc",
+    "playback/display_list_raster_source_unittest.cc",
     "playback/display_list_recording_source_unittest.cc",
     "playback/picture_pile_impl_unittest.cc",
     "playback/picture_pile_unittest.cc",

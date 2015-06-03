@@ -5,6 +5,7 @@
 #ifndef CC_TEST_FAKE_DISPLAY_LIST_RECORDING_SOURCE_H_
 #define CC_TEST_FAKE_DISPLAY_LIST_RECORDING_SOURCE_H_
 
+#include "cc/base/region.h"
 #include "cc/playback/display_list_recording_source.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/impl_side_painting_settings.h"
@@ -21,11 +22,23 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
   ~FakeDisplayListRecordingSource() override {}
 
   static scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource(
-      const gfx::Rect& recorded_viewport) {
+      const gfx::Rect& recorded_viewport,
+      const gfx::Size& layer_bounds) {
     scoped_ptr<FakeDisplayListRecordingSource> recording_source(
         new FakeDisplayListRecordingSource(
             ImplSidePaintingSettings().default_tile_grid_size));
     recording_source->SetRecordedViewport(recorded_viewport);
+    recording_source->SetLayerBounds(layer_bounds);
+    return recording_source;
+  }
+
+  static scoped_ptr<FakeDisplayListRecordingSource> CreateFilledRecordingSource(
+      const gfx::Size& layer_bounds) {
+    scoped_ptr<FakeDisplayListRecordingSource> recording_source(
+        new FakeDisplayListRecordingSource(
+            ImplSidePaintingSettings().default_tile_grid_size));
+    recording_source->SetRecordedViewport(gfx::Rect(layer_bounds));
+    recording_source->SetLayerBounds(layer_bounds);
     return recording_source;
   }
 
@@ -33,17 +46,20 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
     recorded_viewport_ = recorded_viewport;
   }
 
+  void SetLayerBounds(const gfx::Size& layer_bounds) { size_ = layer_bounds; }
+
   void SetGridCellSize(const gfx::Size& grid_cell_size) {
     grid_cell_size_ = grid_cell_size;
   }
 
+  void SetClearCanvasWithDebugColor(bool clear) {
+    clear_canvas_with_debug_color_ = clear;
+  }
+
   void Rerecord() {
-    ContentLayerClient::PaintingControlSetting painting_control =
-        ContentLayerClient::PAINTING_BEHAVIOR_NORMAL;
-    display_list_ = client_.PaintContentsToDisplayList(recorded_viewport_,
-                                                       painting_control);
-    if (gather_pixel_refs_)
-      display_list_->GatherPixelRefs(grid_cell_size_);
+    Region invalidation = recorded_viewport_;
+    UpdateAndExpandInvalidation(&client_, &invalidation, size_,
+                                recorded_viewport_, 0, RECORD_NORMALLY);
   }
 
   void add_draw_rect(const gfx::RectF& rect) {

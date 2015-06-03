@@ -14,10 +14,11 @@ namespace {
 
 TEST(DisplayListRecordingSourceTest, DiscardablePixelRefsWithTransform) {
   gfx::Size grid_cell_size(128, 128);
-  gfx::Rect recorded_viewport(0, 0, 256, 256);
+  gfx::Rect recorded_viewport(256, 256);
 
   scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      FakeDisplayListRecordingSource::CreateRecordingSource(recorded_viewport);
+      FakeDisplayListRecordingSource::CreateFilledRecordingSource(
+          recorded_viewport.size());
   recording_source->SetGridCellSize(grid_cell_size);
   SkBitmap discardable_bitmap[2][2];
   gfx::Transform identity_transform;

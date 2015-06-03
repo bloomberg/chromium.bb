@@ -14,16 +14,6 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-namespace {
-
-#ifdef NDEBUG
-const bool kDefaultClearCanvasSetting = false;
-#else
-const bool kDefaultClearCanvasSetting = true;
-#endif
-
-}  // namespace
-
 namespace cc {
 
 scoped_refptr<DisplayListRasterSource>
@@ -40,7 +30,7 @@ DisplayListRasterSource::DisplayListRasterSource()
       can_use_lcd_text_(true),
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT),
-      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
+      clear_canvas_with_debug_color_(false),
       slow_down_raster_scale_factor_for_debug_(0),
       should_attempt_to_use_distance_field_text_(false) {
 }
@@ -56,7 +46,7 @@ DisplayListRasterSource::DisplayListRasterSource(
       solid_color_(other->solid_color_),
       recorded_viewport_(other->recorded_viewport_),
       size_(other->size_),
-      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
+      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       should_attempt_to_use_distance_field_text_(false) {
@@ -73,7 +63,7 @@ DisplayListRasterSource::DisplayListRasterSource(
       solid_color_(other->solid_color_),
       recorded_viewport_(other->recorded_viewport_),
       size_(other->size_),
-      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
+      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       should_attempt_to_use_distance_field_text_(

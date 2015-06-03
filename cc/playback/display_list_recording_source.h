@@ -45,6 +45,7 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   bool gather_pixel_refs_;
   bool requires_clear_;
   bool is_solid_color_;
+  bool clear_canvas_with_debug_color_;
   SkColor solid_color_;
   SkColor background_color_;
   int pixel_record_distance_;
