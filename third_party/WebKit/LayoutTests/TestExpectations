@@ -1188,11 +1188,6 @@ crbug.com/374572 svg/dynamic-updates/SVGImageElement-svgdom-preserveAspectRatio-
 
 crbug.com/371654 fast/html/imports/import-custom-element-dup-resolve.html [ Pass Failure ]
 
-crbug.com/472330 fast/writing-mode/box-shadow-horizontal-bt-tile-edge.html [ NeedsRebaseline ]
-crbug.com/472330 fast/writing-mode/box-shadow-horizontal-tb-tile-edge.html [ NeedsRebaseline ]
-crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-horizontal-bt-tile-edge.html [ NeedsRebaseline ]
-crbug.com/472330 virtual/slimmingpaint/fast/writing-mode/box-shadow-horizontal-tb-tile-edge.html [ NeedsRebaseline ]
-
 crbug.com/394221 [ Mac ] fast/text/emphasis-avoid-ruby.html [ Pass ImageOnlyFailure ]
 # crbug.com/394221 [ Mac ] fast/text/emphasis-overlap.html [ Pass ImageOnlyFailure ]
 crbug.com/394221 [ Win ] fast/text/emphasis-avoid-ruby.html [ Pass Failure ]
