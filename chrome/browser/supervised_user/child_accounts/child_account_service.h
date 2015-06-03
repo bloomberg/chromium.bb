@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -17,8 +17,7 @@
 #include "chrome/browser/supervised_user/child_accounts/family_info_fetcher.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/core/browser/account_service_flag_fetcher.h"
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "net/base/backoff_entry.h"
 
 namespace base {
@@ -36,7 +35,7 @@ class Profile;
 // supervised user experience, fetch information about the parent(s)).
 class ChildAccountService : public KeyedService,
                             public FamilyInfoFetcher::Consumer,
-                            public SigninManagerBase::Observer,
+                            public AccountTrackerService::Observer,
                             public SupervisedUserService::Delegate {
  public:
   ~ChildAccountService() override;
@@ -70,12 +69,9 @@ class ChildAccountService : public KeyedService,
   // SupervisedUserService::Delegate implementation.
   bool SetActive(bool active) override;
 
-  // SigninManagerBase::Observer implementation.
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username,
-                             const std::string& password) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // AccountTrackerService::Observer implementation.
+  void OnAccountUpdated(
+      const AccountTrackerService::AccountInfo& info) override;
 
   // FamilyInfoFetcher::Consumer implementation.
   void OnGetFamilyMembersSuccess(
@@ -85,12 +81,6 @@ class ChildAccountService : public KeyedService,
   void StartFetchingFamilyInfo();
   void CancelFetchingFamilyInfo();
   void ScheduleNextFamilyInfoUpdate(base::TimeDelta delay);
-
-  void StartFetchingServiceFlags();
-  void CancelFetchingServiceFlags();
-  void OnFlagsFetched(AccountServiceFlagFetcher::ResultCode,
-                      const std::vector<std::string>& flags);
-  void ScheduleNextStatusFlagUpdate(base::TimeDelta delay);
 
   void PropagateChildStatusToUser(bool is_child);
 
@@ -104,15 +94,6 @@ class ChildAccountService : public KeyedService,
   Profile* profile_;
 
   bool active_;
-
-  // The user for which we are currently trying to fetch the child account flag.
-  // Empty when we are not currently fetching.
-  std::string account_id_;
-
-  scoped_ptr<AccountServiceFlagFetcher> flag_fetcher_;
-  // If fetching the account service flag fails, retry with exponential backoff.
-  base::OneShotTimer<ChildAccountService> flag_fetch_timer_;
-  net::BackoffEntry flag_fetch_backoff_;
 
   scoped_ptr<FamilyInfoFetcher> family_fetcher_;
   // If fetching the family info fails, retry with exponential backoff.
