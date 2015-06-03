@@ -260,7 +260,7 @@ void GetAppListWindowOrigins(
 }
 
 AppListServiceMac* GetActiveInstance() {
-  if (app_list::switches::IsMacViewsAppListListEnabled()) {
+  if (app_list::switches::IsMacViewsAppListEnabled()) {
 #if defined(TOOLKIT_VIEWS)
     // TODO(tapted): Return AppListServiceViewsMac instance.
 #else

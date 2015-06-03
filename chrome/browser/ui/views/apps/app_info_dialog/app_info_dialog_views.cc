@@ -33,7 +33,7 @@
 
 bool CanShowAppInfoDialog() {
 #if defined(OS_MACOSX)
-  return app_list::switches::IsMacViewsAppListListEnabled();
+  return app_list::switches::IsMacViewsAppListEnabled();
 #else
   return true;
 #endif

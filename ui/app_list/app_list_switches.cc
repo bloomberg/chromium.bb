@@ -52,7 +52,7 @@ bool IsAppListSyncEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableSyncAppList))
     return true;
 
-  if (!IsMacViewsAppListListEnabled())
+  if (!IsMacViewsAppListEnabled())
     return false;
 #endif
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -120,7 +120,7 @@ bool IsLauncherSearchProviderApiEnabled() {
 }
 
 #if defined(OS_MACOSX)
-bool IsMacViewsAppListListEnabled() {
+bool IsMacViewsAppListEnabled() {
 #if defined(TOOLKIT_VIEWS)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kEnableMacViewsAppList);

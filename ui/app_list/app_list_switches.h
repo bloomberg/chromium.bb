@@ -50,7 +50,7 @@ bool APP_LIST_EXPORT IsDriveAppsInAppListEnabled();
 bool APP_LIST_EXPORT IsLauncherSearchProviderApiEnabled();
 
 #if defined(OS_MACOSX)
-bool APP_LIST_EXPORT IsMacViewsAppListListEnabled();
+bool APP_LIST_EXPORT IsMacViewsAppListEnabled();
 #endif
 
 }  // namespace switches
