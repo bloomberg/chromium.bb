@@ -22,21 +22,26 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchNoiseFinder {
   TouchNoiseFinder();
   ~TouchNoiseFinder();
 
-  // Updates which ABS_MT_SLOTs are likely noise. |touches| should contain all
-  // of the in-progress touches at |time| (including suspected noisy touches).
+  // Updates which ABS_MT_SLOTs are noise. |touches| should contain all of the
+  // in-progress touches at |time| (including noisy touches).
   // |touches| should have at most one entry per ABS_MT_SLOT.
   void HandleTouches(const std::vector<InProgressTouchEvdev>& touches,
                      base::TimeDelta time);
 
-  // Returns whether the in-progress touch at ABS_MT_SLOT |slot| is likely
-  // noise.
+  // Returns whether the in-progress touch at ABS_MT_SLOT |slot| is noise.
   bool SlotHasNoise(size_t slot) const;
 
  private:
+  // Records how frequently noisy touches occur to UMA.
+  void RecordUMA(bool had_noise, base::TimeDelta time);
+
   friend class TouchEventConverterEvdevTouchNoiseTest;
 
-  // The slots which are likely noise.
+  // The slots which are noise.
   std::bitset<kNumTouchEvdevSlots> slots_with_noise_;
+
+  // The time of the previous noise occurence in any of the slots.
+  base::TimeDelta last_noise_time_;
 
   std::vector<TouchNoiseFilter*> filters_;
 

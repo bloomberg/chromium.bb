@@ -26592,6 +26592,43 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ozone.TouchNoiseFilter.FarApartTapDistance"
+    units="squared pixels">
+  <owner>pkotwicz@google.com</owner>
+  <summary>
+    The squared distance between taps which occur in quick succession. Only
+    reported when the taps are far apart and touch noise filtering is enabled.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchNoiseFilter.HorizontallyAlignedDistance"
+    units="pixels">
+  <owner>pkotwicz@google.com</owner>
+  <summary>
+    The horizontal distance from a &quot;touch press&quot; to the closest other
+    touch. Only reported if there are two or more fingers onscreen and touch
+    noise filtering is enabled.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchNoiseFilter.TimeSinceLastNoiseOccurrence"
+    units="ms">
+  <owner>pkotwicz@google.com</owner>
+  <summary>
+    The amount of time between noisy touches. The amount of time since Chrome
+    startup is recorded for the first noisy touch after startup.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchNoiseFilter.TouchesAtSinglePositionDuration"
+    units="ms">
+  <owner>pkotwicz@google.com</owner>
+  <summary>
+    The time between taps which occur in quick succession at the same screen
+    location. Only reported when touch noise filtering is enabled.
+  </summary>
+</histogram>
+
 <histogram name="P2P.Client.Canceled.WaitingTimeSeconds" units="seconds">
   <owner>zeuthen@chromium.org</owner>
   <summary>

@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 
 namespace ui {
@@ -15,6 +16,12 @@ namespace {
 
 // Minimum squared distance between taps to be considered far apart.
 const int kMinDistance2 = 1500 * 1500;
+
+// The minimum squared distance between taps to log to UMA.
+const int kUmaMinDistance2 = 1000 * 1000;
+
+// The maximum squared distance between taps to log to UMA.
+const int kUmaMaxDistance2 = 3000 * 3000;
 
 // Max time between taps considered.
 const int kMaxTapDeltaMs = 30;
@@ -71,6 +78,14 @@ void FarApartTapsTouchNoiseFilter::Filter(
             Distance2(tracked_taps_[i].x, tracked_taps_[i].y, touch.x, touch.y);
         if (min_distance2 < 0 || dist2 < min_distance2)
           min_distance2 = dist2;
+      }
+
+      // Log |min_distance2| to a UMA histogram to allow tuning of
+      // |kMinDistance2|.
+      if (min_distance2 > kUmaMinDistance2) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Ozone.TouchNoiseFilter.FarApartTapDistance", min_distance2,
+            kUmaMinDistance2, kUmaMaxDistance2, 50);
       }
 
       if (min_distance2 > kMinDistance2) {

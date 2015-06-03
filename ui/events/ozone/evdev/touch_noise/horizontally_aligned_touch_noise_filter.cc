@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 
 namespace ui {
@@ -32,7 +33,14 @@ void HorizontallyAlignedTouchNoiseFilter::Filter(
     for (const InProgressTouchEvdev& other_touch : touches) {
       if (touch.slot == other_touch.slot || !other_touch.touching)
         continue;
-      if (std::abs(other_touch.x - touch.x) <= kMaxDistance) {
+
+      int distance = std::abs(other_touch.x - touch.x);
+
+      // Log |distance| to a UMA histogram to allow tuning of |kMaxDistance|.
+      UMA_HISTOGRAM_COUNTS_100(
+          "Ozone.TouchNoiseFilter.HorizontallyAlignedDistance", distance);
+
+      if (distance <= kMaxDistance) {
         VLOG(2) << base::StringPrintf("Cancel tracking id %d, down at %" PRId64
                                       " at %f,%f near touch %d at "
                                       "%f,%f",

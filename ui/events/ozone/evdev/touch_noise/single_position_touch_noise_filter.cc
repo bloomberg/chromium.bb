@@ -7,6 +7,7 @@
 #include <inttypes.h>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 
 namespace ui {
@@ -83,6 +84,7 @@ void SinglePositionTouchNoiseFilter::Filter(
         // Determine duration over which touches have been occuring in this
         // position.
         base::TimeDelta max_duration;
+        size_t max_duration_index = 0;
         for (size_t i = tracked_touches_start_; i != tracked_touches_end_;
              i = (i + 1) % kNumTrackedTouches) {
           TrackedTouch* tracked_touch = &tracked_touches_[i];
@@ -91,9 +93,16 @@ void SinglePositionTouchNoiseFilter::Filter(
           if (Distance2(touch.x, touch.y, tracked_touch->x, tracked_touch->y) <=
               kSamePositionMaxDistance2) {
             base::TimeDelta duration = time - tracked_touch->begin;
-            if (duration > max_duration)
+            if (duration > max_duration) {
               max_duration = duration;
+              max_duration_index = i;
+            }
           }
+        }
+
+        if (max_duration_index != t_ind &&
+            max_duration > tracked_touches_[t_ind].same_location_touch_age) {
+          tracked_touches_[t_ind].same_location_touch_age = max_duration;
         }
 
         if (max_duration.InMilliseconds() > kMinDurationMs) {
@@ -108,6 +117,14 @@ void SinglePositionTouchNoiseFilter::Filter(
 }
 
 void SinglePositionTouchNoiseFilter::StopTrackingTouch(size_t index) {
+  if (tracked_touches_[index].same_location_touch_age.InMilliseconds() > 0) {
+    // Log the age of the oldest touch which occurred at |touch|'s location.
+    // This is logged to allow tuning of |kMinDurationMs|.
+    UMA_HISTOGRAM_TIMES(
+        "Ozone.TouchNoiseFilter.TouchesAtSinglePositionDuration",
+        tracked_touches_[index].same_location_touch_age);
+  }
+
   size_t slot = tracked_touches_[index].slot;
   if (tracked_slots_[slot] == index)
     tracked_slots_[slot] = kNumTrackedTouches;

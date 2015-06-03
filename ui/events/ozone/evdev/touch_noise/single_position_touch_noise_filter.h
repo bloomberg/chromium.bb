@@ -32,6 +32,10 @@ class SinglePositionTouchNoiseFilter : public TouchNoiseFilter {
     int y;
     base::TimeDelta begin;
     base::TimeDelta end;
+
+    // The age of the oldest touch at the same location as this TrackedTouch.
+    // Logged to UMA when we stop tracking the TrackedTouch.
+    base::TimeDelta same_location_touch_age;
   };
 
   void StopTrackingTouch(size_t index);
