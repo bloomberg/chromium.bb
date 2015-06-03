@@ -556,6 +556,8 @@
       'renderer/autofill/page_click_tracker_browsertest.cc',
       'renderer/autofill/password_autofill_agent_browsertest.cc',
       'renderer/autofill/password_generation_agent_browsertest.cc',
+      'renderer/autofill/password_generation_test_utils.cc',
+      'renderer/autofill/password_generation_test_utils.h',
       'renderer/chrome_content_renderer_client_browsertest.cc',
       'renderer/content_settings_observer_browsertest.cc',
       'renderer/media/cast_session_browsertest.cc',

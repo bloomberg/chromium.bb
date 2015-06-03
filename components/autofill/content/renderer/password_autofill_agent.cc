@@ -652,30 +652,6 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   // TODO(vabr): Get a mutable argument instead. http://crbug.com/397083
   blink::WebInputElement mutable_element = element;  // We need a non-const.
 
-  if (element.isTextField())
-    nonscript_modified_values_[element] = element.value();
-
-  DCHECK_EQ(element.document().frame(), render_frame()->GetWebFrame());
-
-  if (element.isPasswordField()) {
-    // Some login forms have event handlers that put a hash of the password into
-    // a hidden field and then clear the password (http://crbug.com/28910,
-    // http://crbug.com/391693). This method gets called before any of those
-    // handlers run, so save away a copy of the password in case it gets lost.
-    // To honor the user having explicitly cleared the password, even an empty
-    // password will be saved here.
-    ProvisionallySavePassword(element.form(), RESTRICTION_NONE);
-
-    PasswordToLoginMap::iterator iter = password_to_username_.find(element);
-    if (iter != password_to_username_.end()) {
-      login_to_password_info_[iter->second].password_was_edited_last = true;
-      // Note that the suggested value of |mutable_element| was reset when its
-      // value changed.
-      mutable_element.setAutofilled(false);
-    }
-    return false;
-  }
-
   LoginToPasswordInfoMap::iterator iter = login_to_password_info_.find(element);
   if (iter == login_to_password_info_.end())
     return false;
@@ -736,6 +712,35 @@ bool PasswordAutofillAgent::TextFieldHandlingKeyDown(
   iter->second.backspace_pressed_last =
       (win_key_code == ui::VKEY_BACK || win_key_code == ui::VKEY_DELETE);
   return true;
+}
+
+void PasswordAutofillAgent::UpdateStateForTextChange(
+    const blink::WebInputElement& element) {
+  // TODO(vabr): Get a mutable argument instead. http://crbug.com/397083
+  blink::WebInputElement mutable_element = element;  // We need a non-const.
+
+  if (element.isTextField())
+    nonscript_modified_values_[element] = element.value();
+
+  DCHECK_EQ(element.document().frame(), render_frame()->GetWebFrame());
+
+  if (element.isPasswordField()) {
+    // Some login forms have event handlers that put a hash of the password into
+    // a hidden field and then clear the password (http://crbug.com/28910,
+    // http://crbug.com/391693). This method gets called before any of those
+    // handlers run, so save away a copy of the password in case it gets lost.
+    // To honor the user having explicitly cleared the password, even an empty
+    // password will be saved here.
+    ProvisionallySavePassword(element.form(), RESTRICTION_NONE);
+
+    PasswordToLoginMap::iterator iter = password_to_username_.find(element);
+    if (iter != password_to_username_.end()) {
+      login_to_password_info_[iter->second].password_was_edited_last = true;
+      // Note that the suggested value of |mutable_element| was reset when its
+      // value changed.
+      mutable_element.setAutofilled(false);
+    }
+  }
 }
 
 bool PasswordAutofillAgent::FillSuggestion(

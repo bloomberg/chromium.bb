@@ -563,10 +563,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
     new NetErrorHelper(render_frame);
   }
 
-  PasswordGenerationAgent* password_generation_agent =
-      new PasswordGenerationAgent(render_frame);
   PasswordAutofillAgent* password_autofill_agent =
       new PasswordAutofillAgent(render_frame);
+  PasswordGenerationAgent* password_generation_agent =
+      new PasswordGenerationAgent(render_frame, password_autofill_agent);
   new AutofillAgent(render_frame, password_autofill_agent,
                     password_generation_agent);
 }

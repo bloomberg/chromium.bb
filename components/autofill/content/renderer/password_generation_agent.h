@@ -23,13 +23,15 @@ namespace autofill {
 
 struct FormData;
 struct PasswordForm;
+class PasswordAutofillAgent;
 
 // This class is responsible for controlling communication for password
 // generation between the browser (which shows the popup and generates
 // passwords) and WebKit (shows the generation icon in the password field).
 class PasswordGenerationAgent : public content::RenderFrameObserver {
  public:
-  explicit PasswordGenerationAgent(content::RenderFrame* render_frame);
+  PasswordGenerationAgent(content::RenderFrame* render_frame,
+                          PasswordAutofillAgent* password_agent);
   ~PasswordGenerationAgent() override;
 
   // Returns true if the field being changed is one where a generated password
@@ -135,6 +137,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver {
 
   // If this feature is enabled. Controlled by Finch.
   bool enabled_;
+
+  // Unowned pointer. Used to notify PassowrdAutofillAgent when values
+  // in password fields are updated.
+  PasswordAutofillAgent* password_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgent);
 };

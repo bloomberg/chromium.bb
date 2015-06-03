@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
+#include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
@@ -106,13 +107,15 @@ PasswordGenerationAgent::AccountCreationFormData::AccountCreationFormData(
 PasswordGenerationAgent::AccountCreationFormData::~AccountCreationFormData() {}
 
 PasswordGenerationAgent::PasswordGenerationAgent(
-    content::RenderFrame* render_frame)
+    content::RenderFrame* render_frame,
+    PasswordAutofillAgent* password_agent)
     : content::RenderFrameObserver(render_frame),
       password_is_generated_(false),
       password_edited_(false),
       generation_popup_shown_(false),
       editing_popup_shown_(false),
-      enabled_(password_generation::IsPasswordGenerationEnabled()) {
+      enabled_(password_generation::IsPasswordGenerationEnabled()),
+      password_agent_(password_agent) {
   VLOG(2) << "Password Generation is " << (enabled_ ? "Enabled" : "Disabled");
 }
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
@@ -259,6 +262,11 @@ void PasswordGenerationAgent::OnPasswordAccepted(
   for (auto& password_element : generation_form_data_->password_elements) {
     password_element.setValue(password, true /* sendEvents */);
     password_element.setAutofilled(true);
+    // Needed to notify password_autofill_agent that the content of the field
+    // has changed. Without this we will overwrite the generated
+    // password with an Autofilled password when saving.
+    // https://crbug.com/493455
+    password_agent_->UpdateStateForTextChange(password_element);
     // Advance focus to the next input field. We assume password fields in
     // an account creation form are always adjacent.
     render_frame()->GetRenderView()->GetWebView()->advanceFocus(false);

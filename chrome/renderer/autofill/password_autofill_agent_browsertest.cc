@@ -4,12 +4,14 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/renderer/autofill/password_generation_test_utils.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
+#include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
@@ -58,6 +60,7 @@ const char kCarolAlternateUsername[] = "RealCarolUsername";
 
 const char kFormHTML[] =
     "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
+    "  <INPUT type='text' id='random_field'/>"
     "  <INPUT type='text' id='username'/>"
     "  <INPUT type='password' id='password'/>"
     "  <INPUT type='submit' value='Login'/>"
@@ -1815,6 +1818,49 @@ TEST_F(PasswordAutofillAgentTest, ReadonlyPasswordFieldOnSubmit) {
   // Observe that the PasswordAutofillAgent can correctly process submitted
   // form.
   ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
+}
+
+// Verify that typed passwords are saved correctly when autofill and generation
+// both trigger. Regression test for https://crbug.com/493455
+TEST_F(PasswordAutofillAgentTest, PasswordGenerationTriggered_TypedPassword) {
+  SimulateOnFillPasswordForm(fill_data_);
+
+  SetNotBlacklistedMessage(password_generation_, kFormHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->document(),
+                                         0);
+
+  SimulateUsernameChange("NewGuy");
+  SimulatePasswordChange("NewPassword");
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSendSubmitEvent(username_element_.form());
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.form());
+
+  ExpectFormSubmittedWithUsernameAndPasswords("NewGuy", "NewPassword", "");
+}
+
+// Verify that generated passwords are saved correctly when autofill and
+// generation both trigger. Regression test for https://crbug.com/493455.
+TEST_F(PasswordAutofillAgentTest,
+       PasswordGenerationTriggered_GeneratedPassword) {
+  SimulateOnFillPasswordForm(fill_data_);
+
+  SetNotBlacklistedMessage(password_generation_, kFormHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->document(),
+                                         0);
+
+  base::string16 password = base::ASCIIToUTF16("NewPass22");
+  AutofillMsg_GeneratedPasswordAccepted msg(0, password);
+  password_generation_->OnMessageReceived(msg);
+
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSendSubmitEvent(username_element_.form());
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.form());
+
+  ExpectFormSubmittedWithUsernameAndPasswords(kAliceUsername, "NewPass22", "");
 }
 
 }  // namespace autofill

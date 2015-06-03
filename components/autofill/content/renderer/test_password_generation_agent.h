@@ -15,7 +15,8 @@ namespace autofill {
 
 class TestPasswordGenerationAgent : public PasswordGenerationAgent {
  public:
-  explicit TestPasswordGenerationAgent(content::RenderFrame* render_frame);
+  TestPasswordGenerationAgent(content::RenderFrame* render_frame,
+                              PasswordAutofillAgent* password_agent);
   ~TestPasswordGenerationAgent() override;
 
   // content::RenderFrameObserver implementation:
