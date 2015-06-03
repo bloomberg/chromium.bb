@@ -311,7 +311,7 @@ void HttpAuthHandlerDigest::GetRequestMethodAndPath(
     *path = GetHostAndPort(url);
   } else {
     *method = request->method;
-    *path = HttpUtil::PathForRequest(url);
+    *path = url.PathForRequest();
   }
 }
 

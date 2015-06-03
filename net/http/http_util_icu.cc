@@ -13,15 +13,6 @@
 namespace net {
 
 // static
-std::string HttpUtil::PathForRequest(const GURL& url) {
-  DCHECK(url.is_valid() && (url.SchemeIsHTTPOrHTTPS() ||
-                            url.SchemeIsWSOrWSS()));
-  if (url.has_query())
-    return url.path() + "?" + url.query();
-  return url.path();
-}
-
-// static
 std::string HttpUtil::SpecForRequest(const GURL& url) {
   // We may get ftp scheme when fetching ftp resources through proxy.
   DCHECK(url.is_valid() && (url.SchemeIsHTTPOrHTTPS() || url.SchemeIs("ftp") ||

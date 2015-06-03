@@ -591,51 +591,44 @@ TEST(HttpUtilTest, AssembleRawHeaders) {
   }
 }
 
-// Test SpecForRequest() and PathForRequest().
+// Test SpecForRequest().
 TEST(HttpUtilTest, RequestUrlSanitize) {
   struct {
     const char* const url;
     const char* const expected_spec;
-    const char* const expected_path;
   } tests[] = {
     { // Check that #hash is removed.
       "http://www.google.com:78/foobar?query=1#hash",
       "http://www.google.com:78/foobar?query=1",
-      "/foobar?query=1"
     },
     { // The reference may itself contain # -- strip all of it.
       "http://192.168.0.1?query=1#hash#10#11#13#14",
       "http://192.168.0.1/?query=1",
-      "/?query=1"
     },
     { // Strip username/password.
       "http://user:pass@google.com",
       "http://google.com/",
-      "/"
     },
     { // https scheme
       "https://www.google.com:78/foobar?query=1#hash",
       "https://www.google.com:78/foobar?query=1",
-      "/foobar?query=1"
     },
     { // WebSocket's ws scheme
       "ws://www.google.com:78/foobar?query=1#hash",
       "ws://www.google.com:78/foobar?query=1",
-      "/foobar?query=1"
     },
     { // WebSocket's wss scheme
       "wss://www.google.com:78/foobar?query=1#hash",
       "wss://www.google.com:78/foobar?query=1",
-      "/foobar?query=1"
     }
   };
   for (size_t i = 0; i < arraysize(tests); ++i) {
+    SCOPED_TRACE(i);
+
     GURL url(GURL(tests[i].url));
     std::string expected_spec(tests[i].expected_spec);
-    std::string expected_path(tests[i].expected_path);
 
     EXPECT_EQ(expected_spec, HttpUtil::SpecForRequest(url));
-    EXPECT_EQ(expected_path, HttpUtil::PathForRequest(url));
   }
 }
 

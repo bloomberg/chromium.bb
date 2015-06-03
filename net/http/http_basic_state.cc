@@ -50,8 +50,8 @@ std::string HttpBasicState::GenerateRequestLine() const {
   const size_t kSuffixLen = arraysize(kSuffix) - 1;
   DCHECK(request_info_);
   const GURL& url = request_info_->url;
-  const std::string path = using_proxy_ ? HttpUtil::SpecForRequest(url)
-                                        : HttpUtil::PathForRequest(url);
+  const std::string path =
+      using_proxy_ ? HttpUtil::SpecForRequest(url) : url.PathForRequest();
   // Don't use StringPrintf for concatenation because it is very inefficient.
   std::string request_line;
   const size_t expected_size = request_info_->method.size() + 1 + path.size() +

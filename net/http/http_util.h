@@ -24,10 +24,6 @@ namespace net {
 
 class NET_EXPORT HttpUtil {
  public:
-  // Returns the absolute path of the URL, to be used for the http request.
-  // The absolute path starts with a '/' and may contain a query.
-  static std::string PathForRequest(const GURL& url);
-
   // Returns the absolute URL, to be used for the http request. This url is
   // made up of the protocol, host, [port], path, [query]. Everything else
   // is stripped (username, password, reference).

@@ -123,7 +123,7 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
       (*headers)["url"] = GetHostAndPort(info.url);
     } else {
       (*headers)["scheme"] = info.url.scheme();
-      (*headers)["url"] = direct ? HttpUtil::PathForRequest(info.url)
+      (*headers)["url"] = direct ? info.url.PathForRequest()
                                  : HttpUtil::SpecForRequest(info.url);
     }
   } else {
@@ -139,7 +139,7 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
       (*headers)[":path"] = GetHostAndPort(info.url);
     } else {
       (*headers)[":scheme"] = info.url.scheme();
-      (*headers)[":path"] = HttpUtil::PathForRequest(info.url);
+      (*headers)[":path"] = info.url.PathForRequest();
     }
   }
 }
