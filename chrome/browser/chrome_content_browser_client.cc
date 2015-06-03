@@ -1480,9 +1480,6 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
     int render_process_id,
     int render_frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(scope.is_valid());
-  DCHECK(first_party_url.is_valid());
-
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   bool allow = io_data->GetCookieSettings()->IsSettingCookieAllowed(
       scope, first_party_url);

@@ -243,8 +243,6 @@ void TabSpecificContentSettings::ServiceWorkerAccessed(int render_process_id,
                                                        const GURL& scope,
                                                        bool blocked_by_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(scope.is_valid());
-
   TabSpecificContentSettings* settings =
       GetForFrame(render_process_id, render_frame_id);
   if (settings)
