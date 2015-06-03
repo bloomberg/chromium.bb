@@ -1289,7 +1289,7 @@ template<typename Key, typename Value, typename Extractor, typename HashFunction
         // and/or weak callback then we are done. This optimization does not
         // happen for ListHashSet since its iterator does not point at the
         // backing.
-        if (!m_table || visitor->isHeapObjectAlive(m_table))
+        if (!m_table || Allocator::isHeapObjectAlive(m_table))
             return;
         // Normally, we mark the backing store without performing trace. This
         // means it is marked live, but the pointers inside it are not marked.

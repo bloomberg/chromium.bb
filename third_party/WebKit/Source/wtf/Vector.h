@@ -1321,7 +1321,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             // the conservative scanning traced an on-stack (false-positive
             // or real) pointer to the HeapVector, and then visitor->trace()
             // traces the HeapVector.
-            if (visitor->isHeapObjectAlive(buffer()))
+            if (Allocator::isHeapObjectAlive(buffer()))
                 return;
             Allocator::markNoTracing(visitor, buffer());
         }

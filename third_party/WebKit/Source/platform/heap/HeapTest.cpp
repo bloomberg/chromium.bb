@@ -143,11 +143,11 @@ public:
     bool traceInCollection(VisitorDispatcher visitor, WTF::ShouldWeakPointersBeMarkedStrongly strongify)
     {
         visitor->traceInCollection(second, strongify);
-        if (!visitor->isHeapObjectAlive(second))
+        if (!Heap::isHeapObjectAlive(second))
             return true;
         // FIXME: traceInCollection is also called from WeakProcessing to check if the entry is dead.
         // The below if avoids calling trace in that case by only calling trace when |first| is not yet marked.
-        if (!visitor->isHeapObjectAlive(first))
+        if (!Heap::isHeapObjectAlive(first))
             visitor->trace(first);
         return false;
     }
@@ -296,10 +296,9 @@ public:
 #if ENABLE(GC_PROFILING)
     virtual void recordObjectGraphEdge(const void*) override { }
 #endif
-    virtual bool isMarked(const void*) override { return false; }
     virtual bool ensureMarked(const void* objectPointer) override
     {
-        if (!objectPointer || isMarked(objectPointer))
+        if (!objectPointer || HeapObjectHeader::fromPayload(objectPointer)->isMarked())
             return false;
         markNoTracing(objectPointer);
         return true;
@@ -721,11 +720,11 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-        EXPECT_TRUE(visitor->isMarked(this));
+        EXPECT_TRUE(Heap::isHeapObjectAlive(this));
         if (!traceCount())
-            EXPECT_FALSE(visitor->isMarked(m_traceCounter));
+            EXPECT_FALSE(Heap::isHeapObjectAlive(m_traceCounter));
         else
-            EXPECT_TRUE(visitor->isMarked(m_traceCounter));
+            EXPECT_TRUE(Heap::isHeapObjectAlive(m_traceCounter));
 
         visitor->trace(m_traceCounter);
     }
@@ -1099,7 +1098,7 @@ public:
 
     void zapWeakMembers(Visitor* visitor)
     {
-        if (!visitor->isHeapObjectAlive(m_weakBar))
+        if (!Heap::isHeapObjectAlive(m_weakBar))
             m_weakBar = 0;
     }
 
@@ -1218,7 +1217,7 @@ public:
 
     void zapWeakMembers(Visitor* visitor)
     {
-        if (m_data && !visitor->isHeapObjectAlive(m_data)) {
+        if (m_data && !Heap::isHeapObjectAlive(m_data)) {
             m_data->willFinalize();
             m_data = nullptr;
             m_didCallWillFinalize = true;
@@ -4768,7 +4767,7 @@ struct EmptyClearingHashSetTraits : HashTraits<WeakSet> {
         bool liveEntriesFound = false;
         WeakSet::iterator end = set.end();
         for (WeakSet::iterator it = set.begin(); it != end; ++it) {
-            if (visitor->isHeapObjectAlive(*it)) {
+            if (Heap::isHeapObjectAlive(*it)) {
                 liveEntriesFound = true;
                 break;
             }

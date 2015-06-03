@@ -51,10 +51,10 @@ void SVGElementRareData::processWeakMembers(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
         ASSERT(m_owner);
-        if (!visitor->isHeapObjectAlive(m_cursorElement))
+        if (!Heap::isHeapObjectAlive(m_cursorElement))
             m_cursorElement = nullptr;
 
-        if (!visitor->isHeapObjectAlive(m_cursorImageValue)) {
+        if (!Heap::isHeapObjectAlive(m_cursorImageValue)) {
             // The owning SVGElement is still alive and if it is pointing to an SVGCursorElement
             // we unregister it when the CSSCursorImageValue dies.
             if (m_cursorElement) {
@@ -63,8 +63,8 @@ void SVGElementRareData::processWeakMembers(Visitor* visitor)
             }
             m_cursorImageValue = nullptr;
         }
-        ASSERT(!m_cursorElement || visitor->isHeapObjectAlive(m_cursorElement));
-        ASSERT(!m_cursorImageValue || visitor->isHeapObjectAlive(m_cursorImageValue));
+        ASSERT(!m_cursorElement || Heap::isHeapObjectAlive(m_cursorElement));
+        ASSERT(!m_cursorImageValue || Heap::isHeapObjectAlive(m_cursorImageValue));
 #endif
 }
 

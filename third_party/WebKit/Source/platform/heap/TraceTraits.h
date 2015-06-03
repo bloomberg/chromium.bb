@@ -26,7 +26,6 @@ template<typename T> class CrossThreadPersistent;
 template<typename T> struct GCInfoTrait;
 class HeapObjectHeader;
 template<typename T> class Member;
-template<typename T, bool> class NeedsAdjustAndMark;
 template<typename T> class TraceTrait;
 template<typename T> class WeakMember;
 

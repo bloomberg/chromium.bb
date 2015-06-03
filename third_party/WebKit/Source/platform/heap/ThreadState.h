@@ -109,10 +109,10 @@ using EphemeronCallback = VisitorCallback;
 // }
 #define USING_PRE_FINALIZER(Class, method)   \
     public: \
-        static bool invokePreFinalizer(void* object, Visitor& visitor)   \
+        static bool invokePreFinalizer(void* object)   \
         { \
             Class* self = reinterpret_cast<Class*>(object); \
-            if (visitor.isHeapObjectAlive(self)) \
+            if (Heap::isHeapObjectAlive(self))              \
                 return false; \
             self->method(); \
             return true; \
@@ -669,7 +669,7 @@ private:
     void cleanupPages();
 
     void unregisterPreFinalizerInternal(void*);
-    void invokePreFinalizers(Visitor&);
+    void invokePreFinalizers();
 
 #if ENABLE(GC_PROFILING)
     void snapshotFreeList();
@@ -720,7 +720,7 @@ private:
     GCState m_gcState;
 
     CallbackStack* m_threadLocalWeakCallbackStack;
-    HashMap<void*, bool (*)(void*, Visitor&)> m_preFinalizers;
+    HashMap<void*, bool (*)(void*)> m_preFinalizers;
 
     v8::Isolate* m_isolate;
     void (*m_traceDOMWrappers)(v8::Isolate*, Visitor*);

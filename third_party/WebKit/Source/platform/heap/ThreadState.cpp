@@ -904,13 +904,19 @@ void ThreadState::preSweep()
             // Disallow allocation during weak processing.
             NoAllocationScope noAllocationScope(this);
             {
-                TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
                 // Perform thread-specific weak processing.
+                TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
+                // TODO(haraken): It is wrong to unconditionally use
+                // s_markingVisitor, which is for GlobalMarking.
+                // ThreadTerminationGC should use a visitor for
+                // ThreadLocalMarking. However, a better fix is just to remove
+                // the visitor parameter. The only user of the visitor parameter
+                // is HashTable::process.
                 while (popAndInvokeThreadLocalWeakCallback(Heap::s_markingVisitor)) { }
             }
             {
                 TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
-                invokePreFinalizers(*Heap::s_markingVisitor);
+                invokePreFinalizers();
             }
         }
 
@@ -1237,12 +1243,12 @@ void ThreadState::unregisterPreFinalizerInternal(void* target)
     m_preFinalizers.remove(it);
 }
 
-void ThreadState::invokePreFinalizers(Visitor& visitor)
+void ThreadState::invokePreFinalizers()
 {
     checkThread();
     Vector<void*> deadObjects;
     for (auto& entry : m_preFinalizers) {
-        if (entry.value(entry.key, visitor))
+        if (entry.value(entry.key))
             deadObjects.append(entry.key);
     }
     // FIXME: removeAll is inefficient.  It can shrink repeatedly.

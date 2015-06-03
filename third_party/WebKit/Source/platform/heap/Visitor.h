@@ -141,48 +141,6 @@ public:
 #define DEFINE_INLINE_TRACE() DEFINE_INLINE_TRACE_IMPL(EMPTY_MACRO_ARGUMENT)
 #define DEFINE_INLINE_VIRTUAL_TRACE() DEFINE_INLINE_TRACE_IMPL(virtual)
 
-template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> class NeedsAdjustAndMark;
-
-template<typename T>
-class NeedsAdjustAndMark<T, true> {
-    static_assert(sizeof(T), "T must be fully defined");
-public:
-    static const bool value = false;
-};
-template <typename T> const bool NeedsAdjustAndMark<T, true>::value;
-
-template<typename T>
-class NeedsAdjustAndMark<T, false> {
-    static_assert(sizeof(T), "T must be fully defined");
-public:
-    static const bool value = IsGarbageCollectedMixin<typename WTF::RemoveConst<T>::Type>::value;
-};
-template <typename T> const bool NeedsAdjustAndMark<T, false>::value;
-
-template<typename T, bool = NeedsAdjustAndMark<T>::value> class ObjectAliveTrait;
-
-template<typename T>
-class ObjectAliveTrait<T, false> {
-public:
-    template<typename VisitorDispatcher>
-    static bool isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
-    {
-        static_assert(sizeof(T), "T must be fully defined");
-        return visitor->isMarked(obj);
-    }
-};
-
-template<typename T>
-class ObjectAliveTrait<T, true> {
-public:
-    template<typename VisitorDispatcher>
-    static bool isHeapObjectAlive(VisitorDispatcher visitor, T* obj)
-    {
-        static_assert(sizeof(T), "T must be fully defined");
-        return obj->isHeapObjectAlive(visitor);
-    }
-};
-
 // VisitorHelper contains common implementation of Visitor helper methods.
 //
 // VisitorHelper avoids virtual methods by using CRTP.
@@ -353,34 +311,9 @@ public:
         Derived::fromHelper(this)->registerWeakMembers(object, object, callback);
     }
 
-    template<typename T> inline bool isHeapObjectAlive(T* obj)
-    {
-        static_assert(sizeof(T), "T must be fully defined");
-        // The strongification of collections relies on the fact that once a
-        // collection has been strongified, there is no way that it can contain
-        // non-live entries, so no entries will be removed. Since you can't set
-        // the mark bit on a null pointer, that means that null pointers are
-        // always 'alive'.
-        if (!obj)
-            return true;
-        return ObjectAliveTrait<T>::isHeapObjectAlive(Derived::fromHelper(this), obj);
-    }
-    template<typename T> inline bool isHeapObjectAlive(const Member<T>& member)
-    {
-        return isHeapObjectAlive(member.get());
-    }
-    template<typename T> inline bool isHeapObjectAlive(const WeakMember<T>& member)
-    {
-        return isHeapObjectAlive(member.get());
-    }
-    template<typename T> inline bool isHeapObjectAlive(const RawPtr<T>& ptr)
-    {
-        return isHeapObjectAlive(ptr.get());
-    }
-
 private:
-    template <typename T>
-    static void handleWeakCell(Visitor* self, void* obj);
+    template<typename T>
+    static void handleWeakCell(Visitor* self, void* object);
 };
 
 // Visitor is used to traverse the Blink object graph. Used for the
@@ -452,7 +385,6 @@ public:
     virtual bool weakTableRegistered(const void*) = 0;
 #endif
 
-    virtual bool isMarked(const void*) = 0;
     virtual bool ensureMarked(const void*) = 0;
 
 #if ENABLE(GC_PROFILING)
@@ -487,15 +419,6 @@ private:
 
     bool m_isGlobalMarkingVisitor;
 };
-
-template <typename Derived>
-template <typename T>
-void VisitorHelper<Derived>::handleWeakCell(Visitor* self, void* obj)
-{
-    T** cell = reinterpret_cast<T**>(obj);
-    if (*cell && !self->isHeapObjectAlive(*cell))
-        *cell = nullptr;
-}
 
 #if ENABLE(GC_PROFILING)
 template<typename T>

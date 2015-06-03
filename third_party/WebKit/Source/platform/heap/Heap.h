@@ -806,6 +806,28 @@ PLATFORM_EXPORT inline BasePage* pageFromObject(const void* object)
     return page;
 }
 
+template<typename T, bool = NeedsAdjustAndMark<T>::value> class ObjectAliveTrait;
+
+template<typename T>
+class ObjectAliveTrait<T, false> {
+public:
+    static bool isHeapObjectAlive(T* object)
+    {
+        static_assert(sizeof(T), "T must be fully defined");
+        return HeapObjectHeader::fromPayload(object)->isMarked();
+    }
+};
+
+template<typename T>
+class ObjectAliveTrait<T, true> {
+public:
+    static bool isHeapObjectAlive(T* object)
+    {
+        static_assert(sizeof(T), "T must be fully defined");
+        return object->isHeapObjectAlive();
+    }
+};
+
 class PLATFORM_EXPORT Heap {
 public:
     static void init();
@@ -816,6 +838,35 @@ public:
     static BasePage* findPageFromAddress(Address);
     static BasePage* findPageFromAddress(const void* pointer) { return findPageFromAddress(reinterpret_cast<Address>(const_cast<void*>(pointer))); }
 #endif
+
+    template<typename T>
+    static inline bool isHeapObjectAlive(T* object)
+    {
+        static_assert(sizeof(T), "T must be fully defined");
+        // The strongification of collections relies on the fact that once a
+        // collection has been strongified, there is no way that it can contain
+        // non-live entries, so no entries will be removed. Since you can't set
+        // the mark bit on a null pointer, that means that null pointers are
+        // always 'alive'.
+        if (!object)
+            return true;
+        return ObjectAliveTrait<T>::isHeapObjectAlive(object);
+    }
+    template<typename T>
+    static inline bool isHeapObjectAlive(const Member<T>& member)
+    {
+        return isHeapObjectAlive(member.get());
+    }
+    template<typename T>
+    static inline bool isHeapObjectAlive(const WeakMember<T>& member)
+    {
+        return isHeapObjectAlive(member.get());
+    }
+    template<typename T>
+    static inline bool isHeapObjectAlive(const RawPtr<T>& ptr)
+    {
+        return isHeapObjectAlive(ptr.get());
+    }
 
     // Is the finalizable GC object still alive, but slated for lazy sweeping?
     // If a lazy sweep is in progress, returns true if the object was found
@@ -836,7 +887,7 @@ public:
             return false;
         ASSERT(page->heap()->threadState()->isSweepingInProgress());
 
-        return !ObjectAliveTrait<T>::isHeapObjectAlive(s_markingVisitor, const_cast<T*>(objectPointer));
+        return !Heap::isHeapObjectAlive(const_cast<T*>(objectPointer));
 #else
         return false;
 #endif
@@ -1250,6 +1301,15 @@ inline Address NormalPageHeap::allocateObject(size_t allocationSize, size_t gcIn
         return result;
     }
     return outOfLineAllocate(allocationSize, gcInfoIndex);
+}
+
+template<typename Derived>
+template<typename T>
+void VisitorHelper<Derived>::handleWeakCell(Visitor* self, void* object)
+{
+    T** cell = reinterpret_cast<T**>(object);
+    if (*cell && !ObjectAliveTrait<T>::isHeapObjectAlive(*cell))
+        *cell = nullptr;
 }
 
 inline Address Heap::allocateOnHeapIndex(ThreadState* state, size_t size, int heapIndex, size_t gcInfoIndex)

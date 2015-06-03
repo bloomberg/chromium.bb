@@ -93,7 +93,7 @@ DEFINE_TRACE(PlatformEventDispatcher)
 void PlatformEventDispatcher::clearWeakMembers(Visitor* visitor)
 {
     for (size_t i = 0; i < m_controllers.size(); ++i) {
-        if (!visitor->isHeapObjectAlive(m_controllers[i])) {
+        if (!Heap::isHeapObjectAlive(m_controllers[i])) {
             m_controllers[i] = nullptr;
             m_needsPurge = true;
         }

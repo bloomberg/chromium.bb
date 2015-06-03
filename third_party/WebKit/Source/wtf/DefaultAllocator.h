@@ -131,6 +131,11 @@ public:
     }
 
     static bool isAllocationAllowed() { return true; }
+    template<typename T>
+    static bool isHeapObjectAlive(T* object)
+    {
+        ASSERT_NOT_REACHED();
+    }
 
     static void markNoTracing(...)
     {

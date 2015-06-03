@@ -82,11 +82,6 @@ protected:
     }
 #endif
 
-    inline bool isMarked(const void* objectPointer)
-    {
-        return HeapObjectHeader::fromPayload(objectPointer)->isMarked();
-    }
-
     inline bool ensureMarked(const void* objectPointer)
     {
         if (!objectPointer)
@@ -94,7 +89,7 @@ protected:
         if (!toDerived()->shouldMarkObject(objectPointer))
             return false;
 #if ENABLE(ASSERT)
-        if (isMarked(objectPointer))
+        if (HeapObjectHeader::fromPayload(objectPointer)->isMarked())
             return false;
 
         toDerived()->markNoTracing(objectPointer);

@@ -297,6 +297,17 @@ WebFrame::~WebFrame()
 }
 
 #if ENABLE(OILPAN)
+ALWAYS_INLINE bool WebFrame::isFrameAlive(const WebFrame* frame)
+{
+    if (!frame)
+        return true;
+
+    if (frame->isWebLocalFrame())
+        return Heap::isHeapObjectAlive(toWebLocalFrameImpl(frame));
+
+    return Heap::isHeapObjectAlive(toWebRemoteFrameImpl(frame));
+}
+
 template <typename VisitorDispatcher>
 ALWAYS_INLINE void WebFrame::traceFrameImpl(VisitorDispatcher visitor, WebFrame* frame)
 {
@@ -321,28 +332,15 @@ ALWAYS_INLINE void WebFrame::traceFramesImpl(VisitorDispatcher visitor, WebFrame
 }
 
 template <typename VisitorDispatcher>
-ALWAYS_INLINE bool WebFrame::isFrameAliveImpl(VisitorDispatcher visitor, const WebFrame* frame)
-{
-    if (!frame)
-        return true;
-
-    if (frame->isWebLocalFrame())
-        return visitor->isHeapObjectAlive(toWebLocalFrameImpl(frame));
-
-    return visitor->isHeapObjectAlive(toWebRemoteFrameImpl(frame));
-}
-
-template <typename VisitorDispatcher>
 ALWAYS_INLINE void WebFrame::clearWeakFramesImpl(VisitorDispatcher visitor)
 {
-    if (!isFrameAlive(visitor, m_opener))
+    if (!isFrameAlive(m_opener))
         m_opener = nullptr;
 }
 
 #define DEFINE_VISITOR_METHOD(VisitorDispatcher)                                                                               \
     void WebFrame::traceFrame(VisitorDispatcher visitor, WebFrame* frame) { traceFrameImpl(visitor, frame); }                  \
     void WebFrame::traceFrames(VisitorDispatcher visitor, WebFrame* frame) { traceFramesImpl(visitor, frame); }                \
-    bool WebFrame::isFrameAlive(VisitorDispatcher visitor, const WebFrame* frame) { return isFrameAliveImpl(visitor, frame); } \
     void WebFrame::clearWeakFrames(VisitorDispatcher visitor) { clearWeakFramesImpl(visitor); }
 
 DEFINE_VISITOR_METHOD(Visitor*)

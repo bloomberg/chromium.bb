@@ -1083,7 +1083,7 @@ template<typename T> struct HashTraits<blink::WeakMember<T>> : SimpleClassHashTr
             visitor->trace(weakMember.get()); // Strongified visit.
             return false;
         }
-        return !visitor->isHeapObjectAlive(weakMember);
+        return !blink::Heap::isHeapObjectAlive(weakMember);
     }
 };
 

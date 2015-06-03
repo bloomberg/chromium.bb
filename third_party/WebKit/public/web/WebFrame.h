@@ -710,8 +710,7 @@ private:
 #if ENABLE(OILPAN)
     static void traceFrame(Visitor*, WebFrame*);
     static void traceFrame(InlinedGlobalMarkingVisitor, WebFrame*);
-    static bool isFrameAlive(Visitor*, const WebFrame*);
-    static bool isFrameAlive(InlinedGlobalMarkingVisitor, const WebFrame*);
+    static bool isFrameAlive(const WebFrame*);
 
     template <typename VisitorDispatcher>
     static void traceFramesImpl(VisitorDispatcher, WebFrame*);
@@ -719,8 +718,6 @@ private:
     void clearWeakFramesImpl(VisitorDispatcher);
     template <typename VisitorDispatcher>
     static void traceFrameImpl(VisitorDispatcher, WebFrame*);
-    template <typename VisitorDispatcher>
-    static bool isFrameAliveImpl(VisitorDispatcher, const WebFrame*);
 #endif
 #endif
 

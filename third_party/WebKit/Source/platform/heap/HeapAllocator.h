@@ -119,6 +119,12 @@ public:
         return ThreadState::current()->isAllocationAllowed();
     }
 
+    template<typename T>
+    static bool isHeapObjectAlive(T* object)
+    {
+        return Heap::isHeapObjectAlive(object);
+    }
+
     template<typename VisitorDispatcher>
     static void markNoTracing(VisitorDispatcher visitor, const void* t) { visitor->markNoTracing(t); }
 

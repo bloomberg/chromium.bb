@@ -58,11 +58,6 @@ public:
     }
 #endif
 
-    virtual bool isMarked(const void* objectPointer) override
-    {
-        return Impl::isMarked(objectPointer);
-    }
-
     virtual bool ensureMarked(const void* objectPointer) override
     {
         return Impl::ensureMarked(objectPointer);

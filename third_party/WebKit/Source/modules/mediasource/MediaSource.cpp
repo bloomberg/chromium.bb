@@ -269,7 +269,7 @@ void MediaSource::clearWeakMembers(Visitor* visitor)
     // Oilpan: If the MediaSource survived, but its attached media
     // element did not, signal the element that it can safely
     // notify its MediaSource during finalization by calling close().
-    if (m_attachedElement && !visitor->isHeapObjectAlive(m_attachedElement)) {
+    if (m_attachedElement && !Heap::isHeapObjectAlive(m_attachedElement)) {
         m_attachedElement->setCloseMediaSourceWhenFinalizing();
         m_attachedElement.clear();
     }

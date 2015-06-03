@@ -29,7 +29,6 @@ public:
 
     using Impl::mark;
     using Impl::ensureMarked;
-    using Impl::isMarked;
     using Impl::registerDelayedMarkNoTracing;
     using Impl::registerWeakTable;
     using Impl::registerWeakMembers;
