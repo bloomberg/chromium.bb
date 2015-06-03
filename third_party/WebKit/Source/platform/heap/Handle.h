@@ -352,37 +352,41 @@ public:
 
     CrossThreadPersistent(T* raw) : m_raw(raw)
     {
+        checkPointer();
         recordBacktrace();
     }
 
     explicit CrossThreadPersistent(T& raw) : m_raw(&raw)
     {
+        checkPointer();
         recordBacktrace();
     }
 
-    CrossThreadPersistent(const CrossThreadPersistent& other) : m_raw(other) { recordBacktrace(); }
-
-    template<typename U>
-    CrossThreadPersistent(const CrossThreadPersistent<U>& other) : m_raw(other) { recordBacktrace(); }
-
-    template<typename U>
-    CrossThreadPersistent(const Member<U>& other) : m_raw(other) { recordBacktrace(); }
-
-    template<typename U>
-    CrossThreadPersistent(const RawPtr<U>& other) : m_raw(other.get()) { recordBacktrace(); }
-
-    template<typename U>
-    CrossThreadPersistent& operator=(U* other)
+    CrossThreadPersistent(const CrossThreadPersistent& other) : m_raw(other)
     {
-        m_raw = other;
+        checkPointer();
         recordBacktrace();
-        return *this;
     }
 
-    CrossThreadPersistent& operator=(std::nullptr_t)
+    template<typename U>
+    CrossThreadPersistent(const CrossThreadPersistent<U>& other) : m_raw(other)
     {
-        m_raw = nullptr;
-        return *this;
+        checkPointer();
+        recordBacktrace();
+    }
+
+    template<typename U>
+    CrossThreadPersistent(const Member<U>& other) : m_raw(other)
+    {
+        checkPointer();
+        recordBacktrace();
+    }
+
+    template<typename U>
+    CrossThreadPersistent(const RawPtr<U>& other) : m_raw(other.get())
+    {
+        checkPointer();
+        recordBacktrace();
     }
 
     void clear() { m_raw = nullptr; }
@@ -419,9 +423,25 @@ public:
 
     T* operator->() const { return *this; }
 
+    template<typename U>
+    CrossThreadPersistent& operator=(U* other)
+    {
+        m_raw = other;
+        checkPointer();
+        recordBacktrace();
+        return *this;
+    }
+
+    CrossThreadPersistent& operator=(std::nullptr_t)
+    {
+        m_raw = nullptr;
+        return *this;
+    }
+
     CrossThreadPersistent& operator=(const CrossThreadPersistent& other)
     {
         m_raw = other;
+        checkPointer();
         recordBacktrace();
         return *this;
     }
@@ -430,6 +450,7 @@ public:
     CrossThreadPersistent& operator=(const CrossThreadPersistent<U>& other)
     {
         m_raw = other;
+        checkPointer();
         recordBacktrace();
         return *this;
     }
@@ -438,6 +459,7 @@ public:
     CrossThreadPersistent& operator=(const Member<U>& other)
     {
         m_raw = other;
+        checkPointer();
         recordBacktrace();
         return *this;
     }
@@ -446,6 +468,7 @@ public:
     CrossThreadPersistent& operator=(const RawPtr<U>& other)
     {
         m_raw = other;
+        checkPointer();
         recordBacktrace();
         return *this;
     }
@@ -453,6 +476,23 @@ public:
     T* get() const { return m_raw; }
 
 private:
+    void checkPointer()
+    {
+#if ENABLE(ASSERT)
+        if (!m_raw)
+            return;
+        // Heap::isHeapObjectAlive(m_raw) checks that m_raw is a traceable
+        // object. In other words, it checks that the pointer is either of:
+        //
+        //   (a) a pointer to the head of an on-heap object.
+        //   (b) a pointer to the head of an on-heap mixin object.
+        //
+        // Otherwise, Heap::isHeapObjectAlive will crash when it calls
+        // header->checkHeader().
+        Heap::isHeapObjectAlive(m_raw);
+#endif
+    }
+
 #if ENABLE(GC_PROFILING)
     void recordBacktrace()
     {
