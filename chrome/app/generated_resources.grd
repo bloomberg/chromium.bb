@@ -6905,6 +6905,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TRY_SUPPORTED_CHANNEL_LAYOUTS_DESCRIPTION" desc="Description for the flag to enable support for trying supported channel layouts.">
         Causes audio output streams to check if channel layouts other than the default hardware layout are available. Turning this on will allow the OS to do stereo to surround expansion if supported. May expose third party driver bugs, use with caution.
       </message>
+      <if expr="is_macosx">
+        <message name="IDS_FLAGS_APP_INFO_DIALOG_NAME" desc="Name of the flag to enable or disable the toolkit-views App Info dialog on Mac.">
+          Toolkit-Views App Info Dialog.
+        </message>
+        <message name="IDS_FLAGS_APP_INFO_DIALOG_DESCRIPTION" desc="Description of flag to enable or disable the toolkit-views App Info dialog on Mac.">
+          Makes the Toolkit-Views based App Info dialog accessible from chrome://apps or chrome://extensions in place of the native extension permissions dialog, or the details link (which is a link to the Web Store).
+        </message>
+      </if>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

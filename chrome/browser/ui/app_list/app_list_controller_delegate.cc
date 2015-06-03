@@ -25,6 +25,7 @@
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(ENABLE_RLZ)
@@ -86,6 +87,11 @@ bool AppListControllerDelegate::UserMayModifySettings(
 }
 
 bool AppListControllerDelegate::CanDoShowAppInfoFlow() {
+#if defined(OS_MACOSX)
+  // Cocoa app list doesn't yet support the app info dialog.
+  if (!app_list::switches::IsMacViewsAppListEnabled())
+    return false;
+#endif
   return CanShowAppInfoDialog();
 }
 

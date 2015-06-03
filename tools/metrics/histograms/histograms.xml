@@ -58001,6 +58001,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-2132591642" label="enable-input-view"/>
   <int value="-2119827860" label="ash-disable-maximize-mode-window-backdrop"/>
   <int value="-2119530966" label="enable-webrtc-dtls12"/>
+  <int value="-2119493239" label="enable-app-info-dialog-mac"/>
   <int value="-2117201726" label="disable-gpu-rasterization"/>
   <int value="-2114831248" label="disable-new-ntp"/>
   <int value="-2099035488" label="enable-data-reduction-proxy-bypass-warning"/>
@@ -58298,6 +58299,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="838887742" label="manual-enhanced-bookmarks"/>
   <int value="841343322" label="disable-new-korean-ime"/>
   <int value="851085848" label="enable-settings-window"/>
+  <int value="854730848" label="disable-app-info-dialog-mac"/>
   <int value="855746780" label="disable-physical-keyboard-autocorrect"/>
   <int value="857445869" label="enable-captive-portal-bypass-proxy"/>
   <int value="867512869" label="mark-non-secure-as"/>

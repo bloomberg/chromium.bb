@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -31,9 +33,26 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
+namespace {
+
+#if defined(OS_MACOSX)
+bool IsAppInfoDialogMacEnabled() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableAppInfoDialogMac))
+    return false;
+  if (command_line->HasSwitch(switches::kEnableAppInfoDialogMac))
+    return true;
+  return false;  // Current default.
+}
+#endif
+
+}  // namespace
+
 bool CanShowAppInfoDialog() {
 #if defined(OS_MACOSX)
-  return app_list::switches::IsMacViewsAppListEnabled();
+  static const bool can_show = IsAppInfoDialogMacEnabled();
+  return can_show;
 #else
   return true;
 #endif

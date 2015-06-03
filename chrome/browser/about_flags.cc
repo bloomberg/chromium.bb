@@ -2405,6 +2405,16 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableWebRtcDtls12)
   },
 #endif
+#if defined(OS_MACOSX)
+  {
+    "app-info-dialog",
+    IDS_FLAGS_APP_INFO_DIALOG_NAME,
+    IDS_FLAGS_APP_INFO_DIALOG_DESCRIPTION,
+    kOsMac,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppInfoDialogMac,
+                              switches::kDisableAppInfoDialogMac)
+  },
+#endif
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
   // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
