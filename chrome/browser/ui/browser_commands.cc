@@ -634,8 +634,7 @@ void DuplicateTab(Browser* browser) {
 }
 
 bool CanDuplicateTab(const Browser* browser) {
-  WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
-  return contents && contents->GetController().GetLastCommittedEntry();
+  return CanDuplicateTabAt(browser, browser->tab_strip_model()->active_index());
 }
 
 WebContents* DuplicateTabAt(Browser* browser, int index) {
@@ -692,10 +691,13 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
   return contents_dupe;
 }
 
-bool CanDuplicateTabAt(Browser* browser, int index) {
-  content::NavigationController& nc =
-      browser->tab_strip_model()->GetWebContentsAt(index)->GetController();
-  return nc.GetWebContents() && nc.GetLastCommittedEntry();
+bool CanDuplicateTabAt(const Browser* browser, int index) {
+  WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(index);
+  // If an interstitial is showing, do not allow tab duplication, since
+  // the last committed entry is what would get duplicated and is not
+  // what the user expects to duplicate.
+  return contents && !contents->ShowingInterstitialPage() &&
+         contents->GetController().GetLastCommittedEntry();
 }
 
 void ConvertPopupToTabbedBrowser(Browser* browser) {

@@ -91,7 +91,7 @@ void SelectLastTab(Browser* browser);
 void DuplicateTab(Browser* browser);
 bool CanDuplicateTab(const Browser* browser);
 content::WebContents* DuplicateTabAt(Browser* browser, int index);
-bool CanDuplicateTabAt(Browser* browser, int index);
+bool CanDuplicateTabAt(const Browser* browser, int index);
 void ConvertPopupToTabbedBrowser(Browser* browser);
 void Exit();
 void BookmarkCurrentPageIgnoringExtensionOverrides(Browser* browser);

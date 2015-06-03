@@ -1888,6 +1888,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_PRINT));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_DUPLICATE_TAB));
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -1901,6 +1902,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_PRINT));
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_DUPLICATE_TAB));
 
   // Proceed and wait for interstitial to detach. This doesn't destroy
   // |contents|.
@@ -1912,6 +1914,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialCommandDisable) {
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_PRINT));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_SAVE_PAGE));
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ENCODING_MENU));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_DUPLICATE_TAB));
 }
 
 // Ensure that creating an interstitial page closes any JavaScript dialogs
@@ -2720,4 +2723,45 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
   EXPECT_EQ(exp_final_size,
             web_contents->GetRenderWidgetHostView()->GetViewBounds().size());
   EXPECT_EQ(exp_final_size, web_contents->GetContainerBounds().size());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, CanDuplicateTab) {
+  GURL url(ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(kTitle1File)));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
+
+  int active_index = browser()->tab_strip_model()->active_index();
+  EXPECT_EQ(0, active_index);
+
+  EXPECT_TRUE(chrome::CanDuplicateTab(browser()));
+  EXPECT_TRUE(chrome::CanDuplicateTabAt(browser(), 0));
+  EXPECT_TRUE(chrome::CanDuplicateTabAt(browser(), 1));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  TestInterstitialPage* interstitial =
+      new TestInterstitialPage(web_contents, false, GURL());
+  content::WaitForInterstitialAttach(web_contents);
+
+  EXPECT_TRUE(web_contents->ShowingInterstitialPage());
+
+  // Verify that the "Duplicate tab" command is disabled on interstitial
+  // pages. Regression test for crbug.com/310812
+  EXPECT_FALSE(chrome::CanDuplicateTab(browser()));
+  EXPECT_FALSE(chrome::CanDuplicateTabAt(browser(), 0));
+  EXPECT_TRUE(chrome::CanDuplicateTabAt(browser(), 1));
+
+  // Don't proceed and wait for interstitial to detach. This doesn't
+  // destroy |contents|.
+  interstitial->DontProceed();
+  content::WaitForInterstitialDetach(web_contents);
+  // interstitial is deleted now.
+
+  EXPECT_TRUE(chrome::CanDuplicateTab(browser()));
+  EXPECT_TRUE(chrome::CanDuplicateTabAt(browser(), 0));
+  EXPECT_TRUE(chrome::CanDuplicateTabAt(browser(), 1));
 }
