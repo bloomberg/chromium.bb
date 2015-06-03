@@ -203,7 +203,7 @@ bool BrowserGpuMemoryBufferManager::OnMemoryDump(
           buffer.second.size, buffer.second.format, &buffer_size_in_bytes);
       DCHECK(valid_size);
 
-      dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameOuterSize,
+      dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                       base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                       buffer_size_in_bytes);
     }

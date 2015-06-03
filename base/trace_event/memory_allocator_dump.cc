@@ -32,8 +32,11 @@ bool GetDictionaryValueAsCStr(const DictionaryValue* dict_value,
 }
 }  // namespace
 
-const char MemoryAllocatorDump::kNameOuterSize[] = "outer_size";
+// TODO(primiano): remove kName{Inner,Outer}Size below after all the existing
+// dump providers have been rewritten.
+const char MemoryAllocatorDump::kNameSize[] = "size";
 const char MemoryAllocatorDump::kNameInnerSize[] = "inner_size";
+const char MemoryAllocatorDump::kNameOuterSize[] = "outer_size";
 const char MemoryAllocatorDump::kNameObjectsCount[] = "objects_count";
 const char MemoryAllocatorDump::kTypeScalar[] = "scalar";
 const char MemoryAllocatorDump::kTypeString[] = "string";

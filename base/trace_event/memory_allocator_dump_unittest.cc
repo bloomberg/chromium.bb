@@ -24,10 +24,8 @@ class FakeMemoryAllocatorDumpProvider : public MemoryDumpProvider {
     MemoryAllocatorDump* root_heap =
         pmd->CreateAllocatorDump("foobar_allocator");
 
-    root_heap->AddScalar(MemoryAllocatorDump::kNameOuterSize,
+    root_heap->AddScalar(MemoryAllocatorDump::kNameSize,
                          MemoryAllocatorDump::kUnitsBytes, 4096);
-    root_heap->AddScalar(MemoryAllocatorDump::kNameInnerSize,
-                         MemoryAllocatorDump::kUnitsBytes, 1000);
     root_heap->AddScalar(MemoryAllocatorDump::kNameObjectsCount,
                          MemoryAllocatorDump::kUnitsObjects, 42);
     root_heap->AddScalar("attr1", "units1", 1234);
@@ -36,10 +34,8 @@ class FakeMemoryAllocatorDumpProvider : public MemoryDumpProvider {
 
     MemoryAllocatorDump* sub_heap =
         pmd->CreateAllocatorDump("foobar_allocator/sub_heap");
-    sub_heap->AddScalar(MemoryAllocatorDump::kNameOuterSize,
+    sub_heap->AddScalar(MemoryAllocatorDump::kNameSize,
                         MemoryAllocatorDump::kUnitsBytes, 1);
-    sub_heap->AddScalar(MemoryAllocatorDump::kNameInnerSize,
-                        MemoryAllocatorDump::kUnitsBytes, 2);
     sub_heap->AddScalar(MemoryAllocatorDump::kNameObjectsCount,
                         MemoryAllocatorDump::kUnitsObjects, 3);
 
@@ -141,10 +137,8 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
       pmd.GetAllocatorDump("foobar_allocator");
   ASSERT_NE(nullptr, root_heap);
   EXPECT_EQ("foobar_allocator", root_heap->absolute_name());
-  CheckScalar(root_heap, MemoryAllocatorDump::kNameOuterSize,
+  CheckScalar(root_heap, MemoryAllocatorDump::kNameSize,
               MemoryAllocatorDump::kUnitsBytes, 4096);
-  CheckScalar(root_heap, MemoryAllocatorDump::kNameInnerSize,
-              MemoryAllocatorDump::kUnitsBytes, 1000);
   CheckScalar(root_heap, MemoryAllocatorDump::kNameObjectsCount,
               MemoryAllocatorDump::kUnitsObjects, 42);
   CheckScalar(root_heap, "attr1", "units1", 1234);
@@ -156,10 +150,8 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
       pmd.GetAllocatorDump("foobar_allocator/sub_heap");
   ASSERT_NE(nullptr, sub_heap);
   EXPECT_EQ("foobar_allocator/sub_heap", sub_heap->absolute_name());
-  CheckScalar(sub_heap, MemoryAllocatorDump::kNameOuterSize,
+  CheckScalar(sub_heap, MemoryAllocatorDump::kNameSize,
               MemoryAllocatorDump::kUnitsBytes, 1);
-  CheckScalar(sub_heap, MemoryAllocatorDump::kNameInnerSize,
-              MemoryAllocatorDump::kUnitsBytes, 2);
   CheckScalar(sub_heap, MemoryAllocatorDump::kNameObjectsCount,
               MemoryAllocatorDump::kUnitsObjects, 3);
 
@@ -167,9 +159,7 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
       pmd.GetAllocatorDump("foobar_allocator/sub_heap/empty");
   ASSERT_NE(nullptr, empty_sub_heap);
   EXPECT_EQ("foobar_allocator/sub_heap/empty", empty_sub_heap->absolute_name());
-  ASSERT_FALSE(empty_sub_heap->Get(MemoryAllocatorDump::kNameOuterSize, nullptr,
-                                   nullptr, nullptr));
-  ASSERT_FALSE(empty_sub_heap->Get(MemoryAllocatorDump::kNameInnerSize, nullptr,
+  ASSERT_FALSE(empty_sub_heap->Get(MemoryAllocatorDump::kNameSize, nullptr,
                                    nullptr, nullptr));
   ASSERT_FALSE(empty_sub_heap->Get(MemoryAllocatorDump::kNameObjectsCount,
                                    nullptr, nullptr, nullptr));

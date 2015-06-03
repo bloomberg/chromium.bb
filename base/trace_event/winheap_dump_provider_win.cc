@@ -17,19 +17,23 @@ namespace {
 // Report a heap dump to a process memory dump. The |heap_info| structure
 // contains the information about this heap, and |dump_absolute_name| will be
 // used to represent it in the report.
-bool ReportHeapDump(ProcessMemoryDump* pmd,
+void ReportHeapDump(ProcessMemoryDump* pmd,
                     const WinHeapInfo& heap_info,
                     const std::string& dump_absolute_name) {
-  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_absolute_name);
-  if (!dump)
-    return false;
-  dump->AddScalar(MemoryAllocatorDump::kNameOuterSize,
-                  MemoryAllocatorDump::kUnitsBytes, heap_info.committed_size);
-  dump->AddScalar(MemoryAllocatorDump::kNameInnerSize,
-                  MemoryAllocatorDump::kUnitsBytes, heap_info.allocated_size);
-  dump->AddScalar(MemoryAllocatorDump::kNameObjectsCount,
-                  MemoryAllocatorDump::kUnitsObjects, heap_info.block_count);
-  return true;
+  MemoryAllocatorDump* outer_dump =
+      pmd->CreateAllocatorDump(dump_absolute_name);
+  outer_dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                        MemoryAllocatorDump::kUnitsBytes,
+                        heap_info.committed_size);
+
+  MemoryAllocatorDump* inner_dump =
+      pmd->CreateAllocatorDump(dump_absolute_name + "/allocated_objects");
+  inner_dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                        MemoryAllocatorDump::kUnitsBytes,
+                        heap_info.allocated_size);
+  inner_dump->AddScalar(MemoryAllocatorDump::kNameObjectsCount,
+                        MemoryAllocatorDump::kUnitsObjects,
+                        heap_info.block_count);
 }
 
 }  // namespace
@@ -84,9 +88,7 @@ bool WinHeapDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
     all_heap_info.block_count += heap_info.block_count;
   }
   // Report the heap dump.
-  if (!ReportHeapDump(pmd, all_heap_info, "winheap"))
-    return false;
-
+  ReportHeapDump(pmd, all_heap_info, "winheap");
   return true;
 }
 

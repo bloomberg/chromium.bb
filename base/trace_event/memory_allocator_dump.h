@@ -29,6 +29,9 @@ class BASE_EXPORT MemoryAllocatorDump {
                       ProcessMemoryDump* process_memory_dump);
   ~MemoryAllocatorDump();
 
+  // Standard attribute name to model allocated space.
+  static const char kNameSize[];
+
   // Standard attribute name to model total space requested by the allocator
   // (e.g., amount of pages requested to the system).
   static const char kNameOuterSize[];

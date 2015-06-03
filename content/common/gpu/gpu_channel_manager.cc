@@ -356,10 +356,8 @@ bool GpuChannelManager::OnMemoryDump(
 
     base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
         base::StringPrintf("gl/%s", dump_name.c_str()));
-    if (!dump)
-      return false;
 
-    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameOuterSize,
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                     channel.second->GetMemoryUsage());
   }

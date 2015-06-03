@@ -12,9 +12,6 @@
 namespace content {
 namespace {
 
-const char kMemoryAllocatorHeapNamePrefix[] = "segment";
-const char kMemoryAllocatorName[] = "discardable";
-
 bool IsPowerOfTwo(size_t x) {
   return (x & (x - 1)) == 0;
 }
@@ -343,12 +340,6 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
     size_t size,
     int32_t id,
     base::trace_event::ProcessMemoryDump* pmd) {
-  std::string heap_name = base::StringPrintf(
-      "%s/%s_%d", kMemoryAllocatorName, kMemoryAllocatorHeapNamePrefix, id);
-  base::trace_event::MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(heap_name);
-  DCHECK(dump);
-
   size_t allocated_objects_count = 0;
   size_t allocated_objects_size_in_bytes = 0;
   size_t offset =
@@ -363,15 +354,22 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
     offset += span->length_;
   }
 
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameOuterSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  static_cast<uint64_t>(size));
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectsCount,
-                  base::trace_event::MemoryAllocatorDump::kUnitsObjects,
-                  static_cast<uint64_t>(allocated_objects_count));
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameInnerSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  static_cast<uint64_t>(allocated_objects_size_in_bytes));
+  std::string segment_dump_name =
+      base::StringPrintf("discardable/segment_%d", id);
+  base::trace_event::MemoryAllocatorDump* segment_dump =
+      pmd->CreateAllocatorDump(segment_dump_name);
+  segment_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                          static_cast<uint64_t>(size));
+
+  base::trace_event::MemoryAllocatorDump* obj_dump =
+      pmd->CreateAllocatorDump(segment_dump_name + "/allocated_objects");
+  obj_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectsCount,
+                      base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                      static_cast<uint64_t>(allocated_objects_count));
+  obj_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                      static_cast<uint64_t>(allocated_objects_size_in_bytes));
 }
 
 }  // namespace content

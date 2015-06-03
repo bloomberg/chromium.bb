@@ -25,17 +25,20 @@ JavaHeapDumpProvider::~JavaHeapDumpProvider() {
 // Called at trace dump point time. Creates a snapshot with the memory counters
 // for the current process.
 bool JavaHeapDumpProvider::OnMemoryDump(ProcessMemoryDump* pmd) {
-  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump("java_heap");
-
   // These numbers come from java.lang.Runtime stats.
   long total_heap_size = 0;
   long free_heap_size = 0;
   android::JavaRuntime::GetMemoryUsage(&total_heap_size, &free_heap_size);
-  dump->AddScalar(MemoryAllocatorDump::kNameOuterSize,
-                  MemoryAllocatorDump::kUnitsBytes, total_heap_size);
-  dump->AddScalar(MemoryAllocatorDump::kNameInnerSize,
-                  MemoryAllocatorDump::kUnitsBytes,
-                  total_heap_size - free_heap_size);
+
+  MemoryAllocatorDump* outer_dump = pmd->CreateAllocatorDump("java_heap");
+  outer_dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                        MemoryAllocatorDump::kUnitsBytes, total_heap_size);
+
+  MemoryAllocatorDump* inner_dump =
+      pmd->CreateAllocatorDump("java_heap/allocated_objects");
+  inner_dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                        MemoryAllocatorDump::kUnitsBytes,
+                        total_heap_size - free_heap_size);
   return true;
 }
 

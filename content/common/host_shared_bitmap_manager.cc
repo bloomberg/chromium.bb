@@ -162,7 +162,7 @@ bool HostSharedBitmapManager::OnMemoryDump(
     if (!dump)
       return false;
 
-    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameOuterSize,
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                     bitmap.second->buffer_size);
   }
