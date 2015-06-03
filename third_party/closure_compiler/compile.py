@@ -418,7 +418,7 @@ if __name__ == "__main__":
   externs = set(opts.externs or [])
 
   polymer_externs = os.path.join(os.path.dirname(_CURRENT_DIR), 'polymer',
-                                 'v0_8', 'components-chromium',
+                                 'v1_0', 'components-chromium',
                                  'polymer-externs', 'polymer.externs.js')
   externs.add(polymer_externs)
 

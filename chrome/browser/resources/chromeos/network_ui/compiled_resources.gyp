@@ -8,13 +8,13 @@
 
       'variables': {
         'depends': [
-          '../../../../../ui/webui/resources/cr_elements/v0_8/cr_onc/cr_onc_types.js',
+          '../../../../../ui/webui/resources/cr_elements/v1_0/cr_onc/cr_onc_types.js',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:util',
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
         ],
         'externs': [
-          '../../../../../ui/webui/resources/cr_elements/v0_8/cr_network_icon/cr_network_icon_externs.js',
-          '../../../../../ui/webui/resources/cr_elements/v0_8/cr_onc/cr_onc_data_externs.js',
+          '../../../../../ui/webui/resources/cr_elements/v1_0/cr_network_icon/cr_network_icon_externs.js',
+          '../../../../../ui/webui/resources/cr_elements/v1_0/cr_onc/cr_onc_data_externs.js',
           '../../../../../third_party/closure_compiler/externs/chrome_extensions.js'
         ],
       },

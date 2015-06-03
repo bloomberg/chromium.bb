@@ -17,7 +17,7 @@ _RESOURCES_DIR = os.path.join(_SRC_DIR, "ui", "webui", "resources", "js")
 _ASSERT_JS = os.path.join(_RESOURCES_DIR, "assert.js")
 _CR_JS = os.path.join(_RESOURCES_DIR, "cr.js")
 _CR_UI_JS = os.path.join(_RESOURCES_DIR, "cr", "ui.js")
-_POLYMER_EXTERNS = os.path.join(_SRC_DIR, "third_party", "polymer", "v0_8",
+_POLYMER_EXTERNS = os.path.join(_SRC_DIR, "third_party", "polymer", "v1_0",
                                 "components-chromium", "polymer-externs",
                                 "polymer.externs.js")
 
