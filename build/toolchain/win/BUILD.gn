@@ -39,6 +39,12 @@ if (vc_bin_dir == "") {
   vc_bin_dir = toolchain_data.vc_bin_dir
 }
 
+if (use_goma) {
+  goma_prefix = "$goma_dir/gomacc.exe "
+} else {
+  goma_prefix = ""
+}
+
 # This value will be inherited in the toolchain below.
 concurrent_links = exec_script("../get_concurrent_links.py", [], "value")
 
@@ -65,13 +71,7 @@ template("msvc_toolchain") {
                 invoker.current_cpu,
               ])
 
-  if (use_goma) {
-    goma_prefix = "$goma_dir/gomacc.exe "
-  } else {
-    goma_prefix = ""
-  }
-
-  cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
+  cl = invoker.cl
 
   toolchain(target_name) {
     # Make these apply to all tools below.
@@ -201,6 +201,9 @@ template("msvc_toolchain") {
     # passed to the build. They are ignored when this is the default toolchain.
     toolchain_args() {
       current_cpu = invoker.current_cpu
+      if (defined(invoker.is_clang)) {
+        is_clang = invoker.is_clang
+      }
     }
   }
 }
@@ -210,17 +213,35 @@ template("msvc_toolchain") {
 # Right now only one of these can be enabled at a time because the
 # runtime libraries get copied to root_build_dir and would collide.
 if (current_cpu == "x86") {
-  msvc_toolchain("32") {
+  msvc_toolchain("x86") {
     environment = "environment.x86"
-
     current_cpu = "x86"
+    cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
+    is_clang = false
+  }
+  msvc_toolchain("clang_x86") {
+    environment = "environment.x86"
+    current_cpu = "x86"
+    prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                         root_build_dir)
+    cl = "${goma_prefix}$prefix/clang-cl.exe"
+    is_clang = true
   }
 }
 
 if (current_cpu == "x64") {
-  msvc_toolchain("64") {
+  msvc_toolchain("x64") {
     environment = "environment.x64"
-
     current_cpu = "x64"
+    cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
+    is_clang = false
+  }
+  msvc_toolchain("clang_x64") {
+    environment = "environment.x64"
+    current_cpu = "x64"
+    prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                         root_build_dir)
+    cl = "${goma_prefix}$prefix/clang-cl.exe"
+    is_clang = true
   }
 }

@@ -5707,6 +5707,7 @@
           'conditions': [
             # Building with Clang on Windows is a work in progress and very
             # experimental. See crbug.com/82385.
+            # Keep this in sync with the similar blocks in build/config/compiler/BUILD.gn
             ['clang==1', {
               'VCCLCompilerTool': {
                 'AdditionalOptions': [
