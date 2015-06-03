@@ -690,10 +690,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // cleaned up if the navigation is cancelled.  Otherwise, this is NULL.
   scoped_ptr<CrossSiteTransferringRequest> cross_site_transferring_request_;
 
-  // Tracks information about any navigation paused after receiving response
-  // headers.
-  scoped_ptr<GlobalRequestID> response_started_id_;
-
   // If either of these is non-NULL, the pending navigation is to a chrome:
   // page. The scoped_ptr is used if pending_web_ui_ != web_ui_, the WeakPtr is
   // used for when they reference the same object. If either is non-NULL, the
