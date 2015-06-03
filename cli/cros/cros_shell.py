@@ -81,7 +81,8 @@ Quoting can be tricky; the rules are the same as with ssh:
         help='SSH identify file (private key).')
     parser.add_argument(
         '--no-known-hosts', action='store_false', dest='known_hosts',
-        default=True, help='Do not use a known_hosts file.')
+        default=True, help='Do not use a known_hosts file; always set'
+        ' for USB connections.')
     parser.add_argument(
         'command', nargs=argparse.REMAINDER,
         help='(optional) Command to execute on the device.')
@@ -105,7 +106,10 @@ Quoting can be tricky; the rules are the same as with ssh:
   def _ConnectSettings(self):
     """Generates the correct SSH connect settings based on our state."""
     kwargs = {'NumberOfPasswordPrompts': 2}
-    if self.known_hosts:
+    # USB has no risk of a man-in-the-middle attack so we can turn off
+    # known_hosts for any USB connection.
+    if (self.known_hosts and
+        self.device.connection_type != remote_access.CONNECTION_TYPE_USB):
       # Use the default known_hosts and our current key check setting.
       kwargs['UserKnownHostsFile'] = None
       kwargs['StrictHostKeyChecking'] = self.host_key_checking

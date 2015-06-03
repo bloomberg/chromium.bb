@@ -52,6 +52,10 @@ BRILLO_DEVICE_PROPERTY_DIR = '/var/lib/brillo-device'
 BRILLO_DEVICE_PROPERTY_MAX_LEN = 128
 BRILLO_DEVICE_PROPERTY_ALIAS = 'alias'
 
+# Remote device connection types.
+CONNECTION_TYPE_ETHERNET = 'ethernet'
+CONNECTION_TYPE_USB = 'usb'
+
 
 class RemoteAccessException(Exception):
   """Base exception for this module."""
@@ -902,19 +906,24 @@ class ChromiumOSDevice(RemoteDevice):
   MOUNT_ROOTFS_RW_CMD = ['mount', '-o', 'remount,rw', '/']
   LIST_MOUNTS_CMD = ['cat', '/proc/mounts']
 
-  def __init__(self, hostname, alias=None, **kwargs):
+  def __init__(self, hostname, alias=None, connection_type=None, **kwargs):
     """Initializes this object.
 
     Args:
       hostname: A network hostname or a user-friendly USB device name (alias);
         None to find the default ChromiumOSDevice.
       alias: A user-friendly USB device name.
+      connection_type: A CONNECTION_TYPE_xxx value, or None if unknown.
+        Overwritten with the discovered value if |hostname| is None.
     """
     if hostname:
       self._alias = alias
+      self.connection_type = connection_type
+      # _ResolveHostname() may update |self.connection_type| and/or
+      # |self._alias| so they need to be initialized beforehand.
       hostname = self._ResolveHostname(hostname)
     else:
-      service = _GetDefaultService()
+      service, self.connection_type = _GetDefaultService()
       self._alias = service.text[BRILLO_DEVICE_PROPERTY_ALIAS]
       hostname = service.ip
       # We know this exists because it responded to the mDNS, no need to ping.
@@ -1040,6 +1049,8 @@ class ChromiumOSDevice(RemoteDevice):
     """Resolve |hostname| into a network hostname.
 
     If |hostname| is an alias, |self._alias| is updated to be |hostname|.
+    If the connection type can be determined during hostname resolution,
+    |self.connection_type| is updated to the proper value.
 
     Args:
       hostname: Can either be a network hostname or user-friendly USB device
@@ -1057,6 +1068,7 @@ class ChromiumOSDevice(RemoteDevice):
       ip = GetUSBDeviceIP(hostname)
       if ip:
         self._alias = hostname
+        self.connection_type = CONNECTION_TYPE_USB
         return ip
       # |hostname| is not resolvable but may still be valid (eg. ssh hostname).
       # Leave the hostname be.
@@ -1139,8 +1151,8 @@ class ChromiumOSDevice(RemoteDevice):
     return super(ChromiumOSDevice, self).RunCommand(cmd, **kwargs)
 
 
-def _DiscoverServices():
-  """Performs service discovery.
+def _DiscoverUSBServices():
+  """Performs service discovery over the USB link.
 
   Initializes the USB link and sends the mDNS query to find all
   available Brillo services.
@@ -1170,12 +1182,12 @@ def _GetDefaultService():
   returned. Otherwise DefaultDeviceError will be raised.
 
   Returns:
-    The mdns.Service object for the default device.
+    A (mdns.Service, CONNECTION_TYPE_xxx value) tuple.
 
   Raises:
     DefaultDeviceError: no default device was found.
   """
-  services = _DiscoverServices()
+  services = _DiscoverUSBServices()
   if not services:
     raise DefaultDeviceError('No default device could be found.')
   elif len(services) > 1:
@@ -1183,16 +1195,17 @@ def _GetDefaultService():
         'More than one device was found, please specify a device from: %s.' %
         ', '.join(service.text[BRILLO_DEVICE_PROPERTY_ALIAS]
                   for service in services))
-  return services[0]
+  return (services[0], CONNECTION_TYPE_USB)
 
 
 def GetUSBConnectedDevices():
   """Returns a list of all USB-connected devices."""
   # Use connect=False so that we don't try to set up the device connections
   # until the device is used.
-  return [ChromiumOSDevice(
-      service.ip, alias=service.text[BRILLO_DEVICE_PROPERTY_ALIAS],
-      ping=False, connect=False) for service in _DiscoverServices()]
+  return [ChromiumOSDevice(service.ip, connection_type=CONNECTION_TYPE_USB,
+                           alias=service.text[BRILLO_DEVICE_PROPERTY_ALIAS],
+                           ping=False, connect=False)
+          for service in _DiscoverUSBServices()]
 
 
 def GetUSBDeviceIP(alias):

@@ -25,12 +25,6 @@ class MockShellCommand(command_unittest.MockCommand):
   TARGET_CLASS = cros_shell.ShellCommand
   COMMAND = 'shell'
 
-  def __init__(self, *args, **kwargs):
-    command_unittest.MockCommand.__init__(self, *args, **kwargs)
-
-  def Run(self, inst):
-    return command_unittest.MockCommand.Run(self, inst)
-
 
 class ShellTest(cros_test_lib.MockTempDirTestCase,
                 cros_test_lib.OutputTestCase):
@@ -57,6 +51,7 @@ class ShellTest(cros_test_lib.MockTempDirTestCase,
     self.mock_device = self.PatchObject(
         remote_access, 'ChromiumOSDevice', autospec=True).return_value
     self.mock_device.hostname = self.DEVICE_IP
+    self.mock_device.connection_type = None
     self.mock_base_run_command = self.mock_device.BaseRunCommand
     self.mock_base_run_command.return_value = cros_build_lib.CommandResult()
 
@@ -156,3 +151,15 @@ class ShellTest(cros_test_lib.MockTempDirTestCase,
     self.assertFalse(self.mock_prompt.called)
     self.assertEqual(self.mock_base_run_command.call_count, 1)
     self.assertFalse(self.mock_remove_known_host.called)
+
+  def testUsbConnectionDoesNotUseKnownHosts(self):
+    """Tests that known_hosts is disabled by default for USB connections."""
+    self.SetupCommandMock([self.DEVICE_IP])
+    self.mock_device.connection_type = remote_access.CONNECTION_TYPE_USB
+    mock_compile_ssh_connect_settings = self.PatchObject(
+        remote_access, 'CompileSSHConnectSettings', autospec=True)
+
+    self.cmd_mock.inst.Run()
+
+    self.assertNotIn('UserKnownHostsFile',
+                     mock_compile_ssh_connect_settings.call_args[-1])
