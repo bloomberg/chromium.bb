@@ -26,6 +26,11 @@
       'filepath': 'Source/platform/audio' \
                   '|Source/modules/webaudio',
     },
+    'battery_status': {
+      'filepath': 'Source/modules/battery/' \
+                  '|LayoutTests/battery-status/' \
+                  '|Source/core/frame/PlatformEvent(Controller|Dispatcher)'
+    },
     'bidi': {
       'filepath': 'Source/platform/text/.*Bidi' \
                   '|Source/core/rendering/.*Bidi',
@@ -35,9 +40,6 @@
     },
     'bluetooth': {
       'filepath': '[Bb]luetooth'
-    },
-    'test_runner': {
-      'filepath': 'Tools/DumpRenderTree/chromium/TestRunner',
     },
     'canvas': {
       'filepath': 'Source/core/html/canvas/'
@@ -51,12 +53,59 @@
                   '|public/platform/.*Drag' \
                   '|public/web/.*Drag',
     },
+    'compositing': {
+      'filepath': 'Source/core/layout/compositing'
+    },
+    "content_security_policy": {
+      'filepath': 'Source/core/frame/csp' \
+                  '|Source/core/events/SecurityPolicyViolationEvent' \
+                  '|LayoutTests/http/tests/security/contentSecurityPolicy'
+    },
     'css': {
       'filepath': 'Source/core/css',
+    },
+    'css_grid_layout': {
+      'filepath': 'Source/core/layout/.*Grid' \
+                  '|Source/core/paint/.*Grid' \
+                  '|Source/core/css/.*Grid' \
+                  '|LayoutTests/fast/css-grid-layout/' \
+                  '|LayoutTests/ietestcenter/css3/grid/' \
+                  '|LayoutTests/platform/.*/fast/css-grid-layout/' \
+                  '|LayoutTests/platform/.*/ietestcenter/css3/grid/'
+    },
+    'css_flexbox': {
+      'filepath': 'Source/core/rendering/.*Flex' \
+                  '|LayoutTests/fast/flexbox/' \
+                  '|LayoutTests/css3/flexbox/' \
+                  '|LayoutTests/ietestcenter/css3/flexbox/'
+    },
+    'css_fragmentation_tests': {
+      'filepath': 'LayoutTests/fast/multicol/' \
+                  '|LayoutTests/fast/pagination/'
+    },
+    'css_regions': {
+      'filepath': 'Source/core/rendering/.*(Region|FlowThread)' \
+                  '|Source/core/dom/NodeRendering' \
+                  '|Source/core/dom/.*NamedFlow' \
+                  '|Source/core/css/.*Region' \
+                  '|LayoutTests/compositing/regions/' \
+                  '|LayoutTests/fast/regions/' \
+                  '|LayoutTests/platform/chromium.*/fast/regions/'
     },
     'custom_elements': {
       'filepath': 'Source/core/dom/CustomElement' \
                   '|Source/bindings/v8/.*CustomElement',
+    },
+    'device_light': {
+      'filepath': 'Source/modules/device_light/' \
+                  '|LayoutTests/fast/dom/DeviceLight/'
+    },
+    'device_orientation': {
+      'filepath': 'Source/modules/device_orientation/' \
+                  '|LayoutTests/fast/dom/DeviceMotion/' \
+                  '|LayoutTests/fast/dom/DeviceOrientation/' \
+                  '|Source/core/frame/PlatformEvent(Controller|Dispatcher)' \
+                  '|Source/core/frame/DeviceSingleWindowEventController'
     },
     'devtools': {
       'filepath': 'inspector|DevTools|devtools',
@@ -111,38 +160,6 @@
       'filepath': 'Source/modules/push_messaging' \
                   '|public/platform/modules/push_messaging'
     },
-    'scheduler': {
-      'filepath': 'Source/platform/scheduler' \
-                  '|Source/core/html/parser/.*Scheduler'
-    },
-    'serviceworkers' : {
-      'filepath': 'Source/modules/serviceworkers' \
-                  '|LayoutTests/http/tests/serviceworker'
-    },
-    'serviceworkers_tests' : {
-      'filepath': 'LayoutTests/http/tests/serviceworker'
-    },
-    'sheriff_o_matic' : {
-      'filepath': 'Tools/GardeningServer'
-    },
-    'spellcheck' : {
-      'filepath':  'Source/core/editing/Editor' \
-                   '|Source/core/editing/Spell' \
-                   '|Source/core/editing/TextCheckingHelper' \
-                   '|Source/platform/text/TextCheck' \
-                   '|Source/web/EditorClientImpl' \
-                   '|LayoutTests/editing/spelling' \
-                   '|public/web/WebSpellCheckClient.h',
-    },
-    'style': {
-      'filepath': 'style/|Style',
-    },
-    'workers': {
-      'filepath': 'Source/core/workers',
-    },
-    'wtf': {
-      'filepath': 'Source/wtf',
-    },
     'platform_graphics': {
       'filepath': 'Source/platform/fonts' \
                   '|Source/platform/geometry' \
@@ -150,9 +167,6 @@
     },
     'platform': {
       'filepath': 'Source/platform'
-    },
-    'svg': {
-      'filepath': 'Source/core/svg|Source/core/layout/svg',
     },
     'indexed_db': {
       'filepath': 'Source/modules/indexeddb/' \
@@ -164,18 +178,10 @@
       'filepath': 'Source/core/layout' \
                   '|Source/core/rendering'
     },
-    'compositing': {
-      'filepath': 'Source/core/layout/compositing'
-    },
     'layers': {
       'filepath': 'Source/core/page/scrolling/ScrollingCoordinator' \
                   '|Source/platform/graphics/GraphicsLayer' \
                   '|Source/core/layout/Layer'
-    },
-    "content_security_policy": {
-      'filepath': 'Source/core/frame/csp' \
-                  '|Source/core/events/SecurityPolicyViolationEvent' \
-                  '|LayoutTests/http/tests/security/contentSecurityPolicy'
     },
     "prerender": {
       'filepath': 'Prerender' \
@@ -242,32 +248,6 @@
                   '|Source/web/.*Quota' \
                   '|public/.*Quota'
     },
-    'viewport_interaction': {
-      'filepath': 'Source/core/css/.*Viewport' \
-                  '|Source/core/dom/ViewportArguments' \
-                  '|Source/core/html/HTMLMetaElement' \
-                  '|Source/core/page/FrameView' \
-                  '|Source/core/page/scrolling'
-    },
-    'css_regions': {
-      'filepath': 'Source/core/rendering/.*(Region|FlowThread)' \
-                  '|Source/core/dom/NodeRendering' \
-                  '|Source/core/dom/.*NamedFlow' \
-                  '|Source/core/css/.*Region' \
-                  '|LayoutTests/compositing/regions/' \
-                  '|LayoutTests/fast/regions/' \
-                  '|LayoutTests/platform/chromium.*/fast/regions/'
-    },
-    'web_idl': {
-      'filepath': 'Source/core/.*\.idl'
-    },
-    'webcomponents': {
-      'filepath': 'Source/core/dom/shadow/' \
-                  '|Source/core/dom/custom/' \
-                  '|Source/core/html/imports/' \
-                  '|Source/bindings/v8/custom/V8CustomElementConstructorCustom' \
-                  '|Source/bindings/v8/CustomElementHelpers'
-    },
     'mediastream': {
       'filepath': 'Source/modules/mediastream/' \
                   '|Source/platform/mediastream/' \
@@ -281,58 +261,78 @@
                   '|Source/web/.*Geolocation' \
                   '|public/web/.*Geolocation'
     },
+    'screen_orientation': {
+      'filepath': 'Source/modules/screen_orientation/' \
+                  '|public/platform/modules/screen_orientation',
+    },
+    'scheduler': {
+      'filepath': 'Source/platform/scheduler' \
+                  '|Source/core/html/parser/.*Scheduler'
+    },
+    'serviceworkers' : {
+      'filepath': 'Source/modules/serviceworkers' \
+                  '|LayoutTests/http/tests/serviceworker'
+    },
+    'serviceworkers_tests' : {
+      'filepath': 'LayoutTests/http/tests/serviceworker'
+    },
+    'sheriff_o_matic' : {
+      'filepath': 'Tools/GardeningServer'
+    },
+    'spellcheck' : {
+      'filepath':  'Source/core/editing/Editor' \
+                   '|Source/core/editing/Spell' \
+                   '|Source/core/editing/TextCheckingHelper' \
+                   '|Source/platform/text/TextCheck' \
+                   '|Source/web/EditorClientImpl' \
+                   '|LayoutTests/editing/spelling' \
+                   '|public/web/WebSpellCheckClient.h',
+    },
+    'style': {
+      'filepath': 'style/|Style',
+    },
+    'svg': {
+      'filepath': 'Source/core/svg|Source/core/layout/svg',
+    },
+    'test_runner': {
+      'filepath': 'Tools/DumpRenderTree/chromium/TestRunner',
+    },
     'vibration': {
       'filepath': 'LayoutTests/vibration/' \
                   '|Source/modules/vibration/'
     },
-    'device_orientation': {
-      'filepath': 'Source/modules/device_orientation/' \
-                  '|LayoutTests/fast/dom/DeviceMotion/' \
-                  '|LayoutTests/fast/dom/DeviceOrientation/' \
-                  '|Source/core/frame/PlatformEvent(Controller|Dispatcher)' \
-                  '|Source/core/frame/DeviceSingleWindowEventController'
+    'viewport_interaction': {
+      'filepath': 'Source/core/css/.*Viewport' \
+                  '|Source/core/dom/ViewportArguments' \
+                  '|Source/core/html/HTMLMetaElement' \
+                  '|Source/core/page/FrameView' \
+                  '|Source/core/page/scrolling'
     },
     'web': {
       'filepath': 'Source/web/'
+    },
+    'web_idl': {
+      'filepath': 'Source/core/.*\.idl'
+    },
+    'webcomponents': {
+      'filepath': 'Source/core/dom/shadow/' \
+                  '|Source/core/dom/custom/' \
+                  '|Source/core/html/imports/' \
+                  '|Source/bindings/v8/custom/V8CustomElementConstructorCustom' \
+                  '|Source/bindings/v8/CustomElementHelpers'
     },
     'webp': {
       'filepath': 'Source/platform/image-decoders/webp' \
                   '|Source/platform/image-encoders/skia/WEBP'
     },
-    'css_grid_layout': {
-      'filepath': 'Source/core/layout/.*Grid' \
-                  '|Source/core/paint/.*Grid' \
-                  '|Source/core/css/.*Grid' \
-                  '|LayoutTests/fast/css-grid-layout/' \
-                  '|LayoutTests/ietestcenter/css3/grid/' \
-                  '|LayoutTests/platform/.*/fast/css-grid-layout/' \
-                  '|LayoutTests/platform/.*/ietestcenter/css3/grid/'
-    },
-    'css_flexbox': {
-      'filepath': 'Source/core/rendering/.*Flex' \
-                  '|LayoutTests/fast/flexbox/' \
-                  '|LayoutTests/css3/flexbox/' \
-                  '|LayoutTests/ietestcenter/css3/flexbox/'
-    },
-    'css_fragmentation_tests': {
-      'filepath': 'LayoutTests/fast/multicol/' \
-                  '|LayoutTests/fast/pagination/'
-    },
-    'battery_status': {
-      'filepath': 'Source/modules/battery/' \
-                  '|LayoutTests/battery-status/' \
-                  '|Source/core/frame/PlatformEvent(Controller|Dispatcher)'
-    },
-    'device_light': {
-      'filepath': 'Source/modules/device_light/' \
-                  '|LayoutTests/fast/dom/DeviceLight/'
-    },
-    'screen_orientation': {
-      'filepath': 'Source/modules/screen_orientation/' \
-                  '|public/platform/modules/screen_orientation',
-    },
     'websockets': {
       'filepath': 'Source/modules/websockets/'
+    },
+    'workers': {
+      'filepath': 'Source/core/workers',
+    },
+    'wtf': {
+      'filepath': 'Source/wtf',
     },
     'xmlhttprequest': {
       'filepath': 'Source/core/xmlhttprequest/'
@@ -351,14 +351,8 @@
                    'blink-reviews-animation@chromium.org'],
     'app_banner': [ 'mlamouri+watch-blink@chromium.org' ],
     'audio': ['rtoy@chromium.org'],
-    'devtools': [ 'pfeldman+blink@chromium.org',
-                  'apavlov+blink@chromium.org',
-                  'lushnikov+blink@chromium.org',
-                  'yurys+blink@chromium.org',
-                  'caseq+blink@chromium.org',
-                  'sergeyv+blink@chromium.org',
-                  'kozyatinskiy+blink@chromium.org',
-                  'devtools-reviews@chromium.org' ],
+    'battery_status': [ 'timvolodine@chromium.org',
+                        'mlamouri+watch-blink@chromium.org' ],
     'bidi': [ 'leviw+bidiwatch@chromium.org' ],
     'bindings': [ 'arv+blink@chromium.org',
                   'blink-reviews-bindings@chromium.org',
@@ -369,13 +363,50 @@
                 'dongseong.hwang@intel.com',
                 'junov@chromium.org' ],
     'clipboard': [ 'dcheng@chromium.org', ],
-    'custom_elements': [ 'dominicc+watchlist@chromium.org', 'dglazkov+blink@chromium.org' ],
-    'fetch': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org', 'tyoshino+watch@chromium.org' ],
+    'content_security_policy': [ 'mkwst+watchlist-csp@chromium.org' ],
+    'css': [ 'alexis.menard@intel.com',
+             'apavlov+blink@chromium.org',
+             'dglazkov+blink@chromium.org',
+             'rob.buis@samsung.com',
+             'blink-reviews-css@chromium.org' ],
+    'css_grid_layout': [ 'svillar@igalia.com',
+                         'jfernandez@igalia.com',
+                         'rego@igalia.com' ],
+    'css_flexbox': [ 'cbiesinger@chromium.org' ],
+    'css_fragmentation_tests': [ 'mstensho@opera.com' ],
+    'css_regions': [ 'ChromiumBugTracker@adobe.com' ],
+    'custom_elements': [ 'dominicc+watchlist@chromium.org',
+                         'dglazkov+blink@chromium.org' ],
+    'dom': [ 'eae+blinkwatch@chromium.org',
+             'dglazkov+blink@chromium.org',
+             'sigbjornf@opera.com',
+             'rob.buis@samsung.com',
+             'blink-reviews-dom@chromium.org' ],
+    'device_light': [ 'timvolodine@chromium.org',
+                      'mlamouri+watch-blink@chromium.org' ],
+    'device_orientation': [ 'timvolodine@chromium.org',
+                            'mvanouwerkerk+watch@chromium.org',
+                            'ch.dumez@samsung.com',
+                            'mlamouri+watch-blink@chromium.org' ],
+    'devtools': [ 'pfeldman+blink@chromium.org',
+                  'apavlov+blink@chromium.org',
+                  'lushnikov+blink@chromium.org',
+                  'yurys+blink@chromium.org',
+                  'caseq+blink@chromium.org',
+                  'sergeyv+blink@chromium.org',
+                  'kozyatinskiy+blink@chromium.org',
+                  'devtools-reviews@chromium.org' ],
+    'events': [ 'eae+blinkwatch@chromium.org',
+                'dglazkov+blink@chromium.org',
+                'blink-reviews-events@chromium.org' ],
+    'fetch': [ 'japhet@chromium.org',
+               'gavinp+loader@chromium.org',
+               'tyoshino+watch@chromium.org' ],
     'layers': [ 'blink-layers+watch@chromium.org' ],
-    'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org', 'tyoshino+watch@chromium.org' ],
+    'loader': [ 'japhet@chromium.org',
+                'gavinp+loader@chromium.org',
+                'tyoshino+watch@chromium.org' ],
     'owners': [ 'abarth@chromium.org'],
-    'test_runner': [ 'jochen+watch@chromium.org',
-                     'mlamouri+watch-blink@chromium.org' ],
     'platform_graphics': [ 'schenney@chromium.org',
                            'danakj@chromium.org',
                            'pdr+graphicswatchlist@chromium.org',
@@ -386,24 +417,16 @@
                            'jbroman@chromium.org',
                            'dongseong.hwang@intel.com',
                            'junov@chromium.org' ],
-    'svg': [ 'schenney@chromium.org', 'pdr+svgwatchlist@chromium.org', 'fmalita@chromium.org', 'dschulze@chromium.org', 'rob.buis@samsung.com', 'fs@opera.com', 'gyuyoung.kim@chromium.org', 'kouhei+svg@chromium.org' ],
-    'css': [ 'alexis.menard@intel.com', 'apavlov+blink@chromium.org', 'dglazkov+blink@chromium.org', 'rob.buis@samsung.com', 'blink-reviews-css@chromium.org' ],
-    'dom': [ 'eae+blinkwatch@chromium.org',
-             'dglazkov+blink@chromium.org',
-             'sigbjornf@opera.com',
-             'rob.buis@samsung.com',
-             'blink-reviews-dom@chromium.org' ],
-    'events': [ 'eae+blinkwatch@chromium.org', 'dglazkov+blink@chromium.org', 'blink-reviews-events@chromium.org' ],
-    'heap': [ 'ager@chromium.org', 'haraken@chromium.org', 'kouhei+heap@chromium.org', 'oilpan-reviews@chromium.org' ],
-    'html': [ 'dglazkov+blink@chromium.org', 'blink-reviews-html@chromium.org' ],
+    'heap': [ 'ager@chromium.org',
+              'haraken@chromium.org',
+              'kouhei+heap@chromium.org',
+              'oilpan-reviews@chromium.org' ],
+    'html': [ 'dglazkov+blink@chromium.org',
+              'blink-reviews-html@chromium.org' ],
     'public_api': [ 'dglazkov+blink@chromium.org' ],
-    'workers': [ 'kinuko+worker@chromium.org',
-                 'horo+watch@chromium.org',
-                 'falken@chromium.org' ],
-    'wtf': [ 'mikhail.pozdnyakov@intel.com',
-             'blink-reviews-wtf@chromium.org' ],
     'indexed_db': ['dgrogan@chromium.org',
-                   'jsbell+idb@chromium.org', 'cmumford@chromium.org'],
+                   'jsbell+idb@chromium.org',
+                   'cmumford@chromium.org'],
     'layout': [ 'pdr+renderingwatchlist@chromium.org',
                 'eae+blinkwatch@chromium.org',
                 'jchaffraix+rendering@chromium.org',
@@ -415,16 +438,25 @@
                 'slimming-paint-reviews@chromium.org',
                 'dongseong.hwang@intel.com' ],
     'compositing': [ ],
-    'content_security_policy': [ 'mkwst+watchlist-csp@chromium.org' ],
     'permissions': [ 'mlamouri+watch-blink@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org',
                    'yoav@yoav.ws' ],
     'preloadScanner': [ 'yoav@yoav.ws' ],
-    'push_messaging': [ 'johnme+watch@chromium.org', 'mvanouwerkerk+watch@chromium.org', 'peter+watch@chromium.org' ],
+    'push_messaging': [ 'johnme+watch@chromium.org',
+                        'mvanouwerkerk+watch@chromium.org',
+                        'peter+watch@chromium.org' ],
     'client_hints': [ 'yoav@yoav.ws' ],
     'scheduler': [ 'scheduler-bugs@chromium.org' ],
-    'track': [ 'vcarbune@chromium.org', 'silviapf@chromium.org', 'philipj@opera.com', 'glenn@chromium.org', 'fs@opera.com', 'eric.carlson@apple.com' ],
-    'media': [ 'feature-media-reviews@chromium.org', 'philipj@opera.com', 'eric.carlson@apple.com', 'mlamouri+watch-blink@chromium.org' ],
+    'track': [ 'vcarbune@chromium.org',
+               'silviapf@chromium.org',
+               'philipj@opera.com',
+               'glenn@chromium.org',
+               'fs@opera.com',
+               'eric.carlson@apple.com' ],
+    'media': [ 'feature-media-reviews@chromium.org',
+               'philipj@opera.com',
+               'eric.carlson@apple.com',
+               'mlamouri+watch-blink@chromium.org' ],
     'media_queries': [ 'kenneth.christiansen@gmail.com',
                        'yoav@yoav.ws' ],
     'fileapi': [ 'kinuko+fileapi@chromium.org',
@@ -434,9 +466,8 @@
                'tzik@chromium.org',
                'nhiroki@chromium.org' ],
     'viewport_interaction': [ 'kenneth.christiansen@gmail.com' ],
-    'css_regions': [ 'ChromiumBugTracker@adobe.com' ],
-    'web_idl': [ 'arv+blink@chromium.org', 'ch.dumez@samsung.com', 'vivekg@chromium.org', 'vivek.vg@samsung.com' ],
-    'webcomponents': [ 'webcomponents-bugzilla@chromium.org', 'dglazkov+blink@chromium.org' ],
+    'webcomponents': [ 'webcomponents-bugzilla@chromium.org',
+                       'dglazkov+blink@chromium.org' ],
     'mediastream': [ 'tommyw+watchlist@chromium.org' ],
     'navigator_content_utils': [ 'gyuyoung.kim@chromium.org' ],
     'notifications': [ 'peter+watch@chromium.org' ],
@@ -464,25 +495,34 @@
                          'teravest@chromium.org' ],
     'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
     'style': [ 'blink-reviews-style@chromium.org' ],
-    'device_orientation': [ 'timvolodine@chromium.org',
-                            'mvanouwerkerk+watch@chromium.org',
-                            'ch.dumez@samsung.com',
-                            'mlamouri+watch-blink@chromium.org' ],
+    'svg': [ 'schenney@chromium.org',
+             'pdr+svgwatchlist@chromium.org',
+             'fmalita@chromium.org',
+             'dschulze@chromium.org',
+             'rob.buis@samsung.com',
+             'fs@opera.com',
+             'gyuyoung.kim@chromium.org',
+             'kouhei+svg@chromium.org' ],
+    'test_runner': [ 'jochen+watch@chromium.org',
+                     'mlamouri+watch-blink@chromium.org' ],
     'webp': [ 'urvang@chromium.org',
               'jzern@chromium.org',
               'skal@google.com',
               'vikasa@google.com' ],
-    'css_grid_layout': [ 'svillar@igalia.com', 'jfernandez@igalia.com', 'rego@igalia.com' ],
-    'css_flexbox': [ 'cbiesinger@chromium.org' ],
-    'css_fragmentation_tests': [ 'mstensho@opera.com' ],
-    'battery_status': [ 'timvolodine@chromium.org',
-                        'mlamouri+watch-blink@chromium.org' ],
     'out_of_process_frames': [ 'dcheng@chromium.org',
                                'mlamouri+watch-blink@chromium.org' ],
-    'device_light': [ 'timvolodine@chromium.org',
-                      'mlamouri+watch-blink@chromium.org' ],
     'screen_orientation': [ 'mlamouri+watch-blink@chromium.org' ],
-    'websockets': [ 'tyoshino+watch@chromium.org', 'yhirano+watch@chromium.org' ],
+    'web_idl': [ 'arv+blink@chromium.org',
+                 'ch.dumez@samsung.com',
+                 'vivekg@chromium.org',
+                 'vivek.vg@samsung.com' ],
+    'websockets': [ 'tyoshino+watch@chromium.org',
+                    'yhirano+watch@chromium.org' ],
+    'workers': [ 'kinuko+worker@chromium.org',
+                 'horo+watch@chromium.org',
+                 'falken@chromium.org' ],
+    'wtf': [ 'mikhail.pozdnyakov@intel.com',
+             'blink-reviews-wtf@chromium.org' ],
     'xmlhttprequest': [ 'tyoshino+watch@chromium.org' ],
   },
 }
