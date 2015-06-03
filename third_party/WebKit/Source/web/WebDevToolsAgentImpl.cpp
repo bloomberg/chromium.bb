@@ -60,6 +60,7 @@
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorState.h"
+#include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/InspectorWorkerAgent.h"
@@ -249,7 +250,7 @@ public:
     }
 };
 
-class DebuggerTask : public V8Debugger::Task {
+class DebuggerTask : public InspectorTaskRunner::Task {
 public:
     DebuggerTask(PassOwnPtr<WebDevToolsAgent::MessageDescriptor> descriptor)
         : m_descriptor(descriptor)
@@ -633,7 +634,7 @@ void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
     if (!m_attached)
         return;
     if (WebDevToolsAgent::shouldInterruptForMessage(message))
-        MainThreadDebugger::instance()->debugger()->runPendingTasks();
+        MainThreadDebugger::instance()->taskRunner()->runPendingTasks();
     else
         dispatchMessageFromFrontend(message);
 }

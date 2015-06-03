@@ -47,6 +47,7 @@ class InspectorBackendDispatcher;
 class InspectorFrontend;
 class InspectorFrontendChannel;
 class InspectorStateClient;
+class InspectorTaskRunner;
 class InstrumentingAgents;
 class WorkerDebuggerAgent;
 class WorkerGlobalScope;
@@ -91,6 +92,7 @@ private:
     RawPtrWillBeMember<WorkerDebuggerAgent> m_workerDebuggerAgent;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
     RawPtrWillBeMember<WorkerRuntimeAgent> m_workerRuntimeAgent;
+    OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;
     bool m_paused;
 };
 

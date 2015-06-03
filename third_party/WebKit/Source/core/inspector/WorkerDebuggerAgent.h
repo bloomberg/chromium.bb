@@ -31,13 +31,12 @@
 #ifndef WorkerDebuggerAgent_h
 #define WorkerDebuggerAgent_h
 
-#include "bindings/core/v8/WorkerThreadDebugger.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 
 namespace blink {
 
 class WorkerGlobalScope;
-class WorkerDebuggerAgent;
+class WorkerThreadDebugger;
 
 class WorkerDebuggerAgent final : public InspectorDebuggerAgent {
     WTF_MAKE_NONCOPYABLE(WorkerDebuggerAgent);
@@ -47,8 +46,6 @@ public:
     static PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> create(WorkerThreadDebugger*, WorkerGlobalScope*, InjectedScriptManager*);
     ~WorkerDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
-
-    void interruptAndDispatchInspectorCommands();
 
 private:
 

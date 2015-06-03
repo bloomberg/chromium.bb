@@ -1667,6 +1667,8 @@
             'inspector/InspectorStyleSheet.h',
             'inspector/InspectorStyleTextEditor.cpp',
             'inspector/InspectorStyleTextEditor.h',
+            'inspector/InspectorTaskRunner.cpp',
+            'inspector/InspectorTaskRunner.h',
             'inspector/InspectorTimelineAgent.cpp',
             'inspector/InspectorTimelineAgent.h',
             'inspector/InspectorTraceEvents.cpp',

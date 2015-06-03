@@ -37,9 +37,7 @@
 #include "core/inspector/JavaScriptCallFrame.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "platform/JSONValues.h"
-#include "wtf/Deque.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
 #include "wtf/dtoa/utils.h"
 #include "wtf/text/CString.h"
@@ -50,27 +48,6 @@ namespace {
 const char stepIntoV8MethodName[] = "stepIntoStatement";
 const char stepOutV8MethodName[] = "stepOutOfFunction";
 }
-
-class V8Debugger::ThreadSafeTaskQueue {
-    WTF_MAKE_NONCOPYABLE(ThreadSafeTaskQueue);
-public:
-    ThreadSafeTaskQueue() { }
-    PassOwnPtr<Task> tryTake()
-    {
-        MutexLocker lock(m_mutex);
-        if (m_queue.isEmpty())
-            return nullptr;
-        return m_queue.takeFirst();
-    }
-    void append(PassOwnPtr<Task> task)
-    {
-        MutexLocker lock(m_mutex);
-        m_queue.append(task);
-    }
-private:
-    Mutex m_mutex;
-    Deque<OwnPtr<Task>> m_queue;
-};
 
 v8::MaybeLocal<v8::Value> V8Debugger::callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[])
 {
@@ -85,7 +62,6 @@ V8Debugger::V8Debugger(v8::Isolate* isolate, Client* client)
     , m_client(client)
     , m_breakpointsActivated(true)
     , m_runningNestedMessageLoop(false)
-    , m_taskQueue(adoptPtr(new ThreadSafeTaskQueue))
 {
 }
 
@@ -482,22 +458,6 @@ PassRefPtrWillBeRawPtr<JavaScriptCallFrame> V8Debugger::callFrameNoScopes(int in
     return JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
 }
 
-void V8Debugger::interruptAndRun(PassOwnPtr<Task> task)
-{
-    m_taskQueue->append(task);
-    m_isolate->RequestInterrupt(&v8InterruptCallback, this);
-}
-
-void V8Debugger::runPendingTasks()
-{
-    while (true) {
-        OwnPtr<Task> task = m_taskQueue->tryTake();
-        if (!task)
-            return;
-        task->run();
-    }
-}
-
 static V8Debugger* toV8Debugger(v8::Local<v8::Value> data)
 {
     void* p = v8::Local<v8::External>::Cast(data)->Value();
@@ -555,13 +515,6 @@ void V8Debugger::handleProgramBreak(ScriptState* pausedScriptState, v8::Local<v8
         v8::Local<v8::Value> argv[] = { executionState };
         callDebuggerMethod(stepOutV8MethodName, 1, argv);
     }
-}
-
-void V8Debugger::v8InterruptCallback(v8::Isolate*, void* data)
-{
-    V8Debugger* server = static_cast<V8Debugger*>(data);
-    if (server->enabled())
-        server->runPendingTasks();
 }
 
 void V8Debugger::v8DebugEventCallback(const v8::Debug::EventDetails& eventDetails)

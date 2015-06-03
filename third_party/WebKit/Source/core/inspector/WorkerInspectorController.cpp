@@ -32,6 +32,7 @@
 
 #include "core/inspector/WorkerInspectorController.h"
 
+#include "bindings/core/v8/WorkerThreadDebugger.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/AsyncCallTracker.h"
@@ -44,6 +45,7 @@
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InspectorStateClient.h"
+#include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/WorkerConsoleAgent.h"
@@ -87,6 +89,24 @@ private:
     virtual void updateInspectorStateCookie(const String& cookie) override { }
 };
 
+class RunInspectorCommandsTask final : public InspectorTaskRunner::Task {
+public:
+    explicit RunInspectorCommandsTask(WorkerThread* thread)
+        : m_thread(thread) { }
+    virtual ~RunInspectorCommandsTask() { }
+    virtual void run() override
+    {
+        // Process all queued debugger commands. WorkerThread is certainly
+        // alive if this task is being executed.
+        m_thread->willEnterNestedLoop();
+        while (MessageQueueMessageReceived == m_thread->runDebuggerTask(WorkerThread::DontWaitForMessage)) { }
+        m_thread->didLeaveNestedLoop();
+    }
+
+private:
+    WorkerThread* m_thread;
+};
+
 }
 
 class WorkerInjectedScriptHostClient: public InjectedScriptHostClient {
@@ -104,6 +124,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     , m_injectedScriptManager(InjectedScriptManager::createForWorker())
     , m_workerThreadDebugger(WorkerThreadDebugger::create(workerGlobalScope))
     , m_agents(m_instrumentingAgents.get(), m_state.get())
+    , m_inspectorTaskRunner(adoptPtr(new InspectorTaskRunner(v8::Isolate::GetCurrent())))
     , m_paused(false)
 {
     OwnPtrWillBeRawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(m_injectedScriptManager.get(), m_workerThreadDebugger->debugger(), workerGlobalScope, this);
@@ -174,8 +195,10 @@ void WorkerInspectorController::restoreInspectorStateFromCookie(const String& in
 
 void WorkerInspectorController::dispatchMessageFromFrontend(const String& message)
 {
+    m_inspectorTaskRunner->setIgnoreInterrupts(true);
     if (m_backendDispatcher)
         m_backendDispatcher->dispatch(message);
+    m_inspectorTaskRunner->setIgnoreInterrupts(false);
 }
 
 void WorkerInspectorController::dispose()
@@ -186,7 +209,7 @@ void WorkerInspectorController::dispose()
 
 void WorkerInspectorController::interruptAndDispatchInspectorCommands()
 {
-    m_workerDebuggerAgent->interruptAndDispatchInspectorCommands();
+    m_inspectorTaskRunner->interruptAndRun(adoptPtr(new RunInspectorCommandsTask(m_workerGlobalScope->thread())));
 }
 
 void WorkerInspectorController::resumeStartup()

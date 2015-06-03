@@ -110,16 +110,6 @@ public:
 
     static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> toJavaScriptCallFrameUnsafe(const ScriptValue&);
 
-    class Task {
-    public:
-        virtual ~Task() { }
-        virtual void run() = 0;
-    };
-    // This method can be called on any thread. It is caller's responsibility to make sure that
-    // this V8Debugger and corresponding v8::Isolate exist while this method is running.
-    void interruptAndRun(PassOwnPtr<Task>);
-    void runPendingTasks();
-
     bool isPaused();
 
     v8::Local<v8::Value> functionScopes(v8::Local<v8::Function>);
@@ -142,7 +132,6 @@ private:
 
     static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     void handleProgramBreak(ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Value> exception, v8::Local<v8::Array> hitBreakpoints, bool isPromiseRejection = false);
-    static void v8InterruptCallback(v8::Isolate*, void*);
     static void v8DebugEventCallback(const v8::Debug::EventDetails&);
     v8::Local<v8::Value> callInternalGetterFunction(v8::Local<v8::Object>, const char* functionName);
     void handleV8DebugEvent(const v8::Debug::EventDetails&);
@@ -168,8 +157,6 @@ private:
     v8::Local<v8::Object> m_executionState;
     RefPtr<ScriptState> m_pausedScriptState;
     bool m_runningNestedMessageLoop;
-    class ThreadSafeTaskQueue;
-    OwnPtr<ThreadSafeTaskQueue> m_taskQueue;
 };
 
 } // namespace blink

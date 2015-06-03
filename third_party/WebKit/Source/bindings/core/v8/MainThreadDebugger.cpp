@@ -42,6 +42,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/page/Page.h"
@@ -67,6 +68,7 @@ MainThreadDebugger::MainThreadDebugger(PassOwnPtr<ClientMessageLoop> clientMessa
     : ScriptDebuggerBase(isolate, V8Debugger::create(isolate, this))
     , m_clientMessageLoop(clientMessageLoop)
     , m_pausedFrame(nullptr)
+    , m_taskRunner(adoptPtr(new InspectorTaskRunner(isolate)))
 {
     MutexLocker locker(creationMutex());
     ASSERT(!s_instance);
@@ -136,11 +138,11 @@ MainThreadDebugger* MainThreadDebugger::instance()
     return s_instance;
 }
 
-void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<V8Debugger::Task> task)
+void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunner::Task> task)
 {
     MutexLocker locker(creationMutex());
     if (s_instance)
-        s_instance->debugger()->interruptAndRun(task);
+        s_instance->m_taskRunner->interruptAndRun(task);
 }
 
 ScriptDebugListener* MainThreadDebugger::getDebugListenerForContext(v8::Local<v8::Context> context)

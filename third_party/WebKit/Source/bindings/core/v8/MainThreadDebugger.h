@@ -32,6 +32,7 @@
 #define MainThreadDebugger_h
 
 #include "core/CoreExport.h"
+#include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/ScriptDebuggerBase.h"
 #include <v8.h>
 
@@ -40,8 +41,6 @@ class Mutex;
 }
 
 namespace blink {
-
-class Page;
 
 class CORE_EXPORT MainThreadDebugger final : public NoBaseWillBeGarbageCollectedFinalized<MainThreadDebugger>, public ScriptDebuggerBase {
     WTF_MAKE_NONCOPYABLE(MainThreadDebugger);
@@ -66,7 +65,8 @@ public:
     void removeListener(ScriptDebugListener*, LocalFrame*);
 
     static MainThreadDebugger* instance();
-    static void interruptMainThreadAndRun(PassOwnPtr<V8Debugger::Task>);
+    static void interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunner::Task>);
+    InspectorTaskRunner* taskRunner() const { return m_taskRunner.get(); }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -83,6 +83,7 @@ private:
     ListenersMap m_listenersMap;
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
     RawPtrWillBeMember<LocalFrame> m_pausedFrame;
+    OwnPtr<InspectorTaskRunner> m_taskRunner;
 
     static MainThreadDebugger* s_instance;
 };
