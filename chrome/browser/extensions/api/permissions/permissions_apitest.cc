@@ -195,4 +195,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, HostSubsets) {
   EXPECT_TRUE(RunExtensionTest("permissions/host_subsets")) << message_;
 }
 
+// Tests that requesting an optional permission from a background page, with
+// another window open, grants the permission and updates the bindings
+// (chrome.whatever, in this case chrome.alarms). Regression test for
+// crbug.com/435141, see details there for trickiness.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, OptionalPermissionsUpdatesBindings) {
+  ASSERT_TRUE(RunExtensionTest("permissions/optional_updates_bindings"))
+      << message_;
+}
+
 }  // namespace extensions

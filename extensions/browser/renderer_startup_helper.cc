@@ -34,49 +34,45 @@ void RendererStartupHelper::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      content::RenderProcessHost* process =
-          content::Source<content::RenderProcessHost>(source).ptr();
-      if (!ExtensionsBrowserClient::Get()->IsSameContext(
-               browser_context_, process->GetBrowserContext()))
-        break;
+  DCHECK_EQ(content::NOTIFICATION_RENDERER_PROCESS_CREATED, type);
+  content::RenderProcessHost* process =
+      content::Source<content::RenderProcessHost>(source).ptr();
+  if (!ExtensionsBrowserClient::Get()->IsSameContext(
+          browser_context_, process->GetBrowserContext()))
+    return;
 
-      // Platform apps need to know the system font.
-      // TODO(dbeam): this is not the system font in all cases.
-      process->Send(new ExtensionMsg_SetSystemFont(webui::GetFontFamily(),
-                                                   webui::GetFontSize()));
+  // Platform apps need to know the system font.
+  // TODO(dbeam): this is not the system font in all cases.
+  process->Send(new ExtensionMsg_SetSystemFont(webui::GetFontFamily(),
+                                               webui::GetFontSize()));
 
-      // Valid extension function names, used to setup bindings in renderer.
-      std::vector<std::string> function_names;
-      ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
-      process->Send(new ExtensionMsg_SetFunctionNames(function_names));
+  // Valid extension function names, used to setup bindings in renderer.
+  std::vector<std::string> function_names;
+  ExtensionFunctionDispatcher::GetAllFunctionNames(&function_names);
+  process->Send(new ExtensionMsg_SetFunctionNames(function_names));
 
-      // Scripting whitelist. This is modified by tests and must be communicated
-      // to renderers.
-      process->Send(new ExtensionMsg_SetScriptingWhitelist(
-          extensions::ExtensionsClient::Get()->GetScriptingWhitelist()));
+  // Scripting whitelist. This is modified by tests and must be communicated
+  // to renderers.
+  process->Send(new ExtensionMsg_SetScriptingWhitelist(
+      extensions::ExtensionsClient::Get()->GetScriptingWhitelist()));
 
-      // Loaded extensions.
-      std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;
-      const ExtensionSet& extensions =
-          ExtensionRegistry::Get(browser_context_)->enabled_extensions();
-      for (ExtensionSet::const_iterator iter = extensions.begin();
-           iter != extensions.end(); ++iter) {
-        // Renderers don't need to know about themes.
-        if (!(*iter)->is_theme()) {
-          // Don't need to include tab permissions for new tabs.
-          loaded_extensions.push_back(ExtensionMsg_Loaded_Params(
-              iter->get(), false /* no tab permissions */));
-        }
-      }
-      process->Send(new ExtensionMsg_Loaded(loaded_extensions));
-      break;
+  // Loaded extensions.
+  std::vector<ExtensionMsg_Loaded_Params> loaded_extensions;
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(browser_context_)->enabled_extensions();
+  for (const auto& ext : extensions) {
+    // Renderers don't need to know about themes.
+    if (!ext->is_theme()) {
+      // TODO(kalman): Only include tab specific permissions for extension
+      // processes, no other process needs it, so it's mildly wasteful.
+      // I am not sure this is possible to know this here, at such a low
+      // level of the stack. Perhaps site isolation can help.
+      bool include_tab_permissions = true;
+      loaded_extensions.push_back(
+          ExtensionMsg_Loaded_Params(ext.get(), include_tab_permissions));
     }
-    default:
-      NOTREACHED();
-      break;
   }
+  process->Send(new ExtensionMsg_Loaded(loaded_extensions));
 }
 
 //////////////////////////////////////////////////////////////////////////////

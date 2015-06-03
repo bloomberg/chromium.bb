@@ -90,34 +90,15 @@ void ExtensionWebContentsObserver::RenderViewCreated(
     }
   }
 
-  switch (type) {
-    case Manifest::TYPE_EXTENSION:
-    case Manifest::TYPE_USER_SCRIPT:
-    case Manifest::TYPE_HOSTED_APP:
-    case Manifest::TYPE_LEGACY_PACKAGED_APP:
-    case Manifest::TYPE_PLATFORM_APP:
-      // Always send a Loaded message before ActivateExtension so that
-      // ExtensionDispatcher knows what Extension is active, not just its ID.
-      // This is important for classifying the Extension's JavaScript context
-      // correctly (see ExtensionDispatcher::ClassifyJavaScriptContext).
-      // We also have to include the tab-specific permissions here, since it's
-      // an extension process.
-      render_view_host->Send(
-          new ExtensionMsg_Loaded(std::vector<ExtensionMsg_Loaded_Params>(
-              1, ExtensionMsg_Loaded_Params(
-                     extension, true /* include tab permissions */))));
-      render_view_host->Send(
-          new ExtensionMsg_ActivateExtension(extension->id()));
-      break;
-
-    case Manifest::TYPE_UNKNOWN:
-    case Manifest::TYPE_THEME:
-    case Manifest::TYPE_SHARED_MODULE:
-      break;
-
-    case Manifest::NUM_LOAD_TYPES:
-      NOTREACHED();
-  }
+  // Tells the new view that it's hosted in an extension process.
+  //
+  // This will often be a rendant IPC, because activating extensions happens at
+  // the process level, not at the view level. However, without some mild
+  // refactoring this isn't trivial to do, and this way is simpler.
+  //
+  // Plus, we can delete the concept of activating an extension once site
+  // isolation is turned on.
+  render_view_host->Send(new ExtensionMsg_ActivateExtension(extension->id()));
 }
 
 void ExtensionWebContentsObserver::RenderFrameCreated(

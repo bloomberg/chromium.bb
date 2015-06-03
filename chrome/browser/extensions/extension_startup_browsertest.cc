@@ -256,9 +256,6 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
   }
 };
 
-// Fails inconsistently on Linux x64. http://crbug.com/80961
-// TODO(dpapad): Has not failed since October 2011, let's reenable, monitor
-// and act accordingly.
 IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Test) {
   WaitForServicesToStart(1, true);
   TestInjection(true, true);

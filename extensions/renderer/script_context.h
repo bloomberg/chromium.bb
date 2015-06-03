@@ -123,10 +123,10 @@ class ScriptContext : public RequestSender::Source {
   Feature::Availability GetAvailability(const std::string& api_name);
 
   // Returns a string description of the type of context this is.
-  std::string GetContextTypeDescription();
+  std::string GetContextTypeDescription() const;
 
   // Returns a string description of the effective type of context this is.
-  std::string GetEffectiveContextTypeDescription();
+  std::string GetEffectiveContextTypeDescription() const;
 
   v8::Isolate* isolate() const { return isolate_; }
 
@@ -179,6 +179,9 @@ class ScriptContext : public RequestSender::Source {
   // not have access to |name|. Returns true if this context has access (i.e.
   // no exception thrown), false if it does not (i.e. an exception was thrown).
   bool HasAccessOrThrowError(const std::string& name);
+
+  // Returns a string representation of this ScriptContext, for debugging.
+  std::string GetDebugString() const;
 
  private:
   class Runner;

@@ -684,6 +684,10 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       "runtime", scoped_ptr<NativeHandler>(new RuntimeCustomBindings(context)));
 }
 
+void Dispatcher::LoadExtensionForTest(const Extension* extension) {
+  CHECK(extensions_.Insert(extension));
+}
+
 bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(Dispatcher, message)
@@ -732,12 +736,9 @@ void Dispatcher::WebKitInitialized() {
 
   // Initialize host permissions for any extensions that were activated before
   // WebKit was initialized.
-  for (std::set<std::string>::iterator iter = active_extension_ids_.begin();
-       iter != active_extension_ids_.end();
-       ++iter) {
-    const Extension* extension = extensions_.GetByID(*iter);
+  for (const std::string& extension_id : active_extension_ids_) {
+    const Extension* extension = extensions_.GetByID(extension_id);
     CHECK(extension);
-
     InitOriginPermissions(extension);
   }
 
@@ -784,7 +785,7 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
                    "e::dispatcher:%s:%s",
                    extension_id.c_str(),
                    error.c_str());
-    CHECK(extension) << extension_id << " was never loaded: " << error;
+    LOG(FATAL) << extension_id << " was never loaded: " << error;
   }
 
   active_extension_ids_.insert(extension_id);
@@ -848,24 +849,34 @@ void Dispatcher::OnDispatchOnDisconnect(int port_id,
 
 void Dispatcher::OnLoaded(
     const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions) {
-  std::vector<ExtensionMsg_Loaded_Params>::const_iterator i;
-  for (i = loaded_extensions.begin(); i != loaded_extensions.end(); ++i) {
+  for (const auto& param : loaded_extensions) {
     std::string error;
-    scoped_refptr<const Extension> extension = i->ConvertToExtension(&error);
+    scoped_refptr<const Extension> extension = param.ConvertToExtension(&error);
     if (!extension.get()) {
-      extension_load_errors_[i->id] = error;
+      NOTREACHED() << error;
+      // Note: in tests |param.id| has been observed to be empty (see comment
+      // just below) so this isn't all that reliable.
+      extension_load_errors_[param.id] = error;
       continue;
     }
-    OnLoadedInternal(extension);
+
+    // TODO(kalman): This test is deliberately not a CHECK (though I wish it
+    // could be) and uses extension->id() not params.id:
+    // 1. For some reason params.id can be empty. I've only seen it with
+    //    the webstore extension, in tests, and I've spent some time trying to
+    //    figure out why - but cost/benefit won.
+    // 2. The browser only sends this IPC to RenderProcessHosts once, but the
+    //    Dispatcher is attached to a RenderThread. Presumably there is a
+    //    mismatch there. In theory one would think it's possible for the
+    //    browser to figure this out itself - but again, cost/benefit.
+    if (!extensions_.Contains(extension->id()))
+      extensions_.Insert(extension);
   }
+
   // Update the available bindings for all contexts. These may have changed if
   // an externally_connectable extension was loaded that can connect to an
   // open webpage.
   UpdateBindings("");
-}
-
-void Dispatcher::OnLoadedInternal(scoped_refptr<const Extension> extension) {
-  extensions_.Insert(extension);
 }
 
 void Dispatcher::OnMessageInvoke(const std::string& extension_id,
@@ -919,7 +930,11 @@ void Dispatcher::OnTransferBlobs(const std::vector<std::string>& blob_uuids) {
 }
 
 void Dispatcher::OnUnloaded(const std::string& id) {
-  extensions_.Remove(id);
+  // See comment in OnLoaded for why it would be nice, but perhaps incorrect,
+  // to CHECK here rather than guarding.
+  if (!extensions_.Remove(id))
+    return;
+
   active_extension_ids_.erase(id);
 
   script_injection_manager_->OnExtensionUnloaded(id);

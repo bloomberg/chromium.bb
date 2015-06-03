@@ -96,15 +96,7 @@ ScriptContext::ScriptContext(const v8::Local<v8::Context>& v8_context,
       isolate_(v8_context->GetIsolate()),
       url_(web_frame_ ? GetDataSourceURLForFrame(web_frame_) : GURL()),
       runner_(new Runner(this)) {
-  VLOG(1) << "Created context:\n"
-          << "  extension id: " << GetExtensionID() << "\n"
-          << "  frame:        " << web_frame_ << "\n"
-          << "  URL:          " << GetURL() << "\n"
-          << "  context type: " << GetContextTypeDescription() << "\n"
-          << "  effective extension id: "
-          << (effective_extension_.get() ? effective_extension_->id() : "")
-          << "  effective context type: "
-          << GetEffectiveContextTypeDescription();
+  VLOG(1) << "Created context:\n" << GetDebugString();
   gin::PerContextData* gin_data = gin::PerContextData::From(v8_context);
   CHECK(gin_data);  // may fail if the v8::Context hasn't been registered yet
   gin_data->set_runner(runner_.get());
@@ -233,11 +225,11 @@ void ScriptContext::DispatchOnUnloadEvent() {
   module_system_->CallModuleMethod("unload_event", "dispatch");
 }
 
-std::string ScriptContext::GetContextTypeDescription() {
+std::string ScriptContext::GetContextTypeDescription() const {
   return GetContextTypeDescriptionString(context_type_);
 }
 
-std::string ScriptContext::GetEffectiveContextTypeDescription() {
+std::string ScriptContext::GetEffectiveContextTypeDescription() const {
   return GetContextTypeDescriptionString(effective_context_type_);
 }
 
@@ -371,6 +363,21 @@ bool ScriptContext::HasAccessOrThrowError(const std::string& name) {
   }
 
   return true;
+}
+
+std::string ScriptContext::GetDebugString() const {
+  return base::StringPrintf(
+      "  extension id:           %s\n"
+      "  frame:                  %p\n"
+      "  URL:                    %s\n"
+      "  context_type:           %s\n"
+      "  effective extension id: %s\n"
+      "  effective context type: %s",
+      extension_.get() ? extension_->id().c_str() : "(none)", web_frame_,
+      GetURL().spec().c_str(), GetContextTypeDescription().c_str(),
+      effective_extension_.get() ? effective_extension_->id().c_str()
+                                 : "(none)",
+      GetEffectiveContextTypeDescription().c_str());
 }
 
 ScriptContext::Runner::Runner(ScriptContext* context) : context_(context) {
