@@ -531,6 +531,27 @@ bool ContainsNonNullEntryForNonNullKey(
   return it != map.end() && it->second.get();
 }
 
+
+// Helper function to check if there exist any form on |frame| where its action
+// equals |action|. Return true if so.
+bool IsFormVisible(
+    blink::WebFrame* frame,
+    GURL& action) {
+  blink::WebVector<blink::WebFormElement> forms;
+  frame->document().forms(forms);
+
+  for (size_t i = 0; i < forms.size(); ++i) {
+    const blink::WebFormElement& form = forms[i];
+    if (!IsWebNodeVisible(form))
+      continue;
+
+    if (action == GetCanonicalActionForForm(form))
+      return true; // Form still exists
+  }
+
+  return false;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -546,9 +567,6 @@ PasswordAutofillAgent::PasswordAutofillAgent(content::RenderFrame* render_frame)
       username_selection_start_(0),
       did_stop_loading_(false),
       weak_ptr_factory_(this) {
-  save_password_on_in_page_navigation_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          autofill::switches::kEnablePasswordSaveOnInPageNavigation);
   Send(new AutofillHostMsg_PasswordAutofillAgentConstructed(routing_id()));
 }
 
@@ -860,28 +878,13 @@ void PasswordAutofillAgent::OnDynamicFormsSeen() {
 void PasswordAutofillAgent::XHRSucceeded() {
   if (!ProvisionallySavedPasswordIsValid())
     return;
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
 
   // Prompt to save only if the form is now gone, either invisible or
   // removed from the DOM.
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
-  blink::WebVector<blink::WebFormElement> forms;
-  frame->document().forms(forms);
+  if (IsFormVisible(frame, provisionally_saved_form_->action))
+    return;
 
-  for (size_t i = 0; i < forms.size(); ++i) {
-    const blink::WebFormElement& form = forms[i];
-    if (!IsWebNodeVisible(form)) {
-      continue;
-    }
-
-    scoped_ptr<PasswordForm> password_form(CreatePasswordForm(
-        form, &nonscript_modified_values_, &form_predictions_));
-    if (password_form.get()) {
-      if (provisionally_saved_form_->action == password_form->action) {
-        // Form still exists, no save required.
-        return;
-      }
-    }
-  }
   Send(new AutofillHostMsg_InPageNavigation(routing_id(),
                                             *provisionally_saved_form_));
   provisionally_saved_form_.reset();
@@ -1004,7 +1007,7 @@ void PasswordAutofillAgent::FrameWillClose() {
 
 void PasswordAutofillAgent::DidCommitProvisionalLoad(
     bool is_new_navigation, bool is_same_page_navigation) {
-  if (!save_password_on_in_page_navigation_)
+  if (!ProvisionallySavedPasswordIsValid())
     return;
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   // TODO(dvadym): check if we need to check if it is main frame navigation
@@ -1012,7 +1015,11 @@ void PasswordAutofillAgent::DidCommitProvisionalLoad(
   if (frame->parent())
     return; // Not a top-level navigation.
 
-  if (is_same_page_navigation && provisionally_saved_form_) {
+  // Prompt to save only if the form disappeared.
+  if (IsFormVisible(frame, provisionally_saved_form_->action))
+    return;
+
+  if (is_same_page_navigation) {
     Send(new AutofillHostMsg_InPageNavigation(routing_id(),
                                               *provisionally_saved_form_));
     provisionally_saved_form_.reset();

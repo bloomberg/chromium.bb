@@ -359,15 +359,6 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
                          const std::string& element_id,
                          const std::string& expected_value);
 
-  // TODO(dvadym): Remove this once history.pushState() handling is not behind
-  // a flag.
-  // Calling this will activate handling of pushState()-initiated form submits.
-  // This feature is currently behind a renderer flag. Just setting the flag in
-  // the browser will not change it for the already running renderer at tab 0.
-  // Therefore this method first sets the flag and then opens a new tab at
-  // position 0. This new tab gets the flag copied from the browser process.
-  void ActivateHistoryPushState();
-
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTest);
 };
@@ -472,12 +463,6 @@ void PasswordManagerBrowserTest::CheckElementValue(
       RenderViewHost(), value_check_script, &return_value));
   EXPECT_TRUE(return_value) << "element_id = " << element_id
                             << ", expected_value = " << expected_value;
-}
-
-void PasswordManagerBrowserTest::ActivateHistoryPushState() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      autofill::switches::kEnablePasswordSaveOnInPageNavigation);
-  AddTabAtIndex(0, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_TYPED);
 }
 
 // Actual tests ---------------------------------------------------------------
@@ -1621,15 +1606,17 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   WaitForElementValue("username_id", "temp");
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForPushState) {
-  ActivateHistoryPushState();
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PromptForPushStateWhenFormDisappears) {
   NavigateToFile("/password/password_push_state.html");
 
   // Verify that we show the save password prompt if 'history.pushState()'
   // is called after form submission is suppressed by, for example, calling
-  // preventDefault in a form's submit event handler.
+  // preventDefault() in a form's submit event handler.
   // Note that calling 'submit()' on a form with javascript doesn't call
   // the onsubmit handler, so we click the submit button instead.
+  // Also note that the prompt will only show up if the form disappers
+  // after submission
   NavigationObserver observer(WebContents());
   observer.SetQuitOnEntryCommitted(true);
   scoped_ptr<PromptObserver> prompt_observer(
@@ -1641,6 +1628,29 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForPushState) {
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+// Similar to the case above, but this time the form persists after
+// 'history.pushState()'. And save password prompt should not show up
+// in this case.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       NoPromptForPushStateWhenFormPersists) {
+  NavigateToFile("/password/password_push_state.html");
+
+  // Set |should_delete_testform| to false to keep submitted form visible after
+  // history.pushsTate();
+  NavigationObserver observer(WebContents());
+  observer.SetQuitOnEntryCommitted(true);
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "should_delete_testform = false;"
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
@@ -1743,7 +1753,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ChangePwdIncorrect) {
 // As the two ChangePwd* tests above, only with submitting through
 // history.pushState().
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ChangePwdPushStateCorrect) {
-  ActivateHistoryPushState();
   NavigateToFile("/password/password_push_state.html");
 
   NavigationObserver observer(WebContents());
@@ -1763,7 +1772,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ChangePwdPushStateCorrect) {
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        ChangePwdPushStateIncorrect) {
-  ActivateHistoryPushState();
   NavigateToFile("/password/password_push_state.html");
 
   NavigationObserver observer(WebContents());

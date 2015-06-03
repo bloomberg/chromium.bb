@@ -54,10 +54,6 @@ const char kEnableOfferStoreUnmaskedWalletCards[] =
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
 
-// Enable showing password save prompt on in-page navigations
-const char kEnablePasswordSaveOnInPageNavigation[] =
-    "enable-password-save-in-page-navigation";
-
 // Enables/disables suggestions without typing anything (on first click).
 const char kEnableSingleClickAutofill[]     = "enable-single-click-autofill";
 

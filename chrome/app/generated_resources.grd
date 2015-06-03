@@ -6365,12 +6365,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SMART_LOCK_NO_THANKS_BUTTON" desc="Text for the button the user clicks to dismiss save password bubble.">
         No thanks
       </message>
-      <message name="IDS_FLAGS_ENABLE_SAVE_PASSOWRD_ON_IN_PAGE_NAVIGATION_NAME" desc="Name of the flag to enable showing of the password save prompt on in-page navigations">
-        Enable showing of password prompt on in-page navigations.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_SAVE_PASSOWRD_ON_IN_PAGE_NAVIGATION_DESCRIPTION" desc="Description of the flag to enable showing of password save prompt on in-page navigations">
-        Enable showing of the password prompt on in-page navigations. This allows for saving passwords on more pages but might sometimes trigger the prompt on unsuccessful login attempts.
-      </message>
       <message name="IDS_FLAGS_ENABLE_AFFILIATION_BASED_MATCHING_NAME" desc="Name of the flag to enable affiliation based matching, so that credentials stored for an Android application will also be considered matches for, and be filled into corresponding websites (so-called 'affiliated' websites).">
         Enable affiliation based matching in password manager.
       </message>
