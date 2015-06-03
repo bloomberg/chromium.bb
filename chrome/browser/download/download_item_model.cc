@@ -167,6 +167,9 @@ base::string16 InterruptReasonStatusMessage(int reason) {
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
       string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_SERVER_CERT_PROBLEM;
       break;
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_STATUS_FORBIDDEN;
+      break;
     case content::DOWNLOAD_INTERRUPT_REASON_NONE:
       NOTREACHED();
       // fallthrough
@@ -244,6 +247,9 @@ base::string16 InterruptReasonMessage(int reason) {
       break;
     case content::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
       string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_SERVER_CERT_PROBLEM;
+      break;
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
+      string_id = IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FORBIDDEN;
       break;
     case content::DOWNLOAD_INTERRUPT_REASON_NONE:
       NOTREACHED();

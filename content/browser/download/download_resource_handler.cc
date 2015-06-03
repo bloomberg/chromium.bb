@@ -420,6 +420,10 @@ void DownloadResourceHandler::OnResponseCompleted(
         // Server didn't authorize this request.
         reason = DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED;
         break;
+      case net::HTTP_FORBIDDEN:
+        // Server forbids access to this resource.
+        reason = DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN;
+        break;
       default:    // All other errors.
         // Redirection and informational codes should have been handled earlier
         // in the stack.

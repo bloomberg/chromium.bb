@@ -100,6 +100,9 @@ INTERRUPT_REASON(SERVER_UNAUTHORIZED, 34)
 // Server certificate problem.
 INTERRUPT_REASON(SERVER_CERT_PROBLEM, 35)
 
+// Server access forbidden.
+INTERRUPT_REASON(SERVER_FORBIDDEN, 36)
+
 // User input.
 
 // The user canceled the download.

@@ -1883,6 +1883,14 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Download page message: Server certificate problem.">
         There was a problem with server's certificate.
       </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_STATUS_FORBIDDEN"
+               desc="Forbidden.">
+        Forbidden
+      </message>
+      <message name="IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_FORBIDDEN"
+               desc="Download page message: Forbidden.">
+        Access to this resource was forbidden by the server.
+      </message>
 
       <!-- Download Shelf Items -->
       <message name="IDS_DOWNLOAD_STATUS_STARTING"
