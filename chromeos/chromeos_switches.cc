@@ -280,6 +280,8 @@ const char kSmsTestMessages[] = "sms-test-messages";
 
 // Indicates that a stub implementation of CrosSettings that stores settings in
 // memory without signing should be used, treating current user as the owner.
+// This also modifies OwnerSettingsServiceChromeOS::HandlesSetting such that no
+// settings are handled by OwnerSettingsServiceChromeOS.
 // This option is for testing the chromeos build of chrome on the desktop only.
 const char kStubCrosSettings[] = "stub-cros-settings";
 
