@@ -31,8 +31,8 @@ std::string TestFailedMessage(const std::string& msg) {
 }
 
 int GetSubProcessTimeoutTimeInSeconds() {
-  // 10s ought to be enough for anybody.
-  return 10;
+  // Previously 10s, but that timed out (just) on Chromecast.
+  return 12;
 }
 
 // Returns the number of threads of the current process or -1.
