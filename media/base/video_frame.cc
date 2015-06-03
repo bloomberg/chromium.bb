@@ -86,6 +86,12 @@ static int BytesPerElement(VideoFrame::Format format, size_t plane) {
   DCHECK(VideoFrame::IsValidPlane(plane, format));
   if (format == VideoFrame::ARGB || format == VideoFrame::XRGB)
     return 4;
+
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  if (format == VideoFrame::NV12 && plane == VideoFrame::kUVPlane)
+    return 2;
+#endif
+
   return 1;
 }
 
@@ -111,10 +117,11 @@ bool VideoFrame::IsYuvPlanar(Format format) {
     case YV16:
     case YV12A:
     case YV24:
-      return true;
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
     case NV12:
 #endif
+      return true;
+
     case UNKNOWN:
     case ARGB:
     case XRGB:
