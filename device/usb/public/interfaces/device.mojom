@@ -9,6 +9,20 @@ enum TransferDirection {
   OUT,
 };
 
+enum ControlTransferType {
+  STANDARD,
+  CLASS,
+  VENDOR,
+  RESERVED
+};
+
+enum ControlTransferRecipient {
+  DEVICE,
+  INTERFACE,
+  ENDPOINT,
+  OTHER
+};
+
 enum EndpointType {
   BULK,
   INTERRUPT,
@@ -57,6 +71,193 @@ struct DeviceInfo {
   array<ConfigurationInfo> configurations;
 };
 
+struct ControlTransferParams {
+  ControlTransferType type;
+  ControlTransferRecipient recipient;
+  uint8 request;
+  uint16 value;
+  uint16 index;
+};
+
+enum TransferStatus {
+  // The transfer completed successfully.
+  COMPLETED,
+
+  // The transfer failed due to a non-specific error.
+  ERROR,
+
+  // The transfer timed out.
+  TIMEOUT,
+
+  // The transfer was cancelled.
+  CANCELLED,
+
+  // The transfer stalled.
+  STALLED,
+
+  // The transfer failed because the device was disconnected from the host.
+  DISCONNECT,
+
+  // The transfer succeeded, but the device sent more data than was requested.
+  // This applies only to inbound transfers.
+  BABBLE,
+
+  // The transfer succeeded, but the device sent less data than was requested.
+  // This applies only to inbound transfers.
+  SHORT_PACKET,
+};
+
 interface Device {
-  GetDeviceInfo() => (DeviceInfo info);
+  // Closes the device. Calling this effectively invalidates the Device object.
+  Close() => ();
+
+  // Retrieve a DeviceInfo struct containing metadata about the device,
+  // including the set of all available device configurations. May return null
+  // if the device has been closed.
+  GetDeviceInfo() => (DeviceInfo? info);
+
+  // Initiates a device control transfer to set the device's configuration to
+  // one with the configuration value |value|.
+  SetConfiguration(uint8 value) => (bool success);
+
+  // Claims a single interface in the current device configuration.
+  ClaimInterface(uint8 interface_number) => (bool success);
+
+  // Releases a claimed interface in the current device configuration.
+  ReleaseInterface(uint8 interface_number) => (bool success);
+
+  // Selects an alternate setting for a given claimed interface.
+  SetInterfaceAlternateSetting(uint8 interface_number, uint8 alternate_setting)
+      => (bool success);
+
+  // Resets the device.
+  Reset() => (bool success);
+
+  // Initiates an inbound control transfer request. |params| determine the
+  // details of the request. Transfers to recipients other than DEVICE require a
+  // corresponding interface to be claimed.
+  //
+  // |length| specifies the expected number of bytes to receive for this
+  // transfer. The size of |data| will never exceed |length|, and |data| will be
+  // null if |status| is neither COMPLETED, BABBLE, or SHORT_PACKET.
+  //
+  // |timeout| specifies the request timeout in milliseconds. A timeout of 0
+  // indicates no timeout: the request will remain pending indefinitely until
+  // completed or otherwise terminated.
+  ControlTransferIn(ControlTransferParams params, uint32 length, uint32 timeout)
+      => (TransferStatus status, array<uint8>? data);
+
+  // Initiates an inbound control transfer request. |params| determine the
+  // details of the request. Transfers to recipients other than DEVICE require a
+  // corresponding interface to be claimed.
+  //
+  // |data| specifies the bytes to send the device in the body of the request.
+  //
+  // |timeout| specifies the request timeout in milliseconds. A timeout of 0
+  // indicates no timeout: the request will remain pending indefinitely until
+  // completed or otherwise terminated.
+  ControlTransferOut(ControlTransferParams params,
+                     array<uint8> data,
+                     uint32 timeout)
+      => (TransferStatus status);
+
+  // Initiates an inbound bulk transfer request on a specific endpoint. The
+  // interface to which |endpoint_number| belongs must be claimed, and the
+  // appropriate alternate setting must be set on that interface before
+  // transfers can be initiated on the endpoint. The endpoint must be of type
+  // BULK.
+  //
+  // |length| specifies the expected number of bytes to receive for this
+  // transfer. The size of |data| will never exceed |length|, and |data| will be
+  // null if |status| is neither COMPLETED, BABBLE, or SHORT_PACKET.
+  //
+  // |timeout| specifies the request timeout in milliseconds. A timeout of 0
+  // indicates no timeout: the request will remain pending indefinitely until
+  // completed or otherwise terminated.
+  BulkTransferIn(uint8 endpoint_number, uint32 length, uint32 timeout)
+      => (TransferStatus status, array<uint8>? data);
+
+  // Initiates an outbound bulk transfer request on a specific endpoint. The
+  // interface to which |endpoint_number| belongs must be claimed, and the
+  // appropriate alternate setting must be set on that interface before
+  // transfers can be initiated on the endpoint. The endpoint must be of type
+  // BULK.
+  //
+  // |data| specifies the bytes to send the device in the body of the request.
+  //
+  // |timeout| specifies the request timeout in milliseconds. A timeout of 0
+  // indicates no timeout: the request will remain pending indefinitely until
+  // completed or otherwise terminated.
+  BulkTransferOut(uint8 endpoint_number, array<uint8> data, uint32 timeout)
+      => (TransferStatus status);
+
+  // Initiates an inbound interrupt transfer request on a specific endpoint. The
+  // interface to which |endpoint_number| belongs must be claimed, and the
+  // appropriate alternate setting must be set on that interface before
+  // transfers can be initiated on the endpoint. The endpoint must be of type
+  // INTERRUPT.
+  //
+  // |length| specifies the expected number of bytes to receive for this
+  // transfer. The size of |data| will never exceed |length|, and |data| will be
+  // null if |status| is neither COMPLETED, BABBLE, or SHORT_PACKET.
+  //
+  // |timeout| specifies the request timeout in milliseconds. A timeout of 0
+  // indicates no timeout: the request will remain pending indefinitely until
+  // completed or otherwise terminated.
+  InterruptTransferIn(uint8 endpoint_number, uint32 length, uint32 timeout)
+      => (TransferStatus status, array<uint8>? data);
+
+  // Initiates an outbound interrupt transfer request on a specific endpoint.
+  // The interface to which |endpoint_number| belongs must be claimed, and the
+  // appropriate alternate setting must be set on that interface before
+  // transfers can be initiated on the endpoint. The endpoint must be of type
+  // INTERRUPT.
+  //
+  // |data| specifies the bytes to send the device in the body of the request.
+  //
+  // |timeout| specifies the request timeout in milliseconds. A timeout of 0
+  // indicates no timeout: the request will remain pending indefinitely until
+  // completed or otherwise terminated.
+  InterruptTransferOut(uint8 endpoint_number, array<uint8> data, uint32 timeout)
+      => (TransferStatus status);
+
+  // Initiates an inbound isochronous transfer request on a specific endpoint.
+  // The interface to which |endpoint_number| belongs must be claimed, and the
+  // appropriate alternate setting must be set on that interface before
+  // transfers can be initiated on the endpoint. The endpoint must be of type
+  // ISOCHRONOUS.
+  //
+  // |packet_length| specifies the maximum expected number of bytes to receive
+  // for each packet in this transfer. |num_packets| specifies the maximum total
+  // number of packets to receive.
+  //
+  // |timeout| specifies the request timeout in milliseconds. A timeout of 0
+  // indicates no timeout: the request will remain pending indefinitely until
+  // completed or otherwise terminated.
+  //
+  // |packets| contains the set of packets received from the device, in order.
+  // No received packet's size will exceed |packet_length|, and will be null
+  // if |status| is neither COMPLETED, BABBLE, or SHORT_PACKET.
+  IsochronousTransferIn(uint8 endpoint_number,
+                        uint32 num_packets,
+                        uint32 packet_length,
+                        uint32 timeout)
+      => (TransferStatus status, array<array<uint8>>? packets);
+
+  // Initiates an outbound isochronous transfer request on a specific endpoint.
+  // The interface to which |endpoint_number| belongs must be claimed, and the
+  // appropriate alternate setting must be set on that interface before
+  // transfers can be initiated on the endpoint. The endpoint must be of type
+  // ISOCHRONOUS.
+  //
+  // |packets| specifies the series of data packets to send to the device for
+  // this transfer.
+  //
+  // |timeout| specifies the request timeout in milliseconds. A timeout of 0
+  // indicates no timeout: the request will remain pending indefinitely until
+  // completed or otherwise terminated.
+  IsochronousTransferOut(uint8 endpoint_number,
+                         array<array<uint8>> packets,
+                         uint32 timeout)
+      => (TransferStatus status);
 };

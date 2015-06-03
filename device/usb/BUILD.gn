@@ -50,11 +50,12 @@ source_set("usb") {
     "//net",
     "//third_party/libusb",
     "//third_party/mojo/src/mojo/edk/system",
-    "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 
   public_deps = [
     "//device/usb/public/interfaces",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/mojo/src/mojo/public/cpp/bindings:callback",
   ]
 
   if (is_linux) {

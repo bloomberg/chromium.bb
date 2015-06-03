@@ -26,8 +26,9 @@ void MockUsbService::RemoveDevice(scoped_refptr<UsbDevice> device) {
 
 scoped_refptr<UsbDevice> MockUsbService::GetDevice(const std::string& guid) {
   auto it = devices_.find(guid);
-  EXPECT_TRUE(it != devices_.end());
-  return it->second;
+  if (it != devices_.end())
+    return it->second;
+  return nullptr;
 }
 
 void MockUsbService::GetDevices(const GetDevicesCallback& callback) {

@@ -4,10 +4,9 @@
 
 #include <set>
 #include <string>
-#include <vector>
 
-#include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -15,11 +14,16 @@
 #include "device/usb/device_impl.h"
 #include "device/usb/device_manager_impl.h"
 #include "device/usb/mock_usb_device.h"
+#include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
 #include "device/usb/public/cpp/device_manager_delegate.h"
 #include "device/usb/public/cpp/device_manager_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/error_handler.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
+
+using ::testing::Invoke;
+using ::testing::_;
 
 namespace device {
 namespace usb {
@@ -74,12 +78,12 @@ class TestDeviceClient : public DeviceClient {
   MockUsbService mock_usb_service_;
 };
 
-class DeviceManagerImplTest : public testing::Test {
+class USBDeviceManagerImplTest : public testing::Test {
  public:
-  DeviceManagerImplTest()
+  USBDeviceManagerImplTest()
       : message_loop_(new base::MessageLoop),
         device_client_(new TestDeviceClient) {}
-  ~DeviceManagerImplTest() override {}
+  ~USBDeviceManagerImplTest() override {}
 
  protected:
   MockUsbService& mock_usb_service() {
@@ -95,44 +99,71 @@ class DeviceManagerImplTest : public testing::Test {
   scoped_ptr<TestDeviceClient> device_client_;
 };
 
-void VerifyDevicesAndThen(const std::set<std::string>& expected_guids,
-                          scoped_ptr<std::set<std::string>> actual_guids,
-                          const base::Closure& continuation) {
-  EXPECT_EQ(expected_guids, *actual_guids);
+// This is used this to watch a MessagePipe and run a given callback when the
+// pipe is closed.
+class PipeWatcher : public mojo::ErrorHandler {
+ public:
+  PipeWatcher(const base::Closure& error_callback)
+      : error_callback_(error_callback) {}
+  ~PipeWatcher() override {}
+
+ private:
+  // mojo::ErrorHandler:
+  void OnConnectionError() override { error_callback_.Run(); }
+
+  const base::Closure error_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(PipeWatcher);
+};
+
+class MockOpenCallback {
+ public:
+  explicit MockOpenCallback(UsbDevice* device) : device_(device) {}
+
+  void Open(const UsbDevice::OpenCallback& callback) {
+    device_handle_ = new MockUsbDeviceHandle(device_);
+    callback.Run(device_handle_);
+  }
+
+  scoped_refptr<MockUsbDeviceHandle> mock_handle() { return device_handle_; }
+
+ private:
+  UsbDevice* device_;
+  scoped_refptr<MockUsbDeviceHandle> device_handle_;
+};
+
+void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
+                          const base::Closure& continuation,
+                          mojo::Array<DeviceInfoPtr> results) {
+  EXPECT_EQ(expected_guids.size(), results.size());
+  std::set<std::string> actual_guids;
+  for (size_t i = 0; i < results.size(); ++i)
+    actual_guids.insert(results[i]->guid);
+  EXPECT_EQ(expected_guids, actual_guids);
   continuation.Run();
 }
 
-void OnGetDeviceInfo(std::set<std::string>* actual_guids,
-                     const base::Closure& barrier,
-                     DevicePtr device,
-                     DeviceInfoPtr info) {
-  actual_guids->insert(info->guid);
-  barrier.Run();
+void ExpectDeviceInfoAndThen(const std::string& expected_guid,
+                             const base::Closure& continuation,
+                             DeviceInfoPtr device_info) {
+  EXPECT_EQ(expected_guid, device_info->guid);
+  continuation.Run();
 }
 
-void ExpectDevicesAndThen(const std::set<std::string>& guids,
-                          const base::Closure& continuation,
-                          mojo::Array<EnumerationResultPtr> results) {
-  EXPECT_EQ(guids.size(), results.size());
-  scoped_ptr<std::set<std::string>> actual_serials(new std::set<std::string>);
-  std::set<std::string>* actual_serials_raw = actual_serials.get();
-  base::Closure barrier = base::BarrierClosure(
-      static_cast<int>(results.size()),
-      base::Bind(&VerifyDevicesAndThen, guids, base::Passed(&actual_serials),
-                 continuation));
-  for (size_t i = 0; i < results.size(); ++i) {
-    DevicePtr device = results[i]->device.Pass();
-    Device* raw_device = device.get();
-    raw_device->GetDeviceInfo(base::Bind(&OnGetDeviceInfo, actual_serials_raw,
-                                         barrier, base::Passed(&device)));
-  }
+void ExpectOpenDeviceError(OpenDeviceError expected_error,
+                           OpenDeviceError actual_error) {
+  EXPECT_EQ(expected_error, actual_error);
+}
+
+void FailOnGetDeviceInfoResponse(DeviceInfoPtr device_info) {
+  FAIL();
 }
 
 }  // namespace
 
 // Test basic GetDevices functionality to ensure that all mock devices are
 // returned by the service.
-TEST_F(DeviceManagerImplTest, GetDevices) {
+TEST_F(USBDeviceManagerImplTest, GetDevices) {
   scoped_refptr<MockUsbDevice> device0 =
       new MockUsbDevice(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
   scoped_refptr<MockUsbDevice> device1 =
@@ -159,15 +190,66 @@ TEST_F(DeviceManagerImplTest, GetDevices) {
   guids.insert(device1->guid());
   guids.insert(device2->guid());
 
+  // One call to GetConfiguration for each device during enumeration.
   EXPECT_CALL(*device0.get(), GetConfiguration());
   EXPECT_CALL(*device1.get(), GetConfiguration());
   EXPECT_CALL(*device2.get(), GetConfiguration());
 
-  base::RunLoop run_loop;
+  base::RunLoop loop;
   device_manager->GetDevices(
       options.Pass(),
-      base::Bind(&ExpectDevicesAndThen, guids, run_loop.QuitClosure()));
-  run_loop.Run();
+      base::Bind(&ExpectDevicesAndThen, guids, loop.QuitClosure()));
+  loop.Run();
+}
+
+// Test requesting a single Device by GUID.
+TEST_F(USBDeviceManagerImplTest, OpenDevice) {
+  scoped_refptr<MockUsbDevice> mock_device =
+      new MockUsbDevice(0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
+
+  mock_usb_service().AddDevice(mock_device);
+
+  DeviceManagerPtr device_manager;
+  DeviceClient::Get()->ConnectToUSBDeviceManager(
+      mojo::GetProxy(&device_manager));
+
+  // Should be called on the mock as a result of OpenDevice() below.
+  EXPECT_CALL(*mock_device.get(), Open(_));
+
+  MockOpenCallback open_callback(mock_device.get());
+  ON_CALL(*mock_device.get(), Open(_))
+      .WillByDefault(Invoke(&open_callback, &MockOpenCallback::Open));
+
+  // Should be called on the mock as a result of GetDeviceInfo() below.
+  EXPECT_CALL(*mock_device.get(), GetConfiguration());
+
+  {
+    base::RunLoop loop;
+    DevicePtr device;
+    device_manager->OpenDevice(
+        mock_device->guid(), mojo::GetProxy(&device),
+        base::Bind(&ExpectOpenDeviceError, OPEN_DEVICE_ERROR_OK));
+    device->GetDeviceInfo(base::Bind(&ExpectDeviceInfoAndThen,
+                                     mock_device->guid(), loop.QuitClosure()));
+    loop.Run();
+  }
+
+  // The device should eventually be closed when its MessagePipe is closed.
+  DCHECK(open_callback.mock_handle());
+  EXPECT_CALL(*open_callback.mock_handle().get(), Close());
+
+  DevicePtr bad_device;
+  device_manager->OpenDevice(
+      "not a real guid", mojo::GetProxy(&bad_device),
+      base::Bind(&ExpectOpenDeviceError, OPEN_DEVICE_ERROR_NOT_FOUND));
+
+  {
+    base::RunLoop loop;
+    scoped_ptr<PipeWatcher> watcher(new PipeWatcher(loop.QuitClosure()));
+    bad_device.set_error_handler(watcher.get());
+    bad_device->GetDeviceInfo(base::Bind(&FailOnGetDeviceInfoResponse));
+    loop.Run();
+  }
 }
 
 }  // namespace usb

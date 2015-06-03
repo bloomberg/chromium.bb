@@ -43,6 +43,73 @@ TypeConverter<device::usb::TransferDirection, device::UsbEndpointDirection>::
 }
 
 // static
+device::usb::TransferStatus
+TypeConverter<device::usb::TransferStatus, device::UsbTransferStatus>::Convert(
+    const device::UsbTransferStatus& status) {
+  switch (status) {
+    case device::USB_TRANSFER_COMPLETED:
+      return device::usb::TRANSFER_STATUS_COMPLETED;
+    case device::USB_TRANSFER_ERROR:
+      return device::usb::TRANSFER_STATUS_ERROR;
+    case device::USB_TRANSFER_TIMEOUT:
+      return device::usb::TRANSFER_STATUS_TIMEOUT;
+    case device::USB_TRANSFER_CANCELLED:
+      return device::usb::TRANSFER_STATUS_CANCELLED;
+    case device::USB_TRANSFER_STALLED:
+      return device::usb::TRANSFER_STATUS_STALLED;
+    case device::USB_TRANSFER_DISCONNECT:
+      return device::usb::TRANSFER_STATUS_DISCONNECT;
+    case device::USB_TRANSFER_OVERFLOW:
+      return device::usb::TRANSFER_STATUS_BABBLE;
+    case device::USB_TRANSFER_LENGTH_SHORT:
+      return device::usb::TRANSFER_STATUS_SHORT_PACKET;
+    default:
+      NOTREACHED();
+      return device::usb::TRANSFER_STATUS_ERROR;
+  }
+}
+
+// static
+device::UsbDeviceHandle::TransferRequestType
+TypeConverter<device::UsbDeviceHandle::TransferRequestType,
+              device::usb::ControlTransferType>::
+    Convert(const device::usb::ControlTransferType& type) {
+  switch (type) {
+    case device::usb::CONTROL_TRANSFER_TYPE_STANDARD:
+      return device::UsbDeviceHandle::STANDARD;
+    case device::usb::CONTROL_TRANSFER_TYPE_CLASS:
+      return device::UsbDeviceHandle::CLASS;
+    case device::usb::CONTROL_TRANSFER_TYPE_VENDOR:
+      return device::UsbDeviceHandle::VENDOR;
+    case device::usb::CONTROL_TRANSFER_TYPE_RESERVED:
+      return device::UsbDeviceHandle::RESERVED;
+    default:
+      NOTREACHED();
+      return device::UsbDeviceHandle::RESERVED;
+  }
+}
+
+// static
+device::UsbDeviceHandle::TransferRecipient
+TypeConverter<device::UsbDeviceHandle::TransferRecipient,
+              device::usb::ControlTransferRecipient>::
+    Convert(const device::usb::ControlTransferRecipient& recipient) {
+  switch (recipient) {
+    case device::usb::CONTROL_TRANSFER_RECIPIENT_DEVICE:
+      return device::UsbDeviceHandle::DEVICE;
+    case device::usb::CONTROL_TRANSFER_RECIPIENT_INTERFACE:
+      return device::UsbDeviceHandle::INTERFACE;
+    case device::usb::CONTROL_TRANSFER_RECIPIENT_ENDPOINT:
+      return device::UsbDeviceHandle::ENDPOINT;
+    case device::usb::CONTROL_TRANSFER_RECIPIENT_OTHER:
+      return device::UsbDeviceHandle::OTHER;
+    default:
+      NOTREACHED();
+      return device::UsbDeviceHandle::OTHER;
+  }
+}
+
+// static
 device::usb::EndpointType
 TypeConverter<device::usb::EndpointType, device::UsbTransferType>::Convert(
     const device::UsbTransferType& type) {

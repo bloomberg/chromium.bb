@@ -19,6 +19,7 @@ namespace device {
 
 class UsbDevice;
 class UsbDeviceFilter;
+class UsbDeviceHandle;
 
 namespace usb {
 
@@ -36,11 +37,19 @@ class DeviceManagerImpl : public DeviceManager {
   // DeviceManager implementation:
   void GetDevices(EnumerationOptionsPtr options,
                   const GetDevicesCallback& callback) override;
+  void OpenDevice(const mojo::String& guid,
+                  mojo::InterfaceRequest<Device> device_request,
+                  const OpenDeviceCallback& callback) override;
 
   // Callback to handle the async response from the underlying UsbService.
   void OnGetDevices(const GetDevicesCallback& callback,
                     const std::vector<UsbDeviceFilter>& filters,
                     const std::vector<scoped_refptr<UsbDevice>>& devices);
+
+  // Callback to handle the async Open response from a UsbDevice.
+  void OnOpenDevice(const OpenDeviceCallback& callback,
+                    mojo::InterfaceRequest<Device> device_request,
+                    scoped_refptr<UsbDeviceHandle> device_handle);
 
   mojo::StrongBinding<DeviceManager> binding_;
 

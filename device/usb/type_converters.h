@@ -11,6 +11,7 @@
 #include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_filter.h"
+#include "device/usb/usb_device_handle.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/array.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
@@ -34,6 +35,26 @@ struct TypeConverter<device::usb::TransferDirection,
                      device::UsbEndpointDirection> {
   static device::usb::TransferDirection Convert(
       const device::UsbEndpointDirection& direction);
+};
+
+template <>
+struct TypeConverter<device::usb::TransferStatus, device::UsbTransferStatus> {
+  static device::usb::TransferStatus Convert(
+      const device::UsbTransferStatus& status);
+};
+
+template <>
+struct TypeConverter<device::UsbDeviceHandle::TransferRequestType,
+                     device::usb::ControlTransferType> {
+  static device::UsbDeviceHandle::TransferRequestType Convert(
+      const device::usb::ControlTransferType& type);
+};
+
+template <>
+struct TypeConverter<device::UsbDeviceHandle::TransferRecipient,
+                     device::usb::ControlTransferRecipient> {
+  static device::UsbDeviceHandle::TransferRecipient Convert(
+      const device::usb::ControlTransferRecipient& recipient);
 };
 
 template <>

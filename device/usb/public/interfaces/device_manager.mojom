@@ -6,6 +6,17 @@ module device.usb;
 
 import "device.mojom";
 
+enum OpenDeviceError {
+  // Opening the device succeeded.
+  OK,
+
+  // The device could not be opened because the request GUID is unknown.
+  NOT_FOUND,
+
+  // The operating system denied access to the device.
+  ACCESS_DENIED,
+};
+
 struct DeviceFilter {
   bool has_vendor_id;
   uint16 vendor_id;
@@ -27,12 +38,11 @@ struct EnumerationOptions {
   array<DeviceFilter> filters;
 };
 
-// TODO(rockot): Remove this wrapper struct. Mojom bindings do not yet support
-// arrays of interfaces.
-struct EnumerationResult {
-  Device device;
-};
-
 interface DeviceManager {
-  GetDevices(EnumerationOptions options) => (array<EnumerationResult> results);
+  // Retrieves information about all devices available to the DeviceManager
+  // implementation.
+  GetDevices(EnumerationOptions options) => (array<DeviceInfo> results);
+
+  // Attempts to open a device given its GUID.
+  OpenDevice(string guid, Device& device_request) => (OpenDeviceError error);
 };

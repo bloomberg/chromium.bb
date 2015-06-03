@@ -44,7 +44,7 @@ void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,
   DCHECK(DeviceClient::Get());
   UsbService* usb_service = DeviceClient::Get()->GetUsbService();
   if (!usb_service) {
-    mojo::Array<EnumerationResultPtr> results(0);
+    mojo::Array<DeviceInfoPtr> results(0);
     callback.Run(results.Pass());
     return;
   }
@@ -55,24 +55,58 @@ void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,
                                      filters));
 }
 
+void DeviceManagerImpl::OpenDevice(
+    const mojo::String& guid,
+    mojo::InterfaceRequest<Device> device_request,
+    const OpenDeviceCallback& callback) {
+  DCHECK(DeviceClient::Get());
+  UsbService* usb_service = DeviceClient::Get()->GetUsbService();
+  if (!usb_service) {
+    callback.Run(OPEN_DEVICE_ERROR_NOT_FOUND);
+    return;
+  }
+  scoped_refptr<UsbDevice> device = usb_service->GetDevice(guid);
+  if (!device) {
+    callback.Run(OPEN_DEVICE_ERROR_NOT_FOUND);
+    return;
+  }
+  device->Open(base::Bind(&DeviceManagerImpl::OnOpenDevice,
+                          weak_factory_.GetWeakPtr(), callback,
+                          base::Passed(&device_request)));
+}
+
 void DeviceManagerImpl::OnGetDevices(
     const GetDevicesCallback& callback,
     const std::vector<UsbDeviceFilter>& filters,
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
-  mojo::Array<EnumerationResultPtr> results(0);
+  mojo::Array<DeviceInfoPtr> device_infos(0);
   for (size_t i = 0; i < devices.size(); ++i) {
     DeviceInfoPtr device_info = DeviceInfo::From(*devices[i]);
     if (UsbDeviceFilter::MatchesAny(devices[i], filters) &&
         delegate_->IsDeviceAllowed(*device_info)) {
-      EnumerationResultPtr result = EnumerationResult::New();
-      DevicePtr device;
-      // Owned by its message pipe.
-      new DeviceImpl(devices[i], mojo::GetProxy(&device));
-      result->device = device.Pass();
-      results.push_back(result.Pass());
+      const UsbConfigDescriptor* config = devices[i]->GetConfiguration();
+      device_info->configurations = mojo::Array<ConfigurationInfoPtr>::New(0);
+      if (config)
+        device_info->configurations.push_back(ConfigurationInfo::From(*config));
+      device_infos.push_back(device_info.Pass());
     }
   }
-  callback.Run(results.Pass());
+  callback.Run(device_infos.Pass());
+}
+
+void DeviceManagerImpl::OnOpenDevice(
+    const OpenDeviceCallback& callback,
+    mojo::InterfaceRequest<Device> device_request,
+    scoped_refptr<UsbDeviceHandle> device_handle) {
+  if (!device_handle) {
+    callback.Run(OPEN_DEVICE_ERROR_ACCESS_DENIED);
+    return;
+  }
+
+  // Owned by its MessagePipe.
+  new DeviceImpl(device_handle, device_request.Pass());
+
+  callback.Run(OPEN_DEVICE_ERROR_OK);
 }
 
 }  // namespace usb
