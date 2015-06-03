@@ -52,14 +52,14 @@ class TaskSetFinishedTaskImpl : public TileTask {
 
 // This allows a micro benchmark system to run tasks with highest priority,
 // since it should finish as quickly as possible.
-unsigned TileTaskWorkerPool::kBenchmarkTaskPriority = 0u;
+size_t TileTaskWorkerPool::kBenchmarkTaskPriority = 0u;
 // Task priorities that make sure task set finished tasks run before any
 // other remaining tasks. This is combined with the task set type to ensure
 // proper prioritization ordering between task set types.
-unsigned TileTaskWorkerPool::kTaskSetFinishedTaskPriorityBase = 1u;
+size_t TileTaskWorkerPool::kTaskSetFinishedTaskPriorityBase = 1u;
 // For correctness, |kTileTaskPriorityBase| must be greater than
 // |kTaskSetFinishedTaskPriorityBase + kNumberOfTaskSets|.
-unsigned TileTaskWorkerPool::kTileTaskPriorityBase = 10u;
+size_t TileTaskWorkerPool::kTileTaskPriorityBase = 10u;
 
 TileTaskWorkerPool::TileTaskWorkerPool() {
 }
@@ -96,7 +96,7 @@ void TileTaskWorkerPool::ScheduleTasksOnOriginThread(TileTaskClient* client,
 // static
 void TileTaskWorkerPool::InsertNodeForTask(TaskGraph* graph,
                                            TileTask* task,
-                                           unsigned priority,
+                                           size_t priority,
                                            size_t dependencies) {
   DCHECK(std::find_if(graph->nodes.begin(), graph->nodes.end(),
                       TaskGraph::Node::TaskComparator(task)) ==
@@ -157,7 +157,7 @@ static bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
 void TileTaskWorkerPool::PlaybackToMemory(void* memory,
                                           ResourceFormat format,
                                           const gfx::Size& size,
-                                          int stride,
+                                          size_t stride,
                                           const RasterSource* raster_source,
                                           const gfx::Rect& canvas_bitmap_rect,
                                           const gfx::Rect& canvas_playback_rect,
@@ -179,7 +179,7 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
 
   if (!stride)
     stride = info.minRowBytes();
-  DCHECK_GT(stride, 0);
+  DCHECK_GT(stride, 0u);
 
   if (!needs_copy) {
     skia::RefPtr<SkSurface> surface = skia::AdoptRef(

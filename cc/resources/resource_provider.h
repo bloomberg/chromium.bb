@@ -616,7 +616,7 @@ class CC_EXPORT ResourceProvider {
 
 // TODO(epenner): Move these format conversions to resource_format.h
 // once that builds on mac (npapi.h currently #includes OpenGL.h).
-inline unsigned BitsPerPixel(ResourceFormat format) {
+inline int BitsPerPixel(ResourceFormat format) {
   switch (format) {
     case BGRA_8888:
     case RGBA_8888:

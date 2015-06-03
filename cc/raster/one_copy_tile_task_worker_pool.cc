@@ -132,7 +132,7 @@ scoped_ptr<TileTaskWorkerPool> OneCopyTileTaskWorkerPool::Create(
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     ResourcePool* resource_pool,
-    size_t max_bytes_per_copy_operation,
+    int max_bytes_per_copy_operation,
     bool have_persistent_gpu_memory_buffers) {
   return make_scoped_ptr<TileTaskWorkerPool>(new OneCopyTileTaskWorkerPool(
       task_runner, task_graph_runner, context_provider, resource_provider,
@@ -146,7 +146,7 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     ResourcePool* resource_pool,
-    size_t max_bytes_per_copy_operation,
+    int max_bytes_per_copy_operation,
     bool have_persistent_gpu_memory_buffers)
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
@@ -330,6 +330,8 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     DCHECK(rv);
     int stride;
     gpu_memory_buffer->GetStride(&stride);
+    // TileTaskWorkerPool::PlaybackToMemory only supports unsigned strides.
+    DCHECK_GE(stride, 0);
 
     gfx::Rect playback_rect = raster_full_rect;
     if (reusing_raster_resource) {
@@ -338,24 +340,24 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     DCHECK(!playback_rect.IsEmpty())
         << "Why are we rastering a tile that's not dirty?";
     TileTaskWorkerPool::PlaybackToMemory(
-        data, raster_resource->format(), raster_resource->size(), stride,
-        raster_source, raster_full_rect, playback_rect, scale);
+        data, raster_resource->format(), raster_resource->size(),
+        static_cast<size_t>(stride), raster_source, raster_full_rect,
+        playback_rect, scale);
     gpu_memory_buffer->Unmap();
   }
 
   base::AutoLock lock(lock_);
 
   CopySequenceNumber sequence = 0;
-  size_t bytes_per_row = (BitsPerPixel(raster_resource->format()) *
-                          raster_resource->size().width()) /
-                         8;
-  size_t chunk_size_in_rows = std::max(
-      static_cast<size_t>(1), max_bytes_per_copy_operation_ / bytes_per_row);
+  int bytes_per_row = (BitsPerPixel(raster_resource->format()) *
+                       raster_resource->size().width()) /
+                      8;
+  int chunk_size_in_rows =
+      std::max(1, max_bytes_per_copy_operation_ / bytes_per_row);
   // Align chunk size to 4. Required to support compressed texture formats.
-  chunk_size_in_rows =
-      MathUtil::RoundUp(chunk_size_in_rows, static_cast<size_t>(4));
-  size_t y = 0;
-  size_t height = raster_resource->size().height();
+  chunk_size_in_rows = MathUtil::RoundUp(chunk_size_in_rows, 4);
+  int y = 0;
+  int height = raster_resource->size().height();
   while (y < height) {
     int failed_attempts = 0;
     while ((pending_copy_operations_.size() + issued_copy_operation_count_) >=
@@ -386,7 +388,8 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     copy_operation_count_cv_.Signal();
 
     // Copy at most |chunk_size_in_rows|.
-    size_t rows_to_copy = std::min(chunk_size_in_rows, height - y);
+    int rows_to_copy = std::min(chunk_size_in_rows, height - y);
+    DCHECK_GT(rows_to_copy, 0);
 
     // |raster_resource_write_lock| is passed to the first copy operation as it
     // needs to be released before we can issue a copy.
@@ -551,16 +554,20 @@ OneCopyTileTaskWorkerPool::StateAsValue() const {
 
 void OneCopyTileTaskWorkerPool::StagingStateAsValueInto(
     base::trace_event::TracedValue* staging_state) const {
-  staging_state->SetInteger("staging_resource_count",
-                            resource_pool_->total_resource_count());
-  staging_state->SetInteger("bytes_used_for_staging_resources",
-                            resource_pool_->total_memory_usage_bytes());
-  staging_state->SetInteger("pending_copy_count",
-                            resource_pool_->total_resource_count() -
-                                resource_pool_->acquired_resource_count());
-  staging_state->SetInteger("bytes_pending_copy",
-                            resource_pool_->total_memory_usage_bytes() -
-                                resource_pool_->acquired_memory_usage_bytes());
+  staging_state->SetInteger(
+      "staging_resource_count",
+      static_cast<int>(resource_pool_->total_resource_count()));
+  staging_state->SetInteger(
+      "bytes_used_for_staging_resources",
+      static_cast<int>(resource_pool_->total_memory_usage_bytes()));
+  staging_state->SetInteger(
+      "pending_copy_count",
+      static_cast<int>(resource_pool_->total_resource_count() -
+                       resource_pool_->acquired_resource_count()));
+  staging_state->SetInteger(
+      "bytes_pending_copy",
+      static_cast<int>(resource_pool_->total_memory_usage_bytes() -
+                       resource_pool_->acquired_memory_usage_bytes()));
 }
 
 }  // namespace cc

@@ -271,7 +271,7 @@ class TileTaskWorkerPoolPerfTest
         tile_task_worker_pool_ = OneCopyTileTaskWorkerPool::Create(
             task_runner_.get(), task_graph_runner_.get(),
             context_provider_.get(), resource_provider_.get(),
-            staging_resource_pool_.get(), std::numeric_limits<size_t>::max(),
+            staging_resource_pool_.get(), std::numeric_limits<int>::max(),
             false);
         break;
       case TILE_TASK_WORKER_POOL_TYPE_GPU:

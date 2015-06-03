@@ -91,7 +91,7 @@ class CC_EXPORT PixelBufferTileTaskWorkerPool : public TileTaskWorkerPool,
   void CheckForCompletedUploads();
   void CheckForCompletedRasterTasks();
   void ScheduleMoreTasks();
-  unsigned PendingRasterTaskCount() const;
+  size_t PendingRasterTaskCount() const;
   TaskSetCollection PendingTasks() const;
   void CheckForCompletedRasterizerTasks();
 

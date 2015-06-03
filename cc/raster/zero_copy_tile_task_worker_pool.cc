@@ -37,10 +37,13 @@ class RasterBufferImpl : public RasterBuffer {
     DCHECK(rv);
     int stride;
     gpu_memory_buffer->GetStride(&stride);
+    // TileTaskWorkerPool::PlaybackToMemory only supports unsigned strides.
+    DCHECK_GE(stride, 0);
     // TODO(danakj): Implement partial raster with raster_dirty_rect.
     TileTaskWorkerPool::PlaybackToMemory(
-        data, resource_->format(), resource_->size(), stride, raster_source,
-        raster_full_rect, raster_full_rect, scale);
+        data, resource_->format(), resource_->size(),
+        static_cast<size_t>(stride), raster_source, raster_full_rect,
+        raster_full_rect, scale);
     gpu_memory_buffer->Unmap();
   }
 

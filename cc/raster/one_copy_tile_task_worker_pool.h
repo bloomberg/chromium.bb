@@ -39,7 +39,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
       ContextProvider* context_provider,
       ResourceProvider* resource_provider,
       ResourcePool* resource_pool,
-      size_t max_bytes_per_copy_operation,
+      int max_bytes_per_copy_operation,
       bool have_persistent_gpu_memory_buffers);
 
   // Overridden from TileTaskWorkerPool:
@@ -87,7 +87,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
                             ContextProvider* context_provider,
                             ResourceProvider* resource_provider,
                             ResourcePool* resource_pool,
-                            size_t max_bytes_per_copy_operation,
+                            int max_bytes_per_copy_operation,
                             bool have_persistent_gpu_memory_buffers);
 
  private:
@@ -125,7 +125,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
   ResourcePool* resource_pool_;
-  const size_t max_bytes_per_copy_operation_;
+  const int max_bytes_per_copy_operation_;
   const bool have_persistent_gpu_memory_buffers_;
   TaskSetCollection tasks_pending_;
   scoped_refptr<TileTask> task_set_finished_tasks_[kNumberOfTaskSets];

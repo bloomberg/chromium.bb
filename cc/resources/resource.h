@@ -26,8 +26,10 @@ class CC_EXPORT Resource {
 
   inline static size_t MemorySizeBytes(const gfx::Size& size,
                                        ResourceFormat format) {
-    DCHECK_EQ(0u, (BitsPerPixel(format) * size.width() * size.height()) % 8);
-    return (BitsPerPixel(format) * size.width() * size.height()) / 8;
+    DCHECK_EQ(0, (BitsPerPixel(format) * size.width() * size.height()) % 8);
+    // TODO(vmpstr): Make this function overflow safe. crbug.com/495867
+    return static_cast<size_t>(
+        (BitsPerPixel(format) * size.width() * size.height()) / 8);
   }
 
  protected:

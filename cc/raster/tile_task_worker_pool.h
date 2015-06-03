@@ -19,9 +19,9 @@ class RenderingStatsInstrumentation;
 
 class CC_EXPORT TileTaskWorkerPool {
  public:
-  static unsigned kBenchmarkTaskPriority;
-  static unsigned kTaskSetFinishedTaskPriorityBase;
-  static unsigned kTileTaskPriorityBase;
+  static size_t kBenchmarkTaskPriority;
+  static size_t kTaskSetFinishedTaskPriorityBase;
+  static size_t kTileTaskPriorityBase;
 
   TileTaskWorkerPool();
   virtual ~TileTaskWorkerPool();
@@ -42,7 +42,7 @@ class CC_EXPORT TileTaskWorkerPool {
   // |priority| values.
   static void InsertNodeForTask(TaskGraph* graph,
                                 TileTask* task,
-                                unsigned priority,
+                                size_t priority,
                                 size_t dependencies);
 
   // Utility function that can be used to build a task graph. Inserts nodes that
@@ -62,7 +62,7 @@ class CC_EXPORT TileTaskWorkerPool {
   static void PlaybackToMemory(void* memory,
                                ResourceFormat format,
                                const gfx::Size& size,
-                               int stride,
+                               size_t stride,
                                const RasterSource* raster_source,
                                const gfx::Rect& canvas_bitmap_rect,
                                const gfx::Rect& canvas_playback_rect,
