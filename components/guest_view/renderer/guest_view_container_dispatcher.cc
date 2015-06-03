@@ -26,7 +26,7 @@ bool GuestViewContainerDispatcher::OnControlMessageReceived(
     return false;
 
   int element_instance_id = kInstanceIDNone;
-  PickleIterator iter(message);
+  base::PickleIterator iter(message);
   bool success = iter.ReadInt(&element_instance_id);
   DCHECK(success);
 

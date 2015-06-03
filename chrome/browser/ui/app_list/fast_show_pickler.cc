@@ -197,7 +197,7 @@ const int FastShowPickler::kVersion = 3;
 
 scoped_ptr<base::Pickle> FastShowPickler::PickleAppListModelForFastShow(
     AppListModel* model) {
-  scoped_ptr<base::Pickle> result(new Pickle);
+  scoped_ptr<base::Pickle> result(new base::Pickle);
   if (!result->WriteInt(kVersion))
     return scoped_ptr<base::Pickle>();
   if (!result->WriteInt((int)model->top_level_item_list()->item_count()))

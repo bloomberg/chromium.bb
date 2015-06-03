@@ -823,7 +823,7 @@ void ParamTraits<cc::DrawQuad::Resources>::Write(Message* m,
 }
 
 bool ParamTraits<cc::DrawQuad::Resources>::Read(const Message* m,
-                                                PickleIterator* iter,
+                                                base::PickleIterator* iter,
                                                 param_type* p) {
   if (!ReadParam(m, iter, &p->count))
     return false;

@@ -308,8 +308,4 @@ class BASE_EXPORT Pickle {
 
 }  // namespace base
 
-// TODO(brettw) remove these when callers have been updated.
-using base::Pickle;
-using base::PickleIterator;
-
 #endif  // BASE_PICKLE_H_
