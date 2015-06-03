@@ -953,9 +953,10 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
   ASSERT_EQ(originMaximumZoomScale, scrollView.maximumZoomScale);
 };
 
+// TODO(iOS): Flaky on the bots. crbug/496140
 WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
            CRWWKWebControllerPageScrollStateTest,
-           SetPageStateWithUserScalableEnabled) {
+           FLAKY_SetPageStateWithUserScalableEnabled) {
   this->LoadHtml(@"<html><head>"
                   "<meta name='viewport' content="
                   "'width=device-width,maximum-scale=10,initial-scale=1.0'"
