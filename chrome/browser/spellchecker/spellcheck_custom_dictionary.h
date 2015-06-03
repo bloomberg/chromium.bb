@@ -5,15 +5,28 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_CUSTOM_DICTIONARY_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_CUSTOM_DICTIONARY_H_
 
+#include <set>
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/spellchecker/spellcheck_dictionary.h"
-#include "chrome/common/spellcheck_common.h"
+#include "sync/api/sync_data.h"
+#include "sync/api/sync_error.h"
+#include "sync/api/sync_merge_result.h"
 #include "sync/api/syncable_service.h"
+
+namespace syncer {
+class SyncErrorFactory;
+class SyncChangeProcessor;
+}
+
+namespace tracked_objects {
+class Location;
+}
 
 // Defines a custom dictionary where users can add their own words. All words
 // must be UTF8, between 1 and 99 bytes long, and without leading or trailing
@@ -31,37 +44,41 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   class Change {
    public:
     Change();
-    Change(const Change& other);
-    explicit Change(const chrome::spellcheck_common::WordList& to_add);
     ~Change();
 
     // Adds |word| in this change.
     void AddWord(const std::string& word);
 
+    // Adds |words| in this change.
+    void AddWords(const std::set<std::string>& words);
+
     // Removes |word| in this change.
     void RemoveWord(const std::string& word);
 
     // Prepares this change to be applied to |words| by removing duplicate and
-    // invalid words from words to be added, removing missing words from words
-    // to be removed, and sorting both lists of words. Assumes that |words| is
-    // sorted. Returns a bitmap of |ChangeSanitationResult| values.
-    int Sanitize(const chrome::spellcheck_common::WordSet& words);
+    // invalid words from words to be added and removing missing words from
+    // words to be removed. Returns a bitmap of |ChangeSanitationResult| values.
+    int Sanitize(const std::set<std::string>& words);
 
     // Returns the words to be added in this change.
-    const chrome::spellcheck_common::WordList& to_add() const;
+    const std::set<std::string>& to_add() const { return to_add_; }
 
     // Returns the words to be removed in this change.
-    const chrome::spellcheck_common::WordList& to_remove() const;
+    const std::set<std::string>& to_remove() const {
+      return to_remove_;
+    }
 
     // Returns true if there are no changes to be made. Otherwise returns false.
-    bool empty() const;
+    bool empty() const { return to_add_.empty() && to_remove_.empty(); }
 
    private:
     // The words to be added.
-    chrome::spellcheck_common::WordList to_add_;
+    std::set<std::string> to_add_;
 
     // The words to be removed.
-    chrome::spellcheck_common::WordList to_remove_;
+    std::set<std::string> to_remove_;
+
+    DISALLOW_COPY_AND_ASSIGN(Change);
   };
 
   // Interface to implement for dictionary load and change observers.
@@ -74,11 +91,13 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
     virtual void OnCustomDictionaryChanged(const Change& dictionary_change) = 0;
   };
 
-  explicit SpellcheckCustomDictionary(const base::FilePath& path);
+  // The dictionary will be saved in |dictionary_directory_name|.
+  explicit SpellcheckCustomDictionary(
+      const base::FilePath& dictionary_directory_name);
   ~SpellcheckCustomDictionary() override;
 
   // Returns the in-memory cache of words in the custom dictionary.
-  const chrome::spellcheck_common::WordSet& GetWords() const;
+  const std::set<std::string>& GetWords() const;
 
   // Adds |word| to the dictionary, schedules a write to disk, and notifies
   // observers of the change. Returns true if |word| is valid and not a
@@ -126,29 +145,28 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
 
   // Returns the list of words in the custom spellcheck dictionary at |path|.
   // Makes sure that the custom dictionary file does not have duplicates and
-  // contains only valid words.
-  static chrome::spellcheck_common::WordList LoadDictionaryFile(
+  // contains only valid words. Must be called on the FILE thread. The caller
+  // owns the result.
+  static scoped_ptr<std::set<std::string>> LoadDictionaryFile(
       const base::FilePath& path);
 
   // Applies the change in |dictionary_change| to the custom spellcheck
-  // dictionary. Assumes that |dictionary_change| has been sanitized.
-  static void UpdateDictionaryFile(
-      const Change& dictionary_change,
-      const base::FilePath& path);
+  // dictionary. Assumes that |dictionary_change| has been sanitized. Must be
+  // called on the FILE thread. Takes ownership of |dictionary_change|.
+  static void UpdateDictionaryFile(scoped_ptr<Change> dictionary_change,
+                                   const base::FilePath& path);
 
   // The reply point for PostTaskAndReplyWithResult, called when
-  // LoadDictionaryFile finishes reading the dictionary file. Does not modify
-  // |custom_words|, but cannot be a const-ref due to the signature of
-  // PostTaskAndReplyWithResult.
-  void OnLoaded(chrome::spellcheck_common::WordList custom_words);
+  // LoadDictionaryFile finishes reading the dictionary file. Takes ownership of
+  // |custom_words|.
+  void OnLoaded(scoped_ptr<std::set<std::string>> custom_words);
 
   // Applies the |dictionary_change| to the in-memory copy of the dictionary.
-  // Assumes that words in |dictionary_change| are sorted.
   void Apply(const Change& dictionary_change);
 
-  // Schedules a write of |dictionary_change| to disk. Assumes that words in
-  // |dictionary_change| are sorted.
-  void Save(const Change& dictionary_change);
+  // Schedules a write of |dictionary_change| to disk. Takes ownership of
+  // |dictionary_change| to pass it to the FILE thread.
+  void Save(scoped_ptr<Change> dictionary_change);
 
   // Notifies the sync service of the |dictionary_change|. Syncs up to the
   // maximum syncable words on the server. Disables syncing of this dictionary
@@ -160,12 +178,12 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   void Notify(const Change& dictionary_change);
 
   // In-memory cache of the custom words file.
-  chrome::spellcheck_common::WordSet words_;
+  std::set<std::string> words_;
 
-  // A path for custom dictionary.
+  // The path to the custom dictionary file.
   base::FilePath custom_dictionary_path_;
 
-  // Observers for changes in dictionary load status and content changes.
+  // Observers for dictionary load and content changes.
   base::ObserverList<Observer> observers_;
 
   // Used to send local changes to the sync infrastructure.

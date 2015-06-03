@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 
+#include <set>
+#include <string>
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
@@ -120,7 +123,7 @@ ExtensionFunction::ResponseAction FetchAllDictionaryWordsFunction::Run() {
     return RespondNow(Error("Custom dictionary not loaded yet."));
   }
 
-  const chrome::spellcheck_common::WordSet& words = dictionary->GetWords();
+  const std::set<std::string>& words = dictionary->GetWords();
   base::ListValue* output = new base::ListValue();
   for (auto it = words.begin(); it != words.end(); ++it) {
     output->AppendString(*it);

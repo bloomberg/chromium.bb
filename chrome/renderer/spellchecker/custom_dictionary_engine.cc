@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/spellchecker/custom_dictionary_engine.h"
 
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 
 CustomDictionaryEngine::CustomDictionaryEngine() {
@@ -18,26 +17,18 @@ void CustomDictionaryEngine::Init(const std::set<std::string>& custom_words) {
   // synchronization, and use in the custom dictionary engine. Since
   // (UTF8ToUTF16(UTF16ToUTF8(word)) == word) holds, the engine does not need to
   // normalize the strings.
-  for (std::set<std::string>::const_iterator it = custom_words.begin();
-       it != custom_words.end();
-       ++it) {
-    dictionary_.insert(base::UTF8ToUTF16(*it));
-  }
+  for (const std::string& word : custom_words)
+    dictionary_.insert(base::UTF8ToUTF16(word));
 }
 
 void CustomDictionaryEngine::OnCustomDictionaryChanged(
-    const std::vector<std::string>& words_added,
-    const std::vector<std::string>& words_removed) {
-  for (std::vector<std::string>::const_iterator it = words_added.begin();
-       it != words_added.end();
-       ++it) {
-    dictionary_.insert(base::UTF8ToUTF16(*it));
-  }
-  for (std::vector<std::string>::const_iterator it = words_removed.begin();
-       it != words_removed.end();
-       ++it) {
-    dictionary_.erase(base::UTF8ToUTF16(*it));
-  }
+    const std::set<std::string>& words_added,
+    const std::set<std::string>& words_removed) {
+  for (const std::string& word : words_added)
+    dictionary_.insert(base::UTF8ToUTF16(word));
+
+  for (const std::string& word : words_removed)
+    dictionary_.erase(base::UTF8ToUTF16(word));
 }
 
 bool CustomDictionaryEngine::SpellCheckWord(

@@ -2,20 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
-
-#include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
-#include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
-#include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/common/spellcheck_common.h"
+
+#include <algorithm>
+
+#include "chrome/browser/spellchecker/feedback_sender.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using chrome::spellcheck_common::WordList;
 
 static KeyedService* BuildSpellcheckService(content::BrowserContext* profile) {
   return new SpellcheckService(static_cast<Profile*>(profile));

@@ -7,10 +7,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
-
-class SpellcheckCustomDictionary;
-
 namespace dictionary_helper {
 
 // Synchronously loads the dictionaries across all profiles. Also loads the

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/webui/options/language_dictionary_overlay_handler.h"
 
+#include <string>
+
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
@@ -72,12 +75,17 @@ void LanguageDictionaryOverlayHandler::OnCustomDictionaryLoaded() {
 void LanguageDictionaryOverlayHandler::OnCustomDictionaryChanged(
     const SpellcheckCustomDictionary::Change& dictionary_change) {
   base::ListValue add_words;
+  for (const std::string& word : dictionary_change.to_add()) {
+    add_words.AppendString(word);
+  }
+
   base::ListValue remove_words;
-  add_words.AppendStrings(dictionary_change.to_add());
-  remove_words.AppendStrings(dictionary_change.to_remove());
+  for (const std::string& word : dictionary_change.to_remove()) {
+    remove_words.AppendString(word);
+  }
+
   web_ui()->CallJavascriptFunction("EditDictionaryOverlay.updateWords",
-                                   add_words,
-                                   remove_words);
+                                   add_words, remove_words);
 }
 
 void LanguageDictionaryOverlayHandler::ResetDictionaryWords() {
@@ -92,10 +100,8 @@ void LanguageDictionaryOverlayHandler::ResetDictionaryWords() {
   }
 
   base::ListValue list_value;
-  const chrome::spellcheck_common::WordSet& words = dictionary_->GetWords();
-  for (chrome::spellcheck_common::WordSet::const_iterator it = words.begin();
-       it != words.end(); ++it) {
-    list_value.AppendString(*it);
+  for (const std::string& word : dictionary_->GetWords()) {
+    list_value.AppendString(word);
   }
   web_ui()->CallJavascriptFunction("EditDictionaryOverlay.setWordList",
                                    list_value);

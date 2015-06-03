@@ -5,11 +5,13 @@
 #ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
 #define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -17,13 +19,17 @@
 #include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
 
 struct SpellCheckResult;
 
 namespace blink {
 class WebTextCheckingCompletion;
 struct WebTextCheckingResult;
+template <typename T> class WebVector;
+}
+
+namespace IPC {
+class Message;
 }
 
 // TODO(morrita): Needs reorg with SpellCheckProvider.
@@ -118,13 +124,12 @@ class SpellCheck : public content::RenderProcessObserver,
    bool OnControlMessageReceived(const IPC::Message& message) override;
 
   // Message handlers.
-  void OnInit(IPC::PlatformFileForTransit bdict_file,
-              const std::set<std::string>& custom_words,
-              const std::string& language,
-              bool auto_spell_correct);
-  void OnCustomDictionaryChanged(
-      const std::vector<std::string>& words_added,
-      const std::vector<std::string>& words_removed);
+   void OnInit(IPC::PlatformFileForTransit bdict_file,
+               const std::set<std::string>& custom_words,
+               const std::string& language,
+               bool auto_spell_correct);
+   void OnCustomDictionaryChanged(const std::set<std::string>& words_added,
+                                  const std::set<std::string>& words_removed);
   void OnEnableAutoSpellCorrect(bool enable);
   void OnEnableSpellCheck(bool enable);
   void OnRequestDocumentMarkers();

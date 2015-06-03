@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
+
 #include <vector>
 
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -34,8 +35,6 @@
 using base::HistogramBase;
 using base::HistogramSamples;
 using base::StatisticsRecorder;
-using chrome::spellcheck_common::WordList;
-using chrome::spellcheck_common::WordSet;
 
 namespace {
 
@@ -44,10 +43,7 @@ namespace {
 syncer::SyncDataList GetAllSyncDataNoLimit(
     const SpellcheckCustomDictionary* dictionary) {
   syncer::SyncDataList data;
-  std::string word;
-  const WordSet& words = dictionary->GetWords();
-  for (WordSet::const_iterator it = words.begin(); it != words.end(); ++it) {
-    word = *it;
+  for (const std::string& word : dictionary->GetWords()) {
     sync_pb::EntitySpecifics specifics;
     specifics.mutable_dictionary()->set_word(word);
     data.push_back(syncer::SyncData::CreateLocalData(word, word, specifics));
@@ -74,7 +70,7 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
   // A wrapper around SpellcheckCustomDictionary::LoadDictionaryFile private
   // function to avoid a large number of FRIEND_TEST declarations in
   // SpellcheckCustomDictionary.
-  chrome::spellcheck_common::WordList LoadDictionaryFile(
+  scoped_ptr<std::set<std::string>> LoadDictionaryFile(
       const base::FilePath& path) {
     return SpellcheckCustomDictionary::LoadDictionaryFile(path);
   }
@@ -83,18 +79,18 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
   // function to avoid a large number of FRIEND_TEST declarations in
   // SpellcheckCustomDictionary.
   void UpdateDictionaryFile(
-      const SpellcheckCustomDictionary::Change& dictionary_change,
+      scoped_ptr<SpellcheckCustomDictionary::Change> dictionary_change,
       const base::FilePath& path) {
-    SpellcheckCustomDictionary::UpdateDictionaryFile(dictionary_change, path);
+    SpellcheckCustomDictionary::UpdateDictionaryFile(dictionary_change.Pass(),
+                                                     path);
   }
 
   // A wrapper around SpellcheckCustomDictionary::OnLoaded private method to
   // avoid a large number of FRIEND_TEST declarations in
   // SpellcheckCustomDictionary.
-  void OnLoaded(
-      SpellcheckCustomDictionary& dictionary,
-      const chrome::spellcheck_common::WordList& custom_words) {
-    dictionary.OnLoaded(custom_words);
+  void OnLoaded(SpellcheckCustomDictionary& dictionary,
+                scoped_ptr<std::set<std::string>> custom_words) {
+    dictionary.OnLoaded(custom_words.Pass());
   }
 
   // A wrapper around SpellcheckCustomDictionary::Apply private method to avoid
@@ -161,31 +157,29 @@ class DictionaryObserverCounter : public SpellcheckCustomDictionary::Observer {
 TEST_F(SpellcheckCustomDictionaryTest, SaveAndLoad) {
   base::FilePath path =
       profile_.GetPath().Append(chrome::kCustomDictionaryFileName);
-  WordList loaded_custom_words = LoadDictionaryFile(path);
 
   // The custom word list should be empty now.
-  WordList expected;
-  EXPECT_EQ(expected, loaded_custom_words);
+  EXPECT_TRUE(LoadDictionaryFile(path)->empty());
 
-  SpellcheckCustomDictionary::Change change;
-  change.AddWord("bar");
-  change.AddWord("foo");
+  scoped_ptr<SpellcheckCustomDictionary::Change> change(
+      new SpellcheckCustomDictionary::Change);
+  change->AddWord("bar");
+  change->AddWord("foo");
 
-  UpdateDictionaryFile(change, path);
-  expected.push_back("bar");
-  expected.push_back("foo");
+  UpdateDictionaryFile(change.Pass(), path);
+  std::set<std::string> expected;
+  expected.insert("bar");
+  expected.insert("foo");
 
   // The custom word list should include written words.
-  loaded_custom_words = LoadDictionaryFile(path);
-  EXPECT_EQ(expected, loaded_custom_words);
+  EXPECT_EQ(expected, *LoadDictionaryFile(path));
 
-  change = SpellcheckCustomDictionary::Change();
-  change.RemoveWord("bar");
-  change.RemoveWord("foo");
-  UpdateDictionaryFile(change, path);
-  loaded_custom_words = LoadDictionaryFile(path);
-  expected.clear();
-  EXPECT_EQ(expected, loaded_custom_words);
+  scoped_ptr<SpellcheckCustomDictionary::Change> change2(
+      new SpellcheckCustomDictionary::Change);
+  change2->RemoveWord("bar");
+  change2->RemoveWord("foo");
+  UpdateDictionaryFile(change2.Pass(), path);
+  EXPECT_TRUE(LoadDictionaryFile(path)->empty());
 }
 
 TEST_F(SpellcheckCustomDictionaryTest, MultiProfile) {
@@ -201,8 +195,8 @@ TEST_F(SpellcheckCustomDictionaryTest, MultiProfile) {
   SpellcheckCustomDictionary* custom_dictionary2 =
       spellcheck_service2->GetCustomDictionary();
 
-  WordSet expected1;
-  WordSet expected2;
+  std::set<std::string> expected1;
+  std::set<std::string> expected2;
 
   custom_dictionary->AddWord("foo");
   custom_dictionary->AddWord("bar");
@@ -214,10 +208,10 @@ TEST_F(SpellcheckCustomDictionaryTest, MultiProfile) {
   expected2.insert("hoge");
   expected2.insert("fuga");
 
-  WordSet actual1 = custom_dictionary->GetWords();
+  std::set<std::string> actual1 = custom_dictionary->GetWords();
   EXPECT_EQ(actual1, expected1);
 
-  WordSet actual2 = custom_dictionary2->GetWords();
+  std::set<std::string> actual2 = custom_dictionary2->GetWords();
   EXPECT_EQ(actual2, expected2);
 }
 
@@ -228,8 +222,7 @@ TEST_F(SpellcheckCustomDictionaryTest, LegacyEmptyDictionaryShouldBeConverted) {
 
   std::string content;
   base::WriteFile(path, content.c_str(), content.length());
-  WordList loaded_custom_words = LoadDictionaryFile(path);
-  EXPECT_TRUE(loaded_custom_words.empty());
+  EXPECT_TRUE(LoadDictionaryFile(path)->empty());
 }
 
 // Legacy dictionary with two words should be converted to new format dictionary
@@ -241,11 +234,10 @@ TEST_F(SpellcheckCustomDictionaryTest,
 
   std::string content = "foo\nbar\nfoo\n";
   base::WriteFile(path, content.c_str(), content.length());
-  WordList loaded_custom_words = LoadDictionaryFile(path);
-  WordList expected;
-  expected.push_back("bar");
-  expected.push_back("foo");
-  EXPECT_EQ(expected, loaded_custom_words);
+  std::set<std::string> expected;
+  expected.insert("bar");
+  expected.insert("foo");
+  EXPECT_EQ(expected, *LoadDictionaryFile(path));
 }
 
 // Illegal words should be removed. Leading and trailing whitespace should be
@@ -259,12 +251,11 @@ TEST_F(SpellcheckCustomDictionaryTest,
       "01234567890123456789012345678901234567890123456789"
       "01234567890123456789012345678901234567890123456789";
   base::WriteFile(path, content.c_str(), content.length());
-  WordList loaded_custom_words = LoadDictionaryFile(path);
-  WordList expected;
-  expected.push_back("bar");
-  expected.push_back("foo");
-  expected.push_back("foo bar");
-  EXPECT_EQ(expected, loaded_custom_words);
+  std::set<std::string> expected;
+  expected.insert("bar");
+  expected.insert("foo");
+  expected.insert("foo bar");
+  EXPECT_EQ(expected, *LoadDictionaryFile(path));
 }
 
 // Write to dictionary should backup previous version and write the word to the
@@ -276,21 +267,20 @@ TEST_F(SpellcheckCustomDictionaryTest, CorruptedWriteShouldBeRecovered) {
 
   std::string content = "foo\nbar";
   base::WriteFile(path, content.c_str(), content.length());
-  WordList loaded_custom_words = LoadDictionaryFile(path);
-  WordList expected;
-  expected.push_back("bar");
-  expected.push_back("foo");
-  EXPECT_EQ(expected, loaded_custom_words);
+  std::set<std::string> expected;
+  expected.insert("bar");
+  expected.insert("foo");
+  EXPECT_EQ(expected, *LoadDictionaryFile(path));
 
-  SpellcheckCustomDictionary::Change change;
-  change.AddWord("baz");
-  UpdateDictionaryFile(change, path);
+  scoped_ptr<SpellcheckCustomDictionary::Change> change(
+      new SpellcheckCustomDictionary::Change);
+  change->AddWord("baz");
+  UpdateDictionaryFile(change.Pass(), path);
   content.clear();
   base::ReadFileToString(path, &content);
   content.append("corruption");
   base::WriteFile(path, content.c_str(), content.length());
-  loaded_custom_words = LoadDictionaryFile(path);
-  EXPECT_EQ(expected, loaded_custom_words);
+  EXPECT_EQ(expected, *LoadDictionaryFile(path));
 }
 
 TEST_F(SpellcheckCustomDictionaryTest,
@@ -424,7 +414,7 @@ TEST_F(SpellcheckCustomDictionaryTest, ProcessSyncChanges) {
 
   EXPECT_FALSE(dictionary->ProcessSyncChanges(FROM_HERE, changes).IsSet());
 
-  const WordSet& words = dictionary->GetWords();
+  const std::set<std::string>& words = dictionary->GetWords();
   EXPECT_EQ(2UL, words.size());
   EXPECT_EQ(0UL, words.count("bar"));
   EXPECT_EQ(1UL, words.count("foo"));
@@ -476,10 +466,62 @@ TEST_F(SpellcheckCustomDictionaryTest, MergeDataAndStartSyncing) {
   EXPECT_EQ(0, error_counter);
   EXPECT_TRUE(custom_dictionary->IsSyncing());
 
-  WordSet words = custom_dictionary->GetWords();
-  WordSet words2 = custom_dictionary2->GetWords();
+  std::set<std::string> words = custom_dictionary->GetWords();
+  std::set<std::string> words2 = custom_dictionary2->GetWords();
   EXPECT_EQ(words.size(), words2.size());
   EXPECT_EQ(words, words2);
+}
+
+TEST_F(SpellcheckCustomDictionaryTest, SyncBeforeLoadDoesNotDuplicateWords) {
+  SpellcheckCustomDictionary* custom_dictionary =
+      SpellcheckServiceFactory::GetForContext(&profile_)->GetCustomDictionary();
+
+  TestingProfile profile2;
+  SpellcheckCustomDictionary* custom_dictionary2 =
+      static_cast<SpellcheckService*>(
+          SpellcheckServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+              &profile2, &BuildSpellcheckService))
+          ->GetCustomDictionary();
+
+  scoped_ptr<SpellcheckCustomDictionary::Change> change(
+      new SpellcheckCustomDictionary::Change);
+  change->AddWord("foo");
+  Apply(*custom_dictionary2, *change);
+
+  base::FilePath path =
+      profile_.GetPath().Append(chrome::kCustomDictionaryFileName);
+  UpdateDictionaryFile(change.Pass(), path);
+  EXPECT_TRUE(custom_dictionary->GetWords().empty());
+
+  int error_counter = 0;
+  EXPECT_FALSE(
+      custom_dictionary->MergeDataAndStartSyncing(
+                           syncer::DICTIONARY,
+                           custom_dictionary2->GetAllSyncData(
+                               syncer::DICTIONARY),
+                           scoped_ptr<syncer::SyncChangeProcessor>(
+                               new syncer::SyncChangeProcessorWrapperForTest(
+                                   custom_dictionary2)),
+                           scoped_ptr<syncer::SyncErrorFactory>(
+                               new SyncErrorFactoryStub(&error_counter)))
+          .error()
+          .IsSet());
+  EXPECT_EQ(0, error_counter);
+  EXPECT_TRUE(custom_dictionary->IsSyncing());
+
+  std::set<std::string> expected_words_in_memory;
+  expected_words_in_memory.insert("foo");
+  EXPECT_EQ(expected_words_in_memory, custom_dictionary->GetWords());
+
+  // Finish all writes to disk.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  std::string actual_contents_on_disk;
+  base::ReadFileToString(path, &actual_contents_on_disk);
+  static const char kExpectedContentsPrefix[] = "foo\nchecksum_v1 = ";
+  EXPECT_EQ(
+      kExpectedContentsPrefix,
+      actual_contents_on_disk.substr(0, sizeof kExpectedContentsPrefix - 1));
 }
 
 TEST_F(SpellcheckCustomDictionaryTest, DictionaryTooBigBeforeSyncing) {
@@ -780,9 +822,9 @@ TEST_F(SpellcheckCustomDictionaryTest, LoadAfterSyncStart) {
   EXPECT_EQ(0, error_counter);
   EXPECT_TRUE(custom_dictionary->IsSyncing());
 
-  WordList custom_words;
-  custom_words.push_back("bar");
-  OnLoaded(*custom_dictionary, custom_words);
+  scoped_ptr<std::set<std::string>> custom_words(new std::set<std::string>);
+  custom_words->insert("bar");
+  OnLoaded(*custom_dictionary, custom_words.Pass());
   EXPECT_TRUE(custom_dictionary->IsSyncing());
 
   EXPECT_EQ(2UL, custom_dictionary->GetWords().size());
@@ -823,13 +865,13 @@ TEST_F(SpellcheckCustomDictionaryTest, LoadAfterSyncStartTooBigToSync) {
   EXPECT_EQ(0, error_counter);
   EXPECT_TRUE(custom_dictionary->IsSyncing());
 
-  WordList custom_words;
+  scoped_ptr<std::set<std::string>> custom_words(new std::set<std::string>);
   for (size_t i = 0;
        i < chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS;
        ++i) {
-    custom_words.push_back("foo" + base::Uint64ToString(i));
+    custom_words->insert(custom_words->end(), "foo" + base::Uint64ToString(i));
   }
-  OnLoaded(*custom_dictionary, custom_words);
+  OnLoaded(*custom_dictionary, custom_words.Pass());
   EXPECT_EQ(0, error_counter);
   EXPECT_FALSE(custom_dictionary->IsSyncing());
 
@@ -857,13 +899,13 @@ TEST_F(SpellcheckCustomDictionaryTest, LoadDuplicatesAfterSync) {
   SpellcheckCustomDictionary* custom_dictionary2 =
       spellcheck_service2->GetCustomDictionary();
 
-  WordList to_add;
+  SpellcheckCustomDictionary::Change change;
   for (size_t i = 0;
        i < chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS / 2;
        ++i) {
-    to_add.push_back("foo" + base::Uint64ToString(i));
+    change.AddWord("foo" + base::Uint64ToString(i));
   }
-  Apply(*custom_dictionary, SpellcheckCustomDictionary::Change(to_add));
+  Apply(*custom_dictionary, change);
 
   int error_counter = 0;
   EXPECT_FALSE(
@@ -881,7 +923,8 @@ TEST_F(SpellcheckCustomDictionaryTest, LoadDuplicatesAfterSync) {
   EXPECT_EQ(0, error_counter);
   EXPECT_TRUE(custom_dictionary->IsSyncing());
 
-  OnLoaded(*custom_dictionary, to_add);
+  OnLoaded(*custom_dictionary,
+           make_scoped_ptr(new std::set<std::string>(change.to_add())));
   EXPECT_EQ(0, error_counter);
   EXPECT_TRUE(custom_dictionary->IsSyncing());
 
@@ -905,10 +948,10 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryLoadNotification) {
   DictionaryObserverCounter observer;
   custom_dictionary->AddObserver(&observer);
 
-  WordList custom_words;
-  custom_words.push_back("foo");
-  custom_words.push_back("bar");
-  OnLoaded(*custom_dictionary, custom_words);
+  scoped_ptr<std::set<std::string>> custom_words(new std::set<std::string>);
+  custom_words->insert("foo");
+  custom_words->insert("bar");
+  OnLoaded(*custom_dictionary, custom_words.Pass());
 
   EXPECT_GE(observer.loads(), 1);
   EXPECT_LE(observer.loads(), 2);
@@ -923,7 +966,7 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryAddWordNotification) {
   SpellcheckCustomDictionary* custom_dictionary =
       spellcheck_service->GetCustomDictionary();
 
-  OnLoaded(*custom_dictionary, WordList());
+  OnLoaded(*custom_dictionary, make_scoped_ptr(new std::set<std::string>));
 
   DictionaryObserverCounter observer;
   custom_dictionary->AddObserver(&observer);
@@ -943,7 +986,7 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionaryRemoveWordNotification) {
   SpellcheckCustomDictionary* custom_dictionary =
       spellcheck_service->GetCustomDictionary();
 
-  OnLoaded(*custom_dictionary, WordList());
+  OnLoaded(*custom_dictionary, make_scoped_ptr(new std::set<std::string>));
 
   EXPECT_TRUE(custom_dictionary->AddWord("foo"));
   EXPECT_TRUE(custom_dictionary->AddWord("bar"));
@@ -973,8 +1016,8 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionarySyncNotification) {
   SpellcheckCustomDictionary* custom_dictionary2 =
       spellcheck_service2->GetCustomDictionary();
 
-  OnLoaded(*custom_dictionary, WordList());
-  OnLoaded(*custom_dictionary2, WordList());
+  OnLoaded(*custom_dictionary, make_scoped_ptr(new std::set<std::string>));
+  OnLoaded(*custom_dictionary2, make_scoped_ptr(new std::set<std::string>));
 
   custom_dictionary->AddWord("foo");
   custom_dictionary->AddWord("bar");
@@ -1134,8 +1177,7 @@ TEST_F(SpellcheckCustomDictionaryTest, RecordSizeStatsCorrectly) {
   // Load the dictionary which should be empty.
   base::FilePath path =
       profile_.GetPath().Append(chrome::kCustomDictionaryFileName);
-  WordList loaded_custom_words = LoadDictionaryFile(path);
-  EXPECT_EQ(0u, loaded_custom_words.size());
+  EXPECT_TRUE(LoadDictionaryFile(path)->empty());
 
   // We expect there to be an entry with 0.
   histogram =
@@ -1146,14 +1188,14 @@ TEST_F(SpellcheckCustomDictionaryTest, RecordSizeStatsCorrectly) {
   samples->Subtract(*baseline);
   EXPECT_EQ(0,samples->sum());
 
-  SpellcheckCustomDictionary::Change change;
-  change.AddWord("bar");
-  change.AddWord("foo");
-  UpdateDictionaryFile(change, path);
+  scoped_ptr<SpellcheckCustomDictionary::Change> change(
+      new SpellcheckCustomDictionary::Change);
+  change->AddWord("bar");
+  change->AddWord("foo");
+  UpdateDictionaryFile(change.Pass(), path);
 
   // Load the dictionary again and it should have 2 entries.
-  loaded_custom_words = LoadDictionaryFile(path);
-  EXPECT_EQ(2u, loaded_custom_words.size());
+  EXPECT_EQ(2u, LoadDictionaryFile(path)->size());
 
   histogram =
       StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
@@ -1169,7 +1211,7 @@ TEST_F(SpellcheckCustomDictionaryTest, HasWord) {
       SpellcheckServiceFactory::GetForContext(&profile_);
   SpellcheckCustomDictionary* custom_dictionary =
       spellcheck_service->GetCustomDictionary();
-  OnLoaded(*custom_dictionary, WordList());
+  OnLoaded(*custom_dictionary, make_scoped_ptr(new std::set<std::string>));
   EXPECT_FALSE(custom_dictionary->HasWord("foo"));
   EXPECT_FALSE(custom_dictionary->HasWord("bar"));
   custom_dictionary->AddWord("foo");

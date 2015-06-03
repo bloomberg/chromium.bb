@@ -4,18 +4,21 @@
 
 #include "chrome/renderer/spellchecker/spellcheck.h"
 
+#include <algorithm>
+
+#include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/common/render_messages.h"
+#include "base/location.h"
+#include "base/logging.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
-#include "chrome/renderer/spellchecker/spellcheck_language.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 #include "third_party/WebKit/public/web/WebTextDecorationType.h"
@@ -70,7 +73,7 @@ bool DocumentMarkersCollector::Visit(content::RenderView* render_view) {
 
 class DocumentMarkersRemover : public content::RenderViewVisitor {
  public:
-  explicit DocumentMarkersRemover(const std::vector<std::string>& words);
+  explicit DocumentMarkersRemover(const std::set<std::string>& words);
   ~DocumentMarkersRemover() override {}
   bool Visit(content::RenderView* render_view) override;
 
@@ -80,10 +83,10 @@ class DocumentMarkersRemover : public content::RenderViewVisitor {
 };
 
 DocumentMarkersRemover::DocumentMarkersRemover(
-    const std::vector<std::string>& words)
+    const std::set<std::string>& words)
     : words_(words.size()) {
-  for (size_t i = 0; i < words.size(); ++i)
-    words_[i] = WebString::fromUTF8(words[i]);
+  std::transform(words.begin(), words.end(), words_.begin(),
+                 [](const std::string& w) { return WebString::fromUTF8(w); });
 }
 
 bool DocumentMarkersRemover::Visit(content::RenderView* render_view) {
@@ -159,8 +162,7 @@ void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
                         const std::set<std::string>& custom_words,
                         const std::string& language,
                         bool auto_spell_correct) {
-  Init(IPC::PlatformFileForTransitToFile(bdict_file),
-       custom_words, language);
+  Init(IPC::PlatformFileForTransitToFile(bdict_file), custom_words, language);
   auto_spell_correct_turned_on_ = auto_spell_correct;
 #if !defined(OS_MACOSX)
   PostDelayedSpellCheckTask(pending_request_param_.release());
@@ -168,8 +170,8 @@ void SpellCheck::OnInit(IPC::PlatformFileForTransit bdict_file,
 }
 
 void SpellCheck::OnCustomDictionaryChanged(
-    const std::vector<std::string>& words_added,
-    const std::vector<std::string>& words_removed) {
+    const std::set<std::string>& words_added,
+    const std::set<std::string>& words_removed) {
   custom_dictionary_.OnCustomDictionaryChanged(words_added, words_removed);
   if (words_added.empty())
     return;

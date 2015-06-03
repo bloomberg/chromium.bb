@@ -6,7 +6,10 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
+#include "third_party/icu/source/common/unicode/urename.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
 
 namespace chrome {
 namespace spellcheck_common {

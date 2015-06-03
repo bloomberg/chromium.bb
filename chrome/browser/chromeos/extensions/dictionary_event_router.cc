@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/extensions/dictionary_event_router.h"
 
+#include <string>
+
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
@@ -63,11 +65,15 @@ void ExtensionDictionaryEventRouter::OnCustomDictionaryChanged(
     return;
   }
 
-  scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<base::ListValue> added_words(new base::ListValue());
+  for (const std::string& word : dictionary_change.to_add())
+    added_words->AppendString(word);
+
   scoped_ptr<base::ListValue> removed_words(new base::ListValue());
-  added_words->AppendStrings(dictionary_change.to_add());
-  removed_words->AppendStrings(dictionary_change.to_remove());
+  for (const std::string& word : dictionary_change.to_remove())
+    removed_words->AppendString(word);
+
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(added_words.release());
   args->Append(removed_words.release());
 

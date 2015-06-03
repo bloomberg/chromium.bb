@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/spellchecker/feedback_sender.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"

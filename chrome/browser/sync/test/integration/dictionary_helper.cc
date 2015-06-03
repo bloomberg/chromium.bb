@@ -5,21 +5,22 @@
 #include "chrome/browser/sync/test/integration/dictionary_helper.h"
 
 #include <algorithm>
+#include <set>
 
 #include "base/format_macros.h"
+#include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/sync/test/integration/dictionary_load_observer.h"
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/spellcheck_common.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 class DictionarySyncIntegrationTestHelper {
  public:
@@ -83,13 +84,12 @@ size_t GetVerifierDictionarySize() {
 }
 
 bool DictionariesMatch() {
-  const chrome::spellcheck_common::WordSet& reference =
+  const std::set<std::string>& reference =
       sync_datatype_helper::test()->use_verifier()
           ? GetVerifierDictionary()->GetWords()
           : GetDictionary(0)->GetWords();
   for (int i = 0; i < sync_datatype_helper::test()->num_clients(); ++i) {
-    const chrome::spellcheck_common::WordSet& dictionary =
-        GetDictionary(i)->GetWords();
+    const std::set<std::string>& dictionary = GetDictionary(i)->GetWords();
     if (reference.size() != dictionary.size() ||
         !std::equal(reference.begin(), reference.end(), dictionary.begin())) {
       return false;
@@ -173,10 +173,8 @@ bool AwaitNumDictionaryEntries(int index, size_t num_words) {
 }
 
 bool DictionaryMatchesVerifier(int index) {
-  const chrome::spellcheck_common::WordSet& expected =
-      GetVerifierDictionary()->GetWords();
-  const chrome::spellcheck_common::WordSet& actual =
-      GetDictionary(index)->GetWords();
+  const std::set<std::string>& expected = GetVerifierDictionary()->GetWords();
+  const std::set<std::string>& actual = GetDictionary(index)->GetWords();
   return expected.size() == actual.size() &&
          std::equal(expected.begin(), expected.end(), actual.begin());
 }

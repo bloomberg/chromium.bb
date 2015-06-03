@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/renderer/spellchecker/spellcheck.h"
+
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/renderer/spellchecker/hunspell_engine.h"
-#include "chrome/renderer/spellchecker/spellcheck.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 

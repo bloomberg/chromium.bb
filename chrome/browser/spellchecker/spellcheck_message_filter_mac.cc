@@ -9,6 +9,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "chrome/browser/spellchecker/feedback_sender.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -310,4 +311,3 @@ void SpellCheckMessageFilterMac::RetireDocumentTag(int route_id) {
   spellcheck_mac::CloseDocumentWithTag(ToDocumentTag(route_id));
   tag_map_.erase(route_id);
 }
-

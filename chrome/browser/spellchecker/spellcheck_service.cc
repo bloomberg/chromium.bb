@@ -4,16 +4,19 @@
 
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
+#include "base/logging.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/browser/spellchecker/feedback_sender.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_platform_mac.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -24,7 +27,6 @@
 #include "ipc/ipc_platform_file.h"
 
 using content::BrowserThread;
-using chrome::spellcheck_common::WordList;
 
 // TODO(rlp): I do not like globals, but keeping these for now during
 // transition.

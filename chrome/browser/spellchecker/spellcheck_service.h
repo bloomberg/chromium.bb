@@ -5,20 +5,20 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_SERVICE_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_SERVICE_H_
 
-#include "base/compiler_specific.h"
+#include <string>
+#include <vector>
+
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/spellchecker/feedback_sender.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
-#include "chrome/common/spellcheck_common.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class PrefService;
 class SpellCheckHostMetrics;
 
 namespace base {
@@ -28,6 +28,12 @@ class WaitableEvent;
 namespace content {
 class RenderProcessHost;
 class BrowserContext;
+class NotificationDetails;
+class NotificationSource;
+}
+
+namespace spellcheck {
+class FeedbackSender;
 }
 
 // Encapsulates the browser side spellcheck service. There is one of these per

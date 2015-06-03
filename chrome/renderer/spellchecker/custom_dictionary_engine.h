@@ -7,8 +7,8 @@
 
 #include <set>
 #include <string>
-#include <vector>
 
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 // Custom spellcheck dictionary. Words in this dictionary are always correctly
@@ -30,9 +30,8 @@ class CustomDictionaryEngine {
                       int misspelling_len);
 
   // Update custom dictionary words.
-  void OnCustomDictionaryChanged(
-      const std::vector<std::string>& words_added,
-      const std::vector<std::string>& words_removed);
+  void OnCustomDictionaryChanged(const std::set<std::string>& words_added,
+                                 const std::set<std::string>& words_removed);
 
  private:
   // Correctly spelled words.
