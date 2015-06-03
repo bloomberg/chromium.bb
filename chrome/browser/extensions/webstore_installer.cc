@@ -33,6 +33,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_thread.h"
@@ -55,6 +56,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "net/base/escape.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -164,6 +166,18 @@ void MaybeAppendAuthUserParameter(const std::string& authuser, GURL* url) {
   url::Replacements<char> replacements;
   replacements.SetQuery(new_query_string.c_str(), new_query);
   *url = url->ReplaceComponents(replacements);
+}
+
+std::string GetErrorMessageForDownloadInterrupt(
+    content::DownloadInterruptReason reason) {
+  switch (reason) {
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED:
+    case content::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
+      return l10n_util::GetStringUTF8(IDS_WEBSTORE_DOWNLOAD_ACCESS_DENIED);
+    default:
+      break;
+  }
+  return kDownloadInterruptedError;
 }
 
 }  // namespace
@@ -505,7 +519,9 @@ void WebstoreInstaller::OnDownloadUpdated(DownloadItem* download) {
       break;
     case DownloadItem::INTERRUPTED:
       RecordInterrupt(download);
-      ReportFailure(kDownloadInterruptedError, FAILURE_REASON_OTHER);
+      ReportFailure(
+          GetErrorMessageForDownloadInterrupt(download->GetLastReason()),
+          FAILURE_REASON_OTHER);
       break;
     case DownloadItem::COMPLETE:
       // Wait for other notifications if the download is really an extension.
