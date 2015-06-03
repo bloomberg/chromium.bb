@@ -16,7 +16,7 @@ goog.require('__crWeb.message');
 __gCrWeb.core_dynamic = {};
 
 /* Beginning of anonymous object. */
-new function() {
+(function() {
   /**
    * Resets common.JSONStringify to a clean copy. This can be called to ensure
    * that its copy is not of an override injected earlier by the page. This
@@ -157,4 +157,4 @@ new function() {
       videos[i].webkitExitFullScreen();
     }
   };
-}
+}());

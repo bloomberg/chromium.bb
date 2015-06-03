@@ -17,9 +17,12 @@ goog.require('__crWeb.base');
 __gCrWeb['common'] = {};
 
 /* Beginning of anonymous object. */
-new function() {
-  // JSON safe object to protect against custom implementation of Object.toJSON
-  // in host pages.
+(function() {
+  /**
+   * JSON safe object to protect against custom implementation of Object.toJSON
+   * in host pages.
+   * @constructor
+   */
   __gCrWeb['common'].JSONSafeObject = function JSONSafeObject() {
   };
 
@@ -542,7 +545,9 @@ new function() {
     // First attempt is from the name / id supplied.
     var form = document.forms.namedItem(name);
     if (form) {
-      return form;
+      if (form.nodeType !== Node.ELEMENT_NODE)
+        return null;
+      return /** @type {Element} */(form);
     }
     // Second attempt is from the prefixed index position of the form in
     // document.forms.
@@ -688,4 +693,4 @@ new function() {
     }
     return false;
   };
-}  // End of anonymous object
+}());  // End of anonymous object

@@ -12,7 +12,7 @@ goog.provide('__crWeb.messageDynamic');
 __gCrWeb.message_dynamic = {};
 
 /* Beginning of anonymous object. */
-new function() {
+(function() {
   /**
    * Sends queued commands to the Objective-C side.
    * @param {Object} queueObject Queue object containing messages to send.
@@ -28,4 +28,4 @@ new function() {
     });
     queueObject.reset();
   };
-}
+}());

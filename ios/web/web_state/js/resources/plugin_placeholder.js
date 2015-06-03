@@ -14,7 +14,7 @@
 __gCrWeb['plugin'] = {};
 
 /* Beginning of anonymous object. */
-new function() {
+(function() {
 
   /* Data-URL version of plugin_blocked_android.png. Served this way rather
    * than with an intercepted URL to avoid messing up https pages.
@@ -196,4 +196,4 @@ new function() {
       plugin.insertBefore(placeholder, plugin.firstChild);
     }
   };
-}  // End of anonymous object
+}());  // End of anonymous object

@@ -11,7 +11,7 @@
 // Namespace for module, used as presence beacon for injection checks.
 __gCrWeb['windowIdObject'] = {};
 
-new function() {
+(function() {
   // CRWJSWindowIdManager replaces $(WINDOW_ID) with appropriate string upon
   // injection.
   __gCrWeb['windowId'] = '$(WINDOW_ID)';
@@ -28,4 +28,4 @@ new function() {
       __gCrWeb.message.invokeQueues();
     }
   }, 0);
-}
+}());

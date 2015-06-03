@@ -13,7 +13,7 @@ goog.require('__crWeb.windowOpen');
 __gCrWeb.dialogOverrides = {};
 
 // Beginning of anonymous object.
-new function() {
+(function() {
   /*
    * Install a wrapper around functions displaying dialogs in order to catch
    * code displaying dialog.
@@ -117,4 +117,4 @@ new function() {
   // after other window methods overrides.
   __gCrWeb['setSuppressDialogs'] = installDialogOverridesMethods();
 
-}  // End of anonymous object
+}());  // End of anonymous object

@@ -13,7 +13,7 @@ goog.provide('__crWeb.coreDynamic');
 __gCrWeb.core_dynamic = {};
 
 /* Beginning of anonymous object. */
-new function() {
+(function() {
   /**
    * Adds WKWebView specific event listeners.
    */
@@ -56,4 +56,4 @@ new function() {
     __gCrWeb.message.invokeOnHost(
         {'command': 'window.history.willChangeState'});
   };
-}
+}());

@@ -20,7 +20,7 @@ goog.require('__crWeb.message');
  */
 
 /* Beginning of anonymous object. */
-new function() {
+(function() {
   // TODO(jimblackler): use this namespace as a wrapper for all externally-
   // visible functions, to be consistent with other JS scripts. crbug.com/380390
   __gCrWeb['core'] = {};
@@ -653,4 +653,4 @@ new function() {
          {'command': 'form.requestAutocomplete',
          'formName': __gCrWeb.common.getFormIdentifier(this)});
   };
-}  // End of anonymous object
+}());  // End of anonymous object

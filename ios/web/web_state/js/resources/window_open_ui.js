@@ -13,7 +13,7 @@ goog.require('__crWeb.core');
 __gCrWeb.windowOpen = {};
 
 // Beginning of anonymous object.
-new function() {
+(function() {
   // Preserve a reference to the original window.open method.
   __gCrWeb['originalWindowOpen'] = window.open;
 
@@ -244,4 +244,4 @@ new function() {
     return windowProxy;
   };
 
-}  // End of anonymous object
+}());  // End of anonymous object

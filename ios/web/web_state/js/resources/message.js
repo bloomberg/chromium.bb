@@ -15,7 +15,7 @@ goog.require('__crWeb.messageDynamic');
 __gCrWeb.message = {};
 
 /* Beginning of anonymous object. */
-new function() {
+(function() {
   /**
    * Object to manage queue of messages waiting to be sent to the main
    * application for immediate processing.
@@ -78,7 +78,7 @@ new function() {
 
   /**
    * Returns the message queue as a string.
-   * @return {!Object} The current message queue.
+   * @return {string} The current message queue as a JSON string.
    */
   __gCrWeb.message.getMessageQueue = function() {
     var messageQueueString = __gCrWeb.common.JSONStringify(messageQueue_.queue);
@@ -114,4 +114,4 @@ new function() {
       Object.prototype.toJSON = originalObjectToJSON;
     }
   };
-}
+}());

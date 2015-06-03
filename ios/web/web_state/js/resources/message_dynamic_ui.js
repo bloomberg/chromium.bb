@@ -14,7 +14,7 @@ goog.require('__crWeb.common');
 __gCrWeb.message_dynamic = {};
 
 /* Beginning of anonymous object. */
-new function() {
+(function() {
   /**
    * Returns true if sending the message queue should be delayed.
    */
@@ -59,4 +59,4 @@ new function() {
       send();
     }
   };
-}
+}());

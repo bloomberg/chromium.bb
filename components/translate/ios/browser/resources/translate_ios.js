@@ -4,7 +4,7 @@
 
 __gCrWeb['translate'] = {};
 
-new function() {
+(function() {
 /**
  * The delay a wait performed (in milliseconds) before checking whether the
  * translation has finished.
@@ -75,4 +75,5 @@ __gCrWeb.translate['checkTranslateStatus'] = function() {
                       __gCrWeb.translate.TRANSLATE_STATUS_CHECK_DELAY);
   }
 }
-}  // anonymous function
+
+}());  // anonymous function

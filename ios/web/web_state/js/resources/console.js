@@ -15,7 +15,7 @@ goog.require('__crWeb.message');
 __gCrWeb.console = {};
 
 /* Beginning of anonymous object. */
-new function() {
+(function() {
   function sendConsoleMessage(method, originalArguments) {
     message = Array.prototype.slice.call(originalArguments).join(' ');
     __gCrWeb.message.invokeOnHost({'command': 'console',
@@ -43,4 +43,4 @@ new function() {
   console.error = function() {
     sendConsoleMessage('error', arguments);
   };
-}
+}());
