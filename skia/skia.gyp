@@ -147,5 +147,22 @@
         '../build/android/increase_size_for_speed.gypi',
       ],
     },
+    {
+      'target_name': 'skia_mojo',
+      'type': 'static_library',
+      'dependencies': [
+        'skia',
+        '../base/base.gyp:base',
+      ],
+      'includes': [
+        '../third_party/mojo/mojom_bindings_generator.gypi',
+      ],
+      'sources': [
+        # Note: file list duplicated in GN build.
+        'public/interfaces/bitmap.mojom',
+        'public/type_converters.cc',
+        'public/type_converters.h',
+      ],
+    },
   ],
 }
