@@ -52,9 +52,31 @@
         ],
       },
     }],
+    ['OS=="linux"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
+        ],
+      },
+    }],
+    ['OS=="mac"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+        ],
+      },
+    }],
+    ['OS=="win"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/ffmpegsumo.dll',
+        ],
+      },
+    }],
     ['OS=="mac" and asan==1 and fastbuild==0', {
       'variables': {
         'files': [
+          '<(PRODUCT_DIR)/ffmpegsumo.so.dSYM/',
           '<(PRODUCT_DIR)/audio_unittests.dSYM/',
         ],
       },
