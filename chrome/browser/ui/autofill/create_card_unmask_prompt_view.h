@@ -12,6 +12,7 @@ class WebContents;
 namespace autofill {
 
 class CardUnmaskPromptController;
+class CardUnmaskPromptView;
 
 // Factory function for CardUnmaskPromptView on non-iOS platforms.
 CardUnmaskPromptView* CreateCardUnmaskPromptView(
