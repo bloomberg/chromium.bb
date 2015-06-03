@@ -281,14 +281,16 @@ if (enable_configuration_policy) {
       resources_zip = "res.java/$target_name.zip"
       generated_resources_dir = "$root_gen_dir/chrome/app/policy/android"
 
-      copy("${target_name}__consolidate_resources") {
+      consolidate_target_name = "${target_name}__consolidate_resources"
+      copy(consolidate_target_name) {
         sources = [
-          "$root_gen_dir/policy/app_restrictions.xml",
+          app_restrictions_path
         ]
         outputs = [
           "$generated_resources_dir/xml-v21/app_restrictions.xml",
         ]
         deps = [
+          ":cloud_policy_code_generate",
           ":policy_templates",
         ]
       }
@@ -304,13 +306,14 @@ if (enable_configuration_policy) {
         type = "android_resources"
       }
 
-      action("${target_name}__create_zip") {
+      zip_target_name = "${target_name}__create_zip"
+      action(zip_target_name) {
         script = "//build/android/gn/zip.py"
         outputs = [
           "$root_build_dir/$resources_zip",
         ]
         generated_resources =
-            [ "$generated_resources_dir/xml-v21/app_restrictions.xml" ] +
+            get_target_outputs(":$consolidate_target_name") +
             policy_templates_android_outputs
         inputs = generated_resources
         rebased_inputs = rebase_path(generated_resources, root_build_dir)
@@ -321,12 +324,14 @@ if (enable_configuration_policy) {
           "--output=$resources_zip",
           "--base-dir=$rebased_resources_dir",
         ]
+        deps = [
+          ":$consolidate_target_name",
+          ":policy_templates_grit",  # For policy_templates_android_outputs.
+        ]
       }
 
       deps = [
-        ":${target_name}__consolidate_resources",
-        ":${target_name}__build_config",
-        ":${target_name}__create_zip",
+        ":$zip_target_name",
       ]
     }
   }

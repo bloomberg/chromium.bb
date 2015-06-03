@@ -66,6 +66,7 @@ android_resources("content_shell_apk_resources") {
   resource_dirs = [ "shell_apk/res" ]
   deps = [
     ":content_shell_java_resources",
+    ":content_shell_manifest",
   ]
   android_manifest = content_shell_manifest
 }
@@ -91,7 +92,9 @@ copy_ex("copy_content_shell_assets") {
   sources = [
     "$root_out_dir/content_shell.pak",
   ]
-  deps = []
+  deps = [
+    "//content/shell:pak",
+  ]
 
   if (icu_use_data_file) {
     sources += [ "$root_build_dir/icudtl.dat" ]
@@ -113,11 +116,12 @@ android_apk("content_shell_apk") {
     # "//tools/android/forwarder",
   ]
   deps = [
+    ":content_shell_apk_java",
     ":content_shell_apk_resources",
     ":content_shell_java",
-    ":content_shell_apk_java",
-    ":libcontent_shell_content_view",
+    ":content_shell_manifest",
     ":copy_content_shell_assets",
+    ":libcontent_shell_content_view",
     "//base:base_java",
     "//content/public/android:content_java",
     "//media/base/android:media_java",
@@ -173,14 +177,19 @@ if (current_cpu != "x64" && current_cpu != "arm64") {
   }
 
   android_resources("linker_resources") {
+    testonly = true
     resource_dirs = [ "linker_test_apk/res" ]
     android_manifest = chromium_linker_test_manifest
+    deps = [
+      ":chromium_linker_test_manifest",
+    ]
   }
 
   # GYP: //content/content_tests.gypi:chromium_linker_test_apk
   android_apk("chromium_linker_test_apk") {
     testonly = true
     deps = [
+      ":chromium_linker_test_manifest",
       ":content_shell_java",
       ":copy_content_shell_assets",
       ":linker_resources",

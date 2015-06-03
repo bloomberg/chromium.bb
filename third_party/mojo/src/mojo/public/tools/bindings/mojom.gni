@@ -396,6 +396,9 @@ template("mojom") {
         "--zip-inputs=$rebase_inputs",
         "--output=$rebase_output",
       ]
+      deps = [
+        ":$generator_target_name",
+      ]
     }
 
     java_target_name = target_name + "_java"

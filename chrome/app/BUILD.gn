@@ -128,6 +128,9 @@ if (is_android) {
     grit_output_dir = "$root_gen_dir/chrome/java/res"
     generated_files =
         rebase_path(android_generated_java_resources, "java/res", ".")
+    deps = [
+      ":generated_resources",
+    ]
   }
 }
 

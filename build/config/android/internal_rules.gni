@@ -235,6 +235,10 @@ template("write_build_config") {
          type == "android_resources" || type == "deps_dex")
 
   action(target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
+
     script = "//build/android/gyp/write_build_config.py"
     depfile = "$target_gen_dir/$target_name.d"
     inputs = []
@@ -783,11 +787,15 @@ template("java_prebuilt_impl") {
     _dex_path = _base_path + ".dex.jar"
   }
 
-  _final_deps = []
   _template_name = target_name
 
-  _final_deps += [ ":${_template_name}__build_config" ]
-  write_build_config("${_template_name}__build_config") {
+  build_config_target_name = "${_template_name}__build_config"
+  process_jar_target_name = "${_template_name}__process_jar"
+  if (_supports_android) {
+    dex_target_name = "${_template_name}__dex"
+  }
+
+  write_build_config(build_config_target_name) {
     type = "java_library"
     supports_android = _supports_android
     requires_android =
@@ -804,8 +812,12 @@ template("java_prebuilt_impl") {
     }
   }
 
-  _final_deps += [ ":${_template_name}__process_jar" ]
-  process_java_prebuilt("${_template_name}__process_jar") {
+  process_java_prebuilt(process_jar_target_name) {
+    visibility = [ ":$_template_name" ]
+    if (_supports_android) {
+      visibility += [ ":$dex_target_name" ]
+    }
+
     if (defined(invoker.proguard_preprocess) && invoker.proguard_preprocess) {
       proguard_preprocess = true
       proguard_config = invoker.proguard_config
@@ -814,20 +826,31 @@ template("java_prebuilt_impl") {
     build_config = _build_config
     input_jar_path = invoker.jar_path
     output_jar_path = _jar_path
+
+    deps = [
+      ":$build_config_target_name",
+    ]
   }
 
   if (_supports_android) {
-    _final_deps += [ ":${_template_name}__dex" ]
-    dex("${_template_name}__dex") {
+    dex(dex_target_name) {
       sources = [
         _jar_path,
       ]
       output = _dex_path
+      deps = [
+        ":$process_jar_target_name",
+      ]
     }
   }
 
   group(target_name) {
-    deps = _final_deps
+    deps = [
+      ":$process_jar_target_name",
+    ]
+    if (_supports_android) {
+      deps += [ ":$dex_target_name" ]
+    }
   }
 }
 
@@ -1154,6 +1177,9 @@ template("java_library_impl") {
         deps = [
           ":$_compile_java_target",
         ]
+        if (defined(invoker.deps)) {
+          deps += invoker.deps
+        }
       }
 
       if (run_findbugs) {
@@ -1207,6 +1233,10 @@ template("process_resources") {
   }
 
   action(target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
+
     script = "//build/android/gyp/process_resources.py"
 
     depfile = "$target_gen_dir/$target_name.d"
@@ -1299,6 +1329,10 @@ template("copy_ex") {
   }
 
   action(target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
+
     script = "//build/android/gyp/copy_ex.py"
 
     if (defined(invoker.deps)) {
@@ -1343,7 +1377,9 @@ template("copy_ex") {
 template("deps_dex") {
   set_sources_assignment_filter([])
   build_config = "$target_gen_dir/${target_name}.build_config"
-  write_build_config("${target_name}__build_config") {
+  build_config_target_name = "${target_name}__build_config"
+
+  write_build_config(build_config_target_name) {
     type = "deps_dex"
     deps = invoker.deps
 
@@ -1363,6 +1399,9 @@ template("deps_dex") {
       excluded_jars = rebase_path(invoker.excluded_jars, root_build_dir)
       args += [ "--excluded-paths=${excluded_jars}" ]
     }
+    deps = [
+      ":$build_config_target_name",
+    ]
   }
 }
 

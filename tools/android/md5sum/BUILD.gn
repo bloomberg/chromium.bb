@@ -49,5 +49,8 @@ if (current_toolchain == default_toolchain) {
     outputs = [
       "$root_build_dir/md5sum_bin_host",
     ]
+    deps = [
+      ":md5sum_bin",
+    ]
   }
 }

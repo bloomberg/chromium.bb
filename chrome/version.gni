@@ -120,7 +120,7 @@ template("process_version") {
       visibility = invoker.visibility
     }
     sources = get_target_outputs(":$action_name")
-    deps = [
+    public_deps = [
       ":$action_name",
     ]
   }

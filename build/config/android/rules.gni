@@ -402,6 +402,9 @@ template("java_cpp_enum") {
     inputs = generate_enum_outputs
     output = srcjar_path
     base_dir = base_gen_dir
+    deps = [
+      ":$generate_enum_target_name",
+    ]
   }
 
   group(final_target_name) {
@@ -586,7 +589,13 @@ template("android_resources") {
   r_text_path = base_path + "_R.txt"
   build_config = base_path + ".build_config"
 
-  write_build_config("${target_name}__build_config") {
+  build_config_target_name = "${target_name}__build_config"
+  process_resources_target_name = "${target_name}__process_resources"
+  final_target_name = target_name
+
+  write_build_config(build_config_target_name) {
+    visibility = [ ":$process_resources_target_name" ]
+
     type = "android_resources"
     resources_zip = zip_path
     srcjar = srcjar_path
@@ -607,7 +616,9 @@ template("android_resources") {
     android_manifest = invoker.android_manifest
   }
 
-  process_resources("${target_name}__process_resources") {
+  process_resources(process_resources_target_name) {
+    visibility = [ ":$final_target_name" ]
+
     resource_dirs = invoker.resource_dirs
     if (defined(invoker.custom_package)) {
       custom_package = invoker.custom_package
@@ -620,11 +631,21 @@ template("android_resources") {
     if (defined(invoker.shared_resources)) {
       shared_resources = invoker.shared_resources
     }
+
+    deps = [
+      ":$build_config_target_name",
+    ]
+    if (defined(invoker.deps)) {
+      # Invoker may have added deps that generate the input resources.
+      deps += invoker.deps
+    }
   }
 
-  group(target_name) {
+  group(final_target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
     deps = [
-      ":${target_name}__build_config",
       ":${target_name}__process_resources",
     ]
   }
@@ -685,6 +706,9 @@ template("java_strings_grd") {
     base_dir = grit_output_dir
     inputs = generate_strings_outputs
     output = resources_zip
+    deps = [
+      ":$grit_target_name",
+    ]
   }
 
   group(target_name) {
@@ -721,23 +745,35 @@ template("java_strings_grd_prebuilt") {
   resources_zip = base_path + ".resources.zip"
   build_config = base_path + ".build_config"
 
-  write_build_config("${target_name}__build_config") {
+  build_config_target_name = "${target_name}__build_config"
+  zip_target_name ="${target_name}__zip" 
+  final_target_name = target_name
+
+  write_build_config(build_config_target_name) {
+    visibility = [ ":$zip_target_name" ]
     type = "android_resources"
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
   }
 
-  zip("${target_name}__zip") {
+  zip(zip_target_name) {
+    visibility = [ ":$final_target_name" ]
+
     base_dir = invoker.grit_output_dir
     inputs = rebase_path(invoker.generated_files, ".", base_dir)
     output = resources_zip
+    deps = [
+      ":$build_config_target_name",
+    ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
   }
 
-  group(target_name) {
+  group(final_target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
     deps = [
-      ":${target_name}__build_config",
-      ":${target_name}__zip",
+      ":$zip_target_name",
     ]
   }
 }
@@ -1386,6 +1422,9 @@ template("android_apk") {
     deps = [
       ":$build_config_target",
     ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
   }
   _srcjar_deps += [ ":$process_resources_target" ]
 
@@ -1446,6 +1485,10 @@ template("android_apk") {
     }
     srcjar_deps = _srcjar_deps
     dex_path = base_path + ".dex.jar"
+
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
   }
 
   if (_dist_jar_path != "") {
@@ -1582,6 +1625,9 @@ template("android_apk") {
       ":$process_resources_target",
       ":$final_dex_target_name",
     ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
 
     if (defined(invoker.asset_location)) {
       asset_location = invoker.asset_location
@@ -1930,7 +1976,6 @@ template("create_native_executable_dist") {
 
   dist_dir = invoker.dist_dir
   binary = invoker.binary
-  final_deps = []
   template_name = target_name
 
   libraries_list =
@@ -1941,9 +1986,13 @@ template("create_native_executable_dist") {
   #'<(DEPTH)/build/android/setup.gyp:copy_system_libraries',
   #],
 
+  find_deps_target_name = "${template_name}__find_library_dependencies"
+  copy_target_name = "${template_name}__copy_libraries_and_exe"
+
   stripped_libraries_dir = "$root_build_dir/lib.stripped"
-  final_deps += [ ":${template_name}__find_library_dependencies" ]
-  action("${template_name}__find_library_dependencies") {
+  action(find_deps_target_name) {
+    visibility = [ ":$copy_target_name" ]
+
     script = "//build/android/gyp/write_ordered_libraries.py"
     depfile = "$target_gen_dir/$target_name.d"
     inputs = [
@@ -1968,8 +2017,9 @@ template("create_native_executable_dist") {
     ]
   }
 
-  final_deps += [ ":${template_name}__copy_libraries_and_exe" ]
-  copy_ex("${template_name}__copy_libraries_and_exe") {
+  copy_ex(copy_target_name) {
+    visibility = [ ":$template_name" ]
+
     clear_dir = true
     inputs = [
       binary,
@@ -1982,10 +2032,19 @@ template("create_native_executable_dist") {
       "--files=$rebased_binaries_list",
       "--files=@FileArg($rebased_libraries_list:libraries)",
     ]
+
+    deps = [
+      ":$find_deps_target_name",
+    ]
   }
 
-  group(target_name) {
-    deps = final_deps
+  group(template_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
+    deps = [
+      ":$copy_target_name",
+    ]
   }
 }
 
