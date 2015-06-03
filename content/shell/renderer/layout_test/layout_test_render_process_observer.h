@@ -16,12 +16,15 @@ namespace blink {
 class WebFrame;
 }
 
+namespace test_runner {
+class WebTestDelegate;
+class WebTestInterfaces;
+}
+
 namespace content {
 
 class RenderView;
 class BlinkTestRunner;
-class WebTestDelegate;
-class WebTestInterfaces;
 
 class LayoutTestRenderProcessObserver : public RenderProcessObserver {
  public:
@@ -30,7 +33,7 @@ class LayoutTestRenderProcessObserver : public RenderProcessObserver {
   LayoutTestRenderProcessObserver();
   ~LayoutTestRenderProcessObserver() override;
 
-  void SetTestDelegate(WebTestDelegate* delegate);
+  void SetTestDelegate(test_runner::WebTestDelegate* delegate);
   void SetMainWindow(RenderView* view);
 
   // RenderProcessObserver implementation.
@@ -38,10 +41,10 @@ class LayoutTestRenderProcessObserver : public RenderProcessObserver {
   void OnRenderProcessShutdown() override;
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
-  WebTestDelegate* test_delegate() const {
+  test_runner::WebTestDelegate* test_delegate() const {
     return test_delegate_;
   }
-  WebTestInterfaces* test_interfaces() const {
+  test_runner::WebTestInterfaces* test_interfaces() const {
     return test_interfaces_.get();
   }
   BlinkTestRunner* main_test_runner() const { return main_test_runner_; }
@@ -52,8 +55,8 @@ class LayoutTestRenderProcessObserver : public RenderProcessObserver {
   void OnSetWebKitSourceDir(const base::FilePath& webkit_source_dir);
 
   BlinkTestRunner* main_test_runner_;
-  WebTestDelegate* test_delegate_;
-  scoped_ptr<WebTestInterfaces> test_interfaces_;
+  test_runner::WebTestDelegate* test_delegate_;
+  scoped_ptr<test_runner::WebTestInterfaces> test_interfaces_;
 
   base::FilePath webkit_source_dir_;
 

@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -1335,4 +1335,4 @@ v8::Local<v8::Object> WebAXObjectProxyList::GetOrCreate(
   return handle;
 }
 
-}  // namespace content
+}  // namespace test_runner

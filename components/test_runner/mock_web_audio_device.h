@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "third_party/WebKit/public/platform/WebAudioDevice.h"
 
-namespace content {
+namespace test_runner {
 
 class MockWebAudioDevice : public blink::WebAudioDevice {
  public:
@@ -26,6 +26,6 @@ class MockWebAudioDevice : public blink::WebAudioDevice {
   DISALLOW_COPY_AND_ASSIGN(MockWebAudioDevice);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_WEB_AUDIO_DEVICE_H_

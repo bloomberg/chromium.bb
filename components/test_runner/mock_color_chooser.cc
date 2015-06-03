@@ -7,7 +7,7 @@
 #include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_test_proxy.h"
 
-namespace content {
+namespace test_runner {
 
 namespace {
 class HostMethodTask : public WebMethodTask<MockColorChooser> {
@@ -49,4 +49,4 @@ void MockColorChooser::InvokeDidEndChooser() {
   client_->didEndChooser();
 }
 
-}  // namespace content
+}  // namespace test_runner

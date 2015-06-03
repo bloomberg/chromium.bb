@@ -23,7 +23,7 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-namespace content {
+namespace test_runner {
 
 TestInterfaces::TestInterfaces()
     : accessibility_controller_(new AccessibilityController()),
@@ -185,4 +185,4 @@ AppBannerClient* TestInterfaces::GetAppBannerClient() {
   return app_banner_client_;
 }
 
-}  // namespace content
+}  // namespace test_runner

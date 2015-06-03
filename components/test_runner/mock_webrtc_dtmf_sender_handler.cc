@@ -11,7 +11,7 @@
 
 using namespace blink;
 
-namespace content {
+namespace test_runner {
 
 class DTMFSenderToneTask : public WebMethodTask<MockWebRTCDTMFSenderHandler> {
  public:
@@ -66,4 +66,4 @@ bool MockWebRTCDTMFSenderHandler::insertDTMF(const WebString& tones,
   return true;
 }
 
-}  // namespace content
+}  // namespace test_runner

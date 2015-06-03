@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerPromptResult.h"
 
-namespace content {
+namespace test_runner {
 
 AppBannerClient::AppBannerClient() {
 }
@@ -40,4 +40,4 @@ void AppBannerClient::ResolvePromise(int request_id,
   callbacks_map_.Remove(request_id);
 }
 
-}  // namespace content
+}  // namespace test_runner

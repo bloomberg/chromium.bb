@@ -19,7 +19,7 @@ class WebSpeechRecognizerClient;
 class WebString;
 }
 
-namespace content {
+namespace test_runner {
 
 class WebTestDelegate;
 
@@ -93,6 +93,6 @@ class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer {
   DISALLOW_COPY_AND_ASSIGN(MockWebSpeechRecognizer);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_WEB_SPEECH_RECOGNIZER_H_

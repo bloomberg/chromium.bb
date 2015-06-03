@@ -13,7 +13,7 @@ namespace blink {
 class WebMIDIAccessorClient;
 }
 
-namespace content {
+namespace test_runner {
 
 class TestInterfaces;
 
@@ -41,6 +41,6 @@ class MockWebMIDIAccessor : public blink::WebMIDIAccessor {
   DISALLOW_COPY_AND_ASSIGN(MockWebMIDIAccessor);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_WEB_MIDI_ACCESSOR_H_

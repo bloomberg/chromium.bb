@@ -71,7 +71,7 @@ struct WebWindowFeatures;
 typedef unsigned WebColor;
 }
 
-namespace content {
+namespace test_runner {
 
 class MockCredentialManagerClient;
 class MockScreenOrientationClient;
@@ -402,6 +402,6 @@ class WebTestProxy : public Base, public WebTestProxyBase {
   DISALLOW_COPY_AND_ASSIGN(WebTestProxy);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_WEB_TEST_PROXY_H_

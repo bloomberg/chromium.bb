@@ -106,9 +106,9 @@ void LayoutTestContentRendererClient::RenderViewCreated(
 
   render_view->GetWebView()->setCredentialManagerClient(
       test_runner->proxy()->GetCredentialManagerClientMock());
-  WebTestDelegate* delegate =
+  test_runner::WebTestDelegate* delegate =
       LayoutTestRenderProcessObserver::GetInstance()->test_delegate();
-  if (delegate == static_cast<WebTestDelegate*>(test_runner))
+  if (delegate == static_cast<test_runner::WebTestDelegate*>(test_runner))
     LayoutTestRenderProcessObserver::GetInstance()->SetMainWindow(render_view);
 }
 
@@ -116,7 +116,7 @@ WebMediaStreamCenter*
 LayoutTestContentRendererClient::OverrideCreateWebMediaStreamCenter(
     WebMediaStreamCenterClient* client) {
 #if defined(ENABLE_WEBRTC)
-  WebTestInterfaces* interfaces =
+  test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->CreateMediaStreamCenter(client);
 #else
@@ -128,7 +128,7 @@ WebRTCPeerConnectionHandler*
 LayoutTestContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
     WebRTCPeerConnectionHandlerClient* client) {
 #if defined(ENABLE_WEBRTC)
-  WebTestInterfaces* interfaces =
+  test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->CreateWebRTCPeerConnectionHandler(client);
 #else
@@ -139,7 +139,7 @@ LayoutTestContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
 WebMIDIAccessor*
 LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
     WebMIDIAccessorClient* client) {
-  WebTestInterfaces* interfaces =
+  test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->CreateMIDIAccessor(client);
 }
@@ -147,7 +147,7 @@ LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
 WebAudioDevice*
 LayoutTestContentRendererClient::OverrideCreateAudioDevice(
     double sample_rate) {
-  WebTestInterfaces* interfaces =
+  test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->CreateAudioDevice(sample_rate);
 }
@@ -167,7 +167,7 @@ WebThemeEngine* LayoutTestContentRendererClient::OverrideThemeEngine() {
 scoped_ptr<blink::WebAppBannerClient>
 LayoutTestContentRendererClient::CreateAppBannerClient(
     RenderFrame* render_frame) {
-  WebTestInterfaces* interfaces =
+  test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
   return interfaces->CreateAppBannerClient();
 }
@@ -184,7 +184,7 @@ LayoutTestContentRendererClient::CreateMediaStreamRendererFactory() {
 
 void LayoutTestContentRendererClient::WebTestProxyCreated(
     RenderView* render_view,
-    WebTestProxyBase* proxy) {
+    test_runner::WebTestProxyBase* proxy) {
   BlinkTestRunner* test_runner = new BlinkTestRunner(render_view);
   test_runner->set_proxy(proxy);
   if (!LayoutTestRenderProcessObserver::GetInstance()->test_delegate()) {

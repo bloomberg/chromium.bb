@@ -13,7 +13,7 @@ namespace blink {
 class WebView;
 }
 
-namespace content {
+namespace test_runner {
 
 struct TestPreferences {
     int default_font_size;

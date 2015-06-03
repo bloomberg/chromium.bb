@@ -28,16 +28,19 @@ class WebDeviceOrientationData;
 struct WebRect;
 }
 
+namespace test_runner {
+class WebTestProxyBase;
+}
+
 namespace content {
 
 class LeakDetector;
-class WebTestProxyBase;
 struct LeakDetectionResult;
 
 // This is the renderer side of the webkit test runner.
 class BlinkTestRunner : public RenderViewObserver,
                         public RenderViewObserverTracker<BlinkTestRunner>,
-                        public WebTestDelegate {
+                        public test_runner::WebTestDelegate {
  public:
   explicit BlinkTestRunner(RenderView* render_view);
   ~BlinkTestRunner() override;
@@ -55,7 +58,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void ClearEditCommand() override;
   void SetEditCommand(const std::string& name,
                       const std::string& value) override;
-  void SetGamepadProvider(GamepadController* controller) override;
+  void SetGamepadProvider(test_runner::GamepadController* controller) override;
   void SetDeviceLightData(const double data) override;
   void SetDeviceMotionData(const blink::WebDeviceMotionData& data) override;
   void SetDeviceOrientationData(
@@ -65,8 +68,8 @@ class BlinkTestRunner : public RenderViewObserver,
   void ResetScreenOrientation() override;
   void DidChangeBatteryStatus(const blink::WebBatteryStatus& status) override;
   void PrintMessage(const std::string& message) override;
-  void PostTask(WebTask* task) override;
-  void PostDelayedTask(WebTask* task, long long ms) override;
+  void PostTask(test_runner::WebTask* task) override;
+  void PostDelayedTask(test_runner::WebTask* task, long long ms) override;
   blink::WebString RegisterIsolatedFileSystem(
       const blink::WebVector<blink::WebString>& absolute_filenames) override;
   long long GetCurrentTimeInMillisecond() override;
@@ -74,7 +77,7 @@ class BlinkTestRunner : public RenderViewObserver,
       const std::string& utf8_path) override;
   blink::WebURL LocalFileToDataURL(const blink::WebURL& file_url) override;
   blink::WebURL RewriteLayoutTestsURL(const std::string& utf8_url) override;
-  TestPreferences* Preferences() override;
+  test_runner::TestPreferences* Preferences() override;
   void ApplyPreferences() override;
   virtual std::string makeURLErrorDescription(const blink::WebURLError& error);
   void UseUnfortunateSynchronousResizeMode(bool enable) override;
@@ -95,7 +98,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetGeofencingMockProvider(bool service_available) override;
   void ClearGeofencingMockProvider() override;
   void SetGeofencingMockPosition(double latitude, double longitude) override;
-  void SetFocus(WebTestProxyBase* proxy, bool focus) override;
+  void SetFocus(test_runner::WebTestProxyBase* proxy, bool focus) override;
   void SetAcceptAllCookies(bool accept) override;
   std::string PathToLocalResource(const std::string& resource) override;
   void SetLocale(const std::string& locale) override;
@@ -108,7 +111,8 @@ class BlinkTestRunner : public RenderViewObserver,
   void LoadURLForFrame(const blink::WebURL& url,
                        const std::string& frame_name) override;
   bool AllowExternalPages() override;
-  std::string DumpHistoryForWindow(WebTestProxyBase* proxy) override;
+  std::string DumpHistoryForWindow(
+      test_runner::WebTestProxyBase* proxy) override;
   void FetchManifest(
       blink::WebView* view,
       const GURL& url,
@@ -137,8 +141,8 @@ class BlinkTestRunner : public RenderViewObserver,
 
   void Reset();
 
-  void set_proxy(WebTestProxyBase* proxy) { proxy_ = proxy; }
-  WebTestProxyBase* proxy() const { return proxy_; }
+  void set_proxy(test_runner::WebTestProxyBase* proxy) { proxy_ = proxy; }
+  test_runner::WebTestProxyBase* proxy() const { return proxy_; }
 
   void ReportLeakDetectionResult(const LeakDetectionResult& result);
 
@@ -159,11 +163,11 @@ class BlinkTestRunner : public RenderViewObserver,
   void CaptureDumpPixels(const SkBitmap& snapshot);
   void CaptureDumpComplete();
 
-  WebTestProxyBase* proxy_;
+  test_runner::WebTestProxyBase* proxy_;
 
   RenderView* focused_view_;
 
-  TestPreferences prefs_;
+  test_runner::TestPreferences prefs_;
 
   ShellTestConfiguration test_config_;
 

@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
-namespace content {
+namespace test_runner {
 
 class WebTestDelegate;
 
@@ -57,6 +57,6 @@ class MockWebRTCDataChannelHandler : public blink::WebRTCDataChannelHandler {
   DISALLOW_COPY_AND_ASSIGN(MockWebRTCDataChannelHandler);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_WEBRTC_DATA_CHANNEL_HANDLER_H_

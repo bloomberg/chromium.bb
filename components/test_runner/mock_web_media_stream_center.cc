@@ -17,7 +17,7 @@
 #include "third_party/WebKit/public/platform/WebSourceInfo.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
-namespace content {
+namespace test_runner {
 
 namespace {
 class NewTrackTask : public WebMethodTask<MockWebMediaStreamCenter> {
@@ -134,4 +134,4 @@ MockWebMediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
   return NULL;
 }
 
-}  // namespace content
+}  // namespace test_runner

@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
-namespace content {
+namespace test_runner {
 
 bool MockGrammarCheck::CheckGrammarOfString(
     const blink::WebString& text,
@@ -60,4 +60,4 @@ bool MockGrammarCheck::CheckGrammarOfString(
   return false;
 }
 
-}  // namespace content
+}  // namespace test_runner

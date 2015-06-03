@@ -17,7 +17,7 @@ using blink::WebColor;
 using blink::WebRect;
 using blink::WebThemeEngine;
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -589,6 +589,6 @@ void MockWebThemeEngine::paint(blink::WebCanvas* canvas,
   }
 }
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // !defined(OS_MACOSX)

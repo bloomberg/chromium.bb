@@ -9,7 +9,7 @@
 #include "third_party/WebKit/public/web/WebSpeechRecognitionResult.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizerClient.h"
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -250,4 +250,4 @@ void MockWebSpeechRecognizer::StepTask::RunIfValid() {
   object_->delegate_->PostTask(new StepTask(object_));
 }
 
-}  // namespace content
+}  // namespace test_runner

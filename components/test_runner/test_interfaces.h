@@ -20,7 +20,7 @@ class WebURL;
 class WebView;
 }
 
-namespace content {
+namespace test_runner {
 
 class AccessibilityController;
 class AppBannerClient;
@@ -74,6 +74,6 @@ class TestInterfaces {
   DISALLOW_COPY_AND_ASSIGN(TestInterfaces);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_TEST_INTERFACES_H_

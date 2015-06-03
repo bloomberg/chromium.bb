@@ -15,7 +15,7 @@ namespace blink {
 class WebLocalFrame;
 }
 
-namespace content {
+namespace test_runner {
 
 class MockScreenOrientationClient : public blink::WebScreenOrientationClient {
  public:
@@ -52,6 +52,6 @@ class MockScreenOrientationClient : public blink::WebScreenOrientationClient {
   DISALLOW_COPY_AND_ASSIGN(MockScreenOrientationClient);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_SCREEN_ORIENTATION_CLIENT_H_

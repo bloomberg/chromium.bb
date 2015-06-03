@@ -7,7 +7,7 @@
 
 #include "third_party/WebKit/public/platform/WebThemeEngine.h"
 
-namespace content {
+namespace test_runner {
 
 class MockWebThemeEngine : public blink::WebThemeEngine {
  public:
@@ -24,6 +24,6 @@ class MockWebThemeEngine : public blink::WebThemeEngine {
 #endif  // !defined(OS_MACOSX)
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_WEB_THEME_ENGINE_H_

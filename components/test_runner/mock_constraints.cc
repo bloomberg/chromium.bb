@@ -12,7 +12,7 @@ using blink::WebMediaConstraints;
 using blink::WebString;
 using blink::WebVector;
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -59,4 +59,4 @@ bool MockConstraints::VerifyConstraints(const WebMediaConstraints& constraints,
   return true;
 }
 
-}  // namespace content
+}  // namespace test_runner

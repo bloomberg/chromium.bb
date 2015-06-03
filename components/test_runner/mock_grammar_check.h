@@ -12,7 +12,7 @@ class WebString;
 struct WebTextCheckingResult;
 }
 
-namespace content {
+namespace test_runner {
 
 // A mock implementation of a grammar-checker used for WebKit tests. This class
 // only implements the minimal functionarities required by WebKit tests, i.e.
@@ -25,6 +25,6 @@ class MockGrammarCheck {
                                    std::vector<blink::WebTextCheckingResult>*);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_GRAMMAR_CHECK_H_

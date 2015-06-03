@@ -8,7 +8,7 @@
 #include "base/id_map.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 
-namespace content {
+namespace test_runner {
 
 // Test app banner client that holds on to callbacks and allows the test runner
 // to resolve them.
@@ -30,6 +30,6 @@ class AppBannerClient : public blink::WebAppBannerClient {
   DISALLOW_COPY_AND_ASSIGN(AppBannerClient);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_APP_BANNER_CLIENT_H_

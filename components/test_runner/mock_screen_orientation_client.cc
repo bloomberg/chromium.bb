@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
-namespace content {
+namespace test_runner {
 
 MockScreenOrientationClient::MockScreenOrientationClient()
     : main_frame_(NULL),
@@ -158,4 +158,4 @@ MockScreenOrientationClient::SuitableOrientationForCurrentLock() {
   }
 }
 
-}  // namespace content
+}  // namespace test_runner

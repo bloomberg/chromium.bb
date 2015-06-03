@@ -10,7 +10,7 @@ class WebMediaConstraints;
 class WebString;
 }
 
-namespace content {
+namespace test_runner {
 
 class MockConstraints {
  public:
@@ -18,6 +18,6 @@ class MockConstraints {
                                 blink::WebString* failed_constraint = 0);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_CONSTRAINTS_H_

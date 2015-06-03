@@ -18,7 +18,7 @@ class WebString;
 class WebView;
 }
 
-namespace content {
+namespace test_runner {
 
 class WebTestDelegate;
 
@@ -70,6 +70,6 @@ class AccessibilityController :
   DISALLOW_COPY_AND_ASSIGN(AccessibilityController);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_ACCESSIBILITY_CONTROLLER_H_

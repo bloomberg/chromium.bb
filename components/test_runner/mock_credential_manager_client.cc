@@ -6,7 +6,7 @@
 
 #include "third_party/WebKit/public/platform/WebCredential.h"
 
-namespace content {
+namespace test_runner {
 
 MockCredentialManagerClient::MockCredentialManagerClient() {
 }
@@ -47,4 +47,4 @@ void MockCredentialManagerClient::dispatchRequest(
   delete callbacks;
 }
 
-}  // namespace content
+}  // namespace test_runner

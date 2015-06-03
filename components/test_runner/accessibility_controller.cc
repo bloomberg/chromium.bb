@@ -13,7 +13,7 @@
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-namespace content {
+namespace test_runner {
 
 class AccessibilityControllerBindings
     : public gin::Wrappable<AccessibilityControllerBindings> {
@@ -275,4 +275,4 @@ AccessibilityController::FindAccessibleElementByIdRecursive(
   return v8::Local<v8::Object>();
 }
 
-}  // namespace content
+}  // namespace test_runner

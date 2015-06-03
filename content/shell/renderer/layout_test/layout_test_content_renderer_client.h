@@ -19,11 +19,14 @@ namespace web_cache {
 class WebCacheRenderProcessObserver;
 }
 
+namespace test_runner {
+class WebTestProxyBase;
+}
+
 namespace content {
 
 class LayoutTestRenderProcessObserver;
 class MockWebClipboardImpl;
-class WebTestProxyBase;
 
 class LayoutTestContentRendererClient : public ShellContentRendererClient {
  public:
@@ -49,7 +52,8 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
       override;
 
  private:
-  void WebTestProxyCreated(RenderView* render_view, WebTestProxyBase* proxy);
+  void WebTestProxyCreated(RenderView* render_view,
+                           test_runner::WebTestProxyBase* proxy);
 
   scoped_ptr<LayoutTestRenderProcessObserver> shell_observer_;
   scoped_ptr<MockWebClipboardImpl> clipboard_;

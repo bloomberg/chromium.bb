@@ -18,7 +18,7 @@ using blink::WebFrame;
 using blink::WebGamepad;
 using blink::WebGamepads;
 
-namespace content {
+namespace test_runner {
 
 class GamepadControllerBindings
     : public gin::Wrappable<GamepadControllerBindings> {
@@ -247,4 +247,4 @@ void GamepadController::SetAxisData(int index, int axis, double data) {
   gamepads_.items[index].axes[axis] = data;
 }
 
-}  // namespace content
+}  // namespace test_runner

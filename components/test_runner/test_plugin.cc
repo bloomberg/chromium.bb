@@ -26,7 +26,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -779,4 +779,4 @@ bool TestPlugin::IsSupportedMimeType(const blink::WebString& mime_type) {
          mime_type == CanCreateWithoutRendererMimeType();
 }
 
-}  // namespace content
+}  // namespace test_runner

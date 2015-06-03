@@ -15,7 +15,7 @@ class WebFrame;
 class WebURL;
 }
 
-namespace content {
+namespace test_runner {
 
 class MockCredentialManagerClient : public blink::WebCredentialManagerClient {
  public:
@@ -42,6 +42,6 @@ class MockCredentialManagerClient : public blink::WebCredentialManagerClient {
   DISALLOW_COPY_AND_ASSIGN(MockCredentialManagerClient);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_CREDENTIAL_MANAGER_CLIENT_H_

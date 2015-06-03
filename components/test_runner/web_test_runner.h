@@ -11,7 +11,7 @@ namespace blink {
 class WebContentSettingsClient;
 }
 
-namespace content {
+namespace test_runner {
 
 class WebTestRunner {
  public:
@@ -37,6 +37,6 @@ class WebTestRunner {
   virtual bool ShouldGeneratePixelResults() = 0;
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_WEB_TEST_RUNNER_H_

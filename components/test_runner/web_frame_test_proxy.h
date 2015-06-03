@@ -13,7 +13,7 @@
 #include "components/test_runner/web_test_proxy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
-namespace content {
+namespace test_runner {
 
 // Templetized wrapper around RenderFrameImpl objects, which implement
 // the WebFrameClient interface.
@@ -287,6 +287,6 @@ class WebFrameTestProxy : public Base {
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxy);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_WEB_FRAME_TEST_PROXY_H_

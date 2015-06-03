@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "third_party/WebKit/public/web/WebContentSettingsClient.h"
 
-namespace content {
+namespace test_runner {
 
 class WebTestDelegate;
 
@@ -62,6 +62,6 @@ class WebContentSettings : public blink::WebContentSettingsClient {
   DISALLOW_COPY_AND_ASSIGN(WebContentSettings);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_WEB_CONTENT_SETTINGS_H_

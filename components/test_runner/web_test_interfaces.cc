@@ -14,7 +14,7 @@
 
 using namespace blink;
 
-namespace content {
+namespace test_runner {
 
 WebTestInterfaces::WebTestInterfaces() : interfaces_(new TestInterfaces()) {
 }
@@ -86,4 +86,4 @@ WebTestInterfaces::CreateAppBannerClient() {
   return client.Pass();
 }
 
-}  // namespace content
+}  // namespace test_runner

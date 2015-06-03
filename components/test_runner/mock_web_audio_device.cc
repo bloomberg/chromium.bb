@@ -4,7 +4,7 @@
 
 #include "components/test_runner/mock_web_audio_device.h"
 
-namespace content {
+namespace test_runner {
 
 MockWebAudioDevice::MockWebAudioDevice(double sample_rate)
     : sample_rate_(sample_rate) {}
@@ -19,4 +19,4 @@ double MockWebAudioDevice::sampleRate() {
   return sample_rate_;
 }
 
-}  // namespace content
+}  // namespace test_runner

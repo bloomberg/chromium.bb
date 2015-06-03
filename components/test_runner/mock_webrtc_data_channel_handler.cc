@@ -10,7 +10,7 @@
 
 using namespace blink;
 
-namespace content {
+namespace test_runner {
 
 class DataChannelReadyStateTask
     : public WebMethodTask<MockWebRTCDataChannelHandler> {
@@ -109,4 +109,4 @@ void MockWebRTCDataChannelHandler::close() {
       this, client_, WebRTCDataChannelHandlerClient::ReadyStateClosed));
 }
 
-}  // namespace content
+}  // namespace test_runner

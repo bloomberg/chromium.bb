@@ -22,7 +22,7 @@
 
 using namespace blink;
 
-namespace content {
+namespace test_runner {
 
 class RTCSessionDescriptionRequestSuccededTask
     : public WebMethodTask<MockWebRTCPeerConnectionHandler> {
@@ -407,4 +407,4 @@ void MockWebRTCPeerConnectionHandler::stop() {
   task_list_.RevokeAll();
 }
 
-}  // namespace content
+}  // namespace test_runner

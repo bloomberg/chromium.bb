@@ -4,7 +4,7 @@
 
 #include "components/test_runner/test_common.h"
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -34,4 +34,4 @@ std::string NormalizeLayoutTestURL(const std::string& url) {
   return result;
 }
 
-}  // namespace content
+}  // namespace test_runner

@@ -10,7 +10,7 @@
 #include "components/test_runner/web_task.h"
 #include "third_party/WebKit/public/web/WebSpellCheckClient.h"
 
-namespace content {
+namespace test_runner {
 
 class WebTestDelegate;
 class WebTestProxyBase;
@@ -60,6 +60,6 @@ class SpellCheckClient : public blink::WebSpellCheckClient {
   DISALLOW_COPY_AND_ASSIGN(SpellCheckClient);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_SPELL_CHECK_CLIENT_H_

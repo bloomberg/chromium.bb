@@ -8,7 +8,7 @@
 #include "components/test_runner/test_common.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -171,4 +171,4 @@ bool MockSpellCheck::InitializeIfNeeded() {
   return false;
 }
 
-}  // namespace content
+}  // namespace test_runner

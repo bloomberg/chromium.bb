@@ -59,7 +59,7 @@
 
 using namespace blink;
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -3094,4 +3094,4 @@ void TestRunner::DidLosePointerLockInternal() {
     web_view_->didLosePointerLock();
 }
 
-}  // namespace content
+}  // namespace test_runner

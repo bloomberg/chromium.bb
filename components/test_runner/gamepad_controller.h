@@ -15,7 +15,7 @@ class WebFrame;
 class WebGamepadListener;
 }
 
-namespace content {
+namespace test_runner {
 
 class WebTestDelegate;
 
@@ -62,6 +62,6 @@ class GamepadController : public base::SupportsWeakPtr<GamepadController> {
   DISALLOW_COPY_AND_ASSIGN(GamepadController);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_GAMEPAD_CONTROLLER_H_

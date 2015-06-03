@@ -10,7 +10,7 @@
 #include "components/test_runner/web_test_runner.h"
 #include "third_party/WebKit/public/platform/WebMIDIAccessorClient.h"
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -62,4 +62,4 @@ void MockWebMIDIAccessor::startSession() {
       this, client_, interfaces_->GetTestRunner()->midiAccessorResult()));
 }
 
-}  // namespace content
+}  // namespace test_runner

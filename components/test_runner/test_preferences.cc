@@ -9,7 +9,7 @@
 using blink::WebSettings;
 using blink::WebString;
 
-namespace content {
+namespace test_runner {
 
 TestPreferences::TestPreferences() { Reset(); }
 
@@ -55,4 +55,4 @@ void TestPreferences::Reset() {
   strict_powerful_feature_restrictions = false;
 }
 
-}  // namespace content
+}  // namespace test_runner

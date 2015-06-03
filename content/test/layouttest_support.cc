@@ -48,11 +48,13 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<base::Callback<void(RenderView*, WebTestProxyBase*)> >::Leaky
+base::LazyInstance<
+    base::Callback<void(RenderView*, test_runner::WebTestProxyBase*)>>::Leaky
     g_callback = LAZY_INSTANCE_INITIALIZER;
 
 RenderViewImpl* CreateWebTestProxy(const ViewMsg_New_Params& params) {
-  typedef WebTestProxy<RenderViewImpl, const ViewMsg_New_Params&> ProxyType;
+  typedef test_runner::WebTestProxy<RenderViewImpl, const ViewMsg_New_Params&>
+      ProxyType;
   ProxyType* render_view_proxy = new ProxyType(params);
   if (g_callback == 0)
     return render_view_proxy;
@@ -60,17 +62,20 @@ RenderViewImpl* CreateWebTestProxy(const ViewMsg_New_Params& params) {
   return render_view_proxy;
 }
 
-WebTestProxyBase* GetWebTestProxyBase(RenderViewImpl* render_view) {
-  typedef WebTestProxy<RenderViewImpl, ViewMsg_New_Params*> ViewProxy;
+test_runner::WebTestProxyBase* GetWebTestProxyBase(
+    RenderViewImpl* render_view) {
+  typedef test_runner::WebTestProxy<RenderViewImpl, ViewMsg_New_Params*>
+      ViewProxy;
 
   ViewProxy* render_view_proxy = static_cast<ViewProxy*>(render_view);
-  return static_cast<WebTestProxyBase*>(render_view_proxy);
+  return static_cast<test_runner::WebTestProxyBase*>(render_view_proxy);
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(
     RenderViewImpl* render_view,
     int32 routing_id) {
-  typedef WebFrameTestProxy<RenderFrameImpl, RenderViewImpl*, int32> FrameProxy;
+  typedef test_runner::WebFrameTestProxy<RenderFrameImpl, RenderViewImpl*,
+                                         int32> FrameProxy;
 
   FrameProxy* render_frame_proxy = new FrameProxy(render_view, routing_id);
   render_frame_proxy->set_base_proxy(GetWebTestProxyBase(render_view));
@@ -80,9 +85,9 @@ RenderFrameImpl* CreateWebFrameTestProxy(
 
 }  // namespace
 
-
 void EnableWebTestProxyCreation(
-    const base::Callback<void(RenderView*, WebTestProxyBase*)>& callback) {
+    const base::Callback<void(RenderView*, test_runner::WebTestProxyBase*)>&
+        callback) {
   g_callback.Get() = callback;
   RenderViewImpl::InstallCreateHook(CreateWebTestProxy);
   RenderFrameImpl::InstallCreateHook(CreateWebFrameTestProxy);
@@ -390,7 +395,8 @@ std::string DumpHistoryItem(HistoryEntry::HistoryNode* node,
     result.append(indent, ' ');
   }
 
-  std::string url = NormalizeLayoutTestURL(item.urlString().utf8());
+  std::string url =
+      test_runner::NormalizeLayoutTestURL(item.urlString().utf8());
   result.append(url);
   if (!item.target().isEmpty()) {
     result.append(" (in frame \"");

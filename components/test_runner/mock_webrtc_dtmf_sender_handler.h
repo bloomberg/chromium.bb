@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandler.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
-namespace content {
+namespace test_runner {
 
 class WebTestDelegate;
 
@@ -45,6 +45,6 @@ class MockWebRTCDTMFSenderHandler : public blink::WebRTCDTMFSenderHandler {
   DISALLOW_COPY_AND_ASSIGN(MockWebRTCDTMFSenderHandler);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_WEBRTC_DTMF_SENDER_HANDLER_H_

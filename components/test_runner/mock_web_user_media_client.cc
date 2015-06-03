@@ -33,7 +33,7 @@ using blink::WebString;
 using blink::WebUserMediaRequest;
 using blink::WebVector;
 
-namespace content {
+namespace test_runner {
 
 class UserMediaRequestTask : public WebMethodTask<MockWebUserMediaClient> {
  public:
@@ -272,4 +272,4 @@ void MockWebUserMediaClient::requestSources(
   delegate_->PostTask(new SourcesRequestTask(this, request, sources));
 }
 
-}  // namespace content
+}  // namespace test_runner

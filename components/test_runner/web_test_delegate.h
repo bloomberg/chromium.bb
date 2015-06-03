@@ -42,7 +42,7 @@ class TextureLayerClient;
 class SharedBitmapManager;
 }
 
-namespace content {
+namespace test_runner {
 
 class DeviceLightData;
 class GamepadController;
@@ -259,6 +259,6 @@ class WebTestDelegate {
     const blink::WebPluginParams& params) = 0;
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_WEB_TEST_DELEGATE_H_

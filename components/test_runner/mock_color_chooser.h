@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/web/WebColorChooser.h"
 #include "third_party/WebKit/public/web/WebColorChooserClient.h"
 
-namespace content {
+namespace test_runner {
 
 class WebTestDelegate;
 class WebTestProxyBase;
@@ -38,6 +38,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN(MockColorChooser);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_COLOR_CHOOSER_H_

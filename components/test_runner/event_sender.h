@@ -30,7 +30,7 @@ namespace gin {
 class Arguments;
 }
 
-namespace content {
+namespace test_runner {
 
 class TestInterfaces;
 class WebTestDelegate;
@@ -284,6 +284,6 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
   DISALLOW_COPY_AND_ASSIGN(EventSender);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_EVENT_SENDER_H_

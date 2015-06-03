@@ -22,7 +22,7 @@ class WebURL;
 class WebView;
 }
 
-namespace content {
+namespace test_runner {
 
 class TestInterfaces;
 class WebTestDelegate;
@@ -65,6 +65,6 @@ class WebTestInterfaces {
   DISALLOW_COPY_AND_ASSIGN(WebTestInterfaces);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_WEB_TEST_INTERFACES_H_

@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 
-namespace content {
+namespace test_runner {
 
 class WebTaskList;
 
@@ -72,6 +72,6 @@ class WebMethodTask : public WebTask {
   T* object_;
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_WEB_TASK_H_

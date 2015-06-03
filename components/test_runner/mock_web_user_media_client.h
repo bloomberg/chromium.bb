@@ -9,7 +9,7 @@
 #include "components/test_runner/web_task.h"
 #include "third_party/WebKit/public/web/WebUserMediaClient.h"
 
-namespace content {
+namespace test_runner {
 
 class WebTestDelegate;
 
@@ -34,6 +34,6 @@ class MockWebUserMediaClient : public blink::WebUserMediaClient {
   DISALLOW_COPY_AND_ASSIGN(MockWebUserMediaClient);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_WEB_USER_MEDIA_CLIENT_H_

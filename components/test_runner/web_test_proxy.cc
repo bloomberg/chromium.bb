@@ -55,7 +55,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/web/WebWidgetClient.h"
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -1393,4 +1393,4 @@ blink::WebString WebTestProxyBase::acceptLanguages() {
   return blink::WebString::fromUTF8(accept_languages_);
 }
 
-}  // namespace content
+}  // namespace test_runner

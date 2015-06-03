@@ -14,7 +14,7 @@ class WebAudioSourceProvider;
 class WebMediaStreamCenterClient;
 };
 
-namespace content {
+namespace test_runner {
 
 class TestInterfaces;
 
@@ -50,6 +50,6 @@ class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter {
   DISALLOW_COPY_AND_ASSIGN(MockWebMediaStreamCenter);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_WEB_MEDIA_STREAM_CENTER_H_

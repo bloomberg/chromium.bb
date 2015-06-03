@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -149,4 +149,4 @@ blink::WebString SpellCheckClient::autoCorrectWord(
   return blink::WebString();
 }
 
-}  // namespace content
+}  // namespace test_runner

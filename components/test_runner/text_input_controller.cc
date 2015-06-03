@@ -16,7 +16,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
-namespace content {
+namespace test_runner {
 
 class TextInputControllerBindings
     : public gin::Wrappable<TextInputControllerBindings> {
@@ -261,4 +261,4 @@ void TextInputController::SetComposition(const std::string& text) {
   view_->setComposition(web_text, underlines, 0, web_text.length());
 }
 
-}  // namespace content
+}  // namespace test_runner

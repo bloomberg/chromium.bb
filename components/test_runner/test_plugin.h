@@ -29,7 +29,7 @@ namespace cc {
 class SharedBitmap;
 }
 
-namespace content {
+namespace test_runner {
 
 class WebTestDelegate;
 
@@ -179,6 +179,6 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   DISALLOW_COPY_AND_ASSIGN(TestPlugin);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_TEST_PLUGIN_H_

@@ -16,7 +16,7 @@ class WebFrame;
 class WebView;
 }
 
-namespace content {
+namespace test_runner {
 
 // TextInputController is bound to window.textInputController in Javascript
 // when content_shell is running. Layout tests use it to exercise various
@@ -51,6 +51,6 @@ class TextInputController : public base::SupportsWeakPtr<TextInputController> {
   DISALLOW_COPY_AND_ASSIGN(TextInputController);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_TEXT_INPUT_CONTROLLER_H_

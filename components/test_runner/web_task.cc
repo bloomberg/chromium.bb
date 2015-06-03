@@ -8,7 +8,7 @@
 
 #include "third_party/WebKit/public/web/WebKit.h"
 
-namespace content {
+namespace test_runner {
 
 WebTask::WebTask(WebTaskList* list) : task_list_(list) {
   task_list_->RegisterTask(this);
@@ -42,4 +42,4 @@ void WebTaskList::RevokeAll() {
     tasks_[0]->cancel();
 }
 
-}  // namespace content
+}  // namespace test_runner

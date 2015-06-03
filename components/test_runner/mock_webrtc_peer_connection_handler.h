@@ -18,7 +18,7 @@ namespace blink {
 class WebRTCPeerConnectionHandlerClient;
 };
 
-namespace content {
+namespace test_runner {
 
 class TestInterfaces;
 
@@ -98,6 +98,6 @@ class MockWebRTCPeerConnectionHandler
   DISALLOW_COPY_AND_ASSIGN(MockWebRTCPeerConnectionHandler);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_MOCK_WEBRTC_PEER_CONNECTION_HANDLER_H_

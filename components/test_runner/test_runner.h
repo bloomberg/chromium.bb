@@ -32,7 +32,7 @@ class ArrayBufferView;
 class Arguments;
 }
 
-namespace content {
+namespace test_runner {
 
 class InvokeCallbackTask;
 class TestInterfaces;
@@ -822,6 +822,6 @@ class TestRunner : public WebTestRunner,
   DISALLOW_COPY_AND_ASSIGN(TestRunner);
 };
 
-}  // namespace content
+}  // namespace test_runner
 
 #endif  // COMPONENTS_TEST_RUNNER_TEST_RUNNER_H_

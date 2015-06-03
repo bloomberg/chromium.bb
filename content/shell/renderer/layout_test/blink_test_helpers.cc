@@ -16,8 +16,9 @@
 
 namespace content {
 
-void ExportLayoutTestSpecificPreferences(const TestPreferences& from,
-                                         WebPreferences* to) {
+void ExportLayoutTestSpecificPreferences(
+    const test_runner::TestPreferences& from,
+    WebPreferences* to) {
   to->allow_universal_access_from_file_urls =
       from.allow_universal_access_from_file_urls;
   to->dom_paste_enabled = from.dom_paste_allowed;

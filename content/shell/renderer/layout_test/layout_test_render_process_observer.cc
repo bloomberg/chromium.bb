@@ -48,7 +48,7 @@ LayoutTestRenderProcessObserver::~LayoutTestRenderProcessObserver() {
 }
 
 void LayoutTestRenderProcessObserver::SetTestDelegate(
-    WebTestDelegate* delegate) {
+    test_runner::WebTestDelegate* delegate) {
   test_interfaces_->SetDelegate(delegate);
   test_delegate_ = delegate;
 }
@@ -69,7 +69,7 @@ void LayoutTestRenderProcessObserver::WebKitInitialized() {
     WebRuntimeFeatures::enableTestOnlyFeatures(true);
   }
 
-  test_interfaces_.reset(new WebTestInterfaces);
+  test_interfaces_.reset(new test_runner::WebTestInterfaces);
   test_interfaces_->ResetAll();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFontAntialiasing)) {

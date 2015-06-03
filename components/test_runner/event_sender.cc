@@ -45,7 +45,7 @@ using blink::WebTouchPoint;
 using blink::WebVector;
 using blink::WebView;
 
-namespace content {
+namespace test_runner {
 
 namespace {
 
@@ -2480,4 +2480,4 @@ bool EventSender::HandleInputEventOnViewOrPopup(const WebInputEvent& event) {
   return view_->handleInputEvent(event);
 }
 
-}  // namespace content
+}  // namespace test_runner

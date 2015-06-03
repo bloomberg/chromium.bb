@@ -9,7 +9,7 @@
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
-namespace content {
+namespace test_runner {
 
 WebContentSettings::WebContentSettings() : delegate_(0) {
   Reset();
@@ -118,4 +118,4 @@ void WebContentSettings::Reset() {
   running_insecure_content_allowed_ = false;
 }
 
-}  // namespace content
+}  // namespace test_runner
