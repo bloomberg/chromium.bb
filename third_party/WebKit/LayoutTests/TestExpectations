@@ -758,8 +758,6 @@ crbug.com/371716 [ Win ] http/tests/local/formdata/send-form-data.html [ Pass Ti
 # 309184 and 303419 track Android-specific failures
 crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
 
-crbug.com/488184 [ Linux Mac ] http/tests/media/media-source/mediasource-errors.html [ Failure Pass ]
-
 crbug.com/323301 [ Android ] http/tests/media/media-source/mediasource-play-then-seek-back.html [ Pass Crash ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure ]

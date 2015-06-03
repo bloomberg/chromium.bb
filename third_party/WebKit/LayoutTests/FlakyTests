@@ -717,7 +717,6 @@ crbug.com/30536 [ Release XP ] http/tests/local/blob/send-hybrid-blob.html [ Fai
 crbug.com/283723 [ Release Win7 ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/283723 [ Debug Win7 ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/283723 [ Release XP ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
-Bug(gardener) [ Release Mavericks ] http/tests/media/media-source/mediasource-errors.html [ Failure Pass ]
 Bug(gardener) [ Release Retina ] http/tests/media/media-source/mediasource-play-then-seek-back.html [ Crash Pass ]
 crbug.com/418324 [ Release Linux ] http/tests/media/media-source/mediasource-redundant-seek.html [ Failure Pass ]
 crbug.com/418324 [ Debug Linux ] http/tests/media/media-source/mediasource-redundant-seek.html [ Failure Pass ]
