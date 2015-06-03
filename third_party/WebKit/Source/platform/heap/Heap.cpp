@@ -819,25 +819,22 @@ Address NormalPageHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIn
         return largeObject;
     }
 
-    // 2. Check if we should trigger a GC.
+    // 2. Try to allocate from a free list.
     updateRemainingAllocationSize();
-    threadState()->scheduleGCIfNeeded();
-
-    // 3. Try to allocate from a free list.
     Address result = allocateFromFreeList(allocationSize, gcInfoIndex);
     if (result)
         return result;
 
-    // 4. Reset the allocation point.
+    // 3. Reset the allocation point.
     setAllocationPoint(nullptr, 0);
 
-    // 5. Lazily sweep pages of this heap until we find a freed area for
+    // 4. Lazily sweep pages of this heap until we find a freed area for
     // this allocation or we finish sweeping all pages of this heap.
     result = lazySweep(allocationSize, gcInfoIndex);
     if (result)
         return result;
 
-    // 6. Coalesce promptly freed areas and then try to allocate from a free
+    // 5. Coalesce promptly freed areas and then try to allocate from a free
     // list.
     if (coalesce()) {
         result = allocateFromFreeList(allocationSize, gcInfoIndex);
@@ -845,8 +842,11 @@ Address NormalPageHeap::outOfLineAllocate(size_t allocationSize, size_t gcInfoIn
             return result;
     }
 
-    // 7. Complete sweeping.
+    // 6. Complete sweeping.
     threadState()->completeSweep();
+
+    // 7. Check if we should trigger a GC.
+    threadState()->scheduleGCIfNeeded();
 
     // 8. Add a new page to this heap.
     allocatePage();
@@ -899,18 +899,19 @@ Address LargeObjectHeap::allocateLargeObjectPage(size_t allocationSize, size_t g
     // alignment
     ASSERT(!(allocationSize & allocationMask));
 
-    // 1. Check if we should trigger a GC.
-    threadState()->scheduleGCIfNeeded();
-
-    // 2. Try to sweep large objects more than allocationSize bytes
+    // 1. Try to sweep large objects more than allocationSize bytes
     // before allocating a new large object.
     Address result = lazySweep(allocationSize, gcInfoIndex);
     if (result)
         return result;
 
-    // 3. If we have failed in sweeping allocationSize bytes,
+    // 2. If we have failed in sweeping allocationSize bytes,
     // we complete sweeping before allocating this large object.
     threadState()->completeSweep();
+
+    // 3. Check if we should trigger a GC.
+    threadState()->scheduleGCIfNeeded();
+
     return doAllocateLargeObjectPage(allocationSize, gcInfoIndex);
 }
 
