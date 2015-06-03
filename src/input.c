@@ -1138,19 +1138,19 @@ notify_modifiers(struct weston_seat *seat, uint32_t serial)
 	group = xkb_state_serialize_layout(keyboard->xkb_state.state,
 					   XKB_STATE_LAYOUT_EFFECTIVE);
 
-	if (mods_depressed != seat->keyboard->modifiers.mods_depressed ||
-	    mods_latched != seat->keyboard->modifiers.mods_latched ||
-	    mods_locked != seat->keyboard->modifiers.mods_locked ||
-	    group != seat->keyboard->modifiers.group)
+	if (mods_depressed != keyboard->modifiers.mods_depressed ||
+	    mods_latched != keyboard->modifiers.mods_latched ||
+	    mods_locked != keyboard->modifiers.mods_locked ||
+	    group != keyboard->modifiers.group)
 		changed = 1;
 
-	run_modifier_bindings(seat, seat->keyboard->modifiers.mods_depressed,
+	run_modifier_bindings(seat, keyboard->modifiers.mods_depressed,
 	                      mods_depressed);
 
-	seat->keyboard->modifiers.mods_depressed = mods_depressed;
-	seat->keyboard->modifiers.mods_latched = mods_latched;
-	seat->keyboard->modifiers.mods_locked = mods_locked;
-	seat->keyboard->modifiers.group = group;
+	keyboard->modifiers.mods_depressed = mods_depressed;
+	keyboard->modifiers.mods_latched = mods_latched;
+	keyboard->modifiers.mods_locked = mods_locked;
+	keyboard->modifiers.group = group;
 
 	/* And update the modifier_state for bindings. */
 	mods_lookup = mods_depressed | mods_latched;
