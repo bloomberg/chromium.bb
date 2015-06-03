@@ -13,6 +13,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 using base::UTF8ToUTF16;
 using gfx::ElideText;
@@ -300,4 +301,46 @@ base::string16 ElideHost(const GURL& url,
   const base::string16 elided_subdomain = ElideText(
       url_subdomain, font_list, subdomain_width, gfx::ELIDE_HEAD);
   return elided_subdomain + url_domain;
+}
+
+base::string16 FormatUrlForSecurityDisplay(const GURL& url,
+                                           const std::string& languages) {
+  if (!url.is_valid() || url.is_empty() || !url.IsStandard())
+    return net::FormatUrl(url, languages);
+
+  const base::string16 colon(base::ASCIIToUTF16(":"));
+  const base::string16 scheme_separator(
+      base::ASCIIToUTF16(url::kStandardSchemeSeparator));
+
+  if (url.SchemeIsFile()) {
+    return base::ASCIIToUTF16(url::kFileScheme) + scheme_separator +
+           base::UTF8ToUTF16(url.path());
+  }
+
+  if (url.SchemeIsFileSystem()) {
+    const GURL* inner_url = url.inner_url();
+    if (inner_url->SchemeIsFile()) {
+      return base::ASCIIToUTF16(url::kFileSystemScheme) + colon +
+             FormatUrlForSecurityDisplay(*inner_url, languages) +
+             base::UTF8ToUTF16(url.path());
+    }
+    return base::ASCIIToUTF16(url::kFileSystemScheme) + colon +
+           FormatUrlForSecurityDisplay(*inner_url, languages);
+  }
+
+  const GURL origin = url.GetOrigin();
+  const std::string& scheme = origin.scheme();
+  const std::string& host = origin.host();
+
+  base::string16 result = base::UTF8ToUTF16(scheme);
+  result += scheme_separator;
+  result += base::UTF8ToUTF16(host);
+
+  const int port = origin.IntPort();
+  const int default_port = url::DefaultPortForScheme(origin.scheme().c_str(),
+                                                     origin.scheme().length());
+  if (port != url::PORT_UNSPECIFIED && port != default_port)
+    result += colon + base::UTF8ToUTF16(origin.port());
+
+  return result;
 }

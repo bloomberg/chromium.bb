@@ -45,4 +45,20 @@ base::string16 ElideHost(const GURL& host_url,
                          const gfx::FontList& font_list,
                          float available_pixel_width);
 
+// This is a convenience function for formatting a URL in a concise and
+// human-friendly way, to help users make security-related decisions (or in
+// other circumstances when people need to distinguish sites, origins, or
+// otherwise-simplified URLs from each other).
+//
+// Internationalized domain names (IDN) may be presented in Unicode if
+// |languages| accepts the Unicode representation (see |net::FormatUrl| for more
+// details on the algorithm).
+//
+// - Omits the path for standard schemes, excepting file and filesystem.
+// - Omits the port if it is the default for the scheme.
+//
+// Do not use this for URLs which will be parsed or sent to other applications.
+base::string16 FormatUrlForSecurityDisplay(const GURL& origin,
+                                           const std::string& languages);
+
 #endif  // CHROME_BROWSER_UI_ELIDE_URL_H_

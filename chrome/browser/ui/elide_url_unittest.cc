@@ -204,4 +204,123 @@ TEST(TextEliderTest, TestHostEliding) {
             ElideHost(GURL("http://foo.bar"), gfx::FontList(), 2));
 }
 
+TEST(TextEliderTest, FormatUrlForSecurityDisplay) {
+  struct OriginTestData {
+    const char* const description;
+    const char* const input;
+    const wchar_t* const output;
+  };
+
+  const OriginTestData tests[] = {
+      {"Empty URL", "", L""},
+      {"HTTP URL", "http://www.google.com/", L"http://www.google.com"},
+      {"HTTPS URL", "https://www.google.com/", L"https://www.google.com"},
+      {"Standard HTTP port",
+       "http://www.google.com:80/",
+       L"http://www.google.com"},
+      {"Standard HTTPS port",
+       "https://www.google.com:443/",
+       L"https://www.google.com"},
+      {"Standard HTTP port, IDN Chinese",
+       "http://\xe4\xb8\xad\xe5\x9b\xbd.icom.museum:80",
+       L"http://xn--fiqs8s.icom.museum"},
+      {"HTTP URL, IDN Hebrew (RTL)",
+       "http://"
+       "\xd7\x90\xd7\x99\xd7\xa7\xd7\x95\xd7\xb4\xd7\x9d."
+       "\xd7\x99\xd7\xa9\xd7\xa8\xd7\x90\xd7\x9c.museum/",
+       L"http://xn--4dbklr2c8d.xn--4dbrk0ce.museum"},
+      {"HTTP URL with query string, IDN Arabic (RTL)",
+       "http://\xd9\x85\xd8\xb5\xd8\xb1.icom.museum/foo.html?yes=no",
+       L"http://xn--wgbh1c.icom.museum"},
+      {"Non-standard HTTP port",
+       "http://www.google.com:9000/",
+       L"http://www.google.com:9000"},
+      {"Non-standard HTTPS port",
+       "https://www.google.com:9000/",
+       L"https://www.google.com:9000"},
+      {"File URI",
+       "file:///usr/example/file.html",
+       L"file:///usr/example/file.html"},
+      {"File URI with hostname",
+       "file://localhost/usr/example/file.html",
+       L"file:///usr/example/file.html"},
+      {"UNC File URI 1",
+       "file:///CONTOSO/accounting/money.xls",
+       L"file:///CONTOSO/accounting/money.xls"},
+      {"UNC File URI 2",
+       "file:///C:/Program%20Files/Music/Web%20Sys/main.html?REQUEST=RADIO",
+       L"file:///C:/Program%20Files/Music/Web%20Sys/main.html"},
+      {"HTTP URL with path",
+       "http://www.google.com/test.html",
+       L"http://www.google.com"},
+      {"HTTPS URL with path",
+       "https://www.google.com/test.html",
+       L"https://www.google.com"},
+      {"Unusual secure scheme (wss)",
+       "wss://www.google.com/",
+       L"wss://www.google.com"},
+      {"Unusual non-secure scheme (gopher)",
+       "gopher://www.google.com/",
+       L"gopher://www.google.com"},
+      {"Unlisted scheme (chrome)", "chrome://version", L"chrome://version"},
+      {"HTTP IP address", "http://173.194.65.103", L"http://173.194.65.103"},
+      {"HTTPS IP address", "https://173.194.65.103", L"https://173.194.65.103"},
+      {"HTTP IPv6 address",
+       "http://[FE80:0000:0000:0000:0202:B3FF:FE1E:8329]/",
+       L"http://[fe80::202:b3ff:fe1e:8329]"},
+      {"HTTPS IPv6 address with port",
+       "https://[2001:db8:0:1]:443/",
+       L"https://[2001:db8:0:1]"},
+      {"HTTPS IP address, non-default port",
+       "https://173.194.65.103:8443",
+       L"https://173.194.65.103:8443"},
+      {"HTTP filesystem: URL with path",
+       "filesystem:http://www.google.com/temporary/test.html",
+       L"filesystem:http://www.google.com"},
+      {"File filesystem: URL with path",
+       "filesystem:file://localhost/temporary/stuff/test.html?z=fun&goat=billy",
+       L"filesystem:file:///temporary/stuff/test.html"},
+      {"Invalid scheme 1",
+       "twelve://www.cyber.org/wow.php",
+       L"twelve://www.cyber.org/wow.php"},
+      {"Invalid scheme 2",
+       "://www.cyber.org/wow.php",
+       L"://www.cyber.org/wow.php"},
+      {"Invalid host 1", "https://www.cyber../wow.php", L"https://www.cyber.."},
+      {"Invalid host 2", "https://www...cyber/wow.php", L"https://www...cyber"},
+      {"Invalid port 1",
+       "https://173.194.65.103:000",
+       L"https://173.194.65.103:0"},
+      {"Invalid port 2",
+       "https://173.194.65.103:gruffle",
+       L"https://173.194.65.103:gruffle"},
+      {"Invalid port 3",
+       "https://173.194.65.103:/hello.aspx",
+       L"https://173.194.65.103"},
+      {"Trailing dot in DNS name",
+       "https://www.example.com./get/goat",
+       L"https://www.example.com."},
+      {"Blob URL",
+       "blob:http%3A//www.html5rocks.com/4d4ff040-6d61-4446-86d3-13ca07ec9ab9",
+       L"blob:http%3A//www.html5rocks.com/"
+       L"4d4ff040-6d61-4446-86d3-13ca07ec9ab9"},
+  };
+
+  const char languages[] = "zh-TW,en-US,en,am,ar-EG,ar";
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    base::string16 formatted =
+        FormatUrlForSecurityDisplay(GURL(tests[i].input), std::string());
+    EXPECT_EQ(base::WideToUTF16(tests[i].output), formatted)
+        << tests[i].description;
+    base::string16 formatted_with_languages =
+        FormatUrlForSecurityDisplay(GURL(tests[i].input), languages);
+    EXPECT_EQ(base::WideToUTF16(tests[i].output), formatted_with_languages)
+        << tests[i].description;
+  }
+
+  base::string16 formatted = FormatUrlForSecurityDisplay(GURL(), std::string());
+  EXPECT_EQ(base::string16(), formatted)
+      << "Explicitly test the 0-argument GURL constructor";
+}
+
 }  // namespace

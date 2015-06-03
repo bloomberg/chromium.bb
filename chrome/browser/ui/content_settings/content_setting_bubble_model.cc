@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
+#include "chrome/browser/ui/elide_url.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -38,7 +39,6 @@
 #include "content/public/common/origin_util.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -274,12 +274,8 @@ bool ContentSettingSingleRadioGroup::settings_changed() const {
 // content type and setting the default value based on the content setting.
 void ContentSettingSingleRadioGroup::SetRadioGroup() {
   GURL url = web_contents()->GetURL();
-  base::string16 display_host;
-  net::AppendFormattedHost(
-      url,
-      profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
-      &display_host);
-
+  base::string16 display_host = FormatUrlForSecurityDisplay(
+      url, profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   if (display_host.empty())
     display_host = base::ASCIIToUTF16(url.spec());
 
@@ -558,7 +554,7 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
             ->GetBlockedPopupRequests();
     for (const std::pair<int32, GURL>& blocked_popup : blocked_popups) {
       std::string title(blocked_popup.second.spec());
-      // The popup may not have a valid URL.
+      // The pop-up may not have a valid URL.
       if (title.empty())
         title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
       ListItem popup_item(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -685,11 +681,8 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   RadioGroup radio_group;
   radio_group.url = url;
 
-  base::string16 display_host_utf16;
-  net::AppendFormattedHost(
-      url,
-      profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
-      &display_host_utf16);
+  base::string16 display_host_utf16 = FormatUrlForSecurityDisplay(
+      url, profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   std::string display_host(base::UTF16ToUTF8(display_host_utf16));
   if (display_host.empty())
     display_host = url.spec();
