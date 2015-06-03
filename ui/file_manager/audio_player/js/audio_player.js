@@ -67,6 +67,7 @@ function AudioPlayer(container) {
         this.onExternallyUnmounted_.bind(this));
 
     window.addEventListener('resize', this.onResize_.bind(this));
+    document.addEventListener('keydown', this.onKeyDown_.bind(this));
 
     // Show the window after DOM is processed.
     var currentWindow = chrome.app.window.current();
@@ -288,6 +289,30 @@ AudioPlayer.prototype.onResize_ = function(event) {
              window.innerHeight < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
     this.isExpanded_ = false;
     this.model_.expanded = false;
+  }
+};
+
+/**
+ * Handles keydown event to open inspector with shortcut keys.
+ *
+ * @param {Event} event KeyDown event.
+ * @private
+ */
+AudioPlayer.prototype.onKeyDown_ = function(event) {
+  switch (util.getKeyModifiers(event) + event.keyIdentifier) {
+    // Handle debug shortcut keys.
+    case 'Ctrl-Shift-U+0049': // Ctrl+Shift+I
+      chrome.fileManagerPrivate.openInspector('normal');
+      break;
+    case 'Ctrl-Shift-U+004A': // Ctrl+Shift+J
+      chrome.fileManagerPrivate.openInspector('console');
+      break;
+    case 'Ctrl-Shift-U+0043': // Ctrl+Shift+C
+      chrome.fileManagerPrivate.openInspector('element');
+      break;
+    case 'Ctrl-Shift-U+0042': // Ctrl+Shift+B
+      chrome.fileManagerPrivate.openInspector('background');
+      break;
   }
 };
 
