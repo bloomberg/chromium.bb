@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -84,6 +85,12 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         });
 
         mWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public Bitmap getDefaultVideoPoster() {
+                return Bitmap.createBitmap(
+                        new int[] {Color.TRANSPARENT}, 1, 1, Bitmap.Config.ARGB_8888);
+            }
+
             @Override
             public void onGeolocationPermissionsShowPrompt(String origin,
                     GeolocationPermissions.Callback callback) {
