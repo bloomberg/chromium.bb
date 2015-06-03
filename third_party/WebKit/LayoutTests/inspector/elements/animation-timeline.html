@@ -29,9 +29,9 @@ function startAnimationWithStepTiming()
 function test()
 {
     InspectorTest.selectNodeWithId("node", step1);
-    var stylesPane = WebInspector.panels.elements.sidebarPanes.styles;
-    stylesPane._toggleAnimationsControlPane();
-    var timeline = stylesPane._animationTimeline;
+    var timeline = new WebInspector.AnimationTimeline();
+    var elementsPanel = WebInspector.ElementsPanel.instance();
+    elementsPanel.setWidgetBelowDOM(timeline);
     // Override timeline width for testing
     WebInspector.AnimationTimeline.prototype.width = function() { return 1000; }
     // Override animation color for testing
