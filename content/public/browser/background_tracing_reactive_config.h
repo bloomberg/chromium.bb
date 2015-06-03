@@ -20,7 +20,7 @@ struct CONTENT_EXPORT BackgroundTracingReactiveConfig
   BackgroundTracingReactiveConfig();
   ~BackgroundTracingReactiveConfig() override;
 
-  enum RuleType { TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL };
+  enum RuleType { TRACE_FOR_10S_OR_TRIGGER_OR_FULL };
   struct TracingRule {
     RuleType type;
     std::string trigger_name;

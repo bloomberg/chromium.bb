@@ -113,33 +113,33 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromInvalidString) {
   EXPECT_FALSE(ReadFromJSONString(
       "{\"mode\":\"reactive\","
       "\"configs\": [{\"rule\": "
-      "\"trace_on_trigger_until_10s_or_trigger_or_full\"}]}"));
+      "\"trace_for_10s_or_trigger_or_full\"}]}"));
 
   EXPECT_FALSE(ReadFromJSONString(
       "{\"mode\":\"reactive\","
       "\"configs\": [{\"rule\": "
-      "\"trace_on_trigger_until_10s_or_trigger_or_full\", \"category\": "
+      "\"trace_for_10s_or_trigger_or_full\", \"category\": "
       "[]}]}"));
   EXPECT_FALSE(ReadFromJSONString(
       "{\"mode\":\"reactive\","
       "\"configs\": [{\"rule\": "
-      "\"trace_on_trigger_until_10s_or_trigger_or_full\", \"category\": "
+      "\"trace_for_10s_or_trigger_or_full\", \"category\": "
       "\"\"}]}"));
   EXPECT_FALSE(ReadFromJSONString(
       "{\"mode\":\"reactive\","
       "\"configs\": [{\"rule\": "
-      "\"trace_on_trigger_until_10s_or_trigger_or_full\", \"category\": "
+      "\"trace_for_10s_or_trigger_or_full\", \"category\": "
       "\"benchmark\"}]}"));
 
   EXPECT_FALSE(ReadFromJSONString(
       "{\"mode\":\"reactive\","
       "\"configs\": [{\"rule\": "
-      "\"trace_on_trigger_until_10s_or_trigger_or_full\", \"category\": "
+      "\"trace_for_10s_or_trigger_or_full\", \"category\": "
       "\"benchmark\", \"trigger_name\": []}]}"));
   EXPECT_FALSE(ReadFromJSONString(
       "{\"mode\":\"reactive\","
       "\"configs\": [{\"rule\": "
-      "\"trace_on_trigger_until_10s_or_trigger_or_full\", \"category\": "
+      "\"trace_for_10s_or_trigger_or_full\", \"category\": "
       "\"benchmark\", \"trigger_name\": 0}]}"));
 }
 
@@ -206,51 +206,47 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
 
   config = ReadReactiveFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
-      "\"TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL\", "
+      "\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\", "
       "\"category\": \"BENCHMARK\", \"trigger_name\": \"foo\"}]}");
   EXPECT_TRUE(config);
   EXPECT_EQ(config->mode, BackgroundTracingConfig::REACTIVE_TRACING_MODE);
   EXPECT_EQ(config->configs.size(), 1u);
   EXPECT_EQ(config->configs[0].type,
-            BackgroundTracingReactiveConfig::
-                TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL);
+            BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL);
   EXPECT_EQ(config->configs[0].trigger_name, "foo");
   EXPECT_EQ(config->configs[0].category_preset,
             BackgroundTracingConfig::BENCHMARK);
 
   config = ReadReactiveFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
-      "\"TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL\", "
+      "\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\", "
       "\"category\": \"BENCHMARK_DEEP\", \"trigger_name\": \"foo\"}]}");
   EXPECT_TRUE(config);
   EXPECT_EQ(config->mode, BackgroundTracingConfig::REACTIVE_TRACING_MODE);
   EXPECT_EQ(config->configs.size(), 1u);
   EXPECT_EQ(config->configs[0].type,
-            BackgroundTracingReactiveConfig::
-                TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL);
+            BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL);
   EXPECT_EQ(config->configs[0].trigger_name, "foo");
   EXPECT_EQ(config->configs[0].category_preset,
             BackgroundTracingConfig::BENCHMARK_DEEP);
 
   config = ReadReactiveFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
-      "\"TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL\", "
+      "\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\", "
       "\"category\": \"BENCHMARK_DEEP\", \"trigger_name\": "
       "\"foo1\"},{\"rule\": "
-      "\"TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL\", "
+      "\"TRACE_FOR_10S_OR_TRIGGER_OR_FULL\", "
       "\"category\": \"BENCHMARK_DEEP\", \"trigger_name\": \"foo2\"}]}");
   EXPECT_TRUE(config);
   EXPECT_EQ(config->mode, BackgroundTracingConfig::REACTIVE_TRACING_MODE);
   EXPECT_EQ(config->configs.size(), 2u);
   EXPECT_EQ(config->configs[0].type,
-            BackgroundTracingReactiveConfig::
-                TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL);
+            BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL);
   EXPECT_EQ(config->configs[0].trigger_name, "foo1");
   EXPECT_EQ(config->configs[0].category_preset,
             BackgroundTracingConfig::BENCHMARK_DEEP);
   EXPECT_EQ(config->configs[1].type,
-            BackgroundTracingReactiveConfig::
-                TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL);
+            BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL);
   EXPECT_EQ(config->configs[1].trigger_name, "foo2");
   EXPECT_EQ(config->configs[1].category_preset,
             BackgroundTracingConfig::BENCHMARK_DEEP);
@@ -347,14 +343,14 @@ TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
 
     BackgroundTracingReactiveConfig::TracingRule rule;
     rule.type = BackgroundTracingReactiveConfig::
-        TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL;
+        TRACE_FOR_10S_OR_TRIGGER_OR_FULL;
     rule.trigger_name = "foo";
     rule.category_preset = BackgroundTracingConfig::BENCHMARK_DEEP;
     config->configs.push_back(rule);
     EXPECT_EQ(ConfigToString(config.get()),
               "{\"configs\":[{\"category\":\"BENCHMARK_DEEP\",\"rule\":\"TRACE_"
-              "ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL\",\"trigger_"
-              "name\":\"foo\"}],\"mode\":\"REACTIVE_TRACING_MODE\"}");
+              "FOR_10S_OR_TRIGGER_OR_FULL\",\"trigger_name\":\"foo\"}],\"mode\""
+              ":\"REACTIVE_TRACING_MODE\"}");
   }
 
   {
@@ -362,7 +358,7 @@ TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
 
     BackgroundTracingReactiveConfig::TracingRule rule;
     rule.type = BackgroundTracingReactiveConfig::
-        TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL;
+        TRACE_FOR_10S_OR_TRIGGER_OR_FULL;
     rule.trigger_name = "foo1";
     rule.category_preset = BackgroundTracingConfig::BENCHMARK_DEEP;
     config->configs.push_back(rule);
@@ -370,11 +366,10 @@ TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
     config->configs.push_back(rule);
     EXPECT_EQ(ConfigToString(config.get()),
               "{\"configs\":[{\"category\":\"BENCHMARK_DEEP\",\"rule\":\"TRACE_"
-              "ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL\",\"trigger_"
-              "name\":\"foo1\"},{\"category\":\"BENCHMARK_DEEP\",\"rule\":"
-              "\"TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL\","
-              "\"trigger_name\":\"foo2\"}],\"mode\":\"REACTIVE_TRACING_"
-              "MODE\"}");
+              "FOR_10S_OR_TRIGGER_OR_FULL\",\"trigger_name\":\"foo1\"},{"
+              "\"category\":\"BENCHMARK_DEEP\",\"rule\":\"TRACE_FOR_10S_OR_"
+              "TRIGGER_OR_FULL\",\"trigger_name\":\"foo2\"}],\"mode\":"
+              "\"REACTIVE_TRACING_MODE\"}");
   }
 }
 

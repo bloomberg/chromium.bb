@@ -27,8 +27,8 @@ const char kConfigRuleTriggerNameKey[] = "trigger_name";
 const char kPreemptiveConfigRuleMonitorNamed[] =
     "MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED";
 
-const char kReactiveConfigRuleTraceOnTriggerOr10sOrTriggerOrFull[] =
-    "TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL";
+const char kReactiveConfigRuleTraceFor10sOrTriggerOrFull[] =
+    "TRACE_FOR_10S_OR_TRIGGER_OR_FULL";
 
 std::string CategoryPresetToString(
     BackgroundTracingConfig::CategoryPreset category_preset) {
@@ -133,11 +133,11 @@ BackgroundTracingReactiveConfig_FromDict(const base::DictionaryValue* dict) {
     if (!config_dict->GetString(kConfigRuleKey, &type))
       return nullptr;
 
-    if (type != kReactiveConfigRuleTraceOnTriggerOr10sOrTriggerOrFull)
+    if (type != kReactiveConfigRuleTraceFor10sOrTriggerOrFull)
       return nullptr;
 
     rule.type = BackgroundTracingReactiveConfig::
-        TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL;
+        TRACE_FOR_10S_OR_TRIGGER_OR_FULL;
 
     std::string trigger_name;
     if (!config_dict->GetString(kConfigRuleTriggerNameKey, &trigger_name))
@@ -194,11 +194,10 @@ bool BackgroundTracingReactiveConfig_IntoDict(
         CategoryPresetToString(config->configs[i].category_preset));
 
     switch (config->configs[i].type) {
-      case BackgroundTracingReactiveConfig::
-          TRACE_ON_MANUAL_TRIGGER_UNTIL_10S_OR_NEXT_TRIGGER_OR_FULL:
+      case BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL:
         config_dict->SetString(
             kConfigRuleKey,
-            kReactiveConfigRuleTraceOnTriggerOr10sOrTriggerOrFull);
+            kReactiveConfigRuleTraceFor10sOrTriggerOrFull);
         break;
       default:
         NOTREACHED();

@@ -85,6 +85,8 @@ class BackgroundTracingManager {
 
   virtual void InvalidateTriggerHandlesForTesting() = 0;
 
+  virtual void FireTimerForTesting() = 0;
+
  protected:
   virtual ~BackgroundTracingManager() {}
 };

@@ -67,7 +67,23 @@ scoped_ptr<BackgroundTracingPreemptiveConfig> CreatePreemptiveConfig() {
   BackgroundTracingPreemptiveConfig::MonitoringRule rule;
   rule.type =
       BackgroundTracingPreemptiveConfig::MONITOR_AND_DUMP_WHEN_TRIGGER_NAMED;
-  rule.named_trigger_info.trigger_name = "test";
+  rule.named_trigger_info.trigger_name = "preemptive_test";
+
+  config->configs.push_back(rule);
+
+  return config.Pass();
+}
+
+scoped_ptr<BackgroundTracingReactiveConfig> CreateReactiveConfig() {
+  scoped_ptr<BackgroundTracingReactiveConfig> config(
+      new BackgroundTracingReactiveConfig());
+
+  BackgroundTracingReactiveConfig::TracingRule rule;
+  rule.type =
+      BackgroundTracingReactiveConfig::TRACE_FOR_10S_OR_TRIGGER_OR_FULL;
+  rule.trigger_name = "reactive_test";
+  rule.category_preset =
+      BackgroundTracingConfig::CategoryPreset::BENCHMARK_DEEP;
 
   config->configs.push_back(rule);
 
@@ -98,7 +114,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         CreatePreemptiveConfig();
 
     BackgroundTracingManager::TriggerHandle handle =
-        BackgroundTracingManager::GetInstance()->RegisterTriggerType("test");
+        BackgroundTracingManager::
+            GetInstance()->RegisterTriggerType("preemptive_test");
 
     BackgroundTracingManager::GetInstance()->SetActiveScenario(
         config.Pass(), upload_config_wrapper.get_receive_callback(), true);
@@ -130,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     content::BackgroundTracingManager::TriggerHandle handle =
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
-            "test");
+            "preemptive_test");
 
     BackgroundTracingManager::GetInstance()->SetActiveScenario(
         config.Pass(), upload_config_wrapper.get_receive_callback(), true);
@@ -208,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     content::BackgroundTracingManager::TriggerHandle handle =
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
-            "test");
+            "preemptive_test");
 
     BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
         handle,
@@ -269,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
     content::BackgroundTracingManager::TriggerHandle handle =
         content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
-            "test");
+            "preemptive_test");
 
     content::BackgroundTracingManager::GetInstance()
         ->InvalidateTriggerHandlesForTesting();
@@ -290,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   }
 }
 
-// This tests that reactive mode configs will fail.
+// This tests that preemptive mode configs will fail.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        DoesNotAllowPreemptiveConfigThatsNotManual) {
   {
@@ -316,22 +333,110 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   }
 }
 
-// This tests that reactive mode configs will fail.
+// This tests that reactive mode records and terminates with timeout.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       DoesNotAllowReactiveConfig) {
+                       ReactiveTimeoutTermination) {
   {
     SetupBackgroundTracingManager();
 
+    base::RunLoop run_loop;
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
-        (base::Closure()));
+        run_loop.QuitClosure());
 
-    scoped_ptr<BackgroundTracingConfig> config(
-        new BackgroundTracingReactiveConfig());
+    scoped_ptr<BackgroundTracingReactiveConfig> config =
+        CreateReactiveConfig();
 
-    bool result = BackgroundTracingManager::GetInstance()->SetActiveScenario(
+    BackgroundTracingManager::TriggerHandle handle =
+        BackgroundTracingManager::
+            GetInstance()->RegisterTriggerType("reactive_test");
+
+    BackgroundTracingManager::GetInstance()->SetActiveScenario(
         config.Pass(), upload_config_wrapper.get_receive_callback(), true);
 
-    EXPECT_FALSE(result);
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
+
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+
+    BackgroundTracingManager::GetInstance()->FireTimerForTesting();
+
+    run_loop.Run();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
+  }
+}
+
+// This tests that reactive mode records and terminates with a second trigger.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       ReactiveSecondTriggerTermination) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        run_loop.QuitClosure());
+
+    scoped_ptr<BackgroundTracingReactiveConfig> config =
+        CreateReactiveConfig();
+
+    BackgroundTracingManager::TriggerHandle handle =
+        BackgroundTracingManager::
+            GetInstance()->RegisterTriggerType("reactive_test");
+
+    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        config.Pass(), upload_config_wrapper.get_receive_callback(), true);
+
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
+
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+    // second trigger to terminate.
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+
+    run_loop.Run();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
+  }
+}
+
+// This tests a third trigger in reactive more does not start another trace.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       ReactiveThirdTriggerTimeout) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        run_loop.QuitClosure());
+
+    scoped_ptr<BackgroundTracingReactiveConfig> config =
+        CreateReactiveConfig();
+
+    BackgroundTracingManager::TriggerHandle handle =
+        BackgroundTracingManager::
+            GetInstance()->RegisterTriggerType("reactive_test");
+
+    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        config.Pass(), upload_config_wrapper.get_receive_callback(), true);
+
+    BackgroundTracingManager::GetInstance()->WhenIdle(
+        base::Bind(&DisableScenarioWhenIdle));
+
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+    // second trigger to terminate.
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), true));
+    // third trigger to trigger again, fails as it is still gathering.
+    BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), false));
+
+    run_loop.Run();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
   }
 }
 
