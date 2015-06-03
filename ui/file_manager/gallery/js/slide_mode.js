@@ -226,34 +226,30 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @private
    * @const
    */
-  this.options_ = util.createChild(queryRequiredElement(
-      this.topToolbar_, '.filename-spacer'), 'options');
+  this.options_ = queryRequiredElement(this.bottomToolbar_, '.options');
 
   /**
    * @type {!HTMLElement}
    * @private
    * @const
    */
-  this.savedLabel_ = util.createChild(this.options_, 'saved');
-  this.savedLabel_.textContent = this.displayStringFunction_('GALLERY_SAVED');
+  this.savedLabel_ = queryRequiredElement(this.options_, '.saved');
 
   /**
    * @type {!HTMLElement}
    * @private
    * @const
    */
-  this.overwriteOriginalBox_ = util.createChild(
-      this.options_, 'overwrite-original');
+  this.overwriteOriginalBox_ = queryRequiredElement(
+      this.options_, '.overwrite-original');
 
   /**
    * @type {!HTMLElement}
    * @private
    * @const
    */
-  this.overwriteOriginal_ = util.createChild(
-      this.overwriteOriginalBox_, '', 'input');
-  this.overwriteOriginal_.type = 'checkbox';
-  this.overwriteOriginal_.id = 'overwrite-checkbox';
+  this.overwriteOriginal_ = queryRequiredElement(
+      this.overwriteOriginalBox_, '#overwrite-checkbox')
   chrome.storage.local.get(SlideMode.OVERWRITE_KEY, function(values) {
     var value = values[SlideMode.OVERWRITE_KEY];
     // Out-of-the box default is 'true'
@@ -262,16 +258,6 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
   }.bind(this));
   this.overwriteOriginal_.addEventListener('click',
       this.onOverwriteOriginalClick_.bind(this));
-
-  /**
-   * @type {!HTMLElement}
-   * @const
-   */
-  var overwriteLabel = util.createChild(
-      this.overwriteOriginalBox_, '', 'label');
-  overwriteLabel.textContent =
-      this.displayStringFunction_('GALLERY_OVERWRITE_ORIGINAL');
-  overwriteLabel.setAttribute('for', 'overwrite-checkbox');
 
   /**
    * @type {!HTMLElement}

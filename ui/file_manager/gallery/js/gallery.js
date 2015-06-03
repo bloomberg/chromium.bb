@@ -137,8 +137,6 @@ function Gallery(volumeManager) {
   this.filenameEdit_.addEventListener('keydown',
       this.onFilenameEditKeydown_.bind(this));
 
-  var middleSpacer = queryRequiredElement(this.bottomToolbar_,
-      '.middle-spacer');
   var buttonSpacer = queryRequiredElement(this.topToolbar_, '.button-spacer');
 
   this.prompt_ = new ImageEditor.Prompt(this.container_, strf);

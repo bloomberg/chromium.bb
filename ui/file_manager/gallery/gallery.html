@@ -107,8 +107,19 @@
       </div>
     </div>
     <div id="bottom-toolbar" class="toolbar bottom tool dimmable">
-      <div class="middle-spacer">
+      <div class="slide-mode-toolbar">
         <div class="ribbon-spacer"></div>
+      </div>
+
+      <div class="edit-mode-toolbar">
+        <div class="options">
+          <!-- TODO(yawano): Replace overwrite original checkbox with undo toast. -->
+          <div class="overwrite-original">
+            <input id="overwrite-checkbox" type="checkbox"></input>
+            <div class="label" for="overwrite-checkbox" i18n-content="GALLERY_OVERWRITE_ORIGINAL"></div>
+          </div>
+          <div class="saved" i18n-content="GALLERY_SAVED"></div>
+        </div>
         <div class="edit-bar-spacer"></div>
       </div>
     </div>
