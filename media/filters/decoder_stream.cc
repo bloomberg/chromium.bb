@@ -288,7 +288,10 @@ void DecoderStream<StreamType>::Decode(
 
   int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
 
-  TRACE_EVENT_ASYNC_BEGIN0("media", GetTraceString<StreamType>(), this);
+  TRACE_EVENT_ASYNC_BEGIN2(
+      "media", GetTraceString<StreamType>(), this, "key frame",
+      !buffer->end_of_stream() && buffer->is_key_frame(), "timestamp (ms)",
+      buffer->timestamp().InMilliseconds());
 
   if (buffer->end_of_stream())
     decoding_eos_ = true;
