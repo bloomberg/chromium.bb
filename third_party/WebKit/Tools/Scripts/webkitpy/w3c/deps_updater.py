@@ -5,7 +5,7 @@
 """Pull latest revisions of the W3C test repos and update our DEPS entries."""
 
 import argparse
-
+import re
 
 from webkitpy.common.webkit_finder import WebKitFinder
 
@@ -79,6 +79,7 @@ class DepsUpdater(object):
         self.print_('## cloning %s' % repo)
         self.cd('')
         self.run(['git', 'clone', url])
+        self.cd(re.compile('.*/([^/]+)\.git').match(url).group(1))
 
         self.print_('## noting the revision we are importing')
         master_commitish = self.run(['git', 'show-ref', 'origin/master'])[1].split()[0]
