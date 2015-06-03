@@ -30,12 +30,10 @@
 #include "core/html/canvas/CanvasImageSource.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 
+class SkPaint;
+
 namespace blink {
 class WebGraphicsContext3D;
-}
-
-namespace blink {
-
 class ExceptionState;
 class HTMLImageLoader;
 class GraphicsContext;
@@ -66,7 +64,7 @@ public:
     unsigned webkitDroppedFrameCount() const;
 
     // Used by canvas to gain raw pixel access
-    void paintCurrentFrameInContext(GraphicsContext*, const IntRect&) const;
+    void paintCurrentFrame(SkCanvas*, const IntRect&, const SkPaint*) const;
 
     // Used by WebGL to do GPU-GPU textures copy if possible.
     bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GC3Dint level, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY);

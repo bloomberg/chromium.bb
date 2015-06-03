@@ -52,17 +52,17 @@ public:
 
     LayoutBox* embeddedContentBox() const;
 
-    virtual bool isSVGImage() const override { return true; }
-    virtual IntSize size() const override { return m_intrinsicSize; }
+    bool isSVGImage() const override { return true; }
+    IntSize size() const override { return m_intrinsicSize; }
     void setURL(const KURL& url) { m_url = url; }
 
-    virtual bool currentFrameHasSingleSecurityOrigin() const override;
+    bool currentFrameHasSingleSecurityOrigin() const override;
 
-    virtual void startAnimation(CatchUpAnimation = CatchUp) override;
-    virtual void stopAnimation() override;
-    virtual void resetAnimation() override;
+    void startAnimation(CatchUpAnimation = CatchUp) override;
+    void stopAnimation() override;
+    void resetAnimation() override;
 
-    virtual bool bitmapForCurrentFrame(SkBitmap*) override;
+    bool bitmapForCurrentFrame(SkBitmap*) override;
 
     // Returns the SVG image document's frame.
     FrameView* frameView() const;
@@ -83,25 +83,25 @@ private:
     virtual ~SVGImage();
 
 
-    virtual String filenameExtension() const override;
+    String filenameExtension() const override;
 
-    virtual void setContainerSize(const IntSize&) override;
+    void setContainerSize(const IntSize&) override;
     IntSize containerSize() const;
-    virtual bool usesContainerSize() const override { return true; }
-    virtual void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
+    bool usesContainerSize() const override { return true; }
+    void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
 
-    virtual bool dataChanged(bool allDataReceived) override;
+    bool dataChanged(bool allDataReceived) override;
 
     // FIXME: SVGImages are underreporting decoded sizes and will be unable
     // to prune because these functions are not implemented yet.
-    virtual void destroyDecodedData(bool) override { }
+    void destroyDecodedData(bool) override { }
 
     // FIXME: Implement this to be less conservative.
-    virtual bool currentFrameKnownToBeOpaque() override { return false; }
+    bool currentFrameKnownToBeOpaque() override { return false; }
 
     SVGImage(ImageObserver*);
-    void draw(GraphicsContext*, const FloatRect& fromRect, const FloatRect& toRect, SkXfermode::Mode, RespectImageOrientationEnum) override;
-    void drawForContainer(GraphicsContext*, const FloatSize, float, const FloatRect&, const FloatRect&, SkXfermode::Mode);
+    void draw(SkCanvas*, const SkPaint&, const FloatRect& fromRect, const FloatRect& toRect, RespectImageOrientationEnum, ImageClampingMode) override;
+    void drawForContainer(SkCanvas*, const SkPaint&, const FloatSize, float, const FloatRect&, const FloatRect&);
     void drawPatternForContainer(GraphicsContext*, const FloatSize, float, const FloatRect&, const FloatSize&, const FloatPoint&,
         SkXfermode::Mode, const FloatRect&, const IntSize& repeatSpacing);
 

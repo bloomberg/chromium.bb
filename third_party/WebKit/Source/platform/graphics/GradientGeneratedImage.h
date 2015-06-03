@@ -47,9 +47,8 @@ public:
     }
 
 protected:
-    void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
-        SkXfermode::Mode, RespectImageOrientationEnum) override;
-    virtual void drawTile(GraphicsContext*, const FloatRect&) final;
+    void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override;
+    void drawTile(GraphicsContext*, const FloatRect&) final;
 
     GradientGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)
         : GeneratedImage(size)

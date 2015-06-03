@@ -280,57 +280,67 @@ String BitmapImage::filenameExtension() const
     return m_source.filenameExtension();
 }
 
-void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum shouldRespectImageOrientation)
+bool BitmapImage::isLazyDecodedBitmap()
+{
+    SkBitmap bitmap;
+    if (!bitmapForCurrentFrame(&bitmap))
+        return false;
+    return DeferredImageDecoder::isLazyDecoded(bitmap);
+}
+
+bool BitmapImage::isImmutableBitmap()
+{
+    SkBitmap bitmap;
+    if (!bitmapForCurrentFrame(&bitmap))
+        return false;
+    return bitmap.isImmutable();
+}
+
+void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum shouldRespectImageOrientation, ImageClampingMode clampMode)
 {
     TRACE_EVENT0("skia", "BitmapImage::draw");
+
+    ASSERT(dstRect.width() >= 0 && dstRect.height() >= 0);
+    ASSERT(srcRect.width() >= 0 && srcRect.height() >= 0);
     SkBitmap bitmap;
     if (!bitmapForCurrentFrame(&bitmap))
         return; // It's too early and we don't have an image yet.
 
-    FloatRect normDstRect = adjustForNegativeSize(dstRect);
-    FloatRect normSrcRect = adjustForNegativeSize(srcRect);
-    normSrcRect.intersect(FloatRect(0, 0, bitmap.width(), bitmap.height()));
+    FloatRect adjustedSrcRect = srcRect;
+    adjustedSrcRect.intersect(FloatRect(0, 0, bitmap.width(), bitmap.height()));
 
-    if (normSrcRect.isEmpty() || normDstRect.isEmpty())
+    if (adjustedSrcRect.isEmpty() || dstRect.isEmpty())
         return; // Nothing to draw.
 
     ImageOrientation orientation = DefaultImageOrientation;
     if (shouldRespectImageOrientation == RespectImageOrientation)
         orientation = frameOrientationAtIndex(m_currentFrame);
 
-    GraphicsContextStateSaver saveContext(*ctxt, false);
+    int initialSaveCount = canvas->getSaveCount();
+    FloatRect adjustedDstRect = dstRect;
     if (orientation != DefaultImageOrientation) {
-        saveContext.save();
+        canvas->save();
 
         // ImageOrientation expects the origin to be at (0, 0)
-        ctxt->translate(normDstRect.x(), normDstRect.y());
-        normDstRect.setLocation(FloatPoint());
+        canvas->translate(adjustedDstRect.x(), adjustedDstRect.y());
+        adjustedDstRect.setLocation(FloatPoint());
 
-        ctxt->concatCTM(orientation.transformFromDefault(normDstRect.size()));
+        canvas->concat(affineTransformToSkMatrix(orientation.transformFromDefault(adjustedDstRect.size())));
 
         if (orientation.usesWidthAsHeight()) {
             // The destination rect will have it's width and height already reversed for the orientation of
             // the image, as it was needed for page layout, so we need to reverse it back here.
-            normDstRect = FloatRect(normDstRect.x(), normDstRect.y(), normDstRect.height(), normDstRect.width());
+            adjustedDstRect = FloatRect(adjustedDstRect.x(), adjustedDstRect.y(), adjustedDstRect.height(), adjustedDstRect.width());
         }
     }
 
-    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap);
-    bool isOpaque = bitmap.isOpaque();
+    SkRect skSrcRect = adjustedSrcRect;
+    SkCanvas::DrawBitmapRectFlags flags =
+        clampMode == ClampImageToSourceRect ? SkCanvas::kNone_DrawBitmapRectFlag : SkCanvas::kBleed_DrawBitmapRectFlag;
+    canvas->drawBitmapRectToRect(bitmap, &skSrcRect, adjustedDstRect, &paint, flags);
+    canvas->restoreToCount(initialSaveCount);
 
-    {
-        SkPaint paint;
-        SkRect skSrcRect = normSrcRect;
-        int initialSaveCount = ctxt->preparePaintForDrawRectToRect(&paint, skSrcRect, normDstRect, compositeOp, !isOpaque, isLazyDecoded, bitmap.isImmutable());
-        // We want to filter it if we decided to do interpolation above, or if
-        // there is something interesting going on with the matrix (like a rotation).
-        // Note: for serialization, we will want to subset the bitmap first so we
-        // don't send extra pixels.
-        ctxt->drawBitmapRect(bitmap, &skSrcRect, normDstRect, &paint);
-        ctxt->canvas()->restoreToCount(initialSaveCount);
-    }
-
-    if (isLazyDecoded)
+    if (DeferredImageDecoder::isLazyDecoded(bitmap))
         PlatformInstrumentation::didDrawLazyPixelRef(bitmap.getGenerationID());
 
     if (ImageObserver* observer = imageObserver())

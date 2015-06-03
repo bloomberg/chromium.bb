@@ -68,12 +68,12 @@ public:
         m_bitmap.eraseColor(SK_ColorTRANSPARENT);
     }
 
-    virtual IntSize size() const override
+    IntSize size() const override
     {
         return m_size;
     }
 
-    virtual bool bitmapForCurrentFrame(SkBitmap* bitmap) override
+    bool bitmapForCurrentFrame(SkBitmap* bitmap) override
     {
         if (m_size.isZero())
             return false;
@@ -83,16 +83,16 @@ public:
     }
 
     // Stub implementations of pure virtual Image functions.
-    virtual void destroyDecodedData(bool) override
+    void destroyDecodedData(bool) override
     {
     }
 
-    virtual bool currentFrameKnownToBeOpaque() override
+    bool currentFrameKnownToBeOpaque() override
     {
         return false;
     }
 
-    void draw(GraphicsContext*, const FloatRect&, const FloatRect&, SkXfermode::Mode, RespectImageOrientationEnum) override
+    void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override
     {
     }
 

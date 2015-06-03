@@ -34,10 +34,10 @@ IntSize SVGImageForContainer::size() const
     return roundedIntSize(scaledContainerSize);
 }
 
-void SVGImageForContainer::draw(GraphicsContext* context, const FloatRect& dstRect,
-    const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum)
+void SVGImageForContainer::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect,
+    const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
 {
-    m_image->drawForContainer(context, m_containerSize, m_zoom, dstRect, srcRect, compositeOp);
+    m_image->drawForContainer(canvas, paint, m_containerSize, m_zoom, dstRect, srcRect);
 }
 
 void SVGImageForContainer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale,

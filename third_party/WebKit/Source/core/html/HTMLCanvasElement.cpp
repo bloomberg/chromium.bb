@@ -127,7 +127,6 @@ HTMLCanvasElement::~HTMLCanvasElement()
     for (CanvasObserver* canvasObserver : m_observers)
         canvasObserver->canvasDestroyed(this);
     // Ensure these go away before the ImageBuffer.
-    m_contextStateSaver.clear();
     m_context.clear();
 #endif
 }
@@ -289,7 +288,7 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
     m_dirtyRect.unite(rect);
     if (m_context && m_context->is2d() && hasImageBuffer())
         buffer()->didDraw(rect);
-    notifyObserversCanvasChanged(m_dirtyRect);
+    notifyObserversCanvasChanged(rect);
 }
 
 void HTMLCanvasElement::didFinalizeFrame()
@@ -369,12 +368,6 @@ void HTMLCanvasElement::reset()
     int h = getAttribute(heightAttr).toInt(&ok);
     if (!ok || h < 0)
         h = DefaultHeight;
-
-    if (m_contextStateSaver) {
-        // Reset to the initial graphics context state.
-        m_contextStateSaver->restore();
-        m_contextStateSaver->save();
-    }
 
     if (m_context && m_context->is2d())
         toCanvasRenderingContext2D(m_context.get())->reset();
@@ -648,7 +641,6 @@ void HTMLCanvasElement::createImageBuffer()
 void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface> externalSurface)
 {
     ASSERT(!m_imageBuffer);
-    ASSERT(!m_contextStateSaver);
 
     m_didFailToCreateImageBuffer = true;
     m_imageBufferIsClear = true;
@@ -682,18 +674,11 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
     }
 
     m_imageBuffer->setClient(this);
-    m_imageBuffer->context()->setShouldClampToSourceRect(false);
-    m_imageBuffer->context()->disableAntialiasingOptimizationForHairlineImages();
-    m_imageBuffer->context()->setImageInterpolationQuality(CanvasDefaultInterpolationQuality);
     // Enabling MSAA overrides a request to disable antialiasing. This is true regardless of whether the
     // rendering mode is accelerated or not. For consistency, we don't want to apply AA in accelerated
     // canvases but not in unaccelerated canvases.
     if (!msaaSampleCount && document().settings() && !document().settings()->antialiased2dCanvasEnabled())
-        m_imageBuffer->context()->setShouldAntialias(false);
-#if ENABLE(ASSERT)
-    m_imageBuffer->context()->disableDestructionChecks(); // 2D canvas is allowed to leave context in an unfinalized state.
-#endif
-    m_contextStateSaver = adoptPtr(new GraphicsContextStateSaver(*m_imageBuffer->context()));
+        toCanvasRenderingContext2D(m_context.get())->setShouldAntialias(false);
 
     if (m_context)
         setNeedsCompositingUpdate();
@@ -747,11 +732,6 @@ void HTMLCanvasElement::updateExternallyAllocatedMemory() const
     // Subtracting two intptr_t that are known to be positive will never underflow.
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(externallyAllocatedMemory - m_externallyAllocatedMemory);
     m_externallyAllocatedMemory = externallyAllocatedMemory;
-}
-
-GraphicsContext* HTMLCanvasElement::drawingContext() const
-{
-    return buffer() ? m_imageBuffer->context() : nullptr;
 }
 
 SkCanvas* HTMLCanvasElement::drawingCanvas() const
@@ -814,7 +794,6 @@ PassRefPtr<Image> HTMLCanvasElement::copiedImage(SourceDrawingBuffer sourceBuffe
 
 void HTMLCanvasElement::discardImageBuffer()
 {
-    m_contextStateSaver.clear(); // uses context owned by m_imageBuffer
     m_imageBuffer.clear();
     m_dirtyRect = FloatRect();
     updateExternallyAllocatedMemory();

@@ -109,7 +109,6 @@ public:
 
     Color strokeColor() const { return immutableState()->strokeColor(); }
     void setStrokeColor(const Color& color) { mutableState()->setStrokeColor(color); }
-    SkColor effectiveStrokeColor() const { return immutableState()->effectiveStrokeColor(); }
 
     Pattern* strokePattern() const { return immutableState()->strokePattern(); }
     void setStrokePattern(PassRefPtr<Pattern>, float alpha = 1);
@@ -136,32 +135,11 @@ public:
     void setShouldAntialias(bool antialias) { mutableState()->setShouldAntialias(antialias); }
     bool shouldAntialias() const { return immutableState()->shouldAntialias(); }
 
-    // Disable the anti-aliasing optimization for scales/multiple-of-90-degrees
-    // rotations of thin ("hairline") images.
-    // Note: This will only be reliable when the device pixel scale/ratio is
-    // fixed (e.g. when drawing to context backed by an ImageBuffer).
-    void disableAntialiasingOptimizationForHairlineImages() { ASSERT(!isRecording()); m_antialiasHairlineImages = true; }
-    bool shouldAntialiasHairlineImages() const { return m_antialiasHairlineImages; }
-
-    void setShouldClampToSourceRect(bool clampToSourceRect) { mutableState()->setShouldClampToSourceRect(clampToSourceRect); }
-    bool shouldClampToSourceRect() const { return immutableState()->shouldClampToSourceRect(); }
-
     void setTextDrawingMode(TextDrawingModeFlags mode) { mutableState()->setTextDrawingMode(mode); }
     TextDrawingModeFlags textDrawingMode() const { return immutableState()->textDrawingMode(); }
 
-    void setAlphaAsFloat(float alpha) { mutableState()->setAlphaAsFloat(alpha);}
-    int getNormalizedAlpha() const
-    {
-        int alpha = immutableState()->alpha();
-        return alpha > 255 ? 255 : alpha;
-    }
-
     void setImageInterpolationQuality(InterpolationQuality quality) { mutableState()->setInterpolationQuality(quality); }
     InterpolationQuality imageInterpolationQuality() const { return immutableState()->interpolationQuality(); }
-
-    // Do not use these methods: they are deprecated/scheduled for removal.
-    void setCompositeOperation(SkXfermode::Mode);
-    SkXfermode::Mode compositeOperation() const;
 
     // Specify the device scale factor which may change the way document markers
     // and fonts are rendered.
@@ -224,7 +202,6 @@ public:
     // These methods write to the canvas.
     // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect
     void writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
-    void drawBitmapRect(const SkBitmap&, const SkRect*, const SkRect&, const SkPaint* = 0);
     void drawOval(const SkRect&, const SkPaint&);
     void drawPath(const SkPath&, const SkPaint&);
     void drawRect(const SkRect&, const SkPaint&);
@@ -268,14 +245,11 @@ public:
     void setShadow(const FloatSize& offset, float blur, const Color&,
         DrawLooperBuilder::ShadowTransformMode = DrawLooperBuilder::ShadowRespectsTransforms,
         DrawLooperBuilder::ShadowAlphaMode = DrawLooperBuilder::ShadowRespectsAlpha, ShadowMode = DrawShadowAndForeground);
-    void clearShadow() { clearDrawLooper(); clearDropShadowImageFilter(); }
-    void setDropShadowImageFilter(PassRefPtr<SkImageFilter>);
 
     // It is assumed that this draw looper is used only for shadows
     // (i.e. a draw looper is set if and only if there is a shadow).
     // The builder passed into this method will be destroyed.
     void setDrawLooper(PassOwnPtr<DrawLooperBuilder>);
-    void setDrawLooper(PassRefPtr<SkDrawLooper> looper) { mutableState()->setDrawLooper(looper); }
     void clearDrawLooper();
 
     void drawFocusRing(const Vector<IntRect>&, int width, int offset, const Color&);
@@ -291,6 +265,8 @@ public:
     typedef unsigned Edges;
     void drawInnerShadow(const FloatRoundedRect&, const Color& shadowColor, const IntSize shadowOffset, int shadowBlur, int shadowSpread, Edges clippedEdges = NoEdge);
 
+    const SkPaint& fillPaint() const { return immutableState()->fillPaint(); }
+
     // ---------- Transformation methods -----------------
     // Note that the getCTM method returns only the current transform from Blink's perspective,
     // which is not the final transform used to place content on screen. It cannot be relied upon
@@ -305,23 +281,15 @@ public:
     void translate(float x, float y);
     // ---------- End transformation methods -----------------
 
+    SkFilterQuality computeFilterQuality(Image*, const FloatRect& dest, const FloatRect& src) const;
+    bool shouldAntialiasImages() { return shouldAntialias() && !getTotalMatrix().rectStaysRect();}
+
     // URL drawing
     void setURLForRect(const KURL&, const IntRect&);
     void setURLFragmentForRect(const String& name, const IntRect&);
     void addURLTargetAtPoint(const String& name, const IntPoint&);
 
     static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
-
-    // This method can potentially push saves onto the canvas. It returns the initial save count,
-    // and should be balanced with a call to context->canvas()->restoreToCount(initialSaveCount).
-    WARN_UNUSED_RETURN int preparePaintForDrawRectToRect(
-        SkPaint*,
-        const SkRect& srcRect,
-        const SkRect& destRect,
-        SkXfermode::Mode,
-        bool isBitmapWithAlpha,
-        bool isLazyDecoded = false,
-        bool isDataComplete = true) const;
 
     static int focusRingOutsetExtent(int offset, int width)
     {
@@ -370,7 +338,6 @@ private:
     void restoreLayer();
 
     // Helpers for drawing a focus ring (drawFocusRing)
-    float prepareFocusRingPaint(SkPaint&, const Color&, int width) const;
     void drawFocusRingPath(const SkPath&, const Color&, int width);
     void drawFocusRingRect(const SkRect&, const Color&, int width);
 
@@ -378,9 +345,6 @@ private:
     void clipRRect(const SkRRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
     void concat(const SkMatrix&);
     void drawRRect(const SkRRect&, const SkPaint&);
-
-    void clearDropShadowImageFilter();
-    SkImageFilter* dropShadowImageFilter() const { return immutableState()->dropShadowImageFilter(); }
 
     // Apply deferred paint state saves
     void realizePaintSave()
@@ -441,7 +405,6 @@ private:
 
     unsigned m_accelerated : 1;
     unsigned m_printing : 1;
-    unsigned m_antialiasHairlineImages : 1;
 };
 
 } // namespace blink

@@ -205,14 +205,17 @@ void HTMLVideoElement::updateDisplayState()
         setDisplayMode(Poster);
 }
 
-void HTMLVideoElement::paintCurrentFrameInContext(GraphicsContext* context, const IntRect& destRect) const
+void HTMLVideoElement::paintCurrentFrame(SkCanvas* canvas, const IntRect& destRect, const SkPaint* paint) const
 {
     if (!webMediaPlayer())
         return;
 
-    WebCanvas* canvas = context->canvas();
-    SkXfermode::Mode mode = context->compositeOperation();
-    webMediaPlayer()->paint(canvas, destRect, context->getNormalizedAlpha(), mode);
+    SkXfermode::Mode mode;
+    if (!paint || !SkXfermode::AsMode(paint->getXfermode(), &mode))
+        mode = SkXfermode::kSrcOver_Mode;
+
+    // TODO(junov, philipj): crbug.com/456529 Pass the whole SkPaint instead of only alpha and xfermode
+    webMediaPlayer()->paint(canvas, destRect, paint ? paint->getAlpha() : 0xFF, mode);
 }
 
 bool HTMLVideoElement::copyVideoTextureToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLint level, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY)
@@ -313,7 +316,7 @@ PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageMode mode
         return nullptr;
     }
 
-    paintCurrentFrameInContext(imageBuffer->context(), IntRect(IntPoint(0, 0), intrinsicSize));
+    paintCurrentFrame(imageBuffer->canvas(), IntRect(IntPoint(0, 0), intrinsicSize), nullptr);
 
     *status = (mode == CopySourceImageIfVolatile) ? NormalSourceImageStatus : ExternalSourceImageStatus;
     return imageBuffer->copyImage(mode == CopySourceImageIfVolatile ? CopyBackingStore : DontCopyBackingStore, Unscaled);

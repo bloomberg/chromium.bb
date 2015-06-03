@@ -427,7 +427,7 @@ bool ThemePainterMac::paintSliderThumb(LayoutObject* o, const PaintInfo& paintIn
     paintInfo.context->setShadow(shadowOffset, LayoutThemeMac::sliderThumbShadowBlur, shadowColor);
     paintInfo.context->setFillColor(Color::black);
     paintInfo.context->fillEllipse(borderBounds);
-    paintInfo.context->clearShadow();
+    paintInfo.context->clearDrawLooper();
 
     IntRect fillBounds = enclosedIntRect(unzoomedRect);
     RefPtr<Gradient> fillGradient = Gradient::create(fillBounds.minXMinYCorner(), fillBounds.minXMaxYCorner());

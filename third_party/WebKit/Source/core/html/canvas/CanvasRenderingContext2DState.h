@@ -30,6 +30,7 @@ public:
     enum PaintType {
         FillPaintType,
         StrokePaintType,
+        ImagePaintType,
     };
 
     CanvasRenderingContext2DState(const CanvasRenderingContext2DState&, ClipListCopyMode = CopyClipList);
@@ -45,6 +46,9 @@ public:
 
     void setLineDash(const Vector<float>&);
     const Vector<float>& lineDash() const { return m_lineDash; }
+
+    void setShouldAntialias(bool);
+    bool shouldAntialias() const;
 
     void setLineDashOffset(float);
     float lineDashOffset() const { return m_lineDashOffset; }
@@ -157,6 +161,7 @@ private:
 
     mutable SkPaint m_strokePaint;
     mutable SkPaint m_fillPaint;
+    mutable SkPaint m_imagePaint;
 
     FloatSize m_shadowOffset;
     float m_shadowBlur;

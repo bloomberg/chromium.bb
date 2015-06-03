@@ -49,7 +49,6 @@ class AffineTransform;
 class CanvasContextCreationAttributes;
 class CanvasRenderingContext;
 class GraphicsContext;
-class GraphicsContextStateSaver;
 class HTMLCanvasElement;
 class Image;
 class ImageBuffer;
@@ -116,7 +115,6 @@ public:
 
     void paint(GraphicsContext*, const LayoutRect&);
 
-    GraphicsContext* drawingContext() const; // Deprecated: use drawingCanvas
     SkCanvas* drawingCanvas() const;
     SkCanvas* existingDrawingCanvas() const;
 
@@ -213,7 +211,6 @@ private:
     mutable bool m_didFailToCreateImageBuffer;
     bool m_imageBufferIsClear;
     OwnPtr<ImageBuffer> m_imageBuffer;
-    mutable OwnPtr<GraphicsContextStateSaver> m_contextStateSaver;
 
     mutable RefPtr<Image> m_copiedImage; // FIXME: This is temporary for platforms that have to copy the image buffer to render (and for CSSCanvasValue).
 };

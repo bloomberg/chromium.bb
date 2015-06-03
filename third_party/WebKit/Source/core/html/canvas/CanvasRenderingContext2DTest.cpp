@@ -568,7 +568,7 @@ TEST_F(CanvasRenderingContext2DTest, NoFallbackWithSmallState)
     canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->fillRect(0, 0, 1, 1); // To have a non-empty dirty rect
-    for (int i = 0; i < ExpensiveCanvasHeuristicParameters::ExpensiveRecordingStackDepth - 2; ++i) {
+    for (int i = 0; i < ExpensiveCanvasHeuristicParameters::ExpensiveRecordingStackDepth - 1; ++i) {
         context2d()->save();
         context2d()->translate(1.0f, 0.0f);
     }
@@ -582,7 +582,7 @@ TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState)
     canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
 
     context2d()->fillRect(0, 0, 1, 1); // To have a non-empty dirty rect
-    for (int i = 0; i < ExpensiveCanvasHeuristicParameters::ExpensiveRecordingStackDepth - 1; ++i) {
+    for (int i = 0; i < ExpensiveCanvasHeuristicParameters::ExpensiveRecordingStackDepth; ++i) {
         context2d()->save();
         context2d()->translate(1.0f, 0.0f);
     }

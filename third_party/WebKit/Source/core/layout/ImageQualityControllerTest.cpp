@@ -50,11 +50,11 @@ TEST_F(ImageQualityControllerTest, ImageRenderingPixelated)
 
 class TestImageAnimated : public Image {
 public:
-    virtual bool maybeAnimated() override { return true; }
-    virtual bool currentFrameKnownToBeOpaque() override { return false; }
-    virtual IntSize size() const override { return IntSize(); }
-    virtual void destroyDecodedData(bool) override { }
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode, RespectImageOrientationEnum) override { }
+    bool maybeAnimated() override { return true; }
+    bool currentFrameKnownToBeOpaque() override { return false; }
+    IntSize size() const override { return IntSize(); }
+    void destroyDecodedData(bool) override { }
+    void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
 };
 
 TEST_F(ImageQualityControllerTest, ImageMaybeAnimated)
@@ -68,13 +68,13 @@ TEST_F(ImageQualityControllerTest, ImageMaybeAnimated)
 
 class TestImageWithContrast : public Image {
 public:
-    virtual bool maybeAnimated() override { return true; }
-    virtual bool currentFrameKnownToBeOpaque() override { return false; }
-    virtual IntSize size() const override { return IntSize(); }
-    virtual void destroyDecodedData(bool) override { }
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode, RespectImageOrientationEnum) override { }
+    bool maybeAnimated() override { return true; }
+    bool currentFrameKnownToBeOpaque() override { return false; }
+    IntSize size() const override { return IntSize(); }
+    void destroyDecodedData(bool) override { }
+    void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
 
-    virtual bool isBitmapImage() const override { return true; };
+    bool isBitmapImage() const override { return true; };
 };
 
 TEST_F(ImageQualityControllerTest, LowQualityFilterForContrast)
@@ -88,13 +88,13 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForContrast)
 
 class TestImageLowQuality : public Image {
 public:
-    virtual bool maybeAnimated() override { return true; }
-    virtual bool currentFrameKnownToBeOpaque() override { return false; }
-    virtual IntSize size() const override { return IntSize(1, 1); }
-    virtual void destroyDecodedData(bool) override { }
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode, RespectImageOrientationEnum) override { }
+    bool maybeAnimated() override { return true; }
+    bool currentFrameKnownToBeOpaque() override { return false; }
+    IntSize size() const override { return IntSize(1, 1); }
+    void destroyDecodedData(bool) override { }
+    void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
 
-    virtual bool isBitmapImage() const override { return true; };
+    bool isBitmapImage() const override { return true; };
 };
 
 TEST_F(ImageQualityControllerTest, MediumQualityFilterForUnscaledImage)

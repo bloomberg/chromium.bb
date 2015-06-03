@@ -40,54 +40,51 @@ CrossfadeGeneratedImage::CrossfadeGeneratedImage(Image* fromImage, Image* toImag
 {
 }
 
-void CrossfadeGeneratedImage::drawCrossfade(GraphicsContext* context, SkXfermode::Mode xferMode)
+void CrossfadeGeneratedImage::drawCrossfade(SkCanvas* canvas, const SkPaint& paint, ImageClampingMode clampMode)
 {
-    float inversePercentage = 1 - m_percentage;
+    FloatRect fromImageRect(FloatPoint(), m_fromImage->size());
+    FloatRect toImageRect(FloatPoint(), m_toImage->size());
+    FloatRect destRect(FloatPoint(), m_crossfadeSize);
 
-    IntSize fromImageSize = m_fromImage->size();
-    IntSize toImageSize = m_toImage->size();
+    // TODO(junov): The various effects encoded into paint should probably be applied here
+    // instead of inside the layer.  This probably faulty behavior was maintained in order
+    // to preserve pre-existing behavior while refactoring this code.  This should be
+    // investigated further. crbug.com/472634
+    SkPaint layerPaint;
+    layerPaint.setXfermode(paint.getXfermode());
+    SkAutoCanvasRestore ar(canvas, false);
+    canvas->saveLayer(nullptr, &layerPaint);
 
-    context->beginLayer(1, xferMode);
-
-    // Draw the image we're fading away from.
-    context->save();
-    if (m_crossfadeSize != fromImageSize) {
-        context->scale(
-            static_cast<float>(m_crossfadeSize.width()) / fromImageSize.width(),
-            static_cast<float>(m_crossfadeSize.height()) / fromImageSize.height());
-    }
-    context->setAlphaAsFloat(inversePercentage);
-    context->drawImage(m_fromImage, IntPoint());
-    context->restore();
-
-    // Draw the image we're fading towards.
-    context->save();
-    if (m_crossfadeSize != toImageSize) {
-        context->scale(
-            static_cast<float>(m_crossfadeSize.width()) / toImageSize.width(),
-            static_cast<float>(m_crossfadeSize.height()) / toImageSize.height());
-    }
-    context->setAlphaAsFloat(m_percentage);
-    context->drawImage(m_toImage, IntPoint(), SkXfermode::kPlus_Mode);
-    context->restore();
-
-    context->endLayer();
+    SkPaint imagePaint(paint);
+    imagePaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+    int imageAlpha = clampedAlphaForBlending(1 - m_percentage);
+    imagePaint.setAlpha(imageAlpha > 255 ? 255 : imageAlpha);
+    imagePaint.setAntiAlias(paint.isAntiAlias());
+    // TODO(junov): This code should probably be propagating the RespectImageOrientationEnum
+    // form CrossfadeGeneratedImage::draw. Code was written this way during refactoring to
+    // avoid modifying existing behavior, but this warrants further investigation. crbug.com/472634
+    m_fromImage->draw(canvas, imagePaint, destRect, fromImageRect, DoNotRespectImageOrientation, clampMode);
+    imagePaint.setXfermodeMode(SkXfermode::kPlus_Mode);
+    imageAlpha = clampedAlphaForBlending(m_percentage);
+    imagePaint.setAlpha(imageAlpha > 255 ? 255 : imageAlpha);
+    m_toImage->draw(canvas, imagePaint, destRect, toImageRect, DoNotRespectImageOrientation, clampMode);
 }
 
-void CrossfadeGeneratedImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum)
+void CrossfadeGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode clampMode)
 {
     // Draw nothing if either of the images hasn't loaded yet.
     if (m_fromImage == Image::nullImage() || m_toImage == Image::nullImage())
         return;
 
-    GraphicsContextStateSaver stateSaver(*context);
-    context->clip(dstRect);
-    context->translate(dstRect.x(), dstRect.y());
+    SkAutoCanvasRestore ar(canvas, true);
+    canvas->clipRect(dstRect);
+    canvas->translate(dstRect.x(), dstRect.y());
     if (dstRect.size() != srcRect.size())
-        context->scale(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height());
-    context->translate(-srcRect.x(), -srcRect.y());
+        canvas->scale(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height());
+    canvas->translate(-srcRect.x(), -srcRect.y());
 
-    drawCrossfade(context, compositeOp);
+    drawCrossfade(canvas, paint, clampMode);
+    canvas->restore();
 }
 
 void CrossfadeGeneratedImage::drawTile(GraphicsContext* context, const FloatRect& srcRect)
@@ -96,7 +93,12 @@ void CrossfadeGeneratedImage::drawTile(GraphicsContext* context, const FloatRect
     if (m_fromImage == Image::nullImage() || m_toImage == Image::nullImage())
         return;
 
-    drawCrossfade(context, SkXfermode::kSrcOver_Mode);
+    SkPaint paint = context->fillPaint();
+    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+    paint.setAntiAlias(context->shouldAntialiasImages());
+    FloatRect destRect(FloatPoint(), m_crossfadeSize);
+    paint.setFilterQuality(context->computeFilterQuality(this, destRect, srcRect));
+    drawCrossfade(context->canvas(), paint, ClampImageToSourceRect);
 }
 
 } // namespace blink

@@ -84,7 +84,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
         }
     }
 
-    video->paintCurrentFrameInContext(buffer->context(), videoRect);
+    video->paintCurrentFrame(buffer->canvas(), videoRect, nullptr);
     m_bitmap = buffer->copyImage(DontCopyBackingStore);
     m_bitmapRect = IntRect(IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y())), srcRect.size());
 }

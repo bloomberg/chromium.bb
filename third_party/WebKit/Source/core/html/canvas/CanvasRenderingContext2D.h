@@ -113,6 +113,9 @@ public:
 
     bool isContextLost() const;
 
+    bool shouldAntialias() const;
+    void setShouldAntialias(bool);
+
     String globalCompositeOperation() const;
     void setGlobalCompositeOperation(const String&);
 
@@ -222,7 +225,6 @@ private:
     const CanvasRenderingContext2DState& state() const { return *m_stateStack.last(); }
 
     void setShadow(const FloatSize& offset, float blur, RGBA32 color);
-    void applyShadow(ShadowMode = DrawShadowAndForeground);
 
     void dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*);
     void dispatchContextRestoredEvent(Timer<CanvasRenderingContext2D>*);
@@ -232,17 +234,17 @@ private:
     bool computeDirtyRect(const FloatRect& localBounds, const SkIRect& transformedClipBounds, SkIRect*);
     void didDraw(const SkIRect&);
 
-    GraphicsContext* drawingContext() const; // Deprecated: use drawingCanvas
     SkCanvas* drawingCanvas() const;
 
     void unwindStateStack();
-    void realizeSaves(SkCanvas*);
+    void realizeSaves();
+
+    bool shouldDrawImageAntialiased(const FloatRect& destRect) const;
 
     template<typename DrawFunc, typename ContainsFunc>
     bool draw(const DrawFunc&, const ContainsFunc&, const SkRect& bounds, CanvasRenderingContext2DState::PaintType, CanvasRenderingContext2DState::ImageType = CanvasRenderingContext2DState::NoImage);
     void drawPathInternal(const Path&, CanvasRenderingContext2DState::PaintType, SkPath::FillType = SkPath::kWinding_FillType);
-    void drawImageOnContext(CanvasImageSource*, Image*, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint*);
-    void drawVideo(CanvasImageSource*, const FloatRect& srcRect, const FloatRect& dstRect);
+    void drawImageInternal(CanvasImageSource*, Image*, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint*);
     void clipInternal(const Path&, const String& windingRuleString);
 
     bool isPointInPathInternal(const Path&, const float x, const float y, const String& windingRuleString);

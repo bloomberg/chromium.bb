@@ -33,7 +33,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/graphics/ImageOrientation.h"
-#include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -52,6 +52,7 @@ class FloatSize;
 class GraphicsContext;
 class Length;
 class SharedBuffer;
+class Image;
 
 // This class gets notified when an image creates or destroys decoded frames and when it advances animation frames.
 class ImageObserver;
@@ -70,6 +71,8 @@ public:
 
     virtual bool isSVGImage() const { return false; }
     virtual bool isBitmapImage() const { return false; }
+    virtual bool isLazyDecodedBitmap() { return false; }
+    virtual bool isImmutableBitmap() { return false; }
     virtual bool currentFrameKnownToBeOpaque() = 0;
 
     virtual PassRefPtr<SkImage> skImage();
@@ -139,13 +142,18 @@ public:
     virtual bool notSolidColor() { return true; }
 #endif
 
+    enum ImageClampingMode {
+        ClampImageToSourceRect,
+        DoNotClampImageToSourceRect
+    };
+
+    virtual void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) = 0;
+
 protected:
     Image(ImageObserver* = 0);
 
     static void fillWithSolidColor(GraphicsContext*, const FloatRect& dstRect, const Color&, SkXfermode::Mode);
-    static FloatRect adjustForNegativeSize(const FloatRect&); // A helper method for translating negative width and height values.
 
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode, RespectImageOrientationEnum) = 0;
     void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatPoint& srcPoint, const FloatSize& tileSize,
         SkXfermode::Mode, const IntSize& repeatSpacing);
     void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, const FloatSize& tileScaleFactor, TileRule hRule, TileRule vRule, SkXfermode::Mode);

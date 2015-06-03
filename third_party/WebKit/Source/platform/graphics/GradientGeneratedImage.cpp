@@ -31,16 +31,17 @@
 
 namespace blink {
 
-void GradientGeneratedImage::draw(GraphicsContext* destContext, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum)
+void GradientGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& destRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
 {
-    GraphicsContextStateSaver stateSaver(*destContext);
-    destContext->clip(destRect);
-    destContext->translate(destRect.x(), destRect.y());
+    SkAutoCanvasRestore ar(canvas, true);
+    canvas->clipRect(destRect);
+    canvas->translate(destRect.x(), destRect.y());
     if (destRect.size() != srcRect.size())
-        destContext->scale(destRect.width() / srcRect.width(), destRect.height() / srcRect.height());
-    destContext->translate(-srcRect.x(), -srcRect.y());
-    destContext->setFillGradient(m_gradient);
-    destContext->fillRect(FloatRect(FloatPoint(), m_size), destContext->fillColor(), compositeOp);
+        canvas->scale(destRect.width() / srcRect.width(), destRect.height() / srcRect.height());
+    canvas->translate(-srcRect.x(), -srcRect.y());
+    SkPaint gradientPaint(paint);
+    gradientPaint.setShader(m_gradient->shader());
+    canvas->drawRect(SkRect::MakeWH(m_size.width(), m_size.height()), gradientPaint);
 }
 
 void GradientGeneratedImage::drawTile(GraphicsContext* context, const FloatRect& srcRect)

@@ -107,20 +107,6 @@ void Image::fillWithSolidColor(GraphicsContext* ctxt, const FloatRect& dstRect, 
     ctxt->fillRect(dstRect, color, xferMode);
 }
 
-FloatRect Image::adjustForNegativeSize(const FloatRect& rect)
-{
-    FloatRect norm = rect;
-    if (norm.width() < 0) {
-        norm.setX(norm.x() + norm.width());
-        norm.setWidth(-norm.width());
-    }
-    if (norm.height() < 0) {
-        norm.setY(norm.y() + norm.height());
-        norm.setHeight(-norm.height());
-    }
-    return norm;
-}
-
 void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& scaledTileSize, SkXfermode::Mode op, const IntSize& repeatSpacing)
 {
     if (mayFillWithSolidColor()) {
@@ -153,7 +139,7 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const Fl
         visibleSrcRect.setY((destRect.y() - oneTileRect.y()) / scale.height());
         visibleSrcRect.setWidth(destRect.width() / scale.width());
         visibleSrcRect.setHeight(destRect.height() / scale.height());
-        draw(ctxt, destRect, visibleSrcRect, op, DoNotRespectImageOrientation);
+        ctxt->drawImage(this, destRect, visibleSrcRect, op, DoNotRespectImageOrientation);
         return;
     }
 
@@ -279,20 +265,19 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
     SkBitmap bitmapToPaint;
     bitmap.extractSubset(&bitmapToPaint, enclosingIntRect(normSrcRect));
 
-    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap);
     {
-        SkPaint paint;
-        int initialSaveCount = context->preparePaintForDrawRectToRect(&paint, floatSrcRect,
-            destRect, compositeOp, !bitmap.isOpaque(), isLazyDecoded, bitmap.isImmutable());
+        SkPaint paint = context->fillPaint();
+        paint.setColor(SK_ColorBLACK);
+        paint.setXfermodeMode(compositeOp);
+        paint.setFilterQuality(context->computeFilterQuality(this, destRect, normSrcRect));
+        paint.setAntiAlias(context->shouldAntialiasImages());
         RefPtr<SkShader> shader = createPatternShader(bitmapToPaint, localMatrix, paint,
             FloatSize(repeatSpacing.width() / scale.width(), repeatSpacing.height() / scale.height()));
-
         paint.setShader(shader.get());
         context->drawRect(destRect, paint);
-        context->canvas()->restoreToCount(initialSaveCount);
     }
 
-    if (isLazyDecoded)
+    if (DeferredImageDecoder::isLazyDecoded(bitmap))
         PlatformInstrumentation::didDrawLazyPixelRef(bitmap.getGenerationID());
 }
 

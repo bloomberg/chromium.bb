@@ -41,6 +41,8 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState()
 {
     m_fillPaint.setStyle(SkPaint::kFill_Style);
     m_fillPaint.setAntiAlias(true);
+    m_imagePaint.setStyle(SkPaint::kFill_Style);
+    m_imagePaint.setAntiAlias(true);
     m_strokePaint.setStyle(SkPaint::kStroke_Style);
     m_strokePaint.setStrokeWidth(1);
     m_strokePaint.setStrokeCap(SkPaint::kButt_Cap);
@@ -59,6 +61,7 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(const CanvasRenderi
     , m_fillStyle(other.m_fillStyle)
     , m_strokePaint(other.m_strokePaint)
     , m_fillPaint(other.m_fillPaint)
+    , m_imagePaint(other.m_imagePaint)
     , m_shadowOffset(other.m_shadowOffset)
     , m_shadowBlur(other.m_shadowBlur)
     , m_shadowColor(other.m_shadowColor)
@@ -107,6 +110,7 @@ CanvasRenderingContext2DState& CanvasRenderingContext2DState::operator=(const Ca
     m_fillStyle = other.m_fillStyle;
     m_strokePaint = other.m_strokePaint;
     m_fillPaint = other.m_fillPaint;
+    m_imagePaint = other.m_imagePaint;
     m_shadowOffset = other.m_shadowOffset;
     m_shadowBlur = other.m_shadowBlur;
     m_shadowColor = other.m_shadowColor;
@@ -235,9 +239,24 @@ CanvasStyle* CanvasRenderingContext2DState::style(PaintType paintType) const
         return fillStyle();
     case StrokePaintType:
         return strokeStyle();
+    case ImagePaintType:
+        return nullptr;
     }
     ASSERT_NOT_REACHED();
     return nullptr;
+}
+
+void CanvasRenderingContext2DState::setShouldAntialias(bool shouldAntialias)
+{
+    m_fillPaint.setAntiAlias(shouldAntialias);
+    m_strokePaint.setAntiAlias(shouldAntialias);
+    m_imagePaint.setAntiAlias(shouldAntialias);
+}
+
+bool CanvasRenderingContext2DState::shouldAntialias() const
+{
+    ASSERT(m_fillPaint.isAntiAlias() == m_strokePaint.isAntiAlias() && m_fillPaint.isAntiAlias() == m_imagePaint.isAntiAlias());
+    return m_fillPaint.isAntiAlias();
 }
 
 void CanvasRenderingContext2DState::setGlobalAlpha(float alpha)
@@ -245,6 +264,8 @@ void CanvasRenderingContext2DState::setGlobalAlpha(float alpha)
     m_globalAlpha = alpha;
     m_strokeStyleDirty = true;
     m_fillStyleDirty = true;
+    int imageAlpha = clampedAlphaForBlending(alpha);
+    m_imagePaint.setAlpha(imageAlpha > 255 ? 255 : imageAlpha);
 }
 
 void CanvasRenderingContext2DState::clipPath(const SkPath& path, AntiAliasingMode antiAliasingMode)
@@ -369,6 +390,7 @@ void CanvasRenderingContext2DState::setGlobalComposite(SkXfermode::Mode mode)
 {
     m_strokePaint.setXfermodeMode(mode);
     m_fillPaint.setXfermodeMode(mode);
+    m_imagePaint.setXfermodeMode(mode);
 }
 
 SkXfermode::Mode CanvasRenderingContext2DState::globalComposite() const
@@ -385,11 +407,12 @@ void CanvasRenderingContext2DState::setImageSmoothingEnabled(bool enabled)
     SkFilterQuality filterQuality = enabled ? kLow_SkFilterQuality : kNone_SkFilterQuality;
     m_strokePaint.setFilterQuality(filterQuality);
     m_fillPaint.setFilterQuality(filterQuality);
+    m_imagePaint.setFilterQuality(filterQuality);
 }
 
 bool CanvasRenderingContext2DState::imageSmoothingEnabled() const
 {
-    return m_strokePaint.getFilterQuality() == kLow_SkFilterQuality;
+    return m_imagePaint.getFilterQuality() == kLow_SkFilterQuality;
 }
 
 bool CanvasRenderingContext2DState::shouldDrawShadows() const
@@ -400,13 +423,22 @@ bool CanvasRenderingContext2DState::shouldDrawShadows() const
 const SkPaint* CanvasRenderingContext2DState::getPaint(PaintType paintType, ShadowMode shadowMode, ImageType imageType) const
 {
     SkPaint* paint;
-    if (paintType == StrokePaintType) {
+    switch (paintType) {
+    case StrokePaintType:
         updateLineDash();
         updateStrokeStyle();
         paint = &m_strokePaint;
-    } else {
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        // no break on purpose: paint needs to be assigned to avoid compiler warning about uninitialized variable
+    case FillPaintType:
         updateFillStyle();
         paint = &m_fillPaint;
+        break;
+    case ImagePaintType:
+        paint = &m_imagePaint;
+        break;
     }
 
     if ((!shouldDrawShadows() && shadowMode == DrawShadowAndForeground) || shadowMode == DrawForegroundOnly) {

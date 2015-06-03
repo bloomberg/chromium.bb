@@ -60,15 +60,17 @@ public:
 
     virtual ~BitmapImage();
 
-    virtual bool isBitmapImage() const override;
+    bool isBitmapImage() const override;
+    bool isLazyDecodedBitmap() override;
+    bool isImmutableBitmap() override;
 
-    virtual bool currentFrameHasSingleSecurityOrigin() const override;
+    bool currentFrameHasSingleSecurityOrigin() const override;
 
-    virtual IntSize size() const override;
+    IntSize size() const override;
     IntSize sizeRespectingOrientation() const;
-    virtual bool getHotSpot(IntPoint&) const override;
-    virtual String filenameExtension() const override;
-    virtual bool dataChanged(bool allDataReceived) override;
+    bool getHotSpot(IntPoint&) const override;
+    String filenameExtension() const override;
+    bool dataChanged(bool allDataReceived) override;
 
     bool isAllDataReceived() const { return m_allDataReceived; }
     bool hasColorProfile() const;
@@ -77,21 +79,21 @@ public:
     // This because we start and stop animating lazily. Animation starts when
     // the image is rendered, and automatically pauses once all observers no
     // longer want to render the image.
-    virtual void stopAnimation() override;
-    virtual void resetAnimation() override;
-    virtual bool maybeAnimated() override;
+    void stopAnimation() override;
+    void resetAnimation() override;
+    bool maybeAnimated() override;
 
     virtual void setAnimationPolicy(ImageAnimationPolicy policy) override { m_animationPolicy = policy; }
     virtual ImageAnimationPolicy animationPolicy() override { return m_animationPolicy; }
     virtual void advanceTime(double deltaTimeInSeconds) override;
 
-    virtual bool bitmapForCurrentFrame(SkBitmap*) override;
-    virtual PassRefPtr<Image> imageForDefaultFrame() override;
-    virtual bool currentFrameKnownToBeOpaque() override;
+    bool bitmapForCurrentFrame(SkBitmap*) override;
+    PassRefPtr<Image> imageForDefaultFrame() override;
+    bool currentFrameKnownToBeOpaque() override;
     ImageOrientation currentFrameOrientation();
 
 #if ENABLE(ASSERT)
-    virtual bool notSolidColor() override;
+    bool notSolidColor() override;
 #endif
 
 private:
@@ -109,7 +111,7 @@ private:
     BitmapImage(const SkBitmap &, ImageObserver* = 0);
     BitmapImage(ImageObserver* = 0);
 
-    void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode, RespectImageOrientationEnum) override;
+    void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override;
 
     size_t currentFrame() const { return m_currentFrame; }
     size_t frameCount();
@@ -140,7 +142,7 @@ private:
     // frame; this is used while animating large images to keep memory footprint
     // low; the decoder should preserve the current frame and may preserve some
     // other frames to avoid redecoding the whole image on every frame.
-    virtual void destroyDecodedData(bool destroyAll) override;
+    void destroyDecodedData(bool destroyAll) override;
 
     // If the image is large enough, calls destroyDecodedData().
     void destroyDecodedDataIfNecessary();
@@ -156,7 +158,7 @@ private:
     // Animation.
     int repetitionCount(bool imageKnownToBeComplete);  // |imageKnownToBeComplete| should be set if the caller knows the entire image has been decoded.
     bool shouldAnimate();
-    virtual void startAnimation(CatchUpAnimation = CatchUp) override;
+    void startAnimation(CatchUpAnimation = CatchUp) override;
     void advanceAnimation(Timer<BitmapImage>*);
 
     // Function that does the real work of advancing the animation.  When
@@ -171,8 +173,8 @@ private:
     // changed.
     void checkForSolidColor();
 
-    virtual bool mayFillWithSolidColor() override;
-    virtual Color solidColor() const override;
+    bool mayFillWithSolidColor() override;
+    Color solidColor() const override;
 
     ImageSource m_source;
     mutable IntSize m_size; // The size to use for the overall image (will just be the size of the first image).

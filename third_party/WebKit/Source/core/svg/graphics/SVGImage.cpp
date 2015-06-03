@@ -59,7 +59,6 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "third_party/skia/include/core/SkPicture.h"
-#include "wtf/Optional.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -194,8 +193,8 @@ IntSize SVGImage::containerSize() const
     return IntSize(300, 150);
 }
 
-void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize containerSize, float zoom, const FloatRect& dstRect,
-    const FloatRect& srcRect, SkXfermode::Mode compositeOp)
+void SVGImage::drawForContainer(SkCanvas* canvas, const SkPaint& paint, const FloatSize containerSize, float zoom, const FloatRect& dstRect,
+    const FloatRect& srcRect)
 {
     if (!m_page)
         return;
@@ -214,7 +213,7 @@ void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize contai
     adjustedSrcSize.scale(roundedContainerSize.width() / containerSize.width(), roundedContainerSize.height() / containerSize.height());
     scaledSrc.setSize(adjustedSrcSize);
 
-    draw(context, dstRect, scaledSrc, compositeOp, DoNotRespectImageOrientation);
+    draw(canvas, paint, dstRect, scaledSrc, DoNotRespectImageOrientation, ClampImageToSourceRect);
 }
 
 bool SVGImage::bitmapForCurrentFrame(SkBitmap* bitmap)
@@ -226,7 +225,8 @@ bool SVGImage::bitmapForCurrentFrame(SkBitmap* bitmap)
     if (!buffer)
         return false;
 
-    drawForContainer(buffer->context(), size(), 1, rect(), rect(), SkXfermode::kSrcOver_Mode);
+    SkPaint paint;
+    drawForContainer(buffer->canvas(), paint, size(), 1, rect(), rect());
 
     *bitmap = buffer->bitmap();
     return true;
@@ -252,7 +252,8 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
             // When generating an expanded tile, make sure we don't draw into the spacing area.
             if (tile != spacedTile)
                 patternPicture.context().clip(tile);
-            drawForContainer(&patternPicture.context(), containerSize, zoom, tile, srcRect, SkXfermode::kSrcOver_Mode);
+            SkPaint paint;
+            drawForContainer(patternPicture.context().canvas(), paint, containerSize, zoom, tile, srcRect);
         }
     }
     RefPtr<const SkPicture> tilePicture = patternPicture.endRecording();
@@ -270,12 +271,24 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     context->drawRect(dstRect, paint);
 }
 
-void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum)
+static bool drawNeedsLayer(const SkPaint& paint)
+{
+    if (SkColorGetA(paint.getColor()) < 255)
+        return true;
+
+    SkXfermode::Mode xfermode;
+    if (SkXfermode::AsMode(paint.getXfermode(), &xfermode)) {
+        if (xfermode != SkXfermode::kSrcOver_Mode)
+            return true;
+    }
+
+    return false;
+}
+
+void SVGImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
 {
     if (!m_page)
         return;
-
-    float opacity = context->getNormalizedAlpha() / 255.f;
 
     FrameView* view = frameView();
     view->resize(containerSize());
@@ -284,16 +297,9 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     // there may have been a previous url/fragment that needs to be reset.
     view->scrollToFragment(m_url);
 
+    SkPictureBuilder imagePicture(dstRect);
     {
-        DisplayItemListContextRecorder contextRecorder(*context);
-        GraphicsContext& paintContext = contextRecorder.context();
-
-        ClipRecorder clipRecorder(paintContext, *this, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
-
-        bool hasCompositing = compositeOp != SkXfermode::kSrcOver_Mode;
-        Optional<CompositingRecorder> compositingRecorder;
-        if (hasCompositing || opacity < 1)
-            compositingRecorder.emplace(paintContext, *this, compositeOp, opacity);
+        ClipRecorder clipRecorder(imagePicture.context(), *this, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
 
         // We can only draw the entire frame, clipped to the rect we want. So compute where the top left
         // of the image would be if we were drawing without clipping, and translate accordingly.
@@ -302,11 +308,21 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         FloatPoint destOffset = dstRect.location() - topLeftOffset;
         AffineTransform transform = AffineTransform::translation(destOffset.x(), destOffset.y());
         transform.scale(scale.width(), scale.height());
-        TransformRecorder transformRecorder(paintContext, *this, transform);
+        TransformRecorder transformRecorder(imagePicture.context(), *this, transform);
 
         view->updateLayoutAndStyleForPainting();
-        view->paint(&paintContext, enclosingIntRect(srcRect));
+        view->paint(&imagePicture.context(), enclosingIntRect(srcRect));
         ASSERT(!view->needsLayout());
+    }
+
+    {
+        SkAutoCanvasRestore ar(canvas, false);
+        if (drawNeedsLayer(paint)) {
+            SkRect layerRect = dstRect;
+            canvas->saveLayer(&layerRect, &paint);
+        }
+        RefPtr<const SkPicture> recording = imagePicture.endRecording();
+        canvas->drawPicture(recording.get());
     }
 
     if (imageObserver())

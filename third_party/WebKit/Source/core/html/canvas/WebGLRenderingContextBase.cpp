@@ -3926,7 +3926,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::videoFrameToImage(HTMLVideoElement*
         return nullptr;
     }
     IntRect destRect(0, 0, size.width(), size.height());
-    video->paintCurrentFrameInContext(buf->context(), destRect);
+    video->paintCurrentFrame(buf->canvas(), destRect, nullptr);
     return buf->copyImage(backingStoreCopy);
 }
 
@@ -3955,7 +3955,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
                 // The video element paints an RGBA frame into our surface here. By using an AcceleratedImageBufferSurface,
                 // we enable the WebMediaPlayer implementation to do any necessary color space conversion on the GPU (though it
                 // may still do a CPU conversion and upload the results).
-                video->paintCurrentFrameInContext(imageBuffer->context(), IntRect(0, 0, video->videoWidth(), video->videoHeight()));
+                video->paintCurrentFrame(imageBuffer->canvas(), IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr);
                 imageBuffer->context()->canvas()->flush();
 
                 // This is a straight GPU-GPU copy, any necessary color space conversion was handled in the paintCurrentFrameInContext() call.

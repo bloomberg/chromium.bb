@@ -37,7 +37,6 @@
 #include "platform/graphics/StrokeData.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -71,7 +70,6 @@ public:
 
     // Stroke data
     Color strokeColor() const { return m_strokeColor; }
-    SkColor effectiveStrokeColor() const { return applyAlpha(m_strokeColor.rgb()); }
     void setStrokeColor(const Color&);
 
     Gradient* strokeGradient() const { return m_strokeGradient.get(); }
@@ -90,7 +88,6 @@ public:
 
     // Fill data
     Color fillColor() const { return m_fillColor; }
-    SkColor effectiveFillColor() const { return applyAlpha(m_fillColor.rgb()); }
     void setFillColor(const Color&);
 
     Gradient* fillGradient() const { return m_fillGradient.get(); }
@@ -104,24 +101,12 @@ public:
     void setDrawLooper(PassRefPtr<SkDrawLooper>);
     void clearDrawLooper();
 
-    SkImageFilter* dropShadowImageFilter() const { return m_dropShadowImageFilter.get(); }
-    void setDropShadowImageFilter(PassRefPtr<SkImageFilter>);
-    void clearDropShadowImageFilter();
-
     // Text. (See TextModeFill & friends.)
     TextDrawingModeFlags textDrawingMode() const { return m_textDrawingMode; }
     void setTextDrawingMode(TextDrawingModeFlags mode) { m_textDrawingMode = mode; }
 
-    // Common shader state.
-    int alpha() const { return m_alpha; }
-    void setAlphaAsFloat(float);
-
     SkColorFilter* colorFilter() const { return m_colorFilter.get(); }
     void setColorFilter(PassRefPtr<SkColorFilter>);
-
-    // Compositing control, for the CSS and Canvas compositing spec.
-    void setCompositeOperation(SkXfermode::Mode);
-    SkXfermode::Mode compositeOperation() const { return m_compositeOperation; }
 
     // Image interpolation control.
     InterpolationQuality interpolationQuality() const { return m_interpolationQuality; }
@@ -130,20 +115,10 @@ public:
     bool shouldAntialias() const { return m_shouldAntialias; }
     void setShouldAntialias(bool);
 
-    bool shouldClampToSourceRect() const { return m_shouldClampToSourceRect; }
-    void setShouldClampToSourceRect(bool shouldClampToSourceRect) { m_shouldClampToSourceRect = shouldClampToSourceRect; }
-
 private:
     GraphicsContextState();
     explicit GraphicsContextState(const GraphicsContextState&);
     GraphicsContextState& operator=(const GraphicsContextState&);
-
-    // Helper function for applying the state's alpha value to the given input
-    // color to produce a new output color.
-    SkColor applyAlpha(SkColor color) const
-    {
-        return scaleAlpha(color, m_alpha);
-    }
 
     // These are mutbale to enable gradient updates when the paints are fetched for use.
     mutable SkPaint m_strokePaint;
@@ -160,21 +135,16 @@ private:
     RefPtr<Pattern> m_fillPattern;
 
     RefPtr<SkDrawLooper> m_looper;
-    RefPtr<SkImageFilter> m_dropShadowImageFilter;
 
     TextDrawingModeFlags m_textDrawingMode;
 
-    int m_alpha;
     RefPtr<SkColorFilter> m_colorFilter;
-
-    SkXfermode::Mode m_compositeOperation;
 
     InterpolationQuality m_interpolationQuality;
 
     uint16_t m_saveCount;
 
     bool m_shouldAntialias : 1;
-    bool m_shouldClampToSourceRect : 1;
 };
 
 } // namespace blink

@@ -36,30 +36,22 @@ bool StaticBitmapImage::currentFrameKnownToBeOpaque()
     return m_image->isOpaque();
 }
 
-void StaticBitmapImage::draw(GraphicsContext* ctx, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum)
+void StaticBitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
 {
-    FloatRect normDstRect = adjustForNegativeSize(dstRect);
-    FloatRect normSrcRect = adjustForNegativeSize(srcRect);
+    ASSERT(dstRect.width() >= 0 && dstRect.height() >= 0);
+    ASSERT(srcRect.width() >= 0 && srcRect.height() >= 0);
 
-    normSrcRect.intersect(FloatRect(0, 0, m_image->width(), m_image->height()));
+    FloatRect adjustedSrcRect = srcRect;
+    adjustedSrcRect.intersect(FloatRect(0, 0, m_image->width(), m_image->height()));
 
-    if (normSrcRect.isEmpty() || normDstRect.isEmpty())
+    if (adjustedSrcRect.isEmpty() || dstRect.isEmpty())
         return; // Nothing to draw.
 
-    ASSERT(normSrcRect.width() <= m_image->width() && normSrcRect.height() <= m_image->height());
+    ASSERT(adjustedSrcRect.width() <= m_image->width() && adjustedSrcRect.height() <= m_image->height());
 
-    {
-        SkCanvas* canvas = ctx->canvas();
-
-        SkPaint paint;
-        int initialSaveCount = ctx->preparePaintForDrawRectToRect(&paint, srcRect, dstRect, compositeOp, !currentFrameKnownToBeOpaque());
-
-        SkRect srcSkRect = WebCoreFloatRectToSKRect(normSrcRect);
-        SkRect dstSkRect = WebCoreFloatRectToSKRect(normDstRect);
-
-        canvas->drawImageRect(m_image.get(), &srcSkRect, dstSkRect, &paint);
-        canvas->restoreToCount(initialSaveCount);
-    }
+    SkRect srcSkRect = adjustedSrcRect;
+    // TODO: Add support for ImageClampingMode
+    canvas->drawImageRect(m_image.get(), &srcSkRect, dstRect, &paint);
 
     if (ImageObserver* observer = imageObserver())
         observer->didDraw(this);
