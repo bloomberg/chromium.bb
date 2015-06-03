@@ -16,8 +16,6 @@
 #include "base/time/time.h"
 #include "base/version.h"
 #include "components/update_client/configurator.h"
-#include "components/update_client/crx_downloader.h"
-#include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
 
 using std::string;
@@ -70,20 +68,18 @@ void ActionUpdate::Run(UpdateContext* update_context, Callback callback) {
 
   const bool is_background_download(IsBackgroundDownload(item));
 
-  scoped_ptr<CrxDownloader> crx_downloader(
+  crx_downloader_.reset(
       (*update_context_->crx_downloader_factory)(
           is_background_download, update_context_->config->RequestContext(),
           update_context_->blocking_task_runner,
-          update_context_->single_thread_task_runner));
-  crx_downloader->set_progress_callback(
+          update_context_->single_thread_task_runner).release());
+  crx_downloader_->set_progress_callback(
       base::Bind(&ActionUpdate::DownloadProgress, base::Unretained(this), id));
-  update_context_->crx_downloader.reset(crx_downloader.release());
 
-  const std::vector<GURL> urls(GetUrls(item));
   OnDownloadStart(item);
 
-  update_context_->crx_downloader->StartDownload(
-      urls,
+  crx_downloader_->StartDownload(
+      GetUrls(item),
       base::Bind(&ActionUpdate::DownloadComplete, base::Unretained(this), id));
 }
 
@@ -106,8 +102,10 @@ void ActionUpdate::DownloadComplete(
   CrxUpdateItem* item = FindUpdateItemById(id);
   DCHECK(item);
 
-  AppendDownloadMetrics(update_context_->crx_downloader->download_metrics(),
+  AppendDownloadMetrics(crx_downloader_->download_metrics(),
                         &item->download_metrics);
+
+  crx_downloader_.reset();
 
   if (download_result.error) {
     OnDownloadError(item, download_result);
@@ -119,8 +117,6 @@ void ActionUpdate::DownloadComplete(
         base::TimeDelta::FromMilliseconds(
             update_context_->config->StepDelay()));
   }
-
-  update_context_->crx_downloader.reset();
 }
 
 void ActionUpdate::Install(const std::string& id,
@@ -143,14 +139,14 @@ void ActionUpdate::DoInstallOnBlockingTaskRunner(
     UpdateContext* update_context,
     CrxUpdateItem* item,
     const base::FilePath& crx_path) {
-  update_context->unpacker = new ComponentUnpacker(
+  unpacker_ = new ComponentUnpacker(
       item->component.pk_hash, crx_path, item->component.fingerprint,
       item->component.installer,
       update_context->config->CreateOutOfProcessPatcher(),
       update_context->blocking_task_runner);
-  update_context->unpacker->Unpack(
-      base::Bind(&ActionUpdate::EndUnpackingOnBlockingTaskRunner,
-                 base::Unretained(this), update_context, item, crx_path));
+  unpacker_->Unpack(base::Bind(&ActionUpdate::EndUnpackingOnBlockingTaskRunner,
+                               base::Unretained(this), update_context, item,
+                               crx_path));
 }
 
 void ActionUpdate::EndUnpackingOnBlockingTaskRunner(
@@ -159,7 +155,7 @@ void ActionUpdate::EndUnpackingOnBlockingTaskRunner(
     const base::FilePath& crx_path,
     ComponentUnpacker::Error error,
     int extended_error) {
-  update_context->unpacker = nullptr;
+  unpacker_ = nullptr;
   update_client::DeleteFileAndEmptyParentDirectory(crx_path);
   update_context->main_task_runner->PostDelayedTask(
       FROM_HERE,

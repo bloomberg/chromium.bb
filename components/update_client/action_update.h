@@ -15,6 +15,7 @@
 #include "base/version.h"
 #include "components/update_client/action.h"
 #include "components/update_client/component_unpacker.h"
+#include "components/update_client/crx_downloader.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_engine.h"
 #include "url/gurl.h"
@@ -24,8 +25,12 @@ namespace update_client {
 class UpdateChecker;
 
 // Defines a template method design pattern for ActionUpdate. This class
-// implements the common code for updating a CRX using either differential or
-// full updates algorithm.
+// implements the common code for updating a single CRX using either
+// a differential or a full update algorithm.
+// TODO(sorin): further refactor this class to enforce that there is a 1:1
+// relationship between one instance of this class and one CRX id. In other
+// words, make the CRX id and its associated CrxUpdateItem data structure
+// a member of this class instead of passing them around as function parameters.
 class ActionUpdate : public Action, protected ActionImpl {
  public:
   ActionUpdate();
@@ -77,6 +82,12 @@ class ActionUpdate : public Action, protected ActionImpl {
   void DoneInstalling(const std::string& id,
                       ComponentUnpacker::Error error,
                       int extended_error);
+
+  // Downloads updates for one CRX id only.
+  scoped_ptr<CrxDownloader> crx_downloader_;
+
+  // Unpacks one CRX.
+  scoped_refptr<ComponentUnpacker> unpacker_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionUpdate);
 };

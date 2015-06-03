@@ -4,9 +4,12 @@
 
 #include "components/update_client/crx_downloader.h"
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/update_client/url_fetcher_downloader.h"
 
 #if defined(OS_WIN)
@@ -142,7 +145,8 @@ void CrxDownloader::OnDownloadComplete(
     }
   }
 
-  download_callback_.Run(result);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(download_callback_, result));
 }
 
 void CrxDownloader::OnDownloadProgress(const Result& result) {

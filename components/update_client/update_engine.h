@@ -18,7 +18,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/update_client/action.h"
 #include "components/update_client/component_patcher_operation.h"
-#include "components/update_client/component_unpacker.h"
 #include "components/update_client/crx_downloader.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/ping_manager.h"
@@ -33,9 +32,7 @@ class SingleThreadTaskRunner;
 namespace update_client {
 
 class Configurator;
-class CrxDownloader;
 struct CrxUpdateItem;
-class PingManager;
 struct UpdateContext;
 
 // Handles updates for a group of components. Updates for different groups
@@ -144,9 +141,6 @@ struct UpdateContext {
 
   // Contains the ids of the items to update.
   std::queue<std::string> queue;
-
-  scoped_ptr<CrxDownloader> crx_downloader;
-  scoped_refptr<ComponentUnpacker> unpacker;
 };
 
 }  // namespace update_client
