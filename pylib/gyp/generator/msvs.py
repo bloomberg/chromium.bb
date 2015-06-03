@@ -2345,6 +2345,9 @@ def _GenerateMSBuildRuleTargetsFile(targets_path, msbuild_rules):
         rule_name,
         {'Condition': "'@(%s)' != '' and '%%(%s.ExcludedFromBuild)' != "
          "'true'" % (rule_name, rule_name),
+         'EchoOff': 'true',
+         'StandardOutputImportance': 'High',
+         'StandardErrorImportance': 'High',
          'CommandLineTemplate': '%%(%s.CommandLineTemplate)' % rule_name,
          'AdditionalOptions': '%%(%s.AdditionalOptions)' % rule_name,
          'Inputs': rule_inputs
