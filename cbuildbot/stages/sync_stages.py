@@ -173,6 +173,7 @@ class BootstrapStage(PatchChangesStage):
     self.chromite_patch_pool = chromite_patch_pool
     self.manifest_patch_pool = manifest_patch_pool
     self.returncode = None
+    self.tempdir = None
 
   def _ApplyManifestPatches(self, patch_pool):
     """Apply a pool of manifest patches to a temp manifest checkout.
@@ -249,8 +250,7 @@ class BootstrapStage(PatchChangesStage):
     else:
       PatchChangesStage.HandleApplyFailures(self, failures)
 
-  @osutils.TempDirDecorator
-  def PerformStage(self):
+  def _PerformStageInTempDir(self):
     # The plan for the builders is to use master branch to bootstrap other
     # branches. Now, if we wanted to test patches for both the bootstrap code
     # (on master) and the branched chromite (say, R20), we need to filter the
@@ -301,6 +301,12 @@ class BootstrapStage(PatchChangesStage):
     result_obj = cros_build_lib.RunCommand(
         cmd, cwd=self.tempdir, kill_timeout=30, error_code_ok=True)
     self.returncode = result_obj.returncode
+
+  def PerformStage(self):
+    with osutils.TempDir(base_dir=self._run.options.bootstrap_dir) as tempdir:
+      self.tempdir = tempdir
+      self._PerformStageInTempDir()
+    self.tempdir = None
 
 
 class SyncStage(generic_stages.BuilderStage):

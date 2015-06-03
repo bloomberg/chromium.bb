@@ -408,6 +408,11 @@ def _CreateParser():
                           'where the build occurs. For external build configs, '
                           "defaults to 'trybot' directory at top level of your "
                           'repo-managed checkout.'))
+  parser.add_option('--bootstrap-dir', type='path', default=None,
+                    help='Bootstrapping cbuildbot may involve checking out '
+                         'multiple copies of chromite. All these checkouts '
+                         'will be contained in the directory specified here. '
+                         'Default:%s' % osutils.GetGlobalTempDir())
   parser.add_remote_option('--chrome_rev', default=None, type='string',
                            action='callback', dest='chrome_rev',
                            callback=_CheckChromeRevOption,
