@@ -42,9 +42,9 @@ namespace blink {
 
 class JavaScriptCallFrame : public RefCounted<JavaScriptCallFrame> {
 public:
-    static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> create(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
+    static PassRefPtr<JavaScriptCallFrame> create(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
     {
-        return adoptRefWillBeNoop(new JavaScriptCallFrame(debuggerContext, callFrame));
+        return adoptRef(new JavaScriptCallFrame(debuggerContext, callFrame));
     }
     ~JavaScriptCallFrame();
 
@@ -82,7 +82,7 @@ private:
     String callV8FunctionReturnString(const char* name) const;
 
     v8::Isolate* m_isolate;
-    RefPtrWillBeMember<JavaScriptCallFrame> m_caller;
+    RefPtr<JavaScriptCallFrame> m_caller;
     ScopedPersistent<v8::Context> m_debuggerContext;
     ScopedPersistent<v8::Object> m_callFrame;
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;

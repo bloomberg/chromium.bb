@@ -133,7 +133,7 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(JavaScriptCallF
 
 static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(const ScriptValue& callFrames)
 {
-    RefPtrWillBeRawPtr<JavaScriptCallFrame> jsCallFrame = V8Debugger::toJavaScriptCallFrameUnsafe(callFrames);
+    RefPtr<JavaScriptCallFrame> jsCallFrame = V8Debugger::toJavaScriptCallFrameUnsafe(callFrames);
     return jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
 }
 
@@ -488,7 +488,7 @@ bool InspectorDebuggerAgent::isCallStackEmptyOrBlackboxed()
 {
     ASSERT(enabled());
     for (int index = 0; ; ++index) {
-        RefPtrWillBeRawPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(index);
+        RefPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(index);
         if (!frame)
             break;
         if (!isCallFrameWithUnknownScriptOrBlackboxed(frame.release()))
@@ -503,9 +503,9 @@ bool InspectorDebuggerAgent::isTopCallFrameBlackboxed()
     return isCallFrameWithUnknownScriptOrBlackboxed(debugger().callFrameNoScopes(0));
 }
 
-bool InspectorDebuggerAgent::isCallFrameWithUnknownScriptOrBlackboxed(PassRefPtrWillBeRawPtr<JavaScriptCallFrame> pFrame)
+bool InspectorDebuggerAgent::isCallFrameWithUnknownScriptOrBlackboxed(PassRefPtr<JavaScriptCallFrame> pFrame)
 {
-    RefPtrWillBeRawPtr<JavaScriptCallFrame> frame = pFrame;
+    RefPtr<JavaScriptCallFrame> frame = pFrame;
     if (!frame)
         return true;
     ScriptsMap::iterator it = m_scripts.find(String::number(frame->sourceID()));
@@ -797,7 +797,7 @@ void InspectorDebuggerAgent::stepOver(ErrorString* errorString)
     if (!assertPaused(errorString))
         return;
     // StepOver at function return point should fallback to StepInto.
-    RefPtrWillBeRawPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(0);
+    RefPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(0);
     if (frame && frame->isAtReturn()) {
         stepInto(errorString);
         return;
@@ -1456,7 +1456,7 @@ PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyn
         return nullptr;
     RefPtrWillBeRawPtr<ScriptAsyncCallStack> result = nullptr;
     for (AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
-        RefPtrWillBeRawPtr<JavaScriptCallFrame> callFrame = V8Debugger::toJavaScriptCallFrameUnsafe((*it)->callFrames());
+        RefPtr<JavaScriptCallFrame> callFrame = V8Debugger::toJavaScriptCallFrameUnsafe((*it)->callFrames());
         if (!callFrame)
             break;
         result = ScriptAsyncCallStack::create((*it)->description(), toScriptCallStack(callFrame.get()), result.release());

@@ -378,7 +378,7 @@ int V8Debugger::frameCount()
     return 0;
 }
 
-PassRefPtrWillBeRawPtr<JavaScriptCallFrame> V8Debugger::toJavaScriptCallFrameUnsafe(const ScriptValue& value)
+PassRefPtr<JavaScriptCallFrame> V8Debugger::toJavaScriptCallFrameUnsafe(const ScriptValue& value)
 {
     if (value.isEmpty())
         return nullptr;
@@ -390,7 +390,7 @@ PassRefPtrWillBeRawPtr<JavaScriptCallFrame> V8Debugger::toJavaScriptCallFrameUns
     return V8JavaScriptCallFrame::unwrap(v8::Local<v8::Object>::Cast(value.v8ValueUnsafe()));
 }
 
-PassRefPtrWillBeRawPtr<JavaScriptCallFrame> V8Debugger::wrapCallFrames(int maximumLimit, ScopeInfoDetails scopeDetails)
+PassRefPtr<JavaScriptCallFrame> V8Debugger::wrapCallFrames(int maximumLimit, ScopeInfoDetails scopeDetails)
 {
     const int scopeBits = 2;
     static_assert(NoScopes < (1 << scopeBits), "there must be enough bits to encode ScopeInfoDetails");
@@ -422,7 +422,7 @@ ScriptValue V8Debugger::currentCallFramesInner(ScopeInfoDetails scopeDetails)
     if (!stackTrace->GetFrameCount())
         return ScriptValue();
 
-    RefPtrWillBeRawPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(0, scopeDetails);
+    RefPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames(0, scopeDetails);
     if (!currentCallFrame)
         return ScriptValue();
 
@@ -443,7 +443,7 @@ ScriptValue V8Debugger::currentCallFramesForAsyncStack()
     return currentCallFramesInner(FastAsyncScopes);
 }
 
-PassRefPtrWillBeRawPtr<JavaScriptCallFrame> V8Debugger::callFrameNoScopes(int index)
+PassRefPtr<JavaScriptCallFrame> V8Debugger::callFrameNoScopes(int index)
 {
     if (!m_isolate->InContext())
         return nullptr;

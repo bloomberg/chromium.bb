@@ -105,10 +105,10 @@ public:
     bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, ScriptValue* newCallFrames, RefPtr<JSONObject>* result);
     ScriptValue currentCallFrames();
     ScriptValue currentCallFramesForAsyncStack();
-    PassRefPtrWillBeRawPtr<JavaScriptCallFrame> callFrameNoScopes(int index);
+    PassRefPtr<JavaScriptCallFrame> callFrameNoScopes(int index);
     int frameCount();
 
-    static PassRefPtrWillBeRawPtr<JavaScriptCallFrame> toJavaScriptCallFrameUnsafe(const ScriptValue&);
+    static PassRefPtr<JavaScriptCallFrame> toJavaScriptCallFrameUnsafe(const ScriptValue&);
 
     bool isPaused();
 
@@ -144,7 +144,7 @@ private:
         NoScopes // Should be the last option.
     };
     ScriptValue currentCallFramesInner(ScopeInfoDetails);
-    PassRefPtrWillBeRawPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, ScopeInfoDetails);
+    PassRefPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, ScopeInfoDetails);
     void handleV8AsyncTaskEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
     void handleV8PromiseEvent(ScriptDebugListener*, ScriptState* pausedScriptState, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData);
 

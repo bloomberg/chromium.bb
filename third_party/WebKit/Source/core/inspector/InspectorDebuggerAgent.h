@@ -248,7 +248,7 @@ private:
 
     bool isCallStackEmptyOrBlackboxed();
     bool isTopCallFrameBlackboxed();
-    bool isCallFrameWithUnknownScriptOrBlackboxed(PassRefPtrWillBeRawPtr<JavaScriptCallFrame>);
+    bool isCallFrameWithUnknownScriptOrBlackboxed(PassRefPtr<JavaScriptCallFrame>);
     PromiseTracker& promiseTracker() const { return *m_promiseTracker; }
 
     void internalSetAsyncCallStackDepth(int);
