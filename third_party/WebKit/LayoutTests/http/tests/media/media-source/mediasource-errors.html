@@ -159,7 +159,6 @@
 
                 test.waitForExpectedEvents(function()
                 {
-                    assert_equals(mediaElement.readyState, HTMLMediaElement.HAVE_METADATA);
                     assert_true(mediaElement.error != null);
                     assert_equals(mediaElement.error.code, MediaError.MEDIA_ERR_DECODE);
                     test.done();
