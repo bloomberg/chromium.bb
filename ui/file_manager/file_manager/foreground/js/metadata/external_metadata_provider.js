@@ -62,7 +62,7 @@ ExternalMetadataProvider.prototype.get = function(requests) {
         Object.keys(nameMap),
         function(results) {
           if (!chrome.runtime.lastError)
-            fulfill(this.convertResults_(requests, results));
+            fulfill(this.convertResults_(requests, nameMap, results));
           else
             fulfill(requests.map(function() { return new MetadataItem(); }));
         }.bind(this));
@@ -71,11 +71,12 @@ ExternalMetadataProvider.prototype.get = function(requests) {
 
 /**
  * @param {!Array<!MetadataRequest>} requests
+ * @param {!Object<boolean>} nameMap
  * @param {!Array<!EntryProperties>} propertiesList
  * @return {!Array<!MetadataItem>}
  */
 ExternalMetadataProvider.prototype.convertResults_ =
-    function(requests, propertiesList) {
+    function(requests, nameMap, propertiesList) {
   var results = [];
   for (var i = 0; i < propertiesList.length; i++) {
     var properties = propertiesList[i];
@@ -97,7 +98,8 @@ ExternalMetadataProvider.prototype.convertResults_ =
     item.shared = properties.shared;
     item.sharedWithMe = properties.sharedWithMe;
     item.size = requests[i].entry.isFile ? (properties.size || 0) : -1;
-    item.thumbnailUrl = properties.thumbnailUrl;
+    if (properties.thumbnailUrl || nameMap['thumbnailUrl'])
+      item.thumbnailUrl = properties.thumbnailUrl;
     results.push(item);
   }
   return results;
