@@ -394,10 +394,10 @@ ScrollAnimatorNone::Parameters ScrollAnimatorNone::parametersForScrollGranularit
     return Parameters();
 }
 
-ScrollResultOneDimensional ScrollAnimatorNone::scroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
+ScrollResultOneDimensional ScrollAnimatorNone::userScroll(ScrollbarOrientation orientation, ScrollGranularity granularity, float step, float delta)
 {
     if (!m_scrollableArea->scrollAnimatorEnabled())
-        return ScrollAnimator::scroll(orientation, granularity, step, delta);
+        return ScrollAnimator::userScroll(orientation, granularity, step, delta);
 
     TRACE_EVENT0("blink", "ScrollAnimatorNone::scroll");
 
@@ -412,12 +412,12 @@ ScrollResultOneDimensional ScrollAnimatorNone::scroll(ScrollbarOrientation orien
         parameters = parametersForScrollGranularity(granularity);
         break;
     case ScrollByPrecisePixel:
-        return ScrollAnimator::scroll(orientation, granularity, step, delta);
+        return ScrollAnimator::userScroll(orientation, granularity, step, delta);
     }
 
     // If the individual input setting is disabled, bail.
     if (!parameters.m_isEnabled)
-        return ScrollAnimator::scroll(orientation, granularity, step, delta);
+        return ScrollAnimator::userScroll(orientation, granularity, step, delta);
 
     // This is an animatable scroll. Set the animation in motion using the appropriate parameters.
     float scrollableSize = static_cast<float>(m_scrollableArea->scrollSize(orientation));

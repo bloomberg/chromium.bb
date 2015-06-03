@@ -707,7 +707,7 @@ bool LayoutBox::scroll(ScrollDirectionPhysical direction, ScrollGranularity gran
     if (!layer() || !layer()->scrollableArea())
         return false;
 
-    return layer()->scrollableArea()->scroll(direction, granularity, delta);
+    return layer()->scrollableArea()->userScroll(direction, granularity, delta);
 }
 
 bool LayoutBox::canBeScrolledAndHasScrollableArea() const

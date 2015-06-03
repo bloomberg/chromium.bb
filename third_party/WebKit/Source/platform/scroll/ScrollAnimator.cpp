@@ -50,7 +50,7 @@ ScrollAnimator::~ScrollAnimator()
 {
 }
 
-ScrollResultOneDimensional ScrollAnimator::scroll(ScrollbarOrientation orientation, ScrollGranularity, float step, float delta)
+ScrollResultOneDimensional ScrollAnimator::userScroll(ScrollbarOrientation orientation, ScrollGranularity, float step, float delta)
 {
     float& currentPos = (orientation == HorizontalScrollbar) ? m_currentPosX : m_currentPosY;
     float newPos = clampScrollPosition(orientation, currentPos + step * delta);
@@ -108,7 +108,7 @@ ScrollResult ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
                     deltaY = -deltaY;
             }
 
-            ScrollResultOneDimensional resultY = scroll(
+            ScrollResultOneDimensional resultY = userScroll(
                 VerticalScrollbar, granularity, m_scrollableArea->pixelStep(VerticalScrollbar), -deltaY);
 
             if (e.granularity() != ScrollByPageWheelEvent) {
@@ -127,7 +127,7 @@ ScrollResult ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
                     deltaX = -deltaX;
             }
 
-            ScrollResultOneDimensional resultX = scroll(
+            ScrollResultOneDimensional resultX = userScroll(
                 HorizontalScrollbar, granularity, m_scrollableArea->pixelStep(HorizontalScrollbar), -deltaX);
 
             if (e.granularity() != ScrollByPageWheelEvent) {

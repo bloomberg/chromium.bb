@@ -986,7 +986,7 @@ bool EventHandler::bubblingScroll(ScrollDirection direction, ScrollGranularity g
     if (view) {
         ScrollDirectionPhysical physicalDirection =
             toPhysicalDirection(direction, view->isVerticalDocument(), view->isFlippedDocument());
-        if (view->scrollableArea()->scroll(physicalDirection, granularity)) {
+        if (view->scrollableArea()->userScroll(physicalDirection, granularity)) {
             setFrameWasScrolledByUser();
             return true;
         }
@@ -3654,7 +3654,7 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
     ScrollDirectionPhysical physicalDirection =
         toPhysicalDirection(direction, view->isVerticalDocument(), view->isFlippedDocument());
 
-    if (view->scrollableArea()->scroll(physicalDirection, ScrollByPage))
+    if (view->scrollableArea()->userScroll(physicalDirection, ScrollByPage))
         event->setDefaultHandled();
 }
 

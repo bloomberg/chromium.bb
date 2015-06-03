@@ -191,7 +191,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 
     // Layout viewport shouldn't scroll since it's not horizontally scrollable,
     // but visual viewport should.
-    rootFrameViewport->scroll(ScrollRight, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
     EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(50, 0), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(50, 0), rootFrameViewport->scrollPositionDouble());
@@ -202,7 +202,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
     layoutViewport.setUserInputScrollable(true, true);
     visualViewport.setUserInputScrollable(false, true);
 
-    rootFrameViewport->scroll(ScrollRight, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
     EXPECT_POINT_EQ(DoublePoint(100, 0), layoutViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(100, 0), rootFrameViewport->scrollPositionDouble());
@@ -213,7 +213,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
     layoutViewport.setUserInputScrollable(false, true);
     visualViewport.setUserInputScrollable(false, true);
 
-    rootFrameViewport->scroll(ScrollRight, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
     EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
@@ -222,7 +222,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
     EXPECT_TRUE(rootFrameViewport->userInputScrollable(VerticalScrollbar));
 
     // Vertical scrolling should be unaffected.
-    rootFrameViewport->scroll(ScrollDown, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
     EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 225), rootFrameViewport->scrollPositionDouble());
@@ -242,7 +242,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
 
     // Layout viewport shouldn't scroll since it's not vertically scrollable,
     // but visual viewport should.
-    rootFrameViewport->scroll(ScrollDown, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
     EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 75), rootFrameViewport->scrollPositionDouble());
@@ -253,7 +253,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
     layoutViewport.setUserInputScrollable(true, true);
     visualViewport.setUserInputScrollable(true, false);
 
-    rootFrameViewport->scroll(ScrollDown, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
     EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 150), rootFrameViewport->scrollPositionDouble());
@@ -264,7 +264,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
     layoutViewport.setUserInputScrollable(true, false);
     visualViewport.setUserInputScrollable(true, false);
 
-    rootFrameViewport->scroll(ScrollDown, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollDown, ScrollByPixel, 300);
     EXPECT_POINT_EQ(DoublePoint(0, 0), layoutViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 0), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 0), rootFrameViewport->scrollPositionDouble());
@@ -273,7 +273,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable)
     EXPECT_FALSE(rootFrameViewport->userInputScrollable(VerticalScrollbar));
 
     // Horizontal scrolling should be unaffected.
-    rootFrameViewport->scroll(ScrollRight, ScrollByPixel, 300);
+    rootFrameViewport->userScroll(ScrollRight, ScrollByPixel, 300);
     EXPECT_POINT_EQ(DoublePoint(100, 0), layoutViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(50, 0), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(150, 0), rootFrameViewport->scrollPositionDouble());
@@ -306,7 +306,7 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
     visualViewport.setScrollPosition(DoublePoint(50, 75));
     EXPECT_POINT_EQ(DoublePoint(50, 75), rootFrameViewport->scrollPositionDouble());
 
-    rootFrameViewport->scroll(ScrollLeft, ScrollByPixel, 50);
+    rootFrameViewport->userScroll(ScrollLeft, ScrollByPixel, 50);
     EXPECT_POINT_EQ(DoublePoint(0, 75), rootFrameViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 75), visualViewport.scrollPositionDouble());
 
@@ -328,7 +328,7 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll)
     layoutViewport.setScrollPosition(DoublePoint(100, 150));
     EXPECT_POINT_EQ(DoublePoint(100, 150), rootFrameViewport->scrollPositionDouble());
 
-    rootFrameViewport->scroll(ScrollLeft, ScrollByPixel, 100);
+    rootFrameViewport->userScroll(ScrollLeft, ScrollByPixel, 100);
     EXPECT_POINT_EQ(DoublePoint(0, 150), rootFrameViewport->scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(0, 150), layoutViewport.scrollPositionDouble());
 }

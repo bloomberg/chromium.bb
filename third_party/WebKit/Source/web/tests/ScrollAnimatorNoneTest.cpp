@@ -124,25 +124,25 @@ TEST(ScrollAnimatorEnabled, Enabled)
     EXPECT_CALL(scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
     EXPECT_CALL(scrollableArea, setScrollOffset(_)).Times(4);
 
-    scrollAnimatorNone->scroll(HorizontalScrollbar, ScrollByLine, 100, 1);
+    scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByLine, 100, 1);
     EXPECT_NE(100, scrollAnimatorNone->currentX());
     EXPECT_NE(0, scrollAnimatorNone->currentX());
     EXPECT_EQ(0, scrollAnimatorNone->currentY());
     scrollAnimatorNone->reset();
 
-    scrollAnimatorNone->scroll(HorizontalScrollbar, ScrollByPage, 100, 1);
+    scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByPage, 100, 1);
     EXPECT_NE(100, scrollAnimatorNone->currentX());
     EXPECT_NE(0, scrollAnimatorNone->currentX());
     EXPECT_EQ(0, scrollAnimatorNone->currentY());
     scrollAnimatorNone->reset();
 
-    scrollAnimatorNone->scroll(HorizontalScrollbar, ScrollByPixel, 4, 25);
+    scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByPixel, 4, 25);
     EXPECT_NE(100, scrollAnimatorNone->currentX());
     EXPECT_NE(0, scrollAnimatorNone->currentX());
     EXPECT_EQ(0, scrollAnimatorNone->currentY());
     scrollAnimatorNone->reset();
 
-    scrollAnimatorNone->scroll(HorizontalScrollbar, ScrollByPrecisePixel, 4, 25);
+    scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByPrecisePixel, 4, 25);
     EXPECT_EQ(100, scrollAnimatorNone->currentX());
     EXPECT_NE(0, scrollAnimatorNone->currentX());
     EXPECT_EQ(0, scrollAnimatorNone->currentY());
@@ -158,22 +158,22 @@ TEST(ScrollAnimatorEnabled, Disabled)
     EXPECT_CALL(scrollableArea, maximumScrollPosition()).Times(AtLeast(1)).WillRepeatedly(Return(IntPoint(1000, 1000)));
     EXPECT_CALL(scrollableArea, setScrollOffset(_)).Times(4);
 
-    scrollAnimatorNone->scroll(HorizontalScrollbar, ScrollByLine, 100, 1);
+    scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByLine, 100, 1);
     EXPECT_EQ(100, scrollAnimatorNone->currentX());
     EXPECT_EQ(0, scrollAnimatorNone->currentY());
     scrollAnimatorNone->reset();
 
-    scrollAnimatorNone->scroll(HorizontalScrollbar, ScrollByPage, 100, 1);
+    scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByPage, 100, 1);
     EXPECT_EQ(100, scrollAnimatorNone->currentX());
     EXPECT_EQ(0, scrollAnimatorNone->currentY());
     scrollAnimatorNone->reset();
 
-    scrollAnimatorNone->scroll(HorizontalScrollbar, ScrollByDocument, 100, 1);
+    scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByDocument, 100, 1);
     EXPECT_EQ(100, scrollAnimatorNone->currentX());
     EXPECT_EQ(0, scrollAnimatorNone->currentY());
     scrollAnimatorNone->reset();
 
-    scrollAnimatorNone->scroll(HorizontalScrollbar, ScrollByPixel, 100, 1);
+    scrollAnimatorNone->userScroll(HorizontalScrollbar, ScrollByPixel, 100, 1);
     EXPECT_EQ(100, scrollAnimatorNone->currentX());
     EXPECT_EQ(0, scrollAnimatorNone->currentY());
     scrollAnimatorNone->reset();

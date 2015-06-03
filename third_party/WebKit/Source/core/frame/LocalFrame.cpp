@@ -715,8 +715,8 @@ void LocalFrame::removeSpellingMarkersUnderWords(const Vector<String>& words)
 
 static bool scrollAreaOnBothAxes(const FloatSize& delta, ScrollableArea& view)
 {
-    bool scrolledHorizontal = view.scroll(ScrollLeft, ScrollByPrecisePixel, delta.width());
-    bool scrolledVertical = view.scroll(ScrollUp, ScrollByPrecisePixel, delta.height());
+    bool scrolledHorizontal = view.userScroll(ScrollLeft, ScrollByPrecisePixel, delta.width());
+    bool scrolledVertical = view.userScroll(ScrollUp, ScrollByPrecisePixel, delta.height());
     return scrolledHorizontal || scrolledVertical;
 }
 

@@ -50,11 +50,12 @@ public:
 
     virtual ~ScrollAnimator();
 
-    // Computes a scroll destination for the given parameters.  Returns false if
-    // already at the destination.  Otherwise, starts scrolling towards the
-    // destination and returns true.  Scrolling may be immediate or animated.
-    // The base class implementation always scrolls immediately, never animates.
-    virtual ScrollResultOneDimensional scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta);
+    // Computes a scroll destination for the given parameters.  The returned
+    // ScrollResultOneDimensional will have didScroll set to false if already at
+    // the destination.  Otherwise, starts scrolling towards the destination and
+    // didScroll is true.  Scrolling may be immediate or animated. The base
+    // class implementation always scrolls immediately, never animates.
+    virtual ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta);
 
     virtual void scrollToOffsetWithoutAnimation(const FloatPoint&);
 

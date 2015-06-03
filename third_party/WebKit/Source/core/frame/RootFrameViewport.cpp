@@ -276,7 +276,7 @@ GraphicsLayer* RootFrameViewport::layerForVerticalScrollbar() const
     return layoutViewport().layerForVerticalScrollbar();
 }
 
-bool RootFrameViewport::scroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
+bool RootFrameViewport::userScroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
 {
     updateScrollAnimator();
 
@@ -288,13 +288,13 @@ bool RootFrameViewport::scroll(ScrollDirectionPhysical direction, ScrollGranular
         orientation = HorizontalScrollbar;
 
     if (layoutViewport().userInputScrollable(orientation) && visualViewport().userInputScrollable(orientation))
-        return ScrollableArea::scroll(direction, granularity, delta);
+        return ScrollableArea::userScroll(direction, granularity, delta);
 
     if (visualViewport().userInputScrollable(orientation))
-        return visualViewport().scroll(direction, granularity, delta);
+        return visualViewport().userScroll(direction, granularity, delta);
 
     if (layoutViewport().userInputScrollable(orientation))
-        return layoutViewport().scroll(direction, granularity, delta);
+        return layoutViewport().userScroll(direction, granularity, delta);
 
     return false;
 }

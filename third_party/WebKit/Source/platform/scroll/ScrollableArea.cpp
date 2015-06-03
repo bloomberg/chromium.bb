@@ -122,7 +122,7 @@ GraphicsLayer* ScrollableArea::layerForContainer() const
     return layerForScrolling() ? layerForScrolling()->parent() : 0;
 }
 
-bool ScrollableArea::scroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
+bool ScrollableArea::userScroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
 {
     ScrollbarOrientation orientation;
     if (direction == ScrollUp || direction == ScrollDown)
@@ -155,7 +155,7 @@ bool ScrollableArea::scroll(ScrollDirectionPhysical direction, ScrollGranularity
     if (direction == ScrollUp || direction == ScrollLeft)
         delta = -delta;
 
-    return scrollAnimator()->scroll(orientation, granularity, step, delta).didScroll;
+    return scrollAnimator()->userScroll(orientation, granularity, step, delta).didScroll;
 }
 
 void ScrollableArea::setScrollPosition(const DoublePoint& position, ScrollBehavior behavior)

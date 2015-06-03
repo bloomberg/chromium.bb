@@ -80,7 +80,7 @@ private:
     Timer<ScrollAnimatorMac> m_sendContentAreaScrolledTimer;
     FloatSize m_contentAreaScrolledTimerScrollDelta;
 
-    virtual ScrollResultOneDimensional scroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
+    virtual ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
     virtual void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
 
     virtual void handleWheelEventPhase(PlatformWheelEventPhase) override;
