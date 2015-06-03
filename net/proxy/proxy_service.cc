@@ -1222,6 +1222,12 @@ void ProxyService::OnInitProxyResolverComplete(int result) {
 
   init_proxy_resolver_.reset();
 
+  // When using the out-of-process resolver, creating the resolver can complete
+  // with the ERR_PAC_SCRIPT_TERMINATED result code, which indicates the
+  // resolver process crashed.
+  UMA_HISTOGRAM_BOOLEAN("Net.ProxyService.ScriptTerminatedOnInit",
+                        result == ERR_PAC_SCRIPT_TERMINATED);
+
   if (result != OK) {
     if (fetched_config_.pac_mandatory()) {
       VLOG(1) << "Failed configuring with mandatory PAC script, blocking all "

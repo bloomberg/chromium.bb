@@ -21002,12 +21002,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Net.ProxyService.ScriptTerminated" enum="Boolean">
+<histogram name="Net.ProxyService.ScriptTerminated" enum="BooleanTerminated">
   <owner>eroman@chromium.org</owner>
   <summary>
     Whether a proxy resolution resulted in the PAC script terminating
-    unexpectedly. This only happens when the resolver process crashes when using
-    out-of-process PAC.
+    unexpectedly. This does not include terminations that occured during
+    initialization of a new proxy resolver. This only happens when the resolver
+    process crashes when using out-of-process PAC.
+  </summary>
+</histogram>
+
+<histogram name="Net.ProxyService.ScriptTerminatedOnInit"
+    enum="BooleanTerminated">
+  <owner>eroman@chromium.org</owner>
+  <summary>
+    Whether the creation of a new proxy resolver resulted in the PAC script
+    terminating unexpectedly. This only happens when the resolver process
+    crashes when using out-of-process PAC.
   </summary>
 </histogram>
 
@@ -49414,6 +49425,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanTablet" type="int">
   <int value="0" label="Non tablet"/>
   <int value="1" label="Tablet"/>
+</enum>
+
+<enum name="BooleanTerminated" type="int">
+  <int value="0" label="Not terminated"/>
+  <int value="1" label="Terminated"/>
 </enum>
 
 <enum name="BooleanTimedOut" type="int">
