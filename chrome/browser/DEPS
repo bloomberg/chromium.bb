@@ -72,6 +72,7 @@ include_rules = [
   "+components/query_parser",
   "+components/rappor",
   "+components/renderer_context_menu",
+  "+components/safe_json_parser",
   "+components/search",
   "+components/search_engines",
   "+components/search_provider_logos",

@@ -3,6 +3,7 @@ include_rules = [
   "+content/public/child",
   "+content/public/utility",
   "+components/wifi",
+  "+components/safe_json_parser",
   "+courgette",
   "+extensions/common",
   "+sandbox/linux/seccomp-bpf/sandbox_bpf.h",

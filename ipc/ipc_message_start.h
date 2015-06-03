@@ -124,6 +124,7 @@ enum IPCMessageStart {
   DataReductionProxyStart,
   ContentSettingsMsgStart,
   ChromeAppBannerMsgStart,
+  SafeJsonParserMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

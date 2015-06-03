@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_json_parser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/web_application_info.h"
 #include "components/favicon/core/favicon_service.h"
+#include "components/safe_json_parser/safe_json_parser.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
@@ -184,16 +184,17 @@ void ChromeManagementAPIDelegate::
     GetPermissionWarningsByManifestFunctionDelegate(
         extensions::ManagementGetPermissionWarningsByManifestFunction* function,
         const std::string& manifest_str) const {
-  scoped_refptr<SafeJsonParser> parser(new SafeJsonParser(
-      manifest_str,
-      base::Bind(
-          &extensions::ManagementGetPermissionWarningsByManifestFunction::
-              OnParseSuccess,
-          function),
-      base::Bind(
-          &extensions::ManagementGetPermissionWarningsByManifestFunction::
-              OnParseFailure,
-          function)));
+  scoped_refptr<safe_json_parser::SafeJsonParser> parser(
+      new safe_json_parser::SafeJsonParser(
+          manifest_str,
+          base::Bind(
+              &extensions::ManagementGetPermissionWarningsByManifestFunction::
+                  OnParseSuccess,
+              function),
+          base::Bind(
+              &extensions::ManagementGetPermissionWarningsByManifestFunction::
+                  OnParseFailure,
+              function)));
   parser->Start();
 }
 

@@ -9,7 +9,12 @@ include_rules = [
   "+components/crx_file",
   "+components/user_manager",
   "+extensions/strings/grit/extensions_strings.h",
+  "+grit",  # For generated headers
 
   # For access to testing command line switches.
   "+ppapi/shared_impl",
+
+  # For safe_json_parser
+  "+components/safe_json_parser",
+  "+ui/base",
 ]

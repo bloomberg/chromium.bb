@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
-#include "chrome/browser/safe_json_parser.h"
+#include "components/safe_json_parser/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
@@ -49,7 +49,7 @@ void WebstoreInstallHelper::Start() {
   // Use base::Unretained so that base::Bind won't AddRef() on us. Otherwise,
   // we'll have two callbacks holding references to us, only one of which will
   // ever be called.
-  json_parser_ = new SafeJsonParser(
+  json_parser_ = new safe_json_parser::SafeJsonParser(
       manifest_,
       base::Bind(&WebstoreInstallHelper::OnJSONParseSucceeded,
                  base::Unretained(this)),

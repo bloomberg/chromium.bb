@@ -186,6 +186,9 @@
       <message name="IDS_LEARN_MORE" desc="Learn more text">
         Learn more
       </message>
+      <message name="IDS_UTILITY_PROCESS_JSON_PARSER_NAME" desc="The name of the utility process used for parsing JSON files.">
+        JSON Parser
+      </message>
     </messages>
   </release>
 </grit>

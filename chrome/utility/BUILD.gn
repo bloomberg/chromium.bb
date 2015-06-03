@@ -17,6 +17,7 @@ static_library("utility") {
   public_deps = []
   deps = [
     "//base",
+    "//components/safe_json_parser:safe_json_parser_message_filter",
     "//components/search_engines",
     "//components/strings",
     "//components/url_fixer",

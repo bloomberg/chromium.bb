@@ -62,7 +62,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnDetectSeccompSupport();
 #endif
 
-  void OnParseJSON(const std::string& json);
   void OnPatchFileBsdiff(const base::FilePath& input_file,
                          const base::FilePath& patch_file,
                          const base::FilePath& output_file);

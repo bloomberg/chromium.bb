@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_JSON_PARSER_H_
-#define CHROME_BROWSER_SAFE_JSON_PARSER_H_
+#ifndef COMPONENTS_SAFE_JSON_PARSER_SAFE_JSON_PARSER_H_
+#define COMPONENTS_SAFE_JSON_PARSER_SAFE_JSON_PARSER_H_
 
 #include <string>
 
@@ -20,6 +20,8 @@ class Value;
 namespace IPC {
 class Message;
 }
+
+namespace safe_json_parser {
 
 // SafeJsonParser parses a given JSON safely via a utility process. The object
 // is ref-counted and kept alive after Start() is called until one of the two
@@ -59,4 +61,6 @@ class SafeJsonParser : public content::UtilityProcessHostClient {
   DISALLOW_COPY_AND_ASSIGN(SafeJsonParser);
 };
 
-#endif  // CHROME_BROWSER_SAFE_JSON_PARSER_H_
+}  // namespace safe_json_parser
+
+#endif  // COMPONENTS_SAFE_JSON_PARSER_SAFE_JSON_PARSER_H_

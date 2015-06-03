@@ -258,6 +258,7 @@ source_set("browser") {
       "//components/password_manager/content/browser",
       "//components/plugins/common",
       "//components/precache/content",
+      "//components/safe_json_parser",
       "//components/sessions",
       "//components/storage_monitor",
       "//components/translate/content/browser",

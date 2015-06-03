@@ -26,7 +26,9 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace safe_json_parser {
 class SafeJsonParser;
+}
 
 namespace extensions {
 
@@ -94,7 +96,7 @@ class WebstoreInstallHelper : public base::RefCounted<WebstoreInstallHelper>,
   // The manifest to parse.
   std::string manifest_;
 
-  scoped_refptr<SafeJsonParser> json_parser_;
+  scoped_refptr<safe_json_parser::SafeJsonParser> json_parser_;
 
   // If |icon_url_| is non-empty, it needs to be fetched and decoded into an
   // SkBitmap.

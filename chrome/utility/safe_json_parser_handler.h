@@ -1,0 +1,34 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_UTILITY_SAFE_JSON_PARSER_HANDLER_H_
+#define CHROME_UTILITY_SAFE_JSON_PARSER_HANDLER_H_
+
+#include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "chrome/utility/utility_message_handler.h"
+
+namespace safe_json_parser {
+class SafeJsonParserMessageFilter;
+}  // namespace safe_json_parser
+
+// Dispatches IPCs for out of process JSON parsing. This is an adapter class
+// that delegates to safe_json_parser::SafeJsonParserMessageFilter, since the
+// SafeJsonParserMessageFilter in //components/safe_json_parser can't directly
+// depend on //chrome/utility.
+class SafeJsonParserHandler : public UtilityMessageHandler {
+ public:
+  SafeJsonParserHandler();
+  ~SafeJsonParserHandler() override;
+
+  // UtilityMessageHandler
+  bool OnMessageReceived(const IPC::Message& message) override;
+
+ private:
+  scoped_ptr<safe_json_parser::SafeJsonParserMessageFilter> handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(SafeJsonParserHandler);
+};
+
+#endif  // CHROME_UTILITY_SAFE_JSON_PARSER_HANDLER_H_

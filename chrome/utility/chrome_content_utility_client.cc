@@ -6,13 +6,13 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/utility/chrome_content_utility_ipc_whitelist.h"
+#include "chrome/utility/safe_json_parser_handler.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "content/public/child/image_decoder_utils.h"
 #include "content/public/common/content_switches.h"
@@ -154,6 +154,8 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
   handlers_.push_back(new ShellHandler());
   handlers_.push_back(new FontCacheHandler());
 #endif
+
+  handlers_.push_back(new SafeJsonParserHandler());
 }
 
 ChromeContentUtilityClient::~ChromeContentUtilityClient() {
@@ -186,7 +188,6 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RobustJPEGDecodeImage,
                         OnRobustJPEGDecodeImage)
 #endif  // defined(OS_CHROMEOS)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseJSON, OnParseJSON)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_PatchFileBsdiff,
                         OnPatchFileBsdiff)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_PatchFileCourgette,
@@ -368,21 +369,6 @@ void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(
   ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_CHROMEOS)
-
-void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
-  int error_code;
-  std::string error;
-  scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      json, base::JSON_PARSE_RFC, &error_code, &error);
-  if (value) {
-    base::ListValue wrapper;
-    wrapper.Append(value.Pass());
-    Send(new ChromeUtilityHostMsg_ParseJSON_Succeeded(wrapper));
-  } else {
-    Send(new ChromeUtilityHostMsg_ParseJSON_Failed(error));
-  }
-  ReleaseProcessIfNeeded();
-}
 
 void ChromeContentUtilityClient::OnPatchFileBsdiff(
     const base::FilePath& input_file,

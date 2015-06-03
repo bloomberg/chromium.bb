@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
-#include "chrome/browser/safe_json_parser.h"
+#include "components/safe_json_parser/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -156,11 +156,11 @@ void SupervisedUserSiteList::ParseJson(
   }
 
   // TODO(bauerb): Use batch mode to load multiple whitelists?
-  scoped_refptr<SafeJsonParser> parser(new SafeJsonParser(
-      json,
-      base::Bind(&SupervisedUserSiteList::OnJsonParseSucceeded, path,
-                 base::TimeTicks::Now(), callback),
-      base::Bind(&HandleError, path)));
+  scoped_refptr<safe_json_parser::SafeJsonParser> parser(
+      new safe_json_parser::SafeJsonParser(
+          json, base::Bind(&SupervisedUserSiteList::OnJsonParseSucceeded, path,
+                           base::TimeTicks::Now(), callback),
+          base::Bind(&HandleError, path)));
   parser->Start();
 }
 
