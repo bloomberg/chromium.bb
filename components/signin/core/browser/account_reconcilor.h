@@ -23,6 +23,7 @@
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -40,13 +41,6 @@ class AccountReconcilor : public KeyedService,
                           public OAuth2TokenService::Observer,
                           public SigninManagerBase::Observer {
  public:
-  enum State {
-      NOT_RECONCILING,
-      NOT_RECONCILING_ERROR_OCCURED,
-      GATHERING_INFORMATION,
-      APPLYING_CHANGES
-  };
-
   AccountReconcilor(ProfileOAuth2TokenService* token_service,
                     SigninManagerBase* signin_manager,
                     SigninClient* client,
@@ -64,7 +58,7 @@ class AccountReconcilor : public KeyedService,
   void Shutdown() override;
 
   // Determine what the reconcilor is currently doing.
-  State GetState();
+  signin_metrics::AccountReconcilorState GetState();
 
  private:
   bool IsRegisteredWithTokenService() const {

@@ -9,11 +9,13 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
@@ -135,6 +137,8 @@ void ProcessMirrorHeaderUIThread(
   if (!web_contents)
     return;
 
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
@@ -152,6 +156,8 @@ void ProcessMirrorHeaderUIThread(
       default:
         bubble_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ACCOUNT_MANAGEMENT;
     }
+    signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
+        AccountReconcilorFactory::GetForProfile(profile)->GetState());
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         bubble_mode, manage_accounts_params);
   }
@@ -164,9 +170,10 @@ void ProcessMirrorHeaderUIThread(
         url, content::Referrer(), OFF_THE_RECORD,
         ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
   } else {
-    AccountManagementScreenHelper::OpenAccountManagementScreen(
-        Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-        service_type);
+    signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
+        AccountReconcilorFactory::GetForProfile(profile)->GetState());
+    AccountManagementScreenHelper::OpenAccountManagementScreen(profile,
+                                                               service_type);
   }
 #endif // OS_ANDROID
 }

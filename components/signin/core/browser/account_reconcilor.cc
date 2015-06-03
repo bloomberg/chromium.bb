@@ -178,16 +178,14 @@ bool AccountReconcilor::IsProfileConnected() {
   return signin_manager_->IsAuthenticated();
 }
 
-AccountReconcilor::State AccountReconcilor::GetState() {
+signin_metrics::AccountReconcilorState AccountReconcilor::GetState() {
   if (!is_reconcile_started_) {
     return error_during_last_reconcile_
-        ? AccountReconcilor::State::NOT_RECONCILING_ERROR_OCCURED
-        : AccountReconcilor::State::NOT_RECONCILING;
+               ? signin_metrics::ACCOUNT_RECONCILOR_ERROR
+               : signin_metrics::ACCOUNT_RECONCILOR_OK;
   }
 
-  return add_to_cookie_.empty()
-      ? AccountReconcilor::State::GATHERING_INFORMATION
-      : AccountReconcilor::State::APPLYING_CHANGES;
+  return signin_metrics::ACCOUNT_RECONCILOR_RUNNING;
 }
 
 void AccountReconcilor::OnContentSettingChanged(

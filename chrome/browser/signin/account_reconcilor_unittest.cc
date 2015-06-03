@@ -323,12 +323,12 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
 
-  ASSERT_EQ(AccountReconcilor::State::NOT_RECONCILING, reconcilor->GetState());
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
   reconcilor->StartReconcile();
-  ASSERT_EQ(AccountReconcilor::State::GATHERING_INFORMATION,
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_RUNNING,
             reconcilor->GetState());
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(AccountReconcilor::State::APPLYING_CHANGES, reconcilor->GetState());
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_RUNNING, reconcilor->GetState());
 
   std::vector<std::pair<std::string, bool> > accounts;
   ASSERT_TRUE(cookie_manager_service()->ListAccounts(&accounts));
@@ -344,9 +344,9 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieFailure) {
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
 
-  ASSERT_EQ(AccountReconcilor::State::NOT_RECONCILING, reconcilor->GetState());
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
   reconcilor->StartReconcile();
-  ASSERT_EQ(AccountReconcilor::State::GATHERING_INFORMATION,
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_RUNNING,
             reconcilor->GetState());
   base::RunLoop().RunUntilIdle();
 
@@ -355,7 +355,7 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieFailure) {
   ASSERT_EQ(0u, accounts.size());
 
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(AccountReconcilor::State::NOT_RECONCILING_ERROR_OCCURED,
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_ERROR,
             reconcilor->GetState());
 }
 

@@ -37528,6 +37528,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Signin.AccountReconcilorState.OnGaiaResponse"
+    enum="SigninAccountReconcilorState">
+  <owner>bzanotti@chromium.org</owner>
+  <summary>
+    Records the state of the account reconcilor when GAIA returns a specific
+    response.
+  </summary>
+</histogram>
+
 <histogram name="Signin.AddAccount" enum="BooleanSuccess">
   <owner>mlerman@chromium.org</owner>
   <summary>
@@ -64516,6 +64525,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Learn more"/>
   <int value="1" label="Settings page"/>
   <int value="2" label="Dismiss"/>
+</enum>
+
+<enum name="SigninAccountReconcilorState" type="int">
+  <int value="0" label="OK">
+    The account reconcilor has finished running and is up-to-date.
+  </int>
+  <int value="1" label="Running">
+    The account reconcilor is running and gathering informations.
+  </int>
+  <int value="2" label="Error">
+    The account reconcilor has encountered an error and stopped.
+  </int>
 </enum>
 
 <enum name="SigninChoice" type="int">

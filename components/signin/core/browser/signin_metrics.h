@@ -163,6 +163,20 @@ enum CrossDevicePromoInitialized {
   NUM_CROSS_DEVICE_PROMO_INITIALIZED_METRICS
 };
 
+// Enum values used for "Signin.AccountReconcilorState.OnGaiaResponse"
+// histogram, which records the state of the AccountReconcilor when GAIA returns
+// a specific response.
+enum AccountReconcilorState {
+  // The AccountReconcilor has finished running ans is up-to-date.
+  ACCOUNT_RECONCILOR_OK,
+  // The AccountReconcilor is running and gathering information.
+  ACCOUNT_RECONCILOR_RUNNING,
+  // The AccountReconcilor encountered an error and stopped.
+  ACCOUNT_RECONCILOR_ERROR,
+  // Always the last enumerated type.
+  ACCOUNT_RECONCILOR_HISTOGRAM_COUNT,
+};
+
 // Log to UMA histograms and UserCounts stats about a single execution of the
 // AccountReconciler.
 // |total_number_accounts| - How many accounts are in the browser for this
@@ -213,6 +227,11 @@ void LogXDevicePromoEligible(CrossDevicePromoEligibility metric);
 void LogXDevicePromoInitialized(CrossDevicePromoInitialized metric);
 
 void LogBrowsingSessionDuration(const base::Time& previous_activity_time);
+
+// Records the AccountReconcilor |state| when GAIA returns a specific response.
+// If |state| is different than ACCOUNT_RECONCILOR_OK it means the user will
+// be shown a different set of accounts in the content-area and the settings UI.
+void LogAccountReconcilorStateOnGaiaResponse(AccountReconcilorState state);
 
 }  // namespace signin_metrics
 

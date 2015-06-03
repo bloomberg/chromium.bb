@@ -5,7 +5,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 
@@ -124,6 +124,11 @@ void LogBrowsingSessionDuration(const base::Time& previous_activity_time) {
       "Signin.XDevicePromo.BrowsingSessionDuration",
       (base::Time::Now() - previous_activity_time).InMinutes(), 1,
       base::TimeDelta::FromDays(30).InMinutes(), 50);
+}
+
+void LogAccountReconcilorStateOnGaiaResponse(AccountReconcilorState state) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.AccountReconcilorState.OnGaiaResponse",
+                            state, ACCOUNT_RECONCILOR_HISTOGRAM_COUNT);
 }
 
 }  // namespace signin_metrics
