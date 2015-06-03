@@ -300,9 +300,9 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif  // defined(OS_ANDROID)
 
   cast_browser_process_->SetConnectivityChecker(
-      make_scoped_refptr(new ConnectivityChecker(
+      ConnectivityChecker::Create(
           content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::IO))));
+              content::BrowserThread::IO)));
 
   url_request_context_factory_->InitializeOnUIThread();
 

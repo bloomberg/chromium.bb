@@ -110,6 +110,10 @@
       'sources': [
         'net/connectivity_checker.cc',
         'net/connectivity_checker.h',
+        'net/connectivity_checker_impl.cc',
+        'net/connectivity_checker_impl.h',
+        'net/fake_connectivity_checker.cc',
+        'net/fake_connectivity_checker.h',
         'net/net_switches.cc',
         'net/net_switches.h',
         'net/net_util_cast.cc',
