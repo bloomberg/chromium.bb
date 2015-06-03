@@ -90,8 +90,9 @@ class UsbDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
   }
 
   base::string16 GetHeading() const override {
-    return l10n_util::GetPluralStringFUTF16(
-        IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE, devices_.size());
+    return l10n_util::GetStringUTF16(
+        multiple() ? IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE_MULTIPLE
+                   : IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE_SINGLE);
   }
 
   void Dismissed() override {
@@ -204,8 +205,9 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
   }
 
   base::string16 GetHeading() const override {
-    return l10n_util::GetPluralStringFUTF16(
-        IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE, devices_.size());
+    return l10n_util::GetStringUTF16(
+        multiple() ? IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE_MULTIPLE
+                   : IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE_SINGLE);
   }
 
   void Dismissed() override {
@@ -303,7 +305,6 @@ void DevicePermissionsPrompt::Prompt::SetObserver(Observer* observer) {
 }
 
 base::string16 DevicePermissionsPrompt::Prompt::GetPromptMessage() const {
-  // TODO(jungshik): Consider using the ICU syntax once bug 481734 is fixed.
   return l10n_util::GetStringFUTF16(multiple_
                                         ? IDS_DEVICE_PERMISSIONS_PROMPT_MULTIPLE
                                         : IDS_DEVICE_PERMISSIONS_PROMPT_SINGLE,
