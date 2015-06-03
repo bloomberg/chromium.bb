@@ -2,26 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/json/json_writer.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/mock_timer.h"
-#include "net/socket/stream_listen_socket.h"
+#include "base/values.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
+#include "net/base/test_completion_callback.h"
+#include "net/socket/unix_domain_client_socket_posix.h"
 #include "remoting/host/gnubby_auth_handler_posix.h"
 #include "remoting/host/gnubby_socket.h"
-#include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/client_stub.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
 
-using protocol::MockClientStub;
-
-using testing::_;
-using testing::Return;
-
 namespace {
 
+const char kSocketFilename[] = "socket_for_testing";
+
 // Test gnubby request data.
-const unsigned char request_data[] = {
+const unsigned char kRequestData[] = {
     0x00, 0x00, 0x00, 0x9a, 0x65, 0x1e, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00,
     0x00, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x60, 0x90,
     0x24, 0x71, 0xf8, 0xf2, 0xe5, 0xdf, 0x7f, 0x81, 0xc7, 0x49, 0xc4, 0xa3,
@@ -37,24 +44,59 @@ const unsigned char request_data[] = {
     0x5e, 0xa3, 0xbc, 0x02, 0x5b, 0xec, 0xe4, 0x4b, 0xae, 0x0e, 0xf2, 0xbd,
     0xc8, 0xaa};
 
-class MockStreamListenSocket : public net::StreamListenSocket {
- public:
-  explicit MockStreamListenSocket(net::StreamListenSocket::Delegate* delegate)
-      : StreamListenSocket(net::kInvalidSocket, delegate) {}
+}  // namespace
 
-  void Accept() override { NOTREACHED(); }
+class TestClientStub : public protocol::ClientStub {
+ public:
+  TestClientStub() {}
+  ~TestClientStub() override {}
+
+  // protocol::ClientStub implementation.
+  void SetCapabilities(const protocol::Capabilities& capabilities) override {}
+
+  void SetPairingResponse(
+      const protocol::PairingResponse& pairing_response) override {}
+
+  void DeliverHostMessage(const protocol::ExtensionMessage& message) override {
+    message_ = message;
+    loop_.Quit();
+  }
+
+  // protocol::ClipboardStub implementation.
+  void InjectClipboardEvent(const protocol::ClipboardEvent& event) override {}
+
+  // protocol::CursorShapeStub implementation.
+  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override {}
+
+  void WaitForDeliverHostMessage() { loop_.Run(); }
+
+  void CheckHostDataMessage(int id, const std::string& data) {
+    std::string connection_id = base::StringPrintf("\"connectionId\":%d", id);
+    std::string data_message = base::StringPrintf("\"data\":%s", data.c_str());
+
+    ASSERT_TRUE(message_.type() == "gnubby-auth" ||
+                message_.type() == "auth-v1");
+    ASSERT_NE(message_.data().find("\"type\":\"data\""), std::string::npos);
+    ASSERT_NE(message_.data().find(connection_id), std::string::npos);
+    ASSERT_NE(message_.data().find(data_message), std::string::npos);
+  }
 
  private:
-  ~MockStreamListenSocket() override {}
-};
+  protocol::ExtensionMessage message_;
+  base::RunLoop loop_;
 
-}  // namespace
+  DISALLOW_COPY_AND_ASSIGN(TestClientStub);
+};
 
 class GnubbyAuthHandlerPosixTest : public testing::Test {
  public:
-  GnubbyAuthHandlerPosixTest() {}
-
-  void SetUp() override;
+  GnubbyAuthHandlerPosixTest() {
+    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+    socket_path_ = temp_dir_.path().Append(kSocketFilename);
+    auth_handler_posix_.reset(new GnubbyAuthHandlerPosix(&client_stub_));
+    auth_handler_ = auth_handler_posix_.get();
+    auth_handler_->SetGnubbySocketName(socket_path_);
+  }
 
  protected:
   // Object under test.
@@ -63,103 +105,87 @@ class GnubbyAuthHandlerPosixTest : public testing::Test {
   // GnubbyAuthHandler interface for |auth_handler_posix_|.
   GnubbyAuthHandler* auth_handler_;
 
-  // Stream delegate interface for |auth_handler_posix_|.
-  net::StreamListenSocket::Delegate* delegate_;
-
-  // Mock client stub.
-  MockClientStub client_stub_;
-
-  base::MessageLoop message_loop_;
-
- private:
-  void OnConnect(int result);
+  base::MessageLoopForIO message_loop_;
+  TestClientStub client_stub_;
+  base::ScopedTempDir temp_dir_;
+  base::FilePath socket_path_;
+  base::Closure accept_callback_;
 };
 
-void GnubbyAuthHandlerPosixTest::SetUp() {
-  auth_handler_posix_.reset(new GnubbyAuthHandlerPosix(&client_stub_));
-  auth_handler_ = auth_handler_posix_.get();
-  delegate_ = auth_handler_posix_.get();
-}
-
-MATCHER_P2(EqualsDataMessage, id, data, "") {
-  std::string connection_id = base::StringPrintf("\"connectionId\":%d", id);
-  std::string data_message = base::StringPrintf("\"data\":%s", data);
-
-  return (arg.type() == "gnubby-auth" &&
-          arg.data().find("\"type\":\"data\"") != std::string::npos &&
-          arg.data().find(connection_id) != std::string::npos &&
-          arg.data().find(data_message) != std::string::npos);
-}
-
 TEST_F(GnubbyAuthHandlerPosixTest, HostDataMessageDelivered) {
-  // Expects a JSON array of the ASCII character codes for "test_msg".
-  EXPECT_CALL(client_stub_,
-              DeliverHostMessage(
-                  EqualsDataMessage(42, "[116,101,115,116,95,109,115,103]")));
-
   auth_handler_->DeliverHostDataMessage(42, "test_msg");
+  client_stub_.WaitForDeliverHostMessage();
+  // Expects a JSON array of the ASCII character codes for "test_msg".
+  client_stub_.CheckHostDataMessage(42, "[116,101,115,116,95,109,115,103]");
 }
 
-TEST_F(GnubbyAuthHandlerPosixTest, DidClose) {
-  net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
+TEST_F(GnubbyAuthHandlerPosixTest, DidReadAndClose) {
+  std::string message_json = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
 
-  delegate_->DidAccept(nullptr, make_scoped_ptr(socket));
-  ASSERT_TRUE(auth_handler_posix_->HasActiveSocketForTesting(socket));
-
-  delegate_->DidClose(socket);
-  ASSERT_FALSE(auth_handler_posix_->HasActiveSocketForTesting(socket));
-}
-
-TEST_F(GnubbyAuthHandlerPosixTest, DidRead) {
-  EXPECT_CALL(client_stub_, DeliverHostMessage(_));
-
-  net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
-
-  delegate_->DidAccept(nullptr, make_scoped_ptr(socket));
-  delegate_->DidRead(socket,
-                     reinterpret_cast<const char*>(request_data),
-                     sizeof(request_data));
-}
-
-TEST_F(GnubbyAuthHandlerPosixTest, DidReadByteByByte) {
-  EXPECT_CALL(client_stub_, DeliverHostMessage(_));
-
-  net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
-
-  delegate_->DidAccept(nullptr, make_scoped_ptr(socket));
-  for (unsigned int i = 0; i < sizeof(request_data); ++i) {
-    delegate_->DidRead(
-        socket, reinterpret_cast<const char*>(request_data + i), 1);
+  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+  auth_handler_->DeliverClientMessage(message_json);
+  net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
+  net::TestCompletionCallback connect_callback;
+  int rv = client_socket.Connect(connect_callback.callback());
+  ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
+  int request_len = sizeof(kRequestData);
+  scoped_refptr<net::DrainableIOBuffer> request_buffer(
+      new net::DrainableIOBuffer(
+          new net::WrappedIOBuffer(reinterpret_cast<const char*>(kRequestData)),
+          request_len));
+  net::TestCompletionCallback write_callback;
+  int bytes_written = 0;
+  while (bytes_written < request_len) {
+    int write_result = client_socket.Write(request_buffer.get(),
+                                           request_buffer->BytesRemaining(),
+                                           write_callback.callback());
+    write_result = write_callback.GetResult(write_result);
+    ASSERT_GT(write_result, 0);
+    bytes_written += write_result;
+    ASSERT_LE(bytes_written, request_len);
+    request_buffer->DidConsume(write_result);
   }
+  ASSERT_EQ(request_len, bytes_written);
+
+  client_stub_.WaitForDeliverHostMessage();
+  base::ListValue expected_data;
+  // Skip first four bytes.
+  for (size_t i = 4; i < sizeof(kRequestData); ++i) {
+    expected_data.AppendInteger(kRequestData[i]);
+  }
+
+  std::string expected_data_json;
+  base::JSONWriter::Write(expected_data, &expected_data_json);
+  client_stub_.CheckHostDataMessage(1, expected_data_json);
+  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
 }
 
 TEST_F(GnubbyAuthHandlerPosixTest, DidReadTimeout) {
-  net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
+  std::string message_json = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
 
-  delegate_->DidAccept(nullptr, make_scoped_ptr(socket));
-  ASSERT_TRUE(auth_handler_posix_->HasActiveSocketForTesting(socket));
-
-  base::MockTimer* mock_timer = new base::MockTimer(false, false);
-  auth_handler_posix_->GetGnubbySocketForTesting(socket)
-      ->SetTimerForTesting(make_scoped_ptr(mock_timer));
-  delegate_->DidRead(socket, reinterpret_cast<const char*>(request_data), 1);
-  mock_timer->Fire();
-
-  ASSERT_FALSE(auth_handler_posix_->HasActiveSocketForTesting(socket));
+  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+  auth_handler_->DeliverClientMessage(message_json);
+  net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
+  net::TestCompletionCallback connect_callback;
+  int rv = client_socket.Connect(connect_callback.callback());
+  ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
+  auth_handler_posix_->SetRequestTimeoutForTest(base::TimeDelta());
+  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
 }
 
 TEST_F(GnubbyAuthHandlerPosixTest, ClientErrorMessageDelivered) {
-  net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
+  std::string message_json = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
 
-  delegate_->DidAccept(nullptr, make_scoped_ptr(socket));
+  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
+  auth_handler_->DeliverClientMessage(message_json);
+  net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
+  net::TestCompletionCallback connect_callback;
+  int rv = client_socket.Connect(connect_callback.callback());
+  ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
 
-  std::string error_json = base::StringPrintf(
-      "{\"type\":\"error\",\"connectionId\":%d}",
-      auth_handler_posix_->GetConnectionIdForTesting(socket));
-
-  ASSERT_TRUE(auth_handler_posix_->HasActiveSocketForTesting(socket));
+  std::string error_json = "{\"type\":\"error\",\"connectionId\":1}";
   auth_handler_->DeliverClientMessage(error_json);
-  ASSERT_FALSE(auth_handler_posix_->HasActiveSocketForTesting(socket));
+  ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
 }
 
 }  // namespace remoting

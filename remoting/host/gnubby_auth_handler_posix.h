@@ -8,14 +8,20 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "net/socket/stream_listen_socket.h"
+#include "net/base/completion_callback.h"
+#include "net/socket/stream_socket.h"
 #include "remoting/host/gnubby_auth_handler.h"
 
 namespace base {
 class DictionaryValue;
 }  // namespace base
+
+namespace net {
+class UnixDomainServerSocket;
+}  // namespace net
 
 namespace remoting {
 
@@ -26,16 +32,14 @@ class ClientStub;
 class GnubbySocket;
 
 class GnubbyAuthHandlerPosix : public GnubbyAuthHandler,
-                               public base::NonThreadSafe,
-                               public net::StreamListenSocket::Delegate {
+                               public base::NonThreadSafe {
  public:
   explicit GnubbyAuthHandlerPosix(protocol::ClientStub* client_stub);
   ~GnubbyAuthHandlerPosix() override;
 
-  bool HasActiveSocketForTesting(net::StreamListenSocket* socket) const;
-  int GetConnectionIdForTesting(net::StreamListenSocket* socket) const;
-  GnubbySocket* GetGnubbySocketForTesting(
-      net::StreamListenSocket* socket) const;
+  size_t GetActiveSocketsMapSizeForTest() const;
+
+  void SetRequestTimeoutForTest(const base::TimeDelta& timeout);
 
  private:
   typedef std::map<int, GnubbySocket*> ActiveSockets;
@@ -45,13 +49,17 @@ class GnubbyAuthHandlerPosix : public GnubbyAuthHandler,
   void DeliverHostDataMessage(int connection_id,
                               const std::string& data) const override;
 
-  // StreamListenSocket::Delegate interface.
-  void DidAccept(net::StreamListenSocket* server,
-                 scoped_ptr<net::StreamListenSocket> socket) override;
-  void DidRead(net::StreamListenSocket* socket,
-               const char* data,
-               int len) override;
-  void DidClose(net::StreamListenSocket* socket) override;
+  // Starts listening for connection.
+  void DoAccept();
+
+  // Called when a connection is accepted.
+  void OnAccepted(int result);
+
+  // Called when a GnubbySocket has done reading.
+  void OnReadComplete(int connection_id);
+
+  // Removes a GnubbySocket from |active_sockets_| and deletes it.
+  void Close(const ActiveSockets::iterator& iter);
 
   // Create socket for authorization.
   void CreateAuthorizationSocket();
@@ -72,13 +80,19 @@ class GnubbyAuthHandlerPosix : public GnubbyAuthHandler,
   protocol::ClientStub* client_stub_;
 
   // Socket used to listen for authorization requests.
-  scoped_ptr<net::StreamListenSocket> auth_socket_;
+  scoped_ptr<net::UnixDomainServerSocket> auth_socket_;
+
+  // A temporary holder for an accepted connection.
+  scoped_ptr<net::StreamSocket> accept_socket_;
 
   // The last assigned gnubby connection id.
   int last_connection_id_;
 
   // Sockets by connection id used to process gnubbyd requests.
   ActiveSockets active_sockets_;
+
+  // Timeout used for a request.
+  base::TimeDelta request_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(GnubbyAuthHandlerPosix);
 };

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 
@@ -17,29 +18,27 @@ class Timer;
 }  // namespace base
 
 namespace net {
-class StreamListenSocket;
+class DrainableIOBuffer;
+class IOBufferWithSize;
+class StreamSocket;
 }  // namespace net
 
 namespace remoting {
 
-// Class that manages a socket used for gnubby requests.
+// Class that manages reading requests and sending responses. The socket can
+// only handle receiving one request at a time. It expects to receive no extra
+// bytes over the wire, which is checked by IsRequestTooLarge method.
 class GnubbySocket : public base::NonThreadSafe {
  public:
-  GnubbySocket(scoped_ptr<net::StreamListenSocket> socket,
+  GnubbySocket(scoped_ptr<net::StreamSocket> socket,
+               const base::TimeDelta& timeout,
                const base::Closure& timeout_callback);
   ~GnubbySocket();
 
-  // Adds data to the current request.
-  void AddRequestData(const char* data, int data_len);
-
-  // Gets the current request data and clears it.
-  void GetAndClearRequestData(std::string* data_out);
-
-  // Returns true if the current request is complete.
-  bool IsRequestComplete() const;
-
-  // Returns true if the stated request size is larger than the allowed maximum.
-  bool IsRequestTooLarge() const;
+  // Returns false if the request has not yet completed, or is too large to be
+  // processed. Otherwise, the cached request data is copied into |data_out| and
+  // the internal buffer resets and is ready for the next request.
+  bool GetAndClearRequestData(std::string* data_out);
 
   // Sends response data to the socket.
   void SendResponse(const std::string& data);
@@ -47,13 +46,30 @@ class GnubbySocket : public base::NonThreadSafe {
   // Sends an SSH error code to the socket.
   void SendSshError();
 
-  // Returns true if |socket| is the same one owned by this object.
-  bool IsSocket(net::StreamListenSocket* socket) const;
-
-  // Sets a timer for testing.
-  void SetTimerForTesting(scoped_ptr<base::Timer> timer);
+  // |request_received_callback| is used to notify the caller that request data
+  // has been fully read, and caller is to use GetAndClearRequestData method to
+  // get the request data.
+  void StartReadingRequest(const base::Closure& request_received_callback);
 
  private:
+  // Called when bytes are written to |socket_|.
+  void OnDataWritten(int result);
+
+  // Continues writing to |socket_| if needed.
+  void DoWrite();
+
+  // Called when bytes are read from |socket_|.
+  void OnDataRead(int bytes_read);
+
+  // Continues to read.
+  void DoRead();
+
+  // Returns true if the current request is complete.
+  bool IsRequestComplete() const;
+
+  // Returns true if the stated request size is larger than the allowed maximum.
+  bool IsRequestTooLarge() const;
+
   // Returns the stated request length.
   size_t GetRequestLength() const;
 
@@ -64,10 +80,21 @@ class GnubbySocket : public base::NonThreadSafe {
   void ResetTimer();
 
   // The socket.
-  scoped_ptr<net::StreamListenSocket> socket_;
+  scoped_ptr<net::StreamSocket> socket_;
+
+  // Invoked when request data has been read.
+  base::Closure request_received_callback_;
+
+  // Indicates whether read has completed and |request_received_callback_| is
+  // about to be run.
+  bool read_completed_;
 
   // Request data.
   std::vector<char> request_data_;
+
+  scoped_refptr<net::DrainableIOBuffer> write_buffer_;
+
+  scoped_refptr<net::IOBufferWithSize> read_buffer_;
 
   // The activity timer.
   scoped_ptr<base::Timer> timer_;

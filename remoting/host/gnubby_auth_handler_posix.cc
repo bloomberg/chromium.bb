@@ -12,9 +12,11 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "net/socket/unix_domain_listen_socket_posix.h"
+#include "net/base/net_errors.h"
+#include "net/socket/unix_domain_server_socket_posix.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/gnubby_socket.h"
 #include "remoting/proto/control.pb.h"
@@ -34,22 +36,11 @@ const char kGnubbyAuthMessage[] = "gnubby-auth";
 const char kGnubbyAuthV1[] = "auth-v1";
 const char kMessageType[] = "type";
 
+const int64 kDefaultRequestTimeoutSeconds = 60;
+
 // The name of the socket to listen for gnubby requests on.
 base::LazyInstance<base::FilePath>::Leaky g_gnubby_socket_name =
     LAZY_INSTANCE_INITIALIZER;
-
-// STL predicate to match by a StreamListenSocket pointer.
-class CompareSocket {
- public:
-  explicit CompareSocket(net::StreamListenSocket* socket) : socket_(socket) {}
-
-  bool operator()(const std::pair<int, GnubbySocket*> element) const {
-    return element.second->IsSocket(socket_);
-  }
-
- private:
-  net::StreamListenSocket* socket_;
-};
 
 // Socket authentication function that only allows connections from callers with
 // the current uid.
@@ -88,7 +79,10 @@ bool ConvertListValueToString(base::ListValue* bytes, std::string* out) {
 
 GnubbyAuthHandlerPosix::GnubbyAuthHandlerPosix(
     protocol::ClientStub* client_stub)
-    : client_stub_(client_stub), last_connection_id_(0) {
+    : client_stub_(client_stub),
+      last_connection_id_(0),
+      request_timeout_(
+          base::TimeDelta::FromSeconds(kDefaultRequestTimeoutSeconds)) {
   DCHECK(client_stub_);
 }
 
@@ -186,71 +180,65 @@ void GnubbyAuthHandlerPosix::DeliverHostDataMessage(
   client_stub_->DeliverHostMessage(message);
 }
 
-bool GnubbyAuthHandlerPosix::HasActiveSocketForTesting(
-    net::StreamListenSocket* socket) const {
-  return std::find_if(active_sockets_.begin(),
-                      active_sockets_.end(),
-                      CompareSocket(socket)) != active_sockets_.end();
+size_t GnubbyAuthHandlerPosix::GetActiveSocketsMapSizeForTest() const {
+  return active_sockets_.size();
 }
 
-int GnubbyAuthHandlerPosix::GetConnectionIdForTesting(
-    net::StreamListenSocket* socket) const {
-  ActiveSockets::const_iterator iter = std::find_if(
-      active_sockets_.begin(), active_sockets_.end(), CompareSocket(socket));
-  return iter->first;
+void GnubbyAuthHandlerPosix::SetRequestTimeoutForTest(
+    const base::TimeDelta& timeout) {
+  request_timeout_ = timeout;
 }
 
-GnubbySocket* GnubbyAuthHandlerPosix::GetGnubbySocketForTesting(
-    net::StreamListenSocket* socket) const {
-  ActiveSockets::const_iterator iter = std::find_if(
-      active_sockets_.begin(), active_sockets_.end(), CompareSocket(socket));
-  return iter->second;
+void GnubbyAuthHandlerPosix::DoAccept() {
+  int result = auth_socket_->Accept(
+      &accept_socket_,
+      base::Bind(&GnubbyAuthHandlerPosix::OnAccepted, base::Unretained(this)));
+  if (result != net::ERR_IO_PENDING)
+    OnAccepted(result);
 }
 
-void GnubbyAuthHandlerPosix::DidAccept(
-    net::StreamListenSocket* server,
-    scoped_ptr<net::StreamListenSocket> socket) {
+void GnubbyAuthHandlerPosix::OnAccepted(int result) {
   DCHECK(CalledOnValidThread());
+  DCHECK_NE(net::ERR_IO_PENDING, result);
+
+  if (result < 0) {
+    LOG(ERROR) << "Error in accepting a new connection";
+    return;
+  }
 
   int connection_id = ++last_connection_id_;
-  active_sockets_[connection_id] =
-      new GnubbySocket(socket.Pass(),
+  GnubbySocket* socket =
+      new GnubbySocket(accept_socket_.Pass(), request_timeout_,
                        base::Bind(&GnubbyAuthHandlerPosix::RequestTimedOut,
-                                  base::Unretained(this),
-                                  connection_id));
+                                  base::Unretained(this), connection_id));
+  active_sockets_[connection_id] = socket;
+  socket->StartReadingRequest(
+      base::Bind(&GnubbyAuthHandlerPosix::OnReadComplete,
+                 base::Unretained(this), connection_id));
+
+  // Continue accepting new connections.
+  DoAccept();
 }
 
-void GnubbyAuthHandlerPosix::DidRead(net::StreamListenSocket* socket,
-                                     const char* data,
-                                     int len) {
+void GnubbyAuthHandlerPosix::OnReadComplete(int connection_id) {
   DCHECK(CalledOnValidThread());
 
-  ActiveSockets::iterator iter = std::find_if(
-      active_sockets_.begin(), active_sockets_.end(), CompareSocket(socket));
-  if (iter != active_sockets_.end()) {
-    GnubbySocket* gnubby_socket = iter->second;
-    gnubby_socket->AddRequestData(data, len);
-    if (gnubby_socket->IsRequestTooLarge()) {
-      SendErrorAndCloseActiveSocket(iter);
-    } else if (gnubby_socket->IsRequestComplete()) {
-      std::string request_data;
-      gnubby_socket->GetAndClearRequestData(&request_data);
-      ProcessGnubbyRequest(iter->first, request_data);
-    }
-  } else {
-    LOG(ERROR) << "Received data for unknown connection";
+  ActiveSockets::iterator iter = active_sockets_.find(connection_id);
+  DCHECK(iter != active_sockets_.end());
+  std::string request_data;
+  if (!iter->second->GetAndClearRequestData(&request_data)) {
+    SendErrorAndCloseActiveSocket(iter);
+    return;
   }
+  ProcessGnubbyRequest(connection_id, request_data);
+  Close(iter);
 }
 
-void GnubbyAuthHandlerPosix::DidClose(net::StreamListenSocket* socket) {
+void GnubbyAuthHandlerPosix::Close(const ActiveSockets::iterator& iter) {
   DCHECK(CalledOnValidThread());
 
-  ActiveSockets::iterator iter = std::find_if(
-      active_sockets_.begin(), active_sockets_.end(), CompareSocket(socket));
-  if (iter != active_sockets_.end()) {
-    delete iter->second;
-    active_sockets_.erase(iter);
-  }
+  delete iter->second;
+  active_sockets_.erase(iter);
 }
 
 void GnubbyAuthHandlerPosix::CreateAuthorizationSocket() {
@@ -263,11 +251,15 @@ void GnubbyAuthHandlerPosix::CreateAuthorizationSocket() {
     HOST_LOG << "Listening for gnubby requests on "
              << g_gnubby_socket_name.Get().value();
 
-    auth_socket_ = net::deprecated::UnixDomainListenSocket::CreateAndListen(
-        g_gnubby_socket_name.Get().value(), this, base::Bind(MatchUid));
-    if (!auth_socket_.get()) {
+    auth_socket_.reset(
+        new net::UnixDomainServerSocket(base::Bind(MatchUid), false));
+    int rv = auth_socket_->ListenWithAddressAndPort(
+        g_gnubby_socket_name.Get().value(), 0, 1);
+    if (rv != net::OK) {
       LOG(ERROR) << "Failed to open socket for gnubby requests";
+      return;
     }
+    DoAccept();
   } else {
     HOST_LOG << "No gnubby socket name specified";
   }
@@ -292,9 +284,7 @@ GnubbyAuthHandlerPosix::GetSocketForMessage(base::DictionaryValue* message) {
 void GnubbyAuthHandlerPosix::SendErrorAndCloseActiveSocket(
     const ActiveSockets::iterator& iter) {
   iter->second->SendSshError();
-
-  delete iter->second;
-  active_sockets_.erase(iter);
+  Close(iter);
 }
 
 void GnubbyAuthHandlerPosix::RequestTimedOut(int connection_id) {

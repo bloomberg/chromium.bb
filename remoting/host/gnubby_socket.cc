@@ -6,7 +6,9 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "net/socket/stream_listen_socket.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
+#include "net/socket/stream_socket.h"
 
 namespace remoting {
 
@@ -14,39 +16,123 @@ namespace {
 
 const size_t kRequestSizeBytes = 4;
 const size_t kMaxRequestLength = 16384;
-const unsigned int kRequestTimeoutSeconds = 60;
+const size_t kRequestReadBufferLength = kRequestSizeBytes + kMaxRequestLength;
 
 // SSH Failure Code
 const char kSshError[] = {0x05};
 
 }  // namespace
 
-GnubbySocket::GnubbySocket(scoped_ptr<net::StreamListenSocket> socket,
+GnubbySocket::GnubbySocket(scoped_ptr<net::StreamSocket> socket,
+                           const base::TimeDelta& timeout,
                            const base::Closure& timeout_callback)
-    : socket_(socket.Pass()) {
+    : socket_(socket.Pass()),
+      read_completed_(false),
+      read_buffer_(new net::IOBufferWithSize(kRequestReadBufferLength)) {
   timer_.reset(new base::Timer(false, false));
-  timer_->Start(FROM_HERE,
-                base::TimeDelta::FromSeconds(kRequestTimeoutSeconds),
-                timeout_callback);
+  timer_->Start(FROM_HERE, timeout, timeout_callback);
 }
 
 GnubbySocket::~GnubbySocket() {}
 
-void GnubbySocket::AddRequestData(const char* data, int data_len) {
+bool GnubbySocket::GetAndClearRequestData(std::string* data_out) {
   DCHECK(CalledOnValidThread());
+  DCHECK(read_completed_);
 
-  request_data_.insert(request_data_.end(), data, data + data_len);
-  ResetTimer();
-}
-
-void GnubbySocket::GetAndClearRequestData(std::string* data_out) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(IsRequestComplete() && !IsRequestTooLarge());
-
+  if (!read_completed_)
+    return false;
+  if (!IsRequestComplete() || IsRequestTooLarge())
+    return false;
   // The request size is not part of the data; don't send it.
   data_out->assign(request_data_.begin() + kRequestSizeBytes,
                    request_data_.end());
   request_data_.clear();
+  return true;
+}
+
+void GnubbySocket::SendResponse(const std::string& response_data) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!write_buffer_);
+
+  std::string response_length_string = GetResponseLengthAsBytes(response_data);
+  int response_len = response_length_string.size() + response_data.size();
+  scoped_ptr<std::string> response(
+      new std::string(response_length_string + response_data));
+  write_buffer_ = new net::DrainableIOBuffer(
+      new net::StringIOBuffer(response.Pass()), response_len);
+  DoWrite();
+}
+
+void GnubbySocket::SendSshError() {
+  DCHECK(CalledOnValidThread());
+
+  SendResponse(std::string(kSshError, arraysize(kSshError)));
+}
+
+void GnubbySocket::StartReadingRequest(
+    const base::Closure& request_received_callback) {
+  DCHECK(CalledOnValidThread());
+
+  request_received_callback_ = request_received_callback;
+  DoRead();
+}
+
+void GnubbySocket::OnDataWritten(int result) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(write_buffer_);
+
+  if (result < 0) {
+    LOG(ERROR) << "Error in sending response.";
+    return;
+  }
+  ResetTimer();
+  write_buffer_->DidConsume(result);
+  DoWrite();
+}
+
+void GnubbySocket::DoWrite() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(write_buffer_);
+
+  if (!write_buffer_->BytesRemaining()) {
+    write_buffer_ = nullptr;
+    return;
+  }
+  int result = socket_->Write(
+      write_buffer_.get(), write_buffer_->BytesRemaining(),
+      base::Bind(&GnubbySocket::OnDataWritten, base::Unretained(this)));
+  if (result != net::ERR_IO_PENDING)
+    OnDataWritten(result);
+}
+
+void GnubbySocket::OnDataRead(int bytes_read) {
+  DCHECK(CalledOnValidThread());
+
+  if (bytes_read < 0) {
+    LOG(ERROR) << "Error in reading request.";
+    read_completed_ = true;
+    request_received_callback_.Run();
+    return;
+  }
+  ResetTimer();
+  request_data_.insert(request_data_.end(), read_buffer_->data(),
+                       read_buffer_->data() + bytes_read);
+  if (IsRequestComplete()) {
+    read_completed_ = true;
+    request_received_callback_.Run();
+    return;
+  }
+  DoRead();
+}
+
+void GnubbySocket::DoRead() {
+  DCHECK(CalledOnValidThread());
+
+  int result = socket_->Read(
+      read_buffer_.get(), kRequestReadBufferLength,
+      base::Bind(&GnubbySocket::OnDataRead, base::Unretained(this)));
+  if (result != net::ERR_IO_PENDING)
+    OnDataRead(result);
 }
 
 bool GnubbySocket::IsRequestComplete() const {
@@ -65,29 +151,6 @@ bool GnubbySocket::IsRequestTooLarge() const {
   return GetRequestLength() > kMaxRequestLength;
 }
 
-void GnubbySocket::SendResponse(const std::string& response_data) {
-  DCHECK(CalledOnValidThread());
-
-  socket_->Send(GetResponseLengthAsBytes(response_data));
-  socket_->Send(response_data);
-  ResetTimer();
-}
-
-void GnubbySocket::SendSshError() {
-  DCHECK(CalledOnValidThread());
-
-  SendResponse(std::string(kSshError, arraysize(kSshError)));
-}
-
-bool GnubbySocket::IsSocket(net::StreamListenSocket* socket) const {
-  return socket == socket_.get();
-}
-
-void GnubbySocket::SetTimerForTesting(scoped_ptr<base::Timer> timer) {
-  timer->Start(FROM_HERE, timer_->GetCurrentDelay(), timer_->user_task());
-  timer_ = timer.Pass();
-}
-
 size_t GnubbySocket::GetRequestLength() const {
   DCHECK(request_data_.size() >= kRequestSizeBytes);
 
@@ -99,6 +162,7 @@ size_t GnubbySocket::GetRequestLength() const {
 std::string GnubbySocket::GetResponseLengthAsBytes(
     const std::string& response) const {
   std::string response_len;
+  response_len.reserve(kRequestSizeBytes);
   int len = response.size();
 
   response_len.push_back((len >> 24) & 255);
