@@ -68,7 +68,7 @@ public class AppMenuTest extends ChromeShellTestBase {
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
 
         showAppMenuAndAssertMenuShown();
-        mAppMenu = getActivity().getAppMenuHandler().getAppMenu();
+        mAppMenu = getActivity().getAppMenuHandler().getAppMenuForTest();
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {

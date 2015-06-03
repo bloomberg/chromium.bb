@@ -29,6 +29,13 @@
 
         <activity android:name="org.chromium.test.broker.OnDeviceInstrumentationBroker"
             android:exported="true"/>
+
+        <receiver android:name="org.chromium.chrome.browser.hosted.HostedActivityTest$DummyBroadcastReceiver">
+            <intent-filter>
+                <action android:name="org.chromium.chrome.browser.hosted.TEST_PENDING_INTENT_SENT" >
+                </action>
+            </intent-filter>
+        </receiver>
     </application>
 
     <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="22" />

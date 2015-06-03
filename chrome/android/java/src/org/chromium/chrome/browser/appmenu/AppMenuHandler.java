@@ -139,7 +139,7 @@ public class AppMenuHandler {
      * @return The App Menu that the menu handler is interacting with.
      */
     @VisibleForTesting
-    AppMenu getAppMenu() {
+    public AppMenu getAppMenuForTest() {
         return mAppMenu;
     }
 

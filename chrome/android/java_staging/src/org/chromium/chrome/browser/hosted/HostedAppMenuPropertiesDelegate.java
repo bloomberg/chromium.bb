@@ -9,6 +9,7 @@ import android.view.MenuItem;
 
 import com.google.android.apps.chrome.R;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
@@ -65,5 +66,17 @@ public class HostedAppMenuPropertiesDelegate extends ChromeAppMenuPropertiesDele
             return -1;
         }
         return mItemToIndexMap.get(menuItem).intValue();
+    }
+
+    /**
+     * Get the {@link MenuItem} object associated with the given title. If multiple menu items have
+     * the same title, a random one will be returned. This method is for testing purpose _only_.
+     */
+    @VisibleForTesting
+    MenuItem getMenuItemForTitle(String title) {
+        for (MenuItem item : mItemToIndexMap.keySet()) {
+            if (item.getTitle().equals(title)) return item;
+        }
+        return null;
     }
 }

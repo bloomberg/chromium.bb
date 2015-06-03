@@ -30,6 +30,7 @@ import android.widget.PopupWindow.OnDismissListener;
 import org.chromium.base.AnimationFrameTimeHistogram;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.SysUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 import java.util.ArrayList;
@@ -328,6 +329,14 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
      */
     ListPopupWindow getPopup() {
         return mPopup;
+    }
+
+    /**
+     * @return The menu instance inside of this class.
+     */
+    @VisibleForTesting
+    public Menu getMenuForTest() {
+        return mMenu;
     }
 
     private void setMenuHeight(

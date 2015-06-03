@@ -15,11 +15,13 @@ import android.view.ViewGroup;
 import com.google.android.apps.chrome.R;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
+import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.document.BrandColorUtils;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
@@ -283,5 +285,29 @@ public class HostedActivity extends CompositorChromeActivity {
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);
+    }
+
+    /**
+     * @return The {@link AppMenuPropertiesDelegate} associated with this activity. For test
+     *         purposes only.
+     */
+    @VisibleForTesting
+    HostedAppMenuPropertiesDelegate getAppMenuPropertiesDelegate() {
+        return mAppMenuPropertiesDelegate;
+    }
+
+    @Override
+    @VisibleForTesting
+    public AppMenuHandler getAppMenuHandler() {
+        return mAppMenuHandler;
+    }
+
+    /**
+     * @return The {@link HostedIntentDataProvider} for this {@link HostedActivity}. For test
+     *         purposes only.
+     */
+    @VisibleForTesting
+    HostedIntentDataProvider getIntentDataProvider() {
+        return mIntentDataProvider;
     }
 }

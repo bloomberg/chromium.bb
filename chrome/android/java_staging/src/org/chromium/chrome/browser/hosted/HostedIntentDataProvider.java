@@ -19,6 +19,7 @@ import android.util.Pair;
 import com.google.android.apps.chrome.R;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.util.ArrayList;
@@ -105,6 +106,7 @@ public class HostedIntentDataProvider {
     private PendingIntent mActionButtonPendingIntent;
     private List<Pair<String, PendingIntent>> mMenuEntries = new ArrayList<>();
     private Bundle mAnimationBundle;
+    private PendingIntent.OnFinished mOnFinished;
 
     /**
      * Constructs a {@link HostedIntentDataProvider}.
@@ -223,7 +225,7 @@ public class HostedIntentDataProvider {
         addedIntent.setData(Uri.parse(url));
         try {
             PendingIntent pendingIntent = mMenuEntries.get(menuIndex).second;
-            pendingIntent.send(context, 0, addedIntent);
+            pendingIntent.send(context, 0, addedIntent, mOnFinished, null);
         } catch (CanceledException e) {
             Log.e(TAG, "Hosted chrome failed to send pending intent.");
         }
@@ -286,5 +288,10 @@ public class HostedIntentDataProvider {
         int scaledWidth = bitmap.getWidth() / bitmap.getHeight() * height;
         if (scaledWidth > 2 * height) return false;
         return true;
+    }
+
+    @VisibleForTesting
+    void setMenuSelectionOnFinishedForTesting(PendingIntent.OnFinished onFinished) {
+        mOnFinished = onFinished;
     }
 }
