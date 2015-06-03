@@ -357,7 +357,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
 
     // Main layout algorithm.
     const unsigned boxEndOffset = textBox->start() + textBox->len();
-    while (m_visualMetricsIterator.characterOffset() < boxEndOffset) {
+    while (!m_visualMetricsIterator.isAtEnd() && m_visualMetricsIterator.characterOffset() < boxEndOffset) {
         const SVGTextMetrics& visualMetrics = m_visualMetricsIterator.metrics();
         if (visualMetrics.isEmpty()) {
             m_visualMetricsIterator.next();

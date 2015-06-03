@@ -106,6 +106,7 @@ public:
     const Vector<SVGTextMetrics>& metricsList() const { return m_textLayoutObject->layoutAttributes()->textMetricsValues(); }
     unsigned metricsListOffset() const { return m_metricsListOffset; }
     unsigned characterOffset() const { return m_characterOffset; }
+    bool isAtEnd() const { return m_metricsListOffset == metricsList().size(); }
 
 private:
     void reset(const LayoutSVGInlineText* textLayoutObject)
