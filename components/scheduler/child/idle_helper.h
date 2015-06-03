@@ -159,6 +159,9 @@ class SCHEDULER_EXPORT IdleHelper
     DISALLOW_COPY_AND_ASSIGN(State);
   };
 
+  // The minimum duration of an idle period.
+  static const int kMinimumIdlePeriodDurationMillis = 1;
+
   // The minimum delay to wait between retrying to initiate a long idle time.
   static const int kRetryEnableLongIdlePeriodDelayMillis = 1;
 

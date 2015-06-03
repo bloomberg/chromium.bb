@@ -238,6 +238,11 @@ class BaseIdleHelperTest : public testing::Test {
         IdleHelper::kRetryEnableLongIdlePeriodDelayMillis);
   }
 
+  static base::TimeDelta minimum_idle_period_duration() {
+    return base::TimeDelta::FromMilliseconds(
+        IdleHelper::kMinimumIdlePeriodDurationMillis);
+  }
+
   base::TimeTicks CurrentIdleTaskDeadline() {
     return idle_helper_->CurrentIdleTaskDeadline();
   }
@@ -1008,6 +1013,69 @@ TEST_F(IdleHelperWithQuiescencePeriodTest,
 
   EXPECT_EQ(1, run_count);
   EXPECT_EQ(expected_deadline, deadline_in_task);
+}
+
+TEST_F(IdleHelperTest, NoShortIdlePeriodWhenDeadlineTooClose) {
+  int run_count = 0;
+  base::TimeTicks deadline_in_task;
+  EXPECT_CALL(*idle_helper_, CanEnterLongIdlePeriod(_, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(true));
+
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  base::TimeDelta half_a_ms(base::TimeDelta::FromMicroseconds(50));
+  base::TimeTicks less_than_min_deadline(
+      clock_->Now() + minimum_idle_period_duration() - half_a_ms);
+  base::TimeTicks more_than_min_deadline(
+      clock_->Now() + minimum_idle_period_duration() + half_a_ms);
+
+  idle_helper_->StartIdlePeriod(
+      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->Now(),
+      less_than_min_deadline);
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);
+
+  idle_helper_->StartIdlePeriod(
+      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->Now(),
+      more_than_min_deadline);
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);
+}
+
+TEST_F(IdleHelperTest, NoLongIdlePeriodWhenDeadlineTooClose) {
+  int run_count = 0;
+  base::TimeTicks deadline_in_task;
+  EXPECT_CALL(*idle_helper_, CanEnterLongIdlePeriod(_, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(true));
+
+  base::TimeDelta half_a_ms(base::TimeDelta::FromMicroseconds(50));
+  base::TimeDelta less_than_min_deadline_duration(
+      minimum_idle_period_duration() - half_a_ms);
+  base::TimeDelta more_than_min_deadline_duration(
+      minimum_idle_period_duration() + half_a_ms);
+
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+  default_task_runner_->PostDelayedTask(FROM_HERE, base::Bind(&NullTask),
+                                        less_than_min_deadline_duration);
+
+  idle_helper_->EnableLongIdlePeriod();
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);
+
+  idle_helper_->EndIdlePeriod();
+  clock_->AdvanceNow(maximum_idle_period_duration());
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);
+
+  default_task_runner_->PostDelayedTask(FROM_HERE, base::Bind(&NullTask),
+                                        more_than_min_deadline_duration);
+  idle_helper_->EnableLongIdlePeriod();
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);
 }
 
 }  // namespace scheduler

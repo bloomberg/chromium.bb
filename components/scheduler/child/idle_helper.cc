@@ -89,7 +89,8 @@ IdleHelper::IdlePeriodState IdleHelper::ComputeNewLongIdlePeriodState(
                                          max_long_idle_period_duration);
   }
 
-  if (long_idle_period_duration > base::TimeDelta()) {
+  if (long_idle_period_duration >=
+      base::TimeDelta::FromMilliseconds(kMinimumIdlePeriodDurationMillis)) {
     *next_long_idle_period_delay_out = long_idle_period_duration;
     if (helper_->IsQueueEmpty(idle_queue_index_)) {
       return IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED;
@@ -167,8 +168,18 @@ void IdleHelper::StartIdlePeriod(IdlePeriodState new_state,
   DCHECK_GT(idle_period_deadline, now);
   helper_->CheckOnValidThread();
   DCHECK(IsInIdlePeriod(new_state));
-  TRACE_EVENT0(disabled_by_default_tracing_category_, "StartIdlePeriod");
 
+  base::TimeDelta idle_period_duration(idle_period_deadline - now);
+  if (idle_period_duration <
+      base::TimeDelta::FromMilliseconds(kMinimumIdlePeriodDurationMillis)) {
+    TRACE_EVENT1(disabled_by_default_tracing_category_,
+                 "NotStartingIdlePeriodBecauseDeadlineIsTooClose",
+                 "idle_period_duration_ms",
+                 idle_period_duration.InMillisecondsF());
+    return;
+  }
+
+  TRACE_EVENT0(disabled_by_default_tracing_category_, "StartIdlePeriod");
   helper_->EnableQueue(idle_queue_index_,
                        PrioritizingTaskQueueSelector::BEST_EFFORT_PRIORITY);
   helper_->PumpQueue(idle_queue_index_);
