@@ -433,6 +433,7 @@
       'precache/core/precache_url_table_unittest.cc',
     ],
     'proximity_auth_unittest_sources': [
+      'proximity_auth/ble/bluetooth_low_energy_characteristics_finder_unittest.cc',
       'proximity_auth/ble/bluetooth_low_energy_connection_finder_unittest.cc',
       'proximity_auth/ble/proximity_auth_ble_system_unittest.cc',
       'proximity_auth/bluetooth_connection_finder_unittest.cc',

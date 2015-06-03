@@ -34,9 +34,9 @@ const char kDeviceName[] = "Device name";
 const char kBluetoothAddress[] = "11:22:33:44:55:66";
 const RemoteDevice kRemoteDevice = {kDeviceName, kBluetoothAddress};
 
-const char kServiceUUID[] = "1EADBEEF-CAFE-FEED-FOOD-D15EA5EBEEEF";
-const char kToPeripheralCharUUID[] = "2EADBEEF-CAFE-FEED-FOOD-D15EA5EBEEEF";
-const char kFromPeripheralCharUUID[] = "3EADBEEF-CAFE-FEED-FOOD-D15EA5EBEEEF";
+const char kServiceUUID[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEEF";
+const char kToPeripheralCharUUID[] = "FBAE09F2-0482-11E5-8418-1697F925EC7B";
+const char kFromPeripheralCharUUID[] = "5539ED10-0483-11E5-8418-1697F925EC7B";
 
 const char kOtherUUID[] = "AAAAAAAA-AAAA-AAAA-AAAA-D15EA5EBEEEF";
 const char kOtherBluetoothAddress[] = "00:00:00:00:00:00";

@@ -36,15 +36,18 @@ class BluetoothLowEnergyCharacteristicsFinder
   // This callback takes as arguments (in this order): |to_peripheral_char_| and
   // |from_peripheral_char_|. A blank id field in the characteristics indicate
   // that the characteristics was not found in the remote service.
+  // TODO(sacomoto): Remove RemoteAttributes and add an error message instead.
+  // The caller of this object should not care if only a subset of the
+  // characteristics was found. See crbug.com/495511.
   typedef base::Callback<void(const RemoteAttribute&, const RemoteAttribute&)>
       ErrorCallback;
 
-  // Constructs the class and registers itself as an observer for |adapter|,
+  // Constructs the object and registers itself as an observer for |adapter|,
   // waiting for |to_peripheral_char| and |from_peripheral_char| to be found.
   // When both characteristics were found |success_callback| is called. After
   // all characteristics of |service| were discovered, if |from_periphral_char|
-  // or |to_peripheral| was not found, it calls |error_callback|. The class will
-  // perform at most one call of the callbacks.
+  // or |to_peripheral| was not found, it calls |error_callback|. The object
+  // will perform at most one call of the callbacks.
   BluetoothLowEnergyCharacteristicsFinder(
       scoped_refptr<device::BluetoothAdapter> adapter,
       device::BluetoothDevice* device,

@@ -30,6 +30,7 @@ source_set("ble") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "bluetooth_low_energy_characteristics_finder_unittest.cc",
     "bluetooth_low_energy_connection_finder_unittest.cc",
     "proximity_auth_ble_system_unittest.cc",
   ]
