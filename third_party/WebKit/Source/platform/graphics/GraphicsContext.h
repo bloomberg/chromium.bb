@@ -262,7 +262,7 @@ public:
     // Instead of being dispatched to the active canvas, draw commands following beginRecording()
     // are stored in a display list that can be replayed at a later time. Pass in the bounding
     // rectangle for the content in the list.
-    void beginRecording(const FloatRect&, uint32_t = 0);
+    void beginRecording(const FloatRect&);
     PassRefPtr<const SkPicture> endRecording();
 
     void setShadow(const FloatSize& offset, float blur, const Color&,

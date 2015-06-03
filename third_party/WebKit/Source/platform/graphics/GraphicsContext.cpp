@@ -438,19 +438,19 @@ void GraphicsContext::endLayer()
     ASSERT(m_layerCount-- > 0);
 }
 
-void GraphicsContext::beginRecording(const FloatRect& bounds, uint32_t recordFlags)
+void GraphicsContext::beginRecording(const FloatRect& bounds)
 {
     if (contextDisabled())
         return;
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        m_canvas = m_pictureRecorder.beginRecording(bounds, 0, recordFlags);
+        m_canvas = m_pictureRecorder.beginRecording(bounds, 0);
         return;
     }
 
     m_recordingStateStack.append(
         RecordingState::Create(m_canvas, getTotalMatrix()));
-    m_canvas = m_recordingStateStack.last()->recorder().beginRecording(bounds, 0, recordFlags);
+    m_canvas = m_recordingStateStack.last()->recorder().beginRecording(bounds, 0);
 }
 
 PassRefPtr<const SkPicture> GraphicsContext::endRecording()
