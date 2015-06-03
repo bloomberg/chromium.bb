@@ -1,6 +1,6 @@
-CONSOLE ERROR: Failed to find a valid digest in the 'integrity' attribute for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/style-1-of-3.css' with computed SHA-256 integrity 'RvLeYLQyPa_ZQk95Rj0XQpfsoBHW9Vrqb3zwo5DScrJG8t5gtDI9r9lCT3lGPRdCl-ygEdb1WupvfPCjkNJysg=='. The resource has been blocked.
-CONSOLE ERROR: Failed to find a valid digest in the 'integrity' attribute for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/style-2-of-3.css' with computed SHA-256 integrity 'j1bGpDxu0bZAb4jBJzciDWuVUuOTXlLvB9WNKDh7Gik9ygF6CctjgYISUwShHmFMReqoU3BDt1yeXAp39aL0TXuAI-RK52lE66N3X3bNETo='. The resource has been blocked.
-CONSOLE ERROR: Failed to find a valid digest in the 'integrity' attribute for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/style-3-of-3.css' with computed SHA-256 integrity 'P302RfA5c_H9Ao_miirSIPVBr3uxOdTzm8IzaGwidneeOOwuyTfOhCp8-c1yg-W16rKf1IW_-4TxD0yAKdkV-eaUn8Wt-sL5hoxVFkRfx2wi5hUrPp-OJ6HUiXt82N7F'. The resource has been blocked.
+CONSOLE ERROR: Failed to find a valid digest in the 'integrity' attribute for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/style-1-of-3.css' with computed SHA-256 integrity 'RvLeYLQyPa_ZQk95Rj0XQpfsoBHW9Vrqb3zwo5DScrI='. The resource has been blocked.
+CONSOLE ERROR: Failed to find a valid digest in the 'integrity' attribute for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/style-2-of-3.css' with computed SHA-256 integrity 'ReqoU3BDt1yeXAp39aL0TXuAI-RK52lE66N3X3bNETo='. The resource has been blocked.
+CONSOLE ERROR: Failed to find a valid digest in the 'integrity' attribute for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/style-3-of-3.css' with computed SHA-256 integrity '5pSfxa36wvmGjFUWRF_HbCLmFSs-n44nodSJe3zY3sU='. The resource has been blocked.
 Test 1
 
 Test 2

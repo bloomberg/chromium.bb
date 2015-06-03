@@ -1,4 +1,4 @@
-CONSOLE ERROR: Failed to find a valid digest in the 'integrity' attribute for resource 'http://localhost:8000/security/resources/cors-script.php?value=ran' with computed SHA-256 integrity 'mk_DwEwGGoyrh4sgi9t0nYTO1Lrft3w6vzaNuMaZrtSaT8PATAYajKuHiyCL23SdhM7Uut-3fDq_No24xpmu1A=='. The resource has been blocked.
+CONSOLE ERROR: Failed to find a valid digest in the 'integrity' attribute for resource 'http://localhost:8000/security/resources/cors-script.php?value=ran' with computed SHA-256 integrity 'mk_DwEwGGoyrh4sgi9t0nYTO1Lrft3w6vzaNuMaZrtQ='. The resource has been blocked.
 This is a testharness.js-based test.
 PASS SRI on cross origin CORS enabled script, with bad integrity 
 Harness: the test ran to completion.

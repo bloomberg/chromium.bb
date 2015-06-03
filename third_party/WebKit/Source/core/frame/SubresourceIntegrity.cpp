@@ -108,6 +108,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
         }
     }
 
+    digest.clear();
     if (computeDigest(HashAlgorithmSha256, normalizedSource.data(), normalizedSource.length(), digest)) {
         // This message exposes the digest of the resource to the console.
         // Because this is only to the console, that's okay for now, but we
