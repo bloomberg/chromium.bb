@@ -28,6 +28,9 @@ using device::BluetoothGattNotifySession;
 using device::BluetoothUUID;
 
 namespace proximity_auth {
+namespace {
+const int kFirstByteZero = 0;
+}  // namespace
 
 BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
     const RemoteDevice& device,
@@ -35,7 +38,8 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
     const BluetoothUUID remote_service_uuid,
     const BluetoothUUID to_peripheral_char_uuid,
     const BluetoothUUID from_peripheral_char_uuid,
-    scoped_ptr<BluetoothGattConnection> gatt_connection)
+    scoped_ptr<BluetoothGattConnection> gatt_connection,
+    int max_number_of_write_attempts)
     : Connection(device),
       adapter_(adapter),
       remote_service_({remote_service_uuid, ""}),
@@ -43,6 +47,8 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
       from_peripheral_char_({from_peripheral_char_uuid, ""}),
       sub_status_(SubStatus::DISCONNECTED),
       receiving_bytes_(false),
+      write_remote_characteristic_pending_(false),
+      max_number_of_write_attempts_(max_number_of_write_attempts),
       weak_ptr_factory_(this) {
   DCHECK(adapter_);
   DCHECK(adapter_->IsInitialized());
@@ -78,6 +84,7 @@ void BluetoothLowEnergyConnection::Connect() {
 // connect to BLE devices advertising the SmartLock service (assuming this
 // device has no other connection).
 void BluetoothLowEnergyConnection::Disconnect() {
+  ClearWriteRequestsQueue();
   StopNotifySession();
   SetSubStatus(SubStatus::DISCONNECTED);
   if (connection_) {
@@ -103,24 +110,23 @@ void BluetoothLowEnergyConnection::SetSubStatus(SubStatus new_sub_status) {
   }
 }
 
-// TODO(sacomoto): Send a SmartLock BLE socket incoming signal. Implement a
-// sender with full support for messages larger than a single characteristic
-// value.
+// TODO(sacomoto): Implement a sender with full support for messages larger than
+// a single characteristic value.
 void BluetoothLowEnergyConnection::SendMessageImpl(
     scoped_ptr<WireMessage> message) {
-  DCHECK(!GetGattCharacteristic(to_peripheral_char_.id));
   VLOG(1) << "Sending message " << message->Serialize();
 
-  std::string serialized_message = message->Serialize();
-  std::vector<uint8> bytes(serialized_message.begin(),
-                           serialized_message.end());
+  std::string serialized_msg = message->Serialize();
 
-  GetGattCharacteristic(to_peripheral_char_.id)
-      ->WriteRemoteCharacteristic(
-          bytes, base::Bind(&base::DoNothing),
-          base::Bind(
-              &BluetoothLowEnergyConnection::OnWriteRemoteCharacteristicError,
-              weak_ptr_factory_.GetWeakPtr()));
+  WriteRequest write_request = BuildWriteRequest(
+      ToByteVector(static_cast<uint32>(ControlSignal::kSendSignal)),
+      ToByteVector(static_cast<uint32>(serialized_msg.size())), false);
+  WriteRemoteCharacteristic(write_request);
+
+  write_request = BuildWriteRequest(
+      std::vector<uint8>{static_cast<uint8>(kFirstByteZero)},
+      std::vector<uint8>(serialized_msg.begin(), serialized_msg.end()), true);
+  WriteRemoteCharacteristic(write_request);
 }
 
 void BluetoothLowEnergyConnection::DeviceRemoved(BluetoothAdapter* adapter,
@@ -143,16 +149,16 @@ void BluetoothLowEnergyConnection::GattCharacteristicValueChanged(
           << characteristic->GetUUID().canonical_value();
 
   if (characteristic->GetIdentifier() == from_peripheral_char_.id) {
-    if (value.size() < 4) {
-      VLOG(1) << "Incoming data corrupted, no signal found.";
+    if (receiving_bytes_) {
+      // Ignoring the first byte, as it contains a deprecated signal.
+      const std::string bytes(value.begin() + 1, value.end());
+      OnBytesReceived(bytes);
+      receiving_bytes_ = false;
       return;
     }
 
-    if (receiving_bytes_) {
-      // TODO(sacomoto): properly handle the sendStatus signal (first 4 bytes).
-      // Ignoring it for now.
-      const std::string bytes(value.begin() + 4, value.end());
-      OnBytesReceived(bytes);
+    if (value.size() < 4) {
+      VLOG(1) << "Incoming data corrupted, no signal found.";
       return;
     }
 
@@ -172,6 +178,17 @@ void BluetoothLowEnergyConnection::GattCharacteristicValueChanged(
         break;
     }
   }
+}
+
+BluetoothLowEnergyConnection::WriteRequest::WriteRequest(
+    const std::vector<uint8>& val,
+    bool flag)
+    : value(val),
+      is_last_write_for_wire_message(flag),
+      number_of_failed_attempts(0) {
+}
+
+BluetoothLowEnergyConnection::WriteRequest::~WriteRequest() {
 }
 
 scoped_ptr<WireMessage> BluetoothLowEnergyConnection::DeserializeWireMessage(
@@ -279,18 +296,86 @@ void BluetoothLowEnergyConnection::SendInviteToConnectSignal() {
     VLOG(1) << "Sending invite to connect signal";
     SetSubStatus(SubStatus::WAITING_RESPONSE_SIGNAL);
 
-    // The connection status is not CONNECTED yet, so in order to bypass the
-    // check in SendMessage implementation we need to send the message using the
-    // private implementation.
-    SendMessageImpl(scoped_ptr<FakeWireMessage>(new FakeWireMessage(
-        ToString(static_cast<uint32>(ControlSignal::kInviteToConnectSignal)))));
+    WriteRequest write_request = BuildWriteRequest(
+        ToByteVector(
+            static_cast<uint32>(ControlSignal::kInviteToConnectSignal)),
+        std::vector<uint8>(), false);
+
+    WriteRemoteCharacteristic(write_request);
   }
 }
 
+void BluetoothLowEnergyConnection::WriteRemoteCharacteristic(
+    WriteRequest request) {
+  write_requests_queue_.push(request);
+  ProcessNextWriteRequest();
+}
+
+void BluetoothLowEnergyConnection::ProcessNextWriteRequest() {
+  BluetoothGattCharacteristic* characteristic =
+      GetGattCharacteristic(to_peripheral_char_.id);
+  if (!write_requests_queue_.empty() && !write_remote_characteristic_pending_ &&
+      characteristic) {
+    write_remote_characteristic_pending_ = true;
+    WriteRequest next_request = write_requests_queue_.front();
+    characteristic->WriteRemoteCharacteristic(
+        next_request.value,
+        base::Bind(&BluetoothLowEnergyConnection::OnRemoteCharacteristicWritten,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   next_request.is_last_write_for_wire_message),
+        base::Bind(
+            &BluetoothLowEnergyConnection::OnWriteRemoteCharacteristicError,
+            weak_ptr_factory_.GetWeakPtr(),
+            next_request.is_last_write_for_wire_message));
+  }
+}
+
+void BluetoothLowEnergyConnection::OnRemoteCharacteristicWritten(
+    bool run_did_send_message_callback) {
+  write_remote_characteristic_pending_ = false;
+  // TODO(sacomoto): Actually pass the current message to the observer.
+  if (run_did_send_message_callback)
+    OnDidSendMessage(FakeWireMessage(""), true);
+
+  // Removes the top of queue (already processed) and process the next request.
+  DCHECK(!write_requests_queue_.empty());
+  write_requests_queue_.pop();
+  ProcessNextWriteRequest();
+}
+
 void BluetoothLowEnergyConnection::OnWriteRemoteCharacteristicError(
+    bool run_did_send_message_callback,
     BluetoothGattService::GattErrorCode error) {
-  VLOG(1) << "Error writing characteristic"
+  VLOG(1) << "Error " << error << " writing characteristic: "
           << to_peripheral_char_.uuid.canonical_value();
+  write_remote_characteristic_pending_ = false;
+  // TODO(sacomoto): Actually pass the current message to the observer.
+  if (run_did_send_message_callback)
+    OnDidSendMessage(FakeWireMessage(""), false);
+
+  // Increases the number of failed attempts and retry.
+  DCHECK(!write_requests_queue_.empty());
+  if (write_requests_queue_.front().number_of_failed_attempts++ >=
+      max_number_of_write_attempts_) {
+    Disconnect();
+    return;
+  }
+  ProcessNextWriteRequest();
+}
+
+BluetoothLowEnergyConnection::WriteRequest
+BluetoothLowEnergyConnection::BuildWriteRequest(
+    const std::vector<uint8>& signal,
+    const std::vector<uint8>& bytes,
+    bool is_last_write_for_wire_message) {
+  std::vector<uint8> value(signal.begin(), signal.end());
+  value.insert(value.end(), bytes.begin(), bytes.end());
+  return WriteRequest(value, is_last_write_for_wire_message);
+}
+
+void BluetoothLowEnergyConnection::ClearWriteRequestsQueue() {
+  while (!write_requests_queue_.empty())
+    write_requests_queue_.pop();
 }
 
 const std::string& BluetoothLowEnergyConnection::GetRemoteDeviceAddress() {
@@ -342,15 +427,14 @@ uint32 BluetoothLowEnergyConnection::ToUint32(const std::vector<uint8>& bytes) {
 
 // TODO(sacomoto): make this robust to byte ordering in both sides of the
 // SmartLock BLE socket.
-const std::string BluetoothLowEnergyConnection::ToString(const uint32 value) {
-  char bytes[4] = {};
-
+const std::vector<uint8> BluetoothLowEnergyConnection::ToByteVector(
+    const uint32 value) {
+  std::vector<uint8> bytes(4, 0);
   bytes[0] = static_cast<uint8>(value);
   bytes[1] = static_cast<uint8>(value >> 8);
-  bytes[2] = static_cast<uint8>(value >> 12);
+  bytes[2] = static_cast<uint8>(value >> 16);
   bytes[3] = static_cast<uint8>(value >> 24);
-
-  return std::string(bytes);
+  return bytes;
 }
 
 }  // namespace proximity_auth

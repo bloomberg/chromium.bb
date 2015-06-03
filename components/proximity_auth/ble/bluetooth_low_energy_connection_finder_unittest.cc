@@ -41,6 +41,8 @@ const char kFromPeripheralCharUUID[] = "5539ED10-0483-11E5-8418-1697F925EC7B";
 const char kOtherUUID[] = "AAAAAAAA-AAAA-AAAA-AAAA-D15EA5EBEEEF";
 const char kOtherBluetoothAddress[] = "00:00:00:00:00:00";
 
+const int kMaxNumberOfAttempts = 2;
+
 class MockConnection : public Connection {
  public:
   MockConnection() : Connection(kRemoteDevice) {}
@@ -63,7 +65,8 @@ class MockBluetoothLowEnergyConnectionFinder
   MockBluetoothLowEnergyConnectionFinder()
       : BluetoothLowEnergyConnectionFinder(kServiceUUID,
                                            kToPeripheralCharUUID,
-                                           kFromPeripheralCharUUID) {}
+                                           kFromPeripheralCharUUID,
+                                           kMaxNumberOfAttempts) {}
   ~MockBluetoothLowEnergyConnectionFinder() override {}
 
   // Mock methods don't support return type scoped_ptr<>. This is a possible
@@ -178,13 +181,15 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   // Destroying a BluetoothConnectionFinder for which Find() has not been called
   // should not crash.
   BluetoothLowEnergyConnectionFinder connection_finder(
-      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID);
+      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
+      kMaxNumberOfAttempts);
 }
 
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
        Find_StartsDiscoverySession) {
   BluetoothLowEnergyConnectionFinder connection_finder(
-      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID);
+      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
+      kMaxNumberOfAttempts);
 
   EXPECT_CALL(*adapter_, StartDiscoverySession(_, _));
   EXPECT_CALL(*adapter_, AddObserver(_));
@@ -194,7 +199,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
        Find_StopsDiscoverySessionBeforeDestroying) {
   BluetoothLowEnergyConnectionFinder connection_finder(
-      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID);
+      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
+      kMaxNumberOfAttempts);
 
   device::BluetoothAdapter::DiscoverySessionCallback discovery_callback;
   scoped_ptr<device::MockBluetoothDiscoverySession> discovery_session(
@@ -218,7 +224,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
        Find_CreatesGattConnectionWhenRightDeviceIsAdded) {
   BluetoothLowEnergyConnectionFinder connection_finder(
-      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID);
+      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
+      kMaxNumberOfAttempts);
   device::BluetoothDevice::GattConnectionCallback gatt_connection_callback;
   FindAndExpectStartDiscovery(connection_finder);
 
@@ -230,7 +237,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
        Find_DoesntCreateGattConnectionWhenWrongDeviceIsAdded) {
   BluetoothLowEnergyConnectionFinder connection_finder(
-      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID);
+      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
+      kMaxNumberOfAttempts);
   FindAndExpectStartDiscovery(connection_finder);
 
   PrepareForNewWrongDevice(kOtherUUID);
@@ -240,7 +248,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
        Find_CreatesGattConnectionWhenRightDeviceIsChanged) {
   BluetoothLowEnergyConnectionFinder connection_finder(
-      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID);
+      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
+      kMaxNumberOfAttempts);
   device::BluetoothDevice::GattConnectionCallback gatt_connection_callback;
   FindAndExpectStartDiscovery(connection_finder);
 
@@ -252,7 +261,8 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
        Find_DoesntCreateGattConnectionWhenWrongDeviceIsChanged) {
   BluetoothLowEnergyConnectionFinder connection_finder(
-      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID);
+      kServiceUUID, kToPeripheralCharUUID, kFromPeripheralCharUUID,
+      kMaxNumberOfAttempts);
   FindAndExpectStartDiscovery(connection_finder);
 
   PrepareForNewWrongDevice(kOtherUUID);

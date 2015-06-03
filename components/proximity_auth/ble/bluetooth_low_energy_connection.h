@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_LOW_ENERGY_CONNECTION_H
 #define COMPONENTS_PROXIMITY_AUTH_BLUETOOTH_LOW_ENERGY_CONNECTION_H
 
+#include <queue>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -49,6 +51,7 @@ namespace proximity_auth {
 class BluetoothLowEnergyConnection : public Connection,
                                      public device::BluetoothAdapter::Observer {
  public:
+  // Signals sent to the remote device to indicate connection related events.
   enum class ControlSignal : uint32 {
     kInviteToConnectSignal = 0,
     kInvitationResponseSignal = 1,
@@ -67,7 +70,8 @@ class BluetoothLowEnergyConnection : public Connection,
       const device::BluetoothUUID remote_service_uuid,
       const device::BluetoothUUID to_peripheral_char_uuid,
       const device::BluetoothUUID from_peripheral_char_uuid,
-      scoped_ptr<device::BluetoothGattConnection> gatt_connection);
+      scoped_ptr<device::BluetoothGattConnection> gatt_connection,
+      int max_number_of_write_attempts);
 
   ~BluetoothLowEnergyConnection() override;
 
@@ -107,6 +111,21 @@ class BluetoothLowEnergyConnection : public Connection,
       const std::vector<uint8>& value) override;
 
  private:
+  // Represents a request to write |value| to a some characteristic.
+  // |is_last_write_for_wire_messsage| indicates whether this request
+  // corresponds to the last write request for some wire message.
+  // A WireMessage corresponds to exactly two WriteRequest: the first containing
+  // a kSendSignal + the size of the WireMessage, and the second containing a
+  // SendStatusSignal + the serialized WireMessage.
+  struct WriteRequest {
+    WriteRequest(const std::vector<uint8>& val, bool flag);
+    ~WriteRequest();
+
+    std::vector<uint8> value;
+    bool is_last_write_for_wire_message;
+    int number_of_failed_attempts;
+  };
+
   // Called when a GATT connection is created or received by the constructor.
   void OnGattConnectionCreated(
       scoped_ptr<device::BluetoothGattConnection> gatt_connection);
@@ -149,10 +168,42 @@ class BluetoothLowEnergyConnection : public Connection,
   // Completes and updates the status accordingly.
   void CompleteConnection();
 
+  // This is the only entry point for WriteRequests, which are processed
+  // accordingly the following flow:
+  // 1) |request| is enqueued;
+  // 2) |request| will be processed by ProcessNextWriteRequest() when there is
+  // no pending
+  // write request;
+  // 3) |request| will be dequeued when it's successfully processed
+  // (OnRemoteCharacteristicWritten());
+  // 4) |request| is not dequeued if it fails
+  // (OnWriteRemoteCharacteristicError()),
+  // it remains on the queue and will be retried.
+  // |request| will remain on the queue until it succeeds or it triggers a
+  // Disconnect() call (after |max_number_of_tries_|).
+  void WriteRemoteCharacteristic(WriteRequest request);
+
+  // Processes the next request in |write_requests_queue_|.
+  void ProcessNextWriteRequest();
+
+  // Called when the BluetoothGattCharacteristic::RemoteCharacteristicWrite() is
+  // sucessfully complete.
+  void OnRemoteCharacteristicWritten(bool run_did_send_message_callback);
+
   // Called when there is an error writing to the remote characteristic
   // |to_peripheral_char_|.
   void OnWriteRemoteCharacteristicError(
+      bool run_did_send_message_callback,
       device::BluetoothGattService::GattErrorCode error);
+
+  // Builds the value to be written on |to_peripheral_char_|. The value
+  // corresponds to |signal| concatenated with |payload|.
+  WriteRequest BuildWriteRequest(const std::vector<uint8>& signal,
+                                 const std::vector<uint8>& bytes,
+                                 bool is_last_message_for_wire_message);
+
+  // Clears |write_requests_queue_|.
+  void ClearWriteRequestsQueue();
 
   // Returns the Bluetooth address of the remote device.
   const std::string& GetRemoteDeviceAddress();
@@ -172,8 +223,8 @@ class BluetoothLowEnergyConnection : public Connection,
   // Convert the first 4 bytes from a byte vector to a uint32.
   uint32 ToUint32(const std::vector<uint8>& bytes);
 
-  // Convert an uint32 to a byte array.
-  const std::string ToString(const uint32 value);
+  // Convert an uint32 to a byte vector.
+  const std::vector<uint8> ToByteVector(uint32 value);
 
   // The Bluetooth adapter over which the Bluetooth connection will be made.
   scoped_refptr<device::BluetoothAdapter> adapter_;
@@ -199,9 +250,18 @@ class BluetoothLowEnergyConnection : public Connection,
   // Internal connection status
   SubStatus sub_status_;
 
-  // True if it's receiving bytes from |from_peripheral_char_|. This is set
-  // after a ControlSignal::kSendSignal is received.
+  // Indicates a receiving operation is in progress. This is set after a
+  // ControlSignal::kSendSignal was received from the remote device.
   bool receiving_bytes_;
+
+  // Indicates there is a BluetoothGattCharacteristic::WriteRemoteCharacteristic
+  // operation pending.
+  bool write_remote_characteristic_pending_;
+
+  std::queue<WriteRequest> write_requests_queue_;
+
+  // Maximum number of tries to send any write request.
+  int max_number_of_write_attempts_;
 
   // Stores when the instace was created.
   base::TimeTicks start_time_;

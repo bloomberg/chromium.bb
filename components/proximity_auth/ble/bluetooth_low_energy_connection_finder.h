@@ -33,7 +33,8 @@ class BluetoothLowEnergyConnectionFinder
   BluetoothLowEnergyConnectionFinder(
       const std::string& remote_service_uuid,
       const std::string& to_peripheral_char_uuid,
-      const std::string& from_peripheral_char_uuid);
+      const std::string& from_peripheral_char_uuid,
+      int max_number_of_tries);
   ~BluetoothLowEnergyConnectionFinder() override;
 
   // Finds a connection to the remote device. Only the first one is functional.
@@ -133,6 +134,9 @@ class BluetoothLowEnergyConnectionFinder
 
   // The set of devices this connection finder has tried to connect to.
   std::set<device::BluetoothDevice*> pending_connections_;
+
+  // BluetoothLowEnergyConnection parameter.
+  int max_number_of_tries_;
 
   base::WeakPtrFactory<BluetoothLowEnergyConnectionFinder> weak_ptr_factory_;
 

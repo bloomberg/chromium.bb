@@ -27,12 +27,14 @@ namespace proximity_auth {
 BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
     const std::string& remote_service_uuid,
     const std::string& to_peripheral_char_uuid,
-    const std::string& from_peripheral_char_uuid)
+    const std::string& from_peripheral_char_uuid,
+    int max_number_of_tries)
     : remote_service_uuid_(device::BluetoothUUID(remote_service_uuid)),
       to_peripheral_char_uuid_(device::BluetoothUUID(to_peripheral_char_uuid)),
       from_peripheral_char_uuid_(
           device::BluetoothUUID(from_peripheral_char_uuid)),
       connected_(false),
+      max_number_of_tries_(max_number_of_tries),
       weak_ptr_factory_(this) {
 }
 
@@ -259,7 +261,8 @@ scoped_ptr<Connection> BluetoothLowEnergyConnectionFinder::CreateConnection(
 
   return make_scoped_ptr(new BluetoothLowEnergyConnection(
       remote_device, adapter_, remote_service_uuid_, to_peripheral_char_uuid_,
-      from_peripheral_char_uuid_, gatt_connection.Pass()));
+      from_peripheral_char_uuid_, gatt_connection.Pass(),
+      max_number_of_tries_));
 }
 
 void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(

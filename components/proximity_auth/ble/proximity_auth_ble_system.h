@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
+#include "components/proximity_auth/connection_observer.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 
 namespace content {
@@ -28,7 +30,8 @@ class ConnectionFinder;
 // Energy. This is the underlying system for the Smart Lock features. It will
 // discover Bluetooth Low Energy phones and unlock the lock screen if the phone
 // passes an authorization and authentication protocol.
-class ProximityAuthBleSystem : public ScreenlockBridge::Observer {
+class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
+                               public ConnectionObserver {
  public:
   ProximityAuthBleSystem(ScreenlockBridge* screenlock_bridge,
                          content::BrowserContext* browser_context);
@@ -40,6 +43,10 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer {
   void OnScreenDidUnlock(
       ScreenlockBridge::LockHandler::ScreenType screen_type) override;
   void OnFocusedUserChanged(const std::string& user_id) override;
+
+  // proximity_auth::ConnectionObserver:
+  void OnMessageReceived(const Connection& connection,
+                         const WireMessage& message) override;
 
  protected:
   class ScreenlockBridgeAdapter {
@@ -70,13 +77,25 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer {
   // Handler for a new connection found event.
   void OnConnectionFound(scoped_ptr<Connection> connection);
 
+  // Start (recurrently) polling every |polling_interval_| ms for the screen
+  // state of the remote device.
+  void StartPollingScreenState();
+
+  // Stop polling for screen state of the remote device, if currently active.
+  void StopPollingScreenState();
+
   scoped_ptr<ScreenlockBridgeAdapter> screenlock_bridge_;
+
   content::BrowserContext*
       browser_context_;  // Not owned. Must outlive this object.
 
   scoped_ptr<ConnectionFinder> connection_finder_;
 
   scoped_ptr<Connection> connection_;
+
+  const base::TimeDelta polling_interval_;
+
+  bool is_polling_screen_state_;
 
   base::WeakPtrFactory<ProximityAuthBleSystem> weak_ptr_factory_;
 
