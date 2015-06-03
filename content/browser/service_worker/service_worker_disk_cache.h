@@ -18,12 +18,22 @@ namespace content {
 
 class CONTENT_EXPORT ServiceWorkerDiskCache
     : public AppCacheDiskCache {
+ public:
+  static scoped_ptr<ServiceWorkerDiskCache> CreateWithBlockFileBackend();
+  static scoped_ptr<ServiceWorkerDiskCache> CreateWithSimpleBackend();
+
+ private:
+  friend class ServiceWorkerDiskCacheMigrator;
+  friend class ServiceWorkerDiskCacheMigratorTest;
+  explicit ServiceWorkerDiskCache(bool use_simple_cache);
 };
 
 class CONTENT_EXPORT ServiceWorkerResponseReader
     : public AppCacheResponseReader {
  protected:
   // Should only be constructed by the storage class.
+  friend class ServiceWorkerDiskCacheMigrator;
+  friend class ServiceWorkerDiskCacheMigratorTest;
   friend class ServiceWorkerStorage;
   ServiceWorkerResponseReader(
       int64 response_id,
@@ -34,6 +44,8 @@ class CONTENT_EXPORT ServiceWorkerResponseWriter
     : public AppCacheResponseWriter {
  protected:
   // Should only be constructed by the storage class.
+  friend class ServiceWorkerDiskCacheMigrator;
+  friend class ServiceWorkerDiskCacheMigratorTest;
   friend class ServiceWorkerStorage;
   ServiceWorkerResponseWriter(
       int64 response_id,
@@ -44,6 +56,8 @@ class CONTENT_EXPORT ServiceWorkerResponseMetadataWriter
     : public AppCacheResponseMetadataWriter {
  protected:
   // Should only be constructed by the storage class.
+  friend class ServiceWorkerDiskCacheMigrator;
+  friend class ServiceWorkerDiskCacheMigratorTest;
   friend class ServiceWorkerStorage;
   ServiceWorkerResponseMetadataWriter(int64 response_id,
                                       ServiceWorkerDiskCache* disk_cache);

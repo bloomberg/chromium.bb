@@ -52,6 +52,10 @@ class CONTENT_EXPORT AppCacheDiskCache
                 const net::CompletionCallback& callback) override;
   int DoomEntry(int64 key, const net::CompletionCallback& callback) override;
 
+ protected:
+  explicit AppCacheDiskCache(bool use_simple_cache);
+  disk_cache::Backend* disk_cache() { return disk_cache_.get(); }
+
  private:
   class CreateBackendCallbackShim;
   class EntryImpl;
@@ -88,7 +92,6 @@ class CONTENT_EXPORT AppCacheDiskCache
   bool is_initializing() const {
     return create_backend_callback_.get() != NULL;
   }
-  disk_cache::Backend* disk_cache() { return disk_cache_.get(); }
   int Init(net::CacheType cache_type,
            const base::FilePath& directory,
            int cache_size,
@@ -99,6 +102,7 @@ class CONTENT_EXPORT AppCacheDiskCache
   void AddOpenEntry(EntryImpl* entry) { open_entries_.insert(entry); }
   void RemoveOpenEntry(EntryImpl* entry) { open_entries_.erase(entry); }
 
+  bool use_simple_cache_;
   bool is_disabled_;
   net::CompletionCallback init_callback_;
   scoped_refptr<CreateBackendCallbackShim> create_backend_callback_;

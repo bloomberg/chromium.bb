@@ -1371,7 +1371,7 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
   if (disk_cache_)
     return disk_cache_.get();
 
-  disk_cache_.reset(new ServiceWorkerDiskCache);
+  disk_cache_ = ServiceWorkerDiskCache::CreateWithBlockFileBackend();
 
   base::FilePath path = GetDiskCachePath();
   if (path.empty()) {
