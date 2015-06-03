@@ -298,6 +298,13 @@ class ViewManagerClientImpl : public mojo::ViewManagerClient,
     if (embed_run_loop_)
       embed_run_loop_->Quit();
   }
+  void OnWillEmbed(uint32_t view,
+                   mojo::InterfaceRequest<mojo::ServiceProvider> services,
+                   mojo::ServiceProviderPtr exposed_services,
+                   const OnWillEmbedCallback& callback) override {
+    tracker()->OnWillEmbed(view);
+    callback.Run(true, services.Pass(), exposed_services.Pass());
+  }
   void OnEmbeddedAppDisconnected(Id view_id) override {
     tracker()->OnEmbeddedAppDisconnected(view_id);
   }
@@ -1443,6 +1450,44 @@ TEST_F(ViewManagerServiceAppTest, EmbedSupplyingViewManagerClient) {
   client2.WaitForOnEmbed();
   EXPECT_EQ("OnEmbed creator=" + application_impl()->url(),
             SingleChangeToDescription(*client2.tracker()->changes()));
+}
+
+TEST_F(ViewManagerServiceAppTest, OnWillEmbed) {
+  // Create connections 2 and 3, marking 2 as an embed root.
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
+  ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
+  ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 2)));
+  ASSERT_TRUE(AddView(vm2(), BuildViewId(1, 1), BuildViewId(2, 2)));
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm2(), BuildViewId(2, 2)));
+  ASSERT_TRUE(CreateView(vm3(), BuildViewId(3, 3)));
+  ASSERT_TRUE(AddView(vm3(), BuildViewId(2, 2), BuildViewId(3, 3)));
+  vm2()->SetEmbedRoot();
+  // Make sure the viewmanager processed the SetEmbedRoot() call.
+  ASSERT_TRUE(WaitForAllMessages(vm2()));
+  changes2()->clear();
+
+  // Embed 4 into 3, connection 2 should get the OnWillEmbed.
+  scoped_ptr<ViewManagerClientImpl> connection4(
+      EstablishConnectionViaEmbed(vm3(), BuildViewId(3, 3)));
+  ASSERT_TRUE(connection4.get());
+  EXPECT_EQ("OnWillEmbed view=3,3", SingleChangeToDescription(*changes2()));
+
+  // Mark 3 as an embed root.
+  vm3()->SetEmbedRoot();
+  // Make sure the viewmanager processed the SetEmbedRoot() call.
+  ASSERT_TRUE(WaitForAllMessages(vm3()));
+  changes2()->clear();
+  changes3()->clear();
+
+  // Embed 5 into 4. Only 3 should get the will embed.
+  ASSERT_TRUE(CreateView(connection4->service(), BuildViewId(4, 4)));
+  ASSERT_TRUE(
+      AddView(connection4->service(), BuildViewId(3, 3), BuildViewId(4, 4)));
+  scoped_ptr<ViewManagerClientImpl> connection5(
+      EstablishConnectionViaEmbed(connection4->service(), BuildViewId(4, 4)));
+  ASSERT_TRUE(connection5.get());
+  EXPECT_EQ("OnWillEmbed view=4,4", SingleChangeToDescription(*changes3()));
+  ASSERT_TRUE(changes2()->empty());
 }
 
 // TODO(sky): need to better track changes to initial connection. For example,

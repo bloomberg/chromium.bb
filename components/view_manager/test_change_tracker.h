@@ -19,6 +19,7 @@ namespace view_manager {
 enum ChangeType {
   CHANGE_TYPE_EMBED,
   CHANGE_TYPE_EMBEDDED_APP_DISCONNECTED,
+  CHANGE_TYPE_WILL_EMBED,
   // TODO(sky): nuke NODE.
   CHANGE_TYPE_NODE_BOUNDS_CHANGED,
   CHANGE_TYPE_NODE_VIEWPORT_METRICS_CHANGED,
@@ -122,6 +123,7 @@ class TestChangeTracker {
   void OnEmbed(mojo::ConnectionSpecificId connection_id,
                const mojo::String& creator_url,
                mojo::ViewDataPtr root);
+  void OnWillEmbed(mojo::Id view_id);
   void OnEmbeddedAppDisconnected(mojo::Id view_id);
   void OnViewBoundsChanged(mojo::Id view_id,
                            mojo::RectPtr old_bounds,

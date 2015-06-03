@@ -36,4 +36,3 @@ interface ViewManagerRootClient {
   // An accelerator registered via AddAccelerator() has been triggered.
   OnAccelerator(mojo.Event event);
 };
-

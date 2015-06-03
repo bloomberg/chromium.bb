@@ -42,6 +42,10 @@ std::string ChangeToDescription1(const Change& change) {
       return base::StringPrintf("OnEmbeddedAppDisconnected view=%s",
                                 ViewIdToString(change.view_id).c_str());
 
+    case CHANGE_TYPE_WILL_EMBED:
+      return base::StringPrintf("OnWillEmbed view=%s",
+                                ViewIdToString(change.view_id).c_str());
+
     case CHANGE_TYPE_NODE_BOUNDS_CHANGED:
       return base::StringPrintf(
           "BoundsChanged view=%s old_bounds=%s new_bounds=%s",
@@ -120,7 +124,7 @@ std::string SingleChangeToDescription(const std::vector<Change>& changes) {
 
 std::string SingleViewDescription(const std::vector<TestView>& views) {
   if (views.size() != 1u)
-    return std::string();
+    return "more than one changes and expected only one";
   return views[0].ToString();
 }
 
@@ -179,6 +183,13 @@ void TestChangeTracker::OnEmbed(mojo::ConnectionSpecificId connection_id,
   change.connection_id = connection_id;
   change.creator_url = creator_url;
   change.views.push_back(ViewDataToTestView(root));
+  AddChange(change);
+}
+
+void TestChangeTracker::OnWillEmbed(mojo::Id view_id) {
+  Change change;
+  change.type = CHANGE_TYPE_WILL_EMBED;
+  change.view_id = view_id;
   AddChange(change);
 }
 

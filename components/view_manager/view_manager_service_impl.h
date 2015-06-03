@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/access_policy_delegate.h"
 #include "components/view_manager/ids.h"
@@ -70,6 +71,8 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   // destroyed but the connection is still valid.
   const ViewId* root() const { return root_.get(); }
 
+  bool is_embed_root() const { return is_embed_root_; }
+
   // Invoked when a connection is about to be destroyed.
   void OnWillDestroyViewManagerServiceImpl(ViewManagerServiceImpl* connection);
 
@@ -80,10 +83,11 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   bool AddView(const ViewId& parent_id, const ViewId& child_id);
   std::vector<const ServerView*> GetViewTree(const ViewId& view_id) const;
   bool SetViewVisibility(const ViewId& view_id, bool visible);
-  bool EmbedRequest(mojo::URLRequestPtr request,
+  void EmbedRequest(mojo::URLRequestPtr request,
                     const ViewId& view_id,
                     mojo::InterfaceRequest<mojo::ServiceProvider> services,
-                    mojo::ServiceProviderPtr exposed_services);
+                    mojo::ServiceProviderPtr exposed_services,
+                    const mojo::Callback<void(bool)>& callback);
   bool Embed(const ViewId& view_id, mojo::ViewManagerClientPtr client);
 
   // The following methods are invoked after the corresponding change has been
@@ -120,6 +124,7 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
 
  private:
   typedef std::map<mojo::ConnectionSpecificId, ServerView*> ViewMap;
+  struct PendingEmbed;
 
   bool IsViewKnown(const ServerView* view) const;
 
@@ -147,8 +152,6 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   // Resets the root of this connection.
   void RemoveRoot();
 
-  void RemoveChildrenAsPartOfEmbed(const ViewId& view_id);
-
   // Converts View(s) to ViewData(s) for transport. This assumes all the views
   // are valid for the client. The parent of views the client is not allowed to
   // see are set to NULL (in the returned ViewData(s)).
@@ -168,7 +171,23 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   // Deletes all Views we own.
   void DestroyViews();
 
-  bool PrepareForEmbed(const ViewId& view_id);
+  bool CanEmbed(const ViewId& view_id) const;
+  void PrepareForEmbed(const ViewId& view_id);
+  void RemoveChildrenAsPartOfEmbed(const ViewId& view_id);
+  void OnWillEmbedDone(scoped_refptr<PendingEmbed> pending_embed,
+                       bool allow_embed,
+                       mojo::InterfaceRequest<mojo::ServiceProvider> services,
+                       mojo::ServiceProviderPtr exposed_services);
+
+  // Invalidates any PendingEmbeds with |connection| as the embed root.
+  void InvalidatePendingEmbedForConnection(ViewManagerServiceImpl* connection);
+
+  // Invalidates any PendingEmbemds targetting |view_id|.
+  void InvalidatePendingEmbedForView(const ViewId& view_id);
+
+  // Runs the callback for |embed| and releases it.
+  void RemovePendingEmbedAndNotifyCallback(scoped_refptr<PendingEmbed> embed,
+                                           bool success);
 
   // ViewManagerService:
   void CreateView(
@@ -202,6 +221,7 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
                        const mojo::String& name,
                        mojo::Array<uint8_t> value,
                        const mojo::Callback<void(bool)>& callback) override;
+  void SetEmbedRoot() override;
   void EmbedRequest(mojo::URLRequestPtr request,
                     mojo::Id transport_view_id,
                     mojo::InterfaceRequest<mojo::ServiceProvider> services,
@@ -217,6 +237,7 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   bool IsViewKnownForAccessPolicy(const ServerView* view) const override;
   bool IsViewRootOfAnotherConnectionForAccessPolicy(
       const ServerView* view) const override;
+  bool IsEmbedRootForAccessPolicy() override;
 
   ConnectionManager* connection_manager_;
 
@@ -249,6 +270,14 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   // connection may have no root. A connection has no root if either the root
   // is destroyed or Embed() is invoked on the root.
   scoped_ptr<ViewId> root_;
+
+  bool is_embed_root_;
+
+  // If we have an ancestor marked as an embed root then we have to query it
+  // before completing the embed. |pending_embeds_| contains such requests.
+  // The requests are removed if the embed becomes invalid, for example, the
+  // view embed was called for is removed.
+  std::set<scoped_refptr<PendingEmbed>> pending_embeds_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerServiceImpl);
 };

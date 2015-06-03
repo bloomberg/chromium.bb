@@ -14,6 +14,7 @@ mojo_sdk_source_set("cpp") {
     "lib/view_manager_client_factory.cc",
     "lib/view_manager_client_impl.cc",
     "lib/view_manager_client_impl.h",
+    "lib/view_manager_delegate.cc",
     "lib/view_manager_init.cc",
     "lib/view_observer.cc",
     "lib/view_private.cc",

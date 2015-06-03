@@ -85,6 +85,7 @@ class ViewManagerClientImpl : public ViewManager,
   View* GetViewById(Id id) override;
   View* GetFocusedView() override;
   View* CreateView() override;
+  void SetEmbedRoot() override;
 
   // Overridden from ViewManagerClient:
   void OnEmbed(ConnectionSpecificId connection_id,
@@ -94,6 +95,10 @@ class ViewManagerClientImpl : public ViewManager,
                InterfaceRequest<ServiceProvider> services,
                ServiceProviderPtr exposed_services,
                Id focused_view_id) override;
+  void OnWillEmbed(Id view,
+                   InterfaceRequest<ServiceProvider> services,
+                   ServiceProviderPtr exposed_services,
+                   const OnWillEmbedCallback& callback) override;
   void OnEmbeddedAppDisconnected(Id view_id) override;
   void OnViewBoundsChanged(Id view_id,
                            RectPtr old_bounds,

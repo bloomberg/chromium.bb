@@ -185,7 +185,16 @@ class ViewManagerTest : public test::ApplicationTestBase,
   ViewManagerTest()
       : most_recent_view_manager_(nullptr),
         window_manager_(nullptr),
-        got_disconnect_(false) {}
+        got_disconnect_(false),
+        on_will_embed_count_(0u),
+        on_will_embed_return_value_(true) {}
+
+  void clear_on_will_embed_count() { on_will_embed_count_ = 0u; }
+  size_t on_will_embed_count() const { return on_will_embed_count_; }
+
+  void set_on_will_embed_return_value(bool value) {
+    on_will_embed_return_value_ = value;
+  }
 
   // Overridden from ApplicationDelegate:
   void Initialize(ApplicationImpl* app) override {
@@ -224,6 +233,14 @@ class ViewManagerTest : public test::ApplicationTestBase,
     most_recent_view_manager_ = root->view_manager();
     QuitRunLoop();
   }
+  bool OnWillEmbed(View* view,
+                   InterfaceRequest<ServiceProvider>* services,
+                   ServiceProviderPtr* exposed_services) override {
+    if (!on_will_embed_return_value_)
+      QuitRunLoop();
+    on_will_embed_count_++;
+    return on_will_embed_return_value_;
+  }
   void OnViewManagerDisconnected(ViewManager* view_manager) override {
     got_disconnect_ = true;
   }
@@ -256,6 +273,12 @@ class ViewManagerTest : public test::ApplicationTestBase,
   ViewManager* window_manager_;
 
   bool got_disconnect_;
+
+  // Number of times OnWillEmbed() has been called.
+  size_t on_will_embed_count_;
+
+  // Value OnWillEmbed() should return.
+  bool on_will_embed_return_value_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerTest);
 };
@@ -725,6 +748,50 @@ TEST_F(ViewManagerTest, EmbedRemovesChildren) {
   // we may end up reconnecting to the test and rerunning the test, which is
   // problematic since the other services don't shut down.
   ASSERT_TRUE(DoRunLoopWithTimeout());
+}
+
+TEST_F(ViewManagerTest, OnWillEmbed) {
+  window_manager()->SetEmbedRoot();
+
+  View* view1 = window_manager()->CreateView();
+  window_manager()->GetRoot()->AddChild(view1);
+
+  ViewManager* view_manager = Embed(window_manager(), view1);
+  View* view2 = view_manager->CreateView();
+  view_manager->GetRoot()->AddChild(view2);
+
+  Embed(view_manager, view2);
+  EXPECT_EQ(1u, on_will_embed_count());
+}
+
+// Verifies Embed() doesn't succeed if OnWillEmbed() returns false.
+TEST_F(ViewManagerTest, OnWillEmbedFails) {
+  window_manager()->SetEmbedRoot();
+
+  View* view1 = window_manager()->CreateView();
+  window_manager()->GetRoot()->AddChild(view1);
+
+  ViewManager* view_manager = Embed(window_manager(), view1);
+  View* view2 = view_manager->CreateView();
+  view_manager->GetRoot()->AddChild(view2);
+
+  clear_on_will_embed_count();
+  set_on_will_embed_return_value(false);
+  view2->Embed(application_impl()->url());
+
+  EXPECT_TRUE(DoRunLoopWithTimeout());
+  EXPECT_EQ(1u, on_will_embed_count());
+
+  // The run loop above quits when OnWillEmbed() returns, which means it's
+  // possible there is still an OnEmbed() message in flight. Sets the bounds of
+  // |view1| and wait for it to the change in |view_manager|, that way we know
+  // |view_manager| has processed all messages for it.
+  mojo::Rect bounds = view1->bounds();
+  bounds.width++;
+  view1->SetBounds(bounds);
+  WaitForBoundsToChange(view_manager->GetRoot());
+
+  EXPECT_EQ(1u, on_will_embed_count());
 }
 
 }  // namespace mojo

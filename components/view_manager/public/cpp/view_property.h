@@ -16,7 +16,7 @@
 //
 //  DECLARE_EXPORTED_VIEW_PROPERTY_TYPE(FOO_EXPORT, MyType);
 //  namespace foo {
-//    // Use this to define an exported property that is premitive,
+//    // Use this to define an exported property that is primitive,
 //    // or a pointer you don't want automatically deleted.
 //    DEFINE_VIEW_PROPERTY_KEY(MyType, kMyKey, MyDefault);
 //

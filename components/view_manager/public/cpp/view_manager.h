@@ -34,6 +34,9 @@ class ViewManager {
   // Creates and returns a new View (which is owned by the ViewManager). Views
   // are initially hidden, use SetVisible(true) to show.
   virtual View* CreateView() = 0;
+
+  // Set view_manager.mojom for details.
+  virtual void SetEmbedRoot() = 0;
 };
 
 }  // namespace mojo

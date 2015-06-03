@@ -265,6 +265,22 @@ const ViewManagerServiceImpl* ConnectionManager::GetConnectionWithRoot(
   return nullptr;
 }
 
+ViewManagerServiceImpl* ConnectionManager::GetEmbedRoot(
+    ViewManagerServiceImpl* service) {
+  while (service) {
+    const ViewId* root_id = service->root();
+    if (!root_id || root_id->connection_id == service->id())
+      return nullptr;
+
+    ViewManagerServiceImpl* parent_service =
+        GetConnection(root_id->connection_id);
+    service = parent_service;
+    if (service && service->is_embed_root())
+      return service;
+  }
+  return nullptr;
+}
+
 void ConnectionManager::SetWindowManagerClientConnection(
     scoped_ptr<ClientConnection> connection) {
   CHECK(!window_manager_client_connection_);

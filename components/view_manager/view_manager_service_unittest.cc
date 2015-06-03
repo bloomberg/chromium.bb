@@ -56,6 +56,10 @@ class TestViewManagerClient : public mojo::ViewManagerClient {
     // TODO(sky): add test coverage of |focused_view_id|.
     tracker_.OnEmbed(connection_id, embedder_url, root.Pass());
   }
+  void OnWillEmbed(uint32_t view,
+                   mojo::InterfaceRequest<mojo::ServiceProvider> services,
+                   mojo::ServiceProviderPtr exposed_services,
+                   const OnWillEmbedCallback& callback) override {}
   void OnEmbeddedAppDisconnected(uint32_t view) override {
     tracker_.OnEmbeddedAppDisconnected(view);
   }
@@ -294,7 +298,7 @@ void SetUpAnimate1(ViewManagerServiceTest* test, ViewId* embed_view_id) {
                                              *embed_view_id));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   test->wm_connection()->EmbedRequest(request.Pass(), *embed_view_id, nullptr,
-                                      nullptr);
+                                      nullptr, mojo::Callback<void(bool)>());
   ViewManagerServiceImpl* connection1 =
       test->connection_manager()->GetConnectionWithRoot(*embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
@@ -431,8 +435,8 @@ TEST_F(ViewManagerServiceTest, CloneAndAnimateLargerDepth) {
   EXPECT_TRUE(
       wm_connection()->AddView(*(wm_connection()->root()), embed_view_id));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  wm_connection()->EmbedRequest(request.Pass(), embed_view_id, nullptr,
-                                nullptr);
+  wm_connection()->EmbedRequest(request.Pass(), embed_view_id, nullptr, nullptr,
+                                mojo::Callback<void(bool)>());
   ViewManagerServiceImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
@@ -480,8 +484,8 @@ TEST_F(ViewManagerServiceTest, FocusOnPointer) {
       wm_connection()->AddView(*(wm_connection()->root()), embed_view_id));
   connection_manager()->root()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  wm_connection()->EmbedRequest(request.Pass(), embed_view_id, nullptr,
-                                nullptr);
+  wm_connection()->EmbedRequest(request.Pass(), embed_view_id, nullptr, nullptr,
+                                mojo::Callback<void(bool)>());
   ViewManagerServiceImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);

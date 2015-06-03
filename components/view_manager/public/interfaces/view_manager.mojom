@@ -106,6 +106,16 @@ interface ViewManagerService {
   // Shows the surface in the specified view.
   SetViewSurfaceId(uint32 view_id, SurfaceId surface_id) => (bool success);
 
+  // Tells the ViewManagerService that the ViewManagerClient wants to get
+  // OnWillEmbed() when Embed() is invoked on any descendant Views created by
+  // other ViewManagerClients.
+  //
+  // See Embed() docs for more details.
+  //
+  // TODO(sky): this needs to be restricted in some way. Maybe the root can
+  // grant this ability?
+  SetEmbedRoot();
+
   // A connection may grant access to a view from another connection by way of
   // the embed functions. There are two variants of this call:
   //
@@ -130,7 +140,10 @@ interface ViewManagerService {
   // When a connection embeds an app the connection no longer has priviledges
   // to access or see any of the children of the view. If the view had existing
   // children the children are removed. The one exception is the root
-  // connection.
+  // connection and any embed roots. Embed roots always see the full tree.
+  //
+  // The embed functions call OnWillEmbed() on the first ancestor that has
+  // been set as an embed root.
   //
   // |services| encapsulates services offered by the embedder to the embedded
   // app alongside this Embed() call. |exposed_services| provides a means for
@@ -162,6 +175,18 @@ interface ViewManagerClient {
           ServiceProvider&? services,
           ServiceProvider? exposed_services,
           uint32 focused_view);
+
+  // Notifies a ViewManagerClient that an embed is about to happen. The
+  // ViewManagerClient can decide not to allow the embed as well as changing
+  // the ServiceProviders that are exposed as a result of the embed. This is
+  // only invoked once per embed, and is invoked on the first ancestor that has
+  // invoked SetEmbedRoot().
+  OnWillEmbed(uint32 view,
+              ServiceProvider&? services,
+              ServiceProvider? exposed_services) =>
+      (bool proceed_with_embed,
+       ServiceProvider&? services,
+       ServiceProvider? exposed_services);
 
   // Invoked when the application embedded at |view| is disconnected.
   OnEmbeddedAppDisconnected(uint32 view);

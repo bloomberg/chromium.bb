@@ -277,6 +277,10 @@ View* ViewManagerClientImpl::CreateView() {
   return view;
 }
 
+void ViewManagerClientImpl::SetEmbedRoot() {
+  service_->SetEmbedRoot();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerClientImpl, ViewManagerClient implementation:
 
@@ -302,6 +306,18 @@ void ViewManagerClientImpl::OnEmbed(ConnectionSpecificId connection_id,
   focused_view_ = GetViewById(focused_view_id);
 
   delegate_->OnEmbed(root_, services.Pass(), exposed_services.Pass());
+}
+
+void ViewManagerClientImpl::OnWillEmbed(
+    Id view_id,
+    InterfaceRequest<ServiceProvider> services,
+    ServiceProviderPtr exposed_services,
+    const OnWillEmbedCallback& callback) {
+  View* view = GetViewById(view_id);
+  bool allow_embed = false;
+  if (view)
+    allow_embed = delegate_->OnWillEmbed(view, &services, &exposed_services);
+  callback.Run(allow_embed, services.Pass(), exposed_services.Pass());
 }
 
 void ViewManagerClientImpl::OnEmbeddedAppDisconnected(Id view_id) {

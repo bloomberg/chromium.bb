@@ -45,6 +45,18 @@ class ViewManagerDelegate {
                        InterfaceRequest<ServiceProvider> services,
                        ServiceProviderPtr exposed_services) = 0;
 
+  // Only invoked if the connection has been marked as an embed root. This
+  // allows the delegate to disallow the embed (return false), or change
+  // the ServiceProviders that would be exposed to the new client.
+  //
+  // This implementation returns true (allowing the embed), and does not alter
+  // the supplied ServiceProviders.
+  //
+  // See the mojom for more details.
+  virtual bool OnWillEmbed(View* view,
+                           InterfaceRequest<ServiceProvider>* services,
+                           ServiceProviderPtr* exposed_services);
+
   // Called when a connection to the view manager service is closed.
   // |view_manager| is not valid after this function returns.
   virtual void OnViewManagerDisconnected(ViewManager* view_manager) = 0;
