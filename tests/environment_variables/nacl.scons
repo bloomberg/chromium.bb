@@ -39,3 +39,22 @@ nodes.append(env.CommandSelLdrTestNacl(
 
 if not env.IsRunningUnderValgrind():
   env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_env_var_test')
+
+passthrough_nexe = env.ComponentProgram('passthrough_test',
+                                        'passthrough_test.c',
+                                        EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl(
+    'passthrough_test.out',
+    passthrough_nexe,
+    args=['with_p'],
+    sel_ldr_flags=['-p'],
+    osenv=['FOO=bar'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_passthrough_test')
+
+node = env.CommandSelLdrTestNacl(
+    'no_passthrough_test.out',
+    passthrough_nexe,
+    args=['without_p'],
+    osenv=['FOO=bar'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_no_passthrough_test')
