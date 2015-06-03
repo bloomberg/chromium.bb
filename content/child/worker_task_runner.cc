@@ -39,7 +39,7 @@ class DoNothingTaskRunner : public base::TaskRunner {
 
 struct WorkerTaskRunner::ThreadLocalState {
   ThreadLocalState() {}
-  ObserverList<WorkerTaskRunner::Observer> stop_observers_;
+  base::ObserverList<WorkerTaskRunner::Observer> stop_observers_;
 };
 
 WorkerTaskRunner::WorkerTaskRunner()

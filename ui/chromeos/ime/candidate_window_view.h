@@ -93,7 +93,7 @@ class UI_CHROMEOS_EXPORT CandidateWindowView : public views::BubbleDelegateView,
   int selected_candidate_index_in_page_;
 
   // The observers of the object.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Views created in the class will be part of tree of |this|, so these
   // child views will be deleted when |this| is deleted.

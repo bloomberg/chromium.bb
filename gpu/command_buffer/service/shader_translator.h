@@ -118,7 +118,7 @@ class GPU_EXPORT ShaderTranslator
   ShHandle compiler_;
   bool implementation_is_glsl_es_;
   ShCompileOptions driver_bug_workarounds_;
-  ObserverList<DestructionObserver> destruction_observers_;
+  base::ObserverList<DestructionObserver> destruction_observers_;
 };
 
 }  // namespace gles2

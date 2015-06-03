@@ -372,7 +372,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   scoped_ptr<views::MenuRunner> launcher_menu_runner_;
 
-  ObserverList<ShelfIconObserver> observers_;
+  base::ObserverList<ShelfIconObserver> observers_;
 
   // Amount content is inset on the left edge (or top edge for vertical
   // alignment).

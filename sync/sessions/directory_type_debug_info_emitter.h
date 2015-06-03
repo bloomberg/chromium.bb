@@ -43,12 +43,12 @@ class SYNC_EXPORT_PRIVATE DirectoryTypeDebugInfoEmitter {
   DirectoryTypeDebugInfoEmitter(
       syncable::Directory* directory,
       syncer::ModelType type,
-      ObserverList<TypeDebugInfoObserver>* observers);
+      base::ObserverList<TypeDebugInfoObserver>* observers);
 
   // A simple constructor for tests.  Should not be used in real code.
   DirectoryTypeDebugInfoEmitter(
       ModelType type,
-      ObserverList<TypeDebugInfoObserver>* observers);
+      base::ObserverList<TypeDebugInfoObserver>* observers);
 
   virtual ~DirectoryTypeDebugInfoEmitter();
 
@@ -88,7 +88,7 @@ class SYNC_EXPORT_PRIVATE DirectoryTypeDebugInfoEmitter {
   // doesn't make sense to have them manage their own observer list.  They all
   // share one observer list that is provided by their owner and which is
   // guaranteed to outlive them.
-  ObserverList<TypeDebugInfoObserver>* type_debug_info_observers_;
+  base::ObserverList<TypeDebugInfoObserver>* type_debug_info_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryTypeDebugInfoEmitter);
 };

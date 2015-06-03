@@ -75,7 +75,7 @@ class CHROMEOS_EXPORT FakeNfcRecordClient : public NfcRecordClient {
   bool tag_records_visible_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Fake properties that are returned for the fake records.
   scoped_ptr<Properties> device_smart_poster_record_properties_;

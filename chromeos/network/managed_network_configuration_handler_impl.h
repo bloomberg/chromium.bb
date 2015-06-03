@@ -211,7 +211,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   // associated set of GUIDs is empty.
   UserToModifiedPoliciesMap queued_modified_policies_;
 
-  ObserverList<NetworkPolicyObserver> observers_;
+  base::ObserverList<NetworkPolicyObserver> observers_;
 
   // For Shill client callbacks
   base::WeakPtrFactory<ManagedNetworkConfigurationHandlerImpl>

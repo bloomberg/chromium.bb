@@ -266,7 +266,7 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
     // the thread running this loop.
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-    ObserverList<Observer> observers_;
+    base::ObserverList<Observer> observers_;
 
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };

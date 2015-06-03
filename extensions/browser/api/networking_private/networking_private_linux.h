@@ -257,7 +257,8 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
   // Holds the current mapping of known networks. Only access on |dbus_thread_|.
   scoped_ptr<NetworkMap> network_map_;
   // Observers to Network Events.
-  ObserverList<NetworkingPrivateDelegateObserver> network_events_observers_;
+  base::ObserverList<NetworkingPrivateDelegateObserver>
+      network_events_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateLinux);
 };

@@ -338,7 +338,7 @@ class RemoteInputMethodWin : public InputMethod,
            remote_delegate_;
   }
 
-  ObserverList<InputMethodObserver> observer_list_;
+  base::ObserverList<InputMethodObserver> observer_list_;
 
   internal::InputMethodDelegate* delegate_;
   internal::RemoteInputMethodDelegateWin* remote_delegate_;

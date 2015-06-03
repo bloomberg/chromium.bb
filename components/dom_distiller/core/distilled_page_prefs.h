@@ -65,7 +65,7 @@ class DistilledPagePrefs {
   void NotifyOnChangeTheme(Theme theme);
 
   PrefService* pref_service_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<DistilledPagePrefs> weak_ptr_factory_;
 

@@ -169,7 +169,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   typedef std::map<std::string, DomainBlockEntry> DomainBlockMap;
 
-  typedef ObserverListThreadSafe<GpuDataManagerObserver>
+  typedef base::ObserverListThreadSafe<GpuDataManagerObserver>
       GpuDataManagerObserverList;
 
   struct LogMessage {

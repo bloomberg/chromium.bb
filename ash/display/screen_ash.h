@@ -52,7 +52,7 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   // It simply has a copy of the displays.
   gfx::Screen* CloneForShutdown();
 
-  ObserverList<gfx::DisplayObserver> observers_;
+  base::ObserverList<gfx::DisplayObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenAsh);
 };

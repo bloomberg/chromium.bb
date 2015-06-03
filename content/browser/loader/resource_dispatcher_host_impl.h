@@ -574,7 +574,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   std::set<const ResourceContext*> active_resource_contexts_;
 
   typedef std::map<GlobalRequestID,
-                   ObserverList<ResourceMessageDelegate>*> DelegateMap;
+                   base::ObserverList<ResourceMessageDelegate>*> DelegateMap;
   DelegateMap delegate_map_;
 
   scoped_ptr<ResourceScheduler> scheduler_;

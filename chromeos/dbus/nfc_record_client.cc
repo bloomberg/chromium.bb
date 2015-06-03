@@ -244,7 +244,7 @@ class NfcRecordClientImpl : public NfcRecordClient,
   dbus::Bus* bus_;
 
   // List of observers interested in event notifications.
-  ObserverList<NfcRecordClient::Observer> observers_;
+  base::ObserverList<NfcRecordClient::Observer> observers_;
 
   // Mapping from object paths to object proxies and properties structures that
   // were already created by us. Record objects belong to either Tag or Device

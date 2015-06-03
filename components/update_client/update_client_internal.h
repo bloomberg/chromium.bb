@@ -75,7 +75,7 @@ class UpdateClientImpl : public UpdateClient {
   scoped_ptr<PingManager> ping_manager_;
   scoped_ptr<UpdateEngine> update_engine_;
 
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   // Used to post responses back to the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;

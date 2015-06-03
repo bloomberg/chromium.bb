@@ -150,7 +150,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry
   // a lot of them, and their lifetimes are unpredictable, so it makes the
   // book-keeping easier if we just store the list here.  That way it's
   // guaranteed to live as long as this sync backend.
-  ObserverList<TypeDebugInfoObserver> type_debug_info_observers_;
+  base::ObserverList<TypeDebugInfoObserver> type_debug_info_observers_;
 
   base::WeakPtrFactory<ModelTypeRegistry> weak_ptr_factory_;
 

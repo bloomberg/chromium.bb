@@ -312,7 +312,7 @@ class NET_EXPORT NetLog {
   base::subtle::Atomic32 is_capturing_;
 
   // |lock_| must be acquired whenever reading or writing to this.
-  ObserverList<ThreadSafeObserver, true> observers_;
+  base::ObserverList<ThreadSafeObserver, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NetLog);
 };

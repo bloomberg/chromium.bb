@@ -66,7 +66,7 @@ class CONTENT_EXPORT PowerProfilerService {
 
   // Sampling period of power data measurement.
   base::TimeDelta sample_period_;
-  ObserverList<PowerProfilerObserver> observers_;
+  base::ObserverList<PowerProfilerObserver> observers_;
 
   scoped_ptr<PowerDataProvider> data_provider_;
 

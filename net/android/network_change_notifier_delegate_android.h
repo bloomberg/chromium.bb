@@ -83,7 +83,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
   void SetOffline();
 
   base::ThreadChecker thread_checker_;
-  scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
+  scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
   scoped_refptr<base::SingleThreadTaskRunner> jni_task_runner_;
   base::android::ScopedJavaGlobalRef<jobject> java_network_change_notifier_;
   mutable base::Lock connection_lock_;  // Protects the state below.

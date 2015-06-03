@@ -306,7 +306,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void NotifyActiveNodeChanged(bool is_input);
 
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
-  ObserverList<AudioObserver> observers_;
+  base::ObserverList<AudioObserver> observers_;
 
   // Audio data and state.
   AudioDeviceMap audio_devices_;

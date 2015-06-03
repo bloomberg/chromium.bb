@@ -138,7 +138,7 @@ class CHROMEOS_EXPORT FakeBluetoothMediaTransportClient
   // corresponding endpoint path when GetProperties() is called.
   std::map<dbus::ObjectPath, dbus::ObjectPath> transport_to_endpoint_map_;
 
-  ObserverList<BluetoothMediaTransportClient::Observer> observers_;
+  base::ObserverList<BluetoothMediaTransportClient::Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothMediaTransportClient);
 };

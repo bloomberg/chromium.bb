@@ -90,7 +90,7 @@ class SNAPSHOT_EXPORT ScreenshotGrabber {
   // Task runner for blocking tasks.
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
-  ObserverList<ScreenshotGrabberObserver> observers_;
+  base::ObserverList<ScreenshotGrabberObserver> observers_;
   base::WeakPtrFactory<ScreenshotGrabber> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotGrabber);

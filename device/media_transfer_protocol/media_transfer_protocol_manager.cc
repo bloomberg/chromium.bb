@@ -671,7 +671,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 #endif
 
   // Device attachment / detachment observers.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Map to keep track of attached storages by name.
   StorageInfoMap storage_info_map_;

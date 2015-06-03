@@ -103,7 +103,7 @@ class MockDiskMountManager : public DiskMountManager {
                          const DiskMountManager::Disk* disk);
 
   // The list of observers.
-  ObserverList<DiskMountManager::Observer> observers_;
+  base::ObserverList<DiskMountManager::Observer> observers_;
 
   // The list of disks found.
   DiskMountManager::DiskMap disks_;

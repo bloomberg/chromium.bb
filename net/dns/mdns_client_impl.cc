@@ -341,14 +341,15 @@ void MDnsClientImpl::Core::AddListener(
     MDnsListenerImpl* listener) {
   ListenerKey key(listener->GetName(), listener->GetType());
   std::pair<ListenerMap::iterator, bool> observer_insert_result =
-      listeners_.insert(
-          make_pair(key, static_cast<ObserverList<MDnsListenerImpl>*>(NULL)));
+      listeners_.insert(make_pair(
+          key, static_cast<base::ObserverList<MDnsListenerImpl>*>(NULL)));
 
   // If an equivalent key does not exist, actually create the observer list.
   if (observer_insert_result.second)
-    observer_insert_result.first->second = new ObserverList<MDnsListenerImpl>();
+    observer_insert_result.first->second =
+        new base::ObserverList<MDnsListenerImpl>();
 
-  ObserverList<MDnsListenerImpl>* observer_list =
+  base::ObserverList<MDnsListenerImpl>* observer_list =
       observer_insert_result.first->second;
 
   observer_list->AddObserver(listener);

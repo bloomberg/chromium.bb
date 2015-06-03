@@ -150,27 +150,28 @@ class ASH_EXPORT SystemTrayNotifier {
 #endif
 
  private:
-  ObserverList<AccessibilityObserver> accessibility_observers_;
-  ObserverList<AudioObserver> audio_observers_;
-  ObserverList<BluetoothObserver> bluetooth_observers_;
-  ObserverList<ClockObserver> clock_observers_;
-  ObserverList<IMEObserver> ime_observers_;
-  ObserverList<LocaleObserver> locale_observers_;
-  ObserverList<TracingObserver> tracing_observers_;
-  ObserverList<UpdateObserver> update_observers_;
-  ObserverList<UserObserver> user_observers_;
+  base::ObserverList<AccessibilityObserver> accessibility_observers_;
+  base::ObserverList<AudioObserver> audio_observers_;
+  base::ObserverList<BluetoothObserver> bluetooth_observers_;
+  base::ObserverList<ClockObserver> clock_observers_;
+  base::ObserverList<IMEObserver> ime_observers_;
+  base::ObserverList<LocaleObserver> locale_observers_;
+  base::ObserverList<TracingObserver> tracing_observers_;
+  base::ObserverList<UpdateObserver> update_observers_;
+  base::ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)
-  ObserverList<LogoutButtonObserver> logout_button_observers_;
-  ObserverList<SessionLengthLimitObserver> session_length_limit_observers_;
-  ObserverList<NetworkObserver> network_observers_;
-  ObserverList<NetworkPortalDetectorObserver>
+  base::ObserverList<LogoutButtonObserver> logout_button_observers_;
+  base::ObserverList<SessionLengthLimitObserver>
+      session_length_limit_observers_;
+  base::ObserverList<NetworkObserver> network_observers_;
+  base::ObserverList<NetworkPortalDetectorObserver>
       network_portal_detector_observers_;
-  ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
-  ObserverList<MediaCaptureObserver> media_capture_observers_;
-  ObserverList<ScreenCaptureObserver> screen_capture_observers_;
-  ObserverList<ScreenShareObserver> screen_share_observers_;
-  ObserverList<LastWindowClosedObserver> last_window_closed_observers_;
-  ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
+  base::ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
+  base::ObserverList<MediaCaptureObserver> media_capture_observers_;
+  base::ObserverList<ScreenCaptureObserver> screen_capture_observers_;
+  base::ObserverList<ScreenShareObserver> screen_share_observers_;
+  base::ObserverList<LastWindowClosedObserver> last_window_closed_observers_;
+  base::ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayNotifier);

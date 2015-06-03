@@ -196,7 +196,7 @@ class CommandBufferProxyImpl
   base::Lock* lock_;
 
   // Unowned list of DeletionObservers.
-  ObserverList<DeletionObserver> deletion_observers_;
+  base::ObserverList<DeletionObserver> deletion_observers_;
 
   // The last cached state received from the service.
   State last_state_;

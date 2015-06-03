@@ -155,7 +155,7 @@ class POLICY_EXPORT CloudPolicyStore {
   // triggered by calling Load().
   bool is_initialized_;
 
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyStore);
 };

@@ -371,7 +371,7 @@ class VIEWS_EXPORT FocusManager {
   FocusChangeReason focus_change_reason_;
 
   // The list of registered FocusChange listeners.
-  ObserverList<FocusChangeListener, true> focus_change_listeners_;
+  base::ObserverList<FocusChangeListener, true> focus_change_listeners_;
 
   // See description above getter.
   bool is_changing_focus_;

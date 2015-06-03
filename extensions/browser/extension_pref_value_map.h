@@ -197,7 +197,7 @@ class ExtensionPrefValueMap : public KeyedService {
   // be done in the destructor. This bit tracks whether it has been done yet.
   bool destroyed_;
 
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefValueMap);
 };

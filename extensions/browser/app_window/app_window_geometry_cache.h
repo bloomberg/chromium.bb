@@ -149,7 +149,7 @@ class AppWindowGeometryCache : public KeyedService,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace extensions

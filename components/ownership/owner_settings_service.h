@@ -135,7 +135,7 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
 
   std::vector<IsOwnerCallback> pending_is_owner_callbacks_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   base::ThreadChecker thread_checker_;
 

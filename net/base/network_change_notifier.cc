@@ -796,18 +796,20 @@ void NetworkChangeNotifier::SetTestNotificationsOnly(bool test_only) {
 NetworkChangeNotifier::NetworkChangeNotifier(
     const NetworkChangeCalculatorParams& params
     /*= NetworkChangeCalculatorParams()*/)
-    : ip_address_observer_list_(new ObserverListThreadSafe<IPAddressObserver>(
-          base::ObserverListBase<IPAddressObserver>::NOTIFY_EXISTING_ONLY)),
+    : ip_address_observer_list_(
+          new base::ObserverListThreadSafe<IPAddressObserver>(
+              base::ObserverListBase<IPAddressObserver>::NOTIFY_EXISTING_ONLY)),
       connection_type_observer_list_(
-          new ObserverListThreadSafe<ConnectionTypeObserver>(
+          new base::ObserverListThreadSafe<ConnectionTypeObserver>(
               base::ObserverListBase<
                   ConnectionTypeObserver>::NOTIFY_EXISTING_ONLY)),
-      resolver_state_observer_list_(new ObserverListThreadSafe<DNSObserver>(
-          base::ObserverListBase<DNSObserver>::NOTIFY_EXISTING_ONLY)),
-      network_change_observer_list_(new ObserverListThreadSafe<
+      resolver_state_observer_list_(
+          new base::ObserverListThreadSafe<DNSObserver>(
+              base::ObserverListBase<DNSObserver>::NOTIFY_EXISTING_ONLY)),
+      network_change_observer_list_(new base::ObserverListThreadSafe<
           NetworkChangeObserver>(
           base::ObserverListBase<NetworkChangeObserver>::NOTIFY_EXISTING_ONLY)),
-      max_bandwidth_observer_list_(new ObserverListThreadSafe<
+      max_bandwidth_observer_list_(new base::ObserverListThreadSafe<
           MaxBandwidthObserver>(
           base::ObserverListBase<MaxBandwidthObserver>::NOTIFY_EXISTING_ONLY)),
       network_state_(new NetworkState()),

@@ -283,7 +283,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
 
   scoped_ptr<LockStateControllerDelegate> delegate_;
 
-  ObserverList<LockStateObserver> observers_;
+  base::ObserverList<LockStateObserver> observers_;
 
   // The current login status, or original login status from before we locked.
   user::LoginStatus login_status_;

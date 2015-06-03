@@ -90,7 +90,7 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
   }
   int32 max_commit_batch_size() const { return max_commit_batch_size_; }
 
-  ObserverList<SyncEngineEventListener>* listeners() {
+  base::ObserverList<SyncEngineEventListener>* listeners() {
     return &listeners_;
   }
 
@@ -129,7 +129,7 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
   // once they are allocated. See definitions of these below.
   friend class TestScopedSessionEventListener;
 
-  ObserverList<SyncEngineEventListener> listeners_;
+  base::ObserverList<SyncEngineEventListener> listeners_;
 
   ServerConnectionManager* const connection_manager_;
   syncable::Directory* const directory_;

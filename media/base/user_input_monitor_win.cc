@@ -60,8 +60,8 @@ class UserInputMonitorWinCore
 
   // Task runner on which |window_| is created.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-  scoped_refptr<ObserverListThreadSafe<UserInputMonitor::MouseEventListener> >
-      mouse_listeners_;
+  scoped_refptr<base::ObserverListThreadSafe<
+      UserInputMonitor::MouseEventListener>> mouse_listeners_;
 
   // These members are only accessed on the UI thread.
   scoped_ptr<base::win::MessageWindow> window_;

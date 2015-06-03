@@ -75,7 +75,7 @@ class ASH_EXPORT ShelfItemDelegateManager : public ShelfModelObserver {
 
   ShelfIDToItemDelegateMap id_to_item_delegate_map_;
 
-  ObserverList<ShelfItemDelegateManagerObserver> observers_;
+  base::ObserverList<ShelfItemDelegateManagerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfItemDelegateManager);
 };

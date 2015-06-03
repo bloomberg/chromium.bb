@@ -180,7 +180,7 @@ class ScreenlockBridge {
   LockHandler* lock_handler_;    // Not owned
   // The last focused user's id.
   std::string focused_user_id_;
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockBridge);
 };

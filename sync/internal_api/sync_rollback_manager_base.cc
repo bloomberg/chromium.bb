@@ -309,7 +309,8 @@ void SyncRollbackManagerBase::InitBookmarkFolder(const std::string& folder) {
   entry.PutSpecifics(specifics);
 }
 
-ObserverList<SyncManager::Observer>* SyncRollbackManagerBase::GetObservers() {
+base::ObserverList<SyncManager::Observer>*
+SyncRollbackManagerBase::GetObservers() {
   return &observers_;
 }
 

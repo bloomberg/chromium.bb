@@ -288,7 +288,7 @@ class SYNC_EXPORT_PRIVATE ServerConnectionManager : public CancelationObserver {
   // The previous auth token that is invalid now.
   std::string previously_invalidated_token;
 
-  ObserverList<ServerConnectionEventListener> listeners_;
+  base::ObserverList<ServerConnectionEventListener> listeners_;
 
   HttpResponse::ServerConnectionCode server_status_;
 

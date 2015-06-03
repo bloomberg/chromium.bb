@@ -728,7 +728,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
   base::PlatformThreadId origin_thread_id_;
 
   dbus::ObjectProxy* power_manager_proxy_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // The delay_id_ obtained from the RegisterSuspendDelay request.
   int32_t suspend_delay_id_;
@@ -976,7 +976,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
   double brightness_;
   int pause_count_;
   int cycle_count_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   base::RepeatingTimer<PowerManagerClientStubImpl> update_timer_;
   power_manager::PowerSupplyProperties props_;
 

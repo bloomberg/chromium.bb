@@ -80,7 +80,7 @@ class AudioPipeReader
 
   base::File pipe_;
   base::RepeatingTimer<AudioPipeReader> timer_;
-  scoped_refptr<ObserverListThreadSafe<StreamObserver> > observers_;
+  scoped_refptr<base::ObserverListThreadSafe<StreamObserver>> observers_;
 
   // Size of the pipe buffer.
   int pipe_buffer_size_;

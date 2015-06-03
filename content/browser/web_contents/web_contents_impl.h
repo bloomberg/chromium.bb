@@ -1015,7 +1015,7 @@ class CONTENT_EXPORT WebContentsImpl
   // This MUST be listed above frame_tree_ since at destruction time the
   // latter might cause RenderViewHost's destructor to call us and we might use
   // the observer list then.
-  ObserverList<WebContentsObserver> observers_;
+  base::ObserverList<WebContentsObserver> observers_;
 
   // The tab that opened this tab, if any.  Will be set to null if the opener
   // is closed.

@@ -110,7 +110,7 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   // Resets to its initial state as if newly created.
   void ResetForTesting();
 
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
   AgentHostMap workers_;
   bool debug_service_worker_on_start_;
 

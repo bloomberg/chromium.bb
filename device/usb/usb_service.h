@@ -62,7 +62,7 @@ class UsbService : public base::NonThreadSafe {
   void NotifyDeviceAdded(scoped_refptr<UsbDevice> device);
   void NotifyDeviceRemoved(scoped_refptr<UsbDevice> device);
 
-  ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true> observer_list_;
 
  private:
   friend void base::DeletePointer<UsbService>(UsbService* service);

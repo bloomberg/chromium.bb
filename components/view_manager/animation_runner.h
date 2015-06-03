@@ -100,7 +100,7 @@ class AnimationRunner {
 
   base::TimeTicks last_tick_time_;
 
-  ObserverList<AnimationRunnerObserver> observers_;
+  base::ObserverList<AnimationRunnerObserver> observers_;
 
   ViewToAnimationMap view_to_animation_map_;
 

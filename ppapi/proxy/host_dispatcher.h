@@ -142,7 +142,7 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   // ultimately call back into the plugin.
   bool allow_plugin_reentrancy_;
 
-  ObserverList<SyncMessageStatusObserver> sync_status_observer_list_;
+  base::ObserverList<SyncMessageStatusObserver> sync_status_observer_list_;
 
   std::vector<IPC::Listener*> filters_;
 

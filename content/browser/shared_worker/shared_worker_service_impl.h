@@ -168,7 +168,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   PendingInstaneMap pending_instances_;
   int next_pending_instance_id_;
 
-  ObserverList<WorkerServiceObserver> observers_;
+  base::ObserverList<WorkerServiceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerServiceImpl);
 };

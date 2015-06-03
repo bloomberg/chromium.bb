@@ -133,7 +133,7 @@ class APP_LIST_EXPORT AppListItem {
   bool is_installing_;
   int percent_downloaded_;
 
-  ObserverList<AppListItemObserver> observers_;
+  base::ObserverList<AppListItemObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItem);
 };

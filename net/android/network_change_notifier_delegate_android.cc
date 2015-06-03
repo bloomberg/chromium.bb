@@ -52,7 +52,7 @@ jdouble GetMaxBandwidthForConnectionSubtype(JNIEnv* env,
 }
 
 NetworkChangeNotifierDelegateAndroid::NetworkChangeNotifierDelegateAndroid()
-    : observers_(new ObserverListThreadSafe<Observer>()) {
+    : observers_(new base::ObserverListThreadSafe<Observer>()) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_network_change_notifier_.Reset(
       Java_NetworkChangeNotifier_init(

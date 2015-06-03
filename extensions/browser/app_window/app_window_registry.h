@@ -138,7 +138,7 @@ class AppWindowRegistry : public KeyedService {
   content::BrowserContext* context_;
   AppWindowList app_windows_;
   InspectedWindowSet inspected_windows_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 };
 

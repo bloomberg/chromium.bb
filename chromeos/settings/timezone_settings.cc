@@ -283,7 +283,7 @@ class TimezoneSettingsBaseImpl : public chromeos::system::TimezoneSettings {
   const icu::TimeZone* GetKnownTimezoneOrNull(
       const icu::TimeZone& timezone) const;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   std::vector<icu::TimeZone*> timezones_;
   scoped_ptr<icu::TimeZone> timezone_;
 

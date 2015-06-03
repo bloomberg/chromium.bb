@@ -22,8 +22,7 @@ class SettingsObserver {
   virtual ~SettingsObserver() {}
 };
 
-typedef ObserverListThreadSafe<SettingsObserver>
-    SettingsObserverList;
+typedef base::ObserverListThreadSafe<SettingsObserver> SettingsObserverList;
 
 }  // namespace extensions
 

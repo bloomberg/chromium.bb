@@ -396,10 +396,10 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // been read from trusted device policy yet.
   std::string owner_email_;
 
-  ObserverList<UserManager::Observer> observer_list_;
+  base::ObserverList<UserManager::Observer> observer_list_;
 
   // TODO(nkostylev): Merge with session state refactoring CL.
-  ObserverList<UserManager::UserSessionStateObserver>
+  base::ObserverList<UserManager::UserSessionStateObserver>
       session_state_observer_list_;
 
   // Time at which this object was created.

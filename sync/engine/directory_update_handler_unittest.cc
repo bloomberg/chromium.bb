@@ -92,7 +92,7 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
 
  protected:
   // Used in the construction of DirectoryTypeDebugInfoEmitters.
-  ObserverList<TypeDebugInfoObserver> type_observers_;
+  base::ObserverList<TypeDebugInfoObserver> type_observers_;
 
  private:
   base::MessageLoop loop_;  // Needed to initialize the directory.
@@ -525,7 +525,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   scoped_refptr<FakeModelWorker> password_worker_;
   scoped_refptr<FakeModelWorker> passive_worker_;
 
-  ObserverList<TypeDebugInfoObserver> type_observers_;
+  base::ObserverList<TypeDebugInfoObserver> type_observers_;
   DirectoryTypeDebugInfoEmitter bookmarks_emitter_;
   DirectoryTypeDebugInfoEmitter passwords_emitter_;
   DirectoryTypeDebugInfoEmitter articles_emitter_;

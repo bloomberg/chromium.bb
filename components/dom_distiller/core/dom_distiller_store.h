@@ -200,7 +200,7 @@ class DomDistillerStore : public syncer::SyncableService,
   scoped_ptr<leveldb_proto::ProtoDatabase<ArticleEntry> > database_;
   bool database_loaded_;
   scoped_ptr<syncer::AttachmentStore> attachment_store_;
-  ObserverList<DomDistillerObserver> observers_;
+  base::ObserverList<DomDistillerObserver> observers_;
 
   DomDistillerModel model_;
 

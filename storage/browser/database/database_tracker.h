@@ -281,7 +281,7 @@ class STORAGE_EXPORT DatabaseTracker
   scoped_ptr<sql::Connection> db_;
   scoped_ptr<DatabasesTable> databases_table_;
   scoped_ptr<sql::MetaTable> meta_table_;
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
   std::map<std::string, CachedOriginInfo> origins_info_map_;
   DatabaseConnections database_connections_;
 

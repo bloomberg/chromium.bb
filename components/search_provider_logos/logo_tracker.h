@@ -209,7 +209,7 @@ class LogoTracker : public net::URLFetcherDelegate {
 
   // The list of observers to be notified when the logo is available. This
   // should be empty when the state is IDLE.
-  ObserverList<LogoObserver> logo_observers_;
+  base::ObserverList<LogoObserver> logo_observers_;
 
   scoped_ptr<LogoDelegate> logo_delegate_;
 

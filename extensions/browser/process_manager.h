@@ -297,7 +297,7 @@ class ProcessManager : public KeyedService,
   ImpulseCallbackForTesting keepalive_impulse_callback_for_testing_;
   ImpulseCallbackForTesting keepalive_impulse_decrement_callback_for_testing_;
 
-  ObserverList<ProcessManagerObserver> observer_list_;
+  base::ObserverList<ProcessManagerObserver> observer_list_;
 
   // ID Counter used to set ProcessManager::BackgroundPageData close_sequence_id
   // members. These IDs are tracked per extension in background_page_data_ and

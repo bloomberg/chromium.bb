@@ -220,7 +220,7 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
 
   Status status_;
   State state_;
-  ObserverList<AppListModelObserver, true> observers_;
+  base::ObserverList<AppListModelObserver, true> observers_;
   bool folders_enabled_;
   bool custom_launcher_page_enabled_;
   std::string custom_launcher_page_name_;

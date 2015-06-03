@@ -68,8 +68,8 @@ class UserInputMonitorLinuxCore
   static void ProcessReply(XPointer self, XRecordInterceptData* data);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  scoped_refptr<ObserverListThreadSafe<UserInputMonitor::MouseEventListener> >
-      mouse_listeners_;
+  scoped_refptr<base::ObserverListThreadSafe<
+      UserInputMonitor::MouseEventListener>> mouse_listeners_;
 
   //
   // The following members should only be accessed on the IO thread.

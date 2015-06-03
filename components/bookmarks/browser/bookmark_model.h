@@ -416,7 +416,7 @@ class BookmarkModel : public KeyedService {
   int64 next_node_id_;
 
   // The observers.
-  ObserverList<BookmarkModelObserver> observers_;
+  base::ObserverList<BookmarkModelObserver> observers_;
 
   // Set of nodes ordered by URL. This is not a map to avoid copying the
   // urls.

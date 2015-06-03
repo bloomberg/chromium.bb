@@ -48,7 +48,7 @@ class POLICY_EXPORT PolicyServiceImpl
   void RefreshPolicies(const base::Closure& callback) override;
 
  private:
-  typedef ObserverList<PolicyService::Observer, true> Observers;
+  typedef base::ObserverList<PolicyService::Observer, true> Observers;
   typedef std::map<PolicyDomain, Observers*> ObserverMap;
 
   // ConfigurationPolicyProvider::Observer overrides:

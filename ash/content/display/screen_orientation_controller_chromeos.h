@@ -179,7 +179,7 @@ class ASH_EXPORT ScreenOrientationController
   gfx::Display::Rotation current_rotation_;
 
   // Rotation Lock observers.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Tracks all windows that have requested a lock, as well as the requested
   // orientation.

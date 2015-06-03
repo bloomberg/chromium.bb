@@ -123,13 +123,13 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   // Filters for resource creation messages. Note that since we don't support
   // deleting these dynamically we don't need to worry about modifications
   // during iteration. If we add that capability, this should be replaced with
-  // an ObserverList.
+  // an base::ObserverList.
   ScopedVector<HostFactory> host_factory_filters_;
 
   // Filters for instance messages. Note that since we don't support deleting
   // these dynamically we don't need to worry about modifications during
   // iteration. If we add that capability, this should be replaced with an
-  // ObserverList.
+  // base::ObserverList.
   ScopedVector<InstanceMessageFilter> instance_message_filters_;
 
   typedef std::map<PP_Resource, linked_ptr<ResourceHost> > ResourceMap;

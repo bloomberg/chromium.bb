@@ -48,7 +48,7 @@ class ActiveStateManagerImpl : public ActiveStateManager,
   // true if the ActiveStateManager is active.
   bool active_;
   // The list of observers.
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveStateManagerImpl);
 };

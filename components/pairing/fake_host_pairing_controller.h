@@ -52,7 +52,7 @@ class FakeHostPairingController
   // HostPairingController::Observer:
   void PairingStageChanged(Stage new_stage) override;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   Stage current_stage_;
   std::string device_name_;
   std::string confirmation_code_;

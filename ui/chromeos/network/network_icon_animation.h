@@ -39,7 +39,7 @@ class UI_CHROMEOS_EXPORT NetworkIconAnimation : public gfx::AnimationDelegate {
 
  private:
   gfx::ThrobAnimation animation_;
-  ObserverList<AnimationObserver> observers_;
+  base::ObserverList<AnimationObserver> observers_;
 };
 
 }  // namespace network_icon

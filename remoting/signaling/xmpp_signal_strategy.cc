@@ -112,7 +112,7 @@ class XmppSignalStrategy::Core : public XmppLoginHandler::Delegate {
 
   Error error_;
 
-  ObserverList<Listener, true> listeners_;
+  base::ObserverList<Listener, true> listeners_;
 
   base::Timer keep_alive_timer_;
 

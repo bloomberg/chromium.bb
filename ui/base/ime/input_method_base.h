@@ -95,7 +95,7 @@ class UI_BASE_IME_EXPORT InputMethodBase
   internal::InputMethodDelegate* delegate_;
   TextInputClient* text_input_client_;
 
-  ObserverList<InputMethodObserver> observer_list_;
+  base::ObserverList<InputMethodObserver> observer_list_;
 
   bool system_toplevel_window_focused_;
 

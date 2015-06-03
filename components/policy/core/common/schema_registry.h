@@ -88,8 +88,8 @@ class POLICY_EXPORT SchemaRegistry : public base::NonThreadSafe {
   scoped_refptr<SchemaMap> schema_map_;
 
  private:
-  ObserverList<Observer, true> observers_;
-  ObserverList<InternalObserver, true> internal_observers_;
+  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<InternalObserver, true> internal_observers_;
   bool domains_ready_[POLICY_DOMAIN_SIZE];
 
   DISALLOW_COPY_AND_ASSIGN(SchemaRegistry);

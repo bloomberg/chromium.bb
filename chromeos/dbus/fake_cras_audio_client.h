@@ -50,7 +50,7 @@ class CHROMEOS_EXPORT FakeCrasAudioClient : public CrasAudioClient {
   AudioNodeList node_list_;
   uint64 active_input_node_id_;
   uint64 active_output_node_id_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCrasAudioClient);
 };

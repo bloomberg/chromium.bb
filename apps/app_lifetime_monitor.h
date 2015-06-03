@@ -81,7 +81,7 @@ class AppLifetimeMonitor : public KeyedService,
 
   content::NotificationRegistrar registrar_;
   Profile* profile_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLifetimeMonitor);
 };

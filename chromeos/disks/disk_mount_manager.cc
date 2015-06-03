@@ -610,7 +610,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // Mount event change observers.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   CrosDisksClient* cros_disks_client_;
 

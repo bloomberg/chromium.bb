@@ -876,9 +876,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   internal::NativeWidgetPrivate* native_widget_;
 
-  ObserverList<WidgetObserver> observers_;
+  base::ObserverList<WidgetObserver> observers_;
 
-  ObserverList<WidgetRemovalsObserver> removals_observers_;
+  base::ObserverList<WidgetRemovalsObserver> removals_observers_;
 
   // Non-owned pointer to the Widget's delegate. If a NULL delegate is supplied
   // to Init() a default WidgetDelegate is created.

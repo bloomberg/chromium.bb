@@ -120,7 +120,8 @@ class AffiliationFetchThrottlerTest : public testing::Test {
   }
 
  private:
-  // Needed because NetworkChangeNotifier uses ObserverList, which notifies
+  // Needed because NetworkChangeNotifier uses base::ObserverList, which
+  // notifies
   // observers on the MessageLoop that belongs to the thread from which they
   // have registered.
   base::MessageLoop message_loop_;

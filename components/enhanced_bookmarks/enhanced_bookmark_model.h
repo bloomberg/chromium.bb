@@ -202,7 +202,7 @@ class EnhancedBookmarkModel : public KeyedService,
   bookmarks::BookmarkModel* bookmark_model_;
   bool loaded_;
 
-  ObserverList<EnhancedBookmarkModelObserver> observers_;
+  base::ObserverList<EnhancedBookmarkModelObserver> observers_;
 
   IdToNodeMap id_map_;
   NodeToIdMap nodes_to_reset_;

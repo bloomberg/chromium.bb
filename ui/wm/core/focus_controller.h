@@ -107,8 +107,9 @@ class WM_EXPORT FocusController : public aura::client::ActivationClient,
 
   scoped_ptr<FocusRules> rules_;
 
-  ObserverList<aura::client::ActivationChangeObserver> activation_observers_;
-  ObserverList<aura::client::FocusChangeObserver> focus_observers_;
+  base::ObserverList<aura::client::ActivationChangeObserver>
+      activation_observers_;
+  base::ObserverList<aura::client::FocusChangeObserver> focus_observers_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
 

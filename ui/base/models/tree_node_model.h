@@ -292,7 +292,7 @@ class TreeNodeModel : public TreeModel {
 
  private:
   // The observers.
-  ObserverList<TreeModelObserver> observer_list_;
+  base::ObserverList<TreeModelObserver> observer_list_;
 
   // The root.
   scoped_ptr<NodeType> root_;

@@ -76,7 +76,7 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerImpl
   PrefService* local_state_;  // not owned
 
   PrefChangeRegistrar pref_change_registrar_;
-  ObserverList<AudioPrefObserver> observers_;
+  base::ObserverList<AudioPrefObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDevicesPrefHandlerImpl);
 };

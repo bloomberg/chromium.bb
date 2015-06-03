@@ -40,7 +40,7 @@ class DelegatingSignalStrategy : public SignalStrategy {
   std::string local_jid_;
   SendIqCallback send_iq_callback_;
 
-  ObserverList<Listener> listeners_;
+  base::ObserverList<Listener> listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingSignalStrategy);
 };

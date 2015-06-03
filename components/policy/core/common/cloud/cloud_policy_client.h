@@ -374,7 +374,7 @@ class POLICY_EXPORT CloudPolicyClient {
   ResponseMap responses_;
   DeviceManagementStatus status_;
 
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
  private:

@@ -156,7 +156,7 @@ class MockProxyConfigService: public ProxyConfigService {
  private:
   ConfigAvailability availability_;
   ProxyConfig config_;
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
 };
 
 // A test network delegate that exercises the OnResolveProxy callback.

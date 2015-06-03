@@ -72,7 +72,7 @@ class FakePowerManagerClient : public PowerManagerClient {
   // readiness.
   void HandleSuspendReadiness();
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Last policy passed to SetPolicy().
   power_manager::PowerManagementPolicy policy_;

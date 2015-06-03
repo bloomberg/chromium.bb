@@ -212,7 +212,7 @@ class CONTENT_EXPORT AppCacheServiceImpl
   base::Time last_reinit_time_;
   base::TimeDelta next_reinit_delay_;
   base::OneShotTimer<AppCacheServiceImpl> reinit_timer_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheServiceImpl);
 };

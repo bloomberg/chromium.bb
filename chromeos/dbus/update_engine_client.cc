@@ -383,7 +383,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   }
 
   dbus::ObjectProxy* update_engine_proxy_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   Status last_status_;
 
   // Note: This should remain the last member so it'll be destroyed and
@@ -525,7 +525,7 @@ class UpdateEngineClientFakeImpl : public UpdateEngineClientStubImpl {
     }
   }
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   Status last_status_;
 
   base::WeakPtrFactory<UpdateEngineClientFakeImpl> weak_factory_;

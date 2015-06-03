@@ -273,7 +273,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl
   // OpenDirectory() and ShutdownOnSyncThread().
   WeakHandle<SyncManager::ChangeObserver> change_observer_;
 
-  ObserverList<SyncManager::Observer> observers_;
+  base::ObserverList<SyncManager::Observer> observers_;
 
   // The ServerConnectionManager used to abstract communication between the
   // client (the Syncer) and the sync server.

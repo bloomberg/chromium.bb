@@ -444,10 +444,11 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
       base::MemoryPressureListener::MemoryPressureLevel level) {
     // Here should be base::MemoryPressureListener::NotifyMemoryPressure, but
     // since the RendererFrameManager is installing a MemoryPressureListener
-    // which uses ObserverListThreadSafe, which furthermore remembers the
+    // which uses base::ObserverListThreadSafe, which furthermore remembers the
     // message loop for the thread it was created in. Between tests, the
     // RendererFrameManager singleton survives and and the MessageLoop gets
-    // destroyed. The correct fix would be to have ObserverListThreadSafe look
+    // destroyed. The correct fix would be to have base::ObserverListThreadSafe
+    // look
     // up the proper message loop every time (see crbug.com/443824.)
     RendererFrameManager::GetInstance()->OnMemoryPressure(level);
   }

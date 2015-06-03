@@ -244,7 +244,7 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
       BluetoothProfileServiceProvider::Delegate::Status status);
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Static properties we return.
   typedef std::map<const dbus::ObjectPath, Properties *> PropertiesMap;

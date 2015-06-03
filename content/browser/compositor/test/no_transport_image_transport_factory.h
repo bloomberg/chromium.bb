@@ -41,7 +41,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   scoped_ptr<ui::ContextFactory> context_factory_;
   scoped_refptr<cc::ContextProvider> context_provider_;
   scoped_ptr<GLHelper> gl_helper_;
-  ObserverList<ImageTransportFactoryObserver> observer_list_;
+  base::ObserverList<ImageTransportFactoryObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NoTransportImageTransportFactory);
 };

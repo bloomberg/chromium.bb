@@ -88,7 +88,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   std::vector<InputDevice> mouse_devices_;
   std::vector<InputDevice> touchpad_devices_;
 
-  ObserverList<InputDeviceEventObserver> observers_;
+  base::ObserverList<InputDeviceEventObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDataManager);
 };

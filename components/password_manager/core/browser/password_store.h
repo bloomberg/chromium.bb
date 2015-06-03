@@ -376,7 +376,7 @@ class PasswordStore : protected PasswordStoreSync,
   void DestroySyncableService();
 
   // The observers.
-  scoped_refptr<ObserverListThreadSafe<Observer>> observers_;
+  scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
 
   scoped_ptr<PasswordSyncableService> syncable_service_;
   scoped_ptr<AffiliatedMatchHelper> affiliated_match_helper_;

@@ -688,7 +688,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   bool extensions_disabled_;
 
-  ObserverList<ExtensionPrefsObserver> observer_list_;
+  base::ObserverList<ExtensionPrefsObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefs);
 };

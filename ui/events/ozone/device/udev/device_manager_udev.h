@@ -41,7 +41,7 @@ class DeviceManagerUdev
 
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
-  ObserverList<DeviceEventObserver> observers_;
+  base::ObserverList<DeviceEventObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagerUdev);
 };

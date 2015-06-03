@@ -59,7 +59,7 @@ class NfcTagChromeOS : public device::NfcTag,
   scoped_ptr<NfcNdefTagTechnologyChromeOS> ndef_technology_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<device::NfcTag::Observer> observers_;
+  base::ObserverList<device::NfcTag::Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NfcTagChromeOS);
 };

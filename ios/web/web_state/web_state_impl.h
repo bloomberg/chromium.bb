@@ -283,7 +283,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   scoped_ptr<web::WebUIIOS> web_ui_;
 
   // A list of observers notified when page state changes. Weak references.
-  ObserverList<WebStateObserver, true> observers_;
+  base::ObserverList<WebStateObserver, true> observers_;
 
   // Map of all the HTTP response headers received, for each URL.
   // This map is cleared after each page load, and only the headers of the main

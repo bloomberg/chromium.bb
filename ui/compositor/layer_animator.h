@@ -349,7 +349,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator> {
 
   // Observers are notified when layer animations end, are scheduled or are
   // aborted.
-  ObserverList<LayerAnimationObserver> observers_;
+  base::ObserverList<LayerAnimationObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimator);
 };

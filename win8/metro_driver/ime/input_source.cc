@@ -126,7 +126,7 @@ class InputSourceImpl : public InputSource {
 
   base::win::ScopedComPtr<ITfInputProcessorProfileMgr> profile_manager_;
   scoped_refptr<InputSourceMonitor> monitor_;
-  ObserverList<InputSourceObserver> observer_list_;
+  base::ObserverList<InputSourceObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(InputSourceImpl);
 };

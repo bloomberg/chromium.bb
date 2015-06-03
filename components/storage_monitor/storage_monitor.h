@@ -170,7 +170,7 @@ class StorageMonitor {
 
   scoped_ptr<Receiver> receiver_;
 
-  scoped_refptr<ObserverListThreadSafe<RemovableStorageObserver> >
+  scoped_refptr<base::ObserverListThreadSafe<RemovableStorageObserver>>
       observer_list_;
 
   // Used to make sure we call initialize from the same thread as creation.

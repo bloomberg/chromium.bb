@@ -178,7 +178,7 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
   const int render_frame_id_;
 
   // Our observers.
-  mutable ObserverList<RenderViewContextMenuObserver> observers_;
+  mutable base::ObserverList<RenderViewContextMenuObserver> observers_;
 
   // Whether a command has been executed. Used to track whether menu observers
   // should be notified of menu closing without execution.

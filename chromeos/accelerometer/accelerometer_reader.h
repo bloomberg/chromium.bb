@@ -97,7 +97,7 @@ class CHROMEOS_EXPORT AccelerometerReader {
   // The accelerometer configuration.
   scoped_refptr<Configuration> configuration_;
 
-  scoped_refptr<ObserverListThreadSafe<Observer>> observers_;
+  scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
 
   base::WeakPtrFactory<AccelerometerReader> weak_factory_;
 

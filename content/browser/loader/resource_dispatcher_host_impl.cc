@@ -989,7 +989,7 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
     GlobalRequestID id(filter_->child_id(), request_id);
     DelegateMap::iterator it = delegate_map_.find(id);
     if (it != delegate_map_.end()) {
-      ObserverList<ResourceMessageDelegate>::Iterator del_it(it->second);
+      base::ObserverList<ResourceMessageDelegate>::Iterator del_it(it->second);
       ResourceMessageDelegate* delegate;
       while (!handled && (delegate = del_it.GetNext()) != NULL) {
         handled = delegate->OnMessageReceived(message);
@@ -1096,7 +1096,7 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     DelegateMap::iterator it = delegate_map_.find(old_request_id);
     if (it != delegate_map_.end()) {
       // Tell each delegate that the request ID has changed.
-      ObserverList<ResourceMessageDelegate>::Iterator del_it(it->second);
+      base::ObserverList<ResourceMessageDelegate>::Iterator del_it(it->second);
       ResourceMessageDelegate* delegate;
       while ((delegate = del_it.GetNext()) != NULL) {
         delegate->set_request_id(new_request_id);
@@ -2310,7 +2310,10 @@ void ResourceDispatcherHostImpl::RegisterResourceMessageDelegate(
   DelegateMap::iterator it = delegate_map_.find(id);
   if (it == delegate_map_.end()) {
     it = delegate_map_.insert(
-        std::make_pair(id, new ObserverList<ResourceMessageDelegate>)).first;
+                           std::make_pair(
+                               id,
+                               new base::ObserverList<ResourceMessageDelegate>))
+             .first;
   }
   it->second->AddObserver(delegate);
 }

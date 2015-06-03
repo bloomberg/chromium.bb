@@ -76,7 +76,7 @@ class InvalidationLogger {
   void EmitRegisteredHandlers();
 
   // The list of every observer currently listening for notifications.
-  ObserverList<InvalidationLoggerObserver> observer_list_;
+  base::ObserverList<InvalidationLoggerObserver> observer_list_;
 
   // The last InvalidatorState updated by the InvalidatorService.
   syncer::InvalidatorState last_invalidator_state_;

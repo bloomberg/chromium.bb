@@ -138,7 +138,7 @@ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
     PepperRendererInstanceData renderer_data;
     bool is_throttled;
 
-    ObserverList<InstanceObserver> observer_list;
+    base::ObserverList<InstanceObserver> observer_list;
   };
 
   // Reports plugin activity to the callback set with SetOnKeepaliveCallback.

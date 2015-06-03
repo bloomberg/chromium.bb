@@ -60,7 +60,7 @@ class WM_EXPORT DefaultActivationClient : public aura::client::ActivationClient,
   // The window which was active before the currently active one.
   aura::Window* last_active_;
 
-  ObserverList<aura::client::ActivationChangeObserver> observers_;
+  base::ObserverList<aura::client::ActivationChangeObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultActivationClient);
 };

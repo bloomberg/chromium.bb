@@ -120,7 +120,7 @@ class InfoBarManager {
   InfoBars infobars_;
   bool infobars_enabled_;
 
-  ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarManager);
 };

@@ -353,7 +353,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   // Handles find requests and replies for the webview find API.
   WebViewFindHelper find_helper_;
 
-  ObserverList<ScriptExecutionObserver> script_observers_;
+  base::ObserverList<ScriptExecutionObserver> script_observers_;
   scoped_ptr<ScriptExecutor> script_executor_;
 
   content::NotificationRegistrar notification_registrar_;

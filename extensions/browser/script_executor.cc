@@ -33,7 +33,7 @@ const char* kRendererDestroyed = "The tab was closed.";
 // corresponding response comes from the renderer, or the renderer is destroyed.
 class Handler : public content::WebContentsObserver {
  public:
-  Handler(ObserverList<ScriptExecutionObserver>* script_observers,
+  Handler(base::ObserverList<ScriptExecutionObserver>* script_observers,
           content::WebContents* web_contents,
           ExtensionMsg_ExecuteCode_Params* params,
           ScriptExecutor::FrameScope scope,
@@ -147,7 +147,7 @@ class Handler : public content::WebContentsObserver {
     delete this;
   }
 
-  base::WeakPtr<ObserverList<ScriptExecutionObserver>> script_observers_;
+  base::WeakPtr<base::ObserverList<ScriptExecutionObserver>> script_observers_;
 
   // The id of the host (the extension or the webui) doing the injection.
   HostID host_id_;
@@ -185,7 +185,7 @@ ScriptExecutionObserver::~ScriptExecutionObserver() {
 
 ScriptExecutor::ScriptExecutor(
     content::WebContents* web_contents,
-    ObserverList<ScriptExecutionObserver>* script_observers)
+    base::ObserverList<ScriptExecutionObserver>* script_observers)
     : next_request_id_(0),
       web_contents_(web_contents),
       script_observers_(script_observers) {

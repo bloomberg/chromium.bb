@@ -185,7 +185,7 @@ class ChromotingHost : public base::NonThreadSafe,
   SignalStrategy* signal_strategy_;
 
   // Must be used on the network thread only.
-  ObserverList<HostStatusObserver> status_observers_;
+  base::ObserverList<HostStatusObserver> status_observers_;
 
   // The connections to remote clients.
   ClientList clients_;

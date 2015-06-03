@@ -796,15 +796,15 @@ class CONTENT_EXPORT RenderWidget
 
   // Lists of RenderFrameProxy objects that need to be notified of
   // compositing-related events (e.g. DidCommitCompositorFrame).
-  ObserverList<RenderFrameProxy> render_frame_proxies_;
+  base::ObserverList<RenderFrameProxy> render_frame_proxies_;
 #if defined(VIDEO_HOLE)
-  ObserverList<RenderFrameImpl> video_hole_frames_;
+  base::ObserverList<RenderFrameImpl> video_hole_frames_;
 #endif  // defined(VIDEO_HOLE)
 
   // A list of RenderFrames associated with this RenderWidget. Notifications
   // are sent to each frame in the list for events such as changing
   // visibility state for example.
-  ObserverList<RenderFrameImpl> render_frames_;
+  base::ObserverList<RenderFrameImpl> render_frames_;
 
   ui::MenuSourceType context_menu_source_type_;
   bool has_host_context_menu_location_;

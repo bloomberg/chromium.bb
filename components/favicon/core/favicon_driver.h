@@ -115,7 +115,7 @@ class FaviconDriver {
   virtual void NotifyFaviconUpdated(bool icon_url_changed);
 
  private:
-  ObserverList<FaviconDriverObserver> observer_list_;
+  base::ObserverList<FaviconDriverObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconDriver);
 };

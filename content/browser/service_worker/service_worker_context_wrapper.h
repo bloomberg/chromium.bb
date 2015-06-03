@@ -172,8 +172,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // DeleteAndStartOver fails.
   ServiceWorkerContextCore* context();
 
-  const scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
-      observer_list_;
+  const scoped_refptr<base::ObserverListThreadSafe<
+      ServiceWorkerContextObserver>> observer_list_;
   const scoped_ptr<ServiceWorkerProcessManager> process_manager_;
   // Cleared in Shutdown():
   scoped_ptr<ServiceWorkerContextCore> context_core_;

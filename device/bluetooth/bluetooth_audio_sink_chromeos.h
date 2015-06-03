@@ -208,7 +208,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
 
   // List of observers interested in event notifications from us. Objects in
   // |observers_| are expected to outlive a BluetoothAudioSinkChromeOS object.
-  ObserverList<BluetoothAudioSink::Observer> observers_;
+  base::ObserverList<BluetoothAudioSink::Observer> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

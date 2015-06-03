@@ -81,7 +81,7 @@ class NET_EXPORT SSLConfigService
                            const SSLConfig& new_config);
 
  private:
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 };
 
 }  // namespace net

@@ -109,7 +109,7 @@ class UndoManager {
   ScopedVector<UndoGroup> redo_actions_;
 
   // The observers to notify when internal state changes.
-  ObserverList<UndoManagerObserver> observers_;
+  base::ObserverList<UndoManagerObserver> observers_;
 
   // Supports grouping operations into a single undo action.
   int group_actions_count_;

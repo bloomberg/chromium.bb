@@ -90,7 +90,7 @@ class CHROMEOS_EXPORT FakeNfcAdapterClient : public NfcAdapterClient {
                          const std::string& property_name);
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Fake properties that are returned for the emulated adapters.
   scoped_ptr<Properties> properties_;

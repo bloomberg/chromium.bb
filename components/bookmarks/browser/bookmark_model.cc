@@ -100,7 +100,8 @@ BookmarkModel::BookmarkModel(BookmarkClient* client)
       other_node_(NULL),
       mobile_node_(NULL),
       next_node_id_(1),
-      observers_(ObserverList<BookmarkModelObserver>::NOTIFY_EXISTING_ONLY),
+      observers_(
+          base::ObserverList<BookmarkModelObserver>::NOTIFY_EXISTING_ONLY),
       loaded_signal_(true, false),
       extensive_changes_(0) {
   DCHECK(client_);

@@ -195,7 +195,7 @@ class APP_LIST_EXPORT SearchResult {
   bool is_installing_;
   int percent_downloaded_;
 
-  ObserverList<SearchResultObserver> observers_;
+  base::ObserverList<SearchResultObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResult);
 };

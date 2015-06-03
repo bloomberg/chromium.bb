@@ -99,7 +99,7 @@ class Connection {
   Status status_;
 
   // The registered observers of the connection.
-  ObserverList<ConnectionObserver> observers_;
+  base::ObserverList<ConnectionObserver> observers_;
 
   // A temporary buffer storing bytes received before a received message can be
   // fully constructed.

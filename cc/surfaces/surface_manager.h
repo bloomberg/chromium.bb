@@ -60,7 +60,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   typedef base::hash_map<SurfaceId, Surface*> SurfaceMap;
   SurfaceMap surface_map_;
-  ObserverList<SurfaceDamageObserver> observer_list_;
+  base::ObserverList<SurfaceDamageObserver> observer_list_;
   base::ThreadChecker thread_checker_;
 
   // List of surfaces to be destroyed, along with what sequences they're still

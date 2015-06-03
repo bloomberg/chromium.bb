@@ -84,7 +84,7 @@ class InputServiceLinux : public base::MessageLoop::DestructionObserver {
   bool CalledOnValidThread() const;
 
   DeviceMap devices_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
  private:
   friend struct base::DefaultDeleter<InputServiceLinux>;

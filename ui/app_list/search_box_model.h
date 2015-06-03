@@ -87,7 +87,7 @@ class APP_LIST_EXPORT SearchBoxModel {
   gfx::SelectionModel selection_model_;
   base::string16 text_;
 
-  ObserverList<SearchBoxModelObserver> observers_;
+  base::ObserverList<SearchBoxModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxModel);
 };

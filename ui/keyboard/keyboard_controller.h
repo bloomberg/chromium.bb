@@ -181,7 +181,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   KeyboardMode keyboard_mode_;
   ui::TextInputType type_;
 
-  ObserverList<KeyboardControllerObserver> observer_list_;
+  base::ObserverList<KeyboardControllerObserver> observer_list_;
 
   // The currently used keyboard position.
   gfx::Rect current_keyboard_bounds_;

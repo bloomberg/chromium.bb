@@ -68,7 +68,7 @@ class TopIconAnimationView : public views::View,
   // true: opening folder; false: closing folder.
   bool open_folder_;
 
-  ObserverList<TopIconAnimationObserver> observers_;
+  base::ObserverList<TopIconAnimationObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TopIconAnimationView);
 };

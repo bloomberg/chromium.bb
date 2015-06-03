@@ -108,7 +108,7 @@ class Client : public ConnectionObserver {
   scoped_ptr<SecureContext> secure_context_;
 
   // The registered observers of |this_| client.
-  ObserverList<ClientObserver> observers_;
+  base::ObserverList<ClientObserver> observers_;
 
   // Queue of messages to send to the remote device.
   std::deque<PendingMessage> queued_messages_;

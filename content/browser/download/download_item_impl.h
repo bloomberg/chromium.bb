@@ -493,7 +493,7 @@ class CONTENT_EXPORT DownloadItemImpl
   DownloadDangerType danger_type_;
 
   // The views of this item in the download shelf and download contents.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Time the download was started.
   base::Time start_time_;

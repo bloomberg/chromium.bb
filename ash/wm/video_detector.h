@@ -88,7 +88,7 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   // Maps from a window that we're tracking to information about it.
   WindowInfoMap window_infos_;
 
-  ObserverList<VideoDetectorObserver> observers_;
+  base::ObserverList<VideoDetectorObserver> observers_;
 
   // Last time at which we notified observers that a video was playing.
   base::TimeTicks last_observer_notification_time_;

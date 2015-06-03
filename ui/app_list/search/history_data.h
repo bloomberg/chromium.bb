@@ -82,7 +82,7 @@ class APP_LIST_EXPORT HistoryData : public base::SupportsWeakPtr<HistoryData> {
   HistoryDataStore* store_;  // Not owned.
   const size_t max_primary_;
   const size_t max_secondary_;
-  ObserverList<HistoryDataObserver, true> observers_;
+  base::ObserverList<HistoryDataObserver, true> observers_;
 
   Associations associations_;
 

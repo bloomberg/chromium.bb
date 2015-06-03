@@ -92,7 +92,7 @@ class WarningService : public KeyedService,
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 };
 
 }  // namespace extensions

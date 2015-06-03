@@ -194,7 +194,7 @@ class GCMDriverDesktop : public GCMDriver,
   bool connected_;
 
   // List of observers to notify when connection state changes.
-  ObserverList<GCMConnectionObserver, false> connection_observer_list_;
+  base::ObserverList<GCMConnectionObserver, false> connection_observer_list_;
 
   // Account mapper. Only works when user is signed in.
   scoped_ptr<GCMAccountMapper> account_mapper_;

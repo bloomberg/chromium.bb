@@ -76,7 +76,7 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
   int can_rollback_call_count() const { return can_rollback_call_count_; }
 
  private:
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   std::queue<UpdateEngineClient::Status> status_queue_;
   UpdateEngineClient::Status default_status_;
   UpdateEngineClient::UpdateCheckResult update_check_result_;

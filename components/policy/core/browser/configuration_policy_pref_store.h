@@ -75,7 +75,7 @@ class POLICY_EXPORT ConfigurationPolicyPrefStore
   // Current policy preferences.
   scoped_ptr<PrefValueMap> prefs_;
 
-  ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyPrefStore);
 };

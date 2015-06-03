@@ -49,7 +49,7 @@ class SYNC_EXPORT SyncJsController
   void UpdateBackendEventHandler();
 
   WeakHandle<JsBackend> js_backend_;
-  ObserverList<JsEventHandler> js_event_handlers_;
+  base::ObserverList<JsEventHandler> js_event_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncJsController);
 };

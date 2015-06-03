@@ -334,8 +334,8 @@ class COMPOSITOR_EXPORT Compositor
   // The root of the Layer tree drawn by this compositor.
   Layer* root_layer_;
 
-  ObserverList<CompositorObserver, true> observer_list_;
-  ObserverList<CompositorAnimationObserver> animation_observer_list_;
+  base::ObserverList<CompositorObserver, true> observer_list_;
+  base::ObserverList<CompositorAnimationObserver> animation_observer_list_;
   std::list<CompositorBeginFrameObserver*> begin_frame_observer_list_;
 
   gfx::AcceleratedWidget widget_;

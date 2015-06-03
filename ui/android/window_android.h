@@ -70,7 +70,7 @@ class UI_ANDROID_EXPORT WindowAndroid {
   gfx::Vector2dF content_offset_;
   WindowAndroidCompositor* compositor_;
 
-  ObserverList<WindowAndroidObserver> observer_list_;
+  base::ObserverList<WindowAndroidObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowAndroid);
 };

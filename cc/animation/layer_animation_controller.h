@@ -215,8 +215,8 @@ class CC_EXPORT LayerAnimationController
 
   base::TimeTicks last_tick_time_;
 
-  ObserverList<LayerAnimationValueObserver> value_observers_;
-  ObserverList<LayerAnimationEventObserver> event_observers_;
+  base::ObserverList<LayerAnimationValueObserver> value_observers_;
+  base::ObserverList<LayerAnimationEventObserver> event_observers_;
 
   LayerAnimationValueProvider* value_provider_;
 

@@ -71,10 +71,10 @@ class ASH_EXPORT FirstRunHelper {
   virtual gfx::Rect GetHelpButtonBounds() = 0;
 
  protected:
-  ObserverList<Observer>& observers() { return observers_; }
+  base::ObserverList<Observer>& observers() { return observers_; }
 
  private:
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunHelper);
 };

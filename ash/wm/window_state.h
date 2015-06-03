@@ -370,7 +370,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // restored when only this one window gets shown.
   scoped_ptr<gfx::Rect> pre_auto_manage_window_bounds_;
 
-  ObserverList<WindowStateObserver> observer_list_;
+  base::ObserverList<WindowStateObserver> observer_list_;
 
   // True to ignore a property change event to avoid reentrance in
   // UpdateWindowStateType()

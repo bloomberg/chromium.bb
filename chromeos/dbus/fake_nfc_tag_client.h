@@ -96,7 +96,7 @@ class CHROMEOS_EXPORT FakeNfcTagClient : public NfcTagClient {
   void HandleSimulationTimeout();
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Fake properties that are returned for the emulated tag.
   scoped_ptr<Properties> properties_;

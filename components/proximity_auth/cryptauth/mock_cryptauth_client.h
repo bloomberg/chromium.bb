@@ -73,7 +73,7 @@ class MockCryptAuthClientFactory : public CryptAuthClientFactory {
   bool is_strict_;
 
   // Observers of the factory.
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCryptAuthClientFactory);
 };

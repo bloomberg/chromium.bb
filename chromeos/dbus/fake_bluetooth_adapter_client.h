@@ -90,7 +90,7 @@ class CHROMEOS_EXPORT FakeBluetoothAdapterClient
   void PostDelayedTask(const base::Closure& callback);
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Static properties we return.
   scoped_ptr<Properties> properties_;

@@ -66,7 +66,7 @@ class CHROMEOS_EXPORT FakeBluetoothMediaClient : public BluetoothMediaClient {
       endpoints_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<BluetoothMediaClient::Observer> observers_;
+  base::ObserverList<BluetoothMediaClient::Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothMediaClient);
 };

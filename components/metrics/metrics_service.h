@@ -474,7 +474,7 @@ class MetricsService : public base::HistogramFlattener {
   SyntheticTrialGroups synthetic_trial_groups_;
 
   // List of observers of |synthetic_trial_groups_| changes.
-  ObserverList<SyntheticTrialObserver> synthetic_trial_observer_list_;
+  base::ObserverList<SyntheticTrialObserver> synthetic_trial_observer_list_;
 
   // Execution phase the browser is in.
   static ExecutionPhase execution_phase_;

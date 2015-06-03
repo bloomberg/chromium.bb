@@ -99,7 +99,7 @@ class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
                       ClearCallback());
   }
 
-  ObserverList<WindowsSessionChangeObserver, true> observer_list_;
+  base::ObserverList<WindowsSessionChangeObserver, true> observer_list_;
   scoped_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WtsRegistrationNotificationManager);

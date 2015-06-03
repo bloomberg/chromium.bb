@@ -143,7 +143,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   static std::string StartingPhaseToString(StartingPhase phase);
 
  private:
-  typedef ObserverList<Listener> ListenerList;
+  typedef base::ObserverList<Listener> ListenerList;
   class DevToolsProxy;
   friend class EmbeddedWorkerRegistry;
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StartAndStop);

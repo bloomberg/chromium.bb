@@ -210,7 +210,7 @@ class AboutSigninInternals
   // Most of the values are mirrored in the prefs for persistence.
   SigninStatus signin_status_;
 
-  ObserverList<Observer> signin_observers_;
+  base::ObserverList<Observer> signin_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AboutSigninInternals);
 };

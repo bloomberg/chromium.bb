@@ -105,7 +105,7 @@ class DirectoryCommitContributionTest : public ::testing::Test {
   TestIdFactory id_factory_;
 
   // Used in construction of DirectoryTypeDebugInfoEmitters.
-  ObserverList<TypeDebugInfoObserver> type_observers_;
+  base::ObserverList<TypeDebugInfoObserver> type_observers_;
 
  private:
   base::MessageLoop loop_;  // Neeed to initialize the directory.

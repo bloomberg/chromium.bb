@@ -55,7 +55,7 @@ class CHROMEOS_EXPORT FakeBluetoothInputClient
   PropertiesMap properties_map_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothInputClient);
 };

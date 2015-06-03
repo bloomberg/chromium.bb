@@ -90,7 +90,7 @@ class CHROMEOS_EXPORT FakeBluetoothGattServiceClient
   std::string heart_rate_service_path_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.

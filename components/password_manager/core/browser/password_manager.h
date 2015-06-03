@@ -193,7 +193,7 @@ class PasswordManager : public LoginModel {
 
   // Observers to be notified of LoginModel events.  This is mutable to allow
   // notification in const member functions.
-  mutable ObserverList<LoginModelObserver> observers_;
+  mutable base::ObserverList<LoginModelObserver> observers_;
 
   // Callbacks to be notified when a password form has been submitted.
   std::vector<PasswordSubmittedCallback> submission_callbacks_;

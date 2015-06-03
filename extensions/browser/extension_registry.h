@@ -183,7 +183,7 @@ class ExtensionRegistry : public KeyedService {
   // Extensions that are installed and blocked. Will never be loaded.
   ExtensionSet blocked_extensions_;
 
-  ObserverList<ExtensionRegistryObserver> observers_;
+  base::ObserverList<ExtensionRegistryObserver> observers_;
 
   content::BrowserContext* const browser_context_;
 

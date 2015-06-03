@@ -106,7 +106,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy,
-      ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
+      base::ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
       ServiceWorkerContextWrapper* wrapper);
   ServiceWorkerContextCore(
       ServiceWorkerContextCore* old_context,
@@ -252,7 +252,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int64, ServiceWorkerVersion*> live_versions_;
   int next_handle_id_;
   int next_registration_handle_id_;
-  scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
+  scoped_refptr<base::ObserverListThreadSafe<ServiceWorkerContextObserver>>
       observer_list_;
   base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;
 

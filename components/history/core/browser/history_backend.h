@@ -822,7 +822,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   // List of observers
-  ObserverList<HistoryBackendObserver> observers_;
+  base::ObserverList<HistoryBackendObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryBackend);
 };

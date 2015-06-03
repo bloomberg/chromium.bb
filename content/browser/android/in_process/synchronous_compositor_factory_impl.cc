@@ -115,7 +115,7 @@ class SynchronousCompositorFactoryImpl::VideoContextProvider
 
   scoped_refptr<cc::ContextProvider> context_provider_;
   gpu::GLInProcessContext* gl_in_process_context_;
-  ObserverList<StreamTextureFactoryContextObserver> observer_list_;
+  base::ObserverList<StreamTextureFactoryContextObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoContextProvider);
 };

@@ -222,7 +222,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   void HandleShillDisconnectSuccess(const std::string& service_path,
                                     const base::Closure& success_callback);
 
-  ObserverList<NetworkConnectionObserver> observers_;
+  base::ObserverList<NetworkConnectionObserver> observers_;
 
   // Local references to the associated handler instances.
   CertLoader* cert_loader_;

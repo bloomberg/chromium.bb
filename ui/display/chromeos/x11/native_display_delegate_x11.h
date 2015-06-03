@@ -163,7 +163,7 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   scoped_ptr<NativeDisplayEventDispatcherX11> platform_event_dispatcher_;
 
   // List of observers waiting for display configuration change events.
-  ObserverList<NativeDisplayObserver> observers_;
+  base::ObserverList<NativeDisplayObserver> observers_;
 
   // A background color used during boot time + multi displays.
   uint32_t background_color_argb_;

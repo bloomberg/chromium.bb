@@ -110,7 +110,7 @@ class ServerView {
 
   std::map<std::string, std::vector<uint8_t>> properties_;
 
-  ObserverList<ServerViewObserver> observers_;
+  base::ObserverList<ServerViewObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerView);
 };

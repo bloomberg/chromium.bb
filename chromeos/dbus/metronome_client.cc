@@ -65,7 +65,7 @@ class MetronomeClientImpl : public MetronomeClient {
   bool signal_connected_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
@@ -166,7 +166,7 @@ class MetronomeClientFakeImpl : public MetronomeClient {
   base::RepeatingTimer<MetronomeClientFakeImpl> beacon_timer_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MetronomeClientFakeImpl);
 };

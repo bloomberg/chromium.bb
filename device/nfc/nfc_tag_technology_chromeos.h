@@ -67,7 +67,7 @@ class NfcNdefTagTechnologyChromeOS : public device::NfcNdefTagTechnology,
   device::NfcNdefMessage message_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<device::NfcNdefTagTechnology::Observer> observers_;
+  base::ObserverList<device::NfcNdefTagTechnology::Observer> observers_;
 
   // D-Bus object path of the remote tag or device that this object operates
   // on.

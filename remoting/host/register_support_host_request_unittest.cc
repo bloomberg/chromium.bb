@@ -71,7 +71,7 @@ class RegisterSupportHostRequestTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   MockSignalStrategy signal_strategy_;
-  ObserverList<SignalStrategy::Listener, true> signal_strategy_listeners_;
+  base::ObserverList<SignalStrategy::Listener, true> signal_strategy_listeners_;
   scoped_refptr<RsaKeyPair> key_pair_;
   MockCallback callback_;
 };

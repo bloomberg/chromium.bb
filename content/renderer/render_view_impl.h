@@ -746,9 +746,7 @@ class CONTENT_EXPORT RenderViewImpl
   // to access RenderViewImpl state. The set of state variables are page-level
   // specific, so they don't belong in RenderFrameImpl and should remain in
   // this object.
-  ObserverList<RenderViewObserver>& observers() {
-    return observers_;
-  }
+  base::ObserverList<RenderViewObserver>& observers() { return observers_; }
 
   // TODO(nasko): Remove this method when we move to frame proxy objects, since
   // the concept of swapped out will be eliminated.
@@ -994,7 +992,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.
-  ObserverList<RenderViewObserver> observers_;
+  base::ObserverList<RenderViewObserver> observers_;
 
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   scoped_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;

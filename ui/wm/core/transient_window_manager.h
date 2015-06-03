@@ -98,7 +98,7 @@ class WM_EXPORT TransientWindowManager : public aura::WindowObserver {
   bool show_on_parent_visible_;
   bool ignore_visibility_changed_event_;
 
-  ObserverList<TransientWindowObserver> observers_;
+  base::ObserverList<TransientWindowObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TransientWindowManager);
 };

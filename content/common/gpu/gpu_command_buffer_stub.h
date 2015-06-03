@@ -266,7 +266,7 @@ class GpuCommandBufferStub
 
   GpuWatchdog* watchdog_;
 
-  ObserverList<DestructionObserver> destruction_observers_;
+  base::ObserverList<DestructionObserver> destruction_observers_;
 
   // A queue of sync points associated with this stub.
   std::deque<uint32> sync_points_;

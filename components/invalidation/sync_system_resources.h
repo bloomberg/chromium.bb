@@ -171,7 +171,7 @@ class INVALIDATION_EXPORT_PRIVATE SyncNetworkChannel
 
   int received_messages_count_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 };
 
 class SyncStorage : public invalidation::Storage {

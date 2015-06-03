@@ -32,7 +32,7 @@ class ScriptExecutor {
       content::WebContents* web_contents,
       // |script_observers| is assumed to be owned by |this|'s owner, and in
       // such a way that |this| is destroyed first.
-      ObserverList<ScriptExecutionObserver>* script_observers);
+      base::ObserverList<ScriptExecutionObserver>* script_observers);
 
   ~ScriptExecutor();
 
@@ -105,7 +105,7 @@ class ScriptExecutor {
 
   content::WebContents* web_contents_;
 
-  ObserverList<ScriptExecutionObserver>* script_observers_;
+  base::ObserverList<ScriptExecutionObserver>* script_observers_;
 };
 
 }  // namespace extensions

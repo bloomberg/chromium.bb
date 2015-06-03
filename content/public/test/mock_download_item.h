@@ -102,7 +102,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
 
  private:
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace content

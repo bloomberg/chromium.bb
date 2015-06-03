@@ -646,7 +646,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   TemplateURLVector template_urls_;
 
-  ObserverList<TemplateURLServiceObserver> model_observers_;
+  base::ObserverList<TemplateURLServiceObserver> model_observers_;
 
   // Maps from host to set of TemplateURLs whose search url host is host.
   // NOTE: This is always non-NULL; we use a scoped_ptr<> to avoid circular

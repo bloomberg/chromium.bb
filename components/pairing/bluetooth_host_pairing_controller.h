@@ -111,7 +111,7 @@ class BluetoothHostPairingController
   scoped_ptr<ProtoDecoder> proto_decoder_;
 
   base::ThreadChecker thread_checker_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   base::WeakPtrFactory<BluetoothHostPairingController> ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothHostPairingController);

@@ -70,7 +70,7 @@ class PrivetDaemonManagerClientImpl : public PrivetDaemonManagerClient,
                         dbus::Response* response);
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   dbus::ObjectManager* object_manager_;
   base::WeakPtrFactory<PrivetDaemonManagerClientImpl> weak_ptr_factory_;
 

@@ -93,7 +93,7 @@ class FakeControllerPairingController
   void PairingStageChanged(Stage new_stage) override;
   void DiscoveredDevicesListChanged() override;
 
-  ObserverList<ControllerPairingController::Observer> observers_;
+  base::ObserverList<ControllerPairingController::Observer> observers_;
   Stage current_stage_;
   std::string confirmation_code_;
   std::string preset_confirmation_code_;

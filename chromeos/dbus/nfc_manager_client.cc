@@ -144,7 +144,7 @@ class NfcManagerClientImpl : public NfcManagerClient {
   scoped_ptr<Properties> properties_;
 
   // List of observers interested in event notifications.
-  ObserverList<NfcManagerClient::Observer> observers_;
+  base::ObserverList<NfcManagerClient::Observer> observers_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.

@@ -461,7 +461,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       BluetoothDiscoverySession* discovery_session);
 
   // Observers of BluetoothAdapter, notified from implementation subclasses.
-  ObserverList<device::BluetoothAdapter::Observer> observers_;
+  base::ObserverList<device::BluetoothAdapter::Observer> observers_;
 
   // Devices paired with, connected to, discovered by, or visible to the
   // adapter. The key is the Bluetooth address of the device and the value is

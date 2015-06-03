@@ -102,7 +102,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   std::string device_policy_;
   std::map<std::string, std::string> user_policies_;
   std::map<std::string, std::string> device_local_account_policy_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   SessionManagerClient::ActiveSessionsMap user_sessions_;
   std::vector<std::string> server_backed_state_keys_;
 

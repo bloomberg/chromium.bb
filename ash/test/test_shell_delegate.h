@@ -76,7 +76,8 @@ class TestShellDelegate : public ShellDelegate {
   scoped_ptr<content::BrowserContext> active_browser_context_;
   scoped_ptr<app_list::AppListViewDelegate> app_list_view_delegate_;
 
-  ObserverList<ash::VirtualKeyboardStateObserver> keyboard_state_observer_list_;
+  base::ObserverList<ash::VirtualKeyboardStateObserver>
+      keyboard_state_observer_list_;
 
   TestSessionStateDelegate* test_session_state_delegate_;  // Not owned.
 

@@ -280,7 +280,7 @@ class BluetoothMediaTransportClientImpl
   dbus::ObjectManager* object_manager_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<BluetoothMediaTransportClient::Observer> observers_;
+  base::ObserverList<BluetoothMediaTransportClient::Observer> observers_;
 
   base::WeakPtrFactory<BluetoothMediaTransportClientImpl> weak_ptr_factory_;
 

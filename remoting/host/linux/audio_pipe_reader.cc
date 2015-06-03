@@ -48,7 +48,7 @@ AudioPipeReader::AudioPipeReader(
     const base::FilePath& pipe_path)
     : task_runner_(task_runner),
       pipe_path_(pipe_path),
-      observers_(new ObserverListThreadSafe<StreamObserver>()) {
+      observers_(new base::ObserverListThreadSafe<StreamObserver>()) {
 }
 
 AudioPipeReader::~AudioPipeReader() {}

@@ -633,7 +633,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   dbus::ObjectProxy* session_manager_proxy_;
   scoped_ptr<BlockingMethodCaller> blocking_method_caller_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Most recent screen-lock state received from session_manager.
   bool screen_is_locked_;
@@ -798,7 +798,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
 
  private:
   StubDelegate* delegate_;  // Weak pointer; may be NULL.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   std::string device_policy_;
   bool screen_is_locked_;
 

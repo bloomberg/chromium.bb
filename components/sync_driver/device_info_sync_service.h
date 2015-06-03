@@ -98,7 +98,7 @@ class DeviceInfoSyncService : public syncer::SyncableService,
   SyncDataMap all_data_;
 
   // Registered observers, not owned.
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoSyncService);
 };

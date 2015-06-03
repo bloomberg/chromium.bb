@@ -222,7 +222,7 @@ void AppCacheGroup::RunQueuedUpdates() {
 // static
 bool AppCacheGroup::FindObserver(
     const UpdateObserver* find_me,
-    const ObserverList<UpdateObserver>& observer_list) {
+    const base::ObserverList<UpdateObserver>& observer_list) {
   return observer_list.HasObserver(find_me);
 }
 

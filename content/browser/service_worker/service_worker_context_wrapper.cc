@@ -101,7 +101,7 @@ ServiceWorkerContext* ServiceWorkerContext::GetServiceWorkerContext(
 ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
     BrowserContext* browser_context)
     : observer_list_(
-          new ObserverListThreadSafe<ServiceWorkerContextObserver>()),
+          new base::ObserverListThreadSafe<ServiceWorkerContextObserver>()),
       process_manager_(new ServiceWorkerProcessManager(browser_context)),
       is_incognito_(false),
       storage_partition_(nullptr) {

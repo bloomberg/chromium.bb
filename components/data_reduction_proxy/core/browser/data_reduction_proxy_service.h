@@ -143,7 +143,7 @@ class DataReductionProxyService
   // make calls to IO based objects.
   base::WeakPtr<DataReductionProxyIOData> io_data_;
 
-  ObserverList<DataReductionProxyServiceObserver> observer_list_;
+  base::ObserverList<DataReductionProxyServiceObserver> observer_list_;
 
   bool initialized_;
 

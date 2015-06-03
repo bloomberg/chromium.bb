@@ -83,8 +83,9 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   void FireOnActiveAccountLogout();
 
  private:
-  ObserverList<Observer, true> observers_;
-  ObserverList<OAuth2TokenService::Observer, true> token_service_observers_;
+  base::ObserverList<Observer, true> observers_;
+  base::ObserverList<OAuth2TokenService::Observer, true>
+      token_service_observers_;
   int token_service_observer_count_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityProvider);

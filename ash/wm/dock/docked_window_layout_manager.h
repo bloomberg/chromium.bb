@@ -324,7 +324,7 @@ class ASH_EXPORT DockedWindowLayoutManager
   scoped_ptr<DockedBackgroundWidget> background_widget_;
 
   // Observers of dock bounds changes.
-  ObserverList<DockedWindowLayoutManagerObserver> observer_list_;
+  base::ObserverList<DockedWindowLayoutManagerObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DockedWindowLayoutManager);
 };

@@ -80,7 +80,7 @@ class WM_EXPORT CompoundEventFilter : public ui::EventHandler {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Additional pre-target event handlers.
-  ObserverList<ui::EventHandler, true> handlers_;
+  base::ObserverList<ui::EventHandler, true> handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(CompoundEventFilter);
 };

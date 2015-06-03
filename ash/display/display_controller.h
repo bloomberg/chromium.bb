@@ -207,7 +207,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // The mapping from display ID to its window tree host.
   WindowTreeHostMap window_tree_hosts_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Store the primary window tree host temporarily while replacing
   // display.

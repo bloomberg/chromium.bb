@@ -119,7 +119,7 @@ class FakeSyncManager : public SyncManager {
  private:
   scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;
 
-  ObserverList<SyncManager::Observer> observers_;
+  base::ObserverList<SyncManager::Observer> observers_;
 
   // Faked directory state.
   ModelTypeSet initial_sync_ended_types_;

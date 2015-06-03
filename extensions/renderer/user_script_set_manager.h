@@ -105,7 +105,7 @@ class UserScriptSetManager : public content::RenderProcessObserver {
   const ExtensionSet* extensions_;
 
   // The associated observers.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(UserScriptSetManager);
 };

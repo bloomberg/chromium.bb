@@ -134,7 +134,7 @@ class ListModel {
 
  private:
   ScopedVector<ItemType> items_;
-  ObserverList<ListModelObserver> observers_;
+  base::ObserverList<ListModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ListModel<ItemType>);
 };

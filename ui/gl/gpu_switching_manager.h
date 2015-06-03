@@ -71,7 +71,7 @@ class GL_EXPORT GpuSwitchingManager {
   struct PlatformSpecific;
   scoped_ptr<PlatformSpecific> platform_specific_;
 
-  ObserverList<GpuSwitchingObserver> observer_list_;
+  base::ObserverList<GpuSwitchingObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuSwitchingManager);
 };

@@ -57,7 +57,7 @@ class DrmNativeDisplayDelegate : public NativeDisplayDelegate {
  private:
   DrmDisplayHostManager* display_manager_;  // Not owned.
 
-  ObserverList<NativeDisplayObserver> observers_;
+  base::ObserverList<NativeDisplayObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmNativeDisplayDelegate);
 };

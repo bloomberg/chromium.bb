@@ -206,7 +206,7 @@ class FakeServer {
   int request_counter_;
 
   // FakeServer's observers.
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
 
   // When true, the server operates normally. When false, a failure is returned
   // on every request. This is used to simulate a network failure on the client.

@@ -106,7 +106,7 @@ class APP_LIST_EXPORT AppListItemList {
   void FixItemPosition(size_t index);
 
   ScopedVector<AppListItem> app_list_items_;
-  ObserverList<AppListItemListObserver, true> observers_;
+  base::ObserverList<AppListItemListObserver, true> observers_;
   std::string highlighted_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemList);

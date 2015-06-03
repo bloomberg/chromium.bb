@@ -8,8 +8,8 @@ TimerTest.RepeatingTimer
 TimerTest.RepeatingTimer_Cancel
 
 # Crashes occasionally, see http://crbug.com/7477
-ObserverListThreadSafeTest.CrossThreadObserver
-ObserverListThreadSafeTest.CrossThreadNotifications
+base::ObserverListThreadSafeTest.CrossThreadObserver
+base::ObserverListThreadSafeTest.CrossThreadNotifications
 
 # Hangs sometimes on linux, see http://crbug.com/22138
 ClipboardTest.*

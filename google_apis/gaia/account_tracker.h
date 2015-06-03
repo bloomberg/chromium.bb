@@ -109,7 +109,7 @@ class AccountTracker : public OAuth2TokenService::Observer,
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   std::map<std::string, AccountIdFetcher*> user_info_requests_;
   std::map<std::string, AccountState> accounts_;
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
   bool shutdown_called_;
 };
 

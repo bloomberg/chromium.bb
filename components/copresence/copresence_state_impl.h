@@ -61,7 +61,7 @@ class CopresenceStateImpl final : public CopresenceState {
   std::map<std::string, TransmittedToken> transmitted_tokens_;
   std::map<std::string, ReceivedToken> received_tokens_;
 
-  ObserverList<CopresenceObserver> observers_;
+  base::ObserverList<CopresenceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CopresenceStateImpl);
 };

@@ -52,7 +52,7 @@ class GPU_EXPORT SubscriptionRefSet
 
   RefSet reference_set_;
 
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SubscriptionRefSet);
 };

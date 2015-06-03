@@ -93,7 +93,7 @@ class BookmarkServerService : protected net::URLFetcherDelegate,
 
  protected:
   // The observers.
-  ObserverList<BookmarkServerServiceObserver> observers_;
+  base::ObserverList<BookmarkServerServiceObserver> observers_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BookmarkServerServiceTest, Cluster);

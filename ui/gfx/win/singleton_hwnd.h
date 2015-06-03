@@ -44,7 +44,7 @@ class GFX_EXPORT SingletonHwnd : public WindowImpl {
   void RemoveObserver(SingletonHwndObserver* observer);
 
   // List of registered observers.
-  ObserverList<SingletonHwndObserver, true> observer_list_;
+  base::ObserverList<SingletonHwndObserver, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SingletonHwnd);
 };

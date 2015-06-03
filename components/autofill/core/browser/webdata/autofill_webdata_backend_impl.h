@@ -205,7 +205,8 @@ class AutofillWebDataBackendImpl
   void DestroyAutofillProfileResult(const WDTypedResult* result);
   void DestroyAutofillCreditCardResult(const WDTypedResult* result);
 
-  ObserverList<AutofillWebDataServiceObserverOnDBThread> db_observer_list_;
+  base::ObserverList<AutofillWebDataServiceObserverOnDBThread>
+      db_observer_list_;
 
   // WebDatabaseBackend allows direct access to DB.
   // TODO(caitkp): Make it so nobody but us needs direct DB access anymore.

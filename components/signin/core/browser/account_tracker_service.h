@@ -191,7 +191,7 @@ class AccountTrackerService : public KeyedService,
   SigninClient* signin_client_;  // Not owned.
   std::map<std::string, AccountInfoFetcher*> user_info_requests_;
   std::map<std::string, AccountState> accounts_;
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
   bool shutdown_called_;
   bool network_fetches_enabled_;
   std::list<std::string> pending_user_info_fetches_;

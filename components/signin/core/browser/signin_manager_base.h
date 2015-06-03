@@ -139,7 +139,7 @@ class SigninManagerBase : public KeyedService {
 
   // List of observers to notify on signin events.
   // Makes sure list is empty on destruction.
-  ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true> observer_list_;
 
   // Helper method to notify all registered diagnostics observers with.
   void NotifyDiagnosticsObservers(
@@ -158,7 +158,7 @@ class SigninManagerBase : public KeyedService {
   std::string authenticated_account_id_;
 
   // The list of SigninDiagnosticObservers.
-  ObserverList<signin_internals_util::SigninDiagnosticsObserver, true>
+  base::ObserverList<signin_internals_util::SigninDiagnosticsObserver, true>
       signin_diagnostics_observers_;
 
   base::WeakPtrFactory<SigninManagerBase> weak_pointer_factory_;

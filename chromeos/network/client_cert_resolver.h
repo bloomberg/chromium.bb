@@ -110,7 +110,7 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
   // Trigger a ResolveRequestCompleted event on all observers.
   void NotifyResolveRequestCompleted();
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // The set of networks that were checked/resolved in previous passes. These
   // networks are skipped in the NetworkListChanged notification.

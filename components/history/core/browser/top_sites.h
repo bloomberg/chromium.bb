@@ -184,7 +184,7 @@ class TopSites : public RefcountedKeyedService {
  private:
   friend class base::RefCountedThreadSafe<TopSites>;
 
-  ObserverList<TopSitesObserver, true> observer_list_;
+  base::ObserverList<TopSitesObserver, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSites);
 };

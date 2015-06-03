@@ -191,7 +191,7 @@ class NfcAdapterClientImpl
   dbus::Bus* bus_;
 
   // List of observers interested in event notifications.
-  ObserverList<NfcAdapterClient::Observer> observers_;
+  base::ObserverList<NfcAdapterClient::Observer> observers_;
 
   // Mapping from object paths to object proxies and properties structures that
   // were already created by us.

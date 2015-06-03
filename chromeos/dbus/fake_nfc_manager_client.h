@@ -52,7 +52,7 @@ class CHROMEOS_EXPORT FakeNfcManagerClient : public NfcManagerClient {
   void OnPropertyChanged(const std::string& property_name);
 
   // List of observers interested in event notifications.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Set containing the currently simulated adapters.
   std::set<dbus::ObjectPath> adapters_;

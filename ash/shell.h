@@ -757,7 +757,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   ::wm::CursorManager cursor_manager_;
 #endif  // defined(OS_CHROMEOS)
 
-  ObserverList<ShellObserver> observers_;
+  base::ObserverList<ShellObserver> observers_;
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_testing_;

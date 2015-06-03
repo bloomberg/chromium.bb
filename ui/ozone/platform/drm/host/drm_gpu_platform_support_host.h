@@ -58,7 +58,7 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
 
   std::vector<GpuPlatformSupportHost*> handlers_;  // Not owned.
   DrmCursor* cursor_;                              // Not owned.
-  ObserverList<ChannelObserver> channel_observers_;
+  base::ObserverList<ChannelObserver> channel_observers_;
 };
 
 }  // namespace ui

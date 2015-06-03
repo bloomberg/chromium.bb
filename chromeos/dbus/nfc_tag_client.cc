@@ -224,7 +224,7 @@ class NfcTagClientImpl : public NfcTagClient,
   dbus::Bus* bus_;
 
   // List of observers interested in event notifications.
-  ObserverList<NfcTagClient::Observer> observers_;
+  base::ObserverList<NfcTagClient::Observer> observers_;
 
   // Mapping from object paths to object proxies and properties structures that
   // were already created by us. This stucture stores a different DBusObjectMap

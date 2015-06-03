@@ -376,7 +376,7 @@ class ASH_EXPORT ShelfLayoutManager
   // EventFilter used to detect when user issues a gesture on a bezel sensor.
   scoped_ptr<ShelfBezelEventFilter> bezel_event_filter_;
 
-  ObserverList<ShelfLayoutManagerObserver> observers_;
+  base::ObserverList<ShelfLayoutManagerObserver> observers_;
 
   // The shelf reacts to gesture-drags, and can be set to auto-hide for certain
   // gestures. Some shelf behaviour (e.g. visibility state, background color

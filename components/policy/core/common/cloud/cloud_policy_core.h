@@ -128,7 +128,7 @@ class POLICY_EXPORT CloudPolicyCore {
   scoped_ptr<CloudPolicyRefreshScheduler> refresh_scheduler_;
   scoped_ptr<RemoteCommandsService> remote_commands_service_;
   scoped_ptr<IntegerPrefMember> refresh_delay_;
-  ObserverList<Observer, true> observers_;
+  base::ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyCore);
 };

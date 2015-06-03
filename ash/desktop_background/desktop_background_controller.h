@@ -148,7 +148,7 @@ class ASH_EXPORT DesktopBackgroundController
 
   SkColor background_color_;
 
-  ObserverList<DesktopBackgroundControllerObserver> observers_;
+  base::ObserverList<DesktopBackgroundControllerObserver> observers_;
 
   // The current wallpaper.
   scoped_ptr<wallpaper::WallpaperResizer> current_wallpaper_;

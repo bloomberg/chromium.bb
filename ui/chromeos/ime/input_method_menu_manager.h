@@ -53,7 +53,7 @@ public:
   InputMethodMenuItemList menu_list_;
 
   // Observers who will be notified when menu changes.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMenuManager);
 };

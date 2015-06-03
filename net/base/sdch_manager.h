@@ -248,7 +248,7 @@ class NET_EXPORT SdchManager {
   // Assert list is empty on destruction since if there is an observer
   // that hasn't removed itself from the list, that observer probably
   // has a reference to the SdchManager.
-  ObserverList<SdchObserver, true> observers_;
+  base::ObserverList<SdchObserver, true> observers_;
 
   base::ThreadChecker thread_checker_;
 

@@ -263,7 +263,7 @@ class SYNC_EXPORT_PRIVATE SyncEncryptionHandlerImpl
 
   base::ThreadChecker thread_checker_;
 
-  ObserverList<SyncEncryptionHandler::Observer> observers_;
+  base::ObserverList<SyncEncryptionHandler::Observer> observers_;
 
   // The current user share (for creating transactions).
   UserShare* user_share_;

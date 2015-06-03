@@ -19,7 +19,7 @@ class ViewPrivate {
   // Creates and returns a new View. Caller owns the return value.
   static View* LocalCreate();
 
-  ObserverList<ViewObserver>* observers() { return &view_->observers_; }
+  base::ObserverList<ViewObserver>* observers() { return &view_->observers_; }
 
   void ClearParent() { view_->parent_ = NULL; }
 

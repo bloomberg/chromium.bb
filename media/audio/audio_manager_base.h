@@ -174,7 +174,7 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   int num_input_streams_;
 
   // Track output state change listeners.
-  ObserverList<AudioDeviceListener> output_listeners_;
+  base::ObserverList<AudioDeviceListener> output_listeners_;
 
   // Thread used to interact with audio streams created by this audio manager.
   base::Thread audio_thread_;

@@ -91,7 +91,7 @@ class ASH_EXPORT ShelfModel {
 
   ShelfItems items_;
   Status status_;
-  ObserverList<ShelfModelObserver> observers_;
+  base::ObserverList<ShelfModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfModel);
 };

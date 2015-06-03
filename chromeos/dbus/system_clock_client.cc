@@ -130,7 +130,7 @@ class SystemClockClientImpl : public SystemClockClient {
   bool can_set_time_;
   bool can_set_time_initialized_;
   dbus::ObjectProxy* system_clock_proxy_;
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<SystemClockClientImpl> weak_ptr_factory_;
 

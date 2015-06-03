@@ -106,7 +106,7 @@ class CHROMEOS_EXPORT LoginState {
   LoggedInState logged_in_state_;
   LoggedInUserType logged_in_user_type_;
   std::string primary_user_hash_;
-  ObserverList<Observer> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   // If true, it always thinks the current status as logged in. Set to true by
   // default running on a Linux desktop without flags and test cases. To test

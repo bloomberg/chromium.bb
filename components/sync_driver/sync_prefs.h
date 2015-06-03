@@ -173,7 +173,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // May be NULL.
   PrefService* const pref_service_;
 
-  ObserverList<SyncPrefObserver> sync_pref_observers_;
+  base::ObserverList<SyncPrefObserver> sync_pref_observers_;
 
   // The preference that controls whether sync is under control by
   // configuration management.

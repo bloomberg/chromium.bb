@@ -72,7 +72,7 @@ class FakeSignalStrategy : public SignalStrategy,
 
   std::string jid_;
   PeerCallback peer_callback_;
-  ObserverList<Listener, true> listeners_;
+  base::ObserverList<Listener, true> listeners_;
 
   int last_id_;
 

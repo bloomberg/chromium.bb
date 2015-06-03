@@ -797,7 +797,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // completed.
   bool backend_loaded_;
 
-  ObserverList<HistoryServiceObserver> observers_;
+  base::ObserverList<HistoryServiceObserver> observers_;
   base::CallbackList<void(const std::set<GURL>&)>
       favicon_changed_callback_list_;
 

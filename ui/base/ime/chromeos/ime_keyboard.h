@@ -116,7 +116,7 @@ class UI_BASE_IME_EXPORT ImeKeyboard {
   std::string last_layout_;
 
  private:
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace input_method

@@ -92,7 +92,7 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
       ModelTypeSet models_with_changes) override;
 
  protected:
-  ObserverList<SyncManager::Observer>* GetObservers();
+  base::ObserverList<SyncManager::Observer>* GetObservers();
 
   // Initialize sync backup DB.
   bool InitInternal(
@@ -126,7 +126,7 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
   void InitBookmarkFolder(const std::string& folder);
 
   UserShare share_;
-  ObserverList<SyncManager::Observer> observers_;
+  base::ObserverList<SyncManager::Observer> observers_;
 
   scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler_;
   ReportUnrecoverableErrorFunction report_unrecoverable_error_function_;

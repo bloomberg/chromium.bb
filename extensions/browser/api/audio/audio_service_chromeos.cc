@@ -57,7 +57,7 @@ class AudioServiceImpl : public AudioService,
   uint64_t GetIdFromStr(const std::string& id_str);
 
   // List of observers.
-  ObserverList<AudioService::Observer> observer_list_;
+  base::ObserverList<AudioService::Observer> observer_list_;
 
   chromeos::CrasAudioHandler* cras_audio_handler_;
 

@@ -56,7 +56,7 @@ class UI_BASE_IME_EXPORT MockInputMethod
 
  private:
   TextInputClient* text_input_client_;
-  ObserverList<InputMethodObserver> observer_list_;
+  base::ObserverList<InputMethodObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputMethod);
 };

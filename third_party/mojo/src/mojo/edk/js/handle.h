@@ -39,7 +39,7 @@ class HandleWrapper : public gin::Wrappable<HandleWrapper> {
   void NotifyCloseObservers();
 
   mojo::ScopedHandle handle_;
-  ObserverList<HandleCloseObserver> close_observers_;
+  base::ObserverList<HandleCloseObserver> close_observers_;
 };
 
 }  // namespace js

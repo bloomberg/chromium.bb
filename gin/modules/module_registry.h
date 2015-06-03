@@ -99,7 +99,7 @@ class GIN_EXPORT ModuleRegistry {
   PendingModuleVector pending_modules_;
   v8::Persistent<v8::Object> modules_;
 
-  ObserverList<ModuleRegistryObserver> observer_list_;
+  base::ObserverList<ModuleRegistryObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleRegistry);
 };

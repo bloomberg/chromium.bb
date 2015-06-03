@@ -51,8 +51,8 @@ class LogRouter {
   // Observer lists for clients and receivers. The |true| in the template
   // specialisation means that they will check that all observers were removed
   // on destruction.
-  ObserverList<PasswordManagerClient, true> clients_;
-  ObserverList<LogReceiver, true> receivers_;
+  base::ObserverList<PasswordManagerClient, true> clients_;
+  base::ObserverList<LogReceiver, true> receivers_;
 
   // Logs accumulated since the first receiver was registered.
   std::string accumulated_logs_;

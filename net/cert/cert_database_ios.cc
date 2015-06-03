@@ -11,7 +11,8 @@
 namespace net {
 
 CertDatabase::CertDatabase()
-    : observer_list_(new ObserverListThreadSafe<Observer>) {}
+    : observer_list_(new base::ObserverListThreadSafe<Observer>) {
+}
 
 CertDatabase::~CertDatabase() {}
 

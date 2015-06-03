@@ -385,10 +385,10 @@ class OAuth2TokenService : public base::NonThreadSafe {
 
   // List of observers to notify when refresh token availability changes.
   // Makes sure list is empty on destruction.
-  ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true> observer_list_;
 
   // List of observers to notify when access token status changes.
-  ObserverList<DiagnosticsObserver, true> diagnostics_observer_list_;
+  base::ObserverList<DiagnosticsObserver, true> diagnostics_observer_list_;
 
   // The depth of batch changes.
   int batch_change_depth_;

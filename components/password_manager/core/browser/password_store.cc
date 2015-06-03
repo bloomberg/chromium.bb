@@ -71,7 +71,7 @@ PasswordStore::PasswordStore(
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner)
     : main_thread_runner_(main_thread_runner),
       db_thread_runner_(db_thread_runner),
-      observers_(new ObserverListThreadSafe<Observer>()),
+      observers_(new base::ObserverListThreadSafe<Observer>()),
       is_propagating_password_changes_to_web_credentials_enabled_(false),
       shutdown_called_(false) {
 }

@@ -180,7 +180,7 @@ class AURA_EXPORT WindowTreeHost {
   // the dtor).
   Window* window_;  // Owning.
 
-  ObserverList<WindowTreeHostObserver> observers_;
+  base::ObserverList<WindowTreeHostObserver> observers_;
 
   scoped_ptr<WindowEventDispatcher> dispatcher_;
 

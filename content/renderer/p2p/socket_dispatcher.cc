@@ -21,7 +21,7 @@ P2PSocketDispatcher::P2PSocketDispatcher(
     : ipc_task_runner_(ipc_task_runner),
       network_notifications_started_(false),
       network_list_observers_(
-          new ObserverListThreadSafe<NetworkListObserver>()),
+          new base::ObserverListThreadSafe<NetworkListObserver>()),
       sender_(NULL) {
 }
 

@@ -131,7 +131,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy,
-    ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
+    base::ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
       providers_(new ProcessToProviderMap),

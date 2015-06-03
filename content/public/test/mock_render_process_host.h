@@ -127,7 +127,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   int id_;
   bool has_connection_;
   BrowserContext* browser_context_;
-  ObserverList<RenderProcessHostObserver> observers_;
+  base::ObserverList<RenderProcessHostObserver> observers_;
 
   IDMap<RenderWidgetHost> render_widget_hosts_;
   int prev_routing_id_;

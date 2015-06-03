@@ -215,7 +215,7 @@ class MessageCenterImpl : public MessageCenter,
 
   scoped_ptr<NotificationList> notification_list_;
   NotificationCache notification_cache_;
-  ObserverList<MessageCenterObserver> observer_list_;
+  base::ObserverList<MessageCenterObserver> observer_list_;
   scoped_ptr<internal::PopupTimersController> popup_timers_controller_;
   scoped_ptr<base::OneShotTimer<MessageCenterImpl> > quiet_mode_timer_;
   NotifierSettingsProvider* settings_provider_;

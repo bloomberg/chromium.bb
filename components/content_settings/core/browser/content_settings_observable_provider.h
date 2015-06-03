@@ -33,7 +33,7 @@ class ObservableProvider : public ProviderInterface {
 
  private:
   base::ThreadChecker thread_checker_;
-  ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer, true> observer_list_;
 };
 
 }  // namespace content_settings

@@ -110,9 +110,7 @@ class MockRenderThread : public RenderThread {
   // Dispatches control messages to observers.
   bool OnControlMessageReceived(const IPC::Message& msg);
 
-  ObserverList<RenderProcessObserver>& observers() {
-    return observers_;
-  }
+  base::ObserverList<RenderProcessObserver>& observers() { return observers_; }
 
  protected:
   // This function operates as a regular IPC listener. Subclasses
@@ -170,7 +168,7 @@ class MockRenderThread : public RenderThread {
   std::vector<scoped_refptr<IPC::MessageFilter> > filters_;
 
   // Observers to notify.
-  ObserverList<RenderProcessObserver> observers_;
+  base::ObserverList<RenderProcessObserver> observers_;
 
   cc::TestSharedBitmapManager shared_bitmap_manager_;
 };

@@ -82,7 +82,7 @@ NSSCertDatabase::NSSCertDatabase(crypto::ScopedPK11Slot public_slot,
                                  crypto::ScopedPK11Slot private_slot)
     : public_slot_(public_slot.Pass()),
       private_slot_(private_slot.Pass()),
-      observer_list_(new ObserverListThreadSafe<Observer>),
+      observer_list_(new base::ObserverListThreadSafe<Observer>),
       weak_factory_(this) {
   CHECK(public_slot_);
 

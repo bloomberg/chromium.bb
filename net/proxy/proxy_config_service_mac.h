@@ -65,7 +65,7 @@ class ProxyConfigServiceMac : public ProxyConfigService {
   Forwarder forwarder_;
   scoped_ptr<const NetworkConfigWatcherMac> config_watcher_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Holds the last system proxy settings that we fetched.
   bool has_fetched_config_;

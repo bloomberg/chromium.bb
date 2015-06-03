@@ -87,7 +87,7 @@ class CHROMEOS_EXPORT FakeBluetoothGattDescriptorClient
   PropertiesMap properties_;
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.

@@ -175,7 +175,7 @@ class ShillClientHelper {
   ReleasedCallback released_callback_;
   int active_refs_;
   PropertyChangedHandler property_changed_handler_;
-  ObserverList<ShillPropertyChangedObserver, true /* check_empty */>
+  base::ObserverList<ShillPropertyChangedObserver, true /* check_empty */>
       observer_list_;
   std::vector<std::string> interfaces_to_be_monitored_;
 

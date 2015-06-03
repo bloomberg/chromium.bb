@@ -354,7 +354,7 @@ class PersonalDataManager : public KeyedService,
   WebDataServiceBase::Handle pending_server_creditcards_query_;
 
   // The observers.
-  ObserverList<PersonalDataManagerObserver> observers_;
+  base::ObserverList<PersonalDataManagerObserver> observers_;
 
  private:
   // Finds the country code that occurs most frequently among all profiles.

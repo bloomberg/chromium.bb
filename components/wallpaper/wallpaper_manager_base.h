@@ -589,7 +589,7 @@ class WALLPAPER_EXPORT WallpaperManagerBase
 
   content::NotificationRegistrar registrar_;
 
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // These members are for the scheduler:
 

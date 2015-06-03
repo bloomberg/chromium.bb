@@ -205,7 +205,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
   scoped_refptr<DOMStorageTaskRunner> task_runner_;
 
   // List of objects observing local storage events.
-  ObserverList<EventObserver> event_observers_;
+  base::ObserverList<EventObserver> event_observers_;
 
   // We use a 32 bit identifier for per tab storage sessions.
   // At a tab per second, this range is large enough for 68 years.

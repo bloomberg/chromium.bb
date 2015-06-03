@@ -93,7 +93,7 @@ class APP_LIST_EXPORT FolderImage : public AppListItemListObserver,
   // Top items for generating folder icon.
   std::vector<AppListItem*> top_items_;
 
-  ObserverList<FolderImageObserver> observers_;
+  base::ObserverList<FolderImageObserver> observers_;
 };
 
 }  // namespace app_list

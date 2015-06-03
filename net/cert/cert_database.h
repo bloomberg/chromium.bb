@@ -14,7 +14,8 @@
 template <typename T> struct DefaultSingletonTraits;
 
 namespace base {
-template <class ObserverType> class ObserverListThreadSafe;
+template <class ObserverType>
+class ObserverListThreadSafe;
 }
 
 namespace net {

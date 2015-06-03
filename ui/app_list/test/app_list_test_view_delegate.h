@@ -102,7 +102,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   std::map<size_t, int> open_search_result_counts_;
   Users users_;
   scoped_ptr<AppListTestModel> model_;
-  ObserverList<AppListViewDelegateObserver> observers_;
+  base::ObserverList<AppListViewDelegateObserver> observers_;
   SpeechUIModel speech_ui_;
   base::TimeDelta auto_launch_timeout_;
 

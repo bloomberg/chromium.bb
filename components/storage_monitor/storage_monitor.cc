@@ -134,7 +134,8 @@ void StorageMonitor::EjectDevice(
 }
 
 StorageMonitor::StorageMonitor()
-    : observer_list_(new ObserverListThreadSafe<RemovableStorageObserver>()),
+    : observer_list_(
+          new base::ObserverListThreadSafe<RemovableStorageObserver>()),
       initializing_(false),
       initialized_(false),
       transient_device_ids_(new TransientDeviceIds) {

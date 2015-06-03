@@ -200,7 +200,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   scoped_refptr<base::SequencedTaskRunner> bluetooth_task_runner_;
 
   // List of observers interested in event notifications.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Adapter handle owned by bluetooth task runner.
   base::win::ScopedHandle adapter_handle_;

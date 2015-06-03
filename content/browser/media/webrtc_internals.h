@@ -137,7 +137,7 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // application for power-saving.
   void CreateOrReleasePowerSaveBlocker();
 
-  ObserverList<WebRTCInternalsUIObserver> observers_;
+  base::ObserverList<WebRTCInternalsUIObserver> observers_;
 
   // |peer_connection_data_| is a list containing all the PeerConnection
   // updates.

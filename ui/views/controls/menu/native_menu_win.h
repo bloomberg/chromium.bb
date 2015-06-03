@@ -137,7 +137,7 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   MenuAction menu_action_;
 
   // A list of listeners to call when the menu opens.
-  ObserverList<MenuListener> listeners_;
+  base::ObserverList<MenuListener> listeners_;
 
   // Keep track of whether the listeners have already been called at least
   // once.

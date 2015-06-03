@@ -80,7 +80,7 @@ class WM_EXPORT CursorManager : public aura::client::CursorClient,
   // The cursor state to restore when the cursor is unlocked.
   scoped_ptr<internal::CursorState> state_on_unlock_;
 
-  ObserverList<aura::client::CursorClientObserver> observers_;
+  base::ObserverList<aura::client::CursorClientObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorManager);
 };

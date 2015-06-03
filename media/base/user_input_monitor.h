@@ -33,7 +33,7 @@ class MEDIA_EXPORT UserInputMonitor {
    protected:
     virtual ~MouseEventListener() {}
   };
-  typedef ObserverListThreadSafe<UserInputMonitor::MouseEventListener>
+  typedef base::ObserverListThreadSafe<UserInputMonitor::MouseEventListener>
       MouseListenerList;
 
   UserInputMonitor();

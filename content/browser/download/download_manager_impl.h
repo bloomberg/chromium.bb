@@ -177,7 +177,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   bool shutdown_needed_;
 
   // Observers that want to be notified of changes to the set of downloads.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   // The current active browser context.
   BrowserContext* browser_context_;

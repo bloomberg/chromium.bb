@@ -181,7 +181,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // open.
   views::View* overlay_view_;
 
-  ObserverList<AppListViewObserver> observers_;
+  base::ObserverList<AppListViewObserver> observers_;
   scoped_ptr<HideViewAnimationObserver> animation_observer_;
 
   // For UMA and testing. If non-null, triggered when the app list is painted.

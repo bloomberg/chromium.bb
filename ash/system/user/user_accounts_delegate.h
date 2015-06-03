@@ -55,7 +55,7 @@ class ASH_EXPORT UserAccountsDelegate {
   void NotifyAccountListChanged();
 
  private:
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(UserAccountsDelegate);
 };

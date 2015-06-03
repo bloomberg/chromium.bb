@@ -32,7 +32,7 @@ class DeviceManagerManual : public DeviceManager {
 
   bool have_scanned_devices_;
   std::vector<base::FilePath> devices_;
-  ObserverList<DeviceEventObserver> observers_;
+  base::ObserverList<DeviceEventObserver> observers_;
 
   base::WeakPtrFactory<DeviceManagerManual> weak_ptr_factory_;
 

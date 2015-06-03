@@ -212,7 +212,7 @@ void AccelerometerReader::RemoveObserver(Observer* observer) {
 
 AccelerometerReader::AccelerometerReader()
     : configuration_(new AccelerometerReader::Configuration()),
-      observers_(new ObserverListThreadSafe<Observer>()),
+      observers_(new base::ObserverListThreadSafe<Observer>()),
       weak_factory_(this) {
 }
 

@@ -130,7 +130,8 @@ class AutofillWebDataService : public AutofillWebData,
   }
 
  private:
-  ObserverList<AutofillWebDataServiceObserverOnUIThread> ui_observer_list_;
+  base::ObserverList<AutofillWebDataServiceObserverOnUIThread>
+      ui_observer_list_;
 
   // The task runner that this class uses as its UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;

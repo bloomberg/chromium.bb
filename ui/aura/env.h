@@ -93,7 +93,7 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   scoped_ptr<ui::EventTargetIterator> GetChildIterator() const override;
   ui::EventTargeter* GetEventTargeter() override;
 
-  ObserverList<EnvObserver> observers_;
+  base::ObserverList<EnvObserver> observers_;
 
   int mouse_button_flags_;
   // Location of last mouse event, in screen coordinates.

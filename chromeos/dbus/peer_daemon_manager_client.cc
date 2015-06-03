@@ -90,7 +90,7 @@ class PeerDaemonManagerClientImpl : public PeerDaemonManagerClient,
                              const std::string& property_name);
 
   // List of observers interested in event notifications from us.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
   dbus::ObjectManager* object_manager_;
 
   base::WeakPtrFactory<PeerDaemonManagerClientImpl> weak_ptr_factory_;

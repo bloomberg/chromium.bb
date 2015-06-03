@@ -187,7 +187,7 @@ class View {
   View* parent_;
   Children children_;
 
-  ObserverList<ViewObserver> observers_;
+  base::ObserverList<ViewObserver> observers_;
 
   Rect bounds_;
   ViewportMetricsPtr viewport_metrics_;

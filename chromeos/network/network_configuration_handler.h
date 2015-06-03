@@ -206,7 +206,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
   // Map of in-progress deleter instances. Owned by this class.
   std::map<std::string, ProfileEntryDeleter*> profile_entry_deleters_;
 
-  ObserverList<NetworkConfigurationObserver> observers_;
+  base::ObserverList<NetworkConfigurationObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigurationHandler);
 };

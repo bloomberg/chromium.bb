@@ -71,7 +71,7 @@ class XmppPushClient :
  private:
   base::ThreadChecker thread_checker_;
   const NotifierOptions notifier_options_;
-  ObserverList<PushClientObserver> observers_;
+  base::ObserverList<PushClientObserver> observers_;
 
   // XMPP connection settings.
   SubscriptionList subscriptions_;

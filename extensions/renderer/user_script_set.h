@@ -94,7 +94,7 @@ class UserScriptSet {
   ScopedVector<UserScript> scripts_;
 
   // The associated observers.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(UserScriptSet);
 };

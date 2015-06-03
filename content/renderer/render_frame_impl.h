@@ -855,7 +855,7 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererWebCookieJarImpl cookie_jar_;
 
   // All the registered observers.
-  ObserverList<RenderFrameObserver> observers_;
+  base::ObserverList<RenderFrameObserver> observers_;
 
   scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
 
