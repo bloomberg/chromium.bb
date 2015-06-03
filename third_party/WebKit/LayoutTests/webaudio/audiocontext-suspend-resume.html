@@ -53,7 +53,7 @@
       // that on an offline context.  Thus, check that suspend() on an 
       // OfflineAudioContext rejects the promise.
       shouldNotThrow("p1 = offlineContext.suspend()");
-      shouldBeType(p1, Promise);
+      shouldBeType("p1", "Promise");
       p1.then(
         handlePromise(testFailed, "offlineContext.suspend() should have been rejected for an offline context"),
         function (e) {
@@ -76,7 +76,7 @@
       // that on an offline context. Thus, check that resume() on an 
       // OfflineAudioContext rejects the promise.
       shouldNotThrow("p2 = offlineContext.resume()");
-      shouldBeType(p2, Promise);
+      shouldBeType("p2", "Promise");
       
       // Resume doesn't actually resume an offline context
       shouldBeEqualToString("offlineContext.state", "suspended");

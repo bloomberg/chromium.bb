@@ -14,7 +14,6 @@ window.jsTestIsAsync = true;
 var resolve;
 var promise = new Promise(function(r) { resolve = r; });
 var newPromise = window.internals.addOneToPromise(promise);
-debug("Got a new promise: " + newPromise);
 
 newPromise.then(function(result) {
     window.result = result;
