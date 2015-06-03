@@ -914,11 +914,6 @@ class CRWWKWebControllerPageScrollStateTest : public web::WKWebViewWebTest {
   }
 };
 
-// Helper function for comparing two CGFloats.
-bool CGFloatsAreEqual(CGFloat val1, CGFloat val2) {
-  return std::fabs(val1 - val2) < std::numeric_limits<CGFloat>::epsilon();
-}
-
 WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
            CRWWKWebControllerPageScrollStateTest,
            SetPageStateWithUserScalableDisabled) {
@@ -950,12 +945,12 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
   // setPageState: is async; wait for its completion.
   scrollView = [[[this->webController_ view] subviews][0] scrollView];
   base::test::ios::WaitUntilCondition(^bool() {
-    return CGFloatsAreEqual(scrollView.contentOffset.x, 1.0f);
+    return [scrollView contentOffset].x == 1.0f;
   });
 
-  ASSERT_CGFLOAT_EQ(originZoomScale, scrollView.zoomScale);
-  ASSERT_CGFLOAT_EQ(originMinimumZoomScale, scrollView.minimumZoomScale);
-  ASSERT_CGFLOAT_EQ(originMaximumZoomScale, scrollView.maximumZoomScale);
+  ASSERT_EQ(originZoomScale, scrollView.zoomScale);
+  ASSERT_EQ(originMinimumZoomScale, scrollView.minimumZoomScale);
+  ASSERT_EQ(originMaximumZoomScale, scrollView.maximumZoomScale);
 };
 
 WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
@@ -979,10 +974,10 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
   id webView = [[this->webController_ view] subviews][0];
   UIScrollView* scrollView = [webView scrollView];
   base::test::ios::WaitUntilCondition(^bool() {
-    return CGFloatsAreEqual(scrollView.contentOffset.x, 1.0f);
+    return [scrollView contentOffset].x == 1.0f;
   });
 
-  ASSERT_FLOAT_EQ(3, scrollView.zoomScale / scrollView.minimumZoomScale);
+  EXPECT_FLOAT_EQ(3, scrollView.zoomScale / scrollView.minimumZoomScale);
 };
 
 WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
@@ -1011,7 +1006,7 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
   // setPageState: is async; wait for its completion.
   id webView = [[this->webController_ view] subviews][0];
   base::test::ios::WaitUntilCondition(^bool() {
-    return CGFloatsAreEqual([webView scrollView].contentOffset.y, 30.0f);
+    return [[webView scrollView] contentOffset].y == 30.0f;
   });
 
   ASSERT_FALSE([this->webController_ atTop]);

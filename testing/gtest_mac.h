@@ -43,15 +43,6 @@ GTEST_API_ AssertionResult CmpHelperNSNE(const char* expected_expression,
 #define ASSERT_NSNE(val1, val2) \
   ASSERT_PRED_FORMAT2(::testing::internal::CmpHelperNSNE, val1, val2)
 
-// Tests CGFloat equality.
-#if CGFLOAT_IS_DOUBLE
-#define EXPECT_CGFLOAT_EQ(expected, actual) EXPECT_DOUBLE_EQ(expected, actual)
-#define ASSERT_CGFLOAT_EQ(expected, actual) ASSERT_DOUBLE_EQ(expected, actual)
-#else
-#define EXPECT_CGFLOAT_EQ(expected, actual) EXPECT_FLOAT_EQ(expected, actual)
-#define ASSERT_CGFLOAT_EQ(expected, actual) ASSERT_FLOAT_EQ(expected, actual)
-#endif  // CGFLOAT_IS_DOUBLE
-
 #endif  // GTEST_OS_MAC
 
 #endif  // TESTING_GTEST_MAC_H_

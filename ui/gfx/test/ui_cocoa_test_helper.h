@@ -130,6 +130,11 @@ class CocoaTest : public PlatformTest {
     (actual >= (expected - CGFLOAT_EPSILON) && \
      actual <= (expected + CGFLOAT_EPSILON))
 
+// A test support macro which ascertains if two CGFloats are equal.
+#define EXPECT_CGFLOAT_EQ(expected, actual) \
+    EXPECT_TRUE(CGFLOAT_EQ(expected, actual)) << \
+                expected << " != " << actual
+
 // A test support macro which compares two NSRects for equality taking
 // the float epsilon into consideration.
 #define EXPECT_NSRECT_EQ(expected, actual) \
