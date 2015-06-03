@@ -3520,6 +3520,7 @@ TEST(HeapTest, WeakMembers)
             h5 = WithWeakMember::create(h2, h3);
             Heap::collectGarbage(ThreadState::HeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
             EXPECT_EQ(5u, Bar::s_live); // The on-stack pointer keeps h3 alive.
+            EXPECT_FALSE(h3->hasBeenFinalized());
             EXPECT_TRUE(h4->strongIsThere());
             EXPECT_TRUE(h4->weakIsThere());
             EXPECT_TRUE(h5->strongIsThere());
