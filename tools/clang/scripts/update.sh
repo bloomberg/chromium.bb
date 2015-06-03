@@ -11,7 +11,7 @@
 CLANG_REVISION=238013
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=1
+CLANG_SUB_REVISION=3
 
 PACKAGE_VERSION="${CLANG_REVISION}-${CLANG_SUB_REVISION}"
 
@@ -675,10 +675,10 @@ popd
 if [[ -n "${with_android}" ]]; then
   # Make a standalone Android toolchain.
   ${ANDROID_NDK_DIR}/build/tools/make-standalone-toolchain.sh \
-      --platform=android-14 \
+      --platform=android-19 \
       --install-dir="${LLVM_BUILD_DIR}/android-toolchain" \
       --system=linux-x86_64 \
-      --stl=libcxx \
+      --stl=stlport \
       --toolchain=arm-linux-androideabi-4.9
 
   # Android NDK r9d copies a broken unwind.h into the toolchain, see
