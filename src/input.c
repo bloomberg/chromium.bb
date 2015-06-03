@@ -51,10 +51,10 @@ weston_seat_repick(struct weston_seat *seat)
 {
 	const struct weston_pointer *pointer = seat->pointer;
 
-	if (pointer == NULL)
+	if (!pointer)
 		return;
 
-	pointer->grab->interface->focus(seat->pointer->grab);
+	pointer->grab->interface->focus(pointer->grab);
 }
 
 static void
