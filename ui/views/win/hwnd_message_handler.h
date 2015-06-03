@@ -240,6 +240,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
                                  LPARAM l_param,
                                  bool* handled) override;
 
+  void HandleParentChanged() override;
+
   // Returns the auto-hide edges of the appbar. See
   // ViewsDelegate::GetAppbarAutohideEdges() for details. If the edges change,
   // OnAppbarAutohideEdgesChanged() is called.

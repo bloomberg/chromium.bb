@@ -56,6 +56,8 @@ void LegacyRenderWidgetHostHWND::Destroy() {
 }
 
 void LegacyRenderWidgetHostHWND::UpdateParent(HWND parent) {
+  if (GetWindowEventTarget(GetParent()))
+    GetWindowEventTarget(GetParent())->HandleParentChanged();
   ::SetParent(hwnd(), parent);
   // If the new parent is the desktop Window, then we disable the child window
   // to ensure that it does not receive any input events. It should not because

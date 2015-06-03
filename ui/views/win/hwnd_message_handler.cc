@@ -992,6 +992,13 @@ LRESULT HWNDMessageHandler::HandleNcHitTestMessage(unsigned int message,
   return ret;
 }
 
+void HWNDMessageHandler::HandleParentChanged() {
+  // If the forwarder window's parent is changed then we need to reset our
+  // context as we will not receive touch releases if the touch was initiated
+  // in the forwarder window.
+  touch_ids_.clear();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, private:
 

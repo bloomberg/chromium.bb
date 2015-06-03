@@ -74,6 +74,10 @@ class UI_BASE_EXPORT WindowEventTarget {
                                          WPARAM w_param,
                                          LPARAM l_param,
                                          bool* handled) = 0;
+
+  // Notification from the forwarder window that its parent changed.
+  virtual void HandleParentChanged() = 0;
+
  protected:
   WindowEventTarget();
   virtual ~WindowEventTarget();
