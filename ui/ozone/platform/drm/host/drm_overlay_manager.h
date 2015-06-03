@@ -16,14 +16,13 @@ class DrmOverlayManager : public OverlayManagerOzone {
   ~DrmOverlayManager() override;
 
   // OverlayManagerOzone:
-  OverlayCandidatesOzone* GetOverlayCandidates(
+  scoped_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) override;
   bool CanShowPrimaryPlaneAsOverlay() override;
 
  private:
   bool allow_surfaceless_;
-
-  scoped_ptr<OverlayCandidatesOzone> candidates_;
+  bool is_supported_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayManager);
 };

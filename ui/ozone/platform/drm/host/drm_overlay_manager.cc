@@ -59,17 +59,18 @@ class SingleOverlay : public OverlayCandidatesOzone {
 
 DrmOverlayManager::DrmOverlayManager(bool allow_surfaceless)
     : allow_surfaceless_(allow_surfaceless) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kOzoneTestSingleOverlaySupport))
-    candidates_ = make_scoped_ptr(new SingleOverlay());
+  is_supported_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kOzoneTestSingleOverlaySupport);
 }
 
 DrmOverlayManager::~DrmOverlayManager() {
 }
 
-OverlayCandidatesOzone* DrmOverlayManager::GetOverlayCandidates(
+scoped_ptr<OverlayCandidatesOzone> DrmOverlayManager::CreateOverlayCandidates(
     gfx::AcceleratedWidget w) {
-  return candidates_.get();
+  if (!is_supported_)
+    return nullptr;
+  return make_scoped_ptr(new SingleOverlay());
 }
 
 bool DrmOverlayManager::CanShowPrimaryPlaneAsOverlay() {

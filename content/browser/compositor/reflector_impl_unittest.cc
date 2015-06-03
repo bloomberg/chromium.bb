@@ -62,7 +62,8 @@ CreateTestValidatorOzone() {
 #if defined(USE_OZONE)
   return scoped_ptr<BrowserCompositorOverlayCandidateValidator>(
       new BrowserCompositorOverlayCandidateValidatorOzone(
-          0, new TestOverlayCandidatesOzone()));
+          0, scoped_ptr<ui::OverlayCandidatesOzone>(
+                 new TestOverlayCandidatesOzone())));
 #else
   return nullptr;
 #endif  // defined(USE_OZONE)

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/public/overlay_candidates_ozone.h"
 
 namespace ui {
 
@@ -12,7 +13,7 @@ StubOverlayManager::StubOverlayManager() {
 StubOverlayManager::~StubOverlayManager() {
 }
 
-OverlayCandidatesOzone* StubOverlayManager::GetOverlayCandidates(
+scoped_ptr<OverlayCandidatesOzone> StubOverlayManager::CreateOverlayCandidates(
     gfx::AcceleratedWidget w) {
   return nullptr;
 }

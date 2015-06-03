@@ -65,16 +65,15 @@ class OverlayCandidatesCast : public OverlayCandidatesOzone {
 
 }  // namespace
 
-OverlayManagerCast::OverlayManagerCast()
-    : candidates_(new OverlayCandidatesCast()) {
+OverlayManagerCast::OverlayManagerCast() {
 }
 
 OverlayManagerCast::~OverlayManagerCast() {
 }
 
-OverlayCandidatesOzone* OverlayManagerCast::GetOverlayCandidates(
+scoped_ptr<OverlayCandidatesOzone> OverlayManagerCast::CreateOverlayCandidates(
     gfx::AcceleratedWidget w) {
-  return candidates_.get();
+  return make_scoped_ptr(new OverlayCandidatesCast());
 }
 
 bool OverlayManagerCast::CanShowPrimaryPlaneAsOverlay() {

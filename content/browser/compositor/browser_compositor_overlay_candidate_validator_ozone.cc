@@ -30,9 +30,9 @@ static ui::SurfaceFactoryOzone::BufferFormat GetOzoneFormat(
 BrowserCompositorOverlayCandidateValidatorOzone::
     BrowserCompositorOverlayCandidateValidatorOzone(
         gfx::AcceleratedWidget widget,
-        ui::OverlayCandidatesOzone* overlay_candidates)
+        scoped_ptr<ui::OverlayCandidatesOzone> overlay_candidates)
     : widget_(widget),
-      overlay_candidates_(overlay_candidates),
+      overlay_candidates_(overlay_candidates.Pass()),
       software_mirror_active_(false) {
 }
 

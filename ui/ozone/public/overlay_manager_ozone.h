@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PUBLIC_OVERLAY_MANAGER_OZONE_H_
 #define UI_OZONE_PUBLIC_OVERLAY_MANAGER_OZONE_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -18,7 +19,7 @@ class OverlayManagerOzone {
   virtual ~OverlayManagerOzone() {}
 
   // Get the hal struct to check for overlay support.
-  virtual OverlayCandidatesOzone* GetOverlayCandidates(
+  virtual scoped_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) = 0;
 
   // Returns true if overlays can be shown at z-index 0, replacing the main

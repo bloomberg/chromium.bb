@@ -16,12 +16,11 @@ class OverlayManagerCast : public OverlayManagerOzone {
   ~OverlayManagerCast() override;
 
   // OverlayManagerOzone:
-  OverlayCandidatesOzone* GetOverlayCandidates(
+  scoped_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) override;
   bool CanShowPrimaryPlaneAsOverlay() override;
 
  private:
-  scoped_ptr<OverlayCandidatesOzone> candidates_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayManagerCast);
 };
