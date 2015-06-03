@@ -327,14 +327,16 @@ void PluginURLFetcher::OnDownloadedData(int len,
                                         int encoded_data_length) {
 }
 
-void PluginURLFetcher::OnReceivedData(const char* data,
-                                      int data_length,
-                                      int encoded_data_length) {
+void PluginURLFetcher::OnReceivedData(scoped_ptr<ReceivedData> data) {
+  const char* payload = data->payload();
+  int data_length = data->length();
+  int encoded_data_length = data->encoded_length();
   if (!plugin_stream_)
     return;
 
   if (multipart_delegate_) {
-    multipart_delegate_->OnReceivedData(data, data_length, encoded_data_length);
+    multipart_delegate_->OnReceivedData(payload, data_length,
+                                        encoded_data_length);
   } else {
     int64 offset = data_offset_;
     data_offset_ += data_length;
@@ -344,10 +346,10 @@ void PluginURLFetcher::OnReceivedData(const char* data,
       // ResourceDispatcher it's not mapped for write access in this process.
       // http://crbug.com/308466.
       scoped_ptr<char[]> data_copy(new char[data_length]);
-      memcpy(data_copy.get(), data, data_length);
+      memcpy(data_copy.get(), payload, data_length);
       plugin_stream_->DidReceiveData(data_copy.get(), data_length, offset);
     } else {
-      plugin_stream_->DidReceiveData(data, data_length, offset);
+      plugin_stream_->DidReceiveData(payload, data_length, offset);
     }
     // DANGER: this instance may be deleted at this point.
   }

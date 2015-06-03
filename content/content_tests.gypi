@@ -590,6 +590,7 @@
       'child/power_monitor_broadcast_source_unittest.cc',
       'child/resource_dispatcher_unittest.cc',
       'child/service_worker/service_worker_dispatcher_unittest.cc',
+      'child/shared_memory_received_data_factory_unittest.cc',
       'child/simple_webmimeregistry_impl_unittest.cc',
       'child/site_isolation_policy_unittest.cc',
       'child/v8_value_converter_impl_unittest.cc',
