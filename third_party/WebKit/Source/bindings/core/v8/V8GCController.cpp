@@ -384,11 +384,12 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
 {
     // FIXME: It would be nice if the GC callbacks passed the Isolate directly....
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (type == v8::kGCTypeScavenge)
+    if (type == v8::kGCTypeScavenge) {
         minorGCEpilogue(isolate);
-    else if (type == v8::kGCTypeMarkSweepCompact)
+    } else if (type == v8::kGCTypeMarkSweepCompact) {
         majorGCEpilogue(isolate);
-    ThreadState::current()->didV8GC();
+        ThreadState::current()->didV8GC();
+    }
 
     // Forces a Blink heap garbage collection when a garbage collection
     // was forced from V8. This is used for tests that force GCs from
