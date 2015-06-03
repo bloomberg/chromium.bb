@@ -141,10 +141,10 @@ ActiveScriptController::RequiresUserConsentForScriptInjection(
   switch (type) {
     case UserScript::CONTENT_SCRIPT:
       return extension->permissions_data()->GetContentScriptAccess(
-          extension, url, url, tab_id, -1, NULL);
+          extension, url, tab_id, -1, NULL);
     case UserScript::PROGRAMMATIC_SCRIPT:
       return extension->permissions_data()->GetPageAccess(
-          extension, url, url, tab_id, -1, NULL);
+          extension, url, tab_id, -1, NULL);
   }
 
   NOTREACHED();

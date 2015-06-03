@@ -8,6 +8,7 @@
 
 #include "base/values.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_messages.h"
@@ -66,8 +67,7 @@ bool ProgrammaticScriptInjector::ShouldInjectCss(
 PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
     const InjectionHost* injection_host,
     blink::WebFrame* frame,
-    int tab_id,
-    const GURL& top_url) const {
+    int tab_id) const {
   // It doesn't make sense to inject a script into a remote frame or a frame
   // with a null document.
   if (frame->isWebRemoteFrame() || frame->document().isNull())
@@ -87,7 +87,10 @@ PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
   DCHECK_EQ(injection_host->id().type(), HostID::EXTENSIONS);
 
   return injection_host->CanExecuteOnFrame(
-      effective_document_url, top_url, tab_id, true /* is_declarative */);
+      effective_document_url,
+      content::RenderFrame::FromWebFrame(frame),
+      tab_id,
+      true /* is_declarative */);
 }
 
 std::vector<blink::WebScriptSource> ProgrammaticScriptInjector::GetJsSources(

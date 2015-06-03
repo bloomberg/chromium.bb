@@ -67,8 +67,7 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptWebstore) {
   std::string error;
 
   EXPECT_TRUE(extension->permissions_data()->CanAccessPage(
-      extension.get(), kAnyUrl, kAnyUrl, -1, -1, &error))
-      << error;
+      extension.get(), kAnyUrl, -1, -1, &error)) << error;
 
   // Pretend we are in the webstore process. We should not be able to execute
   // script.
@@ -77,7 +76,7 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptWebstore) {
   extension_dispatcher_->OnLoadedInternal(webstore_extension);
   extension_dispatcher_->OnActivateExtension(extensions::kWebStoreAppId);
   EXPECT_FALSE(extension->permissions_data()->CanAccessPage(
-      extension.get(), kAnyUrl, kAnyUrl, -1, -1, &error))
+      extension.get(), kAnyUrl, -1, -1, &error))
       << error;
 }
 

@@ -223,9 +223,10 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   if (top_frame->isWebRemoteFrame())
     return injection.Pass();
 
-  if (injector->CanExecuteOnFrame(injection_host.get(), web_frame,
-                                  -1,  // Content scripts are not tab-specific.
-                                  top_frame->document().url()) ==
+  if (injector->CanExecuteOnFrame(
+          injection_host.get(),
+          web_frame,
+          -1 /* Content scripts are not tab-specific. */) ==
       PermissionsData::ACCESS_DENIED) {
     return injection.Pass();
   }

@@ -19,7 +19,7 @@ class WebUIInjectionHost : public InjectionHost {
   const std::string& name() const override;
   extensions::PermissionsData::AccessType CanExecuteOnFrame(
       const GURL& document_url,
-      const GURL& top_frame_url,
+      content::RenderFrame* render_frame,
       int tab_id,
       bool is_declarative) const override;
   bool ShouldNotifyBrowserOfInjection() const override;

@@ -144,7 +144,7 @@ bool CanRequestAutomation(const Extension* extension,
   int process_id = process ? process->GetID() : -1;
   std::string unused_error;
   return extension->permissions_data()->CanAccessPage(
-      extension, url, url, tab_id, process_id, &unused_error);
+      extension, url, tab_id, process_id, &unused_error);
 }
 
 // Helper class that implements an action adapter for a |RenderFrameHost|.

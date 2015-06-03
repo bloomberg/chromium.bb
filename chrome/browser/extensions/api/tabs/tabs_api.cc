@@ -1275,7 +1275,6 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
     if (!extension()->permissions_data()->CanAccessPage(
             extension(),
             web_contents_->GetURL(),
-            web_contents_->GetURL(),
             tab_id,
             process ? process->GetID() : -1,
             &error_)) {
@@ -1799,7 +1798,6 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
   if (!extension()->permissions_data()->CanAccessPage(
           extension(),
           contents->GetURL(),
-          contents->GetURL(),
           execute_tab_id_,
           process ? process->GetID() : -1,
           &error_)) {
@@ -1887,7 +1885,7 @@ bool TabsSetZoomFunction::RunAsync() {
     return false;
 
   GURL url(web_contents->GetVisibleURL());
-  if (PermissionsData::IsRestrictedUrl(url, url, extension(), &error_))
+  if (PermissionsData::IsRestrictedUrl(url, extension(), &error_))
     return false;
 
   ZoomController* zoom_controller =
@@ -1939,7 +1937,7 @@ bool TabsSetZoomSettingsFunction::RunAsync() {
     return false;
 
   GURL url(web_contents->GetVisibleURL());
-  if (PermissionsData::IsRestrictedUrl(url, url, extension(), &error_))
+  if (PermissionsData::IsRestrictedUrl(url, extension(), &error_))
     return false;
 
   // "per-origin" scope is only available in "automatic" mode.

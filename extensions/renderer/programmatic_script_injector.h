@@ -41,8 +41,7 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   PermissionsData::AccessType CanExecuteOnFrame(
       const InjectionHost* injection_host,
       blink::WebFrame* web_frame,
-      int tab_id,
-      const GURL& top_url) const override;
+      int tab_id) const override;
   std::vector<blink::WebScriptSource> GetJsSources(
       UserScript::RunLocation run_location) const override;
   std::vector<std::string> GetCssSources(

@@ -49,6 +49,8 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnExtensionDeliverMessage)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect,
                         OnExtensionDispatchOnDisconnect)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabExtensionOwner,
+                        OnSetTabExtensionOwner)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -89,6 +91,11 @@ void ExtensionFrameHelper::OnExtensionDispatchOnDisconnect(
   MessagingBindings::DispatchOnDisconnect(
       extension_dispatcher_->script_context_set(), port_id, error_message,
       render_frame());
+}
+
+void ExtensionFrameHelper::OnSetTabExtensionOwner(
+    const std::string& extension_id) {
+  tab_extension_owner_id_ = extension_id;
 }
 
 }  // namespace extensions

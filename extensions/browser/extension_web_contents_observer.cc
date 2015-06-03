@@ -142,10 +142,19 @@ void ExtensionWebContentsObserver::RenderFrameHostChanged(
   if (old_host)
     process_manager->UnregisterRenderFrameHost(old_host);
 
-  const Extension* extension = GetExtension(new_host->GetRenderViewHost());
-  if (extension) {
+  const Extension* frame_extension = GetExtensionForRenderFrame(new_host);
+  if (frame_extension) {
     process_manager->RegisterRenderFrameHost(
-        web_contents(), new_host, extension);
+        web_contents(), new_host, frame_extension);
+  }
+
+  // This can be different from |frame_extension| above in the case of, e.g.,
+  // a non-extension iframe hosted in a chrome-extension:// page.
+  const Extension* tab_extension =
+      GetExtensionForRenderFrame(web_contents()->GetMainFrame());
+  if (tab_extension) {
+    new_host->Send(new ExtensionMsg_SetTabExtensionOwner(
+        new_host->GetRoutingID(), tab_extension->id()));
   }
 }
 

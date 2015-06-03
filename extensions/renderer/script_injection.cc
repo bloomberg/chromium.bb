@@ -136,8 +136,7 @@ ScriptInjection::InjectionResult ScriptInjection::TryToInject(
   }
 
   switch (injector_->CanExecuteOnFrame(
-      injection_host_.get(), web_frame_, tab_id_,
-      web_frame_->top()->document().url())) {
+      injection_host_.get(), web_frame_, tab_id_)) {
     case PermissionsData::ACCESS_DENIED:
       NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
       return INJECTION_FINISHED;  // We're done.

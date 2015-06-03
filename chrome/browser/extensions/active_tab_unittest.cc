@@ -108,7 +108,7 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
                  int tab_id) {
     const PermissionsData* permissions_data = extension->permissions_data();
     bool script = permissions_data->CanAccessPage(
-        extension.get(), url, url, tab_id, -1, NULL);
+        extension.get(), url, tab_id, -1, NULL);
     bool capture = HasTabsPermission(extension, tab_id) &&
                    permissions_data->CanCaptureVisiblePage(tab_id, NULL);
     switch (feature) {
@@ -276,7 +276,7 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
   EXPECT_TRUE(IsAllowed(extension, chromium, PERMITTED_CAPTURE_ONLY));
   EXPECT_TRUE(IsAllowed(another_extension, chromium, PERMITTED_CAPTURE_ONLY));
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, chromium));
-};
+}
 
 TEST_F(ActiveTabTest, Uninstalling) {
   // Some semi-arbitrary setup.

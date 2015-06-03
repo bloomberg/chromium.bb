@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/renderer/extension_injection_host.h"
+
+#include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
-#include "extensions/renderer/extension_injection_host.h"
+#include "extensions/renderer/extension_frame_helper.h"
 
 namespace extensions {
 
@@ -42,13 +45,20 @@ const std::string& ExtensionInjectionHost::name() const {
 
 PermissionsData::AccessType ExtensionInjectionHost::CanExecuteOnFrame(
     const GURL& document_url,
-    const GURL& top_frame_url,
+    content::RenderFrame* render_frame,
     int tab_id,
     bool is_declarative) const {
   // If we don't have a tab id, we have no UI surface to ask for user consent.
   // For now, we treat this as an automatic allow.
   if (tab_id == -1)
     return PermissionsData::ACCESS_ALLOWED;
+
+  const std::string& extension_id =
+      ExtensionFrameHelper::Get(render_frame)->tab_extension_owner_id();
+  // We don't allow injections in any frame of an extension page (unless it's by
+  // the owning extension).
+  if (!extension_id.empty() && extension_id != extension_->id())
+    return PermissionsData::ACCESS_DENIED;
 
   // Declarative user scripts use "page access" (from "permissions" section in
   // manifest) whereas non-declarative user scripts use custom
@@ -57,7 +67,6 @@ PermissionsData::AccessType ExtensionInjectionHost::CanExecuteOnFrame(
     return extension_->permissions_data()->GetPageAccess(
         extension_,
         document_url,
-        top_frame_url,
         tab_id,
         -1,  // no process id
         nullptr /* ignore error */);
@@ -65,7 +74,6 @@ PermissionsData::AccessType ExtensionInjectionHost::CanExecuteOnFrame(
     return extension_->permissions_data()->GetContentScriptAccess(
         extension_,
         document_url,
-        top_frame_url,
         tab_id,
         -1,  // no process id
         nullptr /* ignore error */);

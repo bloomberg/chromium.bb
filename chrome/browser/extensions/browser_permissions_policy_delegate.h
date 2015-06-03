@@ -18,7 +18,6 @@ class BrowserPermissionsPolicyDelegate
 
   bool CanExecuteScriptOnPage(const Extension* extension,
                               const GURL& document_url,
-                              const GURL& top_document_url,
                               int tab_id,
                               int process_id,
                               std::string* error) override;

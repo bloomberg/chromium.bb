@@ -9,6 +9,10 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/gurl.h"
 
+namespace content {
+class RenderFrame;
+}
+
 // An interface for all kinds of hosts who own user scripts.
 class InjectionHost {
  public:
@@ -26,7 +30,7 @@ class InjectionHost {
   // Returns true if the script should execute.
   virtual extensions::PermissionsData::AccessType CanExecuteOnFrame(
       const GURL& document_url,
-      const GURL& top_frame_url,
+      content::RenderFrame* render_frame,
       int tab_id,
       bool is_declarative) const = 0;
 

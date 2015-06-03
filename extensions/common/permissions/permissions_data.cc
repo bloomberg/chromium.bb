@@ -83,7 +83,6 @@ bool PermissionsData::ShouldSkipPermissionWarnings(
 
 // static
 bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
-                                      const GURL& top_frame_url,
                                       const Extension* extension,
                                       std::string* error) {
   if (extension && CanExecuteScriptEverywhere(extension))
@@ -112,8 +111,8 @@ bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
     return true;
   }
 
-  if (extension && top_frame_url.SchemeIs(kExtensionScheme) &&
-      top_frame_url.host() != extension->id() && !allow_on_chrome_urls) {
+  if (extension && document_url.SchemeIs(kExtensionScheme) &&
+      document_url.host() != extension->id() && !allow_on_chrome_urls) {
     if (error)
       *error = manifest_errors::kCannotAccessExtensionUrl;
     return true;
@@ -227,13 +226,11 @@ bool PermissionsData::HasWithheldImpliedAllHosts() const {
 
 bool PermissionsData::CanAccessPage(const Extension* extension,
                                     const GURL& document_url,
-                                    const GURL& top_frame_url,
                                     int tab_id,
                                     int process_id,
                                     std::string* error) const {
   AccessType result = CanRunOnPage(extension,
                                    document_url,
-                                   top_frame_url,
                                    tab_id,
                                    process_id,
                                    active_permissions()->explicit_hosts(),
@@ -246,13 +243,11 @@ bool PermissionsData::CanAccessPage(const Extension* extension,
 PermissionsData::AccessType PermissionsData::GetPageAccess(
     const Extension* extension,
     const GURL& document_url,
-    const GURL& top_frame_url,
     int tab_id,
     int process_id,
     std::string* error) const {
   return CanRunOnPage(extension,
                       document_url,
-                      top_frame_url,
                       tab_id,
                       process_id,
                       active_permissions()->explicit_hosts(),
@@ -262,13 +257,11 @@ PermissionsData::AccessType PermissionsData::GetPageAccess(
 
 bool PermissionsData::CanRunContentScriptOnPage(const Extension* extension,
                                                 const GURL& document_url,
-                                                const GURL& top_frame_url,
                                                 int tab_id,
                                                 int process_id,
                                                 std::string* error) const {
   AccessType result = CanRunOnPage(extension,
                                    document_url,
-                                   top_frame_url,
                                    tab_id,
                                    process_id,
                                    active_permissions()->scriptable_hosts(),
@@ -281,13 +274,11 @@ bool PermissionsData::CanRunContentScriptOnPage(const Extension* extension,
 PermissionsData::AccessType PermissionsData::GetContentScriptAccess(
     const Extension* extension,
     const GURL& document_url,
-    const GURL& top_frame_url,
     int tab_id,
     int process_id,
     std::string* error) const {
   return CanRunOnPage(extension,
                       document_url,
-                      top_frame_url,
                       tab_id,
                       process_id,
                       active_permissions()->scriptable_hosts(),
@@ -352,7 +343,6 @@ bool PermissionsData::HasTabSpecificPermissionToExecuteScript(
 PermissionsData::AccessType PermissionsData::CanRunOnPage(
     const Extension* extension,
     const GURL& document_url,
-    const GURL& top_frame_url,
     int tab_id,
     int process_id,
     const URLPatternSet& permitted_url_patterns,
@@ -360,14 +350,14 @@ PermissionsData::AccessType PermissionsData::CanRunOnPage(
     std::string* error) const {
   if (g_policy_delegate &&
       !g_policy_delegate->CanExecuteScriptOnPage(
-          extension, document_url, top_frame_url, tab_id, process_id, error)) {
+          extension, document_url, tab_id, process_id, error)) {
     return ACCESS_DENIED;
   }
 
-  if (IsRestrictedUrl(document_url, top_frame_url, extension, error))
+  if (IsRestrictedUrl(document_url, extension, error))
     return ACCESS_DENIED;
 
-  if (HasTabSpecificPermissionToExecuteScript(tab_id, top_frame_url))
+  if (HasTabSpecificPermissionToExecuteScript(tab_id, document_url))
     return ACCESS_ALLOWED;
 
   if (permitted_url_patterns.MatchesURL(document_url))

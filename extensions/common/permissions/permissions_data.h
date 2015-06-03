@@ -49,7 +49,6 @@ class PermissionsData {
     // Otherwise, default policy should decide.
     virtual bool CanExecuteScriptOnPage(const Extension* extension,
                                         const GURL& document_url,
-                                        const GURL& top_document_url,
                                         int tab_id,
                                         int process_id,
                                         std::string* error) = 0;
@@ -80,7 +79,6 @@ class PermissionsData {
   // as is commonly the case for chrome:// urls.
   // NOTE: You probably want to use CanAccessPage().
   static bool IsRestrictedUrl(const GURL& document_url,
-                              const GURL& top_frame_url,
                               const Extension* extension,
                               std::string* error);
 
@@ -158,7 +156,6 @@ class PermissionsData {
   // with the reason the extension cannot access the page.
   bool CanAccessPage(const Extension* extension,
                      const GURL& document_url,
-                     const GURL& top_document_url,
                      int tab_id,
                      int process_id,
                      std::string* error) const;
@@ -167,7 +164,6 @@ class PermissionsData {
   // know how to wait for permission.
   AccessType GetPageAccess(const Extension* extension,
                            const GURL& document_url,
-                           const GURL& top_document_url,
                            int tab_id,
                            int process_id,
                            std::string* error) const;
@@ -180,7 +176,6 @@ class PermissionsData {
   // method.
   bool CanRunContentScriptOnPage(const Extension* extension,
                                  const GURL& document_url,
-                                 const GURL& top_document_url,
                                  int tab_id,
                                  int process_id,
                                  std::string* error) const;
@@ -190,7 +185,6 @@ class PermissionsData {
   // know how to wait for permission.
   AccessType GetContentScriptAccess(const Extension* extension,
                                     const GURL& document_url,
-                                    const GURL& top_document_url,
                                     int tab_id,
                                     int process_id,
                                     std::string* error) const;
@@ -241,7 +235,6 @@ class PermissionsData {
   // sites (like the webstore or chrome:// urls).
   AccessType CanRunOnPage(const Extension* extension,
                           const GURL& document_url,
-                          const GURL& top_document_url,
                           int tab_id,
                           int process_id,
                           const URLPatternSet& permitted_url_patterns,
