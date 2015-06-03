@@ -159,5 +159,8 @@ message Verifiers {
     repeated Bucket buckets = 1;
   }
 
-  message PresubmitCheckVerifier {}
+  message PresubmitCheckVerifier {
+    // After this timeout in seconds, the presubmit process will be killed.
+    optional int32 timeout = 1;
+  }
 }
