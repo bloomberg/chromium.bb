@@ -52,7 +52,7 @@ bool SVGImageChromeClient::isSVGImageChromeClient() const
 
 void SVGImageChromeClient::chromeDestroyed()
 {
-    m_image = 0;
+    m_image = nullptr;
 }
 
 void SVGImageChromeClient::invalidateRect(const IntRect& r)

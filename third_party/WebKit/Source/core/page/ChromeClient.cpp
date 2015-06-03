@@ -43,7 +43,8 @@ void ChromeClient::setWindowRectWithAdjustment(const IntRect& pendingRect)
     IntRect window = pendingRect;
 
     IntSize minimumSize = minimumWindowSize();
-    // Let size 0 pass through, since that indicates default size, not minimum size.
+    // Let size 0 pass through, since that indicates default size, not minimum
+    // size.
     if (window.width())
         window.setWidth(std::min(std::max(minimumSize.width(), window.width()), screen.width()));
     if (window.height())
@@ -140,10 +141,9 @@ bool ChromeClient::runJavaScriptPrompt(LocalFrame* frame, const String& prompt, 
 
 void ChromeClient::mouseDidMoveOverElement(const HitTestResult& result)
 {
-    if (result.innerNode()) {
-        if (result.innerNode()->document().isDNSPrefetchEnabled())
-            prefetchDNS(result.absoluteLinkURL().host());
-    }
+    if (result.innerNode() && result.innerNode()->document().isDNSPrefetchEnabled())
+        prefetchDNS(result.absoluteLinkURL().host());
+
     showMouseOverURL(result);
 
     setToolTip(result);
@@ -151,15 +151,17 @@ void ChromeClient::mouseDidMoveOverElement(const HitTestResult& result)
 
 void ChromeClient::setToolTip(const HitTestResult& result)
 {
-    // First priority is a potential toolTip representing a spelling or grammar error
+    // First priority is a potential toolTip representing a spelling or grammar
+    // error.
     TextDirection toolTipDirection;
     String toolTip = result.spellingToolTip(toolTipDirection);
 
-    // Next we'll consider a tooltip for element with "title" attribute
+    // Next we'll consider a tooltip for element with "title" attribute.
     if (toolTip.isEmpty())
         toolTip = result.title(toolTipDirection);
 
-    // Lastly, for <input type="file"> that allow multiple files, we'll consider a tooltip for the selected filenames
+    // Lastly, for <input type="file"> that allow multiple files, we'll consider
+    // a tooltip for the selected filenames.
     if (toolTip.isEmpty()) {
         if (Node* node = result.innerNode()) {
             if (isHTMLInputElement(*node)) {
@@ -182,7 +184,8 @@ void ChromeClient::setToolTip(const HitTestResult& result)
 void ChromeClient::print(LocalFrame* frame)
 {
     // Defer loads in case the client method runs a new event loop that would
-    // otherwise cause the load to continue while we're in the middle of executing JavaScript.
+    // otherwise cause the load to continue while we're in the middle of
+    // executing JavaScript.
     ScopedPageLoadDeferrer deferrer;
 
     printInternal(frame);

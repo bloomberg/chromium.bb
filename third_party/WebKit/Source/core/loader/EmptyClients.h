@@ -66,97 +66,96 @@ namespace blink {
 class CORE_EXPORT EmptyChromeClient : public ChromeClient {
     WTF_MAKE_FAST_ALLOCATED(EmptyChromeClient);
 public:
-    virtual ~EmptyChromeClient() { }
-    virtual void chromeDestroyed() override { }
+    ~EmptyChromeClient() override { }
+    void chromeDestroyed() override { }
 
-    virtual void* webView() const override { return 0; }
-    virtual void setWindowRect(const IntRect&) override { }
-    virtual IntRect windowRect() override { return IntRect(); }
+    void* webView() const override { return nullptr; }
+    void setWindowRect(const IntRect&) override { }
+    IntRect windowRect() override { return IntRect(); }
 
-    virtual IntRect pageRect() override { return IntRect(); }
+    IntRect pageRect() override { return IntRect(); }
 
-    virtual void focus() override { }
+    void focus() override { }
 
-    virtual bool canTakeFocus(WebFocusType) override { return false; }
-    virtual void takeFocus(WebFocusType) override { }
+    bool canTakeFocus(WebFocusType) override { return false; }
+    void takeFocus(WebFocusType) override { }
 
-    virtual void focusedNodeChanged(Node*, Node*) override { }
-    virtual void focusedFrameChanged(LocalFrame*) override { }
-    virtual Page* createWindow(LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) override { return 0; }
-    virtual void show(NavigationPolicy) override { }
+    void focusedNodeChanged(Node*, Node*) override { }
+    void focusedFrameChanged(LocalFrame*) override { }
+    Page* createWindow(LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) override { return nullptr; }
+    void show(NavigationPolicy) override { }
 
-    virtual void setToolbarsVisible(bool) override { }
-    virtual bool toolbarsVisible() override { return false; }
+    void setToolbarsVisible(bool) override { }
+    bool toolbarsVisible() override { return false; }
 
-    virtual void setStatusbarVisible(bool) override { }
-    virtual bool statusbarVisible() override { return false; }
+    void setStatusbarVisible(bool) override { }
+    bool statusbarVisible() override { return false; }
 
-    virtual void setScrollbarsVisible(bool) override { }
-    virtual bool scrollbarsVisible() override { return false; }
+    void setScrollbarsVisible(bool) override { }
+    bool scrollbarsVisible() override { return false; }
 
-    virtual void setMenubarVisible(bool) override { }
-    virtual bool menubarVisible() override { return false; }
+    void setMenubarVisible(bool) override { }
+    bool menubarVisible() override { return false; }
 
-    virtual void setResizable(bool) override { }
+    void setResizable(bool) override { }
 
-    virtual bool shouldReportDetailedMessageForSource(LocalFrame&, const String&) override { return false; }
-    virtual void addMessageToConsole(LocalFrame*, MessageSource, MessageLevel, const String&, unsigned, const String&, const String&) override { }
+    bool shouldReportDetailedMessageForSource(LocalFrame&, const String&) override { return false; }
+    void addMessageToConsole(LocalFrame*, MessageSource, MessageLevel, const String&, unsigned, const String&, const String&) override { }
 
-    virtual bool canRunBeforeUnloadConfirmPanel() override { return false; }
-    virtual bool runBeforeUnloadConfirmPanelInternal(LocalFrame*, const String&) override { return true; }
+    bool canRunBeforeUnloadConfirmPanel() override { return false; }
+    bool runBeforeUnloadConfirmPanelInternal(LocalFrame*, const String&) override { return true; }
 
-    virtual void closeWindowSoon() override { }
+    void closeWindowSoon() override { }
 
-    virtual void runJavaScriptAlertInternal(LocalFrame*, const String&) override { }
-    virtual bool runJavaScriptConfirmInternal(LocalFrame*, const String&) override { return false; }
-    virtual bool runJavaScriptPromptInternal(LocalFrame*, const String&, const String&, String&) override { return false; }
+    void runJavaScriptAlertInternal(LocalFrame*, const String&) override { }
+    bool runJavaScriptConfirmInternal(LocalFrame*, const String&) override { return false; }
+    bool runJavaScriptPromptInternal(LocalFrame*, const String&, const String&, String&) override { return false; }
 
-    virtual bool hasOpenedPopup() const override { return false; }
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) override;
-    virtual DOMWindow* pagePopupWindowForTesting() const override { return nullptr; }
+    bool hasOpenedPopup() const override { return false; }
+    PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) override;
+    DOMWindow* pagePopupWindowForTesting() const override { return nullptr; }
 
-    virtual void setStatusbarText(const String&) override { }
+    void setStatusbarText(const String&) override { }
 
-    virtual bool tabsToLinks() override { return false; }
+    bool tabsToLinks() override { return false; }
 
-    virtual IntRect windowResizerRect() const override { return IntRect(); }
+    IntRect windowResizerRect() const override { return IntRect(); }
 
-    virtual void invalidateRect(const IntRect&) override { }
-    virtual void scheduleAnimation() override { }
+    void invalidateRect(const IntRect&) override { }
+    void scheduleAnimation() override { }
 
-    virtual IntRect viewportToScreen(const IntRect& r) const override { return r; }
-    virtual WebScreenInfo screenInfo() const override { return WebScreenInfo(); }
-    virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const override { }
+    IntRect viewportToScreen(const IntRect& r) const override { return r; }
+    WebScreenInfo screenInfo() const override { return WebScreenInfo(); }
+    void contentsSizeChanged(LocalFrame*, const IntSize&) const override { }
 
-    virtual void showMouseOverURL(const HitTestResult&) override { }
+    void showMouseOverURL(const HitTestResult&) override { }
 
-    virtual void setToolTip(const String&, TextDirection) override { }
+    void setToolTip(const String&, TextDirection) override { }
 
-    virtual void printInternal(LocalFrame*) override { }
+    void printInternal(LocalFrame*) override { }
 
-    virtual void enumerateChosenDirectory(FileChooser*) override { }
+    void enumerateChosenDirectory(FileChooser*) override { }
 
-    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
-    virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
-    virtual void openTextDataListChooser(HTMLInputElement&) override;
+    PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
+    PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
+    void openTextDataListChooser(HTMLInputElement&) override;
 
-    virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) override;
+    void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) override;
 
-    virtual void setCursorInternal(const Cursor&) override { }
+    void setCursorInternal(const Cursor&) override { }
 
-    virtual void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override { }
+    void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override { }
 
-    virtual void needTouchEvents(bool) override { }
-    virtual void setTouchAction(TouchAction touchAction) override { };
+    void needTouchEvents(bool) override { }
+    void setTouchAction(TouchAction) override { };
 
-    virtual void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element>>&, LocalFrame* frame) override { }
+    void didAssociateFormControls(const WillBeHeapVector<RefPtrWillBeMember<Element>>&, LocalFrame*) override { }
 
-    virtual void annotatedRegionsChanged() override { }
-    virtual String acceptLanguages() override;
+    void annotatedRegionsChanged() override { }
+    String acceptLanguages() override;
 
-    virtual void registerPopupOpeningObserver(PopupOpeningObserver*) { };
-    virtual void unregisterPopupOpeningObserver(PopupOpeningObserver*) { };
-    virtual void notifyPopupOpeningObservers() const { };
+    void registerPopupOpeningObserver(PopupOpeningObserver*) override { };
+    void unregisterPopupOpeningObserver(PopupOpeningObserver*) override { };
 };
 
 class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {

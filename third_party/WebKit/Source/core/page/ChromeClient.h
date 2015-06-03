@@ -24,11 +24,11 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/AXObjectCache.h"
+#include "core/frame/ConsoleTypes.h"
+#include "core/html/forms/PopupMenuClient.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationPolicy.h"
-#include "core/frame/ConsoleTypes.h"
-#include "core/html/forms/PopupMenuClient.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Cursor.h"
 #include "platform/HostWindow.h"
@@ -177,8 +177,8 @@ public:
     virtual GraphicsLayerFactory* graphicsLayerFactory() const { return nullptr; }
 
     // Pass 0 as the GraphicsLayer to detach the root layer.
-    // This sets the graphics layer for the LocalFrame's WebWidget, if it has one. Otherwise
-    // it sets it for the WebViewImpl.
+    // This sets the graphics layer for the LocalFrame's WebWidget, if it has
+    // one. Otherwise it sets it for the WebViewImpl.
     virtual void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) = 0;
 
     virtual void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*, LocalFrame* localRoot) { }
