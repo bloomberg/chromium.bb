@@ -671,6 +671,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             for (TabObserver observer : mObservers) {
                 observer.onDidAttachInterstitialPage(Tab.this);
             }
+            notifyLoadProgress(getProgress());
 
             updateFullscreenEnabledState();
         }
@@ -682,6 +683,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             for (TabObserver observer : mObservers) {
                 observer.onDidDetachInterstitialPage(Tab.this);
             }
+            notifyLoadProgress(getProgress());
 
             updateFullscreenEnabledState();
         }
