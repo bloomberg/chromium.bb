@@ -374,7 +374,9 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
     return NULL;
   }
 
-  DCHECK_EQ(format, ARGB);
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  DCHECK_EQ(format, NV12);
+#endif
   scoped_refptr<VideoFrame> frame(
       new VideoFrame(format, STORAGE_DMABUFS, coded_size, visible_rect,
                      natural_size, timestamp, false));
