@@ -46,6 +46,16 @@ def _Import(name):
   return import_module(name, None)
 
 
+def _TryImport(name):
+  """Try to import a module or package if it is not already imported."""
+  try:
+    return _Import(name)
+  except ImportError:
+    if cr.context.verbose:
+      print 'Warning: Failed to load module', name
+    return None
+
+
 def _ScanModule(module):
   """Runs all the scan_hooks for a module."""
   scanner_tags = getattr(module, _MODULE_SCANNED_TAG, None)
@@ -76,12 +86,14 @@ def _ScanPackage(package):
         packages.append(name)
       elif basename.endswith('.py') and not basename.startswith('_'):
         name = '.'.join([package.__name__, basename[:-3]])
-        module = _Import(name)
-        _ScanModule(module)
-        modules.append(module)
+        module = _TryImport(name)
+        if module:
+          _ScanModule(module)
+          modules.append(module)
     for name in packages:
-      child = _Import(name)
-      modules.extend(_ScanPackage(child))
+      child = _TryImport(name)
+      if child:
+        modules.extend(_ScanPackage(child))
   return modules
 
 
