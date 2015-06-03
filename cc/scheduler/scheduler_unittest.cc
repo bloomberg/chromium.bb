@@ -2914,6 +2914,70 @@ TEST_F(SchedulerTest, SynchronousCompositorDoubleCommitWithoutDraw) {
   client_->Reset();
 }
 
+class SchedulerClientSetNeedsPrepareTilesOnDraw : public FakeSchedulerClient {
+ public:
+  SchedulerClientSetNeedsPrepareTilesOnDraw() : FakeSchedulerClient() {}
+
+ protected:
+  DrawResult ScheduledActionDrawAndSwapIfPossible() override {
+    scheduler_->SetNeedsPrepareTiles();
+    return FakeSchedulerClient::ScheduledActionDrawAndSwapIfPossible();
+  }
+
+  void ScheduledActionPrepareTiles() override {
+    FakeSchedulerClient::ScheduledActionPrepareTiles();
+    scheduler_->DidPrepareTiles();
+  }
+};
+
+TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  scheduler_settings_.use_external_begin_frame_source = true;
+  scheduler_settings_.impl_side_painting = true;
+
+  scoped_ptr<FakeSchedulerClient> client =
+      make_scoped_ptr(new SchedulerClientSetNeedsPrepareTilesOnDraw);
+  SetUpScheduler(client.Pass(), true);
+
+  scheduler_->SetNeedsRedraw();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+  client_->Reset();
+
+  // Next vsync.
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 1, 3);
+  EXPECT_ACTION("ScheduledActionInvalidateOutputSurface", client_, 2, 3);
+  client_->Reset();
+
+  // Android onDraw.
+  scheduler_->SetNeedsRedraw();
+  scheduler_->OnDrawForOutputSurface();
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_FALSE(scheduler_->PrepareTilesPending());
+  client_->Reset();
+
+  // Android onDraw.
+  scheduler_->SetNeedsRedraw();
+  scheduler_->OnDrawForOutputSurface();
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 1, 2);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  EXPECT_FALSE(scheduler_->PrepareTilesPending());
+  client_->Reset();
+
+  // Next vsync.
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_FALSE(scheduler_->PrepareTilesPending());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 3);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
+  EXPECT_FALSE(client_->needs_begin_frames());
+  client_->Reset();
+}
+
 TEST_F(SchedulerTest, AuthoritativeVSyncInterval) {
   SetUpScheduler(true);
   base::TimeDelta initial_interval = scheduler_->BeginImplFrameInterval();
