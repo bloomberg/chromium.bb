@@ -206,13 +206,13 @@ std::string ToString(const MotionEvent& event) {
       DCHECK_GE(pi, 0);
       pointer_ids.clear_first_marked_bit();
       ss << "{"
-          << "\n PointerId: (" << event.GetPointerId(pi) << ")"
+         << "\n  PointerId: (" << event.GetPointerId(pi) << ")"
          << "\n  Pos: (" << event.GetX(pi) << ", " << event.GetY(pi) << ")"
          << "\n  RawPos: (" << event.GetX(pi) << ", " << event.GetY(pi) << ")"
          << "\n  Size: (" << event.GetTouchMajor(pi) << ", "
          << event.GetTouchMinor(pi) << ")"
          << "\n  Orientation: " << event.GetOrientation(pi)
-         << "\n  Pressure: " << event.GetOrientation(pi)
+         << "\n  Pressure: " << event.GetPressure(pi)
          << "\n  Tool: " << event.GetToolType(pi);
       if (history_size) {
         ss << "\n  History: [";
