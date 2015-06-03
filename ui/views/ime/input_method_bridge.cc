@@ -311,15 +311,6 @@ void InputMethodBridge::EnsureCaretInRect(const gfx::Rect& rect) {
     client->EnsureCaretInRect(rect);
 }
 
-void InputMethodBridge::OnCandidateWindowShown() {
-}
-
-void InputMethodBridge::OnCandidateWindowUpdated() {
-}
-
-void InputMethodBridge::OnCandidateWindowHidden() {
-}
-
 bool InputMethodBridge::IsEditCommandEnabled(int command_id) {
   TextInputClient* client = GetTextInputClient();
   return client ? client->IsEditCommandEnabled(command_id) : false;

@@ -51,9 +51,6 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
       base::i18n::TextDirection direction) override;
   void ExtendSelectionAndDelete(size_t before, size_t after) override;
   void EnsureCaretInRect(const gfx::Rect& rect) override;
-  void OnCandidateWindowShown() override;
-  void OnCandidateWindowUpdated() override;
-  void OnCandidateWindowHidden() override;
 
   bool IsEditCommandEnabled(int command_id) override;
   void SetEditCommandForNextKeyEvent(int command_id) override;

@@ -198,27 +198,6 @@ class MockInputMethodObserver : public InputMethodObserver {
   DISALLOW_COPY_AND_ASSIGN(MockInputMethodObserver);
 };
 
-class MockTextInputClient : public DummyTextInputClient {
- public:
-  MockTextInputClient()
-      : shown_event_count_(0), updated_event_count_(0), hidden_event_count_(0) {
-  }
-  ~MockTextInputClient() override {}
-
-  void OnCandidateWindowShown() override { ++shown_event_count_; }
-  void OnCandidateWindowUpdated() override { ++updated_event_count_; }
-  void OnCandidateWindowHidden() override { ++hidden_event_count_; }
-
-  int shown_event_count() const { return shown_event_count_; }
-  int updated_event_count() const { return updated_event_count_; }
-  int hidden_event_count() const { return hidden_event_count_; }
-
- private:
-  int shown_event_count_;
-  int updated_event_count_;
-  int hidden_event_count_;
-};
-
 typedef ScopedObserver<InputMethod, InputMethodObserver>
     InputMethodScopedObserver;
 
@@ -336,53 +315,6 @@ TEST_F(InputMethodBaseTest, DetachTextInputClient) {
     EXPECT_EQ(NULL, input_method.GetTextInputClient());
     verifier.Verify();
   }
-}
-
-TEST_F(InputMethodBaseTest, CandidateWindowEvents) {
-  MockTextInputClient text_input_client;
-
-  {
-    ClientChangeVerifier verifier;
-    MockInputMethodBase input_method_base(&verifier);
-    input_method_base.OnFocus();
-
-    verifier.ExpectClientChange(NULL, &text_input_client);
-    SetFocusedTextInputClient(&input_method_base, &text_input_client);
-
-    EXPECT_EQ(0, text_input_client.shown_event_count());
-    EXPECT_EQ(0, text_input_client.updated_event_count());
-    EXPECT_EQ(0, text_input_client.hidden_event_count());
-
-    input_method_base.OnCandidateWindowShown();
-    base::RunLoop().RunUntilIdle();
-
-    EXPECT_EQ(1, text_input_client.shown_event_count());
-    EXPECT_EQ(0, text_input_client.updated_event_count());
-    EXPECT_EQ(0, text_input_client.hidden_event_count());
-
-    input_method_base.OnCandidateWindowUpdated();
-    base::RunLoop().RunUntilIdle();
-
-    EXPECT_EQ(1, text_input_client.shown_event_count());
-    EXPECT_EQ(1, text_input_client.updated_event_count());
-    EXPECT_EQ(0, text_input_client.hidden_event_count());
-
-    input_method_base.OnCandidateWindowHidden();
-    base::RunLoop().RunUntilIdle();
-
-    EXPECT_EQ(1, text_input_client.shown_event_count());
-    EXPECT_EQ(1, text_input_client.updated_event_count());
-    EXPECT_EQ(1, text_input_client.hidden_event_count());
-
-    input_method_base.OnCandidateWindowShown();
-  }
-
-  // If InputMethod is deleted immediately after an event happens, but before
-  // its callback is invoked, the callback will be cancelled.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, text_input_client.shown_event_count());
-  EXPECT_EQ(1, text_input_client.updated_event_count());
-  EXPECT_EQ(1, text_input_client.hidden_event_count());
 }
 
 }  // namespace

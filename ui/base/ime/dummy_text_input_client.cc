@@ -106,15 +106,6 @@ void DummyTextInputClient::ExtendSelectionAndDelete(size_t before,
 void DummyTextInputClient::EnsureCaretInRect(const gfx::Rect& rect)  {
 }
 
-void DummyTextInputClient::OnCandidateWindowShown() {
-}
-
-void DummyTextInputClient::OnCandidateWindowUpdated() {
-}
-
-void DummyTextInputClient::OnCandidateWindowHidden() {
-}
-
 bool DummyTextInputClient::IsEditCommandEnabled(int command_id) {
   return false;
 }

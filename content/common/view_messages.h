@@ -759,11 +759,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SetWebUIProperty,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetInputMethodActive,
                     bool /* is_active */)
 
-// IME API oncandidatewindow* events for InputMethodContext.
-IPC_MESSAGE_ROUTED0(ViewMsg_CandidateWindowShown)
-IPC_MESSAGE_ROUTED0(ViewMsg_CandidateWindowUpdated)
-IPC_MESSAGE_ROUTED0(ViewMsg_CandidateWindowHidden)
-
 // Used to notify the render-view that we have received a target URL. Used
 // to prevent target URLs spamming the browser.
 IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)

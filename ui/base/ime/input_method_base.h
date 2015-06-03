@@ -85,26 +85,12 @@ class UI_BASE_IME_EXPORT InputMethodBase
   // |client| which is the text input client with focus.
   void NotifyTextInputCaretBoundsChanged(const TextInputClient* client);
 
-  // Interface for for signalling candidate window events.
-  // See also *Callback functions below. To avoid reentrancy issue that
-  // TextInputClient manipulates IME state during even handling, these methods
-  // defer sending actual signals to renderer.
-  void OnCandidateWindowShown();
-  void OnCandidateWindowUpdated();
-  void OnCandidateWindowHidden();
-
   bool system_toplevel_window_focused() const {
     return system_toplevel_window_focused_;
   }
 
  private:
   void SetFocusedTextInputClientInternal(TextInputClient* client);
-
-  // Deferred callbacks for signalling TextInputClient about candidate window
-  // appearance changes.
-  void CandidateWindowShownCallback();
-  void CandidateWindowUpdatedCallback();
-  void CandidateWindowHiddenCallback();
 
   internal::InputMethodDelegate* delegate_;
   TextInputClient* text_input_client_;

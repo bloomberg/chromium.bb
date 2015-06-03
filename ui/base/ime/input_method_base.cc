@@ -144,38 +144,4 @@ void InputMethodBase::SetFocusedTextInputClientInternal(
   NotifyTextInputStateChanged(text_input_client_);
 }
 
-void InputMethodBase::OnCandidateWindowShown() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&InputMethodBase::CandidateWindowShownCallback, AsWeakPtr()));
-}
-
-void InputMethodBase::OnCandidateWindowUpdated() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&InputMethodBase::CandidateWindowUpdatedCallback,
-                 AsWeakPtr()));
-}
-
-void InputMethodBase::OnCandidateWindowHidden() {
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&InputMethodBase::CandidateWindowHiddenCallback, AsWeakPtr()));
-}
-
-void InputMethodBase::CandidateWindowShownCallback() {
-  if (TextInputClient* text_input_client = GetTextInputClient())
-    text_input_client->OnCandidateWindowShown();
-}
-
-void InputMethodBase::CandidateWindowUpdatedCallback() {
-  if (TextInputClient* text_input_client = GetTextInputClient())
-    text_input_client->OnCandidateWindowUpdated();
-}
-
-void InputMethodBase::CandidateWindowHiddenCallback() {
-  if (TextInputClient* text_input_client = GetTextInputClient())
-    text_input_client->OnCandidateWindowHidden();
-}
-
 }  // namespace ui

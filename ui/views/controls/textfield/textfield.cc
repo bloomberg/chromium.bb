@@ -1615,12 +1615,6 @@ void Textfield::ExtendSelectionAndDelete(size_t before, size_t after) {
 
 void Textfield::EnsureCaretInRect(const gfx::Rect& rect) {}
 
-void Textfield::OnCandidateWindowShown() {}
-
-void Textfield::OnCandidateWindowUpdated() {}
-
-void Textfield::OnCandidateWindowHidden() {}
-
 bool Textfield::IsEditCommandEnabled(int command_id) {
   return IsCommandIdEnabled(command_id);
 }
