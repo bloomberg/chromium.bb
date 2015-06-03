@@ -37,7 +37,6 @@ ACRONYMS = [
     'FE',
     'FTP',
     'HTML',
-    'IME',
     'JS',
     'SVG',
     'URL',
