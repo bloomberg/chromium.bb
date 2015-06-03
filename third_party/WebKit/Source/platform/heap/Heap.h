@@ -1179,9 +1179,40 @@ inline bool Heap::isNormalHeapIndex(int index)
 }
 
 #if ENABLE(LAZY_SWEEPING)
-#define EAGERLY_FINALIZE() typedef int IsEagerlyFinalizedMarker
+#define DECLARE_EAGER_FINALIZATION_OPERATOR_NEW() \
+public:                                           \
+    GC_PLUGIN_IGNORE("491488")                    \
+    void* operator new(size_t size)               \
+    {                                             \
+        return allocateObject(size, true);        \
+    }
 #define EAGERLY_FINALIZE_WILL_BE_REMOVED()
+#if ENABLE(ASSERT)
+class VerifyEagerFinalization {
+public:
+    ~VerifyEagerFinalization()
+    {
+        // If this assert triggers, the class annotated as eagerly
+        // finalized ended up not being allocated on the heap
+        // set aside for eager finalization. The reason is most
+        // likely that the effective 'operator new' overload for
+        // this class' leftmost base is for a class that is not
+        // eagerly finalized. Declaring and defining an 'operator new'
+        // for this class is what's required -- consider using
+        // DECLARE_EAGER_FINALIZATION_OPERATOR_NEW().
+        ASSERT(pageFromObject(this)->heap()->heapIndex() == EagerSweepHeapIndex);
+    }
+};
+#define EAGERLY_FINALIZE()                             \
+private:                                               \
+    VerifyEagerFinalization m_verifyEagerFinalization; \
+public:                                                \
+    typedef int IsEagerlyFinalizedMarker
 #else
+#define EAGERLY_FINALIZE() typedef int IsEagerlyFinalizedMarker
+#endif
+#else
+#define DECLARE_EAGER_FINALIZATION_OPERATOR_NEW()
 #define EAGERLY_FINALIZE()
 // TODO(Oilpan): define in terms of Oilpan's EAGERLY_FINALIZE() once lazy
 // sweeping is enabled non-Oilpan.
