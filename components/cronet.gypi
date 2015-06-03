@@ -152,9 +152,9 @@
             '../url/url.gyp:url_lib_use_icu_alternatives_on_android',
           ],
         },
-        { # cronet_stub.jar defines HttpUrlRequest interface and provides its
-          # its implementation using HttpUrlConnection (not the Chromium stack).
-          'target_name': 'cronet_stub',
+        { # cronet_api.jar defines Cronet API and provides implementation of
+          # legacy api using HttpUrlConnection (not the Chromium stack).
+          'target_name': 'cronet_api',
           'type': 'none',
           'dependencies': [
             'cronet_url_request_context_config_list',
@@ -190,7 +190,7 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base',
-            'cronet_stub',
+            'cronet_api',
             'cronet_url_request_java',
             'libcronet',
             'net_request_priority_java',
@@ -229,7 +229,7 @@
           'type': 'none',
           'dependencies': [
             'cronet_java',
-            'cronet_stub',
+            'cronet_api',
           ],
           'variables': {
             'apk_name': 'CronetSample',
@@ -263,7 +263,7 @@
           'dependencies': [
             'cronet_java',
             'cronet_sample_apk_java',
-            'cronet_stub',
+            'cronet_api',
             '../base/base.gyp:base_java_test_support',
           ],
           'variables': {
@@ -381,7 +381,7 @@
           'type': 'none',
           'dependencies': [
             'cronet_java',
-            'cronet_stub',
+            'cronet_api',
           ],
           'variables': {
             'apk_name': 'CronetPerfTest',
@@ -401,13 +401,13 @@
           'dependencies': [
             'libcronet',
             'cronet_java',
-            'cronet_stub',
+            'cronet_api',
             '../net/net.gyp:net_unittests_apk',
           ],
           'variables': {
             'native_lib': 'libcronet.>(android_product_extension)',
             'java_lib': 'cronet.jar',
-            'java_stub_lib': 'cronet_stub.jar',
+            'java_api_lib': 'cronet_api.jar',
             'java_src_lib': 'cronet-src.jar',
             'java_sample_src_lib': 'cronet-sample-src.jar',
             'lib_java_dir': '<(PRODUCT_DIR)/lib.java',
@@ -508,7 +508,7 @@
                 '../AUTHORS',
                 '../chrome/VERSION',
                 'cronet/android/proguard.cfg',
-                '<(lib_java_dir)/<(java_stub_lib)'
+                '<(lib_java_dir)/<(java_api_lib)'
               ],
             },
             {
