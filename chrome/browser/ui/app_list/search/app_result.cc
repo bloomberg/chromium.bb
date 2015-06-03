@@ -96,9 +96,11 @@ void AppResult::Open(int event_flags) {
   if (RunExtensionEnableFlow())
     return;
 
-  extensions::RecordAppListSearchLaunch(extension);
-  content::RecordAction(
-      base::UserMetricsAction("AppList_ClickOnAppFromSearch"));
+  if (display_type() != DISPLAY_RECOMMENDATION) {
+    extensions::RecordAppListSearchLaunch(extension);
+    content::RecordAction(
+        base::UserMetricsAction("AppList_ClickOnAppFromSearch"));
+  }
 
   controller_->ActivateApp(
       profile_,
