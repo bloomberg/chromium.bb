@@ -55,6 +55,7 @@ COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'projects', 'compiler-rt')
 LLVM_BUILD_TOOLS_DIR = os.path.abspath(
     os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
 STAMP_FILE = os.path.join(LLVM_DIR, '..', 'llvm-build', 'cr_build_revision')
+BINUTILS_DIR = os.path.join(THIRD_PARTY_DIR, 'binutils')
 VERSION = '3.7.0'
 
 # URL for pre-built binaries.
@@ -282,8 +283,11 @@ def UpdateClang(args):
     cflags += ' -DLLVM_FORCE_HEAD_REVISION'
     cxxflags += ' -DLLVM_FORCE_HEAD_REVISION'
 
-  base_cmake_args = ['-GNinja', '-DCMAKE_BUILD_TYPE=Release',
-                      '-DLLVM_ENABLE_ASSERTIONS=ON']
+  base_cmake_args = ['-GNinja',
+                     '-DCMAKE_BUILD_TYPE=Release',
+                     '-DLLVM_ENABLE_ASSERTIONS=ON',
+                     '-DLLVM_ENABLE_THREADS=OFF',
+                     ]
 
   cc, cxx = None, None
   if args.bootstrap:
@@ -293,7 +297,6 @@ def UpdateClang(args):
     os.chdir(LLVM_BOOTSTRAP_DIR)
     bootstrap_args = base_cmake_args + [
         '-DLLVM_TARGETS_TO_BUILD=host',
-        '-DLLVM_ENABLE_THREADS=OFF',
         '-DCMAKE_INSTALL_PREFIX=' + LLVM_BOOTSTRAP_INSTALL_DIR,
         '-DCMAKE_C_FLAGS=' + cflags,
         '-DCMAKE_CXX_FLAGS=' + cxxflags,
@@ -317,7 +320,13 @@ def UpdateClang(args):
     cxx = cxx.replace('\\', '/')
     print 'Building final compiler'
 
+  # Build clang.
+  binutils_incdir = ''
+  if sys.platform.startswith('linux'):
+    binutils_incdir = os.path.join(BINUTILS_DIR, 'Linux_x64/Release/include')
+
   cmake_args = base_cmake_args + [
+      '-DLLVM_BINUTILS_INCDIR=' + binutils_incdir,
       '-DCMAKE_C_FLAGS=' + cflags,
       '-DCMAKE_CXX_FLAGS=' + cxxflags,
       '-DCHROMIUM_TOOLS_SRC=%s' % os.path.join(CHROMIUM_DIR, 'tools', 'clang'),
@@ -380,6 +389,7 @@ def UpdateClang(args):
       CopyFile(os.path.join(sanitizer_include_dir, f),
                aux_sanitizer_include_dir)
 
+  # Run tests.
   if args.run_tests or use_head_revision:
     os.chdir(LLVM_BUILD_DIR)
     RunCommand(GetVSVersion().SetupScript('x64') +
