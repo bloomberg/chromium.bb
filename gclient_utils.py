@@ -708,8 +708,6 @@ def GetBuildtoolsPath():
 
 def GetBuildtoolsPlatformBinaryPath():
   """Returns the full path to the binary directory for the current platform."""
-  # Mac and Windows just have one directory, Linux has two according to whether
-  # it's 32 or 64 bits.
   buildtools_path = GetBuildtoolsPath()
   if not buildtools_path:
     return None
@@ -719,10 +717,7 @@ def GetBuildtoolsPlatformBinaryPath():
   elif sys.platform == 'darwin':
     subdir = 'mac'
   elif sys.platform.startswith('linux'):
-    if sys.maxsize > 2**32:
       subdir = 'linux64'
-    else:
-      subdir = 'linux32'
   else:
     raise Error('Unknown platform: ' + sys.platform)
   return os.path.join(buildtools_path, subdir)
