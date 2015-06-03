@@ -44,7 +44,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   typedef uint64_t ContentProtectionClientId;
   static const ContentProtectionClientId kInvalidClientId = 0;
 
-  typedef base::Callback<void(bool)> ConfigurationCallback;
+  typedef base::Callback<void(bool /* success */)> ConfigurationCallback;
 
   typedef base::Callback<void(bool /* success */)> EnableProtectionCallback;
 
@@ -63,6 +63,8 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   typedef base::Callback<void(const QueryProtectionResponse&)>
       QueryProtectionCallback;
+
+  typedef base::Callback<void(bool /* success */)> DisplayControlCallback;
 
   typedef std::vector<DisplaySnapshot*> DisplayStateList;
 
@@ -167,11 +169,11 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   // Called when an external process no longer needs to control the display
   // and Chrome can take control.
-  void TakeControl();
+  void TakeControl(const DisplayControlCallback& callback);
 
   // Called when an external process needs to control the display and thus
   // Chrome should relinquish it.
-  void RelinquishControl();
+  void RelinquishControl(const DisplayControlCallback& callback);
 
   void set_state_controller(StateController* controller) {
     state_controller_ = controller;
@@ -332,6 +334,13 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
                                   bool success);
   void OnContentProtectionClientUnregistered(bool success);
 
+  // Callbacks used to signal when the native platform has released/taken
+  // display control.
+  void OnDisplayControlTaken(const DisplayControlCallback& callback,
+                             bool success);
+  void OnDisplayControlRelinquished(const DisplayControlCallback& callback,
+                                    bool success);
+
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;
   scoped_ptr<NativeDisplayDelegate> native_display_delegate_;
@@ -404,6 +413,10 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   // Display controlled by an external entity.
   bool display_externally_controlled_;
+
+  // True if a TakeControl or RelinquishControl has been called but the response
+  // hasn't arrived yet.
+  bool display_control_changing_;
 
   // Whether the displays are currently suspended.
   bool displays_suspended_;

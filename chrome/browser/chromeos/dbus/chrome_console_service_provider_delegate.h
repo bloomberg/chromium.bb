@@ -17,8 +17,9 @@ class ChromeConsoleServiceProviderDelegate
   ~ChromeConsoleServiceProviderDelegate() override;
 
   // ConsoleServiceProvider::Delegate overrides:
-  void TakeDisplayOwnership() override;
-  void ReleaseDisplayOwnership() override;
+  void TakeDisplayOwnership(const UpdateOwnershipCallback& callback) override;
+  void ReleaseDisplayOwnership(
+      const UpdateOwnershipCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeConsoleServiceProviderDelegate);

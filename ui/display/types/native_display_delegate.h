@@ -31,6 +31,7 @@ typedef base::Callback<void(const std::vector<ui::DisplaySnapshot*>&)>
 typedef base::Callback<void(bool)> ConfigureCallback;
 typedef base::Callback<void(bool, ui::HDCPState)> GetHDCPStateCallback;
 typedef base::Callback<void(bool)> SetHDCPStateCallback;
+typedef base::Callback<void(bool)> DisplayControlCallback;
 
 // Interface for classes that perform display configuration actions on behalf
 // of DisplayConfigurator.
@@ -52,10 +53,11 @@ class DISPLAY_TYPES_EXPORT NativeDisplayDelegate {
   virtual void UngrabServer() = 0;
 
   // Take control of the display from any other controlling process.
-  virtual bool TakeDisplayControl() = 0;
+  virtual void TakeDisplayControl(const DisplayControlCallback& callback) = 0;
 
   // Let others control the display.
-  virtual bool RelinquishDisplayControl() = 0;
+  virtual void RelinquishDisplayControl(
+      const DisplayControlCallback& callback) = 0;
 
   // Flushes all pending requests and waits for replies.
   virtual void SyncWithServer() = 0;

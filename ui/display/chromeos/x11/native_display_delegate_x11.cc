@@ -146,14 +146,14 @@ void NativeDisplayDelegateX11::UngrabServer() {
   XFlush(display_);
 }
 
-bool NativeDisplayDelegateX11::TakeDisplayControl() {
+void NativeDisplayDelegateX11::TakeDisplayControl(
+    const DisplayControlCallback& callback) {
   NOTIMPLEMENTED();
-  return false;
 }
 
-bool NativeDisplayDelegateX11::RelinquishDisplayControl() {
+void NativeDisplayDelegateX11::RelinquishDisplayControl(
+    const DisplayControlCallback& callback) {
   NOTIMPLEMENTED();
-  return false;
 }
 
 void NativeDisplayDelegateX11::SyncWithServer() { XSync(display_, 0); }

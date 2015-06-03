@@ -32,14 +32,16 @@ void NativeDisplayDelegateOzone::UngrabServer() {
   NOTIMPLEMENTED();
 }
 
-bool NativeDisplayDelegateOzone::TakeDisplayControl() {
+void NativeDisplayDelegateOzone::TakeDisplayControl(
+    const DisplayControlCallback& callback) {
   NOTIMPLEMENTED();
-  return false;
+  callback.Run(false);
 }
 
-bool NativeDisplayDelegateOzone::RelinquishDisplayControl() {
+void NativeDisplayDelegateOzone::RelinquishDisplayControl(
+    const DisplayControlCallback& callback) {
   NOTIMPLEMENTED();
-  return false;
+  callback.Run(false);
 }
 
 void NativeDisplayDelegateOzone::SyncWithServer() {

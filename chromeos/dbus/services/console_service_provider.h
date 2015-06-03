@@ -24,12 +24,16 @@ class CHROMEOS_EXPORT ConsoleServiceProvider
  public:
   class Delegate {
    public:
+    typedef base::Callback<void(bool)> UpdateOwnershipCallback;
+
     virtual ~Delegate() {}
 
     // Performs the actual work needed by the provider methods with the same
     // names.
-    virtual void TakeDisplayOwnership() = 0;
-    virtual void ReleaseDisplayOwnership() = 0;
+    virtual void TakeDisplayOwnership(
+        const UpdateOwnershipCallback& callback) = 0;
+    virtual void ReleaseDisplayOwnership(
+        const UpdateOwnershipCallback& callback) = 0;
   };
 
   explicit ConsoleServiceProvider(scoped_ptr<Delegate> delegate);

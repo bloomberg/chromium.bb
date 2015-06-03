@@ -128,7 +128,8 @@ class DisplayConfiguratorTest : public testing::Test {
         enable_content_protection_status_(0),
         enable_content_protection_call_count_(0),
         query_content_protection_call_count_(0),
-        callback_result_(CALLBACK_NOT_CALLED) {}
+        callback_result_(CALLBACK_NOT_CALLED),
+        display_control_result_(CALLBACK_NOT_CALLED) {}
   ~DisplayConfiguratorTest() override {}
 
   void SetUp() override {
@@ -166,6 +167,10 @@ class DisplayConfiguratorTest : public testing::Test {
 
   void OnConfiguredCallback(bool status) {
     callback_result_ = (status ? CALLBACK_SUCCESS : CALLBACK_FAILURE);
+  }
+
+  void OnDisplayControlUpdated(bool status) {
+    display_control_result_ = (status ? CALLBACK_SUCCESS : CALLBACK_FAILURE);
   }
 
   void EnableContentProtectionCallback(bool status) {
@@ -224,6 +229,12 @@ class DisplayConfiguratorTest : public testing::Test {
     return result;
   }
 
+  CallbackResult PopDisplayControlResult() {
+    CallbackResult result = display_control_result_;
+    display_control_result_ = CALLBACK_NOT_CALLED;
+    return result;
+  }
+
   base::MessageLoop message_loop_;
   TestStateController state_controller_;
   TestMirroringController mirroring_controller_;
@@ -242,6 +253,7 @@ class DisplayConfiguratorTest : public testing::Test {
   TestDisplaySnapshot outputs_[2];
 
   CallbackResult callback_result_;
+  CallbackResult display_control_result_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayConfiguratorTest);
@@ -1435,13 +1447,19 @@ TEST_F(DisplayConfiguratorTest, DontRestoreStalePowerStateAfterResume) {
 TEST_F(DisplayConfiguratorTest, ExternalControl) {
   InitWithSingleOutput();
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
-  configurator_.RelinquishControl();
+  configurator_.RelinquishControl(
+      base::Bind(&DisplayConfiguratorTest::OnDisplayControlUpdated,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopDisplayControlResult());
   EXPECT_EQ(
       JoinActions(
           kRelinquishDisplayControl,
           NULL),
       log_->GetActionsAndClear());
-  configurator_.TakeControl();
+  configurator_.TakeControl(
+      base::Bind(&DisplayConfiguratorTest::OnDisplayControlUpdated,
+                 base::Unretained(this)));
+  EXPECT_EQ(CALLBACK_SUCCESS, PopDisplayControlResult());
   EXPECT_EQ(JoinActions(kTakeDisplayControl, kGrab,
                         GetFramebufferAction(small_mode_.size(), &outputs_[0],
                                              nullptr).c_str(),

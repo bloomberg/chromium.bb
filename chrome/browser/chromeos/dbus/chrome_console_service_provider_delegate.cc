@@ -15,12 +15,15 @@ ChromeConsoleServiceProviderDelegate::ChromeConsoleServiceProviderDelegate() {
 ChromeConsoleServiceProviderDelegate::~ChromeConsoleServiceProviderDelegate() {
 }
 
-void ChromeConsoleServiceProviderDelegate::TakeDisplayOwnership() {
-  ash::Shell::GetInstance()->display_configurator()->TakeControl();
+void ChromeConsoleServiceProviderDelegate::TakeDisplayOwnership(
+    const UpdateOwnershipCallback& callback) {
+  ash::Shell::GetInstance()->display_configurator()->TakeControl(callback);
 }
 
-void ChromeConsoleServiceProviderDelegate::ReleaseDisplayOwnership() {
-  ash::Shell::GetInstance()->display_configurator()->RelinquishControl();
+void ChromeConsoleServiceProviderDelegate::ReleaseDisplayOwnership(
+    const UpdateOwnershipCallback& callback) {
+  ash::Shell::GetInstance()->display_configurator()->RelinquishControl(
+      callback);
 }
 
 }  // namespace chromeos

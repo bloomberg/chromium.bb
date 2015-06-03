@@ -473,6 +473,7 @@ DisplayConfigurator::DisplayConfigurator()
       force_configure_(false),
       next_display_protection_client_id_(1),
       display_externally_controlled_(false),
+      display_control_changing_(false),
       displays_suspended_(false),
       layout_manager_(new DisplayLayoutManagerImpl(this)),
       weak_ptr_factory_(this) {
@@ -523,27 +524,74 @@ void DisplayConfigurator::Init(bool is_panel_fitting_enabled) {
   }
 }
 
-void DisplayConfigurator::TakeControl() {
-  if (cached_displays_.empty())
+void DisplayConfigurator::TakeControl(const DisplayControlCallback& callback) {
+  if (display_control_changing_) {
+    callback.Run(false);
     return;
+  }
 
-  if (!display_externally_controlled_)
+  if (!display_externally_controlled_) {
+    callback.Run(true);
     return;
+  }
 
-  if (!native_display_delegate_->TakeDisplayControl())
-    return;
-
-  display_externally_controlled_ = false;
-  force_configure_ = true;
-  RunPendingConfiguration();
+  display_control_changing_ = true;
+  native_display_delegate_->TakeDisplayControl(
+      base::Bind(&DisplayConfigurator::OnDisplayControlTaken,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void DisplayConfigurator::RelinquishControl() {
-  if (display_externally_controlled_)
-    return;
+void DisplayConfigurator::OnDisplayControlTaken(
+    const DisplayControlCallback& callback,
+    bool success) {
+  display_control_changing_ = false;
+  display_externally_controlled_ = !success;
+  if (success) {
+    force_configure_ = true;
+    RunPendingConfiguration();
+  }
 
+  callback.Run(success);
+}
+
+void DisplayConfigurator::RelinquishControl(
+    const DisplayControlCallback& callback) {
+  if (display_control_changing_) {
+    callback.Run(false);
+    return;
+  }
+
+  if (display_externally_controlled_) {
+    callback.Run(true);
+    return;
+  }
+
+  // For simplicity, just fail if in the middle of a display configuration.
+  if (configuration_task_) {
+    callback.Run(false);
+    return;
+  }
+
+  // Set the flag early such that an incoming configuration event won't start
+  // while we're releasing control of the displays.
+  display_control_changing_ = true;
   display_externally_controlled_ = true;
-  native_display_delegate_->RelinquishDisplayControl();
+  native_display_delegate_->RelinquishDisplayControl(
+      base::Bind(&DisplayConfigurator::OnDisplayControlRelinquished,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void DisplayConfigurator::OnDisplayControlRelinquished(
+    const DisplayControlCallback& callback,
+    bool success) {
+  display_control_changing_ = false;
+  display_externally_controlled_ = success;
+  if (!success) {
+    force_configure_ = true;
+    RunPendingConfiguration();
+  }
+
+  callback.Run(success);
 }
 
 void DisplayConfigurator::ForceInitialConfigure(

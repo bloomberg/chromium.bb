@@ -9,6 +9,18 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+namespace {
+
+void OnDisplayOwnershipChanged(
+    const dbus::ExportedObject::ResponseSender& response_sender,
+    scoped_ptr<dbus::Response> response,
+    bool status) {
+  dbus::MessageWriter writer(response.get());
+  writer.AppendBool(status);
+  response_sender.Run(response.Pass());
+}
+
+}  // namespace
 
 ConsoleServiceProvider::ConsoleServiceProvider(scoped_ptr<Delegate> delegate)
     : delegate_(delegate.Pass()),
@@ -38,15 +50,17 @@ void ConsoleServiceProvider::Start(
 void ConsoleServiceProvider::TakeDisplayOwnership(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  delegate_->TakeDisplayOwnership();
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  delegate_->TakeDisplayOwnership(
+      base::Bind(&OnDisplayOwnershipChanged, response_sender,
+                 base::Passed(dbus::Response::FromMethodCall(method_call))));
 }
 
 void ConsoleServiceProvider::ReleaseDisplayOwnership(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  delegate_->ReleaseDisplayOwnership();
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  delegate_->ReleaseDisplayOwnership(
+      base::Bind(&OnDisplayOwnershipChanged, response_sender,
+                 base::Passed(dbus::Response::FromMethodCall(method_call))));
 }
 
 void ConsoleServiceProvider::OnExported(const std::string& interface_name,

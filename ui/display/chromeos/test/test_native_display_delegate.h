@@ -51,8 +51,9 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   void Initialize() override;
   void GrabServer() override;
   void UngrabServer() override;
-  bool TakeDisplayControl() override;
-  bool RelinquishDisplayControl() override;
+  void TakeDisplayControl(const DisplayControlCallback& callback) override;
+  void RelinquishDisplayControl(
+      const DisplayControlCallback& callback) override;
   void SyncWithServer() override;
   void SetBackgroundColor(uint32_t color_argb) override;
   void ForceDPMSOn() override;

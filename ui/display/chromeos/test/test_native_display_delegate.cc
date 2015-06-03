@@ -36,14 +36,16 @@ void TestNativeDisplayDelegate::UngrabServer() {
   log_->AppendAction(kUngrab);
 }
 
-bool TestNativeDisplayDelegate::TakeDisplayControl() {
+void TestNativeDisplayDelegate::TakeDisplayControl(
+    const DisplayControlCallback& callback) {
   log_->AppendAction(kTakeDisplayControl);
-  return true;
+  callback.Run(true);
 }
 
-bool TestNativeDisplayDelegate::RelinquishDisplayControl() {
+void TestNativeDisplayDelegate::RelinquishDisplayControl(
+    const DisplayControlCallback& callback) {
   log_->AppendAction(kRelinquishDisplayControl);
-  return true;
+  callback.Run(true);
 }
 
 void TestNativeDisplayDelegate::SyncWithServer() {
