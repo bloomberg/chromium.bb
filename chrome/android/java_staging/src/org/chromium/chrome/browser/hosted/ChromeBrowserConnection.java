@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
@@ -76,6 +77,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
 
     @Override
     public long finishSetup(IBrowserConnectionCallback callback) {
+        if (callback == null) return RESULT_ERROR;
         final int uid = Binder.getCallingUid();
         synchronized (mLock) {
             if (mUidToCallback.get(uid) != null) return RESULT_ERROR;
@@ -153,6 +155,12 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     public long mayLaunchUrl(
             long sessionId, final String url, Bundle extras, List<Bundle> otherLikelyBundles) {
         int uid = Binder.getCallingUid();
+        // Don't do anything for unknown schemes. Not having a scheme is
+        // allowed, as we allow "www.example.com".
+        String scheme = Uri.parse(url).normalizeScheme().getScheme();
+        if (scheme != null && !scheme.equals("http") && !scheme.equals("https")) {
+            return RESULT_ERROR;
+        }
         if (!isUidForeground(uid)) return RESULT_ERROR;
         synchronized (mLock) {
             if (mSessionIdToUid.get(sessionId) == null || mSessionIdToUid.get(sessionId) != uid) {
