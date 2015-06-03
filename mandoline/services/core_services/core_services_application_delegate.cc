@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "components/clipboard/clipboard_application_delegate.h"
+#include "components/filesystem/file_system_app.h"
 #include "components/resource_provider/resource_provider_app.h"
 #include "components/view_manager/surfaces/surfaces_service_application.h"
 #include "components/view_manager/view_manager_app.h"
@@ -157,8 +158,12 @@ void CoreServicesApplicationDelegate::StartApplication(
   std::string url = response->url;
 
   scoped_ptr<mojo::ApplicationDelegate> delegate;
-  if (url == "mojo://clipboard/")
+  if (url == "mojo://browser/")
+    delegate.reset(new mandoline::Browser);
+  else if (url == "mojo://clipboard/")
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
+  else if (url == "mojo://filesystem_service/")
+    delegate.reset(new filesystem::FileSystemApp);
   else if (url == "mojo://network_service/")
     delegate.reset(new NetworkServiceDelegate);
 #if !defined(OS_ANDROID)
@@ -173,8 +178,6 @@ void CoreServicesApplicationDelegate::StartApplication(
     delegate.reset(new tracing::TracingApp);
   else if (url == "mojo://view_manager/")
     delegate.reset(new view_manager::ViewManagerApp);
-  else if (url == "mojo://browser/")
-    delegate.reset(new mandoline::Browser);
   else
     NOTREACHED() << "This application package does not support " << url;
 

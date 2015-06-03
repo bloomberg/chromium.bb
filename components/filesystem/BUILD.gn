@@ -4,15 +4,16 @@
 
 import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
-mojo_native_application("filesystem") {
+source_set("lib") {
   sources = [
     "directory_impl.cc",
     "directory_impl.h",
     "file_impl.cc",
     "file_impl.h",
+    "file_system_app.cc",
+    "file_system_app.h",
     "file_system_impl.cc",
     "file_system_impl.h",
-    "main.cc",
     "util.cc",
     "util.h",
   ]
@@ -21,6 +22,18 @@ mojo_native_application("filesystem") {
     "//base",
     "//components/filesystem/public/interfaces",
     "//mojo/application/public/cpp",
+    "//mojo/common",
+    "//mojo/platform_handle",
+  ]
+}
+
+mojo_native_application("filesystem") {
+  sources = [
+    "main.cc",
+  ]
+
+  deps = [
+    ":lib",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/platform_handle",
@@ -48,4 +61,6 @@ mojo_native_application("apptests") {
     "//mojo/platform_handle",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
+
+  data_deps = [ ":filesystem" ]
 }

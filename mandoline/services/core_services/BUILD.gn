@@ -64,6 +64,7 @@ source_set("sources") {
   deps = [
     "//base",
     "//components/clipboard:lib",
+    "//components/filesystem:lib",
     "//components/resource_provider:lib",
     "//components/view_manager:lib",
     "//components/view_manager/surfaces:lib",
