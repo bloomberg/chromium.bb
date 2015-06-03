@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.ParcelFileDescriptor;
+import android.os.Parcelable;
 import android.os.Process;
 import android.os.RemoteException;
 import android.util.Log;
@@ -27,10 +27,10 @@ import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.FileDescriptorInfo;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 
-import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -56,9 +56,8 @@ public class ChildProcessService extends Service {
     private String[] mCommandLineParams;
     private int mCpuCount;
     private long mCpuFeatures;
-    // Pairs IDs and file descriptors that should be registered natively.
-    private ArrayList<Integer> mFileIds;
-    private ArrayList<ParcelFileDescriptor> mFileFds;
+    // File descriptors that should be registered natively.
+    private FileDescriptorInfo[] mFdInfos;
     // Linker-specific parameters for this child process service.
     private ChromiumLinkerParams mLinkerParams;
 
@@ -75,6 +74,8 @@ public class ChildProcessService extends Service {
         @Override
         public int setupConnection(Bundle args, IChildProcessCallback callback) {
             mCallback = callback;
+            // Required to unparcel FileDescriptorInfo.
+            args.setClassLoader(getClassLoader());
             synchronized (mMainThread) {
                 // Allow the command line to be set via bind() intent or setupConnection, but
                 // the FD can only be transferred here.
@@ -87,21 +88,12 @@ public class ChildProcessService extends Service {
                 mCpuCount = args.getInt(ChildProcessConnection.EXTRA_CPU_COUNT);
                 mCpuFeatures = args.getLong(ChildProcessConnection.EXTRA_CPU_FEATURES);
                 assert mCpuCount > 0;
-                mFileIds = new ArrayList<Integer>();
-                mFileFds = new ArrayList<ParcelFileDescriptor>();
-                for (int i = 0;; i++) {
-                    String fdName = ChildProcessConnection.EXTRA_FILES_PREFIX + i
-                            + ChildProcessConnection.EXTRA_FILES_FD_SUFFIX;
-                    ParcelFileDescriptor parcel = args.getParcelable(fdName);
-                    if (parcel == null) {
-                        // End of the file list.
-                        break;
-                    }
-                    mFileFds.add(parcel);
-                    String idName = ChildProcessConnection.EXTRA_FILES_PREFIX + i
-                            + ChildProcessConnection.EXTRA_FILES_ID_SUFFIX;
-                    mFileIds.add(args.getInt(idName));
-                }
+                Parcelable[] fdInfosAsParcelable =
+                        args.getParcelableArray(ChildProcessConnection.EXTRA_FILES);
+                // For why this arraycopy is necessary:
+                // http://stackoverflow.com/questions/8745893/i-dont-get-why-this-classcastexception-occurs
+                mFdInfos = new FileDescriptorInfo[fdInfosAsParcelable.length];
+                System.arraycopy(fdInfosAsParcelable, 0, mFdInfos, 0, fdInfosAsParcelable.length);
                 Bundle sharedRelros = args.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
                 if (sharedRelros != null) {
                     Linker.useSharedRelros(sharedRelros);
@@ -201,21 +193,17 @@ public class ChildProcessService extends Service {
                     synchronized (mMainThread) {
                         mLibraryInitialized = true;
                         mMainThread.notifyAll();
-                        while (mFileIds == null) {
+                        while (mFdInfos == null) {
                             mMainThread.wait();
                         }
                     }
-                    assert mFileIds.size() == mFileFds.size();
-                    int[] fileIds = new int[mFileIds.size()];
-                    int[] fileFds = new int[mFileFds.size()];
-                    for (int i = 0; i < mFileIds.size(); ++i) {
-                        fileIds[i] = mFileIds.get(i);
-                        fileFds[i] = mFileFds.get(i).detachFd();
-                    }
                     ContentMain.initApplicationContext(sContext.get().getApplicationContext());
+                    for (FileDescriptorInfo fdInfo : mFdInfos) {
+                        nativeRegisterGlobalFileDescriptor(
+                                fdInfo.mId, fdInfo.mFd.detachFd(), fdInfo.mOffset, fdInfo.mSize);
+                    }
                     nativeInitChildProcess(sContext.get().getApplicationContext(),
-                            ChildProcessService.this, fileIds, fileFds,
-                            mCpuCount, mCpuFeatures);
+                            ChildProcessService.this, mCpuCount, mCpuFeatures);
                     if (mActivitySemaphore.tryAcquire()) {
                         ContentMain.start();
                         nativeExitChildProcess();
@@ -388,18 +376,23 @@ public class ChildProcessService extends Service {
     }
 
     /**
+     * Helper for registering FileDescriptorInfo objects with GlobalFileDescriptors.
+     * This includes the IPC channel, the crash dump signals and resource related
+     * files.
+     */
+    private static native void nativeRegisterGlobalFileDescriptor(
+            int id, int fd, long offset, long size);
+
+    /**
      * The main entry point for a child process. This should be called from a new thread since
      * it will not return until the child process exits. See child_process_service.{h,cc}
      *
      * @param applicationContext The Application Context of the current process.
      * @param service The current ChildProcessService object.
-     * @param fileIds A list of file IDs that should be registered for access by the renderer.
-     * @param fileFds A list of file descriptors that should be registered for access by the
      * renderer.
      */
     private static native void nativeInitChildProcess(Context applicationContext,
-            ChildProcessService service, int[] extraFileIds, int[] extraFileFds,
-            int cpuCount, long cpuFeatures);
+            ChildProcessService service, int cpuCount, long cpuFeatures);
 
     /**
      * Force the child process to exit.

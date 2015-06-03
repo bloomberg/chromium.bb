@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
+import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.Pair;
 import android.view.Surface;
@@ -26,6 +27,7 @@ import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.SurfaceWrapper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Map;
@@ -483,6 +485,24 @@ public class ChildProcessLauncher {
         return null;
     }
 
+    @CalledByNative
+    private static FileDescriptorInfo makeFdInfo(
+            int id, int fd, boolean autoClose, long offset, long size) {
+        ParcelFileDescriptor pFd;
+        if (autoClose) {
+            // Adopt the FD, it will be closed when we close the ParcelFileDescriptor.
+            pFd = ParcelFileDescriptor.adoptFd(fd);
+        } else {
+            try {
+                pFd = ParcelFileDescriptor.fromFd(fd);
+            } catch (IOException e) {
+                Log.e(TAG, "Invalid FD provided for process connection, aborting connection.", e);
+                return null;
+            }
+        }
+        return new FileDescriptorInfo(id, pFd, offset, size);
+    }
+
     /**
      * Spawns and connects to a child process. May be called on any thread. It will not block, but
      * will instead callback to {@link #nativeOnChildProcessStarted} when the connection is
@@ -491,27 +511,12 @@ public class ChildProcessLauncher {
      *
      * @param context Context used to obtain the application context.
      * @param commandLine The child process command line argv.
-     * @param fileIds The ID that should be used when mapping files in the created process.
-     * @param fileFds The file descriptors that should be mapped in the created process.
-     * @param fileAutoClose Whether the file descriptors should be closed once they were passed to
-     * the created process.
+     * @param filesToBeMapped File IDs, FDs, offsets, and lengths to pass through.
      * @param clientContext Arbitrary parameter used by the client to distinguish this connection.
      */
     @CalledByNative
-    static void start(
-            Context context,
-            final String[] commandLine,
-            int childProcessId,
-            int[] fileIds,
-            int[] fileFds,
-            boolean[] fileAutoClose,
-            long clientContext) {
-        assert fileIds.length == fileFds.length && fileFds.length == fileAutoClose.length;
-        FileDescriptorInfo[] filesToBeMapped = new FileDescriptorInfo[fileFds.length];
-        for (int i = 0; i < fileFds.length; i++) {
-            filesToBeMapped[i] =
-                    new FileDescriptorInfo(fileIds[i], fileFds[i], fileAutoClose[i]);
-        }
+    private static void start(Context context, final String[] commandLine, int childProcessId,
+            FileDescriptorInfo[] filesToBeMapped, long clientContext) {
         assert clientContext != 0;
 
         int callbackType = CALLBACK_FOR_UNKNOWN_PROCESS;

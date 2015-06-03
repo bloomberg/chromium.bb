@@ -131,9 +131,7 @@ class SurfaceTextureManagerImpl : public SurfaceTextureManager,
 
 // Chrome actually uses the renderer code path for all of its child
 // processes such as renderers, plugins, etc.
-void InternalInitChildProcess(const std::vector<int>& file_ids,
-                              const std::vector<int>& file_fds,
-                              JNIEnv* env,
+void InternalInitChildProcess(JNIEnv* env,
                               jclass clazz,
                               jobject context,
                               jobject service_in,
@@ -143,13 +141,6 @@ void InternalInitChildProcess(const std::vector<int>& file_ids,
 
   // Set the CPU properties.
   android_setCpu(cpu_count, cpu_features);
-  // Register the file descriptors.
-  // This includes the IPC channel, the crash dump signals and resource related
-  // files.
-  DCHECK(file_fds.size() == file_ids.size());
-  for (size_t i = 0; i < file_ids.size(); ++i)
-    base::GlobalDescriptors::GetInstance()->Set(file_ids[i], file_fds[i]);
-
   SurfaceTextureManager::SetInstance(new SurfaceTextureManagerImpl(service));
 
   base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(env);
@@ -157,22 +148,24 @@ void InternalInitChildProcess(const std::vector<int>& file_ids,
 
 }  // namespace <anonymous>
 
+void RegisterGlobalFileDescriptor(JNIEnv* env,
+                                  jclass clazz,
+                                  jint id,
+                                  jint fd,
+                                  jlong offset,
+                                  jlong size) {
+  base::MemoryMappedFile::Region region(offset, size);
+  base::GlobalDescriptors::GetInstance()->Set(id, fd, region);
+}
+
 void InitChildProcess(JNIEnv* env,
                       jclass clazz,
                       jobject context,
                       jobject service,
-                      jintArray j_file_ids,
-                      jintArray j_file_fds,
                       jint cpu_count,
                       jlong cpu_features) {
-  std::vector<int> file_ids;
-  std::vector<int> file_fds;
-  JavaIntArrayToIntVector(env, j_file_ids, &file_ids);
-  JavaIntArrayToIntVector(env, j_file_fds, &file_fds);
-
-  InternalInitChildProcess(
-      file_ids, file_fds, env, clazz, context, service,
-      cpu_count, cpu_features);
+  InternalInitChildProcess(env, clazz, context, service, cpu_count,
+                           cpu_features);
 }
 
 void ExitChildProcess(JNIEnv* env, jclass clazz) {

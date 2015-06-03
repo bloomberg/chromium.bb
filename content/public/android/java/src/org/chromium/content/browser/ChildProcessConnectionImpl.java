@@ -11,7 +11,6 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.DeadObjectException;
 import android.os.IBinder;
-import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -319,42 +318,12 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
 
             Bundle bundle = new Bundle();
             bundle.putStringArray(EXTRA_COMMAND_LINE, mConnectionParams.mCommandLine);
-
-            FileDescriptorInfo[] fileInfos = mConnectionParams.mFilesToBeMapped;
-            ParcelFileDescriptor[] parcelFiles = new ParcelFileDescriptor[fileInfos.length];
-            for (int i = 0; i < fileInfos.length; i++) {
-                if (fileInfos[i].mFd == -1) {
-                    // If someone provided an invalid FD, they are doing something wrong.
-                    Log.e(TAG, "Invalid FD (id=" + fileInfos[i].mId + ") for process connection, "
-                            + "aborting connection.");
-                    return;
-                }
-                String idName = EXTRA_FILES_PREFIX + i + EXTRA_FILES_ID_SUFFIX;
-                String fdName = EXTRA_FILES_PREFIX + i + EXTRA_FILES_FD_SUFFIX;
-                if (fileInfos[i].mAutoClose) {
-                    // Adopt the FD, it will be closed when we close the ParcelFileDescriptor.
-                    parcelFiles[i] = ParcelFileDescriptor.adoptFd(fileInfos[i].mFd);
-                } else {
-                    try {
-                        parcelFiles[i] = ParcelFileDescriptor.fromFd(fileInfos[i].mFd);
-                    } catch (IOException e) {
-                        Log.e(TAG,
-                                "Invalid FD provided for process connection, aborting connection.",
-                                e);
-                        return;
-                    }
-
-                }
-                bundle.putParcelable(fdName, parcelFiles[i]);
-                bundle.putInt(idName, fileInfos[i].mId);
-            }
+            bundle.putParcelableArray(EXTRA_FILES, mConnectionParams.mFilesToBeMapped);
             // Add the CPU properties now.
             bundle.putInt(EXTRA_CPU_COUNT, CpuFeatures.getCount());
             bundle.putLong(EXTRA_CPU_FEATURES, CpuFeatures.getMask());
-
             bundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS,
                              mConnectionParams.mSharedRelros);
-
             try {
                 mPid = mService.setupConnection(bundle, mConnectionParams.mCallback);
                 assert mPid != 0 : "Child service claims to be run by a process of pid=0.";
@@ -363,8 +332,8 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             }
             // We proactively close the FDs rather than wait for GC & finalizer.
             try {
-                for (ParcelFileDescriptor parcelFile : parcelFiles) {
-                    if (parcelFile != null) parcelFile.close();
+                for (FileDescriptorInfo fileInfo : mConnectionParams.mFilesToBeMapped) {
+                    fileInfo.mFd.close();
                 }
             } catch (IOException ioe) {
                 Log.w(TAG, "Failed to close FD.", ioe);

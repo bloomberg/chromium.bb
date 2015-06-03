@@ -144,12 +144,12 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
   // Android WebView runs in single process, ensure that we never get here
   // when running in single process mode.
   CHECK(!cmd_line->HasSwitch(switches::kSingleProcess));
-
+  std::map<int, base::MemoryMappedFile::Region> regions;
   GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
       *cmd_line, child_process_id, files_to_register.get());
 
   StartChildProcess(
-      cmd_line->argv(), child_process_id, files_to_register.Pass(),
+      cmd_line->argv(), child_process_id, files_to_register.Pass(), regions,
       base::Bind(&OnChildProcessStartedAndroid, callback, client_thread_id,
                  begin_launch_time, base::Passed(&ipcfd)));
 

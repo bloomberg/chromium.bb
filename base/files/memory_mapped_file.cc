@@ -16,15 +16,21 @@ const MemoryMappedFile::Region MemoryMappedFile::Region::kWholeFile(
 MemoryMappedFile::Region::Region(base::LinkerInitialized) : offset(0), size(0) {
 }
 
+MemoryMappedFile::Region::Region() : offset(-1), size(-1) {
+}
+
 MemoryMappedFile::Region::Region(int64 offset, int64 size)
     : offset(offset), size(size) {
-  DCHECK_GE(offset, 0);
-  DCHECK_GT(size, 0);
 }
 
 bool MemoryMappedFile::Region::operator==(
     const MemoryMappedFile::Region& other) const {
   return other.offset == offset && other.size == size;
+}
+
+bool MemoryMappedFile::Region::operator!=(
+    const MemoryMappedFile::Region& other) const {
+  return other.offset != offset || other.size != size;
 }
 
 MemoryMappedFile::~MemoryMappedFile() {
@@ -58,6 +64,11 @@ bool MemoryMappedFile::Initialize(File file) {
 bool MemoryMappedFile::Initialize(File file, const Region& region) {
   if (IsValid())
     return false;
+
+  if (region != Region::kWholeFile) {
+    DCHECK_GE(region.offset, 0);
+    DCHECK_GT(region.size, 0);
+  }
 
   file_ = file.Pass();
 

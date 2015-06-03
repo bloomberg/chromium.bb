@@ -40,10 +40,7 @@ public interface ChildProcessConnection {
     public static final String EXTRA_COMMAND_LINE =
             "com.google.android.apps.chrome.extra.command_line";
     // Note the FDs may only be passed in the connection bundle.
-    public static final String EXTRA_FILES_PREFIX =
-            "com.google.android.apps.chrome.extra.extraFile_";
-    public static final String EXTRA_FILES_ID_SUFFIX = "_id";
-    public static final String EXTRA_FILES_FD_SUFFIX = "_fd";
+    public static final String EXTRA_FILES = "com.google.android.apps.chrome.extra.extraFiles";
 
     // Used to pass the CPU core count to child processes.
     public static final String EXTRA_CPU_COUNT =
