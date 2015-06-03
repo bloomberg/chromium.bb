@@ -151,7 +151,7 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   // Empty if no PushMessagingService was available when constructed.
-  GURL push_endpoint_;
+  GURL push_endpoint_base_;
 
   base::WeakPtrFactory<PushMessagingMessageFilter> weak_factory_io_to_io_;
 

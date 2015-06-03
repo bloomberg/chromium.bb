@@ -31,15 +31,13 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 
 // Messages sent from the browser to the child process.
 
-IPC_MESSAGE_ROUTED3(PushMessagingMsg_SubscribeFromDocumentSuccess,
+IPC_MESSAGE_ROUTED2(PushMessagingMsg_SubscribeFromDocumentSuccess,
                     int32_t /* request_id */,
-                    GURL /* push_endpoint */,
-                    std::string /* push_subscription_id */)
+                    GURL /* push_endpoint */)
 
-IPC_MESSAGE_CONTROL3(PushMessagingMsg_SubscribeFromWorkerSuccess,
+IPC_MESSAGE_CONTROL2(PushMessagingMsg_SubscribeFromWorkerSuccess,
                      int32_t /* request_id */,
-                     GURL /* push_endpoint */,
-                     std::string /* push_subscription_id */)
+                     GURL /* push_endpoint */)
 
 IPC_MESSAGE_ROUTED2(PushMessagingMsg_SubscribeFromDocumentError,
                     int32_t /* request_id */,
@@ -58,10 +56,9 @@ IPC_MESSAGE_CONTROL3(PushMessagingMsg_UnsubscribeError,
                      blink::WebPushError::ErrorType /* error_type */,
                      std::string /* error_message */)
 
-IPC_MESSAGE_CONTROL3(PushMessagingMsg_GetRegistrationSuccess,
+IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetRegistrationSuccess,
                      int32_t /* request_id */,
-                     GURL /* push_endpoint */,
-                     std::string /* push_subscription_id */)
+                     GURL /* push_endpoint */)
 
 IPC_MESSAGE_CONTROL2(PushMessagingMsg_GetRegistrationError,
                      int32_t /* request_id */,

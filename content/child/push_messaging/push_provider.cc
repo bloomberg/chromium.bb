@@ -148,17 +148,14 @@ bool PushProvider::OnMessageReceived(const IPC::Message& message) {
 
 void PushProvider::OnSubscribeFromWorkerSuccess(
     int request_id,
-    const GURL& endpoint,
-    const std::string& subscription_id) {
+    const GURL& endpoint) {
   blink::WebPushSubscriptionCallbacks* callbacks =
       subscription_callbacks_.Lookup(request_id);
   if (!callbacks)
     return;
 
   scoped_ptr<blink::WebPushSubscription> subscription(
-      new blink::WebPushSubscription(
-          blink::WebString::fromUTF8(endpoint.spec()),
-          blink::WebString::fromUTF8(subscription_id)));
+      new blink::WebPushSubscription(endpoint));
   callbacks->onSuccess(subscription.release());
 
   subscription_callbacks_.Remove(request_id);
@@ -208,17 +205,14 @@ void PushProvider::OnUnsubscribeError(
 
 void PushProvider::OnGetRegistrationSuccess(
     int request_id,
-    const GURL& endpoint,
-    const std::string& registration_id) {
+    const GURL& endpoint) {
   blink::WebPushSubscriptionCallbacks* callbacks =
       subscription_callbacks_.Lookup(request_id);
   if (!callbacks)
     return;
 
   scoped_ptr<blink::WebPushSubscription> subscription(
-      new blink::WebPushSubscription(
-          blink::WebString::fromUTF8(endpoint.spec()),
-          blink::WebString::fromUTF8(registration_id)));
+      new blink::WebPushSubscription(endpoint));
   callbacks->onSuccess(subscription.release());
 
   subscription_callbacks_.Remove(request_id);

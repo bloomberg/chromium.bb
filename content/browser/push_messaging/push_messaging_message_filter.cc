@@ -54,6 +54,13 @@ void RecordGetRegistrationStatus(PushGetRegistrationStatus status) {
                             PUSH_GETREGISTRATION_STATUS_LAST + 1);
 }
 
+// Concatenates the subscription id with the endpoint base to create a new
+// GURL object containing the endpoint unique to the subscription.
+GURL CreatePushEndpoint(const GURL& push_endpoint_base,
+                        const std::string& push_subscription_id) {
+  return GURL(push_endpoint_base.spec() + "/" + push_subscription_id);
+}
+
 }  // namespace
 
 struct PushMessagingMessageFilter::RegisterData {
@@ -178,7 +185,7 @@ PushMessagingMessageFilter::PushMessagingMessageFilter(
                           render_process_id));
   PushMessagingService* push_service = ui_core_->service();
   if (push_service)
-    push_endpoint_ = push_service->GetPushEndpoint();
+    push_endpoint_base_ = push_service->GetPushEndpoint();
 }
 
 PushMessagingMessageFilter::~PushMessagingMessageFilter() {}
@@ -447,7 +454,7 @@ void PushMessagingMessageFilter::SendRegisterSuccess(
     const std::string& push_registration_id) {
   // Only called from IO thread, but would be safe to call from UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (push_endpoint_.is_empty()) {
+  if (push_endpoint_base_.is_empty()) {
     // This shouldn't be possible in incognito mode, since we've already checked
     // that we have an existing registration. Hence it's ok to throw an error.
     DCHECK(!ui_core_->is_incognito());
@@ -457,10 +464,12 @@ void PushMessagingMessageFilter::SendRegisterSuccess(
   if (data.FromDocument()) {
     Send(new PushMessagingMsg_SubscribeFromDocumentSuccess(
         data.render_frame_id,
-        data.request_id, push_endpoint_, push_registration_id));
+        data.request_id,
+        CreatePushEndpoint(push_endpoint_base_, push_registration_id)));
   } else {
     Send(new PushMessagingMsg_SubscribeFromWorkerSuccess(
-        data.request_id, push_endpoint_, push_registration_id));
+        data.request_id,
+        CreatePushEndpoint(push_endpoint_base_, push_registration_id)));
   }
   RecordRegistrationStatus(status);
 }
@@ -702,7 +711,7 @@ void PushMessagingMessageFilter::DidGetRegistration(
       PUSH_GETREGISTRATION_STATUS_STORAGE_ERROR;
   switch (service_worker_status) {
     case SERVICE_WORKER_OK:
-      if (push_endpoint_.is_empty()) {
+      if (push_endpoint_base_.is_empty()) {
         // Return not found in incognito mode, so websites can't detect it.
         get_status =
             ui_core_->is_incognito()
@@ -710,9 +719,10 @@ void PushMessagingMessageFilter::DidGetRegistration(
             : PUSH_GETREGISTRATION_STATUS_SERVICE_NOT_AVAILABLE;
         break;
       }
-      Send(new PushMessagingMsg_GetRegistrationSuccess(request_id,
-                                                       push_endpoint_,
-                                                       push_registration_id));
+
+      Send(new PushMessagingMsg_GetRegistrationSuccess(
+          request_id,
+          CreatePushEndpoint(push_endpoint_base_, push_registration_id)));
       RecordGetRegistrationStatus(PUSH_GETREGISTRATION_STATUS_SUCCESS);
       return;
     case SERVICE_WORKER_ERROR_NOT_FOUND:

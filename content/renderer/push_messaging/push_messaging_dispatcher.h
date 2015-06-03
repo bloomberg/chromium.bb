@@ -51,8 +51,7 @@ class PushMessagingDispatcher : public RenderFrameObserver,
       const Manifest& manifest);
 
   void OnSubscribeFromDocumentSuccess(int32_t request_id,
-                                      const GURL& endpoint,
-                                      const std::string& subscription_id);
+                                      const GURL& endpoint);
 
   void OnSubscribeFromDocumentError(int32_t request_id,
                                     PushRegistrationStatus status);
