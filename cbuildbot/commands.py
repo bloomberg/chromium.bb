@@ -1884,7 +1884,7 @@ def BuildStandaloneArchive(archive_dir, image_dir, artifact_info):
   return [filename]
 
 
-def BuildGceTarball(archive_dir, image_dir, image, output):
+def BuildGceTarball(archive_dir, image_dir, image):
   """Builds a tarball that can be converted into a GCE image.
 
   GCE has some very specific requirements about the format of VM
@@ -1895,10 +1895,13 @@ def BuildGceTarball(archive_dir, image_dir, image, output):
     archive_dir: Directory to store the output tarball.
     image_dir: Directory where raw disk file can be found.
     image: Name of raw disk file.
-    output: Basename of the resulting tarball.
+
+  Returns:
+    The full local path of the output tarball.
   """
   with osutils.TempDir() as tempdir:
     temp_disk_raw = os.path.join(tempdir, 'disk.raw')
+    output = '%s_gce.tar.gz' % os.path.splitext(image)[0]
     output_file = os.path.join(archive_dir, output)
     os.symlink(os.path.join(image_dir, image), temp_disk_raw)
 
