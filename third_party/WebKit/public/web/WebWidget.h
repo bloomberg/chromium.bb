@@ -149,13 +149,6 @@ public:
     // Applies viewport related properties during a commit from the compositor
     // thread.
     virtual void applyViewportDeltas(
-        const WebSize& scrollDelta,
-        float scaleFactor,
-        float topControlsShownRatioDelta) { }
-
-    // Applies viewport related properties during a commit from the compositor
-    // thread.
-    virtual void applyViewportDeltas(
         const WebFloatSize& pinchViewportDelta,
         const WebFloatSize& layoutViewportDelta,
         const WebFloatSize& elasticOverscrollDelta,
