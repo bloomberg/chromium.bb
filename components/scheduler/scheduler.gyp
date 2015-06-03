@@ -50,5 +50,16 @@
         '../../third_party/WebKit/public/blink.gyp:blink',
       ],
     },
+    {
+      # GN version: //components/scheduler:test_support
+      'target_name': 'scheduler_test_support',
+      'type': 'static_library',
+      'include_dirs': [
+        '../..',
+      ],
+      'sources': [
+        '<@(scheduler_test_support_sources)',
+      ],
+    },
   ],
 }

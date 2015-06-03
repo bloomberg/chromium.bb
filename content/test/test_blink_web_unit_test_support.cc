@@ -12,8 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
-#include "components/scheduler/renderer/renderer_scheduler.h"
+#include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
+#include "components/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
 #include "content/test/web_layer_tree_view_impl_for_testing.h"
@@ -24,7 +25,6 @@
 #include "storage/browser/database/vfs_backend.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
-#include "third_party/WebKit/public/platform/WebScheduler.h"
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
 #include "third_party/WebKit/public/platform/WebStorageNamespace.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -77,35 +77,6 @@ class DummyTaskRunner : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(DummyTaskRunner);
 };
 
-class DummyWebThread : public blink::WebThread {
- public:
-  DummyWebThread()
-      : thread_id_(base::PlatformThread::CurrentId()),
-        m_dummyScheduler(new blink::WebScheduler()) {}
-
-  virtual void postTask(const blink::WebTraceLocation&, Task*) { NOTREACHED(); }
-
-  virtual void postDelayedTask(const blink::WebTraceLocation&,
-                               Task*,
-                               long long delayMs) {
-    NOTREACHED();
-  }
-
-  virtual bool isCurrentThread() const {
-    return thread_id_ == base::PlatformThread::CurrentId();
-  }
-
-  virtual blink::WebScheduler* scheduler() const {
-    return m_dummyScheduler.get();
-  }
-
- private:
-  base::PlatformThreadId thread_id_;
-  scoped_ptr<blink::WebScheduler> m_dummyScheduler;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyWebThread);
-};
-
 }  // namespace
 
 namespace content {
@@ -124,11 +95,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
 
   scoped_refptr<base::SingleThreadTaskRunner> dummy_task_runner;
   scoped_ptr<base::ThreadTaskRunnerHandle> dummy_task_runner_handle;
-  if (base::MessageLoopProxy::current()) {
-    renderer_scheduler_ = scheduler::RendererScheduler::Create();
-    web_thread_.reset(new scheduler::WebThreadImplForRendererScheduler(
-        renderer_scheduler_.get()));
-  } else {
+  if (!base::MessageLoopProxy::current()) {
     // Dummy task runner is initialized here because the blink::initialize
     // creates IsolateHolder which needs the current task runner handle. There
     // should be no task posted to this task runner. The message loop is not
@@ -139,8 +106,11 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
     dummy_task_runner = make_scoped_refptr(new DummyTaskRunner());
     dummy_task_runner_handle.reset(
         new base::ThreadTaskRunnerHandle(dummy_task_runner));
-    web_thread_.reset(new DummyWebThread());
   }
+  renderer_scheduler_ = make_scoped_ptr(new scheduler::RendererSchedulerImpl(
+      scheduler::LazySchedulerMessageLoopDelegateForTests::Create()));
+  web_thread_.reset(new scheduler::WebThreadImplForRendererScheduler(
+      renderer_scheduler_.get()));
 
   blink::initialize(this);
   blink::setLayoutTestMode(true);
