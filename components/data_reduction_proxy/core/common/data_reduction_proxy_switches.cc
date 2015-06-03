@@ -57,6 +57,10 @@ const char kDisableDataReductionProxyDev[] =
 const char kEnableDataReductionProxyDev[] =
     "enable-spdy-proxy-dev-auth-origin";
 
+// Enables the origin of the carrier test data reduction proxy.
+const char kEnableDataReductionProxyCarrierTest[] =
+    "enable-data-reduction-proxy-carrier-test";
+
 // Enable the data reduction proxy.
 const char kEnableDataReductionProxy[] = "enable-spdy-proxy-auth";
 

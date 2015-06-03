@@ -141,6 +141,20 @@ TEST_F(DataReductionProxyParamsTest, Flags) {
               TestDataReductionProxyParams::FlagSecureProxyCheckURL());
 }
 
+TEST_F(DataReductionProxyParamsTest, CarrierTestFlag) {
+  static const char kCarrierTestOrigin[] =
+      "http://o-o.preferred.nttdocomodcp-hnd1.proxy-dev.googlezip.net:80";
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableDataReductionProxyCarrierTest, kCarrierTestOrigin);
+  DataReductionProxyParams params(DataReductionProxyParams::kAllowed);
+  std::vector<net::ProxyServer> proxies_for_http;
+  proxies_for_http.push_back(net::ProxyServer::FromURI(
+      kCarrierTestOrigin, net::ProxyServer::SCHEME_HTTP));
+  EXPECT_THAT(params.proxies_for_http(false),
+              testing::ContainerEq(proxies_for_http));
+}
+
 TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
   const struct {
     bool allowed;

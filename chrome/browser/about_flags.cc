@@ -1968,6 +1968,14 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(
         data_reduction_proxy::switches::kEnableDataReductionProxyAlt)
   },
+  {
+    "enable-data-reduction-proxy-carrier-test",
+    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_NAME,
+    IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(
+        data_reduction_proxy::switches::kEnableDataReductionProxyCarrierTest)
+  },
 #endif
   {
     "enable-hotword-hardware",
@@ -2521,6 +2529,15 @@ bool SkipConditionalExperiment(const Experiment& experiment,
   // enable-data-reduction-proxy-lo-fi is only available for Chromium builds and
   // the Canary/Dev channel.
   if (!strcmp("enable-data-reduction-proxy-lo-fi", experiment.internal_name) &&
+      channel != chrome::VersionInfo::CHANNEL_DEV &&
+      channel != chrome::VersionInfo::CHANNEL_CANARY &&
+      channel != chrome::VersionInfo::CHANNEL_UNKNOWN) {
+    return true;
+  }
+  // enable-data-reduction-proxy-carrier-test is only available for Chromium
+  // builds and the Canary/Dev channel.
+  if (!strcmp("enable-data-reduction-proxy-carrier-test",
+              experiment.internal_name) &&
       channel != chrome::VersionInfo::CHANNEL_DEV &&
       channel != chrome::VersionInfo::CHANNEL_CANARY &&
       channel != chrome::VersionInfo::CHANNEL_UNKNOWN) {

@@ -25,6 +25,10 @@ namespace {
 const char kEnabled[] = "Enabled";
 const char kDefaultSpdyOrigin[] = "https://proxy.googlezip.net:443";
 const char kDefaultQuicOrigin[] = "quic://proxy.googlezip.net:443";
+// A one-off change, until the Data Reduction Proxy configuration service is
+// available.
+const char kCarrierTestOrigin[] =
+    "http://o-o.preferred.nttdocomodcp-hnd1.proxy-dev.googlezip.net:80";
 const char kDevOrigin[] = "https://proxy-dev.googlezip.net:443";
 const char kDevFallbackOrigin[] = "proxy-dev.googlezip.net:80";
 const char kDefaultFallbackOrigin[] = "compress.googlezip.net:80";
@@ -495,6 +499,10 @@ std::string DataReductionProxyParams::GetDefaultDevFallbackOrigin() const {
 
 // TODO(kundaji): Remove tests for macro definitions.
 std::string DataReductionProxyParams::GetDefaultOrigin() const {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableDataReductionProxyCarrierTest))
+    return kCarrierTestOrigin;
   return quic_enabled_ ?
       kDefaultQuicOrigin : kDefaultSpdyOrigin;
 }

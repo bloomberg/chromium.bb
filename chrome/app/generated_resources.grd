@@ -6485,6 +6485,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION" desc="Description in about::flags to clear data savings obtained with data reduction proxy when Chrome restarts">
          Clears data savings obtained by using data reduction proxy when chrome starts.
       </message>
+      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_NAME" desc="An about::flags experiment title to enable using the carrier test data reduction proxy">
+        Enable a carrier-specific Data Reduction Proxy for testing.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_CARRIER_TEST_DESCRIPTION" desc="Describes an about:flags experiment to enable using the carrier test data reduction proxy">
+        Use a carrier-specific Data Reduction Proxy for testing.
+      </message>
       <message name="IDS_FLAGS_LCD_TEXT_NAME" desc="Name of about:flags option for LCD text.">
         LCD text antialiasing
       </message>

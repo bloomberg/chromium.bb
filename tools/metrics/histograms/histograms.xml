@@ -58321,6 +58321,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1033597574" label="disable-layer-squashing"/>
   <int value="1050321458" label="new-profile-management"/>
   <int value="1054910800" label="enable-timezone-tracking-option"/>
+  <int value="1060319397" label="enable-data-reduction-proxy-carrier-test"/>
   <int value="1062357243" label="remember-cert-error-decisions"/>
   <int value="1067618884" label="enable-experimental-input-view-features"/>
   <int value="1070300488" label="disable-webgl"/>
