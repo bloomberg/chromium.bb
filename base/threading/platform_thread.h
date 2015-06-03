@@ -106,8 +106,6 @@ class PlatformThreadHandle {
   }
 
  private:
-  friend class PlatformThread;
-
   Handle handle_;
   PlatformThreadId id_;
 };
