@@ -756,8 +756,9 @@ String XSSAuditor::canonicalizedSnippetForJavaScript(const FilterTokenRequest& r
     String result;
     while (startPosition < endPosition && !result.length()) {
         // Stop at next comment (using the same rules as above for SVG/XML vs HTML), when we encounter a comma,
-        // when we hit an opening <script> tag, or when we exceed the maximum length target. The comma rule
-        // covers a common parameter concatenation case performed by some web servers.
+        // when we encoutner a backtick, when we hit an opening <script> tag, or when we exceed the maximum length
+        // target. The comma rule covers a common parameter concatenation case performed by some web servers. The
+        // backtick rule covers the ECMA6 multi-line template string feature.
         lastNonSpacePosition = kNotFound;
         for (foundPosition = startPosition; foundPosition < endPosition; foundPosition++) {
             if (!request.shouldAllowCDATA) {
@@ -767,7 +768,7 @@ String XSSAuditor::canonicalizedSnippetForJavaScript(const FilterTokenRequest& r
                     break;
                 }
             }
-            if (string[foundPosition] == ',')
+            if (string[foundPosition] == ',' || string[foundPosition] == '`')
                 break;
 
             if (lastNonSpacePosition != kNotFound && startsOpeningScriptTagAt(string, foundPosition)) {
