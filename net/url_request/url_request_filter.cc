@@ -4,36 +4,12 @@
 
 #include "net/url_request/url_request_filter.h"
 
-#include <set>
-
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
 namespace net {
-
-namespace {
-
-class URLRequestFilterInterceptor : public URLRequestInterceptor {
- public:
-  explicit URLRequestFilterInterceptor(URLRequest::ProtocolFactory* factory)
-      : factory_(factory) {}
-  ~URLRequestFilterInterceptor() override {}
-
-  // URLRequestInterceptor implementation.
-  URLRequestJob* MaybeInterceptRequest(
-      URLRequest* request,
-      NetworkDelegate* network_delegate) const override {
-    return factory_(request, network_delegate, request->url().scheme());
-  }
-
- private:
-  URLRequest::ProtocolFactory* factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestFilterInterceptor);
-};
-
-}  // namespace
 
 URLRequestFilter* URLRequestFilter::shared_instance_ = NULL;
 
@@ -42,14 +18,6 @@ URLRequestFilter* URLRequestFilter::GetInstance() {
   if (!shared_instance_)
     shared_instance_ = new URLRequestFilter;
   return shared_instance_;
-}
-
-void URLRequestFilter::AddHostnameHandler(const std::string& scheme,
-    const std::string& hostname, URLRequest::ProtocolFactory* factory) {
-  AddHostnameInterceptor(
-      scheme, hostname,
-      scoped_ptr<URLRequestInterceptor>(
-          new URLRequestFilterInterceptor(factory)));
 }
 
 void URLRequestFilter::AddHostnameInterceptor(
@@ -84,15 +52,6 @@ void URLRequestFilter::RemoveHostnameHandler(const std::string& scheme,
   // Note that we don't unregister from the URLRequest ProtocolFactory as
   // this would leave no protocol factory for the remaining hostname and URL
   // handlers.
-}
-
-bool URLRequestFilter::AddUrlHandler(
-    const GURL& url,
-    URLRequest::ProtocolFactory* factory) {
-  return AddUrlInterceptor(
-      url,
-      scoped_ptr<URLRequestInterceptor>(
-          new URLRequestFilterInterceptor(factory)));
 }
 
 bool URLRequestFilter::AddUrlInterceptor(

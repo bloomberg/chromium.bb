@@ -39,10 +39,6 @@ class URLRequestSlowDownloadJob : public URLRequestJob {
   void GetResponseInfo(HttpResponseInfo* info) override;
   bool ReadRawData(IOBuffer* buf, int buf_size, int* bytes_read) override;
 
-  static URLRequestJob* Factory(URLRequest* request,
-                                NetworkDelegate* network_delegate,
-                                const std::string& scheme);
-
   // Returns the current number of URLRequestSlowDownloadJobs that have
   // not yet completed.
   static size_t NumberOutstandingRequests();
@@ -51,9 +47,7 @@ class URLRequestSlowDownloadJob : public URLRequestJob {
   static void AddUrlHandler();
 
  private:
-  URLRequestSlowDownloadJob(URLRequest* request,
-                            NetworkDelegate* network_delegate);
-  ~URLRequestSlowDownloadJob() override;
+  class Interceptor;
 
   // Enum indicating where we are in the read after a call to
   // FillBufferHelper.
@@ -69,6 +63,11 @@ class URLRequestSlowDownloadJob : public URLRequestJob {
     // all the data.
     REQUEST_COMPLETE
   };
+
+  URLRequestSlowDownloadJob(URLRequest* request,
+                            NetworkDelegate* network_delegate);
+  ~URLRequestSlowDownloadJob() override;
+
   ReadStatus FillBufferHelper(IOBuffer* buf, int buf_size, int* bytes_written);
 
   void GetResponseInfoConst(HttpResponseInfo* info) const;

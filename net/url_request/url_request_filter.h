@@ -7,16 +7,15 @@
 #include <map>
 #include <string>
 
-#include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
-#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
 
 class GURL;
 
 namespace net {
+class URLRequest;
 class URLRequestJob;
 class URLRequestInterceptor;
 
@@ -35,14 +34,9 @@ class URLRequestInterceptor;
 // request.
 class NET_EXPORT URLRequestFilter : public URLRequestInterceptor {
  public:
-  static URLRequest::ProtocolFactory Factory;
-
   // Singleton instance for use.
   static URLRequestFilter* GetInstance();
 
-  void AddHostnameHandler(const std::string& scheme,
-                          const std::string& hostname,
-                          URLRequest::ProtocolFactory* factory);
   void AddHostnameInterceptor(
       const std::string& scheme,
       const std::string& hostname,
@@ -52,8 +46,6 @@ class NET_EXPORT URLRequestFilter : public URLRequestInterceptor {
 
   // Returns true if we successfully added the URL handler.  This will replace
   // old handlers for the URL if one existed.
-  bool AddUrlHandler(const GURL& url,
-                     URLRequest::ProtocolFactory* factory);
   bool AddUrlInterceptor(const GURL& url,
                          scoped_ptr<URLRequestInterceptor> interceptor);
 

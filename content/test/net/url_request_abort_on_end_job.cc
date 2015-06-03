@@ -15,6 +15,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_status.h"
 
 namespace content {
@@ -22,19 +23,29 @@ namespace {
 
 const char kPageContent[] = "some data\r\n";
 
-net::URLRequestJob* JobFactory(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const std::string& scheme) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return new URLRequestAbortOnEndJob(request, network_delegate);
-}
+class Interceptor : public net::URLRequestInterceptor {
+ public:
+  Interceptor() {}
+  ~Interceptor() override {}
+
+  // URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    return new URLRequestAbortOnEndJob(request, network_delegate);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Interceptor);
+};
 
 void AddUrlHandlerOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->AddUrlHandler(GURL(URLRequestAbortOnEndJob::k400AbortOnEndUrl),
-                        &JobFactory);
+  filter->AddUrlInterceptor(
+      GURL(URLRequestAbortOnEndJob::k400AbortOnEndUrl),
+      scoped_ptr<net::URLRequestInterceptor>(new Interceptor()));
 }
 
 }  // anonymous namespace

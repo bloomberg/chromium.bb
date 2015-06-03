@@ -15,6 +15,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -31,6 +32,28 @@ const char URLRequestSlowDownloadJob::kErrorDownloadUrl[] =
 const int URLRequestSlowDownloadJob::kFirstDownloadSize = 1024 * 35;
 const int URLRequestSlowDownloadJob::kSecondDownloadSize = 1024 * 10;
 
+class URLRequestSlowDownloadJob::Interceptor : public URLRequestInterceptor {
+ public:
+  Interceptor() {}
+  ~Interceptor() override {}
+
+  // URLRequestInterceptor implementation:
+  URLRequestJob* MaybeInterceptRequest(
+      URLRequest* request,
+      NetworkDelegate* network_delegate) const override {
+    URLRequestSlowDownloadJob* job =
+        new URLRequestSlowDownloadJob(request, network_delegate);
+    if (request->url().spec() != kFinishDownloadUrl &&
+        request->url().spec() != kErrorDownloadUrl) {
+      pending_requests_.Get().insert(job);
+    }
+    return job;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Interceptor);
+};
+
 // static
 base::LazyInstance<URLRequestSlowDownloadJob::SlowJobsSet>::Leaky
     URLRequestSlowDownloadJob::pending_requests_ = LAZY_INSTANCE_INITIALIZER;
@@ -44,27 +67,18 @@ void URLRequestSlowDownloadJob::Start() {
 // static
 void URLRequestSlowDownloadJob::AddUrlHandler() {
   URLRequestFilter* filter = URLRequestFilter::GetInstance();
-  filter->AddUrlHandler(GURL(kUnknownSizeUrl),
-                        &URLRequestSlowDownloadJob::Factory);
-  filter->AddUrlHandler(GURL(kKnownSizeUrl),
-                        &URLRequestSlowDownloadJob::Factory);
-  filter->AddUrlHandler(GURL(kFinishDownloadUrl),
-                        &URLRequestSlowDownloadJob::Factory);
-  filter->AddUrlHandler(GURL(kErrorDownloadUrl),
-                        &URLRequestSlowDownloadJob::Factory);
-}
-
-// static
-URLRequestJob* URLRequestSlowDownloadJob::Factory(
-    URLRequest* request,
-    NetworkDelegate* network_delegate,
-    const std::string& scheme) {
-  URLRequestSlowDownloadJob* job =
-      new URLRequestSlowDownloadJob(request, network_delegate);
-  if (request->url().spec() != kFinishDownloadUrl &&
-      request->url().spec() != kErrorDownloadUrl)
-    pending_requests_.Get().insert(job);
-  return job;
+  filter->AddUrlInterceptor(
+      GURL(kUnknownSizeUrl),
+      scoped_ptr<URLRequestInterceptor>(new Interceptor()));
+  filter->AddUrlInterceptor(
+      GURL(kKnownSizeUrl),
+      scoped_ptr<URLRequestInterceptor>(new Interceptor()));
+  filter->AddUrlInterceptor(
+      GURL(kFinishDownloadUrl),
+      scoped_ptr<URLRequestInterceptor>(new Interceptor()));
+  filter->AddUrlInterceptor(
+      GURL(kErrorDownloadUrl),
+      scoped_ptr<URLRequestInterceptor>(new Interceptor()));
 }
 
 // static

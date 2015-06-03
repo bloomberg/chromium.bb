@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -44,6 +46,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_job.h"
 
 #if defined(OS_MACOSX)
@@ -58,46 +61,75 @@ namespace {
 // work. (If we used a test server, the PRE_Test and Test would have separate
 // instances running on separate ports.)
 
-base::LazyInstance<std::map<std::string, std::string> > g_file_contents =
-    LAZY_INSTANCE_INITIALIZER;
+class URLRequestFakerInterceptor : public net::URLRequestInterceptor {
+ public:
+  // |response_contents| are returned by URLRequestJob's created by
+  // MaybeInterceptRequests.
+  explicit URLRequestFakerInterceptor(const std::string& response_contents)
+      : response_contents_(response_contents) {}
+  ~URLRequestFakerInterceptor() override {}
 
-net::URLRequestJob* URLRequestFaker(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const std::string& scheme) {
-  return new net::URLRequestTestJob(
-      request, network_delegate, net::URLRequestTestJob::test_headers(),
-      g_file_contents.Get()[request->url().path()], true);
-}
+  // URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return new net::URLRequestTestJob(request, network_delegate,
+                                      net::URLRequestTestJob::test_headers(),
+                                      response_contents_, true);
+  }
 
-base::LazyInstance<std::string> g_last_upload_bytes = LAZY_INSTANCE_INITIALIZER;
+ private:
+  const std::string response_contents_;
 
-net::URLRequestJob* URLRequestFakerForPostRequests(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const std::string& scheme) {
-  // Read the uploaded data and store it to g_last_upload_bytes.
-  const net::UploadDataStream* upload_data = request->get_upload();
-  g_last_upload_bytes.Get().clear();
-  if (upload_data) {
-    const ScopedVector<net::UploadElementReader>* readers =
-        upload_data->GetElementReaders();
-    if (readers) {
-      for (size_t i = 0; i < readers->size(); ++i) {
-        const net::UploadBytesElementReader* bytes_reader =
-            (*readers)[i]->AsBytesReader();
-        if (bytes_reader) {
-          g_last_upload_bytes.Get() +=
-              std::string(bytes_reader->bytes(), bytes_reader->length());
+  DISALLOW_COPY_AND_ASSIGN(URLRequestFakerInterceptor);
+};
+
+class URLRequestFakerForPostRequestsInterceptor
+    : public net::URLRequestInterceptor {
+ public:
+  URLRequestFakerForPostRequestsInterceptor() {}
+  ~URLRequestFakerForPostRequestsInterceptor() override {}
+
+  // URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    // Read the uploaded data and store it to last_upload_bytes.
+    const net::UploadDataStream* upload_data = request->get_upload();
+    last_upload_bytes_.clear();
+    if (upload_data) {
+      const ScopedVector<net::UploadElementReader>* readers =
+          upload_data->GetElementReaders();
+      if (readers) {
+        for (size_t i = 0; i < readers->size(); ++i) {
+          const net::UploadBytesElementReader* bytes_reader =
+              (*readers)[i]->AsBytesReader();
+          if (bytes_reader) {
+            last_upload_bytes_ +=
+                std::string(bytes_reader->bytes(), bytes_reader->length());
+          }
         }
       }
     }
+    return new net::URLRequestTestJob(
+        request, network_delegate, net::URLRequestTestJob::test_headers(),
+        "<html><head><title>PASS</title></head><body>Data posted</body></html>",
+        true);
   }
-  return new net::URLRequestTestJob(
-      request, network_delegate, net::URLRequestTestJob::test_headers(),
-      "<html><head><title>PASS</title></head><body>Data posted</body></html>",
-      true);
-}
+
+  // Did the last intercepted upload data contain |search_string|?
+  // This method is not thread-safe.  It's called on the UI thread, though
+  // the intercept takes place on the IO thread.  It must not be called while an
+  // upload is in progress.
+  bool DidLastUploadContain(const std::string& search_string) {
+    return last_upload_bytes_.find(search_string) != std::string::npos;
+  }
+
+ private:
+  mutable std::string last_upload_bytes_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestFakerForPostRequestsInterceptor);
+};
 
 class FakeBackgroundModeManager : public BackgroundModeManager {
  public:
@@ -148,14 +180,15 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
       base::FilePath path = test_file_dir.AppendASCII(*it);
       std::string contents;
       CHECK(base::ReadFileToString(path, &contents));
-      g_file_contents.Get()["/" + test_path_ + *it] = contents;
-      net::URLRequestFilter::GetInstance()->AddUrlHandler(
+      net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
           GURL(fake_server_address_ + test_path_ + *it),
-          &URLRequestFaker);
+          scoped_ptr<net::URLRequestInterceptor>(
+              new URLRequestFakerInterceptor(contents)));
     }
-    net::URLRequestFilter::GetInstance()->AddUrlHandler(
+    post_interceptor_ = new URLRequestFakerForPostRequestsInterceptor();
+    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
         GURL(fake_server_address_ + test_path_ + "posted.php"),
-        &URLRequestFakerForPostRequests);
+        scoped_ptr<net::URLRequestInterceptor>(post_interceptor_));
   }
 
  protected:
@@ -251,15 +284,11 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
         browser(), GURL(fake_server_address_ + test_path_ + filename));
     base::string16 final_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(title_pass_, final_title);
-    EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
-                std::string::npos);
-    EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
-                std::string::npos);
+    EXPECT_TRUE(post_interceptor_->DidLastUploadContain("posted-text"));
+    EXPECT_TRUE(post_interceptor_->DidLastUploadContain("text-entered"));
     if (password_present) {
-      EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-password") !=
-                  std::string::npos);
-      EXPECT_TRUE(g_last_upload_bytes.Get().find("password-entered") !=
-                  std::string::npos);
+      EXPECT_TRUE(post_interceptor_->DidLastUploadContain("posted-password"));
+      EXPECT_TRUE(post_interceptor_->DidLastUploadContain("password-entered"));
     }
   }
 
@@ -270,28 +299,14 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   void CheckFormRestored(
       Browser* browser, bool text_present, bool password_present) {
     CheckReloadedPageRestored(browser);
-    if (text_present) {
-      EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") !=
-                  std::string::npos);
-      EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") !=
-                  std::string::npos);
-    } else {
-      EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-text") ==
-                  std::string::npos);
-      EXPECT_TRUE(g_last_upload_bytes.Get().find("text-entered") ==
-                  std::string::npos);
-    }
-    if (password_present) {
-      EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-password") !=
-                  std::string::npos);
-      EXPECT_TRUE(g_last_upload_bytes.Get().find("password-entered") !=
-                  std::string::npos);
-    } else {
-      EXPECT_TRUE(g_last_upload_bytes.Get().find("posted-password") ==
-                  std::string::npos);
-      EXPECT_TRUE(g_last_upload_bytes.Get().find("password-entered") ==
-                  std::string::npos);
-    }
+    EXPECT_EQ(text_present,
+              post_interceptor_->DidLastUploadContain("posted-text"));
+    EXPECT_EQ(text_present,
+              post_interceptor_->DidLastUploadContain("text-entered"));
+    EXPECT_EQ(password_present,
+              post_interceptor_->DidLastUploadContain("posted-password"));
+    EXPECT_EQ(password_present,
+              post_interceptor_->DidLastUploadContain("password-entered"));
   }
 
   void CloseBrowserSynchronously(Browser* browser, bool close_all_windows) {
@@ -361,6 +376,10 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   const base::string16 title_storing_;
   const base::string16 title_error_write_failed_;
   const base::string16 title_error_empty_;
+
+  // Interceptor is owned by URLRequestFilter and lives on IO thread; this is
+  // just a reference.
+  URLRequestFakerForPostRequestsInterceptor* post_interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(BetterSessionRestoreTest);
 };

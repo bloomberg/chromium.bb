@@ -154,6 +154,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -264,13 +265,22 @@ void UndoRedirectHostsToTestData(const char* const urls[], size_t size) {
 }
 
 // Fails requests using ERR_CONNECTION_RESET.
-net::URLRequestJob* FailedJobFactory(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const std::string& scheme) {
-  return new net::URLRequestFailedJob(
-      request, network_delegate, net::ERR_CONNECTION_RESET);
-}
+class FailedJobInterceptor : public net::URLRequestInterceptor {
+ public:
+  FailedJobInterceptor() {}
+  ~FailedJobInterceptor() override {}
+
+  // URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return new net::URLRequestFailedJob(request, network_delegate,
+                                        net::ERR_CONNECTION_RESET);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FailedJobInterceptor);
+};
 
 // While |MakeRequestFail| is in scope URLRequests to |host| will fail.
 class MakeRequestFail {
@@ -295,8 +305,12 @@ class MakeRequestFail {
   // Filters requests to the |host| such that they fail. Run on IO thread.
   static void MakeRequestFailOnIO(const std::string& host) {
     net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-    filter->AddHostnameHandler("http", host, &FailedJobFactory);
-    filter->AddHostnameHandler("https", host, &FailedJobFactory);
+    filter->AddHostnameInterceptor(
+        "http", host,
+        scoped_ptr<net::URLRequestInterceptor>(new FailedJobInterceptor()));
+    filter->AddHostnameInterceptor(
+        "https", host,
+        scoped_ptr<net::URLRequestInterceptor>(new FailedJobInterceptor()));
   }
 
   // Remove filters for requests to the |host|. Run on IO thread.
