@@ -260,16 +260,17 @@ public class PersonalDataManagerTest extends ChromeShellTestBase {
         mHelper.setProfile(profile4);
 
         List<String> expectedLabels = new LinkedList<String>();
-        expectedLabels.add("123 Main, Los Angeles, jm@example.com");
-        expectedLabels.add("123 Main, Los Angeles, jm-work@example.com");
-        expectedLabels.add("1500 Second Ave, Hollywood");
+        expectedLabels.add("123 Main, jm@example.com");
+        expectedLabels.add("123 Main, jm-work@example.com");
+        expectedLabels.add("1500 Second Ave, 90068");
         expectedLabels.add("Fort Worth, Texas");
 
         List<AutofillProfile> profiles = mHelper.getProfiles();
         assertEquals(expectedLabels.size(), profiles.size());
         for (int i = 0; i < profiles.size(); ++i) {
-            int idx = expectedLabels.indexOf(profiles.get(i).getLabel());
-            assertFalse(-1 == idx);
+            String label = profiles.get(i).getLabel();
+            int idx = expectedLabels.indexOf(label);
+            assertFalse("Found unexpected label [" + label + "]", -1 == idx);
             expectedLabels.remove(idx);
         }
     }

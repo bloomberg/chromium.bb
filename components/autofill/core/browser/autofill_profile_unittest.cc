@@ -610,8 +610,8 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
   // Two fields at least, from suggested fields - no filter.
   AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
                                         UNKNOWN_TYPE, 2, "en-US", &labels);
-  EXPECT_EQ(ASCIIToUTF16("Elysium, CA"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Dis, CA"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("Elysium 91111"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Dis 91222"), labels[1]);
 
   // Three fields at least, from suggested fields - no filter.
   AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
@@ -622,10 +622,9 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
   // Three fields at least, from suggested fields - but filter reduces available
   // fields to two.
   AutofillProfile::CreateInferredLabels(profiles.get(), &suggested_fields,
-                                        ADDRESS_HOME_STATE, 3, "en-US",
-                                        &labels);
-  EXPECT_EQ(ASCIIToUTF16("Elysium 91111"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("Dis 91222"), labels[1]);
+                                        ADDRESS_HOME_ZIP, 3, "en-US", &labels);
+  EXPECT_EQ(ASCIIToUTF16("Elysium, CA"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("Dis, CA"), labels[1]);
 
   suggested_fields.clear();
   // In our implementation we always display NAME_FULL for all NAME* fields...

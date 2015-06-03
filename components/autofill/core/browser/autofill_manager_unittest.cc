@@ -1293,14 +1293,12 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsFancyPhone) {
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
 
   // Test that we sent the right values to the external delegate. Inferred
-  // labels include full first relevant field, which in this case is the
-  // address line 1.
+  // labels include the most private field of those that would be filled.
   external_delegate_->CheckSuggestions(
       kDefaultPageID,
-      Suggestion("12345678901", "Elvis Aaron Presley", "", 1),
-      Suggestion("23456789012", "Charles Hardin Holley", "", 2),
+      Suggestion("12345678901", "3734 Elvis Presley Blvd.", "", 1),
+      Suggestion("23456789012", "123 Apple St.", "", 2),
       Suggestion("18007724743", "Natty Bumppo", "", 3));  // 1800PRAIRIE
-
 }
 
 TEST_F(AutofillManagerTest, GetProfileSuggestionsForPhonePrefixOrSuffix) {
@@ -1340,19 +1338,21 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsForPhonePrefixOrSuffix) {
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->AddProfile(profile);
 
+  // The sublabels here are somewhat braindead until crbug.com/493247 is fixed.
+  // TODO(estade): fix the bug and fix this test.
   const FormFieldData& phone_prefix = form.fields[2];
   GetAutofillSuggestions(form, phone_prefix);
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
   // Test that we sent the right prefix values to the external delegate.
   external_delegate_->CheckSuggestions(kDefaultPageID,
-                                       Suggestion("356", "1", "", 1));
+                                       Suggestion("356", "18003569377", "", 1));
 
   const FormFieldData& phone_suffix = form.fields[3];
   GetAutofillSuggestions(form, phone_suffix);
   AutocompleteSuggestionsReturned(std::vector<base::string16>());
   // Test that we sent the right suffix values to the external delegate.
-  external_delegate_->CheckSuggestions(kDefaultPageID,
-                                       Suggestion("9377", "1", "", 1));
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion("9377", "18003569377", "", 1));
 }
 
 // Test that we correctly fill an address form.
