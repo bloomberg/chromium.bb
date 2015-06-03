@@ -147,8 +147,8 @@ def GetSymbolToSectionsMapFromObjectFiles(obj_dir):
       # complete, base, and allocating.  If they're all the same they'll
       # get folded together.
       if not (re.match('[CD][123]E', symbol) and
-          (symbol_extractor.DemangleSymbol(symbol) ==
-           symbol_extractor.DemangleSymbol(symbol_to_sections_map[symbol][0]
+          (symbol_extractor.Demangle(symbol) ==
+           symbol_extractor.Demangle(symbol_to_sections_map[symbol][0]
                                      .lstrip('.text.')))):
         symbol_warnings.Write('Symbol ' + symbol +
                               ' in conflicting sections ' +

@@ -102,10 +102,6 @@ def _StripPrefix(line):
 
 def _SectionNameToSymbols(section_name, section_to_symbols_map):
   """Returns all symbols which could be referred to by section_name."""
-  if (section_name == '' or
-      section_name == '.text.*' or
-      section_name == '.text'):
-    return  # Don't return anything for catch-all sections
   if section_name in section_to_symbols_map:
     for symbol in section_to_symbols_map[section_name]:
       yield symbol
@@ -221,7 +217,7 @@ def _PrintSymbolsAsSections(symbol_names, symbol_to_sections_map, output_file):
   for name in symbol_names:
     if name in symbol_to_sections_map:
       for linker_section in symbol_to_sections_map[name]:
-        if linker_section != '.text' and not linker_section in unique_outputs:
+        if not linker_section in unique_outputs:
           output_file.write(linker_section + '\n')
           unique_outputs.add(linker_section)
     else:
