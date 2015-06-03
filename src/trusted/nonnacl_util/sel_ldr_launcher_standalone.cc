@@ -69,7 +69,7 @@ void SelLdrLauncherStandalone::BuildCommandLine(vector<nacl::string>* command) {
   command->insert(command->end(), sel_ldr_argv_.begin(), sel_ldr_argv_.end());
 
   struct NaClEnvCleanser env_cleanser;
-  NaClEnvCleanserCtor(&env_cleanser, 1);
+  NaClEnvCleanserCtor(&env_cleanser, 1, 0);
   if (!NaClEnvCleanserInit(&env_cleanser, GetEnviron(), NULL)) {
     NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
   }

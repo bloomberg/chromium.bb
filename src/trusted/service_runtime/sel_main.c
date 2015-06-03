@@ -415,12 +415,6 @@ static void NaClSelLdrParseArgs(int argc, char **argv,
 
   /* Post process the options. */
 
-  if (options->enable_env_passthrough && env_vars->num_entries > 0) {
-    fprintf(stderr, "ERROR: -p and -E options are mutually exclusive\n");
-    PrintUsage();
-    exit(-1);
-  }
-
   if (options->debug_mode_ignore_validator == 1) {
     if (!options->quiet)
       fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
@@ -572,19 +566,15 @@ int NaClSelLdrMain(int argc, char **argv) {
   /*
    * Define the environment variables for untrusted code.
    */
-  if (options->enable_env_passthrough) {
-    envp = NaClGetEnviron();
-  } else {
-    if (!DynArraySet(&env_vars, env_vars.num_entries, NULL)) {
-      NaClLog(LOG_FATAL, "Adding env_vars NULL terminator failed\n");
-    }
-    NaClEnvCleanserCtor(&env_cleanser, 0);
-    if (!NaClEnvCleanserInit(&env_cleanser, NaClGetEnviron(),
-            (char const *const *)env_vars.ptr_array)) {
-      NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
-    }
-    envp = NaClEnvCleanserEnvironment(&env_cleanser);
+  if (!DynArraySet(&env_vars, env_vars.num_entries, NULL)) {
+    NaClLog(LOG_FATAL, "Adding env_vars NULL terminator failed\n");
   }
+  NaClEnvCleanserCtor(&env_cleanser, 0, options->enable_env_passthrough);
+  if (!NaClEnvCleanserInit(&env_cleanser, NaClGetEnviron(),
+                           (char const *const *) env_vars.ptr_array)) {
+    NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
+  }
+  envp = NaClEnvCleanserEnvironment(&env_cleanser);
 
   if (options->debug_mode_startup_signal) {
 #if NACL_WINDOWS
@@ -865,9 +855,7 @@ int NaClSelLdrMain(int argc, char **argv) {
   /*
    * Clean up temp storage for env vars.
    */
-  if (!options->enable_env_passthrough) {
-    NaClEnvCleanserDtor(&env_cleanser);
-  }
+  NaClEnvCleanserDtor(&env_cleanser);
   DynArrayDtor(&env_vars);
 
   NaClPerfCounterMark(&time_all_main, "CreateMainThread");

@@ -20,10 +20,12 @@ EXTERN_C_BEGIN
 struct NaClEnvCleanser {
   /* private */
   int with_whitelist;
+  int with_passthrough;
   char const **cleansed_environ;
 };
 
-void NaClEnvCleanserCtor(struct NaClEnvCleanser *self, int with_whitelist);
+void NaClEnvCleanserCtor(struct NaClEnvCleanser *self,
+                         int with_whitelist, int with_passthrough);
 
 /*
  * Initializes the NaClEnvCleanser.  Filters the environment at envp

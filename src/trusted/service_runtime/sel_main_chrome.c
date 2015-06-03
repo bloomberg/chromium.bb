@@ -424,7 +424,7 @@ static int StartApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
 
   NACL_FI_FATAL("BeforeEnvCleanserCtor");
 
-  NaClEnvCleanserCtor(&env_cleanser, 1);
+  NaClEnvCleanserCtor(&env_cleanser, 1, 0);
   if (!NaClEnvCleanserInit(&env_cleanser, NaClGetEnviron(), NULL)) {
     NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
   }
