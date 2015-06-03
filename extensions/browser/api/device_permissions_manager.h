@@ -20,7 +20,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/hid/hid_service.h"
 #include "device/usb/usb_service.h"
-#include "extensions/browser/process_manager_observer.h"
 
 template <typename T>
 struct DefaultSingletonTraits;
@@ -34,8 +33,6 @@ class BrowserContext;
 }
 
 namespace extensions {
-
-class ProcessManager;
 
 // Stores information about a device saved with access granted.
 class DevicePermissionEntry : public base::RefCounted<DevicePermissionEntry> {
@@ -139,7 +136,6 @@ class DevicePermissions {
 
 // Manages saved device permissions for all extensions.
 class DevicePermissionsManager : public KeyedService,
-                                 public ProcessManagerObserver,
                                  public device::UsbService::Observer,
                                  public device::HidService::Observer {
  public:
@@ -188,9 +184,6 @@ class DevicePermissionsManager : public KeyedService,
 
   DevicePermissions* GetInternal(const std::string& extension_id) const;
 
-  // ProcessManagerObserver implementation
-  void OnBackgroundHostClose(const std::string& extension_id) override;
-
   // UsbService::Observer implementation
   void OnDeviceRemovedCleanup(scoped_refptr<device::UsbDevice> device) override;
 
@@ -201,8 +194,6 @@ class DevicePermissionsManager : public KeyedService,
   base::ThreadChecker thread_checker_;
   content::BrowserContext* context_;
   std::map<std::string, DevicePermissions*> extension_id_to_device_permissions_;
-  ScopedObserver<ProcessManager, ProcessManagerObserver>
-      process_manager_observer_;
   ScopedObserver<device::UsbService, device::UsbService::Observer>
       usb_service_observer_;
   ScopedObserver<device::HidService, device::HidService::Observer>

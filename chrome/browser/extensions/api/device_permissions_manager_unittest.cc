@@ -213,44 +213,6 @@ TEST_F(DevicePermissionsManagerTest, AllowAndClearDevices) {
   EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device7_).get());
 }
 
-TEST_F(DevicePermissionsManagerTest, SuspendExtension) {
-  DevicePermissionsManager* manager =
-      DevicePermissionsManager::Get(env_->profile());
-  manager->AllowUsbDevice(extension_->id(), device0_);
-  manager->AllowUsbDevice(extension_->id(), device1_);
-  manager->AllowHidDevice(extension_->id(), device4_);
-  manager->AllowHidDevice(extension_->id(), device5_);
-
-  DevicePermissions* device_permissions =
-      manager->GetForExtension(extension_->id());
-  EXPECT_TRUE(device_permissions->FindUsbDeviceEntry(device0_).get());
-  EXPECT_TRUE(device_permissions->FindUsbDeviceEntry(device1_).get());
-  EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device2_).get());
-  EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device3_).get());
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device4_).get());
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device5_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device6_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device7_).get());
-
-  manager->OnBackgroundHostClose(extension_->id());
-
-  // Device 0 is still registered because its serial number has been stored in
-  // ExtensionPrefs, it is "persistent".
-  EXPECT_TRUE(device_permissions->FindUsbDeviceEntry(device0_).get());
-  // Device 1 does not have uniquely identifying traits and so permission to
-  // open it has been dropped when the app's windows have closed and the
-  // background page has been suspended.
-  EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device1_).get());
-  EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device2_).get());
-  EXPECT_FALSE(device_permissions->FindUsbDeviceEntry(device3_).get());
-  // Device 4 is like device 0, but HID.
-  EXPECT_TRUE(device_permissions->FindHidDeviceEntry(device4_).get());
-  // Device 5 is like device 1, but HID.
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device5_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device6_).get());
-  EXPECT_FALSE(device_permissions->FindHidDeviceEntry(device7_).get());
-}
-
 TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
   DevicePermissionsManager* manager =
       DevicePermissionsManager::Get(env_->profile());

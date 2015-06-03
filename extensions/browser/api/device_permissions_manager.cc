@@ -20,8 +20,6 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/process_manager.h"
-#include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -639,10 +637,8 @@ void DevicePermissionsManager::Clear(const std::string& extension_id) {
 DevicePermissionsManager::DevicePermissionsManager(
     content::BrowserContext* context)
     : context_(context),
-      process_manager_observer_(this),
       usb_service_observer_(this),
       hid_service_observer_(this) {
-  process_manager_observer_.Add(ProcessManager::Get(context));
 }
 
 DevicePermissionsManager::~DevicePermissionsManager() {
@@ -661,25 +657,6 @@ DevicePermissions* DevicePermissionsManager::GetInternal(
   }
 
   return NULL;
-}
-
-void DevicePermissionsManager::OnBackgroundHostClose(
-    const std::string& extension_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  DevicePermissions* device_permissions = GetInternal(extension_id);
-  if (device_permissions) {
-    // When all of the app's windows are closed and the background page is
-    // suspended all ephemeral device permissions are cleared.
-    for (const auto& map_entry : device_permissions->ephemeral_usb_devices_) {
-      device_permissions->entries_.erase(map_entry.second);
-    }
-    device_permissions->ephemeral_usb_devices_.clear();
-    for (const auto& map_entry : device_permissions->ephemeral_hid_devices_) {
-      device_permissions->entries_.erase(map_entry.second);
-    }
-    device_permissions->ephemeral_hid_devices_.clear();
-  }
 }
 
 void DevicePermissionsManager::OnDeviceRemovedCleanup(
@@ -731,7 +708,6 @@ DevicePermissionsManagerFactory::DevicePermissionsManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "DevicePermissionsManager",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ProcessManagerFactory::GetInstance());
 }
 
 DevicePermissionsManagerFactory::~DevicePermissionsManagerFactory() {
