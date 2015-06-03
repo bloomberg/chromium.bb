@@ -404,3 +404,13 @@ class SmoothnessToughTextureUploadCases(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'smoothness.tough_texture_upload_cases'
+
+
+class SmoothnessToughAdCases(perf_benchmark.PerfBenchmark):
+  """Measures rendering statistics while displaying advertisements."""
+  test = smoothness.Smoothness
+  page_set = page_sets.ToughAdCasesPageSet
+
+  @classmethod
+  def Name(cls):
+    return 'smoothness.tough_ad_cases'
