@@ -564,7 +564,7 @@ recorder_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *da
 	struct weston_recorder *recorder;
 	static const char filename[] = "capture.wcap";
 
-	wl_list_for_each(output, &seat->compositor->output_list, link) {
+	wl_list_for_each(output, &ec->output_list, link) {
 		listener = wl_signal_get(&output->frame_signal,
 					 weston_recorder_frame_notify);
 		if (listener)
