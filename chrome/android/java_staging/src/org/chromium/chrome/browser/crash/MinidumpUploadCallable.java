@@ -29,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.concurrent.Callable;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * This class tries to upload a minidump to the crash server.
@@ -98,7 +99,7 @@ public class MinidumpUploadCallable implements Callable<Boolean> {
                 return false;
             }
             minidumpInputStream = new FileInputStream(mFileToUpload);
-            streamCopy(minidumpInputStream, connection.getOutputStream());
+            streamCopy(minidumpInputStream, new GZIPOutputStream(connection.getOutputStream()));
             boolean status = handleExecutionResponse(connection);
 
             if (isLimited) updateUploadPrefs();
@@ -135,6 +136,7 @@ public class MinidumpUploadCallable implements Callable<Boolean> {
 
         connection.setDoOutput(true);
         connection.setRequestProperty("Connection", "Keep-Alive");
+        connection.setRequestProperty("Content-Encoding", "gzip");
         connection.setRequestProperty("Content-Type", String.format(CONTENT_TYPE_TMPL, boundary));
         return true;
     }
