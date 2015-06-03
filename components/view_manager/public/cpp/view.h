@@ -134,6 +134,7 @@ class View {
              InterfaceRequest<ServiceProvider> services,
              ServiceProviderPtr exposed_services);
   void Embed(ViewManagerClientPtr client);
+  void EmbedAllowingReembed(mojo::URLRequestPtr request);
 
  protected:
   // This class is subclassed only by test classes that provide a public ctor.

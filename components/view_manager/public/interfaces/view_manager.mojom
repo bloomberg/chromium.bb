@@ -117,13 +117,16 @@ interface ViewManagerService {
   SetEmbedRoot();
 
   // A connection may grant access to a view from another connection by way of
-  // the embed functions. There are two variants of this call:
+  // the embed functions. The following variants exist:
   //
   // . EmbedRequest: the ViewManager connects to the app at the supplied request
   //   and asks it for a ViewManagerClient.
-  // . With the second variant a ViewManagerClient is directly supplied.
+  // . Embed: the client supplies the ViewManagerClient to use.
+  // . EmbedAllowingReembed: similar to EmbedRequest(), but no
+  //   ServiceProviders are supplied. Additionally this version allows an
+  //   EmbedRoot ancestor to call Embed() in this view at a later date.
   //
-  // In both cases the new ViewManagerClient is configured with a root of
+  // In all cases the new ViewManagerClient is configured with a root of
   // |view_id|.
   //
   // The caller must have created |view_id|. If not the request fails and the
@@ -156,6 +159,7 @@ interface ViewManagerService {
                ServiceProvider&? services,
                ServiceProvider? exposed_services) => (bool success);
   Embed(uint32 view_id, ViewManagerClient client) => (bool success);
+  EmbedAllowingReembed(URLRequest request, uint32 view_id) => (bool success);
 
   SetFocus(uint32 view_id) => (bool success);
 };

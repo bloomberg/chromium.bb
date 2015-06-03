@@ -87,6 +87,10 @@ class ServerView {
   void SetSurfaceId(cc::SurfaceId surface_id);
   const cc::SurfaceId& surface_id() const { return surface_id_; }
 
+  // See mojom for for details.
+  void set_allows_reembed(bool value) { allows_reembed_ = value; }
+  bool allows_reembed() const { return allows_reembed_; }
+
 #if !defined(NDEBUG)
   std::string GetDebugWindowHierarchy() const;
   void BuildDebugInfo(const std::string& depth, std::string* result) const;
@@ -107,6 +111,7 @@ class ServerView {
   cc::SurfaceId surface_id_;
   float opacity_;
   gfx::Transform transform_;
+  bool allows_reembed_;
 
   std::map<std::string, std::vector<uint8_t>> properties_;
 

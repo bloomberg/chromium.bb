@@ -35,7 +35,10 @@ class ServerView;
 class ViewManagerServiceImpl : public mojo::ViewManagerService,
                                public AccessPolicyDelegate {
  public:
-  using ViewIdSet = base::hash_set<mojo::Id>;
+  enum class EmbedType {
+    ALLOW_REEMBED,
+    NO_REEMBED,
+  };
 
   ViewManagerServiceImpl(ConnectionManager* connection_manager,
                          mojo::ConnectionSpecificId creator_id,
@@ -83,11 +86,12 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   bool AddView(const ViewId& parent_id, const ViewId& child_id);
   std::vector<const ServerView*> GetViewTree(const ViewId& view_id) const;
   bool SetViewVisibility(const ViewId& view_id, bool visible);
-  void EmbedRequest(mojo::URLRequestPtr request,
-                    const ViewId& view_id,
-                    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-                    mojo::ServiceProviderPtr exposed_services,
-                    const mojo::Callback<void(bool)>& callback);
+  void Embed(mojo::URLRequestPtr request,
+             const ViewId& view_id,
+             EmbedType type,
+             mojo::InterfaceRequest<mojo::ServiceProvider> services,
+             mojo::ServiceProviderPtr exposed_services,
+             const mojo::Callback<void(bool)>& callback);
   bool Embed(const ViewId& view_id, mojo::ViewManagerClientPtr client);
 
   // The following methods are invoked after the corresponding change has been
@@ -123,7 +127,9 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
                            const ServerView* new_focused_view);
 
  private:
-  typedef std::map<mojo::ConnectionSpecificId, ServerView*> ViewMap;
+  using ViewIdSet = base::hash_set<mojo::Id>;
+  using ViewMap = std::map<mojo::ConnectionSpecificId, ServerView*>;
+
   struct PendingEmbed;
 
   bool IsViewKnown(const ServerView* view) const;
@@ -230,6 +236,10 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   void Embed(mojo::Id transport_view_id,
              mojo::ViewManagerClientPtr client,
              const mojo::Callback<void(bool)>& callback) override;
+  void EmbedAllowingReembed(
+      mojo::URLRequestPtr request,
+      mojo::Id transport_view_id,
+      const mojo::Callback<void(bool)>& callback) override;
   void SetFocus(uint32_t view_id, const SetFocusCallback& callback) override;
 
   // AccessPolicyDelegate:

@@ -59,6 +59,7 @@ class ViewManagerClientImpl : public ViewManager,
              InterfaceRequest<ServiceProvider> services,
              ServiceProviderPtr exposed_services);
   void Embed(Id view_id, ViewManagerClientPtr client);
+  void EmbedAllowingReembed(mojo::URLRequestPtr request, Id view_id);
 
   void set_change_acked_callback(const Callback<void(void)>& callback) {
     change_acked_callback_ = callback;
@@ -71,6 +72,8 @@ class ViewManagerClientImpl : public ViewManager,
   void RemoveView(Id view_id);
 
   void SetViewManagerService(ViewManagerServicePtr service);
+
+  bool is_embed_root() const { return is_embed_root_; }
 
  private:
   class RootObserver;
@@ -153,6 +156,8 @@ class ViewManagerClientImpl : public ViewManager,
   ViewManagerServicePtr service_;
 
   scoped_ptr<RootObserver> root_observer_;
+
+  bool is_embed_root_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };

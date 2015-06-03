@@ -108,7 +108,8 @@ ViewManagerClientImpl::ViewManagerClientImpl(
       capture_view_(nullptr),
       focused_view_(nullptr),
       activated_view_(nullptr),
-      binding_(this, request.Pass()) {
+      binding_(this, request.Pass()),
+      is_embed_root_(false) {
 }
 
 ViewManagerClientImpl::~ViewManagerClientImpl() {
@@ -221,6 +222,13 @@ void ViewManagerClientImpl::Embed(Id view_id, ViewManagerClientPtr client) {
   service_->Embed(view_id, client.Pass(), ActionCompletedCallback());
 }
 
+void ViewManagerClientImpl::EmbedAllowingReembed(mojo::URLRequestPtr request,
+                                                 Id view_id) {
+  DCHECK(service_);
+  service_->EmbedAllowingReembed(request.Pass(), view_id,
+                                 ActionCompletedCallback());
+}
+
 void ViewManagerClientImpl::AddView(View* view) {
   DCHECK(views_.find(view->id()) == views_.end());
   views_[view->id()] = view;
@@ -278,6 +286,8 @@ View* ViewManagerClientImpl::CreateView() {
 }
 
 void ViewManagerClientImpl::SetEmbedRoot() {
+  // TODO(sky): this isn't right. The server may ignore the call.
+  is_embed_root_ = true;
   service_->SetEmbedRoot();
 }
 

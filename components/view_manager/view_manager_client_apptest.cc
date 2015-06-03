@@ -83,6 +83,18 @@ bool WaitForBoundsToChange(View* view) {
   return DoRunLoopWithTimeout();
 }
 
+// Increments the width of |view| and waits for a bounds change in |other_vm|s
+// root.
+bool IncrementWidthAndWaitForChange(View* view, ViewManager* other_vm) {
+  mojo::Rect bounds = view->bounds();
+  bounds.width++;
+  view->SetBounds(bounds);
+  View* view_in_vm = other_vm->GetRoot();
+  if (view_in_vm == view || view_in_vm->id() != view->id())
+    return false;
+  return WaitForBoundsToChange(view_in_vm);
+}
+
 // Spins a run loop until the tree beginning at |root| has |tree_size| views
 // (including |root|).
 class TreeSizeMatchesObserver : public ViewObserver {
@@ -196,6 +208,8 @@ class ViewManagerTest : public test::ApplicationTestBase,
     on_will_embed_return_value_ = value;
   }
 
+  ViewManager* most_recent_view_manager() { return most_recent_view_manager_; }
+
   // Overridden from ApplicationDelegate:
   void Initialize(ApplicationImpl* app) override {
     view_manager_client_factory_.reset(
@@ -212,14 +226,11 @@ class ViewManagerTest : public test::ApplicationTestBase,
 
   // Embeds another version of the test app @ view; returns nullptr on timeout.
   ViewManager* Embed(ViewManager* view_manager, View* view) {
-    DCHECK_EQ(view_manager, view->view_manager());
-    most_recent_view_manager_ = nullptr;
-    view->Embed(application_impl()->url());
-    if (!DoRunLoopWithTimeout())
-      return nullptr;
-    ViewManager* vm = nullptr;
-    std::swap(vm, most_recent_view_manager_);
-    return vm;
+    return EmbedImpl(view_manager, view, EmbedType::NO_REEMBED);
+  }
+
+  ViewManager* EmbedAllowingReembed(ViewManager* view_manager, View* view) {
+    return EmbedImpl(view_manager, view, EmbedType::ALLOW_REEMBED);
   }
 
   bool got_disconnect() const { return got_disconnect_; }
@@ -246,6 +257,30 @@ class ViewManagerTest : public test::ApplicationTestBase,
   }
 
  private:
+  enum class EmbedType {
+    ALLOW_REEMBED,
+    NO_REEMBED,
+  };
+
+  ViewManager* EmbedImpl(ViewManager* view_manager,
+                         View* view,
+                         EmbedType type) {
+    DCHECK_EQ(view_manager, view->view_manager());
+    most_recent_view_manager_ = nullptr;
+    if (type == EmbedType::ALLOW_REEMBED) {
+      mojo::URLRequestPtr request(mojo::URLRequest::New());
+      request->url = mojo::String::From(application_impl()->url());
+      view->EmbedAllowingReembed(request.Pass());
+    } else {
+      view->Embed(application_impl()->url());
+    }
+    if (!DoRunLoopWithTimeout())
+      return nullptr;
+    ViewManager* vm = nullptr;
+    std::swap(vm, most_recent_view_manager_);
+    return vm;
+  }
+
   // Overridden from testing::Test:
   void SetUp() override {
     ApplicationTestBase::SetUp();
@@ -786,12 +821,58 @@ TEST_F(ViewManagerTest, OnWillEmbedFails) {
   // possible there is still an OnEmbed() message in flight. Sets the bounds of
   // |view1| and wait for it to the change in |view_manager|, that way we know
   // |view_manager| has processed all messages for it.
-  mojo::Rect bounds = view1->bounds();
-  bounds.width++;
-  view1->SetBounds(bounds);
-  WaitForBoundsToChange(view_manager->GetRoot());
+  EXPECT_TRUE(IncrementWidthAndWaitForChange(view1, view_manager));
 
   EXPECT_EQ(1u, on_will_embed_count());
+}
+
+// Verify an Embed() from an ancestor is not allowed.
+TEST_F(ViewManagerTest, ReembedFails) {
+  window_manager()->SetEmbedRoot();
+
+  View* view1 = window_manager()->CreateView();
+  window_manager()->GetRoot()->AddChild(view1);
+
+  ViewManager* view_manager = Embed(window_manager(), view1);
+  ASSERT_TRUE(view_manager);
+  View* view2 = view_manager->CreateView();
+  view_manager->GetRoot()->AddChild(view2);
+  Embed(view_manager, view2);
+
+  // Try to embed in view2 from the window_manager. This should fail as the
+  // Embed() didn't grab reembed.
+  View* view2_in_wm = window_manager()->GetViewById(view2->id());
+  view2_in_wm->Embed(application_impl()->url());
+
+  // The Embed() call above returns immediately. To ensure the server has
+  // processed it nudge the bounds and wait for it to be processed.
+  EXPECT_TRUE(IncrementWidthAndWaitForChange(view1, view_manager));
+
+  EXPECT_EQ(nullptr, most_recent_view_manager());
+}
+
+// Verify an Embed() from an ancestor is allowed if the ancestor is an embed
+// root and Embed was done by way of EmbedAllowingReembed().
+TEST_F(ViewManagerTest, ReembedSucceeds) {
+  window_manager()->SetEmbedRoot();
+
+  View* view1 = window_manager()->CreateView();
+  window_manager()->GetRoot()->AddChild(view1);
+
+  ViewManager* view_manager = Embed(window_manager(), view1);
+  View* view2 = view_manager->CreateView();
+  view_manager->GetRoot()->AddChild(view2);
+  EmbedAllowingReembed(view_manager, view2);
+
+  View* view2_in_wm = window_manager()->GetViewById(view2->id());
+  ViewManager* view_manager2 = Embed(window_manager(), view2_in_wm);
+  ASSERT_TRUE(view_manager2);
+
+  // The Embed() call above returns immediately. To ensure the server has
+  // processed it nudge the bounds and wait for it to be processed.
+  EXPECT_TRUE(IncrementWidthAndWaitForChange(view1, view_manager));
+
+  EXPECT_EQ(nullptr, most_recent_view_manager());
 }
 
 }  // namespace mojo

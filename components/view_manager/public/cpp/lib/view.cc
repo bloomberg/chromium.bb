@@ -385,6 +385,13 @@ void View::Embed(ViewManagerClientPtr client) {
     static_cast<ViewManagerClientImpl*>(manager_)->Embed(id_, client.Pass());
 }
 
+void View::EmbedAllowingReembed(mojo::URLRequestPtr request) {
+  if (PrepareForEmbed()) {
+    static_cast<ViewManagerClientImpl*>(manager_)
+        ->EmbedAllowingReembed(request.Pass(), id_);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // View, protected:
 
@@ -591,8 +598,11 @@ void View::NotifyViewVisibilityChangedUp(View* target) {
 }
 
 bool View::PrepareForEmbed() {
-  if (!OwnsView(manager_, this))
+  // TODO(sky): this check isn't quite enough. See what service does.
+  if (!OwnsView(manager_, this) &&
+      !static_cast<ViewManagerClientImpl*>(manager_)->is_embed_root()) {
     return false;
+  }
 
   while (!children_.empty())
     RemoveChild(children_[0]);

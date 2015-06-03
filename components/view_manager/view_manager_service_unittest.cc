@@ -297,8 +297,9 @@ void SetUpAnimate1(ViewManagerServiceTest* test, ViewId* embed_view_id) {
   EXPECT_TRUE(test->wm_connection()->AddView(*(test->wm_connection()->root()),
                                              *embed_view_id));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  test->wm_connection()->EmbedRequest(request.Pass(), *embed_view_id, nullptr,
-                                      nullptr, mojo::Callback<void(bool)>());
+  test->wm_connection()->Embed(request.Pass(), *embed_view_id,
+                               ViewManagerServiceImpl::EmbedType::NO_REEMBED,
+                               nullptr, nullptr, mojo::Callback<void(bool)>());
   ViewManagerServiceImpl* connection1 =
       test->connection_manager()->GetConnectionWithRoot(*embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
@@ -435,8 +436,9 @@ TEST_F(ViewManagerServiceTest, CloneAndAnimateLargerDepth) {
   EXPECT_TRUE(
       wm_connection()->AddView(*(wm_connection()->root()), embed_view_id));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  wm_connection()->EmbedRequest(request.Pass(), embed_view_id, nullptr, nullptr,
-                                mojo::Callback<void(bool)>());
+  wm_connection()->Embed(request.Pass(), embed_view_id,
+                         ViewManagerServiceImpl::EmbedType::NO_REEMBED, nullptr,
+                         nullptr, mojo::Callback<void(bool)>());
   ViewManagerServiceImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
@@ -484,8 +486,9 @@ TEST_F(ViewManagerServiceTest, FocusOnPointer) {
       wm_connection()->AddView(*(wm_connection()->root()), embed_view_id));
   connection_manager()->root()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  wm_connection()->EmbedRequest(request.Pass(), embed_view_id, nullptr, nullptr,
-                                mojo::Callback<void(bool)>());
+  wm_connection()->Embed(request.Pass(), embed_view_id,
+                         ViewManagerServiceImpl::EmbedType::NO_REEMBED, nullptr,
+                         nullptr, mojo::Callback<void(bool)>());
   ViewManagerServiceImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
