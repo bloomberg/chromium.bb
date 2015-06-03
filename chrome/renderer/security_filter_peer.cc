@@ -4,9 +4,12 @@
 
 #include "chrome/renderer/security_filter_peer.h"
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/child/fixed_received_data.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -80,9 +83,7 @@ void SecurityFilterPeer::OnReceivedResponse(
   NOTREACHED();
 }
 
-void SecurityFilterPeer::OnReceivedData(const char* data,
-                                        int data_length,
-                                        int encoded_data_length) {
+void SecurityFilterPeer::OnReceivedData(scoped_ptr<ReceivedData> data) {
   NOTREACHED();
 }
 
@@ -139,10 +140,8 @@ void BufferedPeer::OnReceivedResponse(
   ProcessResponseInfo(info, &response_info_, mime_type_);
 }
 
-void BufferedPeer::OnReceivedData(const char* data,
-                                  int data_length,
-                                  int encoded_data_length) {
-  data_.append(data, data_length);
+void BufferedPeer::OnReceivedData(scoped_ptr<ReceivedData> data) {
+  data_.append(data->payload(), data->length());
 }
 
 void BufferedPeer::OnCompletedRequest(int error_code,
@@ -167,9 +166,8 @@ void BufferedPeer::OnCompletedRequest(int error_code,
 
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty())
-    original_peer_->OnReceivedData(data_.data(),
-                                   static_cast<int>(data_.size()),
-                                   -1);
+    original_peer_->OnReceivedData(make_scoped_ptr(
+        new content::FixedReceivedData(data_.data(), data_.size(), -1)));
   original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
                                      stale_copy_in_cache, security_info,
                                      completion_time, total_transfer_size);
@@ -193,9 +191,7 @@ void ReplaceContentPeer::OnReceivedResponse(
   // Ignore this, we'll serve some alternate content in OnCompletedRequest.
 }
 
-void ReplaceContentPeer::OnReceivedData(const char* data,
-                                        int data_length,
-                                        int encoded_data_length) {
+void ReplaceContentPeer::OnReceivedData(scoped_ptr<ReceivedData> data) {
   // Ignore this, we'll serve some alternate content in OnCompletedRequest.
 }
 
@@ -212,9 +208,8 @@ void ReplaceContentPeer::OnCompletedRequest(
   info.content_length = static_cast<int>(data_.size());
   original_peer_->OnReceivedResponse(info);
   if (!data_.empty())
-    original_peer_->OnReceivedData(data_.data(),
-                                   static_cast<int>(data_.size()),
-                                   -1);
+    original_peer_->OnReceivedData(make_scoped_ptr(
+        new content::FixedReceivedData(data_.data(), data_.size(), -1)));
   original_peer_->OnCompletedRequest(net::OK,
                                      false,
                                      stale_copy_in_cache,

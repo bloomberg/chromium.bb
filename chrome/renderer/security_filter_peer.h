@@ -5,6 +5,8 @@
 #ifndef CHROME_RENDERER_SECURITY_FILTER_PEER_H_
 #define CHROME_RENDERER_SECURITY_FILTER_PEER_H_
 
+#include <string>
+
 #include "content/public/child/request_peer.h"
 #include "content/public/common/resource_response_info.h"
 #include "content/public/common/resource_type.h"
@@ -35,9 +37,7 @@ class SecurityFilterPeer : public content::RequestPeer {
                           const content::ResourceResponseInfo& info) override;
   void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
   void OnDownloadedData(int len, int encoded_data_length) override {}
-  void OnReceivedData(const char* data,
-                      int data_length,
-                      int encoded_data_length) override;
+  void OnReceivedData(scoped_ptr<ReceivedData> data) override;
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
@@ -63,9 +63,7 @@ class BufferedPeer : public SecurityFilterPeer {
 
   // content::RequestPeer Implementation.
   void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
-  void OnReceivedData(const char* data,
-                      int data_length,
-                      int encoded_data_length) override;
+  void OnReceivedData(scoped_ptr<ReceivedData> data) override;
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
@@ -104,9 +102,7 @@ class ReplaceContentPeer : public SecurityFilterPeer {
 
   // content::RequestPeer Implementation.
   void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
-  void OnReceivedData(const char* data,
-                      int data_length,
-                      int encoded_data_length) override;
+  void OnReceivedData(scoped_ptr<ReceivedData> data) override;
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,

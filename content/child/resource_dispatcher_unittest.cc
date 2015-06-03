@@ -77,13 +77,11 @@ class TestRequestPeer : public RequestPeer {
     total_encoded_data_length_ += encoded_data_length;
   }
 
-  void OnReceivedData(const char* data,
-                      int data_length,
-                      int encoded_data_length) override {
+  void OnReceivedData(scoped_ptr<ReceivedData> data) override {
     EXPECT_TRUE(received_response_);
     EXPECT_FALSE(complete_);
-    data_.append(data, data_length);
-    total_encoded_data_length_ += encoded_data_length;
+    data_.append(data->payload(), data->length());
+    total_encoded_data_length_ += data->encoded_length();
   }
 
   void OnCompletedRequest(int error_code,
@@ -734,9 +732,7 @@ class TimeConversionTest : public ResourceDispatcherTest,
 
   void OnDownloadedData(int len, int encoded_data_length) override {}
 
-  void OnReceivedData(const char* data,
-                      int data_length,
-                      int encoded_data_length) override {}
+  void OnReceivedData(scoped_ptr<ReceivedData> data) override {}
 
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,

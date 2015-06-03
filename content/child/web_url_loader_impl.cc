@@ -29,6 +29,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request_body.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/data_url.h"
@@ -73,7 +74,7 @@ namespace {
 
 const size_t kBodyStreamPipeCapacity = 4 * 1024;
 
-typedef ResourceDevToolsInfo::HeadersVector HeadersVector;
+using HeadersVector = ResourceDevToolsInfo::HeadersVector;
 
 // Converts timing data from |load_timing| to the format used by WebKit.
 void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
@@ -313,9 +314,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
                           const ResourceResponseInfo& info) override;
   void OnReceivedResponse(const ResourceResponseInfo& info) override;
   void OnDownloadedData(int len, int encoded_data_length) override;
-  void OnReceivedData(const char* data,
-                      int data_length,
-                      int encoded_data_length) override;
+  void OnReceivedData(scoped_ptr<ReceivedData> data) override;
   void OnReceivedCachedMetadata(const char* data, int len) override;
   void OnCompletedRequest(int error_code,
                           bool was_ignored_by_handler,
@@ -678,16 +677,17 @@ void WebURLLoaderImpl::Context::OnDownloadedData(int len,
     client_->didDownloadData(loader_, len, encoded_data_length);
 }
 
-void WebURLLoaderImpl::Context::OnReceivedData(const char* data,
-                                               int data_length,
-                                               int encoded_data_length) {
+void WebURLLoaderImpl::Context::OnReceivedData(scoped_ptr<ReceivedData> data) {
+  const char* payload = data->payload();
+  int data_length = data->length();
+  int encoded_data_length = data->encoded_length();
   if (!client_)
     return;
 
   if (request_.useStreamOnResponse()) {
     // We don't support ftp_listening_delegate_ and multipart_delegate_ for now.
     // TODO(yhirano): Support ftp listening and multipart.
-    MojoResult rv = WriteDataOnBodyStream(data, data_length);
+    MojoResult rv = WriteDataOnBodyStream(payload, data_length);
     if (rv != MOJO_RESULT_OK && client_) {
       client_->didFail(
           loader_, CreateWebURLError(request_.url(), false, net::ERR_FAILED));
@@ -698,16 +698,17 @@ void WebURLLoaderImpl::Context::OnReceivedData(const char* data,
     // delegate may want to do work after sending data to the delegate, keep
     // |this| and the delegate alive until it's finished handling the data.
     scoped_refptr<Context> protect(this);
-    ftp_listing_delegate_->OnReceivedData(data, data_length);
+    ftp_listing_delegate_->OnReceivedData(payload, data_length);
   } else if (multipart_delegate_) {
     // The multipart delegate will make the appropriate calls to
     // client_->didReceiveData and client_->didReceiveResponse.  Since the
     // delegate may want to do work after sending data to the delegate, keep
     // |this| and the delegate alive until it's finished handling the data.
     scoped_refptr<Context> protect(this);
-    multipart_delegate_->OnReceivedData(data, data_length, encoded_data_length);
+    multipart_delegate_->OnReceivedData(payload, data_length,
+                                        encoded_data_length);
   } else {
-    client_->didReceiveData(loader_, data, data_length, encoded_data_length);
+    client_->didReceiveData(loader_, payload, data_length, encoded_data_length);
   }
 }
 
@@ -824,7 +825,8 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
   if (error_code == net::OK) {
     OnReceivedResponse(info);
     if (!data.empty())
-      OnReceivedData(data.data(), data.size(), 0);
+      OnReceivedData(
+          make_scoped_ptr(new FixedReceivedData(data.data(), data.size(), 0)));
   }
 
   OnCompletedRequest(error_code, false, false, info.security_info,

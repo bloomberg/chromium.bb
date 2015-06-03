@@ -18,11 +18,13 @@
 #include "base/strings/string_util.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
+#include "content/child/shared_memory_received_data_factory.h"
 #include "content/child/site_isolation_policy.h"
 #include "content/child/sync_load_response.h"
 #include "content/child/threaded_data_provider.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/resource_messages.h"
+#include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
 #include "content/public/common/resource_response.h"
@@ -191,6 +193,9 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
 
   request_info->buffer.reset(
       new base::SharedMemory(shm_handle, true));  // read only
+  request_info->received_data_factory =
+      make_scoped_refptr(new SharedMemoryReceivedDataFactory(
+          message_sender_, request_id, request_info->buffer));
 
   bool ok = request_info->buffer->Map(shm_size);
   if (!ok) {
@@ -222,7 +227,9 @@ void ResourceDispatcher::OnReceivedData(int request_id,
 
     // Ensure that the SHM buffer remains valid for the duration of this scope.
     // It is possible for Cancel() to be called before we exit this scope.
-    linked_ptr<base::SharedMemory> retain_buffer(request_info->buffer);
+    // SharedMemoryReceivedDataFactory stores the SHM buffer inside it.
+    scoped_refptr<SharedMemoryReceivedDataFactory> factory(
+        request_info->received_data_factory);
 
     base::TimeTicks time_start = base::TimeTicks::Now();
 
@@ -235,32 +242,35 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     // document blocking policy. We only do this for the first packet.
     std::string alternative_data;
     if (request_info->site_isolation_metadata.get()) {
-      request_info->blocked_response =
-          SiteIsolationPolicy::ShouldBlockResponse(
-              request_info->site_isolation_metadata, data_ptr, data_length,
-              &alternative_data);
+      request_info->blocked_response = SiteIsolationPolicy::ShouldBlockResponse(
+          request_info->site_isolation_metadata, data_ptr, data_length,
+          &alternative_data);
       request_info->site_isolation_metadata.reset();
-
-      // When the response is blocked we may have any alternative data to
-      // send to the renderer. When |alternative_data| is zero-sized, we do not
-      // call peer's callback.
-      if (request_info->blocked_response && !alternative_data.empty()) {
-        data_ptr = alternative_data.data();
-        data_length = alternative_data.size();
-        encoded_data_length = alternative_data.size();
-      }
     }
 
+    // When the response is blocked we may have any alternative data to
+    // send to the renderer.
+    // When |alternative_data| is zero-sized, we do not call peer's callback.
     if (!request_info->blocked_response || !alternative_data.empty()) {
       if (request_info->threaded_data_provider) {
-        request_info->threaded_data_provider->OnReceivedDataOnForegroundThread(
-            data_ptr, data_length, encoded_data_length);
+        // TODO(yhirano): Use |alternative_data| when it is not null.
         // A threaded data provider will take care of its own ACKing, as the
         // data may be processed later on another thread.
         send_ack = false;
-      } else {
-        request_info->peer->OnReceivedData(
+        request_info->threaded_data_provider->OnReceivedDataOnForegroundThread(
             data_ptr, data_length, encoded_data_length);
+      } else {
+        scoped_ptr<RequestPeer::ReceivedData> data;
+        if (!alternative_data.empty()) {
+          data = make_scoped_ptr(new FixedReceivedData(
+              alternative_data.data(), alternative_data.size(),
+              alternative_data.size()));
+        } else {
+          data = factory->Create(data_offset, data_length, encoded_data_length);
+          // |data| takes care of ACKing.
+          send_ack = false;
+        }
+        request_info->peer->OnReceivedData(data.Pass());
       }
     }
 
@@ -336,6 +346,9 @@ void ResourceDispatcher::OnRequestComplete(
     return;
   request_info->completion_time = ConsumeIOTimestamp();
   request_info->buffer.reset();
+  if (request_info->received_data_factory)
+    request_info->received_data_factory->Stop();
+  request_info->received_data_factory = nullptr;
   request_info->buffer_size = 0;
 
   RequestPeer* peer = request_info->peer;

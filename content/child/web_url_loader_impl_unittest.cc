@@ -5,6 +5,7 @@
 #include "content/child/web_url_loader_impl.h"
 
 #include <string.h>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -15,6 +16,7 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/resource_dispatcher.h"
+#include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_response_info.h"
@@ -285,7 +287,8 @@ class WebURLLoaderImplTest : public testing::Test {
   // Assumes it is called only once for a request.
   void DoReceiveData() {
     EXPECT_EQ("", client()->received_data());
-    peer()->OnReceivedData(kTestData, strlen(kTestData), strlen(kTestData));
+    peer()->OnReceivedData(make_scoped_ptr(new FixedReceivedData(
+        kTestData, strlen(kTestData), strlen(kTestData))));
     EXPECT_EQ(kTestData, client()->received_data());
   }
 
@@ -317,8 +320,8 @@ class WebURLLoaderImplTest : public testing::Test {
   }
 
   void DoReceiveDataFtp() {
-    peer()->OnReceivedData(kFtpDirListing, strlen(kFtpDirListing),
-                           strlen(kFtpDirListing));
+    peer()->OnReceivedData(make_scoped_ptr(new FixedReceivedData(
+        kFtpDirListing, strlen(kFtpDirListing), strlen(kFtpDirListing))));
     // The FTP delegate should modify the data the client sees.
     EXPECT_NE(kFtpDirListing, client()->received_data());
   }
@@ -335,8 +338,9 @@ class WebURLLoaderImplTest : public testing::Test {
   }
 
   void DoReceiveDataMultipart() {
-    peer()->OnReceivedData(kMultipartResponse, strlen(kMultipartResponse),
-                           strlen(kMultipartResponse));
+    peer()->OnReceivedData(make_scoped_ptr(
+        new FixedReceivedData(kMultipartResponse, strlen(kMultipartResponse),
+                              strlen(kMultipartResponse))));
     // Multipart delegate should modify the data the client sees.
     EXPECT_NE(kMultipartResponse, client()->received_data());
   }
