@@ -29899,6 +29899,11 @@
         "chrome_rev": "latest_release",
         "chroot_replace": true,
         "description": "Preflight Chromium Uprev & Build (internal)",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com",
+            "tree",
+            "chrome"
+        ],
         "important": true,
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",

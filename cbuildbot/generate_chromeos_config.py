@@ -1308,6 +1308,9 @@ def GetConfig():
       push_overlays=constants.BOTH_OVERLAYS,
       afdo_update_ebuild=True,
       chrome_sdk=False,
+      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
+                               'tree',
+                               'chrome'],
   )
 
   chrome_pfq = site_config.AddTemplate(
