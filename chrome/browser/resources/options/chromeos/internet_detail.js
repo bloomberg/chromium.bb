@@ -737,21 +737,24 @@ cr.define('options.internet', function() {
         return;
       }
 
+      var connectable = onc.getActiveValue('Connectable');
       var connectState = onc.getActiveValue('ConnectionState');
       if (connectState == 'NotConnected') {
+        $('details-internet-disconnect').hidden = true;
         $('details-internet-login').hidden = false;
         // Connecting to an unconfigured network might trigger certificate
         // installation UI. Until that gets handled here, always enable the
-        // Connect button.
-        $('details-internet-login').disabled = false;
-        $('details-internet-disconnect').hidden = true;
+        // Connect button for built-in networks.
+        var enabled = (this.type_ != 'VPN') ||
+                      (onc.getActiveValue('VPN.Type') != 'ThirdPartyVPN') ||
+                      connectable;
+        $('details-internet-login').disabled = !enabled;
       } else {
         $('details-internet-login').hidden = true;
         $('details-internet-disconnect').hidden = false;
       }
 
       var showConfigure = false;
-      var connectable = onc.getActiveValue('Connectable');
       if (this.type_ == 'WiMAX' || this.type_ == 'VPN') {
         showConfigure = true;
       } else if (this.type_ == 'WiFi') {
@@ -1228,11 +1231,13 @@ cr.define('options.internet', function() {
     var guid = onc.guid();
     var type = onc.getActiveValue('Type');
 
-    // VPNs do not correctly set 'Connectable', so we always show the
+    // Built-in VPNs do not correctly set 'Connectable', so we always show the
     // configuration UI.
     if (type == 'VPN') {
-      chrome.send('configureNetwork', [guid]);
-      return;
+      if (onc.getActiveValue('VPN.Type') != 'ThirdPartyVPN') {
+        chrome.send('configureNetwork', [guid]);
+        return;
+      }
     }
 
     // If 'Connectable' is false for WiFi or WiMAX, Shill requires
