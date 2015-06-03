@@ -168,11 +168,11 @@ void BrowserWindowCocoa::Show() {
   }
 
   {
-    TRACE_EVENT0("ui", "BrowserWindowCocoa::Show makeKeyAndOrderFront");
+    TRACE_EVENT0("ui", "BrowserWindowCocoa::Show Activate");
     // This call takes up a substantial part of startup time, and an even more
     // substantial part of startup time when any CALayers are part of the
     // window's NSView heirarchy.
-    [window() makeKeyAndOrderFront:controller_];
+    Activate();
   }
 
   // When creating windows from nibs it is necessary to |makeKeyAndOrderFront:|
