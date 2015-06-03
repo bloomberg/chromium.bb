@@ -9,11 +9,22 @@
 #   1. Install YCM [https://github.com/Valloric/YouCompleteMe]
 #          (Googlers should check out [go/ycm])
 #
-#   2. Point to this config file in your .vimrc:
-#          let g:ycm_global_ycm_extra_conf =
-#              '<chrome_depot>/src/tools/vim/chromium.ycm_extra_conf.py'
+#   2. Create a symbolic link to this file called .ycm_extra_conf.py in the
+#      directory above your Chromium checkout (i.e. next to your .gclient file).
 #
-#   3. Profit
+#          cd src
+#          ln -rs tools/vim/chromium.ycm_extra_conf.py ../.ycm_extra_conf.py
+#
+#   3. (optional) Whitelist the .ycm_extra_conf.py from step #2 by adding the
+#      following to your .vimrc:
+#
+#          let g:ycm_extra_conf_globlist=['<path to .ycm_extra_conf.py>']
+#
+#      You can also add other .ycm_extra_conf.py files you want to use to this
+#      list to prevent excessive prompting each time you visit a directory
+#      covered by a config file.
+#
+#   4. Profit
 #
 #
 # Usage notes:
