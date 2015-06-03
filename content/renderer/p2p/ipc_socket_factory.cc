@@ -373,13 +373,16 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
   switch (state_) {
     case IS_UNINITIALIZED:
       NOTREACHED();
-      return EWOULDBLOCK;
+      error_ = EWOULDBLOCK;
+      return -1;
     case IS_OPENING:
-      return EWOULDBLOCK;
+      error_ = EWOULDBLOCK;
+      return -1;
     case IS_CLOSED:
-      return ENOTCONN;
+      error_ = ENOTCONN;
+      return -1;
     case IS_ERROR:
-      return error_;
+      return -1;
     case IS_OPEN:
       // Continue sending the packet.
       break;
