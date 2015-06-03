@@ -27,7 +27,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTimeStamp.h"
-#include "core/events/EventInitDictionary.h"
+#include "core/events/EventInit.h"
 #include "core/events/EventPath.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
@@ -37,15 +37,6 @@ namespace blink {
 
 class EventTarget;
 class ExecutionContext;
-
-struct EventInit {
-    STACK_ALLOCATED();
-public:
-    EventInit();
-
-    bool bubbles;
-    bool cancelable;
-};
 
 class CORE_EXPORT Event : public RefCountedWillBeGarbageCollectedFinalized<Event>,  public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -107,12 +98,7 @@ public:
         return adoptRefWillBeNoop(new Event(type, true, true));
     }
 
-    // TODO(bashi): Remove this when we remove all [EventConstructor].
     static PassRefPtrWillBeRawPtr<Event> create(const AtomicString& type, const EventInit& initializer)
-    {
-        return adoptRefWillBeNoop(new Event(type, initializer));
-    }
-    static PassRefPtrWillBeRawPtr<Event> create(const AtomicString& type, const EventInitDictionary& initializer)
     {
         return adoptRefWillBeNoop(new Event(type, initializer));
     }
@@ -205,7 +191,6 @@ protected:
     Event();
     Event(const AtomicString& type, bool canBubble, bool cancelable);
     Event(const AtomicString& type, const EventInit&);
-    Event(const AtomicString& type, const EventInitDictionary&);
 
     virtual void receivedTarget();
     bool dispatched() const { return m_target; }

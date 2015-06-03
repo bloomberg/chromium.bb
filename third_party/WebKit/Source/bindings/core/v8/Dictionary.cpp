@@ -153,24 +153,6 @@ bool Dictionary::get(const String& key, Dictionary& value) const
     return true;
 }
 
-bool Dictionary::convert(ConversionContext& context, const String& key, Dictionary& value) const
-{
-    ConversionContextScope scope(context);
-
-    v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value))
-        return true;
-
-    if (v8Value->IsObject())
-        return get(key, value);
-
-    if (context.isNullable() && blink::isUndefinedOrNull(v8Value))
-        return true;
-
-    context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "does not have a Dictionary type."));
-    return false;
-}
-
 static inline bool propertyKey(v8::Local<v8::Context> v8Context, v8::Local<v8::Array> properties, uint32_t index, v8::Local<v8::String>& key)
 {
     v8::Local<v8::Value> property;
@@ -227,30 +209,6 @@ bool Dictionary::getPropertyNames(Vector<String>& names) const
     }
 
     return true;
-}
-
-void Dictionary::ConversionContext::resetPerPropertyContext()
-{
-    if (m_dirty) {
-        m_dirty = false;
-        m_isNullable = false;
-        m_propertyTypeName = "";
-    }
-}
-
-Dictionary::ConversionContext& Dictionary::ConversionContext::setConversionType(const String& typeName, bool isNullable)
-{
-    ASSERT(!m_dirty);
-    m_dirty = true;
-    m_isNullable = isNullable;
-    m_propertyTypeName = typeName;
-
-    return *this;
-}
-
-void Dictionary::ConversionContext::throwTypeError(const String& detail)
-{
-    exceptionState().throwTypeError(detail);
 }
 
 bool Dictionary::toObject(v8::Local<v8::Object>& object) const

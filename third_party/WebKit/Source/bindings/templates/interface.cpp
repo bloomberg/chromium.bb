@@ -545,67 +545,6 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 
 {##############################################################################}
-{% block event_constructor %}
-{% if has_event_constructor %}
-static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
-    if (info.Length() < 1) {
-        exceptionState.throwTypeError("An event name must be provided.");
-        exceptionState.throwIfNeeded();
-        return;
-    }
-
-    V8StringResource<> type(info[0]);
-    if (!type.prepare())
-        return;
-    {% for attribute in any_type_attributes %}
-    v8::Local<v8::Value> {{attribute.name}};
-    {% endfor %}
-    {{cpp_class}}Init eventInit;
-    if (info.Length() >= 2) {
-        Dictionary options(info[1], info.GetIsolate(), exceptionState);
-        if (!initialize{{cpp_class}}(eventInit, options, exceptionState, info)) {
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        {# Store attributes of type |any| on the wrapper to avoid leaking them
-           between isolated worlds. #}
-        {% for attribute in any_type_attributes %}
-        options.get("{{attribute.name}}", {{attribute.name}});
-        if (!{{attribute.name}}.IsEmpty())
-            V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), {{attribute.name}});
-        {% endfor %}
-    }
-    {% if is_constructor_raises_exception %}
-    RefPtrWillBeRawPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    {% else %}
-    RefPtrWillBeRawPtr<{{cpp_class}}> event = {{cpp_class}}::create(type, eventInit);
-    {% endif %}
-    {% if any_type_attributes %}
-    {# If we're in an isolated world, create a SerializedScriptValue and store
-       it in the event for later cloning if the property is accessed from
-       another world. The main world case is handled lazily (in custom code). #}
-    if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld()) {
-        {% for attribute in any_type_attributes %}
-        if (!{{attribute.name}}.IsEmpty())
-            event->setSerialized{{attribute.name | blink_capitalize}}(SerializedScriptValueFactory::instance().createAndSwallowExceptions(info.GetIsolate(), {{attribute.name}}));
-        {% endfor %}
-    }
-
-    {% endif %}
-    v8::Local<v8::Object> wrapper = info.Holder();
-    event->associateWithWrapper(info.GetIsolate(), &{{v8_class}}::wrapperTypeInfo, wrapper);
-    v8SetReturnValue(info, wrapper);
-}
-
-{% endif %}
-{% endblock %}
-
-
-{##############################################################################}
 {% block visit_dom_wrapper %}
 {% if reachable_node_function or set_wrapper_reference_to_list %}
 void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
@@ -647,40 +586,6 @@ static const V8DOMConfiguration::AttributeConfiguration shadowAttributes[] = {
     {{attribute_configuration(attribute)}},
     {% endfor %}
 };
-
-{% endif %}
-{% endblock %}
-
-
-{##############################################################################}
-{% block initialize_event %}
-{% if has_event_constructor %}
-{{exported}}bool initialize{{cpp_class}}({{cpp_class}}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    Dictionary::ConversionContext conversionContext(exceptionState);
-    {% if parent_interface %}{# any Event interface except Event itself #}
-    if (!initialize{{parent_interface}}(eventInit, options, exceptionState, info))
-        return false;
-
-    {% endif %}
-    {% for attribute in attributes
-           if (attribute.is_initialized_by_event_constructor and
-               not attribute.idl_type == 'any')%}
-    {% set is_nullable = 'true' if attribute.is_nullable else 'false' %}
-    {% if attribute.deprecate_as %}
-    if (DictionaryHelper::convert(options, conversionContext.setConversionType("{{attribute.idl_type}}", {{is_nullable}}), "{{attribute.name}}", eventInit.{{attribute.cpp_name}})) {
-        if (options.hasProperty("{{attribute.name}}"))
-            UseCounter::countDeprecationIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
-    } else {
-        return false;
-    }
-    {% else %}
-    if (!DictionaryHelper::convert(options, conversionContext.setConversionType("{{attribute.idl_type}}", {{is_nullable}}), "{{attribute.name}}", eventInit.{{attribute.cpp_name}}))
-        return false;
-    {% endif %}
-    {% endfor %}
-    return true;
-}
 
 {% endif %}
 {% endblock %}

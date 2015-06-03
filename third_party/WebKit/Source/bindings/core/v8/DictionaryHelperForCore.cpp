@@ -69,14 +69,6 @@ CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const Strin
 }
 
 template <>
-bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, bool& value)
-{
-    Dictionary::ConversionContextScope scope(context);
-    DictionaryHelper::get(dictionary, key, value);
-    return true;
-}
-
-template <>
 CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, int32_t& value)
 {
     v8::Local<v8::Value> v8Value;
@@ -106,19 +98,6 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, doub
     return DictionaryHelper::get(dictionary, key, value, unused);
 }
 
-template <>
-bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, double& value)
-{
-    Dictionary::ConversionContextScope scope(context);
-
-    bool hasValue = false;
-    if (!DictionaryHelper::get(dictionary, key, value, hasValue) && hasValue) {
-        context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "is not of type 'double'."));
-        return false;
-    }
-    return true;
-}
-
 template<typename StringType>
 bool getStringType(const Dictionary& dictionary, const String& key, StringType& value)
 {
@@ -146,22 +125,6 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Atom
 }
 
 template <>
-bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, String& value)
-{
-    Dictionary::ConversionContextScope scope(context);
-
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value))
-        return true;
-
-    V8StringResource<> stringValue(v8Value);
-    if (!stringValue.prepare())
-        return false;
-    value = stringValue;
-    return true;
-}
-
-template <>
 bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, ScriptValue& value)
 {
     v8::Local<v8::Value> v8Value;
@@ -169,15 +132,6 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Scri
         return false;
 
     value = ScriptValue(ScriptState::current(dictionary.isolate()), v8Value);
-    return true;
-}
-
-template <>
-bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, ScriptValue& value)
-{
-    Dictionary::ConversionContextScope scope(context);
-
-    DictionaryHelper::get(dictionary, key, value);
     return true;
 }
 
@@ -344,26 +298,6 @@ CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const Strin
 }
 
 template <>
-bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, Vector<String>& value)
-{
-    Dictionary::ConversionContextScope scope(context);
-
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value))
-        return true;
-
-    if (context.isNullable() && blink::isUndefinedOrNull(v8Value))
-        return true;
-
-    if (!v8Value->IsArray()) {
-        context.throwTypeError(ExceptionMessages::notASequenceTypeProperty(key));
-        return false;
-    }
-
-    return DictionaryHelper::get(dictionary, key, value);
-}
-
-template <>
 CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, ArrayValue& value)
 {
     v8::Local<v8::Value> v8Value;
@@ -377,26 +311,6 @@ CORE_EXPORT bool DictionaryHelper::get(const Dictionary& dictionary, const Strin
     ASSERT(dictionary.isolate() == v8::Isolate::GetCurrent());
     value = ArrayValue(v8::Local<v8::Array>::Cast(v8Value), dictionary.isolate());
     return true;
-}
-
-template <>
-bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, ArrayValue& value)
-{
-    Dictionary::ConversionContextScope scope(context);
-
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value))
-        return true;
-
-    if (context.isNullable() && blink::isUndefinedOrNull(v8Value))
-        return true;
-
-    if (!v8Value->IsArray()) {
-        context.throwTypeError(ExceptionMessages::notASequenceTypeProperty(key));
-        return false;
-    }
-
-    return DictionaryHelper::get(dictionary, key, value);
 }
 
 template CORE_EXPORT bool DictionaryHelper::get(const Dictionary&, const String& key, RefPtr<DOMUint8Array>& value);
@@ -494,57 +408,5 @@ struct IntegralTypeTraits<long long> {
     }
     static const String typeName() { return "Int64"; }
 };
-
-template<typename T>
-bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, T& value)
-{
-    Dictionary::ConversionContextScope scope(context);
-
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value))
-        return true;
-
-    value = IntegralTypeTraits<T>::toIntegral(dictionary.isolate(), v8Value, NormalConversion, context.exceptionState());
-    if (context.exceptionState().throwIfNeeded())
-        return false;
-
-    return true;
-}
-
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, uint8_t& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, int8_t& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, unsigned short& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, short& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, unsigned& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, unsigned long& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, int& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, long& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, long long& value);
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, unsigned long long& value);
-
-template bool DictionaryHelper::convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, RefPtrWillBeMember<EventTarget>& value);
-
-template <>
-bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, MessagePortArray& value)
-{
-    Dictionary::ConversionContextScope scope(context);
-
-    v8::Local<v8::Value> v8Value;
-    if (!dictionary.get(key, v8Value))
-        return true;
-
-    ASSERT(dictionary.isolate());
-    ASSERT(dictionary.isolate() == v8::Isolate::GetCurrent());
-
-    if (isUndefinedOrNull(v8Value))
-        return true;
-
-    value = toRefPtrWillBeMemberNativeArray<MessagePort, V8MessagePort>(v8Value, key, dictionary.isolate(), context.exceptionState());
-
-    if (context.exceptionState().throwIfNeeded())
-        return false;
-
-    return true;
-}
 
 } // namespace blink

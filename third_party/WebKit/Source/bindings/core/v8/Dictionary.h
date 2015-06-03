@@ -62,50 +62,6 @@ public:
 
     v8::Local<v8::Value> v8Value() const { return m_options; }
 
-    class CORE_EXPORT ConversionContext {
-    public:
-        explicit ConversionContext(ExceptionState& exceptionState)
-            : m_exceptionState(exceptionState)
-            , m_dirty(true)
-        {
-            resetPerPropertyContext();
-        }
-
-        ExceptionState& exceptionState() const { return m_exceptionState; }
-
-        bool isNullable() const { return m_isNullable; }
-        String typeName() const { return m_propertyTypeName; }
-
-        ConversionContext& setConversionType(const String&, bool);
-
-        void throwTypeError(const String& detail);
-
-        void resetPerPropertyContext();
-
-    private:
-        ExceptionState& m_exceptionState;
-        bool m_dirty;
-
-        bool m_isNullable;
-        String m_propertyTypeName;
-    };
-
-    class ConversionContextScope {
-    public:
-        explicit ConversionContextScope(ConversionContext& context)
-            : m_context(context) { }
-        ~ConversionContextScope()
-        {
-            m_context.resetPerPropertyContext();
-        }
-    private:
-        ConversionContext& m_context;
-    };
-
-    // Note that this function returns true when there is no value associated
-    // with a given key.
-    bool convert(ConversionContext&, const String&, Dictionary&) const;
-
     bool getOwnPropertiesAsStringHashMap(HashMap<String, String>&) const;
     bool getPropertyNames(Vector<String>&) const;
 
@@ -155,12 +111,6 @@ struct DictionaryHelper {
     }
     template <template <typename> class PointerType, typename T>
     static bool get(const Dictionary&, const String& key, PointerType<T>& value);
-    template <typename T>
-    static bool convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, T& value);
-    template <typename T>
-    static bool convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, Nullable<T>& value);
-    template <template <typename> class PointerType, typename T>
-    static bool convert(const Dictionary&, Dictionary::ConversionContext&, const String& key, PointerType<T>& value);
 };
 
 }

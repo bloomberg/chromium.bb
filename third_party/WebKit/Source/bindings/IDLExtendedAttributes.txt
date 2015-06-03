@@ -54,7 +54,6 @@ DoNotCheckSecurity=|Setter
 DoNotCheckSignature
 DoNotExposeJSAccessors
 EnforceRange
-EventConstructor
 ExposeJSAccessors
 Exposed=*
 GarbageCollected
@@ -62,7 +61,6 @@ Global=|*
 Immutable
 ImplementedAs=*
 ImplementedInPrivateScript
-InitializedByEventConstructor
 Iterable
 LegacyInterfaceTypeChecking
 LegacyTreatAsPartialInterface

@@ -263,7 +263,6 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {% endif %}{# not is_array_buffer_or_view #}
 {##############################################################################}
 {% block named_constructor %}{% endblock %}
-{% block initialize_event %}{% endblock %}
 {% block constructor_callback %}{% endblock %}
 {% block configure_shadow_object_template %}{% endblock %}
 {##############################################################################}

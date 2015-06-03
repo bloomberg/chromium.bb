@@ -16,7 +16,7 @@ TestInterfaceEventInit::TestInterfaceEventInit()
 
 DEFINE_TRACE(TestInterfaceEventInit)
 {
-    EventInitDictionary::trace(visitor);
+    EventInit::trace(visitor);
 }
 
 } // namespace blink

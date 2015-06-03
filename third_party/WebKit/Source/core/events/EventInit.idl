@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[
-    // FIXME: Remove ImplementedAs once we replace all EventInits.
-    ImplementedAs=EventInitDictionary,
-] dictionary EventInit {
+// https://dom.spec.whatwg.org/#interface-event
+
+dictionary EventInit {
     boolean bubbles = false;
     boolean cancelable = false;
 };

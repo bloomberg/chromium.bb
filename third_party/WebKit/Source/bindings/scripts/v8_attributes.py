@@ -124,8 +124,6 @@ def attribute_context(interface, attribute):
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in (None, 'Getter'),
         'is_implemented_in_private_script': is_implemented_in_private_script,
-        'is_initialized_by_event_constructor':
-            'InitializedByEventConstructor' in extended_attributes,
         'is_keep_alive_for_gc': keep_alive_for_gc,
         'is_nullable': idl_type.is_nullable,
         'is_explicit_nullable': idl_type.is_explicit_nullable,

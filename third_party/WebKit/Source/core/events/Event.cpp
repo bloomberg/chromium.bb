@@ -32,12 +32,6 @@
 
 namespace blink {
 
-EventInit::EventInit()
-    : bubbles(false)
-    , cancelable(false)
-{
-}
-
 Event::Event()
     : Event("", false, false)
 {
@@ -60,11 +54,6 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
 }
 
 Event::Event(const AtomicString& eventType, const EventInit& initializer)
-    : Event(eventType, initializer.bubbles, initializer.cancelable)
-{
-}
-
-Event::Event(const AtomicString& eventType, const EventInitDictionary& initializer)
     : Event(eventType, initializer.bubbles(), initializer.cancelable())
 {
 }

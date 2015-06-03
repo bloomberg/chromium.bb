@@ -42,26 +42,6 @@ bool DictionaryHelper::get(const Dictionary& dictionary, const String& key, Poin
     return true;
 }
 
-template <template <typename> class PointerType, typename T>
-bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::ConversionContext& context, const String& key, PointerType<T>& value)
-{
-    Dictionary::ConversionContextScope scope(context);
-
-    if (!DictionaryHelper::get(dictionary, key, value))
-        return true;
-
-    if (value)
-        return true;
-
-    v8::Local<v8::Value> v8Value;
-    dictionary.get(key, v8Value);
-    if (context.isNullable() && blink::isUndefinedOrNull(v8Value))
-        return true;
-
-    context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "does not have a " + context.typeName() + " type."));
-    return false;
-}
-
 } // namespace blink
 
 #endif // DictionaryHelperForBindings_h

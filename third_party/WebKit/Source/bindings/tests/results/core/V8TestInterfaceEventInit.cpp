@@ -21,7 +21,7 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
         return;
     }
 
-    V8EventInitDictionary::toImpl(isolate, v8Value, impl, exceptionState);
+    V8EventInit::toImpl(isolate, v8Value, impl, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -52,7 +52,7 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
 v8::Local<v8::Value> toV8(const TestInterfaceEventInit& impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> v8Object = v8::Object::New(isolate);
-    if (!toV8EventInitDictionary(impl, v8Object, creationContext, isolate))
+    if (!toV8EventInit(impl, v8Object, creationContext, isolate))
         return v8::Local<v8::Value>();
     if (!toV8TestInterfaceEventInit(impl, v8Object, creationContext, isolate))
         return v8::Local<v8::Value>();

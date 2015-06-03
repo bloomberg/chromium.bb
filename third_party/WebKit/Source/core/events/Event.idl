@@ -21,9 +21,9 @@
 // https://dom.spec.whatwg.org/#interface-event
 
 [
+    Constructor(DOMString type, optional EventInit eventInitDict),
+    Exposed=(Window,Worker),
     WillBeGarbageCollected,
-    EventConstructor,
-    Exposed=(Window,Worker)
 ] interface Event {
     readonly attribute DOMString type;
     readonly attribute EventTarget? target;
@@ -38,8 +38,8 @@
     void stopPropagation();
     void stopImmediatePropagation();
 
-    [InitializedByEventConstructor] readonly attribute boolean bubbles;
-    [InitializedByEventConstructor] readonly attribute boolean cancelable;
+    readonly attribute boolean bubbles;
+    readonly attribute boolean cancelable;
     void preventDefault();
     readonly attribute boolean defaultPrevented;
 

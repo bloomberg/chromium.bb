@@ -220,20 +220,10 @@ def interface_context(interface):
             number_of_required_arguments(constructor),
     } for constructor in interface.custom_constructors]
 
-    # [EventConstructor]
-    has_event_constructor = 'EventConstructor' in extended_attributes
-    any_type_attributes = [attribute for attribute in interface.attributes
-                           if attribute.idl_type.name == 'Any']
-    if has_event_constructor:
-        includes.add('bindings/core/v8/Dictionary.h')
-        if any_type_attributes:
-            includes.add('bindings/core/v8/SerializedScriptValue.h')
-            includes.add('bindings/core/v8/SerializedScriptValueFactory.h')
-
     # [NamedConstructor]
     named_constructor = named_constructor_context(interface)
 
-    if constructors or custom_constructors or has_event_constructor or named_constructor:
+    if constructors or custom_constructors or named_constructor:
         if interface.is_partial:
             raise Exception('[Constructor] and [NamedConstructor] MUST NOT be'
                             ' specified on partial interface definitions:'
@@ -252,10 +242,8 @@ def interface_context(interface):
             unscopeables.append((method.name, v8_utilities.runtime_enabled_function_name(method)))
 
     context.update({
-        'any_type_attributes': any_type_attributes,
         'constructors': constructors,
         'has_custom_constructor': bool(custom_constructors),
-        'has_event_constructor': has_event_constructor,
         'interface_length':
             interface_length(interface, constructors + custom_constructors),
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
@@ -1253,8 +1241,6 @@ def number_of_required_arguments(constructor):
 
 def interface_length(interface, constructors):
     # Docs: http://heycam.github.io/webidl/#es-interface-call
-    if 'EventConstructor' in interface.extended_attributes:
-        return 1
     if not constructors:
         return 0
     return min(constructor['number_of_required_arguments']
