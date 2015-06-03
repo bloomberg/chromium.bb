@@ -1743,93 +1743,34 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_StoragePersistence) {
 // loads an app with multiple webview tags and each tag sets DOM storage
 // entries, which the test checks to ensure proper storage isolation is
 // enforced.
-// Times out regularly on Windows. See http://crbug.com/248873.
-#if defined(OS_WIN)
-#define MAYBE_DOMStorageIsolation DISABLED_DOMStorageIsolation
-#else
-#define MAYBE_DOMStorageIsolation DOMStorageIsolation
-#endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DOMStorageIsolation) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  GURL regular_url = embedded_test_server()->GetURL("/title1.html");
 
+  GURL navigate_to_url = embedded_test_server()->GetURL(
+      "/extensions/platform_apps/web_view/dom_storage_isolation/page.html");
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("localhost");
+  navigate_to_url = navigate_to_url.ReplaceComponents(replace_host);
+
+  ui_test_utils::NavigateToURL(browser(), navigate_to_url);
+  ASSERT_TRUE(
+      RunPlatformAppTest("platform_apps/web_view/dom_storage_isolation"));
+  // Verify that the browser tab's local/session storage does not have the same
+  // values which were stored by the webviews.
   std::string output;
-  std::string get_local_storage("window.domAutomationController.send("
+  std::string get_local_storage(
+      "window.domAutomationController.send("
       "window.localStorage.getItem('foo') || 'badval')");
-  std::string get_session_storage("window.domAutomationController.send("
-      "window.sessionStorage.getItem('bar') || 'badval')");
-
-  content::WebContents* default_tag_contents1;
-  content::WebContents* default_tag_contents2;
-  content::WebContents* storage_contents1;
-  content::WebContents* storage_contents2;
-
-  NavigateAndOpenAppForIsolation(regular_url, &default_tag_contents1,
-                                 &default_tag_contents2, &storage_contents1,
-                                 &storage_contents2, NULL, NULL, NULL);
-
-  // Initialize the storage for the first of the two tags that share a storage
-  // partition.
-  EXPECT_TRUE(content::ExecuteScript(storage_contents1,
-                                     "initDomStorage('page1')"));
-
-  // Let's test that the expected values are present in the first tag, as they
-  // will be overwritten once we call the initDomStorage on the second tag.
-  EXPECT_TRUE(ExecuteScriptAndExtractString(storage_contents1,
-                                            get_local_storage.c_str(),
-                                            &output));
-  EXPECT_STREQ("local-page1", output.c_str());
-  EXPECT_TRUE(ExecuteScriptAndExtractString(storage_contents1,
-                                            get_session_storage.c_str(),
-                                            &output));
-  EXPECT_STREQ("session-page1", output.c_str());
-
-  // Now, init the storage in the second tag in the same storage partition,
-  // which will overwrite the shared localStorage.
-  EXPECT_TRUE(content::ExecuteScript(storage_contents2,
-                                     "initDomStorage('page2')"));
-
-  // The localStorage value now should reflect the one written through the
-  // second tag.
-  EXPECT_TRUE(ExecuteScriptAndExtractString(storage_contents1,
-                                            get_local_storage.c_str(),
-                                            &output));
-  EXPECT_STREQ("local-page2", output.c_str());
-  EXPECT_TRUE(ExecuteScriptAndExtractString(storage_contents2,
-                                            get_local_storage.c_str(),
-                                            &output));
-  EXPECT_STREQ("local-page2", output.c_str());
-
-  // Session storage is not shared though, as each webview tag has separate
-  // instance, even if they are in the same storage partition.
-  EXPECT_TRUE(ExecuteScriptAndExtractString(storage_contents1,
-                                            get_session_storage.c_str(),
-                                            &output));
-  EXPECT_STREQ("session-page1", output.c_str());
-  EXPECT_TRUE(ExecuteScriptAndExtractString(storage_contents2,
-                                            get_session_storage.c_str(),
-                                            &output));
-  EXPECT_STREQ("session-page2", output.c_str());
-
-  // Also, let's check that the main browser and another tag that doesn't share
-  // the same partition don't have those values stored.
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
+  std::string get_session_storage(
+      "window.domAutomationController.send("
+      "window.localStorage.getItem('baz') || 'badval')");
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetWebContentsAt(0),
-      get_local_storage.c_str(),
-      &output));
+      get_local_storage.c_str(), &output));
   EXPECT_STREQ("badval", output.c_str());
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetWebContentsAt(0),
-      get_session_storage.c_str(),
-      &output));
-  EXPECT_STREQ("badval", output.c_str());
-  EXPECT_TRUE(ExecuteScriptAndExtractString(default_tag_contents1,
-                                            get_local_storage.c_str(),
-                                            &output));
-  EXPECT_STREQ("badval", output.c_str());
-  EXPECT_TRUE(ExecuteScriptAndExtractString(default_tag_contents1,
-                                            get_session_storage.c_str(),
-                                            &output));
+      get_session_storage.c_str(), &output));
   EXPECT_STREQ("badval", output.c_str());
 }
 

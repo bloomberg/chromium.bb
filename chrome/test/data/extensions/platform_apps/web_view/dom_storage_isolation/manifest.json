@@ -1,0 +1,10 @@
+{
+  "name": "Platform API Test: DOM Storage Isolation",
+  "version": "1.0",
+  "permissions": ["webview"],
+  "app": {
+    "background": {
+      "scripts": ["main.js"]
+    }
+  }
+}
