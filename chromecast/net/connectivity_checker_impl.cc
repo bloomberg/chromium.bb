@@ -81,8 +81,7 @@ void ConnectivityCheckerImpl::SetConnected(bool connected) {
     return;
 
   connected_ = connected;
-  connectivity_observer_list_->Notify(
-      FROM_HERE, &ConnectivityObserver::OnConnectivityChanged, connected);
+  Notify(connected);
   LOG(INFO) << "Global connection is: " << (connected ? "Up" : "Down");
 }
 

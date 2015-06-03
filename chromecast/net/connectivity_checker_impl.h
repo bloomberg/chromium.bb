@@ -71,8 +71,6 @@ class ConnectivityCheckerImpl
   scoped_ptr<GURL> connectivity_check_url_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::URLRequest> url_request_;
-  const scoped_refptr<ObserverListThreadSafe<ConnectivityObserver> >
-      connectivity_observer_list_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool connected_;
   // Number of connectivity check errors.

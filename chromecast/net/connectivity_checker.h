@@ -23,7 +23,7 @@ class ConnectivityChecker
  public:
   class ConnectivityObserver {
    public:
-    // Will be called when internet connectivity changes
+    // Will be called when internet connectivity changes.
     virtual void OnConnectivityChanged(bool connected) = 0;
 
    protected:
@@ -42,19 +42,23 @@ class ConnectivityChecker
   void AddConnectivityObserver(ConnectivityObserver* observer);
   void RemoveConnectivityObserver(ConnectivityObserver* observer);
 
-  // Returns if there is internet connectivity
+  // Returns if there is internet connectivity.
   virtual bool Connected() const = 0;
 
-  // Checks for connectivity
+  // Checks for connectivity.
   virtual void Check() = 0;
 
  protected:
   virtual ~ConnectivityChecker();
-  const scoped_refptr<base::ObserverListThreadSafe<ConnectivityObserver>>
-      connectivity_observer_list_;
+
+  // Notifies observes that connectivity has changed.
+  void Notify(bool connected);
 
  private:
   friend class base::RefCountedThreadSafe<ConnectivityChecker>;
+
+  const scoped_refptr<ObserverListThreadSafe<ConnectivityObserver>>
+      connectivity_observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectivityChecker);
 };

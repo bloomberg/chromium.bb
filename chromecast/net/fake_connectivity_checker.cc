@@ -25,8 +25,7 @@ void FakeConnectivityChecker::SetConnectedForTest(bool connected) {
     return;
 
   connected_ = connected;
-  connectivity_observer_list_->Notify(
-      FROM_HERE, &ConnectivityObserver::OnConnectivityChanged, connected);
+  Notify(connected);
 }
 
 }  // namespace chromecast

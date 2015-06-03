@@ -26,6 +26,12 @@ void ConnectivityChecker::RemoveConnectivityObserver(
   connectivity_observer_list_->RemoveObserver(observer);
 }
 
+void ConnectivityChecker::Notify(bool connected) {
+  DCHECK(connectivity_observer_list_.get());
+  connectivity_observer_list_->Notify(
+      FROM_HERE, &ConnectivityObserver::OnConnectivityChanged, connected);
+}
+
 // static
 scoped_refptr<ConnectivityChecker> ConnectivityChecker::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
