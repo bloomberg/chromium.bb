@@ -99,9 +99,7 @@ class MessageCenterChangeObserver
 // Class observing of "ADD" notification events.
 class NotificationAddObserver : public MessageCenterChangeObserver {
  public:
-  NotificationAddObserver() : count_(1) {
-    MessageCenterChangeObserver();
-  }
+  NotificationAddObserver() : count_(1) {}
   explicit NotificationAddObserver(int count) : count_(count) {
     MessageCenterChangeObserver();
   }
@@ -141,9 +139,7 @@ class NotificationAddObserver : public MessageCenterChangeObserver {
 // Class observing of "UPDATE" notification events.
 class NotificationUpdateObserver : public MessageCenterChangeObserver {
  public:
-  NotificationUpdateObserver() {
-    MessageCenterChangeObserver();
-  }
+  NotificationUpdateObserver() {}
   ~NotificationUpdateObserver() override {}
 
   std::string Wait() {
@@ -175,9 +171,7 @@ class NotificationUpdateObserver : public MessageCenterChangeObserver {
 // Class observing of "REMOVE" notification events.
 class NotificationRemoveObserver : public MessageCenterChangeObserver {
  public:
-  NotificationRemoveObserver() {
-    MessageCenterChangeObserver();
-  }
+  NotificationRemoveObserver() {}
   ~NotificationRemoveObserver() override {}
 
   std::string Wait() {
