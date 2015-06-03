@@ -1468,6 +1468,7 @@
       'browser/time_zone_monitor_linux.cc',
       'browser/time_zone_monitor_mac.mm',
       'browser/time_zone_monitor_win.cc',
+      'browser/tracing/background_tracing_config_dict.cc',
       'browser/tracing/background_tracing_manager_impl.cc',
       'browser/tracing/background_tracing_manager_impl.h',
       'browser/tracing/etw_system_event_consumer_win.cc',

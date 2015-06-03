@@ -294,17 +294,4 @@ BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
   return "";
 }
 
-scoped_ptr<BackgroundTracingConfig> BackgroundTracingConfig::FromDict(
-    const base::DictionaryValue* dict) {
-  // TODO(simonhatch): Implement this.
-  CHECK(false);
-  return NULL;
-}
-
-void BackgroundTracingConfig::IntoDict(const BackgroundTracingConfig* config,
-                                       base::DictionaryValue* dict) {
-  // TODO(simonhatch): Implement this.
-  CHECK(false);
-}
-
 }  // namspace content
