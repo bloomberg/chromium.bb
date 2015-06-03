@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Строка состояния</translation>
 <translation id="2248649616066688669">Если Chromebook подключен к внешнему монитору, можно закрыть его и продолжать работу.</translation>
 <translation id="2946640296642327832">Включить Bluetooth</translation>
+<translation id="478959186716341421">Трансляция...</translation>
 <translation id="5537725057119320332">Cast</translation>
 <translation id="6459472438155181876">Расширение экрана на <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Сотовый</translation>
@@ -101,6 +102,7 @@
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="3963445509666917109">Динамик (внутренний)</translation>
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
+<translation id="2208323208084708176">Унифицированный режим рабочего стола</translation>
 <translation id="2825619548187458965">Полка</translation>
 <translation id="2614835198358683673">Возможны проблемы при зарядке Chromebook. Рекомендуем использовать комплектное зарядное устройство.</translation>
 <translation id="4430019312045809116">Объем</translation>
@@ -117,6 +119,7 @@
 <translation id="8528322925433439945">Мобильные сети…</translation>
 <translation id="3157169093162779309">Включить автоповорот экрана</translation>
 <translation id="8428213095426709021">Настройки</translation>
+<translation id="6592705765268910579">Неизвестный приемник</translation>
 <translation id="2372145515558759244">Синхронизация приложений…</translation>
 <translation id="1987317783729300807">Аккаунты</translation>
 <translation id="8456362689280298700">до полной зарядки: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>

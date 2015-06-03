@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Vous pouvez continuer. Si vous accédez à la page, cet avertissement ne s'affichera pas pendant cinq minutes.</translation>
 <translation id="7485870689360869515">Aucune donnée n'a été trouvée.</translation>
 <translation id="3884278016824448484">Identifiant de l'appareil en conflit.</translation>
-<translation id="6779575937362063477">Ce type de carte n'est pas compatible avec Google Wallet. Veuillez sélectionner une autre carte.</translation>
 <translation id="5172758083709347301">Ordinateur</translation>
 <translation id="7180611975245234373">Actualiser</translation>
 <translation id="8208216423136871611">Ne pas enregistrer</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Non</translation>
 <translation id="2704283930420550640">La valeur ne respecte pas le format requis.</translation>
 <translation id="1055184225775184556">&amp;Annuler l'ajout</translation>
+<translation id="7813600968533626083">Supprimer la suggestion de saisie de formulaire de Chrome ?</translation>
 <translation id="4850886885716139402">Afficher</translation>
 <translation id="8091372947890762290">Activation en attente sur le serveur.</translation>
 <translation id="6874604403660855544">&amp;Rétablir l'ajout</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Utiliser un mot de passe pour :</translation>
 <translation id="2855922900409897335">Valider votre <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Cette page en<ph name="ORIGINAL_LANGUAGE"/>a été traduite en<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Supprimer l'adresse de Chrome ?</translation>
 <translation id="7139724024395191329">Émirat</translation>
 <translation id="6646897916597483132">Saisissez le code CVC à quatre chiffres indiqué au recto de votre carte.</translation>
 <translation id="5145883236150621069">Code d'erreur présent dans la réponse de la règle.</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">District</translation>
 <translation id="3427342743765426898">&amp;Rétablir la modification</translation>
 <translation id="3010559122411665027">Entrée de la liste &quot;<ph name="ENTRY_INDEX"/>&quot; : <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Supprimer les données de carte de paiement de Chrome ?</translation>
 <translation id="6445051938772793705">Pays</translation>
 <translation id="5031870354684148875">À propos de Google Traduction</translation>
 <translation id="1152921474424827756">Accédez à une <ph name="BEGIN_LINK"/>copie mise en cache<ph name="END_LINK"/> de <ph name="URL"/>.</translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">Favoris du domaine <ph name="DOMAIN"/></translation>
 <translation id="4300246636397505754">Suggestions des parents</translation>
 <translation id="111844081046043029">Voulez-vous vraiment quitter cette page ?</translation>
+<translation id="2495083838625180221">Analyse de fichiers JSON</translation>
 <translation id="1973335181906896915">Erreur de sérialisation.</translation>
 <translation id="5989320800837274978">Aucun serveur proxy déterminé ou URL de script .pac n'a été indiqué.</translation>
 <translation id="7805768142964895445">État</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Effacer le formulaire</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="8804164990146287819">Règles de confidentialité</translation>
-<translation id="5337776961545044340">Ce type de carte n'est pas compatible avec Google Wallet pour ce marchand. Veuillez en sélectionner une autre.</translation>
 <translation id="7334320624316649418">&amp;Rétablir la réorganisation</translation>
 <translation id="7182878459783632708">Aucune règle n'est définie</translation>
 <translation id="5019198164206649151">L'espace de stockage destiné à la sauvegarde est en mauvais état.</translation>

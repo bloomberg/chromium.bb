@@ -7,7 +7,6 @@ Chromoting</translation>
 <translation id="2676780859508944670">Operación en curso…</translation>
 <translation id="6062854958530969723">Error al iniciar el host</translation>
 <translation id="5843054235973879827">¿Por qué esta operación es segura?</translation>
-<translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5619148062500147964">Hacia esta computadora</translation>
 <translation id="4068946408131579958">Todas las conexiones</translation>
 <translation id="2208514473086078157">La configuración de la política no permite compartir esta computadora como host de Escritorio remoto de Chrome. Comunícate con el administrador de tu sistema para obtener ayuda.</translation>
@@ -250,7 +249,7 @@ remoto de Chrome</translation>
 <translation id="6011539954251327702">Chromoting te permite compartir tu computadora con otro usuario de manera segura en la Web. Tanto tú como el otro usuario deben ejecutar la aplicación Chromoting, que está disponible en <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">En este momento compartes esta computadora con otro usuario. ¿Deseas continuar compartiéndola?</translation>
 <translation id="4207623512727273241">Ejecuta el instalador antes de continuar.</translation>
-<translation id="492843737083352574">Tengo problemas con el teclado o con el mouse.</translation>
+<translation id="492843737083352574">Tengo problemas con el teclado o el mouse.</translation>
 <translation id="1324095856329524885">(Esta función aún no está disponible para tu computadora).</translation>
 <translation id="6570205395680337606">Restablece la aplicación. Perderás todo el trabajo que no se haya guardado.</translation>
 <translation id="6284412385303060032">Se cerró el host que se ejecuta en la pantalla de acceso de la consola para poder admitir el modo de cortina. Por lo tanto, se cambió a un host que se ejecuta en una sesión específica de usuario.</translation>

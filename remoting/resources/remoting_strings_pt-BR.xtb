@@ -7,7 +7,6 @@ Chromoting</translation>
 <translation id="2676780859508944670">Processando…</translation>
 <translation id="6062854958530969723">Falha ao iniciar host.</translation>
 <translation id="5843054235973879827">Por que isto é seguro?</translation>
-<translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5619148062500147964">A este computador</translation>
 <translation id="4068946408131579958">Todas as conexões</translation>
 <translation id="2208514473086078157">As definições da política não permitem compartilhar este computador como um host da Área de trabalho remota do Google Chrome. Entre em contato com o administrador do sistema para obter ajuda.</translation>
@@ -250,7 +249,7 @@ remota do Google Chrome</translation>
 <translation id="6011539954251327702">O Chromoting permite compartilhar seu computador pela Web de forma segura. Ambos os usuários devem estar executando o aplicativo Chromoting, disponível em <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Esta máquina está sendo compartilhada com outro usuário. Deseja continuar compartilhando?</translation>
 <translation id="4207623512727273241">Execute o instalador antes de continuar.</translation>
-<translation id="492843737083352574">Estou tendo problemas com meu teclado ou mouse.</translation>
+<translation id="492843737083352574">Meu teclado ou mouse estão com problemas.</translation>
 <translation id="1324095856329524885">Este recurso ainda não está disponível para seu computador</translation>
 <translation id="6570205395680337606">Reinicie o aplicativo. Você perderá qualquer trabalho que não tenha sido salvo.</translation>
 <translation id="6284412385303060032">O host que está sendo executado na tela de lógica do console foi encerrado para suportar o modo de cortina, alternando para um host executado em uma sessão específica do usuário.</translation>

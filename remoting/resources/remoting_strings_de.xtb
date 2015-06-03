@@ -7,10 +7,10 @@ Host</translation>
 <translation id="2676780859508944670">Vorgang läuft...</translation>
 <translation id="6062854958530969723">Hostinitialisierung fehlgeschlagen</translation>
 <translation id="5843054235973879827">Warum ist dieser Vorgang sicher?</translation>
-<translation id="5895138241574237353">Neu starten</translation>
 <translation id="5619148062500147964">Zu diesem Computer</translation>
 <translation id="4068946408131579958">Alle Verbindungen</translation>
 <translation id="2208514473086078157">Gemäß den Richtlinieneinstellungen können Sie diesen Computer nicht als Chrome Remote Desktop-Host verwenden. Wenden Sie sich für weitere Hilfe an Ihren Systemadministrator.</translation>
+<translation id="6381670701864002291">Sonstige</translation>
 <translation id="6541219117979389420">Anwendungsprotokolle können private Informationen enthalten. Dabei kann es sich zum Beispiel um Ihre Identität, d. h. Ihre E-Mail-Adresse, und den Namen und die Eigenschaften von Dateien und Ordnern in Google Drive handeln.</translation>
 <translation id="3931191050278863510">Host angehalten</translation>
 <translation id="3905196214175737742">Ungültige Hostinhaberdomain</translation>
@@ -53,6 +53,7 @@ Host</translation>
 <translation id="3606997049964069799">Sie sind nicht in Chromium angemeldet. Melden Sie sich an und versuchen Sie es erneut.</translation>
 <translation id="6198252989419008588">PIN ändern</translation>
 <translation id="7970576581263377361">Fehler bei der Authentifizierung. Melden Sie sich erneut in Chromium an.</translation>
+<translation id="477305884757156764">Die Anwendung ist zu langsam.</translation>
 <translation id="6167788864044230298">Chrome App Streaming</translation>
 <translation id="170207782578677537">Fehler beim Registrieren dieses Computers</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
@@ -70,6 +71,7 @@ Host</translation>
 <translation id="2314101195544969792">Ihre Sitzung bei <ph name="APPLICATION_NAME"/> war längere Zeit inaktiv und wird in Kürze beendet.</translation>
 <translation id="6001953797859482435">Einstellungen für Chrome Remote Desktop Host</translation>
 <translation id="225614027745146050">Willkommen</translation>
+<translation id="1770394049404108959">Ich kann die Anwendung nicht öffnen.</translation>
 <translation id="9188433529406846933">Autorisieren</translation>
 <translation id="228809120910082333">Bestätigen Sie unten Ihr Konto und Ihre PIN, um den Zugriff durch Chromoting zu gestatten.</translation>
 <translation id="7605995381616883502">Neue Verbindung</translation>
@@ -100,6 +102,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="3884839335308961732">Bestätigen Sie unten Ihr Konto und Ihre PIN, um Zugriff über Chrome Remote Desktop zu gewähren.</translation>
 <translation id="327263477022142889">Möchten Sie uns helfen, Chrome Remote Desktop zu verbessern? <ph name="LINK_BEGIN"/>Nehmen Sie an der Umfrage teil.<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Strg-Alt-Entf senden</translation>
+<translation id="6173536234069435147">Ich kann meine Google Drive-Dateien nicht öffnen.</translation>
 <translation id="5702987232842159181">Verbunden:</translation>
 <translation id="8509907436388546015">Desktop-Integrationsprozess</translation>
 <translation id="4736223761657662401">Verlauf &quot;Verbindungen&quot;</translation>
@@ -191,10 +194,12 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="2078880767960296260">Host-Prozess</translation>
 <translation id="1643640058022401035">Wenn Sie diese Seite verlassen, wird Ihre Chromoting-Sitzung beendet.</translation>
 <translation id="8261506727792406068">Löschen</translation>
+<translation id="1152528166145813711">Auswählen...</translation>
 <translation id="2235518894410572517">Diesen Computer für einen anderen Nutzer zur Ansicht und Steuerung freigeben</translation>
 <translation id="6939719207673461467">Tastatur ein-/ausblenden</translation>
 <translation id="1023096696228309145">Bitten Sie den Nutzer, auf dessen Computer Sie zugreifen möchten, auf &quot;Jetzt freigeben&quot; zu klicken und Ihnen den Zugriffscode mitzuteilen.</translation>
 <translation id="4240294130679914010">Chromoting Host-Deinstallationsprogramm</translation>
+<translation id="8712909229180978490">Meine online gespeicherten Dateien werden nicht im Google Drive angezeigt.</translation>
 <translation id="80739703311984697">Der Remote-Host verlangt, dass Sie sich über eine Drittanbieter-Website authentifizieren. Um fortfahren zu können, geben Sie Chromoting zusätzliche Berechtigungen für den Zugriff auf die folgende Adresse:</translation>
 <translation id="4006787130661126000">Aktivieren Sie die Remote-Verbindungen, wenn Sie mit Chrome Remote Desktop auf diesen Computer zugreifen möchten.</translation>
 <translation id="177096447311351977">Kanal-IP für Client: <ph name="CLIENT_GAIA_IDENTIFIER"/> IP=&quot;<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>&quot; Host-IP=&quot;<ph name="HOST_IP_ADDRESS_AND_PORT"/>&quot; Kanal=&quot;<ph name="CHANNEL_TYPE"/>&quot; Verbindung=&quot;<ph name="CONNECTION_TYPE"/>&quot;</translation>
@@ -244,6 +249,7 @@ Desktop Host</translation>
 <translation id="6011539954251327702">Chromoting ermöglicht die sichere Freigabe Ihres Computers über das Internet. Beide Nutzer müssen dazu die Chromoting App ausführen. Diese App finden Sie unter <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Dieser Computer ist zurzeit für einen anderen Nutzer freigegeben. Möchten Sie die Freigabe fortsetzen?</translation>
 <translation id="4207623512727273241">Führen Sie das Installationsprogramm aus, bevor Sie fortfahren.</translation>
+<translation id="492843737083352574">Ich habe Probleme mit meiner Tastatur oder meiner Maus.</translation>
 <translation id="1324095856329524885">Diese Funktion ist noch nicht für Ihren Computer verfügbar.</translation>
 <translation id="6570205395680337606">App zurücksetzen. Alle nicht gespeicherten Daten gehen verloren.</translation>
 <translation id="6284412385303060032">Der Host, der auf dem Anmeldebildschirm für die Konsole ausgeführt wird, wurde heruntergefahren, um den Vorhangmodus zu unterstützen, indem zu einem Host in einer nutzerspezfischen Sitzung gewechselt wurde.</translation>
@@ -261,6 +267,7 @@ Desktop Host</translation>
 <translation id="1546934824884762070">Ein unerwarteter Fehler ist aufgetreten. Bitte melden Sie dieses Problem den Entwicklern.</translation>
 <translation id="4795786176190567663">Sie sind nicht berechtigt, diese Aktion durchzuführen.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="3025388528294795783">Teilen Sie uns mit, was nicht funktioniert, damit wir Ihnen weiterhelfen können:</translation>
 <translation id="7434397035092923453">Zugriff für folgenden Client verweigert: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="3403830762023901068">Gemäß den Richtlinieneinstellungen können Sie diesen Computer nicht als Chromoting-Host verwenden. Wenden Sie sich für weitere Hilfe an Ihren Systemadministrator.</translation>
 <translation id="7312846573060934304">Host ist offline.</translation>

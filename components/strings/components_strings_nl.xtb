@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Je kunt doorgaan. Als je doorgaat naar de pagina, wordt deze waarschuwing gedurende vijf minuten niet opnieuw weergegeven.</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
 <translation id="3884278016824448484">Conflicterende apparaat-ID's</translation>
-<translation id="6779575937362063477">Dit type kaart wordt niet ondersteund door Google Wallet. Selecteer een andere kaart.</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
 <translation id="8208216423136871611">Niet opslaan</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Nee</translation>
 <translation id="2704283930420550640">Waarde komt niet overeen met notatie.</translation>
 <translation id="1055184225775184556">&amp;Toevoegen ongedaan maken</translation>
+<translation id="7813600968533626083">Formuliersuggestie verwijderen uit Chrome?</translation>
 <translation id="4850886885716139402">Weergave</translation>
 <translation id="8091372947890762290">Activering is in behandeling op de server</translation>
 <translation id="6874604403660855544">&amp;Opnieuw toevoegen</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Wachtwoord gebruiken voor:</translation>
 <translation id="2855922900409897335">Je <ph name="CREDIT_CARD"/> verifiëren</translation>
 <translation id="7186367841673660872">Deze pagina is vertaald van het<ph name="ORIGINAL_LANGUAGE"/>in het<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Adres verwijderen uit Chrome?</translation>
 <translation id="7139724024395191329">Emiraat</translation>
 <translation id="6646897916597483132">Geef de viercijferige CVC-code op die op de voorkant van je kaart staat</translation>
 <translation id="5145883236150621069">Foutcode aanwezig in de beleidsreactie</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">District</translation>
 <translation id="3427342743765426898">&amp;Opnieuw bewerken</translation>
 <translation id="3010559122411665027">Lijstitem '<ph name="ENTRY_INDEX"/>': <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Creditcard verwijderen uit Chrome?</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="5031870354684148875">Over Google Translate</translation>
 <translation id="1152921474424827756">Een <ph name="BEGIN_LINK"/>gecacht exemplaar<ph name="END_LINK"/> van <ph name="URL"/> openen</translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">Bladwijzers voor <ph name="DOMAIN"/></translation>
 <translation id="4300246636397505754">Bovenliggende suggesties</translation>
 <translation id="111844081046043029">Pagina verlaten?</translation>
+<translation id="2495083838625180221">JSON Parser</translation>
 <translation id="1973335181906896915">Serialisatiefout</translation>
 <translation id="5989320800837274978">Er worden geen vaste proxyservers en geen pac-script-URL gespecificeerd.</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Formulier leegmaken</translation>
 <translation id="6550675742724504774">Opties</translation>
 <translation id="8804164990146287819">Privacybeleid</translation>
-<translation id="5337776961545044340">Dit type kaart wordt voor deze verkoper niet ondersteund door Google Wallet. Selecteer een andere kaart.</translation>
 <translation id="7334320624316649418">&amp;Opnieuw volgorde wijzigen</translation>
 <translation id="7182878459783632708">Geen beleid ingesteld</translation>
 <translation id="5019198164206649151">Backend-opslag in slechte staat</translation>

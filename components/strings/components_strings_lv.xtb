@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Jūs varat turpināt. Ja turpināsiet lietot lapu, šis brīdinājums netiks rādīts vēlreiz piecas minūtes.</translation>
 <translation id="7485870689360869515">Dati netika atrasti.</translation>
 <translation id="3884278016824448484">Ierīces identifikators rada konfliktu.</translation>
-<translation id="6779575937362063477">Šis kartes veids netiek atbalstīts lietotnē Google maks. Lūdzu, atlasiet citu karti.</translation>
 <translation id="5172758083709347301">Ierīce</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
 <translation id="8208216423136871611">Nesaglabāt</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Nē</translation>
 <translation id="2704283930420550640">Vērtība neatbilst formātam.</translation>
 <translation id="1055184225775184556">&amp;Pievienošanas atsaukšana</translation>
+<translation id="7813600968533626083">Vai noņemt veidlapas ieteikumu no pārlūka Chrome?</translation>
 <translation id="4850886885716139402">Skatīt</translation>
 <translation id="8091372947890762290">Aktivizācija vēl nav apstiprināta serverī.</translation>
 <translation id="6874604403660855544">&amp;Atcelt pievienošanas atsaukšanu</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Izmantot paroli:</translation>
 <translation id="2855922900409897335">Verificējiet kredītkarti <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Šī lapa ir tulkota no<ph name="ORIGINAL_LANGUAGE"/>valodas<ph name="LANGUAGE_LANGUAGE"/>valodā</translation>
+<translation id="4587425331216688090">Vai noņemt adresi no pārlūka Chrome?</translation>
 <translation id="7139724024395191329">Emirāts</translation>
 <translation id="6646897916597483132">Ievadiet 4 ciparu CVC kodu, kas norādīts jūsu kredītkartes priekšpusē.</translation>
 <translation id="5145883236150621069">Politikas atbildē ir kļūdas kods.</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Rajons</translation>
 <translation id="3427342743765426898">&amp;Labojuma atsaukuma atcelšana</translation>
 <translation id="3010559122411665027">Saraksta ieraksts “<ph name="ENTRY_INDEX"/>”: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Vai noņemt kredītkarti no pārlūka Chrome?</translation>
 <translation id="6445051938772793705">Valsts</translation>
 <translation id="5031870354684148875">Par Google tulkotāju</translation>
 <translation id="1152921474424827756">Piekļūstiet vietnes <ph name="URL"/> <ph name="BEGIN_LINK"/>kešatmiņā saglabātajai kopijai<ph name="END_LINK"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436"><ph name="DOMAIN"/> grāmatzīmes</translation>
 <translation id="4300246636397505754">Vecāku ieteikumi</translation>
 <translation id="111844081046043029">Vai jūs tiešām vēlaties pamest šo lapu?</translation>
+<translation id="2495083838625180221">JSON parsētājs</translation>
 <translation id="1973335181906896915">Radās serializēšanas kļūda.</translation>
 <translation id="5989320800837274978">Nav norādīti nedz fiksēti starpniekserveri, nedz .pac skripta URL.</translation>
 <translation id="7805768142964895445">Statuss</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Notīrīt veidlapu</translation>
 <translation id="6550675742724504774">Opcijas</translation>
 <translation id="8804164990146287819">Konfidencialitātes politika</translation>
-<translation id="5337776961545044340">Šis kartes veids šim tirgotājam lietotnē Google maks netiek atbalstīts. Lūdzu, atlasiet citu karti.</translation>
 <translation id="7334320624316649418">&amp;Atcelt pārkārtošanas atsaukšanu</translation>
 <translation id="7182878459783632708">Nav iestatīta neviena politika</translation>
 <translation id="5019198164206649151">Dublējumu krātuve nav labā stāvoklī.</translation>

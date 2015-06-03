@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Voit jatkaa. Jos jatkat sivulle, tätä varoitusta ei näytetä uudelleen viiteen minuuttiin.</translation>
 <translation id="7485870689360869515">Tietoja ei löydy.</translation>
 <translation id="3884278016824448484">Ristiriitainen laitteen tunnus</translation>
-<translation id="6779575937362063477">Google Wallet ei tue tämäntyyppistä korttia. Valitse eri kortti.</translation>
 <translation id="5172758083709347301">Kaikki tietokoneen käyttäjät</translation>
 <translation id="7180611975245234373">Päivitä</translation>
 <translation id="8208216423136871611">Älä tallenna</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Ei</translation>
 <translation id="2704283930420550640">Arvo ei vastaa muotoa.</translation>
 <translation id="1055184225775184556">K&amp;umoa lisäys</translation>
+<translation id="7813600968533626083">Poistetaanko lomake-ehdotus Chromen tiedoista?</translation>
 <translation id="4850886885716139402">Näytä</translation>
 <translation id="8091372947890762290">Aktivointi odottaa palvelimella</translation>
 <translation id="6874604403660855544">&amp;Toista lisäys</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Käytä salasanaa kohteeseen:</translation>
 <translation id="2855922900409897335">Vahvista <ph name="CREDIT_CARD"/>.</translation>
 <translation id="7186367841673660872">Tämä sivu on käännetty kielestä<ph name="ORIGINAL_LANGUAGE"/>kielelle<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Poistetaanko osoite Chromen tiedoista?</translation>
 <translation id="7139724024395191329">Emiirikunta</translation>
 <translation id="6646897916597483132">Anna nelinumeroinen CVC luottokortin etupuolelta.</translation>
 <translation id="5145883236150621069">Käytäntövastaus sisältää virhekoodin</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Alue</translation>
 <translation id="3427342743765426898">&amp;Toista muokkaus</translation>
 <translation id="3010559122411665027">Luettelokohde &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Poistetaanko luottokortti Chromen tiedoista?</translation>
 <translation id="6445051938772793705">Maa</translation>
 <translation id="5031870354684148875">Tietoja Google-kääntäjästä</translation>
 <translation id="1152921474424827756">Käytä osoitteen <ph name="URL"/> <ph name="BEGIN_LINK"/>välimuistiversiota<ph name="END_LINK"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">Verkkotunnuksen <ph name="DOMAIN"/> kirjanmerkit</translation>
 <translation id="4300246636397505754">Ylätason ehdotukset</translation>
 <translation id="111844081046043029">Haluatko varmasti poistua tältä sivulta?</translation>
+<translation id="2495083838625180221">JSON-jäsentäjä</translation>
 <translation id="1973335181906896915">Sarjaesittämisen virhe</translation>
 <translation id="5989320800837274978">Kiinteitä välityspalvelimia tai .pac-URL-osoitetta ei ole määritetty.</translation>
 <translation id="7805768142964895445">Tila</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Tyhjennä lomake</translation>
 <translation id="6550675742724504774">Asetukset</translation>
 <translation id="8804164990146287819">Tietosuojakäytäntö</translation>
-<translation id="5337776961545044340">Tältä kauppiaalta ei voi tehdä ostoksia tämän tyyppisellä kortilla Google Walletin kautta. Valitse eri kortti.</translation>
 <translation id="7334320624316649418">&amp;Toista uudelleenjärjestely</translation>
 <translation id="7182878459783632708">Käytäntöjä ei ole asetettu</translation>
 <translation id="5019198164206649151">Tallennustila on virheellisessä tilassa</translation>

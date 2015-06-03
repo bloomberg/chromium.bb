@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">상태 표시줄</translation>
 <translation id="2248649616066688669">Chromebook의 덮개를 닫아도 외부 디스플레이에 연결되어 있는 동안 계속 사용할 수 있습니다.</translation>
 <translation id="2946640296642327832">블루투스 사용</translation>
+<translation id="478959186716341421">전송</translation>
 <translation id="5537725057119320332">전송</translation>
 <translation id="6459472438155181876">화면을 <ph name="DISPLAY_NAME"/>(으)로 확장</translation>
 <translation id="8206859287963243715">휴대전화</translation>
@@ -118,6 +119,7 @@
 <translation id="8528322925433439945">모바일 ...</translation>
 <translation id="3157169093162779309">회전 잠금 사용</translation>
 <translation id="8428213095426709021">설정</translation>
+<translation id="6592705765268910579">알 수 없는 수신자</translation>
 <translation id="2372145515558759244">앱 동기화...</translation>
 <translation id="1987317783729300807">계정</translation>
 <translation id="8456362689280298700">충전 완료까지 <ph name="HOUR"/>:<ph name="MINUTE"/> 남음</translation>

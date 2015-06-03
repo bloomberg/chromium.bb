@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Safata d'estat</translation>
 <translation id="2248649616066688669">Podeu continuar utilitzant el dispositiu Chromebook mentre estigui connectat a una pantalla externa, encara que la tapa estigui tancada.</translation>
 <translation id="2946640296642327832">Activa Bluetooth</translation>
+<translation id="478959186716341421">S'està emetent</translation>
 <translation id="5537725057119320332">Emet</translation>
 <translation id="6459472438155181876">S'està ampliant la pantalla a <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cel·lular</translation>
@@ -118,6 +119,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="8528322925433439945">Xarxes mòbils...</translation>
 <translation id="3157169093162779309">Activeu el bloqueig de la rotació</translation>
 <translation id="8428213095426709021">Configuració</translation>
+<translation id="6592705765268910579">Receptor desconegut</translation>
 <translation id="2372145515558759244">S'estan sincronitzant les aplicacions...</translation>
 <translation id="1987317783729300807">Comptes</translation>
 <translation id="8456362689280298700">Temps per a càrrega completa: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>

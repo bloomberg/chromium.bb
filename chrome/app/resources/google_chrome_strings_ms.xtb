@@ -18,6 +18,7 @@
 <translation id="1225016890511909183">Chrome akan menyimpan maklumat anda dengan selamat supaya anda tidak perlu menaipkannya semula, tetapi anda masih perlu mengesahkan kod keselamatan kad anda untuk pembayaran pada masa hadapan.</translation>
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
 <translation id="7400722733683201933">Mengenai Google Chrome</translation>
+<translation id="8889942196804715220">Lancarkan semula dalam mod benaman Chrome</translation>
 <translation id="2077129598763517140">Gunakan pecutan perkakasan apabila tersedia</translation>
 <translation id="1065672644894730302">Pilihan anda tidak dapat dibaca. Beberapa ciri mungkin tidak tersedia dan perubahan terhadap pilihan tidak akan disimpan.</translation>
 <translation id="7781002470561365167">Terdapat versi Google Chrome baharu yang tersedia.</translation>
@@ -43,6 +44,7 @@
 <translation id="8556340503434111824">Terdapat versi baharu Google Chrome yang tersedia, dan ia lebih pantas daripada biasa.</translation>
 <translation id="8987477933582888019">Penyemak imbas web</translation>
 <translation id="4050175100176540509">Peningkatan keselamatan penting dan ciri baharu tersedia dalam versi terkini.</translation>
+<translation id="8437332772351535342">Melancarkan semula dalam mod Desktop akan menutup dan melancarkan semula apl Chrome anda.</translation>
 <translation id="4728575227883772061">Pemasangan gagal disebabkan ralat tidak dinyatakan. Jika Google Chrome kini dijalankan, sila tutupnya dan cuba semula.</translation>
 <translation id="3080151273017101988">Terus menjalankan apl latar belakang apabila Google Chrome ditutup</translation>
 <translation id="4149882025268051530">Pemasang gagal untuk nyahmampat arkib. Sila muat turun Google Chrome semula.</translation>
@@ -85,6 +87,7 @@
 <translation id="7473136999113284234">Chrome dikemas kini secara automatik supaya anda sentiasa mempunyai versi yang terbaharu.</translation>
 <translation id="7084448929020576097"><ph name="FILE_NAME"/> bersifat hasad dan Chrome telah menyekatnya.</translation>
 <translation id="6368958679917195344">OS Chrome menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS"/>perisian sumber terbuka<ph name="END_LINK_CROS_OSS"/> tambahan.</translation>
+<translation id="5799551393681493217">Mendayakan aliran log masuk Chrome berasaskan iframe. Bendera ini mengatasi --dayakan log masuk berasaskan web.</translation>
 <translation id="7459554271817304652">Sediakan Penyegerakan untuk menyimpan ciri penyemak imbas anda yang diperibadikan ke web dan mengaksesnya dari Google Chrome pada mana-mana komputer.</translation>
 <translation id="4331809312908958774">OS Chrome</translation>
 <translation id="8823341990149967727">Chrome sudah Usang</translation>
@@ -98,11 +101,13 @@
 <translation id="3656661827369545115">Lancarkan Chromium secara automatik apabila komputer anda bermula</translation>
 <translation id="1763864636252898013">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN"/>; sijil keselamatannya tidak dipercayai oleh sistem pengendalian peranti anda. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="556024056938947818">Google Chrome sedang cuba memaparkan kata laluan.</translation>
+<translation id="3012890944909934180">Lancarkan semula Chrome pada desktop</translation>
 <translation id="2580411288591421699">Tidak dapat memasang versi Google Chrome yang sama yang kini dijalankan. Sila tutup Google Chrome dan cuba semula.</translation>
 <translation id="8460191995881063249">Pusat Pemberitahuan Chrome</translation>
 <translation id="1457721931618994305">Mengemas kini Google Chrome...</translation>
 <translation id="2429317896000329049">Google Chrome tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat mencipta direktori sementara. Sila semak ruang cakera kosong dan kebenaran untuk memasang perisian.</translation>
+<translation id="8005540215158006229">Chrome hampir sedia.</translation>
 <translation id="5170938038195470297">Profil anda tidak boleh digunakan kerana ia adalah dari versi Google Chrome yang lebih baharu. Beberapa ciri mungkin tidak tersedia. Sila tetapkan direktori profil lain atau gunakan versi Chrome yang lebih baharu.</translation>
 <translation id="7282192067747128786">Chrome - Pemberitahuan (<ph name="QUANTITY"/> belum dibaca)</translation>
 <translation id="1475773083554142432">Chrome akan menyimpan ini dengan <ph name="SAVED_PASSWORD_LINK"/> dan mengingatinya apabila anda memerlukannya nanti.</translation>
@@ -150,6 +155,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="8008534537613507642">Pasang Semula Chrome</translation>
 <translation id="2689103672227170538">Sambungan ini telah menukar halaman yang ditunjukkan apabila anda memulakan Chrome.</translation>
 <translation id="8862326446509486874">Anda tidak mempunyai hak wajar untuk pemasangan peringkat sistem. Cuba jalankan pemasang semula sebagai Pentadbir.</translation>
+<translation id="5785746630574083988">Melancarkan semula dalam mod Windows 8 akan menutup dan melancarkan semula apl Chrome anda.</translation>
 <translation id="2874156562296220396">Google Chrome berjaya dilaksanakan melalui projek sumber terbuka <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> dan <ph name="BEGIN_LINK_OSS"/>perisian sumber terbuka<ph name="END_LINK_OSS"/> yang lain.</translation>
 <translation id="7191567847629796517">Google Chrome OS tidak menyokong pelancaran aplikasi luaran untuk mengendalikan pautan <ph name="SCHEME"/>. Pautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="3847841918622877581">Google Chrome boleh menggunakan perkhidmatan web untuk meningkatkan pengalaman penyemakan imbas anda.</translation>
@@ -163,6 +169,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="415994390253732730">Chrome Berkelakuan Aneh?</translation>
 <translation id="1104959162601287462">Mengenai &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Perduaan Google Chrome</translation>
+<translation id="7626032353295482388">Selamat Datang ke Chrome</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome penyemak imbas lalai</translation>
 <translation id="1759301979429102118">Butiran daripada kenalan anda dapat membantu anda mengisi borang dengan lebih cepat di Chrome.</translation>
 <translation id="7787950393032327779">Nampaknya profil digunakan oleh proses Google Chrome lain (<ph name="PROCESS_ID"/>) pada komputer lain (<ph name="HOST_NAME"/>). Chrome telah mengunci profil supaya profil tidak rosak. Jika anda pasti tiada proses lain yang menggunakan profil ini, anda boleh membuka profil dan melancarkan semula Chrome.</translation>
@@ -179,11 +186,13 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Muat turun sedang berlangsung. Adakah anda ingin membatalkan muat turun dan keluar daripada Chrome?}other{# muat turun sedang berlangsung pada masa ini. Adakah anda ingin membatalkan muat turun dan keluar daripada Google Chrome?}}</translation>
 <translation id="6235018212288296708">Peraturan masuk bagi Google Chrome untuk membenarkan trafik mDNS.</translation>
 <translation id="7984945080620862648">Anda tidak boleh melawati <ph name="SITE"/> sekarang kerana tapak web ini menghantar bukti kelayakan yang dicampuradukkan yang tidak boleh diproses oleh Chrome. Ralat rangkaian dan serangan biasanya bersifat sementara oleh itu, halaman ini mungkin akan berfungsi sebentar lagi.</translation>
+<translation id="4011219958405096740">Apabila didayakan, akan menggunakan aliran log masuk Chrome berasaskan iframe; atau pun gunakan aliran berasaskan webview.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="61852838583753520">Kemas kini &amp;Chrome OS</translation>
 <translation id="5028489144783860647">Google Chrome tidak dapat menyegerakkan data anda. Sila kemas kini frasa laluan Segerak anda.</translation>
 <translation id="9026991721384951619">OS Chrome tidak dapat menyegerakkan data anda kerana butiran log masuk akaun anda sudah lapuk.</translation>
 <translation id="8547799825197623713">Pelancar Apl Chrome Canary</translation>
+<translation id="2267273557509361161">Lancarkan semula Chrome dalam mod Windows 8</translation>
 <translation id="2871893339301912279">Anda kini telah log masuk ke Chrome!</translation>
 <translation id="7890208801193284374">Jika anda berkongsi komputer, rakan dan keluarga boleh menyemak imbas secara berasingan dan menyediakan Chrome sebagaimana yang mereka mahukan.</translation>
 <translation id="7161904924553537242">Selamat Datang ke Google Chrome</translation>
@@ -209,6 +218,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="629218512217695915">Gunakan kata laluan yang dijana oleh Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="6113794647360055231">Chrome kini lebih baik</translation>
+<translation id="2588322182880276190">Logo Chrome</translation>
 <translation id="4367618624832907428">Google Chrome tidak dapat memaparkan halaman web kerana komputer anda tidak disambungkan ke Internet.</translation>
 <translation id="174539241580958092">Google Chrome tidak dapat menyegerakkan data anda disebabkan ralat melog masuk.</translation>
 <translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon anda.</translation>
@@ -253,6 +263,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="2246246234298806438">Google Chrome tidak dapat memaparkan pratonton cetakan apabila pemapar PDF terbina dalam tiada.</translation>
 <translation id="5132929315877954718">Temui apl, permainan, sambungan dan tema hebat untuk Google Chrome.</translation>
 <translation id="6626317981028933585">Malangnya, tetapan Mozilla Firefox anda tidak tersedia semasa penyemak imbas tersebut dijalankan. Untuk mengimport tetapan tersebut ke Google Chrome, simpan kerja anda dan tutup semua tetingkap Firefox. Kemudian klik Teruskan.</translation>
+<translation id="8274359292107649245">Buka Chrome pada desktop</translation>
 <translation id="7242029209006116544">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME"/> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. Anda boleh memilih membuat profil baharu untuk mengasingkan data Chrome anda yang sedia ada. <ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome atau membuat carian dari Kotak Omni.</translation>
 <translation id="1553358976309200471">Kemas Kini Chrome</translation>
@@ -264,6 +275,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="5531349711857992002">Rantaian sijil untuk tapak web ini mengandungi sekurang-kurangnya satu sijil yang ditandatangani menggunakan algoritma tandatangan yang telah ditamatkan berdasarkan SHA-1.</translation>
 <translation id="6049075767726609708">Pentadbir telah memasang Google Chrome pada sistem ini, dan ia adalah tersedia untuk semua pengguna. Google Chrome peringkat sistem akan menggantikan pemasangan peringkat pengguna anda sekarang.</translation>
 <translation id="1818142563254268765">Chrome tidak dapat dikemas kini kepada versi yang terbaharu, jadi anda terlepas ciri baharu yang hebat dan pembetulan keselamatan. Anda perlu mengemas kini Chrome.</translation>
+<translation id="781069973841903133">Langkah melancarkan semula dalam mod benaman Chrome akan menyebabkan apl Chrome anda ditutup dan dilancarkan semula.</translation>
 <translation id="7408085963519505752">Syarat Chrome OS</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1016765312371154165">Chrome tidak ditutup dengan betul.</translation>

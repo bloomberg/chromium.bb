@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Maaari ka nang magpatuloy. Kung magpapatuloy ka sa page, hindi na muling lalabas ang babalang ito sa loob ng limang minuto.</translation>
 <translation id="7485870689360869515">Walang nahanap na data.</translation>
 <translation id="3884278016824448484">Sumasalungat na tagatukoy ng device</translation>
-<translation id="6779575937362063477">Hindi sinusuportahan ng Google Wallet ang uri ng card na ito. Mangyaring pumili ng iba pang card.</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="7180611975245234373">I-refresh</translation>
 <translation id="8208216423136871611">Huwag mag-save</translation>
@@ -17,7 +16,7 @@
 <translation id="5299298092464848405">Error sa pag-parse ng patakaran</translation>
 <translation id="6628463337424475685">Paghahanap ng <ph name="ENGINE"/></translation>
 <translation id="2498091847651709837">Mag-scan ng bagong card</translation>
-<translation id="6831043979455480757">I-translate</translation>
+<translation id="6831043979455480757">Isalin</translation>
 <translation id="1228893227497259893">Maling tagatukoy ng entity</translation>
 <translation id="6337534724793800597">I-filter ang mga patakaran ayon sa pangalan</translation>
 <translation id="4372948949327679948">Inaasahang <ph name="VALUE_TYPE"/> na halaga.</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Hindi</translation>
 <translation id="2704283930420550640">Hindi tumutugma ang format sa halaga.</translation>
 <translation id="1055184225775184556">&amp;I-undo ang Pagdagdag</translation>
+<translation id="7813600968533626083">Alisin ang suhestyon sa Chrome?</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="8091372947890762290">Nakabinbin sa server ang pag-activate</translation>
 <translation id="6874604403660855544">&amp;Gawing muli ang pagdagdag</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Gamitin ang password para sa:</translation>
 <translation id="2855922900409897335">I-verify ang iyong <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Naisalin ang pahinang ito mula sa<ph name="ORIGINAL_LANGUAGE"/>sa<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Alisin ang address sa Chrome?</translation>
 <translation id="7139724024395191329">Emirate</translation>
 <translation id="6646897916597483132">Ilagay ang CVC na may 4 na digit mula sa harap ng iyong card</translation>
 <translation id="5145883236150621069">May code ng error sa tugon sa patakaran</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="3427342743765426898">&amp;Gawing Muli ang Pag-e-edit</translation>
 <translation id="3010559122411665027">Listahan ng entry na &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Alisin ang credit card sa Chrome?</translation>
 <translation id="6445051938772793705">Bansa</translation>
 <translation id="5031870354684148875">Tungkol sa Google Translate</translation>
 <translation id="1152921474424827756">Mag-access ng <ph name="BEGIN_LINK"/>naka-cache na kopya<ph name="END_LINK"/> ng <ph name="URL"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">Mga Bookmark ng <ph name="DOMAIN"/></translation>
 <translation id="4300246636397505754">Mga suhestyon ng magulang</translation>
 <translation id="111844081046043029">Sigurado ka ba na nais mong iwanan ang pahinang ito?</translation>
+<translation id="2495083838625180221">Pang-parse ng JSON</translation>
 <translation id="1973335181906896915">Error sa serialization</translation>
 <translation id="5989320800837274978">Hindi tunukoy ang alinman sa mga hindi nababagong proxy server o isang .pac script URL.</translation>
 <translation id="7805768142964895445">Katayuan</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">I-clear ang form</translation>
 <translation id="6550675742724504774">Mga Pagpipilian</translation>
 <translation id="8804164990146287819">Patakaran sa Privacy</translation>
-<translation id="5337776961545044340">Hindi sinusuportahan ng Google Wallet ang ganitong uri ng card para sa merchant na ito. Mangyaring pumili ng ibang card.</translation>
 <translation id="7334320624316649418">&amp;Gawing muli ang pagbabago sa ayos</translation>
 <translation id="7182878459783632708">Walang nakatakdang mga patakaran</translation>
 <translation id="5019198164206649151">Hindi maganda ang katayuan ng backing store</translation>

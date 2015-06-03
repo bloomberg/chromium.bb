@@ -18,6 +18,7 @@
 <translation id="1225016890511909183">Chrome lagrer informasjonen din sikkert, slik at du slipper å skrive den inn på nytt. Du må imidlertid bekrefte kortets sikkerhetskode ved fremtidig bruk.</translation>
 <translation id="2770231113462710648">Endre standardnettleser til:</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
+<translation id="8889942196804715220">Start på nytt i Chrome i maksimert modus</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="1065672644894730302">Kan ikke lese innstillingene. Enkelte funksjoner kan være utilgjengelige, og endringer av innstillingene blir ikke lagret.</translation>
 <translation id="7781002470561365167">En ny versjon av Google Chrome er tilgjengelig.</translation>
@@ -43,6 +44,7 @@
 <translation id="8556340503434111824">En ny versjon av Google Chrome er tilgjengelig, og den er nå raskere en noen sinne.</translation>
 <translation id="8987477933582888019">Nettleser</translation>
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
+<translation id="8437332772351535342">Starter du på nytt i skrivebordsmodus, lukkes og startes Chrome-appene dine på nytt.</translation>
 <translation id="4728575227883772061">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Google Chrome hvis det kjører, og prøv på nytt.</translation>
 <translation id="3080151273017101988">Fortsett kjøringen av bakgrunnsprogrammer når Google Chrome er lukket</translation>
 <translation id="4149882025268051530">Installasjonsprogrammet fikk ikke dekomprimert arkivet. Last ned Google Chrome på nytt.</translation>
@@ -85,6 +87,7 @@
 <translation id="7473136999113284234">Chrome oppdateres automatisk, sånn at du alltid har den nyeste versjonen.</translation>
 <translation id="7084448929020576097">Filen <ph name="FILE_NAME"/> er skadelig, og Chrome har blokkert den.</translation>
 <translation id="6368958679917195344">Chrome OS muliggjøres av <ph name="BEGIN_LINK_CROS_OSS"/>tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS"/>.</translation>
+<translation id="5799551393681493217">Aktiverer iframe-baserte påloggingsprosesser i Chrome. Dette flagget overrstyrer --enable-web-based-signin.</translation>
 <translation id="7459554271817304652">Konfigurer Synkronisering til å lagre de personlig tilpassede nettleserfunksjonene dine på nettet slik at du kan bruke dem fra Google Chrome på enhver datamaskin.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="8823341990149967727">Chrome er utdatert</translation>
@@ -97,11 +100,13 @@
 <translation id="3656661827369545115">Start Chromium automatisk når datamaskinen din starter</translation>
 <translation id="1763864636252898013">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN"/>. Sikkerhetssertifikatet til tjeneren er ikke klarert av enhetens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="556024056938947818">Google Chrome prøver å vise passord.</translation>
+<translation id="3012890944909934180">Start Chrome på nytt via skrivebordet</translation>
 <translation id="2580411288591421699">Google Chrome-versjonen du prøver å installere, kjører allerede. Lukk Google Chrome og forsøk å installere på nytt.</translation>
 <translation id="8460191995881063249">Chrome varselssenter</translation>
 <translation id="1457721931618994305">Oppdaterer Google Chrome …</translation>
 <translation id="2429317896000329049">Google Chrome kunne ikke synkronisere dataene dine fordi synkronisering ikke er tilgjengelig for domenet ditt.</translation>
 <translation id="7747138024166251722">Installasjonsprogrammet kunne ikke opprette en midlertidig katalog. Kontroller at du har nok ledig diskplass og tillatelse til å installere programvare.</translation>
+<translation id="8005540215158006229">Chrome er nesten klar.</translation>
 <translation id="5170938038195470297">Profilen din kan ikke brukes fordi den er fra en nyere versjon av Google Chrome. Enkelte funksjoner kan være utilgjengelige. Angi en annen profilkatalog, eller bruk en nyere versjon av Chrome.</translation>
 <translation id="7282192067747128786">Chrome – varsler (<ph name="QUANTITY"/> uleste)</translation>
 <translation id="1475773083554142432">Chrome lagrer dette med <ph name="SAVED_PASSWORD_LINK"/> og husker det neste gang du trenger det.</translation>
@@ -149,6 +154,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="8008534537613507642">Installer Chrome på nytt</translation>
 <translation id="2689103672227170538">Denne utvidelsen har endret hvilken side som vises når du starter Chrome.</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettighetene for å installere på systemnivå. Prøv å kjøre installasjonsprogrammet som administrator.</translation>
+<translation id="5785746630574083988">Omstart i Windows 8-modus lukker og starte Chrome-appene dine på nytt.</translation>
 <translation id="2874156562296220396">Google Chrome er tilgjengelig som følge av prosjektet for åpen kilde, <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>, og annen <ph name="BEGIN_LINK_OSS"/>programvare for åpen kilde<ph name="END_LINK_OSS"/>.</translation>
 <translation id="7191567847629796517">Google Chrome OS støtter ikke oppstart av eksterne apper for behandling av <ph name="SCHEME"/>-linker. Den forespurte linken er <ph name="PROTOLINK"/>.</translation>
 <translation id="3847841918622877581">Det kan hende at Google Chrome bruker nettbaserte tjenester for å forbedre din surfeopplevelse.</translation>
@@ -162,6 +168,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="415994390253732730">Oppfører Chrome seg merkelig?</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
+<translation id="7626032353295482388">Velkommen til Chrome</translation>
 <translation id="5941830788786076944">Gjør Google Chrome til standardleser</translation>
 <translation id="1759301979429102118">Informasjon fra kontaktene dine kan hjelpe deg med å fylle ut skjemaer raskere i Chrome.</translation>
 <translation id="7787950393032327779">Profilen ser ut til å være i bruk av en annen Google Chrome-prosess (<ph name="PROCESS_ID"/>) på en annen datamaskin (<ph name="HOST_NAME"/>). Chrome har låst profilen slik at den ikke blir infisert. Hvis du er sikker på at ingen andre prosesser bruker profilen, kan du låse opp profilen og starte Chrome på nytt.</translation>
@@ -178,11 +185,13 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{En nedlasting pågår for øyeblikket. Vil du avbryte nedlastingen og avslutte Google Chrome?}other{# nedlastinger pågår for øyeblikket. Vil du avbryte nedlastingene og avslutte Google Chrome?}}</translation>
 <translation id="6235018212288296708">Regel om innkommende trafikk for Google Chrome for å tillate mDNS-trafikk.</translation>
 <translation id="7984945080620862648">Du kan ikke gå til <ph name="SITE"/> akkurat nå fordi nettstedet sendte kryptert legitimasjon som Chrome ikke kan behandle. Nettverksfeil og -angrep er som regel kortvarige, så denne siden fungerer nok igjen senere.</translation>
+<translation id="4011219958405096740">Når dette er slått på, brukes en iframe-basert påloggingsprosess i Chrome – i motsatt fall brukes en nettvisningsbasert prosess.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="61852838583753520">Oppdater &amp;Chrome OS</translation>
 <translation id="5028489144783860647">Google Chrome kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
 <translation id="9026991721384951619">Chrome OS kunne ikke synkronisere dataene fordi påloggingsopplysningene dine er foreldede.</translation>
 <translation id="8547799825197623713">Chrome-appvelger – Canary</translation>
+<translation id="2267273557509361161">Start Chrome på nytt i Windows 8-modus</translation>
 <translation id="2871893339301912279">Du er nå logget på Chrome.</translation>
 <translation id="7890208801193284374">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chrome akkurat slik de vil.</translation>
 <translation id="7161904924553537242">Velkommen til Google Chrome</translation>
@@ -206,6 +215,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="629218512217695915">Bruk passordet som genereres av Chrome</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-Inn)</translation>
 <translation id="6113794647360055231">Nå er Chrome blitt enda bedre</translation>
+<translation id="2588322182880276190">Chrome-logo</translation>
 <translation id="4367618624832907428">Google Chrome kan ikke vise nettsiden fordi datamaskinen din ikke har noen Internett-tilkobling.</translation>
 <translation id="174539241580958092">Google Chrome kunne ikke synkronisere dataene dine på grunn av en påloggingsfeil.</translation>
 <translation id="8255190535488645436">Google Chrome bruker kameraet og mikrofonen din.</translation>
@@ -249,6 +259,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="2246246234298806438">Google Chrome kan ikke vise forhåndsvisningen av utskrift når det innebygde PDF-visningsprogrammet mangler.</translation>
 <translation id="5132929315877954718">Oppdag flotte apper, spill, utvidelser og temaer for Google Chrome.</translation>
 <translation id="6626317981028933585">Mozilla Firefox-innstillingene er dessverre ikke tilgjengelige når nettleseren kjører. Hvis du vil importere disse innstillingene til Google Chrome, kan du lagre arbeidet ditt og lukke alle Firefox-vinduer. Deretter klikker du Fortsett.</translation>
+<translation id="8274359292107649245">Åpne Chrome fra skrivebordet</translation>
 <translation id="7242029209006116544">Du er i ferd med å logge deg på med en administrert konto og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine, som apper, bokmerker, loggen, passord og andre innstillinger, blir permanent knyttet til <ph name="USER_NAME"/>. Du kan slette disse dataene via kontooversikten for Google, men du kan ikke knytte disse dataene til en annen konto. Du kan velge om du vil opprette en ny profil for å holde de eksisterende Chrome-dataene dine atskilte. <ph name="LEARN_MORE"/></translation>
 <translation id="5386244825306882791">Den styrer også hvilken side som vises når du starter Chrome eller søker fra multifunksjonsfeltet.</translation>
 <translation id="1553358976309200471">Oppdater Chrome</translation>
@@ -260,6 +271,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="5531349711857992002">Sertifikatkjeden for dette nettstedet inneholder minst ett sertifikat som ble signert med en avviklet signaturalgoritme som er basert på SHA-1.</translation>
 <translation id="6049075767726609708">En administrator har installert Google Chrome på dette systemet, og det er tilgjengelig for alle brukere. Systemnivåinstallasjonen av Google Chrome vil erstatte brukernivåinstallasjonen nå.</translation>
 <translation id="1818142563254268765">Chrome kan ikke oppdatere seg selv til den nyeste versjonen, så du går glipp av fantastiske nye funksjoner og sikkerhetsforbedringer. Du må oppdatere Chrome.</translation>
+<translation id="781069973841903133">Hvis du starter på nytt i maksimert modus i Chrome, blir Chrome-appene dine lukket og startet på nytt.</translation>
 <translation id="7408085963519505752">Vilkår for Chrome OS</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1016765312371154165">Chrome ble ikke avsluttet på riktig måte.</translation>

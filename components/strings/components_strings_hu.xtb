@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Folytathatja a böngészést. Ha továbblép az oldalra, akkor ez a figyelmeztetés a következő öt percben nem fog újra megjelenni.</translation>
 <translation id="7485870689360869515">Nem található adat.</translation>
 <translation id="3884278016824448484">Eszközazonosító-ütközés</translation>
-<translation id="6779575937362063477">A Google Wallet nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon egy másikat.</translation>
 <translation id="5172758083709347301">Számítógép</translation>
 <translation id="7180611975245234373">Frissítés</translation>
 <translation id="8208216423136871611">Ne mentse</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Nem</translation>
 <translation id="2704283930420550640">Az érték nem egyezik a formátummal.</translation>
 <translation id="1055184225775184556">&amp;Hozzáadás visszavonása</translation>
+<translation id="7813600968533626083">Eltávolítja a javaslatot a Chrome-ból?</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="8091372947890762290">Az aktiválás függőben van a szerveren</translation>
 <translation id="6874604403660855544">&amp;Hozzáadás újra</translation>
@@ -115,7 +115,8 @@
 <translation id="8218327578424803826">Hozzárendelt helyszín:</translation>
 <translation id="3542684924769048008">Jelszó használata a következőre:</translation>
 <translation id="2855922900409897335">A(z) <ph name="CREDIT_CARD"/> kártya igazolása</translation>
-<translation id="7186367841673660872">Ezt az oldalt<ph name="ORIGINAL_LANGUAGE"/>nyelvről<ph name="LANGUAGE_LANGUAGE"/>nyelvre fordítottuk</translation>
+<translation id="7186367841673660872">Ezt az oldalt<ph name="ORIGINAL_LANGUAGE"/>nyelvről fordítottuk<ph name="LANGUAGE_LANGUAGE"/>nyelvre.</translation>
+<translation id="4587425331216688090">Eltávolítja a címet a Chrome-ból?</translation>
 <translation id="7139724024395191329">Emírség</translation>
 <translation id="6646897916597483132">Adja meg a kártya elején szereplő négyjegyű CVC-kódot</translation>
 <translation id="5145883236150621069">Az irányelv válasza hibakódot tartalmaz</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Kerület</translation>
 <translation id="3427342743765426898">&amp;Szerkesztés újra</translation>
 <translation id="3010559122411665027">&quot;<ph name="ENTRY_INDEX"/>.&quot; listabejegyzés: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Eltávolítja a hitelkártyát a Chrome-ból?</translation>
 <translation id="6445051938772793705">Ország</translation>
 <translation id="5031870354684148875">A Google Fordító leírása</translation>
 <translation id="1152921474424827756">A(z) <ph name="URL"/> egy <ph name="BEGIN_LINK"/>tárolt változatának<ph name="END_LINK"/> megtekintése</translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">A(z) <ph name="DOMAIN"/> könyvjelzői</translation>
 <translation id="4300246636397505754">Szülői javaslatok</translation>
 <translation id="111844081046043029">Biztos, hogy el szeretné hagyni ezt az oldalt?</translation>
+<translation id="2495083838625180221">JSON Parser</translation>
 <translation id="1973335181906896915">Szerializálási hiba</translation>
 <translation id="5989320800837274978">Sem fix proxyszerver, sem pedig .pac típusú szkript URL-címe nincs megadva.</translation>
 <translation id="7805768142964895445">Állapot</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Űrlap törlése</translation>
 <translation id="6550675742724504774">Beállítások</translation>
 <translation id="8804164990146287819">Adatvédelmi irányelvek</translation>
-<translation id="5337776961545044340">A Google Wallet ennél a kereskedőnél nem támogatja ezt a kártyatípust. Kérjük, válasszon másik kártyát.</translation>
 <translation id="7334320624316649418">&amp;Átrendezés újra</translation>
 <translation id="7182878459783632708">Nincsenek beállított házirendek</translation>
 <translation id="5019198164206649151">A háttértároló állapota nem megfelelő</translation>

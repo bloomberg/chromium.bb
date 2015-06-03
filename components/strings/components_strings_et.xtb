@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Võite jätkata. Kui liigute edasi lehele, ei ilmu see hoiatus järgmise viie minuti jooksul uuesti.</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
 <translation id="3884278016824448484">Seadme identifikaator on konfliktne</translation>
-<translation id="6779575937362063477">Google Wallet ei toeta seda kaarditüüpi. Valige teistsugune kaart.</translation>
 <translation id="5172758083709347301">Masin</translation>
 <translation id="7180611975245234373">Värskenda</translation>
 <translation id="8208216423136871611">Ära salvesta</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Ei</translation>
 <translation id="2704283930420550640">Väärtus ei vasta vormingule.</translation>
 <translation id="1055184225775184556">&amp;Võta lisamine tagasi</translation>
+<translation id="7813600968533626083">Kas eemaldada Chrome'ist vormi soovitus?</translation>
 <translation id="4850886885716139402">Kuva</translation>
 <translation id="8091372947890762290">Aktiveerimine on serveris ootel</translation>
 <translation id="6874604403660855544">&amp;Lisa uuesti</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Kasuta parooli:</translation>
 <translation id="2855922900409897335">Kaardi <ph name="CREDIT_CARD"/> kinnitamine</translation>
 <translation id="7186367841673660872">See leht on tõlgitud keelest<ph name="ORIGINAL_LANGUAGE"/>keelde<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Kas eemaldada Chrome'ist aadress?</translation>
 <translation id="7139724024395191329">Emiraat</translation>
 <translation id="6646897916597483132">Sisestage 4-kohaline CVC kaardi tagaküljelt</translation>
 <translation id="5145883236150621069">Reegli vastuses sisaldus veakood</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Ringkond</translation>
 <translation id="3427342743765426898">&amp;Muuda uuesti</translation>
 <translation id="3010559122411665027">Loendi kirje „<ph name="ENTRY_INDEX"/>”: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Kas eemaldada Chrome'ist krediitkaart?</translation>
 <translation id="6445051938772793705">Riik</translation>
 <translation id="5031870354684148875">Teave Google'i tõlke kohta</translation>
 <translation id="1152921474424827756">Hankige juurdepääs aadressi <ph name="URL"/> <ph name="BEGIN_LINK"/>vahemällu salvestatud koopiale<ph name="END_LINK"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">Domeeni <ph name="DOMAIN"/> järjehoidjad</translation>
 <translation id="4300246636397505754">Vanema soovitused</translation>
 <translation id="111844081046043029">Olete kindel, et soovite sellele lehelt lahkuda?</translation>
+<translation id="2495083838625180221">JSON-i parser</translation>
 <translation id="1973335181906896915">Viga jadaks teisendamisel</translation>
 <translation id="5989320800837274978">Määratud ei ole fikseeritud puhverservereid ega pac-skriptiga URL-i.</translation>
 <translation id="7805768142964895445">Olek</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Tühjenda vorm</translation>
 <translation id="6550675742724504774">Valikud</translation>
 <translation id="8804164990146287819">Privaatsuseeskirjad</translation>
-<translation id="5337776961545044340">Google Wallet ei toeta selle kaupmehe puhul seda tüüpi kaarti. Valige teine kaart.</translation>
 <translation id="7334320624316649418">&amp;Korrasta uuesti</translation>
 <translation id="7182878459783632708">Reegleid pole määratud</translation>
 <translation id="5019198164206649151">Varusalves esineb probleeme</translation>

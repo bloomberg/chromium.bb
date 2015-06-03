@@ -333,7 +333,7 @@
       Sa lahat ng platform maliban sa <ph name="PRODUCT_OS_NAME"/>, hindi available ang kiosk mode kapag naka-disable ang fullscreen mode.</translation>
 <translation id="8828766846428537606">I-configure ang default na home page sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user sa pagbabago nito. Ang mga setting ng home page ng user ay lubos na naka-lock down lamang, kung pinili mo ang home page upang maging ang pahina ng bagong tab, o itakda ito upang maging URL at tumukoy ng URL ng home page. Kung hindi mo tutukuyin ang URL ng home page, maitatakda pa rin ung ser ang home page sa pahina ng bagong tab sa pamamagitan ng pagtukoy sa 'chrome://newtab'.</translation>
 <translation id="2231817271680715693">I-import ang kasaysayan ng pagba-browse mula sa default na browser sa unang pagtakbo</translation>
-<translation id="1353966721814789986">Mga pahina ng startup</translation>
+<translation id="1353966721814789986">Mga page sa startup</translation>
 <translation id="7173856672248996428">Ephemeral na profile</translation>
 <translation id="1841130111523795147">Nagbibigay-daan sa user na mag-sign in sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user na baguhin ang setting na ito.
 
@@ -1291,7 +1291,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="603410445099326293">Mga parameter para sa URL ng mungkahi na ginagamit ang POST</translation>
 <translation id="2592091433672667839">Tagal ng kawalan ng aktibidad bago ipakita ang screen saver sa screen sa pag-sign-in sa mode ng retail</translation>
 <translation id="166427968280387991">Proxy server</translation>
-<translation id="2805707493867224476">Payagang magpakita ng mga pop-up ang lahat ng mga site</translation>
+<translation id="2805707493867224476">Payagang magpakita ng mga pop-up ang lahat ng site</translation>
 <translation id="1727394138581151779">I-block ang lahat ng plugin</translation>
 <translation id="8118665053362250806">Italkda ang laki ng cache ng media disk</translation>
 <translation id="6565312346072273043">Itakda ang default na estado ng feature na pagiging naa-access ng on-screen na keyboard sa screen sa pag-log in.

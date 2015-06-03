@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Statusleiste</translation>
 <translation id="2248649616066688669">Wenn Ihr Chromebook mit einem externen Bildschirm verbunden ist, können Sie es weiterhin verwenden – sogar, wenn es zugeklappt ist.</translation>
 <translation id="2946640296642327832">Bluetooth aktivieren</translation>
+<translation id="478959186716341421">Wird gestreamt</translation>
 <translation id="5537725057119320332">Übertragen</translation>
 <translation id="6459472438155181876">Bildschirm wird auf <ph name="DISPLAY_NAME"/> erweitert...</translation>
 <translation id="8206859287963243715">Mobil</translation>
@@ -101,6 +102,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
 <translation id="3963445509666917109">Lautsprecher (intern)</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
+<translation id="2208323208084708176">Unified Desktop-Modus</translation>
 <translation id="2825619548187458965">Ablage</translation>
 <translation id="2614835198358683673">Ihr Chromebook kann möglicherweise nicht geladen werden, während es eingeschaltet ist. Wir empfehlen die Verwendung des Originalladegeräts.</translation>
 <translation id="4430019312045809116">Lautstärke</translation>
@@ -117,6 +119,7 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="8528322925433439945">Mobil...</translation>
 <translation id="3157169093162779309">Rotationssperre aktivieren</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
+<translation id="6592705765268910579">Unbekannter Receiver</translation>
 <translation id="2372145515558759244">Apps werden synchronisiert...</translation>
 <translation id="1987317783729300807">Konten</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> bis voll aufgeladen</translation>

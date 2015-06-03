@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Anda dapat melanjutkannya. Jika Anda melanjutkan ke laman tersebut, peringatan ini tidak akan muncul lagi selama lima menit.</translation>
 <translation id="7485870689360869515">Tidak ada data yang ditemukan.</translation>
 <translation id="3884278016824448484">Pengenal perangkat bertentangan</translation>
-<translation id="6779575937362063477">Kartu kredit jenis ini tidak didukung oleh Google Wallet. Mohon pilih kartu kredit yang lain.</translation>
 <translation id="5172758083709347301">Mesin</translation>
 <translation id="7180611975245234373">Segarkan</translation>
 <translation id="8208216423136871611">Jangan simpan</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Nggak</translation>
 <translation id="2704283930420550640">Nilai tidak sesuai format.</translation>
 <translation id="1055184225775184556">&amp;Urungkan Penambahan</translation>
+<translation id="7813600968533626083">Hapus sebagai saran dari Chrome?</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="8091372947890762290">Aktivasi ditunda di server</translation>
 <translation id="6874604403660855544">&amp;Ulangi penambahan</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Gunakan sandi untuk:</translation>
 <translation id="2855922900409897335">Verifikasi <ph name="CREDIT_CARD"/> Anda</translation>
 <translation id="7186367841673660872">Laman ini telah diterjemahkan dari<ph name="ORIGINAL_LANGUAGE"/>ke<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Hapus alamat dari Chrome?</translation>
 <translation id="7139724024395191329">Emirate</translation>
 <translation id="6646897916597483132">Masukkan 4 digit CVC di depan kartu Anda</translation>
 <translation id="5145883236150621069">Ada kode kesalahan dalam tanggapan kebijakan</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Distrik</translation>
 <translation id="3427342743765426898">&amp;Ulangi Pengeditan</translation>
 <translation id="3010559122411665027">Entri daftar &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Hapus kartu kredit dari Chrome?</translation>
 <translation id="6445051938772793705">Negara</translation>
 <translation id="5031870354684148875">Tentang Google Terjemahan</translation>
 <translation id="1152921474424827756">Akses <ph name="BEGIN_LINK"/>salinan yang disimpan dalam cache<ph name="END_LINK"/> dari <ph name="URL"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">Bookmark <ph name="DOMAIN"/></translation>
 <translation id="4300246636397505754">Saran induk</translation>
 <translation id="111844081046043029">Yakin ingin meninggalkan laman ini?</translation>
+<translation id="2495083838625180221">Pengurai JSON</translation>
 <translation id="1973335181906896915">Kesalahan serialisasi</translation>
 <translation id="5989320800837274978">Baik proxy server tetap ataupun URL skrip .pac tidak ditentukan.</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Hapus formulir</translation>
 <translation id="6550675742724504774">Opsi</translation>
 <translation id="8804164990146287819">Kebijakan Privasi</translation>
-<translation id="5337776961545044340">Kartu kredit jenis ini tidak didukung oleh Google Wallet untuk pedagang ini. Mohon pilih kartu kredit yang berbeda.</translation>
 <translation id="7334320624316649418">&amp;Ulangi pengaturan ulang</translation>
 <translation id="7182878459783632708">Tidak ada kebijakan yang disetel</translation>
 <translation id="5019198164206649151">Penyimpanan cadangan dalam kondisi buruk</translation>

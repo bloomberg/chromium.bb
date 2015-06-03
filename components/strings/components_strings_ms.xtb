@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Anda boleh teruskan. Jika anda terus ke halaman, amaran ini tidak akan muncul lagi selama lima minit.</translation>
 <translation id="7485870689360869515">Tiada data dijumpai.</translation>
 <translation id="3884278016824448484">Pengecam peranti bercanggah</translation>
-<translation id="6779575937362063477">Kad jenis ini tidak disokong oleh Google Wallet. Sila pilih kad yang lain.</translation>
 <translation id="5172758083709347301">Mesin</translation>
 <translation id="7180611975245234373">Muat semula</translation>
 <translation id="8208216423136871611">Jangan simpan</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Tidak</translation>
 <translation id="2704283930420550640">Nilai tidak sepadan dengan format.</translation>
 <translation id="1055184225775184556">&amp;Buat Asal Tambahkan</translation>
+<translation id="7813600968533626083">Alih keluar cadangan borang daripada Chrome?</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="8091372947890762290">Pengaktifan belum selesai pada pelayan</translation>
 <translation id="6874604403660855544">&amp;Buat semula tambahkan</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Gunakan kata laluan untuk:</translation>
 <translation id="2855922900409897335">Mengesahkan <ph name="CREDIT_CARD"/> anda</translation>
 <translation id="7186367841673660872">Halaman ini telah diterjemahkan dari<ph name="ORIGINAL_LANGUAGE"/>ke<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Alih keluar alamat daripada Chrome?</translation>
 <translation id="7139724024395191329">Emiriah</translation>
 <translation id="6646897916597483132">Masukkan CVC 4 digit dari bahagian depan kad anda</translation>
 <translation id="5145883236150621069">Terdapat kod ralat dalam balasan dasar</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Daerah</translation>
 <translation id="3427342743765426898">&amp;Buat Semula Edit</translation>
 <translation id="3010559122411665027">Masukan senarai &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Alih keluar kad kredit daripada Chrome?</translation>
 <translation id="6445051938772793705">Negara</translation>
 <translation id="5031870354684148875">Mengenai Terjemahan Google</translation>
 <translation id="1152921474424827756">Akses <ph name="BEGIN_LINK"/>salinan cache<ph name="END_LINK"/> <ph name="URL"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436"><ph name="DOMAIN"/> Penanda halaman</translation>
 <translation id="4300246636397505754">Cadangan ibu bapa</translation>
 <translation id="111844081046043029">Adakah anda pasti anda mahu meninggalkan halaman ini?</translation>
+<translation id="2495083838625180221">Penghurai JSON</translation>
 <translation id="1973335181906896915">Ralat penyirian</translation>
 <translation id="5989320800837274978">Pelayan proksi tetap begitu juga URL skrip .pac, kedua-duanya tidak ditetapkan.</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Kosongkan borang</translation>
 <translation id="6550675742724504774">Pilihan</translation>
 <translation id="8804164990146287819">Dasar Privasi</translation>
-<translation id="5337776961545044340">Kad jenis ini tidak disokong oleh Google Wallet untuk pedagang ini. Sila pilih kad lain.</translation>
 <translation id="7334320624316649418">&amp;Buat semula susun semula</translation>
 <translation id="7182878459783632708">Tiada dasar ditetapkan</translation>
 <translation id="5019198164206649151">Simpanan penyandaran dalam keadaan buruk</translation>

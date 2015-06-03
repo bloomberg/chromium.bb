@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Puoi continuare. Se rimani nella pagina, questo avviso non verrà più visualizzato per cinque minuti.</translation>
 <translation id="7485870689360869515">Nessun dato trovato.</translation>
 <translation id="3884278016824448484">Identificativo del dispositivo in conflitto</translation>
-<translation id="6779575937362063477">Questo tipo di carta non è supportato da Google Wallet. Seleziona un'altra carta.</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="7180611975245234373">Aggiorna</translation>
 <translation id="8208216423136871611">Non salvare</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">No</translation>
 <translation id="2704283930420550640">Il valore non corrisponde al formato.</translation>
 <translation id="1055184225775184556">&amp;Annulla aggiunta</translation>
+<translation id="7813600968533626083">Rimuovere il suggerimento per i moduli da Chrome?</translation>
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="8091372947890762290">Attivazione in attesa sul server</translation>
 <translation id="6874604403660855544">&amp;Ripeti aggiunta</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Utilizza password per:</translation>
 <translation id="2855922900409897335">Verifica la carta <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Questa pagina è stata tradotta da<ph name="ORIGINAL_LANGUAGE"/>a<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Rimuovere l'indirizzo da Chrome?</translation>
 <translation id="7139724024395191329">Emirato</translation>
 <translation id="6646897916597483132">Inserisci il codice CVC di quattro cifre indicato sulla parte anteriore della carta</translation>
 <translation id="5145883236150621069">Codice di errore presente nella risposta del criterio</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Distretto</translation>
 <translation id="3427342743765426898">&amp;Ripeti modifica</translation>
 <translation id="3010559122411665027">Voce &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Rimuovere la carta di credito da Chrome?</translation>
 <translation id="6445051938772793705">Paese</translation>
 <translation id="5031870354684148875">Informazioni su Google Traduttore</translation>
 <translation id="1152921474424827756">Accedi a una <ph name="BEGIN_LINK"/>copia memorizzata nella cache<ph name="END_LINK"/> di <ph name="URL"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">Segnalibri di <ph name="DOMAIN"/></translation>
 <translation id="4300246636397505754">Suggerimenti per i genitori</translation>
 <translation id="111844081046043029">Vuoi uscire dalla pagina?</translation>
+<translation id="2495083838625180221">JSON Parser</translation>
 <translation id="1973335181906896915">Errore di serializzazione</translation>
 <translation id="5989320800837274978">Non sono stati specificati né server proxy fissi né un URL script .pac.</translation>
 <translation id="7805768142964895445">Stato</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Cancella modulo</translation>
 <translation id="6550675742724504774">Opzioni</translation>
 <translation id="8804164990146287819">Norme sulla privacy</translation>
-<translation id="5337776961545044340">Questo tipo di carta non è supportato da Google Wallet per questo commerciante. Seleziona un'altra carta.</translation>
 <translation id="7334320624316649418">&amp;Ripeti ridisposizione</translation>
 <translation id="7182878459783632708">Nessuna norma impostata</translation>
 <translation id="5019198164206649151">Archivio di backup in stato non valido</translation>

@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Du kan fortsette. Hvis du fortsetter til siden, vises ikke denne advarselen igjen før det har gått fem minutter.</translation>
 <translation id="7485870689360869515">Ingen data ble funnet.</translation>
 <translation id="3884278016824448484">Motstridende enhetsidentifikator</translation>
-<translation id="6779575937362063477">Denne typen kort støttes ikke av Google Wallet. Velg et annet kort.</translation>
 <translation id="5172758083709347301">Datamaskin</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="8208216423136871611">Ikke lagre</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Nei takk</translation>
 <translation id="2704283930420550640">Verdien samsvarer ikke med formatet.</translation>
 <translation id="1055184225775184556">&amp;Angre tilleggingen</translation>
+<translation id="7813600968533626083">Vil du fjerne skjemaforslaget fra Chrome?</translation>
 <translation id="4850886885716139402">Visning</translation>
 <translation id="8091372947890762290">Aktivering venter på tjeneren</translation>
 <translation id="6874604403660855544">&amp;Legg til likevel</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Bruk passord for:</translation>
 <translation id="2855922900409897335">Bekreft følgende kort: <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Denne siden har blitt oversatt fra<ph name="ORIGINAL_LANGUAGE"/>til<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="6646897916597483132">Skriv inn den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>
 <translation id="5145883236150621069">Feilkode i responsen for enhetsinnstillinger</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Område</translation>
 <translation id="3427342743765426898">&amp;Endre likevel</translation>
 <translation id="3010559122411665027">Listeoppføring «<ph name="ENTRY_INDEX"/>»: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Vil du fjerne kredittkortet fra Chrome?</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="5031870354684148875">Om Google Oversett</translation>
 <translation id="1152921474424827756">Åpne en <ph name="BEGIN_LINK"/>bufret kopi<ph name="END_LINK"/> av <ph name="URL"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436"><ph name="DOMAIN"/>-bokmerker</translation>
 <translation id="4300246636397505754">Overordnede forslag</translation>
 <translation id="111844081046043029">Er du sikker på at du vil forlate denne siden?</translation>
+<translation id="2495083838625180221">JSON Parser</translation>
 <translation id="1973335181906896915">Serialiseringsfeil</translation>
 <translation id="5989320800837274978">Verken statiske proxytjenere eller en nettadresse med .pac-skript er angitt.</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Slett skjemaet</translation>
 <translation id="6550675742724504774">Alternativer</translation>
 <translation id="8804164990146287819">Personvernregler</translation>
-<translation id="5337776961545044340">Google Wallet støtter ikke denne korttypen for denne selgeren. Du må velge et annet kort.</translation>
 <translation id="7334320624316649418">&amp;Omorganiser likevel</translation>
 <translation id="7182878459783632708">Ingen innstillinger er angitt</translation>
 <translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>

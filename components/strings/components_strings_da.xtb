@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Du kan nu fortsætte. Denne advarsel vises ikke igen i de næste fem minutter, hvis du fortsætter til siden.</translation>
 <translation id="7485870689360869515">Der blev ikke fundet nogen data.</translation>
 <translation id="3884278016824448484">Modstridende enheds-id</translation>
-<translation id="6779575937362063477">Denne korttype understøttes ikke af Google Wallet. Vælg et andet kort.</translation>
 <translation id="5172758083709347301">Maskine</translation>
 <translation id="7180611975245234373">Opdater</translation>
 <translation id="8208216423136871611">Gem ikke</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Nej</translation>
 <translation id="2704283930420550640">Værdien stemmer ikke overens med formatet.</translation>
 <translation id="1055184225775184556">&amp;Fortryd tilføjelse</translation>
+<translation id="7813600968533626083">Vil du fjerne formularforslaget fra Chrome?</translation>
 <translation id="4850886885716139402">Vis</translation>
 <translation id="8091372947890762290">Aktivering afventer serveren</translation>
 <translation id="6874604403660855544">&amp;Annuller fortryd tilføjelse</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Brug adgangskode til:</translation>
 <translation id="2855922900409897335">Bekræft dit <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Denne side er oversat fra<ph name="ORIGINAL_LANGUAGE"/>til<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="6646897916597483132">Indtast den firecifrede kontrolkode, som ses på forsiden af dit kort</translation>
 <translation id="5145883236150621069">Fejlkode til stede i politiksvar</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Distrikt</translation>
 <translation id="3427342743765426898">&amp;Annuller fortryd redigering</translation>
 <translation id="3010559122411665027">Angiv posten &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Vil du fjerne kreditkortet fra Chrome?</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="5031870354684148875">Om Google Oversæt</translation>
 <translation id="1152921474424827756">Få adgang til en <ph name="BEGIN_LINK"/>cachelagret kopi<ph name="END_LINK"/> af <ph name="URL"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">Bogmærker fra <ph name="DOMAIN"/></translation>
 <translation id="4300246636397505754">Forslag fra forældre</translation>
 <translation id="111844081046043029">Er du sikker på, at du vil forlade denne side?</translation>
+<translation id="2495083838625180221">Værktøj til parsing af JSON-filer</translation>
 <translation id="1973335181906896915">Serialiseringsfejl</translation>
 <translation id="5989320800837274978">Der er hverken angivet faste proxyservere eller en .pac-scriptwebadresse.</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Ryd formular</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="8804164990146287819">Privatlivspolitik</translation>
-<translation id="5337776961545044340">Denne korttype understøttes ikke af Google Wallet for denne sælger. Vælg et andet kort.</translation>
 <translation id="7334320624316649418">&amp;Annuller fortryd omarrangering</translation>
 <translation id="7182878459783632708">Ingen politikker er indstillet</translation>
 <translation id="5019198164206649151">Sikkerhedskopien er fejlbehæftet</translation>

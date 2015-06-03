@@ -27,7 +27,7 @@
 <translation id="6777217372746654521">Diese Adresszeile enthält offenbar ein Postfach. Geben Sie eine Straßen- oder Gebäudeadresse ein.</translation>
 <translation id="8471101563037901452">Die Postleitzahl stimmt offenbar nicht mit dem Rest der Adresse überein. Sie kennen Ihre Postleitzahl nicht? <ph name="BEGIN_LINK"/>Schlagen Sie sie hier nach<ph name="END_LINK"/>.</translation>
 <translation id="9207002871037636573">Sie müssen eine Postleitzahl angeben, wie beispielsweise <ph name="EXAMPLE"/>.</translation>
-<translation id="5089810972385038852">Bundesstaat</translation>
+<translation id="5089810972385038852">Bundesstaat/-land</translation>
 <translation id="6735419622867539268"><ph name="FIELD_VALUE"/> ist kein gültiger Wert für dieses Feld.</translation>
 <translation id="43113324827158664">Dieses Feld ist ein Pflichtfeld.</translation>
 <translation id="3050787670591910834">Sie müssen eine Postleitzahl angeben, wie beispielsweise <ph name="EXAMPLE"/>.</translation>

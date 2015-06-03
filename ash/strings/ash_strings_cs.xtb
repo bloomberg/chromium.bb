@@ -18,7 +18,7 @@
 <translation id="370649949373421643">Povolit Wi-Fi</translation>
 <translation id="3626281679859535460">Jas</translation>
 <translation id="3621202678540785336">Vstup</translation>
-<translation id="7348093485538360975">Klávesnice na obrazovce</translation>
+<translation id="7348093485538360975">Softwarová klávesnice</translation>
 <translation id="595202126637698455">Sledování výkonu aktivováno</translation>
 <translation id="8054466585765276473">Výpočet doby výdrže baterie.</translation>
 <translation id="7982789257301363584">Síť</translation>
@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">Stavový panel</translation>
 <translation id="2248649616066688669">Pokud je Chromebook připojen k externí obrazovce, můžete ho používat i po zavření víka.</translation>
 <translation id="2946640296642327832">Zapnout Bluetooth</translation>
+<translation id="478959186716341421">Odesílání</translation>
 <translation id="5537725057119320332">Odeslat</translation>
 <translation id="6459472438155181876">Rozšíření obrazovky na displej <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
@@ -116,6 +117,7 @@
 <translation id="8528322925433439945">Mobilní sítě...</translation>
 <translation id="3157169093162779309">Zapnout zámek otáčení</translation>
 <translation id="8428213095426709021">Nastavení</translation>
+<translation id="6592705765268910579">Neznámý příjemce</translation>
 <translation id="2372145515558759244">Synchronizace aplikací...</translation>
 <translation id="1987317783729300807">Účty</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> do úplného nabití</translation>
@@ -167,7 +169,7 @@
 <translation id="9201131092683066720">Baterie je nabita na <ph name="PERCENTAGE"/> %.</translation>
 <translation id="2983818520079887040">Nastavení...</translation>
 <translation id="6452181791372256707">Odmítnout</translation>
-<translation id="1330145147221172764">Povolit klávesnici na obrazovce</translation>
+<translation id="1330145147221172764">Povolit softwarovou klávesnici</translation>
 <translation id="1195412055398077112">přesah obrazu</translation>
 <translation id="607652042414456612">Váš počítač mohou objevit okolní zařízení Bluetooth, ve kterých se bude zobrazovat s názvem „<ph name="NAME"/>“ a adresou <ph name="ADDRESS"/>.</translation>
 <translation id="112308213915226829">Automaticky skrývat poličku</translation>
@@ -179,7 +181,7 @@
 <translation id="6248847161401822652">Práci ukončíte dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE"/> % a nabíjí se.</translation>
 <translation id="4895488851634969361">Baterie je plně nabita.</translation>
-<translation id="615957422585914272">Zobrazit klávesnici na obrazovce</translation>
+<translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
 <translation id="5947494881799873997">Vrátit zpět</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
 <translation id="7649070708921625228">Nápověda</translation>

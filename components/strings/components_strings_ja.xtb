@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">続行できますが、このページに移動するとこの警告は今後 5 分間表示されません。</translation>
 <translation id="7485870689360869515">データが見つかりません。</translation>
 <translation id="3884278016824448484">競合するデバイス識別子です</translation>
-<translation id="6779575937362063477">この種類のカードは Google ウォレットでご利用いただけません。別のカードを選択してください。</translation>
 <translation id="5172758083709347301">マシン</translation>
 <translation id="7180611975245234373">更新</translation>
 <translation id="8208216423136871611">保存しない</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">いいえ</translation>
 <translation id="2704283930420550640">値が有効な形式ではありません。</translation>
 <translation id="1055184225775184556">追加の取り消し（&amp;U）</translation>
+<translation id="7813600968533626083">Chrome から候補を削除してもよろしいですか？</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="8091372947890762290">サーバーで有効化が保留になっています</translation>
 <translation id="6874604403660855544">追加のやり直し（&amp;R）</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">次のパスワードを使用:</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD"/> の確認</translation>
 <translation id="7186367841673660872">このページは<ph name="ORIGINAL_LANGUAGE"/>から<ph name="LANGUAGE_LANGUAGE"/>に翻訳されました</translation>
+<translation id="4587425331216688090">Chrome からアドレスを削除してもよろしいですか？</translation>
 <translation id="7139724024395191329">管轄区域</translation>
 <translation id="6646897916597483132">カードの表側に記載されている 4 桁の CVC を入力します</translation>
 <translation id="5145883236150621069">ポリシー応答内にエラー コードがあります</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">地区</translation>
 <translation id="3427342743765426898">編集のやり直し（&amp;R）</translation>
 <translation id="3010559122411665027">リスト エントリ「<ph name="ENTRY_INDEX"/>」: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Chrome からクレジット カードを削除してもよろしいですか？</translation>
 <translation id="6445051938772793705">国</translation>
 <translation id="5031870354684148875">Google 翻訳について</translation>
 <translation id="1152921474424827756"><ph name="URL"/> の<ph name="BEGIN_LINK"/>キャッシュ コピー<ph name="END_LINK"/>にアクセスします</translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436"><ph name="DOMAIN"/> のブックマーク</translation>
 <translation id="4300246636397505754">保護者からのおすすめ</translation>
 <translation id="111844081046043029">このページから移動してもよろしいですか？</translation>
+<translation id="2495083838625180221">JSON パーサー</translation>
 <translation id="1973335181906896915">シリアル化エラーです</translation>
 <translation id="5989320800837274978">固定プロキシ サーバーと .pac スクリプト URL のどちらも指定されていません。</translation>
 <translation id="7805768142964895445">ステータス</translation>
@@ -145,7 +148,7 @@
 <translation id="8349305172487531364">ブックマーク バー</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME"/> で <ph name="SEARCH_TERMS"/> を検索</translation>
 <translation id="7956713633345437162">モバイルのブックマーク</translation>
-<translation id="5089810972385038852">州</translation>
+<translation id="5089810972385038852">都道府県 / 州</translation>
 <translation id="647261751007945333">デバイス ポリシー</translation>
 <translation id="2556876185419854533">編集の取り消し（&amp;U）</translation>
 <translation id="213826338245044447">モバイルのブックマーク</translation>
@@ -229,11 +232,10 @@
 <translation id="106701514854093668">パソコンのブックマーク</translation>
 <translation id="6154808779448689242">返されたポリシー トークンは現在のトークンと一致しません</translation>
 <translation id="7995512525968007366">指定なし</translation>
-<translation id="7961015016161918242">同期しない</translation>
+<translation id="7961015016161918242">使用しない</translation>
 <translation id="2835170189407361413">フォームをクリア</translation>
 <translation id="6550675742724504774">オプション</translation>
 <translation id="8804164990146287819">プライバシー ポリシー</translation>
-<translation id="5337776961545044340">Google ウォレットでは、この販売者にこの種類のカードはサポートされていません。別のカードを選択してください。</translation>
 <translation id="7334320624316649418">順序変更のやり直し（&amp;R）</translation>
 <translation id="7182878459783632708">ポリシーが設定されていません</translation>
 <translation id="5019198164206649151">代替ストアの状態が不適切です</translation>

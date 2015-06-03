@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Poți continua. Dacă accesezi pagina, acest avertisment nu se va mai afișa în următoarele 5 minute.</translation>
 <translation id="7485870689360869515">Nu s-au găsit date.</translation>
 <translation id="3884278016824448484">Identificator de gadget în conflict</translation>
-<translation id="6779575937362063477">Acest tip de card nu este acceptat de Google Wallet. Selectați alt card.</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="8208216423136871611">Nu salva</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Nu</translation>
 <translation id="2704283930420550640">Valoarea nu se potrivește cu formatul.</translation>
 <translation id="1055184225775184556">&amp;Anulați adăugarea</translation>
+<translation id="7813600968533626083">Elimini sugestia pentru formular din Chrome?</translation>
 <translation id="4850886885716139402">Afișează</translation>
 <translation id="8091372947890762290">Se așteaptă activarea pe server</translation>
 <translation id="6874604403660855544">&amp;Repetați adăugarea</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Folosește parola pentru:</translation>
 <translation id="2855922900409897335">Confirmă <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Această pagină a fost tradusă din <ph name="ORIGINAL_LANGUAGE"/> în <ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Elimini adresa din Chrome?</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="6646897916597483132">Introdu codul CVC alcătuit din 4 cifre înscris pe fața a cardului</translation>
 <translation id="5145883236150621069">Răspunsul pentru politică include un cod de eroare</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Județ</translation>
 <translation id="3427342743765426898">&amp;Repetați editarea</translation>
 <translation id="3010559122411665027">Intrarea din listă „<ph name="ENTRY_INDEX"/>”: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Elimini cardul de credit din Chrome?</translation>
 <translation id="6445051938772793705">Țară</translation>
 <translation id="5031870354684148875">Despre Google Traducere</translation>
 <translation id="1152921474424827756">Accesați o <ph name="BEGIN_LINK"/>copie păstrată în memoria cache<ph name="END_LINK"/> a site-ului <ph name="URL"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">Marcaje <ph name="DOMAIN"/></translation>
 <translation id="4300246636397505754">Sugestii parentale</translation>
 <translation id="111844081046043029">Sigur vrei să ieși de pe această pagină?</translation>
+<translation id="2495083838625180221">Analizor JSON</translation>
 <translation id="1973335181906896915">Eroare de serializare</translation>
 <translation id="5989320800837274978">Nu sunt specificate nici servere proxy fixe și nici o adresă URL pentru scripturi .pac.</translation>
 <translation id="7805768142964895445">Stare</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Golește formularul</translation>
 <translation id="6550675742724504774">Opțiuni</translation>
 <translation id="8804164990146287819">Politica de confidențialitate</translation>
-<translation id="5337776961545044340">Acest tip de card nu este acceptat de Google Wallet pentru acest comerciant. Selectați alt card.</translation>
 <translation id="7334320624316649418">&amp;Repetați reordonarea</translation>
 <translation id="7182878459783632708">Nu au fost setate politici</translation>
 <translation id="5019198164206649151">Depozit de fundal în stare nevalidă</translation>

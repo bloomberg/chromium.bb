@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">계속 사용할 수 있습니다. 이 페이지를 계속 이용하는 경우 5분 동안 이 경고가 다시 표시되지 않습니다.</translation>
 <translation id="7485870689360869515">데이터 없음</translation>
 <translation id="3884278016824448484">기기 식별자 충돌</translation>
-<translation id="6779575937362063477">Google 월렛에서 지원하지 않는 카드 유형입니다. 다른 카드를 선택해 주세요.</translation>
 <translation id="5172758083709347301">컴퓨터</translation>
 <translation id="7180611975245234373">새로고침</translation>
 <translation id="8208216423136871611">저장하지 않음</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">안함</translation>
 <translation id="2704283930420550640">값이 형식과 일치하지 않습니다.</translation>
 <translation id="1055184225775184556">추가 실행 취소(&amp;U)</translation>
+<translation id="7813600968533626083">Chrome에서 추천검색어를 삭제하시겠습니까?</translation>
 <translation id="4850886885716139402">보기</translation>
 <translation id="8091372947890762290">활성화 요청이 서버에서 대기 중</translation>
 <translation id="6874604403660855544">추가 다시 실행(&amp;R)</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">비밀번호 사용 항목:</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD"/> 인증</translation>
 <translation id="7186367841673660872">이 페이지는<ph name="ORIGINAL_LANGUAGE"/>에서<ph name="LANGUAGE_LANGUAGE"/>로 번역되었습니다.</translation>
+<translation id="4587425331216688090">Chrome에서 주소를 삭제하시겠습니까?</translation>
 <translation id="7139724024395191329">에미리트</translation>
 <translation id="6646897916597483132">카드 앞면의 4자리 CVC를 입력하세요.</translation>
 <translation id="5145883236150621069">정책 응답에 오류 코드가 포함되어 있음</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">구</translation>
 <translation id="3427342743765426898">수정 다시 실행(&amp;R)</translation>
 <translation id="3010559122411665027">목록 항목 '<ph name="ENTRY_INDEX"/>': <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Chrome에서 신용카드를 삭제하시겠습니까?</translation>
 <translation id="6445051938772793705">국가</translation>
 <translation id="5031870354684148875">Google 번역 정보</translation>
 <translation id="1152921474424827756"><ph name="URL"/>의 <ph name="BEGIN_LINK"/>캐시된 사본<ph name="END_LINK"/>에 액세스</translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436"><ph name="DOMAIN"/> 북마크</translation>
 <translation id="4300246636397505754">상위 추천</translation>
 <translation id="111844081046043029">이 페이지에서 벗어나시겠습니까?</translation>
+<translation id="2495083838625180221">JSON 파서</translation>
 <translation id="1973335181906896915">일련화 오류</translation>
 <translation id="5989320800837274978">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되지 않았습니다.</translation>
 <translation id="7805768142964895445">상태</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">서식 지우기</translation>
 <translation id="6550675742724504774">옵션</translation>
 <translation id="8804164990146287819">개인정보취급방침</translation>
-<translation id="5337776961545044340">이 판매자의 Google 월렛에서 지원하지 않는 카드 유형입니다. 다른 카드를 선택해 주세요.</translation>
 <translation id="7334320624316649418">재정렬 다시 실행(&amp;R)</translation>
 <translation id="7182878459783632708">설정된 정책 없음</translation>
 <translation id="5019198164206649151">보조 기억 장치 상태가 잘못됨</translation>

@@ -8,6 +8,7 @@
 <translation id="1005274289863221750">使用您的麦克风和摄像头</translation>
 <translation id="2857834222104759979">清单文件无效。</translation>
 <translation id="6384275966486438344">将您的搜索设置更改为：<ph name="SEARCH_HOST"/></translation>
+<translation id="8658591203505835552">选择 USB 设备</translation>
 <translation id="1445572445564823378">此扩展程序拖慢了 <ph name="PRODUCT_NAME"/>的运行速度。您应将其停用，以恢复 <ph name="PRODUCT_NAME"/>的性能。</translation>
 <translation id="7003844668372540529">来自<ph name="VENDOR_NAME"/>的未知产品 <ph name="PRODUCT_ID"/></translation>
 <translation id="1033780634303702874">访问您的串行设备</translation>
@@ -16,13 +17,11 @@
 <translation id="6027032947578871493">来自<ph name="VENDOR_NAME"/>的未知产品 <ph name="PRODUCT_ID"/>（序列号为 <ph name="SERIAL_NUMBER"/>）</translation>
 <translation id="4115165561519362854">此设备的管理员要求“<ph name="EXTENSION_NAME"/>”的最低版本为 <ph name="EXTENSION_VERSION"/>。此扩展程序必须更新到该版本（或更高版本）后才能启用。</translation>
 <translation id="6075907793831890935">与名为“<ph name="HOSTNAME"/>”的设备交换数据</translation>
-<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{选择 1 台 USB 设备}other{选择多台 USB 设备}}</translation>
 <translation id="5971037678316050792">控制蓝牙适配器状态和配对</translation>
 <translation id="677806580227005219">MIME 处理程序：<ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">获取与您的系统配对的蓝牙设备的相关信息，以及发现附近的蓝牙设备。</translation>
-<translation id="5699534389808783598">选择多台 HID 设备
-      {NUM_DEVICE,plural, =1{选择 1 台 HID 设备}other{选择多台 HID 设备}}</translation>
 <translation id="8749863574775030885">访问来自未知供应商的 USB 设备</translation>
+<translation id="781637217073033149">选择 HID 设备</translation>
 <translation id="3115238746683532089">来自供应商 <ph name="VENDOR_ID"/> 的未知产品 <ph name="PRODUCT_ID"/>（序列号为 <ph name="SERIAL_NUMBER"/>）</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/>（<ph name="VENDOR_NAME"/>）</translation>
 <translation id="657064425229075395">无法加载背景脚本“<ph name="BACKGROUND_SCRIPT"/>”。</translation>
@@ -38,7 +37,9 @@
 <translation id="8712265948125780616">扩展程序解压缩程序</translation>
 <translation id="149347756975725155">无法加载扩展程序图标“<ph name="ICON"/>”。</translation>
 <translation id="8825366169884721447">此扩展程序无法修改网络请求的请求标头“<ph name="HEADER_NAME"/>”，因为这一修改与另一个扩展程序（<ph name="EXTENSION_NAME"/>）产生了冲突。</translation>
+<translation id="4776856853352853275">选择 USB 设备</translation>
 <translation id="6731255991101203740">无法创建解压缩目录：“<ph name="DIRECTORY_PATH"/>”</translation>
+<translation id="545850661681880228">选择 HID 设备</translation>
 <translation id="4233778200880751280">无法加载简介页面“<ph name="ABOUT_PAGE"/>”。</translation>
 <translation id="388442998277590542">无法加载选项页“<ph name="OPTIONS_PAGE"/>”。</translation>
 <translation id="5127881134400491887">管理网络连接</translation>

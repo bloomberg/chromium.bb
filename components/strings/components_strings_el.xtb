@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Μπορείτε να συνεχίσετε. Αν συνεχίσετε στη σελίδα, αυτή η προειδοποίηση δεν θα εμφανιστεί ξανά για πέντε λεπτά.</translation>
 <translation id="7485870689360869515">Δεν βρέθηκαν δεδομένα</translation>
 <translation id="3884278016824448484">Αναγνωριστικό συσκευής που προκαλεί διένεξη</translation>
-<translation id="6779575937362063477">Αυτός ο τύπος κάρτας δεν υποστηρίζεται από το Πορτοφόλι Google. Επιλέξτε άλλη κάρτα.</translation>
 <translation id="5172758083709347301">Υπολογιστής</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
 <translation id="8208216423136871611">Να μην γίνει αποθήκευση</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Όχι</translation>
 <translation id="2704283930420550640">Η τιμή δεν συμφωνεί με τη μορφή.</translation>
 <translation id="1055184225775184556">&amp;Αναίρεση προσθήκης</translation>
+<translation id="7813600968533626083">Κατάργηση πρότασης φόρμας από το Chrome;</translation>
 <translation id="4850886885716139402">Προβολή</translation>
 <translation id="8091372947890762290">Η ενεργοποίηση στο διακομιστή εκκρεμεί</translation>
 <translation id="6874604403660855544">&amp;Επανάληψη προσθήκης</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Χρήση κωδικού πρόσβασης για:</translation>
 <translation id="2855922900409897335">Επαλήθευση της κάρτας <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Αυτή η σελίδα έχει μεταφραστεί από τα<ph name="ORIGINAL_LANGUAGE"/>στα<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Κατάργηση διεύθυνσης από το Chrome;</translation>
 <translation id="7139724024395191329">Εμιράτο</translation>
 <translation id="6646897916597483132">Εισαγάγετε τον τετραψήφιο κωδικό CVC από το μπροστινό μέρος της κάρτας σας</translation>
 <translation id="5145883236150621069">Βρέθηκε κωδικός σφάλματος στην απόκριση πολιτικής</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Περιοχή</translation>
 <translation id="3427342743765426898">&amp;Επανάληψη επεξεργασίας</translation>
 <translation id="3010559122411665027">Καταχώριση λίστας &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Κατάργηση πιστωτικής κάρτας από το Chrome;</translation>
 <translation id="6445051938772793705">Χώρα</translation>
 <translation id="5031870354684148875">Σχετικά με τη Google Μετάφραση</translation>
 <translation id="1152921474424827756">Πρόσβαση σε <ph name="BEGIN_LINK"/>προσωρινό αντίγραφο<ph name="END_LINK"/> της διεύθυνσης <ph name="URL"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">Σελιδοδείκτες <ph name="DOMAIN"/></translation>
 <translation id="4300246636397505754">Γονικές προτάσεις</translation>
 <translation id="111844081046043029">Είστε βέβαιοι ότι επιθυμείτε έξοδο από αυτή τη σελίδα;</translation>
+<translation id="2495083838625180221">Συντακτικός αναλυτής JSON</translation>
 <translation id="1973335181906896915">Σφάλμα σειριοποίησης</translation>
 <translation id="5989320800837274978">Δεν προσδιορίζονται ούτε οι σταθεροί διακομιστές μεσολάβησης ούτε μια διεύθυνση URL σεναρίου .pac.</translation>
 <translation id="7805768142964895445">Κατάσταση</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Διαγραφή φόρμας</translation>
 <translation id="6550675742724504774">Επιλογές</translation>
 <translation id="8804164990146287819">Πολιτική Απορρήτου</translation>
-<translation id="5337776961545044340">Αυτός ο τύπος κάρτας δεν υποστηρίζεται από το Πορτοφόλι Google γι' αυτόν τον έμπορο. Επιλέξτε διαφορετική κάρτα.</translation>
 <translation id="7334320624316649418">&amp;Επανάληψη αναδιάταξης</translation>
 <translation id="7182878459783632708">Δεν έχουν οριστεί πολιτικές</translation>
 <translation id="5019198164206649151">Η αποθήκευση αντιγράφων ασφαλείας είναι σε κακή κατάσταση</translation>

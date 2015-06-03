@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">אתה רשאי להמשיך. אם תמשיך אל הדף, האזהרה הזו לא תופיע שוב למשך חמש דקות.</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
 <translation id="3884278016824448484">מזהה מכשיר מתנגש</translation>
-<translation id="6779575937362063477">‏סוג כרטיס זה אינו נתמך על ידי ארנק Google. בחר כרטיס אחר.</translation>
 <translation id="5172758083709347301">מכונה</translation>
 <translation id="7180611975245234373">רענן</translation>
 <translation id="8208216423136871611">אל תשמור</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">לא</translation>
 <translation id="2704283930420550640">הערך לא תואם לפורמט.</translation>
 <translation id="1055184225775184556">&amp;ביטול הוספה</translation>
+<translation id="7813600968533626083">‏האם להסיר מ-Chrome הצעות בשביל טפסים?</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="8091372947890762290">ההפעלה ממתינה בשרת</translation>
 <translation id="6874604403660855544">&amp;ביצוע מחדש של הוספה</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">השתמש בסיסמה עבור:</translation>
 <translation id="2855922900409897335">אמת את ה-<ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">דף זה תורגם מ<ph name="ORIGINAL_LANGUAGE"/>ל<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">‏האם להסיר את הכתובת מ-Chrome?</translation>
 <translation id="7139724024395191329">אמירות</translation>
 <translation id="6646897916597483132">‏הזן את ה-CVC בן ארבע הספרות המופיע בחזית הכרטיס</translation>
 <translation id="5145883236150621069">קיים קוד שגיאה בתגובת המדיניות</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">מחוז</translation>
 <translation id="3427342743765426898">&amp;ביצוע מחדש של עריכה</translation>
 <translation id="3010559122411665027">רשומה ברשימה &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">‏האם להסיר את כרטיס האשראי מ-Chrome?</translation>
 <translation id="6445051938772793705">ארץ</translation>
 <translation id="5031870354684148875">‏מידע על Google Translate</translation>
 <translation id="1152921474424827756">גש אל <ph name="BEGIN_LINK"/>עותק בקובץ שמור<ph name="END_LINK"/> של <ph name="URL"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">סימניות של <ph name="DOMAIN"/></translation>
 <translation id="4300246636397505754">הצעות להורים</translation>
 <translation id="111844081046043029">האם אתה בטוח שברצונך לצאת מדף זה?</translation>
+<translation id="2495083838625180221">‏מנתח JSON</translation>
 <translation id="1973335181906896915">שגיאה בעריכה בסידרה</translation>
 <translation id="5989320800837274978">‏לא צוינו שרתי Proxy קבועים ולא כתובת אתר של סקריפט ‎.pac</translation>
 <translation id="7805768142964895445">סטטוס</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">נקה טופס</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
 <translation id="8804164990146287819">מדיניות פרטיות</translation>
-<translation id="5337776961545044340">‏סוג כרטיס זה אינו נתמך על ידי ארנק Google עבור הסוחר הזה. בחר כרטיס אחר.</translation>
 <translation id="7334320624316649418">&amp;ביצוע מחדש של שינוי סדר</translation>
 <translation id="7182878459783632708">לא הוגדרה מדיניות</translation>
 <translation id="5019198164206649151">האחסון המשמש כגיבוי אינו תקין</translation>

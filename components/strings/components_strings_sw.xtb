@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Unaweza kuendelea. Ukienda kwenye ukurasa, onyo hili halitaonekana tena kwa dakika tano.</translation>
 <translation id="7485870689360869515">Hakuna data iliyopatikana.</translation>
 <translation id="3884278016824448484">Kitambulisho cha kifaa kinachokinzana</translation>
-<translation id="6779575937362063477">Aina hii ya kadi haitumiki na Google Wallet. Tafadhali chagua kadi tofauti.</translation>
 <translation id="5172758083709347301">Mashine</translation>
 <translation id="7180611975245234373">Onyesha upya</translation>
 <translation id="8208216423136871611">Usihifadhi</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">La</translation>
 <translation id="2704283930420550640">Thamani haioani na umbizo.</translation>
 <translation id="1055184225775184556">Tendua Kuongeza</translation>
+<translation id="7813600968533626083">Ungependa kuondoa pendekezo la fomu kutoka kwenye Chrome?</translation>
 <translation id="4850886885716139402">Mwonekano</translation>
 <translation id="8091372947890762290">Uwashaji unasubiri kwenye seva</translation>
 <translation id="6874604403660855544">Rudia kuongeza</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Tumia nenosiri kwa:</translation>
 <translation id="2855922900409897335">Thibitisha kadi yako ya <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Ukurasa huu umetafsiriwa kutoka<ph name="ORIGINAL_LANGUAGE"/>hadi<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Ungependa kuondoa anwani kutoka kwenye Chrome?</translation>
 <translation id="7139724024395191329">Emirate</translation>
 <translation id="6646897916597483132">Weka CVC yenye tarakimu 4 kutoka mbele ya kadi yako</translation>
 <translation id="5145883236150621069">Msimbo wa hitilafu uko katika jibu la sera</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Wilaya</translation>
 <translation id="3427342743765426898">Rudia Kuhariri</translation>
 <translation id="3010559122411665027">Ingizo orodha &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Ungependa kuondoa kadi ya malipo kutoka kwenye Chrome?</translation>
 <translation id="6445051938772793705">Nchi</translation>
 <translation id="5031870354684148875">Kuhusu Google Tafsiri</translation>
 <translation id="1152921474424827756">Fikia <ph name="BEGIN_LINK"/>nakala iliyowekwa kwenye akiba<ph name="END_LINK"/> ya <ph name="URL"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436">Alamisho za <ph name="DOMAIN"/></translation>
 <translation id="4300246636397505754">Mapendekezo ya wazazi</translation>
 <translation id="111844081046043029">Je, una hakika kuwa ungependa kuondoka kwenye ukurasa huu?</translation>
+<translation id="2495083838625180221">Kichanganuzi cha JSON</translation>
 <translation id="1973335181906896915">Hitilafu ya namba tambulishi</translation>
 <translation id="5989320800837274978">Siyo seva proksi za kudumu wala URL ya hati ya .pac zimebainishwa.</translation>
 <translation id="7805768142964895445">Hali</translation>
@@ -229,7 +232,6 @@
 <translation id="2835170189407361413">Futa fomu</translation>
 <translation id="6550675742724504774">Chaguo</translation>
 <translation id="8804164990146287819">Sera ya Faragha</translation>
-<translation id="5337776961545044340">Aina hii ya kadi haiwezi kutumiwa na Google Wallet kwa mfanyabiashara huyu. Tafadhali teua kadi tofauti.</translation>
 <translation id="7334320624316649418">Rudia Kupanga Upya</translation>
 <translation id="7182878459783632708">Hakuna sera zilizowekwa</translation>
 <translation id="5019198164206649151">Hifadhi la kucheleza liko katika hali mbaya</translation>

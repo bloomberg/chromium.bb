@@ -8,6 +8,7 @@
 <translation id="1005274289863221750">使用您的麥克風和相機</translation>
 <translation id="2857834222104759979">資訊清單檔案無效。</translation>
 <translation id="6384275966486438344">將您的搜尋設定變更為：<ph name="SEARCH_HOST"/></translation>
+<translation id="8658591203505835552">選取一個 USB 裝置</translation>
 <translation id="1445572445564823378">這個擴充功能使得 <ph name="PRODUCT_NAME"/> 運作變慢。建議您停用這個擴充功能，以恢復 <ph name="PRODUCT_NAME"/> 的效能。</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/> 提供的不明產品 <ph name="PRODUCT_ID"/></translation>
 <translation id="1033780634303702874">存取您的序列裝置</translation>
@@ -16,13 +17,11 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME"/> 提供的不明產品 <ph name="PRODUCT_ID"/> (序號：<ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">這個裝置的管理員要求的 <ph name="EXTENSION_NAME"/> 最低版本為 <ph name="EXTENSION_VERSION"/>。更新至該版本 (或以上版本) 後，才能啟用這項擴充功能。</translation>
 <translation id="6075907793831890935">與名稱為 <ph name="HOSTNAME"/> 的裝置交換資料</translation>
-<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{選取一個 USB 裝置}other{選取多個 USB 裝置}}</translation>
 <translation id="5971037678316050792">控制藍牙介面卡狀態與連線配對功能</translation>
 <translation id="677806580227005219">MIME 處理常式：<ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">存取與系統配對的藍牙裝置資訊並搜尋附近的藍牙裝置。</translation>
-<translation id="5699534389808783598">選取 HID 裝置
-      {NUM_DEVICE,plural, =1{選取一個 HID 裝置}other{選取多個 HID 裝置}}</translation>
 <translation id="8749863574775030885">存取製造商不明的 USB 裝置</translation>
+<translation id="781637217073033149">選取多個 HID 裝置</translation>
 <translation id="3115238746683532089">供應商 <ph name="VENDOR_ID"/> 提供的不明產品 <ph name="PRODUCT_ID"/> (序號：<ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> (供應商：<ph name="VENDOR_NAME"/>)</translation>
 <translation id="657064425229075395">無法載入背景指令碼「<ph name="BACKGROUND_SCRIPT"/>」。</translation>
@@ -38,7 +37,9 @@
 <translation id="8712265948125780616">擴充功能解壓縮工具</translation>
 <translation id="149347756975725155">無法載入擴充功能圖示「<ph name="ICON"/>」。</translation>
 <translation id="8825366169884721447">這個擴充功能無法修改網路要求的「<ph name="HEADER_NAME"/>」要求標頭，因為修改動作與其他擴充功能 (<ph name="EXTENSION_NAME"/>) 發生衝突。</translation>
+<translation id="4776856853352853275">選取一或多個 USB 裝置</translation>
 <translation id="6731255991101203740">無法建立解壓縮目錄：「<ph name="DIRECTORY_PATH"/>」</translation>
+<translation id="545850661681880228">選取一個 HID 裝置</translation>
 <translation id="4233778200880751280">無法載入簡介網頁「<ph name="ABOUT_PAGE"/>」。</translation>
 <translation id="388442998277590542">無法載入「<ph name="OPTIONS_PAGE"/>」選項頁面。</translation>
 <translation id="5127881134400491887">管理網路連線</translation>

@@ -57,6 +57,7 @@
 <translation id="7064610482057367130">Netika atrasta neviena Chromium instalācija, kuru varētu atjaunināt.</translation>
 <translation id="872034308864968620">Ļaut Chromium darboties fonā</translation>
 <translation id="459535195905078186">Chromium lietotnes</translation>
+<translation id="5942225298871134766">Chromium saglabās šo paroli, izmantojot sistēmu <ph name="SAVED_PASSWORD_LINK"/>, un atcerēsies to nākamajā reizē, kad jums tā būs nepieciešama.</translation>
 <translation id="8134284582177628525">Ja izmantojat šo datoru kopā ar lietotāju <ph name="PROFILE_NAME"/>, pievienojiet savu kontu pārlūkā Chromium, lai veiktu pārlūkošanu atsevišķi. Pretējā gadījumā atsaistiet attiecīgā lietotāja Google kontu.</translation>
 <translation id="1480489203462860648">Izmēģināt, tas jau ir instalēts</translation>
 <translation id="3032787606318309379">Notiek pievienošana pārlūkam Chromium...</translation>
@@ -66,6 +67,7 @@
 <translation id="8628626585870903697">Pārlūka Chromium komplektācijā nav PDF skatītāja, kas nepieciešams funkcijas Drukas priekšskatījums darbībai.</translation>
 <translation id="7138853919861947730">Lai uzlabotu pārlūkošanu, Chromium var izmantot tīmekļa pakalpojumus.</translation>
 <translation id="4743926867934016338">Pieņemt un meklēt</translation>
+<translation id="2347108572062610441">Šis paplašinājums mainīja iestatījumu, kura lapa tiek parādīta, palaižot pārlūku Chromium.</translation>
 <translation id="3849925841547750267">Diemžēl jūsu Mozilla Firefox iestatījumi nav pieejami pārlūka darbības laikā. Lai šos iestatījumus importētu uz pārlūku Chromium, saglabājiet savu darbu un aizveriet visus Firefox logus. Pēc tam noklikšķiniet uz Turpināt.</translation>
 <translation id="7027298027173928763">Pārlūku Chromium nevarēja automātiski atjaunināt uz jaunāko versiju, tāpēc jums nav pieejamas vairākas jaunas, noderīgas funkcijas un drošības uzlabojumi. Jums manuāli jāpārinstalē pārlūks Chromium.</translation>
 <translation id="8897323336392112261">Tas nosaka arī to, kāda lapa tiks rādīta, kad atvērsiet pārlūku Chromium vai noklikšķināsiet uz pogas “Sākums”.</translation>
@@ -150,6 +152,7 @@
 <translation id="8684913864886094367">Chromium netika pareizi izslēgts.</translation>
 <translation id="3582788516608077514">Notiek Chromium atjaunināšana...</translation>
 <translation id="7223968959479464213">Uzdevumu pārvaldnieks — Chromium</translation>
+<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Pašlaik notiek lejupielāde. Vai vēlaties atcelt lejupielādi un iziet no pārlūka Chromium?}zero{Pašlaik notiek # lejupielādes. Vai vēlaties atcelt lejupielādes un iziet no pārlūka Chromium?}one{Pašlaik notiek # lejupielāde. Vai vēlaties atcelt lejupielādes un iziet no pārlūka Chromium?}other{Pašlaik notiek # lejupielādes. Vai vēlaties atcelt lejupielādes un iziet no pārlūka Chromium?}}</translation>
 <translation id="1779356040007214683">Lai uzlabotu Chromium drošību, mēs atspējojām dažus paplašinājumus, kas nav norādīti vietnē <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> un, iespējams, tika pievienoti, jums nezinot.</translation>
 <translation id="6883876366448858277">nosūta vārdu un tā apkārtējo kontekstu pakalpojumam Google meklēšana, iegūstot definīcijas, attēlus un citus meklēšanas rezultātus.</translation>
 <translation id="6638567566961868659">Skatiet savas grāmatzīmes Chromium izvēlnē vai grāmatzīmju joslā.</translation>
@@ -186,6 +189,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="6334986366598267305">Tagad pārlūkā Chromium ir vieglāk izmantot Google kontu, kā arī ir atvieglota lietošana datoros, ko izmanto vairākas personas.</translation>
 <translation id="6212496753309875659">Šim datoram jau ir jaunākā Chromium versija. Ja programmatūra nedarbojas, atinstalējiet pārlūku Chromium un mēģiniet vēlreiz.</translation>
 <translation id="1115445892567829615">Chromium nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
+<translation id="2396765026452590966">Paplašinājums “<ph name="EXTENSION_NAME"/>” mainīja iestatījumu, kura lapa tiek parādīta, palaižot pārlūku Chromium.</translation>
 <translation id="1298199220304005244">Saņemt palīdzību par Chromium OS izmantošanu</translation>
 <translation id="331951419404882060">Chromium OS nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
 <translation id="8187289872471304532">Atveriet izvēlni
@@ -202,6 +206,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="2158734852934720349">Chromium OS atklātā pirmkoda licences</translation>
 <translation id="2966088006374919794">Chromium ir jāpalaiž ārēja lietojumprogramma, lai rīkotos ar <ph name="SCHEME"/> saitēm. Pieprasītā saite ir <ph name="PROTOLINK"/>.</translation>
 <translation id="7205698830395646142">Paslēpšana Chromium izvēlnē</translation>
+<translation id="9019929317751753759">Lai uzlabotu Chromium drošību, mēs atspējojām tālāk norādīto paplašinājumu, kas nav norādīts vietnē <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> un, iespējams, tika pievienots, jums nezinot.</translation>
 <translation id="7979877361127045932">Paslēpt Chromium izvēlnē</translation>
 <translation id="6485906693002546646">Chromium satura sinhronizēšanai jūs izmantojat kontu <ph name="PROFILE_EMAIL"/>. Lai atjauninātu savas sinhronizācijas preferences vai izmantotu Chromium bez Google konta, dodieties uz: <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="705851970750939768">Atjaunināt Chromium</translation>
@@ -228,6 +233,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="805745970029938373">Šeit būs redzami visi paziņojumi no Chromium lietotnēm, paplašinājumiem un vietnēm.</translation>
 <translation id="2119636228670142020">Par &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Ir pieejama jauna un drošāka Chromium versija.</translation>
+<translation id="1644918877723739397">Chromium saglabās šo paroli jūsu sarakstā “<ph name="SAVED_PASSWORD_LINK"/>” un atcerēsies to nākamajā reizē, kad jums tā būs nepieciešama.</translation>
 <translation id="378917192836375108">Chromium ļauj jums noklikšķināt uz tālruņa numura un zvanīt uz to pakalpojumā Skype!</translation>
 <translation id="608189560609172163">Chromium nevarēja sinhronizēt jūsu datus pierakstīšanās kļūdas dēļ.</translation>
 <translation id="4888717733111232871">Ienākošo savienojumu kārtula pārlūkam Chromium, lai atļautu mDNS datplūsmu.</translation>

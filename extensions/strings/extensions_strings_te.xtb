@@ -8,6 +8,7 @@
 <translation id="1005274289863221750">మీ మైక్రోఫోన్ మరియు కెమెరాను ఉపయోగించండి</translation>
 <translation id="2857834222104759979">వివరాల ఫైల్ చెల్లనిది.</translation>
 <translation id="6384275966486438344">మీ శోధన సెట్టింగ్‌లను దీనికి మార్చండి: <ph name="SEARCH_HOST"/></translation>
+<translation id="8658591203505835552">USB పరికరాన్ని ఎంచుకోండి</translation>
 <translation id="1445572445564823378">ఈ పొడిగింపు <ph name="PRODUCT_NAME"/>ను మందగింప చేస్తోంది. <ph name="PRODUCT_NAME"/> యొక్క పనితీరును పునరుద్ధరించడానికి మీరు దీన్ని ఆపివేయాలి.</translation>
 <translation id="7003844668372540529"><ph name="VENDOR_NAME"/> నుండి తెలియని ఉత్పత్తి <ph name="PRODUCT_ID"/></translation>
 <translation id="1033780634303702874">మీ క్రమానుసార పరికరాలను ప్రాప్యత చేయడం</translation>
@@ -16,13 +17,11 @@
 <translation id="6027032947578871493"><ph name="VENDOR_NAME"/> నుండి తెలియని ఉత్పత్తి <ph name="PRODUCT_ID"/> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">ఈ మెషీన్ నిర్వాహకుడికి <ph name="EXTENSION_NAME"/> కనీస సంస్కరణ అయిన <ph name="EXTENSION_VERSION"/> ఉండటం అవసరం. ఇది ఆ సంస్కరణకు (లేదా తదుపరి దానికి) నవీకరించే వరకు ప్రారంభించబడదు.</translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> పేరు గల పరికరంతో డేటాను ఇచ్చిపుచ్చుకోవడానికి అనుమతి</translation>
-<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{USB పరికరాన్ని ఎంచుకోండి}other{USB పరికరాలను ఎంచుకోండి}}</translation>
 <translation id="5971037678316050792">బ్లూటూత్ అడాప్టర్ స్థితిని మరియు జత చేసే విధానాన్ని నియంత్రించడానికి అనుమతి</translation>
 <translation id="677806580227005219">Mime హ్యాండ్లర్: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">మీ సిస్టమ్‌తో జత చేయబడిన బ్లూటూత్ పరికరాలకు సంబంధించిన సమాచారాన్ని ప్రాప్యత చేయడానికి మరియు సమీపంలోని బ్లూటూత్ పరికరాలను కనుగొనడానికి అనుమతి.</translation>
-<translation id="5699534389808783598">HID పరికరాలను ఎంచుకోండి
-      {NUM_DEVICE,plural, =1{HID పరికరాన్ని ఎంచుకోండి}other{HID పరికరాలను ఎంచుకోండి}}</translation>
 <translation id="8749863574775030885">తెలియని విక్రేత అందించిన USB పరికరాలకు ప్రాప్యత</translation>
+<translation id="781637217073033149">HID పరికరాలను ఎంచుకోండి</translation>
 <translation id="3115238746683532089"><ph name="VENDOR_ID"/> విక్రేత నుండి తెలియని ఉత్పత్తి <ph name="PRODUCT_ID"/> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME"/> నుండి <ph name="PRODUCT_NAME"/></translation>
 <translation id="657064425229075395">నేపథ్య స్క్రిప్ట్ '<ph name="BACKGROUND_SCRIPT"/>'ను లోడ్ చేయడం సాధ్యం కాలేదు.</translation>
@@ -38,7 +37,9 @@
 <translation id="8712265948125780616">ఎక్స్‌టెన్షన్ అన్‌ప్యాకర్</translation>
 <translation id="149347756975725155">'<ph name="ICON"/>' పొడిగింపు చిహ్నాన్ని లోడ్ చేయలేకపోయింది.</translation>
 <translation id="8825366169884721447">సవరణ వేరొక పొడిగింపు (<ph name="EXTENSION_NAME"/>)కు వైరుధ్యంగా ఉన్నందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థన యొక్క &quot;<ph name="HEADER_NAME"/>&quot; అభ్యర్థన శీర్షికను సవరించడంలో విఫలమైంది.</translation>
+<translation id="4776856853352853275">USB పరికరాలను ఎంచుకోండి</translation>
 <translation id="6731255991101203740">దీనిలో అన్‌జిప్ చేయడానికి  డైరెక్టరీ సృష్టించబడదు: '<ph name="DIRECTORY_PATH"/>'</translation>
+<translation id="545850661681880228">HID పరికరాన్ని ఎంచుకోండి</translation>
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' పరిచయ పేజీని లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="388442998277590542">ఎంపికల పేజీ '<ph name="OPTIONS_PAGE"/>'ని లోడ్ చెయ్యడం సాధ్యం కాలేదు.</translation>
 <translation id="5127881134400491887">నెట్‌వర్క్ కనెక్షన్‌లను నిర్వహించండి</translation>

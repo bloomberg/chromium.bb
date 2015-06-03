@@ -150,7 +150,7 @@
 <translation id="8684913864886094367">Chromium no se cerró correctamente.</translation>
 <translation id="3582788516608077514">Actualizando Chromium...</translation>
 <translation id="7223968959479464213">Administrador de tareas - Chromium</translation>
-<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{En este momento hay una descarga en curso. ¿Deseas cancelarla y salir de Chromium?}other{En este momento hay # descargas en curso. ¿Deseas cancelarlas y salir de Chromium?}}</translation>
+<translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{En este momento, hay una descarga en curso. ¿Deseas cancelarla y salir de Chromium?}other{En este momento, hay # descargas en curso. ¿Deseas cancelarlas y salir de Chromium?}}</translation>
 <translation id="1779356040007214683">Para que Chromium sea más seguro, inhabilitamos algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> y que posiblemente se hayan agregado sin tu conocimiento.</translation>
 <translation id="6883876366448858277">envía una palabra y el contexto en el que se encuentra a la Búsqueda de Google, y muestra definiciones, imágenes y otros resultados de búsqueda.</translation>
 <translation id="6638567566961868659">Busca tus marcadores en el menú de Chromium o en la barra de marcadores.</translation>
@@ -202,7 +202,7 @@
 <translation id="2158734852934720349">Licencias de código abierto del Sistema operativo Chromium</translation>
 <translation id="2966088006374919794">Chromium necesita iniciar una aplicación externa para utilizar vínculos <ph name="SCHEME"/>. El vínculo solicitado es <ph name="PROTOLINK"/>.</translation>
 <translation id="7205698830395646142">Ocultar en el menú de Chromium</translation>
-<translation id="9019929317751753759">Para que Chromium sea más seguro, inhabilitamos algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> y que posiblemente se hayan agregado sin tu conocimiento.</translation>
+<translation id="9019929317751753759">Para que Chromium sea más seguro, inhabilitamos algunas extensiones que no aparecen en <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> y que posiblemente se hayan agregado sin tu conocimiento.</translation>
 <translation id="7979877361127045932">Ocultar en el menú de Chromium</translation>
 <translation id="6485906693002546646">Estás utilizando <ph name="PROFILE_EMAIL"/> para sincronizar los datos de Chromium. Si quieres actualizar las preferencias de sincronización o utilizar Chromium sin una cuenta de Google, accede a <ph name="SETTINGS_LINK"/>.</translation>
 <translation id="705851970750939768">Actualizar Chromium</translation>

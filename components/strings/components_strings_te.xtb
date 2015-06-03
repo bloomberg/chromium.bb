@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">మీరు కొనసాగించవచ్చు. మీరు పేజీకి కొనసాగిస్తే, ఈ హెచ్చరిక ఐదు నిమిషాల పాటు మళ్లీ కనిపించదు.</translation>
 <translation id="7485870689360869515">డేటా కనుగొనబడలేదు.</translation>
 <translation id="3884278016824448484">వైరుధ్యమైన పరికరం ఐడెంటిఫైయర్</translation>
-<translation id="6779575937362063477">ఈ రకమైన కార్డ్‌కు Google Wallet మద్దతు ఇవ్వదు. దయచేసి మరో కార్డ్‌ని ఎంచుకోండి.</translation>
 <translation id="5172758083709347301">మెషీన్</translation>
 <translation id="7180611975245234373">రీఫ్రెష్ చేయి</translation>
 <translation id="8208216423136871611">సేవ్ చేయవద్దు</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">వద్దు</translation>
 <translation id="2704283930420550640">విలువ ఆకృతికి సరిపోలలేదు.</translation>
 <translation id="1055184225775184556">&amp;జోడించడాన్ని రద్దు చేయి</translation>
+<translation id="7813600968533626083">Chrome నుండి ఫారమ్ సూచనను తీసివేయాలా?</translation>
 <translation id="4850886885716139402">వీక్షణ</translation>
 <translation id="8091372947890762290">సక్రియం సర్వర్‌లో పెండింగ్‌లో ఉంది</translation>
 <translation id="6874604403660855544">&amp;జోడించడాన్ని పునరావృతం చేయి</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">దీని కోసం పాస్‌వర్డ్‌ను ఉపయోగించండి:</translation>
 <translation id="2855922900409897335">మీ <ph name="CREDIT_CARD"/>ని ధృవీకరించండి</translation>
 <translation id="7186367841673660872">ఈ పేజీ<ph name="ORIGINAL_LANGUAGE"/>నుండి<ph name="LANGUAGE_LANGUAGE"/>కు అనువదించబడింది</translation>
+<translation id="4587425331216688090">Chrome నుండి చిరునామాను తీసివేయాలా?</translation>
 <translation id="7139724024395191329">ఎమిరేట్</translation>
 <translation id="6646897916597483132">మీ కార్డ్ ముందువైపు ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="5145883236150621069">విధాన ప్రతిస్పందనలో లోపం కోడ్ ఉంది</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">జిల్లా</translation>
 <translation id="3427342743765426898">&amp;సవరించడాన్ని పునరావృతం చేయి</translation>
 <translation id="3010559122411665027">జాబితా నమోదు &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Chrome నుండి క్రెడిట్ కార్డ్‌ను తీసివేయాలా?</translation>
 <translation id="6445051938772793705">దేశం</translation>
 <translation id="5031870354684148875">Google అనువాదం గురించి</translation>
 <translation id="1152921474424827756"><ph name="URL"/> యొక్క <ph name="BEGIN_LINK"/>కాష్ చేయబడిన కాపీ<ph name="END_LINK"/>ని ప్రాప్యత చేయండి</translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436"><ph name="DOMAIN"/> బుక్‌మార్క్‌లు</translation>
 <translation id="4300246636397505754">తల్లి/తండ్రి సూచనలు</translation>
 <translation id="111844081046043029">మీరు దీన్ని ఖచ్చితంగా వదిలేయాలనుకుంటున్నారా?</translation>
+<translation id="2495083838625180221">JSON పార్సర్</translation>
 <translation id="1973335181906896915">శ్రేణిగా రూపొందించడంలో లోపం</translation>
 <translation id="5989320800837274978">స్థిర ప్రాక్సీ సర్వర్‌లు లేదా ఒక .pac స్క్రిప్ట్ URL పేర్కొనబడలేదు.</translation>
 <translation id="7805768142964895445">స్థితి</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">ఫారమ్‌ను తుడిచివేయి</translation>
 <translation id="6550675742724504774">ఎంపికలు</translation>
 <translation id="8804164990146287819">గోప్యతా విధానం</translation>
-<translation id="5337776961545044340">ఈ వ్యాపార సంస్థ కోసం Google Wallet ఈ రకమైన కార్డ్‌కు మద్దతు ఇవ్వడం లేదు. దయచేసి మరో కార్డ్‌ని ఎంచుకోండి.</translation>
 <translation id="7334320624316649418">&amp;మళ్లీ క్రమం చేయడాన్ని పునరావృతం చేయి</translation>
 <translation id="7182878459783632708">విధానాలను సెట్ చేయలేదు</translation>
 <translation id="5019198164206649151">బ్యాకింగ్ నిల్వ చెల్లని స్థితిలో ఉంది</translation>

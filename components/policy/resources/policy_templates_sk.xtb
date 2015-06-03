@@ -541,7 +541,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Ak je toto pravidlo nastavené na hodnotu True, externý ukladací priestor sa nezobrazí v prehliadači súborov.
 
-      Toto pravidlo sa vzťahuje na všetky typy pamäťových médií, ako sú prenosné disky USB, externé pevné disky, karty SD a ďalšie typy pamäťových kariet, optické ukladacie priestory a pod. Na interný ukladací priestor sa nevzťahuje, takže súbory uložené v priečinku Stiahnuté súbory je možné otvoriť. Toto pravidlo tiež nemá žiadny vplyv na službu Disk Google.
+      Toto pravidlo sa vzťahuje na všetky typy pamäťových médií, ako sú prenosné disky USB, externé pevné disky, SD karty a ďalšie typy pamäťových kariet, optické ukladacie priestory a pod. Na interný ukladací priestor sa nevzťahuje, takže súbory uložené v priečinku Stiahnuté súbory je možné otvoriť. Toto pravidlo tiež nemá žiadny vplyv na službu Disk Google.
 
       Ak je toto nastavenie zakázané alebo nie je nakonfigurované, používatelia môžu vo svojom zariadení používať všetky podporované typy externých ukladacích priestorov.</translation>
 <translation id="6936894225179401731">Určuje maximálny počet súbežných pripojení k serveru proxy.

@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">您可以繼續操作。如果您繼續造訪網頁，後續 5 分鐘內將不會再看到這項警告。</translation>
 <translation id="7485870689360869515">找不到任何資料。</translation>
 <translation id="3884278016824448484">裝置識別碼發生衝突</translation>
-<translation id="6779575937362063477">Google 電子錢包不支援此類型卡片，請選取其他卡片。</translation>
 <translation id="5172758083709347301">本機</translation>
 <translation id="7180611975245234373">重新整理</translation>
 <translation id="8208216423136871611">不要儲存</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">不需要</translation>
 <translation id="2704283930420550640">政策值格式不符。</translation>
 <translation id="1055184225775184556">復原新增(&amp;U)</translation>
+<translation id="7813600968533626083">要從 Chrome 中移除建議嗎？</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="8091372947890762290">尚未在伺服器上啟動</translation>
 <translation id="6874604403660855544">重做新增(&amp;R)</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">選擇密碼：</translation>
 <translation id="2855922900409897335">驗證您的 <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">此網頁內容已由<ph name="ORIGINAL_LANGUAGE"/>翻譯成<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">要從 Chrome 中移除地址嗎？</translation>
 <translation id="7139724024395191329">大公國</translation>
 <translation id="6646897916597483132">請輸入信用卡正面的四位數信用卡安全碼</translation>
 <translation id="5145883236150621069">政策回應中存在錯誤代碼</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">區</translation>
 <translation id="3427342743765426898">重做編輯(&amp;R)</translation>
 <translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX"/>」：<ph name="ERROR"/></translation>
+<translation id="7569952961197462199">要從 Chrome 中移除信用卡嗎？</translation>
 <translation id="6445051938772793705">國家/地區</translation>
 <translation id="5031870354684148875">關於「Google 翻譯」</translation>
 <translation id="1152921474424827756">存取 <ph name="URL"/> 的<ph name="BEGIN_LINK"/>頁庫存檔副本<ph name="END_LINK"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436"><ph name="DOMAIN"/> 書籤</translation>
 <translation id="4300246636397505754">家長建議</translation>
 <translation id="111844081046043029">您確定要離開此網頁嗎?</translation>
+<translation id="2495083838625180221">JSON 剖析器</translation>
 <translation id="1973335181906896915">序列化錯誤</translation>
 <translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="7805768142964895445">狀態</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">清除表單</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="8804164990146287819">隱私權政策</translation>
-<translation id="5337776961545044340">這個商家的 Google 電子錢包不支援這種類型的信用卡，請選取其他信用卡。</translation>
 <translation id="7334320624316649418">重做重新排序(&amp;R)</translation>
 <translation id="7182878459783632708">沒有設定任何政策</translation>
 <translation id="5019198164206649151">備份儲存狀態不佳</translation>

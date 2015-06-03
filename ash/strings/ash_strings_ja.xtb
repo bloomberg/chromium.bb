@@ -31,6 +31,7 @@
 <translation id="2297568595583585744">ステータス トレイ</translation>
 <translation id="2248649616066688669">外部ディスプレイに接続している間は、本体を閉じた状態でも Chromebook を使用できます。</translation>
 <translation id="2946640296642327832">Bluetooth を有効にする</translation>
+<translation id="478959186716341421">キャスト中</translation>
 <translation id="5537725057119320332">キャスト</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME"/> へ画面を拡張しています</translation>
 <translation id="8206859287963243715">携帯電話</translation>
@@ -118,6 +119,7 @@
 <translation id="8528322925433439945">モバイル...</translation>
 <translation id="3157169093162779309">回転ロックを有効にする</translation>
 <translation id="8428213095426709021">設定</translation>
+<translation id="6592705765268910579">不明な受信者</translation>
 <translation id="2372145515558759244">アプリの同期中...</translation>
 <translation id="1987317783729300807">アカウント</translation>
 <translation id="8456362689280298700">フル充電まで: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>

@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">আপনি অবিরত রাখতে পারেন৷ আপনি যদি পৃষ্ঠাটিতে অবিরত করেন এই সতর্কতা পরবর্তী পাঁচ মিনিটের জন্য উপস্থিত হবে না৷</translation>
 <translation id="7485870689360869515">কোনো ডেটা পাওয়া যায়নি৷</translation>
 <translation id="3884278016824448484">পরস্পর বিরোধী ডিভাইস সনাক্তকারী</translation>
-<translation id="6779575937362063477">এই ধরনের কার্ড Google Wallet এর দ্বারা সমর্থিত নয়৷ দয়া করে একটি আলাদা কার্ড নির্বাচন করুন৷</translation>
 <translation id="5172758083709347301">যন্ত্র</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
 <translation id="8208216423136871611">সংরক্ষণ করবেন না</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">না</translation>
 <translation id="2704283930420550640">বিন্যাসের সাথে মূল্য মেলে না৷</translation>
 <translation id="1055184225775184556">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
+<translation id="7813600968533626083">Chrome থেকে ফর্ম প্রস্তাবনা সরাবেন?</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="8091372947890762290">সার্ভারে সক্রিয়করণ বাকি আছে</translation>
 <translation id="6874604403660855544">&amp;যোগ করাকে পুনরায় করুন</translation>
@@ -117,6 +117,7 @@
 <translation id="3542684924769048008">এর জন্য পাসওয়ার্ড ব্যবহার করুন:</translation>
 <translation id="2855922900409897335">আপনার <ph name="CREDIT_CARD"/> যাচাই করুন৷</translation>
 <translation id="7186367841673660872">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE"/>থেকে<ph name="LANGUAGE_LANGUAGE"/>তে অনুবাদ করা হয়েছে</translation>
+<translation id="4587425331216688090">Chrome থেকে ঠিকানা সরাবেন?</translation>
 <translation id="7139724024395191329">এমিরেট</translation>
 <translation id="6646897916597483132">আপনার কার্ডের সামনে থেকে ৪ সংখ্যার CVC লিখুন</translation>
 <translation id="5145883236150621069">নীতি প্রতিক্রিয়ার মধ্যে ত্রুটি কোড উপস্থিত</translation>
@@ -124,6 +125,7 @@
 <translation id="6970216967273061347">জেলা</translation>
 <translation id="3427342743765426898">&amp;সম্পাদনাকে পুনরায় করুন</translation>
 <translation id="3010559122411665027">তালিকার এন্ট্রি &quot; <ph name="ENTRY_INDEX"/> &quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Chrome থেকে ক্রেডিট কার্ড সরাবেন?</translation>
 <translation id="6445051938772793705">দেশ</translation>
 <translation id="5031870354684148875">Google অনুবাদ সম্বন্ধে</translation>
 <translation id="1152921474424827756"><ph name="URL"/> এর <ph name="BEGIN_LINK"/>ক্যাশে করা অনুলিপি<ph name="END_LINK"/> অ্যাক্সেস করুন</translation>
@@ -136,6 +138,7 @@
 <translation id="1962204205936693436"><ph name="DOMAIN"/> বুকমার্কগুলি</translation>
 <translation id="4300246636397505754">মূল প্রস্তাবনাগুলি</translation>
 <translation id="111844081046043029">আপনি এই পৃষ্ঠাটি ছেড়ে যাওয়ার ব্যাপারে কি নিশ্চিত?</translation>
+<translation id="2495083838625180221">JSON বিশ্লেষক</translation>
 <translation id="1973335181906896915">ধারাবাহিকতাতে ত্রুটি</translation>
 <translation id="5989320800837274978">কোনো নির্ধারিত প্রক্সি সার্ভার অথবা একটি.pac স্ক্রিপ্ট UR সুর্নিদিষ্টভাবে উল্লেখ করা হয়নি৷</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
@@ -234,7 +237,6 @@
 <translation id="2835170189407361413">ফর্ম সাফ করুন</translation>
 <translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="8804164990146287819">গোপনীয়তা নীতি</translation>
-<translation id="5337776961545044340">এই বণিকের জন্য এই ধরনের কার্ড Google Wallet এর দ্বারা সমর্থিত নয়৷ দয়া করে একটি আলাদা কার্ড নির্বাচন করুন৷</translation>
 <translation id="7334320624316649418">&amp;পুনর্বিন্যাসকে পুনরায় করুন</translation>
 <translation id="7182878459783632708">কোন নীতি সেট করা নেই</translation>
 <translation id="5019198164206649151">ব্যাকিং স্টোরটি ত্রুটিপূর্ণ অবস্থায় আছে</translation>

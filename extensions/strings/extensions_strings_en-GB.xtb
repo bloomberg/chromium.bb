@@ -8,6 +8,7 @@
 <translation id="1005274289863221750">Use your microphone and camera</translation>
 <translation id="2857834222104759979">Manifest file is invalid.</translation>
 <translation id="6384275966486438344">Change your search settings to: <ph name="SEARCH_HOST"/></translation>
+<translation id="8658591203505835552">Select a USB device</translation>
 <translation id="1445572445564823378">This extension is slowing down <ph name="PRODUCT_NAME"/>. You should disable it to restore <ph name="PRODUCT_NAME"/>'s performance.</translation>
 <translation id="7003844668372540529">Unknown product <ph name="PRODUCT_ID"/> from <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Access your serial devices</translation>
@@ -16,13 +17,11 @@
 <translation id="6027032947578871493">Unknown product <ph name="PRODUCT_ID"/> from <ph name="VENDOR_NAME"/> (serial number <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">The administrator of this machine requires <ph name="EXTENSION_NAME"/> to have a minimum version of <ph name="EXTENSION_VERSION"/>. It cannot be enabled until it has updated to that version (or higher).</translation>
 <translation id="6075907793831890935">Exchange data with the device named <ph name="HOSTNAME"/></translation>
-<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Select a USB device}other{Select USB devices}}</translation>
 <translation id="5971037678316050792">Control Bluetooth adaptor state and pairing</translation>
 <translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.</translation>
-<translation id="5699534389808783598">Select HID devices
-      {NUM_DEVICE,plural, =1{Select a HID device}other{Select HID devices}}</translation>
 <translation id="8749863574775030885">Access USB devices from an unknown vendor</translation>
+<translation id="781637217073033149">Select HID devices</translation>
 <translation id="3115238746683532089">Unknown product <ph name="PRODUCT_ID"/> from vendor <ph name="VENDOR_ID"/> (serial number <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> from <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Could not load background script '<ph name="BACKGROUND_SCRIPT"/>'.</translation>
@@ -38,7 +37,9 @@
 <translation id="8712265948125780616">Extension Unpacker</translation>
 <translation id="149347756975725155">Could not load extension icon '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">This extension failed to modify the request header &quot;<ph name="HEADER_NAME"/>&quot; of a network request because the modification conflicted with another extension (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="4776856853352853275">Select USB devices</translation>
 <translation id="6731255991101203740">Could not create directory for unzipping: '<ph name="DIRECTORY_PATH"/>'</translation>
+<translation id="545850661681880228">Select an HID device</translation>
 <translation id="4233778200880751280">Could not load about page '<ph name="ABOUT_PAGE"/>'.</translation>
 <translation id="388442998277590542">Could not load options page '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="5127881134400491887">Manage network connections</translation>

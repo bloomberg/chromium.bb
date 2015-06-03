@@ -7,10 +7,10 @@ saimniekdators</translation>
 <translation id="2676780859508944670">Notiek apstrāde...</translation>
 <translation id="6062854958530969723">Neizdevās inicializēt saimniekdatoru.</translation>
 <translation id="5843054235973879827">Kāpēc tas ir droši?</translation>
-<translation id="5895138241574237353">Restartēt</translation>
 <translation id="5619148062500147964">Ar šo datoru</translation>
 <translation id="4068946408131579958">Visi savienojumi</translation>
 <translation id="2208514473086078157">Saskaņā ar politikas iestatījumiem šo datoru nevar koplietot kā Chrome attālās darbvirsmas saimniekdatoru. Lai saņemtu palīdzību, sazinieties ar sistēmas administratoru.</translation>
+<translation id="6381670701864002291">Cita problēma.</translation>
 <translation id="6541219117979389420">Lietojumprogrammu žurnālos var būt ietverta privāta informācija, tostarp jūsu identitāte (e-pasta adrese) un Google diska failu un mapju nosaukumi un rekvizīti.</translation>
 <translation id="3931191050278863510">Saimniekdatora darbība ir apturēta.</translation>
 <translation id="3905196214175737742">Saimniekdatora īpašnieka domēns nav derīgs.</translation>
@@ -53,6 +53,7 @@ saimniekdators</translation>
 <translation id="3606997049964069799">Jūs neesat pierakstījies pārlūkā Chromium. Lūdzu, pierakstieties un mēģiniet vēlreiz.</translation>
 <translation id="6198252989419008588">Mainīt PIN</translation>
 <translation id="7970576581263377361">Autentificēšana neizdevās. Lūdzu, vēlreiz pierakstieties pārlūkā Chromium.</translation>
+<translation id="477305884757156764">Lietojumprogramma ir pārāk lēna.</translation>
 <translation id="6167788864044230298">Chrome lietotnes straumēšana</translation>
 <translation id="170207782578677537">Neizdevās reģistrēt šo datoru.</translation>
 <translation id="4804818685124855865">Atvienot</translation>
@@ -70,6 +71,7 @@ saimniekdators</translation>
 <translation id="2314101195544969792">Jūsu <ph name="APPLICATION_NAME"/> sesija jau kādu laiku nav aktīva, un drīzumā tiks pārtraukts savienojums.</translation>
 <translation id="6001953797859482435">Chrome attālās darbvirsmas saimniekdatora preferences</translation>
 <translation id="225614027745146050">Laipni lūdzam!</translation>
+<translation id="1770394049404108959">Nevaru atvērt lietojumprogrammu.</translation>
 <translation id="9188433529406846933">Autorizēšana</translation>
 <translation id="228809120910082333">Lūdzu, tālāk apstipriniet kontu un PIN kodu, lai piekļūtu Chrome saitei.</translation>
 <translation id="7605995381616883502">Jauns savienojums</translation>
@@ -100,6 +102,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="3884839335308961732">Lai atļautu piekļuvi, izmantojot Chrome attālo darbvirsmu, lūdzu, apstipriniet kontu un PIN kodu.</translation>
 <translation id="327263477022142889">Vai vēlaties palīdzēt uzlabot Chrome attālo darbvirsmu? <ph name="LINK_BEGIN"/>Atbildiet uz aptaujas jautājumiem!<ph name="LINK_END"/></translation>
 <translation id="6612717000975622067">Sūtīt Ctrl-Alt-Del</translation>
+<translation id="6173536234069435147">Nevaru atvērt savus Google diska failus.</translation>
 <translation id="5702987232842159181">Savienojums ir izveidots:</translation>
 <translation id="8509907436388546015">Darbvirsmas integrācijas process</translation>
 <translation id="4736223761657662401">Savienojumu vēsture</translation>
@@ -191,10 +194,12 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="2078880767960296260">Saimniekdatora process</translation>
 <translation id="1643640058022401035">Aizverot šo lapu, Chrome saites sesija tiks pārtraukta.</translation>
 <translation id="8261506727792406068">Dzēst</translation>
+<translation id="1152528166145813711">Atlasīt...</translation>
 <translation id="2235518894410572517">Koplietojiet šo datoru, lai cits lietotājs redzētu un kontrolētu tā darbvirsmu.</translation>
 <translation id="6939719207673461467">Rādīt/slēpt tastatūru</translation>
 <translation id="1023096696228309145">Lūdziet lietotājam, kura datoram vēlaties piekļūt, noklikšķināt uz “Kopīgot tūlīt” un pēc tam paziņot jums piekļuves kodu.</translation>
 <translation id="4240294130679914010">Chrome saites saimniekdatora atinstalēšanas programma</translation>
+<translation id="8712909229180978490">Google diskā neredzu savus tiešsaistē saglabātos failus.</translation>
 <translation id="80739703311984697">Attālajā saimniekdatorā tiek pieprasīts, lai veicat autentificēšanu trešās puses vietnē. Lai turpinātu, jums jāpiešķir Chrome saitei papildu atļaujas piekļūt šai adresei:</translation>
 <translation id="4006787130661126000">Ja vēlaties piekļūt šim datoram, izmantojot Chrome attālo darbvirsmu, ir jāiespējo attālie savienojumi.</translation>
 <translation id="177096447311351977">Klienta kanāla IP: <ph name="CLIENT_GAIA_IDENTIFIER"/> ip='<ph name="CLIENT_IP_ADDRESS_AND_PORT"/>' host_ip='<ph name="HOST_IP_ADDRESS_AND_PORT"/>' channel='<ph name="CHANNEL_TYPE"/>' connection='<ph name="CONNECTION_TYPE"/>'.</translation>
@@ -244,6 +249,7 @@ darbvirsmas saimniekdators</translation>
 <translation id="6011539954251327702">Izmantojot Chrome saiti, varat droši koplietot savu datoru tīmeklī. Abiem lietotājiem ir jāizmanto lietotne Chrome saite, kas ir pieejama vietnē <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">Šobrīd jūs koplietojat šo ierīci ar citu lietotāju. Vai vēlaties turpināt koplietošanu?</translation>
 <translation id="4207623512727273241">Lūdzu, vispirms palaidiet instalēšanas programmu.</translation>
+<translation id="492843737083352574">Man radušās problēmas ar tastatūru vai peli.</translation>
 <translation id="1324095856329524885">(šī funkcija vēl nav pieejama jūsu datoram)</translation>
 <translation id="6570205395680337606">Atiestatīt lietojumprogrammu. Tiks zaudēts viss nesaglabātais saturs.</translation>
 <translation id="6284412385303060032">Saimniekdators, kas darbojas konsoles pieteikšanās ekrānā, ir izslēgts, lai atbalstītu aizkara režīmu, pārslēdzoties uz saimniekdatoru, kurš darbojas noteikta lietotāja sesijā.</translation>
@@ -261,6 +267,7 @@ darbvirsmas saimniekdators</translation>
 <translation id="1546934824884762070">Radās neparedzēta kļūda. Lūdzu, ziņojiet par šo problēmu izstrādātājiem.</translation>
 <translation id="4795786176190567663">Jums nav atļauju, lai veiktu šo darbību.</translation>
 <translation id="6965382102122355670">Labi</translation>
+<translation id="3025388528294795783">Lai mēs varētu novērst problēmu, lūdzu, aprakstiet to:</translation>
 <translation id="7434397035092923453">Piekļuve liegta šim klientam: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="3403830762023901068">Saskaņā ar politikas iestatījumiem šo datoru nevar koplietot kā Chrome saites saimniekdatoru. Lai saņemtu palīdzību, sazinieties ar sistēmas administratoru.</translation>
 <translation id="7312846573060934304">Saimniekdators darbojas bezsaistes režīmā.</translation>

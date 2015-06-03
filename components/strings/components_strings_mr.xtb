@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">आपण सुरु ठेवू शकता. आपण पृष्ठावर सुरु ठेवल्यास, ही चेतावणी पाच मिनिटे पुन्हा दिसणार नाही.</translation>
 <translation id="7485870689360869515">डेटा आढळला नाही.</translation>
 <translation id="3884278016824448484">संघर्ष करणारा डिव्हाइस अभिज्ञापक</translation>
-<translation id="6779575937362063477">या प्रकारचे कार्ड Google Wallet द्वारे समर्थित नाही. कृपया एक भिन्न कार्ड निवडा.</translation>
 <translation id="5172758083709347301">मशीन</translation>
 <translation id="7180611975245234373">रीफ्रेश करा</translation>
 <translation id="8208216423136871611">जतन करू नका</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">नाही</translation>
 <translation id="2704283930420550640">मूल्य स्वरुपनाशी जुळत नाही.</translation>
 <translation id="1055184225775184556">&amp;जोडा पूर्ववत करा</translation>
+<translation id="7813600968533626083">Chrome मधून सूचना फॉर्म काढायचा?</translation>
 <translation id="4850886885716139402">पहा</translation>
 <translation id="8091372947890762290">सक्रियकरण सर्व्हरवर प्रलंबित आहे</translation>
 <translation id="6874604403660855544">&amp;जोडा पुन्हा करा</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">यासाठी संकेतशब्द वापरा:</translation>
 <translation id="2855922900409897335">आपले <ph name="CREDIT_CARD"/> सत्यापित करा</translation>
 <translation id="7186367841673660872">हे पृष्ठ<ph name="ORIGINAL_LANGUAGE"/>मधून<ph name="LANGUAGE_LANGUAGE"/>मध्ये अनुवादित केले गेले आहे</translation>
+<translation id="4587425331216688090">Chrome मधून पत्ता काढायचा?</translation>
 <translation id="7139724024395191329">अमिरात</translation>
 <translation id="6646897916597483132">आपल्या कार्डच्या पुढील भागावर असलेले 4-अंकी CVC प्रविष्ट करा</translation>
 <translation id="5145883236150621069">धोरण प्रतिसादामध्ये त्रुटी कोड अस्तित्वात आहे</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">‍जिल्‍हा</translation>
 <translation id="3427342743765426898">&amp;संपादित करा पुन्हा करा</translation>
 <translation id="3010559122411665027">सूची प्रविष्टी &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Chrome मधून क्रेडिट कार्ड काढायचे?</translation>
 <translation id="6445051938772793705">देश</translation>
 <translation id="5031870354684148875">Google अनुवाद बद्दल</translation>
 <translation id="1152921474424827756"><ph name="URL"/> च्या <ph name="BEGIN_LINK"/>कॅशे केलेल्या कॉपीवर<ph name="END_LINK"/> प्रवेश करा</translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436"><ph name="DOMAIN"/> बुकमार्क</translation>
 <translation id="4300246636397505754">पालक सूचना</translation>
 <translation id="111844081046043029">आपली खात्री आहे की आपण हे पृष्ठ सोडू इच्छिता?</translation>
+<translation id="2495083838625180221">JSON विश्लेषक</translation>
 <translation id="1973335181906896915">क्रमीकरण त्रुटी</translation>
 <translation id="5989320800837274978">निश्चित प्रॉक्‍सी सर्व्हर किंवा .pac स्क्रिप्ट URL देखील निर्दिष्‍ट केलेली नाही.</translation>
 <translation id="7805768142964895445">स्थिती</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">फॉर्म क्लिअर करा</translation>
 <translation id="6550675742724504774">पर्याय</translation>
 <translation id="8804164990146287819">गोपनीयता धोरण</translation>
-<translation id="5337776961545044340">कार्डचा हा प्रकार या व्यापार्‍यासाठी Google Wallet द्वारे समर्थित नाही. कृपया एक भिन्न कार्ड निवडा.</translation>
 <translation id="7334320624316649418">&amp;पुनर्क्रमित करा पुन्हा करा</translation>
 <translation id="7182878459783632708">कोणतीही धोरणे सेट नाहीत</translation>
 <translation id="5019198164206649151">समर्थन संचयन खराब स्थितीत</translation>

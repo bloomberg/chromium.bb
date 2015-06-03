@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">Можете да наставите. Ако наставите до странице, ово упозорење се неће поново појавити у наредних пет минута.</translation>
 <translation id="7485870689360869515">Нису пронађени подаци.</translation>
 <translation id="3884278016824448484">Неусаглашени идентификатор уређаја</translation>
-<translation id="6779575937362063477">Google новчаник не подржава овај тип картице. Изаберите неку другу картицу.</translation>
 <translation id="5172758083709347301">Рачунар</translation>
 <translation id="7180611975245234373">Освежи</translation>
 <translation id="8208216423136871611">Не чувај</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">Не</translation>
 <translation id="2704283930420550640">Вредност се не подудара са форматом.</translation>
 <translation id="1055184225775184556">&amp;Опозови додавање</translation>
+<translation id="7813600968533626083">Желите ли да уклоните предлог из Chrome-а?</translation>
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="8091372947890762290">Активација је на чекању на серверу</translation>
 <translation id="6874604403660855544">&amp;Понови додавање</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">Користи лозинку за:</translation>
 <translation id="2855922900409897335">Верификујте <ph name="CREDIT_CARD"/></translation>
 <translation id="7186367841673660872">Ова страница је преведена са језика:<ph name="ORIGINAL_LANGUAGE"/>на<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4587425331216688090">Желите ли да уклоните адресу из Chrome-а?</translation>
 <translation id="7139724024395191329">Емират</translation>
 <translation id="6646897916597483132">Унесите четвороцифрени CVC који се налази на предњој страни картице</translation>
 <translation id="5145883236150621069">Кôд грешке је присутан у одговору на смернице</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">Дистрикт</translation>
 <translation id="3427342743765426898">&amp;Понови измену</translation>
 <translation id="3010559122411665027">Унос на листи „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Желите ли да уклоните кредитну картицу из Chrome-а?</translation>
 <translation id="6445051938772793705">Земља</translation>
 <translation id="5031870354684148875">О Google преводиоцу</translation>
 <translation id="1152921474424827756">Приступите <ph name="BEGIN_LINK"/>кешираној копији<ph name="END_LINK"/> странице <ph name="URL"/></translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436"><ph name="DOMAIN"/> – обележивачи</translation>
 <translation id="4300246636397505754">Предлози родитеља</translation>
 <translation id="111844081046043029">Желите ли стварно да затворите ову страницу?</translation>
+<translation id="2495083838625180221">Рашчлањивач JSON датотека</translation>
 <translation id="1973335181906896915">Грешка при серијализацији</translation>
 <translation id="5989320800837274978">Нису наведени ни фиксни прокси сервери нити URL адреса .pac скрипте.</translation>
 <translation id="7805768142964895445">Статус</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">Обриши образац</translation>
 <translation id="6550675742724504774">Опције</translation>
 <translation id="8804164990146287819">Политика приватности</translation>
-<translation id="5337776961545044340">Google новчаник не подржава овај тип картице за овог продавца. Изаберите другу картицу.</translation>
 <translation id="7334320624316649418">&amp;Понови промену редоследа</translation>
 <translation id="7182878459783632708">Нису подешене никакве смернице</translation>
 <translation id="5019198164206649151">Складиште тока података је у лошем стању</translation>

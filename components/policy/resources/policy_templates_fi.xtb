@@ -158,15 +158,15 @@ Käytännön arvot tulee määrittää millisekunteina. Arvoja voi valita välil
           Jos tätä käytäntöä ei ole asetettu, sivujen sisällönkuvauskentät skannataan.</translation>
 <translation id="3478024346823118645">Käyttäjätietojen tyhjennys uloskirjautumisen yhteydessä</translation>
 <translation id="8668394701842594241">Määrittää laajennukset, joita voi käyttää tuotteessa <ph name="PRODUCT_NAME"/>, ja estää käyttäjiä muuttamasta tätä asetusta. Jokerimerkeillä * ja ? voidaan korvata mitä tahansa merkkejä. * korvaa rajoittamattoman määrän merkkejä, kun taas ? korvaa yksittäisen valinnaisen merkin, eli nolla merkkiä tai yhden merkin. Vaihtomerkki on \, joten jos haluat käyttää merkkejä *, ? tai \ ilman niiden jokerimerkkimerkitystä, lisää niiden eteen merkki \. Luettelossa olevia laajennuksia käytetään aina tuotteessa <ph name="PRODUCT_NAME"/>, jos ne on asennettu. Laajennukset merkitään käytössä oleviksi kohdassa about:plugins, eivätkä käyttäjät voi poistaa niitä käytöstä. Huomaa, että tämä käytäntö ohittaa sekä käytännön DisabledPlugins että DisabledPluginsExceptions. Jos tätä käytäntöä ei ole määritetty, käyttäjä voi poistaa käytöstä minkä tahansa järjestelmään asennetun laajennuksen.</translation>
-<translation id="653608967792832033">Määrittää käyttämättömyysajan, jonka kuluttua ruutu lukitaan, kun laitetta käytetään akkuvirralla.
+<translation id="653608967792832033">Määrittää käyttämättömyysajan, jonka kuluttua näyttö lukitaan, kun laitetta käytetään akkuvirralla.
 
-          Kun tämän käytännön arvo on yli nolla, se määrittää käyttämättömyysajan, jonka kuluttua <ph name="PRODUCT_OS_NAME"/> lukitsee ruudun.
+          Kun tämän käytännön arvo on yli nolla, se määrittää käyttämättömyysajan, jonka kuluttua <ph name="PRODUCT_OS_NAME"/> lukitsee näytön.
 
-          Kun tämän käytännön arvo on nolla, <ph name="PRODUCT_OS_NAME"/> ei lukitse ruutua laitteen ollessa käyttämättömänä.
+          Kun tämän käytännön arvo on nolla, <ph name="PRODUCT_OS_NAME"/> ei lukitse näyttöä laitteen ollessa käyttämättömänä.
 
           Kun tälle käytännölle ei ole asetettu arvoa, se käyttää ajan oletusarvoa.
 
-          Suositeltu tapa toteuttaa ruudun lukitus laitteen ollessa käyttämättömänä on ottaa käyttöön ruudun lukitus sovelluksen keskeytyessä ja määrittää <ph name="PRODUCT_OS_NAME"/> keskeytymään, kun se on ollut käyttämättömänä tietyn aikaa. Tätä käytäntöä pitäisi käyttää vain silloin, kun ruutu halutaan lukita huomattavasti sovelluksen keskeytymistä aiemmin tai kun sovelluksen ei haluta keskeytyvän lainkaan.
+          Suositeltu tapa toteuttaa näytön lukitus laitteen ollessa käyttämättömänä on ottaa käyttöön näytön lukitus sovelluksen keskeytyessä ja määrittää <ph name="PRODUCT_OS_NAME"/> keskeytymään, kun se on ollut käyttämättömänä tietyn aikaa. Tätä käytäntöä pitäisi käyttää vain silloin, kun näyttö halutaan lukita huomattavasti sovelluksen keskeytymistä aiemmin tai kun sovelluksen ei haluta keskeytyvän lainkaan.
 
           Tämän käytännön arvo täytyy määrittää millisekunteina. Arvo rajoitetaan käyttämättömyysajan arvoa pienemmäksi.</translation>
 <translation id="979541737284082440">(Tämä dokumentti voi sisältää käytäntöjä, jotka on tarkoitettu tuotteen
@@ -847,24 +847,24 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
       Jos käytäntöä ei määritetä, automaattinen puhdistus käyttää sisäänrakennettua oletustapaa, joka on tällä hetkellä RemoveLRUIfDormant.</translation>
 <translation id="6923366716660828830">Määrittää oletushakupalvelun nimen. Jos nimi jätetään tyhjäksi tai käytäntöä ei ole määritetty, käytetään haku-URL-osoitteen määrittämää isäntänimeä. Tämä käytäntö on voimassa vain jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
-<translation id="4869787217450099946">Määrittää, sallitaanko ruudun herätyksen lukitus. Laajennus voi pyytää ruudun herätyksen lukitusta virranhallintalaajennuksen sovellusliittymän kautta.
+<translation id="4869787217450099946">Määrittää, sallitaanko näytön herätyksen lukitus. Laajennus voi pyytää näytön herätyksen lukitusta virranhallintalaajennuksen sovellusliittymän kautta.
 
-          Jos käytännön asetus on tosi tai arvoa ei ole asetettu, virranhallinta noudattaa ruudun herätyksen lukitusta.
+          Jos käytännön asetus on tosi tai arvoa ei ole asetettu, virranhallinta noudattaa näytön herätyksen lukitusta.
 
-          Jos käytännön asetus on epätosi, ruudun herätyksen lukituspyynnöt ohitetaan.</translation>
+          Jos käytännön asetus on epätosi, näytön herätyksen lukituspyynnöt ohitetaan.</translation>
 <translation id="467236746355332046">Tuetut ominaisuudet:</translation>
 <translation id="5447306928176905178">Ota käyttöön muistitietojen ilmoittaminen (JS-pinon koko) sivulle (vanhentunut)</translation>
 <translation id="7632724434767231364">GSSAPI-kirjaston nimi</translation>
 <translation id="3038323923255997294">Jätä taustasovellukset käyntiin, kun <ph name="PRODUCT_NAME"/> suljetaan</translation>
-<translation id="8909280293285028130">Määrittää käyttämättömyysajan, jonka kuluttua ruutu lukitaan, kun laitetta käytetään verkkovirralla.
+<translation id="8909280293285028130">Määrittää käyttämättömyysajan, jonka kuluttua näyttö lukitaan, kun laitetta käytetään verkkovirralla.
 
-          Kun tälle käytännölle asetetaan nollaa suurempi arvo, se määrittää käyttämättömyysajan, jonka kuluttua <ph name="PRODUCT_OS_NAME"/> lukitsee ruudun.
+          Kun tälle käytännölle asetetaan nollaa suurempi arvo, se määrittää käyttämättömyysajan, jonka kuluttua <ph name="PRODUCT_OS_NAME"/> lukitsee näytön.
 
-          Kun tälle käytännölle asetetaan arvoksi nolla, <ph name="PRODUCT_OS_NAME"/> ei lukitse ruutua laitteen ollessa käyttämättömänä.
+          Kun tälle käytännölle asetetaan arvoksi nolla, <ph name="PRODUCT_OS_NAME"/> ei lukitse näyttöä laitteen ollessa käyttämättömänä.
 
           Kun tälle käytännölle ei aseteta arvoa, se käyttää oletusaikaa.
 
-          Suositeltu tapa toteuttaa ruudun lukitus laitteen ollessa käyttämättömänä on ottaa käyttöön ruudun lukitus sovelluksen keskeytyessä ja määrittää <ph name="PRODUCT_OS_NAME"/> keskeytymään, kun se on ollut käyttämättömänä tietyn aikaa. Tätä käytäntöä pitäisi käyttää vain silloin, kun ruutu halutaan lukita huomattavasti sovelluksen keskeytymistä aiemmin tai kun sovelluksen ei haluta keskeytyvän lainkaan.
+          Suositeltu tapa toteuttaa näytön lukitus laitteen ollessa käyttämättömänä on ottaa käyttöön näytön lukitus sovelluksen keskeytyessä ja määrittää <ph name="PRODUCT_OS_NAME"/> keskeytymään, kun se on ollut käyttämättömänä tietyn aikaa. Tätä käytäntöä pitäisi käyttää vain silloin, kun näyttö halutaan lukita huomattavasti sovelluksen keskeytymistä aiemmin tai kun sovelluksen ei haluta keskeytyvän lainkaan.
 
           Tämän käytännön arvo täytyy määrittää millisekunteina. Arvo rajoitetaan käyttämättömyysajan arvoa pienemmäksi.</translation>
 <translation id="7651739109954974365">Määrittää, onko mobiilitiedonsiirto roaming-tilassa käytössä laitteessa. Jos arvo on tosi, mobiilitiedonsiirto roaming-tilassa on sallittu. Jos arvoa ei määritetä tai määritetty arvo on epätosi, mobiilitiedonsiirto roaming-tilassa ei ole käytettävissä.</translation>
@@ -898,15 +898,15 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
           Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, pikahakupyyntö lähetetään GET-metodin avulla.
 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
-<translation id="6095999036251797924">Määrittää ajan, jonka jälkeen ruutu lukitaan verkko- tai akkuvirtaa käytettäessä, jos käyttäjä ei tee mitään.
+<translation id="6095999036251797924">Määrittää ajan, jonka jälkeen näyttö lukitaan verkko- tai akkuvirtaa käytettäessä, jos käyttäjä ei tee mitään.
 
-          Jos arvo on suurempi kuin nolla, se tarkoittaa aikaa, joka käyttäjän on oltava toimettomana ennen kuin <ph name="PRODUCT_OS_NAME"/> lukitsee ruudun.
+          Jos arvo on suurempi kuin nolla, se tarkoittaa aikaa, joka käyttäjän on oltava toimettomana ennen kuin <ph name="PRODUCT_OS_NAME"/> lukitsee näytön.
 
-          Jos arvo on nolla, <ph name="PRODUCT_OS_NAME"/> ei lukitse ruutua, vaikka käyttäjä on toimettomana.
+          Jos arvo on nolla, <ph name="PRODUCT_OS_NAME"/> ei lukitse näyttöä, vaikka käyttäjä on toimettomana.
 
           Jos arvoa ei ole määritetty, oletusarvoa käytetään sen sijasta.
 
-          Suositeltu tapa lukita ruutu käyttämättömänä on ottaa ruudun lukitus käyttöön jäädytyksen yhteydessä, jolloin <ph name="PRODUCT_OS_NAME"/> jäädyttää laitteen määritetyn ajan jälkeen. Käytäntöä tulee käyttää vain, jos ruudun lukitus tapahtuu huomattavasti aiemmin kuin jäädytys tai jos et halua laitetta jäädytettävän käyttämättömänä.
+          Suositeltu tapa lukita näyttö käyttämättömänä on ottaa näytön lukitus käyttöön jäädytyksen yhteydessä, jolloin <ph name="PRODUCT_OS_NAME"/> jäädyttää laitteen määritetyn ajan jälkeen. Käytäntöä tulee käyttää vain, jos näytön lukitus tapahtuu huomattavasti aiemmin kuin jäädytys tai jos et halua laitetta jäädytettävän käyttämättömänä.
 
           Käytännön arvo tulee antaa millisekunteina. Arvon on oltava pienempi kuin käyttämättömyyden viive.</translation>
 <translation id="1454846751303307294">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa suorittaa JavaScriptiä. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultJavaScriptSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
@@ -1028,7 +1028,7 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="13356285923490863">Käytännön nimi</translation>
 <translation id="557658534286111200">Ottaa kirjanmerkkien muokkauksen käyttöön tai poistaa sen käytöstä</translation>
 <translation id="5378985487213287085">Voit määrittää, saavatko sivustot näyttää työpöytäilmoituksia. Työpöytäilmoituksien näyttäminen voidaan sallia oletuksena, kieltää oletuksena, tai käyttäjältä voidaan kysyä aina sivuston halutessa näyttää työpöytäilmoituksia. Jos tätä käytäntöä ei ole määritetty, käytetään AskNotifications-käytäntöä, ja käyttäjä voi muuttaa sitä.</translation>
-<translation id="2386362615870139244">Salli ruudun herätyksen lukitus</translation>
+<translation id="2386362615870139244">Salli näytön herätyksen lukitus</translation>
 <translation id="6908640907898649429">Määrittää oletushakupalvelun. Voit määrittää käytettävän oletushakupalvelun tai poistaa oletushaun käytöstä.</translation>
 <translation id="6544897973797372144">Jos käytännön arvo on Tosi ja ChromeOsReleaseChannel-käytäntöä ei ole määritetty, käyttäjät voivat vaihtaa laitteen julkaisuversiota. Jos käytännön arvo on Epätosi, laitteeseen lukitaan viimeksi määritetty julkaisuversio.
 

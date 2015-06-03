@@ -2,7 +2,6 @@
 <translation id="2774256287122201187">தொடரலாம். அப்படி தொடர்ந்தால், ஐந்து நிமிடங்களுக்கு இந்த எச்சரிக்கை மீண்டும் காட்டப்படாது.</translation>
 <translation id="7485870689360869515">தரவு எதுவும் இல்லை.</translation>
 <translation id="3884278016824448484">முரண்பாடான சாதன அடையாளங்காட்டி</translation>
-<translation id="6779575937362063477">இந்த வகை கார்டு Google Wallet ஆல் ஆதரிக்கப்படாது. வேறொரு கார்டைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="5172758083709347301">இயந்திரம்</translation>
 <translation id="7180611975245234373">புதுப்பி</translation>
 <translation id="8208216423136871611">சேமிக்காதே</translation>
@@ -42,6 +41,7 @@
 <translation id="7378627244592794276">இல்லை</translation>
 <translation id="2704283930420550640">மதிப்பானது வடிவமைப்பிற்குப் பொருந்தவில்லை.</translation>
 <translation id="1055184225775184556">&amp;சேர்த்தலைச் செயல்தவிர்</translation>
+<translation id="7813600968533626083">Chrome இலிருந்து படிவப் பரிந்துரையை அகற்றவா?</translation>
 <translation id="4850886885716139402">காட்சி</translation>
 <translation id="8091372947890762290">சேவையகத்தில் செயலாக்கம் நிலுவையிலுள்ளது</translation>
 <translation id="6874604403660855544">&amp;சேர்த்தலை மீண்டும் செய்</translation>
@@ -116,6 +116,7 @@
 <translation id="3542684924769048008">இதற்காக கடவுச்சொல்லைப் பயன்படுத்தவும்:</translation>
 <translation id="2855922900409897335">உங்கள் <ph name="CREDIT_CARD"/> கார்டைச் சரிபார்க்கவும்</translation>
 <translation id="7186367841673660872">இந்தப் பக்கமானது<ph name="ORIGINAL_LANGUAGE"/>இலிருந்து<ph name="LANGUAGE_LANGUAGE"/>க்கு மொழிபெயர்க்கப்பட்டது</translation>
+<translation id="4587425331216688090">Chrome இலிருந்து முகவரியை அகற்றவா?</translation>
 <translation id="7139724024395191329">எமிரேட்</translation>
 <translation id="6646897916597483132">கார்டின் முன்புறமுள்ள, 4 இலக்க CVCஐ உள்ளிடவும்</translation>
 <translation id="5145883236150621069">கொள்கைப் பதிலில் பிழைக் குறியீடு உள்ளது</translation>
@@ -123,6 +124,7 @@
 <translation id="6970216967273061347">மாவட்டம்</translation>
 <translation id="3427342743765426898">&amp;திருத்தலை மீண்டும் செய்</translation>
 <translation id="3010559122411665027">பட்டியல் உள்ளீடு &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="7569952961197462199">Chrome இலிருந்து கிரெடிட் கார்டை அகற்றவா?</translation>
 <translation id="6445051938772793705">நாடு</translation>
 <translation id="5031870354684148875">Google மொழியாக்கம் ஓர் அறிமுகம்</translation>
 <translation id="1152921474424827756"><ph name="URL"/> இன் <ph name="BEGIN_LINK"/>உருவாக்கத்திற்கான தற்காலிகச் சேமிப்பு நகலை<ph name="END_LINK"/> அணுகவும்</translation>
@@ -135,6 +137,7 @@
 <translation id="1962204205936693436"><ph name="DOMAIN"/> புத்தகக்குறிகள்</translation>
 <translation id="4300246636397505754">மூலப் பரிந்துரைகள்</translation>
 <translation id="111844081046043029">இந்த பக்கத்தை விட்டு நிச்சயமாக வெளியேற வேண்டுமா?</translation>
+<translation id="2495083838625180221">JSON பார்சர்</translation>
 <translation id="1973335181906896915">தொடராக்க பிழை</translation>
 <translation id="5989320800837274978">ப்ராக்ஸி சேவையகம் சரிசெய்யப்படவும் இல்லை .pac ஸ்கிரிப்ட் URL குறிப்பிடப்படவுமில்லை.</translation>
 <translation id="7805768142964895445">நிலை</translation>
@@ -233,7 +236,6 @@
 <translation id="2835170189407361413">படிவத்தை அழி</translation>
 <translation id="6550675742724504774">விருப்பத்தேர்வுகள்</translation>
 <translation id="8804164990146287819">தனியுரிமைக் கொள்கை</translation>
-<translation id="5337776961545044340">இந்த வர்த்தகருக்கான, இந்த வகை கார்டு Google Wallet ஆல் ஆதரிக்கப்படவில்லை. வேறொரு கார்டைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="7334320624316649418">&amp;மறுவரிசைப்படுத்தலை மீண்டும் செய்</translation>
 <translation id="7182878459783632708">கொள்கைகள் அமைக்கப்படவில்லை</translation>
 <translation id="5019198164206649151">தவறான நிலையில் மீட்பு சேமிப்பு உள்ளது</translation>

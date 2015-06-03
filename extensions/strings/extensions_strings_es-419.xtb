@@ -8,6 +8,7 @@
 <translation id="1005274289863221750">Usar tu micrófono y tu cámara</translation>
 <translation id="2857834222104759979">Archivo de manifiesto no válido.</translation>
 <translation id="6384275966486438344">Cambiar la configuración de búsqueda por <ph name="SEARCH_HOST"/></translation>
+<translation id="8658591203505835552">Selecciona un dispositivo USB</translation>
 <translation id="1445572445564823378">Esta extensión está ralentizando <ph name="PRODUCT_NAME"/>. Deberías inhabilitarla para restaurar el rendimiento de <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="7003844668372540529">Producto desconocido <ph name="PRODUCT_ID"/> de <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Acceder a tus dispositivos en serie</translation>
@@ -16,13 +17,11 @@
 <translation id="6027032947578871493">Producto desconocido <ph name="PRODUCT_ID"/> de <ph name="VENDOR_NAME"/> (número de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">El administrador de esta computadora requiere una versión de <ph name="EXTENSION_NAME"/> no anterior a <ph name="EXTENSION_VERSION"/>. No se puede habilitar hasta que se haya actualizado a dicha versión (o versiones posteriores).</translation>
 <translation id="6075907793831890935">Intercambiar datos con el dispositivo <ph name="HOSTNAME"/></translation>
-<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{Selecciona un dispositivo USB.}other{Selecciona dispositivos USB.}}</translation>
 <translation id="5971037678316050792">Controlar el estado y la sincronización del adaptador Bluetooth</translation>
 <translation id="677806580227005219">Controlador MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Acceder a la información sobre los dispositivos Bluetooth sincronizados con el sistema y detectar dispositivos Bluetooth cercanos.</translation>
-<translation id="5699534389808783598">Seleccionar dispositivos HID
-      {NUM_DEVICE,plural, =1{Selecciona un dispositivo HID.}other{Selecta dispositivos HID.}}</translation>
 <translation id="8749863574775030885">Acceder a dispositivos USB de un proveedor desconocido</translation>
+<translation id="781637217073033149">Seleccionar dispositivos HID</translation>
 <translation id="3115238746683532089">Producto desconocido <ph name="PRODUCT_ID"/> del proveedor <ph name="VENDOR_ID"/> (número de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> en <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">No se pudo cargar la secuencia de comandos en segundo plano &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
@@ -38,7 +37,9 @@
 <translation id="8712265948125780616">Desempaquetador de extensiones</translation>
 <translation id="149347756975725155">No se pudo cargar el ícono de extensión '<ph name="ICON"/>'.</translation>
 <translation id="8825366169884721447">Esta extensión no pudo modificar el encabezado de solicitud &quot;<ph name="HEADER_NAME"/>&quot; de una solicitud de red porque la modificación entró en conflicto con otra extensión (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="4776856853352853275">Seleccionar dispositivos USB</translation>
 <translation id="6731255991101203740">No se pudo crear un directorio para descomprimir &quot;<ph name="DIRECTORY_PATH"/>&quot;.</translation>
+<translation id="545850661681880228">Seleccionar un dispositivo HID</translation>
 <translation id="4233778200880751280">No se pudo cargar la página de información &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
 <translation id="388442998277590542">No se pudo cargar la página de opciones '<ph name="OPTIONS_PAGE"/>'.</translation>
 <translation id="5127881134400491887">Administrar conexiones de red</translation>

@@ -8,6 +8,7 @@
 <translation id="1005274289863221750">Mikrofoni ja kaamera kasutamine</translation>
 <translation id="2857834222104759979">Manifestifail on kehtetu.</translation>
 <translation id="6384275966486438344">Muutke oma otsinguseadeid: <ph name="SEARCH_HOST"/></translation>
+<translation id="8658591203505835552">USB-seadme valimine</translation>
 <translation id="1445572445564823378">Laiendus aeglustab rakendust <ph name="PRODUCT_NAME"/>. Peaksite selle keelama, et taastada rakenduse <ph name="PRODUCT_NAME"/> toimivus.</translation>
 <translation id="7003844668372540529">Tundmatu toode <ph name="PRODUCT_ID"/> teenusepakkujalt <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Juurdepääs jadaseadmetele</translation>
@@ -16,13 +17,11 @@
 <translation id="6027032947578871493">Tundmatu toode <ph name="PRODUCT_ID"/> teenusepakkujalt <ph name="VENDOR_NAME"/> (seerianumber <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="4115165561519362854">Seadme administraator nõuab, et kasutaksite laienduse <ph name="EXTENSION_NAME"/> puhul vähemalt versiooni <ph name="EXTENSION_VERSION"/>. Laiendust ei saa lubada enne, kui see on värskendatud sellele versioonile (või uuemale versioonile).</translation>
 <translation id="6075907793831890935">Vaheta andmeid seadmega <ph name="HOSTNAME"/></translation>
-<translation id="2934720479762806197">{NUM_DEVICE,plural, =1{USB-seadme valimine}other{USB-seadmete valimine}}</translation>
 <translation id="5971037678316050792">Bluetoothi adapteri oleku ja sidumise juhtimine</translation>
 <translation id="677806580227005219">Mime-töötleja: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
 <translation id="6241530762627360640">Juurdepääs teie süsteemiga seotud Bluetoothi seadmete teabele ja läheduses olevate Bluetoothi seadmete tuvastamine.</translation>
-<translation id="5699534389808783598">HID-seadmete valimine
-      {NUM_DEVICE,plural, =1{HID-seadme valimine}other{HID-seadmete valimine}}</translation>
 <translation id="8749863574775030885">Juurdepääs tundmatu müüja USB-seadmetele</translation>
+<translation id="781637217073033149">HID-seadmete valimine</translation>
 <translation id="3115238746683532089">Tundmatu toode <ph name="PRODUCT_ID"/> teenusepakkujalt <ph name="VENDOR_ID"/> (seerianumber <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> teenusepakkujalt <ph name="VENDOR_NAME"/></translation>
 <translation id="657064425229075395">Taustaskripti „<ph name="BACKGROUND_SCRIPT"/>” ei õnnestunud laadida.</translation>
@@ -38,7 +37,9 @@
 <translation id="8712265948125780616">Laienduse lahtipakkija</translation>
 <translation id="149347756975725155">Laienduse ikooni <ph name="ICON"/> ei õnnestunud laadida.</translation>
 <translation id="8825366169884721447">Laiendusel ei õnnestunud muuta võrgutaotluse päist „<ph name="HEADER_NAME"/>”, kuna muudatus sattus vastuollu teise laiendusega (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="4776856853352853275">USB-seadmete valimine</translation>
 <translation id="6731255991101203740">Lahtipakkimiseks ei saanud kataloogi luua: „<ph name="DIRECTORY_PATH"/>”</translation>
+<translation id="545850661681880228">HID-seadme valimine</translation>
 <translation id="4233778200880751280">Teabelehte „<ph name="ABOUT_PAGE"/>” ei õnnestunud laadida.</translation>
 <translation id="388442998277590542">Valikute lehte <ph name="OPTIONS_PAGE"/> ei õnnestunud laadida.</translation>
 <translation id="5127881134400491887">Võrguühenduste haldamine</translation>
