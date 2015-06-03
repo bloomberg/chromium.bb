@@ -14,6 +14,7 @@
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "net/base/escape.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 
@@ -129,10 +130,8 @@ void MockGoogleStreamingServer::SimulateServerResponse(
     bool success, const std::string& http_response) {
   net::TestURLFetcher* fetcher = GetURLFetcher(true);
 
-  net::URLRequestStatus status;
-  status.set_status(success ? net::URLRequestStatus::SUCCESS :
-                              net::URLRequestStatus::FAILED);
-  fetcher->set_status(status);
+  fetcher->set_status(
+      net::URLRequestStatus::FromError(success ? net::OK : net::ERR_FAILED));
   fetcher->set_response_code(success ? 200 : 500);
   fetcher->SetResponseString(http_response);
   fetcher->delegate()->OnURLFetchDownloadProgress(fetcher, 0, 0);

@@ -1223,6 +1223,7 @@
       'url_request/url_request_redirect_job.h',
       'url_request/url_request_simple_job.cc',
       'url_request/url_request_simple_job.h',
+      'url_request/url_request_status.cc',
       'url_request/url_request_status.h',
       'url_request/url_request_test_job.cc',
       'url_request/url_request_test_job.h',

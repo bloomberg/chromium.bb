@@ -688,8 +688,7 @@ void URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
   // If the URL request already has an error status, then canceling is a no-op.
   // Plus, we don't want to change the error status once it has been set.
   if (status_.is_success()) {
-    status_.set_status(URLRequestStatus::CANCELED);
-    status_.set_error(error);
+    status_ = URLRequestStatus(URLRequestStatus::CANCELED, error);
     response_info_.ssl_info = ssl_info;
 
     // If the request hasn't already been completed, log a cancellation event.

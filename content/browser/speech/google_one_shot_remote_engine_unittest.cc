@@ -8,6 +8,7 @@
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -65,10 +66,8 @@ void GoogleOneShotRemoteEngineTest::CreateAndTestRequest(
   ASSERT_TRUE(fetcher);
 
   fetcher->set_url(fetcher->GetOriginalURL());
-  net::URLRequestStatus status;
-  status.set_status(success ? net::URLRequestStatus::SUCCESS :
-                              net::URLRequestStatus::FAILED);
-  fetcher->set_status(status);
+  fetcher->set_status(
+      net::URLRequestStatus::FromError(success ? net::OK : net::ERR_FAILED));
   fetcher->set_response_code(success ? 200 : 500);
   fetcher->SetResponseString(http_response);
 

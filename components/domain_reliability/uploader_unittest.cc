@@ -91,9 +91,7 @@ class DomainReliabilityUploaderTest : public testing::Test {
     EXPECT_TRUE(fetcher);
 
     net::URLRequestStatus status;
-    status.set_status(net::URLRequestStatus::FAILED);
-    status.set_error(error);
-    fetcher->set_status(status);
+    fetcher->set_status(net::URLRequestStatus::FromError(error));
     fetcher->set_response_code(-1);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }

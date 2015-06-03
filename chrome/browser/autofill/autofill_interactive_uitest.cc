@@ -46,7 +46,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -221,9 +223,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   void SimulateURLFetch(bool success) {
     net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
-    net::URLRequestStatus status;
-    status.set_status(success ? net::URLRequestStatus::SUCCESS :
-                                net::URLRequestStatus::FAILED);
+    net::Error error = success ? net::OK : net::ERR_FAILED;
 
     std::string script = " var google = {};"
         "google.translate = (function() {"
@@ -253,7 +253,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
         "cr.googleTranslate.onTranslateElementLoad();";
 
     fetcher->set_url(fetcher->GetOriginalURL());
-    fetcher->set_status(status);
+    fetcher->set_status(net::URLRequestStatus::FromError(error));
     fetcher->set_response_code(success ? 200 : 500);
     fetcher->SetResponseString(script);
     fetcher->delegate()->OnURLFetchComplete(fetcher);

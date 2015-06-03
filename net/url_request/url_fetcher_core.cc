@@ -668,8 +668,7 @@ void URLFetcherCore::CancelURLRequest(int error) {
   // URLRequestJob::NotifyDone(). But, because the request was released
   // immediately after being canceled, the request could not call
   // OnReadCompleted() which overwrites |status_| with the error status.
-  status_.set_status(URLRequestStatus::CANCELED);
-  status_.set_error(error);
+  status_ = URLRequestStatus(URLRequestStatus::CANCELED, error);
 
   // Release the reference to the request context. There could be multiple
   // references to URLFetcher::Core at this point so it may take a while to

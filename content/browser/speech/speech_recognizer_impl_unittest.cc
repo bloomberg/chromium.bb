@@ -261,9 +261,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   ASSERT_TRUE(fetcher);
 
   fetcher->set_url(fetcher->GetOriginalURL());
-  net::URLRequestStatus status;
-  status.set_status(net::URLRequestStatus::SUCCESS);
-  fetcher->set_status(status);
+  fetcher->set_status(net::URLRequestStatus());
   fetcher->set_response_code(200);
   fetcher->SetResponseString(
       "{\"status\":0,\"hypotheses\":[{\"utterance\":\"123\"}]}");
@@ -317,10 +315,8 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
 
   // Issue the network callback to complete the process.
   fetcher->set_url(fetcher->GetOriginalURL());
-  net::URLRequestStatus status;
-  status.set_status(net::URLRequestStatus::FAILED);
-  status.set_error(net::ERR_CONNECTION_REFUSED);
-  fetcher->set_status(status);
+  fetcher->set_status(
+      net::URLRequestStatus::FromError(net::ERR_CONNECTION_REFUSED));
   fetcher->set_response_code(0);
   fetcher->SetResponseString(std::string());
   fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -354,9 +350,7 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
 
   // Issue the network callback to complete the process.
   fetcher->set_url(fetcher->GetOriginalURL());
-  net::URLRequestStatus status;
-  status.set_status(net::URLRequestStatus::SUCCESS);
-  fetcher->set_status(status);
+  fetcher->set_status(net::URLRequestStatus());
   fetcher->set_response_code(500);
   fetcher->SetResponseString("Internal Server Error");
   fetcher->delegate()->OnURLFetchComplete(fetcher);

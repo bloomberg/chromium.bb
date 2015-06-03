@@ -281,8 +281,8 @@ void RedirectToFileResourceHandler::DidWriteToFile(int result) {
     if (completed_during_write_ && completed_status_.is_success()) {
       // If the request successfully completed mid-write, but the write failed,
       // convert the status to a failure for downstream.
-      completed_status_.set_status(net::URLRequestStatus::CANCELED);
-      completed_status_.set_error(net::ERR_FAILED);
+      completed_status_ = net::URLRequestStatus(net::URLRequestStatus::CANCELED,
+                                                net::ERR_FAILED);
     }
     if (!completed_during_write_)
       controller()->CancelWithError(net::ERR_FAILED);

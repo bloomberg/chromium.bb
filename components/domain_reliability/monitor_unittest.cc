@@ -66,8 +66,6 @@ class DomainReliabilityMonitorTest : public testing::Test {
   static RequestInfo MakeRequestInfo() {
     RequestInfo request;
     request.status = net::URLRequestStatus();
-    request.status.set_status(net::URLRequestStatus::SUCCESS);
-    request.status.set_error(net::OK);
     request.response_info.socket_address =
         net::HostPortPair::FromString("12.34.56.78:80");
     request.response_info.headers = MakeHttpResponseHeaders(
@@ -153,8 +151,7 @@ TEST_F(DomainReliabilityMonitorTest, NotReported) {
 TEST_F(DomainReliabilityMonitorTest, NetworkFailure) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/always_report");
-  request.status.set_status(net::URLRequestStatus::FAILED);
-  request.status.set_error(net::ERR_CONNECTION_RESET);
+  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
   request.response_info.headers = nullptr;
   OnRequestLegComplete(request);
 
@@ -176,8 +173,7 @@ TEST_F(DomainReliabilityMonitorTest, ServerFailure) {
 TEST_F(DomainReliabilityMonitorTest, NotReportedFailure) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/never_report");
-  request.status.set_status(net::URLRequestStatus::FAILED);
-  request.status.set_error(net::ERR_CONNECTION_RESET);
+  request.status = net::URLRequestStatus::FromError(net::ERR_CONNECTION_RESET);
   OnRequestLegComplete(request);
 
   EXPECT_EQ(0u, CountPendingBeacons());
@@ -230,8 +226,8 @@ TEST_F(DomainReliabilityMonitorTest, IsUpload) {
 TEST_F(DomainReliabilityMonitorTest, LocalError) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/always_report");
-  request.status.set_status(net::URLRequestStatus::FAILED);
-  request.status.set_error(net::ERR_PROXY_CONNECTION_FAILED);
+  request.status =
+      net::URLRequestStatus::FromError(net::ERR_PROXY_CONNECTION_FAILED);
   OnRequestLegComplete(request);
 
   EXPECT_EQ(0u, CountPendingBeacons());
@@ -276,8 +272,8 @@ TEST_F(DomainReliabilityMonitorTest, NoCachedIPFromFailedRevalidationRequest) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/always_report");
   request.response_info.was_cached = true;
-  request.status.set_status(net::URLRequestStatus::FAILED);
-  request.status.set_error(net::ERR_NAME_RESOLUTION_FAILED);
+  request.status =
+      net::URLRequestStatus::FromError(net::ERR_NAME_RESOLUTION_FAILED);
   OnRequestLegComplete(request);
 
   BeaconVector beacons;
@@ -343,10 +339,13 @@ TEST_F(DomainReliabilityMonitorTest, ClearContexts) {
   EXPECT_EQ(0u, monitor_.contexts_size_for_testing());
 }
 
+// TODO(davidben): When https://crbug.com/490311 is resolved, this test can be
+// removed.
 TEST_F(DomainReliabilityMonitorTest, IgnoreSuccessError) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/always_report");
-  request.status.set_error(net::ERR_QUIC_PROTOCOL_ERROR);
+  request.status = net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
+                                         net::ERR_QUIC_PROTOCOL_ERROR);
   OnRequestLegComplete(request);
 
   BeaconVector beacons;

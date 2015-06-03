@@ -178,9 +178,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
   net::TestURLFetcher* fetcher =
       factory.GetFetcherByID(translate::TranslateScript::kFetcherId);
   ASSERT_TRUE(fetcher);
-  net::URLRequestStatus status;
-  status.set_status(net::URLRequestStatus::SUCCESS);
-  fetcher->set_status(status);
+  fetcher->set_status(net::URLRequestStatus());
   fetcher->set_url(fetcher->GetOriginalURL());
   fetcher->set_response_code(net::HTTP_OK);
   fetcher->SetResponseString(element_js);
