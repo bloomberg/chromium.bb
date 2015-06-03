@@ -1018,26 +1018,6 @@ crbug.com/424338 css2.1/20110323/abspos-containing-block-initial-004f.htm [ Need
 
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure Timeout ]
 
-crbug.com/453113 svg/as-image/img-preserveAspectRatio-support-1.html [ NeedsRebaseline ]
-crbug.com/453113 svg/as-background-image/background-image-preserveaspectRatio-support.html [ NeedsRebaseline ]
-crbug.com/453113 svg/custom/control-points-for-S-and-T.svg [ NeedsRebaseline ]
-crbug.com/453113 css3/blending/background-blend-mode-crossfade-image-gradient.html [ NeedsRebaseline ]
-crbug.com/453113 css3/blending/effect-background-blend-mode-stacking.html [ NeedsRebaseline ]
-crbug.com/453113 css3/images/cross-fade-background-size.html [ NeedsRebaseline ]
-crbug.com/453113 css3/images/cross-fade-tiled.html [ NeedsRebaseline ]
-crbug.com/453113 fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
-crbug.com/453113 svg/W3C-SVG-1.1/filters-light-01-f.svg [ NeedsRebaseline ]
-crbug.com/453113 svg/W3C-SVG-1.1/filters-light-04-f.svg [ NeedsRebaseline ]
-crbug.com/453113 svg/W3C-SVG-1.1/paths-data-03-f.svg [ NeedsRebaseline ]
-crbug.com/453113 svg/W3C-SVG-1.1/text-align-08-b.svg [ NeedsRebaseline ]
-crbug.com/453113 virtual/slimmingpaint/svg/as-background-image/background-image-preserveaspectRatio-support.html [ NeedsRebaseline ]
-crbug.com/453113 virtual/slimmingpaint/svg/as-image/img-preserveAspectRatio-support-1.html [ NeedsRebaseline ]
-crbug.com/453113 virtual/slimmingpaint/svg/W3C-SVG-1.1/filters-light-01-f.svg [ NeedsRebaseline ]
-crbug.com/453113 virtual/slimmingpaint/svg/W3C-SVG-1.1/filters-light-04-f.svg [ NeedsRebaseline ]
-crbug.com/453113 virtual/slimmingpaint/svg/W3C-SVG-1.1/paths-data-03-f.svg [ NeedsRebaseline ]
-crbug.com/453113 virtual/slimmingpaint/svg/W3C-SVG-1.1/text-align-08-b.svg [ NeedsRebaseline ]
-crbug.com/453113 virtual/slimmingpaint/svg/custom/control-points-for-S-and-T.svg [ NeedsRebaseline ]
-
 crbug.com/346151 css3/filters/effect-reference-hidpi-hw.html [ Pass ImageOnlyFailure ]
 
 crbug.com/349552 [ Android ] compositing/animation/animated-composited-inside-hidden.html [ Pass Timeout ]
