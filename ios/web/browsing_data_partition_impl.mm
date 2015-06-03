@@ -9,7 +9,95 @@
 #import "ios/web/public/crw_browsing_data_store.h"
 #include "ios/web/public/web_thread.h"
 
+// A class that observes the |mode| changes in a CRWBrowsingDataStore using KVO.
+// Maintains a count of all the CRWBrowsingDataStores whose mode is out of sync
+// with their corresponding ActiveStateManager's active state.
+@interface CRWBrowsingDataStoreModeObserver : NSObject
+
+// The total count of the CRWBrowsingDataStores -- that are being observed --
+// whose mode is out of sync with their associated ActiveStateManager's active
+// state.
+@property(nonatomic, assign) NSUInteger outOfSyncStoreCount;
+
+// Adds |browsingDataStore| to the list of the CRWBrowsingDataStores that are
+// being observed for KVO changes in the |mode| value. |browserState| cannot be
+// null and the |browserState|'s associated CRWBrowsingDataStore must be
+// |browsingDataStore|.
+// The |browsingDataStore|'s mode must not already be SYNCHRONIZING.
+- (void)startObservingBrowsingDataStore:(CRWBrowsingDataStore*)browsingDataStore
+                           browserState:(web::BrowserState*)browserState;
+
+// Stops observing |browsingDataStore| for its |mode| change.
+// The |browsingDataStore|'s mode must not be SYNCHRONIZING.
+- (void)stopObservingBrowsingDataStore:(CRWBrowsingDataStore*)browsingDataStore;
+@end
+
+@implementation CRWBrowsingDataStoreModeObserver
+
+@synthesize outOfSyncStoreCount = _outOfSyncStoreCount;
+
+- (void)startObservingBrowsingDataStore:(CRWBrowsingDataStore*)browsingDataStore
+                           browserState:(web::BrowserState*)browserState {
+  web::BrowsingDataPartition* browsing_data_partition =
+      web::BrowserState::GetBrowsingDataPartition(browserState);
+  DCHECK(browsing_data_partition);
+  DCHECK_EQ(browsing_data_partition->GetBrowsingDataStore(), browsingDataStore);
+  DCHECK_NE(SYNCHRONIZING, browsingDataStore.mode);
+
+  [browsingDataStore addObserver:self
+                      forKeyPath:@"mode"
+                         options:0
+                         context:browserState];
+}
+
+- (void)stopObservingBrowsingDataStore:
+        (CRWBrowsingDataStore*)browsingDataStore {
+  DCHECK_NE(SYNCHRONIZING, browsingDataStore.mode);
+
+  [browsingDataStore removeObserver:self forKeyPath:@"mode"];
+}
+
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(CRWBrowsingDataStore*)browsingDataStore
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  DCHECK([keyPath isEqual:@"mode"]);
+  DCHECK([browsingDataStore isKindOfClass:[CRWBrowsingDataStore class]]);
+  DCHECK(context);
+
+  if (browsingDataStore.mode == SYNCHRONIZING) {
+    ++self.outOfSyncStoreCount;
+    return;
+  }
+  web::BrowserState* browserState = static_cast<web::BrowserState*>(context);
+  web::ActiveStateManager* activeStateManager =
+      web::BrowserState::GetActiveStateManager(browserState);
+  DCHECK(activeStateManager);
+  bool activeState = activeStateManager->IsActive();
+  // Check if the |browsingDataStore|'s associated ActiveStateManager's active
+  // state is still out of sync.
+  if (activeState && browsingDataStore.mode == INACTIVE) {
+    [browsingDataStore makeActiveWithCompletionHandler:nil];
+  } else if (!activeState && browsingDataStore.mode == ACTIVE) {
+    [browsingDataStore makeInactiveWithCompletionHandler:nil];
+  }
+
+  DCHECK_GE(self.outOfSyncStoreCount, 1U);
+  --self.outOfSyncStoreCount;
+  // TODO(shreyasv): Have a BrowsingDataPartitionClient be informed when
+  // |self.outOfSyncStoreCount| goes down to 0. crbug.com/480654.
+}
+
+@end
+
 namespace web {
+
+namespace {
+// The global observer that tracks the number of CRWBrowsingDataStores whose
+// modes are out of sync with their associated ActiveStateManager's active
+// state.
+CRWBrowsingDataStoreModeObserver* g_browsing_data_store_mode_observer = nil;
+}  // namespace
 
 BrowsingDataPartitionImpl::BrowsingDataPartitionImpl(
     BrowserState* browser_state)
@@ -27,14 +115,14 @@ BrowsingDataPartitionImpl::~BrowsingDataPartitionImpl() {
   if (active_state_manager_) {
     active_state_manager_->RemoveObserver(this);
   }
+  DCHECK_NE(SYNCHRONIZING, [browsing_data_store_ mode]);
+  [g_browsing_data_store_mode_observer
+      stopObservingBrowsingDataStore:browsing_data_store_];
 }
 
 // static
 bool BrowsingDataPartition::IsSynchronized() {
-  // TODO(shreyasv): Implement the logic to track the count of
-  // CRWBrowsingDataManagers whose mode is out of sync with their associated
-  // ActiveStateManager. Return true for now. crbug.com/480654.
-  return true;
+  return [g_browsing_data_store_mode_observer outOfSyncStoreCount] == 0U;
 }
 
 CRWBrowsingDataStore* BrowsingDataPartitionImpl::GetBrowsingDataStore() {
@@ -43,6 +131,13 @@ CRWBrowsingDataStore* BrowsingDataPartitionImpl::GetBrowsingDataStore() {
   if (!browsing_data_store_) {
     browsing_data_store_.reset(
         [[CRWBrowsingDataStore alloc] initWithBrowserState:browser_state_]);
+    if (!g_browsing_data_store_mode_observer) {
+      g_browsing_data_store_mode_observer =
+          [[CRWBrowsingDataStoreModeObserver alloc] init];
+    }
+    [g_browsing_data_store_mode_observer
+        startObservingBrowsingDataStore:browsing_data_store_
+                           browserState:browser_state_];
   }
   return browsing_data_store_;
 }
@@ -50,15 +145,13 @@ CRWBrowsingDataStore* BrowsingDataPartitionImpl::GetBrowsingDataStore() {
 void BrowsingDataPartitionImpl::OnActive() {
   DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
 
-  // TODO(shreyasv): Drive restoring of browsing data from here, once that API
-  // is ready. crbug.com/480654
+  [GetBrowsingDataStore() makeActiveWithCompletionHandler:nil];
 }
 
 void BrowsingDataPartitionImpl::OnInactive() {
   DCHECK_CURRENTLY_ON_WEB_THREAD(WebThread::UI);
 
-  // TODO(shreyasv): Drive stashing of browsing data from here, once that API
-  // is ready. crbug.com/480654
+  [GetBrowsingDataStore() makeInactiveWithCompletionHandler:nil];
 }
 
 void BrowsingDataPartitionImpl::WillBeDestroyed() {

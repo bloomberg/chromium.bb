@@ -42,9 +42,9 @@ enum CRWBrowsingDataStoreMode {
 // All methods must be called on the UI thread.
 @interface CRWBrowsingDataStore : NSObject
 
-// Designated initializer. |browserState| cannot be a nullptr.
-// The |web::ActiveStateManager| associated with |browserState| needs to be in
-// active state.
+// Designated initializer. |browserState| cannot be null.
+// The initial mode of the CRWBrowsingDataStore is obtained from the active
+// state of the |web::ActiveStateManager| associated with |browserState|.
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 

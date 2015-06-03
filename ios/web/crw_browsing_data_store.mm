@@ -147,12 +147,14 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState {
   self = [super init];
   if (self) {
-    DCHECK(web::BrowserState::GetActiveStateManager(browserState)->IsActive());
     DCHECK([NSThread isMainThread]);
     // TODO(shreyasv): Instantiate the necessary CRWBrowsingDataManagers that
     // are encapsulated within this class. crbug.com/480654.
     _browserState = browserState;
-    _mode = ACTIVE;
+    web::ActiveStateManager* activeStateManager =
+        web::BrowserState::GetActiveStateManager(browserState);
+    DCHECK(activeStateManager);
+    _mode = activeStateManager->IsActive() ? ACTIVE : INACTIVE;
     // TODO(shreyasv): If the creation of CRWBrowsingDataManagers turns out to
     // be an expensive operations re-visit this with a lazy-evaluation approach.
     base::scoped_nsobject<CRWCookieBrowsingDataManager>
