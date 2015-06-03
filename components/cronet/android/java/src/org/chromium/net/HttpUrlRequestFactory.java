@@ -14,7 +14,9 @@ import java.util.Map;
 /**
  * A factory for {@link HttpUrlRequest}'s, which uses the best HTTP stack
  * available on the current platform.
+ * @deprecated Use {@link UrlRequestContext} instead.
  */
+@Deprecated
 public abstract class HttpUrlRequestFactory {
     private static final String TAG = "HttpUrlRequestFactory";
 

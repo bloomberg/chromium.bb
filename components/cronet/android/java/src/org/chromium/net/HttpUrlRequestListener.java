@@ -6,7 +6,9 @@ package org.chromium.net;
 
 /**
  * Callback interface.
+ * @deprecated Use {@link UrlRequestListener} instead.
  */
+@Deprecated
 public interface HttpUrlRequestListener {
     /**
      * A callback invoked when the first chunk of the response has arrived and

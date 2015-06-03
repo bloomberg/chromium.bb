@@ -26,8 +26,10 @@ import java.util.Map.Entry;
 
 /**
  * Network request using the native http stack implementation.
+ * @deprecated Use {@link CronetUrlRequest} instead.
  */
 @JNINamespace("cronet")
+@Deprecated
 public class ChromiumUrlRequest implements HttpUrlRequest {
     /**
      * Native adapter object, owned by UrlRequest.

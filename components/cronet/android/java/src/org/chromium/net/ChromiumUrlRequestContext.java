@@ -15,8 +15,10 @@ import org.chromium.base.JNINamespace;
 
 /**
  * Provides context for the native HTTP operations.
+ * @deprecated Use {@link CronetUrlRequestContext} instead.
  */
 @JNINamespace("cronet")
+@Deprecated
 public class ChromiumUrlRequestContext {
     private static final int LOG_NONE = 3;  // LOG(FATAL), no VLOG.
     private static final int LOG_DEBUG = -1;  // LOG(FATAL...INFO), VLOG(1)

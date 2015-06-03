@@ -28,7 +28,9 @@ import java.util.zip.GZIPInputStream;
 
 /**
  * Network request using the HttpUrlConnection implementation.
+ * @deprecated Use {@link UrlRequest} instead.
  */
+@Deprecated
 class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
 
     private static final int MAX_CHUNK_SIZE = 8192;

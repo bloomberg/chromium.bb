@@ -13,7 +13,9 @@ import java.util.Map;
 
 /**
  * Network request using {@link java.net.HttpURLConnection}.
+ * @deprecated Use {@link UrlRequestContext} instead.
  */
+@Deprecated
 class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {
 
     private final Context mContext;

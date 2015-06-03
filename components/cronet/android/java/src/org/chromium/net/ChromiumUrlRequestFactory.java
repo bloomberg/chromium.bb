@@ -14,8 +14,10 @@ import java.util.Map;
 
 /**
  * Network request factory using the native http stack implementation.
+ * @deprecated Use {@link CronetUrlRequestContext} instead.
  */
 @UsedByReflection("HttpUrlRequestFactory.java")
+@Deprecated
 public class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
     private ChromiumUrlRequestContext mRequestContext;
 

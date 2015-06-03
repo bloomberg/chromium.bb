@@ -9,8 +9,10 @@ import java.io.IOException;
 /**
  * Exception returned if a {@link HttpUrlRequest} attempts to download a
  * response that exceeds the user-specified limit.
+ * @deprecated This is no longer used in the async API.
  */
 @SuppressWarnings("serial")
+@Deprecated
 public class ResponseTooLargeException extends IOException {
     public ResponseTooLargeException() {
     }

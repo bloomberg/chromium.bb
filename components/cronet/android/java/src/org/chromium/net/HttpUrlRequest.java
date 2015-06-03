@@ -12,7 +12,9 @@ import java.util.Map;
 
 /**
  * HTTP request (GET or POST).
+ * @deprecated Use {@link UrlRequest} instead.
  */
+@Deprecated
 public interface HttpUrlRequest {
 
     public static final int REQUEST_PRIORITY_IDLE = 0;

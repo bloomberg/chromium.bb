@@ -15,7 +15,9 @@ import java.util.ArrayList;
  * {@link #write} results in a ByteBuffer being created and remembered. Then all
  * of those byte buffers are combined on demand. This approach allows to avoid
  * the cost of reallocating a byte buffer.
+ * @deprecated This is no longer used in the new async API.
  */
+@Deprecated
 public class ChunkedWritableByteChannel implements WritableByteChannel {
 
     private final ArrayList<ByteBuffer> mBuffers = new ArrayList<ByteBuffer>();
