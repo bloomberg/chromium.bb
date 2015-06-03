@@ -777,13 +777,6 @@
         "manifest": "official.xml",
         "name": "alex-chrome-pfq"
     },
-    "alex-tot-chrome-pfq-informational": {
-        "_template": "chrome-pfq-informational",
-        "boards": [
-            "x86-alex"
-        ],
-        "name": "alex-tot-chrome-pfq-informational"
-    },
     "amd64-generic-asan": {
         "_template": "asan",
         "active_waterfall": "chromiumos",
@@ -9733,25 +9726,6 @@
             "-chrome_internal"
         ]
     },
-    "link-tot-paladin": {
-        "_template": "paladin",
-        "boards": [
-            "link"
-        ],
-        "description": "Commit Queue (internal)",
-        "do_not_apply_cq_patches": true,
-        "important": false,
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "name": "link-tot-paladin",
-        "overlays": "both",
-        "prebuilts": false,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "lulu-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [
@@ -10136,6 +10110,7 @@
         "boards": [
             "lumpy"
         ],
+        "manifest": "official.xml",
         "name": "lumpy-tot-chrome-pfq-informational"
     },
     "lumpy-tot-chromium-pfq-informational": {

@@ -1680,17 +1680,6 @@ def GetConfig():
                           'telem-chromium-pfq-informational',
                           **telemetry.derive(chrome_try))
 
-  site_config.AddConfig(
-      chrome_info, 'alex-tot-chrome-pfq-informational',
-      boards=['x86-alex'],
-  )
-
-  site_config.AddConfig(
-      chrome_info, 'lumpy-tot-chrome-pfq-informational',
-      boards=['lumpy'],
-  )
-
-
   #
   # Internal Builds
   #
@@ -1886,16 +1875,6 @@ def GetConfig():
   # Something like the following:
   # master_paladin = site_config.AddConfig(internal_paladin, ...)
   # master_paladin.AddSlave(site_config.AddConfig(internal_paladin, ...))
-
-  # Old sanity check builder. This has been replaced by wolf-tot-paladin.
-  # TODO(dnj): Remove this once wolf-tot-paladin is removed from the waterfall.
-  site_config.AddConfig(
-      internal_paladin, 'link-tot-paladin',
-      boards=['link'],
-      do_not_apply_cq_patches=True,
-      prebuilts=False,
-      important=False,
-  )
 
   # Sanity check builder, part of the CQ but builds without the patches
   # under test.
