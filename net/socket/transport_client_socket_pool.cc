@@ -609,7 +609,7 @@ LoadState TransportClientSocketPool::GetLoadState(
   return base_.GetLoadState(group_name, handle);
 }
 
-base::DictionaryValue* TransportClientSocketPool::GetInfoAsValue(
+scoped_ptr<base::DictionaryValue> TransportClientSocketPool::GetInfoAsValue(
     const std::string& name,
     const std::string& type,
     bool include_nested_pools) const {

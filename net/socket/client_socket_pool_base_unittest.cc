@@ -558,7 +558,7 @@ class TestClientSocketPool : public ClientSocketPool {
     base_.RemoveHigherLayeredPool(higher_pool);
   }
 
-  base::DictionaryValue* GetInfoAsValue(
+  scoped_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
       const std::string& type,
       bool include_nested_pools) const override {

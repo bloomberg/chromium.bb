@@ -432,10 +432,11 @@ LoadState WebSocketTransportClientSocketPool::GetLoadState(
   return LookupConnectJob(handle)->GetLoadState();
 }
 
-base::DictionaryValue* WebSocketTransportClientSocketPool::GetInfoAsValue(
-    const std::string& name,
-    const std::string& type,
-    bool include_nested_pools) const {
+scoped_ptr<base::DictionaryValue>
+    WebSocketTransportClientSocketPool::GetInfoAsValue(
+        const std::string& name,
+        const std::string& type,
+        bool include_nested_pools) const {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("name", name);
   dict->SetString("type", type);
@@ -445,7 +446,7 @@ base::DictionaryValue* WebSocketTransportClientSocketPool::GetInfoAsValue(
   dict->SetInteger("max_socket_count", max_sockets_);
   dict->SetInteger("max_sockets_per_group", max_sockets_);
   dict->SetInteger("pool_generation_number", 0);
-  return dict.release();
+  return dict.Pass();
 }
 
 TimeDelta WebSocketTransportClientSocketPool::ConnectionTimeout() const {

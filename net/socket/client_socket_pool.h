@@ -158,10 +158,10 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
                                  const ClientSocketHandle* handle) const = 0;
 
   // Retrieves information on the current state of the pool as a
-  // DictionaryValue.  Caller takes possession of the returned value.
+  // DictionaryValue.
   // If |include_nested_pools| is true, the states of any nested
   // ClientSocketPools will be included.
-  virtual base::DictionaryValue* GetInfoAsValue(
+  virtual scoped_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
       const std::string& type,
       bool include_nested_pools) const = 0;

@@ -266,11 +266,11 @@ LoadState SOCKSClientSocketPool::GetLoadState(
   return base_.GetLoadState(group_name, handle);
 }
 
-base::DictionaryValue* SOCKSClientSocketPool::GetInfoAsValue(
+scoped_ptr<base::DictionaryValue> SOCKSClientSocketPool::GetInfoAsValue(
     const std::string& name,
     const std::string& type,
     bool include_nested_pools) const {
-  base::DictionaryValue* dict = base_.GetInfoAsValue(name, type);
+  scoped_ptr<base::DictionaryValue> dict(base_.GetInfoAsValue(name, type));
   if (include_nested_pools) {
     scoped_ptr<base::ListValue> list(new base::ListValue());
     list->Append(transport_pool_->GetInfoAsValue("transport_socket_pool",
@@ -278,7 +278,7 @@ base::DictionaryValue* SOCKSClientSocketPool::GetInfoAsValue(
                                                  false));
     dict->Set("nested_pools", list.Pass());
   }
-  return dict;
+  return dict.Pass();
 }
 
 base::TimeDelta SOCKSClientSocketPool::ConnectionTimeout() const {

@@ -326,8 +326,9 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   bool CloseOneIdleConnectionInHigherLayeredPool();
 
   // See ClientSocketPool::GetInfoAsValue for documentation on this function.
-  base::DictionaryValue* GetInfoAsValue(const std::string& name,
-                                        const std::string& type) const;
+  scoped_ptr<base::DictionaryValue> GetInfoAsValue(
+      const std::string& name,
+      const std::string& type) const;
 
   base::TimeDelta ConnectionTimeout() const {
     return connect_job_factory_->ConnectionTimeout();
@@ -827,7 +828,7 @@ class ClientSocketPoolBase {
     return helper_.CleanupIdleSockets(force);
   }
 
-  base::DictionaryValue* GetInfoAsValue(const std::string& name,
+  scoped_ptr<base::DictionaryValue> GetInfoAsValue(const std::string& name,
                                         const std::string& type) const {
     return helper_.GetInfoAsValue(name, type);
   }

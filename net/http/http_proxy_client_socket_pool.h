@@ -221,7 +221,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
   LoadState GetLoadState(const std::string& group_name,
                          const ClientSocketHandle* handle) const override;
 
-  base::DictionaryValue* GetInfoAsValue(
+  scoped_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
       const std::string& type,
       bool include_nested_pools) const override;
