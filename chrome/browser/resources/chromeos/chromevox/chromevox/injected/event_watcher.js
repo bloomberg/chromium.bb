@@ -647,6 +647,9 @@ cvox.ChromeVoxEventWatcher.focusEventWatcher = function(evt) {
  * @param {Event} evt The focus event to handle.
  */
 cvox.ChromeVoxEventWatcher.focusHandler = function(evt) {
+  if (!cvox.ChromeVox.documentHasFocus()) {
+    return;
+  }
   if (evt.target &&
       evt.target.hasAttribute &&
       evt.target.getAttribute('aria-hidden') == 'true' &&
