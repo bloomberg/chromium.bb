@@ -39,6 +39,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
   SetAccessibilityFocusable(true);
   view_controller_->SetDelegate(this);
   view_controller_->RegisterCommand();
+  set_context_menu_controller(this);
 }
 
 PageActionImageView::~PageActionImageView() {

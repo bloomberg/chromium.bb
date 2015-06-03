@@ -1059,6 +1059,7 @@
       'browser/ui/views/keyboard_access_browsertest.cc',
       'browser/ui/views/location_bar/location_icon_view_interactive_uitest.cc',
       'browser/ui/views/location_bar/star_view_browsertest.cc',
+      'browser/ui/views/location_bar/page_action_image_view_interactive_uitest.cc',
       'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
       'browser/ui/views/passwords/manage_passwords_bubble_view_browsertest.cc',
       'browser/ui/views/passwords/manage_passwords_icon_view_browsertest.cc',
