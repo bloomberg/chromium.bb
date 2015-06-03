@@ -106,6 +106,63 @@ VideoProfile ToVideoProfile(const ::media::VideoCodecProfile codec_profile) {
   return kVideoProfileUnknown;
 }
 
+::media::ChannelLayout ToMediaChannelLayout(int channel_number) {
+  switch (channel_number) {
+    case 1:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_MONO;
+    case 2:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_STEREO;
+    default:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED;
+  }
+}
+
+::media::SampleFormat ToMediaSampleFormat(const SampleFormat sample_format) {
+  switch (sample_format) {
+    case kUnknownSampleFormat:
+      return ::media::kUnknownSampleFormat;
+    case kSampleFormatU8:
+      return ::media::kSampleFormatU8;
+    case kSampleFormatS16:
+      return ::media::kSampleFormatS16;
+    case kSampleFormatS32:
+      return ::media::kSampleFormatS32;
+    case kSampleFormatF32:
+      return ::media::kSampleFormatF32;
+    case kSampleFormatPlanarS16:
+      return ::media::kSampleFormatPlanarS16;
+    case kSampleFormatPlanarF32:
+      return ::media::kSampleFormatPlanarF32;
+    case kSampleFormatPlanarS32:
+      return ::media::kSampleFormatPlanarS32;
+    default:
+      NOTREACHED();
+      return ::media::kUnknownSampleFormat;
+  }
+}
+
+::media::AudioCodec ToMediaAudioCodec(
+    const chromecast::media::AudioCodec codec) {
+  switch (codec) {
+    case kAudioCodecUnknown:
+      return ::media::kUnknownAudioCodec;
+    case kCodecAAC:
+      return ::media::kCodecAAC;
+    case kCodecMP3:
+      return ::media::kCodecMP3;
+    case kCodecPCM:
+      return ::media::kCodecPCM;
+    case kCodecPCM_S16BE:
+      return ::media::kCodecPCM_S16BE;
+    case kCodecVorbis:
+      return ::media::kCodecVorbis;
+    case kCodecOpus:
+      return ::media::kCodecOpus;
+    default:
+      return ::media::kUnknownAudioCodec;
+  }
+}
+
 }  // namespace
 
 // static
@@ -129,6 +186,16 @@ AudioConfig DecoderConfigAdapter::ToCastAudioConfig(
   audio_config.extra_data_size = config.extra_data_size();
   audio_config.is_encrypted = config.is_encrypted();
   return audio_config;
+}
+
+// static
+::media::AudioDecoderConfig DecoderConfigAdapter::ToMediaAudioDecoderConfig(
+    const AudioConfig& config) {
+  return ::media::AudioDecoderConfig(
+      ToMediaAudioCodec(config.codec),
+      ToMediaSampleFormat(config.sample_format),
+      ToMediaChannelLayout(config.channel_number), config.samples_per_second,
+      config.extra_data, config.extra_data_size, config.is_encrypted);
 }
 
 // static
