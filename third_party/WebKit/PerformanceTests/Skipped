@@ -48,11 +48,6 @@ Bindings/event-target-wrapper.html
 Parser/query-selector-deep.html
 Parser/query-selector-id-deep.html
 
-# Times out on Android, crbug.com/358168
-Canvas/draw-video-to-hw-accelerated-canvas-2d.html
-Canvas/upload-video-to-sub-texture.html
-Canvas/upload-video-to-texture.html
-
 # Microbenchmark that we aren't interested in monitoring.
 Bindings/gc-forest.html
 Bindings/gc-mini-tree.html
