@@ -973,7 +973,10 @@ class _Generator(object):
       # This is broken up into all ifs with no else ifs because we get
       # "fatal error C1061: compiler limit : blocks nested too deeply"
       # on Windows.
-      (c.Append('if (enum_string == "%s")' % enum_value.name)
+      name = enum_value.name
+      if 'camel_case_enum_to_string' in self._namespace.compiler_options:
+        name = enum_value.CamelName()
+      (c.Append('if (enum_string == "%s")' % name)
         .Append('  return %s;' %
             self._type_helper.GetEnumValue(type_, enum_value)))
     (c.Append('return %s;' % self._type_helper.GetEnumNoneValue(type_))
