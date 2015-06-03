@@ -26,7 +26,7 @@ using base::UserMetricsAction;
 using content::WebContents;
 
 // static
-base::LazyInstance<ObserverList<chrome::BrowserListObserver> >::Leaky
+base::LazyInstance<base::ObserverList<chrome::BrowserListObserver>>::Leaky
     BrowserList::observers_ = LAZY_INSTANCE_INITIALIZER;
 
 // static

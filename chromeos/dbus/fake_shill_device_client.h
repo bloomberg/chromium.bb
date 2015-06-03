@@ -113,7 +113,7 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   void SetTDLSState(const std::string& state) override;
 
  private:
-  typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
+  typedef base::ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
 
   void SetDefaultProperties();
   void PassStubDeviceProperties(const dbus::ObjectPath& device_path,

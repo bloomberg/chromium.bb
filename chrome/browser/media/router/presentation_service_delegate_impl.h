@@ -153,7 +153,8 @@ class PresentationServiceDelegateImpl
   std::string default_frame_display_name_;
 
   // References to the observers listening for changes to default media source.
-  ObserverList<DefaultMediaSourceObserver> default_media_source_observers_;
+  base::ObserverList<
+      DefaultMediaSourceObserver> default_media_source_observers_;
 
   // References to the WebContents that owns this instance, and associated
   // browser profile's MediaRouter instance.

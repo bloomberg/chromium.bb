@@ -41,7 +41,7 @@ class NestableTaskRunnerForTest : public NestableSingleThreadTaskRunner {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool is_nested_;
 
-  ObserverList<base::MessageLoop::TaskObserver> task_observers_;
+  base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
 
   base::WeakPtr<NestableTaskRunnerForTest> weak_nestable_task_runner_ptr_;
   base::WeakPtrFactory<NestableTaskRunnerForTest> weak_factory_;

@@ -75,7 +75,7 @@ class BASE_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
   // an in-memory PrefStore that is not persisted to disk.
   bool ShallBeStoredInOverlay(const std::string& key) const;
 
-  ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true> observers_;
   PrefValueMap overlay_;
   scoped_refptr<PersistentPrefStore> underlay_;
   NamesMap overlay_to_underlay_names_map_;

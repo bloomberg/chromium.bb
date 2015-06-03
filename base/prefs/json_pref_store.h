@@ -209,7 +209,7 @@ class BASE_PREFS_EXPORT JsonPrefStore
   base::ImportantFileWriter writer_;
 
   scoped_ptr<PrefFilter> pref_filter_;
-  ObserverList<PrefStore::Observer, true> observers_;
+  base::ObserverList<PrefStore::Observer, true> observers_;
 
   scoped_ptr<ReadErrorDelegate> error_delegate_;
 

@@ -128,7 +128,7 @@ class CryptAuthEnrollmentManager : public SyncScheduler::Delegate {
   scoped_ptr<CryptAuthEnroller> cryptauth_enroller_;
 
   // List of observers.
-  ObserverList<Observer> observers_;
+  base::ObserverList<Observer> observers_;
 
   base::WeakPtrFactory<CryptAuthEnrollmentManager> weak_ptr_factory_;
 

@@ -250,7 +250,7 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
 
   scoped_ptr<TimeSource> time_source_;
 
-  ObserverList<base::MessageLoop::TaskObserver> task_observers_;
+  base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
 
   const char* disabled_by_default_tracing_category_;
 

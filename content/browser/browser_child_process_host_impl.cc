@@ -40,7 +40,7 @@ namespace {
 static base::LazyInstance<BrowserChildProcessHostImpl::BrowserChildProcessList>
     g_child_process_list = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<ObserverList<BrowserChildProcessObserver> >
+base::LazyInstance<base::ObserverList<BrowserChildProcessObserver>>
     g_observers = LAZY_INSTANCE_INITIALIZER;
 
 void NotifyProcessHostConnected(const ChildProcessData& data) {

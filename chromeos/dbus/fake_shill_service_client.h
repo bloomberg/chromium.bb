@@ -104,7 +104,7 @@ class CHROMEOS_EXPORT FakeShillServiceClient
                           const base::Closure& behavior) override;
 
  private:
-  typedef ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
+  typedef base::ObserverList<ShillPropertyChangedObserver> PropertyObserverList;
 
   void NotifyObserversPropertyChanged(const dbus::ObjectPath& service_path,
                                       const std::string& property);

@@ -244,7 +244,4 @@ class ObserverList : public ObserverListBase<ObserverType> {
 
 }  // namespace base
 
-// TODO(brettw) remove this when callers use the correct namespace.
-using base::ObserverList;
-
 #endif  // BASE_OBSERVER_LIST_H_

@@ -133,8 +133,8 @@ class BrowserList {
 
   // A list of observers which will be notified of every browser addition and
   // removal across all BrowserLists.
-  static base::LazyInstance<ObserverList<chrome::BrowserListObserver> >::Leaky
-      observers_;
+  static base::LazyInstance<
+      base::ObserverList<chrome::BrowserListObserver>>::Leaky observers_;
 
   // Nothing fancy, since we only have two HDTs.
   static BrowserList* native_instance_;
