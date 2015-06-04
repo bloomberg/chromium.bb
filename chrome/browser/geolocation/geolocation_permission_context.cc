@@ -43,7 +43,7 @@ void GeolocationPermissionContext::RequestPermission(
                           requesting_frame_origin,
                           web_contents->GetLastCommittedURL().GetOrigin(),
                           callback,
-                          true,
+                          false /* persist */,
                           content_setting);
     }
     return;
