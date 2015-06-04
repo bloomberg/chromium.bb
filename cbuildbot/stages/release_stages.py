@@ -367,6 +367,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
         self._PrintLoudly('Starting %s, %s, %s' % (channel, version, board))
         paygen_build_lib.CreatePayloads(build,
                                         work_dir=tempdir,
+                                        site_config=self._run.site_config,
                                         dry_run=debug,
                                         run_parallel=True,
                                         run_on_builder=True,

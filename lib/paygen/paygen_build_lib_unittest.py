@@ -13,9 +13,9 @@ import shutil
 import tempfile
 import unittest
 
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
+from chromite.cbuildbot import config_lib_unittest
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 
@@ -78,6 +78,7 @@ class PaygenBuildLibTest(cros_test_lib.MoxTempDirTestCase):
     control_dir = None if disable_tests else '/tmp/foo'
 
     return paygen_build_lib._PaygenBuild(self.foo_build, self.work_dir,
+                                         config_lib_unittest.MockSiteConfig(),
                                          control_dir=control_dir,
                                          skip_test_payloads=skip_test_payloads)
 
@@ -331,7 +332,8 @@ fsi_images: 2913.331.0,2465.105.0
     paygen = paygen_build_lib._PaygenBuild(
         gspaths.Build(channel='stable-channel', board='valid-board',
                       version='1.2.3'),
-        self.work_dir)
+        self.work_dir,
+        config_lib_unittest.MockSiteConfig())
 
     self.assertEqual(
         sorted(paygen._DiscoverActiveFsiBuilds()),
@@ -346,7 +348,8 @@ fsi_images: 2913.331.0,2465.105.0
     paygen = paygen_build_lib._PaygenBuild(
         gspaths.Build(channel='stable-channel', board='no-fsi-board',
                       version='1.2.3'),
-        self.work_dir)
+        self.work_dir,
+        config_lib_unittest.MockSiteConfig())
 
     self.assertEqual(paygen._DiscoverActiveFsiBuilds(), [])
 
@@ -354,7 +357,8 @@ fsi_images: 2913.331.0,2465.105.0
     paygen = paygen_build_lib._PaygenBuild(
         gspaths.Build(channel='beta-channel', board='valid-board',
                       version='1.2.3'),
-        self.work_dir)
+        self.work_dir,
+        config_lib_unittest.MockSiteConfig())
 
     self.assertEqual(paygen._DiscoverActiveFsiBuilds(), [])
 
@@ -367,7 +371,8 @@ fsi_images: 2913.331.0,2465.105.0
     paygen = paygen_build_lib._PaygenBuild(
         gspaths.Build(channel='stable-channel', board='x86-alex-he',
                       version='1.2.3'),
-        self.work_dir)
+        self.work_dir,
+        config_lib_unittest.MockSiteConfig())
 
     # Search for real FSIs for an older/live board.
     self.assertEqual(paygen._DiscoverAllFsiBuilds(),
@@ -858,9 +863,11 @@ fsi_images: 2913.331.0,2465.105.0
 
   def DoGeneratePayloadsTest(self, run_parallel, test_dry_run):
     """Test paygen_build_lib._GeneratePayloads."""
-    paygen = paygen_build_lib._PaygenBuild(self.foo_build, self.tempdir,
-                                           dry_run=test_dry_run,
-                                           run_parallel=run_parallel)
+    paygen = paygen_build_lib._PaygenBuild(
+        self.foo_build, self.tempdir,
+        config_lib_unittest.MockSiteConfig(),
+        dry_run=test_dry_run,
+        run_parallel=run_parallel)
 
     basic_payload = gspaths.Payload(tgt_image=self.npo_image,
                                     src_image=self.basic_image)
@@ -1199,10 +1206,15 @@ fsi_images: 2913.331.0,2465.105.0
     payload = gspaths.Payload(tgt_image=self.npo_image,
                               src_image=self.basic_image)
 
+    site_config = config_lib_unittest.MockSiteConfig()
+    site_config.Add('build_to_introduce_boards',
+                    boards=['foo_board'])
+
     suite_name = 'paygen_foo'
     control_dir = tempfile.mkdtemp(prefix='control_dir-')
     paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir, control_dir=control_dir)
+        self.foo_build, self.tempdir, site_config,
+        control_dir=control_dir)
     with tempfile.NamedTemporaryFile(prefix='control_file-', delete=False) as f:
       control_file_name = f.name
       f.write("""
@@ -1215,12 +1227,6 @@ TEST_TYPE = "server"
 DOC = "Faux doc"
 
 """)
-
-    config = cbuildbot_config.GetConfig()
-
-    self.mox.StubOutWithMock(config, 'FindFullConfigsForBoard')
-    config.FindFullConfigsForBoard().AndReturn(
-        ([{'boards': ['foo_board']}], []))
 
     self.mox.StubOutWithMock(urilib, 'ListFiles')
     urilib.ListFiles(
@@ -1251,7 +1257,8 @@ DOC = "Faux doc"
     """Test the process of scheduling HWLab tests."""
     control_dir = '/tmp/control_dir'
     paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir, control_dir=control_dir)
+        self.foo_build, self.tempdir, config_lib_unittest.MockSiteConfig(),
+        control_dir=control_dir)
     control_dump_dir = os.path.join(control_dir, paygen.CONTROL_FILE_SUBDIR)
     payloads = ['foo', 'bar']
     test_channel = self.foo_build.channel.rpartition('-')[0]
@@ -1332,7 +1339,8 @@ The suite job has another 2:39:39.789250 till timeout.
   def testScheduleAutotestTestsNormal(self):
     """Test scheduling autotest tests with run_suite.py."""
     paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir)
+        self.foo_build, self.tempdir,
+        config_lib_unittest.MockSiteConfig())
 
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(utils, 'RunCommand')
@@ -1366,7 +1374,8 @@ The suite job has another 2:39:39.789250 till timeout.
   def testScheduleAutotestTestsBuilderEnvironment(self):
     """Test scheduling autotest tests with build autotest proxy."""
     paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir, run_on_builder=True)
+        self.foo_build, self.tempdir,
+        config_lib_unittest.MockSiteConfig(), run_on_builder=True)
 
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(utils, 'RunCommand')
@@ -1390,7 +1399,8 @@ The suite job has another 2:39:39.789250 till timeout.
   def testScheduleAutotestTestsBuilderEnvironmentWarn(self):
     """Test scheduling autotest tests with build autotest proxy."""
     paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir, run_on_builder=True)
+        self.foo_build, self.tempdir,
+        config_lib_unittest.MockSiteConfig(), run_on_builder=True)
 
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(utils, 'RunCommand')
@@ -1415,12 +1425,6 @@ The suite job has another 2:39:39.789250 till timeout.
 
   def testMapToArchive(self):
     """Test that mapping to images archive names/locations works."""
-    config = cbuildbot_config.GetConfig()
-
-    self.mox.StubOutWithMock(config, 'FindFullConfigsForBoard')
-    config.FindFullConfigsForBoard().MultipleTimes().AndReturn(
-        ([{'boards': ['foo_board', 'bar_board', 'bar-board']}], []))
-
     self.mox.StubOutWithMock(urilib, 'ListFiles')
     urilib.ListFiles(
         gspaths.ChromeosImageArchive.BuildUri(
@@ -1429,19 +1433,26 @@ The suite job has another 2:39:39.789250 till timeout.
 
     self.mox.ReplayAll()
 
+    site_config = config_lib_unittest.MockSiteConfig()
+    site_config.Add('build_to_introduce_boards',
+                    boards=['foo_board', 'bar_board', 'bar-board'])
+
+    paygen = paygen_build_lib._PaygenBuild(
+        self.foo_build, self.tempdir, site_config)
+
     # Case 1: mapping successful.
     self.assertEqual(
-        paygen_build_lib._PaygenBuild._MapToArchive('foo-board', '1.2.3'),
+        paygen._MapToArchive('foo-board', '1.2.3'),
         ('foo_board', 'foo_board/R11-1.2.3',
          'gs://foo-archive/foo_board/R11-1.2.3'))
 
     # Case 2: failure, too many build board names found.
     with self.assertRaises(paygen_build_lib.ArchiveError):
-      paygen_build_lib._PaygenBuild._MapToArchive('bar-board', '1.2.3')
+      paygen._MapToArchive('bar-board', '1.2.3')
 
     # Case 3: failure, build board name not found.
     with self.assertRaises(paygen_build_lib.ArchiveError):
-      paygen_build_lib._PaygenBuild._MapToArchive('baz-board', '1.2.3')
+      paygen._MapToArchive('baz-board', '1.2.3')
 
   def testValidateBoardConfig(self):
     """Test ValidateBoardConfig."""

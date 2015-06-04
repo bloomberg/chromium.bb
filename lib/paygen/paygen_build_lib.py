@@ -14,7 +14,6 @@ and setting flags to show that a build has been processed.
 from __future__ import print_function
 
 import ConfigParser
-import itertools
 import json
 import os
 import shutil
@@ -23,7 +22,6 @@ import sys
 import tempfile
 import urlparse
 
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import config_lib
@@ -317,7 +315,8 @@ class _PaygenBuild(object):
     def __repr__(self):
       return str(self)
 
-  def __init__(self, build, work_dir, dry_run=False, ignore_finished=False,
+  def __init__(self, build, work_dir, site_config,
+               dry_run=False, ignore_finished=False,
                skip_full_payloads=False, skip_delta_payloads=False,
                skip_test_payloads=False, skip_nontest_payloads=False,
                control_dir=None, output_dir=None,
@@ -325,6 +324,7 @@ class _PaygenBuild(object):
     """Initializer."""
     self._build = build
     self._work_dir = work_dir
+    self._site_config = site_config
     self._drm = dryrun_lib.DryRunMgr(dry_run)
     self._ignore_finished = dryrun_lib.DryRunMgr(ignore_finished)
     self._skip_full_payloads = skip_full_payloads
@@ -354,8 +354,7 @@ class _PaygenBuild(object):
         self._build.channel, self._build.board, self._build.version, flag,
         bucket=self._build.bucket)
 
-  @classmethod
-  def _MapToArchive(cls, board, version):
+  def _MapToArchive(self, board, version):
     """Returns the chromeos-image-archive equivalents for the build.
 
     Args:
@@ -369,10 +368,8 @@ class _PaygenBuild(object):
       ArchiveError: if we could not compute the mapping.
     """
     # Map chromeos-releases board name to its chromeos-image-archive equivalent.
-    all_configs = cbuildbot_config.GetConfig()
-    cfg_iter = itertools.chain(*all_configs.FindFullConfigsForBoard())
     archive_board_candidates = set([
-        archive_board for cfg in cfg_iter for archive_board in cfg['boards']
+        archive_board for archive_board in self._site_config.GetBoards()
         if archive_board.replace('_', '-') == board])
     if len(archive_board_candidates) == 0:
       raise ArchiveError('could not find build board name for %s' % board)
@@ -1371,17 +1368,19 @@ def ValidateBoardConfig(board):
     raise BoardNotConfigured(board)
 
 
-def CreatePayloads(build, work_dir, dry_run=False, ignore_finished=False,
-                   skip_full_payloads=False, skip_delta_payloads=False,
-                   skip_test_payloads=False, skip_nontest_payloads=False,
-                   disable_tests=False, output_dir=None, run_parallel=False,
-                   run_on_builder=False, au_generator_uri=None):
+def CreatePayloads(build, work_dir, site_config, dry_run=False,
+                   ignore_finished=False, skip_full_payloads=False,
+                   skip_delta_payloads=False, skip_test_payloads=False,
+                   skip_nontest_payloads=False, disable_tests=False,
+                   output_dir=None, run_parallel=False, run_on_builder=False,
+                   au_generator_uri=None):
   """Helper method than generates payloads for a given build.
 
   Args:
     build: gspaths.Build instance describing the build to generate payloads for.
     work_dir: Directory to contain both scratch and long-term work files.
     dry_run: Do not generate payloads (optional).
+    site_config: A valid SiteConfig. Only used to map board names.
     ignore_finished: Ignore the FINISHED flag (optional).
     skip_full_payloads: Do not generate full payloads.
     skip_delta_payloads: Do not generate delta payloads.
@@ -1400,7 +1399,8 @@ def CreatePayloads(build, work_dir, dry_run=False, ignore_finished=False,
     if not disable_tests:
       control_dir = _FindControlFileDir(work_dir)
 
-    _PaygenBuild(build, work_dir, dry_run=dry_run,
+    _PaygenBuild(build, work_dir, site_config,
+                 dry_run=dry_run,
                  ignore_finished=ignore_finished,
                  skip_full_payloads=skip_full_payloads,
                  skip_delta_payloads=skip_delta_payloads,
