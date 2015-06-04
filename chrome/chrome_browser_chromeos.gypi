@@ -710,6 +710,8 @@
         'browser/chromeos/memory/low_memory_observer.h',
         'browser/chromeos/memory/oom_priority_manager.cc',
         'browser/chromeos/memory/oom_priority_manager.h',
+        'browser/chromeos/memory/system_memory_stats_recorder.cc',
+        'browser/chromeos/memory/system_memory_stats_recorder.h',
         'browser/chromeos/mobile/mobile_activator.cc',
         'browser/chromeos/mobile/mobile_activator.h',
         'browser/chromeos/mobile_config.cc',

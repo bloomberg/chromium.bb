@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/memory/low_memory_observer.h"
+#include "chrome/browser/chromeos/memory/system_memory_stats_recorder.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -58,10 +59,6 @@ namespace chromeos {
 
 namespace {
 
-// Record a size in megabytes, over a potential interval up to 32 GB.
-#define UMA_HISTOGRAM_MEGABYTES(name, sample)                     \
-    UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1, 32768, 50)
-
 // The default interval in seconds after which to adjust the oom_score_adj
 // value.
 const int kAdjustmentIntervalSeconds = 10;
@@ -85,23 +82,6 @@ const int kFocusedTabScoreAdjustIntervalMs = 500;
 // the WebContents could be deleted if the user closed the tab.
 int64 IdFromWebContents(WebContents* web_contents) {
   return reinterpret_cast<int64>(web_contents);
-}
-
-// Records a statistics |sample| for UMA histogram |name| using a linear
-// distribution of buckets.
-void RecordLinearHistogram(const std::string& name,
-                           int sample,
-                           int maximum,
-                           size_t bucket_count) {
-  // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
-  // instance and thus only work if |name| is constant.
-  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-      name,
-      1,  // Minimum. The 0 bin for underflow is automatically added.
-      maximum + 1,  // Ensure bucket size of |maximum| / |bucket_count|.
-      bucket_count + 2,  // Account for the underflow and overflow bins.
-      base::Histogram::kUmaTargetedHistogramFlag);
-  counter->Add(sample);
 }
 
 }  // namespace
@@ -370,39 +350,10 @@ void OomPriorityManager::RecordDiscardStatistics() {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Tabs.Discard.IntervalTime2", interval_ms, 100, 100000 * 1000, 50);
   }
-  // Record Chrome's concept of system memory usage at the time of the discard.
-  base::SystemMemoryInfoKB memory;
-  if (base::GetSystemMemoryInfo(&memory)) {
-    // TODO(jamescook): Remove this after R25 is deployed to stable. It does
-    // not have sufficient resolution in the 2-4 GB range and does not properly
-    // account for graphics memory on ARM. Replace with MemAllocatedMB below.
-    int mem_anonymous_mb = (memory.active_anon + memory.inactive_anon) / 1024;
-    UMA_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAnonymousMB", mem_anonymous_mb);
+  // Record chromeos's concept of system memory usage at the time of the
+  // discard.
+  RecordMemoryStats(RECORD_MEMORY_STATS_TAB_DISCARDED);
 
-    // Record graphics GEM object size in a histogram with 50 MB buckets.
-    int mem_graphics_gem_mb = 0;
-    if (memory.gem_size != -1)
-      mem_graphics_gem_mb = memory.gem_size / 1024 / 1024;
-    RecordLinearHistogram(
-        "Tabs.Discard.MemGraphicsMB", mem_graphics_gem_mb, 2500, 50);
-
-    // Record shared memory (used by renderer/GPU buffers).
-    int mem_shmem_mb = memory.shmem / 1024;
-    RecordLinearHistogram("Tabs.Discard.MemShmemMB", mem_shmem_mb, 2500, 50);
-
-    // On Intel, graphics objects are in anonymous pages, but on ARM they are
-    // not. For a total "allocated count" add in graphics pages on ARM.
-    int mem_allocated_mb = mem_anonymous_mb;
-#if defined(ARCH_CPU_ARM_FAMILY)
-    mem_allocated_mb += mem_graphics_gem_mb;
-#endif
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Tabs.Discard.MemAllocatedMB", mem_allocated_mb, 256, 32768, 50);
-
-    int mem_available_mb =
-        (memory.active_file + memory.inactive_file + memory.free) / 1024;
-    UMA_HISTOGRAM_MEGABYTES("Tabs.Discard.MemAvailableMB", mem_available_mb);
-  }
   // Set up to record the next interval.
   last_discard_time_ = TimeTicks::Now();
 }
