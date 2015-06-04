@@ -1298,6 +1298,8 @@ crbug.com/454760 virtual/slimmingpaint/fast/text/international/text-combine-imag
 # Expectations changes due to switiching to In-renderer Shared Worker.
 crbug.com/327256 fast/workers/shared-worker-lifecycle.html [ Failure Pass ]
 
+crbug.com/463050 inspector/extensions/extensions-audits.html [ Failure Pass ]
+
 crbug.com/437112 virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Pass Failure ]
 
 crbug.com/486830 virtual/slimmingpaint/fast/canvas/canvas-scale-drawImage-shadow.html [ Failure ]
