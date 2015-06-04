@@ -102,17 +102,17 @@ public:
     bool shouldReportDetailedMessageForSource(LocalFrame&, const String&) override { return false; }
     void addMessageToConsole(LocalFrame*, MessageSource, MessageLevel, const String&, unsigned, const String&, const String&) override { }
 
-    bool canRunBeforeUnloadConfirmPanel() override { return false; }
-    bool runBeforeUnloadConfirmPanelInternal(LocalFrame*, const String&) override { return true; }
+    bool canOpenBeforeUnloadConfirmPanel() override { return false; }
+    bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*, const String&) override { return true; }
 
     void closeWindowSoon() override { }
 
-    void runJavaScriptAlertInternal(LocalFrame*, const String&) override { }
-    bool runJavaScriptConfirmInternal(LocalFrame*, const String&) override { return false; }
-    bool runJavaScriptPromptInternal(LocalFrame*, const String&, const String&, String&) override { return false; }
+    void openJavaScriptAlertDelegate(LocalFrame*, const String&) override { }
+    bool openJavaScriptConfirmDelegate(LocalFrame*, const String&) override { return false; }
+    bool openJavaScriptPromptDelegate(LocalFrame*, const String&, const String&, String&) override { return false; }
 
     bool hasOpenedPopup() const override { return false; }
-    PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) override;
+    PassRefPtrWillBeRawPtr<PopupMenu> openPopupMenu(LocalFrame&, PopupMenuClient*) override;
     DOMWindow* pagePopupWindowForTesting() const override { return nullptr; }
 
     void setStatusbarText(const String&) override { }
@@ -132,15 +132,15 @@ public:
 
     void setToolTip(const String&, TextDirection) override { }
 
-    void printInternal(LocalFrame*) override { }
+    void printDelegate(LocalFrame*) override { }
 
     void enumerateChosenDirectory(FileChooser*) override { }
 
-    PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
+    PassOwnPtrWillBeRawPtr<ColorChooser> openColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
     PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
     void openTextDataListChooser(HTMLInputElement&) override;
 
-    void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) override;
+    void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) override;
 
     void setCursor(const Cursor&) override { }
     Cursor lastSetCursorForTesting() const override { return pointerCursor(); }

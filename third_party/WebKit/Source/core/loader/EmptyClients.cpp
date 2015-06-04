@@ -68,12 +68,12 @@ public:
     virtual void disconnectClient() override { }
 };
 
-PassRefPtrWillBeRawPtr<PopupMenu> EmptyChromeClient::createPopupMenu(LocalFrame&, PopupMenuClient*)
+PassRefPtrWillBeRawPtr<PopupMenu> EmptyChromeClient::openPopupMenu(LocalFrame&, PopupMenuClient*)
 {
     return adoptRefWillBeNoop(new EmptyPopupMenu());
 }
 
-PassOwnPtrWillBeRawPtr<ColorChooser> EmptyChromeClient::createColorChooser(LocalFrame*, ColorChooserClient*, const Color&)
+PassOwnPtrWillBeRawPtr<ColorChooser> EmptyChromeClient::openColorChooser(LocalFrame*, ColorChooserClient*, const Color&)
 {
     return nullptr;
 }
@@ -87,7 +87,7 @@ void EmptyChromeClient::openTextDataListChooser(HTMLInputElement&)
 {
 }
 
-void EmptyChromeClient::runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>)
+void EmptyChromeClient::openFileChooser(LocalFrame*, PassRefPtr<FileChooser>)
 {
 }
 

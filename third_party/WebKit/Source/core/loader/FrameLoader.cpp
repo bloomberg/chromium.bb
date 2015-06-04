@@ -1161,7 +1161,7 @@ void FrameLoader::scrollToFragmentWithParentBoundary(const KURL& url)
 bool FrameLoader::shouldClose()
 {
     Page* page = m_frame->page();
-    if (!page || !page->chromeClient().canRunBeforeUnloadConfirmPanel())
+    if (!page || !page->chromeClient().canOpenBeforeUnloadConfirmPanel())
         return true;
 
     // Store all references to each subframe in advance since beforeunload's event handler may modify frame

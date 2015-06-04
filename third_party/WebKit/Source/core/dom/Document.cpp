@@ -2565,7 +2565,7 @@ bool Document::dispatchBeforeUnloadEvent(ChromeClient& chromeClient, bool& didAl
     }
 
     String text = beforeUnloadEvent->returnValue();
-    if (chromeClient.runBeforeUnloadConfirmPanel(text, m_frame)) {
+    if (chromeClient.openBeforeUnloadConfirmPanel(text, m_frame)) {
         didAllowNavigation = true;
         return true;
     }

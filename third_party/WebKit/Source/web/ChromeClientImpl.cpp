@@ -370,12 +370,12 @@ void ChromeClientImpl::addMessageToConsole(LocalFrame* localFrame, MessageSource
     }
 }
 
-bool ChromeClientImpl::canRunBeforeUnloadConfirmPanel()
+bool ChromeClientImpl::canOpenBeforeUnloadConfirmPanel()
 {
     return !!m_webView->client();
 }
 
-bool ChromeClientImpl::runBeforeUnloadConfirmPanelInternal(LocalFrame* frame, const String& message)
+bool ChromeClientImpl::openBeforeUnloadConfirmPanelDelegate(LocalFrame* frame, const String& message)
 {
     notifyPopupOpeningObservers();
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
@@ -402,7 +402,7 @@ void ChromeClientImpl::closeWindowSoon()
 
 // Although a LocalFrame is passed in, we don't actually use it, since we
 // already know our own m_webView.
-void ChromeClientImpl::runJavaScriptAlertInternal(LocalFrame* frame, const String& message)
+void ChromeClientImpl::openJavaScriptAlertDelegate(LocalFrame* frame, const String& message)
 {
     notifyPopupOpeningObservers();
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
@@ -413,8 +413,8 @@ void ChromeClientImpl::runJavaScriptAlertInternal(LocalFrame* frame, const Strin
     }
 }
 
-// See comments for runJavaScriptAlert().
-bool ChromeClientImpl::runJavaScriptConfirmInternal(LocalFrame* frame, const String& message)
+// See comments for openJavaScriptAlertDelegate().
+bool ChromeClientImpl::openJavaScriptConfirmDelegate(LocalFrame* frame, const String& message)
 {
     notifyPopupOpeningObservers();
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
@@ -426,8 +426,8 @@ bool ChromeClientImpl::runJavaScriptConfirmInternal(LocalFrame* frame, const Str
     return false;
 }
 
-// See comments for runJavaScriptAlert().
-bool ChromeClientImpl::runJavaScriptPromptInternal(LocalFrame* frame, const String& message, const String& defaultValue, String& result)
+// See comments for openJavaScriptAlertDelegate().
+bool ChromeClientImpl::openJavaScriptPromptDelegate(LocalFrame* frame, const String& message, const String& defaultValue, String& result)
 {
     notifyPopupOpeningObservers();
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
@@ -561,13 +561,13 @@ void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportDescrip
     m_webView->updatePageDefinedViewportConstraints(description);
 }
 
-void ChromeClientImpl::printInternal(LocalFrame* frame)
+void ChromeClientImpl::printDelegate(LocalFrame* frame)
 {
     if (m_webView->client())
         m_webView->client()->printPage(WebLocalFrameImpl::fromFrame(frame));
 }
 
-PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClientImpl::createColorChooser(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
+PassOwnPtrWillBeRawPtr<ColorChooser> ChromeClientImpl::openColorChooser(LocalFrame* frame, ColorChooserClient* chooserClient, const Color&)
 {
     notifyPopupOpeningObservers();
     OwnPtrWillBeRawPtr<ColorChooserUIController> controller = nullptr;
@@ -589,7 +589,7 @@ PassRefPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooser(DateTimeChoose
 #endif
 }
 
-void ChromeClientImpl::runOpenPanel(LocalFrame* frame, PassRefPtr<FileChooser> fileChooser)
+void ChromeClientImpl::openFileChooser(LocalFrame* frame, PassRefPtr<FileChooser> fileChooser)
 {
     notifyPopupOpeningObservers();
     WebViewClient* client = m_webView->client();
@@ -767,7 +767,7 @@ bool ChromeClientImpl::hasOpenedPopup() const
     return m_webView->hasOpenedPopup();
 }
 
-PassRefPtrWillBeRawPtr<PopupMenu> ChromeClientImpl::createPopupMenu(LocalFrame& frame, PopupMenuClient* client)
+PassRefPtrWillBeRawPtr<PopupMenu> ChromeClientImpl::openPopupMenu(LocalFrame& frame, PopupMenuClient* client)
 {
     notifyPopupOpeningObservers();
     if (WebViewImpl::useExternalPopupMenus())
@@ -794,7 +794,7 @@ DOMWindow* ChromeClientImpl::pagePopupWindowForTesting() const
     return m_webView->pagePopupWindow();
 }
 
-bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType& dialogType, const String& dialogMessage, Document::PageDismissalType dismissalType) const
+bool ChromeClientImpl::shouldOpenModalDialogDuringPageDismissal(const DialogType& dialogType, const String& dialogMessage, Document::PageDismissalType dismissalType) const
 {
     const char* kDialogs[] = {"alert", "confirm", "prompt"};
     int dialog = static_cast<int>(dialogType);

@@ -79,12 +79,12 @@ public:
         LocalFrame*, MessageSource, MessageLevel,
         const String& message, unsigned lineNumber,
         const String& sourceID, const String& stackTrace) override;
-    bool canRunBeforeUnloadConfirmPanel() override;
-    bool runBeforeUnloadConfirmPanelInternal(LocalFrame*, const String&) override;
+    bool canOpenBeforeUnloadConfirmPanel() override;
+    bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*, const String&) override;
     void closeWindowSoon() override;
-    void runJavaScriptAlertInternal(LocalFrame*, const String&) override;
-    bool runJavaScriptConfirmInternal(LocalFrame*, const String&) override;
-    bool runJavaScriptPromptInternal(
+    void openJavaScriptAlertDelegate(LocalFrame*, const String&) override;
+    bool openJavaScriptConfirmDelegate(LocalFrame*, const String&) override;
+    bool openJavaScriptPromptDelegate(
         LocalFrame*, const String& message,
         const String& defaultValue, String& result) override;
     void setStatusbarText(const String& message) override;
@@ -102,11 +102,11 @@ public:
     void showMouseOverURL(const HitTestResult&) override;
     void setToolTip(const String& tooltipText, TextDirection) override;
     void dispatchViewportPropertiesDidChange(const ViewportDescription&) const override;
-    void printInternal(LocalFrame*) override;
+    void printDelegate(LocalFrame*) override;
     void annotatedRegionsChanged() override;
-    PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
+    PassOwnPtrWillBeRawPtr<ColorChooser> openColorChooser(LocalFrame*, ColorChooserClient*, const Color&) override;
     PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
-    void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) override;
+    void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) override;
     void enumerateChosenDirectory(FileChooser*) override;
     void setCursor(const Cursor&) override;
     Cursor lastSetCursorForTesting() const override;
@@ -136,12 +136,12 @@ public:
     void setNewWindowNavigationPolicy(WebNavigationPolicy);
 
     bool hasOpenedPopup() const override;
-    PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) override;
+    PassRefPtrWillBeRawPtr<PopupMenu> openPopupMenu(LocalFrame&, PopupMenuClient*) override;
     PagePopup* openPagePopup(PagePopupClient*);
     void closePagePopup(PagePopup*);
     DOMWindow* pagePopupWindowForTesting() const override;
 
-    bool shouldRunModalDialogDuringPageDismissal(const DialogType&, const String& dialogMessage, Document::PageDismissalType) const override;
+    bool shouldOpenModalDialogDuringPageDismissal(const DialogType&, const String& dialogMessage, Document::PageDismissalType) const override;
 
     bool requestPointerLock() override;
     void requestPointerUnlock() override;

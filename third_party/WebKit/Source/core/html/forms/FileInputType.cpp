@@ -162,7 +162,7 @@ void FileInputType::handleDOMActivateEvent(Event* event)
         settings.acceptFileExtensions = input.acceptFileExtensions();
         settings.selectedFiles = m_fileList->pathsForUserVisibleFiles();
         settings.useMediaCapture = RuntimeEnabledFeatures::mediaCaptureEnabled() && input.fastHasAttribute(captureAttr);
-        chromeClient->runOpenPanel(input.document().frame(), newFileChooser(settings));
+        chromeClient->openFileChooser(input.document().frame(), newFileChooser(settings));
     }
     event->setDefaultHandled();
 }

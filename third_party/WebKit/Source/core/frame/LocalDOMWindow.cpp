@@ -826,7 +826,7 @@ void LocalDOMWindow::alert(const String& message)
     if (!host)
         return;
 
-    host->chromeClient().runJavaScriptAlert(frame(), message);
+    host->chromeClient().openJavaScriptAlert(frame(), message);
 }
 
 bool LocalDOMWindow::confirm(const String& message)
@@ -852,7 +852,7 @@ bool LocalDOMWindow::confirm(const String& message)
             return false;
     }
 
-    return host->chromeClient().runJavaScriptConfirm(frame(), message);
+    return host->chromeClient().openJavaScriptConfirm(frame(), message);
 }
 
 String LocalDOMWindow::prompt(const String& message, const String& defaultValue)
@@ -873,7 +873,7 @@ String LocalDOMWindow::prompt(const String& message, const String& defaultValue)
         return String();
 
     String returnValue;
-    if (host->chromeClient().runJavaScriptPrompt(frame(), message, defaultValue, returnValue))
+    if (host->chromeClient().openJavaScriptPrompt(frame(), message, defaultValue, returnValue))
         return returnValue;
 
     return String();

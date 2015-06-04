@@ -347,7 +347,7 @@ void LayoutMenuList::showPopup()
         return;
 
     if (!m_popup)
-        m_popup = document().frameHost()->chromeClient().createPopupMenu(*document().frame(), this);
+        m_popup = document().frameHost()->chromeClient().openPopupMenu(*document().frame(), this);
     m_popupIsVisible = true;
 
     FloatQuad quad(localToAbsoluteQuad(FloatQuad(borderBoundingBox())));

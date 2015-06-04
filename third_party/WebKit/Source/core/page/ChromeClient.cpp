@@ -56,14 +56,14 @@ void ChromeClient::setWindowRectWithAdjustment(const IntRect& pendingRect)
     setWindowRect(window);
 }
 
-bool ChromeClient::canRunModalIfDuringPageDismissal(Frame* mainFrame, ChromeClient::DialogType dialog, const String& message)
+bool ChromeClient::canOpenModalIfDuringPageDismissal(Frame* mainFrame, ChromeClient::DialogType dialog, const String& message)
 {
     for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
         Document::PageDismissalType dismissal = toLocalFrame(frame)->document()->pageDismissalEventBeingDispatched();
         if (dismissal != Document::NoDismissal)
-            return shouldRunModalDialogDuringPageDismissal(dialog, message, dismissal);
+            return shouldOpenModalDialogDuringPageDismissal(dialog, message, dismissal);
     }
     return true;
 }
@@ -110,33 +110,33 @@ ReturnType openJavaScriptDialog(
     return (chromeClient->*function)(&frame, message, parameters...);
 }
 
-bool ChromeClient::runBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame)
+bool ChromeClient::openBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame)
 {
-    return openJavaScriptDialog(this, &ChromeClient::runBeforeUnloadConfirmPanelInternal, *frame, message);
+    return openJavaScriptDialog(this, &ChromeClient::openBeforeUnloadConfirmPanelDelegate, *frame, message);
 }
 
-void ChromeClient::runJavaScriptAlert(LocalFrame* frame, const String& message)
+void ChromeClient::openJavaScriptAlert(LocalFrame* frame, const String& message)
 {
     ASSERT(frame);
-    if (!canRunModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::AlertDialog, message))
+    if (!canOpenModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::AlertDialog, message))
         return;
-    openJavaScriptDialog(this, &ChromeClient::runJavaScriptAlertInternal, *frame, message);
+    openJavaScriptDialog(this, &ChromeClient::openJavaScriptAlertDelegate, *frame, message);
 }
 
-bool ChromeClient::runJavaScriptConfirm(LocalFrame* frame, const String& message)
+bool ChromeClient::openJavaScriptConfirm(LocalFrame* frame, const String& message)
 {
     ASSERT(frame);
-    if (!canRunModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::ConfirmDialog, message))
+    if (!canOpenModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::ConfirmDialog, message))
         return false;
-    return openJavaScriptDialog(this, &ChromeClient::runJavaScriptConfirmInternal, *frame, message);
+    return openJavaScriptDialog(this, &ChromeClient::openJavaScriptConfirmDelegate, *frame, message);
 }
 
-bool ChromeClient::runJavaScriptPrompt(LocalFrame* frame, const String& prompt, const String& defaultValue, String& result)
+bool ChromeClient::openJavaScriptPrompt(LocalFrame* frame, const String& prompt, const String& defaultValue, String& result)
 {
     ASSERT(frame);
-    if (!canRunModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::PromptDialog, prompt))
+    if (!canOpenModalIfDuringPageDismissal(frame->tree().top(), ChromeClient::PromptDialog, prompt))
         return false;
-    return openJavaScriptDialog(this, &ChromeClient::runJavaScriptPromptInternal, *frame, prompt, defaultValue, result);
+    return openJavaScriptDialog(this, &ChromeClient::openJavaScriptPromptDelegate, *frame, prompt, defaultValue, result);
 }
 
 void ChromeClient::mouseDidMoveOverElement(const HitTestResult& result)
@@ -188,7 +188,7 @@ void ChromeClient::print(LocalFrame* frame)
     // executing JavaScript.
     ScopedPageLoadDeferrer deferrer;
 
-    printInternal(frame);
+    printDelegate(frame);
 }
 
 } // namespace blink

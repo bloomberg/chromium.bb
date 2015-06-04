@@ -119,14 +119,14 @@ public:
     virtual bool shouldReportDetailedMessageForSource(LocalFrame&, const String& source) = 0;
     virtual void addMessageToConsole(LocalFrame*, MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String& sourceID, const String& stackTrace) = 0;
 
-    virtual bool canRunBeforeUnloadConfirmPanel() = 0;
-    bool runBeforeUnloadConfirmPanel(const String& message, LocalFrame*);
+    virtual bool canOpenBeforeUnloadConfirmPanel() = 0;
+    bool openBeforeUnloadConfirmPanel(const String& message, LocalFrame*);
 
     virtual void closeWindowSoon() = 0;
 
-    void runJavaScriptAlert(LocalFrame*, const String&);
-    bool runJavaScriptConfirm(LocalFrame*, const String&);
-    bool runJavaScriptPrompt(LocalFrame*, const String& message, const String& defaultValue, String& result);
+    void openJavaScriptAlert(LocalFrame*, const String&);
+    bool openJavaScriptConfirm(LocalFrame*, const String&);
+    bool openJavaScriptPrompt(LocalFrame*, const String& message, const String& defaultValue, String& result);
     virtual void setStatusbarText(const String&) = 0;
     virtual bool tabsToLinks() = 0;
 
@@ -156,7 +156,7 @@ public:
 
     virtual void annotatedRegionsChanged() = 0;
 
-    virtual PassOwnPtrWillBeRawPtr<ColorChooser> createColorChooser(LocalFrame*, ColorChooserClient*, const Color&) = 0;
+    virtual PassOwnPtrWillBeRawPtr<ColorChooser> openColorChooser(LocalFrame*, ColorChooserClient*, const Color&) = 0;
 
     // This function is used for:
     //  - Mandatory date/time choosers if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
@@ -168,7 +168,7 @@ public:
 
     virtual void openTextDataListChooser(HTMLInputElement&)= 0;
 
-    virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) = 0;
+    virtual void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) = 0;
 
     // Asychronous request to enumerate all files in a directory chosen by the user.
     virtual void enumerateChosenDirectory(FileChooser*) = 0;
@@ -196,7 +196,7 @@ public:
 
     // Checks if there is an opened popup, called by LayoutMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
-    virtual PassRefPtrWillBeRawPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) = 0;
+    virtual PassRefPtrWillBeRawPtr<PopupMenu> openPopupMenu(LocalFrame&, PopupMenuClient*) = 0;
     virtual DOMWindow* pagePopupWindowForTesting() const = 0;
 
     virtual void postAccessibilityNotification(AXObject*, AXObjectCache::AXNotification) { }
@@ -208,7 +208,7 @@ public:
         PromptDialog = 2,
         HTMLDialog = 3
     };
-    virtual bool shouldRunModalDialogDuringPageDismissal(const DialogType&, const String&, Document::PageDismissalType) const { return true; }
+    virtual bool shouldOpenModalDialogDuringPageDismissal(const DialogType&, const String&, Document::PageDismissalType) const { return true; }
 
     virtual bool isSVGImageChromeClient() const { return false; }
 
@@ -246,17 +246,14 @@ protected:
 
     virtual void showMouseOverURL(const HitTestResult&) = 0;
     virtual void setWindowRect(const IntRect&) = 0;
-    // TODO(tkent): Adding 'Internal' to virtual functions is not good. We
-    // should give better names, or move out non-internal versions of these
-    // functions.
-    virtual bool runBeforeUnloadConfirmPanelInternal(LocalFrame*, const String& message) = 0;
-    virtual void runJavaScriptAlertInternal(LocalFrame*, const String&) = 0;
-    virtual bool runJavaScriptConfirmInternal(LocalFrame*, const String&) = 0;
-    virtual bool runJavaScriptPromptInternal(LocalFrame*, const String& message, const String& defaultValue, String& result) = 0;
-    virtual void printInternal(LocalFrame*) = 0;
+    virtual bool openBeforeUnloadConfirmPanelDelegate(LocalFrame*, const String& message) = 0;
+    virtual void openJavaScriptAlertDelegate(LocalFrame*, const String&) = 0;
+    virtual bool openJavaScriptConfirmDelegate(LocalFrame*, const String&) = 0;
+    virtual bool openJavaScriptPromptDelegate(LocalFrame*, const String& message, const String& defaultValue, String& result) = 0;
+    virtual void printDelegate(LocalFrame*) = 0;
 
 private:
-    bool canRunModalIfDuringPageDismissal(Frame* mainFrame, DialogType, const String& message);
+    bool canOpenModalIfDuringPageDismissal(Frame* mainFrame, DialogType, const String& message);
     void setToolTip(const HitTestResult&);
 };
 
