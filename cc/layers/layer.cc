@@ -1150,7 +1150,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   // TODO(enne): This is needed because CDP does this.  Once main thread CDP
   // goes away, content scale / bounds can be removed.
-  if (layer_tree_host()->settings().impl_side_painting) {
+  if (layer_tree_host()->using_only_property_trees()) {
     layer->SetContentsScale(1.f, 1.f);
     layer->SetContentBounds(bounds());
   } else {
