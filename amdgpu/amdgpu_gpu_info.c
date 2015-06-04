@@ -230,7 +230,7 @@ int amdgpu_query_heap_info(amdgpu_device_handle dev,
 			uint32_t flags,
 			struct amdgpu_heap_info *info)
 {
-	struct drm_amdgpu_info_vram_gtt vram_gtt_info;
+	struct drm_amdgpu_info_vram_gtt vram_gtt_info = {};
 	int r;
 
 	r = amdgpu_query_info(dev, AMDGPU_INFO_VRAM_GTT,

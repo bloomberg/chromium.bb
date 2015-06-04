@@ -110,7 +110,7 @@ static int fd_compare(void *key1, void *key2)
 static int amdgpu_get_auth(int fd, int *auth)
 {
 	int r = 0;
-	drm_client_t client;
+	drm_client_t client = {};
 
 	if (drmGetNodeTypeFromFd(fd) == DRM_NODE_RENDER)
 		*auth = 0;
