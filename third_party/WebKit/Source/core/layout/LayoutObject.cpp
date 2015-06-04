@@ -1090,12 +1090,6 @@ String LayoutObject::decoratedName() const
 
     if (isAnonymous())
         name.append(" (anonymous)");
-    if (style()) {
-        if (isAnonymousColumnsBlock())
-            name.append(" (anonymous multi-column)");
-        if (isAnonymousColumnSpanBlock())
-            name.append(" (anonymous multi-column span)");
-    }
     if (isOutOfFlowPositioned())
         name.append(" (positioned)");
     if (isRelPositioned())
@@ -2558,9 +2552,6 @@ void LayoutObject::destroyAndCleanupAnonymousWrappers()
             break;
         // A flow thread is tracked by its containing block. Whether its children are removed or not is irrelevant.
         if (destroyRootParent->isLayoutFlowThread())
-            break;
-        // Column spans are tracked elsewhere.
-        if (destroyRootParent->isAnonymousColumnSpanBlock())
             break;
 
         if (destroyRootParent->slowFirstChild() != destroyRoot || destroyRootParent->slowLastChild() != destroyRoot)

@@ -167,17 +167,12 @@ public:
     virtual LayoutBoxModelObject* virtualContinuation() const override final { return continuation(); }
     bool isAnonymousBlockContinuation() const { return continuation() && isAnonymousBlock(); }
     LayoutInline* inlineElementContinuation() const;
-    LayoutBlock* blockElementContinuation() const;
 
     using LayoutBoxModelObject::continuation;
     using LayoutBoxModelObject::setContinuation;
 
     static LayoutBlock* createAnonymousWithParentAndDisplay(const LayoutObject*, EDisplay = BLOCK);
-    static LayoutBlockFlow* createAnonymousColumnsWithParent(const LayoutObject*);
-    static LayoutBlockFlow* createAnonymousColumnSpanWithParent(const LayoutObject*);
     LayoutBlock* createAnonymousBlock(EDisplay display = BLOCK) const { return createAnonymousWithParentAndDisplay(this, display); }
-    LayoutBlockFlow* createAnonymousColumnsBlock() const { return createAnonymousColumnsWithParent(this); }
-    LayoutBlockFlow* createAnonymousColumnSpanBlock() const { return createAnonymousColumnSpanWithParent(this); }
 
     virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override;
 
@@ -318,11 +313,7 @@ private:
 
     virtual void dirtyLinesFromChangedChild(LayoutObject* child) override final { m_lineBoxes.dirtyLinesFromChangedChild(this, child); }
 
-    void addChildToContinuation(LayoutObject* newChild, LayoutObject* beforeChild);
     virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild) override;
-    void addChildToAnonymousColumnBlocks(LayoutObject* newChild, LayoutObject* beforeChild);
-
-    void addChildIgnoringAnonymousColumnBlocks(LayoutObject* newChild, LayoutObject* beforeChild = 0);
 
     virtual bool isSelfCollapsingBlock() const override;
 
@@ -368,17 +359,6 @@ private:
 
     Position positionForBox(InlineBox*, bool start = true) const;
     PositionWithAffinity positionForPointWithInlineChildren(const LayoutPoint&);
-
-    void makeChildrenAnonymousColumnBlocks(LayoutObject* beforeChild, LayoutBlockFlow* newBlockBox, LayoutObject* newChild);
-
-    void splitBlocks(LayoutBlock* fromBlock, LayoutBlock* toBlock, LayoutBlock* middleBlock,
-        LayoutObject* beforeChild, LayoutBoxModelObject* oldCont);
-    void splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox,
-        LayoutObject* newChild, LayoutBoxModelObject* oldCont);
-    LayoutBlock* clone() const;
-    LayoutBlock* continuationBefore(LayoutObject* beforeChild);
-    LayoutBlockFlow* containingColumnsBlock(bool allowAnonymousColumnBlock = true);
-    LayoutBlockFlow* columnsBlockForSpanningElement(LayoutObject* newChild);
 
     // End helper functions and structs used by layoutBlockChildren.
 

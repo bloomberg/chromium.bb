@@ -325,16 +325,6 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
 
     const ComputedStyle& newStyle = styleRef();
 
-    if (!isAnonymousBlock()) {
-        // Ensure that all of our continuation blocks pick up the new style.
-        for (LayoutBlock* currCont = blockElementContinuation(); currCont; currCont = currCont->blockElementContinuation()) {
-            LayoutBoxModelObject* nextCont = currCont->continuation();
-            currCont->setContinuation(0);
-            currCont->setStyle(mutableStyle());
-            currCont->setContinuation(nextCont);
-        }
-    }
-
     if (TextAutosizer* textAutosizer = document().textAutosizer())
         textAutosizer->record(this);
 
@@ -397,404 +387,7 @@ void LayoutBlock::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
     }
 }
 
-LayoutBlock* LayoutBlock::continuationBefore(LayoutObject* beforeChild)
-{
-    if (beforeChild && beforeChild->parent() == this)
-        return this;
-
-    LayoutBlock* curr = toLayoutBlock(continuation());
-    LayoutBlock* nextToLast = this;
-    LayoutBlock* last = this;
-    while (curr) {
-        if (beforeChild && beforeChild->parent() == curr) {
-            if (curr->firstChild() == beforeChild)
-                return last;
-            return curr;
-        }
-
-        nextToLast = last;
-        last = curr;
-        curr = toLayoutBlock(curr->continuation());
-    }
-
-    if (!beforeChild && !last->firstChild())
-        return nextToLast;
-    return last;
-}
-
-void LayoutBlock::addChildToContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
-{
-    LayoutBlock* flow = continuationBefore(beforeChild);
-    LayoutBoxModelObject* beforeChildParent = 0;
-    if (beforeChild) {
-        beforeChildParent = toLayoutBoxModelObject(beforeChild->parent());
-        // Don't attempt to insert into something that isn't a LayoutBlockFlow (block
-        // container). While the DOM nodes of |beforeChild| and |newChild| are siblings, there may
-        // be anonymous table wrapper objects around |beforeChild| on the layout side. Therefore,
-        // find the nearest LayoutBlockFlow. If it turns out that the new layoutObject doesn't belong
-        // inside the anonymous table, this will make sure that it's really put on the outside. If
-        // it turns out that it does belong inside it, the normal child insertion machinery will
-        // make sure it ends up there, and at the right place too. We cannot just guess that it's
-        // going to be right under the parent of |beforeChild|.
-        while (beforeChildParent && !beforeChildParent->isLayoutBlockFlow()) {
-            ASSERT(!beforeChildParent->virtualContinuation());
-            ASSERT(beforeChildParent->isAnonymous());
-            RELEASE_ASSERT(beforeChildParent != this);
-            beforeChildParent = toLayoutBoxModelObject(beforeChildParent->parent());
-        }
-        ASSERT(beforeChildParent);
-    } else {
-        LayoutBoxModelObject* cont = flow->continuation();
-        if (cont)
-            beforeChildParent = cont;
-        else
-            beforeChildParent = flow;
-    }
-
-    if (newChild->isFloatingOrOutOfFlowPositioned()) {
-        beforeChildParent->addChildIgnoringContinuation(newChild, beforeChild);
-        return;
-    }
-
-    // A continuation always consists of two potential candidates: a block or an anonymous
-    // column span box holding column span children.
-    bool childIsNormal = newChild->isInline() || !newChild->style()->columnSpan();
-    bool bcpIsNormal = beforeChildParent->isInline() || !beforeChildParent->style()->columnSpan();
-    bool flowIsNormal = flow->isInline() || !flow->style()->columnSpan();
-
-    if (flow == beforeChildParent) {
-        flow->addChildIgnoringContinuation(newChild, beforeChild);
-        return;
-    }
-
-    // The goal here is to match up if we can, so that we can coalesce and create the
-    // minimal # of continuations needed for the inline.
-    if (childIsNormal == bcpIsNormal) {
-        beforeChildParent->addChildIgnoringContinuation(newChild, beforeChild);
-        return;
-    }
-    if (flowIsNormal == childIsNormal) {
-        flow->addChildIgnoringContinuation(newChild, 0); // Just treat like an append.
-        return;
-    }
-    beforeChildParent->addChildIgnoringContinuation(newChild, beforeChild);
-}
-
-
-void LayoutBlock::addChildToAnonymousColumnBlocks(LayoutObject* newChild, LayoutObject* beforeChild)
-{
-    ASSERT(!continuation()); // We don't yet support column spans that aren't immediate children of the multi-column block.
-
-    // The goal is to locate a suitable box in which to place our child.
-    LayoutBlock* beforeChildParent = 0;
-    if (beforeChild) {
-        LayoutObject* curr = beforeChild;
-        while (curr && curr->parent() != this)
-            curr = curr->parent();
-        beforeChildParent = toLayoutBlock(curr);
-        ASSERT(beforeChildParent);
-        ASSERT(beforeChildParent->isAnonymousColumnsBlock() || beforeChildParent->isAnonymousColumnSpanBlock());
-    } else {
-        beforeChildParent = toLayoutBlock(lastChild());
-    }
-
-    // If the new child is floating or positioned it can just go in that block.
-    if (newChild->isFloatingOrOutOfFlowPositioned()) {
-        beforeChildParent->addChildIgnoringAnonymousColumnBlocks(newChild, beforeChild);
-        return;
-    }
-
-    // See if the child can be placed in the box.
-    bool newChildHasColumnSpan = newChild->style()->columnSpan() && !newChild->isInline();
-    bool beforeChildParentHoldsColumnSpans = beforeChildParent->isAnonymousColumnSpanBlock();
-
-    if (newChildHasColumnSpan == beforeChildParentHoldsColumnSpans) {
-        beforeChildParent->addChildIgnoringAnonymousColumnBlocks(newChild, beforeChild);
-        return;
-    }
-
-    if (!beforeChild) {
-        // Create a new block of the correct type.
-        LayoutBlock* newBox = newChildHasColumnSpan ? createAnonymousColumnSpanBlock() : createAnonymousColumnsBlock();
-        children()->appendChildNode(this, newBox);
-        newBox->addChildIgnoringAnonymousColumnBlocks(newChild, 0);
-        return;
-    }
-
-    LayoutObject* immediateChild = beforeChild;
-    bool isPreviousBlockViable = true;
-    while (immediateChild->parent() != this) {
-        if (isPreviousBlockViable)
-            isPreviousBlockViable = !immediateChild->previousSibling();
-        immediateChild = immediateChild->parent();
-    }
-    if (isPreviousBlockViable && immediateChild->previousSibling()) {
-        toLayoutBlock(immediateChild->previousSibling())->addChildIgnoringAnonymousColumnBlocks(newChild, 0); // Treat like an append.
-        return;
-    }
-
-    // Split our anonymous blocks.
-    LayoutObject* newBeforeChild = splitAnonymousBoxesAroundChild(beforeChild);
-
-
-    // Create a new anonymous box of the appropriate type.
-    LayoutBlock* newBox = newChildHasColumnSpan ? createAnonymousColumnSpanBlock() : createAnonymousColumnsBlock();
-    children()->insertChildNode(this, newBox, newBeforeChild);
-    newBox->addChildIgnoringAnonymousColumnBlocks(newChild, 0);
-    return;
-}
-
-LayoutBlockFlow* LayoutBlock::containingColumnsBlock(bool allowAnonymousColumnBlock)
-{
-    LayoutBlock* firstChildIgnoringAnonymousWrappers = 0;
-    for (LayoutObject* curr = this; curr; curr = curr->parent()) {
-        if (!curr->isLayoutBlock() || curr->isFloatingOrOutOfFlowPositioned() || curr->isTableCell() || curr->isDocumentElement() || curr->isLayoutView() || curr->hasOverflowClip()
-            || curr->isInlineBlockOrInlineTable())
-            return 0;
-
-        // FIXME: LayoutObjects that do special management of their children (tables, buttons,
-        // lists, flexboxes, etc.) breaks when the flow is split through them. Disabling
-        // multi-column for them to avoid this problem.)
-        if (!curr->isLayoutBlockFlow() || curr->isListItem())
-            return 0;
-
-        LayoutBlockFlow* currBlock = toLayoutBlockFlow(curr);
-        if (!currBlock->createsAnonymousWrapper())
-            firstChildIgnoringAnonymousWrappers = currBlock;
-
-        if (currBlock->style()->specifiesColumns() && (allowAnonymousColumnBlock || !currBlock->isAnonymousColumnsBlock()))
-            return toLayoutBlockFlow(firstChildIgnoringAnonymousWrappers);
-
-        if (currBlock->isAnonymousColumnSpanBlock())
-            return 0;
-    }
-    return 0;
-}
-
-LayoutBlock* LayoutBlock::clone() const
-{
-    LayoutBlock* cloneBlock;
-    if (isAnonymousBlock()) {
-        cloneBlock = createAnonymousBlock();
-        cloneBlock->setChildrenInline(childrenInline());
-    } else {
-        LayoutObject* cloneLayoutObject = toElement(node())->createLayoutObject(styleRef());
-        cloneBlock = toLayoutBlock(cloneLayoutObject);
-        cloneBlock->setStyle(mutableStyle());
-
-        // This takes care of setting the right value of childrenInline in case
-        // generated content is added to cloneBlock and 'this' does not have
-        // generated content added yet.
-        cloneBlock->setChildrenInline(cloneBlock->firstChild() ? cloneBlock->firstChild()->isInline() : childrenInline());
-    }
-    cloneBlock->setIsInsideFlowThread(isInsideFlowThread());
-    return cloneBlock;
-}
-
-void LayoutBlock::splitBlocks(LayoutBlock* fromBlock, LayoutBlock* toBlock,
-    LayoutBlock* middleBlock,
-    LayoutObject* beforeChild, LayoutBoxModelObject* oldCont)
-{
-    ASSERT(isDescendantOf(fromBlock));
-
-    if (!beforeChild && isAfterContent(lastChild()))
-        beforeChild = lastChild();
-
-    Vector<LayoutBlock*> blocksToClone;
-    for (LayoutObject* o = this; o != fromBlock; o = o->parent())
-        blocksToClone.append(toLayoutBlock(o));
-
-    // Create a new clone of the top-most block.
-    LayoutBlock* topMostBlockToClone = blocksToClone.last();
-    LayoutBlock* cloneBlock = topMostBlockToClone->clone();
-
-    // Put |cloneBlock| as a child of |toBlock|.
-    toBlock->children()->appendChildNode(toBlock, cloneBlock);
-
-    // Now take all the children after |topMostBlockToClone| and remove them from the |fromBlock|
-    // and put them in the |toBlock|.
-    fromBlock->moveChildrenTo(toBlock, topMostBlockToClone->nextSibling(), nullptr, true);
-
-    LayoutBlock* currentBlockParent = topMostBlockToClone;
-    LayoutBlock* cloneBlockParent = cloneBlock;
-
-    // Clone the blocks from top to down to ensure any new object will be added into a rooted tree.
-    // Note that we have already cloned the top-most one, so the loop begins from size - 2.
-    for (int i = static_cast<int>(blocksToClone.size()) - 2; i >= 0; --i) {
-        // Hook the clone up as a continuation of |currentBlockParent|. Note we do encounter
-        // anonymous blocks possibly as we walk down the block chain.  When we split an
-        // anonymous block, there's no need to do any continuation hookup, since we haven't
-        // actually split a real element.
-        if (!currentBlockParent->isAnonymousBlock()) {
-            LayoutBoxModelObject* oldCont = currentBlockParent->continuation();
-            currentBlockParent->setContinuation(cloneBlock);
-            cloneBlock->setContinuation(oldCont);
-        }
-
-        // Create a new clone.
-        LayoutBlock* currentBlock = blocksToClone[i];
-        cloneBlock = currentBlock->clone();
-
-        // Insert the |cloneBlock| as the first child of |cloneBlockParent|.
-        cloneBlockParent->addChildIgnoringContinuation(cloneBlock, nullptr);
-
-        // Take all the children after |currentBlock| and remove them from the |currentBlockParent|
-        // and put them to the end of the |cloneParent|.
-        currentBlockParent->moveChildrenTo(cloneBlockParent, currentBlock->nextSibling(), nullptr, true);
-
-        cloneBlockParent = cloneBlock;
-        currentBlockParent = currentBlock;
-    }
-
-    // The last block to clone is |this|, and the current |cloneBlock| is cloned from |this|.
-    ASSERT(this == blocksToClone.first());
-
-    // Hook |cloneBlock| up as the continuation of the |middleBlock|.
-    if (!isAnonymousBlock()) {
-        cloneBlock->setContinuation(oldCont);
-        middleBlock->setContinuation(cloneBlock);
-    }
-
-    // Now take all of the children from |beforeChild| to the end and remove
-    // them from |this| and place them in the |cloneBlock|.
-    moveChildrenTo(cloneBlock, beforeChild, nullptr, true);
-}
-
-void LayoutBlock::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox,
-    LayoutObject* newChild, LayoutBoxModelObject* oldCont)
-{
-    LayoutBlock* pre = 0;
-    LayoutBlock* block = containingColumnsBlock();
-
-    // Delete our line boxes before we do the inline split into continuations.
-    block->deleteLineBoxTree();
-
-    bool madeNewBeforeBlock = false;
-    if (block->isAnonymousColumnsBlock()) {
-        // We can reuse this block and make it the preBlock of the next continuation.
-        pre = block;
-        pre->removePositionedObjects(0);
-        if (block->isLayoutBlockFlow())
-            toLayoutBlockFlow(pre)->removeFloatingObjects();
-        block = toLayoutBlock(block->parent());
-    } else {
-        // No anonymous block available for use.  Make one.
-        pre = block->createAnonymousColumnsBlock();
-        pre->setChildrenInline(false);
-        madeNewBeforeBlock = true;
-    }
-
-    LayoutBlock* post = block->createAnonymousColumnsBlock();
-    post->setChildrenInline(false);
-
-    LayoutObject* boxFirst = madeNewBeforeBlock ? block->firstChild() : pre->nextSibling();
-    if (madeNewBeforeBlock)
-        block->children()->insertChildNode(block, pre, boxFirst);
-    block->children()->insertChildNode(block, newBlockBox, boxFirst);
-    block->children()->insertChildNode(block, post, boxFirst);
-    block->setChildrenInline(false);
-
-    if (madeNewBeforeBlock)
-        block->moveChildrenTo(pre, boxFirst, 0, true);
-
-    splitBlocks(pre, post, newBlockBox, beforeChild, oldCont);
-
-    // We already know the newBlockBox isn't going to contain inline kids, so avoid wasting
-    // time in makeChildrenNonInline by just setting this explicitly up front.
-    newBlockBox->setChildrenInline(false);
-
-    newBlockBox->addChild(newChild);
-
-    // Always just do a full layout in order to ensure that line boxes (especially wrappers for images)
-    // get deleted properly.  Because objects moves from the pre block into the post block, we want to
-    // make new line boxes instead of leaving the old line boxes around.
-    pre->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
-    block->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
-    post->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
-}
-
-void LayoutBlock::makeChildrenAnonymousColumnBlocks(LayoutObject* beforeChild, LayoutBlockFlow* newBlockBox, LayoutObject* newChild)
-{
-    LayoutBlockFlow* pre = 0;
-    LayoutBlockFlow* post = 0;
-    LayoutBlock* block = this; // Eventually block will not just be |this|, but will also be a block nested inside |this|.  Assign to a variable
-        // so that we don't have to patch all of the rest of the code later on.
-
-    // Delete the block's line boxes before we do the split.
-    block->deleteLineBoxTree();
-
-    if (beforeChild && beforeChild->parent() != this)
-        beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
-
-    if (beforeChild != firstChild()) {
-        pre = block->createAnonymousColumnsBlock();
-        pre->setChildrenInline(block->childrenInline());
-    }
-
-    if (beforeChild) {
-        post = block->createAnonymousColumnsBlock();
-        post->setChildrenInline(block->childrenInline());
-    }
-
-    LayoutObject* boxFirst = block->firstChild();
-    if (pre)
-        block->children()->insertChildNode(block, pre, boxFirst);
-    block->children()->insertChildNode(block, newBlockBox, boxFirst);
-    if (post)
-        block->children()->insertChildNode(block, post, boxFirst);
-    block->setChildrenInline(false);
-
-    // The pre/post blocks always have layers, so we know to always do a full insert/remove (so we pass true as the last argument).
-    block->moveChildrenTo(pre, boxFirst, beforeChild, true);
-    block->moveChildrenTo(post, beforeChild, 0, true);
-
-    // We already know the newBlockBox isn't going to contain inline kids, so avoid wasting
-    // time in makeChildrenNonInline by just setting this explicitly up front.
-    newBlockBox->setChildrenInline(false);
-
-    newBlockBox->addChild(newChild);
-
-    // Always just do a full layout in order to ensure that line boxes (especially wrappers for images)
-    // get deleted properly.  Because objects moved from the pre block into the post block, we want to
-    // make new line boxes instead of leaving the old line boxes around.
-    if (pre)
-        pre->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
-    block->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
-    if (post)
-        post->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
-}
-
-LayoutBlockFlow* LayoutBlock::columnsBlockForSpanningElement(LayoutObject* newChild)
-{
-    // FIXME: This function is the gateway for the addition of column-span support.  It will
-    // be added to in three stages:
-    // (1) Immediate children of a multi-column block can span.
-    // (2) Nested block-level children with only block-level ancestors between them and the multi-column block can span.
-    // (3) Nested children with block or inline ancestors between them and the multi-column block can span (this is when we
-    // cross the streams and have to cope with both types of continuations mixed together).
-    // This function currently supports (1) and (2).
-    LayoutBlockFlow* columnsBlockAncestor = 0;
-    if (!newChild->isText() && newChild->style()->columnSpan() && !newChild->isBeforeOrAfterContent()
-        && !newChild->isFloatingOrOutOfFlowPositioned() && !newChild->isInline() && !newChild->isTablePart()
-        && !isAnonymousColumnSpanBlock()) {
-        columnsBlockAncestor = containingColumnsBlock(false);
-        if (columnsBlockAncestor) {
-            // Make sure that none of the parent ancestors have a continuation.
-            // If yes, we do not want split the block into continuations.
-            LayoutObject* curr = this;
-            while (curr && curr != columnsBlockAncestor) {
-                if (curr->isLayoutBlock() && toLayoutBlock(curr)->continuation()) {
-                    columnsBlockAncestor = 0;
-                    break;
-                }
-                curr = curr->parent();
-            }
-        }
-    }
-    return columnsBlockAncestor;
-}
-
-void LayoutBlock::addChildIgnoringAnonymousColumnBlocks(LayoutObject* newChild, LayoutObject* beforeChild)
+void LayoutBlock::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     if (beforeChild && beforeChild->parent() != this) {
         LayoutObject* beforeChildContainer = beforeChild->parent();
@@ -881,18 +474,7 @@ void LayoutBlock::addChildIgnoringAnonymousColumnBlocks(LayoutObject* newChild, 
 
 void LayoutBlock::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
-    if (continuation() && !isAnonymousBlock())
-        addChildToContinuation(newChild, beforeChild);
-    else
-        addChildIgnoringContinuation(newChild, beforeChild);
-}
-
-void LayoutBlock::addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild)
-{
-    if (!isAnonymousBlock() && firstChild() && (firstChild()->isAnonymousColumnsBlock() || firstChild()->isAnonymousColumnSpanBlock()))
-        addChildToAnonymousColumnBlocks(newChild, beforeChild);
-    else
-        addChildIgnoringAnonymousColumnBlocks(newChild, beforeChild);
+    addChildIgnoringContinuation(newChild, beforeChild);
 }
 
 static void getInlineRun(LayoutObject* start, LayoutObject* boundary,
@@ -1010,7 +592,7 @@ void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child)
     ASSERT(!child->childrenInline());
     ASSERT(child->parent() == this);
 
-    if (child->continuation() || (child->firstChild() && (child->isAnonymousColumnSpanBlock() || child->isAnonymousColumnsBlock())))
+    if (child->continuation())
         return;
 
     // Promote all the leftover anonymous block's children (to become children of this block
@@ -1045,12 +627,7 @@ static bool canMergeContiguousAnonymousBlocks(LayoutObject* oldChild, LayoutObje
         || (next && (next->isRubyRun() || next->isRubyBase())))
         return false;
 
-    if (!prev || !next)
-        return true;
-
-    // Make sure the types of the anonymous blocks match up.
-    return prev->isAnonymousColumnsBlock() == next->isAnonymousColumnsBlock()
-        && prev->isAnonymousColumnSpanBlock() == next->isAnonymousColumnSpanBlock();
+    return true;
 }
 
 void LayoutBlock::removeAnonymousWrappersIfRequired()
@@ -1091,16 +668,7 @@ void LayoutBlock::collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* 
     LayoutObject* nextSibling = child->nextSibling();
 
     parent->children()->removeChildNode(parent, child, child->hasLayer());
-    // FIXME: Get rid of the temporary disabling of continuations. This is needed by the old
-    // multicol implementation, because of buggy block continuation handling (which is hard and
-    // rather pointless to fix at this point). Support for block continuations can be removed
-    // together with the old multicol implementation. crbug.com/408123
-    LayoutBoxModelObject* temporarilyInactiveContinuation = parent->continuation();
-    if (temporarilyInactiveContinuation)
-        parent->setContinuation(0);
     child->moveAllChildrenTo(parent, nextSibling, child->hasLayer());
-    if (temporarilyInactiveContinuation)
-        parent->setContinuation(temporarilyInactiveContinuation);
     // Explicitly delete the child's line box tree, or the special anonymous
     // block handling in willBeDestroyed will cause problems.
     child->deleteLineBoxTree();
@@ -1736,17 +1304,6 @@ LayoutInline* LayoutBlock::inlineElementContinuation() const
 {
     LayoutBoxModelObject* continuation = this->continuation();
     return continuation && continuation->isInline() ? toLayoutInline(continuation) : 0;
-}
-
-LayoutBlock* LayoutBlock::blockElementContinuation() const
-{
-    LayoutBoxModelObject* currentContinuation = continuation();
-    if (!currentContinuation || currentContinuation->isInline())
-        return 0;
-    LayoutBlock* nextContinuation = toLayoutBlock(currentContinuation);
-    if (nextContinuation->isAnonymousBlock())
-        return nextContinuation->blockElementContinuation();
-    return nextContinuation;
 }
 
 ContinuationOutlineTableMap* continuationOutlineTable()
@@ -3055,10 +2612,6 @@ void LayoutBlock::computeSelfHitTestRects(Vector<LayoutRect>& rects, const Layou
 
 LayoutBox* LayoutBlock::createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const
 {
-    if (isAnonymousColumnsBlock())
-        return createAnonymousColumnsWithParent(parent);
-    if (isAnonymousColumnSpanBlock())
-        return createAnonymousColumnSpanWithParent(parent);
     return createAnonymousWithParentAndDisplay(parent, style()->display());
 }
 
@@ -3204,28 +2757,6 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentAndDisplay(const LayoutObject
     }
 
     RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), newDisplay);
-    parent->updateAnonymousChildStyle(*newBox, *newStyle);
-    newBox->setStyle(newStyle.release());
-    return newBox;
-}
-
-LayoutBlockFlow* LayoutBlock::createAnonymousColumnsWithParent(const LayoutObject* parent)
-{
-    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), BLOCK);
-    newStyle->inheritColumnPropertiesFrom(parent->styleRef());
-
-    LayoutBlockFlow* newBox = LayoutBlockFlow::createAnonymous(&parent->document());
-    parent->updateAnonymousChildStyle(*newBox, *newStyle);
-    newBox->setStyle(newStyle.release());
-    return newBox;
-}
-
-LayoutBlockFlow* LayoutBlock::createAnonymousColumnSpanWithParent(const LayoutObject* parent)
-{
-    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), BLOCK);
-    newStyle->setColumnSpan(ColumnSpanAll);
-
-    LayoutBlockFlow* newBox = LayoutBlockFlow::createAnonymous(&parent->document());
     parent->updateAnonymousChildStyle(*newBox, *newStyle);
     newBox->setStyle(newStyle.release());
     return newBox;

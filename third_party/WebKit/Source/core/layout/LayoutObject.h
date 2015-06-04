@@ -503,8 +503,6 @@ public:
             && !isLayoutFullScreen()
             && !isLayoutFullScreenPlaceholder();
     }
-    bool isAnonymousColumnsBlock() const { return style()->specifiesColumns() && isAnonymousBlock(); }
-    bool isAnonymousColumnSpanBlock() const { return style()->columnSpan() && isAnonymousBlock(); }
     bool isElementContinuation() const { return node() && node()->layoutObject() != this; }
     bool isInlineElementContinuation() const { return isElementContinuation() && isInline(); }
     virtual LayoutBoxModelObject* virtualContinuation() const { return 0; }
