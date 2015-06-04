@@ -36,7 +36,7 @@
     	ctx.fillRect(0, 0, 150, 150);
     	
     	if (window.testRunner)
-    	    testRunner.notifyDone();
+    	    testRunner.layoutAndPaintAsyncThen(function(){ testRunner.notifyDone(); });
    		}
    }
   </script>

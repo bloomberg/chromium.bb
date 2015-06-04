@@ -61,7 +61,7 @@
         ctx.restore();
     	
     	if (window.testRunner)
-    	    testRunner.notifyDone();
+    	    testRunner.layoutAndPaintAsyncThen(function(){ testRunner.notifyDone(); });
     }
    }
   </script>

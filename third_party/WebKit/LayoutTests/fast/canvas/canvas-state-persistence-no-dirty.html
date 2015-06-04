@@ -22,7 +22,7 @@ requestAnimationFrame(function() {
     context.fillRect(0, 0, 10, 10);
 
     if (window.testRunner)
-      testRunner.notifyDone();
+      testRunner.layoutAndPaintAsyncThen(function(){ testRunner.notifyDone(); });
 
   });
 });
