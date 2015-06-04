@@ -51,23 +51,32 @@ static inline LayoutRect enclosingIntRectIfNotEmpty(const FloatRect& rect)
     return LayoutRect(enclosingIntRect(rect));
 }
 
-LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const LayoutObject* object, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+static void inflateWithOutlineIfNeeded(FloatRect& paintInvalidationRect, const ComputedStyle& style)
+{
+    if (!style.hasOutline())
+        return;
+    int outlineSize = 0;
+    if (style.outlineStyleIsAuto())
+        outlineSize = GraphicsContext::focusRingOutsetExtent(style.outlineOffset(), style.outlineWidth());
+    else
+        outlineSize = style.outlineSize();
+    paintInvalidationRect.inflate(outlineSize);
+}
+
+LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const LayoutObject& object, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     // Return early for any cases where we don't actually paint
-    if (object->style()->visibility() != VISIBLE && !object->enclosingLayer()->hasVisibleContent())
+    if (object.style()->visibility() != VISIBLE && !object.enclosingLayer()->hasVisibleContent())
         return LayoutRect();
 
-    // Pass our local paint rect to computeRectForPaintInvalidation() which will
-    // map to parent coords and recurse up the parent chain.
-    FloatRect paintInvalidationRect = object->paintInvalidationRectInLocalCoordinates();
-    paintInvalidationRect.inflate(object->style()->outlineWidth());
+    FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalCoordinates();
+    inflateWithOutlineIfNeeded(paintInvalidationRect, object.styleRef());
 
     if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
         // Compute accumulated SVG transform and apply to local paint rect.
-        AffineTransform transform = paintInvalidationState->svgTransform() * object->localToParentTransform();
-        paintInvalidationRect = transform.mapRect(paintInvalidationRect);
+        AffineTransform transform = paintInvalidationState->svgTransform() * object.localToParentTransform();
         // FIXME: These are quirks carried forward from the old paint invalidation infrastructure.
-        LayoutRect rect = enclosingIntRectIfNotEmpty(paintInvalidationRect);
+        LayoutRect rect = enclosingIntRectIfNotEmpty(transform.mapRect(paintInvalidationRect));
         // Offset by SVG root paint offset and apply clipping as needed.
         rect.move(paintInvalidationState->paintOffset());
         if (paintInvalidationState->isClipped())
@@ -81,16 +90,16 @@ LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const Layou
     return rect;
 }
 
-const LayoutSVGRoot& SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(const LayoutObject* object, const FloatRect& localPaintInvalidationRect, LayoutRect& rect)
+const LayoutSVGRoot& SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(const LayoutObject& object, const FloatRect& localPaintInvalidationRect, LayoutRect& rect)
 {
-    ASSERT(object && object->isSVG() && !object->isSVGRoot());
+    ASSERT(object.isSVG() && !object.isSVGRoot());
 
     FloatRect paintInvalidationRect = localPaintInvalidationRect;
     // FIXME: Building the transform to the SVG root border box and then doing
     // mapRect() with that would be slightly more efficient, but requires some
     // additions to AffineTransform (preMultiply, preTranslate) to avoid
     // excessive copying and to get a similar fast-path for translations.
-    const LayoutObject* parent = object;
+    const LayoutObject* parent = &object;
     do {
         paintInvalidationRect = parent->localToParentTransform().mapRect(paintInvalidationRect);
         parent = parent->parent();
