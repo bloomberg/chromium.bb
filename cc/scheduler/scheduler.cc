@@ -772,7 +772,8 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
                    estimated_parent_draw_time_.InMillisecondsF());
   state->SetBoolean("last_set_needs_begin_frame_",
                     frame_source_->NeedsBeginFrames());
-  state->SetInteger("begin_retro_frame_args_", begin_retro_frame_args_.size());
+  state->SetInteger("begin_retro_frame_args_",
+                    static_cast<int>(begin_retro_frame_args_.size()));
   state->SetBoolean("begin_retro_frame_task_",
                     !begin_retro_frame_task_.IsCancelled());
   state->SetBoolean("begin_impl_frame_deadline_task_",

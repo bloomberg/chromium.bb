@@ -64,13 +64,13 @@ VideoResourceUpdater::PlaneResource::PlaneResource(
       mailbox(mailbox),
       ref_count(0),
       frame_ptr(nullptr),
-      plane_index(0) {
+      plane_index(0u) {
 }
 
 bool VideoResourceUpdater::PlaneResourceMatchesUniqueID(
     const PlaneResource& plane_resource,
     const media::VideoFrame* video_frame,
-    int plane_index) {
+    size_t plane_index) {
   return plane_resource.frame_ptr == video_frame &&
          plane_resource.plane_index == plane_index &&
          plane_resource.timestamp == video_frame->timestamp();
@@ -78,7 +78,7 @@ bool VideoResourceUpdater::PlaneResourceMatchesUniqueID(
 
 void VideoResourceUpdater::SetPlaneResourceUniqueId(
     const media::VideoFrame* video_frame,
-    int plane_index,
+    size_t plane_index,
     PlaneResource* plane_resource) {
   plane_resource->frame_ptr = video_frame;
   plane_resource->plane_index = plane_index;

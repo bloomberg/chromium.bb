@@ -48,6 +48,8 @@ class IdAllocator {
         ids_(new GLuint[id_allocation_chunk_size]),
         next_id_index_(id_allocation_chunk_size) {
     DCHECK(id_allocation_chunk_size_);
+    DCHECK_LE(id_allocation_chunk_size_,
+              static_cast<size_t>(std::numeric_limits<int>::max()));
   }
 
   GLES2Interface* gl_;
@@ -161,14 +163,15 @@ class TextureIdAllocator : public IdAllocator {
                      size_t texture_id_allocation_chunk_size)
       : IdAllocator(gl, texture_id_allocation_chunk_size) {}
   ~TextureIdAllocator() override {
-    gl_->DeleteTextures(id_allocation_chunk_size_ - next_id_index_,
-                        ids_.get() + next_id_index_);
+    gl_->DeleteTextures(
+        static_cast<int>(id_allocation_chunk_size_ - next_id_index_),
+        ids_.get() + next_id_index_);
   }
 
   // Overridden from IdAllocator:
   GLuint NextId() override {
     if (next_id_index_ == id_allocation_chunk_size_) {
-      gl_->GenTextures(id_allocation_chunk_size_, ids_.get());
+      gl_->GenTextures(static_cast<int>(id_allocation_chunk_size_), ids_.get());
       next_id_index_ = 0;
     }
 
@@ -184,14 +187,15 @@ class BufferIdAllocator : public IdAllocator {
   BufferIdAllocator(GLES2Interface* gl, size_t buffer_id_allocation_chunk_size)
       : IdAllocator(gl, buffer_id_allocation_chunk_size) {}
   ~BufferIdAllocator() override {
-    gl_->DeleteBuffers(id_allocation_chunk_size_ - next_id_index_,
-                       ids_.get() + next_id_index_);
+    gl_->DeleteBuffers(
+        static_cast<int>(id_allocation_chunk_size_ - next_id_index_),
+        ids_.get() + next_id_index_);
   }
 
   // Overridden from IdAllocator:
   GLuint NextId() override {
     if (next_id_index_ == id_allocation_chunk_size_) {
-      gl_->GenBuffers(id_allocation_chunk_size_, ids_.get());
+      gl_->GenBuffers(static_cast<int>(id_allocation_chunk_size_), ids_.get());
       next_id_index_ = 0;
     }
 
@@ -768,8 +772,9 @@ void ResourceProvider::CopyToResource(ResourceId id,
     gl->BindTexture(GL_TEXTURE_2D, resource->gl_id);
 
     if (resource->format == ETC1) {
-      size_t num_bytes = static_cast<size_t>(image_size.width()) *
-                         image_size.height() * BitsPerPixel(ETC1) / 8;
+      // TODO(vmpstr): Make this overflow safe. crbug.com/495867
+      int num_bytes =
+          image_size.width() * image_size.height() * BitsPerPixel(ETC1) / 8;
       gl->CompressedTexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(ETC1),
                                image_size.width(), image_size.height(), 0,
                                num_bytes, image);

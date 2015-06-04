@@ -88,7 +88,7 @@ class CC_EXPORT VideoResourceUpdater
     // frame pointer will only be used for pointer comparison, i.e. the
     // underlying data will not be accessed.
     const void* frame_ptr;
-    int plane_index;
+    size_t plane_index;
     base::TimeDelta timestamp;
 
     PlaneResource(unsigned resource_id,
@@ -99,10 +99,10 @@ class CC_EXPORT VideoResourceUpdater
 
   static bool PlaneResourceMatchesUniqueID(const PlaneResource& plane_resource,
                                            const media::VideoFrame* video_frame,
-                                           int plane_index);
+                                           size_t plane_index);
 
   static void SetPlaneResourceUniqueId(const media::VideoFrame* video_frame,
-                                       int plane_index,
+                                       size_t plane_index,
                                        PlaneResource* plane_resource);
 
   // This needs to be a container where iterators can be erased without
