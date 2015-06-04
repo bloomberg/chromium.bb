@@ -171,7 +171,6 @@ public:
 
     HistoryItem* currentItem() const { return m_currentItem.get(); }
     void saveScrollState();
-    void clearScrollPositionAndViewState();
 
     void restoreScrollPositionAndViewState();
 
@@ -192,8 +191,12 @@ private:
 
     void startLoad(FrameLoadRequest&, FrameLoadType, NavigationPolicy);
 
-
-    void setHistoryItemStateForCommit(HistoryCommitType, bool isPushOrReplaceState = false, HistoryScrollRestorationType = ScrollRestorationAuto, PassRefPtr<SerializedScriptValue> = nullptr);
+    enum class HistoryNavigationType {
+        DifferentDocument,
+        Fragment,
+        HistoryApi
+    };
+    void setHistoryItemStateForCommit(HistoryCommitType, HistoryNavigationType);
 
     void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, FrameLoadType, ClientRedirectPolicy);
 

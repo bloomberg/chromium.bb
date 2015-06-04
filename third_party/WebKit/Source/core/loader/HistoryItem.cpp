@@ -56,16 +56,6 @@ HistoryItem::~HistoryItem()
 {
 }
 
-void HistoryItem::generateNewItemSequenceNumber()
-{
-    m_itemSequenceNumber = generateSequenceNumber();
-}
-
-void HistoryItem::generateNewDocumentSequenceNumber()
-{
-    m_documentSequenceNumber = generateSequenceNumber();
-}
-
 const String& HistoryItem::urlString() const
 {
     return m_urlString;
@@ -126,12 +116,6 @@ const IntPoint& HistoryItem::scrollPoint() const
 void HistoryItem::setScrollPoint(const IntPoint& point)
 {
     m_scrollPoint = point;
-}
-
-void HistoryItem::clearScrollPoint()
-{
-    m_scrollPoint = IntPoint();
-    m_pinchViewportScrollPoint = FloatPoint();
 }
 
 float HistoryItem::pageScaleFactor() const

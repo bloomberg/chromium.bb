@@ -3359,9 +3359,6 @@ void WebViewImpl::resetScrollAndScaleState()
             scrollableArea->notifyScrollPositionChanged(DoublePoint::zero());
     }
 
-    // Clear out the values for the current history item. This will prevent the history item from clobbering the
-    // value determined during page scale initialization, which may be less than 1.
-    page()->deprecatedLocalMainFrame()->loader().clearScrollPositionAndViewState();
     pageScaleConstraintsSet().setNeedsReset(true);
 
     // Clobber saved scales and scroll offsets.

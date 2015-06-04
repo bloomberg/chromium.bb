@@ -196,15 +196,6 @@ void FrameLoader::saveScrollState()
     client()->didUpdateCurrentHistoryItem();
 }
 
-void FrameLoader::clearScrollPositionAndViewState()
-{
-    ASSERT(m_frame->isMainFrame());
-    if (!m_currentItem)
-        return;
-    m_currentItem->clearScrollPoint();
-    m_currentItem->setPageScaleFactor(0);
-}
-
 void FrameLoader::dispatchUnloadEvent()
 {
     saveScrollState();
@@ -296,28 +287,37 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
     documentLoader->replaceDocumentWhileExecutingJavaScriptURL(init, source, ownerDocument);
 }
 
-void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitType, bool isPushOrReplaceState, HistoryScrollRestorationType scrollRestorationType, PassRefPtr<SerializedScriptValue> stateObject)
+void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitType, HistoryNavigationType navigationType)
 {
-    if (m_provisionalItem)
-        m_currentItem = m_provisionalItem.release();
-
-    if (!m_currentItem || historyCommitType == StandardCommit) {
-        m_currentItem = HistoryItem::create();
-    } else if (!isPushOrReplaceState && m_documentLoader->url() != m_currentItem->url()) {
-        m_currentItem->generateNewItemSequenceNumber();
-        if (!equalIgnoringFragmentIdentifier(m_documentLoader->url(), m_currentItem->url()))
-            m_currentItem->generateNewDocumentSequenceNumber();
-    }
-
+    RefPtrWillBeRawPtr<HistoryItem> oldItem = m_currentItem;
+    m_currentItem = historyCommitType == BackForwardCommit ? m_provisionalItem.release() : HistoryItem::create();
     m_currentItem->setURL(m_documentLoader->urlForHistory());
     m_currentItem->setDocumentState(m_frame->document()->formElementsState());
     m_currentItem->setTarget(m_frame->tree().uniqueName());
-    if (isPushOrReplaceState) {
-        m_currentItem->setStateObject(stateObject);
-        m_currentItem->setScrollRestorationType(scrollRestorationType);
-    }
     m_currentItem->setReferrer(SecurityPolicy::generateReferrer(m_documentLoader->request().referrerPolicy(), m_currentItem->url(), m_documentLoader->request().httpReferrer()));
     m_currentItem->setFormInfoFromRequest(m_documentLoader->request());
+
+    // Don't propagate state from the old item to the new item if there isn't an old item (obviously),
+    // or if this is a back/forward navigation, since we explicitly want to restore the state we just
+    // committed.
+    if (!oldItem || historyCommitType == BackForwardCommit)
+        return;
+    // Don't propagate state from the old item if this is a different-document navigation, unless the before
+    // and after pages are logically related. This means they have the same url (ignoring fragment) and
+    // the new item was loaded via reload or client redirect.
+    if (navigationType == HistoryNavigationType::DifferentDocument && (historyCommitType != HistoryInertCommit || !equalIgnoringFragmentIdentifier(oldItem->url(), m_currentItem->url())))
+        return;
+    m_currentItem->setDocumentSequenceNumber(oldItem->documentSequenceNumber());
+    m_currentItem->setScrollPoint(oldItem->scrollPoint());
+    m_currentItem->setPinchViewportScrollPoint(oldItem->pinchViewportScrollPoint());
+    m_currentItem->setPageScaleFactor(oldItem->pageScaleFactor());
+    m_currentItem->setStateObject(oldItem->stateObject());
+    // The item sequence number determines whether items are "the same", such back/forward navigation
+    // between items with the same item sequence number is a no-op. Only treat this as identical if the
+    // navigation did not create a back/forward entry and the url is identical or it was loaded via
+    // history.replaceState().
+    if (historyCommitType == HistoryInertCommit && (navigationType == HistoryNavigationType::HistoryApi || oldItem->url() == m_currentItem->url()))
+        m_currentItem->setItemSequenceNumber(oldItem->itemSequenceNumber());
 }
 
 static HistoryCommitType loadTypeToCommitType(FrameLoadType type)
@@ -346,7 +346,7 @@ void FrameLoader::receivedFirstData()
         historyCommitType = HistoryInertCommit;
     else if (historyCommitType == InitialCommitInChildFrame && MixedContentChecker::isMixedContent(m_frame->tree().top()->securityContext()->securityOrigin(), m_documentLoader->url()))
         historyCommitType = HistoryInertCommit;
-    setHistoryItemStateForCommit(historyCommitType);
+    setHistoryItemStateForCommit(historyCommitType, HistoryNavigationType::DifferentDocument);
 
     if (!m_stateMachine.committedMultipleRealLoads() && m_loadType == FrameLoadTypeStandard)
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedMultipleRealLoads);
@@ -581,7 +581,11 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     if (!m_currentItem)
         historyCommitType = HistoryInertCommit;
 
-    setHistoryItemStateForCommit(historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi, scrollRestorationType, data);
+    setHistoryItemStateForCommit(historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi ? HistoryNavigationType::HistoryApi : HistoryNavigationType::Fragment);
+    if (sameDocumentNavigationSource == SameDocumentNavigationHistoryApi) {
+        m_currentItem->setStateObject(data);
+        m_currentItem->setScrollRestorationType(scrollRestorationType);
+    }
     client()->dispatchDidNavigateWithinPage(m_currentItem.get(), historyCommitType);
     client()->dispatchDidReceiveTitle(m_frame->document()->title());
     if (m_frame->document()->loadEventFinished())

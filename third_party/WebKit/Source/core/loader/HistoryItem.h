@@ -53,11 +53,6 @@ public:
     }
     ~HistoryItem();
 
-    // Used when the frame this item represents was navigated to a different
-    // url but a new item wasn't created.
-    void generateNewItemSequenceNumber();
-    void generateNewDocumentSequenceNumber();
-
     const String& urlString() const;
     KURL url() const;
 
@@ -71,7 +66,6 @@ public:
     void setPinchViewportScrollPoint(const FloatPoint&);
     const IntPoint& scrollPoint() const;
     void setScrollPoint(const IntPoint&);
-    void clearScrollPoint();
 
     float pageScaleFactor() const;
     void setPageScaleFactor(float);
