@@ -2524,6 +2524,45 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistSubresources) {
+  // Checks that an image with a blacklisted URL is loaded, but an iframe with a
+  // blacklisted URL is not.
+
+  GURL main_url = URLRequestMockHTTPJob::GetMockUrl(
+      base::FilePath(FILE_PATH_LITERAL("policy/blacklist-subresources.html")));
+  GURL image_url = URLRequestMockHTTPJob::GetMockUrl(
+      base::FilePath(FILE_PATH_LITERAL("policy/pixel.png")));
+  GURL subframe_url = URLRequestMockHTTPJob::GetMockUrl(
+      base::FilePath(FILE_PATH_LITERAL("policy/blank.html")));
+
+  // Set a blacklist containing the image and the iframe which are used by the
+  // main document.
+  base::ListValue blacklist;
+  blacklist.Append(new base::StringValue(image_url.spec().c_str()));
+  blacklist.Append(new base::StringValue(subframe_url.spec().c_str()));
+  PolicyMap policies;
+  policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, blacklist.DeepCopy(), NULL);
+  UpdateProviderPolicy(policies);
+  FlushBlacklistPolicy();
+
+  std::string blacklisted_image_load_result;
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send(imageLoadResult)",
+      &blacklisted_image_load_result));
+  EXPECT_EQ("success", blacklisted_image_load_result);
+
+  std::string blacklisted_iframe_load_result;
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send(iframeLoadResult)",
+      &blacklisted_iframe_load_result));
+  EXPECT_EQ("error", blacklisted_iframe_load_result);
+}
+
 #if defined(OS_MACOSX)
 // http://crbug.com/339240
 #define MAYBE_FileURLBlacklist DISABLED_FileURLBlacklist
