@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unit tests for cros_portage_upgrade.py."""
+"""Unit tests for check_gdata_token_unittest.py."""
 
 from __future__ import print_function
 
@@ -10,18 +10,15 @@ import filecmp
 import mox
 import os
 import shutil
-import sys
-
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
-    os.path.abspath(__file__))), 'third_party', 'gdata', 'src'))
-import gdata.service
-from gdata.projecthosting import client as gdata_ph_client
-from gdata.spreadsheet import service as gdata_ss_service
 
 from chromite.lib import cros_build_lib as build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gdata_lib
 from chromite.scripts import check_gdata_token as cgt
+
+import gdata.service
+from gdata.projecthosting import client as gdata_ph_client
+from gdata.spreadsheet import service as gdata_ss_service
 
 
 # pylint: disable=protected-access
@@ -38,9 +35,9 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
       # Running with --help should exit with code==0.
       self.AssertFuncSystemExitZero(cgt.main, argv)
 
-    # Verify that a message beginning with "Usage: " was printed.
+    # Verify that a message beginning with "usage: " was printed.
     stdout = output.GetStdout()
-    self.assertTrue(stdout.startswith('Usage: '))
+    self.assertTrue(stdout.startswith('usage: '))
 
   def testMainOutsideChroot(self):
     """Test flow outside chroot"""

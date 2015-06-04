@@ -2,16 +2,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Validate or replace the standard gdata authorization token."""
+"""Validate or replace the standard gdata authorization token.
+
+Run outside of chroot to validate the gdata token file at ~/.gdata_token or
+update it if it has expired.
+To update the token file, there must be a valid credentials file at
+~/.gdata_cred.txt.
+
+If run inside chroot the updated token file is still valid but will not be
+preserved if chroot is deleted.
+"""
 
 from __future__ import print_function
 
 import filecmp
-import optparse
 import os
 import shutil
 
 from chromite.cbuildbot import constants
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib as build_lib
 from chromite.lib import operation
 
@@ -19,8 +28,8 @@ from chromite.lib import operation
 MODULE = os.path.splitext(os.path.basename(__file__))[0]
 oper = operation.Operation(MODULE)
 
-TOKEN_FILE = os.path.join(os.environ['HOME'], '.gdata_token')
-CRED_FILE = os.path.join(os.environ['HOME'], '.gdata_cred.txt')
+TOKEN_FILE = os.path.expanduser('~/.gdata_token')
+CRED_FILE = os.path.expanduser('~/.gdata_cred.txt')
 
 
 def _ChrootPathToExternalPath(path):
@@ -208,35 +217,17 @@ class InsideChroot(object):
     self._SaveTokenFile()
 
 
-def _CreateParser():
-  usage = 'Usage: %prog'
-  epilog = ('\n'
-            'Run outside of chroot to validate the gdata '
-            'token file at %r or update it if it has expired.\n'
-            'To update the token file there must be a valid '
-            'credentials file at %r.\n'
-            'If run inside chroot the updated token file is '
-            'still valid but will not be preserved if chroot\n'
-            'is deleted.\n' %
-            (TOKEN_FILE, CRED_FILE))
-
-  return optparse.OptionParser(usage=usage, epilog=epilog)
+def GetParser():
+  return commandline.ArgumentParser(description=__doc__)
 
 
 def main(argv):
   """Main function."""
-  # Create a copy of args just to be safe.
-  argv = list(argv)
-
   # No actual options used, but --help is still supported.
-  parser = _CreateParser()
-  (_options, args) = parser.parse_args(argv)
-
-  if args:
-    parser.print_help()
-    oper.Die('No arguments allowed.')
+  parser = GetParser()
+  _opts = parser.parse_args(argv)
 
   if build_lib.IsInsideChroot():
     InsideChroot().Run()
   else:
-    OutsideChroot(args).Run()
+    OutsideChroot(argv).Run()
