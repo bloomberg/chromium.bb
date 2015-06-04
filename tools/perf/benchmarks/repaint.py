@@ -28,7 +28,7 @@ class _Repaint(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'repaint'
 
-  def CreateUserStorySet(self, options):
+  def CreateStorySet(self, options):
     return page_sets.KeyMobileSitesRepaintPageSet(
         options.mode, options.width, options.height)
 
