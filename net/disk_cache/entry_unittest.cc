@@ -4100,12 +4100,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheGetAvailableRange) {
   GetAvailableRange();
 }
 
-TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheCouldBeSparse) {
-  SetSimpleCacheMode();
-  InitCache();
-  CouldBeSparse();
-}
-
 TEST_F(DiskCacheEntryTest, SimpleCacheUpdateSparseEntry) {
   SetSimpleCacheMode();
   InitCache();
