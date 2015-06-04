@@ -126,6 +126,8 @@ namespace WTF {
         // correctly-folded code point in all cases (see comment below).
         template<typename T> static inline UChar foldCase(T ch)
         {
+            if (IsSameType<T, LChar>::value)
+                return StringImpl::latin1CaseFoldTable[ch];
             // It's possible for WTF::Unicode::foldCase() to return a 32-bit
             // value that's not representable as a UChar.  However, since this
             // is rare and deterministic, and the result of this is merely used

@@ -37,4 +37,13 @@ TEST(WTF, StringImplCreate8Bit)
     ASSERT_TRUE(testStringImpl->is8Bit());
 }
 
+TEST(WTF, StringImplLatin1CaseFoldTable)
+{
+    LChar symbol = 0xff;
+    while (symbol--) {
+        EXPECT_EQ(WTF::Unicode::foldCase(symbol), StringImpl::latin1CaseFoldTable[symbol]);
+    }
+}
+
+
 } // namespace

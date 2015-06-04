@@ -421,6 +421,7 @@ public:
 #ifdef STRING_STATS
     ALWAYS_INLINE static StringStats& stringStats() { return m_stringStats; }
 #endif
+    static const UChar latin1CaseFoldTable[256];
 
 private:
     template<typename CharType> static size_t allocationSize(unsigned length)
