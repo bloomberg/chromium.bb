@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.ntp;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -59,6 +58,11 @@ public class RecentTabsPage
     private boolean mInForeground;
 
     /**
+     * Whether {@link #mView} is attached to the application window.
+     */
+    private boolean mIsAttachedToWindow;
+
+    /**
      * The time, whichever is most recent, that the page:
      * - Moved to the foreground
      * - Became visible
@@ -104,10 +108,9 @@ public class RecentTabsPage
      * Updates whether the page is in the foreground based on whether the application is in the
      * foreground and whether {@link #mView} is attached to the application window. If the page is
      * no longer in the foreground, records the time that the page spent in the foreground to UMA.
-     * @param isAttachedToWindow whether {@link #mView} is attached to the application window.
      */
-    private void updateForegroundState(boolean isAttachedToWindow) {
-        boolean inForeground = isAttachedToWindow
+    private void updateForegroundState() {
+        boolean inForeground = mIsAttachedToWindow
                 && ApplicationStatus.getStateForActivity(mActivity) == ActivityState.RESUMED;
         if (mInForeground == inForeground) {
             return;
@@ -167,13 +170,11 @@ public class RecentTabsPage
     }
 
     // ApplicationStatus.ActivityStateListener
-    // TODO(pkotwicz) fix to avoid suppressing warning
-    @SuppressLint("NewApi") // ViewGroup#isAttachedToWindow requires API level 19.
     @Override
     public void onActivityStateChange(Activity activity, int state) {
         // Called when the user locks the screen or moves Chrome to the background via the task
         // switcher.
-        updateForegroundState(mView.isAttachedToWindow());
+        updateForegroundState();
     }
 
     // View.OnAttachStateChangeListener
@@ -181,16 +182,15 @@ public class RecentTabsPage
     public void onViewAttachedToWindow(View view) {
         // Called when the user opens the RecentTabsPage or switches back to the RecentTabsPage from
         // another tab.
-        updateForegroundState(true);
+        mIsAttachedToWindow = true;
+        updateForegroundState();
     }
 
     @Override
     public void onViewDetachedFromWindow(View view) {
         // Called when the user navigates from the RecentTabsPage or switches to another tab.
-        // The value of {@link View#isAttachedToWindow()} changes after the
-        // {@link View.OnAttachStateChangeListener#onViewDetachedFromWindow()} listeners are
-        // notified.
-        updateForegroundState(false);
+        mIsAttachedToWindow = false;
+        updateForegroundState();
     }
 
     // ExpandableListView.OnChildClickedListener
