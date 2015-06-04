@@ -476,8 +476,6 @@ int main(int argc, char* argv[]) {
       if ((track_type == Track::kAudio && output_audio) ||
           (track_type == Track::kVideo && output_video)) {
         const int frame_count = block->GetFrameCount();
-        const bool is_key = block->IsKey();
-        const int64 discard_padding = block->GetDiscardPadding();
 
         for (int i = 0; i < frame_count; ++i) {
           const mkvparser::Block::Frame& frame = block->GetFrame(i);
@@ -493,19 +491,16 @@ int main(int argc, char* argv[]) {
           if (frame.Read(&reader, data))
             return EXIT_FAILURE;
 
-          uint64 track_num = vid_track;
-          if (track_type == Track::kAudio)
-            track_num = aud_track;
-
-          bool frame_added = false;
-          if (discard_padding) {
-            frame_added = muxer_segment.AddFrameWithDiscardPadding(
-                data, frame.len, discard_padding, track_num, time_ns, is_key);
-          } else {
-            frame_added = muxer_segment.AddFrame(data, frame.len, track_num,
-                                                 time_ns, is_key);
-          }
-          if (!frame_added) {
+          mkvmuxer::Frame muxer_frame;
+          if (!muxer_frame.Init(data, data_len))
+            return EXIT_FAILURE;
+          muxer_frame.set_track_number(
+              track_type == Track::kAudio ? aud_track : vid_track);
+          if (block->GetDiscardPadding())
+            muxer_frame.set_discard_padding(block->GetDiscardPadding());
+          muxer_frame.set_timestamp(time_ns);
+          muxer_frame.set_is_key(block->IsKey());
+          if (!muxer_segment.AddGenericFrame(&muxer_frame)) {
             printf("\n Could not add frame.\n");
             return EXIT_FAILURE;
           }
