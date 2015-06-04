@@ -76,11 +76,21 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "appearancePageTitle", IDS_SETTINGS_APPEARANCE_PAGE_TITLE);
   html_source->AddLocalizedString(
+      "setWallpaper", IDS_SETTINGS_SET_WALLPAPER);
+  html_source->AddLocalizedString(
+      "getThemes", IDS_SETTINGS_GET_THEMES);
+  html_source->AddLocalizedString(
+      "resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME);
+  html_source->AddLocalizedString(
       "appearanceShowHomeButtonLabel",
       IDS_SETTINGS_APPEARANCE_SHOW_HOME_BUTTON_LABEL);
   html_source->AddLocalizedString(
       "appearanceShowBookmarksBarLabel",
       IDS_SETTINGS_APPEARANCE_SHOW_BOOKMARKS_BAR_LABEL);
+  html_source->AddLocalizedString(
+      "homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP);
+  html_source->AddLocalizedString(
+      "changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE);
 }
 
 void AddCommonStrings(content::WebUIDataSource* html_source) {

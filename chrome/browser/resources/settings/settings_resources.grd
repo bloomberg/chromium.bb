@@ -23,6 +23,9 @@
       <structure name="IDR_SETTINGS_A11Y_PAGE_CSS"
                  file="a11y_page/a11y_page.css"
                  type="chrome_html" />
+     <structure name="IDR_SETTINGS_APPEARANCE_PAGE_CSS"
+                 file="appearance_page/appearance_page.css"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_APPEARANCE_PAGE_HTML"
                  file="appearance_page/appearance_page.html"
                  type="chrome_html"

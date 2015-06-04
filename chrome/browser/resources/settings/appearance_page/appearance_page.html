@@ -5,12 +5,31 @@
 <dom-module id="cr-settings-appearance-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css"
+      href="chrome://md-settings/appearance_page/appearance_page.css">
+  <link rel="import" type="css" href="chrome://resources/css/widgets.css">
+  <link rel="import" href="chrome://resources/html/action_link.html">
   <template>
     <paper-material>
+      <div id="action-container">
+        <cr-button i18n-content="setWallpaper"></cr-button>
+        <cr-button i18n-content="getThemes"></cr-button>
+        <cr-button i18n-content="resetToDefaultTheme" disabled></cr-button>
+      </div>
+      <hr>
       <cr-settings-checkbox
           pref="{{prefs.browser.show_home_button}}"
           i18n-values="label:appearanceShowHomeButtonLabel">
       </cr-settings-checkbox>
+      <div id="change-home-page-section" hidden$="{{!prefs.browser.show_home_button.value}}">
+        <div id="change-home-page-section-container">
+          <span id="home-page-ntp" i18n-content="homePageNtp"></span>
+          <span id="home-page-url"></span>
+          <a is="action-link" id="change-home-page"
+              i18n-content="changeHomePage">
+          </a>
+      </div>
+    </div>
       <cr-settings-checkbox
           pref="{{prefs.bookmark_bar.show_on_all_tabs}}"
           i18n-values="label:appearanceShowBookmarksBarLabel">

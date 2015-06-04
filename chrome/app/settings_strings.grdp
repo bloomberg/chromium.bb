@@ -64,11 +64,26 @@
   <message name="IDS_SETTINGS_APPEARANCE_PAGE_TITLE" desc="Name of the settings page which displays appearance preferences.">
     Appearance
   </message>
+  <message name="IDS_SETTINGS_SET_WALLPAPER" desc="Name of the control which allows the user to set the wallpaper.">
+    Set wallpaper
+  </message>
+  <message name="IDS_SETTINGS_GET_THEMES" desc="Name of the control which allows the user to get themes for the browser.">
+    Get themes
+  </message>
+  <message name="IDS_SETTINGS_RESET_TO_DEFAULT_THEME" desc="Name of the control which resets the browser theme back to the default theme.">
+    Reset to default theme
+  </message>
   <message name="IDS_SETTINGS_APPEARANCE_SHOW_HOME_BUTTON_LABEL" desc="Label for the checkbox which enables or disables showing the home button in the toolbar.">
     Show home button
   </message>
   <message name="IDS_SETTINGS_APPEARANCE_SHOW_BOOKMARKS_BAR_LABEL" desc="Label for the checkbox which enables or disables showing the bookmarks bar in the toolbar.">
     Always show the bookmarks bar
+  </message>
+  <message name="IDS_SETTINGS_HOME_PAGE_NTP" desc="Description of the New Tab Page when set as the home page.">
+    New Tab Page
+  </message>
+  <message name="IDS_SETTINGS_CHANGE_HOME_PAGE" desc="Label of the control to change the home page.">
+    Change
   </message>
 
   <!-- Downloads Page -->

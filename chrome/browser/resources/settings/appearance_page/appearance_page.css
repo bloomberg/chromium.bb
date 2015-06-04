@@ -1,0 +1,30 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+ #change-home-page-section {
+  -webkit-margin-start: 40px;
+  font-size: 90%;
+}
+
+/* TODO(jhawkins): This does not span the width of the entire paper-material
+ * element because our styling of all paper-material includes a fixed margin.
+ * This can be fixed by creating a generic content container inside of each
+ * paper-material which would have this margin instead.
+ *
+ * TODO(jhawkins): Share this rule set at a higher level, e.g., to share with
+ * the device page.
+ */
+hr {
+  width: 100%;
+}
+
+#action-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+#action-container > paper-button {
+  text-transform: upper-case;
+}
