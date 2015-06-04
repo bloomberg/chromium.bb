@@ -2074,6 +2074,11 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
+  main_test_rfh()->OnCreateChildFrame(
+      MSG_ROUTING_NONE, blink::WebTreeScopeType::Document, std::string(),
+      blink::WebSandboxFlags::None);
+  RenderFrameHostImpl* subframe =
+      contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
   const GURL url2("http://foo2");
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = 1;
@@ -2087,8 +2092,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   params.page_state = PageState::CreateFromURL(url2);
 
   LoadCommittedDetails details;
-  EXPECT_TRUE(controller.RendererDidNavigate(main_test_rfh(), params,
-                                             &details));
+  EXPECT_TRUE(controller.RendererDidNavigate(subframe, params, &details));
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(url1, details.previous_url);

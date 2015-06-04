@@ -932,7 +932,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // The active entry's SiteInstance should match our SiteInstance.
   // TODO(creis): This check won't pass for subframes until we create entries
   // for subframe navigations.
-  if (ui::PageTransitionIsMainFrame(params.transition))
+  if (!rfh->GetParent())
     CHECK(active_entry->site_instance() == rfh->GetSiteInstance());
 
   // Remember the bindings the renderer process has at this point, so that
@@ -941,8 +941,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // Now prep the rest of the details for the notification and broadcast.
   details->entry = active_entry;
-  details->is_main_frame =
-      ui::PageTransitionIsMainFrame(params.transition);
+  details->is_main_frame = !rfh->GetParent();
   details->serialized_security_info = params.security_info;
   details->http_status_code = params.http_status_code;
   NotifyNavigationEntryCommitted(details);
@@ -980,7 +979,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     // Greater page IDs than we've ever seen before are new pages. We may or may
     // not have a pending entry for the page, and this may or may not be the
     // main frame.
-    if (ui::PageTransitionIsMainFrame(params.transition))
+    if (!rfh->GetParent())
       return NAVIGATION_TYPE_NEW_PAGE;
 
     // When this is a new subframe navigation, we should have a committed page
@@ -1044,7 +1043,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
   }
   NavigationEntryImpl* existing_entry = entries_[existing_entry_index].get();
 
-  if (!ui::PageTransitionIsMainFrame(params.transition)) {
+  if (rfh->GetParent()) {
     // All manual subframes would get new IDs and were handled above, so we
     // know this is auto. Since the current page was found in the navigation
     // entry list, we're guaranteed to have a last committed entry.
@@ -1105,10 +1104,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
   if (params.did_create_new_entry) {
     // A new entry. We may or may not have a pending entry for the page, and
     // this may or may not be the main frame.
-    if (ui::PageTransitionIsMainFrame(params.transition)) {
-      // TODO(avi): I want to use |if (!rfh->GetParent())| here but lots of unit
-      // tests fake auto subframe commits by sending the main frame a
-      // PAGE_TRANSITION_AUTO_SUBFRAME transition. Fix those, and adjust here.
+    if (!rfh->GetParent()) {
       return NAVIGATION_TYPE_NEW_PAGE;
     }
 
@@ -1127,7 +1123,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
   // We only clear the session history when navigating to a new page.
   DCHECK(!params.history_list_was_cleared);
 
-  if (!ui::PageTransitionIsMainFrame(params.transition)) {
+  if (rfh->GetParent()) {
     // All manual subframes would be did_create_new_entry and handled above, so
     // we know this is auto.
     if (GetLastCommittedEntry()) {
@@ -1293,7 +1289,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
   // We should only get here for main frame navigations.
-  DCHECK(ui::PageTransitionIsMainFrame(params.transition));
+  DCHECK(!rfh->GetParent());
 
   // This is a back/forward navigation. The existing page for the ID is
   // guaranteed to exist by ClassifyNavigation, and we just need to update it
@@ -1377,8 +1373,8 @@ void NavigationControllerImpl::RendererDidNavigateInPage(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool* did_replace_entry) {
-  DCHECK(ui::PageTransitionIsMainFrame(params.transition)) <<
-      "WebKit should only tell us about in-page navs for the main frame.";
+  DCHECK(!rfh->GetParent()) <<
+      "Blink should only tell us about in-page navs for the main frame.";
   // We're guaranteed to have an entry for this one.
   NavigationEntryImpl* existing_entry = GetEntryWithPageID(
       rfh->GetSiteInstance(), params.page_id);
