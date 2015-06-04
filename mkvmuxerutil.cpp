@@ -36,7 +36,7 @@ namespace {
 const int kDateElementSize = 8;
 
 uint64 WriteBlock(IMkvWriter* writer, const Frame* const frame, int64 timecode,
-                  uint64 duration) {
+                  uint64 timecode_scale) {
   uint64 block_additional_elem_size = 0;
   uint64 block_addid_elem_size = 0;
   uint64 block_more_payload_size = 0;
@@ -66,6 +66,15 @@ uint64 WriteBlock(IMkvWriter* writer, const Frame* const frame, int64 timecode,
         EbmlElementSize(kMkvDiscardPadding, frame->discard_padding());
   }
 
+  const uint64 reference_block_timestamp =
+      frame->reference_block_timestamp() / timecode_scale;
+  uint64 reference_block_elem_size = 0;
+  if (!frame->is_key()) {
+    reference_block_elem_size =
+        EbmlElementSize(kMkvReferenceBlock, reference_block_timestamp);
+  }
+
+  const uint64 duration = frame->duration() / timecode_scale;
   uint64 block_duration_elem_size = 0;
   if (duration > 0)
     block_duration_elem_size = EbmlElementSize(kMkvBlockDuration, duration);
@@ -76,7 +85,7 @@ uint64 WriteBlock(IMkvWriter* writer, const Frame* const frame, int64 timecode,
 
   const uint64 block_group_payload_size =
       block_elem_size + block_additions_elem_size + block_duration_elem_size +
-      discard_padding_elem_size;
+      discard_padding_elem_size + reference_block_elem_size;
 
   if (!WriteEbmlMasterElement(writer, kMkvBlockGroup,
                               block_group_payload_size)) {
@@ -92,10 +101,8 @@ uint64 WriteBlock(IMkvWriter* writer, const Frame* const frame, int64 timecode,
   if (SerializeInt(writer, timecode, 2))
     return 0;
 
-  uint64 flags = 0;
-  if (frame->is_key())
-    flags |= 0x80;
-  if (SerializeInt(writer, flags, 1))
+  // For a Block, flags is always 0.
+  if (SerializeInt(writer, 0, 1))
     return 0;
 
   if (writer->Write(frame->frame(), static_cast<uint32>(frame->length())))
@@ -119,18 +126,15 @@ uint64 WriteBlock(IMkvWriter* writer, const Frame* const frame, int64 timecode,
     }
   }
 
-  if (frame->discard_padding() != 0) {
-    if (WriteID(writer, kMkvDiscardPadding))
-      return 0;
+  if (frame->discard_padding() != 0 &&
+      !WriteEbmlElement(writer, kMkvDiscardPadding, frame->discard_padding())) {
+    return false;
+  }
 
-    const uint64 size = GetIntSize(frame->discard_padding());
-    if (WriteUInt(writer, size))
-      return false;
-
-    if (SerializeInt(writer, frame->discard_padding(),
-                     static_cast<int32>(size))) {
-      return false;
-    }
+  if (!frame->is_key() &&
+      !WriteEbmlElement(writer, kMkvReferenceBlock,
+                        reference_block_timestamp)) {
+    return false;
   }
 
   if (duration > 0 && !WriteEbmlElement(writer, kMkvBlockDuration, duration)) {
@@ -440,6 +444,23 @@ bool WriteEbmlElement(IMkvWriter* writer, uint64 type, uint64 value) {
   return true;
 }
 
+bool WriteEbmlElement(IMkvWriter* writer, uint64 type, int64 value) {
+  if (!writer)
+    return false;
+
+  if (WriteID(writer, type))
+    return 0;
+
+  const uint64 size = GetIntSize(value);
+  if (WriteUInt(writer, size))
+    return false;
+
+  if (SerializeInt(writer, value, static_cast<int32>(size)))
+    return false;
+
+  return true;
+}
+
 bool WriteEbmlElement(IMkvWriter* writer, uint64 type, float value) {
   if (!writer)
     return false;
@@ -524,7 +545,7 @@ uint64 WriteFrame(IMkvWriter* writer, const Frame* const frame,
   return frame->CanBeSimpleBlock()
              ? WriteSimpleBlock(writer, frame, relative_timecode)
              : WriteBlock(writer, frame, relative_timecode,
-                          frame->duration() / cluster->timecode_scale());
+                          cluster->timecode_scale());
 }
 
 uint64 WriteVoidElement(IMkvWriter* writer, uint64 size) {

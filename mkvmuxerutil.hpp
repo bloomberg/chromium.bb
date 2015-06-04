@@ -18,7 +18,6 @@ class IMkvWriter;
 
 const uint64 kEbmlUnknownValue = 0x01FFFFFFFFFFFFFFULL;
 const int64 kMaxBlockTimecode = 0x07FFFLL;
-const uint64 kMaxTrackNumber = 126;
 
 // Writes out |value| in Big Endian order. Returns 0 on success.
 int32 SerializeInt(IMkvWriter* writer, int64 value, int32 size);
@@ -54,6 +53,7 @@ int32 WriteID(IMkvWriter* writer, uint64 type);
 
 // Output an Mkv non-master element. Returns true if the element was written.
 bool WriteEbmlElement(IMkvWriter* writer, uint64 type, uint64 value);
+bool WriteEbmlElement(IMkvWriter* writer, uint64 type, int64 value);
 bool WriteEbmlElement(IMkvWriter* writer, uint64 type, float value);
 bool WriteEbmlElement(IMkvWriter* writer, uint64 type, const char* value);
 bool WriteEbmlElement(IMkvWriter* writer, uint64 type, const uint8* value,

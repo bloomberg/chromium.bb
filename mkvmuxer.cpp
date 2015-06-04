@@ -131,7 +131,9 @@ Frame::Frame()
       length_(0),
       track_number_(0),
       timestamp_(0),
-      discard_padding_(0) {}
+      discard_padding_(0),
+      reference_block_timestamp_(0),
+      reference_block_timestamp_set_(false) {}
 
 Frame::~Frame() {
   delete[] frame_;
@@ -204,11 +206,19 @@ bool Frame::IsValid() const {
   if (track_number_ == 0 || track_number_ > kMaxTrackNumber) {
     return false;
   }
+  if (!CanBeSimpleBlock() && !is_key_ && !reference_block_timestamp_set_) {
+    return false;
+  }
   return true;
 }
 
 bool Frame::CanBeSimpleBlock() const {
   return additional_ == NULL && discard_padding_ == 0 && duration_ == 0;
+}
+
+void Frame::set_reference_block_timestamp(int64 reference_block_timestamp) {
+  reference_block_timestamp_ = reference_block_timestamp;
+  reference_block_timestamp_set_ = true;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -2426,6 +2436,20 @@ bool Segment::AddGenericFrame(const Frame* frame) {
   if (!cluster)
     return false;
 
+  // If the Frame is not a SimpleBlock, then set the reference_block_timestamp
+  // if it is not set already.
+  bool frame_created = false;
+  if (!frame->CanBeSimpleBlock() && !frame->is_key() &&
+      !frame->reference_block_timestamp_set()) {
+    Frame* const new_frame = new (std::nothrow) Frame();
+    if (!new_frame->CopyFrom(*frame))
+      return false;
+    new_frame->set_reference_block_timestamp(
+        last_track_timestamp_[frame->track_number() - 1]);
+    frame = new_frame;
+    frame_created = true;
+  }
+
   if (!cluster->AddFrame(frame))
     return false;
 
@@ -2435,7 +2459,11 @@ bool Segment::AddGenericFrame(const Frame* frame) {
   }
 
   last_timestamp_ = frame->timestamp();
+  last_track_timestamp_[frame->track_number() - 1] = frame->timestamp();
   last_block_duration_ = frame->duration();
+
+  if (frame_created)
+    delete frame;
 
   return true;
 }
@@ -2947,8 +2975,10 @@ int Segment::WriteFramesAll() {
         return -1;
     }
 
-    if (frame_timestamp > last_timestamp_)
+    if (frame_timestamp > last_timestamp_) {
       last_timestamp_ = frame_timestamp;
+      last_track_timestamp_[frame->track_number() - 1] = frame_timestamp;
+    }
 
     delete frame;
     frame = NULL;
@@ -3010,8 +3040,10 @@ bool Segment::WriteFramesLessThan(uint64 timestamp) {
       }
 
       ++shift_left;
-      if (frame_timestamp > last_timestamp_)
+      if (frame_timestamp > last_timestamp_) {
         last_timestamp_ = frame_timestamp;
+        last_track_timestamp_[frame_prev->track_number() - 1] = frame_timestamp;
+      }
 
       delete frame_prev;
     }
