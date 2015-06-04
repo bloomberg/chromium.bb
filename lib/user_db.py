@@ -125,6 +125,48 @@ class UserDB(object):
                                        gid=gid_as_int, users=users)
     return self._group_cache
 
+  def GetUserEntry(self, username, skip_lock=False):
+    """Returns a user's database entry.
+
+    Args:
+      username: name of user to get the entry for.
+      skip_lock: True iff we should skip getting a lock before reading the
+        database.
+
+    Returns:
+      database entry as a string.
+    """
+    if skip_lock:
+      return UserToEntry(self._users[username])
+
+    # Clear the user cache to force ourselves to reparse while holding a lock.
+    self._user_cache = None
+
+    with locking.PortableLinkLock(
+        self._user_db_file + '.lock', max_retry=self._DB_LOCK_RETRIES):
+      return UserToEntry(self._users[username])
+
+  def GetGroupEntry(self, groupname, skip_lock=False):
+    """Returns a group's database entry.
+
+    Args:
+      groupname: name of group to get the entry for.
+      skip_lock: True iff we should skip getting a lock before reading the
+        database.
+
+    Returns:
+      database entry as a string.
+    """
+    if skip_lock:
+      return GroupToEntry(self._groups[groupname])
+
+    # Clear the group cache to force ourselves to reparse while holding a lock.
+    self._group_cache = None
+
+    with locking.PortableLinkLock(
+        self._group_db_file + '.lock', max_retry=self._DB_LOCK_RETRIES):
+      return GroupToEntry(self._groups[groupname])
+
   def UserExists(self, username):
     """Returns True iff a user called |username| exists in the database.
 
