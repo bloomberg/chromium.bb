@@ -344,9 +344,16 @@ AXObject* AXObjectCacheImpl::getOrCreate(Widget* widget)
         return obj;
 
     RefPtr<AXObject> newObj = nullptr;
-    if (widget->isFrameView())
+    if (widget->isFrameView()) {
+        FrameView* frameView = toFrameView(widget);
+
+        // Don't create an AXScrollView for a FrameView that isn't attached to a frame,
+        // for example if it's in the process of being disposed.
+        if (frameView->frame().view() != frameView || !frameView->layoutView())
+            return 0;
+
         newObj = AXScrollView::create(toFrameView(widget), this);
-    else if (widget->isScrollbar())
+    } else if (widget->isScrollbar())
         newObj = AXScrollbar::create(toScrollbar(widget), this);
 
     // Will crash later if we have two objects for the same widget.
