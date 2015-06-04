@@ -155,7 +155,7 @@ def BuildFileList():
     for system_crt_file in system_crt_files:
         result.append((os.path.join(r'C:\Windows\SysWOW64', system_crt_file),
                        os.path.join('sys32', system_crt_file)))
-        result.append((os.path.join(r'C:\Windows\System32', system_crt_file),
+        result.append((os.path.join(r'C:\Windows\Sysnative', system_crt_file),
                        os.path.join('sys64', system_crt_file)))
 
   # Generically drop all arm stuff that we don't need.
