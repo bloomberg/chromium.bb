@@ -12,7 +12,6 @@
 
 namespace blink {
 
-// TODO(mkwst): Throw this away once it's unused on the Chromium side: https://crbug.com/494880
 class WebPasswordCredential : public WebCredential {
 public:
     BLINK_PLATFORM_EXPORT WebPasswordCredential(const WebString& id, const WebString& password, const WebString& name, const WebURL& avatarURL);

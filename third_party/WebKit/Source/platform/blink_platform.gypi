@@ -285,7 +285,6 @@
       'exported/WebHTTPBody.cpp',
       'exported/WebHTTPLoadInfo.cpp',
       'exported/WebImageSkia.cpp',
-      'exported/WebLocalCredential.cpp',
       'exported/WebMediaConstraints.cpp',
       'exported/WebMediaDeviceInfo.cpp',
       'exported/WebMediaStream.cpp',
