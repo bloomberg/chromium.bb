@@ -11,6 +11,24 @@
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SadTabHelper);
 
+namespace {
+
+chrome::SadTabKind SadTabKindFromTerminationStatus(
+    base::TerminationStatus status) {
+  switch (status) {
+#if defined(OS_CHROMEOS)
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+      return chrome::SAD_TAB_KIND_KILLED_BY_OOM;
+#endif
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+      return chrome::SAD_TAB_KIND_KILLED;
+    default:
+      return chrome::SAD_TAB_KIND_CRASHED;
+  }
+}
+
+}  // namespace
+
 SadTabHelper::~SadTabHelper() {
 }
 
@@ -40,13 +58,7 @@ void SadTabHelper::RenderProcessGone(base::TerminationStatus status) {
 }
 
 void SadTabHelper::InstallSadTab(base::TerminationStatus status) {
-  chrome::SadTabKind kind =
-      (
-#if defined(OS_CHROMEOS)
-       status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM ||
-#endif
-       status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) ?
-      chrome::SAD_TAB_KIND_KILLED : chrome::SAD_TAB_KIND_CRASHED;
-  sad_tab_.reset(chrome::SadTab::Create(web_contents(), kind));
+  sad_tab_.reset(chrome::SadTab::Create(
+      web_contents(), SadTabKindFromTerminationStatus(status)));
   sad_tab_->Show();
 }

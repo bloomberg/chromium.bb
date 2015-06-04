@@ -43761,12 +43761,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>jamescook@chromium.org</owner>
   <summary>
     Cumulative number of times a tab was killed with a &quot;He's dead,
-    Jim!&quot; page, which is usually due to the kernel out-of-memory killer
-    running, recorded once per tab kill event.  For example, a user who loses 3
-    tabs will record a count in the 1 bin, 2 bin, and 3 bin.  Thus each bin N is
-    the number of sessions where users experienced N or more kill events.  The
-    user may not have actually seen the sad tab page, as it might have been an
-    inactive tab.  Compare to Tabs.SadTab.KillDisplayed.
+    Jim!&quot; page, which is usually due to the renderer being killed, recorded
+    once per tab kill event.  For example, a user who loses 3 tabs will record a
+    count in the 1 bin, 2 bin, and 3 bin.  Thus each bin N is the number of
+    sessions where users experienced N or more kill events.  The user may not
+    have actually seen the sad tab page, as it might have been an inactive tab.
+    Compare to Tabs.SadTab.KillDisplayed. This can happen due to out of memory,
+    malformed IPC messages, or a SIGINT/TERM/KILL signal sent by a user.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SadTab.KillCreated.OOM">
+  <owner>oshima@chromium.org</owner>
+  <summary>
+    Cumulative number of times a tab was killed with a &quot;He's dead,
+    Jim!&quot; page due to the kernel out-of-memory killer, recorded once per
+    tab kill event.  For example, a user who loses 3 tabs will record a count in
+    the 1 bin, 2 bin, and 3 bin.  Thus each bin N is the number of sessions
+    where users experienced N or more kill events.  The user may not have
+    actually seen the sad tab page, as it might have been an inactive tab.
+    Compare to Tabs.SadTab.KillDisplayed.
   </summary>
 </histogram>
 
@@ -43778,6 +43792,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     For example, a user who loses 3 tabs will record a count in the 1 bin, 2
     bin, and 3 bin. Thus each bin N is the number of sessions where users
     experienced N or more kill events.  Compare to Tabs.SadTab.CrashCreated.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SadTab.KillDisplayed.OOM">
+  <owner>oshima@chromium.org</owner>
+  <summary>
+    Cumulative number of times a tab was killed with a &quot;He's dead,
+    Jim!&quot; page due to the kernel out-of-memory killer and the user saw the
+    page, recorded once per tab kill event.  For example, a user who loses 3
+    tabs will record a count in the 1 bin, 2 bin, and 3 bin. Thus each bin N is
+    the number of sessions where users experienced N or more kill events.
+    Compare to Tabs.SadTab.CrashCreated.
   </summary>
 </histogram>
 

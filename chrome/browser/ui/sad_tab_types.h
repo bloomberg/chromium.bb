@@ -7,10 +7,11 @@
 
 namespace chrome {
 
-// NOTE: Do not remove or reorder the elements in this enum, and only add new
-// items at the end. We depend on these specific values in a histogram.
 enum SadTabKind {
-  SAD_TAB_KIND_CRASHED = 0,  // Tab crashed. Display the "Aw, Snap!" page.
+  SAD_TAB_KIND_CRASHED,  // Tab crashed. Display the "Aw, Snap!" page.
+#if defined(OS_CHROMEOS)
+  SAD_TAB_KIND_KILLED_BY_OOM,  // Tab killed by oom killer.
+#endif
   SAD_TAB_KIND_KILLED  // Tab killed. Display the "He's dead, Jim!" tab page.
 };
 

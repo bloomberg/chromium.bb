@@ -42,6 +42,36 @@ const int kMaxContentWidth = 600;
 const int kMinColumnWidth = 120;
 const char kCategoryTagCrash[] = "Crash";
 
+void RecordKillCreated() {
+  static int killed = 0;
+  killed++;
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Tabs.SadTab.KillCreated", killed, 1, 1000, 50);
+}
+
+void RecordKillDisplayed() {
+  static int killed = 0;
+  killed++;
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Tabs.SadTab.KillDisplayed", killed, 1, 1000, 50);
+}
+
+#if defined(OS_CHROMEOS)
+void RecordKillCreatedOOM() {
+  static int oom_killed = 0;
+  oom_killed++;
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Tabs.SadTab.KillCreated.OOM", oom_killed, 1, 1000, 50);
+}
+
+void RecordKillDisplayedOOM() {
+  static int oom_killed = 0;
+  oom_killed++;
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Tabs.SadTab.KillDisplayed.OOM", oom_killed, 1, 1000, 50);
+}
+#endif
+
 }  // namespace
 
 SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
@@ -56,12 +86,6 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
       help_message_(nullptr) {
   DCHECK(web_contents);
 
-  // Sometimes the user will never see this tab, so keep track of the total
-  // number of creation events to compare to display events.
-  // TODO(jamescook): Remove this after R20 stable.  Keep it for now so we can
-  // compare R20 to earlier versions.
-  UMA_HISTOGRAM_COUNTS("SadTab.Created", kind_);
-
   // These stats should use the same counting approach and bucket size used for
   // tab discard events in chromeos::OomPriorityManager so they can be
   // directly compared.
@@ -74,13 +98,15 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
           "Tabs.SadTab.CrashCreated", crashed, 1, 1000, 50);
       break;
     }
-    case chrome::SAD_TAB_KIND_KILLED: {
-      static int killed = 0;
-      killed++;
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Tabs.SadTab.KillCreated", killed, 1, 1000, 50);
+    case chrome::SAD_TAB_KIND_KILLED:
+      RecordKillCreated();
       break;
-    }
+#if defined(OS_CHROMEOS)
+    case chrome::SAD_TAB_KIND_KILLED_BY_OOM:
+      RecordKillCreated();
+      RecordKillCreatedOOM();
+      break;
+#endif
     default:
       NOTREACHED();
   }
@@ -252,11 +278,6 @@ void SadTabView::Layout() {
 
 void SadTabView::OnPaint(gfx::Canvas* canvas) {
   if (!painted_) {
-    // User actually saw the error, keep track for user experience stats.
-    // TODO(jamescook): Remove this after R20 stable.  Keep it for now so we can
-    // compare R20 to earlier versions.
-    UMA_HISTOGRAM_COUNTS("SadTab.Displayed", kind_);
-
     // These stats should use the same counting approach and bucket size used
     // for tab discard events in chromeos::OomPriorityManager so they
     // can be directly compared.
@@ -267,14 +288,15 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
             "Tabs.SadTab.CrashDisplayed", ++crashed, 1, 1000, 50);
         break;
       }
-      case chrome::SAD_TAB_KIND_KILLED: {
-        static int killed = 0;
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Tabs.SadTab.KillDisplayed", ++killed, 1, 1000, 50);
+      case chrome::SAD_TAB_KIND_KILLED:
+        RecordKillDisplayed();
         break;
-      }
-      default:
-        NOTREACHED();
+#if defined(OS_CHROMEOS)
+      case chrome::SAD_TAB_KIND_KILLED_BY_OOM:
+        RecordKillDisplayed();
+        RecordKillDisplayedOOM();
+        break;
+#endif
     }
     painted_ = true;
   }
