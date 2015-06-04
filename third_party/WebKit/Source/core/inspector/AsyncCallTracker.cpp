@@ -84,7 +84,7 @@ public:
     void unobserve()
     {
         disposeCallChains();
-        dispose();
+        ContextLifecycleObserver::clearContext();
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()

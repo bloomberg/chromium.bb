@@ -40,7 +40,7 @@ public:
 #if !ENABLE(OILPAN)
     virtual ~LifecycleObserver()
     {
-        dispose();
+        clearContext();
     }
 #endif
 
@@ -51,11 +51,6 @@ public:
     }
 
     virtual void contextDestroyed() { }
-
-    void dispose()
-    {
-        setContext(nullptr);
-    }
 
     Context* lifecycleContext() const { return m_lifecycleContext; }
     void clearLifecycleContext() { m_lifecycleContext = nullptr; }
@@ -68,6 +63,11 @@ protected:
     }
 
     void setContext(Context*);
+
+    void clearContext()
+    {
+        setContext(nullptr);
+    }
 
 private:
     RawPtrWillBeWeakMember<Context> m_lifecycleContext;

@@ -120,8 +120,8 @@ Animation::~Animation()
 #if !ENABLE(OILPAN)
 void Animation::detachFromTimeline()
 {
-    dispose();
     m_timeline = nullptr;
+    ActiveDOMObject::clearContext();
 }
 #endif
 
