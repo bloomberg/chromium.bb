@@ -218,26 +218,6 @@ Response InputHandler::DispatchKeyEvent(
   return Response::OK();
 }
 
-Response InputHandler::DispatchKeyEvent(
-    const std::string& type,
-    const int* modifiers,
-    const double* timestamp,
-    const std::string* text,
-    const std::string* unmodified_text,
-    const std::string* key_identifier,
-    const std::string* code,
-    const int* windows_virtual_key_code,
-    const int* native_virtual_key_code,
-    const bool* auto_repeat,
-    const bool* is_keypad,
-    const bool* is_system_key) {
-  std::string dom_key;
-  return InputHandler::DispatchKeyEvent(type, modifiers, timestamp, text,
-      unmodified_text, key_identifier, code, &dom_key,
-      windows_virtual_key_code, native_virtual_key_code, auto_repeat,
-      is_keypad, is_system_key);
-}
-
 Response InputHandler::DispatchMouseEvent(
     const std::string& type,
     int x,
