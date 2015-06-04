@@ -14,6 +14,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -61,8 +62,7 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
       opaque_(true),
       browser_plugin_(browser_plugin),
       render_frame_proxy_(render_frame_proxy),
-      frame_(frame),
-      weak_factory_(this) {
+      frame_(frame) {
 }
 
 ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {
@@ -271,23 +271,21 @@ void ChildFrameCompositingHelper::OnCompositorFrameSwapped(
 
 // static
 void ChildFrameCompositingHelper::SatisfyCallback(
-    base::WeakPtr<ChildFrameCompositingHelper> helper,
+    scoped_refptr<ThreadSafeSender> sender,
+    int host_routing_id,
     cc::SurfaceSequence sequence) {
-  if (helper && helper->render_frame_proxy_) {
-    helper->render_frame_proxy_->Send(
-        new FrameHostMsg_SatisfySequence(helper->host_routing_id_, sequence));
-  }
+  // This may be called on either the main or impl thread.
+  sender->Send(new FrameHostMsg_SatisfySequence(host_routing_id, sequence));
 }
 
 // static
 void ChildFrameCompositingHelper::RequireCallback(
-    base::WeakPtr<ChildFrameCompositingHelper> helper,
+    scoped_refptr<ThreadSafeSender> sender,
+    int host_routing_id,
     cc::SurfaceId id,
     cc::SurfaceSequence sequence) {
-  if (helper && helper->render_frame_proxy_) {
-    helper->render_frame_proxy_->Send(new FrameHostMsg_RequireSequence(
-        helper->host_routing_id_, id, sequence));
-  }
+  // This may be called on either the main or impl thread.
+  sender->Send(new FrameHostMsg_RequireSequence(host_routing_id, id, sequence));
 }
 
 void ChildFrameCompositingHelper::OnSetSurface(
@@ -304,10 +302,14 @@ void ChildFrameCompositingHelper::OnSetSurface(
     return;
 
   if (!surface_layer_.get()) {
+    scoped_refptr<ThreadSafeSender> sender(
+        RenderThreadImpl::current()->thread_safe_sender());
     cc::SurfaceLayer::SatisfyCallback satisfy_callback =
-        base::Bind(&ChildFrameCompositingHelper::SatisfyCallback, GetWeakPtr());
+        base::Bind(&ChildFrameCompositingHelper::SatisfyCallback, sender,
+                   host_routing_id_);
     cc::SurfaceLayer::RequireCallback require_callback =
-        base::Bind(&ChildFrameCompositingHelper::RequireCallback, GetWeakPtr());
+        base::Bind(&ChildFrameCompositingHelper::RequireCallback, sender,
+                   host_routing_id_);
     surface_layer_ =
         cc::SurfaceLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
                                  satisfy_callback, require_callback);

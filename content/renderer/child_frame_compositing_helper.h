@@ -52,6 +52,7 @@ namespace content {
 class BrowserPlugin;
 class BrowserPluginManager;
 class RenderFrameProxy;
+class ThreadSafeSender;
 
 class CONTENT_EXPORT ChildFrameCompositingHelper
     : public base::RefCounted<ChildFrameCompositingHelper>,
@@ -106,15 +107,13 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
                                          float device_scale_factor,
                                          cc::Layer* layer);
   void SendReturnedDelegatedResources();
-  static void SatisfyCallback(base::WeakPtr<ChildFrameCompositingHelper> helper,
+  static void SatisfyCallback(scoped_refptr<ThreadSafeSender> sender,
+                              int host_routing_id,
                               cc::SurfaceSequence sequence);
-  static void RequireCallback(base::WeakPtr<ChildFrameCompositingHelper> helper,
+  static void RequireCallback(scoped_refptr<ThreadSafeSender> sender,
+                              int host_routing_id,
                               cc::SurfaceId id,
                               cc::SurfaceSequence sequence);
-
-  base::WeakPtr<ChildFrameCompositingHelper> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
 
   int host_routing_id_;
   int last_route_id_;
@@ -141,8 +140,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   scoped_refptr<cc::DelegatedRendererLayer> delegated_layer_;
   scoped_ptr<blink::WebLayer> web_layer_;
   blink::WebFrame* frame_;
-
-  base::WeakPtrFactory<ChildFrameCompositingHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildFrameCompositingHelper);
 };
