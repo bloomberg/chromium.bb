@@ -417,34 +417,42 @@ void AXTreeSerializer<AXSourceNode>::SerializeChangedNodes(
 
   // Serialize this node. This fills in all of the fields in
   // AXNodeData except child_ids, which we handle below.
+  size_t serialized_node_index = out_update->nodes.size();
   out_update->nodes.push_back(AXNodeData());
-  AXNodeData* serialized_node = &out_update->nodes.back();
-  tree_->SerializeNode(node, serialized_node);
-  // TODO(dmazzoni/dtseng): Make the serializer not depend on roles to identify
-  // the root.
-  if (serialized_node->id == client_root_->id &&
-      (serialized_node->role != AX_ROLE_ROOT_WEB_AREA &&
-       serialized_node->role != AX_ROLE_DESKTOP)) {
-    serialized_node->role = AX_ROLE_ROOT_WEB_AREA;
-  }
-  serialized_node->child_ids.clear();
+  {
+    // Take the address of an element in a vector only within a limited
+    // scope because otherwise the pointer can become invalid if the
+    // vector is resized.
+    AXNodeData* serialized_node = &out_update->nodes[serialized_node_index];
 
-  // Iterate over the children, make note of the ones that are new
-  // and need to be serialized, and update the ClientTreeNode
+    tree_->SerializeNode(node, serialized_node);
+    // TODO(dmazzoni/dtseng): Make the serializer not depend on roles to
+    // identify the root.
+    if (serialized_node->id == client_root_->id &&
+        (serialized_node->role != AX_ROLE_ROOT_WEB_AREA &&
+         serialized_node->role != AX_ROLE_DESKTOP)) {
+      serialized_node->role = AX_ROLE_ROOT_WEB_AREA;
+    }
+  }
+
+  // Iterate over the children, serialize them, and update the ClientTreeNode
   // data structure to reflect the new tree.
-  std::vector<AXSourceNode> children_to_serialize;
+  std::vector<int32> actual_serialized_node_child_ids;
   client_node->children.reserve(children.size());
   for (size_t i = 0; i < children.size(); ++i) {
     AXSourceNode& child = children[i];
     int child_id = tree_->GetId(child);
 
-    // No need to do anything more with children that aren't new;
-    // the client will reuse its existing object.
+    // Skip if the child isn't valid.
+    if (!tree_->IsValid(child))
+      continue;
+
+    // Skip if the same child is included more than once.
     if (new_child_ids.find(child_id) == new_child_ids.end())
       continue;
 
     new_child_ids.erase(child_id);
-    serialized_node->child_ids.push_back(child_id);
+    actual_serialized_node_child_ids.push_back(child_id);
     if (client_child_id_map.find(child_id) != client_child_id_map.end()) {
       ClientTreeNode* reused_child = client_child_id_map[child_id];
       client_node->children.push_back(reused_child);
@@ -454,13 +462,14 @@ void AXTreeSerializer<AXSourceNode>::SerializeChangedNodes(
       new_child->parent = client_node;
       client_node->children.push_back(new_child);
       client_id_map_[child_id] = new_child;
-      children_to_serialize.push_back(child);
+      SerializeChangedNodes(child, out_update);
     }
   }
 
-  // Serialize all of the new children, recursively.
-  for (size_t i = 0; i < children_to_serialize.size(); ++i)
-    SerializeChangedNodes(children_to_serialize[i], out_update);
+  // Finally, update the child ids of this node to reflect the actual child
+  // ids that were valid during serialization.
+  out_update->nodes[serialized_node_index].child_ids.swap(
+      actual_serialized_node_child_ids);
 }
 
 }  // namespace ui

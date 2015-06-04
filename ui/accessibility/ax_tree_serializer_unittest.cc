@@ -179,4 +179,69 @@ TEST_F(AXTreeSerializerTest, ReparentingUpdatesSubtree) {
   EXPECT_EQ(5, update.nodes[3].id);
 }
 
+// A variant of AXTreeSource that returns true for IsValid() for one
+// particular id.
+class AXTreeSourceWithInvalidId : public AXTreeSource<const AXNode*> {
+ public:
+  AXTreeSourceWithInvalidId(AXTree* tree, int invalid_id)
+      : tree_(tree),
+        invalid_id_(invalid_id) {}
+  ~AXTreeSourceWithInvalidId() override {}
+
+  // AXTreeSource implementation.
+  AXNode* GetRoot() const override { return tree_->root(); }
+  AXNode* GetFromId(int32 id) const override { return tree_->GetFromId(id); }
+  int32 GetId(const AXNode* node) const override { return node->id(); }
+  void GetChildren(const AXNode* node,
+                   std::vector<const AXNode*>* out_children) const override {
+    for (int i = 0; i < node->child_count(); ++i)
+      out_children->push_back(node->ChildAtIndex(i));
+  }
+  AXNode* GetParent(const AXNode* node) const override {
+    return node->parent();
+  }
+  bool IsValid(const AXNode* node) const override {
+    return node != NULL && node->id() != invalid_id_;
+  }
+  bool IsEqual(const AXNode* node1, const AXNode* node2) const override {
+    return node1 == node2;
+  }
+  const AXNode* GetNull() const override { return NULL; }
+  void SerializeNode(const AXNode* node, AXNodeData* out_data) const override {
+    *out_data = node->data();
+    if (node->id() == invalid_id_)
+      out_data->id = -1;
+  }
+
+ private:
+  AXTree* tree_;
+  int invalid_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(AXTreeSourceWithInvalidId);
+};
+
+// Test that the serializer skips invalid children.
+TEST(AXTreeSerializerInvalidTest, InvalidChild) {
+  // (1 (2 3))
+  AXTreeUpdate treedata;
+  treedata.nodes.resize(3);
+  treedata.nodes[0].id = 1;
+  treedata.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  treedata.nodes[0].child_ids.push_back(2);
+  treedata.nodes[0].child_ids.push_back(3);
+  treedata.nodes[1].id = 2;
+  treedata.nodes[2].id = 3;
+
+  AXTree tree(treedata);
+  AXTreeSourceWithInvalidId source(&tree, 3);
+
+  AXTreeSerializer<const AXNode*> serializer(&source);
+  AXTreeUpdate update;
+  serializer.SerializeChanges(tree.root(), &update);
+
+  ASSERT_EQ(2U, update.nodes.size());
+  EXPECT_EQ(1, update.nodes[0].id);
+  EXPECT_EQ(2, update.nodes[1].id);
+}
+
 }  // namespace ui
