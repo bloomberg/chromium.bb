@@ -384,11 +384,11 @@ void LayoutView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidatio
     // short-circuit on full-paint invalidation.
     LayoutRect dirtyRect = viewRect();
     if (doingFullPaintInvalidation() && !dirtyRect.isEmpty()) {
-        const LayoutBoxModelObject* paintInvalidationContainer = &paintInvalidationState.paintInvalidationContainer();
-        DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect, &paintInvalidationState);
+        const LayoutBoxModelObject& paintInvalidationContainer = paintInvalidationState.paintInvalidationContainer();
+        DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(this, &paintInvalidationContainer, dirtyRect, &paintInvalidationState);
         invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-            invalidateDisplayItemClients(*paintInvalidationContainer);
+            invalidateDisplayItemClients(paintInvalidationContainer);
     }
     LayoutBlock::invalidateTreeIfNeeded(paintInvalidationState);
 }

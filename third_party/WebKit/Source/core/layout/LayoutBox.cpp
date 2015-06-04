@@ -4088,14 +4088,14 @@ void LayoutBox::invalidatePaintRectClippedByOldAndNewBounds(const LayoutBoxModel
     LayoutRect rectClippedByNewBounds = intersection(rect, newBounds);
     // Invalidate only once if the clipped rects equal.
     if (rectClippedByOldBounds == rectClippedByNewBounds) {
-        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
+        invalidatePaintUsingContainer(paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
         return;
     }
     // Invalidate the bigger one if one contains another. Otherwise invalidate both.
     if (!rectClippedByNewBounds.contains(rectClippedByOldBounds))
-        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
+        invalidatePaintUsingContainer(paintInvalidationContainer, rectClippedByOldBounds, PaintInvalidationIncremental);
     if (!rectClippedByOldBounds.contains(rectClippedByNewBounds))
-        invalidatePaintUsingContainer(&paintInvalidationContainer, rectClippedByNewBounds, PaintInvalidationIncremental);
+        invalidatePaintUsingContainer(paintInvalidationContainer, rectClippedByNewBounds, PaintInvalidationIncremental);
 }
 
 void LayoutBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)

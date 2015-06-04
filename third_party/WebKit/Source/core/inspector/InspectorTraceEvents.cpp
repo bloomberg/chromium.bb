@@ -369,12 +369,12 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutInvalidationTrac
     return value.release();
 }
 
-PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintInvalidationTrackingEvent::data(const LayoutObject* layoutObject, const LayoutObject* paintContainer)
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorPaintInvalidationTrackingEvent::data(const LayoutObject* layoutObject, const LayoutObject& paintContainer)
 {
     ASSERT(layoutObject);
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("frame", toHexString(layoutObject->frame()));
-    setGeneratingNodeInfo(value.get(), paintContainer, "paintId");
+    setGeneratingNodeInfo(value.get(), &paintContainer, "paintId");
     setGeneratingNodeInfo(value.get(), layoutObject, "nodeId", "nodeName");
     return value.release();
 }

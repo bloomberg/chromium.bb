@@ -837,10 +837,14 @@ public:
 
     void getTextDecorations(unsigned decorations, AppliedTextDecoration& underline, AppliedTextDecoration& overline, AppliedTextDecoration& linethrough, bool quirksMode = false, bool firstlineStyle = false);
 
-    // Return the LayoutBoxModelObject in the container chain which is responsible for painting this object, or 0
+    // Return the LayoutBoxModelObject in the container chain which is responsible for painting this object, or layout view
     // if painting is root-relative. This is the container that should be passed to the 'forPaintInvalidation'
     // methods.
+    const LayoutBoxModelObject& containerForPaintInvalidationOnRootedTree() const;
+
+    // This method will be deprecated in a long term, replaced by containerForPaintInvalidationOnRootedTree.
     const LayoutBoxModelObject* containerForPaintInvalidation() const;
+
     const LayoutBoxModelObject* adjustCompositedContainerForSpecialAncestors(const LayoutBoxModelObject* paintInvalidationContainer) const;
     bool isPaintInvalidationContainer() const;
 
@@ -858,9 +862,7 @@ public:
     // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
     // of the GraphicsLayer backing of |paintInvalidationContainer|. Note that this coordinaten space is not the same
     // as the local coordinate space of |paintInvalidationContainer| in the presence of layer squashing.
-    // If |paintInvalidationContainer| is 0, invalidate paints via the view.
-    // FIXME: |paintInvalidationContainer| should never be 0. See crbug.com/363699.
-    void invalidatePaintUsingContainer(const LayoutBoxModelObject* paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason) const;
+    void invalidatePaintUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect&, PaintInvalidationReason) const;
 
     // Invalidate the paint of a specific subrectangle within a given object. The rect |r| is in the object's coordinate space.
     void invalidatePaintRectangle(const LayoutRect&) const;
@@ -1230,7 +1232,7 @@ private:
     void setLayoutDidGetCalledSinceLastFrame();
     void clearLayoutDidGetCalledSinceLastFrame() { m_bitfields.setLayoutDidGetCalledSinceLastFrame(false); }
 
-    void invalidatePaintIncludingNonCompositingDescendantsInternal(const LayoutBoxModelObject* repaintContainer);
+    void invalidatePaintIncludingNonCompositingDescendantsInternal(const LayoutBoxModelObject& repaintContainer);
 
     LayoutRect previousSelectionRectForPaintInvalidation() const;
     void setPreviousSelectionRectForPaintInvalidation(const LayoutRect&);

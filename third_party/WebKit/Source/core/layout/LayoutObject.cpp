@@ -1051,6 +1051,16 @@ const LayoutBoxModelObject* LayoutObject::containerForPaintInvalidation() const
     return adjustCompositedContainerForSpecialAncestors(enclosingCompositedContainer());
 }
 
+const LayoutBoxModelObject& LayoutObject::containerForPaintInvalidationOnRootedTree() const
+{
+    RELEASE_ASSERT(isRooted());
+
+    const LayoutBoxModelObject* paintInvalidationContainer = containerForPaintInvalidation();
+    ASSERT(paintInvalidationContainer);
+
+    return *paintInvalidationContainer;
+}
+
 const LayoutBoxModelObject* LayoutObject::enclosingCompositedContainer() const
 {
     LayoutBoxModelObject* container = 0;
@@ -1146,7 +1156,7 @@ LayoutRect LayoutObject::computePaintInvalidationRect(const LayoutBoxModelObject
     return clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
 }
 
-void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject* paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason) const
+void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
     ASSERT(gDisablePaintInvalidationStateAsserts || document().lifecycle().state() == DocumentLifecycle::InPaintInvalidation);
 
@@ -1164,14 +1174,14 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject* pai
         "object", this->debugName().ascii(),
         "info", jsonObjectForPaintInvalidationInfo(r, paintInvalidationReasonToString(invalidationReason)));
 
-    if (paintInvalidationContainer->isLayoutView()) {
-        toLayoutView(paintInvalidationContainer)->invalidatePaintForRectangle(r, invalidationReason);
+    if (paintInvalidationContainer.isLayoutView()) {
+        toLayoutView(&paintInvalidationContainer)->invalidatePaintForRectangle(r, invalidationReason);
         return;
     }
 
-    if (paintInvalidationContainer->view()->usesCompositing()) {
-        ASSERT(paintInvalidationContainer->isPaintInvalidationContainer());
-        paintInvalidationContainer->setBackingNeedsPaintInvalidationInRect(r, invalidationReason);
+    if (paintInvalidationContainer.view()->usesCompositing()) {
+        ASSERT(paintInvalidationContainer.isPaintInvalidationContainer());
+        paintInvalidationContainer.setBackingNeedsPaintInvalidationInRect(r, invalidationReason);
     }
 }
 
@@ -1236,10 +1246,10 @@ const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const
 
     LayoutRect dirtyRect(r);
 
-    const LayoutBoxModelObject* paintInvalidationContainer = containerForPaintInvalidation();
-    DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect);
+    const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidationOnRootedTree();
+    DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(this, &paintInvalidationContainer, dirtyRect);
     invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationRectangle);
-    return paintInvalidationContainer;
+    return &paintInvalidationContainer;
 }
 
 void LayoutObject::invalidatePaintRectangle(const LayoutRect& r) const
@@ -1435,23 +1445,23 @@ void LayoutObject::incrementallyInvalidatePaint(const LayoutBoxModelObject& pain
 
     LayoutUnit deltaRight = newBounds.maxX() - oldBounds.maxX();
     if (deltaRight > 0)
-        invalidatePaintUsingContainer(&paintInvalidationContainer, LayoutRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height()), PaintInvalidationIncremental);
+        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height()), PaintInvalidationIncremental);
     else if (deltaRight < 0)
-        invalidatePaintUsingContainer(&paintInvalidationContainer, LayoutRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height()), PaintInvalidationIncremental);
+        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height()), PaintInvalidationIncremental);
 
     LayoutUnit deltaBottom = newBounds.maxY() - oldBounds.maxY();
     if (deltaBottom > 0)
-        invalidatePaintUsingContainer(&paintInvalidationContainer, LayoutRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom), PaintInvalidationIncremental);
+        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom), PaintInvalidationIncremental);
     else if (deltaBottom < 0)
-        invalidatePaintUsingContainer(&paintInvalidationContainer, LayoutRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom), PaintInvalidationIncremental);
+        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom), PaintInvalidationIncremental);
 }
 
 void LayoutObject::fullyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds)
 {
     // Otherwise do full paint invalidation.
-    invalidatePaintUsingContainer(&paintInvalidationContainer, oldBounds, invalidationReason);
+    invalidatePaintUsingContainer(paintInvalidationContainer, oldBounds, invalidationReason);
     if (newBounds != oldBounds)
-        invalidatePaintUsingContainer(&paintInvalidationContainer, newBounds, invalidationReason);
+        invalidatePaintUsingContainer(paintInvalidationContainer, newBounds, invalidationReason);
 }
 
 void LayoutObject::invalidatePaintForOverflow()
@@ -2160,20 +2170,19 @@ FloatPoint LayoutObject::localToContainerPoint(const FloatPoint& localPoint, con
 
 FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& localPoint, DeprecatedPaintLayer** backingLayer)
 {
-    const LayoutBoxModelObject* paintInvalidationContainer = containerForPaintInvalidation();
-    ASSERT(paintInvalidationContainer);
-    ASSERT(paintInvalidationContainer->layer());
+    const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidationOnRootedTree();
+    ASSERT(paintInvalidationContainer.layer());
 
     if (backingLayer)
-        *backingLayer = paintInvalidationContainer->layer();
-    FloatPoint containerPoint = localToContainerPoint(FloatPoint(localPoint), paintInvalidationContainer, TraverseDocumentBoundaries);
+        *backingLayer = paintInvalidationContainer.layer();
+    FloatPoint containerPoint = localToContainerPoint(FloatPoint(localPoint), &paintInvalidationContainer, TraverseDocumentBoundaries);
 
     // A layoutObject can have no invalidation backing if it is from a detached frame,
     // or when forced compositing is disabled.
-    if (paintInvalidationContainer->layer()->compositingState() == NotComposited)
+    if (paintInvalidationContainer.layer()->compositingState() == NotComposited)
         return containerPoint;
 
-    DeprecatedPaintLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, containerPoint);
+    DeprecatedPaintLayer::mapPointToPaintBackingCoordinates(&paintInvalidationContainer, containerPoint);
     return containerPoint;
 }
 
@@ -3258,14 +3267,14 @@ DisablePaintInvalidationStateAsserts::DisablePaintInvalidationStateAsserts()
 // Since we're only painting non-composited layers, we know that they all share the same paintInvalidationContainer.
 void LayoutObject::invalidatePaintIncludingNonCompositingDescendants()
 {
-    invalidatePaintIncludingNonCompositingDescendantsInternal(containerForPaintInvalidation());
+    invalidatePaintIncludingNonCompositingDescendantsInternal(containerForPaintInvalidationOnRootedTree());
 }
 
-void LayoutObject::invalidatePaintIncludingNonCompositingDescendantsInternal(const LayoutBoxModelObject* paintInvalidationContainer)
+void LayoutObject::invalidatePaintIncludingNonCompositingDescendantsInternal(const LayoutBoxModelObject& paintInvalidationContainer)
 {
     invalidatePaintUsingContainer(paintInvalidationContainer, previousPaintInvalidationRect(), PaintInvalidationLayer);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        invalidateDisplayItemClients(*paintInvalidationContainer);
+        invalidateDisplayItemClients(paintInvalidationContainer);
 
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isPaintInvalidationContainer())

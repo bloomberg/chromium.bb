@@ -162,7 +162,7 @@ public:
 
 class InspectorPaintInvalidationTrackingEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, const LayoutObject* paintContainer);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const LayoutObject*, const LayoutObject& paintContainer);
 };
 
 class InspectorScrollInvalidationTrackingEvent {

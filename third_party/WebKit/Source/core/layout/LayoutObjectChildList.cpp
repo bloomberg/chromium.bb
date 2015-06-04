@@ -195,10 +195,10 @@ void LayoutObjectChildList::invalidatePaintOnRemoval(const LayoutObject& oldChil
     DisableCompositingQueryAsserts disabler;
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
-    const LayoutBoxModelObject* paintInvalidationContainer = oldChild.containerForPaintInvalidation();
+    const LayoutBoxModelObject& paintInvalidationContainer = *oldChild.containerForPaintInvalidation();
     oldChild.invalidatePaintUsingContainer(paintInvalidationContainer, oldChild.previousPaintInvalidationRect(), PaintInvalidationLayoutObjectRemoval);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        oldChild.invalidateDisplayItemClients(*paintInvalidationContainer);
+        oldChild.invalidateDisplayItemClients(paintInvalidationContainer);
 }
 
 } // namespace blink
