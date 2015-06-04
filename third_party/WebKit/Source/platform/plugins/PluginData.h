@@ -58,7 +58,6 @@ public:
 
     bool supportsMimeType(const String& mimeType) const;
     String pluginNameForMimeType(const String& mimeType) const;
-    String pluginFileForMimeType(const String& mimeType) const;
 
     static void refresh();
 

@@ -104,13 +104,6 @@ String PluginData::pluginNameForMimeType(const String& mimeType) const
     return String();
 }
 
-String PluginData::pluginFileForMimeType(const String& mimeType) const
-{
-    if (const PluginInfo* info = pluginInfoForMimeType(mimeType))
-        return info->file;
-    return String();
-}
-
 void PluginData::initPlugins(const Page*)
 {
     const Vector<PluginInfo>& plugins = pluginCache().plugins();
