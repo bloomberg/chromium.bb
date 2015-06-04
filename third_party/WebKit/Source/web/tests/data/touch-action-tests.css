@@ -62,6 +62,7 @@ body {
   height: 2000px;
   /* Use fixed line height so co-ordinates will be similar in test and browser */
   font-size: 20px;
+  line-height: 1;
   white-space: nowrap;
 }
 
