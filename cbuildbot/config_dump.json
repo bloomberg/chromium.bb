@@ -9110,6 +9110,7 @@
         "manifest": "official.xml",
         "name": "lakitu-chrome-pfq",
         "sync_chrome": false,
+        "upload_gce_images": true,
         "vm_tests": []
     },
     "lakitu-chromium-pfq": {
@@ -9127,6 +9128,7 @@
         "overlays": "both",
         "prebuilts": "public",
         "sync_chrome": false,
+        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -9145,6 +9147,7 @@
         "name": "lakitu-compile-only-pre-cq",
         "overlays": "both",
         "sync_chrome": false,
+        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ]
@@ -9160,6 +9163,7 @@
         "name": "lakitu-full",
         "prebuilts": "public",
         "sync_chrome": false,
+        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],
@@ -9179,6 +9183,7 @@
         "name": "lakitu-incremental",
         "overlays": "both",
         "sync_chrome": false,
+        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ],
@@ -9199,6 +9204,7 @@
         "name": "lakitu-no-vmtest-pre-cq",
         "overlays": "both",
         "sync_chrome": false,
+        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ]
@@ -9220,6 +9226,7 @@
         "overlays": "both",
         "prebuilts": "private",
         "sync_chrome": false,
+        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ],
@@ -9245,6 +9252,7 @@
         "name": "lakitu-pre-cq",
         "overlays": "both",
         "sync_chrome": false,
+        "upload_gce_images": true,
         "useflags": [
             "chrome_internal"
         ],
@@ -9265,6 +9273,7 @@
         "image_test": false,
         "name": "lakitu-release",
         "sync_chrome": false,
+        "upload_gce_images": true,
         "vm_tests": [
             "smoke_suite"
         ]
@@ -9317,6 +9326,7 @@
         "manifest": "official.xml",
         "name": "lakitu-tot-chrome-pfq-informational",
         "sync_chrome": false,
+        "upload_gce_images": true,
         "vm_tests": []
     },
     "lakitu-tot-chromium-pfq-informational": {
@@ -9327,6 +9337,7 @@
         "disk_layout": "base",
         "name": "lakitu-tot-chromium-pfq-informational",
         "sync_chrome": false,
+        "upload_gce_images": true,
         "useflags": [
             "-chrome_internal"
         ],

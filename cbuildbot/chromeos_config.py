@@ -1001,6 +1001,10 @@ _base_layout_boards = frozenset([
 _no_unittest_boards = frozenset((
 ))
 
+_upload_gce_images_boards = frozenset([
+    'lakitu',
+])
+
 # TODO(akeshet): Temporary workaround to vmtest failing on strage-pre-cq, to
 # allow already-screened changes to work through the pipeline.
 _no_vmtest_boards = _arm_boards | _mips_boards | frozenset((
@@ -1401,6 +1405,8 @@ def GetConfig():
         base.update(no_unittest_builder)
       if board in _no_vmtest_boards:
         base.update(vm_tests=[])
+      if board in _upload_gce_images_boards:
+        base.update(upload_gce_images=True)
 
       # TODO(akeshet) Eliminate or clean up this special case.
       # kayle board has a lot of kayle-specific config changes.
