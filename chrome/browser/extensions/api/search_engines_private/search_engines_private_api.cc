@@ -58,8 +58,8 @@ SearchEnginesPrivateGetSearchEnginesFunction::Run() {
   for (size_t i = 0; i < urls.size(); i++) {
     search_engines_private::SearchEngine engine;
     engine.guid = urls[i]->sync_guid();
-    engine.name = base::UTF16ToASCII(urls[i]->short_name());
-    engine.keyword = base::UTF16ToASCII(urls[i]->keyword());
+    engine.name = base::UTF16ToUTF8(urls[i]->short_name());
+    engine.keyword = base::UTF16ToUTF8(urls[i]->keyword());
     engine.url = urls[i]->url();
     engine.type = urls[i]->show_in_default_list()
         ? search_engines_private::SearchEngineType::SEARCH_ENGINE_TYPE_DEFAULT
@@ -120,8 +120,8 @@ SearchEnginesPrivateAddOtherSearchEngineFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   TemplateURLData data;
-  data.SetShortName(base::ASCIIToUTF16(parameters->name));
-  data.SetKeyword(base::ASCIIToUTF16(parameters->keyword));
+  data.SetShortName(base::UTF8ToUTF16(parameters->name));
+  data.SetKeyword(base::UTF8ToUTF16(parameters->keyword));
   data.SetURL(parameters->url);
   TemplateURL* turl = new TemplateURL(data);
 
@@ -155,8 +155,8 @@ SearchEnginesPrivateUpdateSearchEngineFunction::Run() {
       template_url_service->GetTemplateURLForGUID(parameters->guid);
 
   template_url_service->ResetTemplateURL(
-      turl, base::ASCIIToUTF16(parameters->name),
-      base::ASCIIToUTF16(parameters->keyword), parameters->url);
+      turl, base::UTF8ToUTF16(parameters->name),
+      base::UTF8ToUTF16(parameters->keyword), parameters->url);
 
   return RespondNow(NoArguments());
 }
@@ -241,7 +241,7 @@ SearchEnginesPrivateGetHotwordStateFunction::Run() {
     std::string error_message(l10n_util::GetStringUTF8(error));
     if (error == IDS_HOTWORD_GENERIC_ERROR_MESSAGE) {
       error_message = l10n_util::GetStringFUTF8(
-          error, base::ASCIIToUTF16(chrome::kHotwordLearnMoreURL));
+          error, base::UTF8ToUTF16(chrome::kHotwordLearnMoreURL));
     }
     state->error_msg.reset(new std::string(error_message));
   }
@@ -261,7 +261,7 @@ SearchEnginesPrivateGetHotwordStateFunction::Run() {
                      weak_ptr_factory_.GetWeakPtr(), base::Passed(&state),
                      l10n_util::GetStringFUTF16(
                          IDS_HOTWORD_AUDIO_HISTORY_ENABLED,
-                         base::ASCIIToUTF16(user_display_name))));
+                         base::UTF8ToUTF16(user_display_name))));
       return RespondLater();
     }
   }
@@ -278,7 +278,7 @@ void SearchEnginesPrivateGetHotwordStateFunction::OnAudioHistoryChecked(
     state->availability.push_back(
         search_engines_private::HotwordFeature::HOTWORD_FEATURE_AUDIO_HISTORY);
     state->audio_history_state.reset(new std::string(
-        base::UTF16ToASCII(audio_history_state)));
+        base::UTF16ToUTF8(audio_history_state)));
   }
   Respond(OneArgument(state->ToValue().release()));
 }

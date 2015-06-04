@@ -83,8 +83,8 @@ void SearchEnginesPrivateEventRouter::OnTemplateURLServiceChanged() {
     search_engines_private::SearchEngine* engine =
         new search_engines_private::SearchEngine();
     engine->guid = url->sync_guid();
-    engine->name = base::UTF16ToASCII(url->short_name());
-    engine->keyword = base::UTF16ToASCII(url->keyword());
+    engine->name = base::UTF16ToUTF8(url->short_name());
+    engine->keyword = base::UTF16ToUTF8(url->keyword());
     engine->url = url->url();
     engine->type = url->show_in_default_list()
         ? search_engines_private::SearchEngineType::SEARCH_ENGINE_TYPE_DEFAULT
