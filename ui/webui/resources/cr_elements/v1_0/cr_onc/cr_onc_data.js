@@ -85,6 +85,10 @@ var CrOncDataElement = {};
  * @return {!CrOncDataElement} A cr-onc-data element.
  */
 CrOncDataElement.create = function(state) {
+  if (!state) {
+    console.error('CrOncDataElement.create called with null state');
+    return null;
+  }
   var oncData = /** @type {!CrOncDataElement} */ (
       document.createElement('cr-onc-data'));
   oncData.data = state;

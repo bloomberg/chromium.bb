@@ -11,58 +11,78 @@
 /** @typedef {chrome.networkingPrivate.DeviceStateProperties} */
 var DeviceStateProperties;
 
-Polymer('cr-network-summary-item', {
-  publish: {
+/** @typedef {chrome.networkingPrivate.NetworkStateProperties} */
+var NetworkStateProperties;
+
+Polymer({
+  is: 'cr-network-summary-item',
+
+  properties: {
     /**
      * True if the list is expanded.
-     *
-     * @attribute expanded
-     * @type {boolean}
-     * @default false
      */
-    expanded: false,
+    expanded: {
+      type: Boolean,
+      value: false,
+      observer: 'expandedChanged_'
+    },
 
     /**
      * The maximum height in pixels for the list of networks.
-     *
-     * @attribute maxHeight
-     * @type {number}
-     * @default 200
      */
-    maxHeight: 200,
+    maxHeight: {
+      type: Number,
+      value: 200
+    },
+
+    /**
+     * True if this item should be hidden. We need this computed property so
+     * that it can default to true, hiding this element, since no changed event
+     * will be fired for deviceState if it is undefined (in CrNetworkSummary).
+     */
+    isHidden: {
+      type: Boolean,
+      value: true,
+      computed: 'noDeviceState_(deviceState)'
+    },
 
     /**
      * Device state for the network type.
      *
-     * @attribute deviceState
      * @type {?DeviceStateProperties}
-     * @default null
      */
-    deviceState: null,
+    deviceState: {
+      type: Object,
+      value: null,
+      observer: 'deviceStateChanged_'
+    },
 
     /**
      * Network state for the active network.
      *
-     * @attribute networkState
-     * @type {?CrOncDataElement}
-     * @default null
+     * @type {?NetworkStateProperties}
      */
-    networkState: null,
+    networkState: {
+      type: Object,
+      value: null
+    },
 
     /**
      * List of all network state data for the network type.
      *
-     * @attribute networkStateList
-     * @type {?Array<!CrOncDataElement>}
-     * @default null
+     * @type {!Array<!NetworkStateProperties>}
      */
-    networkStateList: null,
+    networkStateList: {
+      type: Array,
+      value: function() { return []; },
+      observer: 'networkStateListChanged_'
+    }
   },
 
   /**
    * Polymer expanded changed method.
    */
-  expandedChanged: function() {
+  expandedChanged_: function() {
     var type = this.deviceState ? this.deviceState.Type : '';
     this.fire('expanded', {expanded: this.expanded, type: type});
   },
@@ -70,7 +90,7 @@ Polymer('cr-network-summary-item', {
   /**
    * Polymer deviceState changed method.
    */
-  deviceStateChanged: function() {
+  deviceStateChanged_: function() {
     this.updateSelectable_();
     if (!this.deviceIsEnabled_(this.deviceState))
       this.expanded = false;
@@ -79,8 +99,17 @@ Polymer('cr-network-summary-item', {
   /**
    * Polymer networkStateList changed method.
    */
-  networkStateListChanged: function() {
+  networkStateListChanged_: function() {
     this.updateSelectable_();
+  },
+
+  /**
+   * @param {?DeviceStateProperties} deviceState The state of a device.
+   * @return {boolean} True if the device state is not set.
+   * @private
+   */
+  noDeviceState_: function(deviceState) {
+    return !deviceState;
   },
 
   /**
@@ -94,22 +123,34 @@ Polymer('cr-network-summary-item', {
 
   /**
    * @param {?DeviceStateProperties} deviceState The device state.
-   * @return {boolean} Whether or not to show the UI to enable the network.
+   * @return {string} The class value for the device enabled button.
    * @private
    */
-  deviceEnabledIsVisible_: function(deviceState) {
-    return deviceState &&
+  getDeviceEnabledButtonClass_: function(deviceState) {
+    var visible = deviceState &&
         deviceState.Type != 'Ethernet' && deviceState.Type != 'VPN';
+    return visible ? '' : 'invisible';
   },
 
   /**
    * @param {?DeviceStateProperties} deviceState The device state.
-   * @param {?Array<!CrOncDataElement>} networkList A list of networks.
+   * @param {!Array<!NetworkStateProperties>} networkList A list of networks.
+   * @return {string} The class value for the expand button.
+   * @private
+   */
+  getExpandButtonClass_: function(deviceState, networkList) {
+    var visible = this.expandIsVisible_(deviceState, networkList);
+    return visible ? '' : 'invisible';
+  },
+
+  /**
+   * @param {?DeviceStateProperties} deviceState The device state.
+   * @param {!Array<!NetworkStateProperties>} networkList A list of networks.
    * @return {boolean} Whether or not to show the UI to expand the list.
    * @private
    */
   expandIsVisible_: function(deviceState, networkList) {
-    if (!this.deviceIsEnabled_(deviceState) || !networkList)
+    if (!this.deviceIsEnabled_(deviceState))
       return false;
     var minLength = (this.type == 'WiFi') ? 1 : 2;
     return networkList.length >= minLength;
@@ -141,8 +182,8 @@ Polymer('cr-network-summary-item', {
    * @private
    */
   onListItemSelected_: function(event) {
-    var onc = event.detail;
-    this.fire('selected', onc);
+    var state = event.detail;
+    this.fire('selected', state);
   },
 
   /**

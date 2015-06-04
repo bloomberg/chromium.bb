@@ -1,12 +1,12 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="network_summary.html">
 
-<polymer-element name="cr-settings-internet-page">
+<dom-module id="cr-settings-internet-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
   <template>
-    <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
-    <paper-shadow layout vertical cross-fade>
+    <paper-material class="layout vertical">
       <cr-network-summary></cr-network-summary>
-    </paper-shadow>
+    </paper-material>
   </template>
   <script src="internet_page.js"></script>
-</polymer-element>
+</dom-module>

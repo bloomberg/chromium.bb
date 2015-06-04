@@ -54,6 +54,10 @@ Polymer({
   properties: {
     /**
      * If set, the ONC data properties will be used to display the icon.
+     * NOTE: Because this is a Polymer element, it can not be set using
+     * data binding; it must be set directly. TODO(stevenjb): Use
+     * NetworkStateProperties instead and replace CrOncDataElement with a
+     * set of utility functions.
      *
      * @type {?CrOncDataElement}
      */

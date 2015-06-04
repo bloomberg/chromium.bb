@@ -1,49 +1,47 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/core-style/core-style.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_onc/cr_onc_data.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/more-routing/more-routing.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_data.html">
 <link rel="import" href="network_summary_item.html">
-<link rel="import" href="network_summary_style.html">
 
-<polymer-element name="cr-network-summary">
+<dom-module id="cr-network-summary">
+  <link rel="import" type="css" href="network_summary.css">
   <template>
-    <core-style ref="networkSummaryStyle"></core-style>
-    <div id="summary" vertical layout>
-      <cr-network-summary-item
-          deviceState="{{deviceStates.Ethernet}}"
-          networkState="{{networkStates.Ethernet}}"
-          networkStateList="{{networkStateLists.Ethernet}}"
-          on-selected="{{onSelected_}}">
+    <div id="summary" class="layout vertical">
+      <cr-network-summary-item id="ethernet"
+          device-state="[[deviceStates.Ethernet]]"
+          network-state="[[networkStates.Ethernet]]"
+          network-state-list="[[networkStateLists.Ethernet]]"
+          on-selected="onSelected_">
       </cr-network-summary-item>
-      <cr-network-summary-item
-          deviceState="{{deviceStates.WiFi}}"
-          networkState="{{networkStates.WiFi}}"
-          networkStateList="{{networkStateLists.WiFi}}"
-          on-expanded="{{onWiFiExpanded_}}"
-          on-selected="{{onSelected_}}"
-          on-device-enabled-toggled="{{onDeviceEnabledToggled_}}">
+      <cr-network-summary-item id="wifi"
+          device-state="[[deviceStates.WiFi]]"
+          network-state="[[networkStates.WiFi]]"
+          network-state-list="[[networkStateLists.WiFi]]"
+          on-expanded="onWiFiExpanded_"
+          on-selected="onSelected_"
+          on-device-enabled-toggled="onDeviceEnabledToggled_">
       </cr-network-summary-item>
-      <cr-network-summary-item
-          deviceState="{{deviceStates.Cellular}}"
-          networkState="{{networkStates.Cellular}}"
-          networkStateList="{{networkStateLists.Cellular}}"
-          on-selected="{{onSelected_}}"
-          on-device-enabled-toggled="{{onDeviceEnabledToggled_}}">
+      <cr-network-summary-item id="cellular"
+          device-state="[[deviceStates.Cellular]]"
+          network-state="[[networkStates.Cellular]]"
+          network-state-list="[[networkStateLists.Cellular]]"
+          on-selected="onSelected_"
+          on-device-enabled-toggled="onDeviceEnabledToggled_">
       </cr-network-summary-item>
-      <cr-network-summary-item
-          deviceState="{{deviceStates.WiMAX}}"
-          networkState="{{networkStates.WiMAX}}"
-          networkStateList="{{networkStateLists.WiMAX}}"
-          on-selected="{{onSelected_}}"
-          on-device-enabled-toggled="{{onDeviceEnabledToggled_}}">
+      <cr-network-summary-item id="wimax"
+          device-state="[[deviceStates.WiMAX]]"
+          network-state="[[networkStates.WiMAX]]"
+          network-state-list="[[networkStateLists.WiMAX]]"
+          on-selected="onSelected_"
+          on-device-enabled-toggled="onDeviceEnabledToggled_">
       </cr-network-summary-item>
-      <cr-network-summary-item
-          deviceState="{{deviceStates.VPN}}"
-          networkState="{{networkStates.VPN}}"
-          networkStateList="{{networkStateLists.VPN}}"
-          on-selected="{{onSelected_}}">
+      <cr-network-summary-item id="vpn"
+          device-state="[[deviceStates.VPN]]"
+          network-state="[[networkStates.VPN]]"
+          network-state-list="[[networkStateLists.VPN]]"
+          on-selected="onSelected_">
       </cr-network-summary-item>
     </div>
   </template>
   <script src="network_summary.js"></script>
-</polymer-element>
+</dom-module>

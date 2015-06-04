@@ -1,49 +1,48 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_onc/cr_onc_data.html">
-<link rel="import" href="internet_detail_page_style.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_data.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_icon/cr_network_icon.html">
 
-<polymer-element name="cr-settings-internet-detail-page">
+<dom-module id="cr-settings-internet-detail-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="internet_detail_page.css">
   <template>
-    <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
-    <core-style ref="internetDetailPageStyle"></core-style>
-    <paper-shadow layout vertical cross-fade>
-      <div vertical layout>
-        <div id="titleDiv" horizontal layout>
-          <div center horizontal layout flex>
-            <cr-network-icon id="networkIcon" networkState="{{networkState}}">
-            </cr-network-icon>
-            <span id="networkName">{{getStateName_(networkState)}}</span>
-            <span id="networkState"
-                  class="{{ {connected: isConnectedState_(networkState)} | tokenList }}">
-              {{getStateText_(networkState)}}
-            </span>
+    <paper-material class="layout vertical">
+      <div class="layout vertical">
+        <div id="titleDiv" class="layout horizontal">
+          <div class="layout center horizontal flex">
+            <cr-network-icon id="networkIcon"></cr-network-icon>
+            <span id="networkName">[[getStateName_(networkState)]]</span>
+            <span id="networkState" class="[[getStateClass_(networkState)]]"
+                >[[getStateText_(networkState)]]</span>
           </div>
-          <div center horizontal layout center-justified
+          <div class="layout center horizontal center-justified"
               id="connectionButtonDiv">
-            <cr-button hidden?="{{!canDisconnect_(networkState)}}"
-                on-click="{{onDisconnectClicked_}}">
+            <cr-button hidden$="[[!canDisconnect_(networkState)]]"
+                on-click="onDisconnectClicked_">
               Disconnect
             </cr-button>
-            <cr-button hidden?="{{!canConnect_(networkState)}}"
-                on-click="{{onConnectClicked_}}">
+            <cr-button hidden$="[[!canConnect_(networkState)]]"
+                on-click="onConnectClicked_">
               Connect
             </cr-button>
           </div>
         </div>
-        <div id="detailDiv" vertical layout>
-          <div vertical layout hidden?="{{!isConnectedState_(networkState)}}">
-            <span>{{getProperty_(networkState, 'MacAddress')}}</span>
+        <div id="detailDiv" class="layout vertical">
+          <div class="layout vertical"
+              hidden$="[[!isConnectedState_(networkState)]]">
+            <span>[[getProperty_(networkState, 'MacAddress')]]</span>
           </div>
-          <div vertical layout hidden?="{{networkState.data.Type != 'WiFi'}}">
-            <span>{{getProperty_(networkState, 'WiFi.Security')}}</span>
-            <span>{{getProperty_(networkState, 'WiFi.SSID')}}</span>
-            <span>{{getProperty_(networkState, 'WiFi.BSSID')}}</span>
-            <span>{{getProperty_(networkState, 'WiFi.SignalStrength')}}</span>
-            <span>{{getProperty_(networkState, 'WiFi.Frequency')}}</span>
+          <div class="layout vertical"
+              hidden$="[[!isType_(networkState, 'WiFi')]]">
+            <span>[[getProperty_(networkState, 'WiFi.Security')]]</span>
+            <span>[[getProperty_(networkState, 'WiFi.SSID')]]</span>
+            <span>[[getProperty_(networkState, 'WiFi.BSSID')]]</span>
+            <span>[[getProperty_(networkState, 'WiFi.SignalStrength')]]</span>
+            <span>[[getProperty_(networkState, 'WiFi.Frequency')]]</span>
           </div>
         </div>
       </div>
     </paper-shadow>
   </template>
   <script src="internet_detail_page.js"></script>
-</polymer-element>
+</dom-module>

@@ -18,50 +18,52 @@
  * @group Chrome Settings Elements
  * @element cr-settings-internet-page
  */
-Polymer('cr-settings-internet-page', {
-  publish: {
+Polymer({
+  is: 'cr-settings-internet-page',
+
+  properties: {
     /**
      * ID of the page.
-     *
-     * @attribute PAGE_ID
-     * @const {string}
      */
-    PAGE_ID: 'internet',
+    PAGE_ID: {
+      type: String,
+      value: 'internet',
+      readOnly: true
+    },
 
     /**
      * Route for the page.
-     *
-     * @attribute route
-     * @type {string}
-     * @default ''
      */
-    route: '',
+    route: {
+      type: String,
+      value: ''
+    },
 
     /**
      * Whether the page is a subpage.
-     *
-     * @attribute subpage
-     * @type {boolean}
-     * @default false
      */
-    subpage: false,
+    subpage: {
+      type: Boolean,
+      value: false,
+      readOnly: true
+    },
 
     /**
      * Title for the page header and navigation menu.
-     *
-     * @attribute pageTitle
-     * @type {string}
      */
-    pageTitle: loadTimeData.getString('internetPageTitle'),
+    pageTitle: {
+      type: String,
+      value: function() { return loadTimeData.getString('internetPageTitle'); }
+    },
 
     /**
      * Name of the 'core-icon' to show. TODO(stevenjb): Update this with the
      * icon for the active internet connection.
-     *
-     * @attribute icon
-     * @type {string}
-     * @default 'settings-ethernet'
      */
-    icon: 'settings-ethernet',
+    icon: {
+      type: String,
+      value: 'settings-ethernet',
+      readOnly: true
+    },
   },
 });

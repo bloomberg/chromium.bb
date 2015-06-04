@@ -1,38 +1,36 @@
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_network_list/cr_network_list.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_network_list_item/cr_network_list_item.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_onc/cr_onc_data.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toggle_button/cr_toggle_button.html">
-<link rel="import" href="network_summary_item_style.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_list/cr_network_list.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_list_item/cr_network_list_item.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_toggle_button/cr_toggle_button.html">
 
-<polymer-element name="cr-network-summary-item">
+<dom-module name="cr-network-summary-item">
+  <link rel="import" type="css" href="network_summary_item.css">
   <template>
-    <core-style ref="networkSummaryStyle"></core-style>
-    <div vertical layout hidden?="{{!deviceState}}">
-      <div id="details" horizontal layout on-click="{{onDetailsClicked_}}">
-        <cr-network-list-item id="detailsItem" flex
-            networkState="{{networkState}}">
+    <div class="layout vertical" hidden$="[[isHidden]]">
+      <div id="details" class="layout horizontal" on-click="onDetailsClicked_">
+        <cr-network-list-item id="detailsItem" class="flex"
+            network-state="[[networkState]]">
         </cr-network-list-item>
-        <div id="buttons" horizontal layout>
+        <div id="buttons" class="layout horizontal">
           <cr-expand-button id="expandListButton"
-              class="{{ {invisible: !expandIsVisible_(deviceState, networkStateList)} | tokenList }}"
+              class$="[[getExpandButtonClass_(deviceState, networkStateList)]]"
               expanded="{{expanded}}">
           </cr-expand-button>
           <cr-toggle-button id="deviceEnabledButton"
-              checked="{{deviceIsEnabled_(deviceState)}}"
-              class="{{ {invisible: !deviceEnabledIsVisible_(deviceState)} | tokenList }}"
-              on-click="{{onDeviceEnabledToggled_}}">
+              checked="[[deviceIsEnabled_(deviceState)]]"
+              class$="[[getDeviceEnabledButtonClass_(deviceState)]]"
+              on-click="onDeviceEnabledToggled_">
           </cr-toggle-button>
         </div>
       </div>
-      <cr-network-list id="networkList" vertical layout
-          maxHeight="{{maxHeight}}"
-          networks="{{networkStateList}}"
-          on-selected="{{onListItemSelected_}}"
+      <cr-network-list id="networkList" class="layout vertical"
+          max-height="[[maxHeight]]"
+          networks="[[networkStateList]]"
+          on-selected="onListItemSelected_"
           opened="{{expanded}}">
       </cr-network-list>
     </div>
   </template>
   <script src="network_summary_item.js"></script>
-</polymer-element>
+</dom-module>

@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/more-routing/more-routing.html">
 <link rel="import" href="chrome://md-settings/routes.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_page_header.html">
 <link rel="import" href="chrome://md-settings/a11y_page/a11y_page.html">
@@ -8,11 +9,8 @@
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
 <link rel="import" href="chrome://md-settings/search_page/search_page.html">
-
-<!-- TODO: Uncomment pages as they are upgraded.
 <link rel="import" href="chrome://md-settings/internet_page/internet_page.html">
 <link rel="import" href="chrome://md-settings/internet_page/internet_detail_page.html">
--->
 
 <dom-module id="cr-settings-main">
   <link rel="import" type="css" href="settings_main.css">
@@ -24,17 +22,13 @@
       <more-route-selector selected-params="{{params}}">
         <iron-pages id="pageContainer" selected-item="{{selectedPage}}"
             on-iron-select="onIronSelect_" attr-for-selected="PAGE_ID">
-          <!-- TODO: Uncomment pages as they are upgraded. -->
 <if expr="chromeos">
-          <!--
           <cr-settings-internet-page route="internet">
           </cr-settings-internet-page>
-          -->
-          <!--
           <cr-settings-internet-detail-page route="internet-detail"
-              subpage="true" guid="{{params.guid}}">
+              subpage="true" guid="[[params.guid]]"
+              selected-page="[[selectedPage]]">
           </cr-settings-internet-detail-page>
-          -->
 </if>
           <cr-settings-a11y-page prefs="{{prefs}}" route="a11y">
           </cr-settings-a11y-page>

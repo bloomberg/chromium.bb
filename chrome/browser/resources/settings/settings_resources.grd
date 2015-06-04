@@ -191,8 +191,8 @@
                  file="settings.js"
                  type="chrome_html" />
       <if expr="chromeos">
-        <structure name="IDR_SETTINGS_INTERNET_DETAIL_PAGE_STYLE_HTML"
-                   file="internet_page/internet_detail_page_style.html"
+        <structure name="IDR_SETTINGS_INTERNET_DETAIL_PAGE_CSS"
+                   file="internet_page/internet_detail_page.css"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_INTERNET_DETAIL_PAGE_HTML"
                    file="internet_page/internet_detail_page.html"
@@ -206,8 +206,8 @@
         <structure name="IDR_SETTINGS_INTERNET_PAGE_JS"
                    file="internet_page/internet_page.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_STYLE_HTML"
-                   file="internet_page/network_summary_style.html"
+        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_CSS"
+                   file="internet_page/network_summary.css"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_SUMMARY_HTML"
                    file="internet_page/network_summary.html"
@@ -215,8 +215,8 @@
         <structure name="IDR_SETTINGS_NETWORK_SUMMARY_JS"
                    file="internet_page/network_summary.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_ITEM_STYLE_HTML"
-                   file="internet_page/network_summary_item_style.html"
+        <structure name="IDR_SETTINGS_NETWORK_SUMMARY_ITEM_CSS"
+                   file="internet_page/network_summary_item.css"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_NETWORK_SUMMARY_ITEM_HTML"
                    file="internet_page/network_summary_item.html"

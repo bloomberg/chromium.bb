@@ -15,69 +15,90 @@
 /** @typedef {chrome.networkingPrivate.NetworkStateProperties} */
 var NetworkStateProperties;
 
-Polymer('cr-settings-internet-detail-page', {
-  publish: {
+Polymer({
+  is: 'cr-settings-internet-detail-page',
+
+  properties: {
     /**
      * ID of the page.
      *
      * @attribute PAGE_ID
      * @const {string}
      */
-    PAGE_ID: 'internet-detail',
+    PAGE_ID: {
+      type: String,
+      value: 'internet-detail',
+      readOnly: true
+    },
 
     /**
      * Route for the page.
-     *
-     * @attribute route
-     * @type {string}
-     * @default ''
      */
-    route: '',
+    route: {
+      type: String,
+      value: ''
+    },
 
     /**
      * Whether the page is a subpage.
-     *
-     * @attribute subpage
-     * @type {boolean}
-     * @default false
      */
-    subpage: false,
+    subpage: {
+      type: Boolean,
+      value: false
+    },
 
     /**
      * Title for the page header and navigation menu.
-     *
-     * @attribute pageTitle
-     * @type {string}
      */
-    pageTitle: loadTimeData.getString('internetDetailPageTitle'),
+    pageTitle: {
+      type: String,
+      value: function() {
+        return loadTimeData.getString('internetDetailPageTitle');
+      }
+    },
+
+    /**
+     * Reflects the selected settings page. We use this to extract guid from
+     * window.location.href when this page is navigated to. This is a
+     * workaround for a bug in the 1.0 version of more-routing where
+     * selected-params="{{params}}" is not correctly setting params in
+     * settings_main.html. TODO(stevenjb): Remove once more-routing is fixed.
+     */
+    selectedPage: {
+      type: String,
+      value: '',
+      observer: 'selectedPageChanged_'
+    },
 
     /**
      * Name of the 'core-icon' to show. TODO(stevenjb): Update this with the
-     * icon for the network.
-     *
-     * @attribute icon
-     * @type {string}
-     * @default 'settings-ethernet'
+     * icon for the active internet connection.
      */
-    icon: 'settings-ethernet',
+    icon: {
+      type: String,
+      value: 'settings-ethernet',
+      readOnly: true
+    },
 
     /**
      * The network GUID to display details for.
-     *
-     * @attribute guid
-     * @type {string}
-     * @default ''
      */
-    guid: '',
+    guid: {
+      type: String,
+      value: '',
+      observer: 'guidChanged_',
+    },
 
     /**
      * The current state for the network matching |guid|.
      *
-     * @attribute networkState
-     * @type {?CrOncDataElement}
-     * @default null
+     * @type {?NetworkStateProperties}
      */
-    networkState: null,
+    networkState: {
+      type: Object,
+      value: null,
+      observer: 'networkStateChanged_'
+    },
   },
 
   /**
@@ -103,8 +124,34 @@ Polymer('cr-settings-internet-detail-page', {
   /**
    * Polymer guid changed method.
    */
-  guidChanged: function() {
+  guidChanged_: function() {
+    if (!this.guid)
+      return;
     this.getNetworkDetails_();
+  },
+
+  /**
+   * Polymer guid changed method. TODO(stevenjb): Remove, see TODO above.
+   */
+  selectedPageChanged_: function() {
+    if ((this.selectedPage && this.selectedPage.PAGE_ID) != this.PAGE_ID)
+      return;
+    var href = window.location.href;
+    var idx = href.lastIndexOf('/');
+    var guid = href.slice(idx + 1);
+    this.guid = guid;
+  },
+
+  /**
+   * Polymer networkState changed method.
+   */
+  networkStateChanged_: function() {
+    if (!this.networkState)
+      return;
+    // Set networkIcon.networkState explicitly since networkState is an element.
+    // TODO(stevenjb): Remove this function when CrOncDataElement is removed.
+    this.$.networkIcon.networkState =
+        CrOncDataElement.create(this.networkState);
   },
 
   /**
@@ -134,30 +181,39 @@ Polymer('cr-settings-internet-detail-page', {
    * @private
    */
   getPropertiesCallback_: function(state) {
-    this.networkState = CrOncDataElement.create(state);
+    this.networkState = state;
   },
 
   /**
-   * @param {?CrOncDataElement} state The network state properties.
+   * @param {?NetworkStateProperties} state The network state properties.
    * @return {string} The text to display for the network name.
    * @private
    */
   getStateName_: function(state) {
-    return state && state.data.Name;
+    return state && state.Name;
   },
 
   /**
-   * @param {?CrOncDataElement} state The network state properties.
+   * @param {?NetworkStateProperties} state The network state properties.
+   * @return {string} The text to display for the network name.
+   * @private
+   */
+  getStateClass_: function(state) {
+    return this.isConnectedState_(state) ? 'connected' : '';
+  },
+
+  /**
+   * @param {?NetworkStateProperties} state The network state properties.
    * @return {string} The text to display for the network connection state.
    * @private
    */
   getStateText_: function(state) {
     // TODO(stevenjb): Localize.
-    return state && state.data.ConnectionState;
+    return state && state.ConnectionState;
   },
 
   /**
-   * @param {?CrOncDataElement} state The network state properties.
+   * @param {?NetworkStateProperties} state The network state properties.
    * @param {string} property The property name.
    * @return {string} The text to display for the property, including the label.
    * @private
@@ -165,36 +221,48 @@ Polymer('cr-settings-internet-detail-page', {
   getProperty_: function(state, property) {
     if (!state)
       return '';
+    var value = this.get(property, state) || '';
     // TODO(stevenjb): Localize.
-    var value = state.getProperty(property) || '';
     return property + ': ' + value;
   },
 
   /**
-   * @param {?CrOncDataElement} state The network state properties.
-   * @return {boolean} Whether or not the state is connected.
+   * @param {?NetworkStateProperties} state The network state properties.
+   * @return {boolean} True if the state is connected.
    * @private
    */
   isConnectedState_: function(state) {
-    return state && state.connected();
+    return state && state.ConnectionState == CrOnc.ConnectionState.CONNECTED;
   },
 
   /**
-   * @param {?CrOncDataElement} state The network state properties.
+   * @param {?NetworkStateProperties} state The network state properties.
    * @return {boolean} Whether or not the network can be connected.
    * @private
    */
   canConnect_: function(state) {
-    return state && state.data.Type != 'Ethernet' && state.disconnected();
+    return state && state.Type != 'Ethernet' &&
+           state.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
   },
 
   /**
-   * @param {?CrOncDataElement} state The network state properties.
+   * @param {?NetworkStateProperties} state The network state properties.
    * @return {boolean} Whether or not the network can be disconnected.
    * @private
    */
   canDisconnect_: function(state) {
-    return state && state.data.Type != 'Ethernet' && !state.disconnected();
+    return state && state.Type != 'Ethernet' &&
+           state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED;
+  },
+
+  /**
+   * @param {?NetworkStateProperties} state The network state properties.
+   * @param {string} type The network type to match.
+   * @return {boolean} Whether or not the type of 'state' matches 'type'.
+   * @private
+   */
+  isType_: function(state, type) {
+    return state && state.Type == type;
   },
 
   /**
