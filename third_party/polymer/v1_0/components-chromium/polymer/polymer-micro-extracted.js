@@ -5,7 +5,11 @@ document.body.removeAttribute("unresolved");
 if (window.WebComponents) {
 addEventListener("WebComponentsReady", resolve);
 } else {
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
 resolve();
+} else {
+addEventListener('DOMContentLoaded', resolve);
+}
 }
 })();
 
