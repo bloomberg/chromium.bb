@@ -19,6 +19,9 @@ base::FilePath GetChromeExePath();
 // Returns path to user profile to be used for launching Chrome.
 base::FilePath GetChromeProfilePath();
 
+// Returns the print command to launch, if set, instead of Chrome.
+base::string16 GetPrintCommandTemplate();
+
 // Implementations for the function pointers in the MONITOR2 structure
 // returned by InitializePrintMonitor2.  The prototypes and behaviors
 // are as described in the MONITOR2 documentation from Microsoft.
@@ -83,6 +86,7 @@ BOOL WINAPI MonitorUiConfigureOrDeletePortUI(const wchar_t*,
 extern const wchar_t kChromeExePath[];
 extern const wchar_t kChromeExePathRegValue[];
 extern const wchar_t kChromeProfilePathRegValue[];
+extern const wchar_t kPrintCommandRegValue[];
 extern const bool kIsUnittest;
 
 }   // namespace cloud_print

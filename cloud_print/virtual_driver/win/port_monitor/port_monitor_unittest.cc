@@ -19,12 +19,14 @@ namespace cloud_print {
 const wchar_t kChromeExePath[] = L"google\\chrome\\application\\chrometest.exe";
 const wchar_t kChromeExePathRegValue[] = L"PathToChromeTestExe";
 const wchar_t kChromeProfilePathRegValue[] = L"PathToChromeTestProfile";
+const wchar_t kPrintCommandRegValue[] = L"TestPrintCommand";
 const bool kIsUnittest = true;
 
 namespace {
 
 const wchar_t kAlternateChromeExePath[] =
     L"google\\chrome\\application\\chrometestalternate.exe";
+const wchar_t kTestPrintCommand[] = L"testprintcommand.exe";
 
 const wchar_t kCloudPrintRegKey[] = L"Software\\Google\\CloudPrint";
 
@@ -53,6 +55,10 @@ class PortMonitorTest : public testing::Test  {
     ASSERT_EQ(ERROR_SUCCESS,
               key.WriteValue(cloud_print::kChromeProfilePathRegValue,
                              temp.value().c_str()));
+
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.WriteValue(cloud_print::kPrintCommandRegValue,
+                             kTestPrintCommand));
   }
   // Deletes the registry entry created in SetUpChromeExeRegistry
   virtual void DeleteChromeExeRegistry() {
@@ -61,6 +67,7 @@ class PortMonitorTest : public testing::Test  {
                           KEY_ALL_ACCESS);
     key.DeleteValue(cloud_print::kChromeExePathRegValue);
     key.DeleteValue(cloud_print::kChromeProfilePathRegValue);
+    key.DeleteValue(cloud_print::kPrintCommandRegValue);
   }
 
   virtual void CreateTempChromeExeFiles() {
@@ -103,6 +110,15 @@ TEST_F(PortMonitorTest, GetChromeExePathTest) {
   // No Chrome or regular chrome path.
   EXPECT_TRUE(chrome_path.empty() ||
               chrome_path.value().rfind(kChromeExePath) == std::string::npos);
+}
+
+TEST_F(PortMonitorTest, GetPrintCommandTemplateTest) {
+  base::string16 print_command = cloud_print::GetPrintCommandTemplate();
+  EXPECT_FALSE(print_command .empty());
+  EXPECT_EQ(print_command, kTestPrintCommand);
+  DeleteChromeExeRegistry();
+  print_command = cloud_print::GetPrintCommandTemplate();
+  EXPECT_TRUE(print_command.empty());
 }
 
 TEST_F(PortMonitorTest, GetChromeProfilePathTest) {

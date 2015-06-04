@@ -21,6 +21,7 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
@@ -45,6 +46,12 @@ const wchar_t kCloudPrintRegKey[] = L"Software\\Google\\CloudPrint";
 const wchar_t kXpsMimeType[] = L"application/vnd.ms-xpsdocument";
 
 const wchar_t kAppDataDir[] = L"Google\\Cloud Printer";
+
+const wchar_t kDocumentPathPlaceHolder[] = L"%%Document_Path%%";
+
+const wchar_t kDocumentTypePlaceHolder[] = L"%%Document_Type%%";
+
+const wchar_t kJobTitlePlaceHolder[] = L"%%Job_Title%%";
 
 struct MonitorData {
   scoped_ptr<base::AtExitManager> at_exit_manager;
@@ -200,37 +207,80 @@ bool GetUserToken(HANDLE* primary_token) {
   return true;
 }
 
-// Launches the Cloud Print dialog in Chrome.
-// xps_path references a file to print.
-// job_title is the title to be used for the resulting print job.
-bool LaunchPrintDialog(const base::FilePath& xps_path,
-                       const base::string16& job_title) {
+bool LaunchCommandAsUser(const base::CommandLine& command) {
   HANDLE token = NULL;
   if (!GetUserToken(&token)) {
     LOG(ERROR) << "Unable to get user token.";
     return false;
   }
   base::win::ScopedHandle primary_token_scoped(token);
-
-  base::FilePath chrome_path = GetChromeExePath();
-  if (chrome_path.empty()) {
-    LOG(ERROR) << "Unable to get chrome exe path.";
-    return false;
-  }
-
-  base::CommandLine command_line(chrome_path);
-
-  base::FilePath chrome_profile = GetChromeProfilePath();
-  if (!chrome_profile.empty())
-    command_line.AppendSwitchPath(switches::kUserDataDir, chrome_profile);
-
-  command_line.AppendSwitchPath(switches::kCloudPrintFile, xps_path);
-  command_line.AppendSwitchNative(switches::kCloudPrintFileType, kXpsMimeType);
-  command_line.AppendSwitchNative(switches::kCloudPrintJobTitle, job_title);
   base::LaunchOptions options;
   options.as_user = primary_token_scoped.Get();
-  base::LaunchProcess(command_line, options);
+  base::LaunchProcess(command, options);
   return true;
+}
+
+// Escape the command line argument as necessary per Microsoft rules.
+// See QuoteForCommandLineToArgvW in base/command_line.cc
+base::string16 EscapeCommandLineArg(const base::string16& arg) {
+  base::string16 quotable_chars(L" \\\"");
+  if (arg.find_first_of(quotable_chars) == base::string16::npos) {
+    // No quoting necessary.
+    return arg;
+  }
+
+  base::string16 out;
+  out.push_back(L'"');
+  for (size_t i = 0; i < arg.size(); ++i) {
+    if (arg[i] == '\\') {
+      // Find the extent of this run of backslashes.
+      size_t start = i, end = start + 1;
+      for (; end < arg.size() && arg[end] == '\\'; ++end) {}
+      size_t backslash_count = end - start;
+
+      // Backslashes are escapes only if the run is followed by a double quote.
+      // Since we also will end the string with a double quote, we escape for
+      // either a double quote or the end of the string.
+      if (end == arg.size() || arg[end] == '"') {
+        // To quote, we need to output 2x as many backslashes.
+        backslash_count *= 2;
+      }
+      for (size_t j = 0; j < backslash_count; ++j)
+        out.push_back('\\');
+
+      // Advance i to one before the end to balance i++ in loop.
+      i = end - 1;
+    } else if (arg[i] == '"') {
+      out.push_back('\\');
+      out.push_back('"');
+    } else {
+      out.push_back(arg[i]);
+    }
+  }
+  out.push_back('"');
+
+  return out;
+}
+
+// Launch the print command as specified in the cloud print registry.
+bool LaunchPrintCommandFromTemplate(const base::string16& command_template,
+                                    const base::FilePath& xps_path,
+                                    const base::string16& job_title) {
+  base::string16 command_string(command_template);
+  // Substitude the place holder with the document path wrapped in quotes.
+  ReplaceFirstSubstringAfterOffset(
+      &command_string, 0, kDocumentPathPlaceHolder,
+      EscapeCommandLineArg(xps_path.value()));
+  // Substitude the place holder with the document type wrapped in quotes.
+  ReplaceFirstSubstringAfterOffset(&command_string, 0, kDocumentTypePlaceHolder,
+                                   kXpsMimeType);
+  // Substitude the place holder with the job title wrapped in quotes.
+  ReplaceFirstSubstringAfterOffset(&command_string, 0, kJobTitlePlaceHolder,
+                                   EscapeCommandLineArg(job_title));
+
+  base::CommandLine command = base::CommandLine::FromString(command_string);
+
+  return LaunchCommandAsUser(command);
 }
 
 // Launches a page to allow the user to download chrome.
@@ -287,35 +337,74 @@ bool ValidateCurrentUser() {
 }
 }  // namespace
 
-base::FilePath ReadPathFromRegistry(HKEY root, const wchar_t* path_name) {
-  base::win::RegKey gcp_key(HKEY_CURRENT_USER, kCloudPrintRegKey, KEY_READ);
+base::string16 ReadStringFromRegistry(HKEY root, const wchar_t* path_name) {
+  base::win::RegKey gcp_key(root, kCloudPrintRegKey, KEY_READ);
   base::string16 data;
-  if (SUCCEEDED(gcp_key.ReadValue(path_name, &data)) &&
-      base::PathExists(base::FilePath(data))) {
-    return base::FilePath(data);
-  }
-  return base::FilePath();
+  gcp_key.ReadValue(path_name, &data);
+  return data;
 }
 
-base::FilePath ReadPathFromAnyRegistry(const wchar_t* path_name) {
-  base::FilePath result = ReadPathFromRegistry(HKEY_CURRENT_USER, path_name);
+base::string16 ReadStringFromAnyRegistry(const wchar_t* path_name) {
+  base::string16 result = ReadStringFromRegistry(HKEY_CURRENT_USER, path_name);
   if (!result.empty())
     return result;
-  return ReadPathFromRegistry(HKEY_LOCAL_MACHINE, path_name);
+  return ReadStringFromRegistry(HKEY_LOCAL_MACHINE, path_name);
 }
 
 base::FilePath GetChromeExePath() {
-  base::FilePath path = ReadPathFromAnyRegistry(kChromeExePathRegValue);
-  if (!path.empty())
-    return path;
+  base::string16 value = ReadStringFromAnyRegistry(kChromeExePathRegValue);
+  if (!value.empty() && base::PathExists(base::FilePath(value)))
+    return base::FilePath(value);
   return chrome_launcher_support::GetAnyChromePath(false /* is_sxs */);
 }
 
 base::FilePath GetChromeProfilePath() {
-  base::FilePath path = ReadPathFromAnyRegistry(kChromeProfilePathRegValue);
-  if (!path.empty() && base::DirectoryExists(path))
-    return path;
+  base::string16 value = ReadStringFromAnyRegistry(kChromeProfilePathRegValue);
+  if (!value.empty() && base::DirectoryExists(base::FilePath(value)))
+    return base::FilePath(value);
   return base::FilePath();
+}
+
+// Launches the Cloud Print dialog in Chrome.
+bool LaunchChromePrintDialog(const base::FilePath& xps_path,
+                             const base::string16& job_title) {
+  base::FilePath chrome_path = GetChromeExePath();
+  if (chrome_path.empty()) {
+    LOG(ERROR) << "Unable to get chrome exe path.";
+    LaunchChromeDownloadPage();
+    return false;
+  }
+
+  base::CommandLine command_line(chrome_path);
+
+  base::FilePath chrome_profile = GetChromeProfilePath();
+  if (!chrome_profile.empty())
+    command_line.AppendSwitchPath(switches::kUserDataDir, chrome_profile);
+
+  command_line.AppendSwitchPath(switches::kCloudPrintFile, xps_path);
+  command_line.AppendSwitchNative(switches::kCloudPrintFileType, kXpsMimeType);
+  command_line.AppendSwitchNative(switches::kCloudPrintJobTitle, job_title);
+
+  return LaunchCommandAsUser(command_line);
+}
+
+base::string16 GetPrintCommandTemplate() {
+  return ReadStringFromAnyRegistry(kPrintCommandRegValue);
+}
+
+// Launches the print command. This will either launch Chrome to display the
+// Cloud Print dialog or another exe as specified in the cloud print registry.
+// xps_path references a file to print.
+// job_title is the title to be used for the resulting print job.
+bool LaunchPrintCommand(const base::FilePath& xps_path,
+                        const base::string16& job_title) {
+  base::string16 command_template = GetPrintCommandTemplate();
+  if (!command_template.empty()) {
+    return LaunchPrintCommandFromTemplate(
+        command_template, xps_path, job_title);
+  } else {
+    return LaunchChromePrintDialog(xps_path, job_title);
+  }
 }
 
 BOOL WINAPI Monitor2EnumPorts(HANDLE,
@@ -493,9 +582,7 @@ BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
                     port_data->job_id,
                     &job_title);
       }
-      if (!LaunchPrintDialog(port_data->file_path, job_title)) {
-        LaunchChromeDownloadPage();
-      } else {
+      if (LaunchPrintCommand(port_data->file_path, job_title)) {
         delete_file = false;
       }
     }
