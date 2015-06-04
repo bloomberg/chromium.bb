@@ -914,9 +914,10 @@ class CRWWKWebControllerPageScrollStateTest : public web::WKWebViewWebTest {
   }
 };
 
+// TODO(iOS): Flaky on the bots. crbug/493427
 WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
            CRWWKWebControllerPageScrollStateTest,
-           SetPageStateWithUserScalableDisabled) {
+           FLAKY_SetPageStateWithUserScalableDisabled) {
 #if !TARGET_IPHONE_SIMULATOR
   // This test fails flakily on device with WKWebView, so skip it there.
   // crbug.com/453530
@@ -953,7 +954,7 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
   ASSERT_EQ(originMaximumZoomScale, scrollView.maximumZoomScale);
 };
 
-// TODO(iOS): Flaky on the bots. crbug/496140
+// TODO(iOS): Flaky on the bots. crbug/493427
 WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
            CRWWKWebControllerPageScrollStateTest,
            FLAKY_SetPageStateWithUserScalableEnabled) {
@@ -981,9 +982,10 @@ WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
   EXPECT_FLOAT_EQ(3, scrollView.zoomScale / scrollView.minimumZoomScale);
 };
 
+// TODO(iOS): Flaky on the bots. crbug/493427
 WEB_TEST_F(CRWUIWebControllerPageScrollStateTest,
            CRWWKWebControllerPageScrollStateTest,
-           AtTop) {
+           FLAKY_AtTop) {
   // This test fails on iPhone 6/6+ with WKWebView; skip until it's fixed.
   // crbug.com/453105
   if ([this->webController_ webViewType] == web::WK_WEB_VIEW_TYPE &&
