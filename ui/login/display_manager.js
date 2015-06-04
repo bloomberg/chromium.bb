@@ -544,7 +544,8 @@ cr.define('cr.ui.login', function() {
       // Due to other origin iframe and long ChromeVox focusing correspondingly
       // passive aria-label title is not pronounced.
       // Gaia hack can be removed on fixed crbug.com/316726.
-      if (nextStepId == SCREEN_GAIA_SIGNIN) {
+      if (nextStepId == SCREEN_GAIA_SIGNIN ||
+          nextStepId == SCREEN_OOBE_ENROLLMENT) {
         newStep.setAttribute(
             'aria-label',
             loadTimeData.getString('signinScreenTitle'));
