@@ -18,15 +18,14 @@
 
 namespace blink {
 
-BluetoothGATTRemoteServer::BluetoothGATTRemoteServer(const WebBluetoothGATTRemoteServer& webGATT)
+BluetoothGATTRemoteServer::BluetoothGATTRemoteServer(PassOwnPtr<WebBluetoothGATTRemoteServer> webGATT)
     : m_webGATT(webGATT)
 {
 }
 
 BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::take(ScriptPromiseResolver*, WebBluetoothGATTRemoteServer* webGATTRawPointer)
 {
-    OwnPtr<WebBluetoothGATTRemoteServer> webGATT = adoptPtr(webGATTRawPointer);
-    return new BluetoothGATTRemoteServer(*webGATT);
+    return new BluetoothGATTRemoteServer(adoptPtr(webGATTRawPointer));
 }
 
 void BluetoothGATTRemoteServer::dispose(WebBluetoothGATTRemoteServer* webGATTRaw)
@@ -42,7 +41,7 @@ ScriptPromise BluetoothGATTRemoteServer::getPrimaryService(ScriptState* scriptSt
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    webbluetooth->getPrimaryService(m_webGATT.deviceInstanceID, serviceUUID, new CallbackPromiseAdapter<BluetoothGATTService, BluetoothError>(resolver));
+    webbluetooth->getPrimaryService(m_webGATT->deviceInstanceID, serviceUUID, new CallbackPromiseAdapter<BluetoothGATTService, BluetoothError>(resolver));
 
     return promise;
 }

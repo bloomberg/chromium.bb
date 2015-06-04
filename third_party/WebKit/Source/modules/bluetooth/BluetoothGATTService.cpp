@@ -10,7 +10,7 @@
 
 namespace blink {
 
-BluetoothGATTService::BluetoothGATTService(const WebBluetoothGATTService& webService)
+BluetoothGATTService::BluetoothGATTService(PassOwnPtr<WebBluetoothGATTService> webService)
     : m_webService(webService)
 {
 }
@@ -20,8 +20,7 @@ BluetoothGATTService* BluetoothGATTService::take(ScriptPromiseResolver*, WebBlue
     if (!webServiceRawPointer) {
         return nullptr;
     }
-    OwnPtr<WebBluetoothGATTService> webService = adoptPtr(webServiceRawPointer);
-    return new BluetoothGATTService(*webService);
+    return new BluetoothGATTService(adoptPtr(webServiceRawPointer));
 }
 
 void BluetoothGATTService::dispose(WebBluetoothGATTService* webService)

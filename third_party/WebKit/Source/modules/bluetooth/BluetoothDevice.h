@@ -27,9 +27,7 @@ class BluetoothDevice final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    BluetoothDevice(const WebBluetoothDevice&);
-
-    static BluetoothDevice* create(const WebBluetoothDevice&);
+    BluetoothDevice(PassOwnPtr<WebBluetoothDevice>);
 
     ScriptPromise connectGATT(ScriptState*);
 
@@ -42,8 +40,8 @@ public:
     DEFINE_INLINE_TRACE() { }
 
     // IDL exposed interface:
-    String instanceID() { return m_webDevice.instanceID; }
-    String name() { return m_webDevice.name; }
+    String instanceID() { return m_webDevice->instanceID; }
+    String name() { return m_webDevice->name; }
     unsigned deviceClass(bool& isNull);
     String vendorIDSource();
     unsigned vendorID(bool& isNull);
@@ -53,7 +51,7 @@ public:
     Vector<String> uuids();
 
 private:
-    WebBluetoothDevice m_webDevice;
+    OwnPtr<WebBluetoothDevice> m_webDevice;
 };
 
 } // namespace blink

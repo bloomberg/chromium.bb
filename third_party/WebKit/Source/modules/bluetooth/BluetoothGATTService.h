@@ -27,7 +27,7 @@ class BluetoothGATTService final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    explicit BluetoothGATTService(const WebBluetoothGATTService&);
+    explicit BluetoothGATTService(PassOwnPtr<WebBluetoothGATTService>);
 
     // Interface required by CallbackPromiseAdapter:
     typedef WebBluetoothGATTService WebType;
@@ -38,11 +38,11 @@ public:
     DEFINE_INLINE_TRACE() { }
 
     // IDL exposed interface:
-    String uuid() { return m_webService.uuid; }
-    bool isPrimary() { return m_webService.isPrimary; }
+    String uuid() { return m_webService->uuid; }
+    bool isPrimary() { return m_webService->isPrimary; }
 
 private:
-    WebBluetoothGATTService m_webService;
+    OwnPtr<WebBluetoothGATTService> m_webService;
 };
 
 } // namespace blink

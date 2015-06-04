@@ -27,7 +27,7 @@ class BluetoothGATTRemoteServer final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    BluetoothGATTRemoteServer(const WebBluetoothGATTRemoteServer&);
+    BluetoothGATTRemoteServer(PassOwnPtr<WebBluetoothGATTRemoteServer>);
 
     // Interface required by CallbackPromiseAdapter:
     typedef WebBluetoothGATTRemoteServer WebType;
@@ -38,11 +38,11 @@ public:
     DEFINE_INLINE_TRACE() { }
 
     // IDL exposed interface:
-    bool connected() { return m_webGATT.connected; }
+    bool connected() { return m_webGATT->connected; }
     ScriptPromise getPrimaryService(ScriptState*, String serviceUUID);
 
 private:
-    WebBluetoothGATTRemoteServer m_webGATT;
+    OwnPtr<WebBluetoothGATTRemoteServer> m_webGATT;
 };
 
 } // namespace blink
