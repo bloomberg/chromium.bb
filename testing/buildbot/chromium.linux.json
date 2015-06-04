@@ -3,12 +3,6 @@
     "additional_compile_targets": [
       "chrome_shell_apk",
       "mandoline:all"
-    ],
-    "scripts": [
-      {
-        "name": "gn_check",
-        "script": "gn_check.py"
-      }
     ]
   },
   "Android GN (dbg)": {
@@ -437,11 +431,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   },
   "Linux GN Clobber": {

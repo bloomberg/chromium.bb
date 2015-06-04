@@ -50,11 +50,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   },
   "win8_chromium_gn_rel": {
@@ -108,11 +103,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   },
   "win_chromium_gn_x64_dbg": {
@@ -166,11 +156,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   },
   "win_chromium_gn_x64_rel": {
@@ -224,11 +209,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   }
 }

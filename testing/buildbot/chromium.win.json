@@ -533,11 +533,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   },
   "Win x64 GN (dbg)": {
@@ -591,11 +586,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   },
   "Win7 Tests (1)": {
@@ -1168,11 +1158,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   },
   "Win8 GN (dbg)": {
@@ -1226,11 +1211,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   },
   "XP Tests (1)": {

@@ -3,20 +3,12 @@
     "additional_compile_targets": [
       "chrome_shell_apk",
       "mandoline:all"
-    ],
-    "gtest_tests": []
+    ]
   },
   "android_chromium_gn_compile_rel": {
     "additional_compile_targets": [
       "chrome_shell_apk",
       "mandoline:all"
-    ],
-    "gtest_tests": [],
-    "scripts": [
-      {
-        "name": "gn_check",
-        "script": "gn_check.py"
-      }
     ]
   },
   "linux_chromium_gn_chromeos_dbg": {
@@ -61,11 +53,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   },
   "linux_chromium_gn_chromeos_rel": {
@@ -113,11 +100,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   },
   "linux_chromium_gn_dbg": {
@@ -168,11 +150,6 @@
       "url_unittests",
       "views_unittests",
       "wm_unittests"
-    ],
-    "gtest_tests": [
-      {
-        "test": "base_unittests"
-      }
     ]
   },
   "linux_chromium_gn_rel": {
