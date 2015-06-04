@@ -38,10 +38,6 @@ PaintContext::PaintContext(cc::DisplayItemList* list,
 #endif
 }
 
-PaintContext::PaintContext(gfx::Canvas* canvas)
-    : PaintContext(canvas, gfx::Rect()) {
-}
-
 PaintContext::PaintContext(const PaintContext& other,
                            const gfx::Vector2d& offset)
     : canvas_(other.canvas_),

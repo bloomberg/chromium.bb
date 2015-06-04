@@ -74,8 +74,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
 
   virtual void ResetWindowControls() = 0;
 
-  virtual void PaintLayeredWindow(gfx::Canvas* canvas) = 0;
-
   virtual InputMethod* GetInputMethod() = 0;
 
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;

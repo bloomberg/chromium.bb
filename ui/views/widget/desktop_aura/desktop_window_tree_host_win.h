@@ -147,7 +147,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void GetMinMaxSize(gfx::Size* min_size, gfx::Size* max_size) const override;
   gfx::Size GetRootViewSize() const override;
   void ResetWindowControls() override;
-  void PaintLayeredWindow(gfx::Canvas* canvas) override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   bool ShouldHandleSystemCommands() const override;
   InputMethod* GetInputMethod() override;

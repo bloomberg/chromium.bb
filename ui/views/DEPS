@@ -25,4 +25,7 @@ specific_include_rules = {
   "examples_browser_main_parts\.cc": [
     "+ui/wm/test"
   ],
+  "view_unittest\.cc": [
+    "+cc/playback"
+  ],
 }

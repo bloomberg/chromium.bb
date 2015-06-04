@@ -38,10 +38,6 @@ class COMPOSITOR_EXPORT PaintContext {
                const gfx::Rect& bounds,
                const gfx::Rect& invalidation);
 
-  // Construct a PaintContext that will re-paint everything (no consideration
-  // for invalidation).
-  explicit PaintContext(gfx::Canvas* canvas);
-
   // Clone a PaintContext with an additional |offset|.
   PaintContext(const PaintContext& other, const gfx::Vector2d& offset);
 
