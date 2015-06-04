@@ -95,7 +95,7 @@ class _W3CTestConverter(HTMLParser):
             self.renamed_properties.iterkeys(),
             self.renamed_values.iterkeys(),
             self.prefixed_values.iterkeys(),
-            (prop.replace('-webkit-', '') for prop in self.prefixed_properties))) + ')(\s+:|:[^;]*)'
+            (prop.replace('-webkit-', '') for prop in self.prefixed_properties))) + ')(\s*:\s*[-\w]*)'
         self.prop_re = re.compile(prop_regex)
 
     def output(self):

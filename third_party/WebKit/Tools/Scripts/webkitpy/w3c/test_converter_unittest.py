@@ -239,6 +239,7 @@ CONTENT OF TEST
         """ Tests convert_prefixed_properties() file that has 20 properties requiring the -webkit- prefix:
         10 in one style block + 5 in another style
         block + 5 inline styles, including one with multiple prefixed properties.
+        2 when prefixed properties appear in comments without ending ';'.
         The properties in the test content are in all sorts of wack formatting.
         """
 
@@ -295,11 +296,16 @@ CONTENT OF TEST
     @test19@: propvalue;
 }
 
+#missing-semicolon-in-comments {
+    /* @test20@: propvalue */
+    @test21@: propvalue;
+}
+
 ]]></style>
 </html>
 """
         converter = _W3CTestConverter(DUMMY_PATH, DUMMY_FILENAME, None)
-        test_content = self.generate_test_content(converter.prefixed_properties, 20, test_html)
+        test_content = self.generate_test_content(converter.prefixed_properties, 22, test_html)
 
         oc = OutputCapture()
         oc.capture_output()
