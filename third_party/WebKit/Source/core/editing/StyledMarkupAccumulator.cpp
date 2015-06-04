@@ -160,7 +160,7 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
         // We'll handle the style attribute separately, below.
         if (attribute.name() == styleAttr && shouldOverrideStyleAttr)
             continue;
-        m_accumulator.appendAttribute(out, element, attribute, 0);
+        m_accumulator.appendAttribute(out, element, attribute, nullptr);
     }
 
     if (shouldOverrideStyleAttr) {
@@ -192,7 +192,7 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
 
         if (!newInlineStyle->isEmpty()) {
             out.appendLiteral(" style=\"");
-            m_accumulator.appendAttributeValue(out, newInlineStyle->style()->asText(), documentIsHTML);
+            MarkupFormatter::appendAttributeValue(out, newInlineStyle->style()->asText(), documentIsHTML);
             out.append('\"');
         }
     }
@@ -209,7 +209,7 @@ void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePr
     else
         out.appendLiteral("<span style=\"");
     ASSERT(m_document);
-    m_accumulator.appendAttributeValue(out, style->asText(), m_document->isHTMLDocument());
+    MarkupFormatter::appendAttributeValue(out, style->asText(), m_document->isHTMLDocument());
     out.appendLiteral("\">");
 }
 

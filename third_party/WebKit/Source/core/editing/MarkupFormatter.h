@@ -66,8 +66,14 @@ class MarkupFormatter final {
     WTF_MAKE_NONCOPYABLE(MarkupFormatter);
     STACK_ALLOCATED();
 public:
-    static void appendComment(StringBuilder&, const String&);
+    static void appendAttributeValue(StringBuilder&, const String&, bool);
+    static void appendCDATASection(StringBuilder&, const String&);
     static void appendCharactersReplacingEntities(StringBuilder&, const String&, unsigned, unsigned, EntityMask);
+    static void appendComment(StringBuilder&, const String&);
+    static void appendDocumentType(StringBuilder&, const DocumentType&);
+    static void appendNamespace(StringBuilder&, const AtomicString& prefix, const AtomicString& namespaceURI, Namespaces&);
+    static void appendProcessingInstruction(StringBuilder&, const String& target, const String& data);
+    static void appendXMLDeclaration(StringBuilder&, const Document&);
     static size_t totalLength(const Vector<String>&);
 
     MarkupFormatter(EAbsoluteURLs, SerializationType = SerializationType::AsOwnerDocument);
@@ -77,17 +83,10 @@ public:
 
     bool serializeAsHTMLDocument(const Node&) const;
 
-    void appendAttributeValue(StringBuilder&, const String&, bool);
-
-    void appendNamespace(StringBuilder&, const AtomicString& prefix, const AtomicString& namespaceURI, Namespaces&);
     void appendText(StringBuilder&, Text&);
-    void appendXMLDeclaration(StringBuilder&, const Document&);
-    void appendDocumentType(StringBuilder&, const DocumentType&);
-    void appendProcessingInstruction(StringBuilder&, const String& target, const String& data);
     void appendOpenTag(StringBuilder&, const Element&, Namespaces*);
     void appendCloseTag(StringBuilder&, const Element&);
     void appendAttribute(StringBuilder&, const Element&, const Attribute&, Namespaces*);
-    void appendCDATASection(StringBuilder&, const String&);
 
     bool shouldAddNamespaceElement(const Element&, Namespaces&) const;
     bool shouldAddNamespaceAttribute(const Attribute&, const Element&) const;

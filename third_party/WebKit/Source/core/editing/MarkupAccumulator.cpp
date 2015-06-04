@@ -81,21 +81,21 @@ void MarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node, Nam
         MarkupFormatter::appendComment(result, toComment(node).data());
         break;
     case Node::DOCUMENT_NODE:
-        appendXMLDeclaration(result, toDocument(node));
+        MarkupFormatter::appendXMLDeclaration(result, toDocument(node));
         break;
     case Node::DOCUMENT_FRAGMENT_NODE:
         break;
     case Node::DOCUMENT_TYPE_NODE:
-        appendDocumentType(result, toDocumentType(node));
+        MarkupFormatter::appendDocumentType(result, toDocumentType(node));
         break;
     case Node::PROCESSING_INSTRUCTION_NODE:
-        appendProcessingInstruction(result, toProcessingInstruction(node).target(), toProcessingInstruction(node).data());
+        MarkupFormatter::appendProcessingInstruction(result, toProcessingInstruction(node).target(), toProcessingInstruction(node).data());
         break;
     case Node::ELEMENT_NODE:
         appendElement(result, toElement(node), namespaces);
         break;
     case Node::CDATA_SECTION_NODE:
-        appendCDATASection(result, toCDATASection(node).data());
+        MarkupFormatter::appendCDATASection(result, toCDATASection(node).data());
         break;
     case Node::ATTRIBUTE_NODE:
         ASSERT_NOT_REACHED();
@@ -125,38 +125,13 @@ void MarkupAccumulator::concatenateMarkup(StringBuilder& result) const
     result.append(m_markup);
 }
 
-void MarkupAccumulator::appendAttributeValue(StringBuilder& result, const String& attribute, bool documentIsHTML)
-{
-    m_formatter.appendAttributeValue(result, attribute, documentIsHTML);
-}
-
 void MarkupAccumulator::appendCustomAttributes(StringBuilder&, const Element&, Namespaces*)
 {
-}
-
-void MarkupAccumulator::appendNamespace(StringBuilder& result, const AtomicString& prefix, const AtomicString& namespaceURI, Namespaces& namespaces)
-{
-    m_formatter.appendNamespace(result, prefix, namespaceURI, namespaces);
 }
 
 void MarkupAccumulator::appendText(StringBuilder& result, Text& text)
 {
     m_formatter.appendText(result, text);
-}
-
-void MarkupAccumulator::appendXMLDeclaration(StringBuilder& result, const Document& document)
-{
-    m_formatter.appendXMLDeclaration(result, document);
-}
-
-void MarkupAccumulator::appendDocumentType(StringBuilder& result, const DocumentType& n)
-{
-    m_formatter.appendDocumentType(result, n);
-}
-
-void MarkupAccumulator::appendProcessingInstruction(StringBuilder& result, const String& target, const String& data)
-{
-    m_formatter.appendProcessingInstruction(result, target, data);
 }
 
 bool MarkupAccumulator::shouldIgnoreAttribute(const Attribute& attribute)
@@ -195,29 +170,9 @@ void MarkupAccumulator::appendAttribute(StringBuilder& result, const Element& el
     m_formatter.appendAttribute(result, element, attribute, namespaces);
 }
 
-void MarkupAccumulator::appendCDATASection(StringBuilder& result, const String& section)
-{
-    m_formatter.appendCDATASection(result, section);
-}
-
-bool MarkupAccumulator::shouldAddNamespaceElement(const Element& element, Namespaces& namespaces) const
-{
-    return m_formatter.shouldAddNamespaceElement(element, namespaces);
-}
-
-bool MarkupAccumulator::shouldAddNamespaceAttribute(const Attribute& attribute, const Element& element) const
-{
-    return m_formatter.shouldAddNamespaceAttribute(attribute, element);
-}
-
 EntityMask MarkupAccumulator::entityMaskForText(const Text& text) const
 {
     return m_formatter.entityMaskForText(text);
-}
-
-bool MarkupAccumulator::shouldSelfClose(const Element& element) const
-{
-    return m_formatter.shouldSelfClose(element);
 }
 
 bool MarkupAccumulator::serializeAsHTMLDocument(const Node& node) const

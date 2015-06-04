@@ -59,25 +59,16 @@ public:
     bool serializeAsHTMLDocument(const Node&) const;
     String toString() { return m_markup.toString(); }
 
-    void appendAttributeValue(StringBuilder&, const String&, bool);
     virtual void appendCustomAttributes(StringBuilder&, const Element&, Namespaces*);
 
-    void appendNamespace(StringBuilder&, const AtomicString& prefix, const AtomicString& namespaceURI, Namespaces&);
     virtual void appendText(StringBuilder&, Text&);
-    void appendXMLDeclaration(StringBuilder&, const Document&);
-    void appendDocumentType(StringBuilder&, const DocumentType&);
-    void appendProcessingInstruction(StringBuilder&, const String& target, const String& data);
     virtual bool shouldIgnoreAttribute(const Attribute&);
     virtual void appendElement(StringBuilder&, Element&, Namespaces*);
     void appendOpenTag(StringBuilder&, const Element&, Namespaces*);
     void appendCloseTag(StringBuilder&, const Element&);
     void appendAttribute(StringBuilder&, const Element&, const Attribute&, Namespaces*);
-    void appendCDATASection(StringBuilder&, const String&);
 
-    bool shouldAddNamespaceElement(const Element&, Namespaces&) const;
-    bool shouldAddNamespaceAttribute(const Attribute&, const Element&) const;
     EntityMask entityMaskForText(const Text&) const;
-    bool shouldSelfClose(const Element&) const;
 
 private:
     MarkupFormatter m_formatter;
