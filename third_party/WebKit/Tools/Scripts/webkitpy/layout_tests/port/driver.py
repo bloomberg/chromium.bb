@@ -143,10 +143,9 @@ class Driver(object):
     def run_test(self, driver_input, stop_when_done):
         """Run a single test and return the results.
 
-        Note that it is okay if a test times out or crashes. content_shell
-        will be stopped when the test ends, and then restarted for the next
-        test when this function is invoked again. As part of the restart, the
-        state of Driver will be reset.
+        Note that it is okay if a test times out or crashes and leaves
+        the driver in an indeterminate state. The upper layers of the program
+        are responsible for cleaning up and ensuring things are okay.
 
         Returns a DriverOutput object.
         """
