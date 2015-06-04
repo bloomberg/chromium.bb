@@ -140,6 +140,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   base::Lock lock_;
   // |lock_| must be acquired when accessing the following members.
   base::ConditionVariable copy_operation_count_cv_;
+  int bytes_scheduled_since_last_flush_;
   size_t issued_copy_operation_count_;
   CopyOperation::Deque pending_copy_operations_;
   CopySequenceNumber next_copy_operation_sequence_;

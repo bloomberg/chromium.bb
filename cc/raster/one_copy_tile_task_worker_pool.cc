@@ -99,9 +99,6 @@ class RasterBufferImpl : public RasterBuffer {
   DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
 };
 
-// Flush interval when performing copy operations.
-const int kCopyFlushPeriod = 4;
-
 // Number of in-flight copy operations to allow.
 const int kMaxCopyOperations = 32;
 
@@ -160,6 +157,7 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
       last_flushed_copy_operation_(0),
       lock_(),
       copy_operation_count_cv_(&lock_),
+      bytes_scheduled_since_last_flush_(0),
       issued_copy_operation_count_(0),
       next_copy_operation_sequence_(1),
       check_for_completed_copy_operations_pending_(false),
@@ -401,13 +399,19 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
     // Acquire a sequence number for this copy operation.
     sequence = next_copy_operation_sequence_++;
 
+    // Increment |bytes_scheduled_since_last_flush_| by the amount of memory
+    // used for this copy operation.
+    bytes_scheduled_since_last_flush_ += rows_to_copy * bytes_per_row;
+
     // Post task that will advance last flushed copy operation to |sequence|
-    // if we have reached the flush period.
-    if ((sequence % kCopyFlushPeriod) == 0) {
+    // when |bytes_scheduled_since_last_flush_| has reached
+    // |max_bytes_per_copy_operation_|.
+    if (bytes_scheduled_since_last_flush_ >= max_bytes_per_copy_operation_) {
       task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&OneCopyTileTaskWorkerPool::AdvanceLastFlushedCopyTo,
                      weak_ptr_factory_.GetWeakPtr(), sequence));
+      bytes_scheduled_since_last_flush_ = 0;
     }
   }
 

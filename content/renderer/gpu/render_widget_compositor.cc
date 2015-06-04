@@ -178,6 +178,14 @@ gfx::Size CalculateDefaultTileSize(RenderWidget* widget) {
   return gfx::Size(default_tile_size, default_tile_size);
 }
 
+int GetMaxBytesPerCopyOperation() {
+  const int kMegabyte = 1024 * 1024;
+
+  // 4MiB is the size of 4 512x512 tiles, which has proven to be a good
+  // default batch size for copy operations.
+  return kMegabyte * 4;
+}
+
 // Check cc::TopControlsState, and blink::WebTopControlsState
 // are kept in sync.
 static_assert(int(blink::WebTopControlsBoth) == int(cc::BOTH),
@@ -455,6 +463,8 @@ void RenderWidgetCompositor::Initialize() {
     // See crbug.com/471411.
     settings.use_external_begin_frame_source = false;
   }
+
+  settings.max_bytes_per_copy_operation = GetMaxBytesPerCopyOperation();
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner =
       compositor_deps_->GetCompositorImplThreadTaskRunner();
