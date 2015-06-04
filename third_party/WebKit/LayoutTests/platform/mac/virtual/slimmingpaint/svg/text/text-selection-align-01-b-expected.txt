@@ -13,13 +13,13 @@ layer at (0,0) size 800x600
           LayoutSVGText {text} at (0,-27) size 226x34 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 226x34
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 16 width 225.15: "text-anchor:none"
-        LayoutSVGContainer {g} at (378,255) size 367x57 [transform={m=((1.00,0.00)(0.00,1.00)) t=(230.00,180.00)}]
+        LayoutSVGContainer {g} at (378,255) size 367x56 [transform={m=((1.00,0.00)(0.00,1.00)) t=(230.00,180.00)}]
           LayoutSVGPath {line} at (383,299) size 84x2 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=50.00] [y2=0.00]
           LayoutSVGEllipse {circle} at (378,295) size 11x10 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=3.00]
           LayoutSVGText {text} at (0,-27) size 217x34 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 217x34
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 17 width 216.75: "text-anchor:start"
-        LayoutSVGContainer {g} at (177,338) size 413x57 [transform={m=((1.00,0.00)(0.00,1.00)) t=(230.00,230.00)}]
+        LayoutSVGContainer {g} at (177,338) size 412x57 [transform={m=((1.00,0.00)(0.00,1.00)) t=(230.00,230.00)}]
           LayoutSVGPath {line} at (341,382) size 84x3 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#000000]}] [x1=-25.00] [y1=0.00] [x2=25.00] [y2=0.00]
           LayoutSVGEllipse {circle} at (378,378) size 11x11 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=3.00]
           LayoutSVGText {text} at (-124,-27) size 248x34 contains 1 chunk(s)
