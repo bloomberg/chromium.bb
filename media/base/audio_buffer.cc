@@ -4,6 +4,8 @@
 
 #include "media/base/audio_buffer.h"
 
+#include <cmath>
+
 #include "base/logging.h"
 #include "media/base/audio_bus.h"
 #include "media/base/buffers.h"
@@ -162,10 +164,50 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateEOSBuffer() {
                                             kNoTimestamp()));
 }
 
+template <typename Target, typename Dest>
+static inline Dest ConvertSample(Target value);
+
 // Convert int16 values in the range [INT16_MIN, INT16_MAX] to [-1.0, 1.0].
-static inline float ConvertS16ToFloat(int16 value) {
+template <>
+inline float ConvertSample<int16, float>(int16 value) {
   return value * (value < 0 ? -1.0f / std::numeric_limits<int16>::min()
                             : 1.0f / std::numeric_limits<int16>::max());
+}
+
+// Specializations for int32
+template <>
+inline int32 ConvertSample<int16, int32>(int16 value) {
+  return static_cast<int32>(value) << 16;
+}
+
+template <>
+inline int32 ConvertSample<int32, int32>(int32 value) {
+  return value;
+}
+
+template <>
+inline int32 ConvertSample<float, int32>(float value) {
+  return static_cast<int32>(value < 0
+                                ? (-value) * std::numeric_limits<int32>::min()
+                                : value * std::numeric_limits<int32>::max());
+}
+
+// Specializations for int16
+template <>
+inline int16 ConvertSample<int16, int16>(int16 sample) {
+  return sample;
+}
+
+template <>
+inline int16 ConvertSample<int32, int16>(int32 sample) {
+  return sample >> 16;
+}
+
+template <>
+inline int16 ConvertSample<float, int16>(float sample) {
+  return static_cast<int16>(
+      nearbyint(sample < 0 ? (-sample) * std::numeric_limits<int16>::min()
+                           : sample * std::numeric_limits<int16>::max()));
 }
 
 void AudioBuffer::ReadFrames(int frames_to_copy,
@@ -213,7 +255,7 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
           source_frame_offset;
       float* dest_data = dest->channel(ch) + dest_frame_offset;
       for (int i = 0; i < frames_to_copy; ++i) {
-        dest_data[i] = ConvertS16ToFloat(source_data[i]);
+        dest_data[i] = ConvertSample<int16, float>(source_data[i]);
       }
     }
     return;
@@ -245,103 +287,74 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
       source_data, dest_frame_offset, frames_to_copy, bytes_per_channel);
 }
 
-static inline int32 ConvertS16ToS32(int16 value) {
-  return static_cast<int32>(value) << 16;
-}
-
-static inline int32 ConvertF32ToS32(float value) {
-  return static_cast<int32>(value < 0
-                                ? (-value) * std::numeric_limits<int32>::min()
-                                : value * std::numeric_limits<int32>::max());
-}
-
-// No need for conversion. Return value as is. Keeping function to align with
-// code structure.
-static inline int32 ConvertS32ToS32(int32 value) {
-  return value;
-}
-
-template <class Target, typename Converter>
-void InterleaveToS32(const std::vector<uint8*>& channel_data,
-                     size_t frames_to_copy,
-                     int trim_start,
-                     int32* dest_data,
-                     Converter convert_func) {
+template <class Target, typename Dest>
+void InterleaveAndConvert(const std::vector<uint8*>& channel_data,
+                          size_t frames_to_copy,
+                          int trim_start,
+                          Dest* dest_data) {
   for (size_t ch = 0; ch < channel_data.size(); ++ch) {
     const Target* source_data =
         reinterpret_cast<const Target*>(channel_data[ch]) + trim_start;
     for (size_t i = 0, offset = ch; i < frames_to_copy;
          ++i, offset += channel_data.size()) {
-      dest_data[offset] = convert_func(source_data[i]);
+      dest_data[offset] = ConvertSample<Target, Dest>(source_data[i]);
     }
+  }
+}
+
+template <typename Dest>
+void ReadFramesInterleaved(const std::vector<uint8*>& channel_data,
+                           int channel_count,
+                           SampleFormat sample_format,
+                           int frames_to_copy,
+                           int trim_start,
+                           Dest* dest_data) {
+  switch (sample_format) {
+    case kSampleFormatU8:
+      NOTREACHED();
+      break;
+    case kSampleFormatS16:
+      InterleaveAndConvert<int16, Dest>(
+          channel_data, frames_to_copy * channel_count, trim_start, dest_data);
+      break;
+    case kSampleFormatS32:
+      InterleaveAndConvert<int32, Dest>(
+          channel_data, frames_to_copy * channel_count, trim_start, dest_data);
+      break;
+    case kSampleFormatF32:
+      InterleaveAndConvert<float, Dest>(
+          channel_data, frames_to_copy * channel_count, trim_start, dest_data);
+      break;
+    case kSampleFormatPlanarS16:
+      InterleaveAndConvert<int16, Dest>(channel_data, frames_to_copy,
+                                        trim_start, dest_data);
+      break;
+    case kSampleFormatPlanarF32:
+      InterleaveAndConvert<float, Dest>(channel_data, frames_to_copy,
+                                        trim_start, dest_data);
+      break;
+    case kSampleFormatPlanarS32:
+      InterleaveAndConvert<int32, Dest>(channel_data, frames_to_copy,
+                                        trim_start, dest_data);
+      break;
+    case kUnknownSampleFormat:
+      NOTREACHED();
+      break;
   }
 }
 
 void AudioBuffer::ReadFramesInterleavedS32(int frames_to_copy,
                                            int32* dest_data) {
   DCHECK_LE(frames_to_copy, adjusted_frame_count_);
+  ReadFramesInterleaved<int32>(channel_data_, channel_count_, sample_format_,
+                               frames_to_copy, trim_start_, dest_data);
+}
 
-  switch (sample_format_) {
-    case kSampleFormatU8:
-      NOTIMPLEMENTED();
-      break;
-    case kSampleFormatS16:
-      // Format is interleaved signed16. Convert each value into int32 and
-      // insert into output channel data.
-      InterleaveToS32<int16>(channel_data_,
-                             frames_to_copy * channel_count_,
-                             trim_start_,
-                             dest_data,
-                             ConvertS16ToS32);
-      break;
-    case kSampleFormatS32: {
-      // Format is interleaved signed32; just copy the data.
-      const int32* source_data =
-          reinterpret_cast<const int32*>(channel_data_[0]) + trim_start_;
-      memcpy(dest_data,
-             source_data,
-             frames_to_copy * channel_count_ * sizeof(int32));
-    } break;
-    case kSampleFormatF32:
-      // Format is interleaved float. Convert each value into int32 and insert
-      // into output channel data.
-      InterleaveToS32<float>(channel_data_,
-                             frames_to_copy * channel_count_,
-                             trim_start_,
-                             dest_data,
-                             ConvertF32ToS32);
-      break;
-    case kSampleFormatPlanarS16:
-      // Format is planar signed 16 bit. Convert each value into int32 and
-      // insert into output channel data.
-      InterleaveToS32<int16>(channel_data_,
-                             frames_to_copy,
-                             trim_start_,
-                             dest_data,
-                             ConvertS16ToS32);
-      break;
-    case kSampleFormatPlanarF32:
-      // Format is planar float. Convert each value into int32 and insert into
-      // output channel data.
-      InterleaveToS32<float>(channel_data_,
-                             frames_to_copy,
-                             trim_start_,
-                             dest_data,
-                             ConvertF32ToS32);
-      break;
-    case kSampleFormatPlanarS32:
-      // Format is planar signed 32 bit. Convert each value into int32 and
-      // insert into output channel data.
-      InterleaveToS32<int32>(channel_data_,
-                             frames_to_copy,
-                             trim_start_,
-                             dest_data,
-                             ConvertS32ToS32);
-      break;
-    case kUnknownSampleFormat:
-      NOTREACHED();
-      break;
-  }
+void AudioBuffer::ReadFramesInterleavedS16(int frames_to_copy,
+                                           int16* dest_data) {
+  DCHECK_LE(frames_to_copy, adjusted_frame_count_);
+  ReadFramesInterleaved<int16>(channel_data_, channel_count_, sample_format_,
+                               frames_to_copy, trim_start_, dest_data);
 }
 
 void AudioBuffer::TrimStart(int frames_to_trim) {

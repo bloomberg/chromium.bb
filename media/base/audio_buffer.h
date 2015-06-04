@@ -78,6 +78,11 @@ class MEDIA_EXPORT AudioBuffer
   // interleaved int32.
   void ReadFramesInterleavedS32(int frames_to_copy, int32* dest);
 
+  // Copy |frames_to_copy| frames into |dest|, |frames_to_copy| is the number of
+  // frames to copy. The frames are converted from their source format into
+  // interleaved int16.
+  void ReadFramesInterleavedS16(int frames_to_copy, int16* dest);
+
   // Trim an AudioBuffer by removing |frames_to_trim| frames from the start.
   // Timestamp and duration are adjusted to reflect the fewer frames.
   // Note that repeated calls to TrimStart() may result in timestamp() and
