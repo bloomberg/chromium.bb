@@ -57,7 +57,7 @@ class ConnectivityChecker
  private:
   friend class base::RefCountedThreadSafe<ConnectivityChecker>;
 
-  const scoped_refptr<ObserverListThreadSafe<ConnectivityObserver>>
+  const scoped_refptr<base::ObserverListThreadSafe<ConnectivityObserver>>
       connectivity_observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectivityChecker);

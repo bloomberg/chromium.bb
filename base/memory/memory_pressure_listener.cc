@@ -8,31 +8,31 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/trace_event/trace_event.h"
 
+namespace base {
+
 namespace {
 
 // ObserverListThreadSafe is RefCountedThreadSafe, this traits is needed
 // to ensure the LazyInstance will hold a reference to it.
 struct LeakyLazyObserverListTraits :
     base::internal::LeakyLazyInstanceTraits<
-        ObserverListThreadSafe<base::MemoryPressureListener> > {
-  static ObserverListThreadSafe<base::MemoryPressureListener>*
+        ObserverListThreadSafe<MemoryPressureListener> > {
+  static ObserverListThreadSafe<MemoryPressureListener>*
       New(void* instance) {
-    ObserverListThreadSafe<base::MemoryPressureListener>* ret =
+    ObserverListThreadSafe<MemoryPressureListener>* ret =
         base::internal::LeakyLazyInstanceTraits<
-            ObserverListThreadSafe<base::MemoryPressureListener> >::New(
-                instance);
+            ObserverListThreadSafe<MemoryPressureListener>>::New(instance);
     // Leaky.
     ret->AddRef();
     return ret;
   }
 };
 
-base::LazyInstance<
-    ObserverListThreadSafe<base::MemoryPressureListener>,
+LazyInstance<
+    ObserverListThreadSafe<MemoryPressureListener>,
     LeakyLazyObserverListTraits> g_observers = LAZY_INSTANCE_INITIALIZER;
-}  // namespace
 
-namespace base {
+}  // namespace
 
 MemoryPressureListener::MemoryPressureListener(
     const MemoryPressureListener::MemoryPressureCallback& callback)

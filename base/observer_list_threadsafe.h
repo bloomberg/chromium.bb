@@ -270,7 +270,4 @@ class ObserverListThreadSafe
 
 }  // namespace base
 
-// TODO(brettw) remove this when callers use the correct namespace.
-using base::ObserverListThreadSafe;
-
 #endif  // BASE_OBSERVER_LIST_THREADSAFE_H_

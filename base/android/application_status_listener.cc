@@ -10,29 +10,30 @@
 #include "base/observer_list_threadsafe.h"
 #include "jni/ApplicationStatus_jni.h"
 
+namespace base {
+namespace android {
+
 namespace {
+
 struct LeakyLazyObserverListTraits :
     base::internal::LeakyLazyInstanceTraits<
-        ObserverListThreadSafe<base::android::ApplicationStatusListener> > {
-  static ObserverListThreadSafe<base::android::ApplicationStatusListener>*
+        ObserverListThreadSafe<ApplicationStatusListener> > {
+  static ObserverListThreadSafe<ApplicationStatusListener>*
       New(void* instance) {
-    ObserverListThreadSafe<base::android::ApplicationStatusListener>* ret =
+    ObserverListThreadSafe<ApplicationStatusListener>* ret =
         base::internal::LeakyLazyInstanceTraits<ObserverListThreadSafe<
-            base::android::ApplicationStatusListener> >::New(instance);
+            ApplicationStatusListener>>::New(instance);
     // Leaky.
     ret->AddRef();
     return ret;
   }
 };
 
-base::LazyInstance<ObserverListThreadSafe<
-    base::android::ApplicationStatusListener>,
-        LeakyLazyObserverListTraits> g_observers = LAZY_INSTANCE_INITIALIZER;
+LazyInstance<ObserverListThreadSafe<ApplicationStatusListener>,
+             LeakyLazyObserverListTraits> g_observers =
+    LAZY_INSTANCE_INITIALIZER;
 
-} // namespace
-
-namespace base {
-namespace android {
+}  // namespace
 
 ApplicationStatusListener::ApplicationStatusListener(
     const ApplicationStatusListener::ApplicationStateChangeCallback& callback)
@@ -41,7 +42,7 @@ ApplicationStatusListener::ApplicationStatusListener(
   g_observers.Get().AddObserver(this);
 
   Java_ApplicationStatus_registerThreadSafeNativeApplicationStateListener(
-      base::android::AttachCurrentThread());
+      AttachCurrentThread());
 }
 
 ApplicationStatusListener::~ApplicationStatusListener() {
