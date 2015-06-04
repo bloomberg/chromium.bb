@@ -396,6 +396,11 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_query_fence *fence,
 		return 0;
 	}
 
+	if (fence->timeout_ns == 0) {
+		pthread_mutex_unlock(&context->sequence_mutex);
+		return 0;
+	}
+
 	pthread_mutex_unlock(&context->sequence_mutex);
 
 	r = amdgpu_ioctl_wait_cs(context, ip_type, ip_instance, ring,
