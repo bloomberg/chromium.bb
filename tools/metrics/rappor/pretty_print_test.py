@@ -21,9 +21,12 @@ PRETTY_XML = """
   <summary>
     Fake type for tests.
   </summary>
-  <parameters num-cohorts="128" bytes="1" hash-functions="2" fake-prob="0.5"
-      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
+  <parameters num-cohorts="128" bytes="1" hash-functions="2"
       reporting-level="COARSE"/>
+  <string-noise fake-prob="0.5" fake-one-prob="0.5" one-coin-prob="0.75"
+      zero-coin-prob="0.25"/>
+  <flag-noise fake-prob="0.5" fake-one-prob="0.75" one-coin-prob="0.875"
+      zero-coin-prob="0.125"/>
 </rappor-parameters>
 
 </rappor-parameter-types>

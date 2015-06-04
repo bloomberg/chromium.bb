@@ -15,17 +15,24 @@ import presubmit_util
 # Model definitions for rappor.xml content
 _SUMMARY_TYPE = models.TextNodeType('summary')
 
+_NOISE_ATTRIBUTES = [
+  'fake-prob',
+  'fake-one-prob',
+  'one-coin-prob',
+  'zero-coin-prob',
+]
+
+_STRING_NOISE_TYPE = models.ObjectNodeType('string-noise',
+    float_attributes=_NOISE_ATTRIBUTES)
+
+_FLAG_NOISE_TYPE = models.ObjectNodeType('flag-noise',
+    float_attributes=_NOISE_ATTRIBUTES)
+
 _PARAMETERS_TYPE = models.ObjectNodeType('parameters',
     int_attributes=[
       'num-cohorts',
       'bytes',
       'hash-functions',
-    ],
-    float_attributes=[
-      'fake-prob',
-      'fake-one-prob',
-      'one-coin-prob',
-      'zero-coin-prob',
     ],
     string_attributes=[
       'reporting-level'
@@ -37,6 +44,8 @@ _RAPPOR_PARAMETERS_TYPE = models.ObjectNodeType('rappor-parameters',
     children=[
       models.ChildType('summary', _SUMMARY_TYPE, False),
       models.ChildType('parameters', _PARAMETERS_TYPE, False),
+      models.ChildType('stringNoise', _STRING_NOISE_TYPE, False),
+      models.ChildType('flagNoise', _FLAG_NOISE_TYPE, False),
     ])
 
 _RAPPOR_PARAMETERS_TYPES_TYPE = models.ObjectNodeType('rappor-parameter-types',

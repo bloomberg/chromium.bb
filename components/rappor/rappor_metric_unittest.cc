@@ -12,24 +12,27 @@
 
 namespace rappor {
 
-const RapporParameters kTestRapporParameters = {
-    1 /* Num cohorts */,
-    16 /* Bloom filter size bytes */,
-    4 /* Bloom filter hash count */,
+const NoiseParameters kTestNoiseParameters = {
     PROBABILITY_75 /* Fake data probability */,
     PROBABILITY_50 /* Fake one probability */,
     PROBABILITY_75 /* One coin probability */,
     PROBABILITY_50 /* Zero coin probability */,
+};
+
+const RapporParameters kTestRapporParameters = {
+    1 /* Num cohorts */,
+    16 /* Bloom filter size bytes */,
+    4 /* Bloom filter hash count */,
+    kTestNoiseParameters /* String noise */,
+    kTestNoiseParameters /* Flags noise */,
     FINE_LEVEL /* Reporting level (not used) */};
 
 const RapporParameters kTestStatsRapporParameters = {
     1 /* Num cohorts */,
     50 /* Bloom filter size bytes */,
     4 /* Bloom filter hash count */,
-    PROBABILITY_75 /* Fake data probability */,
-    PROBABILITY_50 /* Fake one probability */,
-    PROBABILITY_75 /* One coin probability */,
-    PROBABILITY_50 /* Zero coin probability */,
+    kTestNoiseParameters /* String noise */,
+    kTestNoiseParameters /* Flags noise */,
     FINE_LEVEL /* Reporting level (not used) */};
 
 // Check for basic syntax and use.

@@ -10,14 +10,19 @@
 
 namespace rappor {
 
-const RapporParameters kTestRapporParameters = {
-    1 /* Num cohorts */,
-    1 /* Bloom filter size bytes */,
-    4 /* Bloom filter hash count */,
+const NoiseParameters kTestNoiseParameters = {
     PROBABILITY_75 /* Fake data probability */,
     PROBABILITY_50 /* Fake one probability */,
     PROBABILITY_75 /* One coin probability */,
     PROBABILITY_50 /* Zero coin probability */,
+};
+
+const RapporParameters kTestRapporParameters = {
+    1 /* Num cohorts */,
+    1 /* Bloom filter size bytes */,
+    4 /* Bloom filter hash count */,
+    kTestNoiseParameters /* String noise */,
+    kTestNoiseParameters /* Flags noise */,
     FINE_LEVEL /* Reporting level (not used) */};
 
 class TestSamplerFactory {

@@ -11,13 +11,13 @@
 
 namespace rappor {
 
-struct RapporParameters;
+struct NoiseParameters;
 
 namespace internal {
 
 // Generate a randomized report for a single metric/field.
 ByteVector GenerateReport(const std::string& secret,
-                          const RapporParameters& parameters,
+                          const NoiseParameters& parameters,
                           const ByteVector& value);
 
 }  // namespace internal
