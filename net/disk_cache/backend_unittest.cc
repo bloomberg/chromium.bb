@@ -3218,11 +3218,6 @@ TEST_F(DiskCacheBackendTest, SimpleCacheAppCacheKeying) {
   BackendKeying();
 }
 
-TEST_F(DiskCacheBackendTest, DISABLED_SimpleCacheSetSize) {
-  SetSimpleCacheMode();
-  BackendSetSize();
-}
-
 // MacOS has a default open file limit of 256 files, which is incompatible with
 // this simple cache test.
 #if defined(OS_MACOSX)
