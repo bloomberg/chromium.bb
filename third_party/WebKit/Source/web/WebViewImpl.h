@@ -273,8 +273,6 @@ public:
     void enableViewport();
     void disableViewport();
 
-    void setMainFrameScrollOffset(const WebPoint&);
-
     float defaultMinimumPageScaleFactor() const;
     float defaultMaximumPageScaleFactor() const;
     float minimumPageScaleFactor() const;
