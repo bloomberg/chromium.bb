@@ -99,6 +99,41 @@
           ],
         },
         {
+          'target_name': 'cronet_version_header',
+          'type': 'none',
+          # Need to set hard_depency flag because cronet_version generates a
+          # header.
+          'hard_dependency': 1,
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(SHARED_INTERMEDIATE_DIR)/',
+            ],
+          },
+          'actions': [
+            {
+              'action_name': 'version_header',
+              'message': 'Generating version header file: <@(_outputs)',
+              'inputs': [
+                '<(version_path)',
+                'cronet/version.h.in',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/components/cronet/version.h',
+              ],
+              'action': [
+                'python',
+                '<(version_py_path)',
+                '-e', 'VERSION_FULL="<(version_full)"',
+                'cronet/version.h.in',
+                '<@(_outputs)',
+              ],
+              'includes': [
+                '../build/util/version.gypi',
+              ],
+            },
+          ],
+        },
+        {
           # cronet_static_small target has reduced binary size through using
           # ICU alternatives which requires file and ftp support be disabled.
           'target_name': 'cronet_static_small',

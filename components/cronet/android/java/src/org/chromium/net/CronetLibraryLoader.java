@@ -32,6 +32,13 @@ class CronetLibraryLoader {
                 return;
             }
             System.loadLibrary(config.libraryName());
+            if (!Version.CRONET_VERSION.equals(nativeGetCronetVersion())) {
+                throw new RuntimeException(String.format(
+                      "Expected Cronet version number %s, "
+                              + "actual version number %s.",
+                      Version.CRONET_VERSION,
+                      nativeGetCronetVersion()));
+            }
             nativeCronetInitApplicationContext(context.getApplicationContext());
             // Init native Chromium URLRequestContext on Main UI thread.
             Runnable task = new Runnable() {
@@ -69,4 +76,5 @@ class CronetLibraryLoader {
     // Native methods are implemented in cronet_loader.cc.
     private static native void nativeCronetInitOnMainThread();
     private static native void nativeCronetInitApplicationContext(Context appContext);
+    private static native String nativeGetCronetVersion();
 }

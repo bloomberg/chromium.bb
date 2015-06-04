@@ -12,6 +12,7 @@
     'cronet_url_request_context_config_list',
     'cronet_url_request_java',
     'cronet_version',
+    'cronet_version_header',
     'metrics',
   ],
   'sources': [
