@@ -48,6 +48,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     CONFIG_TYPE_FIRMWARE,
     'toolchain-major',
     'toolchain-minor',
+    'llvm',
     'asan',
     'asan-informational',
     'refresh-packages',

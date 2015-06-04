@@ -440,6 +440,12 @@
             "overlays": "public",
             "uprev": false
         },
+        "llvm": {
+            "_template": "llvm",
+            "chroot_replace": true,
+            "description": "Build with LLVM",
+            "profile": "llvm"
+        },
         "no-vmtest-pre-cq": {
             "_template": "no-vmtest-pre-cq",
             "archive": false,
@@ -848,6 +854,18 @@
         ],
         "name": "amd64-generic-incremental",
         "vm_tests": []
+    },
+    "amd64-generic-llvm": {
+        "_template": "llvm",
+        "active_waterfall": "chromiumos",
+        "boards": [
+            "amd64-generic"
+        ],
+        "build_type": "binary",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
+        "name": "amd64-generic-llvm",
+        "trybot_list": true,
+        "uprev": false
     },
     "amd64-generic-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",

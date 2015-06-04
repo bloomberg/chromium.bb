@@ -1040,6 +1040,9 @@ _waterfall_config_map = {
         # Utility
         'chromiumos-sdk',
         'refresh-packages',
+
+        # LLVM
+        'amd64-generic-llvm',
     ]),
 
     constants.WATERFALL_INTERNAL: frozenset([
@@ -1276,6 +1279,13 @@ def GetConfig():
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-ASAN',
+  )
+
+  llvm = site_config.AddTemplate(
+      'llvm',
+      chroot_replace=True,
+      profile='llvm',
+      description='Build with LLVM',
   )
 
   telemetry = site_config.AddTemplate(
@@ -1579,6 +1589,15 @@ def GetConfig():
       trybot_list=False,
       gcc_githash='svn-mirror/google/gcc-4_9',
       description='Test next minor toolchain revision',
+  )
+
+  site_config.AddConfig(
+      llvm,
+      'amd64-generic-llvm',
+      incremental,
+      boards=['amd64-generic'],
+      description='Build with LLVM',
+      trybot_list=True,
   )
 
   site_config.AddConfig(
