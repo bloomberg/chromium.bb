@@ -55,7 +55,7 @@ int NaClDebugExceptionHandlerStandaloneAttach(const void *info,
    */
   length = SNPRINTF(args, sizeof(args),
                     "argv0 --debug-exception-handler %i %i ",
-                    GetCurrentProcessId(), (int) sockets[1]);
+                    GetCurrentProcessId(), (int)(intptr_t) sockets[1]);
   CHECK(length > 0 && length < sizeof(args));
   dest = args + length;
   for (index = 0; index < info_size; index++) {
@@ -132,7 +132,7 @@ static int NaClDebugExceptionHandlerStandaloneMain(int argc, char **argv) {
   }
 
   target_pid = strtol(argv[0], &rest1, 0);
-  socket = (NaClHandle) strtol(argv[1], &rest2, 0);
+  socket = (NaClHandle)(uintptr_t) strtol(argv[1], &rest2, 0);
   if (*rest1 != '\0' || *rest2 != '\0') {
     NaClLog(LOG_FATAL, "NaClDebugExceptionHandlerStandaloneMain: "
             "Bad string argument\n");

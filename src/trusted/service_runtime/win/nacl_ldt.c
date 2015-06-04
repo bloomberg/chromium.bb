@@ -176,16 +176,16 @@ uint16_t NaClLdtAllocateSelector(int entry_number,
   ldt.code_64_bit = 0;
   ldt.op_size_32 = 1;
 
-  if (size_is_in_pages && ((unsigned long) base_addr & 0xfff)) {
+  if (size_is_in_pages && ((uintptr_t) base_addr & 0xfff)) {
     /*
      * The base address needs to be page aligned.
      */
     NaClXMutexUnlock(&nacl_ldt_mutex);
     return 0;
   };
-  ldt.base_00to15 = ((unsigned long) base_addr) & 0xffff;
-  ldt.base_16to23 = (((unsigned long) base_addr) >> 16) & 0xff;
-  ldt.base_24to31 = (((unsigned long) base_addr) >> 24) & 0xff;
+  ldt.base_00to15 = ((uintptr_t) base_addr) & 0xffff;
+  ldt.base_16to23 = (((uintptr_t) base_addr) >> 16) & 0xff;
+  ldt.base_24to31 = (((uintptr_t) base_addr) >> 24) & 0xff;
 
   if (size_minus_one > 0xfffff) {
     /*
