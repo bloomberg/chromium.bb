@@ -13,7 +13,7 @@
 namespace content {
 
 class CONTENT_EXPORT FixedReceivedData final
-    : public RequestPeer::ReceivedData {
+    : public RequestPeer::ThreadSafeReceivedData {
  public:
   FixedReceivedData(const char* data, size_t length, int encoded_length);
   explicit FixedReceivedData(ReceivedData* data);

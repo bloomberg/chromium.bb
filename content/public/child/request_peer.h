@@ -52,6 +52,9 @@ class CONTENT_EXPORT RequestPeer {
     virtual int encoded_length() const = 0;
   };
 
+  // A ThreadSafeReceivedData can be deleted on ANY thread.
+  class CONTENT_EXPORT ThreadSafeReceivedData : public ReceivedData {};
+
   // Called as upload progress is made.
   // note: only for requests with upload progress enabled.
   virtual void OnUploadProgress(uint64 position, uint64 size) = 0;

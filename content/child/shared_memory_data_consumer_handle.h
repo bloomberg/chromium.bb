@@ -14,8 +14,6 @@
 namespace content {
 
 // This class is a WebDataConsumerHandle that accepts RequestPeer::ReceivedData.
-// TODO(yhirano): Currently this only works on a single thread. Make this class
-// work with a multi thread environment.
 class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
     : public NON_EXPORTED_BASE(blink::WebDataConsumerHandle) {
  private:

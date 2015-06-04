@@ -8,6 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/threading/thread.h"
 #include "content/public/child/fixed_received_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,6 +91,81 @@ std::string ToString(const void* p, size_t size) {
   return std::string(q, q + size);
 }
 
+class ThreadedSharedMemoryDataConsumerHandleTest : public ::testing::Test {
+ protected:
+  class ReadDataOperation;
+  class ClientImpl final : public WebDataConsumerHandle::Client {
+   public:
+    explicit ClientImpl(ReadDataOperation* operation) : operation_(operation) {}
+
+    void didGetReadable() override { operation_->ReadData(); }
+
+   private:
+    ReadDataOperation* operation_;
+  };
+
+  class ReadDataOperation final {
+   public:
+    typedef WebDataConsumerHandle::Result Result;
+    ReadDataOperation(scoped_ptr<WebDataConsumerHandle> handle,
+                      base::MessageLoop* main_message_loop,
+                      const base::Closure& on_done)
+        : handle_(handle.Pass()),
+          main_message_loop_(main_message_loop),
+          on_done_(on_done) {}
+
+    const std::string& result() const { return result_; }
+
+    void ReadData() {
+      if (!client_) {
+        client_.reset(new ClientImpl(this));
+        handle_->registerClient(client_.get());
+      }
+
+      Result rv = kOk;
+      size_t read_size = 0;
+
+      while (true) {
+        char buffer[16];
+        rv = handle_->read(&buffer, sizeof(buffer), kNone, &read_size);
+        if (rv != kOk)
+          break;
+        result_.insert(result_.size(), &buffer[0], read_size);
+      }
+
+      if (rv == kShouldWait) {
+        // Wait a while...
+        return;
+      }
+
+      if (rv != kDone) {
+        // Something is wrong.
+        result_ = "error";
+      }
+
+      // The operation is done.
+      main_message_loop_->PostTask(FROM_HERE, on_done_);
+    }
+
+   private:
+    scoped_ptr<WebDataConsumerHandle> handle_;
+    scoped_ptr<WebDataConsumerHandle::Client> client_;
+    base::MessageLoop* main_message_loop_;
+    base::Closure on_done_;
+    std::string result_;
+  };
+
+  void SetUp() override {
+    handle_.reset(
+        new SharedMemoryDataConsumerHandle(kApplyBackpressure, &writer_));
+  }
+
+  StrictMock<MockClient> client_;
+  scoped_ptr<WebDataConsumerHandle> handle_;
+  scoped_ptr<Writer> writer_;
+  base::MessageLoop loop_;
+};
+
 class SharedMemoryDataConsumerHandleTest
     : public ::testing::TestWithParam<BackpressureMode> {
  protected:
@@ -99,6 +179,7 @@ class SharedMemoryDataConsumerHandleTest
   StrictMock<MockClient> client_;
   scoped_ptr<SharedMemoryDataConsumerHandle> handle_;
   scoped_ptr<Writer> writer_;
+  base::MessageLoop loop_;
 };
 
 TEST_P(SharedMemoryDataConsumerHandleTest, ReadFromEmpty) {
@@ -457,6 +538,7 @@ TEST_P(SharedMemoryDataConsumerHandleTest, TwoPhaseReadWithMultipleData) {
 }
 
 TEST(SharedMemoryDataConsumerHandleBackpressureTest, Read) {
+  base::MessageLoop loop;
   char buffer[20];
   Result result;
   size_t size;
@@ -500,6 +582,7 @@ TEST(SharedMemoryDataConsumerHandleBackpressureTest, Read) {
 }
 
 TEST(SharedMemoryDataConsumerHandleBackpressureTest, CloseAndReset) {
+  base::MessageLoop loop;
   char buffer[20];
   Result result;
   size_t size;
@@ -537,6 +620,7 @@ TEST(SharedMemoryDataConsumerHandleBackpressureTest, CloseAndReset) {
 }
 
 TEST(SharedMemoryDataConsumerHandleWithoutBackpressureTest, AddData) {
+  base::MessageLoop loop;
   scoped_ptr<Writer> writer;
   auto handle = make_scoped_ptr(
       new SharedMemoryDataConsumerHandle(kDoNotApplyBackpressure, &writer));
@@ -556,6 +640,48 @@ TEST(SharedMemoryDataConsumerHandleWithoutBackpressureTest, AddData) {
       "2\n"
       "data2 is destructed.\n"
       "3\n",
+      logger->log());
+}
+
+TEST_F(ThreadedSharedMemoryDataConsumerHandleTest, Read) {
+  base::RunLoop run_loop;
+  auto operation = make_scoped_ptr(
+      new ReadDataOperation(handle_.Pass(), &loop_, run_loop.QuitClosure()));
+  scoped_refptr<Logger> logger(new Logger);
+
+  base::Thread t("DataConsumerHandle test thread");
+  ASSERT_TRUE(t.Start());
+
+  t.message_loop()->PostTask(FROM_HERE,
+                             base::Bind(&ReadDataOperation::ReadData,
+                                        base::Unretained(operation.get())));
+
+  logger->Add("1");
+  writer_->AddData(
+      make_scoped_ptr(new LoggingFixedReceivedData("data1", "Once ", logger)));
+  writer_->AddData(
+      make_scoped_ptr(new LoggingFixedReceivedData("data2", "upon ", logger)));
+  writer_->AddData(make_scoped_ptr(
+      new LoggingFixedReceivedData("data3", "a time ", logger)));
+  writer_->AddData(
+      make_scoped_ptr(new LoggingFixedReceivedData("data4", "there ", logger)));
+  writer_->AddData(
+      make_scoped_ptr(new LoggingFixedReceivedData("data5", "was ", logger)));
+  writer_->Close();
+  logger->Add("2");
+
+  run_loop.Run();
+  t.Stop();
+
+  EXPECT_EQ("Once upon a time there was ", operation->result());
+  EXPECT_EQ(
+      "1\n"
+      "2\n"
+      "data1 is destructed.\n"
+      "data2 is destructed.\n"
+      "data3 is destructed.\n"
+      "data4 is destructed.\n"
+      "data5 is destructed.\n",
       logger->log());
 }
 
