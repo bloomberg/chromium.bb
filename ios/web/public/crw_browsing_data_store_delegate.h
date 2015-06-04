@@ -35,7 +35,7 @@ typedef NS_ENUM(NSUInteger, BrowsingDataStoreMakeInactivePolicy) {
 }  // namespace web
 
 // The CRWBrowsingDataStoreDelegate has methods that can override the default
-// behavior of a CRWBrowsingDataStoreMode when a mode change occurs.
+// behavior of a CRWBrowsingDataStore when a mode change occurs.
 @protocol CRWBrowsingDataStoreDelegate<NSObject>
 
 // Called when a CRWBrowsingDataStore wants to change its mode to |ACTIVE|.
