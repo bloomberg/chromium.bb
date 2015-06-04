@@ -280,55 +280,81 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationBogusVersion) {
   VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
 }
 
-TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationLoFi) {
-  std::string expected_header;
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                        kClientStr, std::string(), std::string(), "low",
-                        std::vector<std::string>(), &expected_header);
-
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
-
-  CreateRequestOptions(kBogusVersion);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
-}
-
-TEST_F(DataReductionProxyRequestOptionsTest, LoFiOn) {
-  // Add the LoFi command line switch.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
-
-  std::string expected_header;
-  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
-                        kClientStr, std::string(), std::string(), "low",
-                        std::vector<std::string>(), &expected_header);
-
-  CreateRequestOptions(kBogusVersion);
-  VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
-}
-
-TEST_F(DataReductionProxyRequestOptionsTest, LoFiReloadSingleImage) {
-  // Add the LoFi command line switch.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
-
+TEST_F(DataReductionProxyRequestOptionsTest, LoFiOnThroughCommandLineSwitch) {
+  test_context_->config()->ResetLoFiStatusForTest();
   std::string expected_header;
   SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
                         kClientStr, std::string(), std::string(), std::string(),
                         std::vector<std::string>(), &expected_header);
 
-  CreateRequest(net::LOAD_BYPASS_CACHE);
+  test_context_->config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
   CreateRequestOptions(kBogusVersion);
   VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
 
-  // Check that LoFi turns back on.
+  test_context_->config()->ResetLoFiStatusForTest();
+  // Add the LoFi command line switch.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
+
   SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
                         kClientStr, std::string(), std::string(), "low",
                         std::vector<std::string>(), &expected_header);
 
-  CreateRequest(net::LOAD_NORMAL);
+  test_context_->config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
   CreateRequestOptions(kBogusVersion);
   VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+}
+
+TEST_F(DataReductionProxyRequestOptionsTest, AutoLoFi) {
+  const struct {
+    bool auto_lofi_enabled_group;
+    bool network_prohibitively_slow;
+
+  } tests[] = {
+      {
+       false, false,
+      },
+      {
+       false, true,
+      },
+      {
+       true, false,
+      },
+      {
+       true, true,
+      },
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    test_context_->config()->ResetLoFiStatusForTest();
+    // Lo-Fi header is expected only if session is part of Lo-Fi enabled field
+    // trial and network is prohibitively slow.
+    bool expect_lofi_header =
+        tests[i].auto_lofi_enabled_group && tests[i].network_prohibitively_slow;
+
+    std::string expected_header;
+    if (!expect_lofi_header) {
+      SetHeaderExpectations(kExpectedSession, kExpectedCredentials,
+                            std::string(), kClientStr, std::string(),
+                            std::string(), std::string(),
+                            std::vector<std::string>(), &expected_header);
+    } else {
+      SetHeaderExpectations(kExpectedSession, kExpectedCredentials,
+                            std::string(), kClientStr, std::string(),
+                            std::string(), "low", std::vector<std::string>(),
+                            &expected_header);
+    }
+    test_context_->config()->SetIncludedInLoFiEnabledFieldTrial(
+        tests[i].auto_lofi_enabled_group);
+    test_context_->config()->SetNetworkProhibitivelySlow(
+        tests[i].network_prohibitively_slow);
+
+    // Force update Lo-Fi status.
+    test_context_->config()->UpdateLoFiStatusOnMainFrameRequest(false, nullptr);
+
+    CreateRequestOptions(kBogusVersion);
+    VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  }
 }
 
 TEST_F(DataReductionProxyRequestOptionsTest, SecureSession) {

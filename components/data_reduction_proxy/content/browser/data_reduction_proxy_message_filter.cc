@@ -46,16 +46,17 @@ void DataReductionProxyMessageFilter::OverrideThreadForMessage(
 void DataReductionProxyMessageFilter::OnDataReductionProxyStatus(
     const net::HostPortPair& proxy_server,
     bool* is_data_reduction_proxy,
-    AutoLoFiStatus* lofi_status) {
+    LoFiStatus* lofi_status) {
+  DCHECK(is_data_reduction_proxy);
+  DCHECK(lofi_status);
   *is_data_reduction_proxy = false;
-  *lofi_status = AUTO_LOFI_STATUS_DISABLED;
-  if (!config_) {
+  *lofi_status = LOFI_STATUS_TEMPORARILY_OFF;
+  if (!config_)
     return;
-  }
   *is_data_reduction_proxy =
       config_->IsDataReductionProxy(proxy_server, nullptr);
   if (*is_data_reduction_proxy)
-    *lofi_status = config_->GetAutoLoFiStatus();
+    *lofi_status = config_->GetLoFiStatus();
 }
 
 }  // namespace data_reduction_proxy

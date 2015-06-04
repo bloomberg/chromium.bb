@@ -4420,6 +4420,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.AutoLoFiRequestHeaderState"
+    enum="DataReductionProxyAutoLoFiRequestHeaderState">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Counts the changes in the state of Lo-Fi request header (q=low) being added
+    to the Chrome proxy request header. Counters are incremented when a main
+    frame URL request is handled by Data Reduction Proxy and session was in Auto
+    Lo-Fi enabled field trial.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.BlockTypeFallback"
     enum="DataReductionProxyBypassType">
   <owner>bengr@chromium.org</owner>
@@ -50906,6 +50917,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="Channel is negotiated."/>
 </enum>
 
+<enum name="DataReductionProxyAutoLoFiRequestHeaderState" type="int">
+  <int value="0" label="Empty to Empty"/>
+  <int value="1" label="Empty to Low"/>
+  <int value="2" label="Low to Empty"/>
+  <int value="3" label="Low to Low"/>
+</enum>
+
 <enum name="DataReductionProxyBypassEventType_Deprecated" type="int">
   <int value="0" label="Short bypass"/>
   <int value="1" label="Long bypass"/>
@@ -68247,6 +68265,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.PT_RequestToStart"/>
   <affected-histogram name="PLT.PT_StartToCommit"/>
   <affected-histogram name="PLT.PT_StartToFinish"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DataReductionProxy.WithValidOCL.LoFiOn" separator=".">
+  <suffix name="LoFiOn"
+      label="Only page loads through the data reduction proxy with Lo-Fi On
+             are considered."/>
+  <affected-histogram name="Net.HttpContentLengthDifferenceWithValidOCL"/>
+  <affected-histogram name="Net.HttpContentLengthWithValidOCL"/>
+  <affected-histogram name="Net.HttpOriginalContentLengthWithValidOCL"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DataReductionProxy_AutoLoFi" separator="_">

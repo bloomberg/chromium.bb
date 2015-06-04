@@ -98,7 +98,7 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
 
   // Returns true if this client has the command line switch to enable Lo-Fi
   // mode.
-  static bool IsLoFiEnabled();
+  static bool IsLoFiEnabledThroughSwitch();
 
   // Returns true if this client has the command line switch to show
   // interstitials for data reduction proxy bypasses.
@@ -111,6 +111,9 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   // Returns true if this client is part of a field trial that sets the origin
   // proxy server as quic://proxy.googlezip.net.
   static bool IsIncludedInQuicFieldTrial();
+
+  // Returns the name of the Lo-Fi field trial.
+  static std::string GetLoFiFieldTrialName();
 
   static std::string GetQuicFieldTrialName();
 

@@ -45,6 +45,8 @@ const char kAndroidOneIdentifier[] = "sprout";
 
 const char kQuicFieldTrial[] = "DataReductionProxyUseQuic";
 
+const char kLoFiFieldTrial[] = "DataReductionProxyLoFi";
+
 const char kConfigScheme[] = "scheme";
 const char kConfigHost[] = "host";
 const char kConfigPort[] = "port";
@@ -104,7 +106,12 @@ bool DataReductionProxyParams::IsIncludedInAndroidOnePromoFieldTrial(
 }
 
 // static
-bool DataReductionProxyParams::IsLoFiEnabled() {
+std::string DataReductionProxyParams::GetLoFiFieldTrialName() {
+  return kLoFiFieldTrial;
+}
+
+// static
+bool DataReductionProxyParams::IsLoFiEnabledThroughSwitch() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
 }

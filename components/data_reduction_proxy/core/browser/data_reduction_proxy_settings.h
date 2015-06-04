@@ -143,7 +143,7 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   }
 
   // Returns true if the data reduction proxy promo may be shown.
-  // This is idependent of whether the data reduction proxy is allowed.
+  // This is independent of whether the data reduction proxy is allowed.
   bool PromoAllowed() const {
     return promo_allowed_;
   }
@@ -213,11 +213,12 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   void RegisterDataReductionProxyFieldTrial();
 
   // Registers the trial "SyntheticDataReductionProxyLoFiSetting" with the group
-  // "Enabled" or "Disabled". Indicates whether LoFi is turned on or not.
-  // The group won't be reported if it changes while compiling the report. LoFi
-  // has its own field trial because it is expected that the user will be
-  // switching states often. It can be assumed that when no LoFi group is
-  // reported, the user was in a mixed LoFi state.
+  // "Enabled" or "Disabled". Indicates whether Lo-Fi is turned on or not.
+  // The group won't be reported if it changes while compiling the report. It
+  // can be assumed that when no Lo-Fi group is reported, the user was in a
+  // mixed Lo-Fi state.
+  // TODO(tbansal): State of the Lo-Fi synthetic field trial should change
+  // based on Auto Lo-Fi status.
   void RegisterLoFiFieldTrial();
 
   void OnProxyEnabledPrefChange();

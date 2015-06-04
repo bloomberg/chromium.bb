@@ -23,14 +23,24 @@
 #include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
 
-void RecordContentLengthHistograms(
-    int64 received_content_length,
-    int64 original_content_length,
-    const base::TimeDelta& freshness_lifetime) {
+class NetworkQualityEstimator;
+
+// |lofi_low_header_added| is set to true iff Lo-Fi "q=low" request header can
+// be added to the Chrome proxy headers.
+// |received_content_length| is the number of prefilter bytes received.
+// |original_content_length| is the length of resource if accessed directly
+// without data saver proxy.
+// |freshness_lifetime| contains information on how long the resource will be
+// fresh for and how long is the usability.
+void RecordContentLengthHistograms(bool lofi_low_header_added,
+                                   int64 received_content_length,
+                                   int64 original_content_length,
+                                   const base::TimeDelta& freshness_lifetime) {
   // Add the current resource to these histograms only when a valid
   // X-Original-Content-Length header is present.
   if (original_content_length >= 0) {
@@ -40,6 +50,17 @@ void RecordContentLengthHistograms(
                          original_content_length);
     UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthDifferenceWithValidOCL",
                          original_content_length - received_content_length);
+
+    // Populate Lo-Fi content length histograms.
+    if (lofi_low_header_added) {
+      UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthWithValidOCL.LoFiOn",
+                           received_content_length);
+      UMA_HISTOGRAM_COUNTS("Net.HttpOriginalContentLengthWithValidOCL.LoFiOn",
+                           original_content_length);
+      UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthDifferenceWithValidOCL.LoFiOn",
+                           original_content_length - received_content_length);
+    }
+
   } else {
     // Presume the original content length is the same as the received content
     // length if the X-Original-Content-Header is not present.
@@ -153,6 +174,21 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     net::URLRequest* request,
     const net::ProxyInfo& proxy_info,
     net::HttpRequestHeaders* headers) {
+  DCHECK(data_reduction_proxy_config_);
+  DCHECK(request);
+
+  // TODO(bengr): Investigate a better approach to update the network
+  // quality so that state of Lo-Fi is stored per page.
+  net::NetworkQualityEstimator* network_quality_estimator = nullptr;
+  if (request->context())
+    network_quality_estimator = request->context()->network_quality_estimator();
+
+  if (request->load_flags() & net::LOAD_MAIN_FRAME) {
+    data_reduction_proxy_config_->UpdateLoFiStatusOnMainFrameRequest(
+        ((request->load_flags() & net::LOAD_BYPASS_CACHE) != 0),
+        network_quality_estimator);
+  }
+
   if (data_reduction_proxy_request_options_) {
     data_reduction_proxy_request_options_->MaybeAddRequestHeader(
         request, proxy_info.proxy_server(), headers);
@@ -198,9 +234,17 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
     AccumulateContentLength(received_content_length,
                             adjusted_original_content_length,
                             request_type);
-    RecordContentLengthHistograms(received_content_length,
-                                  original_content_length,
-                                  freshness_lifetime);
+
+    DCHECK(data_reduction_proxy_config_);
+
+    // TODO(bengr): Investigate a better approach to record the Lo-Fi
+    // histogram. State of Lo-Fi should be stored per page.
+    RecordContentLengthHistograms(
+        // |data_reduction_proxy_io_data_| can be NULL for Webview.
+        data_reduction_proxy_io_data_ &&
+            data_reduction_proxy_io_data_->IsEnabled() &&
+            data_reduction_proxy_config_->ShouldUseLoFiHeaderForRequests(),
+        received_content_length, original_content_length, freshness_lifetime);
     experiments_stats_->RecordBytes(request->request_time(), request_type,
                                     received_content_length,
                                     original_content_length);

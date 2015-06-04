@@ -29,7 +29,7 @@ class DataReductionProxyMessageFilter
   // Sets |lofi_response| to the current status of the LoFi.
   void OnDataReductionProxyStatus(const net::HostPortPair& proxy_server,
                                   bool* is_data_reduction_proxy,
-                                  AutoLoFiStatus* lofi_status);
+                                  LoFiStatus* lofi_status);
 
  private:
   ~DataReductionProxyMessageFilter() override;

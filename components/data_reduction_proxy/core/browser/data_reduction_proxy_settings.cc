@@ -18,16 +18,10 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 
 namespace {
+
 // Key of the UMA DataReductionProxy.StartupState histogram.
 const char kUMAProxyStartupStateHistogram[] =
     "DataReductionProxy.StartupState";
-
-bool IsLoFiEnabledOnCommandLine() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxyLoFi);
-}
 
 }  // namespace
 
@@ -175,7 +169,9 @@ PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
 }
 
 bool DataReductionProxySettings::IsLoFiEnabled() const {
-  return IsDataReductionProxyEnabled() && IsLoFiEnabledOnCommandLine();
+  // TODO(megjablon): Remove this function.
+  return IsDataReductionProxyEnabled() &&
+         DataReductionProxyParams::IsLoFiEnabledThroughSwitch();
 }
 
 void DataReductionProxySettings::RegisterDataReductionProxyFieldTrial() {
@@ -185,9 +181,8 @@ void DataReductionProxySettings::RegisterDataReductionProxyFieldTrial() {
 }
 
 void DataReductionProxySettings::RegisterLoFiFieldTrial() {
-  register_synthetic_field_trial_.Run(
-      "SyntheticDataReductionProxyLoFiSetting",
-      IsLoFiEnabled() ? "Enabled" : "Disabled");
+  register_synthetic_field_trial_.Run("SyntheticDataReductionProxyLoFiSetting",
+                                      IsLoFiEnabled() ? "Enabled" : "Disabled");
 }
 
 void DataReductionProxySettings::OnProxyEnabledPrefChange() {

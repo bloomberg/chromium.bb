@@ -135,7 +135,8 @@ class DataReductionProxyRequestOptions {
   void Invalidate();
 
  protected:
-  void SetHeader(net::HttpRequestHeaders* headers, bool force_disable_lo_fi);
+  void SetHeader(const net::URLRequest* request,
+                 net::HttpRequestHeaders* headers);
 
   // Returns a UTF16 string that's the hash of the configured authentication
   // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
@@ -173,9 +174,8 @@ class DataReductionProxyRequestOptions {
   // Updates client type, build, and patch.
   void UpdateVersion();
 
-  // Updates the value of LoFi and regenerates the header if necessary. The LoFi
-  // header is not added if the request bypasses the cache.
-  void UpdateLoFi(bool force_disable_lo_fi);
+  // May regenerate the Chrome Proxy header based on changes in Lo-Fi status.
+  void MayRegenerateHeaderBasedOnLoFi(const net::URLRequest* request);
 
   // Update the value of the experiments to be run and regenerate the header if
   // necessary.
@@ -194,10 +194,10 @@ class DataReductionProxyRequestOptions {
   // |proxy_server| is a data reduction proxy used for ssl tunneling via
   // HTTP CONNECT, or |expect_ssl| is false and |proxy_server| is a data
   // reduction proxy for HTTP traffic.
-  void MaybeAddRequestHeaderImpl(const net::HostPortPair& proxy_server,
+  void MaybeAddRequestHeaderImpl(const net::URLRequest* request,
+                                 const net::HostPortPair& proxy_server,
                                  bool expect_ssl,
-                                 net::HttpRequestHeaders* request_headers,
-                                 bool force_disable_lo_fi);
+                                 net::HttpRequestHeaders* request_headers);
 
   // Regenerates the |header_value_| string which is concatenated to the
   // Chrome-proxy header.

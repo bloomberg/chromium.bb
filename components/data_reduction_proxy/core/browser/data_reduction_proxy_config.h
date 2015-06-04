@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_CONFIG_H_
 
+#include <stdint.h>
+
 #include <string>
 
 #include "base/callback.h"
@@ -29,6 +31,7 @@ class TimeDelta;
 namespace net {
 class HostPortPair;
 class NetLog;
+class NetworkQualityEstimator;
 class URLFetcher;
 class URLRequest;
 class URLRequestContextGetter;
@@ -78,21 +81,36 @@ enum SecureProxyCheckFetchResult {
   SECURE_PROXY_CHECK_FETCH_RESULT_COUNT
 };
 
-// Auto LoFi current status.
-enum AutoLoFiStatus {
-  // Auto LoFi is either off or the current network conditions are not worse
-  // than the ones specified in Auto LoFi field trial parameters.
-  AUTO_LOFI_STATUS_DISABLED = 0,
+// Values of the |lofi_status_|.
+// Default state is |LOFI_STATUS_TEMPORARILY_OFF|.
+enum LoFiStatus {
+  // Used if Lo-Fi is permanently off.
+  LOFI_STATUS_OFF = 0,
 
-  // Auto LoFi is off but the current network conditions are worse than the
-  // ones specified in Auto LoFi field trial parameters.
-  AUTO_LOFI_STATUS_OFF,
+  // Used if Lo-Fi is disabled temporarily through direct or indirect user
+  // action. The state would be reset on next main frame request.
+  LOFI_STATUS_TEMPORARILY_OFF,
 
-  // Auto LoFi is on and but the current network conditions are worse than the
-  // ones specified in Auto LoFi field trial parameters.
-  AUTO_LOFI_STATUS_ON,
+  // Used if Lo-Fi is enabled through flags.
+  LOFI_STATUS_ACTIVE_FROM_FLAGS,
 
-  AUTO_LOFI_STATUS_LAST = AUTO_LOFI_STATUS_ON
+  // Session is in Auto Lo-Fi Control group and the current conditions are
+  // suitable to use Lo-Fi "q=low" header.
+  LOFI_STATUS_ACTIVE_CONTROL,
+
+  // Session is in Auto Lo-Fi Control group and the current conditions are
+  // not suitable to use Lo-Fi "q=low" header.
+  LOFI_STATUS_INACTIVE_CONTROL,
+
+  // Session is in Auto Lo-Fi enabled group and the current conditions are
+  // suitable to use Lo-Fi "q=low" header.
+  LOFI_STATUS_ACTIVE,
+
+  // Session is in Auto Lo-Fi enabled group and the current conditions are
+  // not suitable to use Lo-Fi "q=low" header.
+  LOFI_STATUS_INACTIVE,
+
+  LOFI_STATUS_LAST = LOFI_STATUS_INACTIVE
 };
 
 // Central point for holding the Data Reduction Proxy configuration.
@@ -208,9 +226,21 @@ class DataReductionProxyConfig
   // tied to whether the Data Reduction Proxy is enabled.
   bool promo_allowed() const;
 
-  // Returns the Auto LoFi status. Enabling LoFi from command line switch has
-  // no effect on Auto LoFi.
-  AutoLoFiStatus GetAutoLoFiStatus() const;
+  // Returns the Lo-Fi status.
+  LoFiStatus GetLoFiStatus() const;
+
+  // Returns true only if Lo-Fi "q=low" header should be added to the Chrome
+  // Proxy header.
+  // Should be called on all URL requests (main frame and non main frame).
+  bool ShouldUseLoFiHeaderForRequests() const;
+
+  // Updates |lofi_status_| based on the arguments provided and the current
+  // value of |lofi_status_|.
+  // |network_quality_estimator| may be NULL.
+  // Should be called only on main frame loads.
+  void UpdateLoFiStatusOnMainFrameRequest(
+      bool user_temporarily_disabled_lofi,
+      const net::NetworkQualityEstimator* network_quality_estimator);
 
  protected:
   // Writes a warning to the log that is used in backend processing of
@@ -247,6 +277,8 @@ class DataReductionProxyConfig
                            TestMaybeDisableIfVPNTrialDisabled);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestMaybeDisableIfVPNTrialEnabled);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
+                           PopulateAutoLoFiParams);
 
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;
@@ -256,6 +288,10 @@ class DataReductionProxyConfig
                                   bool alternative_enabled,
                                   bool restricted,
                                   bool at_startup);
+
+  // Populates the parameters for the Lo-Fi field trial if the session is part
+  // of either Lo-Fi enabled or Lo-Fi control field trial group.
+  void PopulateAutoLoFiParams();
 
   // Requests the given |secure_proxy_check_url|. Upon completion, returns the
   // results to the caller via the |fetcher_callback|. Virtualized for unit
@@ -290,18 +326,25 @@ class DataReductionProxyConfig
       bool is_https,
       base::TimeDelta* min_retry_delay) const;
 
-  // Returns true if this client is part of LoFi enabled field trial.
-  // Virtualized for mocking.
+  // Returns true if this client is part of Lo-Fi enabled field trial.
+  // Virtualized for unit testing.
   virtual bool IsIncludedInLoFiEnabledFieldTrial() const;
 
-  // Returns true if this client is part of LoFi control field trial.
-  // Virtualized for mocking.
+  // Returns true if this client is part of Lo-Fi control field trial.
+  // Virtualized for unit testing.
   virtual bool IsIncludedInLoFiControlFieldTrial() const;
 
-  // Returns true if current network conditions are worse than the ones
-  // specified in the enabled or control field trial group parameters.
-  // Virtualized for mocking.
-  virtual bool IsNetworkBad() const;
+  // Returns true if expected throughput is lower than the one specified in the
+  // Auto Lo-Fi field trial parameters OR if the expected round trip time is
+  // higher than the one specified in the Auto Lo-Fi field trial parameters.
+  // |network_quality_estimator| may be NULL.
+  // Virtualized for unit testing.
+  virtual bool IsNetworkQualityProhibitivelySlow(
+      const net::NetworkQualityEstimator* network_quality_estimator) const;
+
+  // Returns true only if Lo-Fi "q=low" header should be added to the Chrome
+  // Proxy header based on the value of |lofi_status|.
+  static bool ShouldUseLoFiHeaderForRequests(LoFiStatus lofi_status);
 
   scoped_ptr<SecureProxyChecker> secure_proxy_checker_;
 
@@ -332,6 +375,23 @@ class DataReductionProxyConfig
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;
+
+  // Thresholds from the field trial at which auto Lo-Fi is turned on.
+  // If the expected round trip time is higher than |auto_lofi_minimum_rtt_|,
+  // auto Lo-Fi would be turned on.
+  base::TimeDelta auto_lofi_minimum_rtt_;
+
+  // If the expected throughput in Kbps is lower than
+  // |auto_lofi_maximum_kbps_|, auto Lo-Fi would be turned on.
+  uint64_t auto_lofi_maximum_kbps_;
+
+  // State of auto Lo-Fi is not changed more than once in any period of
+  // duration shorter than |auto_lofi_hysteresis_|.
+  base::TimeDelta auto_lofi_hysteresis_;
+
+  // Current Lo-Fi status.
+  // The value changes only on main frame load.
+  LoFiStatus lofi_status_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfig);
 };
