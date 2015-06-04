@@ -20,9 +20,11 @@ import org.chromium.chrome.browser.dom_distiller.ReaderModeButtonView.ReaderMode
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
-import org.chromium.content_public.common.TopControlsState;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.concurrent.TimeUnit;
@@ -144,6 +146,8 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
     private boolean mIsReaderModePanelHidden;
     private boolean mIsReaderModePanelDismissed;
     private ContentViewCore mDistilledContentViewCore;
+    private boolean mDidStartLoad;
+    private boolean mDidFinishLoad;
     private WebContentsObserver mDistilledContentObserver;
     private boolean mDidFirstNonEmptyDistilledPaint;
     private ReaderModePanelLayoutDelegate mLayoutDelegate;
@@ -152,6 +156,13 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
     private float mLayoutHeight;
     private boolean mIsToolbarShowing;
     private float mDpToPx;
+
+    /**
+     * ContentViewClient state to override when the distilled ContentViewCore is set on the Tab.
+     */
+    private float mTopControlsOffsetYPix;
+    private float mContentOffsetYPix;
+    private float mOverdrawBottomHeightPix;
 
     /**
      * The {@link ReaderModePanelHost} used to get reader mode status and the associated tab.
@@ -591,11 +602,22 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         }
     }
 
-    private static ContentViewCore createDistillerContentViewCore(
+    private ContentViewCore createDistillerContentViewCore(
             Context context, WindowAndroid windowAndroid) {
         ContentViewCore cvc = new ContentViewCore(context);
         ContentView cv = new ContentView(context, cvc);
         cvc.initialize(cv, cv, ContentViewUtil.createWebContents(false, true), windowAndroid);
+        cvc.setContentViewClient(new ContentViewClient() {
+            @Override
+            public void onOffsetsForFullscreenChanged(float topControlsOffsetYPix,
+                    float contentOffsetYPix, float overdrawBottomHeightPix) {
+                super.onOffsetsForFullscreenChanged(topControlsOffsetYPix, contentOffsetYPix,
+                        overdrawBottomHeightPix);
+                mTopControlsOffsetYPix = topControlsOffsetYPix;
+                mContentOffsetYPix = contentOffsetYPix;
+                mOverdrawBottomHeightPix = overdrawBottomHeightPix;
+            }
+        });
         return cvc;
     }
 
@@ -608,6 +630,8 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         if (mDistilledContentViewCore != null) return;
 
         mDidFirstNonEmptyDistilledPaint = false;
+        mDidStartLoad = false;
+        mDidFinishLoad = false;
         mDistilledContentViewCore = createDistillerContentViewCore(
                 mReaderModeHost.getTab().getContentViewCore().getContext(),
                 mReaderModeHost.getTab().getWindowAndroid());
@@ -621,6 +645,18 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
                 RecordHistogram.recordTimesHistogram("DomDistiller.Time.SwipeToPaint",
                         SystemClock.elapsedRealtime() - start, TimeUnit.MILLISECONDS);
             }
+
+            @Override
+            public void didStartLoading(String url) {
+                super.didStartLoading(url);
+                mDidStartLoad = true;
+            }
+
+            @Override
+            public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
+                super.didFinishLoad(frameId, validatedUrl, isMainFrame);
+                if (isMainFrame) mDidFinishLoad = true;
+            }
         };
         mReaderModeHost.getTab().attachOverlayContentViewCore(
                 mDistilledContentViewCore, true, false);
@@ -628,15 +664,23 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
                 mReaderModeHost.getTab().getContentViewCore().getWebContents(),
                 mDistilledContentViewCore.getWebContents());
         mDistilledContentViewCore.onShow();
-
-        mReaderModeHost.getTab().updateTopControlsState(TopControlsState.BOTH, false);
     }
 
     private void nonAnimatedEnterDistilledMode() {
         RecordUserAction.record("DomDistiller_DistilledPageOpened");
         DomDistillerTabUtils.distillCurrentPageAndView(mReaderModeHost.getTab().getWebContents());
-        mReaderModeHost.getTab().updateTopControlsState(TopControlsState.SHOWN, false);
         nonAnimatedUpdateButtomButtonBar();
+    }
+
+    private static void mergeNavigationHistory(WebContents target, WebContents source) {
+        target.getNavigationController().clearHistory();
+        NavigationController distilled = target.getNavigationController();
+        NavigationController original = source.getNavigationController();
+        if (distilled.canPruneAllButLastCommitted()) {
+            distilled.copyStateFromAndPrune(original, false);
+        } else if (distilled.canCopyStateOver()) {
+            distilled.copyStateFrom(original);
+        }
     }
 
     private void enterDistilledMode() {
@@ -644,9 +688,23 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         mSlidingT = -1.0f;
         requestUpdate();
 
-        mReaderModeHost.getTab().updateTopControlsState(TopControlsState.HIDDEN, false);
-        DomDistillerTabUtils.distillCurrentPageAndView(mReaderModeHost.getTab().getWebContents());
+        mDistilledContentViewCore.getWebContents().updateTopControlsState(true, false, false);
+
+        mReaderModeHost.getTab().detachOverlayContentViewCore(mDistilledContentViewCore);
+        mDistilledContentObserver.destroy();
+        mDistilledContentObserver = null;
+
+        mDistilledContentViewCore.setContentViewClient(new ContentViewClient());
+        mergeNavigationHistory(mDistilledContentViewCore.getWebContents(),
+                mReaderModeHost.getTab().getWebContents());
+        mReaderModeHost.getTab().swapContentViewCore(mDistilledContentViewCore, true,
+                mDidStartLoad, mDidFinishLoad);
+        mDistilledContentViewCore.getContentViewClient().onOffsetsForFullscreenChanged(
+                mTopControlsOffsetYPix, mContentOffsetYPix, mOverdrawBottomHeightPix);
+
+        mDistilledContentViewCore = null;
         destroyDistilledContentViewCore();
+
         if (mLayoutDelegate != null) {
             mLayoutDelegate.setLayoutTabBrightness(1.0f);
             mLayoutDelegate.setLayoutTabY(0.0f);
@@ -656,10 +714,13 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
     }
 
     private void destroyDistilledContentViewCore() {
+        if (mDistilledContentObserver != null) {
+            mDistilledContentObserver.destroy();
+            mDistilledContentObserver = null;
+        }
+
         if (mDistilledContentViewCore == null) return;
 
-        mDistilledContentObserver.destroy();
-        mDistilledContentObserver = null;
         mReaderModeHost.getTab().detachOverlayContentViewCore(mDistilledContentViewCore);
 
         mDistilledContentViewCore.getWebContents().destroy();
