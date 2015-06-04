@@ -84,6 +84,13 @@ This directory contains the source code of ICU 54.1 for C/C++.
     They're generated with scripts :
       scripts/{eucjp,sjis,big5,single_byte}_gen.sh
 
+  - gb_table.patch
+    1. Map \xA3\xA0 to U+3000 instead of U+E5E5 in gb18030 and windows-936 per
+    the encoding spec (one-way mapping in toUnicode direction).
+    2. Map \xA8\xBF to U+01F9 instead of U+E7C8. Add one-way map
+    from U+1E3F to \xA8\xBC (windows-936/GBK).
+       See https://www.w3.org/Bugs/Public/show_bug.cgi?id=28740#c3
+
   - uconv.patch
     a. ISO-2022-JP-[1-4] is dropped.
     b. SCSU, BOCU, ISCII, UTF-7, LMB, ibm42*, ISO-2022-{KR,CN*} and HZ-GB  :

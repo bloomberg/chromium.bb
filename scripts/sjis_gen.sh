@@ -122,6 +122,7 @@ function unsorted_table {
   eudc "0x80" "0xFC" "0x41"
   echo '<U00A5> \x5C |1'
   echo '<U203E> \x7E |1'
+  echo '<U2212> \x81\x7C |1'
 }
 
 wget -N -r -nd https://encoding.spec.whatwg.org/index-jis0208.txt

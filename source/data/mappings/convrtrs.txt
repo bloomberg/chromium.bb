@@ -137,8 +137,9 @@ utf-16le { MIME* HTML* }
 UTF-32 { IANA* MIME* }          ISO-10646-UCS-4 { IANA }
                                 csUCS4
                                 ucs-4
-UTF-32BE { IANA* }              UTF32_BigEndian
-UTF-32LE { IANA* }              UTF32_LittleEndian
+# Until we kill UTF-32 in Blink, add MIME tag here.
+UTF-32BE { MIME* IANA* }              UTF32_BigEndian
+UTF-32LE { MIME* IANA* }              UTF32_LittleEndian
 
 ibm866-html
     IBM866 { MIME* HTML* }
@@ -231,6 +232,7 @@ iso-8859-8-html
     iso88598
     iso_8859-8
     iso_8859-8:1988
+    visual
     # adding this one leads to a failure in encoding-labels.html
 #   csiso88598i
 
@@ -373,18 +375,20 @@ x-mac-cyrillic-html
 # while encoding from Unicode should use GBK.
 
 windows-936-2000
-                       GB2312 { IANA MIME }
                        GBK { MIME* IANA* }
                        CP936 { IANA }
                        MS936 { IANA }
-                       windows-936 { IANA }
                        chinese { IANA }
                        iso-ir-58 { IANA }
-                       gb2312-1980
-                       EUC-CN
-                       csGB2312 { IANA }
+                       GB2312 { IANA MIME }
                        GB_2312-80 { IANA }
+                       gb_2312
+                       gb2312-1980
+                       csGB2312 { IANA }
+                       csiso58gb231280
+                       EUC-CN
                        x-gbk
+                       windows-936
 
 # GB 18030 is partly algorithmic, using the MBCS converter
 gb18030 { IANA* }      gb18030 { HTML* MIME* }  ibm-1392 windows-54936
