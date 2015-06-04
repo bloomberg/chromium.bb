@@ -66,7 +66,7 @@ class FakeProfileSyncService : public ProfileSyncService {
   bool initialized_state_violation() { return initialized_state_violation_; }
 
   // ProfileSyncService:
-  bool SyncActive() const override { return sync_initialized_; }
+  bool IsSyncActive() const override { return sync_initialized_; }
 
   void AddObserver(sync_driver::SyncServiceObserver* observer) override {
     if (sync_initialized_)

@@ -124,7 +124,7 @@ void AppSyncUIState::CheckAppSync() {
   if (!sync_service_ || !sync_service_->HasSyncSetupCompleted())
     return;
 
-  const bool synced = sync_service_->SyncActive();
+  const bool synced = sync_service_->IsSyncActive();
   const bool has_pending_extension =
       extensions::ExtensionSystem::Get(profile_)->extension_service()->
           pending_extension_manager()->HasPendingExtensionFromSync();

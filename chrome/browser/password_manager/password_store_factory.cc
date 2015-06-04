@@ -99,7 +99,7 @@ bool ShouldAffiliationBasedMatchingBeActive(Profile* profile) {
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   return profile_sync_service &&
          profile_sync_service->IsSyncEnabledAndLoggedIn() &&
-         profile_sync_service->SyncActive() &&
+         profile_sync_service->IsSyncActive() &&
          profile_sync_service->GetPreferredDataTypes().Has(syncer::PASSWORDS) &&
          !profile_sync_service->IsUsingSecondaryPassphrase();
 }
@@ -312,8 +312,9 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
     if (backend->Init()) {
       VLOG(1) << "Using KWallet for password storage.";
       used_backend = KWALLET;
-    } else
+    } else {
       backend.reset();
+    }
   } else if (used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_GNOME ||
              used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_UNITY ||
              used_desktop_env == base::nix::DESKTOP_ENVIRONMENT_XFCE) {
@@ -325,8 +326,9 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
       if (backend->Init()) {
         VLOG(1) << "Using libsecret keyring for password storage.";
         used_backend = LIBSECRET;
-      } else
+      } else {
         backend.reset();
+      }
     }
 #endif  // defined(USE_LIBSECRET)
     if (!backend.get()) {
@@ -336,8 +338,9 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
       if (backend->Init()) {
         VLOG(1) << "Using GNOME keyring for password storage.";
         used_backend = GNOME_KEYRING;
-      } else
+      } else {
         backend.reset();
+      }
 #endif  // defined(USE_GNOME_KEYRING)
     }
   }

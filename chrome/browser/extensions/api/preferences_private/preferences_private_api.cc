@@ -25,7 +25,7 @@ void
 PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction::OnStateChanged() {
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(GetProfile());
-  if (sync_service->SyncActive()) {
+  if (sync_service->IsSyncActive()) {
     sync_service->RemoveObserver(this);
     RunAsync();
     Release();  // Balanced in RunAsync().
@@ -37,7 +37,7 @@ bool PreferencesPrivateGetSyncCategoriesWithoutPassphraseFunction::RunAsync() {
       ProfileSyncServiceFactory::GetForProfile(GetProfile());
   if (!sync_service)
     return false;
-  if (!sync_service->SyncActive()) {
+  if (!sync_service->IsSyncActive()) {
     AddRef();  // Balanced in OnStateChanged().
     sync_service->AddObserver(this);
     return true;

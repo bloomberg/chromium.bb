@@ -78,7 +78,7 @@ void OneClickSigninSyncObserver::OnStateChanged() {
       return;
     }
 
-    if (sync_service->SyncActive() &&
+    if (sync_service->IsSyncActive() &&
         signin::GetSourceForPromoURL(continue_url_)
             != signin_metrics::SOURCE_SETTINGS) {
       // TODO(isherman): Having multiple settings pages open can cause issues

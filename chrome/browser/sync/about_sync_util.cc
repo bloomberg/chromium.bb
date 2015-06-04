@@ -324,7 +324,7 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   syncer::SyncStatus full_status;
   bool is_status_valid = service->QueryDetailedSyncStatus(&full_status);
-  bool sync_active = service->SyncActive();
+  bool sync_active = service->IsSyncActive();
   const syncer::sessions::SyncSessionSnapshot& snapshot =
       service->GetLastSessionSnapshot();
 

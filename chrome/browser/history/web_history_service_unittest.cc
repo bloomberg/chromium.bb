@@ -67,7 +67,7 @@ class TestingWebHistoryService : public WebHistoryService {
   }
 
   void SetExpectedPostData(const std::string& expected_data) {
-    current_expected_post_data_= expected_data;
+    current_expected_post_data_ = expected_data;
   }
 
   void EnsureNoPendingRequestsRemain() {
@@ -226,7 +226,7 @@ class WebHistoryServiceTest : public testing::Test {
     ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(&profile_));
     EXPECT_CALL(*sync_service,
-                SyncActive()).WillRepeatedly(Return(true));
+                IsSyncActive()).WillRepeatedly(Return(true));
     syncer::ModelTypeSet result;
     result.Put(syncer::HISTORY_DELETE_DIRECTIVES);
     EXPECT_CALL(*sync_service,

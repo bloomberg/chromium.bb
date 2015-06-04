@@ -230,7 +230,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
     case STATUS_CASE_AUTHENTICATING: {
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillRepeatedly(Return(true));
-      EXPECT_CALL(service, SyncActive()).WillRepeatedly(Return(true));
+      EXPECT_CALL(service, IsSyncActive()).WillRepeatedly(Return(true));
       EXPECT_CALL(service, IsPassphraseRequired())
                   .WillRepeatedly(Return(false));
       browser_sync::SyncBackendHost::Status status;
@@ -245,7 +245,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
     case STATUS_CASE_AUTH_ERROR: {
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillRepeatedly(Return(true));
-      EXPECT_CALL(service, SyncActive()).WillRepeatedly(Return(true));
+      EXPECT_CALL(service, IsSyncActive()).WillRepeatedly(Return(true));
       EXPECT_CALL(service, IsPassphraseRequired())
                   .WillRepeatedly(Return(false));
       browser_sync::SyncBackendHost::Status status;
@@ -262,7 +262,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
     case STATUS_CASE_PROTOCOL_ERROR: {
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillRepeatedly(Return(true));
-      EXPECT_CALL(service, SyncActive()).WillRepeatedly(Return(true));
+      EXPECT_CALL(service, IsSyncActive()).WillRepeatedly(Return(true));
       EXPECT_CALL(service, IsPassphraseRequired())
                   .WillRepeatedly(Return(false));
       syncer::SyncProtocolError protocolError;
@@ -279,7 +279,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
     case STATUS_CASE_PASSPHRASE_ERROR: {
       EXPECT_CALL(service, HasSyncSetupCompleted())
                   .WillRepeatedly(Return(true));
-      EXPECT_CALL(service, SyncActive()).WillRepeatedly(Return(true));
+      EXPECT_CALL(service, IsSyncActive()).WillRepeatedly(Return(true));
       browser_sync::SyncBackendHost::Status status;
       EXPECT_CALL(service, QueryDetailedSyncStatus(_))
                   .WillRepeatedly(DoAll(SetArgPointee<0>(status),
@@ -295,7 +295,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
     case STATUS_CASE_SYNCED: {
       EXPECT_CALL(service, HasSyncSetupCompleted())
               .WillRepeatedly(Return(true));
-      EXPECT_CALL(service, SyncActive()).WillRepeatedly(Return(true));
+      EXPECT_CALL(service, IsSyncActive()).WillRepeatedly(Return(true));
       EXPECT_CALL(service, IsPassphraseRequired())
                   .WillRepeatedly(Return(false));
       browser_sync::SyncBackendHost::Status status;
@@ -312,7 +312,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       EXPECT_CALL(service, IsManaged()).WillRepeatedly(Return(true));
       EXPECT_CALL(service, HasSyncSetupCompleted())
           .WillRepeatedly(Return(false));
-      EXPECT_CALL(service, SyncActive()).WillRepeatedly(Return(false));
+      EXPECT_CALL(service, IsSyncActive()).WillRepeatedly(Return(false));
       EXPECT_CALL(service, IsPassphraseRequired())
                   .WillRepeatedly(Return(false));
       browser_sync::SyncBackendHost::Status status;

@@ -79,7 +79,7 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
-    if (!service()->SyncActive())
+    if (!service()->IsSyncActive())
       return false;
     if (service()->ConfigurationDone())
       return true;
@@ -313,7 +313,7 @@ void ProfileSyncServiceHarness::FinishSyncSetup() {
 
 SyncSessionSnapshot ProfileSyncServiceHarness::GetLastSessionSnapshot() const {
   DCHECK(service() != NULL) << "Sync service has not yet been set up.";
-  if (service()->SyncActive()) {
+  if (service()->IsSyncActive()) {
     return service()->GetLastSessionSnapshot();
   }
   return SyncSessionSnapshot();
@@ -436,7 +436,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
     service()->QueryDetailedSyncStatus(&status);
     // Capture select info from the sync session snapshot and syncer status.
     os << ", has_unsynced_items: "
-       << (service()->SyncActive() ? service()->HasUnsyncedItems() : 0)
+       << (service()->IsSyncActive() ? service()->HasUnsyncedItems() : 0)
        << ", did_commit: "
        << (snap.model_neutral_state().num_successful_commits == 0 &&
            snap.model_neutral_state().commit_result == syncer::SYNCER_OK)
@@ -454,7 +454,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << ", notifications_enabled: "
        << status.notifications_enabled
        << ", service_is_active: "
-       << service()->SyncActive();
+       << service()->IsSyncActive();
   } else {
     os << "Sync service not available";
   }

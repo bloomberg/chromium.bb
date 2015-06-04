@@ -56,7 +56,7 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
     return first_setup_in_progress_;
   }
 
-  bool SyncActive() const override { return sync_active_; }
+  bool IsSyncActive() const override { return sync_active_; }
 
   void set_first_setup_in_progress(bool in_progress) {
     first_setup_in_progress_ = in_progress;

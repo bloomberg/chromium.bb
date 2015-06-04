@@ -1549,7 +1549,7 @@ ProfileSyncService::SyncStatusSummary
       directory_data_type_manager_.get() &&
       directory_data_type_manager_->state() == DataTypeManager::STOPPED) {
     return DATATYPES_NOT_INITIALIZED;
-  } else if (SyncActive()) {
+  } else if (IsSyncActive()) {
     return INITIALIZED;
   }
   return UNKNOWN_ERROR;
@@ -1626,7 +1626,7 @@ void ProfileSyncService::SetSetupInProgress(bool setup_in_progress) {
   NotifyObservers();
 }
 
-bool ProfileSyncService::SyncActive() const {
+bool ProfileSyncService::IsSyncActive() const {
   return backend_initialized_ && backend_mode_ == SYNC &&
          directory_data_type_manager_ &&
          directory_data_type_manager_->state() != DataTypeManager::STOPPED;
@@ -1786,7 +1786,7 @@ void ProfileSyncService::ChangePreferredDataTypes(
 }
 
 syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
-  if (!SyncActive() || !ConfigurationDone())
+  if (!IsSyncActive() || !ConfigurationDone())
     return syncer::ModelTypeSet();
   const syncer::ModelTypeSet preferred_types = GetPreferredDataTypes();
   const syncer::ModelTypeSet failed_types =

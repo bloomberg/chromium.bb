@@ -369,7 +369,7 @@ TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
   active_types.Put(syncer::PASSWORDS);
   EXPECT_CALL(*mock_sync_service, HasSyncSetupCompleted())
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_sync_service, SyncActive()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_sync_service, IsSyncActive()).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_sync_service, GetActiveDataTypes())
       .WillRepeatedly(Return(active_types));
   EXPECT_CALL(*mock_sync_service, IsUsingSecondaryPassphrase())

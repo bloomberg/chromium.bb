@@ -675,7 +675,7 @@ browser_sync::OpenTabsUIDelegate*
     ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
         GetForProfile(browser_->profile());
     // Only return the delegate if it exists and it is done syncing sessions.
-    if (service && service->SyncActive())
+    if (service && service->IsSyncActive())
       open_tabs_delegate_ = service->GetOpenTabsUIDelegate();
   }
   return open_tabs_delegate_;
