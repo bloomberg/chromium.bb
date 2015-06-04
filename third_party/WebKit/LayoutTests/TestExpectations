@@ -1790,7 +1790,6 @@ crbug.com/463358 [ Debug ] virtual/slimmingpaint/fast/transforms/transformed-doc
 crbug.com/463358 [ Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/W3C-SVG-1.1/paths-data-02-t.svg [ Skip ]
 crbug.com/463358 [ Debug ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Pass ImageOnlyFailure ]
-crbug.com/463358 [ Debug ] virtual/slimmingpaint/svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ Skip ]
 crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Failure NeedsManualRebaseline ]
 crbug.com/463358 [ Debug ] fast/backgrounds/transformed-body-background.html [ Pass ImageOnlyFailure ]
 crbug.com/463358 [ Debug ] svg/hixie/perf/005.xml [ Pass ImageOnlyFailure ]
@@ -2682,3 +2681,5 @@ Bug(wangxianzhu) virtual/slimmingpaint/svg/zoom/page/zoom-svg-through-object-wit
 Bug(wangxianzhu) virtual/slimmingpaint/svg/zoom/page/zoom-svg-through-object-with-absolute-size.xhtml [ NeedsRebaseline ]
 Bug(wangxianzhu) virtual/slimmingpaint/svg/zoom/page/zoom-zoom-coords.xhtml [ NeedsRebaseline ]
 Bug(wangxianzhu) virtual/slimmingpaint/svg/zoom/text/zoom-foreignObject.svg [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/fast/css/transformed-mask.html [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
