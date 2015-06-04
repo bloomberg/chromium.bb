@@ -4,6 +4,7 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
+#include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -42,10 +43,13 @@ OverviewButtonTray::OverviewButtonTray(StatusAreaWidget* status_area_widget)
   tray_container()->AddChildView(icon_);
 
   Shell::GetInstance()->AddShellObserver(this);
+  Shell::GetInstance()->session_state_delegate()->AddSessionStateObserver(this);
 }
 
 OverviewButtonTray::~OverviewButtonTray() {
   Shell::GetInstance()->RemoveShellObserver(this);
+  Shell::GetInstance()->session_state_delegate()->RemoveSessionStateObserver(
+      this);
 }
 
 void OverviewButtonTray::UpdateAfterLoginStatusChange(
@@ -60,6 +64,11 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   SetDrawBackgroundAsActive(controller->IsSelecting());
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
   return true;
+}
+
+void OverviewButtonTray::SessionStateChanged(
+    SessionStateDelegate::SessionState state) {
+  UpdateIconVisibility();
 }
 
 void OverviewButtonTray::OnMaximizeModeStarted() {
@@ -115,9 +124,22 @@ void OverviewButtonTray::SetIconBorderForShelfAlignment() {
 }
 
 void OverviewButtonTray::UpdateIconVisibility() {
-  SetVisible(Shell::GetInstance()->maximize_mode_controller()->
-                 IsMaximizeModeWindowManagerEnabled() &&
-             Shell::GetInstance()->window_selector_controller()->CanSelect());
+  // The visibility of the OverviewButtonTray has diverge from
+  // WindowSelectorController::CanSelect. The visibility of the button should
+  // not change during transient times in which CanSelect is false. Such as when
+  // a modal dialog is present.
+  Shell* shell = Shell::GetInstance();
+  SessionStateDelegate* session_state_delegate =
+      shell->session_state_delegate();
+
+  SetVisible(
+      shell->maximize_mode_controller()->IsMaximizeModeWindowManagerEnabled() &&
+      session_state_delegate->IsActiveUserSessionStarted() &&
+      !session_state_delegate->IsScreenLocked() &&
+      session_state_delegate->GetSessionState() ==
+          SessionStateDelegate::SESSION_STATE_ACTIVE &&
+      shell->system_tray_delegate()->GetUserLoginStatus() !=
+          user::LOGGED_IN_KIOSK_APP);
 }
 
 }  // namespace ash

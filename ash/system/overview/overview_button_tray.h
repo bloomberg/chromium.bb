@@ -6,9 +6,9 @@
 #define ASH_SYSTEM_OVERVIEW_OVERVIEW_BUTTON_TRAY_H_
 
 #include "ash/ash_export.h"
+#include "ash/session/session_state_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_background_view.h"
-#include "ash/wm/overview/window_selector_controller.h"
 
 namespace views {
 class ImageView;
@@ -22,6 +22,7 @@ namespace ash {
 // This tray will only be visible while in this state. This tray does not
 // provide any bubble view windows.
 class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
+                                      public SessionStateObserver,
                                       public ShellObserver {
  public:
   explicit OverviewButtonTray(StatusAreaWidget* status_area_widget);
@@ -33,6 +34,9 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
 
   // ActionableView:
   bool PerformAction(const ui::Event& event) override;
+
+  // SessionStateObserver:
+  void SessionStateChanged(SessionStateDelegate::SessionState state) override;
 
   // ShellObserver:
   void OnMaximizeModeStarted() override;

@@ -14,12 +14,16 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/user/login_status.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/test/status_area_widget_test_helper.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "base/command_line.h"
 #include "base/test/user_action_tester.h"
 #include "base/time/time.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -51,6 +55,8 @@ class OverviewButtonTrayTest : public test::AshTestBase {
 
   void SetUp() override;
 
+  void NotifySessionStateChanged();
+
  protected:
   views::ImageView* GetImageView(OverviewButtonTray* tray) {
     return tray->icon_;
@@ -66,6 +72,11 @@ void OverviewButtonTrayTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAshEnableScreenRotationAnimation);
   AshTestBase::SetUp();
+}
+
+void OverviewButtonTrayTest::NotifySessionStateChanged() {
+  GetTray()->SessionStateChanged(
+      ash_test_helper()->GetTestSessionStateDelegate()->GetSessionState());
 }
 
 // Ensures that creation doesn't cause any crashes and adds the image icon.
@@ -178,6 +189,12 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
   SetSessionStarted(true);
   Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_USER);
   EXPECT_TRUE(GetTray()->visible());
+  SetUserAddingScreenRunning(true);
+  NotifySessionStateChanged();
+  EXPECT_FALSE(GetTray()->visible());
+  SetUserAddingScreenRunning(false);
+  NotifySessionStateChanged();
+  EXPECT_TRUE(GetTray()->visible());
   Shell::GetInstance()->maximize_mode_controller()->
       EnableMaximizeModeWindowManager(false);
 }
@@ -227,6 +244,30 @@ TEST_F(OverviewButtonTrayTest, HideAnimationAlwaysCompletes) {
       .Rotate(gfx::Display::ROTATE_270, gfx::Display::ROTATION_SOURCE_ACTIVE);
 
   RunAllPendingInMessageLoop();
+  EXPECT_FALSE(GetTray()->visible());
+}
+
+// Tests that the overview button becomes visible when the user enters
+// maximize mode with a system modal window open, and that it hides once
+// the user exits maximize mode.
+TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
+  // TODO(jonross): When CreateTestWindow*() have been unified, use the
+  // appropriate method to replace this setup. (crbug.com/483503)
+  scoped_ptr<aura::Window> window(new aura::Window(nullptr));
+  window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
+  window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
+  window->Init(ui::LAYER_TEXTURED);
+  window->Show();
+  ParentWindowInPrimaryRootWindow(window.get());
+
+  ASSERT_TRUE(Shell::GetInstance()->IsSystemModalWindowOpen());
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
+  EXPECT_TRUE(GetTray()->visible());
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(false);
   EXPECT_FALSE(GetTray()->visible());
 }
 
