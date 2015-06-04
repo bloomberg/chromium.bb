@@ -713,9 +713,7 @@ TEST_P(EndToEndTest, CorrectlyConfiguredFec) {
             client_->GetOrCreateStream()->fec_policy());
 }
 
-// TODO(shess): This is flaky on ChromiumOS bots.
-// http://crbug.com/374871
-TEST_P(EndToEndTest, DISABLED_LargePostSmallBandwidthLargeBuffer) {
+TEST_P(EndToEndTest, LargePostSmallBandwidthLargeBuffer) {
   ASSERT_TRUE(Initialize());
   SetPacketSendDelay(QuicTime::Delta::FromMicroseconds(1));
   // 256KB per second with a 256KB buffer from server to client.  Wireless
@@ -729,8 +727,7 @@ TEST_P(EndToEndTest, DISABLED_LargePostSmallBandwidthLargeBuffer) {
   string body;
   GenerateBody(&body, 1024 * 1024);
 
-  HTTPMessage request(HttpConstants::HTTP_1_1,
-                      HttpConstants::POST, "/foo");
+  HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/foo");
   request.AddBody(body, true);
 
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
@@ -786,8 +783,7 @@ TEST_P(EndToEndTest, InvalidStream) {
   string body;
   GenerateBody(&body, kMaxPacketSize);
 
-  HTTPMessage request(HttpConstants::HTTP_1_1,
-                      HttpConstants::POST, "/foo");
+  HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/foo");
   request.AddBody(body, true);
   // Force the client to write with a stream ID belonging to a nonexistent
   // server-side stream.
