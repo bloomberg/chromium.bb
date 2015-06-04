@@ -50,8 +50,13 @@ TerminationStatus GetTerminationStatusImpl(ProcessHandle handle,
       case SIGILL:
       case SIGSEGV:
         return TERMINATION_STATUS_PROCESS_CRASHED;
-      case SIGINT:
       case SIGKILL:
+#if defined(OS_CHROMEOS)
+        // On ChromeOS, only way a process gets kill by SIGKILL
+        // is by oom-killer.
+        return TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM;
+#endif
+      case SIGINT:
       case SIGTERM:
         return TERMINATION_STATUS_PROCESS_WAS_KILLED;
       default:

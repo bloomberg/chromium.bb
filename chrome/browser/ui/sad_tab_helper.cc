@@ -41,8 +41,12 @@ void SadTabHelper::RenderProcessGone(base::TerminationStatus status) {
 
 void SadTabHelper::InstallSadTab(base::TerminationStatus status) {
   chrome::SadTabKind kind =
-      (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) ?
-          chrome::SAD_TAB_KIND_KILLED : chrome::SAD_TAB_KIND_CRASHED;
+      (
+#if defined(OS_CHROMEOS)
+       status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM ||
+#endif
+       status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) ?
+      chrome::SAD_TAB_KIND_KILLED : chrome::SAD_TAB_KIND_CRASHED;
   sad_tab_.reset(chrome::SadTab::Create(web_contents(), kind));
   sad_tab_->Show();
 }

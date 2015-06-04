@@ -484,6 +484,11 @@ GpuProcessHost::~GpuProcessHost() {
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
         message = "You killed the GPU process! Why?";
         break;
+#if defined(OS_CHROMEOS)
+      case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+        message = "The GUP process was killed due to out of memory.";
+        break;
+#endif
       case base::TERMINATION_STATUS_PROCESS_CRASHED:
         message = "The GPU process crashed!";
         break;

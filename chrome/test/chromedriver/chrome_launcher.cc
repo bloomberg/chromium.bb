@@ -381,6 +381,9 @@ Status LaunchDesktopChrome(
           termination_reason = "exited abnormally";
           break;
         case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+#if defined(OS_CHROMEOS)
+        case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+#endif
           termination_reason = "was killed";
           break;
         case base::TERMINATION_STATUS_PROCESS_CRASHED:

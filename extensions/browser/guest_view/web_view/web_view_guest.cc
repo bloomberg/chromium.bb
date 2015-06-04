@@ -118,6 +118,10 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
     case base::TERMINATION_STATUS_STILL_RUNNING:
       return "abnormal";
+#if defined(OS_CHROMEOS)
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+      return "oom killed";
+#endif
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
       return "killed";
     case base::TERMINATION_STATUS_PROCESS_CRASHED:

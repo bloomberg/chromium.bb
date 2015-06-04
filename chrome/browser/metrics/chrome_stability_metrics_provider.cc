@@ -109,6 +109,11 @@ void CountBrowserCrashDumpAttempts() {
 }
 #endif  // defined(OS_WIN)
 
+void RecordChildKills(bool was_extension_process) {
+  UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKills",
+                           was_extension_process ? 2 : 1);
+}
+
 }  // namespace
 
 ChromeStabilityMetricsProvider::ChromeStabilityMetricsProvider() {
@@ -286,8 +291,14 @@ void ChromeStabilityMetricsProvider::LogRendererCrash(
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
                              was_extension_process ? 2 : 1);
   } else if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
-    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildKills",
-                             was_extension_process ? 2 : 1);
+    RecordChildKills(was_extension_process);
+#if defined(OS_CHROMEOS)
+  } else if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM) {
+    RecordChildKills(was_extension_process);
+    UMA_HISTOGRAM_ENUMERATION("BrowserRenderProcessHost.ChildKills.OOM",
+                              was_extension_process ? 2 : 1,
+                              3);
+#endif
   } else if (status == base::TERMINATION_STATUS_STILL_RUNNING) {
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.DisconnectedAlive",
                              was_extension_process ? 2 : 1);

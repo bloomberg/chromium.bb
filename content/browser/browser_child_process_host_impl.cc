@@ -306,6 +306,9 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
                                   PROCESS_TYPE_MAX);
         break;
       }
+#if defined(OS_CHROMEOS)
+      case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+#endif
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED: {
         delegate_->OnProcessCrashed(exit_code);
         // Report that this child process was killed.
@@ -325,6 +328,13 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
     UMA_HISTOGRAM_ENUMERATION("ChildProcess.Disconnected2",
                               data_.process_type,
                               PROCESS_TYPE_MAX);
+#if defined(OS_CHROMEOS)
+    if (status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM) {
+      UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed2.OOM",
+                                data_.process_type,
+                                PROCESS_TYPE_MAX);
+    }
+#endif
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&NotifyProcessHostDisconnected, data_));

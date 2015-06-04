@@ -2563,6 +2563,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Count of renderer process kills grouped by type.</summary>
 </histogram>
 
+<histogram name="BrowserRenderProcessHost.ChildKills.OOM" enum="RendererType">
+  <owner>oshima@chromium.org</owner>
+  <summary>
+    Out of BrowserRenderProcessHost.ChildKills, numer of kills due to SIGKILL,
+    which is a strong signal of out of memory on ChromeOS, grouped by renderer
+    type.
+  </summary>
+</histogram>
+
 <histogram name="BrowserRenderProcessHost.DisconnectedAlive"
     enum="RendererType">
   <owner>wfh@chromium.org</owner>
@@ -3020,6 +3029,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="ChildProcess.Killed2" enum="ProcessType2">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Count of child process kills grouped by process type.</summary>
+</histogram>
+
+<histogram name="ChildProcess.Killed2.OOM" enum="ProcessType2">
+  <owner>oshima@chromium.org</owner>
+  <summary>
+    Out of ChildProcess.Killled, number of kills due to SIGKILL, which is a
+    strong signal of out of memory on ChromeOS, grouped by process type.
+  </summary>
 </histogram>
 
 <histogram name="ChildProcess.KilledByExtensionAPI">

@@ -507,8 +507,12 @@ void Tab::SetData(const TabRendererData& data) {
       // selected (i.e. in the foreground) -- we won't reload these
       // automatically since we don't want to get into a crash loop.
       if (IsSelected() ||
-          data_.crashed_status != base::TERMINATION_STATUS_PROCESS_WAS_KILLED)
+          (data_.crashed_status
+           != base::TERMINATION_STATUS_PROCESS_WAS_KILLED &&
+           data_.crashed_status
+           != base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM)) {
         StartCrashAnimation();
+      }
 #else
       StartCrashAnimation();
 #endif

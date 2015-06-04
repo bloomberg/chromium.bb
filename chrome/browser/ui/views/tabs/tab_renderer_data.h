@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
 
-#include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
@@ -29,11 +28,7 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
   // This interprets the crashed status to decide whether or not this
   // render data represents a tab that is "crashed" (i.e. the render
   // process died unexpectedly).
-  bool IsCrashed() const {
-    return (crashed_status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ||
-            crashed_status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
-            crashed_status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION);
-  }
+  bool IsCrashed() const;
 
   // Returns true if the TabRendererData is same as given |data|.
   bool Equals(const TabRendererData& data);

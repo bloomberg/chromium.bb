@@ -506,6 +506,9 @@ void RenderFrameDevToolsAgentHost::RenderProcessGone(
   switch(status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+#if defined(OS_CHROMEOS)
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+#endif
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
 #if defined(OS_ANDROID)
     case base::TERMINATION_STATUS_OOM_PROTECTED:
