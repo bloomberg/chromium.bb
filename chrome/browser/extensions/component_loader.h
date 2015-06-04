@@ -16,10 +16,7 @@
 
 class ExtensionServiceInterface;
 class PrefService;
-
-namespace content {
-class BrowserContext;
-}
+class Profile;
 
 namespace extensions {
 
@@ -29,7 +26,7 @@ class ComponentLoader {
   ComponentLoader(ExtensionServiceInterface* extension_service,
                   PrefService* prefs,
                   PrefService* local_state,
-                  content::BrowserContext* browser_context);
+                  Profile* browser_context);
   virtual ~ComponentLoader();
 
   size_t registered_extensions_count() const {
@@ -147,6 +144,7 @@ class ComponentLoader {
   void AddHotwordHelperExtension();
   void AddImageLoaderExtension();
   void AddNetworkSpeechSynthesisExtension();
+  void AddGoogleNowExtension();
 
   void AddWithNameAndDescription(int manifest_resource_id,
                                  const base::FilePath& root_directory,
@@ -184,7 +182,7 @@ class ComponentLoader {
 
   PrefService* profile_prefs_;
   PrefService* local_state_;
-  content::BrowserContext* browser_context_;
+  Profile* profile_;
 
   ExtensionServiceInterface* extension_service_;
 

@@ -18,15 +18,18 @@
 #include "chrome/browser/extensions/component_extensions_whitelist/whitelist.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/pdf/pdf_extension_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/browser/browser_context.h"
+#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "extensions/common/constants.h"
@@ -130,10 +133,10 @@ ComponentLoader::ComponentExtensionInfo::ComponentExtensionInfo(
 ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
                                  PrefService* profile_prefs,
                                  PrefService* local_state,
-                                 content::BrowserContext* browser_context)
+                                 Profile* profile)
     : profile_prefs_(profile_prefs),
       local_state_(local_state),
-      browser_context_(browser_context),
+      profile_(profile),
       extension_service_(extension_service),
       ignore_whitelist_for_testing_(false),
       weak_factory_(this) {}
@@ -381,7 +384,7 @@ void ComponentLoader::AddHotwordAudioVerificationApp() {
 }
 
 void ComponentLoader::AddHotwordHelperExtension() {
-  if (HotwordServiceFactory::IsHotwordAllowed(browser_context_)) {
+  if (HotwordServiceFactory::IsHotwordAllowed(profile_)) {
     Add(IDR_HOTWORD_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("hotword")));
   }
@@ -397,6 +400,42 @@ void ComponentLoader::AddImageLoaderExtension() {
 void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
   Add(IDR_NETWORK_SPEECH_SYNTHESIS_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("network_speech_synthesis")));
+}
+
+void ComponentLoader::AddGoogleNowExtension() {
+#if defined(ENABLE_GOOGLE_NOW)
+  const char kEnablePrefix[] = "Enable";
+  const char kFieldTrialName[] = "GoogleNow";
+  std::string enable_prefix(kEnablePrefix);
+  std::string field_trial_result =
+      base::FieldTrialList::FindFullName(kFieldTrialName);
+
+  bool enabled_via_field_trial =
+      field_trial_result.compare(0, enable_prefix.length(), enable_prefix) == 0;
+
+  // Enable the feature on trybots and trunk builds.
+  bool enabled_via_trunk_build =
+      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_UNKNOWN;
+
+  bool is_authenticated =
+      SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
+
+  bool enabled =
+      (enabled_via_field_trial && is_authenticated) || enabled_via_trunk_build;
+
+#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
+  // Don't load if newer trial is running (== new extension id is available).
+  std::string ignored_extension_id;
+  if (GetGoogleNowExtensionId(&ignored_extension_id)) {
+    enabled = false;
+  }
+#endif  // defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
+
+  if (enabled) {
+    Add(IDR_GOOGLE_NOW_MANIFEST,
+        base::FilePath(FILE_PATH_LITERAL("google_now")));
+  }
+#endif  // defined(ENABLE_GOOGLE_NOW)
 }
 
 #if defined(OS_CHROMEOS)
@@ -592,6 +631,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     AddHotwordAudioVerificationApp();
     AddHotwordHelperExtension();
     AddImageLoaderExtension();
+    AddGoogleNowExtension();
 
     bool install_feedback = enable_background_extensions_during_testing;
 #if defined(GOOGLE_CHROME_BUILD)
@@ -644,36 +684,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   }
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(ENABLE_GOOGLE_NOW)
-  const char kEnablePrefix[] = "Enable";
-  const char kFieldTrialName[] = "GoogleNow";
-  std::string enable_prefix(kEnablePrefix);
-  std::string field_trial_result =
-      base::FieldTrialList::FindFullName(kFieldTrialName);
-
-  bool enabled_via_field_trial =
-      field_trial_result.compare(0, enable_prefix.length(), enable_prefix) == 0;
-
-  // Enable the feature on trybots and trunk builds.
-  bool enabled_via_trunk_build =
-      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_UNKNOWN;
-
-  bool enabled = enabled_via_field_trial || enabled_via_trunk_build;
-
-#if defined(ENABLE_APP_LIST) && defined(OS_CHROMEOS)
-  // Don't load if newer trial is running (== new extension id is available).
-  std::string ignored_extension_id;
-  if (GetGoogleNowExtensionId(&ignored_extension_id)) {
-    enabled = false;
-  }
-#endif
-
-  if (!skip_session_components && enabled) {
-    Add(IDR_GOOGLE_NOW_MANIFEST,
-        base::FilePath(FILE_PATH_LITERAL("google_now")));
-  }
-#endif
-
 #if defined(GOOGLE_CHROME_BUILD)
 #if !defined(OS_CHROMEOS)  // http://crbug.com/314799
   AddNetworkSpeechSynthesisExtension();
@@ -701,8 +711,7 @@ void ComponentLoader::EnableFileSystemInGuestMode(const std::string& id) {
     // file system access. Make sure temporary file system is enabled in the off
     // the record browser context (as that is the one used in guest session).
     content::BrowserContext* off_the_record_context =
-        ExtensionsBrowserClient::Get()->GetOffTheRecordContext(
-            browser_context_);
+        ExtensionsBrowserClient::Get()->GetOffTheRecordContext(profile_);
     GURL site = content::SiteInstance::GetSiteForURL(
         off_the_record_context, Extension::GetBaseURLFromExtensionId(id));
     storage::FileSystemContext* file_system_context =
