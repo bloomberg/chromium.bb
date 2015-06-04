@@ -746,7 +746,7 @@ template("java_strings_grd_prebuilt") {
   build_config = base_path + ".build_config"
 
   build_config_target_name = "${target_name}__build_config"
-  zip_target_name ="${target_name}__zip" 
+  zip_target_name = "${target_name}__zip"
   final_target_name = target_name
 
   write_build_config(build_config_target_name) {
@@ -1967,6 +1967,7 @@ template("android_aidl") {
 #   create_native_executable_dist("foo_dist") {
 #     dist_dir = "$root_build_dir/foo_dist"
 #     binary = "$root_build_dir/exe.stripped/foo"
+#     deps = [ ":the_thing_that_makes_foo" ]
 #   }
 template("create_native_executable_dist") {
   set_sources_assignment_filter([])
@@ -2015,6 +2016,9 @@ template("create_native_executable_dist") {
       "--readelf",
       rebase_path(android_readelf, root_build_dir),
     ]
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
   }
 
   copy_ex(copy_target_name) {
@@ -2036,6 +2040,9 @@ template("create_native_executable_dist") {
     deps = [
       ":$find_deps_target_name",
     ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
   }
 
   group(template_name) {

@@ -39,6 +39,9 @@ if (current_toolchain == default_toolchain) {
   create_native_executable_dist("md5sum_prepare_dist") {
     dist_dir = "$root_build_dir/md5sum_dist"
     binary = "$root_build_dir/exe.stripped/md5sum_bin"
+    deps = [
+      ":md5sum_bin",
+    ]
   }
 } else {
   # GYP: //tools/android/md5sum/md5sum.gyp:md5sum_bin_host

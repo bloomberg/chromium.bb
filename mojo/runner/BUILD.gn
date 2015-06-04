@@ -309,6 +309,9 @@ if (is_android) {
     outputs = [
       "$root_out_dir/lib.stripped/libmojo_runner.so",
     ]
+    deps = [
+      ":mojo_runner",
+    ]
   }
 
   copy_ex("copy_mojo_runner_test_assets") {
