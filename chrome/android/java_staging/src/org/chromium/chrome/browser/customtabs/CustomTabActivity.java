@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.hosted;
+package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -31,19 +31,19 @@ import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
- * The activity for hosted mode. It will be launched on top of a client's task.
+ * The activity for custom tabs. It will be launched on top of a client's task.
  */
-public class HostedActivity extends CompositorChromeActivity {
-    private static HostedContentHandler sActiveContentHandler;
+public class CustomTabActivity extends CompositorChromeActivity {
+    private static CustomTabContentHandler sActiveContentHandler;
 
-    private HostedTab mTab;
+    private CustomTab mTab;
     private ToolbarHelper mToolbarHelper;
-    private HostedAppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
+    private CustomTabAppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
     private AppMenuHandler mAppMenuHandler;
     private FindToolbarManager mFindToolbarManager;
-    private HostedIntentDataProvider mIntentDataProvider;
+    private CustomTabIntentDataProvider mIntentDataProvider;
     private long mSessionId;
-    private HostedContentHandler mHostedContentHandler;
+    private CustomTabContentHandler mCustomTabContentHandler;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
@@ -52,24 +52,25 @@ public class HostedActivity extends CompositorChromeActivity {
     private boolean mShouldOverridePackage;
 
     /**
-     * Sets the currently active {@link HostedContentHandler} in focus.
-     * @param contentHandler {@link HostedContentHandler} to set.
+     * Sets the currently active {@link CustomTabContentHandler} in focus.
+     * @param contentHandler {@link CustomTabContentHandler} to set.
      */
-    public static void setActiveContentHandler(HostedContentHandler contentHandler) {
+    public static void setActiveContentHandler(CustomTabContentHandler contentHandler) {
         sActiveContentHandler = contentHandler;
     }
 
     /**
      * Used to check whether an incoming intent can be handled by the
-     * current {@link HostedContentHandler}.
-     * @return Whether the active {@link HostedContentHandler} has handled the intent.
+     * current {@link CustomTabContentHandler}.
+     * @return Whether the active {@link CustomTabContentHandler} has handled the intent.
      */
     public static boolean handleInActiveContentIfNeeded(Intent intent) {
         if (sActiveContentHandler == null) return false;
 
-        long intentSessionId = intent.getLongExtra(HostedIntentDataProvider.EXTRA_HOSTED_SESSION_ID,
-                        HostedIntentDataProvider.INVALID_SESSION_ID);
-        if (intentSessionId == HostedIntentDataProvider.INVALID_SESSION_ID) return false;
+        long intentSessionId = intent.getLongExtra(
+                CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_SESSION_ID,
+                CustomTabIntentDataProvider.INVALID_SESSION_ID);
+        if (intentSessionId == CustomTabIntentDataProvider.INVALID_SESSION_ID) return false;
 
         if (sActiveContentHandler.getSessionId() != intentSessionId) return false;
         String url = IntentHandler.getUrlFromIntent(intent);
@@ -97,7 +98,7 @@ public class HostedActivity extends CompositorChromeActivity {
     public void preInflationStartup() {
         super.preInflationStartup();
         setTabModelSelector(new SingleTabModelSelector(this, false, true));
-        mIntentDataProvider = new HostedIntentDataProvider(getIntent(), this);
+        mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
     }
 
     @Override
@@ -105,9 +106,10 @@ public class HostedActivity extends CompositorChromeActivity {
         super.postInflationStartup();
         ToolbarControlContainer controlContainer =
                 ((ToolbarControlContainer) findViewById(R.id.control_container));
-        mAppMenuPropertiesDelegate = new HostedAppMenuPropertiesDelegate(this,
+        mAppMenuPropertiesDelegate = new CustomTabAppMenuPropertiesDelegate(this,
                 mIntentDataProvider.getMenuTitles());
-        mAppMenuHandler = new AppMenuHandler(this, mAppMenuPropertiesDelegate, R.menu.hosted_menu);
+        mAppMenuHandler =
+                new AppMenuHandler(this, mAppMenuPropertiesDelegate, R.menu.custom_tabs_menu);
         mToolbarHelper = new ToolbarHelper(this, controlContainer,
                 mAppMenuHandler, mAppMenuPropertiesDelegate,
                 getCompositorViewHolder().getInvalidator());
@@ -137,7 +139,7 @@ public class HostedActivity extends CompositorChromeActivity {
     public void finishNativeInitialization() {
         String url = IntentHandler.getUrlFromIntent(getIntent());
         mSessionId = mIntentDataProvider.getSessionId();
-        mTab = new HostedTab(this, getWindowAndroid(), mSessionId, url, Tab.INVALID_TAB_ID);
+        mTab = new CustomTab(this, getWindowAndroid(), mSessionId, url, Tab.INVALID_TAB_ID);
         getTabModelSelector().setTab(mTab);
 
         ToolbarControlContainer controlContainer = (ToolbarControlContainer) findViewById(
@@ -153,13 +155,13 @@ public class HostedActivity extends CompositorChromeActivity {
                 new OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        HostedActivity.this.finish();
+                        CustomTabActivity.this.finish();
                     }
                 });
 
         mTab.setFullscreenManager(getFullscreenManager());
         mTab.loadUrl(new LoadUrlParams(url));
-        mHostedContentHandler = new HostedContentHandler() {
+        mCustomTabContentHandler = new CustomTabContentHandler() {
             @Override
             public void loadUrl(LoadUrlParams params) {
                 mTab.loadUrl(params);
@@ -176,7 +178,7 @@ public class HostedActivity extends CompositorChromeActivity {
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        setActiveContentHandler(mHostedContentHandler);
+        setActiveContentHandler(mCustomTabContentHandler);
     }
 
     @Override
@@ -214,12 +216,12 @@ public class HostedActivity extends CompositorChromeActivity {
 
     @Override
     protected int getControlContainerLayoutId() {
-        return R.layout.hosted_control_container;
+        return R.layout.custom_tabs_control_container;
     }
 
     @Override
     protected int getControlContainerHeightResource() {
-        return R.dimen.hosted_control_container_height;
+        return R.dimen.custom_tabs_control_container_height;
     }
 
     @Override
@@ -292,7 +294,7 @@ public class HostedActivity extends CompositorChromeActivity {
      *         purposes only.
      */
     @VisibleForTesting
-    HostedAppMenuPropertiesDelegate getAppMenuPropertiesDelegate() {
+    CustomTabAppMenuPropertiesDelegate getAppMenuPropertiesDelegate() {
         return mAppMenuPropertiesDelegate;
     }
 
@@ -303,11 +305,11 @@ public class HostedActivity extends CompositorChromeActivity {
     }
 
     /**
-     * @return The {@link HostedIntentDataProvider} for this {@link HostedActivity}. For test
+     * @return The {@link CustomTabIntentDataProvider} for this {@link CustomTabActivity}. For test
      *         purposes only.
      */
     @VisibleForTesting
-    HostedIntentDataProvider getIntentDataProvider() {
+    CustomTabIntentDataProvider getIntentDataProvider() {
         return mIntentDataProvider;
     }
 }

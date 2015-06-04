@@ -62,10 +62,10 @@ public interface Toolbar {
     void setBookmarkClickHandler(OnClickListener listener);
 
     /**
-     * Sets the OnClickListener to notify when the back button is pressed in hosted mode.
+     * Sets the OnClickListener to notify when the back button is pressed in a custom tab.
      * @param listener The callback that will be notified when the back button is pressed.
      */
-    void setHostedBackClickHandler(OnClickListener listener);
+    void setCustomTabReturnClickHandler(OnClickListener listener);
 
     /**
      * Calculates the {@link Rect} that represents the content area of the location bar.  This

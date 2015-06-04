@@ -4,5 +4,5 @@
 
 // This file is needed to compile IBrowserConnectionService.aidl.
 
-interface org.chromium.chrome.browser.hosted.IBrowserConnectionService;
-interface org.chromium.chrome.browser.hosted.IBrowserConnectionCallback;
+interface org.chromium.chrome.browser.customtabs.IBrowserConnectionService;
+interface org.chromium.chrome.browser.customtabs.IBrowserConnectionCallback;

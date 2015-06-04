@@ -37,9 +37,9 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebappAuthenticator;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.chrome.browser.hosted.HostedActivity;
-import org.chromium.chrome.browser.hosted.HostedIntentDataProvider;
 import org.chromium.chrome.browser.metrics.LaunchHistogram;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -155,7 +155,7 @@ public class ChromeLauncherActivity extends Activity
         mIntentHandler = new IntentHandler(this, getPackageName());
         maybePerformMigrationTasks();
 
-        if (handleHostedActivityIntent()) {
+        if (handleCustomTabActivityIntent()) {
             finish();
             return;
         }
@@ -249,26 +249,29 @@ public class ChromeLauncherActivity extends Activity
     }
 
     /**
-     * Handles launching an hosted activity, which will sit on top of a client's activity in the
-     * same task.
+     * Handles launching a {@link CustomTabActivity}, which will sit on top of a client's activity
+     * in the same task.
      * @return True if the intent is handled here.
      */
-    private boolean handleHostedActivityIntent() {
+    private boolean handleCustomTabActivityIntent() {
         if (getIntent() == null) return false;
 
-        if (!getIntent().hasExtra(HostedIntentDataProvider.EXTRA_HOSTED_SESSION_ID)) return false;
+        if (!getIntent().hasExtra(
+                CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_SESSION_ID)) {
+            return false;
+        }
 
         String url = IntentHandler.getUrlFromIntent(getIntent());
         if (url == null) return false;
 
-        boolean handled = HostedActivity.handleInActiveContentIfNeeded(getIntent());
+        boolean handled = CustomTabActivity.handleInActiveContentIfNeeded(getIntent());
         if (handled) return true;
 
         // Create and fire a launch intent. Use the copy constructor to carry over the myriad of
         // extras.
         Intent newIntent = new Intent(getIntent());
         newIntent.setAction(Intent.ACTION_VIEW);
-        newIntent.setClassName(this, HostedActivity.class.getName());
+        newIntent.setClassName(this, CustomTabActivity.class.getName());
         newIntent.setData(Uri.parse(url));
         startActivity(newIntent);
         return true;

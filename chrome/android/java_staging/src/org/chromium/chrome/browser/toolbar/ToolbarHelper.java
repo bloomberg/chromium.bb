@@ -149,7 +149,7 @@ public class ToolbarHelper {
             OnClickListener tabSwitcherClickHandler,
             OnClickListener newTabClickHandler,
             OnClickListener bookmarkClickHandler,
-            OnClickListener hostedBackClickHandler) {
+            OnClickListener customTabsBackClickHandler) {
 
 
         TabModelSelector selector = mActivity.getTabModelSelector();
@@ -176,7 +176,7 @@ public class ToolbarHelper {
         mToolbar.setOnTabSwitcherClickHandler(tabSwitcherClickHandler);
         mToolbar.setOnNewTabClickHandler(newTabClickHandler);
         mToolbar.setBookmarkClickHandler(bookmarkClickHandler);
-        mToolbar.setHostedBackClickHandler(hostedBackClickHandler);
+        mToolbar.setCustomTabReturnClickHandler(customTabsBackClickHandler);
         mInitialized = true;
     }
 

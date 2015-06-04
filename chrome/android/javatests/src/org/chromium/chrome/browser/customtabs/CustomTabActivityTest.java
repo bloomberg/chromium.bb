@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.hosted;
+package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.app.Instrumentation;
@@ -38,9 +38,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Instrumentation tests for {@link HostedActivity}.
+ * Instrumentation tests for {@link CustomTabActivity}.
  */
-public class HostedActivityTest extends ChromeActivityTestCaseBase<HostedActivity> {
+public class CustomTabActivityTest extends ChromeActivityTestCaseBase<CustomTabActivity> {
 
     /**
      * An empty {@link BroadcastReceiver} that exists only to make the PendingIntent to carry an
@@ -60,15 +60,15 @@ public class HostedActivityTest extends ChromeActivityTestCaseBase<HostedActivit
     }
 
     private static final String
-            TEST_ACTION = "org.chromium.chrome.browser.hosted.TEST_PENDING_INTENT_SENT";
+            TEST_ACTION = "org.chromium.chrome.browser.customtabs.TEST_PENDING_INTENT_SENT";
     private static final String TEST_PAGE = TestHttpServerClient.getUrl(
             "chrome/test/data/android/google.html");
     private static final String TEST_MENU_TITLE = "testMenuTitle";
 
-    private HostedActivity mActivity;
+    private CustomTabActivity mActivity;
 
-    public HostedActivityTest() {
-        super(HostedActivity.class);
+    public CustomTabActivityTest() {
+        super(CustomTabActivity.class);
     }
 
     @Override
@@ -78,17 +78,18 @@ public class HostedActivityTest extends ChromeActivityTestCaseBase<HostedActivit
     @Override
     protected void startActivityCompletely(Intent intent) {
         Instrumentation.ActivityMonitor monitor = getInstrumentation().addMonitor(
-                HostedActivity.class.getName(), null, false);
+                CustomTabActivity.class.getName(), null, false);
         Activity activity = getInstrumentation().startActivitySync(intent);
         assertNotNull("Main activity did not start", activity);
-        HostedActivity hostedActivity = (HostedActivity) monitor.waitForActivityWithTimeout(
+        CustomTabActivity customTabActivity =
+                (CustomTabActivity) monitor.waitForActivityWithTimeout(
                 ACTIVITY_START_TIMEOUT_MS);
-        assertNotNull("HostedActivity did not start", hostedActivity);
-        setActivity(hostedActivity);
-        mActivity = hostedActivity;
+        assertNotNull("CustomTabActivity did not start", customTabActivity);
+        setActivity(customTabActivity);
+        mActivity = customTabActivity;
     }
 
-    private void startHostedActivityWithIntent(Intent intent) throws InterruptedException {
+    private void startCustomTabActivityWithIntent(Intent intent) throws InterruptedException {
         startActivityCompletely(intent);
         assertTrue("Tab never selected/initialized.",
                 CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
@@ -113,14 +114,14 @@ public class HostedActivityTest extends ChromeActivityTestCaseBase<HostedActivit
 
     /**
      * Creates the simplest intent that is sufficient to let {@link ChromeLauncherActivity} launch
-     * the {@link HostedActivity}.
+     * the {@link CustomTabActivity}.
      */
-    private Intent createMinimalHostedIntent() {
+    private Intent createMinimalCustomTabIntent() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(TEST_PAGE));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setComponent(new ComponentName(getInstrumentation().getTargetContext(),
                 ChromeLauncherActivity.class));
-        intent.putExtra(HostedIntentDataProvider.EXTRA_HOSTED_SESSION_ID, true);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_SESSION_ID, true);
         return intent;
     }
 
@@ -136,11 +137,11 @@ public class HostedActivityTest extends ChromeActivityTestCaseBase<HostedActivit
         PendingIntent pi = PendingIntent.getBroadcast(getInstrumentation().getTargetContext(), 0,
                 menuIntent, 0);
         Bundle bundle = new Bundle();
-        bundle.putString(HostedIntentDataProvider.KEY_HOSTED_MENU_TITLE, TEST_MENU_TITLE);
-        bundle.putParcelable(HostedIntentDataProvider.KEY_HOSTED_PENDING_INTENT, pi);
+        bundle.putString(CustomTabIntentDataProvider.KEY_CUSTOM_TABS_MENU_TITLE, TEST_MENU_TITLE);
+        bundle.putParcelable(CustomTabIntentDataProvider.KEY_CUSTOM_TABS_PENDING_INTENT, pi);
         ArrayList<Bundle> menuItems = new ArrayList<Bundle>();
         menuItems.add(bundle);
-        intent.putParcelableArrayListExtra(HostedIntentDataProvider.EXTRA_HOSTED_MENU_ITEMS,
+        intent.putParcelableArrayListExtra(CustomTabIntentDataProvider.EXTRA_CUSTOM_TABS_MENU_ITEMS,
                 menuItems);
         return pi;
     }
@@ -163,7 +164,7 @@ public class HostedActivityTest extends ChromeActivityTestCaseBase<HostedActivit
 
     @SmallTest
     public void testContextMenuEntriesForImage() throws InterruptedException, TimeoutException {
-        startHostedActivityWithIntent(createMinimalHostedIntent());
+        startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
         final int expectedMenuSize = 4;
         Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(), "logo");
@@ -176,7 +177,7 @@ public class HostedActivityTest extends ChromeActivityTestCaseBase<HostedActivit
 
     @SmallTest
     public void testContextMenuEntriesForLink() throws InterruptedException, TimeoutException {
-        startHostedActivityWithIntent(createMinimalHostedIntent());
+        startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
         final int expectedMenuSize = 3;
         Menu menu = ContextMenuUtils.openContextMenu(this, getActivity().getActivityTab(),
@@ -188,10 +189,10 @@ public class HostedActivityTest extends ChromeActivityTestCaseBase<HostedActivit
     }
 
     @SmallTest
-    public void testHostedAppMenu() throws InterruptedException {
-        Intent intent = createMinimalHostedIntent();
+    public void testCustomTabAppMenu() throws InterruptedException {
+        Intent intent = createMinimalCustomTabIntent();
         addMenuEntryToIntent(intent);
-        startHostedActivityWithIntent(intent);
+        startCustomTabActivityWithIntent(intent);
 
         openAppMenuAndAssertMenuShown();
         final int expectedMenuSize = 4;
@@ -207,9 +208,9 @@ public class HostedActivityTest extends ChromeActivityTestCaseBase<HostedActivit
 
     @SmallTest
     public void testCustomMenuEntry() throws InterruptedException {
-        Intent intent = createMinimalHostedIntent();
+        Intent intent = createMinimalCustomTabIntent();
         final PendingIntent pi = addMenuEntryToIntent(intent);
-        startHostedActivityWithIntent(intent);
+        startCustomTabActivityWithIntent(intent);
 
         final OnFinishedForTest onFinished = new OnFinishedForTest(pi);
         mActivity.getIntentDataProvider().setMenuSelectionOnFinishedForTesting(onFinished);
@@ -235,7 +236,7 @@ public class HostedActivityTest extends ChromeActivityTestCaseBase<HostedActivit
 
     @SmallTest
     public void testOpenInChrome() throws InterruptedException {
-        startHostedActivityWithIntent(createMinimalHostedIntent());
+        startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
 
         boolean isDocumentMode = FeatureUtilities.isDocumentMode(
                 getInstrumentation().getTargetContext());

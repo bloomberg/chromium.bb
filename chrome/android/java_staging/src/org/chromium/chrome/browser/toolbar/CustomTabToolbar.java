@@ -52,9 +52,9 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
- * The Toolbar layout to be used for hosted mode. This is used for both phone and tablet UIs.
+ * The Toolbar layout to be used for a custom tab. This is used for both phone and tablet UIs.
  */
-public class HostedToolbar extends ToolbarLayout implements LocationBar {
+public class CustomTabToolbar extends ToolbarLayout implements LocationBar {
     private View mUrlInfoContainer;
     private UrlBar mUrlBar;
     private TextView mTitleBar;
@@ -62,14 +62,14 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
     private ImageButton mCustomActionButton;
     private int mSecurityIconType;
     private boolean mUseDarkColors;
-    private TintedImageButton mBackButton;
+    private TintedImageButton mReturnButton;
     private Animator mSecurityButtonShowAnimator;
     private boolean mBackgroundColorSet;
 
     /**
      * Constructor for getting this class inflated from an xml layout file.
      */
-    public HostedToolbar(Context context, AttributeSet attrs) {
+    public CustomTabToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -86,7 +86,7 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
         mSecurityButton = (ImageButton) findViewById(R.id.security_button);
         mSecurityIconType = ConnectionSecurityHelperSecurityLevel.NONE;
         mCustomActionButton = (ImageButton) findViewById(R.id.action_button);
-        mBackButton = (TintedImageButton) findViewById(R.id.back_button);
+        mReturnButton = (TintedImageButton) findViewById(R.id.back_button);
         mSecurityButtonShowAnimator = ObjectAnimator.ofFloat(mSecurityButton, ALPHA, 1);
         mSecurityButtonShowAnimator
                 .setDuration(ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
@@ -115,8 +115,8 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
     }
 
     @Override
-    public void setHostedBackClickHandler(OnClickListener listener) {
-        mBackButton.setOnClickListener(listener);
+    public void setCustomTabReturnClickHandler(OnClickListener listener) {
+        mReturnButton.setOnClickListener(listener);
     }
 
     @Override
@@ -239,7 +239,7 @@ public class HostedToolbar extends ToolbarLayout implements LocationBar {
         ColorStateList colorStateList = resources.getColorStateList(mUseDarkColors
                 ? R.color.dark_mode_tint : R.color.light_mode_tint);
         mMenuButton.setTint(colorStateList);
-        mBackButton.setTint(colorStateList);
+        mReturnButton.setTint(colorStateList);
         mUrlBar.setUseDarkTextColors(mUseDarkColors);
 
         int titleTextColor = mUseDarkColors ? resources.getColor(R.color.url_emphasis_default_text)

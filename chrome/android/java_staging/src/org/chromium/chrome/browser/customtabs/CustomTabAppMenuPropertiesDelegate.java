@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.hosted;
+package org.chromium.chrome.browser.customtabs;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,16 +19,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * App menu properties delegate for {@link HostedActivity}.
+ * App menu properties delegate for {@link CustomTabActivity}.
  */
-public class HostedAppMenuPropertiesDelegate extends ChromeAppMenuPropertiesDelegate {
+public class CustomTabAppMenuPropertiesDelegate extends ChromeAppMenuPropertiesDelegate {
     private boolean mIsCustomEntryAdded;
     private List<String> mMenuEntries;
     private Map<MenuItem, Integer> mItemToIndexMap = new HashMap<MenuItem, Integer>();
     /**
-     * Creates an {@link HostedAppMenuPropertiesDelegate} instance.
+     * Creates an {@link CustomTabAppMenuPropertiesDelegate} instance.
      */
-    public HostedAppMenuPropertiesDelegate(ChromeActivity activity,
+    public CustomTabAppMenuPropertiesDelegate(ChromeActivity activity,
             List<String> menuEntries) {
         super(activity);
         mMenuEntries = menuEntries;
@@ -59,7 +59,7 @@ public class HostedAppMenuPropertiesDelegate extends ChromeAppMenuPropertiesDele
 
     /**
      * @return The index that the given menu item should appear in the result of
-     *         {@link HostedIntentDataProvider#getMenuTitles()}. Returns -1 if item not found.
+     *         {@link CustomTabIntentDataProvider#getMenuTitles()}. Returns -1 if item not found.
      */
     public int getIndexOfMenuItem(MenuItem menuItem) {
         if (!mItemToIndexMap.containsKey(menuItem)) {

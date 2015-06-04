@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.hosted;
+package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -27,69 +27,77 @@ import java.util.List;
 
 /**
  * A model class that parses intent from third-party apps and provides results to
- * {@link HostedActivity}.
+ * {@link CustomTabActivity}.
  */
-public class HostedIntentDataProvider {
-    private static final String TAG = "HostedIntentDataProvider";
+public class CustomTabIntentDataProvider {
+    private static final String TAG = "CustomTabIntentDataProvider";
 
     /**
-     * The category name that the service intent has to have for hosted mode. This
+     * The category name that the service intent has to have for custom tabs. This
      * category can also be used to generically resolve to the service component for custom tabs.
      */
     public static final String CATEGORY_CUSTOM_TABS = "android.intent.category.CUSTOM_TABS";
 
     /**
      * Extra used to match the session. This has to be included in the intent to open in
-     * hosted mode. Can be -1 if there is no session id taken. Its value is a long returned
+     * a custom tab. Can be -1 if there is no session id taken. Its value is a long returned
      * by {@link IBrowserConnectionService#newSession}.
      */
-    public static final String EXTRA_HOSTED_SESSION_ID = "hosted:session_id";
+    public static final String EXTRA_CUSTOM_TABS_SESSION_ID =
+            "android.support.CUSTOM_TABS:session_id";
 
     /**
      * Extra used to keep the caller alive. Its value is an Intent.
      */
-    public static final String EXTRA_HOSTED_KEEP_ALIVE = "hosted:keep_alive";
+    public static final String EXTRA_CUSTOM_TABS_KEEP_ALIVE =
+            "android.support.CUSTOM_TABS:keep_alive";
 
     /**
      * Extra that changes the background color for the omnibox. colorRes is an int that specifies a
      * color
      */
-    public static final String EXTRA_HOSTED_TOOLBAR_COLOR = "hosted:toolbar_color";
+    public static final String EXTRA_CUSTOM_TABS_TOOLBAR_COLOR =
+            "android.support.CUSTOM_TABS:toolbar_color";
 
     /**
      * Bundle used for the action button parameters.
      */
-    public static final String EXTRA_HOSTED_ACTION_BUTTON_BUNDLE = "hosted:action_button_bundle";
+    public static final String EXTRA_CUSTOM_TABS_ACTION_BUTTON_BUNDLE =
+            "android.support.CUSTOM_TABS:action_button_bundle";
 
     /**
      * Key that specifies the Bitmap to be used as the image source for the action button.
      */
-    public static final String KEY_HOSTED_ICON = "hosted:icon";
+    public static final String KEY_CUSTOM_TABS_ICON = "android.support.CUSTOM_TABS:icon";
 
     /**
      * Key that specifies the PendingIntent to launch when the action button or menu item was
      * clicked. Chrome will be calling {@link PendingIntent#send()} on clicks after adding the url
      * as data. The client app can call {@link Intent#getDataString()} to get the url.
      */
-    public static final String KEY_HOSTED_PENDING_INTENT = "hosted:pending_intent";
+    public static final String KEY_CUSTOM_TABS_PENDING_INTENT =
+            "android.support.CUSTOM_TABS:pending_intent";
 
     /**
      * Use an {@code ArrayList<Bundle>} for specifying menu related params. There should be a
      * separate Bundle for each custom menu item.
      */
-    public static final String EXTRA_HOSTED_MENU_ITEMS = "hosted:menu_items";
+    public static final String EXTRA_CUSTOM_TABS_MENU_ITEMS =
+            "android.support.CUSTOM_TABS:menu_items";
 
     /**
      * Key for the title of a menu item.
      */
-    public static final String KEY_HOSTED_MENU_TITLE = "hosted:menu_title";
+    public static final String KEY_CUSTOM_TABS_MENU_TITLE =
+            "android.support.CUSTOM_TABS:menu_title";
 
     /**
      * Bundle constructed out of ActivityOptions that Chrome will be running when it finishes
-     * HostedActivity. A similar ActivityOptions for starting Chrome should be constructed and
-     * given to the startActivity() call that launches Chrome.
+     * {@link CustomTabActivity}. A similar ActivityOptions for starting Chrome should be
+     * constructed and given to the startActivity() call that launches Chrome.
      */
-    public static final String EXTRA_HOSTED_EXIT_ANIMATION_BUNDLE = "hosted:exit_animation_bundle";
+    public static final String EXTRA_CUSTOM_TABS_EXIT_ANIMATION_BUNDLE =
+            "android.support.CUSTOM_TABS:exit_animation_bundle";
 
     /**
      * An invalid session ID, used when none is provided in the intent.
@@ -109,52 +117,52 @@ public class HostedIntentDataProvider {
     private PendingIntent.OnFinished mOnFinished;
 
     /**
-     * Constructs a {@link HostedIntentDataProvider}.
+     * Constructs a {@link CustomTabIntentDataProvider}.
      */
-    public HostedIntentDataProvider(Intent intent, Context context) {
+    public CustomTabIntentDataProvider(Intent intent, Context context) {
         if (intent == null) assert false;
 
         mSessionId = IntentUtils.safeGetLongExtra(
-                intent, EXTRA_HOSTED_SESSION_ID, INVALID_SESSION_ID);
+                intent, EXTRA_CUSTOM_TABS_SESSION_ID, INVALID_SESSION_ID);
         retrieveToolbarColor(intent, context);
 
         mKeepAliveServiceIntent = IntentUtils.safeGetParcelableExtra(
-                intent, EXTRA_HOSTED_KEEP_ALIVE);
+                intent, EXTRA_CUSTOM_TABS_KEEP_ALIVE);
 
         Bundle actionButtonBundle = IntentUtils.safeGetBundleExtra(
-                intent, EXTRA_HOSTED_ACTION_BUTTON_BUNDLE);
+                intent, EXTRA_CUSTOM_TABS_ACTION_BUTTON_BUNDLE);
         if (actionButtonBundle != null) {
-            mIcon = IntentUtils.safeGetParcelable(actionButtonBundle, KEY_HOSTED_ICON);
+            mIcon = IntentUtils.safeGetParcelable(actionButtonBundle, KEY_CUSTOM_TABS_ICON);
             if (!checkBitmapSizeWithinBounds(context, mIcon)) {
                 mIcon.recycle();
                 mIcon = null;
             } else {
                 mActionButtonPendingIntent = IntentUtils.safeGetParcelable(
-                        actionButtonBundle, KEY_HOSTED_PENDING_INTENT);
+                        actionButtonBundle, KEY_CUSTOM_TABS_PENDING_INTENT);
             }
         }
 
         List<Bundle> menuItems = IntentUtils.getParcelableArrayListExtra(
-                intent, EXTRA_HOSTED_MENU_ITEMS);
+                intent, EXTRA_CUSTOM_TABS_MENU_ITEMS);
         if (menuItems != null) {
             for (Bundle bundle : menuItems) {
-                String title = IntentUtils.safeGetString(bundle, KEY_HOSTED_MENU_TITLE);
+                String title = IntentUtils.safeGetString(bundle, KEY_CUSTOM_TABS_MENU_TITLE);
                 PendingIntent pendingIntent = IntentUtils.safeGetParcelable(
-                        bundle, KEY_HOSTED_PENDING_INTENT);
+                        bundle, KEY_CUSTOM_TABS_PENDING_INTENT);
                 if (TextUtils.isEmpty(title) || pendingIntent == null) continue;
                 mMenuEntries.add(new Pair<String, PendingIntent>(title, pendingIntent));
             }
         }
 
         mAnimationBundle = IntentUtils.safeGetBundleExtra(
-                intent, EXTRA_HOSTED_EXIT_ANIMATION_BUNDLE);
+                intent, EXTRA_CUSTOM_TABS_EXIT_ANIMATION_BUNDLE);
     }
 
     /**
      * Processes the color passed from the client app and updates {@link #mToolbarColor}.
      */
     private void retrieveToolbarColor(Intent intent, Context context) {
-        int color = IntentUtils.safeGetIntExtra(intent, EXTRA_HOSTED_TOOLBAR_COLOR,
+        int color = IntentUtils.safeGetIntExtra(intent, EXTRA_CUSTOM_TABS_TOOLBAR_COLOR,
                 context.getResources().getColor(R.color.default_primary_color));
         int defaultColor = context.getResources().getColor(R.color.default_primary_color);
 
@@ -227,7 +235,7 @@ public class HostedIntentDataProvider {
             PendingIntent pendingIntent = mMenuEntries.get(menuIndex).second;
             pendingIntent.send(context, 0, addedIntent, mOnFinished, null);
         } catch (CanceledException e) {
-            Log.e(TAG, "Hosted chrome failed to send pending intent.");
+            Log.e(TAG, "Custom tab in Chrome failed to send pending intent.");
         }
     }
 
@@ -278,7 +286,7 @@ public class HostedIntentDataProvider {
         try {
             mActionButtonPendingIntent.send(context, 0, addedIntent);
         } catch (CanceledException e) {
-            Log.e(TAG, "CanceledException while sending pending intent in hosted mode");
+            Log.e(TAG, "CanceledException while sending pending intent in custom tab");
         }
     }
 

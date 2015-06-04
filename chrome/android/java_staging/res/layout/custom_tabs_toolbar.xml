@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.toolbar.HostedToolbar xmlns:android="http://schemas.android.com/apk/res/android">
+<org.chromium.chrome.browser.toolbar.CustomTabToolbar xmlns:android="http://schemas.android.com/apk/res/android">
     <org.chromium.chrome.browser.widget.TintedImageButton
         android:id="@+id/back_button"
         style="@style/ToolbarButton"
@@ -34,7 +34,7 @@
             android:layout_gravity="top"
             android:maxLines="1"
             android:paddingEnd="@dimen/toolbar_edge_padding"
-            android:textSize="@dimen/hosted_title_text_size"
+            android:textSize="@dimen/custom_tabs_title_text_size"
             android:inputType="none" />
         <org.chromium.chrome.browser.omnibox.UrlBar
             android:id="@+id/url_bar"
@@ -44,16 +44,16 @@
             android:layout_gravity ="bottom"
             android:maxLines="1"
             android:paddingEnd="@dimen/toolbar_edge_padding"
-            android:textSize="@dimen/hosted_url_text_size"
+            android:textSize="@dimen/custom_tabs_url_text_size"
             android:inputType="none" />
     </FrameLayout>
     <ImageButton
         android:id="@+id/action_button"
         style="@style/ToolbarButton"
         android:layout_width="wrap_content"
-        android:maxWidth="@dimen/hosted_toolbar_maxWidth"
-        android:paddingTop="@dimen/hosted_toolbar_vertical_padding"
-        android:paddingBottom="@dimen/hosted_toolbar_vertical_padding"
+        android:maxWidth="@dimen/custom_tabs_toolbar_maxWidth"
+        android:paddingTop="@dimen/custom_tabs_toolbar_vertical_padding"
+        android:paddingBottom="@dimen/custom_tabs_toolbar_vertical_padding"
         android:adjustViewBounds="true"
         android:scaleType="centerInside"
         android:layout_marginEnd="42dp"
@@ -76,4 +76,4 @@
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:progress="0" />
-</org.chromium.chrome.browser.toolbar.HostedToolbar>
+</org.chromium.chrome.browser.toolbar.CustomTabToolbar>

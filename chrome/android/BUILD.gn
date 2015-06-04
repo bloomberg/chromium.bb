@@ -562,14 +562,14 @@ zip("chrome_version_srcjar") {
   ]
 }
 
-#GYP: //chrome/android/chrome_apk.gyp:hosted_service_aidl
-android_aidl("hosted_service_aidl") {
-  import_include = "java_staging/src/org/chromium/chrome/browser/hosted"
+#GYP: //chrome/android/chrome_apk.gyp:custom_tabs_service_aidl
+android_aidl("custom_tabs_service_aidl") {
+  import_include = "java_staging/src/org/chromium/chrome/browser/customtabs"
   interface_file =
-      "java_staging/src/org/chromium/chrome/browser/hosted/common.aidl"
+      "java_staging/src/org/chromium/chrome/browser/customtabs/common.aidl"
   sources = [
-    "java_staging/src/org/chromium/chrome/browser/hosted/IBrowserConnectionCallback.aidl",
-    "java_staging/src/org/chromium/chrome/browser/hosted/IBrowserConnectionService.aidl",
+    "java_staging/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionCallback.aidl",
+    "java_staging/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionService.aidl",
   ]
 }
 
@@ -610,7 +610,7 @@ android_library("chrome_staging_java") {
     "//ui/android:ui_java_resources",
     google_play_services_library,
   ]
-  srcjar_deps = [ ":hosted_service_aidl" ]
+  srcjar_deps = [ ":custom_tabs_service_aidl" ]
 }
 
 #GYP: //chrome/android/chrome_apk.gyp:chrome_staging_java

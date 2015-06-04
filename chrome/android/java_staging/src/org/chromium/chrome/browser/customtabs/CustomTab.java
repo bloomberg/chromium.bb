@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.hosted;
+package org.chromium.chrome.browser.customtabs;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -24,9 +24,9 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
- * A chrome tab that is only used in hosted mode.
+ * A chrome tab that is only used as a custom tab.
  */
-public class HostedTab extends ChromeTab {
+public class CustomTab extends ChromeTab {
 
     private TabChromeContextMenuItemDelegate
             mContextMenuDelegate = new TabChromeContextMenuItemDelegate() {
@@ -38,10 +38,10 @@ public class HostedTab extends ChromeTab {
             };
 
     /**
-     * Construct an HostedTab. It might load a prerendered {@link WebContents} for the URL, if
-     * the hosted mode service has successfully warmed up for the url.
+     * Construct an CustomTab. It might load a prerendered {@link WebContents} for the URL, if
+     * {@link ChromeConnectionService} has successfully warmed up for the url.
      */
-    public HostedTab(CompositorChromeActivity activity, WindowAndroid windowAndroid,
+    public CustomTab(CompositorChromeActivity activity, WindowAndroid windowAndroid,
             long sessionId, String url, int parentTabId) {
         super(Tab.generateValidId(Tab.INVALID_TAB_ID), activity, false, windowAndroid,
                 TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);

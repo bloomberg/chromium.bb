@@ -248,7 +248,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     public void setBookmarkClickHandler(OnClickListener listener) { }
 
     @Override
-    public void setHostedBackClickHandler(OnClickListener listener) { }
+    public void setCustomTabReturnClickHandler(OnClickListener listener) { }
 
     /**
      * Gives inheriting classes the chance to update the visibility of the

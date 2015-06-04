@@ -9,7 +9,7 @@
 
     <!-- Full Screen Dimensions -->
     <dimen name="control_container_height">96dp</dimen>
-    <dimen name="hosted_control_container_height">64dp</dimen>
+    <dimen name="custom_tabs_control_container_height">64dp</dimen>
 
     <!-- The combined height of the tab strip and toolbar. -->
     <dimen name="tab_strip_and_toolbar_height">96dp</dimen>

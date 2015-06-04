@@ -141,7 +141,7 @@
       },
       'dependencies': [
         'chrome_template_resources',
-        'hosted_service_aidl',
+        'custom_tabs_service_aidl',
         '<(DEPTH)/base/base.gyp:base_java',
         '<(DEPTH)/chrome/chrome.gyp:chrome_java',
         '<(DEPTH)/chrome/chrome.gyp:document_tab_model_info_proto_java',
@@ -214,16 +214,16 @@
       'includes': [ '../../build/android/jinja_template.gypi' ],
     },
     {
-      # GN: //chrome/android:hosted_service_aidl
-      'target_name': 'hosted_service_aidl',
+      # GN: //chrome/android:custom_tabs_service_aidl
+      'target_name': 'custom_tabs_service_aidl',
       'type': 'none',
       'variables': {
-        'aidl_interface_file': '<(chrome_java_dir)/src/org/chromium/chrome/browser/hosted/common.aidl',
-        'aidl_import_include': '<(chrome_java_dir)/src/org/chromium/chrome/browser/hosted',
+        'aidl_interface_file': '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/common.aidl',
+        'aidl_import_include': '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs',
       },
       'sources': [
-        '<(chrome_java_dir)/src/org/chromium/chrome/browser/hosted/IBrowserConnectionCallback.aidl',
-        '<(chrome_java_dir)/src/org/chromium/chrome/browser/hosted/IBrowserConnectionService.aidl',
+        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionCallback.aidl',
+        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionService.aidl',
       ],
       'includes': [ '../../build/java_aidl.gypi' ],
     },
