@@ -1089,16 +1089,6 @@ TransformationMatrix& TransformationMatrix::applyPerspective(double p)
     return *this;
 }
 
-TransformationMatrix TransformationMatrix::rectToRect(const FloatRect& from, const FloatRect& to)
-{
-    ASSERT(!from.isEmpty());
-    return TransformationMatrix(to.width() / from.width(),
-                                0, 0,
-                                to.height() / from.height(),
-                                to.x() - from.x(),
-                                to.y() - from.y());
-}
-
 // this = mat * this.
 TransformationMatrix& TransformationMatrix::multiply(const TransformationMatrix& mat)
 {
