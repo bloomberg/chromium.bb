@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/aligned_memory.h"
 #include "base/trace_event/trace_event.h"
+#include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_pool.h"
 #include "third_party/libjingle/source/talk/media/base/videoframefactory.h"
@@ -23,55 +24,6 @@ namespace {
 // The reference to |frame| is kept in the closure that calls this method.
 void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {
 }
-
-int WebRtcToMediaPlaneType(webrtc::PlaneType type) {
-  switch (type) {
-    case webrtc::kYPlane:
-      return media::VideoFrame::kYPlane;
-    case webrtc::kUPlane:
-      return media::VideoFrame::kUPlane;
-    case webrtc::kVPlane:
-      return media::VideoFrame::kVPlane;
-    default:
-      NOTREACHED();
-      return media::VideoFrame::kMaxPlanes;
-  }
-}
-
-// Thin adapter from media::VideoFrame to webrtc::VideoFrameBuffer. This
-// implementation is read-only and will return null if trying to get a
-// non-const pointer to the pixel data. This object will be accessed from
-// different threads, but that's safe since it's read-only.
-class VideoFrameWrapper : public webrtc::VideoFrameBuffer {
- public:
-  VideoFrameWrapper(const scoped_refptr<media::VideoFrame>& frame)
-      : frame_(frame) {}
-
- private:
-  int width() const override { return frame_->visible_rect().width(); }
-
-  int height() const override { return frame_->visible_rect().height(); }
-
-  const uint8_t* data(webrtc::PlaneType type) const override {
-    return frame_->visible_data(WebRtcToMediaPlaneType(type));
-  }
-
-  uint8_t* data(webrtc::PlaneType type) override {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  int stride(webrtc::PlaneType type) const override {
-    return frame_->stride(WebRtcToMediaPlaneType(type));
-  }
-
-  void* native_handle() const override { return nullptr; }
-
-  ~VideoFrameWrapper() override {}
-  friend class rtc::RefCountedObject<VideoFrameWrapper>;
-
-  scoped_refptr<media::VideoFrame> frame_;
-};
 
 }  // anonymous namespace
 
@@ -138,7 +90,7 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
     // If no scaling is needed, return a wrapped version of |frame_| directly.
     if (video_frame->natural_size() == video_frame->visible_rect().size()) {
       return new cricket::WebRtcVideoFrame(
-          new rtc::RefCountedObject<VideoFrameWrapper>(video_frame),
+          new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(video_frame),
           captured_frame_.elapsed_time, timestamp_ns);
     }
 
@@ -163,7 +115,7 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
                       scaled_frame->stride(media::VideoFrame::kVPlane),
                       output_width, output_height, libyuv::kFilterBilinear);
     return new cricket::WebRtcVideoFrame(
-        new rtc::RefCountedObject<VideoFrameWrapper>(scaled_frame),
+        new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(scaled_frame),
         captured_frame_.elapsed_time, timestamp_ns);
   }
 

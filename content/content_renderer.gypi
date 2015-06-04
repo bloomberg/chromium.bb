@@ -657,6 +657,8 @@
       'renderer/media/webrtc/webrtc_video_capturer_adapter.h',
       'renderer/media/webrtc/webrtc_video_track_adapter.cc',
       'renderer/media/webrtc/webrtc_video_track_adapter.h',
+      'renderer/media/webrtc/webrtc_video_frame_adapter.cc',
+      'renderer/media/webrtc/webrtc_video_frame_adapter.h',
       'renderer/media/webrtc_audio_capturer.cc',
       'renderer/media/webrtc_audio_capturer.h',
       'renderer/media/webrtc_audio_device_impl.cc',
