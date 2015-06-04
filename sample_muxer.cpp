@@ -494,8 +494,8 @@ int main(int argc, char* argv[]) {
           mkvmuxer::Frame muxer_frame;
           if (!muxer_frame.Init(data, data_len))
             return EXIT_FAILURE;
-          muxer_frame.set_track_number(
-              track_type == Track::kAudio ? aud_track : vid_track);
+          muxer_frame.set_track_number(track_type == Track::kAudio ? aud_track :
+                                                                     vid_track);
           if (block->GetDiscardPadding())
             muxer_frame.set_discard_padding(block->GetDiscardPadding());
           muxer_frame.set_timestamp(time_ns);

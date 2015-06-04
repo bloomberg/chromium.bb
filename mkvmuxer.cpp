@@ -328,7 +328,7 @@ bool Cues::AddCue(CuePoint* cue) {
       return false;
 
     CuePoint** const cues =
-        new (std::nothrow) CuePoint* [new_capacity];  // NOLINT
+        new (std::nothrow) CuePoint*[new_capacity];  // NOLINT
     if (!cues)
       return false;
 
@@ -589,7 +589,7 @@ bool Track::AddContentEncoding() {
   const uint32 count = content_encoding_entries_size_ + 1;
 
   ContentEncoding** const content_encoding_entries =
-      new (std::nothrow) ContentEncoding* [count];  // NOLINT
+      new (std::nothrow) ContentEncoding*[count];  // NOLINT
   if (!content_encoding_entries)
     return false;
 
@@ -1082,7 +1082,7 @@ bool Tracks::AddTrack(Track* track, int32 number) {
 
   const uint32 count = track_entries_size_ + 1;
 
-  Track** const track_entries = new (std::nothrow) Track* [count];  // NOLINT
+  Track** const track_entries = new (std::nothrow) Track*[count];  // NOLINT
   if (!track_entries)
     return false;
 
@@ -1539,9 +1539,7 @@ bool Cluster::Init(IMkvWriter* ptr_writer) {
   return true;
 }
 
-bool Cluster::AddFrame(const Frame* const frame) {
-  return DoWriteFrame(frame);
-}
+bool Cluster::AddFrame(const Frame* const frame) { return DoWriteFrame(frame); }
 
 bool Cluster::AddFrame(const uint8* data, uint64 length, uint64 track_number,
                        uint64 abs_timecode, bool is_key) {
@@ -2711,7 +2709,7 @@ bool Segment::MakeNewCluster(uint64 frame_timestamp_ns) {
     const int32 new_capacity =
         (cluster_list_capacity_ <= 0) ? 1 : cluster_list_capacity_ * 2;
     Cluster** const clusters =
-        new (std::nothrow) Cluster* [new_capacity];  // NOLINT
+        new (std::nothrow) Cluster*[new_capacity];  // NOLINT
     if (!clusters)
       return false;
 
@@ -2848,7 +2846,8 @@ bool Segment::CheckHeaderInfo() {
 void Segment::UpdateDocTypeVersion() {
   for (uint32 index = 0; index < tracks_.track_entries_size(); ++index) {
     const Track* track = tracks_.GetTrackByIndex(index);
-    if (track == NULL) break;
+    if (track == NULL)
+      break;
     if ((track->codec_delay() || track->seek_pre_roll()) &&
         doc_type_version_ < 4) {
       doc_type_version_ = 4;
@@ -2916,7 +2915,7 @@ bool Segment::QueueFrame(Frame* frame) {
     if (new_capacity < 1)
       return false;
 
-    Frame** const frames = new (std::nothrow) Frame* [new_capacity];  // NOLINT
+    Frame** const frames = new (std::nothrow) Frame*[new_capacity];  // NOLINT
     if (!frames)
       return false;
 

@@ -1236,7 +1236,7 @@ void Segment::AppendCluster(Cluster* pCluster) {
   if (count >= size) {
     const long n = (size <= 0) ? 2048 : 2 * size;
 
-    Cluster** const qq = new Cluster* [n];
+    Cluster** const qq = new Cluster*[n];
     Cluster** q = qq;
 
     Cluster** p = m_clusters;
@@ -1290,7 +1290,7 @@ void Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
   if (count >= size) {
     const long n = (size <= 0) ? 2048 : 2 * size;
 
-    Cluster** const qq = new Cluster* [n];
+    Cluster** const qq = new Cluster*[n];
     Cluster** q = qq;
 
     Cluster** p = m_clusters;
@@ -1788,7 +1788,7 @@ void Cues::PreloadCuePoint(long& cue_points_size, long long pos) const {
   if (m_preload_count >= cue_points_size) {
     const long n = (cue_points_size <= 0) ? 2048 : 2 * cue_points_size;
 
-    CuePoint** const qq = new CuePoint* [n];
+    CuePoint** const qq = new CuePoint*[n];
     CuePoint** q = qq;  // beginning of target
 
     CuePoint** p = m_cue_points;  // beginning of source
@@ -2180,7 +2180,7 @@ bool CuePoint::Load(IMkvReader* pReader) {
 
     const long long id = ReadUInt(pReader, pos, len);
     if ((id < 0) || (pos + len > stop)) {
-       return false;
+      return false;
     }
 
     pos += len;  // consume ID
@@ -2192,7 +2192,7 @@ bool CuePoint::Load(IMkvReader* pReader) {
 
     pos += len;  // consume Size field
     if ((pos + size) > stop) {
-	return false;
+      return false;
     }
 
     if (id == 0x33)  // CueTime ID
@@ -2250,7 +2250,7 @@ bool CuePoint::Load(IMkvReader* pReader) {
 
   m_element_start = element_start;
   m_element_size = element_size;
-  
+
   return true;
 }
 
@@ -3702,7 +3702,7 @@ ContentEncoding::~ContentEncoding() {
 }
 
 const ContentEncoding::ContentCompression*
-ContentEncoding::GetCompressionByIndex(unsigned long idx) const {
+    ContentEncoding::GetCompressionByIndex(unsigned long idx) const {
   const ptrdiff_t count = compression_entries_end_ - compression_entries_;
   assert(count >= 0);
 
@@ -3798,7 +3798,7 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
 
   if (compression_count > 0) {
     compression_entries_ =
-        new (std::nothrow) ContentCompression* [compression_count];
+        new (std::nothrow) ContentCompression*[compression_count];
     if (!compression_entries_)
       return -1;
     compression_entries_end_ = compression_entries_;
@@ -3806,7 +3806,7 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
 
   if (encryption_count > 0) {
     encryption_entries_ =
-        new (std::nothrow) ContentEncryption* [encryption_count];
+        new (std::nothrow) ContentEncryption*[encryption_count];
     if (!encryption_entries_) {
       delete[] compression_entries_;
       return -1;
@@ -3947,7 +3947,7 @@ long ContentEncoding::ParseEncryptionEntry(long long start, long long size,
         return E_FILE_FORMAT_INVALID;
     } else if (id == 0x7E2) {
       // ContentEncKeyID
-      delete[] encryption -> key_id;
+      delete[] encryption->key_id;
       encryption->key_id = NULL;
       encryption->key_id_len = 0;
 
@@ -3971,7 +3971,7 @@ long ContentEncoding::ParseEncryptionEntry(long long start, long long size,
       encryption->key_id_len = buflen;
     } else if (id == 0x7E3) {
       // ContentSignature
-      delete[] encryption -> signature;
+      delete[] encryption->signature;
       encryption->signature = NULL;
       encryption->signature_len = 0;
 
@@ -3995,7 +3995,7 @@ long ContentEncoding::ParseEncryptionEntry(long long start, long long size,
       encryption->signature_len = buflen;
     } else if (id == 0x7E4) {
       // ContentSigKeyID
-      delete[] encryption -> sig_key_id;
+      delete[] encryption->sig_key_id;
       encryption->sig_key_id = NULL;
       encryption->sig_key_id_len = 0;
 
@@ -4520,7 +4520,7 @@ long Track::ParseContentEncodingsEntry(long long start, long long size) {
   if (count <= 0)
     return -1;
 
-  content_encoding_entries_ = new (std::nothrow) ContentEncoding* [count];
+  content_encoding_entries_ = new (std::nothrow) ContentEncoding*[count];
   if (!content_encoding_entries_)
     return -1;
 
@@ -4615,22 +4615,22 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
 
       if (height <= 0)
         return E_FILE_FORMAT_INVALID;
-    } else if (id == 0x14B0) { // display width
+    } else if (id == 0x14B0) {  // display width
       display_width = UnserializeUInt(pReader, pos, size);
 
       if (display_width <= 0)
         return E_FILE_FORMAT_INVALID;
-    } else if (id == 0x14BA) { // display height
+    } else if (id == 0x14BA) {  // display height
       display_height = UnserializeUInt(pReader, pos, size);
 
       if (display_height <= 0)
         return E_FILE_FORMAT_INVALID;
-    } else if (id == 0x14B2) { // display unit
+    } else if (id == 0x14B2) {  // display unit
       display_unit = UnserializeUInt(pReader, pos, size);
 
       if (display_unit < 0)
         return E_FILE_FORMAT_INVALID;
-    } else if (id == 0x13B8) { // stereo mode
+    } else if (id == 0x13B8) {  // stereo mode
       stereo_mode = UnserializeUInt(pReader, pos, size);
 
       if (stereo_mode < 0)
@@ -4919,7 +4919,7 @@ long Tracks::Parse() {
   if (count <= 0)
     return 0;  // success
 
-  m_trackEntries = new (std::nothrow) Track* [count];
+  m_trackEntries = new (std::nothrow) Track*[count];
 
   if (m_trackEntries == NULL)
     return -1;
@@ -6376,7 +6376,7 @@ long Cluster::CreateBlock(long long id,
     assert(m_entries_size == 0);
 
     m_entries_size = 1024;
-    m_entries = new BlockEntry* [m_entries_size];
+    m_entries = new BlockEntry*[m_entries_size];
 
     m_entries_count = 0;
   } else {
@@ -6387,7 +6387,7 @@ long Cluster::CreateBlock(long long id,
     if (m_entries_count >= m_entries_size) {
       const long entries_size = 2 * m_entries_size;
 
-      BlockEntry** const entries = new BlockEntry* [entries_size];
+      BlockEntry** const entries = new BlockEntry*[entries_size];
       assert(entries);
 
       BlockEntry** src = m_entries;
