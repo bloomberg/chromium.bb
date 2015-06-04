@@ -75,9 +75,10 @@ importer.Destination = {
  * @return {boolean}
  */
 importer.isEligibleType = function(entry) {
+  // TODO(mtomasz): Add support to mime types.
   return !!entry &&
       entry.isFile &&
-      FileType.isType(entry, ['image', 'raw', 'video']);
+      FileType.isType(['image', 'raw', 'video'], entry);
 };
 
 /**

@@ -13,7 +13,7 @@
  * @return {Promise} Promise to be fulfilled with on success.
  */
 function traverseSlideImages(testVolumeName, volumeType) {
-  var testEntries = [ENTRIES.desktop, ENTRIES.image2, ENTRIES.image3];
+  var testEntries = [ENTRIES.desktop, ENTRIES.image3];
   var launchedPromise = launch(
       testVolumeName, volumeType, testEntries, testEntries.slice(0, 1));
   var appId;
@@ -22,10 +22,6 @@ function traverseSlideImages(testVolumeName, volumeType) {
     return gallery.waitForElement(appId, '.gallery[mode="slide"]');
   }).then(function() {
     return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
-  }).then(function() {
-    return gallery.waitAndClickElement(appId, '.arrow.right');
-  }).then(function() {
-    return gallery.waitForSlideImage(appId, 1024, 768, 'image2');
   }).then(function() {
     return gallery.waitAndClickElement(appId, '.arrow.right');
   }).then(function() {

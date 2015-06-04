@@ -205,7 +205,7 @@ var ENTRIES = {
 
   world: new TestEntryInfo(
       EntryType.FILE, 'video.ogv', 'world.ogv',
-      'text/plain', SharedOption.NONE, 'Jul 4, 2012, 10:35 AM',
+      'video/ogg', SharedOption.NONE, 'Jul 4, 2012, 10:35 AM',
       'world.ogv', '59 KB', 'OGG video'),
 
   unsupported: new TestEntryInfo(
@@ -218,19 +218,23 @@ var ENTRIES = {
       'image/png', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
       'My Desktop Background.png', '272 bytes', 'PNG image'),
 
+  // An image file without an extension, to confirm that file type detection
+  // using mime types works fine.
   image2: new TestEntryInfo(
-      EntryType.FILE, 'image2.png', 'image2.png',
+      EntryType.FILE, 'image2.png', 'image2',
       'image/png', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
-      'image2.png', '4 KB', 'PNG image'),
+      'image2', '4 KB', 'PNG image'),
 
   image3: new TestEntryInfo(
       EntryType.FILE, 'image3.jpg', 'image3.jpg',
-      'image/jpg', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
-      'image3.jpg', '272 bytes', 'JPEG image'),
+      'image/jpeg', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
+      'image3.jpg', '3 KB', 'JPEG image'),
 
+  // An ogg file without a mime type, to confirm that file type detection using
+  // file extensions works fine.
   beautiful: new TestEntryInfo(
       EntryType.FILE, 'music.ogg', 'Beautiful Song.ogg',
-      'text/plain', SharedOption.NONE, 'Nov 12, 2086, 12:00 PM',
+      null, SharedOption.NONE, 'Nov 12, 2086, 12:00 PM',
       'Beautiful Song.ogg', '14 KB', 'OGG audio'),
 
   photos: new TestEntryInfo(

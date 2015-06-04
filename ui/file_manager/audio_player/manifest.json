@@ -32,9 +32,6 @@
   ],
   "file_handlers": {
     "audio": {
-      "types": [
-        "audio/*"
-      ],
       "extensions": [
         "amr",
         "flac",

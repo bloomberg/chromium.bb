@@ -685,9 +685,11 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
   var label = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
 
-  var icon = filelist.renderFileTypeIcon(this.ownerDocument, entry);
-  if (FileType.isImage(entry) || FileType.isVideo(entry) ||
-      FileType.isRaw(entry)) {
+  var mimeType = this.metadataModel_.getCache([entry],
+      ['contentMimeType'])[0].contentMimeType;
+  var icon = filelist.renderFileTypeIcon(this.ownerDocument, entry, mimeType);
+  if (FileType.isImage(entry, mimeType) || FileType.isVideo(entry, mimeType) ||
+      FileType.isRaw(entry, mimeType)) {
     icon.appendChild(this.renderThumbnail_(entry));
   }
   icon.appendChild(this.renderCheckmark_());
@@ -827,7 +829,11 @@ FileTable.prototype.renderType_ = function(entry, columnId, table) {
   var div = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
   div.className = 'type';
-  div.textContent = FileListModel.getFileTypeString(FileType.getType(entry));
+
+  var mimeType = this.metadataModel_.getCache([entry],
+      ['contentMimeType'])[0].contentMimeType;
+  div.textContent = FileListModel.getFileTypeString(
+      FileType.getType(entry, mimeType));
   return div;
 };
 
@@ -1085,12 +1091,13 @@ filelist.decorateListItem = function(li, entry, metadataModel) {
  * Render the type column of the detail table.
  * @param {!Document} doc Owner document.
  * @param {!Entry} entry The Entry object to render.
+ * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {!HTMLDivElement} Created element.
  */
-filelist.renderFileTypeIcon = function(doc, entry) {
+filelist.renderFileTypeIcon = function(doc, entry, opt_mimeType) {
   var icon = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
   icon.className = 'detail-icon';
-  icon.setAttribute('file-type-icon', FileType.getIcon(entry));
+  icon.setAttribute('file-type-icon', FileType.getIcon(entry, opt_mimeType));
   return icon;
 };
 

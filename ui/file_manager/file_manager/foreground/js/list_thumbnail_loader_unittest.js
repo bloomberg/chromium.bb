@@ -75,7 +75,14 @@ function setUp() {
     }
   };
 
-  fileListModel = new FileListModel(thumbnailModel);
+  var metadataModel = {
+    get: function() {},
+    getCache: function(entries, names) {
+      return [{}];
+    }
+  };
+
+  fileListModel = new FileListModel(metadataModel);
 
   directoryModel = {
     __proto__: cr.EventTarget.prototype,

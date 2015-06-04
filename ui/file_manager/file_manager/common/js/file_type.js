@@ -15,31 +15,38 @@ FileType.types = [
   // Images
   {
     type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'JPEG',
-    pattern: /\.jpe?g$/i
+    pattern: /\.jpe?g$/i,
+    mimePattern: /image\/jpeg/i,
   },
   {
     type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'BMP',
-    pattern: /\.bmp$/i
+    pattern: /\.bmp$/i,
+    mimePattern: /image\/bmp/i,
   },
   {
     type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'GIF',
-    pattern: /\.gif$/i
+    pattern: /\.gif$/i,
+    mimePattern: /image\/gif/i,
   },
   {
     type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'ICO',
-    pattern: /\.ico$/i
+    pattern: /\.ico$/i,
+    mimePattern: /image\/x\-icon/i,
   },
   {
     type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'PNG',
-    pattern: /\.png$/i
+    pattern: /\.png$/i,
+    mimePattern: /image\/png/i
   },
   {
     type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'WebP',
-    pattern: /\.webp$/i
+    pattern: /\.webp$/i,
+    mimePattern: /image\/webp/i
   },
   {
     type: 'image', name: 'IMAGE_FILE_TYPE', subtype: 'TIFF',
-    pattern: /\.tiff?$/i
+    pattern: /\.tiff?$/i,
+    mimePattern: /image\/tiff/i
   },
 
   // Raw
@@ -79,85 +86,104 @@ FileType.types = [
   // Video
   {
     type: 'video', name: 'VIDEO_FILE_TYPE', subtype: '3GP',
-    pattern: /\.3gp$/i
+    pattern: /\.3gp$/i,
+    mimePattern: /video\/3gpp/i
   },
   {
     type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'AVI',
-    pattern: /\.avi$/i
+    pattern: /\.avi$/i,
+    mimePattern: /video\/x\-msvideo/i
   },
   {
     type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'QuickTime',
-    pattern: /\.mov$/i
+    pattern: /\.mov$/i,
+    mimePattern: /video\/quicktime/i
   },
   {
     type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MKV',
-    pattern: /\.mkv$/i
+    pattern: /\.mkv$/i,
+    mimePattern: /video\/x\-matroska/i
   },
   {
     type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'MPEG',
-    pattern: /\.m(p4|4v|pg|peg|pg4|peg4)$/i
+    pattern: /\.m(p4|4v|pg|peg|pg4|peg4)$/i,
+    mimePattern: /video\/mp(4|eg)/i
   },
   {
     type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'OGG',
-    pattern: /\.og(m|v|x)$/i
+    pattern: /\.og(m|v|x)$/i,
+    mimePattern: /(application|video)\/ogg/i
   },
   {
     type: 'video', name: 'VIDEO_FILE_TYPE', subtype: 'WebM',
-    pattern: /\.webm$/i
+    pattern: /\.webm$/i,
+    mimePattern: /video\/webm/i
   },
 
   // Audio
   {
     type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'AMR',
-    pattern: /\.amr$/i
+    pattern: /\.amr$/i,
+    mimePattern: /audio\/amr/i
   },
   {
     type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'FLAC',
-    pattern: /\.flac$/i
+    pattern: /\.flac$/i,
+    mimePattern: /audio\/flac/i
   },
   {
     type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'MP3',
-    pattern: /\.mp3$/i
+    pattern: /\.mp3$/i,
+    mimePattern: /audio\/mpeg/i
   },
   {
     type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'MPEG',
-    pattern: /\.m4a$/i
+    pattern: /\.m4a$/i,
+    mimePattern: /audio\/mp4a-latm/i
   },
   {
     type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'OGG',
-    pattern: /\.og(a|g)$/i
+    pattern: /\.og(a|g)$/i,
+    mimePattern: /audio\/ogg/i
   },
   {
     type: 'audio', name: 'AUDIO_FILE_TYPE', subtype: 'WAV',
-    pattern: /\.wav$/i
+    pattern: /\.wav$/i,
+    mimePattern: /audio\/x\-wav/i
   },
 
   // Text
   {
     type: 'text', name: 'PLAIN_TEXT_FILE_TYPE', subtype: 'TXT',
-    pattern: /\.txt$/i
+    pattern: /\.txt$/i,
+    mimePattern: /text\/plain/i
   },
 
   // Archive
   {
     type: 'archive', name: 'ZIP_ARCHIVE_FILE_TYPE', subtype: 'ZIP',
-    pattern: /\.zip$/i
+    pattern: /\.zip$/i,
+    mimePattern: /application\/zip/i
   },
   {
     type: 'archive', name: 'RAR_ARCHIVE_FILE_TYPE', subtype: 'RAR',
-    pattern: /\.rar$/i
+    pattern: /\.rar$/i,
+    mimePattern: /application\/x\-rar\-compressed/i
   },
   {
     type: 'archive', name: 'TAR_ARCHIVE_FILE_TYPE', subtype: 'TAR',
-    pattern: /\.tar$/i
+    pattern: /\.tar$/i,
+    mimePattern: /application\/x\-tar/i
   },
   {
     type: 'archive', name: 'TAR_BZIP2_ARCHIVE_FILE_TYPE', subtype: 'TBZ2',
-    pattern: /\.(tar\.bz2|tbz|tbz2)$/i
+    pattern: /\.(tar\.bz2|tbz|tbz2)$/i,
+    mimePattern: /application\/x\-bzip2/i
   },
   {
     type: 'archive', name: 'TAR_GZIP_ARCHIVE_FILE_TYPE', subtype: 'TGZ',
-    pattern: /\.(tar\.|t)gz$/i
+    pattern: /\.(tar\.|t)gz$/i,
+    mimePattern: /application\/x\-gzip/i
   },
 
   // Hosted docs.
@@ -199,23 +225,31 @@ FileType.types = [
   // Others
   {
     type: 'document', icon: 'pdf', name: 'PDF_DOCUMENT_FILE_TYPE',
-    subtype: 'PDF', pattern: /\.pdf$/i
+    subtype: 'PDF', pattern: /\.pdf$/i,
+    mimePattern: /application\/pdf/i
   },
   {
     type: 'document', name: 'HTML_DOCUMENT_FILE_TYPE',
-    subtype: 'HTML', pattern: /\.(html?|mht(ml)?|shtml|xht(ml)?)$/i
+    subtype: 'HTML', pattern: /\.(html?|mht(ml)?|shtml|xht(ml)?)$/i,
+    mimePattern: /text\/html/i
   },
   {
     type: 'document', icon: 'word', name: 'WORD_DOCUMENT_FILE_TYPE',
-    subtype: 'Word', pattern: /\.(doc|docx)$/i
+    subtype: 'Word', pattern: /\.(doc|docx)$/i,
+    mimePattern: new RegExp('/application\/(msword|vnd\.openxmlformats\-' +
+          'officedocument\./wordprocessingml\.document)/i')
   },
   {
     type: 'document', icon: 'ppt', name: 'POWERPOINT_PRESENTATION_FILE_TYPE',
-    subtype: 'PPT', pattern: /\.(ppt|pptx)$/i
+    subtype: 'PPT', pattern: /\.(ppt|pptx)$/i,
+    mimePattern: new RegExp('/application\/(vnd\.ms-powerpoint|\.' +
+          'openxmlformats\-/officedocument\.wordprocessingml\.presentation)/i')
   },
   {
     type: 'document', icon: 'excel', name: 'EXCEL_FILE_TYPE',
-    subtype: 'Excel', pattern: /\.(xls|xlsx)$/i
+    subtype: 'Excel', pattern: /\.(xls|xlsx)$/i,
+    mimePattern: new RegExp('/application\/(vnd\.ms-excel|\.openxmlformats\-/' +
+        'officedocument\.wordprocessingml\.sheet)/i')
   }
 ];
 
@@ -273,18 +307,29 @@ FileType.getTypeForName = function(name) {
 };
 
 /**
- * Gets the file type object for a given file.
- * @param {Entry} entry Reference to the file.
+ * Gets the file type object for a given entry. If mime type is provided, then
+ * uses it with higher priority than the extension.
+ *
+ * @param {Entry} entry Reference to the entry.
+ * @param {string=} opt_mimeType Optional mime type for the entry.
  * @return {!Object} The matching file type object or an empty object.
  */
-FileType.getType = function(entry) {
+FileType.getType = function(entry, opt_mimeType) {
   if (entry.isDirectory)
     return FileType.DIRECTORY;
 
-  var types = FileType.types;
-  for (var i = 0; i < types.length; i++) {
-    if (types[i].pattern.test(entry.name))
-      return types[i];
+  if (opt_mimeType) {
+    for (var i = 0; i < FileType.types.length; i++) {
+      if (FileType.types[i].mimePattern &&
+          FileType.types[i].mimePattern.test(opt_mimeType)) {
+        return FileType.types[i];
+      }
+    }
+  }
+
+  for (var i = 0; i < FileType.types.length; i++) {
+    if (FileType.types[i].pattern.test(entry.name))
+      return FileType.types[i];
   }
 
   // Unknown file type.
@@ -303,72 +348,80 @@ FileType.getType = function(entry) {
  * Gets the media type for a given file.
  *
  * @param {Entry} entry Reference to the file.
+ * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {string} The value of 'type' property from one of the elements in
  *     FileType.types or undefined.
  */
-FileType.getMediaType = function(entry) {
-  return FileType.getType(entry).type;
+FileType.getMediaType = function(entry, opt_mimeType) {
+  return FileType.getType(entry, opt_mimeType).type;
 };
 
 /**
  * @param {Entry} entry Reference to the file.
+ * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {boolean} True if audio file.
  */
-FileType.isAudio = function(entry) {
-  return FileType.getMediaType(entry) === 'audio';
+FileType.isAudio = function(entry, opt_mimeType) {
+  return FileType.getMediaType(entry, opt_mimeType) === 'audio';
 };
 
 /**
  * Returns whether the |entry| is image file that can be opened in browser.
  * Note that it returns false for RAW images.
  * @param {Entry} entry Reference to the file.
+ * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {boolean} True if image file.
  */
-FileType.isImage = function(entry) {
-  return FileType.getMediaType(entry) === 'image';
+FileType.isImage = function(entry, opt_mimeType) {
+  return FileType.getMediaType(entry, opt_mimeType) === 'image';
 };
 
 /**
  * @param {Entry} entry Reference to the file.
+ * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {boolean} True if video file.
  */
-FileType.isVideo = function(entry) {
-  return FileType.getMediaType(entry) === 'video';
+FileType.isVideo = function(entry, opt_mimeType) {
+  return FileType.getMediaType(entry, opt_mimeType) === 'video';
 };
 
 /**
  * @param {Entry} entry Reference to the file.
+ * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {boolean} True if raw file.
  */
-FileType.isRaw = function(entry) {
-  return FileType.getMediaType(entry) === 'raw';
+FileType.isRaw = function(entry, opt_mimeType) {
+  return FileType.getMediaType(entry, opt_mimeType) === 'raw';
 };
 
 /**
  * Files with more pixels won't have preview.
- * @param {Entry} entry Reference to the file.
  * @param {!Array<string>} types
+ * @param {Entry} entry Reference to the file.
+ * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {boolean} True if type is in specified set
  */
-FileType.isType = function(entry, types) {
-  var type = FileType.getMediaType(entry);
+FileType.isType = function(types, entry, opt_mimeType) {
+  var type = FileType.getMediaType(entry, opt_mimeType);
   return !!type && types.indexOf(type) !== -1;
 };
 
 /**
  * @param {Entry} entry Reference to the file.
+ * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {boolean} Returns true if the file is hosted.
  */
-FileType.isHosted = function(entry) {
-  return FileType.getType(entry).type === 'hosted';
+FileType.isHosted = function(entry, opt_mimeType) {
+  return FileType.getType(entry, opt_mimeType).type === 'hosted';
 };
 
 /**
  * @param {Entry} entry Reference to the file.
+ * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {string} Returns string that represents the file icon.
  *     It refers to a file 'images/filetype_' + icon + '.png'.
  */
-FileType.getIcon = function(entry) {
-  var fileType = FileType.getType(entry);
+FileType.getIcon = function(entry, opt_mimeType) {
+  var fileType = FileType.getType(entry, opt_mimeType);
   return fileType.icon || fileType.type || 'unknown';
 };

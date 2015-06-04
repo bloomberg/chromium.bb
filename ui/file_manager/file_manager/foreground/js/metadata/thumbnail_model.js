@@ -33,6 +33,7 @@ ThumbnailModel.prototype.get = function(entries) {
       [
         'modificationTime',
         'customIconUrl',
+        'contentMimeType',
         'thumbnailUrl',
         'croppedThumbnailUrl',
         'present'
@@ -62,7 +63,8 @@ ThumbnailModel.prototype.get = function(entries) {
             media: {}
           };
           var canUseContentThumbnail =
-              metadataList[i].present && FileType.isImage(entries[i]);
+              metadataList[i].present &&
+              FileType.isImage(entries[i], metadataList[i].contentMimeType);
           if (canUseContentThumbnail)
             contentRequestEntries.push(entries[i]);
         }

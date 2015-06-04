@@ -48,6 +48,7 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
   this.thumbnailUrl_ = null;
   if (opt_metadata.external && opt_metadata.external.customIconUrl)
     this.fallbackUrl_ = opt_metadata.external.customIconUrl;
+  var mimeType = opt_metadata && opt_metadata.contentMimeType;
 
   for (var i = 0; i < loadTargets.length; i++) {
     switch (loadTargets[i]) {
@@ -61,14 +62,16 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
         break;
       case ThumbnailLoader.LoadTarget.EXTERNAL_METADATA:
         if (opt_metadata.external && opt_metadata.external.thumbnailUrl &&
-            (!opt_metadata.external.present || !FileType.isImage(entry))) {
+            (!opt_metadata.external.present ||
+             !FileType.isImage(entry, mimeType))) {
           this.thumbnailUrl_ = opt_metadata.external.thumbnailUrl;
           this.croppedThumbnailUrl_ = opt_metadata.external.croppedThumbnailUrl;
           this.loadTarget_ = ThumbnailLoader.LoadTarget.EXTERNAL_METADATA;
         }
         break;
       case ThumbnailLoader.LoadTarget.FILE_ENTRY:
-        if (FileType.isImage(entry) || FileType.isRaw(entry)) {
+        if (FileType.isImage(entry, mimeType) ||
+            FileType.isRaw(entry, mimeType)) {
           this.thumbnailUrl_ = entry.toURL();
           this.transform_ =
               opt_metadata.media && opt_metadata.media.imageTransform;

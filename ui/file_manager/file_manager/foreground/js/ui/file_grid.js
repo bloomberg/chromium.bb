@@ -142,13 +142,16 @@ FileGrid.prototype.onThumbnailLoaded_ = function(event) {
   if (entry) {
     var box = listItem.querySelector('.img-container');
     if (box) {
+      var mimeType = this.metadataModel_.getCache(
+          [entry], ['contentMimeType'])[0].contentMimeType;
       FileGrid.setThumbnailImage_(
           assertInstanceof(box, HTMLDivElement),
           entry,
           event.dataUrl,
           event.width,
           event.height,
-          /* should animate */ true);
+          /* should animate */ true,
+          mimeType);
     }
     listItem.classList.toggle('thumbnail-loaded', true);
   }
@@ -539,7 +542,10 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
 
   var bottom = li.ownerDocument.createElement('div');
   bottom.className = 'thumbnail-bottom';
-  var detailIcon = filelist.renderFileTypeIcon(li.ownerDocument, entry);
+  var mimeType = this.metadataModel_.getCache(
+      [entry], ['contentMimeType'])[0].contentMimeType;
+  var detailIcon = filelist.renderFileTypeIcon(
+      li.ownerDocument, entry, mimeType);
   if (isDirectory) {
     var checkmark = li.ownerDocument.createElement('div');
     checkmark.className = 'detail-checkmark';
@@ -580,21 +586,27 @@ FileGrid.prototype.decorateThumbnailBox_ = function(li, entry) {
   if (this.listThumbnailLoader_ &&
       this.listThumbnailLoader_.getThumbnailFromCache(entry)) {
     var thumbnailData = this.listThumbnailLoader_.getThumbnailFromCache(entry);
+    var mimeType = this.metadataModel_.getCache(
+        [entry], ['contentMimeType'])[0].contentMimeType;
     FileGrid.setThumbnailImage_(
         box,
         entry,
         thumbnailData.dataUrl,
         thumbnailData.width,
         thumbnailData.height,
-        /* should not animate */ false);
+        /* should not animate */ false,
+        mimeType);
     li.classList.toggle('thumbnail-loaded', true);
   } else {
     var mediaType = FileType.getMediaType(entry);
     box.setAttribute('generic-thumbnail', mediaType);
     li.classList.toggle('thumbnail-loaded', false);
   }
+  var mimeType = this.metadataModel_.getCache(
+      [entry], ['contentMimeType'])[0].contentMimeType;
   li.classList.toggle('can-hide-filename',
-                      FileType.isImage(entry) || FileType.isRaw(entry));
+                      FileType.isImage(entry, mimeType) ||
+                      FileType.isRaw(entry, mimeType));
 };
 
 /**
@@ -642,10 +654,11 @@ FileGrid.prototype.onSplice_ = function() {
  * @param {number} height Height of thumbnail.
  * @param {boolean} shouldAnimate Whether the thumbanil is shown with animation
  *     or not.
+ * @param {string=} opt_mimeType Optional mime type for the image.
  * @private
  */
 FileGrid.setThumbnailImage_ = function(
-    box, entry, dataUrl, width, height, shouldAnimate) {
+    box, entry, dataUrl, width, height, shouldAnimate, opt_mimeType) {
   var oldThumbnails = box.querySelectorAll('.thumbnail');
 
   var thumbnail = box.ownerDocument.createElement('div');
@@ -653,7 +666,7 @@ FileGrid.setThumbnailImage_ = function(
 
   // If the image is JPEG or the thumbnail is larger than the grid size, resize
   // it to cover the thumbnail box.
-  var type = FileType.getType(entry);
+  var type = FileType.getType(entry, opt_mimeType);
   if ((type.type === 'image' && type.subtype === 'JPEG') ||
       width > FileGrid.GridSize || height > FileGrid.GridSize)
     thumbnail.style.backgroundSize = 'cover';

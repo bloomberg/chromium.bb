@@ -141,6 +141,7 @@ ListContainer.ListType = {
  */
 ListContainer.METADATA_PREFETCH_PROPERTY_NAMES = [
   'availableOffline',
+  'contentMimeType',
   'customIconUrl',
   'hosted',
   'modificationTime',

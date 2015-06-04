@@ -20,7 +20,7 @@ function imageOpen(path) {
       TestEntryInfo.getExpectedRows(path == RootPath.DRIVE ?
           BASIC_DRIVE_ENTRY_SET : BASIC_LOCAL_ENTRY_SET).sort();
   var expectedFilesAfter =
-      expectedFilesBefore.concat([ENTRIES.image2.getExpectedRow()]).sort();
+      expectedFilesBefore.concat([ENTRIES.image3.getExpectedRow()]).sort();
 
   StepsRunner.run([
     function() {
@@ -31,7 +31,7 @@ function imageOpen(path) {
       appId = inAppId;
 
       // Add an additional image file.
-      addEntries(['local', 'drive'], [ENTRIES.image2], this.next);
+      addEntries(['local', 'drive'], [ENTRIES.image3], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
@@ -58,13 +58,13 @@ function imageOpen(path) {
     function() {
       // Open another file in Files.app.
       remoteCall.callRemoteTestUtil(
-          'openFile', appId, ['image2.png'], this.next);
+          'openFile', appId, ['image3.jpg'], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
       // Wait for the file opened.
       galleryApp.waitForSlideImage(
-          galleryAppId, 1024, 768, 'image2').then(this.next);
+          galleryAppId, 640, 480, 'image3').then(this.next);
     },
     function() {
       // Close window

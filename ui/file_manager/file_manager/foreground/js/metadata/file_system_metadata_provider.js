@@ -17,7 +17,7 @@ function FileSystemMetadataProvider() {
  * @const {!Array<string>}
  */
 FileSystemMetadataProvider.PROPERTY_NAMES = [
-  'modificationTime', 'size', 'present', 'availableOffline', 'contentMimeType'
+  'modificationTime', 'size', 'present', 'availableOffline'
 ];
 
 FileSystemMetadataProvider.prototype.__proto__ = NewMetadataProvider.prototype;
@@ -29,26 +29,14 @@ FileSystemMetadataProvider.prototype.get = function(requests) {
   if (!requests.length)
     return Promise.resolve([]);
   return Promise.all(requests.map(function(request) {
-    return Promise.all([
-        new Promise(function(fulfill, reject) {
-          request.entry.getMetadata(fulfill, reject);
-        }),
-        new Promise(function(fulfill) {
-          if (request.names.indexOf('contentMimeType') > -1) {
-            chrome.fileManagerPrivate.getMimeType(
-                request.entry.toURL(), fulfill);
-          } else {
-            fulfill(null);
-          }
-        })
-    ]).then(function(results) {
+    return new Promise(function(fulfill, reject) {
+      request.entry.getMetadata(fulfill, reject);
+    }).then(function(result) {
       var item = new MetadataItem();
-      item.modificationTime = results[0].modificationTime;
-      item.size = request.entry.isDirectory ? -1 : results[0].size;
+      item.modificationTime = result.modificationTime;
+      item.size = request.entry.isDirectory ? -1 : result.size;
       item.present = true;
       item.availableOffline = true;
-      if (results[1] !== null)
-        item.contentMimeType = results[1];
       return item;
     }, function() {
       return new MetadataItem();

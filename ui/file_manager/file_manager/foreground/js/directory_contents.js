@@ -550,7 +550,9 @@ FileListModel.prototype.onAddEntryToList_ = function(entry) {
   else
     this.numFiles_++;
 
-  if (FileType.isImage(entry) || FileType.isRaw(entry))
+  var mimeType = this.metadataModel_.getCache([entry],
+      ['contentMimeType'])[0].contentMimeType;
+  if (FileType.isImage(entry, mimeType) || FileType.isRaw(entry, mimeType))
     this.numImageFiles_++;
 };
 
@@ -565,7 +567,9 @@ FileListModel.prototype.onRemoveEntryFromList_ = function(entry) {
   else
     this.numFiles_--;
 
-  if (FileType.isImage(entry) || FileType.isRaw(entry))
+  var mimeType = this.metadataModel_.getCache([entry],
+      ['contentMimeType'])[0].contentMimeType;
+  if (FileType.isImage(entry, mimeType) || FileType.isRaw(entry, mimeType))
     this.numImageFiles_--;
 };
 
@@ -641,8 +645,11 @@ FileListModel.prototype.compareType_ = function(a, b) {
   if (a.isDirectory !== b.isDirectory)
     return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
 
-  var aType = FileListModel.getFileTypeString(FileType.getType(a));
-  var bType = FileListModel.getFileTypeString(FileType.getType(b));
+  var properties = this.metadataModel_.getCache([a, b], ['contentMimeType']);
+  var aType = FileListModel.getFileTypeString(
+      FileType.getType(a, properties[0].contentMimeType));
+  var bType = FileListModel.getFileTypeString(
+      FileType.getType(b, properties[1].contentMimeType));
 
   var result = util.collator.compare(aType, bType);
   return result !== 0 ? result : util.compareName(a, b);

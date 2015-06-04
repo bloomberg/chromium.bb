@@ -67,7 +67,7 @@ function openSingleImage(testVolumeName, volumeType) {
  * @return {Promise} Promise to be fulfilled with on success.
  */
 function openMultipleImages(testVolumeName, volumeType) {
-  var testEntries = [ENTRIES.desktop, ENTRIES.image2, ENTRIES.image3];
+  var testEntries = [ENTRIES.desktop, ENTRIES.image3];
   var launchedPromise = launch(testVolumeName, volumeType, testEntries);
   return launchedPromise.then(function(args) {
     var appId = args.appId;
@@ -79,8 +79,8 @@ function openMultipleImages(testVolumeName, volumeType) {
           appId,
           ['.mosaic-tile']
       ).then(function(tiles) {
-        if (tiles.length !== 3)
-          return pending('The number of tiles is expected 3, but is %d',
+        if (tiles.length !== 2)
+          return pending('The number of tiles is expected 2, but is %d',
                          tiles.length);
         return tiles;
       });
