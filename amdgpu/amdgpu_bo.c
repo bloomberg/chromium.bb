@@ -452,10 +452,10 @@ int amdgpu_bo_import(amdgpu_device_handle dev,
 	atomic_set(&bo->refcount, 1);
 	bo->dev = dev;
 	pthread_mutex_init(&bo->cpu_access_mutex, NULL);
-	pthread_mutex_unlock(&dev->bo_table_mutex);
 
 	r = amdgpu_bo_map(bo, 1 << 20);
 	if (r) {
+		pthread_mutex_unlock(&dev->bo_table_mutex);
 		amdgpu_bo_reference(&bo, NULL);
 		return r;
 	}
