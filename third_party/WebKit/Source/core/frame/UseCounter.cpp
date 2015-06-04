@@ -917,6 +917,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case CSSSelectorPseudoShadow:
         return "::shadow pseudo-element is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.";
 
+    case PrefixedMouseEventMovementX:
+        return replacedBy("webkitMovementX", "movementX");
+
+    case PrefixedMouseEventMovementY:
+        return replacedBy("webkitMovementY", "movementY");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

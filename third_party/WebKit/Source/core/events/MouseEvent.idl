@@ -68,8 +68,8 @@
     [MeasureAs=MouseEventFromElement] readonly attribute Node fromElement;
     [MeasureAs=MouseEventToElement] readonly attribute Node toElement;
     [MeasureAs=MouseEventWhich] readonly attribute long which;
-    [MeasureAs=PrefixedMouseEventMovementX, ImplementedAs=movementX] readonly attribute long webkitMovementX;
-    [MeasureAs=PrefixedMouseEventMovementY, ImplementedAs=movementY] readonly attribute long webkitMovementY;
+    [DeprecateAs=PrefixedMouseEventMovementX, ImplementedAs=movementX] readonly attribute long webkitMovementX;
+    [DeprecateAs=PrefixedMouseEventMovementY, ImplementedAs=movementY] readonly attribute long webkitMovementY;
 
     // FIXME: this belongs on the DragEvent interface
     readonly attribute DataTransfer dataTransfer;
