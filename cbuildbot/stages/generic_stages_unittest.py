@@ -73,7 +73,8 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
                extra_cmd_args=None, build_id=DEFAULT_BUILD_ID,
-               waterfall=constants.WATERFALL_INTERNAL):
+               waterfall=constants.WATERFALL_INTERNAL,
+               master_build_id=None):
     """Prepare a BuilderRun at self._run for this test.
 
     This method must allow being called more than once.  Subclasses can
@@ -99,6 +100,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
         self._run.options.branch_name to be set to 'some-branch-name'.
       build_id: mock build id
       waterfall: One of constants.CIDB_KNOWN_WATERFALLS.
+      master_build_id: mock build id of master build.
     """
     # Use cbuildbot parser to create options object and populate default values.
     parser = cbuildbot._CreateParser()
@@ -150,6 +152,9 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
     if build_id is not None:
       self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
+
+    if master_build_id is not None:
+      self._run.options.master_build_id = master_build_id
 
     self._run.attrs.metadata.UpdateWithDict({'buildbot-master-name': waterfall})
 

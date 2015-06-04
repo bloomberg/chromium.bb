@@ -66,7 +66,8 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
     """Test that master/slave version mismatch causes failure."""
     master_release_tag = '9999.0.0-rc1'
     master_build_id = self.fake_db.InsertBuild(
-        'master', 'waterfall', 2, 'master config', 'master hostname')
+        'master', constants.WATERFALL_INTERNAL, 2, 'master config',
+        'master hostname')
     master_metadata = metadata_lib.CBuildbotMetadata()
     master_metadata.UpdateKeyDictWithDict(
         'version', {'full' : 'R39-9999.0.0-rc1',
@@ -87,11 +88,16 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests that BuildStartStage behaves as expected."""
 
   def setUp(self):
-    self.mock_cidb = mock.MagicMock()
-    cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
+    self.db = fake_cidb.FakeCIDBConnection()
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.db)
     retry_stats.SetupStats()
-    os.environ['BUILDBOT_MASTERNAME'] = 'chromiumos'
-    self._Prepare(build_id=None)
+    os.environ['BUILDBOT_MASTERNAME'] = constants.WATERFALL_EXTERNAL
+
+    master_build_id = self.db.InsertBuild(
+        'master_build', constants.WATERFALL_EXTERNAL, 1,
+        'master_build_config', 'bot_hostname')
+
+    self._Prepare(build_id=None, master_build_id=master_build_id)
 
   def testUnknownWaterfall(self):
     """Test that an assertion is thrown if master name is not valid."""
@@ -100,18 +106,10 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
 
   def testPerformStage(self):
     """Test that a normal run of the stage does a database insert."""
-    self.PatchObject(self.mock_cidb, 'InsertBuild', return_value=31337)
-
     self.RunStage()
-    self.mock_cidb.InsertBuild.assert_called_once_with(
-        bot_hostname=mock.ANY,
-        build_config='x86-generic-paladin',
-        build_number=1234321,
-        builder_name=mock.ANY,
-        master_build_id=None,
-        waterfall='chromiumos',
-        timeout_seconds=mock.ANY)
-    self.assertEqual(self._run.attrs.metadata.GetValue('build_id'), 31337)
+
+    build_id = self._run.attrs.metadata.GetValue('build_id')
+    self.assertGreater(build_id, 0)
     self.assertEqual(self._run.attrs.metadata.GetValue('db_type'),
                      cidb.CONNECTION_TYPE_MOCK)
 
