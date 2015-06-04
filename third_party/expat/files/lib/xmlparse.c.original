@@ -1678,12 +1678,6 @@ XML_ParseBuffer(XML_Parser parser, int len, int isFinal)
 void * XMLCALL
 XML_GetBuffer(XML_Parser parser, int len)
 {
-/* BEGIN MOZILLA CHANGE (sanity check len) */
-  if (len < 0) {
-    errorCode = XML_ERROR_NO_MEMORY;
-    return NULL;
-  }
-/* END MOZILLA CHANGE */
   switch (ps_parsing) {
   case XML_SUSPENDED:
     errorCode = XML_ERROR_SUSPENDED;
@@ -1695,13 +1689,8 @@ XML_GetBuffer(XML_Parser parser, int len)
   }
 
   if (len > bufferLim - bufferEnd) {
+    /* FIXME avoid integer overflow */
     int neededSize = len + (int)(bufferEnd - bufferPtr);
-/* BEGIN MOZILLA CHANGE (sanity check neededSize) */
-    if (neededSize < 0) {
-      errorCode = XML_ERROR_NO_MEMORY;
-      return NULL;
-    }
-/* END MOZILLA CHANGE */
 #ifdef XML_CONTEXT_BYTES
     int keep = (int)(bufferPtr - buffer);
 
@@ -1730,15 +1719,7 @@ XML_GetBuffer(XML_Parser parser, int len)
         bufferSize = INIT_BUFFER_SIZE;
       do {
         bufferSize *= 2;
-/* BEGIN MOZILLA CHANGE (prevent infinite loop on overflow) */
-      } while (bufferSize < neededSize && bufferSize > 0);
-/* END MOZILLA CHANGE */
-/* BEGIN MOZILLA CHANGE (sanity check bufferSize) */
-      if (bufferSize <= 0) {
-        errorCode = XML_ERROR_NO_MEMORY;
-        return NULL;
-      }
-/* END MOZILLA CHANGE */
+      } while (bufferSize < neededSize);
       newBuf = (char *)MALLOC(bufferSize);
       if (newBuf == 0) {
         errorCode = XML_ERROR_NO_MEMORY;
