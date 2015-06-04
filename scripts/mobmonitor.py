@@ -10,10 +10,14 @@ import cherrypy
 
 from chromite.lib import remote_access
 from chromite.lib import commandline
+from chromite.mobmonitor.checkfile import manager
 
 
 class MobMonitorRoot(object):
   """The central object supporting the Mob* Monitor web interface."""
+
+  def __init__(self, checkfile_manager):
+    self.checkfile_manager = checkfile_manager
 
   @cherrypy.expose
   def index(self):
@@ -58,6 +62,9 @@ def ParseArguments(argv):
   """Creates the argument parser."""
   parser = commandline.ArgumentParser(description=__doc__)
 
+  parser.add_argument('-d', '--checkdir',
+                      default='/etc/mobmonitor/checkfiles/',
+                      help='The Mob* Monitor checkfile directory.')
   parser.add_argument('-p', '--port', type=int, default=9999,
                       help='The Mob* Monitor port.')
 
@@ -68,10 +75,15 @@ def main(argv):
   options = ParseArguments(argv)
   options.Freeze()
 
-  mobmonitor = MobMonitorRoot()
-
   # Start the Mob* Monitor web interface.
   cherrypy.config.update({'server.socket_port':
                           remote_access.NormalizePort(options.port)})
+
+  # Setup the mobmonitor
+  checkfile_manager = manager.CheckFileManager(checkdir=options.checkdir)
+  mobmonitor = MobMonitorRoot(checkfile_manager)
+
+  # Start the checkfile collection background task.
+  checkfile_manager.StartCollection()
 
   cherrypy.quickstart(mobmonitor)
