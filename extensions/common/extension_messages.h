@@ -427,7 +427,7 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_ActivateExtension,
 // Notifies the renderer that the current tab is an extension page (we limit
 // what other extensions can do on these pages).
 IPC_MESSAGE_ROUTED1(ExtensionMsg_SetTabExtensionOwner,
-                    std::string /* extension_id */);
+                    std::string /* extension_id */)
 
 // Notifies the renderer that extensions were loaded in the browser.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_Loaded,
