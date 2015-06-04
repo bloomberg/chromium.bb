@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/child/request_peer.h"
 
@@ -17,7 +16,7 @@ class CONTENT_EXPORT FixedReceivedData final
     : public RequestPeer::ReceivedData {
  public:
   FixedReceivedData(const char* data, size_t length, int encoded_length);
-  explicit FixedReceivedData(scoped_ptr<ReceivedData> data);
+  explicit FixedReceivedData(ReceivedData* data);
   FixedReceivedData(const std::vector<char>& data, int encoded_length);
   ~FixedReceivedData() override;
 

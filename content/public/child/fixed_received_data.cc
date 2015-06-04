@@ -12,7 +12,7 @@ FixedReceivedData::FixedReceivedData(const char* data,
     : data_(data, data + length), encoded_length_(encoded_length) {
 }
 
-FixedReceivedData::FixedReceivedData(scoped_ptr<ReceivedData> data)
+FixedReceivedData::FixedReceivedData(ReceivedData* data)
     : FixedReceivedData(data->payload(),
                         data->encoded_length(),
                         data->encoded_length()) {

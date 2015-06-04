@@ -209,6 +209,8 @@
       'child/runtime_features.h',
       'child/scoped_child_process_reference.cc',
       'child/scoped_child_process_reference.h',
+      'child/shared_memory_data_consumer_handle.cc',
+      'child/shared_memory_data_consumer_handle.h',
       'child/shared_memory_received_data_factory.cc',
       'child/shared_memory_received_data_factory.h',
       'child/service_worker/service_worker_dispatcher.cc',
