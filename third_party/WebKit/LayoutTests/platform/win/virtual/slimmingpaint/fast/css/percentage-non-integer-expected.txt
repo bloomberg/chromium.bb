@@ -58,10 +58,10 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (0,0) size 0x17
 layer at (8,126) size 784x0
   LayoutBlockFlow (relative positioned) {DIV} at (0,118) size 784x0
-layer at (8,126) size 293x20
-  LayoutTable (positioned) {TABLE} at (0,0) size 293x20
-    LayoutTableSection {TBODY} at (0,0) size 293x20
-      LayoutTableRow {TR} at (0,0) size 293x20
+layer at (8,126) size 292x20
+  LayoutTable (positioned) {TABLE} at (0,0) size 292x20
+    LayoutTableSection {TBODY} at (0,0) size 292x20
+      LayoutTableRow {TR} at (0,0) size 292x20
         LayoutTableCell {TD} at (0,10) size 11x0 [bgcolor=#00FF00] [r=0 c=0 rs=1 cs=1]
         LayoutTableCell {TD} at (11,10) size 10x0 [bgcolor=#000000] [r=0 c=1 rs=1 cs=1]
         LayoutTableCell {TD} at (21,10) size 13x0 [bgcolor=#00FF00] [r=0 c=2 rs=1 cs=1]
@@ -80,8 +80,8 @@ layer at (8,126) size 293x20
         LayoutTableCell {TD} at (215,10) size 10x0 [bgcolor=#000000] [r=0 c=15 rs=1 cs=1]
         LayoutTableCell {TD} at (225,10) size 27x0 [bgcolor=#00FF00] [r=0 c=16 rs=1 cs=1]
         LayoutTableCell {TD} at (252,10) size 10x0 [bgcolor=#000000] [r=0 c=17 rs=1 cs=1]
-        LayoutTableCell {TD} at (262,10) size 31x0 [bgcolor=#00FF00] [r=0 c=18 rs=1 cs=1]
-        LayoutTableCell {TD} at (293,10) size 0x0 [r=0 c=19 rs=1 cs=1]
+        LayoutTableCell {TD} at (262,10) size 30x0 [bgcolor=#00FF00] [r=0 c=18 rs=1 cs=1]
+        LayoutTableCell {TD} at (292,10) size 0x0 [r=0 c=19 rs=1 cs=1]
 layer at (8,126) size 1000x20 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600 outlineClip at (0,0) size 800x600
   LayoutTable (positioned) {TABLE} at (0,0) size 1000x20
     LayoutTableSection {TBODY} at (0,0) size 1000x20

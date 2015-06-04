@@ -49,7 +49,7 @@ layer at (8,790) size 31x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size
   LayoutBlockFlow {DIV} at (0,782.16) size 31x310 [border: (1px solid #000000)]
     LayoutText {#text} at (12,1) size 17x187
       text run at (12,1) width 186: "Lorem ipsum dolor sit amet, "
-    LayoutImage {IMG} at (1,187.14) size 25x25
+    LayoutImage {IMG} at (1,187.16) size 25x25
     LayoutText {#text} at (12,212) size 17x555
       text run at (12,212) width 555: " consectetur adipiscing elit. Vivamus vitae eros non libero faucibus sagittis sed ut eros."
 layer at (8,1161) size 31x310 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0 outlineClip at (0,0) size 785x600 scrollHeight 761

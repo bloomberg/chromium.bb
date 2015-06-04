@@ -533,7 +533,7 @@ layer at (23,104) size 603x38
     LayoutBlockFlow {IMG} at (0,21) size 20x20
     LayoutText {#text} at (20,29) size 583x15
       text run at (20,29) width 4: " "
-      text run at (23,29) width 58: "Address: "
+      text run at (23,29) width 57: "Address: "
       text run at (80,29) width 523: "ST. JUDE MEDICAL, 21700 OXNARD ST SUITE 800, WOODLAND HILLS CA Z/91367 "
     LayoutBR {BR} at (602,41) size 1x0
     LayoutBlockFlow {IMG} at (0,44) size 20x20

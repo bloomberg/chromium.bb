@@ -8,7 +8,7 @@ layer at (0,0) size 785x1452 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (2,0) width 409: "Test rendering of 3 text runs -- TextRun1 TextRun2 TextRun3, "
           text run at (410,0) width 359: "in which TextRun1 and TextRun2's bidi level are 2, and"
           text run at (36,18) width 733: "TextRun3's bidi level is 1. TextRun2 and TextRun3 are siblings. But their ancestor (not their parent) is a sibling of"
-          text run at (85,36) width 73: "TextRun1. "
+          text run at (86,36) width 72: "TextRun1. "
           text run at (157,36) width 612: "The visual order should be TextRun3 TextRun1 TextRun2, not TextRun3 TextRun2 TextRun1."
       LayoutBlockFlow {HR} at (0,70) size 769x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,88) size 769x18
@@ -220,7 +220,7 @@ layer at (0,0) size 785x1452 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (739,6) size 30x17
                 text run at (739,6) width 30: "Test"
               LayoutInline {SPAN} at (0,0) size 21x17
-                LayoutBlockFlow {IMG} at (658.75,0) size 20x24
+                LayoutBlockFlow {IMG} at (658.77,0) size 20x24
         LayoutBlockFlow {DIV} at (0,76) size 769x18 [bgcolor=#FF0000]
           LayoutText {#text} at (678,0) size 62x17
             text run at (678,0) width 62: "This is a "
@@ -248,7 +248,7 @@ layer at (0,0) size 785x1452 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (741,6) size 28x17
                 text run at (741,6) width 28: "Test"
               LayoutInline {SPAN} at (0,0) size 21x17
-                LayoutBlockFlow {IMG} at (660.53,0) size 20x24
+                LayoutBlockFlow {IMG} at (660.55,0) size 20x24
         LayoutBlockFlow {DIV} at (0,136) size 769x18
           LayoutText {#text} at (637,0) size 62x17
             text run at (637,0) width 62: "This is a "

@@ -40,7 +40,7 @@ layer at (0,0) size 800x566
           LayoutInline {SPAN} at (0,0) size 167x53 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
             LayoutText {#text} at (33,39) size 45x18
               text run at (33,39) width 45: " dgnjk "
-            LayoutBlockFlow {IMG} at (141.55,64) size 22x34 [border: (1px solid #0000FF)]
+            LayoutBlockFlow {IMG} at (141.56,64) size 22x34 [border: (1px solid #0000FF)]
             LayoutText {#text} at (137,72) size 63x18
               text run at (137,72) width 5 RTL: " "
               text run at (163,72) width 37: "njkng"
@@ -53,7 +53,7 @@ layer at (0,0) size 800x566
           LayoutInline {SPAN} at (0,0) size 163x20 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
             LayoutText {#text} at (67,7) size 88x18
               text run at (67,7) width 88: "Some fill text"
-            LayoutBlockFlow {IMG} at (47.89,0) size 20x32
+            LayoutBlockFlow {IMG} at (47.91,0) size 20x32
 layer at (15,138) size 20x20 clip at (16,139) size 18x18
   LayoutBlockFlow {DIV} at (1,2) size 20x20 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16

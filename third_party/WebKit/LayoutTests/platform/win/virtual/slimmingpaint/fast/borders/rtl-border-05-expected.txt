@@ -51,7 +51,7 @@ layer at (0,0) size 800x502
           LayoutInline {SPAN} at (0,0) size 163x19 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
             LayoutText {#text} at (67,7) size 88x17
               text run at (67,7) width 88: "Some fill text"
-            LayoutBlockFlow {IMG} at (47.89,0) size 20x32
+            LayoutBlockFlow {IMG} at (47.91,0) size 20x32
 layer at (182,106) size 20x20 clip at (183,107) size 18x18
   LayoutBlockFlow {DIV} at (1,2) size 20x20 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16

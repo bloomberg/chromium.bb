@@ -43,11 +43,11 @@ layer at (0,0) size 785x748 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             LayoutText {#text} at (0,0) size 39x19
               text run at (0,0) width 39: "Text..."
         LayoutBlockFlow (anonymous) at (0,20) size 769x20
-          LayoutTable (anonymous) at (0,0) size 99x20
-            LayoutTableSection (anonymous) at (0,0) size 99x20
-              LayoutTableRow (anonymous) at (0,0) size 99x20
+          LayoutTable (anonymous) at (0,0) size 98x20
+            LayoutTableSection (anonymous) at (0,0) size 98x20
+              LayoutTableRow (anonymous) at (0,0) size 98x20
                 LayoutTableCell {TD} at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
-                LayoutTableCell {DIV} at (0,0) size 99x20 [r=0 c=1 rs=1 cs=1]
+                LayoutTableCell {DIV} at (0,0) size 98x20 [r=0 c=1 rs=1 cs=1]
                   LayoutText {#text} at (0,0) size 98x19
                     text run at (0,0) width 98: "...continues here"
         LayoutBlockFlow (anonymous) at (0,40) size 769x0
