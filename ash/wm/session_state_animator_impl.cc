@@ -389,6 +389,49 @@ bool IsLayerAnimated(ui::Layer* layer,
   return true;
 }
 
+void GetContainersInRootWindow(int container_mask,
+                               aura::Window* root_window,
+                               aura::Window::Windows* containers) {
+  if (container_mask & SessionStateAnimator::ROOT_CONTAINER) {
+    containers->push_back(root_window);
+  }
+
+  if (container_mask & SessionStateAnimator::DESKTOP_BACKGROUND) {
+    containers->push_back(Shell::GetContainer(
+        root_window, kShellWindowId_DesktopBackgroundContainer));
+  }
+  if (container_mask & SessionStateAnimator::LAUNCHER) {
+    containers->push_back(Shell::GetContainer(
+        root_window, kShellWindowId_DesktopBackgroundContainer));
+  }
+  if (container_mask & SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS) {
+    // TODO(antrim): Figure out a way to eliminate a need to exclude launcher
+    // in such way.
+    aura::Window* non_lock_screen_containers = Shell::GetContainer(
+        root_window, kShellWindowId_NonLockScreenContainersContainer);
+    // |non_lock_screen_containers| may already be removed in some tests.
+    if (non_lock_screen_containers) {
+      for (aura::Window* window : non_lock_screen_containers->children()) {
+        if (window->id() == kShellWindowId_ShelfContainer)
+          continue;
+        containers->push_back(window);
+      }
+    }
+  }
+  if (container_mask & SessionStateAnimator::LOCK_SCREEN_BACKGROUND) {
+    containers->push_back(Shell::GetContainer(
+        root_window, kShellWindowId_LockScreenBackgroundContainer));
+  }
+  if (container_mask & SessionStateAnimator::LOCK_SCREEN_CONTAINERS) {
+    containers->push_back(Shell::GetContainer(
+        root_window, kShellWindowId_LockScreenContainersContainer));
+  }
+  if (container_mask & SessionStateAnimator::LOCK_SCREEN_RELATED_CONTAINERS) {
+    containers->push_back(Shell::GetContainer(
+        root_window, kShellWindowId_LockScreenRelatedContainersContainer));
+  }
+}
+
 }  // namespace
 
 // This observer is intended to use in cases when some action has to be taken
@@ -483,49 +526,13 @@ SessionStateAnimatorImpl::~SessionStateAnimatorImpl() {
 }
 
 // Fills |containers| with the containers described by |container_mask|.
-void SessionStateAnimatorImpl::GetContainers(int container_mask,
+void SessionStateAnimatorImpl::GetContainers(
+    int container_mask,
     aura::Window::Windows* containers) {
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   containers->clear();
 
-  if (container_mask & ROOT_CONTAINER) {
-    containers->push_back(Shell::GetPrimaryRootWindow());
-  }
-
-  if (container_mask & DESKTOP_BACKGROUND) {
-    containers->push_back(Shell::GetContainer(
-        root_window, kShellWindowId_DesktopBackgroundContainer));
-  }
-  if (container_mask & LAUNCHER) {
-    containers->push_back(
-        Shell::GetContainer(root_window, kShellWindowId_ShelfContainer));
-  }
-  if (container_mask & NON_LOCK_SCREEN_CONTAINERS) {
-    // TODO(antrim): Figure out a way to eliminate a need to exclude launcher
-    // in such way.
-    aura::Window* non_lock_screen_containers = Shell::GetContainer(
-        root_window, kShellWindowId_NonLockScreenContainersContainer);
-    // |non_lock_screen_containers| may already be removed in some tests.
-    if (non_lock_screen_containers) {
-      for (aura::Window* window : non_lock_screen_containers->children()) {
-        if (window->id() == kShellWindowId_ShelfContainer)
-          continue;
-        containers->push_back(window);
-      }
-    }
-  }
-  if (container_mask & LOCK_SCREEN_BACKGROUND) {
-    containers->push_back(Shell::GetContainer(
-        root_window, kShellWindowId_LockScreenBackgroundContainer));
-  }
-  if (container_mask & LOCK_SCREEN_CONTAINERS) {
-    containers->push_back(Shell::GetContainer(
-        root_window, kShellWindowId_LockScreenContainersContainer));
-  }
-  if (container_mask & LOCK_SCREEN_RELATED_CONTAINERS) {
-    containers->push_back(Shell::GetContainer(
-        root_window, kShellWindowId_LockScreenRelatedContainersContainer));
-  }
+  for (aura::Window* root_window : Shell::GetAllRootWindows())
+    GetContainersInRootWindow(container_mask, root_window, containers);
 
   // Some of containers may be null in some tests.
   containers->erase(
