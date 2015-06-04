@@ -260,14 +260,8 @@ PluginProxyTestHarness::PluginDelegateMock::ShareHandleWithRemote(
 base::SharedMemoryHandle
 PluginProxyTestHarness::PluginDelegateMock::ShareSharedMemoryHandleWithRemote(
     const base::SharedMemoryHandle& handle,
-    base::ProcessId remote_pid) {
-#if defined(OS_POSIX)
-  return ShareHandleWithRemote(handle.fd, remote_pid, false);
-#elif defined(OS_WIN)
-  return ShareHandleWithRemote(handle, remote_pid, false);
-#else
-#error Not implemented.
-#endif
+    base::ProcessId /* remote_pid */) {
+  return base::SharedMemory::DuplicateHandle(handle);
 }
 
 std::set<PP_Instance>*
@@ -506,14 +500,8 @@ HostProxyTestHarness::DelegateMock::ShareHandleWithRemote(
 base::SharedMemoryHandle
 HostProxyTestHarness::DelegateMock::ShareSharedMemoryHandleWithRemote(
     const base::SharedMemoryHandle& handle,
-    base::ProcessId remote_pid) {
-#if defined(OS_POSIX)
-  return ShareHandleWithRemote(handle.fd, remote_pid, false);
-#elif defined(OS_WIN)
-  return ShareHandleWithRemote(handle, remote_pid, false);
-#else
-#error Not implemented.
-#endif
+    base::ProcessId /*remote_pid*/) {
+  return base::SharedMemory::DuplicateHandle(handle);
 }
 
 // HostProxyTest ---------------------------------------------------------------

@@ -7,6 +7,10 @@
 #include "content/child/child_process.h"
 #include "content/common/sandbox_util.h"
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#include "content/public/common/sandbox_init.h"
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
 namespace content {
 
 PepperProxyChannelDelegateImpl::~PepperProxyChannelDelegateImpl() {}
@@ -35,15 +39,16 @@ base::SharedMemoryHandle
 PepperProxyChannelDelegateImpl::ShareSharedMemoryHandleWithRemote(
     const base::SharedMemoryHandle& handle,
     base::ProcessId remote_pid) {
-  base::PlatformFile local_platform_file =
-#if defined(OS_POSIX)
-      handle.fd;
-#elif defined(OS_WIN)
-      handle;
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  base::SharedMemoryHandle duped_handle;
+  bool success =
+      BrokerDuplicateSharedMemoryHandle(handle, remote_pid, &duped_handle);
+  if (success)
+    return duped_handle;
+  return base::SharedMemory::NULLHandle();
 #else
-#error Not implemented.
-#endif
-  return ShareHandleWithRemote(local_platform_file, remote_pid, false);
+  return base::SharedMemory::DuplicateHandle(handle);
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
 }  // namespace content

@@ -202,16 +202,24 @@ IPC::PlatformFileForTransit PpapiThread::ShareHandleWithRemote(
 base::SharedMemoryHandle PpapiThread::ShareSharedMemoryHandleWithRemote(
     const base::SharedMemoryHandle& handle,
     base::ProcessId remote_pid) {
-  base::PlatformFile local_platform_file =
-#if defined(OS_POSIX)
-      handle.fd;
-#elif defined(OS_WIN)
-      handle;
-#else
-#error Not implemented.
+#if defined(OS_WIN)
+  if (peer_handle_.IsValid()) {
+    DCHECK(is_broker_);
+    return IPC::GetFileHandleForProcess(handle, peer_handle_.Get(), false);
+  }
 #endif
-  return PpapiThread::ShareHandleWithRemote(local_platform_file, remote_pid,
-                                            false);
+
+  DCHECK(remote_pid != base::kNullProcessId);
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  base::SharedMemoryHandle duped_handle;
+  bool success =
+      BrokerDuplicateSharedMemoryHandle(handle, remote_pid, &duped_handle);
+  if (success)
+    return duped_handle;
+  return base::SharedMemory::NULLHandle();
+#else
+  return base::SharedMemory::DuplicateHandle(handle);
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
 std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {

@@ -76,13 +76,11 @@ IPC::PlatformFileForTransit ProxyChannel::ShareHandleWithRemote(
 
 base::SharedMemoryHandle ProxyChannel::ShareSharedMemoryHandleWithRemote(
     const base::SharedMemoryHandle& handle) {
-#if defined(OS_POSIX)
-  return ShareHandleWithRemote(handle.fd, false);
-#elif defined(OS_WIN)
-  return ShareHandleWithRemote(handle, false);
-#else
-#error Not implemented.
-#endif
+  if (!channel_.get())
+    return base::SharedMemory::NULLHandle();
+
+  DCHECK(peer_pid_ != base::kNullProcessId);
+  return delegate_->ShareSharedMemoryHandleWithRemote(handle, peer_pid_);
 }
 
 bool ProxyChannel::Send(IPC::Message* msg) {
