@@ -11,7 +11,8 @@
 class ConstrainedWindowMac;
 @protocol ConstrainedWindowSheet;
 
-// Cocoa implementation of web_modal::SingleWebContentsDialogManager.
+// Cocoa implementation of web_modal::SingleWebContentsDialogManager for showing
+// native Cocoa sheet dialogs (of various kinds).
 class SingleWebContentsDialogManagerCocoa
     : public web_modal::SingleWebContentsDialogManager {
  public:
@@ -31,7 +32,8 @@ class SingleWebContentsDialogManagerCocoa
   gfx::NativeWindow dialog() override;
 
  private:
-  ConstrainedWindowMac* client_;  // Weak. Can be null.
+  // Weak. Legacy DialogManager-style delegate interface that Cocoa uses.
+  ConstrainedWindowMac* client_;
   base::scoped_nsprotocol<id<ConstrainedWindowSheet>> sheet_;
   // Weak. Owns this.
   web_modal::SingleWebContentsDialogManagerDelegate* delegate_;

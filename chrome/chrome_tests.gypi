@@ -480,6 +480,7 @@
       'browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller_browsertest.mm',
       'browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm',
       'browser/ui/cocoa/view_id_util_browsertest.mm',
+      'browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac_browsertest.mm',
       'browser/ui/cocoa/website_settings/permission_bubble_cocoa_browser_test.mm',
       'browser/ui/content_settings/content_setting_bubble_model_browsertest.cc',
       'browser/ui/exclusive_access/fullscreen_controller_browsertest.cc',

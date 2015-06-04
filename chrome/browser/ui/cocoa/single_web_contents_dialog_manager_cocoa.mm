@@ -20,8 +20,8 @@ SingleWebContentsDialogManagerCocoa::SingleWebContentsDialogManagerCocoa(
       delegate_(delegate),
       host_(nullptr),
       shown_(false) {
-  if (client)
-    client->set_manager(this);
+  DCHECK(client);
+  client->set_manager(this);
 }
 
 SingleWebContentsDialogManagerCocoa::~SingleWebContentsDialogManagerCocoa() {
@@ -49,12 +49,9 @@ void SingleWebContentsDialogManagerCocoa::Hide() {
 void SingleWebContentsDialogManagerCocoa::Close() {
   [[ConstrainedWindowSheetController controllerForSheet:sheet_]
       closeSheet:sheet_];
-  if (client_) {
-    client_->set_manager(nullptr);
-    client_->OnDialogClosing();  // |client_| might delete itself here.
-    client_ = nullptr;
-  }
-  delegate_->WillClose(dialog());
+  client_->set_manager(nullptr);
+  client_->OnDialogClosing();      // |client_| might delete itself here.
+  delegate_->WillClose(dialog());  // Deletes |this|.
 }
 
 void SingleWebContentsDialogManagerCocoa::Focus() {
