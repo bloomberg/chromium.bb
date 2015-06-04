@@ -27,8 +27,8 @@ layer at (0,0) size 800x411
             text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
         LayoutBlockFlow {P} at (0,54) size 784x17
           LayoutBlockFlow {SPAN} at (0,0) size 188.45x17
-            LayoutText {#text} at (0,0) size 132x17
-              text run at (0,0) width 132: "font-stretch: condensed"
+            LayoutText {#text} at (0,0) size 131x17
+              text run at (0,0) width 131: "font-stretch: condensed"
           LayoutText {#text} at (188,0) size 347x17
             text run at (188,0) width 347: " - Just poets wax boldly as kings and queens march over fuzz."
         LayoutBlockFlow {P} at (0,71) size 784x17

@@ -33,7 +33,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 234x17
           text run at (0,0) width 234: "Test that text does not wrap too late:"
       LayoutBlockFlow {DIV} at (0,216) size 597x42 [border: (3px solid #000000)]
-        LayoutText {#text} at (3,3) size 588x35
+        LayoutText {#text} at (3,3) size 587x35
           text run at (3,3) width 389: "J u s t a b u n c h o f l e t t e r s h e r e , n o t h i n g t o s e e . "
-          text run at (391,3) width 200: "Thisisonebigwordwhichisveryl"
+          text run at (391,3) width 199: "Thisisonebigwordwhichisveryl"
           text run at (3,21) width 28: "ong."

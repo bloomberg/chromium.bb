@@ -110,8 +110,8 @@ layer at (0,0) size 800x565
                   LayoutText {#text} at (0,1) size 7x18
                     text run at (0,1) width 7 RTL: "\x{5D2}"
                 LayoutTableCell {TD} at (7,0) size 10x19 [r=0 c=1 rs=1 cs=1]
-                  LayoutText {#text} at (0,1) size 10x18
-                    text run at (0,1) width 10 RTL: "\x{5D1}"
+                  LayoutText {#text} at (0,1) size 9x18
+                    text run at (0,1) width 9 RTL: "\x{5D1}"
                 LayoutTableCell {TD} at (17,0) size 11x19 [r=0 c=2 rs=1 cs=1]
                   LayoutText {#text} at (0,1) size 11x18
                     text run at (0,1) width 11 RTL: "\x{5D0}"
@@ -134,8 +134,8 @@ layer at (0,0) size 800x565
                   LayoutText {#text} at (0,1) size 7x18
                     text run at (0,1) width 7 RTL: "\x{5D2}"
                 LayoutTableCell {TD} at (7,0) size 10x19 [r=0 c=1 rs=1 cs=1]
-                  LayoutText {#text} at (0,1) size 10x18
-                    text run at (0,1) width 10 RTL: "\x{5D1}"
+                  LayoutText {#text} at (0,1) size 9x18
+                    text run at (0,1) width 9 RTL: "\x{5D1}"
                 LayoutTableCell {TD} at (17,0) size 11x19 [r=0 c=2 rs=1 cs=1]
                   LayoutText {#text} at (0,1) size 11x18
                     text run at (0,1) width 11 RTL: "\x{5D0}"
@@ -183,8 +183,8 @@ layer at (0,0) size 800x565
                   LayoutText {#text} at (0,1) size 7x18
                     text run at (0,1) width 7 RTL: "\x{5D2}"
                 LayoutTableCell {TD} at (7,0) size 10x19 [r=0 c=1 rs=1 cs=1]
-                  LayoutText {#text} at (0,1) size 10x18
-                    text run at (0,1) width 10 RTL: "\x{5D1}"
+                  LayoutText {#text} at (0,1) size 9x18
+                    text run at (0,1) width 9 RTL: "\x{5D1}"
                 LayoutTableCell {TD} at (17,0) size 11x19 [r=0 c=2 rs=1 cs=1]
                   LayoutText {#text} at (0,1) size 11x18
                     text run at (0,1) width 11 RTL: "\x{5D0}"
@@ -324,8 +324,8 @@ layer at (0,0) size 800x565
                   LayoutText {#text} at (0,1) size 7x18
                     text run at (0,1) width 7 RTL: "\x{5D2}"
                 LayoutTableCell {TD} at (7,0) size 10x19 [r=0 c=1 rs=1 cs=1]
-                  LayoutText {#text} at (0,1) size 10x18
-                    text run at (0,1) width 10 RTL: "\x{5D1}"
+                  LayoutText {#text} at (0,1) size 9x18
+                    text run at (0,1) width 9 RTL: "\x{5D1}"
                 LayoutTableCell {TD} at (17,0) size 11x19 [r=0 c=2 rs=1 cs=1]
                   LayoutText {#text} at (0,1) size 11x18
                     text run at (0,1) width 11 RTL: "\x{5D0}"
@@ -443,8 +443,8 @@ layer at (0,0) size 800x565
                   LayoutText {#text} at (0,1) size 7x18
                     text run at (0,1) width 7 RTL: "\x{5D2}"
                 LayoutTableCell {TD} at (111,0) size 10x19 [r=0 c=13 rs=1 cs=1]
-                  LayoutText {#text} at (0,1) size 10x18
-                    text run at (0,1) width 10 RTL: "\x{5D1}"
+                  LayoutText {#text} at (0,1) size 9x18
+                    text run at (0,1) width 9 RTL: "\x{5D1}"
                 LayoutTableCell {TD} at (121,0) size 11x19 [r=0 c=14 rs=1 cs=1]
                   LayoutText {#text} at (0,1) size 11x18
                     text run at (0,1) width 11 RTL: "\x{5D0}"
@@ -491,8 +491,8 @@ layer at (0,0) size 800x565
                   LayoutText {#text} at (0,1) size 7x18
                     text run at (0,1) width 7 RTL: "\x{5D2}"
                 LayoutTableCell {TD} at (7,0) size 10x19 [r=0 c=1 rs=1 cs=1]
-                  LayoutText {#text} at (0,1) size 10x18
-                    text run at (0,1) width 10 RTL: "\x{5D1}"
+                  LayoutText {#text} at (0,1) size 9x18
+                    text run at (0,1) width 9 RTL: "\x{5D1}"
                 LayoutTableCell {TD} at (17,0) size 11x19 [r=0 c=2 rs=1 cs=1]
                   LayoutText {#text} at (0,1) size 11x18
                     text run at (0,1) width 11 RTL: "\x{5D0}"

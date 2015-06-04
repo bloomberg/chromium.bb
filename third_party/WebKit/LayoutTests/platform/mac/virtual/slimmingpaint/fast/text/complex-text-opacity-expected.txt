@@ -34,8 +34,8 @@ layer at (0,0) size 800x600
           text run at (391,0) width 7: " "
         LayoutText {#text} at (441,0) size 7x29
           text run at (441,0) width 7: " "
-        LayoutText {#text} at (491,0) size 7x29
-          text run at (491,0) width 7: " "
+        LayoutText {#text} at (490,0) size 8x29
+          text run at (490,0) width 8: " "
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,74) size 784x33
         LayoutInline {SPAN} at (0,0) size 51x29
@@ -94,10 +94,10 @@ layer at (8,42) size 45x29 transparent
   LayoutInline {SPAN} at (0,0) size 45x29
     LayoutText {#text} at (397,0) size 45x29
       text run at (397,0) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
-layer at (8,42) size 45x29 transparent
-  LayoutInline {SPAN} at (0,0) size 45x29
-    LayoutText {#text} at (447,0) size 45x29
-      text run at (447,0) width 45: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
+layer at (8,42) size 44x29 transparent
+  LayoutInline {SPAN} at (0,0) size 44x29
+    LayoutText {#text} at (447,0) size 44x29
+      text run at (447,0) width 44: "\x{916}\x{94B}\x{91C}\x{947}\x{902}"
 layer at (8,42) size 44x29 transparent
   LayoutInline {SPAN} at (0,0) size 44x29
     LayoutText {#text} at (497,0) size 44x29
