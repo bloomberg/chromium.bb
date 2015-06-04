@@ -57,9 +57,6 @@ void DomDistillerRequestViewBase::OnArticleReady(
     SendJavaScript(viewer::GetUnsafeArticleContentJs(article_proto));
     // If any content was loaded, show the feedback form.
     SendJavaScript(viewer::GetShowFeedbackFormJs());
-  } else if (page_count_ == article_proto->pages_size()) {
-    // We may still be showing the "Loading" indicator.
-    SendJavaScript(viewer::GetToggleLoadingIndicatorJs(true));
   } else {
     // It's possible that we didn't get some incremental updates from the
     // distiller. Ensure all remaining pages are flushed to the viewer.
@@ -69,6 +66,8 @@ void DomDistillerRequestViewBase::OnArticleReady(
           &page, page_count_ == article_proto->pages_size()));
     }
   }
+  // We may still be showing the "Loading" indicator.
+  SendJavaScript(viewer::GetToggleLoadingIndicatorJs(true));
   // No need to hold on to the ViewerHandle now that distillation is complete.
   viewer_handle_.reset();
 }
@@ -81,7 +80,8 @@ void DomDistillerRequestViewBase::OnArticleUpdated(
         article_update.GetDistilledPage(page_count_);
     // Send the page content to the client. This will execute after the page is
     // ready.
-    SendJavaScript(viewer::GetUnsafeIncrementalDistilledPageJs(&page, false));
+    SendJavaScript(viewer::GetUnsafeIncrementalDistilledPageJs(
+        &page, !article_update.HasNextPage()));
 
     if (page_count_ == 0) {
       // This is the first page, so send the title and text direction to the

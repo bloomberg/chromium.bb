@@ -389,7 +389,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
     std::string result;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
         contents, kGetLoadIndicatorClassName , &result));
-    EXPECT_EQ("visible", result);
+    EXPECT_EQ("hidden", result);
 
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
         contents, kGetContent , &result));
