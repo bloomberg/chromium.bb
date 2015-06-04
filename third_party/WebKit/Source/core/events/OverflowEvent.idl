@@ -23,6 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// TODO(philipj): Remove the overflowchanged event. crbug.com/460822
 [
     Constructor(DOMString type, optional OverflowEventInit eventInitDict),
     RuntimeEnabled=OverflowChangedEvent,
@@ -35,4 +36,3 @@
     readonly attribute boolean horizontalOverflow;
     readonly attribute boolean verticalOverflow;
 };
-

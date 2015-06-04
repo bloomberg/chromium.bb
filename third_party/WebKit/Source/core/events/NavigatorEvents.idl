@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/pointerevents/#extensions-to-the-navigator-interface
+
 partial interface Navigator {
     readonly attribute long maxTouchPoints;
 };

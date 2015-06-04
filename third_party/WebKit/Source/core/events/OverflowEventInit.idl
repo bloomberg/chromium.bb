@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Non-standard.
-
+// TODO(philipj): Remove the overflowchanged event. crbug.com/460822
 [
     RuntimeEnabled=OverflowChangedEvent,
 ] dictionary OverflowEventInit : EventInit {
