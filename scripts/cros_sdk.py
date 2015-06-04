@@ -77,21 +77,24 @@ def GetStage3Urls(version):
           for ext in COMPRESSION_PREFERENCE]
 
 
-def GetBoardOverlayUrls(version, board):
-  """Returns the URL(s) for the board-specific toolchain overlay.
+def GetToolchainsOverlayUrls(version, toolchains):
+  """Returns the URL(s) for a toolchains SDK overlay.
 
   Args:
     version: The SDK version used, e.g. 2015.05.27.145939. We use the year and
         month components to point to a subdirectory on the SDK bucket where
-        board overlays are stored (.../2015/05/ in this case).
-    board: The board name.
+        overlays are stored (.../2015/05/ in this case).
+    toolchains: Iterable of toolchain target strings (e.g. 'i686-pc-linux-gnu').
 
   Returns:
-    List of alternative download URLs for the board's SDK overlay tarball.
+    List of alternative download URLs for an SDK overlay tarball that contains
+    the given toolchains.
   """
+  toolchains_desc = '-'.join(sorted(toolchains))
   suburl_template = os.path.join(
       *(version.split('.')[:2] +
-        ['cros-sdk-overlay-%s-%s.tar.%%s' % (board, version)]))
+        ['cros-sdk-overlay-toolchains-%s-%s.tar.%%s' %
+         (toolchains_desc, version)]))
   return [toolchain.GetSdkURL(suburl=suburl_template % ext)
           for ext in COMPRESSION_PREFERENCE]
 
@@ -102,7 +105,7 @@ def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
   Args:
     storage_dir: Path where to save the tarball.
     urls: List of URLs to try to download. Download will stop on first success.
-    desc: A string describing what's the thing we're downloading (for logging).
+    desc: A string describing what tarball we're downloading (for logging).
     allow_none: Don't fail if none of the URLs worked.
 
   Returns:
@@ -116,7 +119,7 @@ def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
   # fail if asked to resume a complete file.
   # pylint: disable=C0301,W0631
   # https://sourceforge.net/tracker/?func=detail&atid=100976&aid=3482927&group_id=976
-  logging.notice('Downloading %s...', desc)
+  logging.notice('Downloading %s tarball...', desc)
   for url in urls:
     # http://www.logilab.org/ticket/8766
     # pylint: disable=E1101
@@ -179,16 +182,16 @@ def FetchRemoteTarballs(storage_dir, urls, desc, allow_none=False):
   return tarball_dest
 
 
-def CreateChroot(chroot_path, sdk_tarball, board_overlay_tarball, cache_dir,
-                 nousepkg=False, workspace=None):
+def CreateChroot(chroot_path, sdk_tarball, toolchains_overlay_tarball,
+                 cache_dir, nousepkg=False, workspace=None):
   """Creates a new chroot from a given SDK"""
 
   cmd = MAKE_CHROOT + ['--stage3_path', sdk_tarball,
                        '--chroot', chroot_path,
                        '--cache_dir', cache_dir]
 
-  if board_overlay_tarball:
-    cmd.extend(['--board_overlay_path', board_overlay_tarball])
+  if toolchains_overlay_tarball:
+    cmd.extend(['--toolchains_overlay_path', toolchains_overlay_tarball])
 
   if nousepkg:
     cmd.append('--nousepkg')
@@ -499,14 +502,22 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
                             % (sdk_latest_version, bootstrap_latest_version)))
   parser.add_argument('--workspace',
                       help='Workspace directory to mount into the chroot.')
-  parser.add_argument('--board',
-                      help='The board we intend to be building in the chroot. '
-                      'Used for downloading an SDK board overlay (if one is '
-                      'found), which may speed up chroot initialization when '
-                      'building for the first time. Otherwise this has no '
-                      'effect and will not restrict the chroot in any way. '
-                      'Ignored if using --bootstrap.')
   parser.add_argument('commands', nargs=argparse.REMAINDER)
+
+  # SDK overlay tarball options (mutually exclusive).
+  group = parser.add_mutually_exclusive_group()
+  group.add_argument('--toolchains',
+                     help=('Comma-separated list of toolchains we expect to be '
+                           'using on the chroot. Used for downloading a '
+                           'corresponding SDK toolchains group (if one is '
+                           'found), which may speed up chroot initialization '
+                           'when building for the first time. Otherwise this '
+                           'has no effect and will not restrict the chroot in '
+                           'any way. Ignored if using --bootstrap.'))
+  group.add_argument('--board',
+                     help=('The board we intend to be building in the chroot. '
+                           'Used for deriving the list of required toolchains '
+                           '(see --toolchains).'))
 
   # Commands.
   group = parser.add_argument_group('Commands')
@@ -635,17 +646,25 @@ def main(argv):
   else:
     urls = GetArchStageTarballs(sdk_version)
 
-  # Get URLs for the board-specific overlay, if one is to be used.
-  overlay_urls = None
-  if options.board and not options.bootstrap:
-    overlay_urls = GetBoardOverlayUrls(sdk_version, options.board)
+  # Get URLs for the toolchains overlay, if one is to be used.
+  toolchains_overlay_urls = None
+  if not options.bootstrap:
+    toolchains = None
+    if options.toolchains:
+      toolchains = options.toolchains.split(',')
+    elif options.board:
+      toolchains = toolchain.GetToolchainsForBoard(options.board).keys()
+
+    if toolchains:
+      toolchains_overlay_urls = GetToolchainsOverlayUrls(sdk_version,
+                                                         toolchains)
 
   lock_path = os.path.dirname(options.chroot)
   lock_path = os.path.join(
       lock_path, '.%s_lock' % os.path.basename(options.chroot).lstrip('.'))
   with cgroups.SimpleContainChildren('cros_sdk', pid=first_pid):
     with locking.FileLock(lock_path, 'chroot lock') as lock:
-      board_overlay_tarball = None
+      toolchains_overlay_tarball = None
 
       if options.proxy_sim:
         _ProxySimSetup(options)
@@ -685,16 +704,16 @@ def main(argv):
 
       if options.download:
         lock.write_lock()
-        desc = 'stage3 tarball' if options.bootstrap else 'SDK tarball'
-        sdk_tarball = FetchRemoteTarballs(sdk_cache, urls, desc)
-        if overlay_urls:
-          board_overlay_tarball = FetchRemoteTarballs(sdk_cache, overlay_urls,
-                                                      'board overlay tarball',
-                                                      allow_none=True)
+        sdk_tarball = FetchRemoteTarballs(
+            sdk_cache, urls, 'stage3' if options.bootstrap else 'SDK')
+        if toolchains_overlay_urls:
+          toolchains_overlay_tarball = FetchRemoteTarballs(
+              sdk_cache, toolchains_overlay_urls, 'SDK toolchains overlay',
+              allow_none=True)
 
       if options.create:
         lock.write_lock()
-        CreateChroot(options.chroot, sdk_tarball, board_overlay_tarball,
+        CreateChroot(options.chroot, sdk_tarball, toolchains_overlay_tarball,
                      options.cache_dir,
                      nousepkg=(options.bootstrap or options.nousepkg),
                      workspace=options.workspace)
