@@ -330,6 +330,8 @@ interface BluetoothDevice
     getter vendorIDSource
     method connectGATT
     method constructor
+interface BluetoothGATTCharacteristic
+    method constructor
 interface BluetoothGATTRemoteServer
     getter connected
     method constructor

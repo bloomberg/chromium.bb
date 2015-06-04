@@ -12,18 +12,25 @@ namespace blink {
 
 struct WebBluetoothDevice;
 struct WebBluetoothError;
+struct WebBluetoothGATTCharacteristic;
 struct WebBluetoothGATTRemoteServer;
 struct WebBluetoothGATTService;
 
 // Success and failure callbacks for requestDevice.
-// WebBluetoothDevice and WebBluetoothError object ownership is transfered.
+// WebBluetoothDevice and WebBluetoothError object ownership is transferred.
 typedef WebCallbacks<WebBluetoothDevice, WebBluetoothError> WebBluetoothRequestDeviceCallbacks;
 
 // Success and failure callbacks for connectGATT.
+// WebBluetoothGATTRemoteServer and WebBluetoothError object ownership is transferred.
 typedef WebCallbacks<WebBluetoothGATTRemoteServer, WebBluetoothError> WebBluetoothConnectGATTCallbacks;
 
 // Success and failure callbacks for getPrimaryService.
+// WebBluetoothGATTService and WebBluetoothError object ownership is transferred.
 typedef WebCallbacks<WebBluetoothGATTService, WebBluetoothError> WebBluetoothGetPrimaryServiceCallbacks;
+
+// Success and failure callbacks for getCharacteristic.
+// WebBluetoothCharacteristic and WebBluetoothError object ownership is transferred.
+typedef WebCallbacks<WebBluetoothGATTCharacteristic, WebBluetoothError> WebBluetoothGetCharacteristicCallbacks;
 
 class WebBluetooth {
 public:
@@ -47,6 +54,12 @@ public:
         const WebString& serviceUUID,
         WebBluetoothGetPrimaryServiceCallbacks*) { }
     // virtual void getPrimaryServices() { }
+
+    // BluetoothGATTService methods:
+    // See https://webbluetoothcg.github.io/web-bluetooth/#idl-def-bluetoothgattservice
+    virtual void getCharacteristic(const WebString& serviceInstanceID,
+        const WebString& characteristicUUID,
+        WebBluetoothGetCharacteristicCallbacks*) { }
 };
 
 } // namespace blink
