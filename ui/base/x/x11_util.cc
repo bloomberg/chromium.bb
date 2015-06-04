@@ -156,6 +156,19 @@ bool GetWindowManagerName(std::string* wm_name) {
   return !err_tracker.FoundNewError() && result;
 }
 
+struct XImageDeleter {
+  void operator()(XImage* image) const { XDestroyImage(image); }
+};
+
+// Custom release function that will be passed to Skia so that it deletes the
+// image when the SkBitmap goes out of scope.
+// |address| is the pointer to the data inside the XImage.
+// |context| is the pointer to the XImage.
+void ReleaseXImage(void* address, void* context) {
+  if (context)
+    XDestroyImage(static_cast<XImage*>(context));
+}
+
 // A process wide singleton that manages the usage of X cursors.
 class XCursorCache {
  public:
@@ -1181,12 +1194,9 @@ bool CopyAreaToCanvas(XID drawable,
                       gfx::Rect source_bounds,
                       gfx::Point dest_offset,
                       gfx::Canvas* canvas) {
-  ui::XScopedImage scoped_image(
-      XGetImage(gfx::GetXDisplay(), drawable,
-                source_bounds.x(), source_bounds.y(),
-                source_bounds.width(), source_bounds.height(),
-                AllPlanes, ZPixmap));
-  XImage* image = scoped_image.get();
+  scoped_ptr<XImage, XImageDeleter> image(XGetImage(
+      gfx::GetXDisplay(), drawable, source_bounds.x(), source_bounds.y(),
+      source_bounds.width(), source_bounds.height(), AllPlanes, ZPixmap));
   if (!image) {
     LOG(ERROR) << "XGetImage failed";
     return false;
@@ -1210,9 +1220,9 @@ bool CopyAreaToCanvas(XID drawable,
       image->data[i + 3] = 0xff;
 
     SkBitmap bitmap;
-    bitmap.installPixels(SkImageInfo::MakeN32Premul(image->width,
-                                                    image->height),
-                         image->data, image->bytes_per_line);
+    bitmap.installPixels(
+        SkImageInfo::MakeN32Premul(image->width, image->height), image->data,
+        image->bytes_per_line, nullptr, &ReleaseXImage, image.release());
     gfx::ImageSkia image_skia;
     gfx::ImageSkiaRep image_rep(bitmap, canvas->image_scale());
     image_skia.AddRepresentation(image_rep);
@@ -1347,18 +1357,6 @@ size_t XRefcountedMemory::size() const {
 }
 
 XRefcountedMemory::~XRefcountedMemory() {
-}
-
-XScopedImage::~XScopedImage() {
-  reset(NULL);
-}
-
-void XScopedImage::reset(XImage* image) {
-  if (image_ == image)
-    return;
-  if (image_)
-    XDestroyImage(image_);
-  image_ = image;
 }
 
 XScopedCursor::XScopedCursor(::Cursor cursor, XDisplay* display)

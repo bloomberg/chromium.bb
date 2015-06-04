@@ -316,25 +316,6 @@ class UI_BASE_EXPORT XRefcountedMemory : public base::RefCountedMemory {
   DISALLOW_COPY_AND_ASSIGN(XRefcountedMemory);
 };
 
-// Keeps track of an image returned by an X function (e.g. XGetImage) and
-// makes sure it's XDestroyImage'd.
-class UI_BASE_EXPORT XScopedImage {
- public:
-  explicit XScopedImage(XImage* image) : image_(image) {}
-  ~XScopedImage();
-
-  XImage* get() const { return image_; }
-
-  XImage* operator->() const { return image_; }
-
-  void reset(XImage* image);
-
- private:
-  XImage* image_;
-
-  DISALLOW_COPY_AND_ASSIGN(XScopedImage);
-};
-
 // Keeps track of a cursor returned by an X function and makes sure it's
 // XFreeCursor'd.
 class UI_BASE_EXPORT XScopedCursor {
