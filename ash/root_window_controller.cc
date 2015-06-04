@@ -613,8 +613,7 @@ const aura::Window* RootWindowController::GetWindowForFullscreenMode() const {
         GetContainer(kShellWindowId_DefaultContainer)->children();
     for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
          iter != windows.rend(); ++iter) {
-      if (((*iter)->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-           (*iter)->type() == ui::wm::WINDOW_TYPE_PANEL) &&
+      if (wm::IsWindowUserPositionable(*iter) &&
           (*iter)->layer()->GetTargetVisibility()) {
         topmost_window = *iter;
         break;

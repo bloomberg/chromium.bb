@@ -464,9 +464,7 @@ bool CanHandleWindowSnapOrDock() {
   wm::WindowState* window_state = wm::GetActiveWindowState();
   // Disable window snapping shortcut key for full screen window due to
   // http://crbug.com/135487.
-  return (window_state &&
-          (window_state->window()->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-           window_state->window()->type() == ui::wm::WINDOW_TYPE_PANEL) &&
+  return (window_state && window_state->IsUserPositionable() &&
           !window_state->IsFullscreen());
 }
 

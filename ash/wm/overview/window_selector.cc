@@ -22,6 +22,7 @@
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
@@ -224,8 +225,7 @@ bool WindowSelector::IsSelectable(aura::Window* window) {
       state->GetStateType() == wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED) {
     return false;
   }
-  return window->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-         window->type() == ui::wm::WINDOW_TYPE_PANEL;
+  return state->IsUserPositionable();
 }
 
 WindowSelector::WindowSelector(WindowSelectorDelegate* delegate)

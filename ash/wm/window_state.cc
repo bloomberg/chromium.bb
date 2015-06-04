@@ -143,6 +143,11 @@ bool WindowState::IsDocked() const {
          GetStateType() == WINDOW_STATE_TYPE_DOCKED_MINIMIZED;
 }
 
+bool WindowState::IsUserPositionable() const {
+  return (window()->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+          window()->type() == ui::wm::WINDOW_TYPE_PANEL);
+}
+
 bool WindowState::CanMaximize() const {
   // Window must have the kCanMaximizeKey and have no maximum width or height.
   if (!window()->GetProperty(aura::client::kCanMaximizeKey))

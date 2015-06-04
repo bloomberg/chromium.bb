@@ -422,10 +422,8 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
       // adjusted to have minimum visibility, because they are positioned by the
       // user and user should always be able to interact with them. Other
       // windows are positioned programmatically.
-      if (window_state->window()->type() != ui::wm::WINDOW_TYPE_NORMAL &&
-          window_state->window()->type() != ui::wm::WINDOW_TYPE_PANEL) {
+      if (!window_state->IsUserPositionable())
         return true;
-      }
 
       // Use entire display instead of workarea because the workarea can
       // be further shrunk by the docked area. The logic ensures 30%

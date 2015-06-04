@@ -46,6 +46,9 @@ ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 // TODO(oshima): remove this.
 ASH_EXPORT bool IsWindowMinimized(aura::Window* window);
 
+// Returns true if |window|'s location can be controlled by the user.
+ASH_EXPORT bool IsWindowUserPositionable(aura::Window* window);
+
 // Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(aura::Window* window);
 

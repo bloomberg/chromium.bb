@@ -108,6 +108,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool IsActive() const;
   bool IsDocked() const;
 
+  // Returns true if the window's location can be controlled by the user.
+  bool IsUserPositionable() const;
+
   // Checks if the window can change its state accordingly.
   bool CanMaximize() const;
   bool CanMinimize() const;
