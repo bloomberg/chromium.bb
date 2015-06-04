@@ -26,8 +26,8 @@ class AURA_EXPORT WindowTreeHostWin
   // WindowTreeHost:
   ui::EventSource* GetEventSource() override;
   gfx::AcceleratedWidget GetAcceleratedWidget() override;
-  void Show() override;
-  void Hide() override;
+  void ShowImpl() override;
+  void HideImpl() override;
   gfx::Rect GetBounds() const override;
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Point GetLocationOnNativeScreen() const override;

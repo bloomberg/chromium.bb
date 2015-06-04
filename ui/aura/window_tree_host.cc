@@ -172,6 +172,18 @@ void WindowTreeHost::MoveCursorToHostLocation(const gfx::Point& host_location) {
   MoveCursorToInternal(root_location, host_location);
 }
 
+void WindowTreeHost::Show() {
+  if (compositor())
+    compositor()->SetVisible(true);
+  ShowImpl();
+}
+
+void WindowTreeHost::Hide() {
+  HideImpl();
+  if (compositor())
+    compositor()->SetVisible(false);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHost, protected:
 

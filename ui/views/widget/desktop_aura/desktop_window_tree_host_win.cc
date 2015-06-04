@@ -207,11 +207,15 @@ aura::WindowTreeHost* DesktopWindowTreeHostWin::AsWindowTreeHost() {
 
 void DesktopWindowTreeHostWin::ShowWindowWithState(
     ui::WindowShowState show_state) {
+  if (compositor())
+    compositor()->SetVisible(true);
   message_handler_->ShowWindowWithState(show_state);
 }
 
 void DesktopWindowTreeHostWin::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
+  if (compositor())
+    compositor()->SetVisible(true);
   gfx::Rect pixel_bounds = gfx::win::DIPToScreenRect(restored_bounds);
   message_handler_->ShowMaximizedWithBounds(pixel_bounds);
 }
@@ -410,8 +414,11 @@ void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
   // TODO(sky): workaround for ScopedFullscreenVisibility showing window
   // directly. Instead of this should listen for visibility changes and then
   // update window.
-  if (message_handler_->IsVisible() && !content_window_->TargetVisibility())
+  if (message_handler_->IsVisible() && !content_window_->TargetVisibility()) {
+    if (compositor())
+      compositor()->SetVisible(true);
     content_window_->Show();
+  }
   SetWindowTransparency();
 }
 
@@ -469,11 +476,11 @@ gfx::AcceleratedWidget DesktopWindowTreeHostWin::GetAcceleratedWidget() {
   return message_handler_->hwnd();
 }
 
-void DesktopWindowTreeHostWin::Show() {
+void DesktopWindowTreeHostWin::ShowImpl() {
   message_handler_->Show();
 }
 
-void DesktopWindowTreeHostWin::Hide() {
+void DesktopWindowTreeHostWin::HideImpl() {
   if (!pending_close_)
     message_handler_->Hide();
 }

@@ -365,6 +365,8 @@ aura::WindowTreeHost* DesktopWindowTreeHostX11::AsWindowTreeHost() {
 
 void DesktopWindowTreeHostX11::ShowWindowWithState(
     ui::WindowShowState show_state) {
+  if (compositor())
+    compositor()->SetVisible(true);
   if (!window_mapped_)
     MapWindow(show_state);
 
@@ -890,12 +892,12 @@ gfx::AcceleratedWidget DesktopWindowTreeHostX11::GetAcceleratedWidget() {
   return xwindow_;
 }
 
-void DesktopWindowTreeHostX11::Show() {
+void DesktopWindowTreeHostX11::ShowImpl() {
   ShowWindowWithState(ui::SHOW_STATE_NORMAL);
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(true);
 }
 
-void DesktopWindowTreeHostX11::Hide() {
+void DesktopWindowTreeHostX11::HideImpl() {
   if (window_mapped_) {
     XWithdrawWindow(xdisplay_, xwindow_, 0);
     window_mapped_ = false;

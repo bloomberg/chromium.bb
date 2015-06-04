@@ -52,11 +52,11 @@ gfx::AcceleratedWidget WindowTreeHostMojo::GetAcceleratedWidget() {
   return gfx::kNullAcceleratedWidget;
 }
 
-void WindowTreeHostMojo::Show() {
+void WindowTreeHostMojo::ShowImpl() {
   window()->Show();
 }
 
-void WindowTreeHostMojo::Hide() {
+void WindowTreeHostMojo::HideImpl() {
 }
 
 gfx::Rect WindowTreeHostMojo::GetBounds() const {

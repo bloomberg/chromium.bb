@@ -151,8 +151,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   gfx::Transform GetRootTransform() const override;
   ui::EventSource* GetEventSource() override;
   gfx::AcceleratedWidget GetAcceleratedWidget() override;
-  void Show() override;
-  void Hide() override;
+  void ShowImpl() override;
+  void HideImpl() override;
   gfx::Rect GetBounds() const override;
   void SetBounds(const gfx::Rect& requested_bounds_in_pixels) override;
   gfx::Point GetLocationOnNativeScreen() const override;

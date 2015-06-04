@@ -62,11 +62,11 @@ gfx::AcceleratedWidget WindowTreeHostWin::GetAcceleratedWidget() {
   return widget_;
 }
 
-void WindowTreeHostWin::Show() {
+void WindowTreeHostWin::ShowImpl() {
   window_->Show();
 }
 
-void WindowTreeHostWin::Hide() {
+void WindowTreeHostWin::HideImpl() {
   window_->Hide();
 }
 

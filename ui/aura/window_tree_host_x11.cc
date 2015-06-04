@@ -456,7 +456,7 @@ gfx::AcceleratedWidget WindowTreeHostX11::GetAcceleratedWidget() {
   return xwindow_;
 }
 
-void WindowTreeHostX11::Show() {
+void WindowTreeHostX11::ShowImpl() {
   if (!window_mapped_) {
     // Before we map the window, set size hints. Otherwise, some window managers
     // will ignore toplevel XMoveWindow commands.
@@ -480,7 +480,7 @@ void WindowTreeHostX11::Show() {
   }
 }
 
-void WindowTreeHostX11::Hide() {
+void WindowTreeHostX11::HideImpl() {
   if (window_mapped_) {
     XWithdrawWindow(xdisplay_, xwindow_, 0);
     window_mapped_ = false;

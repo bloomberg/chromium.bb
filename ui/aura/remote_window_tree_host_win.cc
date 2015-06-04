@@ -205,14 +205,14 @@ gfx::AcceleratedWidget RemoteWindowTreeHostWin::GetAcceleratedWidget() {
   return ::GetDesktopWindow();
 }
 
-void RemoteWindowTreeHostWin::Show() {
+void RemoteWindowTreeHostWin::ShowImpl() {
   ui::RemoteInputMethodPrivateWin* remote_input_method_private =
       GetRemoteInputMethodPrivate();
   if (remote_input_method_private)
     remote_input_method_private->SetRemoteDelegate(this);
 }
 
-void RemoteWindowTreeHostWin::Hide() {
+void RemoteWindowTreeHostWin::HideImpl() {
   NOTIMPLEMENTED();
 }
 

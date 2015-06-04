@@ -124,10 +124,10 @@ class AURA_EXPORT WindowTreeHost {
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;
 
   // Shows the WindowTreeHost.
-  virtual void Show() = 0;
+  void Show();
 
   // Hides the WindowTreeHost.
-  virtual void Hide() = 0;
+  void Hide();
 
   // Gets/Sets the size of the WindowTreeHost (in pixels).
   virtual gfx::Rect GetBounds() const = 0;
@@ -165,6 +165,12 @@ class AURA_EXPORT WindowTreeHost {
 
   // kCalled when the cursor visibility has changed.
   virtual void OnCursorVisibilityChangedNative(bool show) = 0;
+
+  // Shows the WindowTreeHost.
+  virtual void ShowImpl() = 0;
+
+  // Hides the WindowTreeHost.
+  virtual void HideImpl() = 0;
 
  private:
   friend class test::WindowTreeHostTestApi;
