@@ -28,8 +28,9 @@ SoftwareRenderer::~SoftwareRenderer() {
 }
 
 bool SoftwareRenderer::Initialize() {
-  software_surface_ =
-      ui::SurfaceFactoryOzone::GetInstance()->CreateCanvasForWidget(widget_);
+  software_surface_ = ui::OzonePlatform::GetInstance()
+                          ->GetSurfaceFactoryOzone()
+                          ->CreateCanvasForWidget(widget_);
   if (!software_surface_) {
     LOG(ERROR) << "Failed to create software surface";
     return false;

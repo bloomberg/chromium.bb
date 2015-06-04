@@ -8,15 +8,10 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/native_library.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/ozone_base_export.h"
-
-class SkBitmap;
-class SkCanvas;
 
 namespace ui {
 
@@ -77,12 +72,6 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   typedef base::Callback<void(base::NativeLibrary)> AddGLLibraryCallback;
   typedef base::Callback<void(GLGetProcAddressProc)>
       SetGLGetProcAddressProcCallback;
-
-  SurfaceFactoryOzone();
-  virtual ~SurfaceFactoryOzone();
-
-  // Returns the singleton instance.
-  static SurfaceFactoryOzone* GetInstance();
 
   // Returns native platform display handle. This is used to obtain the EGL
   // display connection for the native display.
@@ -159,8 +148,12 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
   // such as MAP for zero copy or SCANOUT for display controller.
   virtual bool CanCreateNativePixmap(BufferUsage usage);
 
+ protected:
+  SurfaceFactoryOzone();
+  virtual ~SurfaceFactoryOzone();
+
  private:
-  static SurfaceFactoryOzone* impl_;  // not owned
+  DISALLOW_COPY_AND_ASSIGN(SurfaceFactoryOzone);
 };
 
 }  // namespace ui

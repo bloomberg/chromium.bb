@@ -7,6 +7,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
@@ -14,7 +15,8 @@ namespace content {
 
 SoftwareOutputDeviceOzone::SoftwareOutputDeviceOzone(ui::Compositor* compositor)
     : compositor_(compositor) {
-  ui::SurfaceFactoryOzone* factory = ui::SurfaceFactoryOzone::GetInstance();
+  ui::SurfaceFactoryOzone* factory =
+      ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
 
   surface_ozone_ = factory->CreateCanvasForWidget(compositor_->widget());
 
