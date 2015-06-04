@@ -13,9 +13,9 @@ in the dependency trees until common packages are found.
 from __future__ import print_function
 
 import json
-import optparse
 import os
 
+from chromite.lib import commandline
 from chromite.lib import dot_helper
 
 NORMAL_COLOR = 'black'
@@ -143,18 +143,18 @@ def BuildDependencyGraph(pkg, input_deps, version_map, divergent_set):
 
 
 def main(argv):
-  parser = optparse.OptionParser(
-      usage='usage: %prog [options] input1 input2...')
-  parser.add_option('-f', '--format', default='svg',
-                    help='Dot output format (png, svg, etc.).')
-  parser.add_option('-o', '--output-dir', default='.',
-                    help='Output directory.')
-  parser.add_option('-s', '--save-dot', action='store_true',
-                    help='Save dot files.')
-  options, inputs = parser.parse_args(argv)
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('-f', '--format', default='svg',
+                      help='Dot output format (png, svg, etc.).')
+  parser.add_argument('-o', '--output-dir', default='.',
+                      help='Output directory.')
+  parser.add_argument('-s', '--save-dot', action='store_true',
+                      help='Save dot files.')
+  parser.add_argument('inputs', nargs='+')
+  options = parser.parse_args(argv)
 
   input_deps = []
-  for i in inputs:
+  for i in options.inputs:
     with open(i) as handle:
       input_deps.append(json.loads(handle.read()))
 
