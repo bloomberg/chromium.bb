@@ -10,10 +10,6 @@ namespace switches {
 // Enable use of cross-process CALayers to display content directly from the
 // GPU process on Mac.
 const char kDisableRemoteCoreAnimation[] = "disable-remote-core-animation";
-
-// Force all windows to render via a layer-backed view bound to an
-// NSOpenGLContext.
-const char kEnableNSGLSurfaces[] = "enable-ns-gl-surfaces";
 #endif
 
 // Disables use of DWM composition for top level windows.

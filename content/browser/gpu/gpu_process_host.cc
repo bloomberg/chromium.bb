@@ -109,7 +109,6 @@ static const char* const kSwitchNames[] = {
   switches::kVModule,
 #if defined(OS_MACOSX)
   switches::kDisableRemoteCoreAnimation,
-  switches::kEnableNSGLSurfaces,
   switches::kEnableSandboxLogging,
 #endif
 #if defined(USE_AURA)
