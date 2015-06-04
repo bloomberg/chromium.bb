@@ -196,6 +196,13 @@ virtual/deferred/inspector/tracing/paint-profiler-update.html [ WontFix ]
 [ XP Mac ] virtual/slimmingpaint/fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
 [ Mac ] fast/text/mixed-direction-bidi-wrap.html [ WontFix ]
 
+# We don't have the necessary fonts for these tests on XP.
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001f.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001g.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001h.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001l.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001o.html [ WontFix ]
+
 # We don't have full plane2 support on XP.
 [ XP ] fast/text/international/plane2.html [ WontFix ]
 [ XP ] virtual/slimmingpaint/fast/text/international/plane2.html [ WontFix ]
