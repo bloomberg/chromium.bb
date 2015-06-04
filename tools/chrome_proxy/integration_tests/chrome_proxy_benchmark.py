@@ -104,9 +104,9 @@ class ChromeProxySafeBrowsingOn(ChromeProxyBenchmark):
   tag = 'safebrowsing_on'
   test = measurements.ChromeProxySafebrowsingOn
 
-  # Override CreateUserStorySet so that we can instantiate SafebrowsingPageSet
+  # Override CreateStorySet so that we can instantiate SafebrowsingPageSet
   # with a non default param.
-  def CreateUserStorySet(self, options):
+  def CreateStorySet(self, options):
     del options  # unused
     return pagesets.SafebrowsingPageSet(expect_timeout=True)
 
