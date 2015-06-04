@@ -40,7 +40,12 @@
 }
 
 - (BOOL)canBecomeMainWindow {
-  return [self delegate] && [self viewsWidget]->CanActivate();
+  if (![self delegate])
+    return NO;
+
+  // Dialogs shouldn't take large shadows away from their parent window.
+  views::Widget* widget = [self viewsWidget];
+  return widget->CanActivate() && !widget->IsDialogBox();
 }
 
 // Override sendEvent to allow key events to be forwarded to a toolkit-views

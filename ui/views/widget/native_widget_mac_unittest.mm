@@ -670,6 +670,28 @@ TEST_F(NativeWidgetMacTest, NativeWindowChildModalShowHide) {
   }
 }
 
+// Tests Cocoa properties that should be given to particular widget types.
+TEST_F(NativeWidgetMacTest, NativeProperties) {
+  // Create a regular widget (TYPE_WINDOW).
+  Widget* regular_widget = CreateNativeDesktopWidget();
+  EXPECT_TRUE([regular_widget->GetNativeWindow() canBecomeKeyWindow]);
+  EXPECT_TRUE([regular_widget->GetNativeWindow() canBecomeMainWindow]);
+
+  // Disabling activation should prevent key and main status.
+  regular_widget->widget_delegate()->set_can_activate(false);
+  EXPECT_FALSE([regular_widget->GetNativeWindow() canBecomeKeyWindow]);
+  EXPECT_FALSE([regular_widget->GetNativeWindow() canBecomeMainWindow]);
+
+  // Create a dialog widget (also TYPE_WINDOW), but with a DialogDelegate.
+  Widget* dialog_widget = views::DialogDelegate::CreateDialogWidget(
+      new ChildModalDialogDelegate, nullptr, regular_widget->GetNativeView());
+  EXPECT_TRUE([dialog_widget->GetNativeWindow() canBecomeKeyWindow]);
+  // Dialogs shouldn't take main status away from their parent.
+  EXPECT_FALSE([dialog_widget->GetNativeWindow() canBecomeMainWindow]);
+
+  regular_widget->CloseNow();
+}
+
 }  // namespace test
 }  // namespace views
 
