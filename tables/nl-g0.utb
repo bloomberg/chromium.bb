@@ -35,7 +35,7 @@
 #
 # ----------------------------------------------------------------------------------------------
 
-include nl-chardefs.cti
+include nl-chardefs.uti
 include braille-patterns.cti
 
 decpoint  \x002C  2    # COMMA       §3.1 Het cijferteken [1]
