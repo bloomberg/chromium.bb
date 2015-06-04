@@ -257,9 +257,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   void ShowDisambiguationPopup(
       const gfx::Rect& rect_pixels, const SkBitmap& zoomed_bitmap);
 
-  // Creates a java-side touch event, used for injecting touch event for
-  // testing/benchmarking purposes
-  base::android::ScopedJavaLocalRef<jobject> CreateTouchEventSynthesizer();
+  // Creates a java-side touch event, used for injecting motion events for
+  // testing/benchmarking purposes.
+  base::android::ScopedJavaLocalRef<jobject> CreateMotionEventSynthesizer();
 
   // Returns True if the given media should be blocked to load.
   bool ShouldBlockMediaRequest(const GURL& url);

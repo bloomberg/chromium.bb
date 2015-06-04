@@ -695,13 +695,14 @@ void ContentViewCoreImpl::ShowDisambiguationPopup(
                                                java_bitmap.obj());
 }
 
-ScopedJavaLocalRef<jobject> ContentViewCoreImpl::CreateTouchEventSynthesizer() {
+ScopedJavaLocalRef<jobject>
+ContentViewCoreImpl::CreateMotionEventSynthesizer() {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return ScopedJavaLocalRef<jobject>();
-  return Java_ContentViewCore_createTouchEventSynthesizer(env, obj.obj());
+  return Java_ContentViewCore_createMotionEventSynthesizer(env, obj.obj());
 }
 
 bool ContentViewCoreImpl::ShouldBlockMediaRequest(const GURL& url) {

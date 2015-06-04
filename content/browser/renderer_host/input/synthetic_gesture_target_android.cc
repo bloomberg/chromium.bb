@@ -6,7 +6,7 @@
 
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "jni/TouchEventSynthesizer_jni.h"
+#include "jni/MotionEventSynthesizer_jni.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/android/view_configuration.h"
 #include "ui/gfx/screen.h"
@@ -26,21 +26,29 @@ SyntheticGestureTargetAndroid::SyntheticGestureTargetAndroid(
 SyntheticGestureTargetAndroid::~SyntheticGestureTargetAndroid() {
 }
 
-bool SyntheticGestureTargetAndroid::RegisterTouchEventSynthesizer(JNIEnv* env) {
+bool SyntheticGestureTargetAndroid::RegisterMotionEventSynthesizer(
+    JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
 void SyntheticGestureTargetAndroid::TouchSetPointer(
     JNIEnv* env, int index, int x, int y, int id) {
   TRACE_EVENT0("input", "SyntheticGestureTargetAndroid::TouchSetPointer");
-  Java_TouchEventSynthesizer_setPointer(env, touch_event_synthesizer_.obj(),
+  Java_MotionEventSynthesizer_setPointer(env, touch_event_synthesizer_.obj(),
                                       index, x, y, id);
+}
+
+void SyntheticGestureTargetAndroid::TouchSetScrollDeltas(
+    JNIEnv* env, int x, int y, int dx, int dy) {
+  TRACE_EVENT0("input", "SyntheticGestureTargetAndroid::TouchSetPointer");
+  Java_MotionEventSynthesizer_setScrollDeltas(
+      env, touch_event_synthesizer_.obj(), x, y, dx, dy);
 }
 
 void SyntheticGestureTargetAndroid::TouchInject(
     JNIEnv* env, Action action, int pointer_count, int64 time_in_ms) {
   TRACE_EVENT0("input", "SyntheticGestureTargetAndroid::TouchInject");
-  Java_TouchEventSynthesizer_inject(env, touch_event_synthesizer_.obj(),
+  Java_MotionEventSynthesizer_inject(env, touch_event_synthesizer_.obj(),
                                     static_cast<int>(action), pointer_count,
                                     time_in_ms);
 }
@@ -79,7 +87,13 @@ void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
 
 void SyntheticGestureTargetAndroid::DispatchWebMouseWheelEventToPlatform(
     const blink::WebMouseWheelEvent& web_wheel, const ui::LatencyInfo&) {
-  CHECK(false);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  TouchSetScrollDeltas(env, web_wheel.x, web_wheel.y, web_wheel.deltaX,
+                       web_wheel.deltaY);
+  Java_MotionEventSynthesizer_inject(
+      env, touch_event_synthesizer_.obj(),
+      static_cast<int>(SyntheticGestureTargetAndroid::ActionScroll),
+      1, static_cast<int64>(web_wheel.timeStampSeconds * 1000.0));
 }
 
 void SyntheticGestureTargetAndroid::DispatchWebMouseEventToPlatform(

@@ -20,7 +20,7 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
       base::android::ScopedJavaLocalRef<jobject> touch_event_synthesizer);
   ~SyntheticGestureTargetAndroid() override;
 
-  static bool RegisterTouchEventSynthesizer(JNIEnv* env);
+  static bool RegisterMotionEventSynthesizer(JNIEnv* env);
 
   // SyntheticGestureTargetBase:
   void DispatchWebTouchEventToPlatform(
@@ -42,18 +42,22 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
   float GetMinScalingSpanInDips() const override;
 
  private:
-  // Enum values below need to be kept in sync with TouchEventSynthesizer.java
+  // Enum values below need to be kept in sync with MotionEventSynthesizer.java.
   enum Action {
     ActionInvalid = -1,
     ActionStart = 0,
     ActionMove = 1,
     ActionCancel = 2,
-    ActionEnd = 3
+    ActionEnd = 3,
+    ActionScroll = 4
   };
 
   void TouchSetPointer(JNIEnv* env, int index, int x, int y, int id);
-  void TouchInject(
-      JNIEnv* env, Action action, int pointer_count, int64 time_in_ms);
+  void TouchSetScrollDeltas(JNIEnv* env, int x, int y, int dx, int dy);
+  void TouchInject(JNIEnv* env,
+                   Action action,
+                   int pointer_count,
+                   int64 time_in_ms);
 
   base::android::ScopedJavaGlobalRef<jobject> touch_event_synthesizer_;
 

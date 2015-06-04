@@ -26,7 +26,10 @@ bool SyntheticGestureParams::IsGestureSourceTypeSupported(
   return gesture_source_type == TOUCH_INPUT ||
          gesture_source_type == MOUSE_INPUT;
 #elif defined(OS_ANDROID)
-  return gesture_source_type == TOUCH_INPUT;
+  // Android supports mouse wheel events, but mouse drag is not yet
+  // supported. See crbug.com/468806.
+  return gesture_source_type == TOUCH_INPUT ||
+         gesture_source_type == MOUSE_INPUT;
 #else
   return gesture_source_type == MOUSE_INPUT;
 #endif

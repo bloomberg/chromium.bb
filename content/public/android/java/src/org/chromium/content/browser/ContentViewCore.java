@@ -2449,8 +2449,8 @@ public class ContentViewCore implements
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private TouchEventSynthesizer createTouchEventSynthesizer() {
-        return new TouchEventSynthesizer(this);
+    private MotionEventSynthesizer createMotionEventSynthesizer() {
+        return new MotionEventSynthesizer(this);
     }
 
     @SuppressWarnings("unused")
