@@ -38,24 +38,21 @@ Help w/ Common Tasks:
 The goal of Chromium's FFmpeg repository is to just be a mirror of the upstream
 Git repository.  Which means every change made must be upstreamed.  If you make
 a change, please add an entry to chromium/patches/README with a link to the
-tracking issue and code review for your change. Reviews are performed with gerrit
-at https://chromium-review.googlesource.com.
+tracking issue and code review for your change. Reviews are performed with
+gerrit at https://chromium-review.googlesource.com.
 
-  1) Install commit hooks to generate Change-Id fields in commits, run:
-     ./chromium/scripts/install_commit_msg_hook.sh
-
-  2) Create a branch and make a local, single commit. Gerrit differs from
+  1) Create a branch and make a local, single commit. Gerrit differs from
      Rietveld in that you must have a single commit, so use git commit --amend
      if you need to make changes. Inspect that your commit contains a
      Change-Id field, which is how gerrit coalesces separate patch sets into the
      same code review.
 
-  3) Upload for review:
-     git push origin HEAD:refs/for/master
+  2) Upload for review:
+     git cl upload
 
-  4) Commit via https://chromium-review.googlesource.com once approved.
+  3) Commit via https://chromium-review.googlesource.com once approved.
 
-  5) If needed, submit a Chromium-side change to update DEPS.
+  4) If needed, submit a Chromium-side change to update DEPS.
 
 -- Upstreaming a patch.
 
@@ -90,6 +87,6 @@ Performing An Upstream Merge
 Currently this is an extremely tedious process that requires access to a Linux,
 Mac, and Windows development machine and lot of blood, sweat, and tears.
 
-The instructions are also prone to going stale, so in the interest collaboration
-and sharing tips we've moved to a public document:
+The instructions are also prone to going stale, so in the interest
+collaboration and sharing tips we've moved to a public document:
 https://docs.google.com/a/chromium.org/document/d/14bqZ9NISsyEO3948wehhJ7wc9deTIz-yHUhF1MQp7Po/edit#
