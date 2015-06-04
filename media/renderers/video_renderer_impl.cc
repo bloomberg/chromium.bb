@@ -171,12 +171,8 @@ void VideoRendererImpl::Initialize(
   // failed.
   init_cb_ = BindToCurrentLoop(init_cb);
 
-  // Always post |buffering_state_cb_| because it may otherwise invoke reentrant
-  // calls to OnTimeStateChanged() under lock, which can deadlock the compositor
-  // and media threads.
-  buffering_state_cb_ = BindToCurrentLoop(buffering_state_cb);
-
   statistics_cb_ = statistics_cb;
+  buffering_state_cb_ = buffering_state_cb;
   paint_cb_ = base::Bind(&VideoRendererSink::PaintFrameUsingOldRenderingPath,
                          base::Unretained(sink_));
   ended_cb_ = ended_cb;
