@@ -334,9 +334,16 @@ void EmbeddedWorkerContextClient::didHandlePushEvent(
   script_context_->DidHandlePushEvent(request_id, result);
 }
 
+// TODO(chasej): crbug.com/486890 - Remove when matching blink changes land
 void EmbeddedWorkerContextClient::didHandleSyncEvent(int request_id) {
+  didHandleSyncEvent(request_id, blink::WebServiceWorkerEventResultCompleted);
+}
+
+void EmbeddedWorkerContextClient::didHandleSyncEvent(
+    int request_id,
+    blink::WebServiceWorkerEventResult result) {
   DCHECK(script_context_);
-  script_context_->DidHandleSyncEvent(request_id);
+  script_context_->DidHandleSyncEvent(request_id, result);
 }
 
 void EmbeddedWorkerContextClient::didHandleCrossOriginConnectEvent(

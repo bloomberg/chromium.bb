@@ -218,9 +218,11 @@ void ServiceWorkerScriptContext::DidHandlePushEvent(
       GetRoutingID(), request_id, result));
 }
 
-void ServiceWorkerScriptContext::DidHandleSyncEvent(int request_id) {
-  Send(new ServiceWorkerHostMsg_SyncEventFinished(
-      GetRoutingID(), request_id));
+void ServiceWorkerScriptContext::DidHandleSyncEvent(
+    int request_id,
+    blink::WebServiceWorkerEventResult result) {
+  Send(new ServiceWorkerHostMsg_SyncEventFinished(GetRoutingID(), request_id,
+                                                  result));
 }
 
 void ServiceWorkerScriptContext::DidHandleCrossOriginConnectEvent(

@@ -70,7 +70,8 @@ class ServiceWorkerScriptContext {
       blink::WebServiceWorkerEventResult result);
   void DidHandlePushEvent(int request_id,
                           blink::WebServiceWorkerEventResult result);
-  void DidHandleSyncEvent(int request_id);
+  void DidHandleSyncEvent(int request_id,
+                          blink::WebServiceWorkerEventResult result);
   void DidHandleCrossOriginConnectEvent(int request_id, bool accept_connection);
   void GetClients(
       const blink::WebServiceWorkerClientQueryOptions& options,

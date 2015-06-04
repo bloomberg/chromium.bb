@@ -1328,7 +1328,8 @@ void ServiceWorkerVersion::OnFetchEventFinished(
 }
 
 void ServiceWorkerVersion::OnSyncEventFinished(
-    int request_id) {
+    int request_id,
+    blink::WebServiceWorkerEventResult result) {
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerVersion::OnSyncEventFinished",
                "Request id", request_id);
@@ -1338,8 +1339,18 @@ void ServiceWorkerVersion::OnSyncEventFinished(
     return;
   }
 
+  ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableServiceWorkerSync)) {
+    // Avoid potential race condition where flag is disabled after a sync event
+    // was dispatched
+    status = SERVICE_WORKER_ERROR_ABORT;
+  } else if (result == blink::WebServiceWorkerEventResultRejected) {
+    status = SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
+  }
+
   scoped_refptr<ServiceWorkerVersion> protect(this);
-  callback->Run(SERVICE_WORKER_OK);
+  callback->Run(status);
   RemoveCallbackAndStopIfRedundant(&sync_callbacks_, request_id);
 }
 
