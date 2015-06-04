@@ -456,6 +456,9 @@ importer.DefaultScanResult = function(hashGenerator) {
 
   /** @private {!Object<!importer.Disposition, number>} */
   this.duplicateStats_ = {};
+  this.duplicateStats_[importer.Disposition.CONTENT_DUPLICATE] = 0;
+  this.duplicateStats_[importer.Disposition.HISTORY_DUPLICATE] = 0;
+  this.duplicateStats_[importer.Disposition.SCAN_DUPLICATE] = 0;
 
   /**
    * The point in time when the scan was started.
