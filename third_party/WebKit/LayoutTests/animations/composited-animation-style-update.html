@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<style>
+div {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+}
+
+#expectation {
+    font-size: 50px;
+    background: red;
+    transform: translate(1em, 1em);
+}
+
+#target {
+    font-size: 1px;
+    background: green;
+}
+</style>
+<div id="expectation"></div>
+<div id="target"></div>
+<script>
+target.style.fontSize = "50px";
+target.animate([
+  {transform: "translate(1em, 1em)"},
+  {transform: "translate(1em, 1em)"},
+], {
+  duration: 1000,
+  iterations: Infinity,
+});
+</script>

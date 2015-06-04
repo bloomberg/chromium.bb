@@ -189,9 +189,13 @@ const QualifiedName* supportedSVGAttribute(const String& property, SVGElement* s
 
 PassRefPtrWillBeRawPtr<EffectModel> EffectInput::convert(Element* element, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState& exceptionState)
 {
-    // FIXME: Remove the dependency on element.
     if (!element)
         return nullptr;
+
+    // TODO(alancutter): Remove this once composited animations no longer depend on AnimatableValues.
+    if (!element->inActiveDocument())
+        return nullptr;
+    element->document().updateLayoutTreeForNodeIfNeeded(element);
 
     StyleSheetContents* styleSheetContents = element->document().elementSheet().contents();
     StringKeyframeVector keyframes;
