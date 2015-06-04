@@ -63,6 +63,13 @@ class GIN_EXPORT IsolateHolder {
   // This method returns if v8::Locker is needed to access isolate.
   AccessMode access_mode() const { return access_mode_; }
 
+  // This method returns V8IsolateMemoryDumpProvider of this isolate, used for
+  // testing.
+  V8IsolateMemoryDumpProvider* isolate_memory_dump_provider_for_testing()
+      const {
+    return isolate_memory_dump_provider_.get();
+  }
+
  private:
   v8::Isolate* isolate_;
   scoped_ptr<PerIsolateData> isolate_data_;

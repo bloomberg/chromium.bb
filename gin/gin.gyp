@@ -168,6 +168,7 @@
         'shell/gin_shell_unittest.cc',
         'test/run_all_unittests.cc',
         'test/run_js_tests.cc',
+        'v8_isolate_memory_dump_provider_unittest.cc',
         'wrappable_unittest.cc',
       ],
     },
