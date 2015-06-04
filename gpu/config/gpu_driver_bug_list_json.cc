@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.08",
+  "version": "8.09",
   "entries": [
     {
       "id": 1,
@@ -1394,6 +1394,22 @@ LONG_STRING_CONST(
       "gl_renderer": ".*4\\d\\d",
       "features": [
         "disable_blend_equation_advanced"
+      ]
+    },
+    {
+      "id": 118,
+      "cr_bugs": [477306],
+      "description": "NVIDIA 331 series drivers shader compiler may crash when attempting to optimize pow()",
+      "os": {
+        "type": "linux"
+      },
+      "driver_version": {
+        "op": "<=",
+        "value": "331"
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "remove_pow_with_constant_exponent"
       ]
     }
   ]
