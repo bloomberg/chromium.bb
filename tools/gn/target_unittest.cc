@@ -5,10 +5,29 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/config.h"
+#include "tools/gn/scheduler.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
 #include "tools/gn/test_with_scope.h"
 #include "tools/gn/toolchain.h"
+
+namespace {
+
+// Asserts that the current global scheduler has a single unknown generated
+// file with the given name from the given target.
+void AssertSchedulerHasOneUnknownFileMatching(const Target* target,
+                                              const SourceFile& file) {
+  auto unknown = g_scheduler->GetUnknownGeneratedInputs();
+  ASSERT_EQ(1u, unknown.size());  // Should be one unknown file.
+  auto found = unknown.find(file);
+  ASSERT_TRUE(found != unknown.end()) << file.value();
+  EXPECT_TRUE(target == found->second)
+      << "Target doesn't match. Expected\n  "
+      << target->label().GetUserVisibleName(false)
+      << "\nBut got\n  " << found->second->label().GetUserVisibleName(false);
+}
+
+}  // namespace
 
 // Tests that lib[_dir]s are inherited across deps boundaries for static
 // libraries but not executables.
@@ -20,12 +39,9 @@ TEST(Target, LibInheritance) {
   const SourceDir libdir("/foo_dir/");
 
   // Leaf target with ldflags set.
-  Target z(setup.settings(), Label(SourceDir("//foo/"), "z"));
-  z.set_output_type(Target::STATIC_LIBRARY);
+  TestTarget z(setup, "//foo:z", Target::STATIC_LIBRARY);
   z.config_values().libs().push_back(lib);
   z.config_values().lib_dirs().push_back(libdir);
-  z.visibility().SetPublic();
-  z.SetToolchain(setup.toolchain());
   ASSERT_TRUE(z.OnResolved(&err));
 
   // All lib[_dir]s should be set when target is resolved.
@@ -38,13 +54,10 @@ TEST(Target, LibInheritance) {
   // and its own. Its own flag should be before the inherited one.
   const std::string second_lib("bar");
   const SourceDir second_libdir("/bar_dir/");
-  Target shared(setup.settings(), Label(SourceDir("//foo/"), "shared"));
-  shared.set_output_type(Target::SHARED_LIBRARY);
+  TestTarget shared(setup, "//foo:shared", Target::SHARED_LIBRARY);
   shared.config_values().libs().push_back(second_lib);
   shared.config_values().lib_dirs().push_back(second_libdir);
   shared.private_deps().push_back(LabelTargetPair(&z));
-  shared.visibility().SetPublic();
-  shared.SetToolchain(setup.toolchain());
   ASSERT_TRUE(shared.OnResolved(&err));
 
   ASSERT_EQ(2u, shared.all_libs().size());
@@ -55,10 +68,8 @@ TEST(Target, LibInheritance) {
   EXPECT_EQ(libdir, shared.all_lib_dirs()[1]);
 
   // Executable target shouldn't get either by depending on shared.
-  Target exec(setup.settings(), Label(SourceDir("//foo/"), "exec"));
-  exec.set_output_type(Target::EXECUTABLE);
+  TestTarget exec(setup, "//foo:exec", Target::EXECUTABLE);
   exec.private_deps().push_back(LabelTargetPair(&shared));
-  exec.SetToolchain(setup.toolchain());
   ASSERT_TRUE(exec.OnResolved(&err));
   EXPECT_EQ(0u, exec.all_libs().size());
   EXPECT_EQ(0u, exec.all_lib_dirs().size());
@@ -71,18 +82,9 @@ TEST(Target, DependentConfigs) {
   Err err;
 
   // Set up a dependency chain of a -> b -> c
-  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
-  a.set_output_type(Target::EXECUTABLE);
-  a.visibility().SetPublic();
-  a.SetToolchain(setup.toolchain());
-  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
-  b.set_output_type(Target::STATIC_LIBRARY);
-  b.visibility().SetPublic();
-  b.SetToolchain(setup.toolchain());
-  Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
-  c.set_output_type(Target::STATIC_LIBRARY);
-  c.visibility().SetPublic();
-  c.SetToolchain(setup.toolchain());
+  TestTarget a(setup, "//foo:a", Target::EXECUTABLE);
+  TestTarget b(setup, "//foo:b", Target::STATIC_LIBRARY);
+  TestTarget c(setup, "//foo:c", Target::STATIC_LIBRARY);
   a.private_deps().push_back(LabelTargetPair(&b));
   b.private_deps().push_back(LabelTargetPair(&c));
 
@@ -115,14 +117,8 @@ TEST(Target, DependentConfigs) {
   EXPECT_EQ(&all, a.all_dependent_configs()[0].ptr);
 
   // Making an an alternate A and B with B forwarding the direct dependents.
-  Target a_fwd(setup.settings(), Label(SourceDir("//foo/"), "a_fwd"));
-  a_fwd.set_output_type(Target::EXECUTABLE);
-  a_fwd.visibility().SetPublic();
-  a_fwd.SetToolchain(setup.toolchain());
-  Target b_fwd(setup.settings(), Label(SourceDir("//foo/"), "b_fwd"));
-  b_fwd.set_output_type(Target::STATIC_LIBRARY);
-  b_fwd.SetToolchain(setup.toolchain());
-  b_fwd.visibility().SetPublic();
+  TestTarget a_fwd(setup, "//foo:a_fwd", Target::EXECUTABLE);
+  TestTarget b_fwd(setup, "//foo:b_fwd", Target::STATIC_LIBRARY);
   a_fwd.private_deps().push_back(LabelTargetPair(&b_fwd));
   b_fwd.private_deps().push_back(LabelTargetPair(&c));
   b_fwd.forward_dependent_configs().push_back(LabelTargetPair(&c));
@@ -144,22 +140,10 @@ TEST(Target, InheritLibs) {
 
   // Create a dependency chain:
   //   A (executable) -> B (shared lib) -> C (static lib) -> D (source set)
-  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
-  a.set_output_type(Target::EXECUTABLE);
-  a.visibility().SetPublic();
-  a.SetToolchain(setup.toolchain());
-  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
-  b.set_output_type(Target::SHARED_LIBRARY);
-  b.visibility().SetPublic();
-  b.SetToolchain(setup.toolchain());
-  Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
-  c.set_output_type(Target::STATIC_LIBRARY);
-  c.visibility().SetPublic();
-  c.SetToolchain(setup.toolchain());
-  Target d(setup.settings(), Label(SourceDir("//foo/"), "d"));
-  d.set_output_type(Target::SOURCE_SET);
-  d.visibility().SetPublic();
-  d.SetToolchain(setup.toolchain());
+  TestTarget a(setup, "//foo:a", Target::EXECUTABLE);
+  TestTarget b(setup, "//foo:b", Target::SHARED_LIBRARY);
+  TestTarget c(setup, "//foo:c", Target::STATIC_LIBRARY);
+  TestTarget d(setup, "//foo:d", Target::SOURCE_SET);
   a.private_deps().push_back(LabelTargetPair(&b));
   b.private_deps().push_back(LabelTargetPair(&c));
   c.private_deps().push_back(LabelTargetPair(&d));
@@ -193,19 +177,10 @@ TEST(Target, InheritCompleteStaticLib) {
 
   // Create a dependency chain:
   //   A (executable) -> B (complete static lib) -> C (source set)
-  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
-  a.set_output_type(Target::EXECUTABLE);
-  a.visibility().SetPublic();
-  a.SetToolchain(setup.toolchain());
-  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
-  b.set_output_type(Target::STATIC_LIBRARY);
-  b.visibility().SetPublic();
+  TestTarget a(setup, "//foo:a", Target::EXECUTABLE);
+  TestTarget b(setup, "//foo:b", Target::STATIC_LIBRARY);
   b.set_complete_static_lib(true);
-  b.SetToolchain(setup.toolchain());
-  Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
-  c.set_output_type(Target::SOURCE_SET);
-  c.visibility().SetPublic();
-  c.SetToolchain(setup.toolchain());
+  TestTarget c(setup, "//foo:c", Target::SOURCE_SET);
   a.public_deps().push_back(LabelTargetPair(&b));
   b.public_deps().push_back(LabelTargetPair(&c));
 
@@ -231,15 +206,9 @@ TEST(Target, InheritCompleteStaticLibNoDirectStaticLibDeps) {
 
   // Create a dependency chain:
   //   A (complete static lib) -> B (static lib)
-  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
-  a.set_output_type(Target::STATIC_LIBRARY);
-  a.visibility().SetPublic();
+  TestTarget a(setup, "//foo:a", Target::STATIC_LIBRARY);
   a.set_complete_static_lib(true);
-  a.SetToolchain(setup.toolchain());
-  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
-  b.set_output_type(Target::STATIC_LIBRARY);
-  b.visibility().SetPublic();
-  b.SetToolchain(setup.toolchain());
+  TestTarget b(setup, "//foo:b", Target::STATIC_LIBRARY);
 
   a.public_deps().push_back(LabelTargetPair(&b));
   ASSERT_TRUE(b.OnResolved(&err));
@@ -252,19 +221,10 @@ TEST(Target, InheritCompleteStaticLibNoIheritedStaticLibDeps) {
 
   // Create a dependency chain:
   //   A (complete static lib) -> B (source set) -> C (static lib)
-  Target a(setup.settings(), Label(SourceDir("//foo/"), "a"));
-  a.set_output_type(Target::STATIC_LIBRARY);
-  a.visibility().SetPublic();
+  TestTarget a(setup, "//foo:a", Target::STATIC_LIBRARY);
   a.set_complete_static_lib(true);
-  a.SetToolchain(setup.toolchain());
-  Target b(setup.settings(), Label(SourceDir("//foo/"), "b"));
-  b.set_output_type(Target::SOURCE_SET);
-  b.visibility().SetPublic();
-  b.SetToolchain(setup.toolchain());
-  Target c(setup.settings(), Label(SourceDir("//foo/"), "c"));
-  c.set_output_type(Target::STATIC_LIBRARY);
-  c.visibility().SetPublic();
-  c.SetToolchain(setup.toolchain());
+  TestTarget b(setup, "//foo:b", Target::SOURCE_SET);
+  TestTarget c(setup, "//foo:c", Target::STATIC_LIBRARY);
 
   a.public_deps().push_back(LabelTargetPair(&b));
   b.public_deps().push_back(LabelTargetPair(&c));
@@ -280,37 +240,29 @@ TEST(Target, GetComputedOutputName) {
 
   // Basic target with no prefix (executable type tool in the TestWithScope has
   // no prefix) or output name.
-  Target basic(setup.settings(), Label(SourceDir("//foo/"), "bar"));
-  basic.set_output_type(Target::EXECUTABLE);
-  basic.SetToolchain(setup.toolchain());
+  TestTarget basic(setup, "//foo:bar", Target::EXECUTABLE);
   ASSERT_TRUE(basic.OnResolved(&err));
   EXPECT_EQ("bar", basic.GetComputedOutputName(false));
   EXPECT_EQ("bar", basic.GetComputedOutputName(true));
 
   // Target with no prefix but an output name.
-  Target with_name(setup.settings(), Label(SourceDir("//foo/"), "bar"));
-  with_name.set_output_type(Target::EXECUTABLE);
+  TestTarget with_name(setup, "//foo:bar", Target::EXECUTABLE);
   with_name.set_output_name("myoutput");
-  with_name.SetToolchain(setup.toolchain());
   ASSERT_TRUE(with_name.OnResolved(&err));
   EXPECT_EQ("myoutput", with_name.GetComputedOutputName(false));
   EXPECT_EQ("myoutput", with_name.GetComputedOutputName(true));
 
   // Target with a "lib" prefix (the static library tool in the TestWithScope
   // should specify a "lib" output prefix).
-  Target with_prefix(setup.settings(), Label(SourceDir("//foo/"), "bar"));
-  with_prefix.set_output_type(Target::STATIC_LIBRARY);
-  with_prefix.SetToolchain(setup.toolchain());
+  TestTarget with_prefix(setup, "//foo:bar", Target::STATIC_LIBRARY);
   ASSERT_TRUE(with_prefix.OnResolved(&err));
   EXPECT_EQ("bar", with_prefix.GetComputedOutputName(false));
   EXPECT_EQ("libbar", with_prefix.GetComputedOutputName(true));
 
   // Target with a "lib" prefix that already has it applied. The prefix should
   // not duplicate something already in the target name.
-  Target dup_prefix(setup.settings(), Label(SourceDir("//foo/"), "bar"));
-  dup_prefix.set_output_type(Target::STATIC_LIBRARY);
+  TestTarget dup_prefix(setup, "//foo:bar", Target::STATIC_LIBRARY);
   dup_prefix.set_output_name("libbar");
-  dup_prefix.SetToolchain(setup.toolchain());
   ASSERT_TRUE(dup_prefix.OnResolved(&err));
   EXPECT_EQ("libbar", dup_prefix.GetComputedOutputName(false));
   EXPECT_EQ("libbar", dup_prefix.GetComputedOutputName(true));
@@ -321,20 +273,16 @@ TEST(Target, VisibilityFails) {
   TestWithScope setup;
   Err err;
 
-  Target b(setup.settings(), Label(SourceDir("//private/"), "b"));
-  b.set_output_type(Target::STATIC_LIBRARY);
-  b.SetToolchain(setup.toolchain());
+  TestTarget b(setup, "//private:b", Target::STATIC_LIBRARY);
   b.visibility().SetPrivate(b.label().dir());
   ASSERT_TRUE(b.OnResolved(&err));
 
   // Make a target depending on "b". The dependency must have an origin to mark
   // it as user-set so we check visibility. This check should fail.
-  Target a(setup.settings(), Label(SourceDir("//app/"), "a"));
-  a.set_output_type(Target::EXECUTABLE);
+  TestTarget a(setup, "//app:a", Target::EXECUTABLE);
   a.private_deps().push_back(LabelTargetPair(&b));
   IdentifierNode origin;  // Dummy origin.
   a.private_deps()[0].origin = &origin;
-  a.SetToolchain(setup.toolchain());
   ASSERT_FALSE(a.OnResolved(&err));
 }
 
@@ -343,20 +291,15 @@ TEST(Target, VisibilityDatadeps) {
   TestWithScope setup;
   Err err;
 
-  Target b(setup.settings(), Label(SourceDir("//public/"), "b"));
-  b.set_output_type(Target::STATIC_LIBRARY);
-  b.SetToolchain(setup.toolchain());
-  b.visibility().SetPublic();
+  TestTarget b(setup, "//public:b", Target::STATIC_LIBRARY);
   ASSERT_TRUE(b.OnResolved(&err));
 
   // Make a target depending on "b". The dependency must have an origin to mark
   // it as user-set so we check visibility. This check should fail.
-  Target a(setup.settings(), Label(SourceDir("//app/"), "a"));
-  a.set_output_type(Target::EXECUTABLE);
+  TestTarget a(setup, "//app:a", Target::EXECUTABLE);
   a.data_deps().push_back(LabelTargetPair(&b));
   IdentifierNode origin;  // Dummy origin.
   a.data_deps()[0].origin = &origin;
-  a.SetToolchain(setup.toolchain());
   ASSERT_TRUE(a.OnResolved(&err)) << err.help_text();
 }
 
@@ -370,27 +313,20 @@ TEST(Target, VisibilityGroup) {
 
   // B has private visibility. This lets the group see it since the group is in
   // the same directory.
-  Target b(setup.settings(), Label(SourceDir("//private/"), "b"));
-  b.set_output_type(Target::STATIC_LIBRARY);
-  b.SetToolchain(setup.toolchain());
+  TestTarget b(setup, "//private:b", Target::STATIC_LIBRARY);
   b.visibility().SetPrivate(b.label().dir());
   ASSERT_TRUE(b.OnResolved(&err));
 
   // The group has public visibility and depends on b.
-  Target g(setup.settings(), Label(SourceDir("//private/"), "g"));
-  g.set_output_type(Target::GROUP);
-  g.SetToolchain(setup.toolchain());
+  TestTarget g(setup, "//public:g", Target::GROUP);
   g.private_deps().push_back(LabelTargetPair(&b));
   g.private_deps()[0].origin = &origin;
-  g.visibility().SetPublic();
   ASSERT_TRUE(b.OnResolved(&err));
 
   // Make a target depending on "g". This should succeed.
-  Target a(setup.settings(), Label(SourceDir("//app/"), "a"));
-  a.set_output_type(Target::EXECUTABLE);
+  TestTarget a(setup, "//app:a", Target::EXECUTABLE);
   a.private_deps().push_back(LabelTargetPair(&g));
   a.private_deps()[0].origin = &origin;
-  a.SetToolchain(setup.toolchain());
   ASSERT_TRUE(a.OnResolved(&err));
 }
 
@@ -402,27 +338,20 @@ TEST(Target, Testonly) {
   Err err;
 
   // "testlib" is a test-only library.
-  Target testlib(setup.settings(), Label(SourceDir("//test/"), "testlib"));
+  TestTarget testlib(setup, "//test:testlib", Target::STATIC_LIBRARY);
   testlib.set_testonly(true);
-  testlib.set_output_type(Target::STATIC_LIBRARY);
-  testlib.visibility().SetPublic();
-  testlib.SetToolchain(setup.toolchain());
   ASSERT_TRUE(testlib.OnResolved(&err));
 
   // "test" is a test-only executable depending on testlib, this is OK.
-  Target test(setup.settings(), Label(SourceDir("//test/"), "test"));
+  TestTarget test(setup, "//test:test", Target::EXECUTABLE);
   test.set_testonly(true);
-  test.set_output_type(Target::EXECUTABLE);
   test.private_deps().push_back(LabelTargetPair(&testlib));
-  test.SetToolchain(setup.toolchain());
   ASSERT_TRUE(test.OnResolved(&err));
 
   // "product" is a non-test depending on testlib. This should fail.
-  Target product(setup.settings(), Label(SourceDir("//app/"), "product"));
+  TestTarget product(setup, "//app:product", Target::EXECUTABLE);
   product.set_testonly(false);
-  product.set_output_type(Target::EXECUTABLE);
   product.private_deps().push_back(LabelTargetPair(&testlib));
-  product.SetToolchain(setup.toolchain());
   ASSERT_FALSE(product.OnResolved(&err));
 }
 
@@ -434,46 +363,31 @@ TEST(Target, PublicConfigs) {
   Config pub_config(setup.settings(), pub_config_label);
 
   // This is the destination target that has a public config.
-  Target dest(setup.settings(), Label(SourceDir("//a/"), "a"));
-  dest.set_output_type(Target::SOURCE_SET);
-  dest.visibility().SetPublic();
-  dest.SetToolchain(setup.toolchain());
+  TestTarget dest(setup, "//a:a", Target::SOURCE_SET);
   dest.public_configs().push_back(LabelConfigPair(&pub_config));
   ASSERT_TRUE(dest.OnResolved(&err));
 
   // This target has a public dependency on dest.
-  Target pub(setup.settings(), Label(SourceDir("//a/"), "pub"));
-  pub.set_output_type(Target::SOURCE_SET);
-  pub.visibility().SetPublic();
-  pub.SetToolchain(setup.toolchain());
+  TestTarget pub(setup, "//a:pub", Target::SOURCE_SET);
   pub.public_deps().push_back(LabelTargetPair(&dest));
   ASSERT_TRUE(pub.OnResolved(&err));
 
   // Depending on the target with the public dependency should forward dest's
   // to the current target.
-  Target dep_on_pub(setup.settings(), Label(SourceDir("//a/"), "dop"));
-  dep_on_pub.set_output_type(Target::SOURCE_SET);
-  dep_on_pub.visibility().SetPublic();
-  dep_on_pub.SetToolchain(setup.toolchain());
+  TestTarget dep_on_pub(setup, "//a:dop", Target::SOURCE_SET);
   dep_on_pub.private_deps().push_back(LabelTargetPair(&pub));
   ASSERT_TRUE(dep_on_pub.OnResolved(&err));
   ASSERT_EQ(1u, dep_on_pub.configs().size());
   EXPECT_EQ(&pub_config, dep_on_pub.configs()[0].ptr);
 
   // This target has a private dependency on dest for forwards configs.
-  Target forward(setup.settings(), Label(SourceDir("//a/"), "f"));
-  forward.set_output_type(Target::SOURCE_SET);
-  forward.visibility().SetPublic();
-  forward.SetToolchain(setup.toolchain());
+  TestTarget forward(setup, "//a:f", Target::SOURCE_SET);
   forward.private_deps().push_back(LabelTargetPair(&dest));
   forward.forward_dependent_configs().push_back(LabelTargetPair(&dest));
   ASSERT_TRUE(forward.OnResolved(&err));
 
   // Depending on the forward target should apply the config.
-  Target dep_on_forward(setup.settings(), Label(SourceDir("//a/"), "dof"));
-  dep_on_forward.set_output_type(Target::SOURCE_SET);
-  dep_on_forward.visibility().SetPublic();
-  dep_on_forward.SetToolchain(setup.toolchain());
+  TestTarget dep_on_forward(setup, "//a:dof", Target::SOURCE_SET);
   dep_on_forward.private_deps().push_back(LabelTargetPair(&forward));
   ASSERT_TRUE(dep_on_forward.OnResolved(&err));
   ASSERT_EQ(1u, dep_on_forward.configs().size());
@@ -524,26 +438,17 @@ TEST(Target, SharedInheritance) {
   Err err;
 
   // Create two leaf shared libraries.
-  Target pub(setup.settings(), Label(SourceDir("//foo/"), "pub"));
-  pub.set_output_type(Target::SHARED_LIBRARY);
-  pub.visibility().SetPublic();
-  pub.SetToolchain(setup.toolchain());
+  TestTarget pub(setup, "//foo:pub", Target::SHARED_LIBRARY);
   ASSERT_TRUE(pub.OnResolved(&err));
 
-  Target priv(setup.settings(), Label(SourceDir("//foo/"), "priv"));
-  priv.set_output_type(Target::SHARED_LIBRARY);
-  priv.visibility().SetPublic();
-  priv.SetToolchain(setup.toolchain());
+  TestTarget priv(setup, "//foo:priv", Target::SHARED_LIBRARY);
   ASSERT_TRUE(priv.OnResolved(&err));
 
   // Intermediate shared library with the leaf shared libraries as
   // dependencies, one public, one private.
-  Target inter(setup.settings(), Label(SourceDir("//foo/"), "inter"));
-  inter.set_output_type(Target::SHARED_LIBRARY);
-  inter.visibility().SetPublic();
+  TestTarget inter(setup, "//foo:inter", Target::SHARED_LIBRARY);
   inter.public_deps().push_back(LabelTargetPair(&pub));
   inter.private_deps().push_back(LabelTargetPair(&priv));
-  inter.SetToolchain(setup.toolchain());
   ASSERT_TRUE(inter.OnResolved(&err));
 
   // The intermediate shared library should have both "pub" and "priv" in its
@@ -555,11 +460,8 @@ TEST(Target, SharedInheritance) {
   EXPECT_EQ(&priv, inter_inherited[1]);
 
   // Make a toplevel executable target depending on the intermediate one.
-  Target exe(setup.settings(), Label(SourceDir("//foo/"), "exe"));
-  exe.set_output_type(Target::SHARED_LIBRARY);
-  exe.visibility().SetPublic();
+  TestTarget exe(setup, "//foo:exe", Target::SHARED_LIBRARY);
   exe.private_deps().push_back(LabelTargetPair(&inter));
-  exe.SetToolchain(setup.toolchain());
   ASSERT_TRUE(exe.OnResolved(&err));
 
   // The exe's inherited libraries should be "inter" (because it depended
@@ -569,4 +471,90 @@ TEST(Target, SharedInheritance) {
   ASSERT_EQ(2u, exe_inherited.size());
   EXPECT_EQ(&inter, exe_inherited[0]);
   EXPECT_EQ(&pub, exe_inherited[1]);
+}
+
+TEST(Target, GeneratedInputs) {
+  Scheduler scheduler;
+  TestWithScope setup;
+  Err err;
+
+  SourceFile generated_file("//out/Debug/generated.cc");
+
+  // This target has a generated input and no dependency makes it.
+  TestTarget non_existent_generator(setup, "//foo:non_existent_generator",
+                                    Target::EXECUTABLE);
+  non_existent_generator.sources().push_back(generated_file);
+  EXPECT_TRUE(non_existent_generator.OnResolved(&err)) << err.message();
+  AssertSchedulerHasOneUnknownFileMatching(&non_existent_generator,
+                                           generated_file);
+  scheduler.ClearUnknownGeneratedInputsAndWrittenFiles();
+
+  // Make a target that generates the file.
+  TestTarget generator(setup, "//foo:generator", Target::ACTION);
+  generator.action_values().outputs() =
+      SubstitutionList::MakeForTest(generated_file.value().c_str());
+  err = Err();
+  EXPECT_TRUE(generator.OnResolved(&err)) << err.message();
+
+  // A target that depends on the generator that uses the file as a source
+  // should be OK. This uses a private dep (will be used later).
+  TestTarget existent_generator(setup, "//foo:existent_generator",
+                                Target::SHARED_LIBRARY);
+  existent_generator.sources().push_back(generated_file);
+  existent_generator.private_deps().push_back(LabelTargetPair(&generator));
+  EXPECT_TRUE(existent_generator.OnResolved(&err)) << err.message();
+  EXPECT_TRUE(scheduler.GetUnknownGeneratedInputs().empty());
+
+  // A target that depends on the previous one should *not* be allowed to
+  // use the generated file, because existent_generator used private deps.
+  // This is:
+  //    indirect_private --> existent_generator --[private]--> generator
+  TestTarget indirect_private(setup, "//foo:indirect_private",
+                              Target::EXECUTABLE);
+  indirect_private.sources().push_back(generated_file);
+  indirect_private.public_deps().push_back(
+      LabelTargetPair(&existent_generator));
+  EXPECT_TRUE(indirect_private.OnResolved(&err));
+  AssertSchedulerHasOneUnknownFileMatching(&indirect_private, generated_file);
+  scheduler.ClearUnknownGeneratedInputsAndWrittenFiles();
+
+  // Now make a chain like the above but with all public deps, it should be OK.
+  TestTarget existent_public(setup, "//foo:existent_public",
+                             Target::SHARED_LIBRARY);
+  existent_public.public_deps().push_back(LabelTargetPair(&generator));
+  EXPECT_TRUE(existent_public.OnResolved(&err)) << err.message();
+  TestTarget indirect_public(setup, "//foo:indirect_public",
+                             Target::EXECUTABLE);
+  indirect_public.sources().push_back(generated_file);
+  indirect_public.public_deps().push_back(LabelTargetPair(&existent_public));
+  EXPECT_TRUE(indirect_public.OnResolved(&err)) << err.message();
+  EXPECT_TRUE(scheduler.GetUnknownGeneratedInputs().empty());
+}
+
+// This is sort of a Scheduler test, but is related to the above test more.
+TEST(Target, WriteFileGeneratedInputs) {
+  Scheduler scheduler;
+  TestWithScope setup;
+  Err err;
+
+  SourceFile generated_file("//out/Debug/generated.data");
+
+  // This target has a generated input and no dependency makes it.
+  TestTarget non_existent_generator(setup, "//foo:non_existent_generator",
+                                    Target::EXECUTABLE);
+  non_existent_generator.sources().push_back(generated_file);
+  EXPECT_TRUE(non_existent_generator.OnResolved(&err));
+  AssertSchedulerHasOneUnknownFileMatching(&non_existent_generator,
+                                           generated_file);
+  scheduler.ClearUnknownGeneratedInputsAndWrittenFiles();
+
+  // This target has a generated file and we've decared we write it.
+  TestTarget existent_generator(setup, "//foo:existent_generator",
+                                Target::EXECUTABLE);
+  existent_generator.sources().push_back(generated_file);
+  EXPECT_TRUE(existent_generator.OnResolved(&err));
+  scheduler.AddWrittenFile(generated_file);
+
+  // Should be OK.
+  EXPECT_TRUE(scheduler.GetUnknownGeneratedInputs().empty());
 }

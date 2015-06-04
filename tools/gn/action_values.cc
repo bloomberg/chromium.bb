@@ -4,6 +4,7 @@
 
 #include "tools/gn/action_values.h"
 
+#include "tools/gn/settings.h"
 #include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 

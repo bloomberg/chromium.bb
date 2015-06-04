@@ -14,6 +14,7 @@
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/settings.h"
+#include "tools/gn/target.h"
 #include "tools/gn/token.h"
 #include "tools/gn/toolchain.h"
 #include "tools/gn/value.h"
@@ -34,6 +35,10 @@ class TestWithScope {
   // context of this test. Note that the implementation of this is not
   // threadsafe so don't write tests that call print from multiple threads.
   std::string& print_output() { return print_output_; }
+
+  // Parse the given string into a label in the default toolchain. This will
+  // assert if the label isn't valid (this is intended for hardcoded labels).
+  Label ParseLabel(const std::string& str) const;
 
   // Fills in the tools for the given toolchain with reasonable default values.
   // The toolchain in this object will be automatically set up with this
@@ -80,6 +85,17 @@ class TestParseInput {
   Err parse_err_;
 
   DISALLOW_COPY_AND_ASSIGN(TestParseInput);
+};
+
+// Shortcut for creating targets for tests that take the test setup, a pretty-
+// style label, and a target type and sets everything up. The target will
+// default to public visibility.
+class TestTarget : public Target {
+ public:
+  TestTarget(TestWithScope& setup,
+             const std::string& label_string,
+             Target::OutputType type);
+  ~TestTarget() override;
 };
 
 #endif  // TOOLS_GN_TEST_WITH_SCOPE_H_

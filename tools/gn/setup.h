@@ -68,16 +68,6 @@ class Setup {
   // want to rely on them being valid.
   void set_fill_arguments(bool fa) { fill_arguments_ = fa; }
 
-  // When true (the default), Run() will check for unresolved dependencies and
-  // cycles upon completion. When false, such errors will be ignored.
-  void set_check_for_bad_items(bool s) { check_for_bad_items_ = s; }
-
-  // When true (the default), RunPostMessageLoop will check for overrides that
-  // were specified but not used. When false, such errors will be ignored.
-  void set_check_for_unused_overrides(bool s) {
-    check_for_unused_overrides_ = s;
-  }
-
   // After a successful run, setting this will additionally cause the public
   // headers to be checked. Defaults to false.
   void set_check_public_headers(bool s) {
@@ -142,8 +132,6 @@ class Setup {
 
   SourceFile root_build_file_;
 
-  bool check_for_bad_items_;
-  bool check_for_unused_overrides_;
   bool check_public_headers_;
 
   // See getter for info.

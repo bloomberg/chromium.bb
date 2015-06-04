@@ -21,14 +21,18 @@ namespace functions {
 namespace {
 
 // On Windows, provide a custom implementation of base::WriteFile. Sometimes
-// the base version would fail, and this alternate implementation provides
-// additional logging. See http://crbug.com/468437
+// the base version fails, especially on the bots. The guess is that Windows
+// Defender or other antivirus programs still have the file open (after
+// checking for the read) when the write happens immediately after. This
+// version opens with FILE_SHARE_READ (normally not what you want when
+// replacing the entire contents of the file) which lets us continue even if
+// another program has the file open for reading. See http://crbug.com/468437
 #if defined(OS_WIN)
 int DoWriteFile(const base::FilePath& filename, const char* data, int size) {
   base::win::ScopedHandle file(::CreateFile(
       filename.value().c_str(),
       GENERIC_WRITE,
-      FILE_SHARE_READ,  // Not present in the base version, speculative fix.
+      FILE_SHARE_READ,
       NULL,
       CREATE_ALWAYS,
       0,
@@ -109,6 +113,7 @@ Value RunWriteFile(Scope* scope,
           scope->settings()->build_settings()->build_dir(),
           source_file.value(), args[0].origin(), err))
     return Value();
+  g_scheduler->AddWrittenFile(source_file);  // Track that we wrote this file.
 
   // Compute output.
   std::ostringstream contents;

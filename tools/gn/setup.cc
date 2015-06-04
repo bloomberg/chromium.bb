@@ -157,8 +157,6 @@ Setup::Setup()
       loader_(new LoaderImpl(&build_settings_)),
       builder_(new Builder(loader_.get())),
       root_build_file_("//BUILD.gn"),
-      check_for_bad_items_(true),
-      check_for_unused_overrides_(true),
       check_public_headers_(false),
       dotfile_settings_(&build_settings_, std::string()),
       dotfile_scope_(&dotfile_settings_),
@@ -234,14 +232,12 @@ void Setup::RunPreMessageLoop() {
 
 bool Setup::RunPostMessageLoop() {
   Err err;
-  if (check_for_bad_items_) {
+  if (build_settings_.check_for_bad_items()) {
     if (!builder_->CheckForBadItems(&err)) {
       err.PrintToStdout();
       return false;
     }
-  }
 
-  if (check_for_unused_overrides_) {
     if (!build_settings_.build_args().VerifyAllOverridesUsed(&err)) {
       // TODO(brettw) implement a system of warnings. Until we have a better
       // system, print the error but don't return failure.

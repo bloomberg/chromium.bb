@@ -39,6 +39,14 @@ TestWithScope::TestWithScope()
 TestWithScope::~TestWithScope() {
 }
 
+Label TestWithScope::ParseLabel(const std::string& str) const {
+  Err err;
+  Label result = Label::Resolve(SourceDir("//"), toolchain_.label(),
+                                Value(nullptr, str), &err);
+  CHECK(!err.has_error());
+  return result;
+}
+
 // static
 void TestWithScope::SetupToolchain(Toolchain* toolchain) {
   Err err;
@@ -138,4 +146,16 @@ TestParseInput::TestParseInput(const std::string& input)
 }
 
 TestParseInput::~TestParseInput() {
+}
+
+TestTarget::TestTarget(TestWithScope& setup,
+                       const std::string& label_string,
+                       Target::OutputType type)
+    : Target(setup.settings(), setup.ParseLabel(label_string)) {
+  visibility().SetPublic();
+  set_output_type(type);
+  SetToolchain(setup.toolchain());
+}
+
+TestTarget::~TestTarget() {
 }

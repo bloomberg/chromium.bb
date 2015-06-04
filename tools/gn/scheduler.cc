@@ -108,6 +108,39 @@ std::vector<base::FilePath> Scheduler::GetGenDependencies() const {
   return gen_dependencies_;
 }
 
+void Scheduler::AddWrittenFile(const SourceFile& file) {
+  base::AutoLock lock(lock_);
+  written_files_.push_back(file);
+}
+
+void Scheduler::AddUnknownGeneratedInput(const Target* target,
+                                         const SourceFile& file) {
+  base::AutoLock lock(lock_);
+  unknown_generated_inputs_.insert(std::make_pair(file, target));
+}
+
+std::multimap<SourceFile, const Target*>
+    Scheduler::GetUnknownGeneratedInputs() const {
+  base::AutoLock lock(lock_);
+
+  // Remove all unknown inputs that were written files. These are OK as inputs
+  // to build steps since they were written as a side-effect of running GN.
+  //
+  // It's assumed that this function is called once during cleanup to check for
+  // errors, so performing this work in the lock doesn't matter.
+  std::multimap<SourceFile, const Target*> filtered = unknown_generated_inputs_;
+  for (const SourceFile& file : written_files_)
+    filtered.erase(file);
+
+  return filtered;
+}
+
+void Scheduler::ClearUnknownGeneratedInputsAndWrittenFiles() {
+  base::AutoLock lock(lock_);
+  unknown_generated_inputs_.clear();
+  written_files_.clear();
+}
+
 void Scheduler::IncrementWorkCount() {
   base::AtomicRefCountInc(&work_count_);
 }

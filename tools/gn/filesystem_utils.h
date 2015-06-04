@@ -82,16 +82,20 @@ base::StringPiece FindDir(const std::string* path);
 // empty substring if none. For example "//foo/bar/" -> "bar".
 base::StringPiece FindLastDirComponent(const SourceDir& dir);
 
+// Returns true if the given string is in the given output dir. This is pretty
+// stupid and doesn't handle "." and "..", etc., it is designed for a sanity
+// check to keep people from writing output files to the source directory
+// accidentally.
+bool IsStringInOutputDir(const SourceDir& output_dir, const std::string& str);
+
 // Verifies that the given string references a file inside of the given
-// directory. This is pretty stupid and doesn't handle "." and "..", etc.,
-// it is designed for a sanity check to keep people from writing output files
-// to the source directory accidentally.
+// directory. This just uses IsStringInOutputDir above.
 //
 // The origin will be blamed in the error.
 //
 // If the file isn't in the dir, returns false and sets the error. Otherwise
 // returns true and leaves the error untouched.
-bool EnsureStringIsInOutputDir(const SourceDir& dir,
+bool EnsureStringIsInOutputDir(const SourceDir& output_dir,
                                const std::string& str,
                                const ParseNode* origin,
                                Err* err);

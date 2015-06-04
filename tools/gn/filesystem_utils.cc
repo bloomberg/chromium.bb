@@ -310,14 +310,18 @@ base::StringPiece FindLastDirComponent(const SourceDir& dir) {
   return base::StringPiece(&dir_string[0], end);
 }
 
-bool EnsureStringIsInOutputDir(const SourceDir& dir,
+bool IsStringInOutputDir(const SourceDir& output_dir, const std::string& str) {
+  // This check will be wrong for all proper prefixes "e.g. "/output" will
+  // match "/out" but we don't really care since this is just a sanity check.
+  const std::string& dir_str = output_dir.value();
+  return str.compare(0, dir_str.length(), dir_str) == 0;
+}
+
+bool EnsureStringIsInOutputDir(const SourceDir& output_dir,
                                const std::string& str,
                                const ParseNode* origin,
                                Err* err) {
-  // This check will be wrong for all proper prefixes "e.g. "/output" will
-  // match "/out" but we don't really care since this is just a sanity check.
-  const std::string& dir_str = dir.value();
-  if (str.compare(0, dir_str.length(), dir_str) == 0)
+  if (IsStringInOutputDir(output_dir, str))
     return true;  // Output directory is hardcoded.
 
   *err = Err(origin, "File is not inside output directory.",
