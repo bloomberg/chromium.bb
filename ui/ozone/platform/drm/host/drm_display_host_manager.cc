@@ -5,11 +5,10 @@
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 
 #include <fcntl.h>
-#include <stdio.h>
 #include <xf86drm.h>
 
-#include "base/logging.h"
-#include "base/strings/stringprintf.h"
+#include "base/files/file_enumerator.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
@@ -32,6 +31,8 @@ typedef base::Callback<void(const base::FilePath&, scoped_ptr<DrmDeviceHandle>)>
     OnOpenDeviceReplyCallback;
 
 const char kDefaultGraphicsCardPattern[] = "/dev/dri/card%d";
+const char kVgemDevDriCardPath[] = "/dev/dri/";
+const char kVgemSysCardPath[] = "/sys/bus/platform/devices/vgem/drm/";
 
 const char* kDisplayActionString[] = {
     "ADD",
@@ -76,6 +77,22 @@ base::FilePath GetPrimaryDisplayCardPath() {
   return base::FilePath();
 }
 
+base::FilePath GetVgemCardPath() {
+  base::FileEnumerator file_iter(base::FilePath(kVgemSysCardPath), false,
+                                 base::FileEnumerator::DIRECTORIES,
+                                 FILE_PATH_LITERAL("card*"));
+
+  while (!file_iter.Next().empty()) {
+    // Inspect the card%d directories in the directory and extract the filename.
+    std::string vgem_card_path =
+        kVgemDevDriCardPath + file_iter.GetInfo().GetName().BaseName().value();
+    DVLOG(1) << "VGEM card path is " << vgem_card_path;
+    return base::FilePath(vgem_card_path);
+  }
+  DVLOG(1) << "Don't support VGEM";
+  return base::FilePath();
+}
+
 class FindDrmDisplayHostById {
  public:
   explicit FindDrmDisplayHostById(int64_t display_id)
@@ -111,6 +128,16 @@ DrmDisplayHostManager::DrmDisplayHostManager(DrmGpuPlatformSupportHost* proxy,
       return;
     }
     drm_devices_.insert(primary_graphics_card_path_);
+
+    vgem_card_path_ = GetVgemCardPath();
+    if (!vgem_card_path_.empty()) {
+      int fd = HANDLE_EINTR(
+          open(vgem_card_path_.value().c_str(), O_RDWR | O_CLOEXEC));
+      if (fd < 0) {
+        PLOG(ERROR) << "Failed to open vgem: " << vgem_card_path_.value();
+      }
+      vgem_card_device_file_.reset(fd);
+    }
   }
 
   device_manager_->AddObserver(this);
@@ -191,6 +218,8 @@ void DrmDisplayHostManager::ProcessEvent() {
             << " for " << event.path.value();
     switch (event.action_type) {
       case DeviceEvent::ADD:
+        if (event.path == vgem_card_path_)
+          continue;
         if (drm_devices_.find(event.path) == drm_devices_.end()) {
           task_pending_ = base::WorkerPool::PostTask(
               FROM_HERE,
@@ -210,6 +239,7 @@ void DrmDisplayHostManager::ProcessEvent() {
       case DeviceEvent::REMOVE:
         DCHECK(event.path != primary_graphics_card_path_)
             << "Removing primary graphics card";
+        DCHECK(event.path != vgem_card_path_) << "Removing VGEM device";
         auto it = drm_devices_.find(event.path);
         if (it != drm_devices_.end()) {
           task_pending_ = base::ThreadTaskRunnerHandle::Get()->PostTask(

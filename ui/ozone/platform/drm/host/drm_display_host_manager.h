@@ -8,7 +8,7 @@
 #include <queue>
 #include <set>
 
-#include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -98,6 +98,9 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   // with the GPU process trying to open it and aquire DRM master.
   base::FilePath primary_graphics_card_path_;
 
+  // File path for virtual gem (VGEM) device.
+  base::FilePath vgem_card_path_;
+
   // Keeps track if there is a dummy display. This happens on initialization
   // when there is no connection to the GPU to update the displays.
   bool has_dummy_display_;
@@ -125,6 +128,9 @@ class DrmDisplayHostManager : public DeviceEventObserver,
   // This is used to cache the primary DRM device until the channel is
   // established.
   scoped_ptr<DrmDeviceHandle> primary_drm_device_handle_;
+
+  // Manages the VGEM device by itself and doesn't send it to GPU process.
+  base::ScopedFD vgem_card_device_file_;
 
   base::WeakPtrFactory<DrmDisplayHostManager> weak_ptr_factory_;
 
