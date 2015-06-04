@@ -562,9 +562,9 @@ importer.RuntimeCommandWidget = function() {
 
   /** @private {Element} */
   this.toolbarIcon_ =
-      document.querySelector('#cloud-import-button core-icon');
+      document.querySelector('#cloud-import-button iron-icon');
   this.statusIcon_ =
-      document.querySelector('#cloud-import-details .status core-icon');
+      document.querySelector('#cloud-import-details .status iron-icon');
 
   /** @private {Element} */
   this.detailsBanner_ = document.querySelector('#cloud-import-details .banner');

@@ -316,7 +316,7 @@ body.check-select .dialog-header
   display: none !important;
 }
 
-.dialog-header core-icon,
+.dialog-header iron-icon,
 .dialog-header .icon {
   height: 16px;
   width: 16px;
@@ -342,7 +342,7 @@ body.check-select .dialog-header
   width: 32px;
 }
 
-.dialog-header button.icon-button > core-icon {
+.dialog-header button.icon-button > iron-icon {
   margin: 8px;
 }
 
@@ -427,7 +427,7 @@ body.check-select #gear-button {
   width: 24px;
 }
 
-#cloud-import-details-button core-icon {
+#cloud-import-details-button iron-icon {
   margin: 8px 4px;
 }
 
@@ -480,7 +480,7 @@ html[dir='rtl'] #cloud-import-details {
   margin-top: .2em;
 }
 
-#cloud-import-details .status core-icon {
+#cloud-import-details .status iron-icon {
   display: block;
   height: 16px;
   opacity: .6;
@@ -547,7 +547,7 @@ body.check-select #files-selected-label {
   width: 240px;  /* initial value, same as .dialog-navigation-list's width. */
 }
 
-#cancel-selection-button > core-icon {
+#cancel-selection-button > iron-icon {
   -webkit-margin-end: 6px;
 }
 
@@ -582,21 +582,28 @@ body.check-select #search-box {
   -webkit-appearance: none;
 }
 
-#search-box paper-input-decorator {
+#search-box paper-input-container {
   margin-top: -4px;
 }
 
-#search-box paper-input-decorator /deep/ ::-webkit-input-placeholder {
+#search-box paper-input-container /deep/ ::-webkit-input-placeholder {
   color: rgba(255, 255, 255, 0.5);
 }
 
-#search-box paper-input-decorator /deep/ .unfocused-underline {
+#search-box paper-input-container /deep/ .unfocused-line {
   background-color: rgba(255, 255, 255, 0.3);
 }
 
-#search-box paper-input-decorator /deep/ .focused-underline {
+#search-box paper-input-container /deep/ .focused-line {
   background-color: white;
   height: 1px;
+}
+
+#search-box paper-input-container /deep/ .input-content ::content input {
+  color: inherit;
+  font: inherit;
+  margin: 0.5em 0 0.25em;
+  padding: 0;
 }
 
 #search-box.has-cursor,
@@ -740,17 +747,17 @@ html[dir='rtl'] #search-box .clear {
   margin: 3px 0 !important;
 }
 
-.dialog-footer paper-input-decorator {
+.dialog-footer paper-input-container {
   color: rgb(51, 51, 51);
   padding: 4px 0;
   width: 100%;
 }
 
-.dialog-footer paper-input-decorator /deep/ .unfocused-underline {
+.dialog-footer paper-input-container /deep/ .unfocused-line {
   background-color: rgb(207, 207, 207);
 }
 
-.dialog-footer paper-input-decorator /deep/ .focused-underline {
+.dialog-footer paper-input-container /deep/ .focused-line {
   background-color: rgb(33, 150, 243);
 }
 

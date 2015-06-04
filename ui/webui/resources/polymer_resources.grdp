@@ -589,6 +589,12 @@
   <structure name="IDR_POLYMER_1_0_IRON_PAGES_IRON_PAGES_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-pages/iron-pages-extracted.js"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_RANGE_BEHAVIOR_IRON_RANGE_BEHAVIOR_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-range-behavior/iron-range-behavior.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_RANGE_BEHAVIOR_IRON_RANGE_BEHAVIOR_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-range-behavior/iron-range-behavior-extracted.js"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_RESIZABLE_BEHAVIOR_IRON_RESIZABLE_BEHAVIOR_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-resizable-behavior/iron-resizable-behavior.html"
              type="chrome_html" />
@@ -673,6 +679,12 @@
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_FAB_PAPER_FAB_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-fab/paper-fab.html"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_PROGRESS_PAPER_PROGRESS_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-progress/paper-progress-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_PROGRESS_PAPER_PROGRESS_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-progress/paper-progress.html"
              type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_ICON_BUTTON_PAPER_ICON_BUTTON_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-icon-button/paper-icon-button-extracted.js"

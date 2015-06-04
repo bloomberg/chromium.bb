@@ -25,18 +25,16 @@
     <link rel="stylesheet" href="foreground/css/file_status.css">
     <link rel="stylesheet" href="foreground/css/file_types.css">
     <link rel="stylesheet" href="foreground/css/common.css">
-
-    <link rel="import" href="chrome://resources/polymer/core-icon/core-icon.html">
-    <link rel="import" href="chrome://resources/polymer/core-icons/core-icons.html">
-    <link rel="import" href="chrome://resources/polymer/core-icons/image-icons.html">
-    <link rel="import" href="chrome://resources/polymer/core-icons/social-icons.html">
-    <link rel="import" href="chrome://resources/polymer/core-input/core-input.html">
-    <link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
-    <link rel="import" href="chrome://resources/polymer/paper-input/paper-input-decorator.html">
-    <link rel="import" href="chrome://resources/polymer/paper-progress/paper-progress.html">
-    <link rel="import" href="chrome://resources/polymer/paper-ripple/paper-ripple.html">
-
     <link rel="stylesheet" href="chrome-extension://fbjakikfhfdajcamjleinfciajelkpek/cws_widget/cws_widget_container.css">
+
+    <script src="common/js/polymer_config.js"></script>
+    <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+    <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+    <link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
+    <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+    <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
+    <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
+    <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
   </head>
 
   <body tabindex="-1">
@@ -241,18 +239,18 @@
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
       </button>
       <div id="search-box">
-        <paper-input-decorator i18n-values="label:SEARCH_TEXT_LABEL">
-          <input is="core-input" type="search" tabindex="13"
-                 i18n-values="aria-label:SEARCH_TEXT_LABEL">
+        <paper-input-container no-label-float>
+          <input is="iron-input" type="search" tabindex="13"
+                 i18n-values="aria-label:SEARCH_TEXT_LABEL;placeholder:SEARCH_TEXT_LABEL">
           <span class="clear"></span>
-        </paper-input-decorator>
+        </paper-input-container>
       </div>
       <button id="cloud-import-button"
               class="icon-button manual-display"
               tabindex="14"
               i18n-values="aria-label:CLOUD_IMPORT_COMMAND"
               hidden>
-        <core-icon icon="cloud-queue"></core-icon>
+        <iron-icon icon="cloud-queue"></iron-icon>
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
       </button>
       <button id="cloud-import-details-button"
@@ -260,7 +258,7 @@
               tabindex="-1"
               i18n-values="aria-label:CLOUD_IMPORT_SHOW_DETAILS"
               hidden>
-        <core-icon icon="arrow-drop-down"></core-icon>
+        <iron-icon icon="arrow-drop-down"></iron-icon>
         <paper-ripple fit class="recenteringTouch"></paper-ripple>
       </button>
       <button id="view-button" class="icon-button" tabindex="15"
@@ -289,7 +287,7 @@
         </div>
         <div class="main">
           <div class="status">
-            <core-icon icon="cloud-queue"></core-icon>
+            <iron-icon icon="cloud-queue"></iron-icon>
             <div class="content"></div>
           </div>
           <paper-button class="import" tabindex="-1">
@@ -376,10 +374,10 @@
                 tabindex="3" disabled>
         </button>
         <div id="filename-input-box" visibleif="saveas-file">
-          <paper-input-decorator i18n-values="label:FILENAME_LABEL">
-            <input id="filename-input-textbox" is="core-input" tabindex="4"
+          <paper-input-container i18n-values="label:FILENAME_LABEL">
+            <input id="filename-input-textbox" is="iron-input" tabindex="4"
                    class="entry-name" type="text" spellcheck="false">
-          </paper-input-decorator>
+          </paper-input-container>
         </div>
         <div class="preparing-label" i18n-content="PREPARING_LABEL"></div>
         <div class="progress-bar"><div class="progress-track"></div></div>
