@@ -18,20 +18,21 @@
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 
 namespace extensions {
 
 ProgrammaticScriptInjector::ProgrammaticScriptInjector(
     const ExtensionMsg_ExecuteCode_Params& params,
-    blink::WebFrame* web_frame)
+    content::RenderFrame* render_frame)
     : params_(new ExtensionMsg_ExecuteCode_Params(params)),
-      url_(ScriptContext::GetDataSourceURLForFrame(web_frame)),
-      render_view_(content::RenderView::FromWebView(web_frame->view())),
+      url_(ScriptContext::GetDataSourceURLForFrame(
+          render_frame->GetWebFrame())),
+      render_view_(render_frame->GetRenderView()),
       finished_(false) {
   effective_url_ = ScriptContext::GetEffectiveDocumentURL(
-      web_frame, url_, params.match_about_blank);
+      render_frame->GetWebFrame(), url_, params.match_about_blank);
 }
 
 ProgrammaticScriptInjector::~ProgrammaticScriptInjector() {
@@ -66,12 +67,8 @@ bool ProgrammaticScriptInjector::ShouldInjectCss(
 
 PermissionsData::AccessType ProgrammaticScriptInjector::CanExecuteOnFrame(
     const InjectionHost* injection_host,
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     int tab_id) const {
-  // It doesn't make sense to inject a script into a remote frame or a frame
-  // with a null document.
-  if (frame->isWebRemoteFrame() || frame->document().isNull())
-    return PermissionsData::ACCESS_DENIED;
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       frame, frame->document().url(), params_->match_about_blank);
   if (params_->is_web_view) {

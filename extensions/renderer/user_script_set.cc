@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -20,13 +21,14 @@
 #include "extensions/renderer/web_ui_injection_host.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
 namespace extensions {
 
 namespace {
 
-GURL GetDocumentUrlForFrame(blink::WebFrame* frame) {
+GURL GetDocumentUrlForFrame(blink::WebLocalFrame* frame) {
   GURL data_source_url = ScriptContext::GetDataSourceURLForFrame(frame);
   if (!data_source_url.is_empty() && frame->isViewSourceModeEnabled()) {
     data_source_url = GURL(content::kViewSourceScheme + std::string(":") +
@@ -67,16 +69,16 @@ void UserScriptSet::GetActiveExtensionIds(
 
 void UserScriptSet::GetInjections(
     ScopedVector<ScriptInjection>* injections,
-    blink::WebFrame* web_frame,
+    content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location) {
-  GURL document_url = GetDocumentUrlForFrame(web_frame);
+  GURL document_url = GetDocumentUrlForFrame(render_frame->GetWebFrame());
   for (ScopedVector<UserScript>::const_iterator iter = scripts_.begin();
        iter != scripts_.end();
        ++iter) {
     scoped_ptr<ScriptInjection> injection = GetInjectionForScript(
         *iter,
-        web_frame,
+        render_frame,
         tab_id,
         run_location,
         document_url,
@@ -161,7 +163,7 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
 
 scoped_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
     int script_id,
-    blink::WebFrame* web_frame,
+    content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location,
     const GURL& document_url) {
@@ -170,7 +172,7 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
        ++it) {
     if ((*it)->id() == script_id) {
       return GetInjectionForScript(*it,
-                                   web_frame,
+                                   render_frame,
                                    tab_id,
                                    run_location,
                                    document_url,
@@ -180,17 +182,16 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
   return scoped_ptr<ScriptInjection>();
 }
 
-// TODO(dcheng): Scripts can't be injected on a remote frame, so this function
-// signature needs to be updated.
 scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
     UserScript* script,
-    blink::WebFrame* web_frame,
+    content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location,
     const GURL& document_url,
     bool is_declarative) {
   scoped_ptr<ScriptInjection> injection;
   scoped_ptr<const InjectionHost> injection_host;
+  blink::WebLocalFrame* web_frame = render_frame->GetWebFrame();
 
   const HostID& host_id = script->host_id();
   if (host_id.type() == HostID::EXTENSIONS) {
@@ -238,7 +239,7 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   if (inject_css || inject_js) {
     injection.reset(new ScriptInjection(
         injector.Pass(),
-        web_frame->toWebLocalFrame(),
+        render_frame,
         injection_host.Pass(),
         run_location,
         tab_id));

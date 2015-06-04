@@ -19,7 +19,7 @@
 #include "extensions/renderer/scripts_run_info.h"
 #include "grit/extensions_renderer_resources.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -152,7 +152,7 @@ bool UserScriptInjector::ShouldInjectCss(
 
 PermissionsData::AccessType UserScriptInjector::CanExecuteOnFrame(
     const InjectionHost* injection_host,
-    blink::WebFrame* web_frame,
+    blink::WebLocalFrame* web_frame,
     int tab_id) const {
   GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
       web_frame, web_frame->document().url(), script_->match_about_blank());

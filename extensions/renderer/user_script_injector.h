@@ -16,7 +16,7 @@
 class InjectionHost;
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace extensions {
@@ -44,7 +44,7 @@ class UserScriptInjector : public ScriptInjector,
   bool ShouldInjectCss(UserScript::RunLocation run_location) const override;
   PermissionsData::AccessType CanExecuteOnFrame(
       const InjectionHost* injection_host,
-      blink::WebFrame* web_frame,
+      blink::WebLocalFrame* web_frame,
       int tab_id) const override;
   std::vector<blink::WebScriptSource> GetJsSources(
       UserScript::RunLocation run_location) const override;

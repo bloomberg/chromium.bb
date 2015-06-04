@@ -4,15 +4,11 @@
 
 #include "extensions/renderer/script_injection_callback.h"
 
-#include "extensions/renderer/script_injection.h"
-
 namespace extensions {
 
 ScriptInjectionCallback::ScriptInjectionCallback(
-    ScriptInjection* injection,
-    blink::WebLocalFrame* web_frame)
-    : injection_(injection),
-      web_frame_(web_frame) {
+    const CompleteCallback& injection_completed_callback)
+    : injection_completed_callback_(injection_completed_callback) {
 }
 
 ScriptInjectionCallback::~ScriptInjectionCallback() {
@@ -20,7 +16,7 @@ ScriptInjectionCallback::~ScriptInjectionCallback() {
 
 void ScriptInjectionCallback::completed(
     const blink::WebVector<v8::Local<v8::Value> >& result) {
-  injection_->OnJsInjectionCompleted(web_frame_, result);
+  injection_completed_callback_.Run(result);
   delete this;
 }
 

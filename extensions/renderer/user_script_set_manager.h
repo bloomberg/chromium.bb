@@ -17,12 +17,12 @@
 #include "extensions/common/user_script.h"
 #include "extensions/renderer/user_script_set.h"
 
-namespace IPC {
-class Message;
+namespace content {
+class RenderFrame;
 }
 
-namespace blink {
-class WebFrame;
+namespace IPC {
+class Message;
 }
 
 namespace extensions {
@@ -61,7 +61,7 @@ class UserScriptSetManager : public content::RenderProcessObserver {
   // and |url|.
   scoped_ptr<ScriptInjection> GetInjectionForDeclarativeScript(
       int script_id,
-      blink::WebFrame* web_frame,
+      content::RenderFrame* render_frame,
       int tab_id,
       const GURL& url,
       const std::string& extension_id);
@@ -69,7 +69,7 @@ class UserScriptSetManager : public content::RenderProcessObserver {
   // Append all injections from |static_scripts| and each of
   // |programmatic_scripts_| to |injections|.
   void GetAllInjections(ScopedVector<ScriptInjection>* injections,
-                        blink::WebFrame* web_frame,
+                        content::RenderFrame* render_frame,
                         int tab_id,
                         UserScript::RunLocation run_location);
 

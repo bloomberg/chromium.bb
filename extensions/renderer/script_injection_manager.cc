@@ -282,11 +282,10 @@ void ScriptInjectionManager::RemoveObserver(RFOHelper* helper) {
 }
 
 void ScriptInjectionManager::InvalidateForFrame(content::RenderFrame* frame) {
-  blink::WebLocalFrame* web_frame = frame->GetWebFrame();
   for (ScopedVector<ScriptInjection>::iterator iter =
            pending_injections_.begin();
        iter != pending_injections_.end();) {
-    if ((*iter)->web_frame() == web_frame)
+    if ((*iter)->render_frame() == frame)
       iter = pending_injections_.erase(iter);
     else
       ++iter;
@@ -333,13 +332,12 @@ void ScriptInjectionManager::StartInjectScripts(
 void ScriptInjectionManager::InjectScripts(
     content::RenderFrame* frame,
     UserScript::RunLocation run_location) {
-  blink::WebLocalFrame* web_frame = frame->GetWebFrame();
   // Find any injections that want to run on the given frame.
   ScopedVector<ScriptInjection> frame_injections;
   for (ScopedVector<ScriptInjection>::iterator iter =
            pending_injections_.begin();
        iter != pending_injections_.end();) {
-    if ((*iter)->web_frame() == web_frame) {
+    if ((*iter)->render_frame() == frame) {
       frame_injections.push_back(*iter);
       iter = pending_injections_.weak_erase(iter);
     } else {
@@ -350,7 +348,7 @@ void ScriptInjectionManager::InjectScripts(
   // Add any injections for user scripts.
   int tab_id = ExtensionFrameHelper::Get(frame)->tab_id();
   user_script_set_manager_->GetAllInjections(
-      &frame_injections, web_frame, tab_id, run_location);
+      &frame_injections, frame, tab_id, run_location);
 
   ScriptsRunInfo scripts_run_info;
   std::vector<ScriptInjection*> released_injections;
@@ -358,7 +356,7 @@ void ScriptInjectionManager::InjectScripts(
   for (ScriptInjection* injection : released_injections)
     TryToInject(make_scoped_ptr(injection), run_location, &scripts_run_info);
 
-  scripts_run_info.LogRun(web_frame, run_location);
+  scripts_run_info.LogRun(frame->GetWebFrame(), run_location);
 }
 
 void ScriptInjectionManager::TryToInject(
@@ -400,11 +398,10 @@ void ScriptInjectionManager::HandleExecuteCode(
         new WebUIInjectionHost(params.host_id));
   }
 
-  blink::WebLocalFrame* web_frame = render_frame->GetWebFrame();
   scoped_ptr<ScriptInjection> injection(new ScriptInjection(
       scoped_ptr<ScriptInjector>(
-          new ProgrammaticScriptInjector(params, web_frame)),
-      web_frame,
+          new ProgrammaticScriptInjector(params, render_frame)),
+      render_frame,
       injection_host.Pass(),
       static_cast<UserScript::RunLocation>(params.run_at),
       ExtensionFrameHelper::Get(render_frame)->tab_id()));
@@ -424,11 +421,10 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
     const ExtensionId& extension_id,
     int script_id,
     const GURL& url) {
-  blink::WebLocalFrame* web_frame = render_frame->GetWebFrame();
   scoped_ptr<ScriptInjection> injection =
       user_script_set_manager_->GetInjectionForDeclarativeScript(
           script_id,
-          web_frame,
+          render_frame,
           tab_id,
           url,
           extension_id);
@@ -439,7 +435,8 @@ void ScriptInjectionManager::HandleExecuteDeclarativeScript(
                 UserScript::BROWSER_DRIVEN,
                 &scripts_run_info);
 
-    scripts_run_info.LogRun(web_frame, UserScript::BROWSER_DRIVEN);
+    scripts_run_info.LogRun(render_frame->GetWebFrame(),
+                            UserScript::BROWSER_DRIVEN);
   }
 }
 
@@ -468,7 +465,8 @@ void ScriptInjectionManager::HandlePermitScriptInjection(int64 request_id) {
       &scripts_run_info);
   if (res == ScriptInjection::INJECTION_BLOCKED)
     running_injections_.push_back(injection.Pass());
-  scripts_run_info.LogRun(injection->web_frame(), UserScript::RUN_DEFERRED);
+  scripts_run_info.LogRun(injection->render_frame()->GetWebFrame(),
+                          UserScript::RUN_DEFERRED);
 }
 
 }  // namespace extensions

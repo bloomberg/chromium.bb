@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "extensions/common/user_script.h"
 #include "extensions/renderer/injection_host.h"
 #include "extensions/renderer/script_injector.h"
@@ -16,8 +17,11 @@
 struct HostID;
 
 namespace blink {
-class WebLocalFrame;
 template<typename T> class WebVector;
+}
+
+namespace content {
+class RenderFrame;
 }
 
 namespace v8 {
@@ -26,7 +30,6 @@ template <class T> class Local;
 }
 
 namespace extensions {
-class ScriptInjectionManager;
 struct ScriptsRunInfo;
 
 // A script wrapper which is aware of whether or not it is allowed to execute,
@@ -47,10 +50,8 @@ class ScriptInjection {
   // Remove the isolated world associated with the given injection host.
   static void RemoveIsolatedWorld(const std::string& host_id);
 
-  // TODO(devlin): This and its *ScriptInjector brethren, should take take a
-  // RenderFrame, instead of a WebFrame.
   ScriptInjection(scoped_ptr<ScriptInjector> injector,
-                  blink::WebLocalFrame* web_frame,
+                  content::RenderFrame* render_frame,
                   scoped_ptr<const InjectionHost> injection_host,
                   UserScript::RunLocation run_location,
                   int tab_id);
@@ -77,13 +78,8 @@ class ScriptInjection {
   // Resets the pointer of the injection host when the host is gone.
   void OnHostRemoved();
 
-  // Called when JS injection for the given frame has been completed.
-  void OnJsInjectionCompleted(
-      blink::WebLocalFrame* frame,
-      const blink::WebVector<v8::Local<v8::Value> >& results);
-
   // Accessors.
-  blink::WebLocalFrame* web_frame() const { return web_frame_; }
+  content::RenderFrame* render_frame() const { return render_frame_; }
   const HostID& host_id() const { return injection_host_->id(); }
   int64 request_id() const { return request_id_; }
 
@@ -96,11 +92,15 @@ class ScriptInjection {
   // otherwise INJECTION_BLOCKED.
   InjectionResult Inject(ScriptsRunInfo* scripts_run_info);
 
-  // Inject any JS scripts into the |frame|.
-  void InjectJs(blink::WebLocalFrame* frame);
+  // Inject any JS scripts into the frame for the injection.
+  void InjectJs();
 
-  // Inject any CSS source into the |frame|.
-  void InjectCss(blink::WebLocalFrame* frame);
+  // Called when JS injection for the given frame has been completed.
+  void OnJsInjectionCompleted(
+      const blink::WebVector<v8::Local<v8::Value> >& results);
+
+  // Inject any CSS source into the frame for the injection.
+  void InjectCss();
 
   // Notify that we will not inject, and mark it as acknowledged.
   void NotifyWillNotInject(ScriptInjector::InjectFailureReason reason);
@@ -108,8 +108,8 @@ class ScriptInjection {
   // The injector for this injection.
   scoped_ptr<ScriptInjector> injector_;
 
-  // The (main) WebFrame into which this should inject the script.
-  blink::WebLocalFrame* web_frame_;
+  // The RenderFrame into which this should inject the script.
+  content::RenderFrame* render_frame_;
 
   // The associated injection host.
   scoped_ptr<const InjectionHost> injection_host_;
@@ -136,6 +136,8 @@ class ScriptInjection {
 
   // The callback to run upon completing asynchronously.
   CompletionCallback async_completion_callback_;
+
+  base::WeakPtrFactory<ScriptInjection> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptInjection);
 };

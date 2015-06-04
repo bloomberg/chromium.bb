@@ -12,7 +12,6 @@
 #include "extensions/renderer/user_script_set.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace extensions {
 
@@ -36,7 +35,7 @@ void UserScriptSetManager::RemoveObserver(Observer* observer) {
 scoped_ptr<ScriptInjection>
 UserScriptSetManager::GetInjectionForDeclarativeScript(
     int script_id,
-    blink::WebFrame* web_frame,
+    content::RenderFrame* render_frame,
     int tab_id,
     const GURL& url,
     const std::string& extension_id) {
@@ -47,7 +46,7 @@ UserScriptSetManager::GetInjectionForDeclarativeScript(
 
   return user_script_set->GetDeclarativeScriptInjection(
       script_id,
-      web_frame,
+      render_frame,
       tab_id,
       UserScript::BROWSER_DRIVEN,
       url);
@@ -65,14 +64,14 @@ bool UserScriptSetManager::OnControlMessageReceived(
 
 void UserScriptSetManager::GetAllInjections(
     ScopedVector<ScriptInjection>* injections,
-    blink::WebFrame* web_frame,
+    content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location) {
-  static_scripts_.GetInjections(injections, web_frame, tab_id, run_location);
+  static_scripts_.GetInjections(injections, render_frame, tab_id, run_location);
   for (UserScriptSetMap::iterator it = programmatic_scripts_.begin();
        it != programmatic_scripts_.end();
        ++it) {
-    it->second->GetInjections(injections, web_frame, tab_id, run_location);
+    it->second->GetInjections(injections, render_frame, tab_id, run_location);
   }
 }
 

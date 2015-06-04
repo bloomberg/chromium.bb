@@ -11,6 +11,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/host_id.h"
@@ -98,18 +99,19 @@ void ScriptInjection::RemoveIsolatedWorld(const std::string& host_id) {
 
 ScriptInjection::ScriptInjection(
     scoped_ptr<ScriptInjector> injector,
-    blink::WebLocalFrame* web_frame,
+    content::RenderFrame* render_frame,
     scoped_ptr<const InjectionHost> injection_host,
     UserScript::RunLocation run_location,
     int tab_id)
     : injector_(injector.Pass()),
-      web_frame_(web_frame),
+      render_frame_(render_frame),
       injection_host_(injection_host.Pass()),
       run_location_(run_location),
       tab_id_(tab_id),
       request_id_(kInvalidRequestId),
       complete_(false),
-      did_inject_js_(false) {
+      did_inject_js_(false),
+      weak_ptr_factory_(this) {
   CHECK(injection_host_.get());
 }
 
@@ -135,8 +137,9 @@ ScriptInjection::InjectionResult ScriptInjection::TryToInject(
     return INJECTION_FINISHED;  // We're done.
   }
 
+  blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
   switch (injector_->CanExecuteOnFrame(
-      injection_host_.get(), web_frame_, tab_id_)) {
+      injection_host_.get(), web_frame, tab_id_)) {
     case PermissionsData::ACCESS_DENIED:
       NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
       return INJECTION_FINISHED;  // We're done.
@@ -144,7 +147,7 @@ ScriptInjection::InjectionResult ScriptInjection::TryToInject(
       // Note: we don't consider ACCESS_WITHHELD for child frames because there
       // is nowhere to surface a request for a child frame.
       // TODO(devlin): We should ask for permission somehow. crbug.com/491402.
-      if (web_frame_->parent()) {
+      if (web_frame->parent()) {
         NotifyWillNotInject(ScriptInjector::NOT_ALLOWED);
         return INJECTION_FINISHED;
       }
@@ -179,8 +182,8 @@ void ScriptInjection::OnHostRemoved() {
 }
 
 void ScriptInjection::SendInjectionMessage(bool request_permission) {
-  content::RenderView* render_view =
-      content::RenderView::FromWebView(web_frame()->top()->view());
+  // TODO(devlin): This should just use the RenderFrame.
+  content::RenderView* render_view = render_frame_->GetRenderView();
 
   // If we are just notifying the browser of the injection, then send an
   // invalid request (which is treated like a notification).
@@ -212,9 +215,9 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
   DCHECK(should_inject_js || should_inject_css);
 
   if (should_inject_js)
-    InjectJs(web_frame_);
+    InjectJs();
   if (should_inject_css)
-    InjectCss(web_frame_);
+    InjectCss();
 
   complete_ = did_inject_js_ || !should_inject_js;
 
@@ -228,19 +231,22 @@ ScriptInjection::InjectionResult ScriptInjection::Inject(
   return complete_ ? INJECTION_FINISHED : INJECTION_BLOCKED;
 }
 
-void ScriptInjection::InjectJs(blink::WebLocalFrame* frame) {
+void ScriptInjection::InjectJs() {
   DCHECK(!did_inject_js_);
+  blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
   std::vector<blink::WebScriptSource> sources =
       injector_->GetJsSources(run_location_);
   bool in_main_world = injector_->ShouldExecuteInMainWorld();
   int world_id = in_main_world
                      ? DOMActivityLogger::kMainWorldId
                      : GetIsolatedWorldIdForInstance(injection_host_.get(),
-                                                     frame);
+                                                     web_frame);
   bool is_user_gesture = injector_->IsUserGesture();
 
   scoped_ptr<blink::WebScriptExecutionCallback> callback(
-      new ScriptInjectionCallback(this, frame));
+      new ScriptInjectionCallback(
+          base::Bind(&ScriptInjection::OnJsInjectionCompleted,
+                     weak_ptr_factory_.GetWeakPtr())));
 
   base::ElapsedTimer exec_timer;
   if (injection_host_->id().type() == HostID::EXTENSIONS)
@@ -249,16 +255,17 @@ void ScriptInjection::InjectJs(blink::WebLocalFrame* frame) {
     // We only inject in the main world for javascript: urls.
     DCHECK_EQ(1u, sources.size());
 
-    frame->requestExecuteScriptAndReturnValue(sources.front(),
-                                              is_user_gesture,
-                                              callback.release());
+    web_frame->requestExecuteScriptAndReturnValue(sources.front(),
+                                                  is_user_gesture,
+                                                  callback.release());
   } else {
-    frame->requestExecuteScriptInIsolatedWorld(world_id,
-                                               &sources.front(),
-                                               sources.size(),
-                                               EXTENSION_GROUP_CONTENT_SCRIPTS,
-                                               is_user_gesture,
-                                               callback.release());
+    web_frame->requestExecuteScriptInIsolatedWorld(
+        world_id,
+        &sources.front(),
+        sources.size(),
+        EXTENSION_GROUP_CONTENT_SCRIPTS,
+        is_user_gesture,
+        callback.release());
   }
 
   if (injection_host_->id().type() == HostID::EXTENSIONS)
@@ -266,7 +273,6 @@ void ScriptInjection::InjectJs(blink::WebLocalFrame* frame) {
 }
 
 void ScriptInjection::OnJsInjectionCompleted(
-    blink::WebLocalFrame* frame,
     const blink::WebVector<v8::Local<v8::Value> >& results) {
   DCHECK(!did_inject_js_);
 
@@ -280,7 +286,8 @@ void ScriptInjection::OnJsInjectionCompleted(
       // here. V8ValueConverterImpl shouldn't actually care about the
       // context scope, and it switches to v8::Object's creation context
       // when encountered.
-      v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+      v8::Local<v8::Context> context =
+          render_frame_->GetWebFrame()->mainWorldScriptContext();
       execution_result_.reset(v8_converter->FromV8Value(results[0], context));
     }
     if (!execution_result_.get())
@@ -297,11 +304,12 @@ void ScriptInjection::OnJsInjectionCompleted(
   }
 }
 
-void ScriptInjection::InjectCss(blink::WebLocalFrame* frame) {
+void ScriptInjection::InjectCss() {
   std::vector<std::string> css_sources =
       injector_->GetCssSources(run_location_);
+  blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
   for (const std::string& css : css_sources)
-    frame->document().insertStyleSheet(blink::WebString::fromUTF8(css));
+    web_frame->document().insertStyleSheet(blink::WebString::fromUTF8(css));
 }
 
 }  // namespace extensions

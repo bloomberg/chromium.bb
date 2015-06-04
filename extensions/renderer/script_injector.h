@@ -16,7 +16,7 @@ class GURL;
 class InjectionHost;
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace extensions {
@@ -59,7 +59,7 @@ class ScriptInjector {
   // Returns true if the script should execute on the given |frame|.
   virtual PermissionsData::AccessType CanExecuteOnFrame(
       const InjectionHost* injection_host,
-      blink::WebFrame* web_frame,
+      blink::WebLocalFrame* web_frame,
       int tab_id) const = 0;
 
   // Returns the javascript sources to inject at the given |run_location|.

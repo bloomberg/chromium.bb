@@ -13,11 +13,8 @@
 
 struct ExtensionMsg_ExecuteCode_Params;
 
-namespace blink {
-class WebFrame;
-}
-
 namespace content {
+class RenderFrame;
 class RenderView;
 }
 
@@ -27,7 +24,7 @@ namespace extensions {
 class ProgrammaticScriptInjector : public ScriptInjector {
  public:
   ProgrammaticScriptInjector(const ExtensionMsg_ExecuteCode_Params& params,
-                             blink::WebFrame* web_frame);
+                             content::RenderFrame* render_frame);
   ~ProgrammaticScriptInjector() override;
 
  private:
@@ -40,7 +37,7 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   bool ShouldInjectCss(UserScript::RunLocation run_location) const override;
   PermissionsData::AccessType CanExecuteOnFrame(
       const InjectionHost* injection_host,
-      blink::WebFrame* web_frame,
+      blink::WebLocalFrame* web_frame,
       int tab_id) const override;
   std::vector<blink::WebScriptSource> GetJsSources(
       UserScript::RunLocation run_location) const override;

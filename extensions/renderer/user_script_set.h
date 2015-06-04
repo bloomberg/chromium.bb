@@ -19,8 +19,8 @@
 
 class GURL;
 
-namespace blink {
-class WebFrame;
+namespace content {
+class RenderFrame;
 }
 
 namespace extensions {
@@ -49,18 +49,18 @@ class UserScriptSet {
   // Appends the ids of the extensions that have user scripts to |ids|.
   void GetActiveExtensionIds(std::set<std::string>* ids) const;
 
-  // Append any ScriptInjections that should run on the given |web_frame| and
+  // Append any ScriptInjections that should run on the given |render_frame| and
   // |tab_id|, at the given |run_location|, to |injections|.
   // |extensions| is passed in to verify the corresponding extension is still
   // valid.
   void GetInjections(ScopedVector<ScriptInjection>* injections,
-                     blink::WebFrame* web_frame,
+                     content::RenderFrame* render_frame,
                      int tab_id,
                      UserScript::RunLocation run_location);
 
   scoped_ptr<ScriptInjection> GetDeclarativeScriptInjection(
       int script_id,
-      blink::WebFrame* web_frame,
+      content::RenderFrame* render_frame,
       int tab_id,
       UserScript::RunLocation run_location,
       const GURL& document_url);
@@ -75,10 +75,10 @@ class UserScriptSet {
 
  private:
   // Returns a new ScriptInjection for the given |script| to execute in the
-  // |web_frame|, or NULL if the script should not execute.
+  // |render_frame|, or NULL if the script should not execute.
   scoped_ptr<ScriptInjection> GetInjectionForScript(
       UserScript* script,
-      blink::WebFrame* web_frame,
+      content::RenderFrame* render_frame,
       int tab_id,
       UserScript::RunLocation run_location,
       const GURL& document_url,
