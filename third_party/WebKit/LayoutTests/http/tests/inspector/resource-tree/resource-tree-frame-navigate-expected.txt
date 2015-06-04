@@ -28,16 +28,16 @@ Resources Tree:
 Frames
     (resource-tree-frame-navigate.html)
         iframe(resource-tree-frame-navigate-iframe-before.html)
-            Script
+            Scripts
                 script-initial.js
-            Style
+            Stylesheets
                 styles-initial-2.css
             resource-tree-frame-navigate-iframe-before.html
-        Script
+        Scripts
             inspector-test.js
             resource-tree-test.js
             resources-test.js
-        Style
+        Stylesheets
             styles-initial.css
         resource-tree-frame-navigate.html
 
@@ -67,16 +67,16 @@ Resources Tree:
 Frames
     (resource-tree-frame-navigate.html)
         iframe(resource-tree-frame-navigate-iframe-after.html)
-            Script
+            Scripts
                 script-navigated.js
-            Style
+            Stylesheets
                 styles-navigated.css
             resource-tree-frame-navigate-iframe-after.html
-        Script
+        Scripts
             inspector-test.js
             resource-tree-test.js
             resources-test.js
-        Style
+        Stylesheets
             styles-initial.css
         resource-tree-frame-navigate.html
 

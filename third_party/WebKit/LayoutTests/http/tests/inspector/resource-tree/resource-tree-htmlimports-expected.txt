@@ -21,7 +21,7 @@ http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspe
 Resources Tree:
 Frames
     (resource-tree-htmlimports.html)
-        Script
+        Scripts
             import-hello.js
             inspector-test.js
             resource-tree-test.js

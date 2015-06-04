@@ -21,11 +21,11 @@ http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspe
 Resources Tree:
 Frames
     (resource-tree-frame-add.html)
-        Script
+        Scripts
             inspector-test.js
             resource-tree-test.js
             resources-test.js
-        Style
+        Stylesheets
             styles-initial.css
         resource-tree-frame-add.html
 
@@ -55,16 +55,16 @@ Resources Tree:
 Frames
     (resource-tree-frame-add.html)
         (resource-tree-frame-add-iframe.html)
-            Script
+            Scripts
                 script-navigated.js
-            Style
+            Stylesheets
                 styles-navigated.css
             resource-tree-frame-add-iframe.html
-        Script
+        Scripts
             inspector-test.js
             resource-tree-test.js
             resources-test.js
-        Style
+        Stylesheets
             styles-initial.css
         resource-tree-frame-add.html
 

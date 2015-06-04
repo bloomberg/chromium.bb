@@ -7,10 +7,10 @@ Frames
         (resource-tree-non-unique-url-iframe.html)
             Images
                 styles-non-unique-url.css
-            Style
+            Stylesheets
                 styles-non-unique-url.css
             resource-tree-non-unique-url-iframe.html
-        Script
+        Scripts
             inspector-test.js
             resource-tree-test.js
             resources-test.js

@@ -26,16 +26,16 @@ Resources Tree:
 Frames
     (resource-tree-reload.html)
         (resource-tree-reload-iframe.html)
-            Script
+            Scripts
                 script-initial.js
-            Style
+            Stylesheets
                 styles-initial-2.css
             resource-tree-reload-iframe.html
-        Script
+        Scripts
             inspector-test.js
             resource-tree-test.js
             resources-test.js
-        Style
+        Stylesheets
             styles-initial.css
         resource-tree-reload.html
 

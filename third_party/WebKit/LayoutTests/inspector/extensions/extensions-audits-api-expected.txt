@@ -37,5 +37,7 @@ category.onAuditStarted fired, results dump follows:
     expanded : false
 }
  Extension audits
+ Network Utilization
+ Web Page Performance
 All tests done.
 
