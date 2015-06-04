@@ -1688,15 +1688,16 @@ void RenderProcessHostImpl::Cleanup() {
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.
     UnregisterHost(GetID());
-  }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (!io_surface_manager_token_.IsZero()) {
-    BrowserIOSurfaceManager::GetInstance()->InvalidateChildProcessToken(
-        io_surface_manager_token_);
-    io_surface_manager_token_.SetZero();
-  }
+    if (!io_surface_manager_token_.IsZero()) {
+      BrowserIOSurfaceManager::GetInstance()->InvalidateChildProcessToken(
+          io_surface_manager_token_);
+      io_surface_manager_token_.SetZero();
+    }
 #endif
+
+  }
 }
 
 void RenderProcessHostImpl::AddPendingView() {
