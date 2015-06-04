@@ -1396,7 +1396,7 @@ void LayoutText::setText(PassRefPtr<StringImpl> text, bool force)
     // insertChildNode() fails to set true to owner. To avoid that, we call
     // setNeedsLayoutAndPrefWidthsRecalc() only if this LayoutText has parent.
     if (parent())
-        setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::TextChanged);
+        setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::TextChanged);
     m_knownToHaveNoOverflowAndNoFallbackFonts = false;
 
     if (AXObjectCache* cache = document().existingAXObjectCache())
