@@ -65,13 +65,17 @@ firstwordunder 456-456
 # opcodes, these characters would cause a new capsign or begcaps to be inserted
 # after each appearance in a uppercase string.
 
-class    uppersign                   -+&.'     # 1st class = $w
+class    uppersign                   -+&.'     # 4th class = $z
 context  $U[]$u                      @6
 context  $U%uppersign.[]$u           @6
 pass2    [@46]$U%uppersign.@46       @45
 pass2    [@46]$U%uppersign.@45       @45
-pass3    @45$wl.[]@45                @1b       # $wl = %uppersign or $l (letter)
-pass3    @45$wl.[@46]                ?
+pass3    @45$zl.[]@45                @1b       # $zl = %uppersign or $l (letter)
+                                               # CAREFUL! This assumes there are exactly 3 class definitions
+											   # before this module is included (i.e. in nl-g0.utb). This is
+											   # a very fragile situation! In other to avoid this the
+											   # multipass syntax needs enhancing.
+pass3    @45$zl.[@46]                ?
 pass3    @46$U[@6]                   ?
 pass3    @46$U%uppersign.[@6]        ?
 pass4    [@1b-45]                    ?

@@ -106,7 +106,7 @@ replace  \\_
 # For numbers that are immediately followed by a letter a-j, a sign must be
 # inserted for terminating the number.
 
-class    digitletter                 abcdefghij        # 1st class = $w
+class    digitletter                 abcdefghij
 context  $d[]%digitletter            @6
 context  $d"."[]%digitletter         @6
 context  $d","[]%digitletter         @6
@@ -122,10 +122,10 @@ context  $d","[]%digitletter         @6
 # When a PLUS SIGN appears within a word (e.g. 30+'er) it must be preceded by a
 # "second meaning" sign because its first meaning is EXCLAMATION MARK.
 
-class    plusamp                     +&        # 2nd class = $x
-class    noplusamp                   -.'       # 3rd class = $y
-pass4    $yl[]%plusamp               @5        # $yl = %noplusamp or $l (letter)
-pass4    $yl[]%plusamp               @5
+class    plusamp                     +&
+class    noplusamp                   -.'
+pass4    %noplusamp[]%plusamp        @5
+pass4    $l[]%plusamp                @5
 pass4    [@235a]%plusamp             @235-5
 pass4    [@12346a]%plusamp           @12346-5
 pass4    [@235a]                     @235
