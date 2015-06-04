@@ -4167,6 +4167,9 @@
                           ['OS=="android"', {
                             'cflags': [ '-target mipsel-linux-android', '-march=mipsel', '-mcpu=mips32r2'],
                             'ldflags': [ '-target mipsel-linux-android', ],
+                          }, {
+                            'cflags': [ '-target mipsel-linux-gnu', '-march=mipsel', '-mcpu=mips32r2'],
+                            'ldflags': [ '-target mipsel-linux-gnu', ],
                           }],
                          ],
                       }, { # clang==0
@@ -4181,6 +4184,9 @@
                           ['OS=="android"', {
                             'cflags': [ '-target mipsel-linux-android', '-march=mipsel', '-mcpu=mips32'],
                             'ldflags': [ '-target mipsel-linux-android', ],
+                          }, {
+                            'cflags': [ '-target mipsel-linux-gnu', '-march=mipsel', '-mcpu=mips32'],
+                            'ldflags': [ '-target mipsel-linux-gnu', ],
                           }],
                         ],
                       }, { # clang==0
@@ -4196,6 +4202,10 @@
                     'cflags': [
                       # TODO(gordanac) Enable integrated-as.
                       '-no-integrated-as',
+                    ],
+                  }],
+                  ['clang==1 and OS=="android"', {
+                    'cflags': [
                       '-B<(android_toolchain)',  # Else /usr/bin/as gets picked up.
                     ],
                     'ldflags': [
@@ -5942,7 +5952,7 @@
         ['CXX.host', '<(host_cxx)'],
       ],
     }],
-    ['OS=="linux" and target_arch=="mipsel"', {
+    ['OS=="linux" and target_arch=="mipsel" and clang==0', {
       'make_global_settings': [
         ['CC', '<(sysroot)/../bin/mipsel-linux-gnu-gcc'],
         ['CXX', '<(sysroot)/../bin/mipsel-linux-gnu-g++'],
