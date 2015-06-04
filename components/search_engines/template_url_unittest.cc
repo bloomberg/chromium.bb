@@ -797,6 +797,10 @@ TEST_F(TemplateURLTest, SearchTermKeyLocation) {
       "/", std::string::npos },
     { "http://blah/?foo=bar#x={searchTerms}&b=x", url::Parsed::REF,
       "/", std::string::npos },
+    // searchTerms is a key, not a value, so this should result in an empty
+    // value.
+    { "http://blah/?foo=bar#x=012345678901234&a=b&{searchTerms}=x",
+      url::Parsed::QUERY, std::string(), std::string::npos },
 
     // Multiple search terms should result in empty values.
     { "http://blah/{searchTerms}?q={searchTerms}", url::Parsed::QUERY,
