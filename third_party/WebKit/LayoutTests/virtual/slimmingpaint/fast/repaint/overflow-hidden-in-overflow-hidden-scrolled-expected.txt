@@ -6,14 +6,9 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 18, 100, 190],
-        [8, 18, 100, 190],
         [8, 18, 100, 190]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow DIV class='innerWrapper'",
-        "LayoutBlockFlow DIV class='red'",
-        "LayoutBlockFlow DIV id='ucp' class='green'",
         "LayoutBlockFlow DIV class='innerWrapper'"
       ]
     }

@@ -7,14 +7,9 @@
       "drawsContent": true,
       "repaintRects": [
         [314, 564, 435, 15],
-        [314, 114, 450, 450],
-        [312, 112, 454, 469],
         [312, 112, 454, 469]
       ],
       "paintInvalidationClients": [
-        "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
-        "LayoutBlockFlow (relative positioned) DIV class='relative red'",
-        "LayoutBlockFlow (positioned) DIV class='absolute green'",
         "HorizontalScrollbar",
         "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'"
       ]
