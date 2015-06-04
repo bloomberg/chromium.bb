@@ -51,10 +51,6 @@
         'public/video_plane.h',
       ],
     },
-    # TODO(gunsch): Remove this fake target once it's either added or no
-    # longer referenced from internal code.
-    {'target_name': 'cast_media_audio', 'type': 'none'},
-
     {
       'target_name': 'cast_base',
       'type': '<(component)',
