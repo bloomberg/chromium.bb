@@ -252,9 +252,13 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
       next_long_idle_period_delay = std::max(
           base::TimeDelta(), state_.idle_period_deadline() - helper_->Now());
     }
-    helper_->ControlTaskRunner()->PostDelayedTask(
-        FROM_HERE, enable_next_long_idle_period_closure_.callback(),
-        next_long_idle_period_delay);
+    if (next_long_idle_period_delay == base::TimeDelta()) {
+      EnableLongIdlePeriod();
+    } else {
+      helper_->ControlTaskRunner()->PostDelayedTask(
+          FROM_HERE, enable_next_long_idle_period_closure_.callback(),
+          next_long_idle_period_delay);
+    }
   }
 }
 

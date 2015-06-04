@@ -771,33 +771,28 @@ TEST_F(IdleHelperTestWithIdlePeriodObserver,
 }
 
 TEST_F(IdleHelperTest, TestLongIdlePeriodImmediatelyRestartsIfMaxDeadline) {
-  base::TimeTicks actual_deadline;
+  std::vector<base::TimeTicks> actual_deadlines;
   int run_count = 0;
 
-  base::TimeDelta idle_task_duration(base::TimeDelta::FromMilliseconds(10));
-  base::TimeTicks expected_deadline_1(clock_->Now() +
-                                      maximum_idle_period_duration());
-  base::TimeTicks expected_deadline_2(clock_->Now() + idle_task_duration +
-                                      maximum_idle_period_duration());
+  base::TimeTicks clock_before(clock_->Now());
+  base::TimeDelta idle_task_runtime(base::TimeDelta::FromMilliseconds(10));
 
   // The second idle period should happen immediately after the first the
   // they have max deadlines.
   max_idle_task_reposts = 2;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingIdleTestTask, idle_task_runner_,
-                            &run_count, &actual_deadline));
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(UpdateClockIdleTestTask, clock_, &run_count,
-                            clock_->Now() + idle_task_duration));
+      FROM_HERE,
+      base::Bind(&RepostingUpdateClockIdleTestTask, idle_task_runner_,
+                 &run_count, clock_, idle_task_runtime, &actual_deadlines));
 
   idle_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
   EXPECT_EQ(2, run_count);
-  EXPECT_EQ(expected_deadline_1, actual_deadline);
-
-  RunUntilIdle();
-  EXPECT_EQ(3, run_count);
-  EXPECT_EQ(expected_deadline_2, actual_deadline);
+  EXPECT_THAT(
+      actual_deadlines,
+      testing::ElementsAre(
+          clock_before + maximum_idle_period_duration(),
+          clock_before + idle_task_runtime + maximum_idle_period_duration()));
 }
 
 TEST_F(IdleHelperTest, TestLongIdlePeriodRestartWaitsIfNotMaxDeadline) {
@@ -1092,9 +1087,6 @@ TEST_F(IdleHelperWithQuiescencePeriodTest,
 TEST_F(IdleHelperTest, NoShortIdlePeriodWhenDeadlineTooClose) {
   int run_count = 0;
   base::TimeTicks deadline_in_task;
-  EXPECT_CALL(*idle_helper_, CanEnterLongIdlePeriod(_, _))
-      .Times(AnyNumber())
-      .WillRepeatedly(Return(true));
 
   idle_task_runner_->PostIdleTask(
       FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
@@ -1121,9 +1113,6 @@ TEST_F(IdleHelperTest, NoShortIdlePeriodWhenDeadlineTooClose) {
 TEST_F(IdleHelperTest, NoLongIdlePeriodWhenDeadlineTooClose) {
   int run_count = 0;
   base::TimeTicks deadline_in_task;
-  EXPECT_CALL(*idle_helper_, CanEnterLongIdlePeriod(_, _))
-      .Times(AnyNumber())
-      .WillRepeatedly(Return(true));
 
   base::TimeDelta half_a_ms(base::TimeDelta::FromMicroseconds(50));
   base::TimeDelta less_than_min_deadline_duration(
