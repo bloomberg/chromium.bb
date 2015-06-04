@@ -37,6 +37,5 @@
 #
 # ----------------------------------------------------------------------------------------------
 
-include nl-g0.utb
-include nl-chardefs.cti
+include nl-BE-nocaps-g0.utb
 include nl-caps.cti

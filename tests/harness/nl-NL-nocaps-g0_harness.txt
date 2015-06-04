@@ -1,0 +1,16 @@
+{
+  "tables": [
+    "unicode.dis",
+    "nl-NL-nocaps-g0.utb"
+  ], 
+  "tests": [
+    {
+      "data": [
+        {
+          "input": "",
+          "output": ""
+        }
+      ]
+    }
+  ]
+}
