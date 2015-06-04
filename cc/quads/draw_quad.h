@@ -51,17 +51,6 @@ class CC_EXPORT DrawQuad {
 
   virtual ~DrawQuad();
 
-  // TODO(danakj): Chromify or remove these SharedQuadState helpers.
-  const gfx::Transform& quadTransform() const {
-    return shared_quad_state->content_to_target_transform;
-  }
-  gfx::Rect visibleContentRect() const {
-    return shared_quad_state->visible_content_rect;
-  }
-  gfx::Rect clipRect() const { return shared_quad_state->clip_rect; }
-  bool isClipped() const { return shared_quad_state->is_clipped; }
-  float opacity() const { return shared_quad_state->opacity; }
-
   Material material;
 
   // This rect, after applying the quad_transform(), gives the geometry that

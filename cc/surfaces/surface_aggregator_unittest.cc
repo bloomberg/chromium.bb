@@ -1036,7 +1036,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateMultiplePassWithTransform) {
        iter != aggregated_pass_list[1]->quad_list.cend();
        ++iter) {
     EXPECT_EQ(expected_root_pass_quad_transforms[iter.index()].ToString(),
-              iter->quadTransform().ToString())
+              iter->shared_quad_state->content_to_target_transform.ToString())
         << iter.index();
   }
 

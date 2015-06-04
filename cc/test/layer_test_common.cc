@@ -41,8 +41,9 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
   Region remaining = rect;
 
   for (auto iter = quads.cbegin(); iter != quads.cend(); ++iter) {
-    gfx::RectF quad_rectf =
-        MathUtil::MapClippedRect(iter->quadTransform(), gfx::RectF(iter->rect));
+    gfx::RectF quad_rectf = MathUtil::MapClippedRect(
+        iter->shared_quad_state->content_to_target_transform,
+        gfx::RectF(iter->rect));
 
     // Before testing for exact coverage in the integer world, assert that
     // rounding will not round the rect incorrectly.
@@ -69,25 +70,29 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
   // No quad should exist if it's fully occluded.
   for (const auto& quad : quads) {
     gfx::Rect target_visible_rect = MathUtil::MapEnclosingClippedRect(
-        quad->quadTransform(), quad->visible_rect);
+        quad->shared_quad_state->content_to_target_transform,
+        quad->visible_rect);
     EXPECT_FALSE(occluded.Contains(target_visible_rect));
   }
 
   // Quads that are fully occluded on one axis only should be shrunken.
   for (const auto& quad : quads) {
-    gfx::Rect target_rect =
-        MathUtil::MapEnclosingClippedRect(quad->quadTransform(), quad->rect);
-    if (!quad->quadTransform().IsIdentityOrIntegerTranslation()) {
-      DCHECK(quad->quadTransform().IsPositiveScaleOrTranslation())
-          << quad->quadTransform().ToString();
-      gfx::RectF target_rectf =
-          MathUtil::MapClippedRect(quad->quadTransform(), quad->rect);
+    gfx::Rect target_rect = MathUtil::MapEnclosingClippedRect(
+        quad->shared_quad_state->content_to_target_transform, quad->rect);
+    if (!quad->shared_quad_state->content_to_target_transform
+             .IsIdentityOrIntegerTranslation()) {
+      DCHECK(quad->shared_quad_state->content_to_target_transform
+                 .IsPositiveScaleOrTranslation())
+          << quad->shared_quad_state->content_to_target_transform.ToString();
+      gfx::RectF target_rectf = MathUtil::MapClippedRect(
+          quad->shared_quad_state->content_to_target_transform, quad->rect);
       // Scale transforms allowed, as long as the final transformed rect
       // ends up on integer boundaries for ease of testing.
       DCHECK_EQ(target_rectf.ToString(), gfx::RectF(target_rect).ToString());
     }
     gfx::Rect target_visible_rect = MathUtil::MapEnclosingClippedRect(
-        quad->quadTransform(), quad->visible_rect);
+        quad->shared_quad_state->content_to_target_transform,
+        quad->visible_rect);
 
     bool fully_occluded_horizontal = target_rect.x() >= occluded.x() &&
                                      target_rect.right() <= occluded.right();

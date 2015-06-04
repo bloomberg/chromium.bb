@@ -99,7 +99,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
   ASSERT_EQ(render_pass->quad_list.size(), 1U);
   EXPECT_EQ(opacity,
             SolidColorDrawQuad::MaterialCast(render_pass->quad_list.front())
-                ->opacity());
+                ->shared_quad_state->opacity);
 }
 
 TEST(SolidColorLayerImplTest, VerifyCorrectBlendModeInQuad) {

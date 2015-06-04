@@ -27,7 +27,9 @@ BspWalkActionDrawPolygon::BspWalkActionDrawPolygon(
 void BspWalkActionDrawPolygon::operator()(DrawPolygon* item) {
   gfx::Transform inverse_transform;
   bool invertible =
-      item->original_ref()->quadTransform().GetInverse(&inverse_transform);
+      item->original_ref()
+          ->shared_quad_state->content_to_target_transform.GetInverse(
+              &inverse_transform);
   DCHECK(invertible);
   item->TransformToLayerSpace(inverse_transform);
   renderer_->DoDrawPolygon(*item, frame_, render_pass_scissor_,

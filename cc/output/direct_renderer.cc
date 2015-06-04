@@ -309,8 +309,8 @@ bool DirectRenderer::ShouldSkipQuad(const DrawQuad& quad,
   if (render_pass_scissor.IsEmpty())
     return true;
 
-  if (quad.isClipped()) {
-    gfx::Rect r = quad.clipRect();
+  if (quad.shared_quad_state->is_clipped) {
+    gfx::Rect r = quad.shared_quad_state->clip_rect;
     r.Intersect(render_pass_scissor);
     return r.IsEmpty();
   }
@@ -325,12 +325,12 @@ void DirectRenderer::SetScissorStateForQuad(
     bool use_render_pass_scissor) {
   if (use_render_pass_scissor) {
     gfx::Rect quad_scissor_rect = render_pass_scissor;
-    if (quad.isClipped())
-      quad_scissor_rect.Intersect(quad.clipRect());
+    if (quad.shared_quad_state->is_clipped)
+      quad_scissor_rect.Intersect(quad.shared_quad_state->clip_rect);
     SetScissorTestRectInDrawSpace(frame, quad_scissor_rect);
     return;
-  } else if (quad.isClipped()) {
-    SetScissorTestRectInDrawSpace(frame, quad.clipRect());
+  } else if (quad.shared_quad_state->is_clipped) {
+    SetScissorTestRectInDrawSpace(frame, quad.shared_quad_state->clip_rect);
     return;
   }
 
@@ -460,8 +460,10 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
     // This layer is in a 3D sorting context so we add it to the list of
     // polygons to go into the BSP tree.
     if (quad.shared_quad_state->sorting_context_id != 0) {
-      scoped_ptr<DrawPolygon> new_polygon(new DrawPolygon(
-          *it, quad.visible_rect, quad.quadTransform(), next_polygon_id++));
+      scoped_ptr<DrawPolygon> new_polygon(
+          new DrawPolygon(*it, quad.visible_rect,
+                          quad.shared_quad_state->content_to_target_transform,
+                          next_polygon_id++));
       if (new_polygon->points().size() > 2u) {
         poly_list.push_back(new_polygon.Pass());
       }

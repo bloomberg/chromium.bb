@@ -597,12 +597,10 @@ void GLRenderer::DrawCheckerboardQuad(const DrawingFrame* frame,
 
   gl_->Uniform1f(program->fragment_shader().frequency_location(), frequency);
 
-  SetShaderOpacity(quad->opacity(),
+  SetShaderOpacity(quad->shared_quad_state->opacity,
                    program->fragment_shader().alpha_location());
-  DrawQuadGeometry(frame,
-                   quad->quadTransform(),
-                   quad->rect,
-                   program->vertex_shader().matrix_location());
+  DrawQuadGeometry(frame, quad->shared_quad_state->content_to_target_transform,
+                   quad->rect, program->vertex_shader().matrix_location());
 }
 
 // This function does not handle 3D sorting right now, since the debug border
@@ -621,7 +619,9 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
   // partial swaps.
   gfx::Rect layer_rect = quad->rect;
   gfx::Transform render_matrix;
-  QuadRectTransform(&render_matrix, quad->quadTransform(), layer_rect);
+  QuadRectTransform(&render_matrix,
+                    quad->shared_quad_state->content_to_target_transform,
+                    layer_rect);
   GLRenderer::ToGLMatrix(&gl_matrix[0],
                          frame->projection_matrix * render_matrix);
   gl_->UniformMatrix4fv(program->vertex_shader().matrix_location(), 1, false,
@@ -931,7 +931,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   DCHECK(contents_texture->id());
 
   gfx::Transform quad_rect_matrix;
-  QuadRectTransform(&quad_rect_matrix, quad->quadTransform(), quad->rect);
+  QuadRectTransform(&quad_rect_matrix,
+                    quad->shared_quad_state->content_to_target_transform,
+                    quad->rect);
   gfx::Transform contents_device_transform =
       frame->window_matrix * frame->projection_matrix * quad_rect_matrix;
   contents_device_transform.FlattenTo2d();
@@ -1242,10 +1244,10 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     }
   }
 
-  SetShaderOpacity(quad->opacity(), locations.alpha);
+  SetShaderOpacity(quad->shared_quad_state->opacity, locations.alpha);
   SetShaderQuadF(surface_quad, locations.quad);
-  DrawQuadGeometry(
-      frame, quad->quadTransform(), quad->rect, locations.matrix);
+  DrawQuadGeometry(frame, quad->shared_quad_state->content_to_target_transform,
+                   quad->rect, locations.matrix);
 
   // Flush the compositor context before the filter bitmap goes out of
   // scope, so the draw gets processed before the filter texture gets deleted.
@@ -1429,8 +1431,9 @@ bool GLRenderer::ShouldAntialiasQuad(const gfx::Transform& device_transform,
   // crbug.com/429702
   if (!is_render_pass_quad && !quad->IsEdge())
     return false;
-  gfx::RectF content_rect =
-      is_render_pass_quad ? QuadVertexRect() : quad->visibleContentRect();
+  gfx::RectF content_rect = is_render_pass_quad
+                                ? QuadVertexRect()
+                                : quad->shared_quad_state->visible_content_rect;
 
   bool clipped = false;
   gfx::QuadF device_layer_quad =
@@ -1466,9 +1469,10 @@ void GLRenderer::SetupQuadForClippingAndAntialiasing(
     local_clip_region = &rotated_clip;
   }
 
-  gfx::QuadF content_rect = is_render_pass_quad
-                                ? gfx::QuadF(QuadVertexRect())
-                                : gfx::QuadF(quad->visibleContentRect());
+  gfx::QuadF content_rect =
+      is_render_pass_quad
+          ? gfx::QuadF(QuadVertexRect())
+          : gfx::QuadF(quad->shared_quad_state->visible_content_rect);
   if (!use_aa) {
     if (local_clip_region) {
       if (!is_render_pass_quad) {
@@ -1532,7 +1536,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   gfx::Rect tile_rect = quad->visible_rect;
 
   SkColor color = quad->color;
-  float opacity = quad->opacity();
+  float opacity = quad->shared_quad_state->opacity;
   float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
 
   // Early out if alpha is small enough that quad doesn't contribute to output.
@@ -1541,7 +1545,8 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
     return;
 
   gfx::Transform device_transform =
-      frame->window_matrix * frame->projection_matrix * quad->quadTransform();
+      frame->window_matrix * frame->projection_matrix *
+      quad->shared_quad_state->content_to_target_transform;
   device_transform.FlattenTo2d();
   if (!device_transform.IsInvertible())
     return;
@@ -1594,8 +1599,8 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   gfx::RectF centered_rect(
       gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
       tile_rect.size());
-  DrawQuadGeometry(
-      frame, quad->quadTransform(), centered_rect, uniforms.matrix_location);
+  DrawQuadGeometry(frame, quad->shared_quad_state->content_to_target_transform,
+                   centered_rect, uniforms.matrix_location);
 }
 
 struct TileProgramUniforms {
@@ -1637,7 +1642,8 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
                                  ResourceId resource_id,
                                  const gfx::QuadF* clip_region) {
   gfx::Transform device_transform =
-      frame->window_matrix * frame->projection_matrix * quad->quadTransform();
+      frame->window_matrix * frame->projection_matrix *
+      quad->shared_quad_state->content_to_target_transform;
   device_transform.FlattenTo2d();
 
   bool use_aa = settings_->allow_antialiasing &&
@@ -1758,7 +1764,7 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
   // Normalize to tile_rect.
   local_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
 
-  SetShaderOpacity(quad->opacity(), uniforms.alpha_location);
+  SetShaderOpacity(quad->shared_quad_state->opacity, uniforms.alpha_location);
   SetShaderQuadF(local_quad, uniforms.quad_location);
 
   // The transform and vertex data are used to figure out the extents that the
@@ -1768,8 +1774,8 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
   gfx::RectF centered_rect(
       gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
       tile_rect.size());
-  DrawQuadGeometry(
-      frame, quad->quadTransform(), centered_rect, uniforms.matrix_location);
+  DrawQuadGeometry(frame, quad->shared_quad_state->content_to_target_transform,
+                   centered_rect, uniforms.matrix_location);
 }
 
 void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
@@ -1783,11 +1789,12 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
       quad->rect.height() / quad->tex_coord_rect.height();
 
   bool scaled = (tex_to_geom_scale_x != 1.f || tex_to_geom_scale_y != 1.f);
-  GLenum filter =
-      (scaled || !quad->quadTransform().IsIdentityOrIntegerTranslation()) &&
-              !quad->nearest_neighbor
-          ? GL_LINEAR
-          : GL_NEAREST;
+  GLenum filter = (scaled ||
+                   !quad->shared_quad_state->content_to_target_transform
+                        .IsIdentityOrIntegerTranslation()) &&
+                          !quad->nearest_neighbor
+                      ? GL_LINEAR
+                      : GL_NEAREST;
 
   ResourceProvider::ScopedSamplerGL quad_resource_lock(
       resource_provider_, resource_id, filter);
@@ -1840,7 +1847,7 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
 
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  SetShaderOpacity(quad->opacity(), uniforms.alpha_location);
+  SetShaderOpacity(quad->shared_quad_state->opacity, uniforms.alpha_location);
 
   // Pass quad coordinates to the uniform in the same order as GeometryBinding
   // does, then vertices will match the texture mapping in the vertex buffer.
@@ -1881,7 +1888,9 @@ void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
   gl_->Uniform2fv(uniforms.quad_location, 4, gl_quad);
 
   static float gl_matrix[16];
-  ToGLMatrix(&gl_matrix[0], frame->projection_matrix * quad->quadTransform());
+  ToGLMatrix(&gl_matrix[0],
+             frame->projection_matrix *
+                 quad->shared_quad_state->content_to_target_transform);
   gl_->UniformMatrix4fv(uniforms.matrix_location, 1, false, &gl_matrix[0]);
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
@@ -2087,17 +2096,20 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   gl_->UniformMatrix3fv(yuv_matrix_location, 1, 0, yuv_to_rgb);
   gl_->Uniform3fv(yuv_adj_location, 1, yuv_adjust);
 
-  SetShaderOpacity(quad->opacity(), alpha_location);
+  SetShaderOpacity(quad->shared_quad_state->opacity, alpha_location);
   if (!clip_region) {
-    DrawQuadGeometry(frame, quad->quadTransform(), tile_rect, matrix_location);
+    DrawQuadGeometry(frame,
+                     quad->shared_quad_state->content_to_target_transform,
+                     tile_rect, matrix_location);
   } else {
     float uvs[8] = {0};
     GetScaledUVs(quad->visible_rect, clip_region, uvs);
     gfx::QuadF region_quad = *clip_region;
     region_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
     region_quad -= gfx::Vector2dF(0.5f, 0.5f);
-    DrawQuadGeometryClippedByQuadF(frame, quad->quadTransform(), tile_rect,
-                                   region_quad, matrix_location, uvs);
+    DrawQuadGeometryClippedByQuadF(
+        frame, quad->shared_quad_state->content_to_target_transform, tile_rect,
+        region_quad, matrix_location, uvs);
   }
 }
 
@@ -2131,11 +2143,12 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
 
   gl_->Uniform1i(program->fragment_shader().sampler_location(), 0);
 
-  SetShaderOpacity(quad->opacity(),
+  SetShaderOpacity(quad->shared_quad_state->opacity,
                    program->fragment_shader().alpha_location());
   if (!clip_region) {
-    DrawQuadGeometry(frame, quad->quadTransform(), quad->rect,
-                     program->vertex_shader().matrix_location());
+    DrawQuadGeometry(frame,
+                     quad->shared_quad_state->content_to_target_transform,
+                     quad->rect, program->vertex_shader().matrix_location());
   } else {
     gfx::QuadF region_quad(*clip_region);
     region_quad.Scale(1.0f / quad->rect.width(), 1.0f / quad->rect.height());
@@ -2143,8 +2156,8 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
     float uvs[8] = {0};
     GetScaledUVs(quad->visible_rect, clip_region, uvs);
     DrawQuadGeometryClippedByQuadF(
-        frame, quad->quadTransform(), quad->rect, region_quad,
-        program->vertex_shader().matrix_location(), uvs);
+        frame, quad->shared_quad_state->content_to_target_transform, quad->rect,
+        region_quad, program->vertex_shader().matrix_location(), uvs);
   }
 }
 
@@ -2313,7 +2326,7 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
   }
 
   // Generate the vertex opacity
-  const float opacity = quad->opacity();
+  const float opacity = quad->shared_quad_state->opacity;
   draw_cache_.vertex_opacity_data.push_back(quad->vertex_opacity[0] * opacity);
   draw_cache_.vertex_opacity_data.push_back(quad->vertex_opacity[1] * opacity);
   draw_cache_.vertex_opacity_data.push_back(quad->vertex_opacity[2] * opacity);
@@ -2321,7 +2334,9 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
 
   // Generate the transform matrix
   gfx::Transform quad_rect_matrix;
-  QuadRectTransform(&quad_rect_matrix, quad->quadTransform(), quad->rect);
+  QuadRectTransform(&quad_rect_matrix,
+                    quad->shared_quad_state->content_to_target_transform,
+                    quad->rect);
   quad_rect_matrix = frame->projection_matrix * quad_rect_matrix;
 
   Float16 m;
@@ -2376,8 +2391,10 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
                    quad->io_surface_size.height());
   }
 
-  const float vertex_opacity[] = {quad->opacity(), quad->opacity(),
-                                  quad->opacity(), quad->opacity()};
+  const float vertex_opacity[] = {quad->shared_quad_state->opacity,
+                                  quad->shared_quad_state->opacity,
+                                  quad->shared_quad_state->opacity,
+                                  quad->shared_quad_state->opacity};
   gl_->Uniform1fv(binding.vertex_opacity_location, 4, vertex_opacity);
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider_,
@@ -2386,13 +2403,15 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
   gl_->BindTexture(GL_TEXTURE_RECTANGLE_ARB, lock.texture_id());
 
   if (!clip_region) {
-    DrawQuadGeometry(frame, quad->quadTransform(), quad->rect,
-                     binding.matrix_location);
+    DrawQuadGeometry(frame,
+                     quad->shared_quad_state->content_to_target_transform,
+                     quad->rect, binding.matrix_location);
   } else {
     float uvs[8] = {0};
     GetScaledUVs(quad->visible_rect, clip_region, uvs);
-    DrawQuadGeometryClippedByQuadF(frame, quad->quadTransform(), quad->rect,
-                                   *clip_region, binding.matrix_location, uvs);
+    DrawQuadGeometryClippedByQuadF(
+        frame, quad->shared_quad_state->content_to_target_transform, quad->rect,
+        *clip_region, binding.matrix_location, uvs);
   }
 
   gl_->BindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);

@@ -46,7 +46,7 @@ bool OverlayStrategyCommon::IsInvisibleQuad(const DrawQuad* draw_quad) {
     const SolidColorDrawQuad* solid_quad =
         SolidColorDrawQuad::MaterialCast(draw_quad);
     SkColor color = solid_quad->color;
-    float opacity = solid_quad->opacity();
+    float opacity = solid_quad->shared_quad_state->opacity;
     float alpha = (SkColorGetA(color) * (1.0f / 255.0f)) * opacity;
     return solid_quad->ShouldDrawWithBlending() &&
            alpha < std::numeric_limits<float>::epsilon();
@@ -57,8 +57,8 @@ bool OverlayStrategyCommon::IsInvisibleQuad(const DrawQuad* draw_quad) {
 bool OverlayStrategyCommon::GetTextureQuadInfo(const TextureDrawQuad& quad,
                                                OverlayCandidate* quad_info) {
   gfx::OverlayTransform overlay_transform =
-      OverlayCandidate::GetOverlayTransform(quad.quadTransform(),
-                                            quad.y_flipped);
+      OverlayCandidate::GetOverlayTransform(
+          quad.shared_quad_state->content_to_target_transform, quad.y_flipped);
   if (quad.background_color != SK_ColorTRANSPARENT ||
       quad.premultiplied_alpha ||
       overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
@@ -72,7 +72,8 @@ bool OverlayStrategyCommon::GetTextureQuadInfo(const TextureDrawQuad& quad,
 bool OverlayStrategyCommon::GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
                                              OverlayCandidate* quad_info) {
   gfx::OverlayTransform overlay_transform =
-      OverlayCandidate::GetOverlayTransform(quad.quadTransform(), false);
+      OverlayCandidate::GetOverlayTransform(
+          quad.shared_quad_state->content_to_target_transform, false);
   if (overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
     return false;
   if (!quad.matrix.IsScaleOrTranslation()) {
@@ -130,7 +131,7 @@ bool OverlayStrategyCommon::GetCandidateQuadInfo(const DrawQuad& draw_quad,
 
   quad_info->format = RGBA_8888;
   quad_info->display_rect = OverlayCandidate::GetOverlayRect(
-      draw_quad.quadTransform(), draw_quad.rect);
+      draw_quad.shared_quad_state->content_to_target_transform, draw_quad.rect);
   return true;
 }
 

@@ -407,21 +407,26 @@ TEST_F(DelegatedRendererLayerImplTestSimple,
   gfx::Transform transform;
   transform.Translate(4.0, 4.0);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      transform, frame.render_passes[3]->quad_list.front()->quadTransform());
+      transform, frame.render_passes[3]
+                     ->quad_list.front()
+                     ->shared_quad_state->content_to_target_transform);
 
   // Quads from non-root RenderPasses should not be shifted though.
   ASSERT_EQ(2u, frame.render_passes[2]->quad_list.size());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(),
-      frame.render_passes[2]->quad_list.front()->quadTransform());
+      gfx::Transform(), frame.render_passes[2]
+                            ->quad_list.front()
+                            ->shared_quad_state->content_to_target_transform);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(),
-      frame.render_passes[2]->quad_list.ElementAt(1)->quadTransform());
+      gfx::Transform(), frame.render_passes[2]
+                            ->quad_list.ElementAt(1)
+                            ->shared_quad_state->content_to_target_transform);
   ASSERT_EQ(1u, frame.render_passes[1]->quad_list.size());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(),
-      frame.render_passes[1]->quad_list.front()->quadTransform());
+      gfx::Transform(), frame.render_passes[1]
+                            ->quad_list.front()
+                            ->shared_quad_state->content_to_target_transform);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -582,22 +587,26 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface,
   // Because the DelegatedRendererLayer owns a RenderSurfaceImpl, its root
   // RenderPass' quads do not need to be translated at all.
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(),
-      frame.render_passes[3]->quad_list.front()->quadTransform());
+      gfx::Transform(), frame.render_passes[3]
+                            ->quad_list.front()
+                            ->shared_quad_state->content_to_target_transform);
 
   // Quads from non-root RenderPasses should not be shifted either.
   ASSERT_EQ(2u, frame.render_passes[2]->quad_list.size());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(),
-      frame.render_passes[2]->quad_list.front()->quadTransform());
+      gfx::Transform(), frame.render_passes[2]
+                            ->quad_list.front()
+                            ->shared_quad_state->content_to_target_transform);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(),
-      frame.render_passes[2]->quad_list.ElementAt(1)->quadTransform());
+      gfx::Transform(), frame.render_passes[2]
+                            ->quad_list.ElementAt(1)
+                            ->shared_quad_state->content_to_target_transform);
   ASSERT_EQ(1u, frame.render_passes[1]->quad_list.size());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      gfx::Transform(),
-      frame.render_passes[1]->quad_list.front()->quadTransform());
+      gfx::Transform(), frame.render_passes[1]
+                            ->quad_list.front()
+                            ->shared_quad_state->content_to_target_transform);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);

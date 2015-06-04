@@ -178,8 +178,12 @@ TEST(VideoLayerImplTest, Rotated0) {
 
   gfx::Point3F p1(0, impl.quad_list().front()->rect.height(), 0);
   gfx::Point3F p2(impl.quad_list().front()->rect.width(), 0, 0);
-  impl.quad_list().front()->quadTransform().TransformPoint(&p1);
-  impl.quad_list().front()->quadTransform().TransformPoint(&p2);
+  impl.quad_list()
+      .front()
+      ->shared_quad_state->content_to_target_transform.TransformPoint(&p1);
+  impl.quad_list()
+      .front()
+      ->shared_quad_state->content_to_target_transform.TransformPoint(&p2);
   EXPECT_EQ(gfx::Point3F(0, 50, 0), p1);
   EXPECT_EQ(gfx::Point3F(100, 0, 0), p2);
 }
@@ -214,8 +218,12 @@ TEST(VideoLayerImplTest, Rotated90) {
 
   gfx::Point3F p1(0, impl.quad_list().front()->rect.height(), 0);
   gfx::Point3F p2(impl.quad_list().front()->rect.width(), 0, 0);
-  impl.quad_list().front()->quadTransform().TransformPoint(&p1);
-  impl.quad_list().front()->quadTransform().TransformPoint(&p2);
+  impl.quad_list()
+      .front()
+      ->shared_quad_state->content_to_target_transform.TransformPoint(&p1);
+  impl.quad_list()
+      .front()
+      ->shared_quad_state->content_to_target_transform.TransformPoint(&p2);
   EXPECT_EQ(gfx::Point3F(0, 0, 0), p1);
   EXPECT_EQ(gfx::Point3F(100, 50, 0), p2);
 }
@@ -250,8 +258,12 @@ TEST(VideoLayerImplTest, Rotated180) {
 
   gfx::Point3F p1(0, impl.quad_list().front()->rect.height(), 0);
   gfx::Point3F p2(impl.quad_list().front()->rect.width(), 0, 0);
-  impl.quad_list().front()->quadTransform().TransformPoint(&p1);
-  impl.quad_list().front()->quadTransform().TransformPoint(&p2);
+  impl.quad_list()
+      .front()
+      ->shared_quad_state->content_to_target_transform.TransformPoint(&p1);
+  impl.quad_list()
+      .front()
+      ->shared_quad_state->content_to_target_transform.TransformPoint(&p2);
   EXPECT_EQ(gfx::Point3F(100, 0, 0), p1);
   EXPECT_EQ(gfx::Point3F(0, 50, 0), p2);
 }
@@ -286,8 +298,12 @@ TEST(VideoLayerImplTest, Rotated270) {
 
   gfx::Point3F p1(0, impl.quad_list().front()->rect.height(), 0);
   gfx::Point3F p2(impl.quad_list().front()->rect.width(), 0, 0);
-  impl.quad_list().front()->quadTransform().TransformPoint(&p1);
-  impl.quad_list().front()->quadTransform().TransformPoint(&p2);
+  impl.quad_list()
+      .front()
+      ->shared_quad_state->content_to_target_transform.TransformPoint(&p1);
+  impl.quad_list()
+      .front()
+      ->shared_quad_state->content_to_target_transform.TransformPoint(&p2);
   EXPECT_EQ(gfx::Point3F(100, 50, 0), p1);
   EXPECT_EQ(gfx::Point3F(0, 0, 0), p2);
 }

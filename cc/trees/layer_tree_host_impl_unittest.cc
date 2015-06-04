@@ -5829,7 +5829,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
 
   bool antialiased =
       GLRendererWithSetupQuadForAntialiasing::ShouldAntialiasQuad(
-          quad->quadTransform(), quad, false);
+          quad->shared_quad_state->content_to_target_transform, quad, false);
   EXPECT_FALSE(antialiased);
 
   host_impl_->DrawLayers(&frame);

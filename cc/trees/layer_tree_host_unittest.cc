@@ -6040,8 +6040,9 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
       const TileDrawQuad* quad = TileDrawQuad::MaterialCast(draw_quad);
       float quad_scale =
           quad->tex_coord_rect.width() / static_cast<float>(quad->rect.width());
-      float transform_scale =
-          SkMScalarToFloat(quad->quadTransform().matrix().get(0, 0));
+      float transform_scale = SkMScalarToFloat(
+          quad->shared_quad_state->content_to_target_transform.matrix().get(0,
+                                                                            0));
       float scale = quad_scale / transform_scale;
       if (frame_scale != 0.f && frame_scale != scale)
         return 0.f;
@@ -6343,8 +6344,9 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
       const TileDrawQuad* quad = TileDrawQuad::MaterialCast(draw_quad);
       float quad_scale =
           quad->tex_coord_rect.width() / static_cast<float>(quad->rect.width());
-      float transform_scale =
-          SkMScalarToFloat(quad->quadTransform().matrix().get(0, 0));
+      float transform_scale = SkMScalarToFloat(
+          quad->shared_quad_state->content_to_target_transform.matrix().get(0,
+                                                                            0));
       float scale = quad_scale / transform_scale;
       if (frame_scale != 0.f && frame_scale != scale)
         return 0.f;
