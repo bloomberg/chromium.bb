@@ -11,6 +11,7 @@
 #include "chrome/browser/auto_launch_trial.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
+#include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/variations/variations_util.h"
 #include "components/variations/variations_associated_data.h"
@@ -46,6 +47,7 @@ void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line) {
   prerender::ConfigurePrerender(parsed_command_line);
   AutoLaunchChromeFieldTrial();
   SetupLightSpeedTrials();
+  tracing::SetupBackgroundTracingFieldTrial();
 }
 
 }  // namespace chrome

@@ -772,6 +772,8 @@
       'browser/thumbnails/thumbnailing_algorithm.h',
       'browser/thumbnails/thumbnailing_context.cc',
       'browser/thumbnails/thumbnailing_context.h',
+      'browser/tracing/background_tracing_field_trial.cc',
+      'browser/tracing/background_tracing_field_trial.h',
       'browser/tracing/chrome_tracing_delegate.cc',
       'browser/tracing/chrome_tracing_delegate.h',
       'browser/tracing/crash_service_uploader.cc',
