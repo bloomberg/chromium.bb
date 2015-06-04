@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
-import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * Class that manages all the logic and UI behind the signin promo header in the enhanced bookmark
@@ -134,7 +133,7 @@ class EnhancedBookmarkPromoHeader implements AndroidSyncSettingsObserver,
     private void updateShowing(boolean notifyUI) {
         boolean oldIsShowing = mIsShowing;
         mIsShowing = AndroidSyncSettings.isMasterSyncEnabled(mContext)
-                && !ChromeSigninController.get(mContext).isSignedIn()
+                && mSignInManager.isSignInAllowed()
                 && !wasSigninPromoDeclined();
 
         if (oldIsShowing != mIsShowing && notifyUI) {
