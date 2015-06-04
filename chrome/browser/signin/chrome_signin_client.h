@@ -53,6 +53,10 @@ class ChromeSigninClient
   void RemoveContentSettingsObserver(
       content_settings::Observer* observer) override;
   void DelayNetworkCall(const base::Closure& callback) override;
+  GaiaAuthFetcher* CreateGaiaAuthFetcher(
+      GaiaAuthConsumer* consumer,
+      const std::string& source,
+      net::URLRequestContextGetter* getter) override;
 
   // Returns a string describing the chrome version environment. Version format:
   // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">

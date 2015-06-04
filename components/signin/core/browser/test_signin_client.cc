@@ -132,3 +132,10 @@ void TestSigninClient::RemoveContentSettingsObserver(
 void TestSigninClient::DelayNetworkCall(const base::Closure& callback) {
   callback.Run();
 }
+
+GaiaAuthFetcher* TestSigninClient::CreateGaiaAuthFetcher(
+    GaiaAuthConsumer* consumer,
+    const std::string& source,
+    net::URLRequestContextGetter* getter) {
+  return new GaiaAuthFetcher(consumer, source, getter);
+}

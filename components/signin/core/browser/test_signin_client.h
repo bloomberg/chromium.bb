@@ -99,6 +99,10 @@ class TestSigninClient : public SigninClient {
   void RemoveContentSettingsObserver(
       content_settings::Observer* observer) override;
   void DelayNetworkCall(const base::Closure& callback) override;
+  GaiaAuthFetcher* CreateGaiaAuthFetcher(
+      GaiaAuthConsumer* consumer,
+      const std::string& source,
+      net::URLRequestContextGetter* getter) override;
 
  private:
   // Loads the token database.

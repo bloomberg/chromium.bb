@@ -77,17 +77,17 @@ void DeviceActivityFetcher::Stop() {
 }
 
 void DeviceActivityFetcher::StartFetchingListIdpSessions() {
-  gaia_auth_fetcher_.reset(
-      new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
-                          signin_client_->GetURLRequestContext()));
+  gaia_auth_fetcher_.reset(signin_client_->CreateGaiaAuthFetcher(
+      this, GaiaConstants::kChromeSource,
+      signin_client_->GetURLRequestContext()));
   gaia_auth_fetcher_->StartListIDPSessions(kSyncListDevicesScope,
                                            kChromeDomain);
 }
 
 void DeviceActivityFetcher::StartFetchingGetTokenResponse() {
-  gaia_auth_fetcher_.reset(
-      new GaiaAuthFetcher(this, GaiaConstants::kChromeSource,
-                          signin_client_->GetURLRequestContext()));
+  gaia_auth_fetcher_.reset(signin_client_->CreateGaiaAuthFetcher(
+      this, GaiaConstants::kChromeSource,
+      signin_client_->GetURLRequestContext()));
   gaia_auth_fetcher_->StartGetTokenResponse(kSyncListDevicesScope,
                                             kChromeDomain, login_hint_);
 }

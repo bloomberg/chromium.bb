@@ -322,3 +322,10 @@ void ChromeSigninClient::DelayNetworkCall(const base::Closure& callback) {
   }
 #endif
 }
+
+GaiaAuthFetcher* ChromeSigninClient::CreateGaiaAuthFetcher(
+    GaiaAuthConsumer* consumer,
+    const std::string& source,
+    net::URLRequestContextGetter* getter) {
+  return new GaiaAuthFetcher(consumer, source, getter);
+}

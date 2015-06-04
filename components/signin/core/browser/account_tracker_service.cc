@@ -152,9 +152,8 @@ void AccountInfoFetcher::OnGetTokenSuccess(
   const int kMaxRetries = 3;
   gaia_oauth_client_->GetUserInfo(access_token, kMaxRetries, this);
 
-  gaia_auth_fetcher_.reset(
-      new GaiaAuthFetcher(
-          this, GaiaConstants::kChromeSource, request_context_getter_));
+  gaia_auth_fetcher_.reset(service_->signin_client_->CreateGaiaAuthFetcher(
+      this, GaiaConstants::kChromeSource, request_context_getter_));
   gaia_auth_fetcher_->StartOAuthLogin(
       access_token, GaiaConstants::kGaiaService);
 }

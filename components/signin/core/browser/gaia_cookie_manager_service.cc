@@ -123,7 +123,8 @@ void GaiaCookieManagerService::ExternalCcResultFetcher::Start() {
   CleanupTransientState();
   results_.clear();
   helper_->gaia_auth_fetcher_.reset(
-      new GaiaAuthFetcher(this, helper_->source_, helper_->request_context()));
+      helper_->signin_client_->CreateGaiaAuthFetcher(
+          this, helper_->source_, helper_->request_context()));
   helper_->gaia_auth_fetcher_->StartGetCheckConnectionInfo();
 
   // Some fetches may timeout.  Start a timer to decide when the result fetcher
@@ -633,9 +634,10 @@ void GaiaCookieManagerService::OnLogOutFailure(
 void GaiaCookieManagerService::StartFetchingUbertoken() {
   VLOG(1) << "GaiaCookieManagerService::StartFetchingUbertoken account_id="
           << requests_.front().account_id();
-  uber_token_fetcher_.reset(
-      new UbertokenFetcher(token_service_, this, source_,
-                           signin_client_->GetURLRequestContext()));
+  uber_token_fetcher_.reset(new UbertokenFetcher(
+      token_service_, this, source_, signin_client_->GetURLRequestContext(),
+      base::Bind(&SigninClient::CreateGaiaAuthFetcher,
+                 base::Unretained(signin_client_))));
   if (access_token_.empty()) {
     uber_token_fetcher_->StartFetchingToken(requests_.front().account_id());
   } else {
@@ -646,9 +648,8 @@ void GaiaCookieManagerService::StartFetchingUbertoken() {
 
 void GaiaCookieManagerService::StartFetchingMergeSession() {
   DCHECK(!uber_token_.empty());
-  gaia_auth_fetcher_.reset(
-      new GaiaAuthFetcher(this, source_,
-                          signin_client_->GetURLRequestContext()));
+  gaia_auth_fetcher_.reset(signin_client_->CreateGaiaAuthFetcher(
+      this, source_, signin_client_->GetURLRequestContext()));
 
   gaia_auth_fetcher_->StartMergeSession(uber_token_,
       external_cc_result_fetcher_.GetExternalCcResult());
@@ -657,16 +658,15 @@ void GaiaCookieManagerService::StartFetchingMergeSession() {
 void GaiaCookieManagerService::StartFetchingLogOut() {
   DCHECK(requests_.front().request_type() == GaiaCookieRequestType::LOG_OUT);
   VLOG(1) << "GaiaCookieManagerService::StartFetchingLogOut";
-  gaia_auth_fetcher_.reset(new GaiaAuthFetcher(
+  gaia_auth_fetcher_.reset(signin_client_->CreateGaiaAuthFetcher(
       this, source_, signin_client_->GetURLRequestContext()));
   gaia_auth_fetcher_->StartLogOut();
 }
 
 void GaiaCookieManagerService::StartFetchingListAccounts() {
   VLOG(1) << "GaiaCookieManagerService::ListAccounts";
-  gaia_auth_fetcher_.reset(
-      new GaiaAuthFetcher(this, source_,
-                          signin_client_->GetURLRequestContext()));
+  gaia_auth_fetcher_.reset(signin_client_->CreateGaiaAuthFetcher(
+      this, source_, signin_client_->GetURLRequestContext()));
   gaia_auth_fetcher_->StartListAccounts();
 }
 

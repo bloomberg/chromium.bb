@@ -15,6 +15,15 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
+namespace {
+GaiaAuthFetcher* CreateGaiaAuthFetcher(
+    GaiaAuthConsumer* consumer,
+    const std::string& source,
+    net::URLRequestContextGetter* request_context) {
+  return new GaiaAuthFetcher(consumer, source, request_context);
+}
+}
+
 const int UbertokenFetcher::kMaxRetries = 3;
 
 UbertokenFetcher::UbertokenFetcher(
@@ -22,11 +31,25 @@ UbertokenFetcher::UbertokenFetcher(
     UbertokenConsumer* consumer,
     const std::string& source,
     net::URLRequestContextGetter* request_context)
+    : UbertokenFetcher(token_service,
+                       consumer,
+                       source,
+                       request_context,
+                       base::Bind(CreateGaiaAuthFetcher)) {
+}
+
+UbertokenFetcher::UbertokenFetcher(
+    OAuth2TokenService* token_service,
+    UbertokenConsumer* consumer,
+    const std::string& source,
+    net::URLRequestContextGetter* request_context,
+    GaiaAuthFetcherFactory factory)
     : OAuth2TokenService::Consumer("uber_token_fetcher"),
       token_service_(token_service),
       consumer_(consumer),
       source_(source),
       request_context_(request_context),
+      gaia_auth_fetcher_factory_(factory),
       retry_number_(0),
       second_access_token_request_(false) {
   DCHECK(token_service);
@@ -126,8 +149,7 @@ void UbertokenFetcher::RequestAccessToken() {
 }
 
 void UbertokenFetcher::ExchangeTokens() {
-  gaia_auth_fetcher_.reset(new GaiaAuthFetcher(this,
-                                               source_,
-                                               request_context_));
+  gaia_auth_fetcher_.reset(
+      gaia_auth_fetcher_factory_.Run(this, source_, request_context_));
   gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(access_token_);
 }

@@ -11,6 +11,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "net/cookies/cookie_store.h"
 #include "url/gurl.h"
 
@@ -127,6 +128,13 @@ class SigninClient : public KeyedService {
 
   // Execute |callback| if and when there is a network connection.
   virtual void DelayNetworkCall(const base::Closure& callback) = 0;
+
+  // Creates and returns a new platform-specific GaiaAuthFetcher. It is the
+  // responsability of the caller to delete the returned object.
+  virtual GaiaAuthFetcher* CreateGaiaAuthFetcher(
+      GaiaAuthConsumer* consumer,
+      const std::string& source,
+      net::URLRequestContextGetter* getter) = 0;
 };
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_
