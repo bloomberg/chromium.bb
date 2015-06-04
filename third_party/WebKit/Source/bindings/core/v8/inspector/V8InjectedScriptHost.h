@@ -5,6 +5,7 @@
 #ifndef V8InjectedScriptHost_h
 #define V8InjectedScriptHost_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include <v8.h>
 
@@ -14,7 +15,7 @@ class InjectedScriptHost;
 
 class V8InjectedScriptHost {
 public:
-    static v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::FunctionTemplate> constructorTemplate, PassRefPtr<InjectedScriptHost>);
+    static v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::FunctionTemplate> constructorTemplate, PassRefPtrWillBeRawPtr<InjectedScriptHost>);
     static InjectedScriptHost* toImpl(v8::Local<v8::Object>);
     static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate*);
 

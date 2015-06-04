@@ -626,14 +626,14 @@ const V8MethodConfiguration V8InjectedScriptHostMethods[] = {
 
 class WeakCallbackData final {
 public:
-    WeakCallbackData(v8::Isolate* isolate, PassRefPtr<InjectedScriptHost> host, v8::Local<v8::Object> wrapper)
+    WeakCallbackData(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<InjectedScriptHost> host, v8::Local<v8::Object> wrapper)
         : m_host(host)
         , m_persistent(isolate, wrapper)
     {
         m_persistent.SetWeak(this, &WeakCallbackData::weakCallback, v8::WeakCallbackType::kParameter);
     }
 
-    RefPtr<InjectedScriptHost> m_host;
+    RefPtrWillBePersistent<InjectedScriptHost> m_host;
 
 private:
     static void weakCallback(const v8::WeakCallbackInfo<WeakCallbackData>& info)
@@ -663,9 +663,9 @@ v8::Local<v8::FunctionTemplate> V8InjectedScriptHost::createWrapperTemplate(v8::
     return functionTemplate;
 }
 
-v8::Local<v8::Object> V8InjectedScriptHost::wrap(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> constructorTemplate, PassRefPtr<InjectedScriptHost> host)
+v8::Local<v8::Object> V8InjectedScriptHost::wrap(v8::Isolate* isolate, v8::Local<v8::FunctionTemplate> constructorTemplate, PassRefPtrWillBeRawPtr<InjectedScriptHost> host)
 {
-    RefPtr<InjectedScriptHost> impl(host);
+    RefPtrWillBeRawPtr<InjectedScriptHost> impl(host);
     v8::Local<v8::Function> function;
     if (!constructorTemplate->GetFunction(isolate->GetCurrentContext()).ToLocal(&function))
         return v8::Local<v8::Object>();
