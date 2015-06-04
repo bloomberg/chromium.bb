@@ -189,7 +189,8 @@ void DistillerPageWebContents::ExecuteJavaScript() {
 void DistillerPageWebContents::OnWebContentsDistillationDone(
     const GURL& page_url,
     const base::Value* value) {
-  DCHECK(state_ == PAGELOAD_FAILED || state_ == EXECUTING_JAVASCRIPT);
+  DCHECK(state_ == IDLE || state_ == LOADING_PAGE ||  // TODO(nyquist): 493795.
+         state_ == PAGELOAD_FAILED || state_ == EXECUTING_JAVASCRIPT);
   state_ = IDLE;
   DistillerPage::OnDistillationDone(page_url, value);
 }
