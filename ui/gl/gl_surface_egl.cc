@@ -30,7 +30,6 @@ extern "C" {
 #endif
 
 #if defined (USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif
 
@@ -306,9 +305,9 @@ bool GLSurfaceEGL::InitializeOneOff() {
   };
 
 #if defined(USE_OZONE)
-  const EGLint* config_attribs = ui::OzonePlatform::GetInstance()
-                                     ->GetSurfaceFactoryOzone()
-                                     ->GetEGLSurfaceProperties(kConfigAttribs);
+  const EGLint* config_attribs =
+      ui::SurfaceFactoryOzone::GetInstance()->GetEGLSurfaceProperties(
+          kConfigAttribs);
 #else
   const EGLint* config_attribs = kConfigAttribs;
 #endif

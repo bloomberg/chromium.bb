@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "ui/gl/gl_image.h"
-#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace content {
@@ -42,9 +41,8 @@ bool GpuMemoryBufferFactoryOzoneNativeBuffer::
 void GpuMemoryBufferFactoryOzoneNativeBuffer::
     GetSupportedGpuMemoryBufferConfigurations(
         std::vector<Configuration>* configurations) {
-  if (!ui::OzonePlatform::GetInstance()
-           ->GetSurfaceFactoryOzone()
-           ->CanCreateNativePixmap(ui::SurfaceFactoryOzone::SCANOUT))
+  if (!ui::SurfaceFactoryOzone::GetInstance()->CanCreateNativePixmap(
+          ui::SurfaceFactoryOzone::SCANOUT))
     return;
 
   configurations->assign(

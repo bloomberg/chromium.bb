@@ -13,10 +13,22 @@
 
 namespace ui {
 
+// static
+SurfaceFactoryOzone* SurfaceFactoryOzone::impl_ = NULL;
+
 SurfaceFactoryOzone::SurfaceFactoryOzone() {
+  DCHECK(!impl_) << "There should only be a single SurfaceFactoryOzone.";
+  impl_ = this;
 }
 
 SurfaceFactoryOzone::~SurfaceFactoryOzone() {
+  DCHECK_EQ(impl_, this);
+  impl_ = NULL;
+}
+
+SurfaceFactoryOzone* SurfaceFactoryOzone::GetInstance() {
+  DCHECK(impl_) << "No SurfaceFactoryOzone implementation set.";
+  return impl_;
 }
 
 intptr_t SurfaceFactoryOzone::GetNativeDisplay() {

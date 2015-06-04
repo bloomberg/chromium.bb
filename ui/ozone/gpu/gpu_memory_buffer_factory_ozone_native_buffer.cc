@@ -8,7 +8,6 @@
 #include "ui/gl/gl_image_egl.h"
 #include "ui/gl/gl_image_linux_dma_buffer.h"
 #include "ui/ozone/public/native_pixmap.h"
-#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
@@ -36,10 +35,8 @@ class GLImageOzoneNativePixmap : public gfx::GLImageEGL {
                             gfx::OverlayTransform transform,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override {
-    return OzonePlatform::GetInstance()
-        ->GetSurfaceFactoryOzone()
-        ->ScheduleOverlayPlane(widget, z_order, transform, pixmap_, bounds_rect,
-                               crop_rect);
+    return SurfaceFactoryOzone::GetInstance()->ScheduleOverlayPlane(
+        widget, z_order, transform, pixmap_, bounds_rect, crop_rect);
   }
 
  protected:
@@ -75,10 +72,8 @@ class GLImageOzoneNativePixmapDmaBuf : public gfx::GLImageLinuxDMABuffer {
                             gfx::OverlayTransform transform,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override {
-    return OzonePlatform::GetInstance()
-        ->GetSurfaceFactoryOzone()
-        ->ScheduleOverlayPlane(widget, z_order, transform, pixmap_, bounds_rect,
-                               crop_rect);
+    return SurfaceFactoryOzone::GetInstance()->ScheduleOverlayPlane(
+        widget, z_order, transform, pixmap_, bounds_rect, crop_rect);
   }
 
  protected:
@@ -149,10 +144,9 @@ bool GpuMemoryBufferFactoryOzoneNativeBuffer::CreateGpuMemoryBuffer(
     int client_id,
     gfx::PluginWindowHandle surface_handle) {
   scoped_refptr<NativePixmap> pixmap =
-      OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->CreateNativePixmap(surface_handle, size, GetOzoneFormatFor(format),
-                               GetOzoneUsageFor(usage));
+      SurfaceFactoryOzone::GetInstance()->CreateNativePixmap(
+          surface_handle, size, GetOzoneFormatFor(format),
+          GetOzoneUsageFor(usage));
   if (!pixmap.get()) {
     LOG(ERROR) << "Failed to create pixmap " << size.width() << "x"
                << size.height() << " format " << format << ", usage " << usage;

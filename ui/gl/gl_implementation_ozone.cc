@@ -44,10 +44,9 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
     case kGLImplementationOSMesaGL:
       return InitializeStaticGLBindingsOSMesaGL();
     case kGLImplementationEGLGLES2:
-      if (!ui::OzonePlatform::GetInstance()
-               ->GetSurfaceFactoryOzone()
-               ->LoadEGLGLES2Bindings(base::Bind(&AddGLNativeLibrary),
-                                      base::Bind(&SetGLGetProcAddressProc)))
+      if (!ui::SurfaceFactoryOzone::GetInstance()->LoadEGLGLES2Bindings(
+              base::Bind(&AddGLNativeLibrary),
+              base::Bind(&SetGLGetProcAddressProc)))
         return false;
       SetGLImplementation(kGLImplementationEGLGLES2);
       InitializeStaticGLBindingsGL();

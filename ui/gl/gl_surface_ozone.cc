@@ -23,7 +23,6 @@
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
 #include "ui/ozone/public/native_pixmap.h"
-#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
@@ -119,8 +118,7 @@ bool GLSurfaceOzoneEGL::ReinitializeNativeSurface() {
   }
 
   Destroy();
-  ozone_surface_ = ui::OzonePlatform::GetInstance()
-                       ->GetSurfaceFactoryOzone()
+  ozone_surface_ = ui::SurfaceFactoryOzone::GetInstance()
                        ->CreateEGLSurfaceForWidget(widget_)
                        .Pass();
   if (!ozone_surface_) {
@@ -480,10 +478,8 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::SurfaceImage::ScheduleOverlayPlane(
     gfx::OverlayTransform transform,
     const gfx::Rect& bounds_rect,
     const gfx::RectF& crop_rect) {
-  return ui::OzonePlatform::GetInstance()
-      ->GetSurfaceFactoryOzone()
-      ->ScheduleOverlayPlane(widget, z_order, transform, pixmap_, bounds_rect,
-                             crop_rect);
+  return ui::SurfaceFactoryOzone::GetInstance()->ScheduleOverlayPlane(
+      widget, z_order, transform, pixmap_, bounds_rect, crop_rect);
 }
 
 GLSurfaceOzoneSurfacelessSurfaceImpl::SurfaceImage::~SurfaceImage() {
@@ -588,11 +584,9 @@ bool GLSurfaceOzoneSurfacelessSurfaceImpl::CreatePixmaps() {
     return true;
   for (size_t i = 0; i < arraysize(textures_); i++) {
     scoped_refptr<ui::NativePixmap> pixmap =
-        ui::OzonePlatform::GetInstance()
-            ->GetSurfaceFactoryOzone()
-            ->CreateNativePixmap(widget_, GetSize(),
-                                 ui::SurfaceFactoryOzone::BGRA_8888,
-                                 ui::SurfaceFactoryOzone::SCANOUT);
+        ui::SurfaceFactoryOzone::GetInstance()->CreateNativePixmap(
+            widget_, GetSize(), ui::SurfaceFactoryOzone::BGRA_8888,
+            ui::SurfaceFactoryOzone::SCANOUT);
     if (!pixmap)
       return false;
     scoped_refptr<SurfaceImage> image =
@@ -634,12 +628,9 @@ scoped_refptr<GLSurface> GLSurface::CreateSurfacelessViewGLSurface(
   if (GetGLImplementation() == kGLImplementationEGLGLES2 &&
       window != kNullAcceleratedWidget &&
       GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
-      ui::OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->CanShowPrimaryPlaneAsOverlay()) {
+      ui::SurfaceFactoryOzone::GetInstance()->CanShowPrimaryPlaneAsOverlay()) {
     scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
-        ui::OzonePlatform::GetInstance()
-            ->GetSurfaceFactoryOzone()
+        ui::SurfaceFactoryOzone::GetInstance()
             ->CreateSurfacelessEGLSurfaceForWidget(window);
     if (!surface_ozone)
       return nullptr;
@@ -665,12 +656,10 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
   if (window != kNullAcceleratedWidget) {
     scoped_refptr<GLSurface> surface;
     if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
-        ui::OzonePlatform::GetInstance()
-            ->GetSurfaceFactoryOzone()
+        ui::SurfaceFactoryOzone::GetInstance()
             ->CanShowPrimaryPlaneAsOverlay()) {
       scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
-          ui::OzonePlatform::GetInstance()
-              ->GetSurfaceFactoryOzone()
+          ui::SurfaceFactoryOzone::GetInstance()
               ->CreateSurfacelessEGLSurfaceForWidget(window);
       if (!surface_ozone)
         return NULL;
@@ -678,9 +667,8 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
                                                          window);
     } else {
       scoped_ptr<ui::SurfaceOzoneEGL> surface_ozone =
-          ui::OzonePlatform::GetInstance()
-              ->GetSurfaceFactoryOzone()
-              ->CreateEGLSurfaceForWidget(window);
+          ui::SurfaceFactoryOzone::GetInstance()->CreateEGLSurfaceForWidget(
+              window);
       if (!surface_ozone)
         return NULL;
 
@@ -730,9 +718,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
 }
 
 EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
-  return ui::OzonePlatform::GetInstance()
-      ->GetSurfaceFactoryOzone()
-      ->GetNativeDisplay();
+  return ui::SurfaceFactoryOzone::GetInstance()->GetNativeDisplay();
 }
 
 }  // namespace gfx

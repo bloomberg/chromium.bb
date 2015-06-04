@@ -17,6 +17,6 @@ component("gpu") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
-    "//ui/ozone:ozone",
+    "//ui/ozone:ozone_base",
   ]
 }
