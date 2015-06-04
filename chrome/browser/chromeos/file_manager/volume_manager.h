@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/linked_ptr.h"
@@ -24,6 +25,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/storage_monitor/removable_storage_observer.h"
+#include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 
 class Profile;
 
@@ -196,12 +198,18 @@ class VolumeManager : public KeyedService,
                       public chromeos::file_system_provider::Observer,
                       public storage_monitor::RemovableStorageObserver {
  public:
+  // Returns MediaTransferProtocolManager. Used for injecting
+  // FakeMediaTransferProtocolManager for testing.
+  typedef base::Callback<const MtpStorageInfo*(const std::string&)>
+      GetMtpStorageInfoCallback;
+
   VolumeManager(
       Profile* profile,
       drive::DriveIntegrationService* drive_integration_service,
       chromeos::PowerManagerClient* power_manager_client,
       chromeos::disks::DiskMountManager* disk_mount_manager,
-      chromeos::file_system_provider::Service* file_system_provider_service);
+      chromeos::file_system_provider::Service* file_system_provider_service,
+      GetMtpStorageInfoCallback get_mtp_storage_info_callback);
   ~VolumeManager() override;
 
   // Returns the instance corresponding to the |context|.
@@ -297,6 +305,7 @@ class VolumeManager : public KeyedService,
   base::ObserverList<VolumeManagerObserver> observers_;
   chromeos::file_system_provider::Service*
       file_system_provider_service_;  // Not owned by this class.
+  GetMtpStorageInfoCallback get_mtp_storage_info_callback_;
   std::map<std::string, linked_ptr<Volume>> mounted_volumes_;
   scoped_ptr<SnapshotManager> snapshot_manager_;
 

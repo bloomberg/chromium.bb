@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
@@ -14,6 +15,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/storage_monitor/storage_monitor.h"
+#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 namespace file_manager {
 
@@ -44,11 +47,11 @@ KeyedService* VolumeManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* const profile = Profile::FromBrowserContext(context);
   VolumeManager* instance = new VolumeManager(
-      profile,
-      drive::DriveIntegrationServiceFactory::GetForProfile(profile),
+      profile, drive::DriveIntegrationServiceFactory::GetForProfile(profile),
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient(),
       chromeos::disks::DiskMountManager::GetInstance(),
-      chromeos::file_system_provider::ServiceFactory::Get(context));
+      chromeos::file_system_provider::ServiceFactory::Get(context),
+      VolumeManager::GetMtpStorageInfoCallback());
   instance->Initialize();
   return instance;
 }

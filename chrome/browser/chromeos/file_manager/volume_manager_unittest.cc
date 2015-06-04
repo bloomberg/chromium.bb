@@ -21,6 +21,7 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/storage_monitor/storage_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -149,12 +150,14 @@ class VolumeManagerTest : public testing::Test {
               new chromeos::file_system_provider::Service(
                   profile_.get(),
                   extension_registry_.get())),
-          volume_manager_(
-              new VolumeManager(profile_.get(),
-                                NULL,  // DriveIntegrationService
-                                power_manager_client,
-                                disk_manager,
-                                file_system_provider_service_.get())) {
+          volume_manager_(new VolumeManager(
+              profile_.get(),
+              NULL,  // DriveIntegrationService
+              power_manager_client,
+              disk_manager,
+              file_system_provider_service_.get(),
+              base::Bind(&ProfileEnvironment::GetFakeMtpStorageInfo,
+                         base::Unretained(this)))) {
       file_system_provider_service_->SetFileSystemFactoryForTesting(base::Bind(
           &chromeos::file_system_provider::FakeProvidedFileSystem::Create));
     }
@@ -163,11 +166,17 @@ class VolumeManagerTest : public testing::Test {
     VolumeManager* volume_manager() const { return volume_manager_.get(); }
 
    private:
+    const MtpStorageInfo* GetFakeMtpStorageInfo(
+        const std::string& /*storage_name*/) {
+      return &fake_mtp_storage_info_;
+    }
+
     scoped_ptr<TestingProfile> profile_;
     scoped_ptr<extensions::ExtensionRegistry> extension_registry_;
     scoped_ptr<chromeos::file_system_provider::Service>
         file_system_provider_service_;
     scoped_ptr<VolumeManager> volume_manager_;
+    const MtpStorageInfo fake_mtp_storage_info_;
   };
 
   void SetUp() override {
