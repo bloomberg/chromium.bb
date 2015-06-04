@@ -14,6 +14,7 @@
 #include "base/scoped_observer.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/gcm_client.h"
+#include "components/gcm_driver/instance_id/instance_id.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -26,6 +27,9 @@ class BrowserContext;
 namespace gcm {
 class GCMDriver;
 class GCMProfileService;
+}
+namespace instance_id {
+class InstanceIDDriver;
 }
 
 namespace extensions {
@@ -60,12 +64,13 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
   // Could be overridden by testing purpose.
   virtual void OnUnregisterCompleted(const std::string& app_id,
                                      gcm::GCMClient::Result result);
-  virtual void OnDeleteTokensCompleted(const std::string& app_id,
-                                       gcm::GCMClient::Result result);
+  virtual void OnDeleteIDCompleted(const std::string& app_id,
+                                   instance_id::InstanceID::Result result);
   virtual void AddAppHandler(const std::string& app_id);
   virtual void RemoveAppHandler(const std::string& app_id);
 
   gcm::GCMDriver* GetGCMDriver() const;
+  instance_id::InstanceIDDriver* GetInstanceIDDriver() const;
 
  private:
   friend class BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler>;
@@ -80,6 +85,7 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
                               const Extension* extension,
                               extensions::UninstallReason reason) override;
 
+  void RemoveInstanceID(const std::string& app_id);
   void AddDummyAppHandler();
   void RemoveDummyAppHandler();
 

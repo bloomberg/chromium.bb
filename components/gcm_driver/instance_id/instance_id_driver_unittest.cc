@@ -221,6 +221,17 @@ void InstanceIDDriverTest::DeleteTokenCompleted(InstanceID::Result result) {
     async_operation_completed_callback_.Run();
 }
 
+TEST_F(InstanceIDDriverTest, GetAndRemoveInstanceID) {
+  EXPECT_FALSE(driver()->ExistsInstanceID(kTestAppID1));
+
+  InstanceID* instance_id = driver()->GetInstanceID(kTestAppID1);
+  EXPECT_TRUE(instance_id);
+  EXPECT_TRUE(driver()->ExistsInstanceID(kTestAppID1));
+
+  driver()->RemoveInstanceID(kTestAppID1);
+  EXPECT_FALSE(driver()->ExistsInstanceID(kTestAppID1));
+}
+
 TEST_F(InstanceIDDriverTest, NewID) {
   // Creation time should not be set when the ID is not created.
   InstanceID* instance_id1 = driver()->GetInstanceID(kTestAppID1);

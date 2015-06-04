@@ -33,6 +33,14 @@ class InstanceIDDriver {
   // application. The lifetime of InstanceID will be managed by this class.
   InstanceID* GetInstanceID(const std::string& app_id);
 
+  // Removes the InstanceID when it is not longer needed, i.e. the app is being
+  // uninstalled.
+  void RemoveInstanceID(const std::string& app_id);
+
+  // Returns true if the InstanceID for the given application has been created.
+  // This is currently only used for testing purpose.
+  bool ExistsInstanceID(const std::string& app_id) const;
+
  private:
   gcm::GCMDriver* gcm_driver_;  // Not owned.
   typedef std::map<std::string, InstanceID*> InstanceIDMap;

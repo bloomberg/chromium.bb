@@ -943,7 +943,13 @@ void GCMClientImpl::Unregister(
       InstanceIDTokenInfo::FromRegistrationInfo(registration_info.get());
   if (instance_id_token_info) {
     auto instance_id_iter = instance_id_data_.find(registration_info->app_id);
-    DCHECK(instance_id_iter != instance_id_data_.end());
+    if (instance_id_iter == instance_id_data_.end()) {
+      // This should not be reached since we should not delete tokens when
+      // an InstanceID has not been created yet.
+      NOTREACHED();
+      return;
+    }
+
     std::string instance_id = instance_id_iter->second.first;
     std::string app_id = instance_id_token_info->app_id;
 

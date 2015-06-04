@@ -46,4 +46,16 @@ InstanceID* InstanceIDDriver::GetInstanceID(const std::string& app_id) {
   return instance_id;
 }
 
+void InstanceIDDriver::RemoveInstanceID(const std::string& app_id) {
+  auto iter = instance_id_map_.find(app_id);
+  if (iter == instance_id_map_.end())
+    return;
+  delete iter->second;
+  instance_id_map_.erase(iter);
+}
+
+bool InstanceIDDriver::ExistsInstanceID(const std::string& app_id) const {
+  return instance_id_map_.find(app_id) != instance_id_map_.end();
+}
+
 }  // namespace instance_id
