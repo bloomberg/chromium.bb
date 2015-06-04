@@ -151,7 +151,6 @@
 #include "web/InspectorOverlayImpl.h"
 #include "web/LinkHighlight.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
-#include "web/PopupContainer.h"
 #include "web/PrerendererClientImpl.h"
 #include "web/ResizeViewportAnchor.h"
 #include "web/RotationViewportAnchor.h"
@@ -164,7 +163,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPagePopupImpl.h"
 #include "web/WebPluginContainerImpl.h"
-#include "web/WebPopupMenuImpl.h"
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WorkerGlobalScopeProxyProviderImpl.h"
@@ -504,16 +502,13 @@ void WebViewImpl::handleMouseLeave(LocalFrame& mainFrame, const WebMouseEvent& e
 
 void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& event)
 {
-    // If there is a popup open, close it as the user is clicking on the page (outside of the
-    // popup). We also save it so we can prevent a click on an element from immediately
-    // reopening the same popup.
-    RefPtrWillBeRawPtr<PopupContainer> selectPopup = nullptr;
+    // If there is a popup open, close it as the user is clicking on the page
+    // (outside of the popup). We also save it so we can prevent a click on an
+    // element from immediately reopening the same popup.
     RefPtr<WebPagePopupImpl> pagePopup;
     if (event.button == WebMouseEvent::ButtonLeft) {
-        selectPopup = m_selectPopup;
         pagePopup = m_pagePopup;
         hidePopups();
-        ASSERT(!m_selectPopup);
         ASSERT(!m_pagePopup);
     }
 
@@ -539,14 +534,6 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
 
     if (event.button == WebMouseEvent::ButtonLeft && m_mouseCaptureNode)
         m_mouseCaptureGestureToken = mainFrame.eventHandler().takeLastMouseDownGestureToken();
-
-    if (m_selectPopup && m_selectPopup == selectPopup) {
-        // That click triggered a select popup which is the same as the one that
-        // was showing before the click.  It means the user clicked the select
-        // while the popup was showing, and as a result we first closed then
-        // immediately reopened the select popup.  It needs to be closed.
-        hideSelectPopup();
-    }
 
     if (m_pagePopup && pagePopup && m_pagePopup->hasSamePopupClient(pagePopup.get())) {
         // That click triggered a page popup that is the same as the one we just closed.
@@ -772,11 +759,6 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
             break;
         }
 
-        RefPtrWillBeRawPtr<PopupContainer> selectPopup = nullptr;
-        selectPopup = m_selectPopup;
-        hideSelectPopup();
-        ASSERT(!m_selectPopup);
-
         // Don't trigger a disambiguation popup on sites designed for mobile devices.
         // Instead, assume that the page has been designed with big enough buttons and links.
         // Don't trigger a disambiguation popup when screencasting, since it's implemented outside of
@@ -813,15 +795,6 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         }
 
         eventSwallowed = mainFrameImpl()->frame()->eventHandler().handleGestureEvent(targetedEvent);
-
-        if (m_selectPopup && m_selectPopup == selectPopup) {
-            // That tap triggered a select popup which is the same as the one that
-            // was showing before the tap. It means the user tapped the select
-            // while the popup was showing, and as a result we first closed then
-            // immediately reopened the select popup. It needs to be closed.
-            hideSelectPopup();
-        }
-
         break;
     }
     case WebInputEvent::GestureTwoFingerTap:
@@ -1032,10 +1005,8 @@ bool WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
     // event.
     m_suppressNextKeypressEvent = false;
 
-    // If there is a select popup, it should be the one processing the event,
-    // not the page.
-    if (m_selectPopup)
-        return m_selectPopup->handleKeyEvent(PlatformKeyboardEventBuilder(event));
+    // If there is a popup, it should be the one processing the event, not the
+    // page.
     if (m_pagePopup) {
         m_pagePopup->handleKeyEvent(PlatformKeyboardEventBuilder(event));
         // We need to ignore the next Char event after this otherwise pressing
@@ -1112,10 +1083,8 @@ bool WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
     bool suppress = m_suppressNextKeypressEvent;
     m_suppressNextKeypressEvent = false;
 
-    // If there is a select popup, it should be the one processing the event,
-    // not the page.
-    if (m_selectPopup)
-        return m_selectPopup->handleKeyEvent(PlatformKeyboardEventBuilder(event));
+    // If there is a popup, it should be the one processing the event, not the
+    // page.
     if (m_pagePopup)
         return m_pagePopup->handleKeyEvent(PlatformKeyboardEventBuilder(event));
 
@@ -1621,26 +1590,6 @@ bool WebViewImpl::mapKeyCodeForScroll(
     }
 
     return true;
-}
-
-void WebViewImpl::hideSelectPopup()
-{
-    if (m_selectPopup)
-        m_selectPopup->hidePopup();
-}
-
-void WebViewImpl::popupOpened(PopupContainer* popupContainer)
-{
-    ASSERT(!m_selectPopup);
-    m_selectPopup = popupContainer;
-    enablePopupMouseWheelEventListener();
-}
-
-void WebViewImpl::popupClosed(PopupContainer* popupContainer)
-{
-    ASSERT(m_selectPopup);
-    m_selectPopup = nullptr;
-    disablePopupMouseWheelEventListener();
 }
 
 PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client)
@@ -3814,7 +3763,6 @@ void WebViewImpl::extractSmartClipData(WebRect rectInViewport, WebString& clipTe
 
 void WebViewImpl::hidePopups()
 {
-    hideSelectPopup();
     cancelPagePopup();
 }
 

@@ -73,7 +73,6 @@ class InspectorOverlay;
 class InspectorOverlayImpl;
 class LinkHighlight;
 class PageScaleConstraintsSet;
-class PopupContainer;
 class DeprecatedPaintLayerCompositor;
 class TopControls;
 class UserGestureToken;
@@ -426,9 +425,6 @@ public:
         const WebImage& dragImage,
         const WebPoint& dragImageOffset);
 
-    // Notification that a popup was opened/closed.
-    void popupOpened(PopupContainer*);
-    void popupClosed(PopupContainer*);
     PagePopup* openPagePopup(PagePopupClient*);
     void closePagePopup(PagePopup*);
     LocalDOMWindow* pagePopupWindow() const;
@@ -452,8 +448,7 @@ public:
 
     virtual void setVisibilityState(WebPageVisibilityState, bool) override;
 
-    PopupContainer* selectPopup() const { return m_selectPopup.get(); }
-    bool hasOpenedPopup() const { return m_selectPopup || m_pagePopup; }
+    bool hasOpenedPopup() const { return m_pagePopup; }
 
     // Returns true if the event leads to scrolling.
     static bool mapKeyCodeForScroll(
@@ -709,10 +704,7 @@ private:
     // current drop target in this WebView (the drop target can accept the drop).
     WebDragOperation m_dragOperation;
 
-    // The popup associated with a select element.
-    RefPtrWillBePersistent<PopupContainer> m_selectPopup;
-
-    // The popup associated with an input element.
+    // The popup associated with an input/select element.
     RefPtr<WebPagePopupImpl> m_pagePopup;
 
     OwnPtrWillBePersistent<InspectorOverlayImpl> m_inspectorOverlay;

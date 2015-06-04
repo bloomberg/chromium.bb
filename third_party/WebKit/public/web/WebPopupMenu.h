@@ -38,9 +38,10 @@ namespace blink {
 
 class WebWidgetClient;
 
+// TODO(tkent): Remove this class and WebPopupTypeSelect.
 class WebPopupMenu : public WebWidget {
 public:
-    BLINK_EXPORT static WebPopupMenu* create(WebWidgetClient*);
+    static WebPopupMenu* create(WebWidgetClient*) { return nullptr; }
 };
 
 } // namespace blink
