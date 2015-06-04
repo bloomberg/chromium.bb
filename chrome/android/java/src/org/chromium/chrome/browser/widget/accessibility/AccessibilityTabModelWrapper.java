@@ -138,9 +138,13 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
         if (incognitoSelected) {
             mIncognitoButton.setBackgroundResource(R.drawable.btn_bg_holo_active);
             mStandardButton.setBackgroundResource(R.drawable.btn_bg_holo);
+            mAccessibilityView.setContentDescription(getContext().getString(
+                    R.string.accessibility_tab_switcher_incognito_stack));
         } else {
             mIncognitoButton.setBackgroundResource(R.drawable.btn_bg_holo);
             mStandardButton.setBackgroundResource(R.drawable.btn_bg_holo_active);
+            mAccessibilityView.setContentDescription(getContext().getString(
+                    R.string.accessibility_tab_switcher_standard_stack));
         }
 
         getAdapter().setTabModel(mTabModelSelector.getModel(incognitoSelected));
