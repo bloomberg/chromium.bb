@@ -684,6 +684,13 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(LayoutObject
 void LayoutMultiColumnFlowThread::flowThreadDescendantStyleWillChange(LayoutObject* descendant, StyleDifference diff, const ComputedStyle& newStyle)
 {
     // If an in-flow descendant goes out-of-flow, we may have to remove a column set.
+    if (descendant->isText()) {
+        // Text nodes inherit all properties from the parent node (including non-inheritable
+        // ones). We don't care what its 'position' is. In fact, we _must_ ignore it, since the
+        // parent may be the multicol container, and having that accidentally leaked into children
+        // of the multicol is bad.
+        return;
+    }
     if (newStyle.hasOutOfFlowPosition() && !styleRef().hasOutOfFlowPosition())
         flowThreadDescendantWillBeRemoved(descendant);
 }
@@ -691,6 +698,13 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantStyleWillChange(LayoutObje
 void LayoutMultiColumnFlowThread::flowThreadDescendantStyleDidChange(LayoutObject* descendant, StyleDifference diff, const ComputedStyle& oldStyle)
 {
     // If an out-of-flow descendant goes in-flow, we may have to insert a column set.
+    if (descendant->isText()) {
+        // Text nodes inherit all properties from the parent node (including non-inheritable
+        // ones). We don't care what its 'position' is. In fact, we _must_ ignore it, since the
+        // parent may be the multicol container, and having that accidentally leaked into children
+        // of the multicol is bad.
+        return;
+    }
     if (oldStyle.hasOutOfFlowPosition() && !styleRef().hasOutOfFlowPosition())
         flowThreadDescendantWasInserted(descendant);
 }
