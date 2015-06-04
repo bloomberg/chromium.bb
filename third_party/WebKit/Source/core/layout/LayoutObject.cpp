@@ -1505,12 +1505,6 @@ void LayoutObject::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject*
     }
 
     if (LayoutObject* o = parent()) {
-        if (o->isLayoutBlockFlow()) {
-            LayoutBlock* cb = toLayoutBlock(o);
-            if (cb->hasColumns())
-                cb->adjustRectForColumns(rect);
-        }
-
         if (o->hasOverflowClip()) {
             LayoutBox* boxParent = toLayoutBox(o);
             boxParent->applyCachedClipAndScrollOffsetForPaintInvalidation(rect);
@@ -1981,14 +1975,6 @@ void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
             continue;
 
         RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(styleRef(), child->style()->display());
-        if (!RuntimeEnabledFeatures::regionBasedColumnsEnabled()) {
-            if (style()->specifiesColumns()) {
-                if (child->style()->specifiesColumns())
-                    newStyle->inheritColumnPropertiesFrom(styleRef());
-                if (child->style()->columnSpan())
-                    newStyle->setColumnSpan(ColumnSpanAll);
-            }
-        }
 
         // Preserve the position style of anonymous block continuations as they can have relative position when
         // they contain block descendants of relative positioned inlines.
@@ -2079,7 +2065,7 @@ void LayoutObject::mapLocalToContainer(const LayoutBoxModelObject* paintInvalida
     LayoutPoint centerPoint = roundedLayoutPoint(transformState.mappedPoint());
     if (mode & ApplyContainerFlip && o->isBox()) {
         if (o->style()->isFlippedBlocksWritingMode())
-            transformState.move(toLayoutBox(o)->flipForWritingModeIncludingColumns(roundedLayoutPoint(transformState.mappedPoint())) - centerPoint);
+            transformState.move(toLayoutBox(o)->flipForWritingMode(roundedLayoutPoint(transformState.mappedPoint())) - centerPoint);
         mode &= ~ApplyContainerFlip;
     }
 
@@ -2104,7 +2090,7 @@ const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutBoxModelObj
     if (container->hasOverflowClip())
         offset = -LayoutSize(toLayoutBox(container)->scrolledContentOffset());
 
-    geometryMap.push(this, offset, hasColumns());
+    geometryMap.push(this, offset);
 
     return container;
 }
@@ -2196,7 +2182,7 @@ LayoutSize LayoutObject::offsetFromContainer(const LayoutObject* o, const Layout
         offset -= toLayoutBox(o)->scrolledContentOffset();
 
     if (offsetDependsOnPoint)
-        *offsetDependsOnPoint = hasColumns() || o->isLayoutFlowThread();
+        *offsetDependsOnPoint = o->isLayoutFlowThread();
 
     return offset;
 }

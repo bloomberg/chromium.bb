@@ -204,7 +204,7 @@ static bool canMapBetweenLayoutObjects(const LayoutObject* layoutObject, const L
         if (style.position() == FixedPosition || style.isFlippedBlocksWritingMode())
             return false;
 
-        if (current->hasColumns() || current->hasTransformRelatedProperty() || current->isLayoutFlowThread() || current->isSVGRoot())
+        if (current->hasTransformRelatedProperty() || current->isLayoutFlowThread() || current->isSVGRoot())
             return false;
 
         if (current == ancestor)

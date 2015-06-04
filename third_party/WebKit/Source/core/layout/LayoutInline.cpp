@@ -1101,16 +1101,6 @@ void LayoutInline::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject*
 
     LayoutPoint topLeft = rect.location();
 
-    if (o->isLayoutBlockFlow() && !style()->hasOutOfFlowPosition()) {
-        LayoutBlock* cb = toLayoutBlock(o);
-        if (cb->hasColumns()) {
-            LayoutRect paintInvalidationRect(topLeft, rect.size());
-            cb->adjustRectForColumns(paintInvalidationRect);
-            topLeft = paintInvalidationRect.location();
-            rect = paintInvalidationRect;
-        }
-    }
-
     if (style()->hasInFlowPosition() && layer()) {
         // Apply the in-flow position offset when invalidating a rectangle. The layer
         // is translated, but the layout box isn't, so we need to do this to get the
@@ -1152,11 +1142,8 @@ LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container, cons
     if (container->hasOverflowClip())
         offset -= toLayoutBox(container)->scrolledContentOffset();
 
-    if (offsetDependsOnPoint) {
-        *offsetDependsOnPoint = container->hasColumns()
-            || (container->isBox() && container->style()->isFlippedBlocksWritingMode())
-            || container->isLayoutFlowThread();
-    }
+    if (offsetDependsOnPoint)
+        *offsetDependsOnPoint = (container->isBox() && container->style()->isFlippedBlocksWritingMode()) || container->isLayoutFlowThread();
 
     return offset;
 }
@@ -1182,7 +1169,7 @@ void LayoutInline::mapLocalToContainer(const LayoutBoxModelObject* paintInvalida
     if (mode & ApplyContainerFlip && o->isBox()) {
         if (o->style()->isFlippedBlocksWritingMode()) {
             IntPoint centerPoint = roundedIntPoint(transformState.mappedPoint());
-            transformState.move(toLayoutBox(o)->flipForWritingModeIncludingColumns(centerPoint) - centerPoint);
+            transformState.move(toLayoutBox(o)->flipForWritingMode(LayoutPoint(centerPoint)) - centerPoint);
         }
         mode &= ~ApplyContainerFlip;
     }

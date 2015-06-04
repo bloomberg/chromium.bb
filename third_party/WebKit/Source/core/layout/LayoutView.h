@@ -68,8 +68,6 @@ public:
     virtual void updateLogicalWidth() override;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
 
-    virtual LayoutUnit availableLogicalHeight(AvailableLogicalHeightType) const override;
-
     // Based on FrameView::layoutSize, but:
     // - checks for null FrameView
     // - returns 0x0 if using printing layout

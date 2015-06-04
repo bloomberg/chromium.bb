@@ -118,7 +118,6 @@ PushMessaging status=stable
 PushMessagingData status=test
 QuotaPromise status=experimental
 ReducedReferrerGranularity
-RegionBasedColumns status=stable
 RequestAutocomplete status=test
 SandboxBlocksModals status=experimental
 ScreenOrientation status=stable

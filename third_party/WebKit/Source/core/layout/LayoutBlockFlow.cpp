@@ -153,7 +153,7 @@ static bool inNormalFlow(LayoutBox* child)
     LayoutBlock* curr = child->containingBlock();
     LayoutView* layoutView = child->view();
     while (curr && curr != layoutView) {
-        if (curr->hasColumns() || curr->isLayoutFlowThread())
+        if (curr->isLayoutFlowThread())
             return true;
         if (curr->isFloatingOrOutOfFlowPositioned())
             return false;
@@ -209,29 +209,6 @@ void LayoutBlockFlow::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogi
         LayoutUnit columnHeight = computedValues.m_extent - borderAndPaddingLogicalHeight() - scrollbarLogicalHeight();
         pageLogicalHeightChanged = columnHeight != flowThread->columnHeightAvailable();
         flowThread->setColumnHeightAvailable(std::max<LayoutUnit>(columnHeight, 0));
-    } else if (hasColumns()) {
-        ColumnInfo* colInfo = columnInfo();
-
-        if (!pageLogicalHeight) {
-            LayoutUnit oldLogicalHeight = logicalHeight();
-            setLogicalHeight(0);
-            // We need to go ahead and set our explicit page height if one exists, so that we can
-            // avoid doing two layout passes.
-            updateLogicalHeight();
-            LayoutUnit columnHeight = contentLogicalHeight();
-            if (columnHeight > 0) {
-                pageLogicalHeight = columnHeight;
-                hasSpecifiedPageLogicalHeight = true;
-            }
-            setLogicalHeight(oldLogicalHeight);
-        }
-        if (colInfo->columnHeight() != pageLogicalHeight && everHadLayout()) {
-            colInfo->setColumnHeight(pageLogicalHeight);
-            pageLogicalHeightChanged = true;
-        }
-
-        if (!hasSpecifiedPageLogicalHeight && !pageLogicalHeight)
-            colInfo->clearForcedBreaks();
     } else if (isLayoutFlowThread()) {
         LayoutFlowThread* flowThread = toLayoutFlowThread(this);
 
@@ -247,47 +224,6 @@ void LayoutBlockFlow::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogi
         pageLogicalHeight = flowThread->isPageLogicalHeightKnown() ? LayoutUnit(1) : LayoutUnit();
 
         pageLogicalHeightChanged = flowThread->pageLogicalSizeChanged();
-    }
-}
-
-bool LayoutBlockFlow::shouldRelayoutForPagination(LayoutUnit& pageLogicalHeight, LayoutUnit layoutOverflowLogicalBottom) const
-{
-    // FIXME: We don't balance properly at all in the presence of forced page breaks. We need to understand what
-    // the distance between forced page breaks is so that we can avoid making the minimum column height too tall.
-    ColumnInfo* colInfo = columnInfo();
-    LayoutUnit columnHeight = pageLogicalHeight;
-    const int minColumnCount = colInfo->forcedBreaks() + 1;
-    const int desiredColumnCount = colInfo->desiredColumnCount();
-    if (minColumnCount >= desiredColumnCount) {
-        // The forced page breaks are in control of the balancing. Just set the column height to the
-        // maximum page break distance.
-        if (!pageLogicalHeight) {
-            LayoutUnit distanceBetweenBreaks = std::max<LayoutUnit>(colInfo->maximumDistanceBetweenForcedBreaks(),
-                view()->layoutState()->pageLogicalOffset(*this, borderBefore() + paddingBefore() + layoutOverflowLogicalBottom) - colInfo->forcedBreakOffset());
-            columnHeight = std::max(colInfo->minimumColumnHeight(), distanceBetweenBreaks);
-        }
-    } else if (layoutOverflowLogicalBottom > boundedMultiply(pageLogicalHeight, desiredColumnCount)) {
-        // Now that we know the intrinsic height of the columns, we have to rebalance them.
-        columnHeight = std::max<LayoutUnit>(colInfo->minimumColumnHeight(), ceilf(layoutOverflowLogicalBottom.toFloat() / desiredColumnCount));
-    }
-
-    if (columnHeight && columnHeight != pageLogicalHeight) {
-        pageLogicalHeight = columnHeight;
-        return true;
-    }
-
-    return false;
-}
-
-void LayoutBlockFlow::setColumnCountAndHeight(unsigned count, LayoutUnit pageLogicalHeight)
-{
-    ColumnInfo* colInfo = columnInfo();
-    if (pageLogicalHeight)
-        colInfo->setColumnCountAndHeight(count, pageLogicalHeight);
-
-    if (columnCount(colInfo)) {
-        setLogicalHeight(borderBefore() + paddingBefore() + colInfo->columnHeight() + borderAfter() + paddingAfter() + scrollbarLogicalHeight());
-        m_overflow.clear();
     }
 }
 
@@ -349,10 +285,8 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
     LayoutAnalyzer::BlockScope analyzer(*this);
     SubtreeLayoutScope layoutScope(*this);
 
-    // Multiple passes might be required for column and pagination based layout
-    // In the case of the old column code the number of passes will only be two
-    // however, in the newer column code the number of passes could equal the
-    // number of columns.
+    // Multiple passes might be required for column based layout.
+    // The number of passes could be as high as the number of columns.
     bool done = false;
     LayoutUnit pageLogicalHeight = 0;
     while (!done)
@@ -399,7 +333,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (pageLogicalHeightChanged)
         relayoutChildren = true;
 
-    LayoutState state(*this, locationOffset(), pageLogicalHeight, pageLogicalHeightChanged, columnInfo(), logicalWidthChanged);
+    LayoutState state(*this, locationOffset(), pageLogicalHeight, pageLogicalHeightChanged, logicalWidthChanged);
 
     // We use four values, maxTopPos, maxTopNeg, maxBottomPos, and maxBottomNeg, to track
     // our current maximal positive and negative margins. These values are used when we
@@ -444,21 +378,6 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
             setChildNeedsLayout(MarkOnlyThis);
             return false;
         }
-    } else if (hasColumns()) {
-        OwnPtr<OverflowModel> savedOverflow = m_overflow.release();
-        if (childrenInline())
-            addOverflowFromInlineChildren();
-        else
-            addOverflowFromBlockChildren();
-        LayoutUnit layoutOverflowLogicalBottom = (isHorizontalWritingMode() ? layoutOverflowRect().maxY() : layoutOverflowRect().maxX()) - borderBefore() - paddingBefore();
-        m_overflow = savedOverflow.release();
-
-        if (!hasSpecifiedPageLogicalHeight && shouldRelayoutForPagination(pageLogicalHeight, layoutOverflowLogicalBottom)) {
-            setEverHadLayout(true);
-            return false;
-        }
-
-        setColumnCountAndHeight(ceilf(layoutOverflowLogicalBottom.toFloat() / pageLogicalHeight.toFloat()), pageLogicalHeight.toFloat());
     }
 
     if (shouldBreakAtLineToAvoidWidow()) {
@@ -868,7 +787,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
 
 LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(LayoutBox& child, LayoutUnit logicalOffset, bool includeMargins)
 {
-    bool checkColumnBreaks = view()->layoutState()->isPaginatingColumns() || flowThreadContainingBlock();
+    bool checkColumnBreaks = flowThreadContainingBlock();
     bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight();
     bool isUnsplittable = child.isUnsplittableForPagination() || (checkColumnBreaks && child.style()->columnBreakInside() == PBAVOID)
         || (checkPageBreaks && child.style()->pageBreakInside() == PBAVOID);
@@ -1731,20 +1650,15 @@ LayoutUnit LayoutBlockFlow::applyBeforeBreak(LayoutBox& child, LayoutUnit logica
 {
     // FIXME: Add page break checking here when we support printing.
     LayoutFlowThread* flowThread = flowThreadContainingBlock();
-    bool isInsideMulticolFlowThread = flowThread;
-    bool checkColumnBreaks = isInsideMulticolFlowThread || view()->layoutState()->isPaginatingColumns();
+    bool checkColumnBreaks = flowThread;
     bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // FIXME: Once columns can print we have to check this.
     bool checkBeforeAlways = (checkColumnBreaks && child.style()->columnBreakBefore() == PBALWAYS)
         || (checkPageBreaks && child.style()->pageBreakBefore() == PBALWAYS);
     if (checkBeforeAlways && inNormalFlow(&child)) {
         if (checkColumnBreaks) {
-            if (isInsideMulticolFlowThread) {
-                LayoutUnit offsetBreakAdjustment = 0;
-                if (flowThread->addForcedColumnBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset, &child, true, &offsetBreakAdjustment))
-                    return logicalOffset + offsetBreakAdjustment;
-            } else {
-                view()->layoutState()->addForcedColumnBreak(child, logicalOffset);
-            }
+            LayoutUnit offsetBreakAdjustment = 0;
+            if (flowThread->addForcedColumnBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset, &child, true, &offsetBreakAdjustment))
+                return logicalOffset + offsetBreakAdjustment;
         }
         return nextPageLogicalTop(logicalOffset, IncludePageBoundary);
     }
@@ -1755,8 +1669,7 @@ LayoutUnit LayoutBlockFlow::applyAfterBreak(LayoutBox& child, LayoutUnit logical
 {
     // FIXME: Add page break checking here when we support printing.
     LayoutFlowThread* flowThread = flowThreadContainingBlock();
-    bool isInsideMulticolFlowThread = flowThread;
-    bool checkColumnBreaks = isInsideMulticolFlowThread || view()->layoutState()->isPaginatingColumns();
+    bool checkColumnBreaks = flowThread;
     bool checkPageBreaks = !checkColumnBreaks && view()->layoutState()->pageLogicalHeight(); // FIXME: Once columns can print we have to check this.
     bool checkAfterAlways = (checkColumnBreaks && child.style()->columnBreakAfter() == PBALWAYS)
         || (checkPageBreaks && child.style()->pageBreakAfter() == PBALWAYS);
@@ -1765,13 +1678,9 @@ LayoutUnit LayoutBlockFlow::applyAfterBreak(LayoutBox& child, LayoutUnit logical
         marginInfo.clearMargin();
 
         if (checkColumnBreaks) {
-            if (isInsideMulticolFlowThread) {
-                LayoutUnit offsetBreakAdjustment = 0;
-                if (flowThread->addForcedColumnBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset, &child, false, &offsetBreakAdjustment))
-                    return logicalOffset + offsetBreakAdjustment;
-            } else {
-                view()->layoutState()->addForcedColumnBreak(child, logicalOffset);
-            }
+            LayoutUnit offsetBreakAdjustment = 0;
+            if (flowThread->addForcedColumnBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset, &child, false, &offsetBreakAdjustment))
+                return logicalOffset + offsetBreakAdjustment;
         }
         return nextPageLogicalTop(logicalOffset, IncludePageBoundary);
     }
@@ -1795,7 +1704,7 @@ void LayoutBlockFlow::addOverflowFromFloats()
 void LayoutBlockFlow::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeFloats)
 {
     LayoutBlock::computeOverflow(oldClientAfterEdge, recomputeFloats);
-    if (!hasColumns() && (recomputeFloats || createsNewFormattingContext() || hasSelfPaintingLayer()))
+    if (recomputeFloats || createsNewFormattingContext() || hasSelfPaintingLayer())
         addOverflowFromFloats();
 }
 
@@ -2110,9 +2019,6 @@ void LayoutBlockFlow::invalidatePaintForOverflow()
         paintInvalidationRect = LayoutRect(paintInvalidationLogicalLeft, m_paintInvalidationLogicalTop, paintInvalidationLogicalRight - paintInvalidationLogicalLeft, m_paintInvalidationLogicalBottom - m_paintInvalidationLogicalTop);
     else
         paintInvalidationRect = LayoutRect(m_paintInvalidationLogicalTop, paintInvalidationLogicalLeft, m_paintInvalidationLogicalBottom - m_paintInvalidationLogicalTop, paintInvalidationLogicalRight - paintInvalidationLogicalLeft);
-
-    // The paint invalidation rect may be split across columns, in which case adjustRectForColumns() will return the union.
-    adjustRectForColumns(paintInvalidationRect);
 
     if (hasOverflowClip()) {
         // Adjust the paint invalidation rect for scroll offset
@@ -2506,7 +2412,7 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width)
 
 bool LayoutBlockFlow::hasOverhangingFloat(LayoutBox* layoutBox)
 {
-    if (!m_floatingObjects || hasColumns() || !parent())
+    if (!m_floatingObjects || !parent())
         return false;
 
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
@@ -2752,7 +2658,7 @@ GapRects LayoutBlockFlow::selectionGaps(const LayoutBlock* rootBlock, const Layo
 
     GapRects result;
 
-    if (hasColumns() || hasTransformRelatedProperty() || style()->columnSpan())
+    if (hasTransformRelatedProperty() || style()->columnSpan())
         return result;
 
     if (childrenInline())
@@ -3068,9 +2974,6 @@ LayoutMultiColumnFlowThread* LayoutBlockFlow::createMultiColumnFlowThread(FlowTh
 
 void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(const ComputedStyle* oldStyle)
 {
-    if (!RuntimeEnabledFeatures::regionBasedColumnsEnabled())
-        return;
-
     // Paged overflow trumps multicol in this implementation. Ideally, it should be possible to have
     // both paged overflow and multicol on the same element, but then we need two flow
     // threads. Anyway, this is nothing to worry about until we can actually nest multicol properly

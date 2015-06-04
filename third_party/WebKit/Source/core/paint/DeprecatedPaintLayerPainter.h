@@ -40,8 +40,6 @@ private:
     void paintFragmentByApplyingTransform(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& fragmentTranslation);
 
     void paintChildren(unsigned childrenToVisit, GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags);
-    void paintPaginatedChildLayer(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags);
-    void paintChildLayerIntoColumns(GraphicsContext*, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags, const Vector<DeprecatedPaintLayer*>& columnLayers, size_t columnIndex);
     bool atLeastOneFragmentIntersectsDamageRect(DeprecatedPaintLayerFragments&, const DeprecatedPaintLayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& offsetFromRoot);
     void paintFragmentWithPhase(PaintPhase, const DeprecatedPaintLayerFragment&, GraphicsContext*, const ClipRect&, const DeprecatedPaintLayerPaintingInfo&, PaintBehavior, LayoutObject* paintingRootForLayoutObject, PaintLayerFlags, ClipState);
     void paintBackgroundForFragments(const DeprecatedPaintLayerFragments&, GraphicsContext*,

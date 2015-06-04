@@ -53,7 +53,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElement.h"
-#include "core/layout/ColumnInfo.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/HitTestingTransformState.h"
@@ -110,7 +109,6 @@ DeprecatedPaintLayer::DeprecatedPaintLayer(LayoutBoxModelObject* layoutObject, D
     , m_visibleDescendantStatusDirty(false)
     , m_hasVisibleDescendant(false)
     , m_hasVisibleNonLayerContent(false)
-    , m_isPaginated(false)
 #if ENABLE(ASSERT)
     , m_needsPositionUpdate(true)
 #endif
@@ -244,8 +242,7 @@ void DeprecatedPaintLayer::updateLayerPositionsAfterLayout()
         // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
         // https://code.google.com/p/chromium/issues/detail?id=343756
         DisableCompositingQueryAsserts disabler;
-        bool needsPaginationUpdate = isPaginated() || enclosingPaginationLayer();
-        updatePaginationRecursive(needsPaginationUpdate);
+        updatePaginationRecursive(enclosingPaginationLayer());
     }
 }
 
@@ -429,28 +426,6 @@ TransformationMatrix DeprecatedPaintLayer::renderableTransform(PaintBehavior pai
     return *m_transform;
 }
 
-static bool checkContainingBlockChainForPagination(LayoutBoxModelObject* layoutObject, LayoutBox* ancestorColumnsLayoutObject)
-{
-    LayoutView* view = layoutObject->view();
-    LayoutBoxModelObject* prevBlock = layoutObject;
-    LayoutBlock* containingBlock;
-    for (containingBlock = layoutObject->containingBlock();
-        containingBlock && containingBlock != view && containingBlock != ancestorColumnsLayoutObject;
-        containingBlock = containingBlock->containingBlock())
-        prevBlock = containingBlock;
-
-    // If the columns block wasn't in our containing block chain, then we aren't paginated by it.
-    if (containingBlock != ancestorColumnsLayoutObject)
-        return false;
-
-    // If the previous block is absolutely positioned, then we can't be paginated by the columns block.
-    if (prevBlock->isOutOfFlowPositioned())
-        return false;
-
-    // Otherwise we are paginated by the columns block.
-    return true;
-}
-
 // Convert a bounding box from flow thread coordinates, relative to |layer|, to visual coordinates, relative to |ancestorLayer|.
 // See http://www.chromium.org/developers/design-documents/multi-column-layout for more info on these coordinate types.
 static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const DeprecatedPaintLayer* layer, const DeprecatedPaintLayer* ancestorLayer, LayoutRect& rect)
@@ -481,17 +456,13 @@ static void convertFromFlowThreadToVisualBoundingBoxInAncestor(const DeprecatedP
 
 void DeprecatedPaintLayer::updatePaginationRecursive(bool needsPaginationUpdate)
 {
-    m_isPaginated = false;
     m_enclosingPaginationLayer = 0;
 
-    if (RuntimeEnabledFeatures::regionBasedColumnsEnabled() && layoutObject()->isLayoutFlowThread())
+    if (layoutObject()->isLayoutFlowThread())
         needsPaginationUpdate = true;
 
     if (needsPaginationUpdate)
         updatePagination();
-
-    if (layoutObject()->hasColumns())
-        needsPaginationUpdate = true;
 
     for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling())
         child->updatePaginationRecursive(needsPaginationUpdate);
@@ -499,71 +470,49 @@ void DeprecatedPaintLayer::updatePaginationRecursive(bool needsPaginationUpdate)
 
 void DeprecatedPaintLayer::updatePagination()
 {
-    bool usesRegionBasedColumns = RuntimeEnabledFeatures::regionBasedColumnsEnabled();
-    if ((!usesRegionBasedColumns && compositingState() != NotComposited) || !parent())
+    if (!parent())
         return; // FIXME: For now the LayoutView can't be paginated.  Eventually printing will move to a model where it is though.
 
-    // The main difference between the paginated booleans for the old column code and the new column code
-    // is that each paginated layer has to paint on its own with the new code. There is no
-    // recurring into child layers. This means that the m_isPaginated bits for the new column code can't just be set on
-    // "roots" that get split and paint all their descendants. Instead each layer has to be checked individually and
-    // genuinely know if it is going to have to split itself up when painting only its contents (and not any other descendant
-    // layers). We track an enclosingPaginationLayer instead of using a simple bit, since we want to be able to get back
+    // Each paginated layer has to paint on its own. There is no recurring into child layers. Each
+    // layer has to be checked individually and genuinely know if it is going to have to split
+    // itself up when painting only its contents (and not any other descendant layers). We track an
+    // enclosingPaginationLayer instead of using a simple bit, since we want to be able to get back
     // to that layer easily.
-    if (usesRegionBasedColumns && layoutObject()->isLayoutFlowThread()) {
+    if (layoutObject()->isLayoutFlowThread()) {
         m_enclosingPaginationLayer = this;
         return;
     }
 
     if (m_stackingNode->isNormalFlowOnly()) {
-        if (usesRegionBasedColumns) {
-            // We cannot take the fast path for spanners, as they do not have their nearest ancestor
-            // pagination layer (flow thread) in their containing block chain.
-            if (!layoutObject()->isColumnSpanAll()) {
-                // Content inside a transform is not considered to be paginated, since we simply
-                // paint the transform multiple times in each column, so we don't have to use
-                // fragments for the transformed content.
-                m_enclosingPaginationLayer = parent()->enclosingPaginationLayer();
-                if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransformRelatedProperty())
-                    m_enclosingPaginationLayer = 0;
-                return;
-            }
-        } else {
-            m_isPaginated = parent()->layoutObject()->hasColumns();
+        // We cannot take the fast path for spanners, as they do not have their nearest ancestor
+        // pagination layer (flow thread) in their containing block chain.
+        if (!layoutObject()->isColumnSpanAll()) {
+            // Content inside a transform is not considered to be paginated, since we simply
+            // paint the transform multiple times in each column, so we don't have to use
+            // fragments for the transformed content.
+            m_enclosingPaginationLayer = parent()->enclosingPaginationLayer();
+            if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransformRelatedProperty())
+                m_enclosingPaginationLayer = 0;
             return;
         }
     }
 
-    // For the new columns code, we want to walk up our containing block chain looking for an enclosing layer. Once
-    // we find one, then we just check its pagination status.
-    if (usesRegionBasedColumns) {
-        LayoutView* view = layoutObject()->view();
-        LayoutBlock* containingBlock;
-        for (containingBlock = layoutObject()->containingBlock();
-            containingBlock && containingBlock != view;
-            containingBlock = containingBlock->containingBlock()) {
-            if (containingBlock->hasLayer()) {
-                // Content inside a transform is not considered to be paginated, since we simply
-                // paint the transform multiple times in each column, so we don't have to use
-                // fragments for the transformed content.
-                m_enclosingPaginationLayer = containingBlock->layer()->enclosingPaginationLayer();
-                if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransformRelatedProperty())
-                    m_enclosingPaginationLayer = 0;
-                return;
-            }
-        }
-        return;
-    }
-
-    // If we're not normal flow, then we need to look for a multi-column object between us and our stacking container.
-    DeprecatedPaintLayerStackingNode* ancestorStackingContextNode = m_stackingNode->ancestorStackingContextNode();
-    for (DeprecatedPaintLayer* curr = parent(); curr; curr = curr->parent()) {
-        if (curr->layoutObject()->hasColumns()) {
-            m_isPaginated = checkContainingBlockChainForPagination(layoutObject(), curr->layoutBox());
+    // Walk up our containing block chain looking for an enclosing layer. Once we find one, then we
+    // just check its pagination status.
+    LayoutView* view = layoutObject()->view();
+    LayoutBlock* containingBlock;
+    for (containingBlock = layoutObject()->containingBlock();
+        containingBlock && containingBlock != view;
+        containingBlock = containingBlock->containingBlock()) {
+        if (containingBlock->hasLayer()) {
+            // Content inside a transform is not considered to be paginated, since we simply
+            // paint the transform multiple times in each column, so we don't have to use
+            // fragments for the transformed content.
+            m_enclosingPaginationLayer = containingBlock->layer()->enclosingPaginationLayer();
+            if (m_enclosingPaginationLayer && m_enclosingPaginationLayer->hasTransformRelatedProperty())
+                m_enclosingPaginationLayer = 0;
             return;
         }
-        if (curr->stackingNode() == ancestorStackingContextNode)
-            return;
     }
 }
 
@@ -847,24 +796,9 @@ bool DeprecatedPaintLayer::updateLayerPosition()
             LayoutSize offset = toLayoutInline(positionedParent->layoutObject())->offsetForInFlowPositionedInline(*toLayoutBox(layoutObject()));
             localPoint += offset;
         }
-    } else if (parent()) {
-        // FIXME: This code is very wrong, but luckily only needed in the old/current multicol
-        // implementation. The compositing system doesn't understand columns and we're hacking
-        // around that fact by faking the position of the Layers when we think we'll end up
-        // being composited.
-        if (hasStyleDeterminedDirectCompositingReasons() && !RuntimeEnabledFeatures::regionBasedColumnsEnabled()) {
-            // FIXME: Composited layers ignore pagination, so about the best we can do is make sure they're offset into the appropriate column.
-            // They won't split across columns properly.
-            if (!parent()->layoutObject()->hasColumns() && parent()->layoutObject()->isDocumentElement() && layoutObject()->view()->hasColumns())
-                localPoint += layoutObject()->view()->columnOffset(localPoint);
-            else
-                localPoint += parent()->layoutObject()->columnOffset(localPoint);
-        }
-
-        if (parent()->layoutObject()->hasOverflowClip()) {
-            IntSize scrollOffset = parent()->layoutBox()->scrolledContentOffset();
-            localPoint -= scrollOffset;
-        }
+    } else if (parent() && parent()->layoutObject()->hasOverflowClip()) {
+        IntSize scrollOffset = parent()->layoutBox()->scrolledContentOffset();
+        localPoint -= scrollOffset;
     }
 
     bool positionOrOffsetChanged = false;
@@ -2081,10 +2015,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildren(ChildrenIteration ch
         DeprecatedPaintLayer* childLayer = child->layer();
         DeprecatedPaintLayer* hitLayer = 0;
         HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
-        if (childLayer->isPaginated())
-            hitLayer = hitTestPaginatedChildLayer(childLayer, rootLayer, tempResult, hitTestRect, hitTestLocation, transformState, zOffsetForDescendants);
-        else
-            hitLayer = childLayer->hitTestLayer(rootLayer, this, tempResult, hitTestRect, hitTestLocation, false, transformState, zOffsetForDescendants);
+        hitLayer = childLayer->hitTestLayer(rootLayer, this, tempResult, hitTestRect, hitTestLocation, false, transformState, zOffsetForDescendants);
 
         // If it is a list-based test, we can safely append the temporary result since it might had hit
         // nodes but not necesserily had hitLayer set.
@@ -2102,126 +2033,6 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildren(ChildrenIteration ch
     }
 
     return resultLayer;
-}
-
-DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestPaginatedChildLayer(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, HitTestResult& result,
-    const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset)
-{
-    Vector<DeprecatedPaintLayer*> columnLayers;
-    DeprecatedPaintLayerStackingNode* ancestorNode = m_stackingNode->isNormalFlowOnly() ? parent()->stackingNode() : m_stackingNode->ancestorStackingContextNode();
-    for (DeprecatedPaintLayer* curr = childLayer->parent(); curr; curr = curr->parent()) {
-        if (curr->layoutObject()->hasColumns() && checkContainingBlockChainForPagination(childLayer->layoutObject(), curr->layoutBox()))
-            columnLayers.append(curr);
-        if (curr->stackingNode() == ancestorNode)
-            break;
-    }
-
-    ASSERT(columnLayers.size());
-    return hitTestChildLayerColumns(childLayer, rootLayer, result, hitTestRect, hitTestLocation, transformState, zOffset,
-        columnLayers, columnLayers.size() - 1);
-}
-
-DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestChildLayerColumns(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, HitTestResult& result,
-    const LayoutRect& hitTestRect, const HitTestLocation& hitTestLocation, const HitTestingTransformState* transformState, double* zOffset,
-    const Vector<DeprecatedPaintLayer*>& columnLayers, size_t columnIndex)
-{
-    LayoutBlock* columnBlock = toLayoutBlock(columnLayers[columnIndex]->layoutObject());
-
-    ASSERT(columnBlock && columnBlock->hasColumns());
-    if (!columnBlock || !columnBlock->hasColumns())
-        return 0;
-
-    LayoutPoint layerOffset;
-    columnBlock->layer()->convertToLayerCoords(rootLayer, layerOffset);
-
-    ColumnInfo* colInfo = columnBlock->columnInfo();
-    int colCount = columnBlock->columnCount(colInfo);
-
-    // We have to go backwards from the last column to the first.
-    bool isHorizontal = columnBlock->style()->isHorizontalWritingMode();
-    LayoutUnit logicalLeft = columnBlock->logicalLeftOffsetForContent();
-    LayoutUnit currLogicalTopOffset = 0;
-    int i;
-    for (i = 0; i < colCount; i++) {
-        LayoutRect colRect = columnBlock->columnRectAt(colInfo, i);
-        LayoutUnit blockDelta =  (isHorizontal ? colRect.height() : colRect.width());
-        if (columnBlock->style()->isFlippedBlocksWritingMode())
-            currLogicalTopOffset += blockDelta;
-        else
-            currLogicalTopOffset -= blockDelta;
-    }
-    for (i = colCount - 1; i >= 0; i--) {
-        // For each rect, we clip to the rect, and then we adjust our coords.
-        LayoutRect colRect = columnBlock->columnRectAt(colInfo, i);
-        columnBlock->flipForWritingMode(colRect);
-        LayoutUnit currLogicalLeftOffset = (isHorizontal ? colRect.x() : colRect.y()) - logicalLeft;
-        LayoutUnit blockDelta =  (isHorizontal ? colRect.height() : colRect.width());
-        if (columnBlock->style()->isFlippedBlocksWritingMode())
-            currLogicalTopOffset -= blockDelta;
-        else
-            currLogicalTopOffset += blockDelta;
-
-        LayoutSize offset;
-        if (isHorizontal) {
-            if (colInfo->progressionAxis() == ColumnInfo::InlineAxis)
-                offset = LayoutSize(currLogicalLeftOffset, currLogicalTopOffset);
-            else
-                offset = LayoutSize(0, colRect.y() + currLogicalTopOffset - columnBlock->borderTop() - columnBlock->paddingTop());
-        } else {
-            if (colInfo->progressionAxis() == ColumnInfo::InlineAxis)
-                offset = LayoutSize(currLogicalTopOffset, currLogicalLeftOffset);
-            else
-                offset = LayoutSize(colRect.x() + currLogicalTopOffset - columnBlock->borderLeft() - columnBlock->paddingLeft(), 0);
-        }
-
-        colRect.moveBy(layerOffset);
-
-        LayoutRect localClipRect(hitTestRect);
-        localClipRect.intersect(colRect);
-
-        if (!localClipRect.isEmpty() && hitTestLocation.intersects(localClipRect)) {
-            DeprecatedPaintLayer* hitLayer = 0;
-            if (!columnIndex) {
-                // Apply a translation transform to change where the layer paints.
-                TransformationMatrix oldTransform;
-                bool oldHasTransform = childLayer->transform();
-                if (oldHasTransform)
-                    oldTransform = *childLayer->transform();
-                TransformationMatrix newTransform(oldTransform);
-                newTransform.translateRight(offset.width(), offset.height());
-
-                childLayer->m_transform = adoptPtr(new TransformationMatrix(newTransform));
-                hitLayer = childLayer->hitTestLayer(rootLayer, columnLayers[0], result, localClipRect, hitTestLocation, false, transformState, zOffset);
-                if (oldHasTransform)
-                    childLayer->m_transform = adoptPtr(new TransformationMatrix(oldTransform));
-                else
-                    childLayer->m_transform.clear();
-            } else {
-                // Adjust the transform such that the layoutObjects's upper left corner will be at (0,0) in user space.
-                // This involves subtracting out the position of the layer in our current coordinate space.
-                DeprecatedPaintLayer* nextLayer = columnLayers[columnIndex - 1];
-                RefPtr<HitTestingTransformState> newTransformState = nextLayer->createLocalTransformState(rootLayer, nextLayer, localClipRect, hitTestLocation, transformState);
-                newTransformState->translate(offset.width(), offset.height(), HitTestingTransformState::AccumulateTransform);
-                FloatPoint localPoint = newTransformState->mappedPoint();
-                FloatQuad localPointQuad = newTransformState->mappedQuad();
-                LayoutRect localHitTestRect(newTransformState->mappedArea().enclosingBoundingBox());
-                HitTestLocation newHitTestLocation;
-                if (hitTestLocation.isRectBasedTest())
-                    newHitTestLocation = HitTestLocation(localPoint, localPointQuad);
-                else
-                    newHitTestLocation = HitTestLocation(localPoint);
-                newTransformState->flatten();
-
-                hitLayer = hitTestChildLayerColumns(childLayer, columnLayers[columnIndex - 1], result, localHitTestRect, newHitTestLocation,
-                    newTransformState.get(), zOffset, columnLayers, columnIndex - 1);
-            }
-
-            if (hitLayer)
-                return hitLayer;
-        }
-    }
-
-    return 0;
 }
 
 void DeprecatedPaintLayer::blockSelectionGapsBoundsChanged()
@@ -2442,7 +2253,7 @@ LayoutRect DeprecatedPaintLayer::boundingBoxForCompositing(const DeprecatedPaint
     // The layer created for the LayoutFlowThread is just a helper for painting and hit-testing,
     // and should not contribute to the bounding box. The LayoutMultiColumnSets will contribute
     // the correct size for the layout content of the multicol container.
-    if (RuntimeEnabledFeatures::regionBasedColumnsEnabled() && layoutObject()->isLayoutFlowThread())
+    if (layoutObject()->isLayoutFlowThread())
         return LayoutRect();
 
     LayoutRect result = clipper().localClipRect();

@@ -37,7 +37,6 @@ LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightCha
     , m_pageLogicalHeightChanged(pageLogicalHeightChanged)
     , m_containingBlockLogicalWidthChanged(false)
     , m_flowThread(0)
-    , m_columnInfo(0)
     , m_next(0)
     , m_pageLogicalHeight(pageLogicalHeight)
     , m_layoutObject(view)
@@ -46,9 +45,8 @@ LayoutState::LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightCha
     view.pushLayoutState(*this);
 }
 
-LayoutState::LayoutState(LayoutBox& layoutObject, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, ColumnInfo* columnInfo, bool containingBlockLogicalWidthChanged)
+LayoutState::LayoutState(LayoutBox& layoutObject, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, bool containingBlockLogicalWidthChanged)
     : m_containingBlockLogicalWidthChanged(containingBlockLogicalWidthChanged)
-    , m_columnInfo(columnInfo)
     , m_next(layoutObject.view()->layoutState())
     , m_layoutObject(layoutObject)
 {
@@ -76,7 +74,7 @@ LayoutState::LayoutState(LayoutBox& layoutObject, const LayoutSize& offset, Layo
     }
     // If we establish a new page height, then cache the offset to the top of the first page.
     // We can compare this later on to figure out what part of the page we're actually on,
-    if (pageLogicalHeight || m_columnInfo || layoutObject.isLayoutFlowThread()) {
+    if (pageLogicalHeight || layoutObject.isLayoutFlowThread()) {
         m_pageLogicalHeight = pageLogicalHeight;
         bool isFlipped = layoutObject.style()->isFlippedBlocksWritingMode();
         m_pageOffset = LayoutSize(m_layoutOffset.width() + (!isFlipped ? layoutObject.borderLeft() + layoutObject.paddingLeft() : layoutObject.borderRight() + layoutObject.paddingRight()),
@@ -100,12 +98,9 @@ LayoutState::LayoutState(LayoutBox& layoutObject, const LayoutSize& offset, Layo
             m_pageLogicalHeight = 0;
             m_isPaginated = false;
         } else {
-            m_isPaginated = m_pageLogicalHeight || m_next->m_columnInfo || layoutObject.flowThreadContainingBlock();
+            m_isPaginated = m_pageLogicalHeight || layoutObject.flowThreadContainingBlock();
         }
     }
-
-    if (!m_columnInfo)
-        m_columnInfo = m_next->m_columnInfo;
 
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
@@ -115,7 +110,6 @@ LayoutState::LayoutState(LayoutObject& root)
     , m_pageLogicalHeightChanged(false)
     , m_containingBlockLogicalWidthChanged(false)
     , m_flowThread(0)
-    , m_columnInfo(0)
     , m_next(root.view()->layoutState())
     , m_pageLogicalHeight(0)
     , m_layoutObject(root)
@@ -144,7 +138,6 @@ void LayoutState::clearPaginationInformation()
 {
     m_pageLogicalHeight = m_next->m_pageLogicalHeight;
     m_pageOffset = m_next->m_pageOffset;
-    m_columnInfo = m_next->m_columnInfo;
 }
 
 LayoutUnit LayoutState::pageLogicalOffset(const LayoutBox& child, const LayoutUnit& childLogicalOffset) const
@@ -152,13 +145,6 @@ LayoutUnit LayoutState::pageLogicalOffset(const LayoutBox& child, const LayoutUn
     if (child.isHorizontalWritingMode())
         return m_layoutOffset.height() + childLogicalOffset - m_pageOffset.height();
     return m_layoutOffset.width() + childLogicalOffset - m_pageOffset.width();
-}
-
-void LayoutState::addForcedColumnBreak(const LayoutBox& child, const LayoutUnit& childLogicalOffset)
-{
-    if (!m_columnInfo || m_columnInfo->columnHeight())
-        return;
-    m_columnInfo->addForcedBreak(pageLogicalOffset(child, childLogicalOffset));
 }
 
 } // namespace blink

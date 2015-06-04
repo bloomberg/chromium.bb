@@ -22,14 +22,6 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
     // LayoutViews should never be called to paint with an offset not on device pixels.
     ASSERT(LayoutPoint(IntPoint(paintOffset.x(), paintOffset.y())) == paintOffset);
 
-    // This avoids painting garbage between columns if there is a column gap.
-    // This is legacy WebKit behavior and doesn't work with slimmingpaint. We can remove it once region-based columns are launched.
-    if (!RuntimeEnabledFeatures::regionBasedColumnsEnabled() && m_layoutView.frameView() && m_layoutView.style()->isOverflowPaged()) {
-        ASSERT(!RuntimeEnabledFeatures::slimmingPaintEnabled());
-        LayoutRect paintRect(paintInfo.rect);
-        paintInfo.context->fillRect(paintRect, m_layoutView.frameView()->baseBackgroundColor());
-    }
-
     m_layoutView.paintObject(paintInfo, paintOffset);
     BlockPainter(m_layoutView).paintOverflowControlsIfNeeded(paintInfo, paintOffset);
 }

@@ -1665,29 +1665,15 @@ LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o, const LayoutPoi
         offset += offsetForInFlowPosition();
 
     if (!isInline() || isReplaced()) {
-        if (!style()->hasOutOfFlowPosition() && o->hasColumns()) {
-            const LayoutBlock* block = toLayoutBlock(o);
-            LayoutRect columnRect(frameRect());
-            block->adjustStartEdgeForWritingModeIncludingColumns(columnRect);
-            offset += toSize(columnRect.location());
-            LayoutPoint columnPoint = block->flipForWritingModeIncludingColumns(point + offset);
-            offset = toLayoutSize(block->flipForWritingModeIncludingColumns(toLayoutPoint(offset)));
-            offset += o->columnOffset(columnPoint);
-            offset = block->flipForWritingMode(offset);
-
+        offset += topLeftLocationOffset();
+        if (o->isLayoutFlowThread()) {
+            // So far the point has been in flow thread coordinates (i.e. as if everything in
+            // the fragmentation context lived in one tall single column). Convert it to a
+            // visual point now.
+            LayoutPoint pointInContainer = point + offset;
+            offset += o->columnOffset(pointInContainer);
             if (offsetDependsOnPoint)
                 *offsetDependsOnPoint = true;
-        } else {
-            offset += topLeftLocationOffset();
-            if (o->isLayoutFlowThread()) {
-                // So far the point has been in flow thread coordinates (i.e. as if everything in
-                // the fragmentation context lived in one tall single column). Convert it to a
-                // visual point now.
-                LayoutPoint pointInContainer = point + offset;
-                offset += o->columnOffset(pointInContainer);
-                if (offsetDependsOnPoint)
-                    *offsetDependsOnPoint = true;
-            }
         }
     }
 
@@ -1867,13 +1853,6 @@ void LayoutBox::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* pa
         // right dirty rect.  Since this is called from LayoutObject::setStyle, the relative position
         // flag on the LayoutObject has been cleared, so use the one on the style().
         topLeft += layer()->offsetForInFlowPosition();
-    }
-
-    if (position != AbsolutePosition && position != FixedPosition && o->hasColumns() && o->isLayoutBlockFlow()) {
-        LayoutRect paintInvalidationRect(topLeft, rect.size());
-        toLayoutBlock(o)->adjustRectForColumns(paintInvalidationRect);
-        topLeft = paintInvalidationRect.location();
-        rect = paintInvalidationRect;
     }
 
     // FIXME: We ignore the lightweight clipping rect that controls use, since if |o| is in mid-layout,
@@ -4554,13 +4533,6 @@ LayoutPoint LayoutBox::flipForWritingModeForChild(const LayoutBox* child, const 
     if (isHorizontalWritingMode())
         return LayoutPoint(point.x(), point.y() + size().height() - child->size().height() - (2 * child->location().y()));
     return LayoutPoint(point.x() + size().width() - child->size().width() - (2 * child->location().x()), point.y());
-}
-
-LayoutPoint LayoutBox::flipForWritingModeIncludingColumns(const LayoutPoint& point) const
-{
-    if (!hasColumns() || !style()->isFlippedBlocksWritingMode())
-        return flipForWritingMode(point);
-    return toLayoutBlock(this)->flipForWritingModeIncludingColumns(point);
 }
 
 LayoutPoint LayoutBox::topLeftLocation() const

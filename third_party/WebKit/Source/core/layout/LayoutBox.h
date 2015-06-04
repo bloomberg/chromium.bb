@@ -537,8 +537,8 @@ public:
     LayoutUnit computePercentageLogicalHeight(const Length& height) const;
 
     // Block flows subclass availableWidth/Height to handle multi column layout (shrinking the width/height available to children when laying out.)
-    virtual LayoutUnit availableLogicalWidth() const { return contentLogicalWidth(); }
-    virtual LayoutUnit availableLogicalHeight(AvailableLogicalHeightType) const;
+    LayoutUnit availableLogicalWidth() const { return contentLogicalWidth(); }
+    LayoutUnit availableLogicalHeight(AvailableLogicalHeightType) const;
     LayoutUnit availableLogicalHeightUsing(const Length&, AvailableLogicalHeightType) const;
 
     // There are a few cases where we need to refer specifically to the available physical width and available physical height.
@@ -633,7 +633,6 @@ public:
             return position;
         return isHorizontalWritingMode() ? LayoutPoint(position.x(), m_frameRect.height() - position.y()) : LayoutPoint(m_frameRect.width() - position.x(), position.y());
     }
-    LayoutPoint flipForWritingModeIncludingColumns(const LayoutPoint&) const;
     LayoutSize flipForWritingMode(const LayoutSize& offset) const WARN_UNUSED_RETURN
     {
         if (!UNLIKELY(hasFlippedBlocksWritingMode()))

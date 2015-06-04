@@ -201,37 +201,18 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             }
         }
 
-        if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground)
-            && m_layoutBlock.style()->visibility() == VISIBLE
-            && m_layoutBlock.hasColumns()
-            && !paintInfo.paintRootBackgroundOnly()) {
-            LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutBlock, DisplayItem::ColumnRules, bounds);
-            if (!recorder.canUseCachedDrawing())
-                paintColumnRules(scrolledPaintInfo, paintOffset);
-        }
-
         // We're done. We don't bother painting any children.
         if (paintPhase == PaintPhaseBlockBackground || paintInfo.paintRootBackgroundOnly())
             return;
 
-        if (paintPhase != PaintPhaseSelfOutline) {
-            if (m_layoutBlock.hasColumns())
-                paintColumnContents(scrolledPaintInfo, paintOffset);
-            else
-                paintContents(scrolledPaintInfo, paintOffset);
-        }
+        if (paintPhase != PaintPhaseSelfOutline)
+            paintContents(scrolledPaintInfo, paintOffset);
 
-        // FIXME: Make this work with multi column layouts. For now don't fill gaps.
-        bool isPrinting = m_layoutBlock.document().printing();
-        if (!isPrinting && !m_layoutBlock.hasColumns())
+        if (!m_layoutBlock.document().printing())
             m_layoutBlock.paintSelection(scrolledPaintInfo, paintOffset); // Fill in gaps in selection on lines and between blocks.
 
-        if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip) {
-            if (m_layoutBlock.hasColumns())
-                paintColumnContents(scrolledPaintInfo, paintOffset, true);
-            else
-                m_layoutBlock.paintFloats(scrolledPaintInfo, paintOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
-        }
+        if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip)
+            m_layoutBlock.paintFloats(scrolledPaintInfo, paintOffset, paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip);
     }
 
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutBlock.style()->hasOutline() && m_layoutBlock.style()->visibility() == VISIBLE) {
@@ -300,151 +281,6 @@ bool BlockPainter::hasCaret() const
     bool caretBrowsing = caretBrowsingEnabled(m_layoutBlock.frame());
     return hasCursorCaret(m_layoutBlock.frame()->selection(), &m_layoutBlock, caretBrowsing)
         || hasDragCaret(m_layoutBlock.frame()->page()->dragCaretController(), &m_layoutBlock, caretBrowsing);
-}
-
-void BlockPainter::paintColumnRules(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    const Color& ruleColor = m_layoutBlock.resolveColor(CSSPropertyWebkitColumnRuleColor);
-    bool ruleTransparent = m_layoutBlock.style()->columnRuleIsTransparent();
-    EBorderStyle ruleStyle = m_layoutBlock.style()->columnRuleStyle();
-    LayoutUnit ruleThickness = m_layoutBlock.style()->columnRuleWidth();
-    LayoutUnit colGap = m_layoutBlock.columnGap();
-    bool renderRule = ruleStyle > BHIDDEN && !ruleTransparent;
-    if (!renderRule)
-        return;
-
-    ColumnInfo* colInfo = m_layoutBlock.columnInfo();
-    unsigned colCount = m_layoutBlock.columnCount(colInfo);
-
-    bool antialias = BoxPainter::shouldAntialiasLines(paintInfo.context);
-
-    if (colInfo->progressionAxis() == ColumnInfo::InlineAxis) {
-        bool leftToRight = m_layoutBlock.style()->isLeftToRightDirection();
-        LayoutUnit currLogicalLeftOffset = leftToRight ? LayoutUnit() : m_layoutBlock.contentLogicalWidth();
-        LayoutUnit ruleAdd = m_layoutBlock.logicalLeftOffsetForContent();
-        LayoutUnit ruleLogicalLeft = leftToRight ? LayoutUnit() : m_layoutBlock.contentLogicalWidth();
-        LayoutUnit inlineDirectionSize = colInfo->desiredColumnWidth();
-        BoxSide boxSide = m_layoutBlock.isHorizontalWritingMode()
-            ? leftToRight ? BSLeft : BSRight
-            : leftToRight ? BSTop : BSBottom;
-
-        for (unsigned i = 0; i < colCount; i++) {
-            // Move to the next position.
-            if (leftToRight) {
-                ruleLogicalLeft += inlineDirectionSize + colGap / 2;
-                currLogicalLeftOffset += inlineDirectionSize + colGap;
-            } else {
-                ruleLogicalLeft -= (inlineDirectionSize + colGap / 2);
-                currLogicalLeftOffset -= (inlineDirectionSize + colGap);
-            }
-
-            // Now paint the column rule.
-            if (i < colCount - 1) {
-                LayoutUnit ruleLeft = m_layoutBlock.isHorizontalWritingMode() ? paintOffset.x() + ruleLogicalLeft - ruleThickness / 2 + ruleAdd : paintOffset.x() + m_layoutBlock.borderLeft() + m_layoutBlock.paddingLeft();
-                LayoutUnit ruleRight = m_layoutBlock.isHorizontalWritingMode() ? ruleLeft + ruleThickness : ruleLeft + m_layoutBlock.contentWidth();
-                LayoutUnit ruleTop = m_layoutBlock.isHorizontalWritingMode() ? paintOffset.y() + m_layoutBlock.borderTop() + m_layoutBlock.paddingTop() : paintOffset.y() + ruleLogicalLeft - ruleThickness / 2 + ruleAdd;
-                LayoutUnit ruleBottom = m_layoutBlock.isHorizontalWritingMode() ? ruleTop + m_layoutBlock.contentHeight() : ruleTop + ruleThickness;
-                IntRect pixelSnappedRuleRect = pixelSnappedIntRectFromEdges(ruleLeft, ruleTop, ruleRight, ruleBottom);
-                ObjectPainter::drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, antialias);
-            }
-
-            ruleLogicalLeft = currLogicalLeftOffset;
-        }
-    } else {
-        bool topToBottom = !m_layoutBlock.style()->isFlippedBlocksWritingMode();
-        LayoutUnit ruleLeft = m_layoutBlock.isHorizontalWritingMode()
-            ? m_layoutBlock.borderLeft() + m_layoutBlock.paddingLeft()
-            : colGap / 2 - colGap - ruleThickness / 2 + m_layoutBlock.borderBefore() + m_layoutBlock.paddingBefore();
-        LayoutUnit ruleWidth = m_layoutBlock.isHorizontalWritingMode() ? m_layoutBlock.contentWidth() : ruleThickness;
-        LayoutUnit ruleTop = m_layoutBlock.isHorizontalWritingMode()
-            ? colGap / 2 - colGap - ruleThickness / 2 + m_layoutBlock.borderBefore() + m_layoutBlock.paddingBefore()
-            : m_layoutBlock.borderStart() + m_layoutBlock.paddingStart();
-        LayoutUnit ruleHeight = m_layoutBlock.isHorizontalWritingMode() ? ruleThickness : m_layoutBlock.contentHeight();
-        LayoutRect ruleRect(ruleLeft, ruleTop, ruleWidth, ruleHeight);
-
-        if (!topToBottom) {
-            if (m_layoutBlock.isHorizontalWritingMode())
-                ruleRect.setY(m_layoutBlock.size().height() - ruleRect.maxY());
-            else
-                ruleRect.setX(m_layoutBlock.size().width() - ruleRect.maxX());
-        }
-
-        ruleRect.moveBy(paintOffset);
-
-        BoxSide boxSide = m_layoutBlock.isHorizontalWritingMode()
-            ? topToBottom ? BSTop : BSBottom
-            : topToBottom ? BSLeft : BSRight;
-
-        LayoutSize step(0, topToBottom ? colInfo->columnHeight() + colGap : -(colInfo->columnHeight() + colGap));
-        if (!m_layoutBlock.isHorizontalWritingMode())
-            step = step.transposedSize();
-
-        for (unsigned i = 1; i < colCount; i++) {
-            ruleRect.move(step);
-            IntRect pixelSnappedRuleRect = pixelSnappedIntRect(ruleRect);
-            ObjectPainter::drawLineForBoxSide(paintInfo.context, pixelSnappedRuleRect.x(), pixelSnappedRuleRect.y(), pixelSnappedRuleRect.maxX(), pixelSnappedRuleRect.maxY(), boxSide, ruleColor, ruleStyle, 0, 0, antialias);
-        }
-    }
-}
-
-void BlockPainter::paintColumnContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, bool paintingFloats)
-{
-    // We need to do multiple passes, breaking up our child painting into strips.
-    ColumnInfo* colInfo = m_layoutBlock.columnInfo();
-    unsigned colCount = m_layoutBlock.columnCount(colInfo);
-    if (!colCount)
-        return;
-    LayoutUnit currLogicalTopOffset = 0;
-    LayoutUnit colGap = m_layoutBlock.columnGap();
-
-    for (unsigned i = 0; i < colCount; i++) {
-        ScopeRecorder scopeRecorder(*paintInfo.context, m_layoutBlock);
-
-        // For each rect, we clip to the rect, and then we adjust our coords.
-        LayoutRect colRect = m_layoutBlock.columnRectAt(colInfo, i);
-        m_layoutBlock.flipForWritingMode(colRect);
-        LayoutUnit logicalLeftOffset = (m_layoutBlock.isHorizontalWritingMode() ? colRect.x() : colRect.y()) - m_layoutBlock.logicalLeftOffsetForContent();
-        LayoutSize offset = m_layoutBlock.isHorizontalWritingMode() ? LayoutSize(logicalLeftOffset, currLogicalTopOffset) : LayoutSize(currLogicalTopOffset, logicalLeftOffset);
-        if (colInfo->progressionAxis() == ColumnInfo::BlockAxis) {
-            if (m_layoutBlock.isHorizontalWritingMode())
-                offset.expand(0, colRect.y() - m_layoutBlock.borderTop() - m_layoutBlock.paddingTop());
-            else
-                offset.expand(colRect.x() - m_layoutBlock.borderLeft() - m_layoutBlock.paddingLeft(), 0);
-        }
-        colRect.moveBy(paintOffset);
-        PaintInfo info(paintInfo);
-        info.rect.intersect(enclosingIntRect(colRect));
-
-        if (!info.rect.isEmpty()) {
-            LayoutRect clipRect(colRect);
-
-            if (i < colCount - 1) {
-                if (m_layoutBlock.isHorizontalWritingMode())
-                    clipRect.expand(colGap / 2, 0);
-                else
-                    clipRect.expand(0, colGap / 2);
-            }
-            // Each strip pushes a clip, since column boxes are specified as being
-            // like overflow:hidden.
-            // FIXME: Content and column rules that extend outside column boxes at the edges of the multi-column element
-            // are clipped according to the 'overflow' property.
-            ClipRecorder clipRecorder(*paintInfo.context, m_layoutBlock,
-                DisplayItem::paintPhaseToClipColumnBoundsType(paintInfo.phase), LayoutRect(enclosingIntRect(clipRect)));
-
-            // Adjust our x and y when painting.
-            LayoutPoint adjustedPaintOffset = paintOffset + offset;
-            if (paintingFloats)
-                m_layoutBlock.paintFloats(info, adjustedPaintOffset, paintInfo.phase == PaintPhaseSelection || paintInfo.phase == PaintPhaseTextClip);
-            else
-                paintContents(info, adjustedPaintOffset);
-        }
-
-        LayoutUnit blockDelta = (m_layoutBlock.isHorizontalWritingMode() ? colRect.height() : colRect.width());
-        if (m_layoutBlock.style()->isFlippedBlocksWritingMode())
-            currLogicalTopOffset += blockDelta;
-        else
-            currLogicalTopOffset -= blockDelta;
-    }
 }
 
 void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

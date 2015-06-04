@@ -24,7 +24,6 @@
 #define LayoutBlock_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ColumnInfo.h"
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/GapRects.h"
 #include "core/layout/LayoutBox.h"
@@ -148,12 +147,6 @@ public:
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 
-    // Block flows subclass availableWidth to handle multi column layout (shrinking the width available to children when laying out.)
-    virtual LayoutUnit availableLogicalWidth() const override final;
-
-    LayoutPoint flipForWritingModeIncludingColumns(const LayoutPoint&) const;
-    void adjustStartEdgeForWritingModeIncludingColumns(LayoutRect&) const;
-
     LayoutUnit blockDirectionOffset(const LayoutSize& offsetFromBlock) const;
     LayoutUnit inlineDirectionOffset(const LayoutSize& offsetFromBlock) const;
 
@@ -168,10 +161,6 @@ public:
     int lineCount(const RootInlineBox* = 0, bool* = 0) const;
     int heightForLineCount(int);
     void clearTruncation();
-
-    void adjustRectForColumns(LayoutRect&) const;
-    virtual LayoutSize columnOffset(const LayoutPoint&) const override;
-    void adjustForColumnRect(LayoutSize& offset, const LayoutPoint& locationInContainer) const;
 
     void addContinuationWithOutline(LayoutInline*);
 
@@ -192,12 +181,7 @@ public:
 
     virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override;
 
-    ColumnInfo* columnInfo() const;
     int columnGap() const;
-
-    // These two functions take the ColumnInfo* to avoid repeated lookups of the info in the global HashMap.
-    unsigned columnCount(ColumnInfo*) const;
-    LayoutRect columnRectAt(ColumnInfo*, unsigned) const;
 
     // Accessors for logical width/height and margins in the containing block's block-flow direction.
     LayoutUnit logicalWidthForChild(const LayoutBox& child) const { return isHorizontalWritingMode() ? child.size().width() : child.size().height(); }
@@ -274,7 +258,6 @@ protected:
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const override;
     virtual void computePreferredLogicalWidths() override;
-    void adjustIntrinsicLogicalWidthsForColumns(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const;
 
     virtual int firstLineBoxBaseline() const override;
     virtual int inlineBlockBaseline(LineDirectionMode) const override;
@@ -299,8 +282,6 @@ protected:
 
     bool simplifiedLayout();
     virtual void simplifiedNormalFlowLayout();
-
-    void setDesiredColumnCountAndWidth(int, LayoutUnit);
 
 public:
     virtual void computeOverflow(LayoutUnit oldClientAfterEdge, bool = false);
@@ -356,7 +337,6 @@ private:
 
     virtual bool avoidsFloats() const override { return true; }
 
-    bool hitTestColumns(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
     bool hitTestContents(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
     virtual bool hitTestFloats(HitTestResult&, const HitTestLocation&, const LayoutPoint&) { return false; }
@@ -380,20 +360,15 @@ private:
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
-    LayoutUnit desiredColumnWidth() const;
-
 private:
     virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) override final;
     bool isInlineBoxWrapperActuallyChild() const;
-
-    void adjustPointToColumnContents(LayoutPoint&) const;
 
     void markLinesDirtyInBlockRange(LayoutUnit logicalTop, LayoutUnit logicalBottom, RootInlineBox* highest = 0);
 
     Position positionForBox(InlineBox*, bool start = true) const;
     PositionWithAffinity positionForPointWithInlineChildren(const LayoutPoint&);
 
-    void calcColumnWidth();
     void makeChildrenAnonymousColumnBlocks(LayoutObject* beforeChild, LayoutBlockFlow* newBlockBox, LayoutObject* newChild);
 
     void splitBlocks(LayoutBlock* fromBlock, LayoutBlock* toBlock, LayoutBlock* middleBlock,
@@ -438,8 +413,6 @@ protected:
 
     // Adjust from painting offsets to the local coords of this layoutObject
     void offsetForContents(LayoutPoint&) const;
-
-    bool requiresColumns(int desiredColumnCount) const;
 
     virtual bool updateLogicalWidthAndColumnWidth();
 

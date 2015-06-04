@@ -39,8 +39,6 @@ private:
     bool hasCaret() const;
     void paintCarets(const PaintInfo&, const LayoutPoint&);
     void paintContents(const PaintInfo&, const LayoutPoint&);
-    void paintColumnContents(const PaintInfo&, const LayoutPoint&, bool paintFloats = false);
-    void paintColumnRules(const PaintInfo&, const LayoutPoint&);
     void paintSelection(const PaintInfo&, const LayoutPoint&);
     void paintContinuationOutlines(const PaintInfo&, const LayoutPoint&);
 

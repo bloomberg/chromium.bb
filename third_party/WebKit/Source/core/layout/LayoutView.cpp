@@ -28,7 +28,6 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/layout/ColumnInfo.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
@@ -150,14 +149,6 @@ void LayoutView::updateLogicalWidth()
 {
     if (!shouldUsePrintingLayout() && m_frameView)
         setLogicalWidth(viewLogicalWidthForBoxSizing());
-}
-
-LayoutUnit LayoutView::availableLogicalHeight(AvailableLogicalHeightType heightType) const
-{
-    // If we have columns, then the available logical height is reduced to the column height.
-    if (hasColumns())
-        return columnInfo()->columnHeight();
-    return LayoutBlockFlow::availableLogicalHeight(heightType);
 }
 
 bool LayoutView::isChildAllowed(LayoutObject* child, const ComputedStyle&) const
@@ -869,16 +860,7 @@ LayoutObject* LayoutView::backgroundLayoutObject() const
 
 LayoutRect LayoutView::backgroundRect(LayoutBox* backgroundLayoutObject) const
 {
-    if (!hasColumns())
-        return LayoutRect(unscaledDocumentRect());
-
-    ColumnInfo* columnInfo = this->columnInfo();
-    LayoutRect backgroundRect(0, 0, columnInfo->desiredColumnWidth(), columnInfo->columnHeight() * columnInfo->columnCount());
-    if (!isHorizontalWritingMode())
-        backgroundRect = backgroundRect.transposedRect();
-    backgroundLayoutObject->flipForWritingMode(backgroundRect);
-
-    return backgroundRect;
+    return LayoutRect(unscaledDocumentRect());
 }
 
 IntRect LayoutView::documentRect() const

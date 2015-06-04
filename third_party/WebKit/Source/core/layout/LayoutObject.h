@@ -407,8 +407,6 @@ public:
 
     bool childrenInline() const { return m_bitfields.childrenInline(); }
     void setChildrenInline(bool b) { m_bitfields.setChildrenInline(b); }
-    bool hasColumns() const { return m_bitfields.hasColumns(); }
-    void setHasColumns(bool b = true) { m_bitfields.setHasColumns(b); }
 
     bool alwaysCreateLineBoxesForLayoutInline() const
     {
@@ -1056,7 +1054,7 @@ public:
         return layoutDidGetCalledSinceLastFrame() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldInvalidateSelection();
     }
 
-    virtual bool supportsPaintInvalidationStateCachedOffsets() const { return !hasColumns() && !hasTransformRelatedProperty() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
+    virtual bool supportsPaintInvalidationStateCachedOffsets() const { return !hasTransformRelatedProperty() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
 
     virtual LayoutRect viewRect() const;
 
@@ -1326,7 +1324,6 @@ private:
             , m_notifiedOfSubtreeChange(false)
             , m_consumesSubtreeChangeNotification(false)
             , m_childrenInline(false)
-            , m_hasColumns(false)
             , m_alwaysCreateLineBoxesForLayoutInline(false)
             , m_lastBoxDecorationBackgroundObscured(false)
             , m_positionedState(IsStaticallyPositioned)
@@ -1336,7 +1333,7 @@ private:
         {
         }
 
-        // 32 bits have been used in the first word, and 17 in the second.
+        // 32 bits have been used in the first word, and 16 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
@@ -1380,7 +1377,6 @@ private:
 
         // from LayoutBlock
         ADD_BOOLEAN_BITFIELD(childrenInline, ChildrenInline);
-        ADD_BOOLEAN_BITFIELD(hasColumns, HasColumns);
 
         // from LayoutInline
         ADD_BOOLEAN_BITFIELD(alwaysCreateLineBoxesForLayoutInline, AlwaysCreateLineBoxesForLayoutInline);

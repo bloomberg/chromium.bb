@@ -86,9 +86,6 @@ struct SameSizeAsLayoutBlock : public LayoutBox {
 
 static_assert(sizeof(LayoutBlock) == sizeof(SameSizeAsLayoutBlock), "LayoutBlock should stay small");
 
-typedef WTF::HashMap<const LayoutBox*, OwnPtr<ColumnInfo>> ColumnInfoMap;
-static ColumnInfoMap* gColumnInfoMap = 0;
-
 static TrackedDescendantsMap* gPositionedDescendantsMap = 0;
 static TrackedDescendantsMap* gPercentHeightDescendantsMap = 0;
 
@@ -98,8 +95,6 @@ static TrackedContainerMap* gPercentHeightContainerMap = 0;
 typedef WTF::HashSet<LayoutBlock*> DelayedUpdateScrollInfoSet;
 static int gDelayUpdateScrollInfo = 0;
 static DelayedUpdateScrollInfoSet* gDelayedUpdateScrollInfoSet = 0;
-
-static bool gColumnFlowSplitEnabled = true;
 
 // This class helps dispatching the 'overflow' event on layout change. overflow can be set on LayoutBoxes, yet the existing code
 // only works on LayoutBlocks. If this changes, this class should be shared with other LayoutBoxes.
@@ -209,8 +204,6 @@ static void appendImagesFromStyle(Vector<ImageResource*>& images, const Computed
 
 void LayoutBlock::removeFromGlobalMaps()
 {
-    if (hasColumns())
-        gColumnInfoMap->take(this);
     if (gPercentHeightDescendantsMap)
         removeBlockFromDescendantAndContainerMaps(this, gPercentHeightDescendantsMap, gPercentHeightContainerMap);
     if (gPositionedDescendantsMap)
@@ -844,36 +837,6 @@ void LayoutBlock::addChildIgnoringAnonymousColumnBlocks(LayoutObject* newChild, 
         }
     }
 
-    // Check for a spanning element in columns.
-    if (gColumnFlowSplitEnabled && !RuntimeEnabledFeatures::regionBasedColumnsEnabled()) {
-        LayoutBlockFlow* columnsBlockAncestor = columnsBlockForSpanningElement(newChild);
-        if (columnsBlockAncestor) {
-            TemporaryChange<bool> columnFlowSplitEnabled(gColumnFlowSplitEnabled, false);
-            // We are placing a column-span element inside a block.
-            LayoutBlockFlow* newBox = createAnonymousColumnSpanBlock();
-
-            if (columnsBlockAncestor != this && !isLayoutFlowThread()) {
-                // We are nested inside a multi-column element and are being split by the span. We have to break up
-                // our block into continuations.
-                LayoutBoxModelObject* oldContinuation = continuation();
-
-                // When we split an anonymous block, there's no need to do any continuation hookup,
-                // since we haven't actually split a real element.
-                if (!isAnonymousBlock())
-                    setContinuation(newBox);
-
-                splitFlow(beforeChild, newBox, newChild, oldContinuation);
-                return;
-            }
-
-            // We have to perform a split of this block's children. This involves creating an anonymous block box to hold
-            // the column-spanning |newChild|. We take all of the children from before |newChild| and put them into
-            // one anonymous columns block, and all of the children after |newChild| go into another anonymous block.
-            makeChildrenAnonymousColumnBlocks(beforeChild, newBox, newChild);
-            return;
-        }
-    }
-
     bool madeBoxesNonInline = false;
 
     // A block has to either have all of its children inline, or all of its children as blocks.
@@ -1153,9 +1116,6 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
         return;
     }
 
-    // This protects against column split flows when anonymous blocks are getting merged.
-    TemporaryChange<bool> columnFlowSplitEnabled(gColumnFlowSplitEnabled, false);
-
     // If this child is a block, and if our previous and next siblings are
     // both anonymous blocks with inline content, then we can go ahead and
     // fold the inline content back together.
@@ -1432,12 +1392,8 @@ bool LayoutBlock::widthAvailableToChildrenHasChanged()
 bool LayoutBlock::updateLogicalWidthAndColumnWidth()
 {
     LayoutUnit oldWidth = logicalWidth();
-    LayoutUnit oldColumnWidth = desiredColumnWidth();
-
     updateLogicalWidth();
-    calcColumnWidth();
-
-    return oldWidth != logicalWidth() || oldColumnWidth != desiredColumnWidth() || widthAvailableToChildrenHasChanged();
+    return oldWidth != logicalWidth() || widthAvailableToChildrenHasChanged();
 }
 
 void LayoutBlock::layoutBlock(bool)
@@ -1448,19 +1404,10 @@ void LayoutBlock::layoutBlock(bool)
 
 void LayoutBlock::addOverflowFromChildren()
 {
-    if (!hasColumns()) {
-        if (childrenInline())
-            toLayoutBlockFlow(this)->addOverflowFromInlineChildren();
-        else
-            addOverflowFromBlockChildren();
-    } else {
-        ColumnInfo* colInfo = columnInfo();
-        if (columnCount(colInfo)) {
-            LayoutRect lastRect = columnRectAt(colInfo, columnCount(colInfo) - 1);
-            addLayoutOverflow(lastRect);
-            addContentsVisualOverflow(lastRect);
-        }
-    }
+    if (childrenInline())
+        toLayoutBlockFlow(this)->addOverflowFromInlineChildren();
+    else
+        addOverflowFromBlockChildren();
 }
 
 void LayoutBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool)
@@ -1528,7 +1475,7 @@ bool LayoutBlock::createsNewFormattingContext() const
 {
     return isInlineBlockOrInlineTable() || isFloatingOrOutOfFlowPositioned() || hasOverflowClip() || isFlexItemIncludingDeprecated()
         || style()->specifiesColumns() || isLayoutFlowThread() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot()
-        || isDocumentElement() || (RuntimeEnabledFeatures::regionBasedColumnsEnabled() ? isColumnSpanAll() : style()->columnSpan()) || isGridItem();
+        || isDocumentElement() || isColumnSpanAll() || isGridItem();
 }
 
 void LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, LayoutBox& child)
@@ -1704,9 +1651,6 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
     if (!positionedDescendants)
         return;
 
-    if (hasColumns())
-        view()->layoutState()->clearPaginationInformation(); // Positioned objects are not part of the column flow, so they don't paginate with the columns.
-
     for (auto* positionedObject : *positionedDescendants) {
         positionedObject->setMayNeedPaintInvalidation();
 
@@ -1753,9 +1697,6 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
         if (needsBlockDirectionLocationSetBeforeLayout && logicalTopForChild(*positionedObject) != oldLogicalTop)
             positionedObject->forceChildLayout();
     }
-
-    if (hasColumns())
-        view()->layoutState()->setColumnInfo(columnInfo()); // FIXME: Kind of gross. We just put this back into the layout state so that pop() will work.
 }
 
 void LayoutBlock::markPositionedObjectsForLayout()
@@ -2220,18 +2161,13 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
         if (hasOverflowClip())
             scrolledOffset -= scrolledContentOffset();
 
-        // Hit test contents if we don't have columns.
-        if (!hasColumns()) {
-            if (hitTestContents(result, locationInContainer, toLayoutPoint(scrolledOffset), hitTestAction)) {
-                updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - localOffset));
-                return true;
-            }
-            if (hitTestAction == HitTestFloat && hitTestFloats(result, locationInContainer, toLayoutPoint(scrolledOffset)))
-                return true;
-        } else if (hitTestColumns(result, locationInContainer, toLayoutPoint(scrolledOffset), hitTestAction)) {
+        // Hit test contents
+        if (hitTestContents(result, locationInContainer, toLayoutPoint(scrolledOffset), hitTestAction)) {
             updateHitTestResult(result, flipForWritingMode(locationInContainer.point() - localOffset));
             return true;
         }
+        if (hitTestAction == HitTestFloat && hitTestFloats(result, locationInContainer, toLayoutPoint(scrolledOffset)))
+            return true;
     }
 
     // Check if the point is outside radii.
@@ -2254,102 +2190,6 @@ bool LayoutBlock::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
     }
 
     return false;
-}
-
-class ColumnRectIterator {
-    WTF_MAKE_NONCOPYABLE(ColumnRectIterator);
-public:
-    ColumnRectIterator(const LayoutBlock& block)
-        : m_block(block)
-        , m_colInfo(block.columnInfo())
-        , m_direction(m_block.style()->isFlippedBlocksWritingMode() ? 1 : -1)
-        , m_isHorizontal(block.isHorizontalWritingMode())
-        , m_logicalLeft(block.logicalLeftOffsetForContent())
-    {
-        int colCount = m_colInfo->columnCount();
-        m_colIndex = colCount - 1;
-        m_currLogicalTopOffset = colCount * m_colInfo->columnHeight() * m_direction;
-        update();
-    }
-
-    void advance()
-    {
-        ASSERT(hasMore());
-        m_colIndex--;
-        update();
-    }
-
-    LayoutRect columnRect() const { return m_colRect; }
-    bool hasMore() const { return m_colIndex >= 0; }
-
-    void adjust(LayoutSize& offset) const
-    {
-        LayoutUnit currLogicalLeftOffset = (m_isHorizontal ? m_colRect.x() : m_colRect.y()) - m_logicalLeft;
-        offset += m_isHorizontal ? LayoutSize(currLogicalLeftOffset, m_currLogicalTopOffset) : LayoutSize(m_currLogicalTopOffset, currLogicalLeftOffset);
-        if (m_colInfo->progressionAxis() == ColumnInfo::BlockAxis) {
-            if (m_isHorizontal)
-                offset.expand(0, m_colRect.y() - m_block.borderTop() - m_block.paddingTop());
-            else
-                offset.expand(m_colRect.x() - m_block.borderLeft() - m_block.paddingLeft(), 0);
-        }
-    }
-
-private:
-    void update()
-    {
-        if (m_colIndex < 0)
-            return;
-
-        m_colRect = m_block.columnRectAt(const_cast<ColumnInfo*>(m_colInfo), m_colIndex);
-        m_block.flipForWritingMode(m_colRect);
-        m_currLogicalTopOffset -= (m_isHorizontal ? m_colRect.height() : m_colRect.width()) * m_direction;
-    }
-
-    const LayoutBlock& m_block;
-    const ColumnInfo* const m_colInfo;
-    const int m_direction;
-    const bool m_isHorizontal;
-    const LayoutUnit m_logicalLeft;
-    int m_colIndex;
-    LayoutUnit m_currLogicalTopOffset;
-    LayoutRect m_colRect;
-};
-
-bool LayoutBlock::hitTestColumns(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
-{
-    // We need to do multiple passes, breaking up our hit testing into strips.
-    if (!hasColumns())
-        return false;
-
-    for (ColumnRectIterator it(*this); it.hasMore(); it.advance()) {
-        LayoutRect hitRect = LayoutRect(locationInContainer.boundingBox());
-        LayoutRect colRect = it.columnRect();
-        colRect.moveBy(accumulatedOffset);
-        if (locationInContainer.intersects(colRect)) {
-            // The point is inside this column.
-            // Adjust accumulatedOffset to change where we hit test.
-            LayoutSize offset;
-            it.adjust(offset);
-            LayoutPoint finalLocation = accumulatedOffset + offset;
-            if (!result.isRectBasedTest() || colRect.contains(hitRect))
-                return hitTestContents(result, locationInContainer, finalLocation, hitTestAction) || (hitTestAction == HitTestFloat && hitTestFloats(result, locationInContainer, finalLocation));
-
-            hitTestContents(result, locationInContainer, finalLocation, hitTestAction);
-        }
-    }
-
-    return false;
-}
-
-void LayoutBlock::adjustForColumnRect(LayoutSize& offset, const LayoutPoint& locationInContainer) const
-{
-    for (ColumnRectIterator it(*this); it.hasMore(); it.advance()) {
-        LayoutRect colRect = it.columnRect();
-        if (colRect.contains(locationInContainer)) {
-            it.adjust(offset);
-            return;
-        }
-    }
 }
 
 bool LayoutBlock::hitTestContents(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
@@ -2585,18 +2425,7 @@ void LayoutBlock::offsetForContents(LayoutPoint& offset) const
     if (hasOverflowClip())
         offset += LayoutSize(scrolledContentOffset());
 
-    if (hasColumns())
-        adjustPointToColumnContents(offset);
-
     offset = flipForWritingMode(offset);
-}
-
-LayoutUnit LayoutBlock::availableLogicalWidth() const
-{
-    // If we have multiple columns, then the available logical width is reduced to our column width.
-    if (hasColumns())
-        return desiredColumnWidth();
-    return LayoutBox::availableLogicalWidth();
 }
 
 int LayoutBlock::columnGap() const
@@ -2604,341 +2433,6 @@ int LayoutBlock::columnGap() const
     if (style()->hasNormalColumnGap())
         return style()->fontDescription().computedPixelSize(); // "1em" is recommended as the normal gap setting. Matches <p> margins.
     return static_cast<int>(style()->columnGap());
-}
-
-void LayoutBlock::calcColumnWidth()
-{
-    if (RuntimeEnabledFeatures::regionBasedColumnsEnabled())
-        return;
-
-    // Calculate our column width and column count.
-    // FIXME: Can overflow on fast/block/float/float-not-removed-from-next-sibling4.html, see https://bugs.webkit.org/show_bug.cgi?id=68744
-    unsigned desiredColumnCount = 1;
-    LayoutUnit desiredColumnWidth = contentLogicalWidth();
-
-    // For now, we don't support multi-column layouts when printing, since we have to do a lot of work for proper pagination.
-    if (document().paginated() || !style()->specifiesColumns()) {
-        setDesiredColumnCountAndWidth(desiredColumnCount, desiredColumnWidth);
-        return;
-    }
-
-    LayoutUnit availWidth = desiredColumnWidth;
-    LayoutUnit colGap = columnGap();
-    LayoutUnit colWidth = std::max<LayoutUnit>(1, LayoutUnit(style()->columnWidth()));
-    int colCount = std::max<int>(1, style()->columnCount());
-
-    if (style()->hasAutoColumnWidth() && !style()->hasAutoColumnCount()) {
-        desiredColumnCount = colCount;
-        desiredColumnWidth = std::max<LayoutUnit>(0, (availWidth - ((desiredColumnCount - 1) * colGap)) / desiredColumnCount);
-    } else if (!style()->hasAutoColumnWidth() && style()->hasAutoColumnCount()) {
-        desiredColumnCount = std::max<LayoutUnit>(1, (availWidth + colGap) / (colWidth + colGap));
-        desiredColumnWidth = ((availWidth + colGap) / desiredColumnCount) - colGap;
-    } else {
-        desiredColumnCount = std::max<LayoutUnit>(std::min<LayoutUnit>(colCount, (availWidth + colGap) / (colWidth + colGap)), 1);
-        desiredColumnWidth = ((availWidth + colGap) / desiredColumnCount) - colGap;
-    }
-    setDesiredColumnCountAndWidth(desiredColumnCount, desiredColumnWidth);
-}
-
-bool LayoutBlock::requiresColumns(int desiredColumnCount) const
-{
-    // Paged overflow is treated as multicol here, unless this element was the one that got its
-    // overflow propagated to the viewport.
-    bool isPaginated = style()->isOverflowPaged() && node() != document().viewportDefiningElement();
-
-    return firstChild()
-        && (desiredColumnCount != 1 || !style()->hasAutoColumnWidth() || isPaginated)
-        && !firstChild()->isAnonymousColumnsBlock()
-        && !firstChild()->isAnonymousColumnSpanBlock() && !isFlexibleBoxIncludingDeprecated();
-}
-
-void LayoutBlock::setDesiredColumnCountAndWidth(int count, LayoutUnit width)
-{
-    bool destroyColumns = !requiresColumns(count);
-    if (destroyColumns) {
-        if (hasColumns()) {
-            gColumnInfoMap->take(this);
-            setHasColumns(false);
-        }
-    } else {
-        ColumnInfo* info;
-        if (hasColumns()) {
-            info = gColumnInfoMap->get(this);
-        } else {
-            if (!gColumnInfoMap)
-                gColumnInfoMap = new ColumnInfoMap;
-            info = new ColumnInfo;
-            gColumnInfoMap->add(this, adoptPtr(info));
-            setHasColumns(true);
-        }
-        info->setDesiredColumnWidth(width);
-        if (style()->isOverflowPaged()) {
-            info->setDesiredColumnCount(1);
-            info->setProgressionAxis(style()->hasInlinePaginationAxis() ? ColumnInfo::InlineAxis : ColumnInfo::BlockAxis);
-        } else {
-            info->setDesiredColumnCount(count);
-            info->setProgressionAxis(ColumnInfo::InlineAxis);
-        }
-    }
-}
-
-LayoutUnit LayoutBlock::desiredColumnWidth() const
-{
-    if (!hasColumns())
-        return contentLogicalWidth();
-    return gColumnInfoMap->get(this)->desiredColumnWidth();
-}
-
-ColumnInfo* LayoutBlock::columnInfo() const
-{
-    if (!hasColumns())
-        return 0;
-    return gColumnInfoMap->get(this);
-}
-
-unsigned LayoutBlock::columnCount(ColumnInfo* colInfo) const
-{
-    ASSERT(hasColumns());
-    ASSERT(gColumnInfoMap->get(this) == colInfo);
-    return colInfo->columnCount();
-}
-
-LayoutRect LayoutBlock::columnRectAt(ColumnInfo* colInfo, unsigned index) const
-{
-    ASSERT(hasColumns() && gColumnInfoMap->get(this) == colInfo);
-
-    // Compute the appropriate rect based off our information.
-    LayoutUnit colLogicalWidth = colInfo->desiredColumnWidth();
-    LayoutUnit colLogicalHeight = colInfo->columnHeight();
-    LayoutUnit colLogicalTop = borderBefore() + paddingBefore();
-    LayoutUnit colLogicalLeft = logicalLeftOffsetForContent();
-    LayoutUnit colGap = columnGap();
-    if (colInfo->progressionAxis() == ColumnInfo::InlineAxis) {
-        if (style()->isLeftToRightDirection())
-            colLogicalLeft += index * (colLogicalWidth + colGap);
-        else
-            colLogicalLeft += contentLogicalWidth() - colLogicalWidth - index * (colLogicalWidth + colGap);
-    } else {
-        colLogicalTop += index * (colLogicalHeight + colGap);
-    }
-
-    if (isHorizontalWritingMode())
-        return LayoutRect(colLogicalLeft, colLogicalTop, colLogicalWidth, colLogicalHeight);
-    return LayoutRect(colLogicalTop, colLogicalLeft, colLogicalHeight, colLogicalWidth);
-}
-
-void LayoutBlock::adjustPointToColumnContents(LayoutPoint& point) const
-{
-    // Just bail if we have no columns.
-    if (!hasColumns())
-        return;
-
-    ColumnInfo* colInfo = columnInfo();
-    if (!columnCount(colInfo))
-        return;
-
-    // Determine which columns we intersect.
-    LayoutUnit colGap = columnGap();
-    LayoutUnit halfColGap = colGap / 2;
-    LayoutPoint columnPoint(columnRectAt(colInfo, 0).location());
-    LayoutUnit logicalOffset = 0;
-    for (unsigned i = 0; i < colInfo->columnCount(); i++) {
-        // Add in half the column gap to the left and right of the rect.
-        LayoutRect colRect = columnRectAt(colInfo, i);
-        flipForWritingMode(colRect);
-        if (isHorizontalWritingMode() == (colInfo->progressionAxis() == ColumnInfo::InlineAxis)) {
-            LayoutRect gapAndColumnRect(colRect.x() - halfColGap, colRect.y(), colRect.width() + colGap, colRect.height());
-            if (point.x() >= gapAndColumnRect.x() && point.x() < gapAndColumnRect.maxX()) {
-                if (colInfo->progressionAxis() == ColumnInfo::InlineAxis) {
-                    // FIXME: The clamping that follows is not completely right for right-to-left
-                    // content.
-                    if (point.y() < gapAndColumnRect.y()) {
-                        // Clamp everything above the column to its top left.
-                        point = gapAndColumnRect.location();
-                    } else if (point.y() >= gapAndColumnRect.maxY()) {
-                        // Clamp everything below the column to the next column's top left. If there is
-                        // no next column, this still maps to just after this column.
-                        point = gapAndColumnRect.location();
-                        point.move(0, gapAndColumnRect.height());
-                    }
-                } else {
-                    if (point.x() < colRect.x())
-                        point.setX(colRect.x());
-                    else if (point.x() >= colRect.maxX())
-                        point.setX(colRect.maxX() - 1);
-                }
-
-                // We're inside the column.  Translate the x and y into our column coordinate space.
-                if (colInfo->progressionAxis() == ColumnInfo::InlineAxis)
-                    point.move(columnPoint.x() - colRect.x(), (!style()->isFlippedBlocksWritingMode() ? logicalOffset : -logicalOffset));
-                else
-                    point.move((!style()->isFlippedBlocksWritingMode() ? logicalOffset : -logicalOffset) - colRect.x() + borderLeft() + paddingLeft(), 0);
-                return;
-            }
-
-            // Move to the next position.
-            logicalOffset += colInfo->progressionAxis() == ColumnInfo::InlineAxis ? colRect.height() : colRect.width();
-        } else {
-            LayoutRect gapAndColumnRect(colRect.x(), colRect.y() - halfColGap, colRect.width(), colRect.height() + colGap);
-            if (point.y() >= gapAndColumnRect.y() && point.y() < gapAndColumnRect.maxY()) {
-                if (colInfo->progressionAxis() == ColumnInfo::InlineAxis) {
-                    // FIXME: The clamping that follows is not completely right for right-to-left
-                    // content.
-                    if (point.x() < gapAndColumnRect.x()) {
-                        // Clamp everything above the column to its top left.
-                        point = gapAndColumnRect.location();
-                    } else if (point.x() >= gapAndColumnRect.maxX()) {
-                        // Clamp everything below the column to the next column's top left. If there is
-                        // no next column, this still maps to just after this column.
-                        point = gapAndColumnRect.location();
-                        point.move(gapAndColumnRect.width(), 0);
-                    }
-                } else {
-                    if (point.y() < colRect.y())
-                        point.setY(colRect.y());
-                    else if (point.y() >= colRect.maxY())
-                        point.setY(colRect.maxY() - 1);
-                }
-
-                // We're inside the column.  Translate the x and y into our column coordinate space.
-                if (colInfo->progressionAxis() == ColumnInfo::InlineAxis)
-                    point.move((!style()->isFlippedBlocksWritingMode() ? logicalOffset : -logicalOffset), columnPoint.y() - colRect.y());
-                else
-                    point.move(0, (!style()->isFlippedBlocksWritingMode() ? logicalOffset : -logicalOffset) - colRect.y() + borderTop() + paddingTop());
-                return;
-            }
-
-            // Move to the next position.
-            logicalOffset += colInfo->progressionAxis() == ColumnInfo::InlineAxis ? colRect.width() : colRect.height();
-        }
-    }
-}
-
-void LayoutBlock::adjustRectForColumns(LayoutRect& r) const
-{
-    // Just bail if we have no columns.
-    if (!hasColumns())
-        return;
-
-    ColumnInfo* colInfo = columnInfo();
-
-    // Determine which columns we intersect.
-    unsigned colCount = columnCount(colInfo);
-    if (!colCount)
-        return;
-
-    // Begin with a result rect that is empty.
-    LayoutRect result;
-
-    bool isHorizontal = isHorizontalWritingMode();
-    LayoutUnit beforeBorderPadding = borderBefore() + paddingBefore();
-    LayoutUnit colHeight = colInfo->columnHeight();
-    if (!colHeight)
-        return;
-
-    LayoutUnit startOffset = std::max(isHorizontal ? r.y() : r.x(), beforeBorderPadding);
-    LayoutUnit endOffset = std::max(std::min<LayoutUnit>(isHorizontal ? r.maxY() : r.maxX(), beforeBorderPadding + colCount * colHeight), beforeBorderPadding);
-
-    // FIXME: Can overflow on fast/block/float/float-not-removed-from-next-sibling4.html, see https://bugs.webkit.org/show_bug.cgi?id=68744
-    unsigned startColumn = (startOffset - beforeBorderPadding) / colHeight;
-    unsigned endColumn = (endOffset - beforeBorderPadding) / colHeight;
-
-    if (startColumn == endColumn) {
-        // The rect is fully contained within one column. Adjust for our offsets
-        // and issue paint invalidations only that portion.
-        LayoutUnit logicalLeftOffset = logicalLeftOffsetForContent();
-        LayoutRect colRect = columnRectAt(colInfo, startColumn);
-        LayoutRect paintInvalidationRect = r;
-
-        if (colInfo->progressionAxis() == ColumnInfo::InlineAxis) {
-            if (isHorizontal)
-                paintInvalidationRect.move(colRect.x() - logicalLeftOffset, - static_cast<int>(startColumn) * colHeight);
-            else
-                paintInvalidationRect.move(- static_cast<int>(startColumn) * colHeight, colRect.y() - logicalLeftOffset);
-        } else {
-            if (isHorizontal)
-                paintInvalidationRect.move(0, colRect.y() - startColumn * colHeight - beforeBorderPadding);
-            else
-                paintInvalidationRect.move(colRect.x() - startColumn * colHeight - beforeBorderPadding, 0);
-        }
-        paintInvalidationRect.intersect(colRect);
-        result.unite(paintInvalidationRect);
-    } else {
-        // We span multiple columns. We can just unite the start and end column to get the final
-        // paint invalidation rect.
-        result.unite(columnRectAt(colInfo, startColumn));
-        result.unite(columnRectAt(colInfo, endColumn));
-    }
-
-    r = result;
-}
-
-LayoutPoint LayoutBlock::flipForWritingModeIncludingColumns(const LayoutPoint& point) const
-{
-    ASSERT(hasColumns());
-    if (!hasColumns() || !style()->isFlippedBlocksWritingMode())
-        return point;
-    ColumnInfo* colInfo = columnInfo();
-    LayoutUnit columnLogicalHeight = colInfo->columnHeight();
-    LayoutUnit expandedLogicalHeight = borderBefore() + paddingBefore() + columnCount(colInfo) * columnLogicalHeight + borderAfter() + paddingAfter() + scrollbarLogicalHeight();
-    if (isHorizontalWritingMode())
-        return LayoutPoint(point.x(), expandedLogicalHeight - point.y());
-    return LayoutPoint(expandedLogicalHeight - point.x(), point.y());
-}
-
-void LayoutBlock::adjustStartEdgeForWritingModeIncludingColumns(LayoutRect& rect) const
-{
-    ASSERT(hasColumns());
-    if (!hasColumns() || !style()->isFlippedBlocksWritingMode())
-        return;
-
-    ColumnInfo* colInfo = columnInfo();
-    LayoutUnit columnLogicalHeight = colInfo->columnHeight();
-    LayoutUnit expandedLogicalHeight = borderBefore() + paddingBefore() + columnCount(colInfo) * columnLogicalHeight + borderAfter() + paddingAfter() + scrollbarLogicalHeight();
-
-    if (isHorizontalWritingMode())
-        rect.setY(expandedLogicalHeight - rect.maxY());
-    else
-        rect.setX(expandedLogicalHeight - rect.maxX());
-}
-
-LayoutSize LayoutBlock::columnOffset(const LayoutPoint& point) const
-{
-    if (!hasColumns())
-        return LayoutSize();
-
-    ColumnInfo* colInfo = columnInfo();
-
-    LayoutUnit logicalLeft = logicalLeftOffsetForContent();
-    unsigned colCount = columnCount(colInfo);
-    LayoutUnit colLogicalWidth = colInfo->desiredColumnWidth();
-    LayoutUnit colLogicalHeight = colInfo->columnHeight();
-
-    for (unsigned i = 0; i < colCount; ++i) {
-        // Compute the edges for a given column in the block progression direction.
-        LayoutRect sliceRect = LayoutRect(logicalLeft, borderBefore() + paddingBefore() + i * colLogicalHeight, colLogicalWidth, colLogicalHeight);
-        if (!isHorizontalWritingMode())
-            sliceRect = sliceRect.transposedRect();
-
-        LayoutUnit logicalOffset = i * colLogicalHeight;
-
-        // Now we're in the same coordinate space as the point.  See if it is inside the rectangle.
-        if (isHorizontalWritingMode()) {
-            if (point.y() >= sliceRect.y() && point.y() < sliceRect.maxY()) {
-                if (colInfo->progressionAxis() == ColumnInfo::InlineAxis)
-                    return LayoutSize(columnRectAt(colInfo, i).x() - logicalLeft, -logicalOffset);
-                return LayoutSize(0, columnRectAt(colInfo, i).y() - logicalOffset - borderBefore() - paddingBefore());
-            }
-        } else {
-            if (point.x() >= sliceRect.x() && point.x() < sliceRect.maxX()) {
-                if (colInfo->progressionAxis() == ColumnInfo::InlineAxis)
-                    return LayoutSize(-logicalOffset, columnRectAt(colInfo, i).y() - logicalLeft);
-                return LayoutSize(columnRectAt(colInfo, i).x() - logicalOffset - borderBefore() - paddingBefore(), 0);
-            }
-        }
-    }
-
-    return LayoutSize();
 }
 
 void LayoutBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
@@ -2951,12 +2445,6 @@ void LayoutBlock::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Lay
     }
 
     maxLogicalWidth = std::max(minLogicalWidth, maxLogicalWidth);
-
-    // The flow thread based multicol implementation will do this adjustment on the flow thread, and
-    // not here on the multicol container, so that spanners won't incorrectly be treated as column
-    // content (and have spanners' preferred widths multiplied by the number of columns, etc.).
-    if (style()->specifiesColumns() && !RuntimeEnabledFeatures::regionBasedColumnsEnabled())
-        adjustIntrinsicLogicalWidthsForColumns(minLogicalWidth, maxLogicalWidth);
 
     if (isTableCell()) {
         Length tableCellWidth = toLayoutTableCell(this)->styleOrColLogicalWidth();
@@ -3006,31 +2494,6 @@ void LayoutBlock::computePreferredLogicalWidths()
     m_maxPreferredLogicalWidth += borderAndPadding;
 
     clearPreferredLogicalWidthsDirty();
-}
-
-void LayoutBlock::adjustIntrinsicLogicalWidthsForColumns(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
-{
-    ASSERT(!RuntimeEnabledFeatures::regionBasedColumnsEnabled());
-    if (!style()->hasAutoColumnCount() || !style()->hasAutoColumnWidth()) {
-        // The min/max intrinsic widths calculated really tell how much space elements need when
-        // laid out inside the columns. In order to eventually end up with the desired column width,
-        // we need to convert them to values pertaining to the multicol container.
-        int columnCount = style()->hasAutoColumnCount() ? 1 : style()->columnCount();
-        LayoutUnit columnWidth;
-        LayoutUnit gapExtra = (columnCount - 1) * columnGap();
-        if (style()->hasAutoColumnWidth()) {
-            minLogicalWidth = minLogicalWidth * columnCount + gapExtra;
-        } else {
-            columnWidth = style()->columnWidth();
-            minLogicalWidth = std::min(minLogicalWidth, columnWidth);
-        }
-        // FIXME: If column-count is auto here, we should resolve it to calculate the maximum
-        // intrinsic width, instead of pretending that it's 1. The only way to do that is by
-        // performing a layout pass, but this is not an appropriate time or place for layout. The
-        // good news is that if height is unconstrained and there are no explicit breaks, the
-        // resolved column-count really should be 1.
-        maxLogicalWidth = std::max(maxLogicalWidth, columnWidth) * columnCount + gapExtra;
-    }
 }
 
 void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
@@ -3651,8 +3114,6 @@ void LayoutBlock::updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeigh
 {
     if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
         flowThread->updateMinimumPageHeight(offsetFromLogicalTopOfFirstPage() + offset, minHeight);
-    else if (ColumnInfo* colInfo = view()->layoutState()->columnInfo())
-        colInfo->updateMinimumColumnHeight(minHeight);
 }
 
 LayoutUnit LayoutBlock::collapsedMarginBeforeForChild(const LayoutBox& child) const

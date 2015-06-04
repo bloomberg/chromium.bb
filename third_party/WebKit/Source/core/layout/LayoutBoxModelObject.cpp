@@ -852,11 +852,6 @@ void LayoutBoxModelObject::mapAbsoluteToLocalPoint(MapCoordinatesFlags mode, Tra
         // to return flowthread coordinates in the first place? We're effectively performing two
         // conversions here, when in fact none is needed.
         containerOffset = toLayoutSize(flowThread->visualPointToFlowThreadPoint(toLayoutPoint(containerOffset)));
-    } else if (!style()->hasOutOfFlowPosition() && o->hasColumns()) {
-        LayoutBlock* block = toLayoutBlock(o);
-        LayoutPoint point(roundedLayoutPoint(transformState.mappedPoint()));
-        point -= containerOffset;
-        block->adjustForColumnRect(containerOffset, point);
     }
 
     bool preserve3D = mode & UseTransforms && (o->style()->preserves3D() || style()->preserves3D());

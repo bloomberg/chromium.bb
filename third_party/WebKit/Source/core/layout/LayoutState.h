@@ -26,7 +26,6 @@
 #ifndef LayoutState_h
 #define LayoutState_h
 
-#include "core/layout/ColumnInfo.h"
 #include "platform/geometry/LayoutRect.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
@@ -47,21 +46,16 @@ public:
     // Constructor for sub-tree layout
     explicit LayoutState(LayoutObject& root);
 
-    LayoutState(LayoutBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = 0, bool pageHeightLogicalChanged = false, ColumnInfo* = 0, bool containingBlockLogicalWidthChanged = false);
+    LayoutState(LayoutBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = 0, bool pageHeightLogicalChanged = false, bool containingBlockLogicalWidthChanged = false);
 
     ~LayoutState();
 
     void clearPaginationInformation();
-    bool isPaginatingColumns() const { return m_columnInfo; }
     bool isPaginated() const { return m_isPaginated; }
 
     // The page logical offset is the object's offset from the top of the page in the page progression
     // direction (so an x-offset in vertical text and a y-offset for horizontal text).
     LayoutUnit pageLogicalOffset(const LayoutBox&, const LayoutUnit& childLogicalOffset) const;
-
-    void addForcedColumnBreak(const LayoutBox&, const LayoutUnit& childLogicalOffset);
-
-    void setColumnInfo(ColumnInfo* columnInfo) { m_columnInfo = columnInfo; }
 
     const LayoutSize& layoutOffset() const { return m_layoutOffset; }
     const LayoutSize& pageOffset() const { return m_pageOffset; }
@@ -75,14 +69,12 @@ public:
 
     LayoutFlowThread* flowThread() const { return m_flowThread; }
 
-    ColumnInfo* columnInfo() const { return m_columnInfo; }
-
     LayoutObject& layoutObject() const { return m_layoutObject; }
 
 private:
     friend class ForceHorriblySlowRectMapping;
 
-    // Do not add anything apart from bitfields until after m_columnInfo. See https://bugs.webkit.org/show_bug.cgi?id=100173
+    // Do not add anything apart from bitfields until after m_flowThread. See https://bugs.webkit.org/show_bug.cgi?id=100173
     bool m_isPaginated : 1;
     // If our page height has changed, this will force all blocks to relayout.
     bool m_pageLogicalHeightChanged : 1;
@@ -90,8 +82,6 @@ private:
 
     LayoutFlowThread* m_flowThread;
 
-    // If the enclosing pagination model is a column model, then this will store column information for easy retrieval/manipulation.
-    ColumnInfo* m_columnInfo;
     LayoutState* m_next;
 
     // x/y offset from container. Does not include relative positioning or scroll offsets.

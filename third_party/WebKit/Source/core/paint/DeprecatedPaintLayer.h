@@ -157,7 +157,6 @@ public:
     void updateLayerPositionsAfterLayout();
     void updateLayerPositionsAfterOverflowScroll(const DoubleSize& scrollDelta);
 
-    bool isPaginated() const { return m_isPaginated; }
     DeprecatedPaintLayer* enclosingPaginationLayer() const { return m_enclosingPaginationLayer; }
 
     void updateTransformationMatrix();
@@ -217,7 +216,7 @@ public:
     bool canUseConvertToLayerCoords() const
     {
         // These LayoutObjects have an impact on their layers without the layoutObjects knowing about it.
-        return !layoutObject()->hasColumns() && !layoutObject()->hasTransformRelatedProperty() && !layoutObject()->isSVGRoot();
+        return !layoutObject()->hasTransformRelatedProperty() && !layoutObject()->isSVGRoot();
     }
 
     void convertToLayerCoords(const DeprecatedPaintLayer* ancestorLayer, LayoutPoint&) const;
@@ -562,13 +561,6 @@ private:
         const LayoutRect& hitTestRect, const HitTestLocation&,
         const HitTestingTransformState*, double* zOffsetForDescendants, double* zOffset,
         const HitTestingTransformState* unflattenedTransformState, bool depthSortDescendants);
-    DeprecatedPaintLayer* hitTestPaginatedChildLayer(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, HitTestResult&,
-        const LayoutRect& hitTestRect, const HitTestLocation&,
-        const HitTestingTransformState*, double* zOffset);
-    DeprecatedPaintLayer* hitTestChildLayerColumns(DeprecatedPaintLayer* childLayer, DeprecatedPaintLayer* rootLayer, HitTestResult&,
-        const LayoutRect& hitTestRect, const HitTestLocation&,
-        const HitTestingTransformState*, double* zOffset,
-        const Vector<DeprecatedPaintLayer*>& columnLayers, size_t columnIndex);
 
     PassRefPtr<HitTestingTransformState> createLocalTransformState(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer,
         const LayoutRect& hitTestRect, const HitTestLocation&,
@@ -630,8 +622,6 @@ private:
     unsigned m_hasVisibleDescendant : 1;
 
     unsigned m_hasVisibleNonLayerContent : 1;
-
-    unsigned m_isPaginated : 1; // If we think this layer is split by a multi-column ancestor, then this bit will be set.
 
 #if ENABLE(ASSERT)
     unsigned m_needsPositionUpdate : 1;
