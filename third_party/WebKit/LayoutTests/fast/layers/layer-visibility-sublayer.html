@@ -12,33 +12,41 @@
 <script>
 var node1;
 var node2;
-function dotest()
-{
 
-//24
-document.getElementById('24c').style.setProperty('visibility','hidden','');
-document.getElementById('24a').removeChild(document.getElementById('24b'));
-
-//25
-document.getElementById('25c').style.setProperty('visibility','hidden','');
-document.getElementById('25a').removeChild(document.getElementById('25b'));
-
-//26
-document.getElementById('26c').style.setProperty('visibility','hidden','');
-document.getElementById('26a').removeChild(document.getElementById('26b'));
-setTimeout(dotest2,20);
+function startTest() {
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.layoutAndPaintAsyncThen(doTest)
+    } else {
+        requestAnimationFrame(doTest)
+    }
 }
 
-function dotest2()
+function doTest()
 {
+    //24
+    document.getElementById('24c').style.setProperty('visibility','hidden','');
+    document.getElementById('24a').removeChild(document.getElementById('24b'));
 
-//xx
-//document.getElementById('23').style.setProperty('visibility','hidden','');
+    //25
+    document.getElementById('25c').style.setProperty('visibility','hidden','');
+    document.getElementById('25a').removeChild(document.getElementById('25b'));
+
+    //26
+    document.getElementById('26c').style.setProperty('visibility','hidden','');
+    document.getElementById('26a').removeChild(document.getElementById('26b'));
+
+    if (window.testRunner) {
+    	testRunner.layoutAndPaintAsyncThen(function() {
+      	    testRunner.notifyDone();
+        });
+    }
 }
+
 
 </script>
 </head>
-<body onload="setTimeout(dotest,20)">
+<body onload="startTest();">
 <br><br><br><br>
 24 green box with word ok:
 <div id="24a" class="invisible abstop red">
