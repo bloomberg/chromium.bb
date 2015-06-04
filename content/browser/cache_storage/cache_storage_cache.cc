@@ -512,8 +512,8 @@ void CacheStorageCache::Keys(const RequestsCallback& callback) {
 }
 
 void CacheStorageCache::Close(const base::Closure& callback) {
-  DCHECK(backend_state_ != BACKEND_CLOSED)
-      << "Don't call CacheStorageCache::Close() twice.";
+  DCHECK_NE(BACKEND_CLOSED, backend_state_)
+      << "Was CacheStorageCache::Close() called twice?";
 
   base::Closure pending_callback =
       base::Bind(&CacheStorageCache::PendingClosure,
@@ -540,8 +540,8 @@ int64 CacheStorageCache::MemoryBackedSize() const {
               &entry, base::Bind(NotReachedCompletionCallback))) == net::OK) {
     entries.push_back(entry);  // Open the entries without mutating them.
   }
-  DCHECK(rv !=
-         net::ERR_IO_PENDING);  // Expect all memory ops to be synchronous.
+  DCHECK_NE(net::ERR_IO_PENDING, rv)
+      << "Memory cache operations should be synchronous.";
 
   for (disk_cache::Entry* entry : entries) {
     sum += entry->GetDataSize(INDEX_HEADERS) +
@@ -572,7 +572,7 @@ CacheStorageCache::CacheStorageCache(
 
 void CacheStorageCache::MatchImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
                                   const ResponseCallback& callback) {
-  DCHECK(backend_state_ != BACKEND_UNINITIALIZED);
+  DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
   if (backend_state_ != BACKEND_OPEN) {
     callback.Run(CACHE_STORAGE_ERROR_STORAGE,
                  scoped_ptr<ServiceWorkerResponse>(),
@@ -640,16 +640,16 @@ void CacheStorageCache::MatchDidReadMetadata(
 
   for (int i = 0; i < metadata->response().headers_size(); ++i) {
     const CacheHeaderMap header = metadata->response().headers(i);
-    DCHECK(header.name().find('\0') == std::string::npos);
-    DCHECK(header.value().find('\0') == std::string::npos);
+    DCHECK_EQ(std::string::npos, header.name().find('\0'));
+    DCHECK_EQ(std::string::npos, header.value().find('\0'));
     response->headers.insert(std::make_pair(header.name(), header.value()));
   }
 
   ServiceWorkerHeaderMap cached_request_headers;
   for (int i = 0; i < metadata->request().headers_size(); ++i) {
     const CacheHeaderMap header = metadata->request().headers(i);
-    DCHECK(header.name().find('\0') == std::string::npos);
-    DCHECK(header.value().find('\0') == std::string::npos);
+    DCHECK_EQ(std::string::npos, header.name().find('\0'));
+    DCHECK_EQ(std::string::npos, header.value().find('\0'));
     cached_request_headers[header.name()] = header.value();
   }
 
@@ -803,7 +803,7 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
 }
 
 void CacheStorageCache::PutImpl(scoped_ptr<PutContext> put_context) {
-  DCHECK(backend_state_ != BACKEND_UNINITIALIZED);
+  DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
   if (backend_state_ != BACKEND_OPEN) {
     put_context->callback.Run(CACHE_STORAGE_ERROR_STORAGE);
     return;
@@ -854,8 +854,8 @@ void CacheStorageCache::PutDidCreateEntry(scoped_ptr<PutContext> put_context,
   for (ServiceWorkerHeaderMap::const_iterator it =
            put_context->request->headers.begin();
        it != put_context->request->headers.end(); ++it) {
-    DCHECK(it->first.find('\0') == std::string::npos);
-    DCHECK(it->second.find('\0') == std::string::npos);
+    DCHECK_EQ(std::string::npos, it->first.find('\0'));
+    DCHECK_EQ(std::string::npos, it->second.find('\0'));
     CacheHeaderMap* header_map = request_metadata->add_headers();
     header_map->set_name(it->first);
     header_map->set_value(it->second);
@@ -870,8 +870,8 @@ void CacheStorageCache::PutDidCreateEntry(scoped_ptr<PutContext> put_context,
   for (ServiceWorkerHeaderMap::const_iterator it =
            put_context->response->headers.begin();
        it != put_context->response->headers.end(); ++it) {
-    DCHECK(it->first.find('\0') == std::string::npos);
-    DCHECK(it->second.find('\0') == std::string::npos);
+    DCHECK_EQ(std::string::npos, it->first.find('\0'));
+    DCHECK_EQ(std::string::npos, it->second.find('\0'));
     CacheHeaderMap* header_map = response_metadata->add_headers();
     header_map->set_name(it->first);
     header_map->set_value(it->second);
@@ -992,7 +992,7 @@ void CacheStorageCache::Delete(const CacheStorageBatchOperation& operation,
 void CacheStorageCache::DeleteImpl(
     scoped_ptr<ServiceWorkerFetchRequest> request,
     const ErrorCallback& callback) {
-  DCHECK(backend_state_ != BACKEND_UNINITIALIZED);
+  DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
   if (backend_state_ != BACKEND_OPEN) {
     callback.Run(CACHE_STORAGE_ERROR_STORAGE);
     return;
@@ -1042,7 +1042,7 @@ void CacheStorageCache::DeleteDidOpenEntry(
 }
 
 void CacheStorageCache::KeysImpl(const RequestsCallback& callback) {
-  DCHECK(backend_state_ != BACKEND_UNINITIALIZED);
+  DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
   if (backend_state_ != BACKEND_OPEN) {
     callback.Run(CACHE_STORAGE_ERROR_STORAGE, scoped_ptr<Requests>());
     return;
@@ -1145,8 +1145,8 @@ void CacheStorageCache::KeysDidReadMetadata(
 
     for (int i = 0; i < metadata->request().headers_size(); ++i) {
       const CacheHeaderMap header = metadata->request().headers(i);
-      DCHECK(header.name().find('\0') == std::string::npos);
-      DCHECK(header.value().find('\0') == std::string::npos);
+      DCHECK_EQ(std::string::npos, header.name().find('\0'));
+      DCHECK_EQ(std::string::npos, header.value().find('\0'));
       req_headers.insert(std::make_pair(header.name(), header.value()));
     }
   } else {
@@ -1157,7 +1157,7 @@ void CacheStorageCache::KeysDidReadMetadata(
 }
 
 void CacheStorageCache::CloseImpl(const base::Closure& callback) {
-  DCHECK(backend_state_ != BACKEND_CLOSED);
+  DCHECK_NE(BACKEND_CLOSED, backend_state_);
 
   backend_state_ = BACKEND_CLOSED;
   backend_.reset();
@@ -1205,7 +1205,7 @@ void CacheStorageCache::CreateBackendDidCreate(
 }
 
 void CacheStorageCache::InitBackend() {
-  DCHECK(backend_state_ == BACKEND_UNINITIALIZED);
+  DCHECK_EQ(BACKEND_UNINITIALIZED, backend_state_);
 
   if (initializing_)
     return;
