@@ -72,6 +72,7 @@ public class VSyncMonitor {
             @Override
             public void doFrame(long frameTimeNanos) {
                 TraceEvent.begin("VSync");
+                mHandler.removeCallbacks(mSyntheticVSyncRunnable);
                 if (useEstimatedRefreshPeriod && mConsecutiveVSync) {
                     // Display.getRefreshRate() is unreliable on some platforms.
                     // Adjust refresh period- initial value is based on Display.getRefreshRate()
@@ -90,6 +91,7 @@ public class VSyncMonitor {
             @Override
             public void run() {
                 TraceEvent.begin("VSyncSynthetic");
+                mChoreographer.removeFrameCallback(mVSyncFrameCallback);
                 final long currentTime = getCurrentNanoTime();
                 onVSyncCallback(estimateLastVSyncTime(currentTime), currentTime);
                 TraceEvent.end("VSyncSynthetic");
@@ -145,19 +147,26 @@ public class VSyncMonitor {
     private void postCallback() {
         if (mHaveRequestInFlight) return;
         mHaveRequestInFlight = true;
-        if (postSyntheticVSync()) return;
         mConsecutiveVSync = mInsideVSync;
+        // There's no way to tell if we're currently in the scope of a
+        // choregrapher frame callback, which might in turn allow us to honor
+        // the vsync callback in the current frame. Thus, we eagerly post the
+        // frame callback even when we post a synthetic frame callback. If the
+        // frame callback is honored before the synthetic callback, we simply
+        // remove the synthetic callback.
+        postSyntheticVSyncIfNecessary();
         mChoreographer.postFrameCallback(mVSyncFrameCallback);
     }
 
-    private boolean postSyntheticVSync() {
+    private void postSyntheticVSyncIfNecessary() {
+        // TODO(jdduke): Consider removing synthetic vsyncs altogether if
+        // they're found to be no longer necessary.
         final long currentTime = getCurrentNanoTime();
         // Only trigger a synthetic vsync if we've been idle for long enough and the upcoming real
         // vsync is more than half a frame away.
-        if (currentTime - mLastVSyncCpuTimeNano < 2 * mRefreshPeriodNano) return false;
-        if (currentTime - estimateLastVSyncTime(currentTime) > mRefreshPeriodNano / 2) return false;
+        if (currentTime - mLastVSyncCpuTimeNano < 2 * mRefreshPeriodNano) return;
+        if (currentTime - estimateLastVSyncTime(currentTime) > mRefreshPeriodNano / 2) return;
         mHandler.post(mSyntheticVSyncRunnable);
-        return true;
     }
 
     private long estimateLastVSyncTime(long currentTime) {

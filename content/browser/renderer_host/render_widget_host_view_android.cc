@@ -753,10 +753,11 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
       ui::CreateWebTouchEventFromMotionEvent(event, result.did_generate_scroll);
   host_->ForwardTouchEventWithLatencyInfo(web_event, ui::LatencyInfo());
 
-  // Send a proactive BeginFrame on the next vsync to reduce latency.
-  // This is good enough as long as the first touch event has Begin semantics
-  // and the actual scroll happens on the next vsync.
-  if (observing_root_window_)
+  // Send a proactive BeginFrame for this vsync to reduce scroll latency for
+  // scroll-inducing touch events. Note that Android's Choreographer ensures
+  // that BeginFrame requests made during ACTION_MOVE dispatch will be honored
+  // in the same vsync phase.
+  if (observing_root_window_&& result.did_generate_scroll)
     RequestVSyncUpdate(BEGIN_FRAME);
 
   return true;
