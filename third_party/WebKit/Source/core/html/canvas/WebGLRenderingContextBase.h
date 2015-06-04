@@ -534,6 +534,7 @@ protected:
     RefPtrWillBeMember<WebGLRenderbuffer> m_renderbufferBinding;
     RefPtrWillBeMember<CHROMIUMValuebuffer> m_valuebufferBinding;
 
+    GC_PLUGIN_IGNORE("crbug.com/496496")
     WillBeHeapVector<TextureUnitState> m_textureUnits;
     unsigned long m_activeTextureUnit;
 
