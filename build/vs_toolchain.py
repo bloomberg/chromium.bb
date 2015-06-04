@@ -189,7 +189,7 @@ def _GetDesiredVsToolchainHashes():
   # TODO(scottmg): If explicitly set to VS2015 override hashes to the VS2015 RC
   # toolchain. http://crbug.com/492774.
   if os.environ.get('GYP_MSVS_VERSION') == '2015':
-    return ['fbd8008aa6e5418b73efde6279c39c5b013f7d7f']
+    return ['40721575c85171cea5d7afe5ec17bd108a94796e']
   else:
     # Default to VS2013.
     return ['ee7d718ec60c2dc5d255bbe325909c2021a7efef']
