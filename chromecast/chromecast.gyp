@@ -490,6 +490,7 @@
           'dependencies': [
             '<(android_support_v13_target)',
             '../base/base.gyp:base_java',
+            '../components/components.gyp:external_video_surface_java',
             '../content/content.gyp:content_java',
             '../media/media.gyp:media_java',
             '../net/net.gyp:net_java',
