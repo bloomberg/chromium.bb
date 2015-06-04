@@ -84,8 +84,10 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
     if (!owner->documentBeingDestroyed())
         owner->notifyOfSubtreeChange();
 
-    if (!owner->documentBeingDestroyed() && notifyLayoutObject)
+    if (!owner->documentBeingDestroyed() && notifyLayoutObject) {
+        LayoutCounter::layoutObjectSubtreeWillBeDetached(oldChild);
         oldChild->willBeRemovedFromTree();
+    }
 
     // WARNING: There should be no code running between willBeRemovedFromTree and the actual removal below.
     // This is needed to avoid race conditions where willBeRemovedFromTree would dirty the tree's structure
@@ -106,11 +108,6 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
     oldChild->setParent(0);
 
     oldChild->registerSubtreeChangeListenerOnDescendants(oldChild->consumesSubtreeChangeNotification());
-
-    // layoutObjectRemovedFromTree walks the whole subtree. We can improve performance
-    // by skipping this step when destroying the entire tree.
-    if (!owner->documentBeingDestroyed())
-        LayoutCounter::layoutObjectRemovedFromTree(oldChild);
 
     if (AXObjectCache* cache = owner->document().existingAXObjectCache())
         cache->childrenChanged(owner);
@@ -154,10 +151,8 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner, LayoutObject* n
         setLastChild(newChild);
     }
 
-    if (!owner->documentBeingDestroyed() && notifyLayoutObject)
+    if (!owner->documentBeingDestroyed() && notifyLayoutObject) {
         newChild->insertedIntoTree();
-
-    if (!owner->documentBeingDestroyed()) {
         LayoutCounter::layoutObjectSubtreeAttached(newChild);
     }
 

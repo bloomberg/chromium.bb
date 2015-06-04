@@ -468,7 +468,7 @@ void LayoutCounter::destroyCounterNode(LayoutObject& owner, const AtomicString& 
     // map associated with a layoutObject, so there is no risk in leaking the map.
 }
 
-void LayoutCounter::layoutObjectRemovedFromTree(LayoutObject* layoutObject)
+void LayoutCounter::layoutObjectSubtreeWillBeDetached(LayoutObject* layoutObject)
 {
     ASSERT(layoutObject->view());
     if (!layoutObject->view()->hasLayoutCounters())
