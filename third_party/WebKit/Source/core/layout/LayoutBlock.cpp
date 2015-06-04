@@ -700,14 +700,8 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
             LayoutBlock* blockChildrenBlock = prev->childrenInline() ? nextBlock : prevBlock;
 
             // Place the inline children block inside of the block children block instead of deleting it.
-            // In order to reuse it, we have to reset it to just be a generic anonymous block.  Make sure
-            // to clear out inherited column properties by just making a new style, and to also clear the
-            // column span flag if it is set.
             ASSERT(!inlineChildrenBlock->continuation());
-            RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
-            // Cache this value as it might get changed in setStyle() call.
             bool inlineChildrenBlockHasLayer = inlineChildrenBlock->hasLayer();
-            inlineChildrenBlock->setStyle(newStyle);
             children()->removeChildNode(this, inlineChildrenBlock, inlineChildrenBlockHasLayer);
 
             // Now just put the inlineChildrenBlock inside the blockChildrenBlock.
