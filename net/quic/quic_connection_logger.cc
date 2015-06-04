@@ -60,8 +60,8 @@ scoped_ptr<base::Value> NetLogQuicPacketSentCallback(
   dict->SetString("packet_sequence_number",
                   base::Uint64ToString(serialized_packet.sequence_number));
   dict->SetInteger("size", packet_size);
-  dict->SetInteger("sent_time_us",
-                   static_cast<int>(sent_time.ToDebuggingValue()));
+  dict->SetString("sent_time_us",
+                  base::Int64ToString(sent_time.ToDebuggingValue()));
   return dict.Pass();
 }
 
@@ -110,9 +110,9 @@ scoped_ptr<base::Value> NetLogQuicAckFrameCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("largest_observed",
                   base::Uint64ToString(frame->largest_observed));
-  dict->SetInteger(
+  dict->SetString(
       "delta_time_largest_observed_us",
-      static_cast<int>(frame->delta_time_largest_observed.ToMicroseconds()));
+      base::Int64ToString(frame->delta_time_largest_observed.ToMicroseconds()));
   dict->SetInteger("entropy_hash",
                    frame->entropy_hash);
   dict->SetBoolean("truncated", frame->is_truncated);
@@ -140,8 +140,8 @@ scoped_ptr<base::Value> NetLogQuicAckFrameCallback(
        it != received_times.end(); ++it) {
     base::DictionaryValue* info = new base::DictionaryValue();
     info->SetInteger("sequence_number", static_cast<int>(it->first));
-    info->SetInteger("received",
-                     static_cast<int>(it->second.ToDebuggingValue()));
+    info->SetString("received",
+                    base::Int64ToString(it->second.ToDebuggingValue()));
     received->Append(info);
   }
 
