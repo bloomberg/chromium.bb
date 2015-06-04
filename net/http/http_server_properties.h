@@ -275,7 +275,7 @@ class NET_EXPORT HttpServerProperties {
   virtual const AlternativeServiceMap& alternative_service_map() const = 0;
 
   // Returns all alternative service mappings as human readable strings.
-  virtual base::Value* GetAlternativeServiceInfoAsValue() const = 0;
+  virtual scoped_ptr<base::Value> GetAlternativeServiceInfoAsValue() const = 0;
 
   // Sets the threshold to be used when evaluating alternative service
   // advertisments. Only advertisements with a probability greater than or equal

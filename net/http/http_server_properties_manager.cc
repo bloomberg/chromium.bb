@@ -254,7 +254,8 @@ HttpServerPropertiesManager::alternative_service_map() const {
   return http_server_properties_impl_->alternative_service_map();
 }
 
-base::Value* HttpServerPropertiesManager::GetAlternativeServiceInfoAsValue()
+scoped_ptr<base::Value>
+HttpServerPropertiesManager::GetAlternativeServiceInfoAsValue()
     const {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   return http_server_properties_impl_->GetAlternativeServiceInfoAsValue();

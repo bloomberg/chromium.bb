@@ -395,9 +395,10 @@ const AlternativeServiceMap& HttpServerPropertiesImpl::alternative_service_map()
   return alternative_service_map_;
 }
 
-base::Value* HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue()
+scoped_ptr<base::Value>
+HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue()
     const {
-  base::ListValue* dict_list = new base::ListValue();
+  scoped_ptr<base::ListValue> dict_list(new base::ListValue());
   for (const auto& alternative_service_map_item : alternative_service_map_) {
     const HostPortPair& host_port_pair = alternative_service_map_item.first;
     const AlternativeServiceInfo& alternative_service_info =
@@ -417,7 +418,7 @@ base::Value* HttpServerPropertiesImpl::GetAlternativeServiceInfoAsValue()
     dict->SetString("alternative_service", alternative_service_string);
     dict_list->Append(dict.Pass());
   }
-  return dict_list;
+  return dict_list.Pass();
 }
 
 const SettingsMap& HttpServerPropertiesImpl::GetSpdySettings(
