@@ -543,10 +543,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, KioskOnlyTest) {
 }
 
 #if defined(OS_CHROMEOS)
-// This test is currently failing 25% of the time on the ChromiumOS bots.
-// Disabling until the issue can be resolved. (crbug.com/492162)
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
-                       DISABLED_InstallToSharedLocation) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, InstallToSharedLocation) {
   base::ShadowingAtExitManager at_exit_manager;
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       chromeos::switches::kEnableExtensionAssetsSharing);
