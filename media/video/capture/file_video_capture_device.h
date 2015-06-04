@@ -67,6 +67,8 @@ class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
   int frame_size_;
   int64 current_byte_index_;
   int64 first_frame_byte_index_;
+  // Target time for the next frame.
+  base::TimeTicks next_frame_time_;
 
   DISALLOW_COPY_AND_ASSIGN(FileVideoCaptureDevice);
 };

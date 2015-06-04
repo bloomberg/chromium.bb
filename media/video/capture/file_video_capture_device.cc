@@ -210,6 +210,7 @@ void FileVideoCaptureDevice::OnStopAndDeAllocate() {
   current_byte_index_ = 0;
   first_frame_byte_index_ = 0;
   frame_size_ = 0;
+  next_frame_time_ = base::TimeTicks();
   video_frame_.reset();
 }
 
@@ -217,7 +218,6 @@ void FileVideoCaptureDevice::OnCaptureTask() {
   DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
   if (!client_)
     return;
-  const base::TimeTicks timestamp_before_reading = base::TimeTicks::Now();
   int result = file_.Read(current_byte_index_,
                           reinterpret_cast<char*>(video_frame_.get()),
                           frame_size_);
@@ -236,25 +236,25 @@ void FileVideoCaptureDevice::OnCaptureTask() {
   }
 
   // Give the captured frame to the client.
+  const base::TimeTicks current_time = base::TimeTicks::Now();
   client_->OnIncomingCapturedData(video_frame_.get(),
                                   frame_size_,
                                   capture_format_,
                                   0,
-                                  base::TimeTicks::Now());
+                                  current_time);
   // Reschedule next CaptureTask.
   const base::TimeDelta frame_interval =
       base::TimeDelta::FromMicroseconds(1E6 / capture_format_.frame_rate);
-  base::TimeDelta next_on_capture_timedelta = frame_interval -
-      (base::TimeTicks::Now() - timestamp_before_reading);
-  if (next_on_capture_timedelta.InMilliseconds() < 0) {
-    DLOG(WARNING) << "Frame reading took longer than the frame interval.";
-    next_on_capture_timedelta = frame_interval;
+  if (next_frame_time_.is_null()) {
+    next_frame_time_ = current_time + frame_interval;
+  } else {
+    next_frame_time_ += frame_interval;
   }
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FileVideoCaptureDevice::OnCaptureTask,
                  base::Unretained(this)),
-      next_on_capture_timedelta);
+      next_frame_time_ - current_time);
 }
 
 }  // namespace media
