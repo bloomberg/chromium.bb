@@ -370,9 +370,10 @@ def main(argv):
   else:
     bcfile = None
 
-  if (env.getbool('ALLOW_LLVM_BITCODE_INPUT') or
-      env.getone('TARGET_OS') != 'nacl' or
-      env.getbool('USE_EMULATOR')):
+  if ((env.getbool('ALLOW_LLVM_BITCODE_INPUT') or
+       env.getone('TARGET_OS') != 'nacl' or
+       env.getbool('USE_EMULATOR')) and
+      env.getone('SPLIT_MODULE') == 'auto'):
     # When llvm input is allowed, the pexe may not be ABI-stable, so do not
     # split it.  Non-ABI-stable pexes may have symbol naming and visibility
     # issues that the current splitting scheme doesn't account for.
@@ -384,11 +385,10 @@ def main(argv):
     # The x86->arm emulator is very flaky when threading is used, so don't
     # do module splitting when using it.
     env.set('SPLIT_MODULE', 'seq')
-  else:
-    # Do not set -streaming-bitcode for sandboxed mode, because it is already
-    # in the default command line.
-    if not env.getbool('SANDBOXED') and env.getbool('STREAM_BITCODE'):
-      env.append('LLC_FLAGS_EXTRA', '-streaming-bitcode')
+  # Do not set -streaming-bitcode for sandboxed mode, because it is already
+  # in the default command line.
+  if not env.getbool('SANDBOXED') and env.getbool('STREAM_BITCODE'):
+    env.append('LLC_FLAGS_EXTRA', '-streaming-bitcode')
 
   if env.getone('SPLIT_MODULE') == 'seq':
     env.set('SPLIT_MODULE', '1')

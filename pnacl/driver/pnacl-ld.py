@@ -562,6 +562,9 @@ def DoLLVMPasses(pass_list):
   def Func(infile, outfile):
     filtered_list = [pass_option for pass_option in pass_list
                      if pass_option not in env.get('LLVM_PASSES_TO_DISABLE')]
+    # Do not serialize use lists into the (non-finalized) pexe. See
+    # https://code.google.com/p/nativeclient/issues/detail?id=4190
+    filtered_list.append('-preserve-bc-uselistorder=false')
     RunDriver('pnacl-opt', filtered_list + [infile, '-o', outfile])
   return Func
 

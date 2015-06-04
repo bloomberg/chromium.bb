@@ -48,7 +48,7 @@ define i32 @_start() {
 
 
   def checkCompileTranslateFlags(self, pexe, arch, flags,
-                             expected_flags):
+                                 expected_flags, invert_match=False):
     ''' Given a |pexe| the |arch| for translation and additional pnacl-translate
     |flags|, check that the commandline for LLC really contains the
     |expected_flags|.  This ensures that the pnacl-translate script
@@ -78,8 +78,11 @@ define i32 @_start() {
     out = capture_out.getvalue()
     sys.exit = backup_exit
     for f in expected_flags:
-      self.assertTrue(re.search(f, out),
-                      msg='Searching for regex %s in %s' % (f, out))
+      message = 'Searching for regex %s in %s' % (f, out)
+      if not invert_match:
+        self.assertTrue(re.search(f, out), msg=message)
+      else:
+        self.assertFalse(re.search(f, out), msg=message)
     return
 
 
@@ -140,6 +143,12 @@ define i32 @_start() {
           self.platform,
           ['--pnacl-sb', '-split-module=seq'],
           ['StreamInitWithSplit i\\(1\\) h\\(objfile\\) h\\(invalid\\)'])
+      # Check that we do not get streaming bitcode by default.
+      self.checkCompileTranslateFlags(
+          pexe,
+          self.platform,
+          [],
+          ['-streaming-bitcode'], invert_match=True)
 
   def test_subzero_flags(self):
     # Subzero only supports x86-32 for now.
@@ -194,7 +203,7 @@ define i32 @_start() {
         pexe,
         self.platform,
         ['--allow-llvm-bitcode-input'],
-        [])
+        ['bitcode-format'], invert_match=True)
     # For sandboxed pnacl-llc, the default -bitcode-format=pnacl,
     # so we need to set -bitcode-format=llvm to read LLVM files.
     self.checkCompileTranslateFlags(
@@ -202,6 +211,41 @@ define i32 @_start() {
         self.platform,
         ['--pnacl-sb', '--allow-llvm-bitcode-input'],
         ['StreamInitWithSplit i.*C\\(.*-bitcode-format=llvm.*\\)'])
+    # Check that we do not get streaming bitcode by default.
+    self.checkCompileTranslateFlags(
+        pexe,
+        self.platform,
+        ['--allow-llvm-bitcode-input'],
+        ['-streaming-bitcode'], invert_match=True)
+    # Test that we get streaming bitcode when we ask for it.
+    self.checkCompileTranslateFlags(
+        pexe,
+        self.platform,
+        ['--allow-llvm-bitcode-input', '-stream-bitcode'],
+        ['-streaming-bitcode'])
+    # ...even when using threading
+    self.checkCompileTranslateFlags(
+        pexe,
+        self.platform,
+        ['--allow-llvm-bitcode-input', '-stream-bitcode', '-split-module=4'],
+        ['-streaming-bitcode', '-split-module=4'])
+
+  def test_OverrideStreaming(self):
+    if not driver_test_utils.CanRunHost():
+      return
+    pexe = self.getFakePexe()
+    # Test that we get streaming bitcode when we ask for it.
+    self.checkCompileTranslateFlags(
+        pexe,
+        self.platform,
+        ['-stream-bitcode'],
+        ['-streaming-bitcode'])
+    # ...even when using threading.
+    self.checkCompileTranslateFlags(
+        pexe,
+        self.platform,
+        ['-stream-bitcode', '-split-module=4'],
+        ['-streaming-bitcode', '-split-module=4'])
 
   def test_overrideO0(self):
     if driver_test_utils.CanRunHost():
@@ -302,10 +346,10 @@ define i32 @_start() {
       # Same for subzero (only test supported architectures).
       if self.platform == 'x86-32':
         self.checkCompileTranslateFlags(
-          pexe,
-          self.platform,
-          [mattr_flags, '--pnacl-sb', '--use-sz'],
-          ['StreamInitWith.*C\\(.*' + mattr_pat])
+            pexe,
+            self.platform,
+            [mattr_flags, '--pnacl-sb', '--use-sz'],
+            ['StreamInitWith.*C\\(.*' + mattr_pat])
 
 
 if __name__ == '__main__':

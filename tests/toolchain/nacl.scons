@@ -683,3 +683,16 @@ if ((alt_env.Bit('bitcode') and alt_env.SetNonStableBitcodeIfAllowed())
   alt_env.AddNodeToTestSuite(node,
                                ['small_tests', 'toolchain_tests'],
                                'run_llvm_used_globals_objdump_test')
+
+
+tf_env = env.Clone()
+if tf_env.Bit('bitcode') and tf_env.SetNonStableBitcodeIfAllowed():
+  tf_env.Append(TRANSLATEFLAGS=['-stream-bitcode', '-split-module=2'])
+  obj = tf_env.ComponentObject('aligned_code.trans.bc',
+                               'aligned_code.c')
+  pexe = tf_env.ComponentProgram('nonstable_streaming_bitcode', obj,
+                                 EXTRA_LIBS=['${NONIRT_LIBS}'])
+  node = tf_env.CommandSelLdrTestNacl('nonstable_streaming_bitcode.out', pexe)
+  tf_env.AddNodeToTestSuite(node,
+                            ['small_tests', 'toolchain_tests'],
+                            'run_nonstable_streaming_bitcode_test')
