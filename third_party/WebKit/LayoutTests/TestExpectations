@@ -1624,6 +1624,15 @@ crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-http-equiv-refr
 crbug.com/418091 [ Mac ] http/tests/navigation/scrollstate-after-location-reload.html [ Pass Timeout ]
 crbug.com/418091 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_initiator_types.html [ Pass Timeout ]
 
+crbug.com/491993 compositing/repaint/should-not-repaint-composited-descendants.html [ NeedsRebaseline ]
+crbug.com/491993 fast/repaint/outline-clip-change.html [ NeedsRebaseline ]
+crbug.com/491993 fast/repaint/scroll-stacking-context-backface-visiblity-leaves-traces.html [ NeedsRebaseline ]
+crbug.com/491993 fast/repaint/transform-inline-layered-child.html [ NeedsRebaseline ]
+crbug.com/491993 virtual/slimmingpaint/compositing/repaint/should-not-repaint-composited-descendants.html [ NeedsRebaseline ]
+crbug.com/491993 virtual/slimmingpaint/fast/repaint/outline-clip-change.html [ NeedsRebaseline ]
+crbug.com/491993 virtual/slimmingpaint/fast/repaint/scroll-stacking-context-backface-visiblity-leaves-traces.html [ NeedsRebaseline ]
+crbug.com/491993 virtual/slimmingpaint/fast/repaint/transform-inline-layered-child.html [ NeedsRebaseline ]
+
 crbug.com/418091 [ SnowLeopard Debug ] fast/text/atsui-bidi-control.html [ Pass Crash ]
 #crbug.com/418091 [ SnowLeopard Debug ] fast/text/international/bidi-neutral-run.html [ Pass Crash ]
 crbug.com/418091 [ SnowLeopard ] fast/text/shadow-translucent-fill.html [ Pass Failure ]

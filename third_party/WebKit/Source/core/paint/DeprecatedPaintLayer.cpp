@@ -1219,7 +1219,7 @@ void DeprecatedPaintLayer::removeOnlyThisLayer()
             // Our children will be reparented and contained by a new paint invalidation container,
             // so need paint invalidation. CompositingUpdate can't see this layer (which has been
             // removed) so won't do this for us.
-            setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+            layoutObject()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
         }
     }
 
@@ -2738,19 +2738,6 @@ void DeprecatedPaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) con
             rect.append(logicalBoundingBox());
             rects.set(this, rect);
         }
-    }
-}
-
-void DeprecatedPaintLayer::setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants()
-{
-    layoutObject()->setShouldDoFullPaintInvalidation();
-
-    // Disable for reading compositingState() in isPaintInvalidationContainer() below.
-    DisableCompositingQueryAsserts disabler;
-
-    for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling()) {
-        if (!child->isPaintInvalidationContainer())
-            child->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     }
 }
 

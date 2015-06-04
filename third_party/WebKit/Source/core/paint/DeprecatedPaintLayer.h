@@ -500,8 +500,6 @@ public:
 
     void didUpdateNeedsCompositedScrolling();
 
-    void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-
     bool hasSelfPaintingLayerDescendant() const
     {
         if (m_hasSelfPaintingLayerDescendantDirty)

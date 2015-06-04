@@ -1319,20 +1319,6 @@ void FrameView::scrollContentsIfNeededRecursive()
     }
 }
 
-// FIXME: If we had a flag to force invalidations in a whole subtree, we could get rid of this function (crbug.com/410097).
-static void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(const DeprecatedPaintLayer* layer)
-{
-    layer->layoutObject()->setShouldDoFullPaintInvalidation();
-
-    for (DeprecatedPaintLayer* child = layer->firstChild(); child; child = child->nextSibling()) {
-        // Don't include paint invalidation rects for composited child layers; they will paint themselves and have a different origin.
-        if (child->isPaintInvalidationContainer())
-            continue;
-
-        setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(child);
-    }
-}
-
 bool FrameView::invalidateViewportConstrainedObjects()
 {
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
@@ -1359,7 +1345,7 @@ bool FrameView::invalidateViewportConstrainedObjects()
             "data",
             InspectorScrollInvalidationTrackingEvent::data(*layoutObject));
 
-        setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(layer);
+        layoutObject->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     }
     return true;
 }
@@ -1392,7 +1378,7 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
         if (contentsInCompositedLayer())
             layoutView()->layer()->compositedDeprecatedPaintLayerMapping()->setContentsNeedDisplay();
         else
-            setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(layoutView()->layer());
+            layoutView()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     }
 
     if (contentsInCompositedLayer()) {

@@ -1800,7 +1800,7 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
     }
 
     if (updatedDiff.needsPaintInvalidationLayer())
-        toLayoutBoxModelObject(this)->layer()->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
+        setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
     else if (diff.needsPaintInvalidationObject() || updatedDiff.needsPaintInvalidationObject())
         setShouldDoFullPaintInvalidation();
 }
@@ -3259,6 +3259,22 @@ void LayoutObject::invalidatePaintIncludingNonCompositingDescendantsInternal(con
     }
 }
 
+static void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendantsInternal(LayoutObject* object)
+{
+    object->setShouldDoFullPaintInvalidation();
+    for (LayoutObject* child = object->slowFirstChild(); child; child = child->nextSibling()) {
+        if (!child->isPaintInvalidationContainer())
+            setShouldDoFullPaintInvalidationIncludingNonCompositingDescendantsInternal(child);
+    }
+}
+
+// FIXME: If we had a flag to force invalidations in a whole subtree, we could get rid of this function (crbug.com/410097).
+void LayoutObject::setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants()
+{
+    // Need to access the current compositing status.
+    DisableCompositingQueryAsserts disabler;
+    setShouldDoFullPaintInvalidationIncludingNonCompositingDescendantsInternal(this);
+}
 
 } // namespace blink
 
