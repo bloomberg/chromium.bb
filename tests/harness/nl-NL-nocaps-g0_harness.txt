@@ -7,8 +7,21 @@
     {
       "data": [
         {
-          "input": "",
-          "output": ""
+          "input": "ik ben moos",
+          "output": "⠊⠅ ⠃⠑⠝ ⠍⠕⠕⠎"
+        },
+        {
+          "input": "Ik ben Moos",
+          "output": "⠊⠅ ⠃⠑⠝ ⠍⠕⠕⠎"
+        },
+        {
+          "input": "ik vis in een meer",
+          "output": "⠊⠅ ⠧⠊⠎ ⠊⠝ ⠑⠑⠝ ⠍⠑⠑⠗"
+        },
+        {
+          "input":    "ik vis in een meer",
+          "typeform": "000000000000004444",
+          "output": "⠊⠅ ⠧⠊⠎ ⠊⠝ ⠑⠑⠝ ⠍⠑⠑⠗"
         }
       ]
     }
