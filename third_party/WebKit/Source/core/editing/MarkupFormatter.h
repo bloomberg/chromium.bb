@@ -79,6 +79,7 @@ public:
     MarkupFormatter(EAbsoluteURLs, SerializationType = SerializationType::AsOwnerDocument);
     ~MarkupFormatter();
 
+    void appendStartMarkup(StringBuilder&, const Node&, Namespaces*);
     void appendEndMarkup(StringBuilder&, const Element&);
 
     bool serializeAsHTMLDocument(const Node&) const;

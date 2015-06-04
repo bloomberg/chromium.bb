@@ -30,7 +30,7 @@
 #define StyledMarkupAccumulator_h
 
 #include "core/editing/EditingStyle.h"
-#include "core/editing/MarkupAccumulator.h"
+#include "core/editing/MarkupFormatter.h"
 #include "core/editing/TextOffset.h"
 #include "wtf/Forward.h"
 
@@ -80,7 +80,7 @@ private:
     void appendEndMarkup(StringBuilder&, const Element&);
     void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, bool isBlock = false);
 
-    MarkupAccumulator m_accumulator;
+    MarkupFormatter m_formatter;
     const TextOffset m_start;
     const TextOffset m_end;
     const RefPtrWillBeMember<Document> m_document;
@@ -88,6 +88,7 @@ private:
     const ConvertBlocksToInlines m_convertBlocksToInlines;
     RawPtrWillBeMember<Node> m_highestNodeToBeSerialized;
     RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
+    StringBuilder m_result;
     Vector<String> m_reversedPrecedingMarkup;
 };
 

@@ -132,6 +132,38 @@ String MarkupFormatter::resolveURLIfNeeded(const Element& element, const String&
     return urlString;
 }
 
+void MarkupFormatter::appendStartMarkup(StringBuilder& result, const Node& node, Namespaces* namespaces)
+{
+    switch (node.nodeType()) {
+    case Node::TEXT_NODE:
+        ASSERT_NOT_REACHED();
+        break;
+    case Node::COMMENT_NODE:
+        appendComment(result, toComment(node).data());
+        break;
+    case Node::DOCUMENT_NODE:
+        appendXMLDeclaration(result, toDocument(node));
+        break;
+    case Node::DOCUMENT_FRAGMENT_NODE:
+        break;
+    case Node::DOCUMENT_TYPE_NODE:
+        appendDocumentType(result, toDocumentType(node));
+        break;
+    case Node::PROCESSING_INSTRUCTION_NODE:
+        appendProcessingInstruction(result, toProcessingInstruction(node).target(), toProcessingInstruction(node).data());
+        break;
+    case Node::ELEMENT_NODE:
+        ASSERT_NOT_REACHED();
+        break;
+    case Node::CDATA_SECTION_NODE:
+        appendCDATASection(result, toCDATASection(node).data());
+        break;
+    case Node::ATTRIBUTE_NODE:
+        ASSERT_NOT_REACHED();
+        break;
+    }
+}
+
 static bool elementCannotHaveEndTag(const Node& node)
 {
     if (!node.isHTMLElement())

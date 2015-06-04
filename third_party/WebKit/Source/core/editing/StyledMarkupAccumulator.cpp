@@ -51,7 +51,7 @@ const String& styleNodeCloseTag(bool isBlock)
 using namespace HTMLNames;
 
 StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized, ConvertBlocksToInlines convertBlocksToInlines)
-    : m_accumulator(shouldResolveURLs)
+    : m_formatter(shouldResolveURLs)
     , m_start(start)
     , m_end(end)
     , m_document(document)
@@ -63,21 +63,17 @@ StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs
 
 void StyledMarkupAccumulator::appendString(const String& str)
 {
-    m_accumulator.appendString(str);
+    m_result.append(str);
 }
 
 void StyledMarkupAccumulator::appendStartTag(Node& node)
 {
-    StringBuilder out;
-    appendStartMarkup(out, node);
-    appendString(out.toString());
+    appendStartMarkup(m_result, node);
 }
 
 void StyledMarkupAccumulator::appendEndTag(const Element& element)
 {
-    StringBuilder out;
-    appendEndMarkup(out, element);
-    appendString(out.toString());
+    appendEndMarkup(m_result, element);
 }
 
 void StyledMarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node)
@@ -90,14 +86,14 @@ void StyledMarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& nod
         appendElement(result, toElement(node));
         break;
     default:
-        m_accumulator.appendStartMarkup(result, node, nullptr);
+        m_formatter.appendStartMarkup(result, node, nullptr);
         break;
     }
 }
 
 void StyledMarkupAccumulator::appendEndMarkup(StringBuilder& result, const Element& element)
 {
-    m_accumulator.appendEndMarkup(result, element);
+    m_formatter.appendEndMarkup(result, element);
 }
 
 void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
@@ -129,7 +125,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
                 length -= start;
             }
         }
-        MarkupFormatter::appendCharactersReplacingEntities(out, str, start, length, m_accumulator.entityMaskForText(text));
+        MarkupFormatter::appendCharactersReplacingEntities(out, str, start, length, m_formatter.entityMaskForText(text));
     } else {
         const bool useRenderedText = !enclosingElementWithTag(firstPositionInNode(&text), selectTag);
         String content = useRenderedText ? renderedText(text) : stringValueForRange(text);
@@ -150,7 +146,7 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
 void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element, bool addDisplayInline, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
 {
     const bool documentIsHTML = element.document().isHTMLDocument();
-    m_accumulator.appendOpenTag(out, element, 0);
+    m_formatter.appendOpenTag(out, element, 0);
 
     const bool shouldAnnotateOrForceInline = element.isHTMLElement() && (shouldAnnotate() || addDisplayInline);
     const bool shouldOverrideStyleAttr = shouldAnnotateOrForceInline || shouldApplyWrappingStyle(element);
@@ -160,7 +156,7 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
         // We'll handle the style attribute separately, below.
         if (attribute.name() == styleAttr && shouldOverrideStyleAttr)
             continue;
-        m_accumulator.appendAttribute(out, element, attribute, nullptr);
+        m_formatter.appendAttribute(out, element, attribute, nullptr);
     }
 
     if (shouldOverrideStyleAttr) {
@@ -197,7 +193,7 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
         }
     }
 
-    m_accumulator.appendCloseTag(out, element);
+    m_formatter.appendCloseTag(out, element);
 }
 
 void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePropertySet* style, bool isBlock)
@@ -236,12 +232,12 @@ void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style, bool is
 String StyledMarkupAccumulator::takeResults()
 {
     StringBuilder result;
-    result.reserveCapacity(MarkupFormatter::totalLength(m_reversedPrecedingMarkup) + m_accumulator.length());
+    result.reserveCapacity(MarkupFormatter::totalLength(m_reversedPrecedingMarkup) + m_result.length());
 
     for (size_t i = m_reversedPrecedingMarkup.size(); i > 0; --i)
         result.append(m_reversedPrecedingMarkup[i - 1]);
 
-    m_accumulator.concatenateMarkup(result);
+    result.append(m_result);
 
     // We remove '\0' characters because they are not visibly rendered to the user.
     return result.toString().replace(0, "");

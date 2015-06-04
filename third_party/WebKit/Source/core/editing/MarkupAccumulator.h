@@ -53,9 +53,6 @@ public:
     void appendStartMarkup(StringBuilder&, Node&, Namespaces*);
     void appendEndMarkup(StringBuilder&, const Element&);
 
-    size_t length() const { return m_markup.length(); }
-    void concatenateMarkup(StringBuilder&) const;
-
     bool serializeAsHTMLDocument(const Node&) const;
     String toString() { return m_markup.toString(); }
 

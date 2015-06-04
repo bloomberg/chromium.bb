@@ -77,28 +77,11 @@ void MarkupAccumulator::appendStartMarkup(StringBuilder& result, Node& node, Nam
     case Node::TEXT_NODE:
         appendText(result, toText(node));
         break;
-    case Node::COMMENT_NODE:
-        MarkupFormatter::appendComment(result, toComment(node).data());
-        break;
-    case Node::DOCUMENT_NODE:
-        MarkupFormatter::appendXMLDeclaration(result, toDocument(node));
-        break;
-    case Node::DOCUMENT_FRAGMENT_NODE:
-        break;
-    case Node::DOCUMENT_TYPE_NODE:
-        MarkupFormatter::appendDocumentType(result, toDocumentType(node));
-        break;
-    case Node::PROCESSING_INSTRUCTION_NODE:
-        MarkupFormatter::appendProcessingInstruction(result, toProcessingInstruction(node).target(), toProcessingInstruction(node).data());
-        break;
     case Node::ELEMENT_NODE:
         appendElement(result, toElement(node), namespaces);
         break;
-    case Node::CDATA_SECTION_NODE:
-        MarkupFormatter::appendCDATASection(result, toCDATASection(node).data());
-        break;
-    case Node::ATTRIBUTE_NODE:
-        ASSERT_NOT_REACHED();
+    default:
+        m_formatter.appendStartMarkup(result, node, namespaces);
         break;
     }
 }
@@ -118,11 +101,6 @@ static bool elementCannotHaveEndTag(const Node& node)
 void MarkupAccumulator::appendEndMarkup(StringBuilder& result, const Element& element)
 {
     m_formatter.appendEndMarkup(result, element);
-}
-
-void MarkupAccumulator::concatenateMarkup(StringBuilder& result) const
-{
-    result.append(m_markup);
 }
 
 void MarkupAccumulator::appendCustomAttributes(StringBuilder&, const Element&, Namespaces*)

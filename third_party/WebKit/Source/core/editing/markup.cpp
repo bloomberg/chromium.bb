@@ -46,6 +46,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/Editor.h"
+#include "core/editing/MarkupAccumulator.h"
 #include "core/editing/StyledMarkupSerializer.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
