@@ -65,7 +65,9 @@ remoting.ClientPlugin.prototype.injectKeyCombination = function(keys) {};
 /**
  * Sets and stores the key remapping setting for the current host.
  *
- * @param {string} remappings Comma separated list of key remappings.
+ * @param {!Object} remappings Key mappings, specified as {from: to}, where
+ *     |from| and |to| are both USB keycodes, |from| is a decimal representation
+ *     (because object keys must be strings) and |to| is a number.
  */
 remoting.ClientPlugin.prototype.setRemapKeys = function(remappings) {};
 

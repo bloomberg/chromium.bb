@@ -258,7 +258,7 @@ remoting.DesktopConnectedView.prototype.sendPrintScreen = function() {
  * Sets and stores the key remapping setting for the current host. If set,
  * these mappings override the defaults for the client platform.
  *
- * @param {string} remappings Comma-separated list of key remappings.
+ * @param {!Object} remappings
  */
 remoting.DesktopConnectedView.prototype.setRemapKeys = function(remappings) {
   this.plugin_.setRemapKeys(remappings);

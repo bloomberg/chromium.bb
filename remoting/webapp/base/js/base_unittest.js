@@ -94,7 +94,7 @@ QUnit.test('copyWithoutNullFields removes null and undefined fields',
     assert.ok(!('undefinedField' in copy));
 });
 
-QUnit.test('copyWithoutNullFields(null) returns a new empty bject',
+QUnit.test('copyWithoutNullFields(null) returns a new empty object',
   function(assert) {
     assert.deepEqual(
         base.copyWithoutNullFields(null),
@@ -109,6 +109,18 @@ QUnit.test('copyWithoutNullFields(null) returns a new empty bject',
         base.copyWithoutNullFields(undefined),
         base.copyWithoutNullFields(undefined));
 });
+
+QUnit.test('isEmptyObject works',
+  function(assert) {
+    assert.ok(base.isEmptyObject({}));
+    assert.ok(!base.isEmptyObject({1: 1}));
+    assert.ok(!base.isEmptyObject({1:null}));
+
+    var obj = {1: 1};
+    delete obj[1];
+    assert.ok(base.isEmptyObject(obj));
+});
+
 
 QUnit.test('modify the original after deepCopy(obj) should not affect the copy',
   function(assert) {

@@ -105,8 +105,8 @@ remoting.ClientPluginImpl = function(container,
   /** @private {remoting.CredentialsProvider} */
   this.credentials_ = null;
 
-  /** @private {string} */
-  this.keyRemappings_ = '';
+  /** @private {!Object} */
+  this.keyRemappings_ = {};
 };
 
 /**
@@ -543,7 +543,7 @@ remoting.ClientPluginImpl.prototype.releaseAllKeys = function() {
 /**
  * Sets and stores the key remapping setting for the current host.
  *
- * @param {string} remappings Comma separated list of key remappings.
+ * @param {!Object} remappings
  */
 remoting.ClientPluginImpl.prototype.setRemapKeys =
     function(remappings) {
@@ -556,36 +556,21 @@ remoting.ClientPluginImpl.prototype.setRemapKeys =
 /**
  * Applies the configured key remappings to the session, or resets them.
  *
- * @param {string} remapKeys
+ * @param {!Object} remappings
  * @param {boolean} apply True to apply remappings, false to cancel them.
  * @private
  */
 remoting.ClientPluginImpl.prototype.applyRemapKeys_ =
-    function(remapKeys, apply) {
-  if (remapKeys == '') {
-    return;
-  }
-
-  var remappings = remapKeys.split(',');
-  for (var i = 0; i < remappings.length; ++i) {
-    var keyCodes = remappings[i].split('>');
-    if (keyCodes.length != 2) {
-      console.log('bad remapKey: ' + remappings[i]);
-      continue;
-    }
-    var fromKey = parseInt(keyCodes[0], 0);
-    var toKey = parseInt(keyCodes[1], 0);
-    if (!fromKey || !toKey) {
-      console.log('bad remapKey code: ' + remappings[i]);
-      continue;
-    }
+    function(remappings, apply) {
+  for (var i in remappings) {
+    var from = parseInt(i, 10);
+    var to = parseInt(remappings[i], 10);
     if (apply) {
-      console.log('remapKey 0x' + fromKey.toString(16) +
-                  '>0x' + toKey.toString(16));
-      this.remapKey(fromKey, toKey);
+      console.log('remapKey 0x' + from.toString(16) + '>0x' + to.toString(16));
+      this.remapKey(from, to);
     } else {
-      console.log('cancel remapKey 0x' + fromKey.toString(16));
-      this.remapKey(fromKey, fromKey);
+      console.log('cancel remapKey 0x' + from.toString(16));
+      this.remapKey(from, from);
     }
   }
 };

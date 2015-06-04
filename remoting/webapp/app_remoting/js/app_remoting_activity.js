@@ -182,7 +182,10 @@ remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
   // Map Cmd to Ctrl on Mac since hosts typically use Ctrl for keyboard
   // shortcuts, but we want them to act as natively as possible.
   if (remoting.platformIsMac()) {
-    connectionInfo.plugin().setRemapKeys('0x0700e3>0x0700e0,0x0700e7>0x0700e4');
+    connectionInfo.plugin().setRemapKeys({
+      0x0700e3: 0x0700e0,
+      0x0700e7: 0x0700e4
+    });
   }
 
   // Drop the session after 30s of suspension as we cannot recover from a

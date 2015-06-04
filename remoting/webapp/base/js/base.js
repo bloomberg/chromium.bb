@@ -237,6 +237,14 @@ base.copyWithoutNullFields = function(input) {
 };
 
 /**
+ * @param {!Object} object
+ * @return {boolean} True if the object is empty (equal to {}); false otherwise.
+ */
+base.isEmptyObject = function(object) {
+  return Object.keys(object).length === 0;
+};
+
+/**
  * @type {boolean|undefined}
  * @private
  */

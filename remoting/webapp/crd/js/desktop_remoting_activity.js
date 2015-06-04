@@ -93,9 +93,9 @@ remoting.DesktopRemotingActivity.prototype.onConnected =
 
   // Apply the default or previously-specified keyboard remapping.
   var remapping = connectionInfo.host().options.remapKeys;
-  if (remapping === '' && remoting.platformIsChromeOS()) {
+  if (base.isEmptyObject(remapping) && remoting.platformIsChromeOS()) {
     // Under ChromeOS, remap the right Control key to the right Win/Cmd key.
-    remapping = '0x0700e4>0x0700e7';
+    remapping = {0x0700e4: 0x0700e7};
   }
   connectionInfo.plugin().setRemapKeys(remapping);
 

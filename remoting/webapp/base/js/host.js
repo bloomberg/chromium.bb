@@ -57,8 +57,8 @@ remoting.Host.Options = function(hostId) {
   this.shrinkToFit = true;
   /** @type {boolean} */
   this.resizeToClient = true;
-  /** @type {string} */
-  this.remapKeys = '';
+  /** @type {!Object} */
+  this.remapKeys = {};
   /** @type {number} */
   this.desktopScale = 1;
   /** @type {remoting.PairingInfo} */
@@ -77,7 +77,7 @@ remoting.Host.Options.prototype.load = function() {
   var that = this;
   return base.Promise.as(remoting.HostSettings.load, [this.hostId_]).then(
     /**
-     * @param {Object<string|boolean|number>} options
+     * @param {Object<string|boolean|number|!Object>} options
      */
     function(options) {
       // Must be defaulted to true so that app-remoting can resize the host
@@ -88,11 +88,45 @@ remoting.Host.Options.prototype.load = function() {
           base.getBooleanAttr(options, 'resizeToClient', true);
       that.shrinkToFit = base.getBooleanAttr(options, 'shrinkToFit', true);
       that.desktopScale = base.getNumberAttr(options, 'desktopScale', 1);
-      that.remapKeys = base.getStringAttr(options, 'remapKeys', '');
       that.pairingInfo =
           /** @type {remoting.PairingInfo} */ (
               base.getObjectAttr(options, 'pairingInfo', that.pairingInfo));
+
+      // Load the key remappings, allowing for either old or new formats.
+      var remappings = /** string|!Object */ (options['remapKeys']);
+      if (typeof(remappings) === 'string') {
+        remappings = remoting.Host.Options.convertRemapKeys(remappings);
+      } else if (typeof(remappings) !== 'object') {
+        remappings = {};
+      }
+      that.remapKeys = remappings;
     });
+};
+
+/**
+ * Convert an old-style string key remapping into a new-style dictionary one.
+ *
+ * @param {string} remappings
+ * @return {!Object} The same remapping expressed as a dictionary.
+ */
+remoting.Host.Options.convertRemapKeys = function(remappings) {
+  var remappingsArr = remappings.split(',');
+  var result = {};
+  for (var i = 0; i < remappingsArr.length; ++i) {
+    var keyCodes = remappingsArr[i].split('>');
+    if (keyCodes.length != 2) {
+      console.log('bad remapKey: ' + remappingsArr[i]);
+      continue;
+    }
+    var fromKey = parseInt(keyCodes[0], 0);
+    var toKey = parseInt(keyCodes[1], 0);
+    if (!fromKey || !toKey) {
+      console.log('bad remapKey code: ' + remappingsArr[i]);
+      continue;
+    }
+    result[fromKey] = toKey;
+  }
+  return result;
 };
 
 /**
