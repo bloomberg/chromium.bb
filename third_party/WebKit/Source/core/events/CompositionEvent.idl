@@ -23,18 +23,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/DOM-Level-3-Events/#interface-CompositionEvent
+// https://w3c.github.io/uievents/#interface-CompositionEvent
 
 [
     Constructor(DOMString type, optional CompositionEventInit eventInitDict),
 ] interface CompositionEvent : UIEvent {
-
     readonly attribute DOMString data;
 
-    void initCompositionEvent([Default=Undefined] optional DOMString typeArg,
-                              [Default=Undefined] optional boolean canBubbleArg,
-                              [Default=Undefined] optional boolean cancelableArg,
-                              [Default=Undefined] optional Window viewArg,
-                              [Default=Undefined] optional DOMString dataArg);
-
+    // https://w3c.github.io/uievents/#idl-interface-CompositionEvent-initializers
+    // TODO(philipj): None of the initCompositionEvent() arguments should be
+    // optional, and the spec has a locale argument after data.
+    void initCompositionEvent([Default=Undefined] optional DOMString type,
+                              [Default=Undefined] optional boolean bubbles,
+                              [Default=Undefined] optional boolean cancelable,
+                              [Default=Undefined] optional Window? view,
+                              [Default=Undefined] optional DOMString data);
 };

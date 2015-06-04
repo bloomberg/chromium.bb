@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// http://www.w3.org/TR/DOM-Level-3-Events/#interface-MouseEvent
+// https://w3c.github.io/uievents/#interface-MouseEvent
 
 [
     Constructor(DOMString type, optional MouseEventInit eventInitDict),
@@ -31,18 +31,18 @@
     readonly attribute boolean          shiftKey;
     readonly attribute boolean          altKey;
     readonly attribute boolean          metaKey;
+    // TODO(philipj): button should be short, not unsigned short.
     readonly attribute unsigned short   button;
     readonly attribute unsigned short   buttons;
     readonly attribute EventTarget?     relatedTarget;
-    [MeasureAs=MouseEventMovementX] readonly attribute long             movementX;
-    [MeasureAs=MouseEventMovementY] readonly attribute long             movementY;
-    [MeasureAs=PrefixedMouseEventMovementX, ImplementedAs=movementX] readonly attribute long webkitMovementX;
-    [MeasureAs=PrefixedMouseEventMovementY, ImplementedAs=movementY] readonly attribute long webkitMovementY;
+    // TODO(philipj): boolean getModifierState(DOMString keyArg);
 
-     [CallWith=ScriptState] void initMouseEvent([Default=Undefined] optional DOMString type,
-                                       [Default=Undefined] optional boolean canBubble,
+    // https://w3c.github.io/uievents/#idl-interface-MouseEvent-initializers
+    // TODO(philipj): None of the initMouseEvent() arguments should be optional.
+    [CallWith=ScriptState] void initMouseEvent([Default=Undefined] optional DOMString type,
+                                       [Default=Undefined] optional boolean bubbles,
                                        [Default=Undefined] optional boolean cancelable,
-                                       [Default=Undefined] optional Window view,
+                                       [Default=Undefined] optional Window? view,
                                        [Default=Undefined] optional long detail,
                                        [Default=Undefined] optional long screenX,
                                        [Default=Undefined] optional long screenY,
@@ -53,7 +53,12 @@
                                        [Default=Undefined] optional boolean shiftKey,
                                        [Default=Undefined] optional boolean metaKey,
                                        [Default=Undefined] optional unsigned short button,
-                                       [Default=Undefined] optional EventTarget relatedTarget);
+                                       [Default=Undefined] optional EventTarget? relatedTarget);
+
+    // Pointer Lock
+    // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-mouseevent-interface
+    [MeasureAs=MouseEventMovementX] readonly attribute long movementX;
+    [MeasureAs=MouseEventMovementY] readonly attribute long movementY;
 
     // Non-standard
     [MeasureAs=MouseEventOffsetX] readonly attribute long offsetX;
@@ -63,6 +68,8 @@
     [MeasureAs=MouseEventFromElement] readonly attribute Node fromElement;
     [MeasureAs=MouseEventToElement] readonly attribute Node toElement;
     [MeasureAs=MouseEventWhich] readonly attribute long which;
+    [MeasureAs=PrefixedMouseEventMovementX, ImplementedAs=movementX] readonly attribute long webkitMovementX;
+    [MeasureAs=PrefixedMouseEventMovementY, ImplementedAs=movementY] readonly attribute long webkitMovementY;
 
     // FIXME: this belongs on the DragEvent interface
     readonly attribute DataTransfer dataTransfer;

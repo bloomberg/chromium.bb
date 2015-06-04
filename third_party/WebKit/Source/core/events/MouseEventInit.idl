@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://www.w3.org/TR/DOM-Level-3-Events/#interface-MouseEvent
-// Note: this event init is somewhat different from the spec for compatibility reason.
+// https://w3c.github.io/uievents/#idl-def-MouseEventInit
 
-dictionary MouseEventInit : SharedKeyboardAndMouseEventInit {
+dictionary MouseEventInit : EventModifierInit {
     long screenX = 0;
     long screenY = 0;
     long clientX = 0;
     long clientY = 0;
+    // TODO(philipj): button should be short, not unsigned short.
     unsigned short button = 0;
     unsigned short buttons = 0;
     EventTarget? relatedTarget = null;
 
+    // Pointer Lock
     // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-mouseeventinit-dictionary
     long movementX = 0;
     long movementY = 0;

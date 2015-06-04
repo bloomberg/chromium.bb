@@ -17,16 +17,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://w3c.github.io/uievents/#interface-UIEvent
+
 [
     Constructor(DOMString type, optional UIEventInit eventInitDict)
 ] interface UIEvent : Event {
     readonly attribute Window? view;
     readonly attribute long detail;
 
-     void initUIEvent([Default=Undefined] optional DOMString type,
-                                    [Default=Undefined] optional boolean canBubble,
+    // https://w3c.github.io/uievents/#idl-interface-UIEvent-initializers
+    // TODO(philipj): None of the initUIEvent() arguments should be optional.
+    void initUIEvent([Default=Undefined] optional DOMString type,
+                                    [Default=Undefined] optional boolean bubbles,
                                     [Default=Undefined] optional boolean cancelable,
-                                    [Default=Undefined] optional Window view,
+                                    [Default=Undefined] optional Window? view,
                                     [Default=Undefined] optional long detail);
 
     // Non-standard

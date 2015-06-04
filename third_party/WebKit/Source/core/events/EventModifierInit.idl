@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://www.w3.org/TR/DOM-Level-3-Events/#idl-def-SharedKeyboardAndMouseEventInit
+// https://w3c.github.io/uievents/#idl-def-EventModifierInit
 
-dictionary SharedKeyboardAndMouseEventInit : UIEventInit {
+dictionary EventModifierInit : UIEventInit {
     boolean ctrlKey = false;
     boolean shiftKey = false;
     boolean altKey = false;
     boolean metaKey = false;
-    // FIXME: Add keyModifilerXXX members when needed.
+    // FIXME: Add modifierXXX members when needed.
 };

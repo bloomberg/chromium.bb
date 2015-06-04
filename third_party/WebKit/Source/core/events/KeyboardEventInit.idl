@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://www.w3.org/TR/DOM-Level-3-Events/#interface-KeyboardEvent
-// Note: this event init is somewhat different from the spec for compatibility reason.
+// https://w3c.github.io/uievents/#idl-def-KeyboardEventInit
 
-dictionary KeyboardEventInit : SharedKeyboardAndMouseEventInit {
-    DOMString keyIdentifier = "";
+dictionary KeyboardEventInit : EventModifierInit {
+    // TODO(philipj): DOMString key = "";
+    // TODO(philipj): DOMString code = "";
     unsigned long location = 0;
-    [ImplementedAs=location, DeprecateAs=KeyboardEventKeyLocation] unsigned long keyLocation = 0; // Deprecated.
     boolean repeat = false;
+    // TODO(philipj): boolean isComposing = false;
+
+    // Non-standard APIs
+    DOMString keyIdentifier = "";
+    [ImplementedAs=location, DeprecateAs=KeyboardEventKeyLocation] unsigned long keyLocation = 0;
 };

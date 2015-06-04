@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/DOM-Level-3-Events/#interface-FocusEvent
+// https://w3c.github.io/uievents/#interface-FocusEvent
 
 [
     Constructor(DOMString type, optional FocusEventInit eventInitDict),
