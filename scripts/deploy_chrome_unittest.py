@@ -81,24 +81,24 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
 
   def testMountOptionSetsTargetDir(self):
     argv = list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--mount']
-    options, _ = _ParseCommandLine(argv)
+    options = _ParseCommandLine(argv)
     self.assertIsNot(options.target_dir, None)
 
   def testMountOptionSetsMountDir(self):
     argv = list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--mount']
-    options, _ = _ParseCommandLine(argv)
+    options = _ParseCommandLine(argv)
     self.assertIsNot(options.mount_dir, None)
 
   def testMountOptionDoesNotOverrideTargetDir(self):
     argv = list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--mount',
                                 '--target-dir', '/foo/bar/cow']
-    options, _ = _ParseCommandLine(argv)
+    options = _ParseCommandLine(argv)
     self.assertEqual(options.target_dir, '/foo/bar/cow')
 
   def testMountOptionDoesNotOverrideMountDir(self):
     argv = list(_REGULAR_TO) + ['--gs-path', _GS_PATH, '--mount',
                                 '--mount-dir', '/foo/bar/cow']
-    options, _ = _ParseCommandLine(argv)
+    options = _ParseCommandLine(argv)
     self.assertEqual(options.mount_dir, '/foo/bar/cow')
 
 
@@ -164,7 +164,7 @@ class DeployTest(cros_test_lib.MockTempDirTestCase):
   """Setup a deploy object with a GS-path for use in tests."""
 
   def _GetDeployChrome(self, args):
-    options, _ = _ParseCommandLine(args)
+    options = _ParseCommandLine(args)
     return deploy_chrome.DeployChrome(
         options, self.tempdir, os.path.join(self.tempdir, 'staging'))
 
@@ -261,7 +261,7 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
 
   def testSingleFileDeployFailure(self):
     """Default staging enforces that mandatory files are copied"""
-    options, _ = _ParseCommandLine(self.common_flags)
+    options = _ParseCommandLine(self.common_flags)
     osutils.Touch(os.path.join(self.build_dir, 'chrome'), makedirs=True)
     self.assertRaises(
         chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
@@ -269,21 +269,21 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
 
   def testSloppyDeployFailure(self):
     """Sloppy staging enforces that at least one file is copied."""
-    options, _ = _ParseCommandLine(self.common_flags + ['--sloppy'])
+    options = _ParseCommandLine(self.common_flags + ['--sloppy'])
     self.assertRaises(
         chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
         options, self.tempdir, self.staging_dir, chrome_util._COPY_PATHS_CHROME)
 
   def testSloppyDeploySuccess(self):
     """Sloppy staging - stage one file."""
-    options, _ = _ParseCommandLine(self.common_flags + ['--sloppy'])
+    options = _ParseCommandLine(self.common_flags + ['--sloppy'])
     osutils.Touch(os.path.join(self.build_dir, 'chrome'), makedirs=True)
     deploy_chrome._PrepareStagingDir(options, self.tempdir, self.staging_dir,
                                      chrome_util._COPY_PATHS_CHROME)
 
   def testEmptyDeployStrict(self):
     """Strict staging fails when there are no files."""
-    options, _ = _ParseCommandLine(
+    options = _ParseCommandLine(
         self.common_flags + ['--gyp-defines', 'chromeos=1', '--strict'])
 
     self.assertRaises(
@@ -295,7 +295,7 @@ class DeployTestBuildDir(cros_test_lib.MockTempDirTestCase):
   """Set up a deploy object with a build-dir for use in deployment type tests"""
 
   def _GetDeployChrome(self, args):
-    options, _ = _ParseCommandLine(args)
+    options = _ParseCommandLine(args)
     return deploy_chrome.DeployChrome(
         options, self.tempdir, os.path.join(self.tempdir, 'staging'))
 

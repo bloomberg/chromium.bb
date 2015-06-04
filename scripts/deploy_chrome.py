@@ -17,13 +17,13 @@ device's rootfs.
 
 from __future__ import print_function
 
+import argparse
 import collections
 import contextlib
 import functools
 import glob
 import multiprocessing
 import os
-import optparse
 import shlex
 import shutil
 import time
@@ -42,8 +42,6 @@ from chromite.lib import remote_access as remote
 from chromite.lib import stats
 from chromite.lib import timeout_util
 
-
-_USAGE = 'deploy_chrome [--]\n\n %s' % __doc__
 
 KERNEL_A_PARTITION = 2
 KERNEL_B_PARTITION = 4
@@ -88,7 +86,7 @@ class DeployChrome(object):
     """Initialize the class.
 
     Args:
-      options: Optparse result structure.
+      options: options object.
       tempdir: Scratch space for the class.  Caller has responsibility to clean
         it up.
       staging_dir: Directory to stage the files to.
@@ -343,123 +341,113 @@ class DeployChrome(object):
     self._Deploy()
 
 
-def ValidateGypDefines(_option, _opt, value):
+def ValidateGypDefines(value):
   """Convert GYP_DEFINES-formatted string to dictionary."""
   return chrome_util.ProcessGypDefines(value)
 
 
-class CustomOption(commandline.Option):
-  """Subclass Option class to implement path evaluation."""
-  TYPES = commandline.Option.TYPES + ('gyp_defines',)
-  TYPE_CHECKER = commandline.Option.TYPE_CHECKER.copy()
-  TYPE_CHECKER['gyp_defines'] = ValidateGypDefines
-
-
 def _CreateParser():
   """Create our custom parser."""
-  parser = commandline.OptionParser(usage=_USAGE, option_class=CustomOption,
-                                    caching=True)
+  parser = commandline.ArgumentParser(description=__doc__, caching=True)
 
   # TODO(rcui): Have this use the UI-V2 format of having source and target
   # device be specified as positional arguments.
-  parser.add_option('--force', action='store_true', default=False,
-                    help='Skip all prompts (i.e., for disabling of rootfs '
-                         'verification).  This may result in the target '
-                         'machine being rebooted.')
+  parser.add_argument('--force', action='store_true', default=False,
+                      help='Skip all prompts (i.e., for disabling of rootfs '
+                           'verification).  This may result in the target '
+                           'machine being rebooted.')
   sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
-  parser.add_option('--board', default=sdk_board_env,
-                    help="The board the Chrome build is targeted for.  When in "
-                         "a 'cros chrome-sdk' shell, defaults to the SDK "
-                         "board.")
-  parser.add_option('--build-dir', type='path',
-                    help='The directory with Chrome build artifacts to deploy '
-                         'from.  Typically of format <chrome_root>/out/Debug. '
-                         'When this option is used, the GYP_DEFINES '
-                         'environment variable must be set.')
-  parser.add_option('--target-dir', type='path',
-                    help='Target directory on device to deploy Chrome into.',
-                    default=None)
-  parser.add_option('-g', '--gs-path', type='gs_path',
-                    help='GS path that contains the chrome to deploy.')
-  parser.add_option('--nostartui', action='store_false', dest='startui',
-                    default=True,
-                    help="Don't restart the ui daemon after deployment.")
-  parser.add_option('--nostrip', action='store_false', dest='dostrip',
-                    default=True,
-                    help="Don't strip binaries during deployment.  Warning: "
-                         "the resulting binaries will be very large!")
-  parser.add_option('-p', '--port', type=int, default=remote.DEFAULT_SSH_PORT,
-                    help='Port of the target device to connect to.')
-  parser.add_option('-t', '--to',
-                    help='The IP address of the CrOS device to deploy to.')
-  parser.add_option('-v', '--verbose', action='store_true', default=False,
-                    help='Show more debug output.')
-  parser.add_option('--mount-dir', type='path', default=None,
-                    help='Deploy Chrome in target directory and bind it '
-                         'to the directory specified by this flag.'
-                         'Any existing mount on this directory will be '
-                         'umounted first.')
-  parser.add_option('--mount', action='store_true', default=False,
-                    help='Deploy Chrome to default target directory and bind '
-                         'it to the default mount directory.'
-                         'Any existing mount on this directory will be '
-                         'umounted first.')
+  parser.add_argument('--board', default=sdk_board_env,
+                      help="The board the Chrome build is targeted for.  When "
+                           "in a 'cros chrome-sdk' shell, defaults to the SDK "
+                           "board.")
+  parser.add_argument('--build-dir', type='path',
+                      help='The directory with Chrome build artifacts to '
+                           'deploy from. Typically of format '
+                           '<chrome_root>/out/Debug. When this option is used, '
+                           'the GYP_DEFINES environment variable must be set.')
+  parser.add_argument('--target-dir', type='path',
+                      default=None,
+                      help='Target directory on device to deploy Chrome into.')
+  parser.add_argument('-g', '--gs-path', type='gs_path',
+                      help='GS path that contains the chrome to deploy.')
+  parser.add_argument('--nostartui', action='store_false', dest='startui',
+                      default=True,
+                      help="Don't restart the ui daemon after deployment.")
+  parser.add_argument('--nostrip', action='store_false', dest='dostrip',
+                      default=True,
+                      help="Don't strip binaries during deployment.  Warning: "
+                           'the resulting binaries will be very large!')
+  parser.add_argument('-p', '--port', type=int, default=remote.DEFAULT_SSH_PORT,
+                      help='Port of the target device to connect to.')
+  parser.add_argument('-t', '--to',
+                      help='The IP address of the CrOS device to deploy to.')
+  parser.add_argument('-v', '--verbose', action='store_true', default=False,
+                      help='Show more debug output.')
+  parser.add_argument('--mount-dir', type='path', default=None,
+                      help='Deploy Chrome in target directory and bind it '
+                           'to the directory specified by this flag.'
+                           'Any existing mount on this directory will be '
+                           'umounted first.')
+  parser.add_argument('--mount', action='store_true', default=False,
+                      help='Deploy Chrome to default target directory and bind '
+                           'it to the default mount directory.'
+                           'Any existing mount on this directory will be '
+                           'umounted first.')
 
-  group = optparse.OptionGroup(parser, 'Advanced Options')
-  group.add_option('-l', '--local-pkg-path', type='path',
-                   help='Path to local chrome prebuilt package to deploy.')
-  group.add_option('--sloppy', action='store_true', default=False,
-                   help='Ignore when mandatory artifacts are missing.')
-  group.add_option('--staging-flags', default=None, type='gyp_defines',
-                   help=('Extra flags to control staging.  Valid flags are - %s'
-                         % ', '.join(chrome_util.STAGING_FLAGS)))
-  group.add_option('--strict', action='store_true', default=False,
-                   help='Stage artifacts based on the GYP_DEFINES environment '
-                        'variable and --staging-flags, if set. Enforce that '
-                        'all optional artifacts are deployed.')
-  group.add_option('--strip-flags', default=None,
-                   help="Flags to call the 'strip' binutil tool with.  "
-                        "Overrides the default arguments.")
-  group.add_option('--ping', action='store_true', default=False,
-                   help='Ping the device before connection attempt.')
-  parser.add_option_group(group)
+  group = parser.add_argument_group('Advanced Options')
+  group.add_argument('-l', '--local-pkg-path', type='path',
+                     help='Path to local chrome prebuilt package to deploy.')
+  group.add_argument('--sloppy', action='store_true', default=False,
+                     help='Ignore when mandatory artifacts are missing.')
+  group.add_argument('--staging-flags', default=None, type=ValidateGypDefines,
+                     help=('Extra flags to control staging.  Valid flags are - '
+                           '%s' % ', '.join(chrome_util.STAGING_FLAGS)))
+  group.add_argument('--strict', action='store_true', default=False,
+                     help='Stage artifacts based on the GYP_DEFINES '
+                          'environment variable and --staging-flags, if set. '
+                          'Enforce that all optional artifacts are deployed.')
+  group.add_argument('--strip-flags', default=None,
+                     help="Flags to call the 'strip' binutil tool with.  "
+                          "Overrides the default arguments.")
+  group.add_argument('--ping', action='store_true', default=False,
+                     help='Ping the device before connection attempt.')
 
-  group = optparse.OptionGroup(parser, 'Metadata Overrides (Advanced)',
-                               description='Provide all of these overrides '
-                               'in order to remove dependencies on '
-                               'metadata.json existence.')
-  group.add_option('--target-tc', action='store', default=None,
-                   help='Override target toolchain name, e.g. '
-                   'x86_64-cros-linux-gnu')
-  group.add_option('--toolchain-url', action='store', default=None,
-                   help='Override toolchain url format pattern, e.g. '
-                   '2014/04/%%(target)s-2014.04.23.220740.tar.xz')
-  parser.add_option_group(group)
+  group = parser.add_argument_group(
+      'Metadata Overrides (Advanced)',
+      description='Provide all of these overrides in order to remove '
+                  'dependencies on metadata.json existence.')
+  group.add_argument('--target-tc', action='store', default=None,
+                     help='Override target toolchain name, e.g. '
+                          'x86_64-cros-linux-gnu')
+  group.add_argument('--toolchain-url', action='store', default=None,
+                     help='Override toolchain url format pattern, e.g. '
+                          '2014/04/%%(target)s-2014.04.23.220740.tar.xz')
 
   # GYP_DEFINES that Chrome was built with.  Influences which files are staged
   # when --build-dir is set.  Defaults to reading from the GYP_DEFINES
   # enviroment variable.
-  parser.add_option('--gyp-defines', default=None, type='gyp_defines',
-                    help=optparse.SUPPRESS_HELP)
+  parser.add_argument('--gyp-defines', default=None, type=ValidateGypDefines,
+                      help=argparse.SUPPRESS)
   # Path of an empty directory to stage chrome artifacts to.  Defaults to a
   # temporary directory that is removed when the script finishes. If the path
   # is specified, then it will not be removed.
-  parser.add_option('--staging-dir', type='path', default=None,
-                    help=optparse.SUPPRESS_HELP)
+  parser.add_argument('--staging-dir', type='path', default=None,
+                      help=argparse.SUPPRESS)
   # Only prepare the staging directory, and skip deploying to the device.
-  parser.add_option('--staging-only', action='store_true', default=False,
-                    help=optparse.SUPPRESS_HELP)
+  parser.add_argument('--staging-only', action='store_true', default=False,
+                      help=argparse.SUPPRESS)
   # Path to a binutil 'strip' tool to strip binaries with.  The passed-in path
   # is used as-is, and not normalized.  Used by the Chrome ebuild to skip
   # fetching the SDK toolchain.
-  parser.add_option('--strip-bin', default=None, help=optparse.SUPPRESS_HELP)
+  parser.add_argument('--strip-bin', default=None, help=argparse.SUPPRESS)
   return parser
 
 
 def _ParseCommandLine(argv):
   """Parse args, and run environment-independent checks."""
   parser = _CreateParser()
-  (options, args) = parser.parse_args(argv)
+  options = parser.parse_args(argv)
 
   if not any([options.gs_path, options.local_pkg_path, options.build_dir]):
     parser.error('Need to specify either --gs-path, --local-pkg-path, or '
@@ -491,10 +479,10 @@ def _ParseCommandLine(argv):
   if options.mount and not options.mount_dir:
     options.mount_dir = _CHROME_DIR
 
-  return options, args
+  return options
 
 
-def _PostParseCheck(options, _args):
+def _PostParseCheck(options):
   """Perform some usage validation (after we've parsed the arguments).
 
   Args:
@@ -611,8 +599,8 @@ def _PrepareStagingDir(options, tempdir, staging_dir, copy_paths=None,
 
 
 def main(argv):
-  options, args = _ParseCommandLine(argv)
-  _PostParseCheck(options, args)
+  options = _ParseCommandLine(argv)
+  _PostParseCheck(options)
 
   # Set cros_build_lib debug level to hide RunCommand spew.
   if options.verbose:
