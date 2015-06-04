@@ -28,6 +28,7 @@ public:
 
     bool hasOverflowScrollTrigger() const;
     bool requiresCompositingForScrollableFrame() const;
+    bool requiresCompositingForAnimation(const ComputedStyle&) const;
 
 private:
     bool isMainFrame() const;
@@ -35,7 +36,6 @@ private:
     CompositingReasons nonStyleDeterminedDirectReasons(const DeprecatedPaintLayer*) const;
 
     bool requiresCompositingForTransform(LayoutObject*) const;
-    bool requiresCompositingForAnimation(const ComputedStyle&) const;
     bool requiresCompositingForPositionFixed(const DeprecatedPaintLayer*) const;
     bool requiresCompositingForScrollBlocksOn(const LayoutObject*) const;
 

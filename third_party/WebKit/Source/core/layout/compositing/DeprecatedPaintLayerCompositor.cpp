@@ -778,7 +778,8 @@ void DeprecatedPaintLayerCompositor::updateDirectCompositingReasons(DeprecatedPa
 
 bool DeprecatedPaintLayerCompositor::canBeComposited(const DeprecatedPaintLayer* layer) const
 {
-    return m_hasAcceleratedCompositing && layer->isSelfPaintingLayer() && !layer->subtreeIsInvisible() && !layer->layoutObject()->isLayoutFlowThread();
+    const bool hasCompositorAnimation = m_compositingReasonFinder.requiresCompositingForAnimation(*layer->layoutObject()->style());
+    return m_hasAcceleratedCompositing && (hasCompositorAnimation || !layer->subtreeIsInvisible()) && layer->isSelfPaintingLayer() && !layer->layoutObject()->isLayoutFlowThread();
 }
 
 // Return true if the given layer is a stacking context and has compositing child
