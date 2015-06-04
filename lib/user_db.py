@@ -23,6 +23,18 @@ Group = collections.namedtuple(
     'Group', ('group', 'password', 'gid', 'users'))
 
 
+def UserToEntry(user):
+  """Returns the database file entry corresponding to |user|."""
+  return ':'.join([user.user, user.password, str(user.uid), str(user.gid),
+                   user.gecos, user.home, user.shell])
+
+
+def GroupToEntry(group):
+  """Returns the database file entry corresponding to |group|."""
+  return ':'.join([group.group, group.password,
+                   str(group.gid), ','.join(group.users)])
+
+
 class UserDB(object):
   """An object that understands the users and groups installed on a system."""
 
@@ -107,6 +119,8 @@ class UserDB(object):
                         group)
         continue
 
+      users = users.split(',')
+
       self._group_cache[group] = Group(group=group, password=password,
                                        gid=gid_as_int, users=users)
     return self._group_cache
@@ -174,6 +188,8 @@ class UserDB(object):
     # Try to avoid grabbing the lock in the common case that a user already
     # exists.
     if self.UserExists(user.user):
+      logging.info('Not installing user "%s" because it already existed.',
+                   user.user)
       return
 
     # Clear the user cache to force ourselves to reparse.
@@ -184,12 +200,21 @@ class UserDB(object):
       # Check that |user| exists under the lock in case we're racing to create
       # this user.
       if self.UserExists(user.user):
+        logging.info('Not installing user "%s" because it already existed.',
+                     user.user)
         return
 
       self._users[user.user] = user
       new_users = sorted(self._users.itervalues(), key=lambda u: u.uid)
-      contents = '\n'.join([':'.join(map(str, u)) for u in new_users])
+      contents = '\n'.join([UserToEntry(u) for u in new_users])
       osutils.WriteFile(self._user_db_file, contents, atomic=True, sudo=True)
+      print('Added user "%s" to %s:' % (user.user, self._user_db_file))
+      print(' - password entry: %s' % user.password)
+      print(' - id: %d' % user.uid)
+      print(' - group id: %d' % user.gid)
+      print(' - gecos: %s' % user.gecos)
+      print(' - home: %s' % user.home)
+      print(' - shell: %s' % user.shell)
 
   def AddGroup(self, group):
     """Atomically add a group to the database.
@@ -203,6 +228,8 @@ class UserDB(object):
     # Try to avoid grabbing the lock in the common case that a group already
     # exists.
     if self.GroupExists(group.group):
+      logging.info('Not installing group "%s" because it already existed.',
+                   group.group)
       return
 
     # Clear the group cache to force ourselves to reparse.
@@ -213,9 +240,15 @@ class UserDB(object):
       # Check that |group| exists under the lock in case we're racing to create
       # this group.
       if self.GroupExists(group.group):
+        logging.info('Not installing group "%s" because it already existed.',
+                     group.group)
         return
 
       self._groups[group.group] = group
       new_groups = sorted(self._groups.itervalues(), key=lambda g: g.gid)
-      contents = '\n'.join([':'.join(map(str, g)) for g in new_groups])
+      contents = '\n'.join([GroupToEntry(g) for g in new_groups])
       osutils.WriteFile(self._group_db_file, contents, atomic=True, sudo=True)
+      print('Added group "%s" to %s:' % (group.group, self._group_db_file))
+      print(' - group id: %d' % group.gid)
+      print(' - password entry: %s' % group.password)
+      print(' - user list: %s' % ','.join(group.users))
