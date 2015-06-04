@@ -59,6 +59,7 @@
 #include "core/html/track/TextTrackList.h"
 #include "core/html/track/VideoTrack.h"
 #include "core/html/track/VideoTrackList.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
@@ -1914,8 +1915,11 @@ void HTMLMediaElement::play()
 
     if (!UserGestureIndicator::processingUserGesture()) {
         autoplayMediaEncountered();
-        if (m_userGestureRequiredForPlay)
+        if (m_userGestureRequiredForPlay) {
+            String message = ExceptionMessages::failedToExecute("play", "HTMLMediaElement", "API can only be initiated by a user gesture.");
+            document().executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
             return;
+        }
     } else if (m_userGestureRequiredForPlay) {
         if (m_autoplayMediaCounted)
             recordAutoplayMetric(AutoplayManualStart);
