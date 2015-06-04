@@ -187,6 +187,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/devscripts': [
         'GPL (v2 or later)',
     ],
+    'third_party/trace-viewer/third_party/devscripts': [
+        'GPL (v2 or later)',
+    ],
     'third_party/expat/files/lib': [  # http://crbug.com/98121
         'UNKNOWN',
     ],
