@@ -53,28 +53,25 @@ from chromite.lib import git
 from chromite.lib import patch as cros_patch
 
 
-_USAGE = """
-cros_merge_to_branch [*]change_number1 [[*]change_number2 ...] branch\n\n%s\
-""" % __doc__
-
-
 def _GetParser():
   """Returns the parser to use for this module."""
-  parser = commandline.OptionParser(usage=_USAGE)
-  parser.add_option('-d', '--draft', default=False, action='store_true',
-                    help='upload a draft to Gerrit rather than a change')
-  parser.add_option('-n', '--dry-run', default=False, action='store_true',
-                    dest='dryrun',
-                    help='apply changes locally but do not upload them')
-  parser.add_option('-e', '--email',
-                    help='if specified, use this email instead of '
-                    'the email you would upload changes as; must be set w/'
-                    '--nomirror')
-  parser.add_option('--nomirror', default=True, dest='mirror',
-                    action='store_false', help='checkout git repo directly; '
-                    'requires --email')
-  parser.add_option('--nowipe', default=True, dest='wipe', action='store_false',
-                    help='do not wipe the work directory after finishing')
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('-d', '--draft', default=False, action='store_true',
+                      help='upload a draft to Gerrit rather than a change')
+  parser.add_argument('-n', '--dry-run', default=False, action='store_true',
+                      dest='dryrun',
+                      help='apply changes locally but do not upload them')
+  parser.add_argument('-e', '--email',
+                      help='use this email instead of the email you would '
+                           'upload changes as; required w/--nomirror')
+  parser.add_argument('--nomirror', default=True, dest='mirror',
+                      action='store_false',
+                      help='checkout git repo directly; requires --email')
+  parser.add_argument('--nowipe', default=True, dest='wipe',
+                      action='store_false',
+                      help='do not wipe the work directory after finishing')
+  parser.add_argument('change', nargs='+', help='CLs to merge')
+  parser.add_argument('branch', help='the branch to merge to')
   return parser
 
 
@@ -208,18 +205,15 @@ def _ManifestContainsAllPatches(manifest, patches):
 
 def main(argv):
   parser = _GetParser()
-  options, args = parser.parse_args(argv)
+  options = parser.parse_args(argv)
+  changes = options.change
+  branch = options.branch
 
-  if len(args) < 2:
-    parser.error('Not enough arguments specified')
-
-  changes = args[0:-1]
   try:
     patches = gerrit.GetGerritPatchInfo(changes)
   except ValueError as e:
     logging.error('Invalid patch: %s', e)
     cros_build_lib.Die('Did you swap the branch/gerrit number?')
-  branch = args[-1]
 
   # Suppress all logging info output unless we're running debug.
   if not options.debug:
