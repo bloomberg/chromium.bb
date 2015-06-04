@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/browser/task_management/web_contents_tags.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -59,6 +60,10 @@ BackgroundContents::BackgroundContents(
   content::WebContentsObserver::Observe(web_contents_.get());
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents_.get());
+
+  // Add the TaskManager-specific tag for the BackgroundContents.
+  task_management::WebContentsTags::CreateForBackgroundContents(
+      web_contents_.get(), this);
 
   // Close ourselves when the application is shutting down.
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
