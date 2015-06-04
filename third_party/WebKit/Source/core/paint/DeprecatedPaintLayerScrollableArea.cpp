@@ -424,13 +424,8 @@ void DeprecatedPaintLayerScrollableArea::setScrollOffset(const DoublePoint& newS
             requiresPaintInvalidation = true;
     }
 
-    // For slimming paint we need to fully invalidate during scrolling.
-    if (requiresPaintInvalidation && RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        DisablePaintInvalidationStateAsserts disabler;
-        box().invalidatePaintIncludingNonCompositingDescendants();
-    }
-
     // Just schedule a full paint invalidation of our object.
+    // FIXME: This invalidation will be unnecessary in slimming paint phase 2.
     if (requiresPaintInvalidation)
         box().setShouldDoFullPaintInvalidation();
 

@@ -424,6 +424,10 @@ void DeprecatedPaintLayerPainter::paintChildren(unsigned childrenToVisit, Graphi
     LayerListMutationDetector mutationChecker(m_paintLayer.stackingNode());
 #endif
 
+    IntSize scrollOffsetAccumulation = paintingInfo.scrollOffsetAccumulation;
+    if (m_paintLayer.layoutObject()->hasOverflowClip())
+        scrollOffsetAccumulation += m_paintLayer.layoutBox()->scrolledContentOffset();
+
     DeprecatedPaintLayerStackingNodeIterator iterator(*m_paintLayer.stackingNode(), childrenToVisit);
     while (DeprecatedPaintLayerStackingNode* child = iterator.next()) {
         DeprecatedPaintLayerPainter childPainter(*child->layer());
@@ -432,10 +436,18 @@ void DeprecatedPaintLayerPainter::paintChildren(unsigned childrenToVisit, Graphi
         if (!childPainter.shouldPaintLayerInSoftwareMode(paintingInfo, paintFlags))
             continue;
 
+        DeprecatedPaintLayerPaintingInfo childPaintingInfo = paintingInfo;
+        childPaintingInfo.scrollOffsetAccumulation = scrollOffsetAccumulation;
+        // Rare case: accumulate scroll offset of non-stacking-context ancestors up to m_paintLayer.
+        for (DeprecatedPaintLayer* parentLayer = child->layer()->parent(); parentLayer != &m_paintLayer; parentLayer = parentLayer->parent()) {
+            if (parentLayer->layoutObject()->hasOverflowClip())
+                childPaintingInfo.scrollOffsetAccumulation += parentLayer->layoutBox()->scrolledContentOffset();
+        }
+
         if (!child->layer()->isPaginated())
-            childPainter.paintLayer(context, paintingInfo, paintFlags);
+            childPainter.paintLayer(context, childPaintingInfo, paintFlags);
         else
-            childPainter.paintPaginatedChildLayer(context, paintingInfo, paintFlags);
+            childPainter.paintPaginatedChildLayer(context, childPaintingInfo, paintFlags);
     }
 }
 
@@ -634,16 +646,14 @@ void DeprecatedPaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const
     PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintBehavior, paintingRootForLayoutObject, 0, paintingInfo.rootLayer->layoutObject());
     OwnPtr<ScrollRecorder> scrollRecorder;
     LayoutPoint paintOffset = toPoint(fragment.layerBounds.location() - m_paintLayer.layoutBoxLocation());
-    if (&m_paintLayer != paintingInfo.rootLayer && paintingInfo.rootLayer->layoutObject()->hasOverflowClip()) {
-        // As a sublayer of the root layer, m_paintLayer's painting is not controlled by the ScrollRecorder
-        // created by BlockPainter of the root layer, so we need to issue ScrollRecorder for them separately.
-        // FIXME: This doesn't apply in slimming paint phase 2.
-        IntSize scrollOffset = paintingInfo.rootLayer->layoutBox()->scrolledContentOffset();
-        if (paintingInfo.rootLayer->scrollsOverflow() || !scrollOffset.isZero()) {
-            paintOffset += scrollOffset;
-            paintInfo.rect.move(scrollOffset);
-            scrollRecorder = adoptPtr(new ScrollRecorder(*paintInfo.context, *m_paintLayer.layoutObject(), paintInfo.phase, scrollOffset));
-        }
+    if (!paintingInfo.scrollOffsetAccumulation.isZero()) {
+        // As a descendant of the root layer, m_paintLayer's painting is not controlled by the ScrollRecorders
+        // created by BlockPainter of the ancestor layers up to the root layer, so we need to issue ScrollRecorder
+        // for this layer seperately, with the scroll offset accumulated from the root layer to the parent of this
+        // layer, to get the same result as ScrollRecorder in BlockPainter.
+        paintOffset += paintingInfo.scrollOffsetAccumulation;
+        paintInfo.rect.move(paintingInfo.scrollOffsetAccumulation);
+        scrollRecorder = adoptPtr(new ScrollRecorder(*paintInfo.context, *m_paintLayer.layoutObject(), paintInfo.phase, paintingInfo.scrollOffsetAccumulation));
     }
     m_paintLayer.layoutObject()->paint(paintInfo, paintOffset);
 }

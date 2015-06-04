@@ -87,6 +87,7 @@ struct DeprecatedPaintLayerPaintingInfo {
     LayoutObject* paintingRoot; // only paint descendants of this object
     LayoutRect paintDirtyRect; // relative to rootLayer;
     LayoutSize subPixelAccumulation;
+    IntSize scrollOffsetAccumulation;
     PaintBehavior paintBehavior;
     bool clipToDirtyRect;
 };
