@@ -29,10 +29,10 @@ template<typename T> class Member;
 template<typename T> class TraceTrait;
 template<typename T> class WeakMember;
 
-template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultTraceTrait;
+template<typename T, bool = NeedsAdjustAndMark<T>::value> class AdjustAndMarkTrait;
 
 template<typename T>
-class DefaultTraceTrait<T, false> {
+class AdjustAndMarkTrait<T, false> {
 public:
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const T* t)
@@ -73,7 +73,7 @@ public:
 };
 
 template<typename T>
-class DefaultTraceTrait<T, true> {
+class AdjustAndMarkTrait<T, true> {
 public:
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const T* self)
@@ -148,7 +148,7 @@ public:
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const T* t)
     {
-        DefaultTraceTrait<T>::mark(visitor, t);
+        AdjustAndMarkTrait<T>::mark(visitor, t);
     }
 };
 
@@ -186,7 +186,7 @@ struct TraceTrait<HeapVectorBacking<T, Traits>> {
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const Backing* backing)
     {
-        DefaultTraceTrait<Backing>::mark(visitor, backing);
+        AdjustAndMarkTrait<Backing>::mark(visitor, backing);
     }
 };
 
@@ -211,7 +211,7 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
     template<typename VisitorDispatcher>
     static void mark(VisitorDispatcher visitor, const Backing* backing)
     {
-        DefaultTraceTrait<Backing>::mark(visitor, backing);
+        AdjustAndMarkTrait<Backing>::mark(visitor, backing);
     }
 };
 
