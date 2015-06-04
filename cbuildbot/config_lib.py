@@ -371,6 +371,56 @@ class SiteConfig(dict):
   #
   # Methods used when creating a Config programatically.
   #
+  def Add(self, name, *args, **kwargs):
+    """Add a new BuildConfig to the SiteConfig.
+
+    Example usage:
+      # Creates default build named foo.
+      site_config.Add('foo')
+
+      # Creates default build with board 'foo_board'
+      site_config.Add('foo',
+                      boards=['foo_board'])
+
+      # Creates build based on template_build for 'foo_board'.
+      site_config.Add('foo',
+                      template_build,
+                      boards=['foo_board'])
+
+      # Creates build based on template for 'foo_board'. with mixin.
+      # Inheritance order is default, template, mixin, arguments.
+      site_config.Add('foo',
+                      template_build,
+                      mixin_build_config,
+                      boards=['foo_board'])
+
+    Args:
+      name: The name to label this configuration; this is what cbuildbot
+            would see.
+      args: BuildConfigs to patch into this config. First one (if present) is
+            considered the template.
+      kwargs: BuildConfig values to explicitly set on this config.
+
+    Returns:
+      The BuildConfig just added to the SiteConfig.
+    """
+    inherits, overrides = args, kwargs
+
+    assert name not in self, '%s already exists.' % (name,)
+    overrides['name'] = name
+
+    # Remember our template, if we have one.
+    if '_template' not in overrides and args and '_template' in args[0]:
+      overrides['_template'] = args[0]['_template']
+
+    if '_template' in overrides:
+      assert overrides['_template'] in self.GetTemplates(), \
+          '%s inherits from non-template' % (name,)
+
+    result = self.GetDefault().derive(*inherits, **overrides)
+
+    self[name] = result
+    return result
 
   def AddConfig(self, config, name, *args, **kwargs):
     """Derive and add the config to cbuildbot's usable config targets

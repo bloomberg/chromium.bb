@@ -22,7 +22,10 @@ def MockBuildConfig():
 
 
 def MockSiteConfig():
-  """Create a SiteConfig object for convenient testing pleasure."""
+  """Create a SiteConfig object for convenient testing pleasure.
+
+  Shared amoung a number of unittest files, so be careful if changing it.
+  """
   return config_lib.CreateConfigFromString(
       '''
       {
@@ -304,6 +307,110 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
 
 class ConfigClassTest(cros_test_lib.TestCase):
   """Config tests."""
+
+  def testAdd(self):
+    """Test the SiteConfig.Add behavior."""
+
+    minimal_defaults = {
+        'name': None, '_template': None, 'value': 'default',
+    }
+
+    site_config = config_lib.SiteConfig(defaults=minimal_defaults)
+    template = site_config.AddTemplate('template', value='template')
+    mixin = config_lib.BuildConfig(value='mixin')
+
+    site_config.Add('default')
+
+    site_config.Add('default_with_override',
+                    value='override')
+
+    site_config.Add('default_with_mixin',
+                    mixin)
+
+    site_config.Add('mixin_with_override',
+                    mixin,
+                    value='override')
+
+    site_config.Add('default_with_template',
+                    template)
+
+    site_config.Add('template_with_override',
+                    template,
+                    value='override')
+
+
+    site_config.Add('template_with_mixin',
+                    template,
+                    mixin)
+
+    site_config.Add('template_with_mixin_override',
+                    template,
+                    mixin,
+                    value='override')
+
+    expected = {
+        'default': {
+            '_template': None,
+            'name': 'default',
+            'value': 'default',
+        },
+        'default_with_override': {
+            '_template': None,
+            'name': 'default_with_override',
+            'value': 'override',
+        },
+        'default_with_mixin': {
+            '_template': None,
+            'name': 'default_with_mixin',
+            'value': 'mixin',
+        },
+        'mixin_with_override': {
+            '_template': None,
+            'name': 'mixin_with_override',
+            'value': 'override',
+        },
+        'default_with_template': {
+            '_template': 'template',
+            'name': 'default_with_template',
+            'value': 'template',
+        },
+        'template_with_override': {
+            '_template': 'template',
+            'name': 'template_with_override',
+            'value': 'override'
+        },
+        'template_with_mixin': {
+            '_template': 'template',
+            'name': 'template_with_mixin',
+            'value': 'mixin',
+        },
+        'template_with_mixin_override': {
+            '_template': 'template',
+            'name': 'template_with_mixin_override',
+            'value': 'override'
+        },
+    }
+
+    self.maxDiff = None
+    self.assertDictEqual(site_config, expected)
+
+  def testAddErrors(self):
+    """Test the SiteConfig.Add behavior."""
+    site_config = MockSiteConfig()
+
+    site_config.Add('foo')
+
+    # Test we can't add the
+    with self.assertRaises(AssertionError):
+      site_config.Add('foo')
+
+    # Create a template without using AddTemplate so the site config doesn't
+    # know about it.
+    fake_template = config_lib.BuildConfig(
+        name='fake_template', _template='fake_template')
+
+    with self.assertRaises(AssertionError):
+      site_config.Add('bar', fake_template)
 
   def testSaveLoadEmpty(self):
     config = config_lib.SiteConfig()
