@@ -3309,7 +3309,7 @@ WebSize WebViewImpl::contentsPreferredMinimumSize()
 
     layout();
     int widthScaled = document->layoutView()->minPreferredLogicalWidth().round(); // Already accounts for zoom.
-    int heightScaled = static_cast<int>(document->documentElement()->scrollHeight() * zoomLevelToZoomFactor(zoomLevel()));
+    int heightScaled = static_cast<int>((document->documentElement()->scrollHeight() * zoomLevelToZoomFactor(zoomLevel())) + 0.5); // +0.5 to round rather than truncating
     return IntSize(widthScaled, heightScaled);
 }
 
