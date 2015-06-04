@@ -1,4 +1,3 @@
-CONSOLE ERROR: line 104: Uncaught ReferenceError: log is not defined
 This tests that pressing Tab key should traverse into iframe and shadow tree, and pressing Shift-Tab should reverse the order.
 
 Should move from input-01 to input-13 in forward
@@ -53,7 +52,9 @@ Should move from input-15 to input-13 in backward
 PASS
 Should move from input-13 to input-01 in backward
 PASS
-FAIL successfullyParsed should be true. Was false.
+
+Test finished.
+PASS successfullyParsed is true
 
 TEST COMPLETE
 
