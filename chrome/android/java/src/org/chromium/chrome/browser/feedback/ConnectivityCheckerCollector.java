@@ -8,7 +8,9 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +23,36 @@ public class ConnectivityCheckerCollector {
     private static final String TAG = "Feedback";
 
     /**
+     * FeedbackData contains the set of information that is to be included in a feedback report.
+     */
+    public static final class FeedbackData {
+        private final Map<Type, Result> mConnections;
+
+        FeedbackData(Map<Type, Result> connections) {
+            mConnections = connections;
+        }
+
+        /**
+         * @return a {@link Map} with information about connection status for different connection
+         * types.
+         */
+        public Map<Type, Result> getConnections() {
+            return Collections.unmodifiableMap(mConnections);
+        }
+
+        /**
+         * @return a {@link Map} with all the data fields for this feedback.
+         */
+        public Map<String, String> toMap() {
+            Map<String, String> map = new HashMap<>();
+            for (Map.Entry<Type, Result> entry : mConnections.entrySet()) {
+                map.put(entry.getKey().name(), entry.getValue().name());
+            }
+            return map;
+        }
+    }
+
+    /**
      * The type of network stack and connectivity check this result is about.
      */
     public enum Type { CHROME_HTTP, CHROME_HTTPS, SYSTEM_HTTP, SYSTEM_HTTPS }
@@ -31,7 +63,7 @@ public class ConnectivityCheckerCollector {
      */
     public enum Result { UNKNOWN, NOT_CONNECTED, CONNECTED }
 
-    private static class ConnectivityCheckerFuture implements Future<Map<Type, Result>> {
+    private static class ConnectivityCheckerFuture implements Future<FeedbackData> {
         private final Map<Type, Result> mResult = new EnumMap<Type, Result>(Type.class);
 
         private class SingleTypeTask implements ConnectivityChecker.ConnectivityCheckerCallback {
@@ -97,7 +129,7 @@ public class ConnectivityCheckerCollector {
         }
 
         @Override
-        public Map<Type, Result> get() {
+        public FeedbackData get() {
             ThreadUtils.assertOnUiThread();
             Map<Type, Result> result = new EnumMap<Type, Result>(Type.class);
             // Ensure the map is filled with a result for all {@link Type}s.
@@ -108,11 +140,11 @@ public class ConnectivityCheckerCollector {
                     result.put(type, Result.UNKNOWN);
                 }
             }
-            return result;
+            return new FeedbackData(result);
         }
 
         @Override
-        public Map<Type, Result> get(long l, TimeUnit timeUnit) {
+        public FeedbackData get(long l, TimeUnit timeUnit) {
             return get();
         }
 
@@ -143,7 +175,7 @@ public class ConnectivityCheckerCollector {
      * @param timeoutMs number of milliseconds to wait before giving up waiting for a connection.
      * @return a Future to retrieve the results.
      */
-    public static Future<Map<Type, Result>> startChecks(Profile profile, int timeoutMs) {
+    public static Future<FeedbackData> startChecks(Profile profile, int timeoutMs) {
         ThreadUtils.assertOnUiThread();
         ConnectivityCheckerFuture future = new ConnectivityCheckerFuture();
         future.startChecks(profile, timeoutMs);
