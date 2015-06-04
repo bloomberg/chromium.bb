@@ -142,7 +142,7 @@ class TabHelper : public content::WebContentsObserver,
                                const WebApplicationInfo& web_app_info);
 
   // content::WebContentsObserver overrides.
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderFrameCreated(content::RenderFrameHost* host) override;
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
@@ -209,8 +209,8 @@ class TabHelper : public content::WebContentsObserver,
   // the data is available.
   void GetApplicationInfo(WebAppAction action);
 
-  // Sends our tab ID to |render_view_host|.
-  void SetTabId(content::RenderViewHost* render_view_host);
+  // Sends our tab ID to |render_frame_host|.
+  void SetTabId(content::RenderFrameHost* render_frame_host);
 
   // Data for app extensions ---------------------------------------------------
 

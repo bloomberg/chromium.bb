@@ -26,6 +26,7 @@ class ExtensionFrameHelper
                        Dispatcher* extension_dispatcher);
   ~ExtensionFrameHelper() override;
 
+  int tab_id() const { return tab_id_; }
   const std::string& tab_extension_owner_id() const {
     return tab_extension_owner_id_;
   }
@@ -51,7 +52,11 @@ class ExtensionFrameHelper
                                  const Message& message);
   void OnExtensionDispatchOnDisconnect(int port_id,
                                        const std::string& error_message);
+  void OnExtensionSetTabId(int tab_id);
   void OnSetTabExtensionOwner(const std::string& extension_id);
+
+  // The id of the tab the render frame is attached to.
+  int tab_id_;
 
   // The id of the extension that "owns" the tab if this is a chrome-extension
   // page. If it's not a chrome-extension page, |tab_extension_owner_id_| is

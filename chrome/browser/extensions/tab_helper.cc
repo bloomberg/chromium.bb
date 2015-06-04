@@ -40,6 +40,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -65,7 +66,6 @@
 
 using content::NavigationController;
 using content::NavigationEntry;
-using content::RenderViewHost;
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::TabHelper);
@@ -91,8 +91,9 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   SessionTabHelper::CreateForWebContents(web_contents);
-  if (web_contents->GetRenderViewHost())
-    SetTabId(web_contents->GetRenderViewHost());
+  // The Unretained() is safe because ForEachFrame is synchronous.
+  web_contents->ForEachFrame(
+      base::Bind(&TabHelper::SetTabId, base::Unretained(this)));
   active_tab_permission_granter_.reset(new ActiveTabPermissionGranter(
       web_contents,
       SessionTabHelper::IdForTab(web_contents),
@@ -197,8 +198,8 @@ void TabHelper::FinishCreateBookmarkApp(
   pending_web_app_action_ = NONE;
 }
 
-void TabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
-  SetTabId(render_view_host);
+void TabHelper::RenderFrameCreated(content::RenderFrameHost* host) {
+  SetTabId(host);
 }
 
 void TabHelper::DidNavigateMainFrame(
@@ -594,9 +595,9 @@ void TabHelper::Observe(int type,
   }
 }
 
-void TabHelper::SetTabId(RenderViewHost* render_view_host) {
-  render_view_host->Send(
-      new ExtensionMsg_SetTabId(render_view_host->GetRoutingID(),
+void TabHelper::SetTabId(content::RenderFrameHost* render_frame_host) {
+  render_frame_host->Send(
+      new ExtensionMsg_SetTabId(render_frame_host->GetRoutingID(),
                                 SessionTabHelper::IdForTab(web_contents())));
 }
 

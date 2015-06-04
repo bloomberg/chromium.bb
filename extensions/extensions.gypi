@@ -976,8 +976,6 @@
       'renderer/set_icon_natives.h',
       'renderer/static_v8_external_one_byte_string_resource.cc',
       'renderer/static_v8_external_one_byte_string_resource.h',
-      'renderer/tab_finder.cc',
-      'renderer/tab_finder.h',
       'renderer/test_features_native_handler.cc',
       'renderer/test_features_native_handler.h',
       'renderer/user_gestures_native_handler.cc',

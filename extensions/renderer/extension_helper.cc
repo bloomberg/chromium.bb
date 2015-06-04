@@ -121,7 +121,6 @@ ExtensionHelper::ExtensionHelper(content::RenderView* render_view,
       content::RenderViewObserverTracker<ExtensionHelper>(render_view),
       dispatcher_(dispatcher),
       view_type_(VIEW_TYPE_INVALID),
-      tab_id_(-1),
       browser_window_id_(-1) {
   // Lifecycle managed by RenderViewObserver.
   new AutomationApiHelper(render_view);
@@ -136,7 +135,6 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetFrameName, OnSetFrameName)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabId, OnSetTabId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
                         OnUpdateBrowserWindowId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_NotifyRenderViewType,
@@ -203,12 +201,6 @@ void ExtensionHelper::OnSetFrameName(const std::string& name) {
   blink::WebView* web_view = render_view()->GetWebView();
   if (web_view)
     web_view->mainFrame()->setName(blink::WebString::fromUTF8(name));
-}
-
-void ExtensionHelper::OnSetTabId(int init_tab_id) {
-  CHECK_EQ(tab_id_, -1);
-  CHECK_GE(init_tab_id, 0);
-  tab_id_ = init_tab_id;
 }
 
 void ExtensionHelper::OnUpdateBrowserWindowId(int window_id) {

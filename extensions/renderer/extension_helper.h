@@ -45,7 +45,6 @@ class ExtensionHelper
   ExtensionHelper(content::RenderView* render_view, Dispatcher* dispatcher);
   ~ExtensionHelper() override;
 
-  int tab_id() const { return tab_id_; }
   int browser_window_id() const { return browser_window_id_; }
   ViewType view_type() const { return view_type_; }
   Dispatcher* dispatcher() const { return dispatcher_; }
@@ -70,7 +69,6 @@ class ExtensionHelper
                                 const base::ListValue& args,
                                 bool user_gesture);
   void OnNotifyRendererViewType(ViewType view_type);
-  void OnSetTabId(int tab_id);
   void OnUpdateBrowserWindowId(int window_id);
   void OnAddMessageToConsole(content::ConsoleMessageLevel level,
                              const std::string& message);
@@ -81,9 +79,6 @@ class ExtensionHelper
 
   // Type of view attached with RenderView.
   ViewType view_type_;
-
-  // Id of the tab which the RenderView is attached to.
-  int tab_id_;
 
   // Id number of browser window which RenderView is attached to.
   int browser_window_id_;

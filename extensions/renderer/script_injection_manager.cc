@@ -15,7 +15,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/renderer/extension_helper.h"
+#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extension_injection_host.h"
 #include "extensions/renderer/programmatic_script_injector.h"
 #include "extensions/renderer/script_injection.h"
@@ -348,8 +348,7 @@ void ScriptInjectionManager::InjectScripts(
   }
 
   // Add any injections for user scripts.
-  int tab_id = ExtensionHelper::Get(content::RenderView::FromWebView(
-                                        web_frame->top()->view()))->tab_id();
+  int tab_id = ExtensionFrameHelper::Get(frame)->tab_id();
   user_script_set_manager_->GetAllInjections(
       &frame_injections, web_frame, tab_id, run_location);
 
@@ -408,7 +407,7 @@ void ScriptInjectionManager::HandleExecuteCode(
       web_frame,
       injection_host.Pass(),
       static_cast<UserScript::RunLocation>(params.run_at),
-      ExtensionHelper::Get(render_frame->GetRenderView())->tab_id()));
+      ExtensionFrameHelper::Get(render_frame)->tab_id()));
 
   ScriptsRunInfo scripts_run_info;
   FrameStatusMap::const_iterator iter = frame_statuses_.find(render_frame);

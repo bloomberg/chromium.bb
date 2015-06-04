@@ -76,7 +76,6 @@
 #include "extensions/renderer/script_injection_manager.h"
 #include "extensions/renderer/send_request_natives.h"
 #include "extensions/renderer/set_icon_natives.h"
-#include "extensions/renderer/tab_finder.h"
 #include "extensions/renderer/test_features_native_handler.h"
 #include "extensions/renderer/user_gestures_native_handler.h"
 #include "extensions/renderer/utils_native_handler.h"
@@ -993,16 +992,6 @@ void Dispatcher::OnUpdateTabSpecificPermissions(const GURL& visible_url,
                                                 const URLPatternSet& new_hosts,
                                                 bool update_origin_whitelist,
                                                 int tab_id) {
-  // Check against the URL to avoid races. If we can't find the tab, it's
-  // because this is an extension's background page (run in a different
-  // process) - in this case, we can't perform the security check. However,
-  // since activeTab is only granted via user action, this isn't a huge concern.
-  content::RenderView* render_view = TabFinder::Find(tab_id);
-  if (render_view &&
-      render_view->GetWebView()->mainFrame()->document().url() != visible_url) {
-    return;
-  }
-
   const Extension* extension = extensions_.GetByID(extension_id);
   if (!extension)
     return;
