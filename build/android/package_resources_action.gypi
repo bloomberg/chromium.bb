@@ -45,7 +45,7 @@
   'action': [
     'python', '<(DEPTH)/build/android/gyp/package_resources.py',
     '--android-sdk', '<(android_sdk)',
-    '--android-sdk-tools', '<(android_sdk_tools)',
+    '--aapt-path', '<(android_aapt_path)',
     '--configuration-name', '<(CONFIGURATION_NAME)',
     '--android-manifest', '<(android_manifest_path)',
     '--version-code', '<(app_manifest_version_code)',

@@ -13,6 +13,7 @@ rebased_android_sdk_build_tools =
 
 android_sdk_jar = "$android_sdk/android.jar"
 rebased_android_sdk_jar = rebase_path(android_sdk_jar, root_build_dir)
+android_aapt_path = "$rebased_android_sdk_build_tools/aapt"
 
 template("android_lint") {
   set_sources_assignment_filter([])
@@ -635,8 +636,8 @@ template("create_apk") {
       rebase_path(depfile, root_build_dir),
       "--android-sdk",
       rebased_android_sdk,
-      "--android-sdk-tools",
-      rebased_android_sdk_build_tools,
+      "--aapt-path",
+      android_aapt_path,
       "--configuration-name=$_configuration_name",
       "--android-manifest",
       rebase_path(_android_manifest, root_build_dir),
@@ -1264,8 +1265,8 @@ template("process_resources") {
       rebase_path(depfile, root_build_dir),
       "--android-sdk",
       rebase_path(android_sdk, root_build_dir),
-      "--android-sdk-tools",
-      rebase_path(android_sdk_build_tools, root_build_dir),
+      "--aapt-path",
+      android_aapt_path,
       "--android-manifest",
       rebase_path(android_manifest, root_build_dir),
       "--resource-dirs=$rebase_resource_dirs",

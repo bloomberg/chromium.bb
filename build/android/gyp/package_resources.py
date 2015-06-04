@@ -71,8 +71,8 @@ def ParseArgs():
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
   parser.add_option('--android-sdk', help='path to the Android SDK folder')
-  parser.add_option('--android-sdk-tools',
-                    help='path to the Android SDK build tools folder')
+  parser.add_option('--aapt-path',
+                    help='path to the Android aapt tool')
 
   parser.add_option('--configuration-name',
                     help='Gyp\'s configuration name (Debug or Release).')
@@ -105,7 +105,7 @@ def ParseArgs():
     parser.error('No positional arguments should be given.')
 
   # Check that required options have been provided.
-  required_options = ('android_sdk', 'android_sdk_tools', 'configuration_name',
+  required_options = ('android_sdk', 'aapt_path', 'configuration_name',
                       'android_manifest', 'version_code', 'version_name',
                       'apk_path')
 
@@ -187,7 +187,7 @@ def CheckDensityMissedConfigs(apk_path):
 def main():
   options = ParseArgs()
   android_jar = os.path.join(options.android_sdk, 'android.jar')
-  aapt = os.path.join(options.android_sdk_tools, 'aapt')
+  aapt = options.aapt_path
 
   with build_utils.TempDir() as temp_dir:
     package_command = [aapt,

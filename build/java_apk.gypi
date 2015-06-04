@@ -768,7 +768,7 @@
       'action': [
         'python', '<(DEPTH)/build/android/gyp/process_resources.py',
         '--android-sdk', '<(android_sdk)',
-        '--android-sdk-tools', '<(android_sdk_tools)',
+        '--aapt-path', '<(android_aapt_path)',
 
         '--android-manifest', '<(android_manifest_path)',
         '--dependencies-res-zips', '>(dependencies_res_zip_paths)',

@@ -38,8 +38,8 @@ def ParseArgs(args):
   build_utils.AddDepfileOption(parser)
 
   parser.add_option('--android-sdk', help='path to the Android SDK folder')
-  parser.add_option('--android-sdk-tools',
-                    help='path to the Android SDK build tools folder')
+  parser.add_option('--aapt-path',
+                    help='path to the Android aapt tool')
   parser.add_option('--non-constant-id', action='store_true')
 
   parser.add_option('--android-manifest', help='AndroidManifest.xml path')
@@ -102,7 +102,7 @@ def ParseArgs(args):
   # Check that required options have been provided.
   required_options = (
       'android_sdk',
-      'android_sdk_tools',
+      'aapt_path',
       'android_manifest',
       'dependencies_res_zips',
       'resource_dirs',
@@ -303,7 +303,7 @@ def main():
 
   options = ParseArgs(args)
   android_jar = os.path.join(options.android_sdk, 'android.jar')
-  aapt = os.path.join(options.android_sdk_tools, 'aapt')
+  aapt = options.aapt_path
 
   input_files = []
 

@@ -35,6 +35,7 @@
 
 {
   'variables': {
+    'aidl_path%': '<(android_sdk_tools)/aidl',
     'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)/aidl',
     'aidl_import_include%': '',
     'additional_aidl_arguments': [],
@@ -66,7 +67,7 @@
         '<(intermediate_dir)/<(RULE_INPUT_ROOT).java',
       ],
       'action': [
-        '<(android_sdk_tools)/aidl',
+        '<(aidl_path)',
         '-p<(android_sdk)/framework.aidl',
         '-p<(aidl_interface_file)',
         '<@(additional_aidl_arguments)',
