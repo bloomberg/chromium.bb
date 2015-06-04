@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/test/thread_test_helper.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -44,9 +45,14 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -470,7 +476,10 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    ASSERT_TRUE(test_server()->Start());
+    base::FilePath test_data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   }
 
   // This will setup the "url" prefix in database and prepare protocol manager
@@ -614,15 +623,15 @@ class SafeBrowsingServiceMetadataTest
 
 namespace {
 
-const char kEmptyPage[] = "files/empty.html";
-const char kMalwareFile[] = "files/downloads/dangerous/dangerous.exe";
-const char kMalwarePage[] = "files/safe_browsing/malware.html";
-const char kMalwareIFrame[] = "files/safe_browsing/malware_iframe.html";
-const char kMalwareImg[] = "files/safe_browsing/malware_image.png";
+const char kEmptyPage[] = "/empty.html";
+const char kMalwareFile[] = "/downloads/dangerous/dangerous.exe";
+const char kMalwarePage[] = "/safe_browsing/malware.html";
+const char kMalwareIFrame[] = "/safe_browsing/malware_iframe.html";
+const char kMalwareImg[] = "/safe_browsing/malware_image.png";
 
 // This test goes through DownloadResourceHandler.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareMainFrame) {
-  GURL url = test_server()->GetURL(kEmptyPage);
+  GURL url = embedded_test_server()->GetURL(kEmptyPage);
 
   // After adding the url to safebrowsing database and getfullhash result,
   // we should see the interstitial page.
@@ -638,8 +647,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareMainFrame) {
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareIFrame) {
-  GURL main_url = test_server()->GetURL(kMalwarePage);
-  GURL iframe_url = test_server()->GetURL(kMalwareIFrame);
+  GURL main_url = embedded_test_server()->GetURL(kMalwarePage);
+  GURL iframe_url = embedded_test_server()->GetURL(kMalwareIFrame);
 
   // Add the iframe url as malware and then load the parent page.
   SBFullHashResult malware_full_hash;
@@ -655,8 +664,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareIFrame) {
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingServiceMetadataTest, MalwareImg) {
-  GURL main_url = test_server()->GetURL(kMalwarePage);
-  GURL img_url = test_server()->GetURL(kMalwareImg);
+  GURL main_url = embedded_test_server()->GetURL(kMalwarePage);
+  GURL img_url = embedded_test_server()->GetURL(kMalwareImg);
 
   // Add the img url as malware and then load the parent page.
   SBFullHashResult malware_full_hash;
@@ -695,8 +704,8 @@ INSTANTIATE_TEST_CASE_P(MaybeSetMetadata,
                                         METADATA_DISTRIBUTION));
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, UnwantedImgIgnored) {
-  GURL main_url = test_server()->GetURL(kMalwarePage);
-  GURL img_url = test_server()->GetURL(kMalwareImg);
+  GURL main_url = embedded_test_server()->GetURL(kMalwarePage);
+  GURL img_url = embedded_test_server()->GetURL(kMalwareImg);
 
   // Add the img url as coming from a site serving UwS and then load the parent
   // page.
@@ -711,7 +720,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, UnwantedImgIgnored) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, DISABLED_MalwareWithWhitelist) {
-  GURL url = test_server()->GetURL(kEmptyPage);
+  GURL url = embedded_test_server()->GetURL(kEmptyPage);
 
   // After adding the url to safebrowsing database and getfullhash result,
   // we should see the interstitial page.
@@ -739,13 +748,13 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, DISABLED_MalwareWithWhitelist) {
   EXPECT_FALSE(ShowingInterstitialPage());
 }
 
-const char kPrefetchMalwarePage[] = "files/safe_browsing/prefetch_malware.html";
+const char kPrefetchMalwarePage[] = "/safe_browsing/prefetch_malware.html";
 
 // This test confirms that prefetches don't themselves get the
 // interstitial treatment.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Prefetch) {
-  GURL url = test_server()->GetURL(kPrefetchMalwarePage);
-  GURL malware_url = test_server()->GetURL(kMalwarePage);
+  GURL url = embedded_test_server()->GetURL(kPrefetchMalwarePage);
+  GURL malware_url = embedded_test_server()->GetURL(kMalwarePage);
 
   class SetPrefetchForTest {
    public:
@@ -877,7 +886,7 @@ class TestSBClient
 namespace {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrl) {
-  GURL badbin_url = test_server()->GetURL(kMalwareFile);
+  GURL badbin_url = embedded_test_server()->GetURL(kMalwareFile);
   std::vector<GURL> badbin_urls(1, badbin_url);
 
   scoped_refptr<TestSBClient> client(new TestSBClient);
@@ -898,7 +907,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrl) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckUnwantedSoftwareUrl) {
-  const GURL bad_url = test_server()->GetURL(kMalwareFile);
+  const GURL bad_url = embedded_test_server()->GetURL(kMalwareFile);
   {
     scoped_refptr<TestSBClient> client(new TestSBClient);
 
@@ -940,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckUnwantedSoftwareUrl) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckBrowseUrl) {
-  const GURL bad_url = test_server()->GetURL(kMalwareFile);
+  const GURL bad_url = embedded_test_server()->GetURL(kMalwareFile);
   {
     scoped_refptr<TestSBClient> client(new TestSBClient);
 
@@ -983,9 +992,9 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckBrowseUrl) {
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
-  GURL original_url = test_server()->GetURL(kEmptyPage);
-  GURL badbin_url = test_server()->GetURL(kMalwareFile);
-  GURL final_url = test_server()->GetURL(kEmptyPage);
+  GURL original_url = embedded_test_server()->GetURL(kEmptyPage);
+  GURL badbin_url = embedded_test_server()->GetURL(kMalwareFile);
+  GURL final_url = embedded_test_server()->GetURL(kEmptyPage);
   std::vector<GURL> badbin_urls;
   badbin_urls.push_back(original_url);
   badbin_urls.push_back(badbin_url);
@@ -1016,7 +1025,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
 #endif
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
                        MAYBE_CheckDownloadUrlTimedOut) {
-  GURL badbin_url = test_server()->GetURL(kMalwareFile);
+  GURL badbin_url = embedded_test_server()->GetURL(kMalwareFile);
   std::vector<GURL> badbin_urls(1, badbin_url);
 
   scoped_refptr<TestSBClient> client(new TestSBClient);
@@ -1188,13 +1197,12 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
 
   void SetUp() override {
     // We need to start the test server to get the host&port in the url.
-    ASSERT_TRUE(test_server()->Start());
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&SafeBrowsingDatabaseManagerCookieTest::HandleRequest));
 
     // Point to the testing server for all SafeBrowsing requests.
-    GURL url_prefix = test_server()->GetURL(
-        "expect-and-set-cookie?expect=a%3db"
-        "&set=c%3dd%3b%20Expires=Fri,%2001%20Jan%202038%2001:01:01%20GMT"
-        "&data=foo#");
+    GURL url_prefix = embedded_test_server()->GetURL("/testpath");
     sb_factory_.reset(new TestSafeBrowsingServiceFactory(url_prefix.spec()));
     SafeBrowsingService::RegisterFactory(sb_factory_.get());
 
@@ -1241,7 +1249,7 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
       EXPECT_TRUE(false);
       return false;
     }
-    if (!smt.BindString(0, test_server()->host_port_pair().host())) {
+    if (!smt.BindString(0, embedded_test_server()->base_url().host())) {
       EXPECT_TRUE(false);
       return false;
     }
@@ -1289,6 +1297,42 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
   scoped_refptr<SafeBrowsingService> sb_service_;
 
  private:
+  static scoped_ptr<net::test_server::HttpResponse> HandleRequest(
+      const net::test_server::HttpRequest& request) {
+    if (!StartsWithASCII(request.relative_url, "/testpath/", true)) {
+      ADD_FAILURE() << "bad path";
+      return nullptr;
+    }
+
+    auto cookie_it = request.headers.find("Cookie");
+    if (cookie_it == request.headers.end()) {
+      ADD_FAILURE() << "no cookie header";
+      return nullptr;
+    }
+
+    net::cookie_util::ParsedRequestCookies req_cookies;
+    net::cookie_util::ParseRequestCookieLine(cookie_it->second, &req_cookies);
+    if (req_cookies.size() != 1) {
+      ADD_FAILURE() << "req_cookies.size() = " << req_cookies.size();
+      return nullptr;
+    }
+    const net::cookie_util::ParsedRequestCookie expected_cookie(
+        std::make_pair("a", "b"));
+    const net::cookie_util::ParsedRequestCookie& cookie = req_cookies.front();
+    if (cookie != expected_cookie) {
+      ADD_FAILURE() << "bad cookie " << cookie.first << "=" << cookie.second;
+      return nullptr;
+    }
+
+    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse());
+    http_response->set_content("foo");
+    http_response->set_content_type("text/plain");
+    http_response->AddCustomHeader(
+        "Set-Cookie", "c=d; Expires=Fri, 01 Jan 2038 01:01:01 GMT");
+    return http_response.Pass();
+  }
+
   scoped_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseManagerCookieTest);
