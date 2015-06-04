@@ -215,8 +215,8 @@ bool IsSupportedValidityRange(base::Time not_valid_before,
   //
   // Note: This ignores leap seconds, but should be enough in practice.
   //
-  const int64 kDaysFromYear0001ToUnixEpoch = 719162;
-  const int64 kDaysFromUnixEpochToYear10000 = 2932896 + 1;
+  const int64_t kDaysFromYear0001ToUnixEpoch = 719162;
+  const int64_t kDaysFromUnixEpochToYear10000 = 2932896 + 1;
   const base::Time kEpoch = base::Time::UnixEpoch();
   const base::Time kYear0001 = kEpoch -
       base::TimeDelta::FromDays(kDaysFromYear0001ToUnixEpoch);
@@ -233,7 +233,7 @@ bool IsSupportedValidityRange(base::Time not_valid_before,
 bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
                           DigestAlgorithm alg,
                           const std::string& common_name,
-                          uint32 serial_number,
+                          uint32_t serial_number,
                           base::Time not_valid_before,
                           base::Time not_valid_after,
                           std::string* der_encoded) {

@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/basictypes.h"
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/strings/stringprintf.h"
@@ -299,7 +298,7 @@ int CertVerifyProc::Verify(X509Certificate* cert,
 // static
 bool CertVerifyProc::IsBlacklisted(X509Certificate* cert) {
   static const unsigned kComodoSerialBytes = 16;
-  static const uint8 kComodoSerials[][kComodoSerialBytes] = {
+  static const uint8_t kComodoSerials[][kComodoSerialBytes] = {
     // Not a real certificate. For testing only.
     {0x07,0x7a,0x59,0xbc,0xd5,0x34,0x59,0x60,0x1c,0xa6,0x90,0x72,0x67,0xa6,0xdd,0x1c},
 
@@ -372,7 +371,7 @@ bool CertVerifyProc::IsBlacklisted(X509Certificate* cert) {
   static const char kCloudFlareCNSuffix[] = ".cloudflare.com";
   // kCloudFlareEpoch is the base::Time internal value for midnight at the
   // beginning of April 2nd, 2014, UTC.
-  static const int64 kCloudFlareEpoch = INT64_C(13040870400000000);
+  static const int64_t kCloudFlareEpoch = INT64_C(13040870400000000);
   if (cn.size() > arraysize(kCloudFlareCNSuffix) - 1 &&
       cn.compare(cn.size() - (arraysize(kCloudFlareCNSuffix) - 1),
                  arraysize(kCloudFlareCNSuffix) - 1,
@@ -389,7 +388,7 @@ bool CertVerifyProc::IsBlacklisted(X509Certificate* cert) {
 bool CertVerifyProc::IsPublicKeyBlacklisted(
     const HashValueVector& public_key_hashes) {
   static const unsigned kNumHashes = 17;
-  static const uint8 kHashes[kNumHashes][base::kSHA1Length] = {
+  static const uint8_t kHashes[kNumHashes][base::kSHA1Length] = {
     // Subject: CN=DigiNotar Root CA
     // Issuer: CN=Entrust.net x2 and self-signed
     {0x41, 0x0f, 0x36, 0x36, 0x32, 0x58, 0xf3, 0x0b, 0x34, 0x7d,
@@ -529,7 +528,7 @@ static bool CheckNameConstraints(const std::vector<std::string>& dns_names,
 // array of fixed-length strings that contain the domains that the SPKI is
 // allowed to issue for.
 struct PublicKeyDomainLimitation {
-  uint8 public_key[base::kSHA1Length];
+  uint8_t public_key[base::kSHA1Length];
   const char (*domains)[kMaxDomainLength];
 };
 

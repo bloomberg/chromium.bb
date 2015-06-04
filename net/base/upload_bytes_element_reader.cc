@@ -12,10 +12,8 @@
 namespace net {
 
 UploadBytesElementReader::UploadBytesElementReader(const char* bytes,
-                                                   uint64 length)
-    : bytes_(bytes),
-      length_(length),
-      offset_(0) {
+                                                   uint64_t length)
+    : bytes_(bytes), length_(length), offset_(0) {
 }
 
 UploadBytesElementReader::~UploadBytesElementReader() {
@@ -31,11 +29,11 @@ int UploadBytesElementReader::Init(const CompletionCallback& callback) {
   return OK;
 }
 
-uint64 UploadBytesElementReader::GetContentLength() const {
+uint64_t UploadBytesElementReader::GetContentLength() const {
   return length_;
 }
 
-uint64 UploadBytesElementReader::BytesRemaining() const {
+uint64_t UploadBytesElementReader::BytesRemaining() const {
   return length_ - offset_;
 }
 
@@ -49,7 +47,7 @@ int UploadBytesElementReader::Read(IOBuffer* buf,
   DCHECK_LT(0, buf_length);
 
   const int num_bytes_to_read = static_cast<int>(
-      std::min(BytesRemaining(), static_cast<uint64>(buf_length)));
+      std::min(BytesRemaining(), static_cast<uint64_t>(buf_length)));
 
   // Check if we have anything to copy first, because we are getting
   // the address of an element in |bytes_| and that will throw an

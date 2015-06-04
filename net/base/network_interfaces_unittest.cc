@@ -650,9 +650,9 @@ bool read_int_or_bool(DWORD data_size,
                       PVOID data) {
   switch (data_size) {
     case 1:
-      return !!*reinterpret_cast<uint8*>(data);
+      return !!*reinterpret_cast<uint8_t*>(data);
     case 4:
-      return !!*reinterpret_cast<uint32*>(data);
+      return !!*reinterpret_cast<uint32_t*>(data);
     default:
       LOG(FATAL) << "That is not a type I know!";
       return false;

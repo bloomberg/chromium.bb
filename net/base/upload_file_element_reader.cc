@@ -18,15 +18,15 @@ namespace {
 
 // In tests, this value is used to override the return value of
 // UploadFileElementReader::GetContentLength() when set to non-zero.
-uint64 overriding_content_length = 0;
+uint64_t overriding_content_length = 0;
 
 }  // namespace
 
 UploadFileElementReader::UploadFileElementReader(
     base::TaskRunner* task_runner,
     const base::FilePath& path,
-    uint64 range_offset,
-    uint64 range_length,
+    uint64_t range_offset,
+    uint64_t range_length,
     const base::Time& expected_modification_time)
     : task_runner_(task_runner),
       path_(path),
@@ -62,13 +62,13 @@ int UploadFileElementReader::Init(const CompletionCallback& callback) {
   return result;
 }
 
-uint64 UploadFileElementReader::GetContentLength() const {
+uint64_t UploadFileElementReader::GetContentLength() const {
   if (overriding_content_length)
     return overriding_content_length;
   return content_length_;
 }
 
-uint64 UploadFileElementReader::BytesRemaining() const {
+uint64_t UploadFileElementReader::BytesRemaining() const {
   return bytes_remaining_;
 }
 
@@ -78,7 +78,7 @@ int UploadFileElementReader::Read(IOBuffer* buf,
   DCHECK(!callback.is_null());
 
   int num_bytes_to_read = static_cast<int>(
-      std::min(BytesRemaining(), static_cast<uint64>(buf_length)));
+      std::min(BytesRemaining(), static_cast<uint64_t>(buf_length)));
   if (num_bytes_to_read == 0)
     return 0;
 
@@ -127,7 +127,7 @@ void UploadFileElementReader::OnOpenCompleted(
 
 void UploadFileElementReader::OnSeekCompleted(
     const CompletionCallback& callback,
-    int64 result) {
+    int64_t result) {
   DCHECK(!callback.is_null());
 
   if (result < 0) {
@@ -160,8 +160,8 @@ void UploadFileElementReader::OnGetFileInfoCompleted(
     return;
   }
 
-  int64 length = file_info->size;
-  if (range_offset_ < static_cast<uint64>(length)) {
+  int64_t length = file_info->size;
+  if (range_offset_ < static_cast<uint64_t>(length)) {
     // Compensate for the offset.
     length = std::min(length - range_offset_, range_length_);
   }
@@ -192,7 +192,7 @@ int UploadFileElementReader::OnReadCompleted(
     result = ERR_UPLOAD_FILE_CHANGED;
 
   if (result > 0) {
-    DCHECK_GE(bytes_remaining_, static_cast<uint64>(result));
+    DCHECK_GE(bytes_remaining_, static_cast<uint64_t>(result));
     bytes_remaining_ -= result;
   }
 
@@ -202,7 +202,7 @@ int UploadFileElementReader::OnReadCompleted(
 }
 
 UploadFileElementReader::ScopedOverridingContentLengthForTests::
-ScopedOverridingContentLengthForTests(uint64 value) {
+    ScopedOverridingContentLengthForTests(uint64_t value) {
   overriding_content_length = value;
 }
 

@@ -39,7 +39,7 @@ class PriorityQueue : public base::NonThreadSafe {
 #endif
 
  public:
-  typedef uint32 Priority;
+  typedef uint32_t Priority;
 
   // A pointer to a value stored in the queue. The pointer becomes invalid
   // when the queue is destroyed or cleared, or the value is erased.

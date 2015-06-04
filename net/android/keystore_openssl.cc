@@ -13,11 +13,11 @@
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
 #include <openssl/x509.h>
+#include <stdint.h>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "crypto/openssl_util.h"
@@ -152,7 +152,7 @@ base::LazyInstance<BoringSSLEngine>::Leaky global_boringssl_engine =
 
 // VectorBignumSize returns the number of bytes needed to represent the bignum
 // given in |v|, i.e. the length of |v| less any leading zero bytes.
-size_t VectorBignumSize(const std::vector<uint8>& v) {
+size_t VectorBignumSize(const std::vector<uint8_t>& v) {
   size_t size = v.size();
   // Ignore any leading zero bytes.
   for (size_t i = 0; i < v.size() && v[i] == 0; i++) {
@@ -232,7 +232,7 @@ int RsaMethodSignRaw(RSA* rsa,
   }
 
   base::StringPiece from_piece(reinterpret_cast<const char*>(in), in_len);
-  std::vector<uint8> result;
+  std::vector<uint8_t> result;
   // For RSA keys, this function behaves as RSA_private_encrypt with
   // PKCS#1 padding.
   if (!RawSignDigestWithPrivateKey(ex_data->private_key, from_piece, &result)) {
@@ -334,7 +334,7 @@ crypto::ScopedEVP_PKEY CreateRsaPkeyWrapper(
     return crypto::ScopedEVP_PKEY();
   }
 
-  std::vector<uint8> modulus;
+  std::vector<uint8_t> modulus;
   if (!GetRSAKeyModulus(private_key, &modulus)) {
     LOG(ERROR) << "Failed to get private key modulus";
     return crypto::ScopedEVP_PKEY();
@@ -479,7 +479,7 @@ int EcdsaMethodSign(const uint8_t* digest,
     return 0;
   }
   // Sign message with it through JNI.
-  std::vector<uint8> signature;
+  std::vector<uint8_t> signature;
   base::StringPiece digest_sp(reinterpret_cast<const char*>(digest),
                               digest_len);
   if (!RawSignDigestWithPrivateKey(private_key, digest_sp, &signature)) {
@@ -530,7 +530,7 @@ crypto::ScopedEVP_PKEY GetEcdsaPkeyWrapper(jobject private_key) {
     return crypto::ScopedEVP_PKEY();
   }
 
-  std::vector<uint8> order;
+  std::vector<uint8_t> order;
   if (!GetECKeyOrder(private_key, &order)) {
     LOG(ERROR) << "Can't extract order parameter from EC private key";
     return crypto::ScopedEVP_PKEY();

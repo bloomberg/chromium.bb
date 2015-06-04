@@ -33,7 +33,7 @@ struct Charmap {
     return ((map[c >> 5] & (1 << (c & 31))) != 0);
   }
 
-  uint32 map[8];
+  uint32_t map[8];
 };
 
 // Given text to escape and a Charmap defining which values to escape,

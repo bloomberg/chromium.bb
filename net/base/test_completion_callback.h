@@ -107,7 +107,7 @@ class TestClosure : public internal::TestCompletionCallbackBaseInternal {
 typedef internal::TestCompletionCallbackTemplate<int>
     TestCompletionCallbackBase;
 
-typedef internal::TestCompletionCallbackTemplate<int64>
+typedef internal::TestCompletionCallbackTemplate<int64_t>
     TestInt64CompletionCallbackBase;
 
 class TestCompletionCallback : public TestCompletionCallbackBase {

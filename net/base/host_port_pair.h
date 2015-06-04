@@ -19,7 +19,7 @@ class NET_EXPORT HostPortPair {
  public:
   HostPortPair();
   // If |in_host| represents an IPv6 address, it should not bracket the address.
-  HostPortPair(const std::string& in_host, uint16 in_port);
+  HostPortPair(const std::string& in_host, uint16_t in_port);
 
   // Creates a HostPortPair for the origin of |url|.
   static HostPortPair FromURL(const GURL& url);
@@ -52,17 +52,13 @@ class NET_EXPORT HostPortPair {
     return host_;
   }
 
-  uint16 port() const {
-    return port_;
-  }
+  uint16_t port() const { return port_; }
 
   void set_host(const std::string& in_host) {
     host_ = in_host;
   }
 
-  void set_port(uint16 in_port) {
-    port_ = in_port;
-  }
+  void set_port(uint16_t in_port) { port_ = in_port; }
 
   // ToString() will convert the HostPortPair to "host:port".  If |host_| is an
   // IPv6 literal, it will add brackets around |host_|.
@@ -75,7 +71,7 @@ class NET_EXPORT HostPortPair {
   // If |host_| represents an IPv6 address, this string will not contain
   // brackets around the address.
   std::string host_;
-  uint16 port_;
+  uint16_t port_;
 };
 
 }  // namespace net

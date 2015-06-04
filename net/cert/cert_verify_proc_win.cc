@@ -441,7 +441,7 @@ CRLSetResult CheckRevocationWithCRLSet(PCCERT_CHAIN_CONTEXT chain,
     const std::string spki_hash = crypto::SHA256HashString(spki);
 
     const CRYPT_INTEGER_BLOB* serial_blob = &cert->pCertInfo->SerialNumber;
-    scoped_ptr<uint8[]> serial_bytes(new uint8[serial_blob->cbData]);
+    scoped_ptr<uint8_t[]> serial_bytes(new uint8_t[serial_blob->cbData]);
     // The bytes of the serial number are stored little-endian.
     for (unsigned j = 0; j < serial_blob->cbData; j++)
       serial_bytes[j] = serial_blob->pbData[serial_blob->cbData - j - 1];
@@ -496,7 +496,7 @@ void AppendPublicKeyHashes(PCCERT_CHAIN_CONTEXT chain,
       continue;
 
     HashValue sha1(HASH_VALUE_SHA1);
-    base::SHA1HashBytes(reinterpret_cast<const uint8*>(spki_bytes.data()),
+    base::SHA1HashBytes(reinterpret_cast<const uint8_t*>(spki_bytes.data()),
                         spki_bytes.size(), sha1.data());
     hashes->push_back(sha1);
 

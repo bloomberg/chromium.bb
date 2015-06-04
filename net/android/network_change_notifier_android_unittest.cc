@@ -4,7 +4,6 @@
 
 // See network_change_notifier_android.h for design explanations.
 
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"

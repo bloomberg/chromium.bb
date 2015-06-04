@@ -5,12 +5,13 @@
 #ifndef NET_CERT_MULTI_THREADED_CERT_VERIFIER_H_
 #define NET_CERT_MULTI_THREADED_CERT_VERIFIER_H_
 
+#include <stdint.h>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/completion_callback.h"
@@ -156,9 +157,9 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
   // For unit testing.
   void ClearCache() { cache_.Clear(); }
   size_t GetCacheSize() const { return cache_.size(); }
-  uint64 cache_hits() const { return cache_hits_; }
-  uint64 requests() const { return requests_; }
-  uint64 inflight_joins() const { return inflight_joins_; }
+  uint64_t cache_hits() const { return cache_hits_; }
+  uint64_t requests() const { return requests_; }
+  uint64_t inflight_joins() const { return inflight_joins_; }
 
   // cache_ maps from a request to a cached result.
   CertVerifierCache cache_;
@@ -166,9 +167,9 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
   // inflight_ holds the jobs for which an active verification is taking place.
   JobSet inflight_;
 
-  uint64 requests_;
-  uint64 cache_hits_;
-  uint64 inflight_joins_;
+  uint64_t requests_;
+  uint64_t cache_hits_;
+  uint64_t inflight_joins_;
 
   scoped_refptr<CertVerifyProc> verify_proc_;
 

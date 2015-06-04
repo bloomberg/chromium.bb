@@ -29,7 +29,7 @@ class MockFileStream : public FileStream {
 
   // FileStream methods.
   int Seek(base::File::Whence whence,
-           int64 offset,
+           int64_t offset,
            const Int64CompletionCallback& callback) override;
   int Read(IOBuffer* buf,
            int buf_len,
@@ -72,9 +72,9 @@ class MockFileStream : public FileStream {
     return function_error;
   }
 
-  int64 ReturnError64(int64 function_error) {
+  int64_t ReturnError64(int64_t function_error) {
     if (forced_error_ != OK) {
-      int64 ret = forced_error_;
+      int64_t ret = forced_error_;
       clear_forced_error();
       return ret;
     }
@@ -85,12 +85,12 @@ class MockFileStream : public FileStream {
   // Wrappers for callbacks to make them honor ThrottleCallbacks and
   // ReleaseCallbacks.
   void DoCallback(const CompletionCallback& callback, int result);
-  void DoCallback64(const Int64CompletionCallback& callback, int64 result);
+  void DoCallback64(const Int64CompletionCallback& callback, int64_t result);
 
   // Depending on |async_error_|, either synchronously returns |forced_error_|
   // asynchronously calls |callback| with |async_error_|.
   int ErrorCallback(const CompletionCallback& callback);
-  int64 ErrorCallback64(const Int64CompletionCallback& callback);
+  int64_t ErrorCallback64(const Int64CompletionCallback& callback);
 
   int forced_error_;
   bool async_error_;

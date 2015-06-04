@@ -41,7 +41,7 @@ class NET_EXPORT IPPattern {
   bool ParseComponentPattern(const base::StringPiece& text,
                              ComponentPattern* pattern) const;
   // Convert IP component to an int.  Assume hex vs decimal for IPV6 vs V4.
-  bool ValueTextToInt(const base::StringPiece& input, uint32* output) const;
+  bool ValueTextToInt(const base::StringPiece& input, uint32_t* output) const;
 
   bool is_ipv4_;
   // The |ip_mask_| indicates, for each component, if this pattern requires an
@@ -55,7 +55,7 @@ class NET_EXPORT IPPattern {
   // The class invariant is:
   // ip_mask_.size() == component_patterns_.size()
   //                    + size(our ComponentPattern list)
-  std::vector<uint32> component_values_;
+  std::vector<uint32_t> component_values_;
   // If only one component position was specified using a range, then this
   // list will only have 1 element (i.e., we only have patterns for each element
   // of ip_mask_ that is false.)

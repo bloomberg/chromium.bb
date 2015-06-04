@@ -16,7 +16,7 @@ namespace {
 
 struct TestData {
   string host;
-  uint16 port;
+  uint16_t port;
   string to_string;
   string host_for_url;
 } tests[] = {

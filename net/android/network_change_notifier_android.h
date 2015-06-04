@@ -6,8 +6,8 @@
 #define NET_ANDROID_NETWORK_CHANGE_NOTIFIER_ANDROID_H_
 
 #include "base/android/jni_android.h"
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "net/android/network_change_notifier_delegate_android.h"
 #include "net/base/network_change_notifier.h"
 

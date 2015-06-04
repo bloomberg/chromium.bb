@@ -587,7 +587,7 @@ base::string16 IDNToUnicode(const std::string& host,
 std::string GetDirectoryListingEntry(const base::string16& name,
                                      const std::string& raw_bytes,
                                      bool is_dir,
-                                     int64 size,
+                                     int64_t size,
                                      Time modified) {
   std::string result;
   result.append("<script>addRow(");

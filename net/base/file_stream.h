@@ -68,7 +68,8 @@ class NET_EXPORT FileStream {
   // relative to the start of the file.  Otherwise, an error code is returned.
   // It is invalid to request any asynchronous operations while there is an
   // in-flight asynchronous operation.
-  virtual int Seek(base::File::Whence whence, int64 offset,
+  virtual int Seek(base::File::Whence whence,
+                   int64_t offset,
                    const Int64CompletionCallback& callback);
 
   // Call this method to read data from the current stream position

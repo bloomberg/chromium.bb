@@ -678,7 +678,7 @@ int CertVerifyProcMac::VerifyInternal(
                           ", chain_info[" << index << "].StatusBits is "
                        << chain_info[index].StatusBits;
         }
-        for (uint32 status_code_index = 0;
+        for (uint32_t status_code_index = 0;
              status_code_index < chain_info[index].NumStatusCodes;
              ++status_code_index) {
           // As of OS X 10.9, attempting to verify a certificate chain that

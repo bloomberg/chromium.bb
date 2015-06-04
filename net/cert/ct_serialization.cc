@@ -4,7 +4,8 @@
 
 #include "net/cert/ct_serialization.h"
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/logging.h"
 
 namespace net {
@@ -348,7 +349,7 @@ bool DecodeSignedCertificateTimestamp(
   }
 
   result->version = SignedCertificateTimestamp::SCT_VERSION_1;
-  uint64 timestamp;
+  uint64_t timestamp;
   base::StringPiece log_id;
   base::StringPiece extensions;
   if (!ReadFixedBytes(kLogIdLength, input, &log_id) ||
@@ -359,8 +360,8 @@ bool DecodeSignedCertificateTimestamp(
     return false;
   }
 
-  if (timestamp > static_cast<uint64>(kint64max)) {
-    DVLOG(1) << "Timestamp value too big to cast to int64: " << timestamp;
+  if (timestamp > static_cast<uint64_t>(kint64max)) {
+    DVLOG(1) << "Timestamp value too big to cast to int64_t: " << timestamp;
     return false;
   }
 
@@ -368,7 +369,7 @@ bool DecodeSignedCertificateTimestamp(
   extensions.CopyToString(&result->extensions);
   result->timestamp =
       base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(static_cast<int64>(timestamp));
+      base::TimeDelta::FromMilliseconds(static_cast<int64_t>(timestamp));
 
   output->swap(result);
   return true;

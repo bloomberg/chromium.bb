@@ -17,7 +17,7 @@ namespace net {
 
 namespace ct {
 
-static const uint8 kSthRootHashLength = 32;
+static const uint8_t kSthRootHashLength = 32;
 
 // Signed Tree Head as defined in section 3.5. of RFC6962
 struct NET_EXPORT SignedTreeHead {
@@ -28,7 +28,7 @@ struct NET_EXPORT SignedTreeHead {
 
   Version version;
   base::Time timestamp;
-  uint64 tree_size;
+  uint64_t tree_size;
   char sha256_root_hash[kSthRootHashLength];
   DigitallySigned signature;
 };

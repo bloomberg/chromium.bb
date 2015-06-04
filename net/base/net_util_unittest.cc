@@ -56,7 +56,7 @@ struct HeaderCase {
 
 // Fills in sockaddr for the given 32-bit address (IPv4.)
 // |bytes| should be an array of length 4.
-void MakeIPv4Address(const uint8* bytes, int port, SockaddrStorage* storage) {
+void MakeIPv4Address(const uint8_t* bytes, int port, SockaddrStorage* storage) {
   memset(&storage->addr_storage, 0, sizeof(storage->addr_storage));
   storage->addr_len = sizeof(struct sockaddr_in);
   struct sockaddr_in* addr4 = reinterpret_cast<sockaddr_in*>(storage->addr);
@@ -67,7 +67,7 @@ void MakeIPv4Address(const uint8* bytes, int port, SockaddrStorage* storage) {
 
 // Fills in sockaddr for the given 128-bit address (IPv6.)
 // |bytes| should be an array of length 16.
-void MakeIPv6Address(const uint8* bytes, int port, SockaddrStorage* storage) {
+void MakeIPv6Address(const uint8_t* bytes, int port, SockaddrStorage* storage) {
   memset(&storage->addr_storage, 0, sizeof(storage->addr_storage));
   storage->addr_len = sizeof(struct sockaddr_in6);
   struct sockaddr_in6* addr6 = reinterpret_cast<sockaddr_in6*>(storage->addr);
@@ -332,7 +332,7 @@ TEST(NetUtilTest, GetHostAndOptionalPort) {
 
 TEST(NetUtilTest, NetAddressToString_IPv4) {
   const struct {
-    uint8 addr[4];
+    uint8_t addr[4];
     const char* const result;
   } tests[] = {
     {{0, 0, 0, 0}, "0.0.0.0"},
@@ -350,7 +350,7 @@ TEST(NetUtilTest, NetAddressToString_IPv4) {
 
 TEST(NetUtilTest, NetAddressToString_IPv6) {
   const struct {
-    uint8 addr[16];
+    uint8_t addr[16];
     const char* const result;
   } tests[] = {
     {{0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10, 0xFE, 0xDC, 0xBA,
@@ -367,7 +367,7 @@ TEST(NetUtilTest, NetAddressToString_IPv6) {
 }
 
 TEST(NetUtilTest, NetAddressToStringWithPort_IPv4) {
-  uint8 addr[] = {127, 0, 0, 1};
+  uint8_t addr[] = {127, 0, 0, 1};
   SockaddrStorage storage;
   MakeIPv4Address(addr, 166, &storage);
   std::string result = NetAddressToStringWithPort(storage.addr,
@@ -376,7 +376,7 @@ TEST(NetUtilTest, NetAddressToStringWithPort_IPv4) {
 }
 
 TEST(NetUtilTest, NetAddressToStringWithPort_IPv6) {
-  uint8 addr[] = {
+  uint8_t addr[] = {
       0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10, 0xFE, 0xDC, 0xBA,
       0x98, 0x76, 0x54, 0x32, 0x10
   };

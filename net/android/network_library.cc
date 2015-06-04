@@ -50,7 +50,7 @@ void VerifyX509CertChain(const std::vector<std::string>& cert_chain,
                           status, is_issued_by_known_root, verified_chain);
 }
 
-void AddTestRootCertificate(const uint8* cert, size_t len) {
+void AddTestRootCertificate(const uint8_t* cert, size_t len) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> cert_array = ToJavaByteArray(env, cert, len);
   DCHECK(!cert_array.is_null());
@@ -62,9 +62,9 @@ void ClearTestRootCertificates() {
   Java_AndroidNetworkLibrary_clearTestRootCertificates(env);
 }
 
-bool StoreKeyPair(const uint8* public_key,
+bool StoreKeyPair(const uint8_t* public_key,
                   size_t public_len,
-                  const uint8* private_key,
+                  const uint8_t* private_key,
                   size_t private_len) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> public_array =
@@ -83,7 +83,7 @@ void StoreCertificate(net::CertificateMimeType cert_type,
                       size_t data_len) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> data_array =
-      ToJavaByteArray(env, reinterpret_cast<const uint8*>(data), data_len);
+      ToJavaByteArray(env, reinterpret_cast<const uint8_t*>(data), data_len);
   jboolean ret = Java_AndroidNetworkLibrary_storeCertificate(env,
       GetApplicationContext(), cert_type, data_array.obj());
   LOG_IF(WARNING, !ret) <<

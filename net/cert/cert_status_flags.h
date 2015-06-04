@@ -5,14 +5,15 @@
 #ifndef NET_CERT_CERT_STATUS_FLAGS_H_
 #define NET_CERT_CERT_STATUS_FLAGS_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "net/base/net_export.h"
 
 namespace net {
 
 // Bitmask of status flags of a certificate, representing any errors, as well as
 // other non-error status information such as whether the certificate is EV.
-typedef uint32 CertStatus;
+typedef uint32_t CertStatus;
 
 // NOTE: Because these names have appeared in bug reports, we preserve them as
 // MACRO_STYLE for continuity, instead of renaming them to kConstantStyle as

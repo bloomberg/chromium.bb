@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 

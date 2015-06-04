@@ -5,6 +5,7 @@
 #ifndef NET_CERT_X509_UTIL_H_
 #define NET_CERT_X509_UTIL_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "base/memory/ref_counted.h"
@@ -56,7 +57,7 @@ NET_EXPORT_PRIVATE bool IsSupportedValidityRange(base::Time not_valid_before,
 // Use this certificate only after the above risks are acknowledged.
 NET_EXPORT bool CreateKeyAndSelfSignedCert(
     const std::string& subject,
-    uint32 serial_number,
+    uint32_t serial_number,
     base::Time not_valid_before,
     base::Time not_valid_after,
     scoped_ptr<crypto::RSAPrivateKey>* key,
@@ -68,7 +69,7 @@ NET_EXPORT bool CreateKeyAndSelfSignedCert(
 NET_EXPORT bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
                                      DigestAlgorithm alg,
                                      const std::string& subject,
-                                     uint32 serial_number,
+                                     uint32_t serial_number,
                                      base::Time not_valid_before,
                                      base::Time not_valid_after,
                                      std::string* der_cert);

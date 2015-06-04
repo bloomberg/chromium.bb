@@ -4,7 +4,6 @@
 
 #include "net/cert/x509_util.h"
 
-#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "crypto/ec_private_key.h"
@@ -16,7 +15,7 @@ namespace net {
 namespace x509_util {
 
 // RSA keys created by CreateKeyAndSelfSignedCert will be of this length.
-static const uint16 kRSAKeyLength = 1024;
+static const uint16_t kRSAKeyLength = 1024;
 
 // Certificates made by CreateKeyAndSelfSignedCert and
 //  CreateKeyAndChannelIDEC will be signed using this digest algorithm.
@@ -56,7 +55,7 @@ bool ClientCertSorter::operator()(
 }
 
 bool CreateKeyAndSelfSignedCert(const std::string& subject,
-                                uint32 serial_number,
+                                uint32_t serial_number,
                                 base::Time not_valid_before,
                                 base::Time not_valid_after,
                                 scoped_ptr<crypto::RSAPrivateKey>* key,

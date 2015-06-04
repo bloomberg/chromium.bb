@@ -38,8 +38,8 @@ bool OpenSSLPrivateKeyStore::StoreKeyPair(const GURL& url,
   bool ret = false;
   if (public_len > 0 && private_len > 0) {
     ret = android::StoreKeyPair(
-        static_cast<const uint8*>(public_key), public_len,
-        static_cast<const uint8*>(private_key), private_len);
+        static_cast<const uint8_t*>(public_key), public_len,
+        static_cast<const uint8_t*>(private_key), private_len);
   }
   LOG_IF(ERROR, !ret) << "StoreKeyPair failed. pub len = " << public_len
                       << " priv len = " << private_len;

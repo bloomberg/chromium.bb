@@ -15,7 +15,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -177,8 +176,7 @@ ScopedJava GetPKCS8PrivateKeyJava(PrivateKeyType key_type,
   JNIEnv* env = InitEnv();
   base::android::ScopedJavaLocalRef<jbyteArray> bytes(
       base::android::ToJavaByteArray(
-          env,
-          reinterpret_cast<const uint8*>(pkcs8_key.data()),
+          env, reinterpret_cast<const uint8_t*>(pkcs8_key.data()),
           pkcs8_key.size()));
 
   ScopedJava key(
@@ -375,7 +373,7 @@ void DoKeySigning(jobject android_key,
                   const base::StringPiece& message,
                   std::string* result) {
   // First, get the platform signature.
-  std::vector<uint8> android_signature;
+  std::vector<uint8_t> android_signature;
   ASSERT_TRUE(
       RawSignDigestWithPrivateKey(android_key,
                                   message,
@@ -428,7 +426,7 @@ TEST(AndroidKeyStore,GetRSAKeyModulus) {
   ASSERT_FALSE(key_java.is_null());
 
   // Retrieve the corresponding modulus through JNI
-  std::vector<uint8> modulus_java;
+  std::vector<uint8_t> modulus_java;
   ASSERT_TRUE(GetRSAKeyModulus(key_java.obj(), &modulus_java));
 
   // Create an OpenSSL BIGNUM from it.

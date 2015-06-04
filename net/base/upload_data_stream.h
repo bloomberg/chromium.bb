@@ -24,7 +24,7 @@ class NET_EXPORT UploadDataStream {
   // |identifier| identifies a particular upload instance, which is used by the
   // cache to formulate a cache key. This value should be unique across browser
   // sessions. A value of 0 is used to indicate an unspecified identifier.
-  UploadDataStream(bool is_chunked, int64 identifier);
+  UploadDataStream(bool is_chunked, int64_t identifier);
 
   virtual ~UploadDataStream();
 
@@ -62,11 +62,11 @@ class NET_EXPORT UploadDataStream {
   // Returns the total size of the data stream and the current position.
   // When the data is chunked, always returns zero. Must always return the same
   // value after each call to Initialize().
-  uint64 size() const { return total_size_; }
-  uint64 position() const { return current_position_; }
+  uint64_t size() const { return total_size_; }
+  uint64_t position() const { return current_position_; }
 
   // See constructor for description.
-  int64 identifier() const { return identifier_; }
+  int64_t identifier() const { return identifier_; }
 
   bool is_chunked() const { return is_chunked_; }
 
@@ -97,7 +97,7 @@ class NET_EXPORT UploadDataStream {
 
   // Must be called before InitInternal completes, for non-chunked uploads.
   // Must not be called for chunked uploads.
-  void SetSize(uint64 size);
+  void SetSize(uint64_t size);
 
   // Must be called for chunked uploads before the final ReadInternal call
   // completes. Must not be called for non-chunked uploads.
@@ -121,10 +121,10 @@ class NET_EXPORT UploadDataStream {
   // before all but the first call to InitInternal.
   virtual void ResetInternal() = 0;
 
-  uint64 total_size_;
-  uint64 current_position_;
+  uint64_t total_size_;
+  uint64_t current_position_;
 
-  const int64 identifier_;
+  const int64_t identifier_;
 
   const bool is_chunked_;
 

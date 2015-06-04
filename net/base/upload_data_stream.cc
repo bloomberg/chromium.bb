@@ -11,7 +11,7 @@
 
 namespace net {
 
-UploadDataStream::UploadDataStream(bool is_chunked, int64 identifier)
+UploadDataStream::UploadDataStream(bool is_chunked, int64_t identifier)
     : total_size_(0),
       current_position_(0),
       identifier_(identifier),
@@ -71,7 +71,7 @@ void UploadDataStream::Reset() {
   ResetInternal();
 }
 
-void UploadDataStream::SetSize(uint64 size) {
+void UploadDataStream::SetSize(uint64_t size) {
   DCHECK(!initialized_successfully_);
   DCHECK(!is_chunked_);
   total_size_ = size;

@@ -339,7 +339,7 @@ X509Certificate* X509Certificate::CreateFromPickle(
     return NULL;
 
   OSCertHandles intermediates;
-  uint32 num_intermediates = 0;
+  uint32_t num_intermediates = 0;
   if (type != PICKLETYPE_SINGLE_CERTIFICATE) {
     if (!pickle_iter->ReadUInt32(&num_intermediates)) {
       FreeOSCertHandle(cert_handle);
@@ -361,7 +361,7 @@ X509Certificate* X509Certificate::CreateFromPickle(
     // cached pickles will all get replaced.
     // TODO(mdm): remove this compatibility code in April 2013 or so.
     base::PickleIterator saved_iter = *pickle_iter;
-    uint32 zero_check = 0;
+    uint32_t zero_check = 0;
     if (!pickle_iter->ReadUInt32(&zero_check)) {
       // This may not be an error. If there are no intermediates, and we're
       // reading an old 32-bit pickle, and there's nothing else after this in
@@ -379,7 +379,7 @@ X509Certificate* X509Certificate::CreateFromPickle(
       *pickle_iter = saved_iter;
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && defined(__x86_64__)
 
-    for (uint32 i = 0; i < num_intermediates; ++i) {
+    for (uint32_t i = 0; i < num_intermediates; ++i) {
       OSCertHandle intermediate = ReadOSCertHandleFromPickle(pickle_iter);
       if (!intermediate)
         break;

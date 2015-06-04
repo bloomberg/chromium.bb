@@ -22,7 +22,7 @@ namespace net {
 
 namespace {
 
-void CallInt64ToInt(const CompletionCallback& callback, int64 result) {
+void CallInt64ToInt(const CompletionCallback& callback, int64_t result) {
   callback.Run(static_cast<int>(result));
 }
 
@@ -33,10 +33,9 @@ FileStream::Context::IOResult::IOResult()
       os_error(0) {
 }
 
-FileStream::Context::IOResult::IOResult(int64 result,
+FileStream::Context::IOResult::IOResult(int64_t result,
                                         logging::SystemErrorCode os_error)
-    : result(result),
-      os_error(os_error) {
+    : result(result), os_error(os_error) {
 }
 
 // static
@@ -117,7 +116,7 @@ void FileStream::Context::Close(const CompletionCallback& callback) {
 }
 
 void FileStream::Context::Seek(base::File::Whence whence,
-                               int64 offset,
+                               int64_t offset,
                                const Int64CompletionCallback& callback) {
   DCHECK(!async_in_progress_);
 

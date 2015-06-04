@@ -300,7 +300,7 @@ bool X509Certificate::IsSameOSCert(X509Certificate::OSCertHandle a,
 X509Certificate::OSCertHandle X509Certificate::CreateOSCertHandleFromBytes(
     const char* data, int length) {
   CSSM_DATA cert_data;
-  cert_data.Data = const_cast<uint8*>(reinterpret_cast<const uint8*>(data));
+  cert_data.Data = const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(data));
   cert_data.Length = length;
 
   OSCertHandle cert_handle = NULL;

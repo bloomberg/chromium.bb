@@ -60,7 +60,7 @@ scoped_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(
   std::string absolute_release_time_string;
   if (!serialized_list->GetString(3, &absolute_release_time_string))
     return nullptr;
-  int64 absolute_release_time_us;
+  int64_t absolute_release_time_us;
   if (!base::StringToInt64(absolute_release_time_string,
                            &absolute_release_time_us) ||
       absolute_release_time_us < 0) {

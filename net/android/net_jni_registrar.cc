@@ -4,7 +4,6 @@
 
 #include "net/android/net_jni_registrar.h"
 
-#include "base/basictypes.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "net/android/android_private_key.h"

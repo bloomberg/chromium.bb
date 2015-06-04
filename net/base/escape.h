@@ -66,7 +66,7 @@ class UnescapeRule {
  public:
   // A combination of the following flags that is passed to the unescaping
   // functions.
-  typedef uint32 Type;
+  typedef uint32_t Type;
 
   enum {
     // Don't unescape anything at all.

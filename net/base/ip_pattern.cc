@@ -18,15 +18,15 @@ namespace net {
 class IPPattern::ComponentPattern {
  public:
   ComponentPattern();
-  void AppendRange(uint32 min, uint32 max);
-  bool Match(uint32 value) const;
+  void AppendRange(uint32_t min, uint32_t max);
+  bool Match(uint32_t value) const;
 
  private:
   struct Range {
    public:
-    Range(uint32 min, uint32 max) : minimum(min), maximum(max) {}
-    uint32 minimum;
-    uint32 maximum;
+    Range(uint32_t min, uint32_t max) : minimum(min), maximum(max) {}
+    uint32_t minimum;
+    uint32_t maximum;
   };
   typedef std::vector<Range> RangeVector;
 
@@ -37,11 +37,11 @@ class IPPattern::ComponentPattern {
 
 IPPattern::ComponentPattern::ComponentPattern() {}
 
-void IPPattern::ComponentPattern::AppendRange(uint32 min, uint32 max) {
+void IPPattern::ComponentPattern::AppendRange(uint32_t min, uint32_t max) {
   ranges_.push_back(Range(min, max));
 }
 
-bool IPPattern::ComponentPattern::Match(uint32 value) const {
+bool IPPattern::ComponentPattern::Match(uint32_t value) const {
   // Simple linear search should be fine, as we usually only have very few
   // distinct ranges to test.
   for (RangeVector::const_iterator range_it = ranges_.begin();
@@ -71,7 +71,7 @@ bool IPPattern::Match(const IPAddressNumber& address) const {
   // 8, so it is easier to count separately.
   int address_index = 0;
   for (size_t i = 0; i < ip_mask_.size(); ++i) {
-    uint32 value_to_test = address[address_index++];
+    uint32_t value_to_test = address[address_index++];
     if (!is_ipv4_) {
       value_to_test = (value_to_test << 8) + address[address_index++];
     }
@@ -109,7 +109,7 @@ bool IPPattern::ParsePattern(const std::string& ip_pattern) {
       *component_it = is_ipv4_ ? "[0-255]" : "[0-FFFF]";
     } else if ((*component_it)[0] != '[') {
       // This value will just have a specific integer to match.
-      uint32 value;
+      uint32_t value;
       if (!ValueTextToInt(*component_it, &value))
         return false;
       ip_mask_.push_back(true);
@@ -147,11 +147,11 @@ bool IPPattern::ParseComponentPattern(const base::StringPiece& text,
   for (Strings::iterator range_it = ranges.begin();
         range_it != ranges.end(); ++range_it) {
     base::StringTokenizer range_pair(*range_it, "-");
-    uint32 min = 0;
+    uint32_t min = 0;
     range_pair.GetNext();
     if (!ValueTextToInt(range_pair.token(), &min))
       return false;
-    uint32 max = min;  // Sometimes we have no distinct max.
+    uint32_t max = min;  // Sometimes we have no distinct max.
     if (range_pair.GetNext()) {
       if (!ValueTextToInt(range_pair.token(), &max))
         return false;
@@ -167,7 +167,7 @@ bool IPPattern::ParseComponentPattern(const base::StringPiece& text,
 }
 
 bool IPPattern::ValueTextToInt(const base::StringPiece& input,
-                               uint32* output) const {
+                               uint32_t* output) const {
   bool ok = is_ipv4_ ? base::StringToUint(input, output) :
                        base::HexStringToUInt(input, output);
   if (!ok) {

@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
-
 namespace net {
 
 namespace android {

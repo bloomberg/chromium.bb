@@ -49,7 +49,7 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   // sequence returns the sequence number of this CRL set. CRL sets generated
   // by the same source are given strictly monotonically increasing sequence
   // numbers.
-  uint32 sequence() const;
+  uint32_t sequence() const;
 
   // CRLList contains a list of (issuer SPKI hash, revoked serial numbers)
   // pairs.
@@ -82,11 +82,11 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   friend class base::RefCountedThreadSafe<CRLSet>;
   friend class CRLSetStorage;
 
-  uint32 sequence_;
+  uint32_t sequence_;
   CRLList crls_;
   // not_after_ contains the time, in UNIX epoch seconds, after which the
   // CRLSet should be considered stale, or 0 if no such time was given.
-  uint64 not_after_;
+  uint64_t not_after_;
   // crls_index_by_issuer_ maps from issuer SPKI hashes to the index in |crls_|
   // where the information for that issuer can be found. We have both |crls_|
   // and |crls_index_by_issuer_| because, when applying a delta update, we need

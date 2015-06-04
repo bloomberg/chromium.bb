@@ -29,14 +29,14 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   // |task_runner| is used to perform file operations. It must not be NULL.
   UploadFileElementReader(base::TaskRunner* task_runner,
                           const base::FilePath& path,
-                          uint64 range_offset,
-                          uint64 range_length,
+                          uint64_t range_offset,
+                          uint64_t range_length,
                           const base::Time& expected_modification_time);
   ~UploadFileElementReader() override;
 
   const base::FilePath& path() const { return path_; }
-  uint64 range_offset() const { return range_offset_; }
-  uint64 range_length() const { return range_length_; }
+  uint64_t range_offset() const { return range_offset_; }
+  uint64_t range_length() const { return range_length_; }
   const base::Time& expected_modification_time() const {
     return expected_modification_time_;
   }
@@ -44,8 +44,8 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   // UploadElementReader overrides:
   const UploadFileElementReader* AsFileReader() const override;
   int Init(const CompletionCallback& callback) override;
-  uint64 GetContentLength() const override;
-  uint64 BytesRemaining() const override;
+  uint64_t GetContentLength() const override;
+  uint64_t BytesRemaining() const override;
   int Read(IOBuffer* buf,
            int buf_length,
            const CompletionCallback& callback) override;
@@ -60,7 +60,7 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
 
   // These methods are used to implement Init().
   void OnOpenCompleted(const CompletionCallback& callback, int result);
-  void OnSeekCompleted(const CompletionCallback& callback, int64 result);
+  void OnSeekCompleted(const CompletionCallback& callback, int64_t result);
   void OnGetFileInfoCompleted(const CompletionCallback& callback,
                               base::File::Info* file_info,
                               bool result);
@@ -71,18 +71,18 @@ class NET_EXPORT UploadFileElementReader : public UploadElementReader {
   // Sets an value to override the result for GetContentLength().
   // Used for tests.
   struct NET_EXPORT_PRIVATE ScopedOverridingContentLengthForTests {
-    explicit ScopedOverridingContentLengthForTests(uint64 value);
+    explicit ScopedOverridingContentLengthForTests(uint64_t value);
     ~ScopedOverridingContentLengthForTests();
   };
 
   scoped_refptr<base::TaskRunner> task_runner_;
   const base::FilePath path_;
-  const uint64 range_offset_;
-  const uint64 range_length_;
+  const uint64_t range_offset_;
+  const uint64_t range_length_;
   const base::Time expected_modification_time_;
   scoped_ptr<FileStream> file_stream_;
-  uint64 content_length_;
-  uint64 bytes_remaining_;
+  uint64_t content_length_;
+  uint64_t bytes_remaining_;
   base::WeakPtrFactory<UploadFileElementReader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadFileElementReader);

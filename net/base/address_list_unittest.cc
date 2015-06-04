@@ -54,7 +54,7 @@ TEST(AddressListTest, CreateFromAddrinfo) {
     memset(&addr->sin_addr, i, kIPv4AddressSize);
     addr->sin_family = AF_INET;
     // Set port to i << 2;
-    addr->sin_port = base::HostToNet16(static_cast<uint16>(i << 2));
+    addr->sin_port = base::HostToNet16(static_cast<uint16_t>(i << 2));
     memset(&ai[i], 0x0, sizeof(ai[i]));
     ai[i].ai_family = addr->sin_family;
     ai[i].ai_socktype = SOCK_STREAM;

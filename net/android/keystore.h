@@ -6,12 +6,12 @@
 #define NET_ANDROID_KEYSTORE_H
 
 #include <jni.h>
+#include <stdint.h>
 
 #include <string>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/ssl/ssl_client_cert_type.h"
@@ -45,7 +45,7 @@ enum PrivateKeyType {
 // Returns true on success, or false on failure (e.g. if the key
 // is not RSA).
 NET_EXPORT bool GetRSAKeyModulus(jobject private_key,
-                                 std::vector<uint8>* modulus);
+                                 std::vector<uint8_t>* modulus);
 
 // Returns the Q parameter of a given DSAPrivateKey platform object,
 // as a series of bytes, in big-endian representation. This can be used
@@ -54,8 +54,7 @@ NET_EXPORT bool GetRSAKeyModulus(jobject private_key,
 // |q| will receive the result bytes on success.
 // Returns true on success, or false on failure (e.g. if the key is
 // not DSA).
-NET_EXPORT bool GetDSAKeyParamQ(jobject private_key,
-                                std::vector<uint8>* q);
+NET_EXPORT bool GetDSAKeyParamQ(jobject private_key, std::vector<uint8_t>* q);
 
 // Returns the order parameter of a given ECPrivateKey platform object,
 // as a series of bytes, in big-endian representation. This can be used
@@ -64,8 +63,7 @@ NET_EXPORT bool GetDSAKeyParamQ(jobject private_key,
 // |order| will receive the result bytes on success.
 // Returns true on success, or false on failure (e.g. if the key is
 // not EC).
-bool GetECKeyOrder(jobject private_key,
-                   std::vector<uint8>* order);
+bool GetECKeyOrder(jobject private_key, std::vector<uint8_t>* order);
 
 // Returns the encoded PKCS#8 representation of a private key.
 // This only works on Android 4.0.3 and older releases for platform keys
@@ -74,7 +72,7 @@ bool GetECKeyOrder(jobject private_key,
 // |encoded| will receive the encoded data on success.
 // Returns true on success, or false on failure (e.g. on 4.0.4 or higher).
 bool GetPrivateKeyEncodedBytes(jobject private_key,
-                               std::vector<uint8>* encoded);
+                               std::vector<uint8_t>* encoded);
 
 // Compute the signature of a given message, which is actually a hash,
 // using a private key. For more details, please read the comments for the
@@ -85,11 +83,9 @@ bool GetPrivateKeyEncodedBytes(jobject private_key,
 // |signature| will receive the signature on success.
 // Returns true on success, false on failure.
 //
-NET_EXPORT bool RawSignDigestWithPrivateKey(
-    jobject private_key,
-    const base::StringPiece& digest,
-    std::vector<uint8>* signature);
-
+NET_EXPORT bool RawSignDigestWithPrivateKey(jobject private_key,
+                                            const base::StringPiece& digest,
+                                            std::vector<uint8_t>* signature);
 
 // Return the PrivateKeyType of a given private key.
 // |private_key| is a JNI reference for the private key.

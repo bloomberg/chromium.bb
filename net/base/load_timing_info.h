@@ -113,7 +113,7 @@ struct NET_EXPORT LoadTimingInfo {
   //
   // 0 when there is no socket associated with the request, or it's not an HTTP
   // request.
-  uint32 socket_log_id;
+  uint32_t socket_log_id;
 
   // Start time as a base::Time, so times can be coverted into actual times.
   // Other times are recorded as TimeTicks so they are not affected by clock

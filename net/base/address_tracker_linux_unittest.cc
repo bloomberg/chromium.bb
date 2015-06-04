@@ -113,7 +113,7 @@ namespace {
 
 class NetlinkMessage {
  public:
-  explicit NetlinkMessage(uint16 type) : buffer_(NLMSG_HDRLEN) {
+  explicit NetlinkMessage(uint16_t type) : buffer_(NLMSG_HDRLEN) {
     header()->nlmsg_type = type;
     Align();
   }
@@ -125,7 +125,7 @@ class NetlinkMessage {
     Align();
   }
 
-  void AddAttribute(uint16 type, const void* data, size_t length) {
+  void AddAttribute(uint16_t type, const void* data, size_t length) {
     struct nlattr attr;
     attr.nla_len = NLA_HDRLEN + length;
     attr.nla_type = type;
@@ -163,13 +163,13 @@ class NetlinkMessage {
 
 #define INFINITY_LIFE_TIME 0xFFFFFFFF
 
-void MakeAddrMessageWithCacheInfo(uint16 type,
-                                  uint8 flags,
-                                  uint8 family,
+void MakeAddrMessageWithCacheInfo(uint16_t type,
+                                  uint8_t flags,
+                                  uint8_t family,
                                   int index,
                                   const IPAddressNumber& address,
                                   const IPAddressNumber& local,
-                                  uint32 preferred_lifetime,
+                                  uint32_t preferred_lifetime,
                                   Buffer* output) {
   NetlinkMessage nlmsg(type);
   struct ifaddrmsg msg = {};
@@ -188,9 +188,9 @@ void MakeAddrMessageWithCacheInfo(uint16 type,
   nlmsg.AppendTo(output);
 }
 
-void MakeAddrMessage(uint16 type,
-                     uint8 flags,
-                     uint8 family,
+void MakeAddrMessage(uint16_t type,
+                     uint8_t flags,
+                     uint8_t family,
                      int index,
                      const IPAddressNumber& address,
                      const IPAddressNumber& local,
@@ -199,7 +199,10 @@ void MakeAddrMessage(uint16 type,
                                INFINITY_LIFE_TIME, output);
 }
 
-void MakeLinkMessage(uint16 type, uint32 flags, uint32 index, Buffer* output) {
+void MakeLinkMessage(uint16_t type,
+                     uint32_t flags,
+                     uint32_t index,
+                     Buffer* output) {
   NetlinkMessage nlmsg(type);
   struct ifinfomsg msg = {};
   msg.ifi_index = index;

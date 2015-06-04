@@ -17,7 +17,7 @@ bool TestRootCerts::Add(X509Certificate* certificate) {
                                       &cert_bytes))
       return false;
   android::AddTestRootCertificate(
-      reinterpret_cast<const uint8*>(cert_bytes.data()), cert_bytes.size());
+      reinterpret_cast<const uint8_t*>(cert_bytes.data()), cert_bytes.size());
   empty_ = false;
   return true;
 }

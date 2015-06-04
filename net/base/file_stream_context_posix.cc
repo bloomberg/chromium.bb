@@ -80,8 +80,8 @@ int FileStream::Context::Write(IOBuffer* in_buf,
 
 FileStream::Context::IOResult FileStream::Context::SeekFileImpl(
     base::File::Whence whence,
-    int64 offset) {
-  int64 res = file_.Seek(whence, offset);
+    int64_t offset) {
+  int64_t res = file_.Seek(whence, offset);
   if (res == -1)
     return IOResult::FromOSError(errno);
 

@@ -197,7 +197,7 @@ bool GetNetworkListImpl(NetworkInterfaceList* networks,
     }
 
     if (address.FromSockAddr(addr, addr_size)) {
-      uint8 prefix_length = 0;
+      uint8_t prefix_length = 0;
       if (interface->ifa_netmask) {
         // If not otherwise set, assume the same sa_family as ifa_addr.
         if (interface->ifa_netmask->sa_family == 0) {

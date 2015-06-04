@@ -68,8 +68,8 @@ class MockUploadElementReader : public UploadElementReader {
 
   // UploadElementReader overrides.
   MOCK_METHOD1(Init, int(const CompletionCallback& callback));
-  uint64 GetContentLength() const override { return content_length_; }
-  uint64 BytesRemaining() const override { return bytes_remaining_; }
+  uint64_t GetContentLength() const override { return content_length_; }
+  uint64_t BytesRemaining() const override { return bytes_remaining_; }
   bool IsInMemory() const override { return is_in_memory_; }
   MOCK_METHOD3(Read, int(IOBuffer* buf,
                          int buf_length,
@@ -213,7 +213,7 @@ TEST_F(ElementsUploadDataStreamTest, FileSmallerThanLength) {
                                              &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             base::WriteFile(temp_file_path, kTestData, kTestDataSize));
-  const uint64 kFakeSize = kTestDataSize*2;
+  const uint64_t kFakeSize = kTestDataSize * 2;
 
   UploadFileElementReader::ScopedOverridingContentLengthForTests
       overriding_content_length(kFakeSize);
@@ -234,7 +234,7 @@ TEST_F(ElementsUploadDataStreamTest, FileSmallerThanLength) {
   EXPECT_EQ(kFakeSize, stream->size());
   EXPECT_EQ(0U, stream->position());
   EXPECT_FALSE(stream->IsEOF());
-  uint64 read_counter = 0;
+  uint64_t read_counter = 0;
   scoped_refptr<IOBuffer> buf = new IOBuffer(kTestBufferSize);
   while (!stream->IsEOF()) {
     TestCompletionCallback read_callback;
@@ -335,8 +335,8 @@ TEST_F(ElementsUploadDataStreamTest, FileAndBytes) {
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             base::WriteFile(temp_file_path, kTestData, kTestDataSize));
 
-  const uint64 kFileRangeOffset = 1;
-  const uint64 kFileRangeLength = 4;
+  const uint64_t kFileRangeOffset = 1;
+  const uint64_t kFileRangeLength = 4;
   element_readers_.push_back(
       new UploadFileElementReader(base::MessageLoopProxy::current().get(),
                                   temp_file_path,
@@ -347,7 +347,7 @@ TEST_F(ElementsUploadDataStreamTest, FileAndBytes) {
   element_readers_.push_back(new UploadBytesElementReader(
       kTestData, kTestDataSize));
 
-  const uint64 kStreamSize = kTestDataSize + kFileRangeLength;
+  const uint64_t kStreamSize = kTestDataSize + kFileRangeLength;
   TestCompletionCallback init_callback;
   scoped_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(element_readers_.Pass(), 0));

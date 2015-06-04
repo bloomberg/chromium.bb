@@ -29,13 +29,13 @@ namespace {
 // as long as the symbols are properly exposed. The fact that Apple's
 // implementation stores it in BER is an internal implementation detail
 // observed by studying libsecurity_cssm.
-const uint8 kDomainComponentData[] = {
+const uint8_t kDomainComponentData[] = {
   0x09, 0x92, 0x26, 0x89, 0x93, 0xF2, 0x2C, 0x64, 0x01, 0x19
 };
 
 const CSSM_OID kDomainComponentOID = {
     arraysize(kDomainComponentData),
-    const_cast<uint8*>(kDomainComponentData)
+    const_cast<uint8_t*>(kDomainComponentData)
 };
 
 const CSSM_OID* kOIDs[] = {

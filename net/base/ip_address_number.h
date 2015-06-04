@@ -32,21 +32,21 @@ NET_EXPORT bool IsIPAddressReserved(const IPAddressNumber& address);
 
 // Returns the string representation of an IP address.
 // For example: "192.168.0.1" or "::1".
-NET_EXPORT std::string IPAddressToString(const uint8* address,
+NET_EXPORT std::string IPAddressToString(const uint8_t* address,
                                          size_t address_len);
 
 // Returns the string representation of an IP address along with its port.
 // For example: "192.168.0.1:99" or "[::1]:80".
-NET_EXPORT std::string IPAddressToStringWithPort(const uint8* address,
+NET_EXPORT std::string IPAddressToStringWithPort(const uint8_t* address,
                                                  size_t address_len,
-                                                 uint16 port);
+                                                 uint16_t port);
 
 // Same as IPAddressToString() but for an IPAddressNumber.
 NET_EXPORT std::string IPAddressToString(const IPAddressNumber& addr);
 
 // Same as IPAddressToStringWithPort() but for an IPAddressNumber.
-NET_EXPORT std::string IPAddressToStringWithPort(
-    const IPAddressNumber& addr, uint16 port);
+NET_EXPORT std::string IPAddressToStringWithPort(const IPAddressNumber& addr,
+                                                 uint16_t port);
 
 // Returns the address as a sequence of bytes in network-byte-order.
 NET_EXPORT std::string IPAddressToPackedString(const IPAddressNumber& addr);

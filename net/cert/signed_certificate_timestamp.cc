@@ -48,7 +48,7 @@ void SignedCertificateTimestamp::Persist(base::Pickle* pickle) {
 scoped_refptr<SignedCertificateTimestamp>
 SignedCertificateTimestamp::CreateFromPickle(base::PickleIterator* iter) {
   int version;
-  int64 timestamp;
+  int64_t timestamp;
   int hash_algorithm;
   int sig_algorithm;
   scoped_refptr<SignedCertificateTimestamp> sct(

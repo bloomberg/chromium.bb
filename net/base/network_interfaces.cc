@@ -12,10 +12,10 @@ NetworkInterface::NetworkInterface()
 
 NetworkInterface::NetworkInterface(const std::string& name,
                                    const std::string& friendly_name,
-                                   uint32 interface_index,
+                                   uint32_t interface_index,
                                    NetworkChangeNotifier::ConnectionType type,
                                    const IPAddressNumber& address,
-                                   uint32 prefix_length,
+                                   uint32_t prefix_length,
                                    int ip_address_attributes)
     : name(name),
       friendly_name(friendly_name),

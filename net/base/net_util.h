@@ -47,8 +47,8 @@ namespace net {
 typedef std::vector<unsigned char> IPAddressNumber;
 
 // Used by FormatUrl to specify handling of certain parts of the url.
-typedef uint32 FormatUrlType;
-typedef uint32 FormatUrlTypes;
+typedef uint32_t FormatUrlType;
+typedef uint32_t FormatUrlTypes;
 
 #if defined(OS_WIN)
 // Bluetooth address size. Windows Bluetooth is supported via winsock.
@@ -124,7 +124,7 @@ bool GetIPAddressFromSockAddr(const struct sockaddr* sock_addr,
                               socklen_t sock_addr_len,
                               const unsigned char** address,
                               size_t* address_len,
-                              uint16* port);
+                              uint16_t* port);
 
 // Same as IPAddressToString() but for a sockaddr. This output will not include
 // the IPv6 scope ID.
@@ -207,7 +207,8 @@ NET_EXPORT std::string GetDirectoryListingHeader(const base::string16& title);
 // Both |name| and |raw_bytes| are escaped internally.
 NET_EXPORT std::string GetDirectoryListingEntry(const base::string16& name,
                                                 const std::string& raw_bytes,
-                                                bool is_dir, int64 size,
+                                                bool is_dir,
+                                                int64_t size,
                                                 base::Time modified);
 
 // If text starts with "www." it is removed, otherwise text is returned
@@ -218,7 +219,7 @@ NET_EXPORT base::string16 StripWWW(const base::string16& text);
 NET_EXPORT base::string16 StripWWWFromHost(const GURL& url);
 
 // Checks if |port| is in the valid range (0 to 65535, though 0 is technically
-// reserved).  Should be used before casting a port to a uint16.
+// reserved).  Should be used before casting a port to a uint16_t.
 NET_EXPORT bool IsPortValid(int port);
 
 // Checks |port| against a list of ports which are restricted by default.
@@ -345,8 +346,8 @@ NET_EXPORT_PRIVATE AddressFamily GetAddressFamily(
 NET_EXPORT_PRIVATE int ConvertAddressFamily(AddressFamily address_family);
 
 // Retuns the port field of the |sockaddr|.
-const uint16* GetPortFieldFromSockaddr(const struct sockaddr* address,
-                                       socklen_t address_len);
+const uint16_t* GetPortFieldFromSockaddr(const struct sockaddr* address,
+                                         socklen_t address_len);
 // Returns the value of port in |sockaddr| (in host byte ordering).
 NET_EXPORT_PRIVATE int GetPortFromSockaddr(const struct sockaddr* address,
                                            socklen_t address_len);

@@ -22,9 +22,7 @@ using base::android::JavaArrayOfByteArrayToStringVector;
 namespace net {
 namespace android {
 
-bool GetRSAKeyModulus(
-    jobject private_key_ref,
-    std::vector<uint8>* result) {
+bool GetRSAKeyModulus(jobject private_key_ref, std::vector<uint8_t>* result) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jbyteArray> modulus_ref =
@@ -38,8 +36,7 @@ bool GetRSAKeyModulus(
   return true;
 }
 
-bool GetDSAKeyParamQ(jobject private_key_ref,
-                     std::vector<uint8>* result) {
+bool GetDSAKeyParamQ(jobject private_key_ref, std::vector<uint8_t>* result) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jbyteArray> q_ref =
@@ -54,8 +51,7 @@ bool GetDSAKeyParamQ(jobject private_key_ref,
   return true;
 }
 
-bool GetECKeyOrder(jobject private_key_ref,
-                   std::vector<uint8>* result) {
+bool GetECKeyOrder(jobject private_key_ref, std::vector<uint8_t>* result) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jbyteArray> order_ref =
@@ -72,7 +68,7 @@ bool GetECKeyOrder(jobject private_key_ref,
 }
 
 bool GetPrivateKeyEncodedBytes(jobject private_key_ref,
-                               std::vector<uint8>* result) {
+                               std::vector<uint8_t>* result) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jbyteArray> encoded_ref =
@@ -87,17 +83,14 @@ bool GetPrivateKeyEncodedBytes(jobject private_key_ref,
   return true;
 }
 
-bool RawSignDigestWithPrivateKey(
-    jobject private_key_ref,
-    const base::StringPiece& digest,
-    std::vector<uint8>* signature) {
+bool RawSignDigestWithPrivateKey(jobject private_key_ref,
+                                 const base::StringPiece& digest,
+                                 std::vector<uint8_t>* signature) {
   JNIEnv* env = AttachCurrentThread();
 
   // Convert message to byte[] array.
-  ScopedJavaLocalRef<jbyteArray> digest_ref =
-      ToJavaByteArray(env,
-                      reinterpret_cast<const uint8*>(digest.data()),
-                      digest.length());
+  ScopedJavaLocalRef<jbyteArray> digest_ref = ToJavaByteArray(
+      env, reinterpret_cast<const uint8_t*>(digest.data()), digest.length());
   DCHECK(!digest_ref.is_null());
 
   // Invoke platform API

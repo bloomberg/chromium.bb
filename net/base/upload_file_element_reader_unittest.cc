@@ -178,8 +178,8 @@ TEST_F(UploadFileElementReaderTest, InitDuringAsyncOperation) {
 }
 
 TEST_F(UploadFileElementReaderTest, Range) {
-  const uint64 kOffset = 2;
-  const uint64 kLength = bytes_.size() - kOffset * 3;
+  const uint64_t kOffset = 2;
+  const uint64_t kLength = bytes_.size() - kOffset * 3;
   reader_.reset(
       new UploadFileElementReader(base::MessageLoopProxy::current().get(),
                                   temp_file_path_,

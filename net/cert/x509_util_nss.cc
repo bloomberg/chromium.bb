@@ -38,12 +38,11 @@ namespace {
 // Returns NULL if an error is encountered in the certificate creation
 // process.
 // Caller responsible for freeing returned certificate object.
-CERTCertificate* CreateCertificate(
-    SECKEYPublicKey* public_key,
-    const std::string& subject,
-    uint32 serial_number,
-    base::Time not_valid_before,
-    base::Time not_valid_after) {
+CERTCertificate* CreateCertificate(SECKEYPublicKey* public_key,
+                                   const std::string& subject,
+                                   uint32_t serial_number,
+                                   base::Time not_valid_before,
+                                   base::Time not_valid_after) {
   // Create info about public key.
   CERTSubjectPublicKeyInfo* spki =
       SECKEY_CreateSubjectPublicKeyInfo(public_key);
@@ -156,7 +155,7 @@ namespace x509_util {
 bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
                           DigestAlgorithm alg,
                           const std::string& subject,
-                          uint32 serial_number,
+                          uint32_t serial_number,
                           base::Time not_valid_before,
                           base::Time not_valid_after,
                           std::string* der_cert) {

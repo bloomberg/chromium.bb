@@ -24,7 +24,7 @@ class UploadElementReader;
 class NET_EXPORT ElementsUploadDataStream : public UploadDataStream {
  public:
   ElementsUploadDataStream(ScopedVector<UploadElementReader> element_readers,
-                           int64 identifier);
+                           int64_t identifier);
 
   ~ElementsUploadDataStream() override;
 
@@ -32,7 +32,7 @@ class NET_EXPORT ElementsUploadDataStream : public UploadDataStream {
   // scoped_ptr<UploadDataStream> for ease of use.
   static scoped_ptr<UploadDataStream> CreateWithReader(
       scoped_ptr<UploadElementReader> reader,
-      int64 identifier);
+      int64_t identifier);
 
  private:
   // UploadDataStream implementation.

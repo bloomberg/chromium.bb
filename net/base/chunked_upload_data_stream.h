@@ -23,7 +23,7 @@ class IOBuffer;
 // seekable data, due to this buffering behavior.
 class NET_EXPORT ChunkedUploadDataStream : public UploadDataStream {
  public:
-  explicit ChunkedUploadDataStream(int64 identifier);
+  explicit ChunkedUploadDataStream(int64_t identifier);
 
   ~ChunkedUploadDataStream() override;
 

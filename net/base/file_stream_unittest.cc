@@ -177,7 +177,7 @@ TEST_F(FileStreamTest, UseClosedStream) {
 }
 
 TEST_F(FileStreamTest, Read) {
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   FileStream stream(base::MessageLoopProxy::current());
@@ -205,7 +205,7 @@ TEST_F(FileStreamTest, Read) {
 }
 
 TEST_F(FileStreamTest, Read_EarlyDelete) {
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   scoped_ptr<FileStream> stream(
@@ -231,7 +231,7 @@ TEST_F(FileStreamTest, Read_EarlyDelete) {
 }
 
 TEST_F(FileStreamTest, Read_FromOffset) {
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   FileStream stream(base::MessageLoopProxy::current());
@@ -243,10 +243,10 @@ TEST_F(FileStreamTest, Read_FromOffset) {
   EXPECT_EQ(OK, callback.WaitForResult());
 
   TestInt64CompletionCallback callback64;
-  const int64 kOffset = 3;
+  const int64_t kOffset = 3;
   rv = stream.Seek(base::File::FROM_BEGIN, kOffset, callback64.callback());
   ASSERT_EQ(ERR_IO_PENDING, rv);
-  int64 new_offset = callback64.WaitForResult();
+  int64_t new_offset = callback64.WaitForResult();
   EXPECT_EQ(kOffset, new_offset);
 
   int total_bytes_read = 0;
@@ -278,10 +278,10 @@ TEST_F(FileStreamTest, SeekAround) {
 
   TestInt64CompletionCallback callback64;
 
-  const int64 kOffset = 3;
+  const int64_t kOffset = 3;
   rv = stream.Seek(base::File::FROM_BEGIN, kOffset, callback64.callback());
   ASSERT_EQ(ERR_IO_PENDING, rv);
-  int64 new_offset = callback64.WaitForResult();
+  int64_t new_offset = callback64.WaitForResult();
   EXPECT_EQ(kOffset, new_offset);
 
   rv = stream.Seek(base::File::FROM_CURRENT, kOffset, callback64.callback());
@@ -310,7 +310,7 @@ TEST_F(FileStreamTest, Write) {
   int rv = stream.Open(temp_file_path(), flags, callback.callback());
   EXPECT_EQ(OK, callback.GetResult(rv));
 
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
   EXPECT_EQ(0, file_size);
 
@@ -337,7 +337,7 @@ TEST_F(FileStreamTest, Write_EarlyDelete) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
 
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
   EXPECT_EQ(0, file_size);
 
@@ -356,7 +356,7 @@ TEST_F(FileStreamTest, Write_EarlyDelete) {
 }
 
 TEST_F(FileStreamTest, Write_FromOffset) {
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   FileStream stream(base::MessageLoopProxy::current());
@@ -368,10 +368,10 @@ TEST_F(FileStreamTest, Write_FromOffset) {
   EXPECT_EQ(OK, callback.WaitForResult());
 
   TestInt64CompletionCallback callback64;
-  const int64 kOffset = 0;
+  const int64_t kOffset = 0;
   rv = stream.Seek(base::File::FROM_END, kOffset, callback64.callback());
   ASSERT_EQ(ERR_IO_PENDING, rv);
-  int64 new_offset = callback64.WaitForResult();
+  int64_t new_offset = callback64.WaitForResult();
   EXPECT_EQ(kTestDataSize, new_offset);
 
   int total_bytes_written = 0;
@@ -395,7 +395,7 @@ TEST_F(FileStreamTest, Write_FromOffset) {
 }
 
 TEST_F(FileStreamTest, BasicReadWrite) {
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   scoped_ptr<FileStream> stream(
@@ -407,7 +407,7 @@ TEST_F(FileStreamTest, BasicReadWrite) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
 
-  int64 total_bytes_read = 0;
+  int64_t total_bytes_read = 0;
 
   std::string data_read;
   for (;;) {
@@ -448,7 +448,7 @@ TEST_F(FileStreamTest, BasicReadWrite) {
 }
 
 TEST_F(FileStreamTest, BasicWriteRead) {
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   scoped_ptr<FileStream> stream(
@@ -463,7 +463,7 @@ TEST_F(FileStreamTest, BasicWriteRead) {
   TestInt64CompletionCallback callback64;
   rv = stream->Seek(base::File::FROM_END, 0, callback64.callback());
   ASSERT_EQ(ERR_IO_PENDING, rv);
-  int64 offset = callback64.WaitForResult();
+  int64_t offset = callback64.WaitForResult();
   EXPECT_EQ(offset, file_size);
 
   int total_bytes_written = 0;
@@ -619,7 +619,7 @@ class TestWriteReadCompletionCallback {
 };
 
 TEST_F(FileStreamTest, WriteRead) {
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   scoped_ptr<FileStream> stream(
@@ -726,7 +726,7 @@ class TestWriteCloseCompletionCallback {
 };
 
 TEST_F(FileStreamTest, WriteClose) {
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(temp_file_path(), &file_size));
 
   scoped_ptr<FileStream> stream(
@@ -793,8 +793,8 @@ TEST_F(FileStreamTest, OpenAndDelete) {
 // Verify that Write() errors are mapped correctly.
 TEST_F(FileStreamTest, WriteError) {
   // Try opening file as read-only and then writing to it using FileStream.
-  uint32 flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-                 base::File::FLAG_ASYNC;
+  uint32_t flags =
+      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_ASYNC;
 
   base::File file(temp_file_path(), flags);
   ASSERT_TRUE(file.IsValid());
@@ -818,8 +818,8 @@ TEST_F(FileStreamTest, WriteError) {
 // Verify that Read() errors are mapped correctly.
 TEST_F(FileStreamTest, ReadError) {
   // Try opening file for write and then reading from it using FileStream.
-  uint32 flags = base::File::FLAG_OPEN | base::File::FLAG_WRITE |
-                 base::File::FLAG_ASYNC;
+  uint32_t flags =
+      base::File::FLAG_OPEN | base::File::FLAG_WRITE | base::File::FLAG_ASYNC;
 
   base::File file(temp_file_path(), flags);
   ASSERT_TRUE(file.IsValid());
@@ -853,7 +853,7 @@ TEST_F(FileStreamTest, ContentUriRead) {
   base::FilePath path = base::InsertImageIntoMediaStore(image_file);
   EXPECT_TRUE(path.IsContentUri());
   EXPECT_TRUE(base::PathExists(path));
-  int64 file_size;
+  int64_t file_size;
   EXPECT_TRUE(base::GetFileSize(path, &file_size));
   EXPECT_LT(0, file_size);
 

@@ -45,7 +45,7 @@ bool FileStream::IsOpen() const {
 }
 
 int FileStream::Seek(base::File::Whence whence,
-                     int64 offset,
+                     int64_t offset,
                      const Int64CompletionCallback& callback) {
   if (!IsOpen())
     return ERR_UNEXPECTED;

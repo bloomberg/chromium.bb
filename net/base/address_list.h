@@ -29,7 +29,7 @@ class NET_EXPORT AddressList
   explicit AddressList(const IPEndPoint& endpoint);
 
   static AddressList CreateFromIPAddress(const IPAddressNumber& address,
-                                         uint16 port);
+                                         uint16_t port);
 
   static AddressList CreateFromIPAddressList(
       const IPAddressList& addresses,
@@ -39,7 +39,7 @@ class NET_EXPORT AddressList
   static AddressList CreateFromAddrinfo(const struct addrinfo* head);
 
   // Returns a copy of |list| with port on each element set to |port|.
-  static AddressList CopyWithPort(const AddressList& list, uint16 port);
+  static AddressList CopyWithPort(const AddressList& list, uint16_t port);
 
   // TODO(szym): Remove all three. http://crbug.com/126134
   const std::string& canonical_name() const {

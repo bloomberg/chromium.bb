@@ -16,7 +16,7 @@ namespace net {
 
 ElementsUploadDataStream::ElementsUploadDataStream(
     ScopedVector<UploadElementReader> element_readers,
-    int64 identifier)
+    int64_t identifier)
     : UploadDataStream(false, identifier),
       element_readers_(element_readers.Pass()),
       element_index_(0),
@@ -29,7 +29,7 @@ ElementsUploadDataStream::~ElementsUploadDataStream() {
 
 scoped_ptr<UploadDataStream> ElementsUploadDataStream::CreateWithReader(
     scoped_ptr<UploadElementReader> reader,
-    int64 identifier) {
+    int64_t identifier) {
   ScopedVector<UploadElementReader> readers;
   readers.push_back(reader.Pass());
   return scoped_ptr<UploadDataStream>(
@@ -82,7 +82,7 @@ int ElementsUploadDataStream::InitElements(size_t start_index) {
       return result;
   }
 
-  uint64 total_size = 0;
+  uint64_t total_size = 0;
   for (size_t i = 0; i < element_readers_.size(); ++i) {
     total_size += element_readers_[i]->GetContentLength();
   }
@@ -129,9 +129,9 @@ int ElementsUploadDataStream::ReadElements(
   if (read_failed_) {
     // If an error occured during read operation, then pad with zero.
     // Otherwise the server will hang waiting for the rest of the data.
-    int num_bytes_to_fill = static_cast<int>(std::min(
-        static_cast<uint64>(buf->BytesRemaining()),
-        size() - position() - buf->BytesConsumed()));
+    int num_bytes_to_fill =
+        static_cast<int>(std::min(static_cast<uint64_t>(buf->BytesRemaining()),
+                                  size() - position() - buf->BytesConsumed()));
     DCHECK_GE(num_bytes_to_fill, 0);
     memset(buf->data(), 0, num_bytes_to_fill);
     buf->DidConsume(num_bytes_to_fill);

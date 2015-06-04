@@ -93,7 +93,7 @@ class FileStream::Context {
   void Close(const CompletionCallback& callback);
 
   void Seek(base::File::Whence whence,
-            int64 offset,
+            int64_t offset,
             const Int64CompletionCallback& callback);
 
   void Flush(const CompletionCallback& callback);
@@ -101,10 +101,10 @@ class FileStream::Context {
  private:
   struct IOResult {
     IOResult();
-    IOResult(int64 result, logging::SystemErrorCode os_error);
+    IOResult(int64_t result, logging::SystemErrorCode os_error);
     static IOResult FromOSError(logging::SystemErrorCode os_error);
 
-    int64 result;
+    int64_t result;
     logging::SystemErrorCode os_error;  // Set only when result < 0.
   };
 
@@ -149,7 +149,7 @@ class FileStream::Context {
   ////////////////////////////////////////////////////////////////////////////
 
   // Adjusts the position from where the data is read.
-  IOResult SeekFileImpl(base::File::Whence whence, int64 offset);
+  IOResult SeekFileImpl(base::File::Whence whence, int64_t offset);
 
   void OnFileOpened();
 

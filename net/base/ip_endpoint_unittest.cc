@@ -29,7 +29,7 @@ struct TestData {
   { "::1", "[::1]", true },
   { "2001:db8:0::42", "[2001:db8::42]", true },
 };
-uint16 test_count = static_cast<uint16>(arraysize(tests));
+uint16_t test_count = static_cast<uint16_t>(arraysize(tests));
 
 class IPEndPointTest : public PlatformTest {
  public:
@@ -46,7 +46,7 @@ TEST_F(IPEndPointTest, Constructor) {
   IPEndPoint endpoint;
   EXPECT_EQ(0, endpoint.port());
 
-  for (uint16 index = 0; index < test_count; ++index) {
+  for (uint16_t index = 0; index < test_count; ++index) {
     IPEndPoint endpoint(tests[index].ip_address, 80);
     EXPECT_EQ(80, endpoint.port());
     EXPECT_EQ(tests[index].ip_address, endpoint.address());
@@ -54,7 +54,7 @@ TEST_F(IPEndPointTest, Constructor) {
 }
 
 TEST_F(IPEndPointTest, Assignment) {
-  for (uint16 index = 0; index < test_count; ++index) {
+  for (uint16_t index = 0; index < test_count; ++index) {
     IPEndPoint src(tests[index].ip_address, index);
     IPEndPoint dest = src;
 
@@ -64,7 +64,7 @@ TEST_F(IPEndPointTest, Assignment) {
 }
 
 TEST_F(IPEndPointTest, Copy) {
-  for (uint16 index = 0; index < test_count; ++index) {
+  for (uint16_t index = 0; index < test_count; ++index) {
     IPEndPoint src(tests[index].ip_address, index);
     IPEndPoint dest(src);
 
@@ -74,7 +74,7 @@ TEST_F(IPEndPointTest, Copy) {
 }
 
 TEST_F(IPEndPointTest, ToFromSockAddr) {
-  for (uint16 index = 0; index < test_count; ++index) {
+  for (uint16_t index = 0; index < test_count; ++index) {
     IPEndPoint ip_endpoint(tests[index].ip_address, index);
 
     // Convert to a sockaddr.
@@ -97,7 +97,7 @@ TEST_F(IPEndPointTest, ToFromSockAddr) {
 }
 
 TEST_F(IPEndPointTest, ToSockAddrBufTooSmall) {
-  for (uint16 index = 0; index < test_count; ++index) {
+  for (uint16_t index = 0; index < test_count; ++index) {
     IPEndPoint ip_endpoint(tests[index].ip_address, index);
 
     SockaddrStorage storage;
@@ -116,7 +116,7 @@ TEST_F(IPEndPointTest, FromSockAddrBufTooSmall) {
 }
 
 TEST_F(IPEndPointTest, Equality) {
-  for (uint16 index = 0; index < test_count; ++index) {
+  for (uint16_t index = 0; index < test_count; ++index) {
     IPEndPoint src(tests[index].ip_address, index);
     IPEndPoint dest(src);
     EXPECT_TRUE(src == dest);
@@ -159,8 +159,8 @@ TEST_F(IPEndPointTest, ToString) {
   IPEndPoint endpoint;
   EXPECT_EQ(0, endpoint.port());
 
-  for (uint16 index = 0; index < test_count; ++index) {
-    uint16 port = 100 + index;
+  for (uint16_t index = 0; index < test_count; ++index) {
+    uint16_t port = 100 + index;
     IPEndPoint endpoint(tests[index].ip_address, port);
     const std::string result = endpoint.ToString();
     EXPECT_EQ(tests[index].host_normalized + ":" + base::IntToString(port),

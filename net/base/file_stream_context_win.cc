@@ -116,7 +116,7 @@ int FileStream::Context::Write(IOBuffer* buf,
 
 FileStream::Context::IOResult FileStream::Context::SeekFileImpl(
     base::File::Whence whence,
-    int64 offset) {
+    int64_t offset) {
   LARGE_INTEGER result;
   result.QuadPart = file_.Seek(whence, offset);
   if (result.QuadPart >= 0) {

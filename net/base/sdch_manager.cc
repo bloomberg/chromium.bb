@@ -405,7 +405,7 @@ SdchProblemCode SdchManager::AddSdchDictionary(
         if (value != "1.0")
           return SDCH_DICTIONARY_UNSUPPORTED_VERSION;
       } else if (name == "max-age") {
-        int64 seconds;
+        int64_t seconds;
         base::StringToInt64(value, &seconds);
         expiration = base::Time::Now() + base::TimeDelta::FromSeconds(seconds);
       } else if (name == "port") {

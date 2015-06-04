@@ -12,7 +12,7 @@ bool ParseElement(base::StringPiece* in,
                   unsigned tag_value,
                   base::StringPiece* out,
                   unsigned *out_header_len) {
-  const uint8* data = reinterpret_cast<const uint8*>(in->data());
+  const uint8_t* data = reinterpret_cast<const uint8_t*>(in->data());
 
   // We don't support kAny and kOptional at the same time.
   if ((tag_value & kAny) && (tag_value & kOptional))
@@ -243,7 +243,7 @@ bool ExtractCRLURLsFromDERCert(base::StringPiece cert,
 
     // kCRLDistributionPointsOID is the DER encoding of the OID for the X.509
     // CRL Distribution Points extension.
-    static const uint8 kCRLDistributionPointsOID[] = {0x55, 0x1d, 0x1f};
+    static const uint8_t kCRLDistributionPointsOID[] = {0x55, 0x1d, 0x1f};
 
     if (oid.size() != sizeof(kCRLDistributionPointsOID) ||
         memcmp(oid.data(), kCRLDistributionPointsOID, oid.size()) != 0) {

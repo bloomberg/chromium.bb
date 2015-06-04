@@ -63,11 +63,11 @@ bool CRLSet::IsExpired() const {
   if (not_after_ == 0)
     return false;
 
-  uint64 now = base::Time::Now().ToTimeT();
+  uint64_t now = base::Time::Now().ToTimeT();
   return now > not_after_;
 }
 
-uint32 CRLSet::sequence() const {
+uint32_t CRLSet::sequence() const {
   return sequence_;
 }
 

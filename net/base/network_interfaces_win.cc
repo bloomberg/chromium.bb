@@ -146,7 +146,7 @@ bool GetNetworkListImpl(NetworkInterfaceList* networks,
             continue;
           }
 
-          uint32 index =
+          uint32_t index =
               (family == AF_INET) ? adapter->IfIndex : adapter->Ipv6IfIndex;
 
           // From http://technet.microsoft.com/en-us/ff568768(v=vs.60).aspx, the

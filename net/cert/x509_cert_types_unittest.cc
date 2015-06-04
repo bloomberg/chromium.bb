@@ -4,7 +4,6 @@
 
 #include "net/cert/x509_cert_types.h"
 
-#include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/test/test_certificate_data.h"

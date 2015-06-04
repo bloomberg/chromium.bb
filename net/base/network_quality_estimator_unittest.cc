@@ -40,7 +40,7 @@ TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
   TestDelegate d;
   TestURLRequestContext context(false);
 
-  uint64 min_transfer_size_in_bytes =
+  uint64_t min_transfer_size_in_bytes =
       NetworkQualityEstimator::kMinTransferSizeInBytes;
   base::TimeDelta request_duration = base::TimeDelta::FromMicroseconds(
       NetworkQualityEstimator::kMinRequestDurationMicroseconds);
@@ -71,7 +71,7 @@ TEST(NetworkQualityEstimatorTest, TestPeakKbpsFastestRTTUpdates) {
     EXPECT_GT(network_quality.fastest_rtt_confidence, 0);
     EXPECT_GT(network_quality.peak_throughput_kbps_confidence, 0);
     EXPECT_GE(network_quality.fastest_rtt, request_duration);
-    EXPECT_GT(network_quality.peak_throughput_kbps, uint32(0));
+    EXPECT_GT(network_quality.peak_throughput_kbps, uint32_t(0));
     EXPECT_LE(
         network_quality.peak_throughput_kbps,
         min_transfer_size_in_bytes * 8.0 / request_duration.InMilliseconds());

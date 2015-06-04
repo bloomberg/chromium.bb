@@ -19,17 +19,17 @@ namespace net {
 // ownership of the data.
 class NET_EXPORT UploadBytesElementReader : public UploadElementReader {
  public:
-  UploadBytesElementReader(const char* bytes, uint64 length);
+  UploadBytesElementReader(const char* bytes, uint64_t length);
   ~UploadBytesElementReader() override;
 
   const char* bytes() const { return bytes_; }
-  uint64 length() const { return length_; }
+  uint64_t length() const { return length_; }
 
   // UploadElementReader overrides:
   const UploadBytesElementReader* AsBytesReader() const override;
   int Init(const CompletionCallback& callback) override;
-  uint64 GetContentLength() const override;
-  uint64 BytesRemaining() const override;
+  uint64_t GetContentLength() const override;
+  uint64_t BytesRemaining() const override;
   bool IsInMemory() const override;
   int Read(IOBuffer* buf,
            int buf_length,
@@ -37,8 +37,8 @@ class NET_EXPORT UploadBytesElementReader : public UploadElementReader {
 
  private:
   const char* const bytes_;
-  const uint64 length_;
-  uint64 offset_;
+  const uint64_t length_;
+  uint64_t offset_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadBytesElementReader);
 };

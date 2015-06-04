@@ -470,7 +470,7 @@ struct GetDirectoryListingEntryCase {
   const wchar_t* name;
   const char* const raw_bytes;
   bool is_dir;
-  int64 filesize;
+  int64_t filesize;
   base::Time time;
   const char* const expected;
 };

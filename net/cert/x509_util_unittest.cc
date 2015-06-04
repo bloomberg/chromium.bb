@@ -79,7 +79,7 @@ TEST(X509UtilTest, CreateKeyAndSelfSigned) {
 // This test creates a self-signed cert from a private key and then verifies the
 // content of the certificate.
 TEST(X509UtilTest, CreateSelfSigned) {
-  const uint8 private_key_info[] = {
+  const uint8_t private_key_info[] = {
     0x30, 0x82, 0x02, 0x78, 0x02, 0x01, 0x00, 0x30,
     0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7,
     0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x04, 0x82,
@@ -162,7 +162,7 @@ TEST(X509UtilTest, CreateSelfSigned) {
     0xb1, 0xc5, 0x15, 0xf3
   };
 
-  std::vector<uint8> input;
+  std::vector<uint8_t> input;
   input.resize(sizeof(private_key_info));
   memcpy(&input.front(), private_key_info, sizeof(private_key_info));
 

@@ -26,25 +26,25 @@ std::string DumpIPNumber(const IPAddressNumber& v) {
 }
 
 TEST(IpAddressNumberTest, IPAddressToString) {
-  uint8 addr1[4] = {0, 0, 0, 0};
+  uint8_t addr1[4] = {0, 0, 0, 0};
   EXPECT_EQ("0.0.0.0", IPAddressToString(addr1, sizeof(addr1)));
 
-  uint8 addr2[4] = {192, 168, 0, 1};
+  uint8_t addr2[4] = {192, 168, 0, 1};
   EXPECT_EQ("192.168.0.1", IPAddressToString(addr2, sizeof(addr2)));
 
-  uint8 addr3[16] = {0xFE, 0xDC, 0xBA, 0x98};
+  uint8_t addr3[16] = {0xFE, 0xDC, 0xBA, 0x98};
   EXPECT_EQ("fedc:ba98::", IPAddressToString(addr3, sizeof(addr3)));
 }
 
 TEST(IpAddressNumberTest, IPAddressToStringWithPort) {
-  uint8 addr1[4] = {0, 0, 0, 0};
+  uint8_t addr1[4] = {0, 0, 0, 0};
   EXPECT_EQ("0.0.0.0:3", IPAddressToStringWithPort(addr1, sizeof(addr1), 3));
 
-  uint8 addr2[4] = {192, 168, 0, 1};
+  uint8_t addr2[4] = {192, 168, 0, 1};
   EXPECT_EQ("192.168.0.1:99",
             IPAddressToStringWithPort(addr2, sizeof(addr2), 99));
 
-  uint8 addr3[16] = {0xFE, 0xDC, 0xBA, 0x98};
+  uint8_t addr3[16] = {0xFE, 0xDC, 0xBA, 0x98};
   EXPECT_EQ("[fedc:ba98::]:8080",
             IPAddressToStringWithPort(addr3, sizeof(addr3), 8080));
 }

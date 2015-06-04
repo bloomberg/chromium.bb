@@ -211,7 +211,7 @@ OSStatus CSSMCachedCertificate::GetField(const CSSM_OID* field_oid,
   CSSM_OID_PTR oid = const_cast<CSSM_OID_PTR>(field_oid);
   CSSM_DATA_PTR field_ptr = NULL;
   CSSM_HANDLE results_handle = CSSM_INVALID_HANDLE;
-  uint32 field_value_count = 0;
+  uint32_t field_value_count = 0;
   CSSM_RETURN status = CSSM_CL_CertGetFirstCachedFieldValue(
       cl_handle_, cached_cert_handle_, oid, &results_handle,
       &field_value_count, &field_ptr);

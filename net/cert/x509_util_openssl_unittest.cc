@@ -20,8 +20,8 @@ TEST(X509UtilOpenSSLTest, IsSupportedValidityRange) {
       now, now - base::TimeDelta::FromSeconds(1)));
 
   // See x509_util_openssl.cc to see how these were computed.
-  const int64 kDaysFromYear0001ToUnixEpoch = 719162;
-  const int64 kDaysFromUnixEpochToYear10000 = 2932896 + 1;
+  const int64_t kDaysFromYear0001ToUnixEpoch = 719162;
+  const int64_t kDaysFromUnixEpochToYear10000 = 2932896 + 1;
 
   // When computing too_old / too_late, add one day to account for
   // possible leap seconds.

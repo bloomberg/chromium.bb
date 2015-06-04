@@ -11,7 +11,7 @@
 
 namespace net {
 
-ChunkedUploadDataStream::ChunkedUploadDataStream(int64 identifier)
+ChunkedUploadDataStream::ChunkedUploadDataStream(int64_t identifier)
     : UploadDataStream(true, identifier),
       read_index_(0),
       read_offset_(0),

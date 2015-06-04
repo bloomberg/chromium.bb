@@ -108,7 +108,7 @@ class HistogramWatcher
       NetworkChangeNotifier::ConnectionType type) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     base::TimeTicks now = base::TimeTicks::Now();
-    int32 kilobytes_read = bytes_read_since_last_connection_change_ / 1000;
+    int32_t kilobytes_read = bytes_read_since_last_connection_change_ / 1000;
     base::TimeDelta state_duration = SinceLast(&last_connection_change_);
     if (bytes_read_since_last_connection_change_) {
       switch (last_connection_type_) {
@@ -306,8 +306,8 @@ class HistogramWatcher
     if (bytes_read > 10000 &&
         request_duration > base::TimeDelta::FromMilliseconds(1) &&
         request.creation_time() > last_connection_change_) {
-      int32 kbps = static_cast<int32>(
-          bytes_read * 8 / request_duration.InMilliseconds());
+      int32_t kbps = static_cast<int32_t>(bytes_read * 8 /
+                                          request_duration.InMilliseconds());
       if (kbps > peak_kbps_since_last_connection_change_)
         peak_kbps_since_last_connection_change_ = kbps;
     }
@@ -361,9 +361,9 @@ class HistogramWatcher
   NetworkChangeNotifier::ConnectionType last_polled_connection_type_;
   // Count of how many times NotifyDataReceived() has been called while the
   // NetworkChangeNotifier thought network connection was offline.
-  int32 offline_packets_received_;
+  int32_t offline_packets_received_;
   // Number of bytes of network data received since last connectivity change.
-  int32 bytes_read_since_last_connection_change_;
+  int32_t bytes_read_since_last_connection_change_;
   // Fastest round-trip-time (RTT) since last connectivity change. RTT measured
   // from URLRequest creation until first byte received.
   base::TimeDelta fastest_RTT_since_last_connection_change_;
@@ -375,7 +375,7 @@ class HistogramWatcher
   // 2) NotifyDataReceived() may be called repeatedly for one URLRequest.
   // 3) The transfer time includes at least one RTT while no bytes are read.
   // Erring on the conservative side is hopefully offset by taking the maximum.
-  int32 peak_kbps_since_last_connection_change_;
+  int32_t peak_kbps_since_last_connection_change_;
 
   base::ThreadChecker thread_checker_;
 

@@ -268,7 +268,7 @@ base::string16 StripWWWFromHost(const GURL& url) {
 }
 
 bool IsPortValid(int port) {
-  return port >= 0 && port <= std::numeric_limits<uint16>::max();
+  return port >= 0 && port <= std::numeric_limits<uint16_t>::max();
 }
 
 bool IsPortAllowedByDefault(int port) {
@@ -458,15 +458,15 @@ void SockaddrStorage::operator=(const SockaddrStorage& other) {
 // Extracts the address and port portions of a sockaddr.
 bool GetIPAddressFromSockAddr(const struct sockaddr* sock_addr,
                               socklen_t sock_addr_len,
-                              const uint8** address,
+                              const uint8_t** address,
                               size_t* address_len,
-                              uint16* port) {
+                              uint16_t* port) {
   if (sock_addr->sa_family == AF_INET) {
     if (sock_addr_len < static_cast<socklen_t>(sizeof(struct sockaddr_in)))
       return false;
     const struct sockaddr_in* addr =
         reinterpret_cast<const struct sockaddr_in*>(sock_addr);
-    *address = reinterpret_cast<const uint8*>(&addr->sin_addr);
+    *address = reinterpret_cast<const uint8_t*>(&addr->sin_addr);
     *address_len = kIPv4AddressSize;
     if (port)
       *port = base::NetToHost16(addr->sin_port);
@@ -478,7 +478,7 @@ bool GetIPAddressFromSockAddr(const struct sockaddr* sock_addr,
       return false;
     const struct sockaddr_in6* addr =
         reinterpret_cast<const struct sockaddr_in6*>(sock_addr);
-    *address = reinterpret_cast<const uint8*>(&addr->sin6_addr);
+    *address = reinterpret_cast<const uint8_t*>(&addr->sin6_addr);
     *address_len = kIPv6AddressSize;
     if (port)
       *port = base::NetToHost16(addr->sin6_port);
@@ -491,10 +491,10 @@ bool GetIPAddressFromSockAddr(const struct sockaddr* sock_addr,
       return false;
     const SOCKADDR_BTH* addr =
         reinterpret_cast<const SOCKADDR_BTH*>(sock_addr);
-    *address = reinterpret_cast<const uint8*>(&addr->btAddr);
+    *address = reinterpret_cast<const uint8_t*>(&addr->btAddr);
     *address_len = kBluetoothAddressSize;
     if (port)
-      *port = static_cast<uint16>(addr->port);
+      *port = static_cast<uint16_t>(addr->port);
     return true;
   }
 #endif
@@ -504,7 +504,7 @@ bool GetIPAddressFromSockAddr(const struct sockaddr* sock_addr,
 
 std::string NetAddressToString(const struct sockaddr* sa,
                                socklen_t sock_addr_len) {
-  const uint8* address;
+  const uint8_t* address;
   size_t address_len;
   if (!GetIPAddressFromSockAddr(sa, sock_addr_len, &address,
                                 &address_len, NULL)) {
@@ -516,9 +516,9 @@ std::string NetAddressToString(const struct sockaddr* sa,
 
 std::string NetAddressToStringWithPort(const struct sockaddr* sa,
                                        socklen_t sock_addr_len) {
-  const uint8* address;
+  const uint8_t* address;
   size_t address_len;
-  uint16 port;
+  uint16_t port;
   if (!GetIPAddressFromSockAddr(sa, sock_addr_len, &address,
                                 &address_len, &port)) {
     NOTREACHED();
@@ -697,8 +697,8 @@ int ConvertAddressFamily(AddressFamily address_family) {
   return AF_UNSPEC;
 }
 
-const uint16* GetPortFieldFromSockaddr(const struct sockaddr* address,
-                                       socklen_t address_len) {
+const uint16_t* GetPortFieldFromSockaddr(const struct sockaddr* address,
+                                         socklen_t address_len) {
   if (address->sa_family == AF_INET) {
     DCHECK_LE(sizeof(sockaddr_in), static_cast<size_t>(address_len));
     const struct sockaddr_in* sockaddr =
@@ -716,7 +716,7 @@ const uint16* GetPortFieldFromSockaddr(const struct sockaddr* address,
 }
 
 int GetPortFromSockaddr(const struct sockaddr* address, socklen_t address_len) {
-  const uint16* port_field = GetPortFieldFromSockaddr(address, address_len);
+  const uint16_t* port_field = GetPortFieldFromSockaddr(address, address_len);
   if (!port_field)
     return -1;
   return base::NetToHost16(*port_field);

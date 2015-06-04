@@ -33,7 +33,8 @@ MockFileStream::MockFileStream(
 MockFileStream::~MockFileStream() {
 }
 
-int MockFileStream::Seek(base::File::Whence whence, int64 offset,
+int MockFileStream::Seek(base::File::Whence whence,
+                         int64_t offset,
                          const Int64CompletionCallback& callback) {
   Int64CompletionCallback wrapped_callback =
       base::Bind(&MockFileStream::DoCallback64,
@@ -101,7 +102,7 @@ void MockFileStream::DoCallback(const CompletionCallback& callback,
 }
 
 void MockFileStream::DoCallback64(const Int64CompletionCallback& callback,
-                                  int64 result) {
+                                  int64_t result) {
   if (!throttled_) {
     callback.Run(result);
     return;
@@ -123,7 +124,8 @@ int MockFileStream::ErrorCallback(const CompletionCallback& callback) {
   return ret;
 }
 
-int64 MockFileStream::ErrorCallback64(const Int64CompletionCallback& callback) {
+int64_t MockFileStream::ErrorCallback64(
+    const Int64CompletionCallback& callback) {
   CHECK_NE(OK, forced_error_);
   if (async_error_) {
     base::MessageLoop::current()->PostTask(
@@ -131,7 +133,7 @@ int64 MockFileStream::ErrorCallback64(const Int64CompletionCallback& callback) {
     clear_forced_error();
     return ERR_IO_PENDING;
   }
-  int64 ret = forced_error_;
+  int64_t ret = forced_error_;
   clear_forced_error();
   return ret;
 }

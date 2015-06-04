@@ -164,7 +164,7 @@ void X509Certificate::Initialize() {
   ca_fingerprint_ = CalculateCAFingerprint(intermediate_ca_certs_);
 
   const CRYPT_INTEGER_BLOB* serial = &cert_handle_->pCertInfo->SerialNumber;
-  scoped_ptr<uint8[]> serial_bytes(new uint8[serial->cbData]);
+  scoped_ptr<uint8_t[]> serial_bytes(new uint8_t[serial->cbData]);
   for (unsigned i = 0; i < serial->cbData; i++)
     serial_bytes[i] = serial->pbData[serial->cbData - i - 1];
   serial_number_ = std::string(
