@@ -2339,30 +2339,33 @@ def GetConfig():
   # that want to measure performance changes caused by their changes.
   def _AddAFDOConfigs():
     for board in _all_release_boards:
-      base = {'boards': [board]}
-      if board in _no_unittest_boards:
-        base.update(no_unittest_builder)
-      if board in _no_vmtest_boards:
-        base.update(vm_tests=[])
+      base = _base_configs[board]
 
       config_name = '%s-%s' % (board, config_lib.CONFIG_TYPE_RELEASE_AFDO)
-      if config_name not in site_config:
-        generate_config_name = (
-            '%s-%s-%s' % (board,
-                          config_lib.CONFIG_TYPE_RELEASE_AFDO,
-                          'generate'))
-        use_config_name = '%s-%s-%s' % (board,
-                                        config_lib.CONFIG_TYPE_RELEASE_AFDO,
-                                        'use')
-        site_config.AddGroup(
-            config_name,
-            site_config.AddConfig(
-                release_afdo_generate, generate_config_name, base
-            ),
-            site_config.AddConfig(
-                release_afdo_use, use_config_name, base
-            )
-        )
+      if config_name in site_config:
+        continue
+
+      generate_config_name = (
+          '%s-%s-%s' % (board,
+                        config_lib.CONFIG_TYPE_RELEASE_AFDO,
+                        'generate'))
+      use_config_name = '%s-%s-%s' % (board,
+                                      config_lib.CONFIG_TYPE_RELEASE_AFDO,
+                                      'use')
+
+      # We can't use AFDO data if afdo_use is disabled for this board.
+      if not base.get('afdo_use', True):
+        continue
+
+      site_config.AddGroup(
+          config_name,
+          site_config.AddConfig(
+              release_afdo_generate, generate_config_name, base
+          ),
+          site_config.AddConfig(
+              release_afdo_use, use_config_name, base
+          ),
+      )
 
   _AddAFDOConfigs()
 

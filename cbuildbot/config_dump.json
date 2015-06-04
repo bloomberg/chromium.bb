@@ -3298,7 +3298,8 @@
                     "bobcat"
                 ],
                 "grouped": true,
-                "name": "bobcat-release-afdo-generate"
+                "name": "bobcat-release-afdo-generate",
+                "profile": "minimal"
             },
             {
                 "_template": "release-afdo-use",
@@ -3306,24 +3307,28 @@
                     "bobcat"
                 ],
                 "grouped": true,
-                "name": "bobcat-release-afdo-use"
+                "name": "bobcat-release-afdo-use",
+                "profile": "minimal"
             }
         ],
-        "name": "bobcat-release-afdo"
+        "name": "bobcat-release-afdo",
+        "profile": "minimal"
     },
     "bobcat-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "bobcat"
         ],
-        "name": "bobcat-release-afdo-generate"
+        "name": "bobcat-release-afdo-generate",
+        "profile": "minimal"
     },
     "bobcat-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "bobcat"
         ],
-        "name": "bobcat-release-afdo-use"
+        "name": "bobcat-release-afdo-use",
+        "profile": "minimal"
     },
     "bobcat-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -4436,50 +4441,6 @@
         "paygen_skip_testing": true,
         "signer_tests": false,
         "sync_chrome": false,
-        "vm_tests": []
-    },
-    "cosmos-release-afdo": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "cosmos"
-        ],
-        "child_configs": [
-            {
-                "_template": "release-afdo-generate",
-                "boards": [
-                    "cosmos"
-                ],
-                "grouped": true,
-                "name": "cosmos-release-afdo-generate",
-                "vm_tests": []
-            },
-            {
-                "_template": "release-afdo-use",
-                "boards": [
-                    "cosmos"
-                ],
-                "grouped": true,
-                "name": "cosmos-release-afdo-use",
-                "vm_tests": []
-            }
-        ],
-        "name": "cosmos-release-afdo",
-        "vm_tests": []
-    },
-    "cosmos-release-afdo-generate": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "cosmos"
-        ],
-        "name": "cosmos-release-afdo-generate",
-        "vm_tests": []
-    },
-    "cosmos-release-afdo-use": {
-        "_template": "release-afdo-use",
-        "boards": [
-            "cosmos"
-        ],
-        "name": "cosmos-release-afdo-use",
         "vm_tests": []
     },
     "cosmos-tot-chrome-pfq-informational": {
@@ -6371,6 +6332,9 @@
                 "boards": [
                     "daisy_winter"
                 ],
+                "factory": false,
+                "factory_install_netboot": false,
+                "factory_toolkit": false,
                 "grouped": true,
                 "name": "daisy_winter-release-afdo-generate",
                 "vm_tests": []
@@ -6380,11 +6344,17 @@
                 "boards": [
                     "daisy_winter"
                 ],
+                "factory": false,
+                "factory_install_netboot": false,
+                "factory_toolkit": false,
                 "grouped": true,
                 "name": "daisy_winter-release-afdo-use",
                 "vm_tests": []
             }
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "name": "daisy_winter-release-afdo",
         "vm_tests": []
     },
@@ -6393,6 +6363,9 @@
         "boards": [
             "daisy_winter"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "name": "daisy_winter-release-afdo-generate",
         "vm_tests": []
     },
@@ -6401,6 +6374,9 @@
         "boards": [
             "daisy_winter"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "name": "daisy_winter-release-afdo-use",
         "vm_tests": []
     },
@@ -8722,50 +8698,6 @@
         "sync_chrome": false,
         "vm_tests": []
     },
-    "kayle-release-afdo": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "kayle"
-        ],
-        "child_configs": [
-            {
-                "_template": "release-afdo-generate",
-                "boards": [
-                    "kayle"
-                ],
-                "grouped": true,
-                "name": "kayle-release-afdo-generate",
-                "vm_tests": []
-            },
-            {
-                "_template": "release-afdo-use",
-                "boards": [
-                    "kayle"
-                ],
-                "grouped": true,
-                "name": "kayle-release-afdo-use",
-                "vm_tests": []
-            }
-        ],
-        "name": "kayle-release-afdo",
-        "vm_tests": []
-    },
-    "kayle-release-afdo-generate": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "kayle"
-        ],
-        "name": "kayle-release-afdo-generate",
-        "vm_tests": []
-    },
-    "kayle-release-afdo-use": {
-        "_template": "release-afdo-use",
-        "boards": [
-            "kayle"
-        ],
-        "name": "kayle-release-afdo-use",
-        "vm_tests": []
-    },
     "kayle-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
         "boards": [
@@ -9277,45 +9209,6 @@
         "vm_tests": [
             "smoke_suite"
         ]
-    },
-    "lakitu-release-afdo": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "lakitu"
-        ],
-        "child_configs": [
-            {
-                "_template": "release-afdo-generate",
-                "boards": [
-                    "lakitu"
-                ],
-                "grouped": true,
-                "name": "lakitu-release-afdo-generate"
-            },
-            {
-                "_template": "release-afdo-use",
-                "boards": [
-                    "lakitu"
-                ],
-                "grouped": true,
-                "name": "lakitu-release-afdo-use"
-            }
-        ],
-        "name": "lakitu-release-afdo"
-    },
-    "lakitu-release-afdo-generate": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "lakitu"
-        ],
-        "name": "lakitu-release-afdo-generate"
-    },
-    "lakitu-release-afdo-use": {
-        "_template": "release-afdo-use",
-        "boards": [
-            "lakitu"
-        ],
-        "name": "lakitu-release-afdo-use"
     },
     "lakitu-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -13350,45 +13243,6 @@
         "sync_chrome": false,
         "vm_tests": []
     },
-    "panther_embedded-release-afdo": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "panther_embedded"
-        ],
-        "child_configs": [
-            {
-                "_template": "release-afdo-generate",
-                "boards": [
-                    "panther_embedded"
-                ],
-                "grouped": true,
-                "name": "panther_embedded-release-afdo-generate"
-            },
-            {
-                "_template": "release-afdo-use",
-                "boards": [
-                    "panther_embedded"
-                ],
-                "grouped": true,
-                "name": "panther_embedded-release-afdo-use"
-            }
-        ],
-        "name": "panther_embedded-release-afdo"
-    },
-    "panther_embedded-release-afdo-generate": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "panther_embedded"
-        ],
-        "name": "panther_embedded-release-afdo-generate"
-    },
-    "panther_embedded-release-afdo-use": {
-        "_template": "release-afdo-use",
-        "boards": [
-            "panther_embedded"
-        ],
-        "name": "panther_embedded-release-afdo-use"
-    },
     "panther_embedded-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
         "boards": [
@@ -13558,7 +13412,9 @@
                     "panther_moblab"
                 ],
                 "grouped": true,
-                "name": "panther_moblab-release-afdo-generate"
+                "image_test": false,
+                "name": "panther_moblab-release-afdo-generate",
+                "vm_tests": []
             },
             {
                 "_template": "release-afdo-use",
@@ -13566,24 +13422,32 @@
                     "panther_moblab"
                 ],
                 "grouped": true,
-                "name": "panther_moblab-release-afdo-use"
+                "image_test": false,
+                "name": "panther_moblab-release-afdo-use",
+                "vm_tests": []
             }
         ],
-        "name": "panther_moblab-release-afdo"
+        "image_test": false,
+        "name": "panther_moblab-release-afdo",
+        "vm_tests": []
     },
     "panther_moblab-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "panther_moblab"
         ],
-        "name": "panther_moblab-release-afdo-generate"
+        "image_test": false,
+        "name": "panther_moblab-release-afdo-generate",
+        "vm_tests": []
     },
     "panther_moblab-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "panther_moblab"
         ],
-        "name": "panther_moblab-release-afdo-use"
+        "image_test": false,
+        "name": "panther_moblab-release-afdo-use",
+        "vm_tests": []
     },
     "panther_moblab-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -15884,50 +15748,6 @@
         "hw_tests": [],
         "name": "purin-release",
         "sync_chrome": false,
-        "vm_tests": []
-    },
-    "purin-release-afdo": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "purin"
-        ],
-        "child_configs": [
-            {
-                "_template": "release-afdo-generate",
-                "boards": [
-                    "purin"
-                ],
-                "grouped": true,
-                "name": "purin-release-afdo-generate",
-                "vm_tests": []
-            },
-            {
-                "_template": "release-afdo-use",
-                "boards": [
-                    "purin"
-                ],
-                "grouped": true,
-                "name": "purin-release-afdo-use",
-                "vm_tests": []
-            }
-        ],
-        "name": "purin-release-afdo",
-        "vm_tests": []
-    },
-    "purin-release-afdo-generate": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "purin"
-        ],
-        "name": "purin-release-afdo-generate",
-        "vm_tests": []
-    },
-    "purin-release-afdo-use": {
-        "_template": "release-afdo-use",
-        "boards": [
-            "purin"
-        ],
-        "name": "purin-release-afdo-use",
         "vm_tests": []
     },
     "purin-tot-chrome-pfq-informational": {
@@ -18607,6 +18427,9 @@
                 "boards": [
                     "smaug"
                 ],
+                "factory": false,
+                "factory_install_netboot": false,
+                "factory_toolkit": false,
                 "grouped": true,
                 "name": "smaug-release-afdo-generate",
                 "vm_tests": []
@@ -18616,11 +18439,17 @@
                 "boards": [
                     "smaug"
                 ],
+                "factory": false,
+                "factory_install_netboot": false,
+                "factory_toolkit": false,
                 "grouped": true,
                 "name": "smaug-release-afdo-use",
                 "vm_tests": []
             }
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "name": "smaug-release-afdo",
         "vm_tests": []
     },
@@ -18629,6 +18458,9 @@
         "boards": [
             "smaug"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "name": "smaug-release-afdo-generate",
         "vm_tests": []
     },
@@ -18637,6 +18469,9 @@
         "boards": [
             "smaug"
         ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
         "name": "smaug-release-afdo-use",
         "vm_tests": []
     },
@@ -19002,50 +18837,6 @@
         "paygen_skip_testing": true,
         "signer_tests": false,
         "sync_chrome": false,
-        "vm_tests": []
-    },
-    "storm-release-afdo": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "storm"
-        ],
-        "child_configs": [
-            {
-                "_template": "release-afdo-generate",
-                "boards": [
-                    "storm"
-                ],
-                "grouped": true,
-                "name": "storm-release-afdo-generate",
-                "vm_tests": []
-            },
-            {
-                "_template": "release-afdo-use",
-                "boards": [
-                    "storm"
-                ],
-                "grouped": true,
-                "name": "storm-release-afdo-use",
-                "vm_tests": []
-            }
-        ],
-        "name": "storm-release-afdo",
-        "vm_tests": []
-    },
-    "storm-release-afdo-generate": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "storm"
-        ],
-        "name": "storm-release-afdo-generate",
-        "vm_tests": []
-    },
-    "storm-release-afdo-use": {
-        "_template": "release-afdo-use",
-        "boards": [
-            "storm"
-        ],
-        "name": "storm-release-afdo-use",
         "vm_tests": []
     },
     "storm-tot-chrome-pfq-informational": {
@@ -20205,7 +19996,9 @@
                     "stumpy_moblab"
                 ],
                 "grouped": true,
-                "name": "stumpy_moblab-release-afdo-generate"
+                "image_test": false,
+                "name": "stumpy_moblab-release-afdo-generate",
+                "vm_tests": []
             },
             {
                 "_template": "release-afdo-use",
@@ -20213,24 +20006,32 @@
                     "stumpy_moblab"
                 ],
                 "grouped": true,
-                "name": "stumpy_moblab-release-afdo-use"
+                "image_test": false,
+                "name": "stumpy_moblab-release-afdo-use",
+                "vm_tests": []
             }
         ],
-        "name": "stumpy_moblab-release-afdo"
+        "image_test": false,
+        "name": "stumpy_moblab-release-afdo",
+        "vm_tests": []
     },
     "stumpy_moblab-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "stumpy_moblab"
         ],
-        "name": "stumpy_moblab-release-afdo-generate"
+        "image_test": false,
+        "name": "stumpy_moblab-release-afdo-generate",
+        "vm_tests": []
     },
     "stumpy_moblab-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "stumpy_moblab"
         ],
-        "name": "stumpy_moblab-release-afdo-use"
+        "image_test": false,
+        "name": "stumpy_moblab-release-afdo-use",
+        "vm_tests": []
     },
     "stumpy_moblab-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -23987,50 +23788,6 @@
         "important": true,
         "name": "whirlwind-release",
         "sync_chrome": false,
-        "vm_tests": []
-    },
-    "whirlwind-release-afdo": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "whirlwind"
-        ],
-        "child_configs": [
-            {
-                "_template": "release-afdo-generate",
-                "boards": [
-                    "whirlwind"
-                ],
-                "grouped": true,
-                "name": "whirlwind-release-afdo-generate",
-                "vm_tests": []
-            },
-            {
-                "_template": "release-afdo-use",
-                "boards": [
-                    "whirlwind"
-                ],
-                "grouped": true,
-                "name": "whirlwind-release-afdo-use",
-                "vm_tests": []
-            }
-        ],
-        "name": "whirlwind-release-afdo",
-        "vm_tests": []
-    },
-    "whirlwind-release-afdo-generate": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "whirlwind"
-        ],
-        "name": "whirlwind-release-afdo-generate",
-        "vm_tests": []
-    },
-    "whirlwind-release-afdo-use": {
-        "_template": "release-afdo-use",
-        "boards": [
-            "whirlwind"
-        ],
-        "name": "whirlwind-release-afdo-use",
         "vm_tests": []
     },
     "whirlwind-tot-chrome-pfq-informational": {
