@@ -95,8 +95,8 @@ inline bool SeekBackPast(std::string::const_iterator* it,
   return *it == end;
 }
 
-// Validate whether |value| is a valid token according to [RFC2616],
-// Section 2.2.
+// Validate whether |value| is a valid token according to [RFC7230],
+// Section 3.2.6.
 bool IsValidToken(const std::string& value) {
   if (value.empty())
     return false;

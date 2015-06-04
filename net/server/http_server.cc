@@ -417,8 +417,8 @@ bool HttpServer::ParseHeaders(const char* data,
         case ST_VALUE:
           base::TrimWhitespaceASCII(buffer, base::TRIM_LEADING, &header_value);
           it = info->headers.find(header_name);
-          // See last paragraph ("Multiple message-header fields...")
-          // of www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
+          // See the second paragraph ("A sender MUST NOT generate multiple
+          // header fields...") of tools.ietf.org/html/rfc7230#section-3.2.2.
           if (it == info->headers.end()) {
             info->headers[header_name] = header_value;
           } else {

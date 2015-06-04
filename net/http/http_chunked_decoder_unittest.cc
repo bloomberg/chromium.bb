@@ -113,7 +113,7 @@ TEST(HttpChunkedDecoderTest, Incremental2) {
 }
 
 TEST(HttpChunkedDecoderTest, LF_InsteadOf_CRLF) {
-  // Compatibility: [RFC 2616 - Invalid]
+  // Compatibility: [RFC 7230 - Invalid]
   // {Firefox3} - Valid
   // {IE7, Safari3.1, Opera9.51} - Invalid
   const char* const inputs[] = {
@@ -166,7 +166,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_TooBig) {
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_0X) {
   const char* const inputs[] = {
-    // Compatibility [RFC 2616 - Invalid]:
+    // Compatibility [RFC 7230 - Invalid]:
     // {Safari3.1, IE7} - Invalid
     // {Firefox3, Opera 9.51} - Valid
     "0x5\r\nhello\r\n",
@@ -177,7 +177,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_0X) {
 
 TEST(HttpChunkedDecoderTest, ChunkSize_TrailingSpace) {
   const char* const inputs[] = {
-    // Compatibility [RFC 2616 - Invalid]:
+    // Compatibility [RFC 7230 - Invalid]:
     // {IE7, Safari3.1, Firefox3, Opera 9.51} - Valid
     //
     // At least yahoo.com depends on this being valid.
@@ -189,7 +189,7 @@ TEST(HttpChunkedDecoderTest, ChunkSize_TrailingSpace) {
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingTab) {
   const char* const inputs[] = {
-    // Compatibility [RFC 2616 - Invalid]:
+    // Compatibility [RFC 7230 - Invalid]:
     // {IE7, Safari3.1, Firefox3, Opera 9.51} - Valid
     "5\t\r\nhello\r\n",
     "0\r\n\r\n"
@@ -199,7 +199,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingTab) {
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingFormFeed) {
   const char* const inputs[] = {
-    // Compatibility [RFC 2616- Invalid]:
+    // Compatibility [RFC 7230- Invalid]:
     // {Safari3.1} - Invalid
     // {IE7, Firefox3, Opera 9.51} - Valid
     "5\f\r\nhello\r\n",
@@ -210,7 +210,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingFormFeed) {
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingVerticalTab) {
   const char* const inputs[] = {
-    // Compatibility [RFC 2616 - Invalid]:
+    // Compatibility [RFC 7230 - Invalid]:
     // {Safari 3.1} - Invalid
     // {IE7, Firefox3, Opera 9.51} - Valid
     "5\v\r\nhello\r\n",
@@ -221,7 +221,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingVerticalTab) {
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingNonHexDigit) {
   const char* const inputs[] = {
-    // Compatibility [RFC 2616 - Invalid]:
+    // Compatibility [RFC 7230 - Invalid]:
     // {Safari 3.1} - Invalid
     // {IE7, Firefox3, Opera 9.51} - Valid
     "5H\r\nhello\r\n",
@@ -232,7 +232,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_TrailingNonHexDigit) {
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_LeadingSpace) {
   const char* const inputs[] = {
-    // Compatibility [RFC 2616 - Invalid]:
+    // Compatibility [RFC 7230 - Invalid]:
     // {IE7} - Invalid
     // {Safari 3.1, Firefox3, Opera 9.51} - Valid
     " 5\r\nhello\r\n",
@@ -268,7 +268,7 @@ TEST(HttpChunkedDecoderTest, InvalidChunkSize_Negative) {
 
 TEST(HttpChunkedDecoderTest, InvalidChunkSize_Plus) {
   const char* const inputs[] = {
-    // Compatibility [RFC 2616 - Invalid]:
+    // Compatibility [RFC 7230 - Invalid]:
     // {IE7, Safari 3.1} - Invalid
     // {Firefox3, Opera 9.51} - Valid
     "+5\r\nhello\r\n",

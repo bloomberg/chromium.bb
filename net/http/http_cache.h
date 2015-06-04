@@ -4,7 +4,7 @@
 
 // This file declares a HttpTransactionFactory implementation that can be
 // layered on top of another HttpTransactionFactory to add HTTP caching.  The
-// caching logic follows RFC 2616 (any exceptions are called out in the code).
+// caching logic follows RFC 7234 (any exceptions are called out in the code).
 //
 // The HttpCache takes a disk_cache::Backend as a parameter, and uses that for
 // the cache storage.

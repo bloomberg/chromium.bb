@@ -110,14 +110,18 @@ class NET_EXPORT HttpRequestHeaders {
   void RemoveHeader(const base::StringPiece& key);
 
   // Parses the header from a string and calls SetHeader() with it.  This string
-  // should not contain any CRLF.  As per RFC2616, the format is:
+  // should not contain any CRLF.  As per RFC7230 Section 3.2, the format is:
   //
-  // message-header = field-name ":" [ field-value ]
+  // header-field   = field-name ":" OWS field-value OWS
+  //
   // field-name     = token
-  // field-value    = *( field-content | LWS )
-  // field-content  = <the OCTETs making up the field-value
-  //                  and consisting of either *TEXT or combinations
-  //                  of token, separators, and quoted-string>
+  // field-value    = *( field-content / obs-fold )
+  // field-content  = field-vchar [ 1*( SP / HTAB ) field-vchar ]
+  // field-vchar    = VCHAR / obs-text
+  //
+  // obs-fold       = CRLF 1*( SP / HTAB )
+  //                ; obsolete line folding
+  //                ; see Section 3.2.4
   //
   // AddHeaderFromString() will trim any LWS surrounding the
   // field-content.

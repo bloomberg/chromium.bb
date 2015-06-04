@@ -179,7 +179,7 @@ int HttpChunkedDecoder::ScanForChunkRemaining(const char* buf, int buf_len) {
 //
 // Let \X be the character class for a hex digit: [0-9a-fA-F]
 //
-//   RFC 2616: ^\X+$
+//   RFC 7230: ^\X+$
 //        IE7: ^\X+[^\X]*$
 // Safari 3.1: ^[\t\r ]*\X+[\t ]*$
 //  Firefox 3: ^[\t\f\v\r ]*[+]?(0x)?\X+[^\X]*$
