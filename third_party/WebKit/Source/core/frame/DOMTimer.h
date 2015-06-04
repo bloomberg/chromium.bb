@@ -56,9 +56,14 @@ public:
     static double hiddenPageAlignmentInterval();
     static double visiblePageAlignmentInterval();
 
+    // Eager finalization is needed to promptly stop this Timer object.
+    // Otherwise timer events might fire at an object that's slated for destruction
+    // (when lazily swept), but some of its members (m_action) may already have
+    // been finalized & must not be accessed.
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
-    void dispose();
+    void disposeTimer();
 
 private:
     friend class DOMTimerCoordinator; // For create().
