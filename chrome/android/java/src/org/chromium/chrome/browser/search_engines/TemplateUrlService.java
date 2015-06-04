@@ -284,21 +284,6 @@ public class TemplateUrlService {
         return nativeReplaceSearchTermsInUrl(mNativeTemplateUrlServiceAndroid, query, url);
     }
 
-    // TODO(donnd): Delete once the client no longer references it.
-    /**
-     * Finds the default search engine for the default provider and returns the url query
-     * {@link String} for {@code query} with the contextual search version param set.
-     * @param query The search term to use as the main query in the returned search url.
-     * @param alternateTerm The alternate search term to use as an alternate suggestion.
-     * @return      A {@link String} that contains the url of the default search engine with
-     *              {@code query} and {@code alternateTerm} inserted as parameters and contextual
-     *              search and prefetch parameters set.
-     */
-    public String getUrlForContextualSearchQuery(String query, String alternateTerm) {
-        return nativeGetUrlForContextualSearchQuery(
-            mNativeTemplateUrlServiceAndroid, query, alternateTerm, true);
-    }
-
     /**
      * Finds the default search engine for the default provider and returns the url query
      * {@link String} for {@code query} with the contextual search version param set.
