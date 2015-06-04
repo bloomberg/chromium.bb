@@ -734,10 +734,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests tap to expand, after an initial tap to activate the peeking card.
+     *
+     * @SmallTest
+     * @Feature({"ContextualSearch"})
      */
-    @SmallTest
-    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @FlakyTest
     public void testTapExpand() throws InterruptedException, TimeoutException {
         assertNoSearchesLoaded();
         clickWordNode("states");
@@ -1603,10 +1605,11 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests the promo open counter.
+     * @SmallTest
+     * @Feature({"ContextualSearch"})
      */
-    @SmallTest
-    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @FlakyTest
     public void testPromoOpenCountForUndecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
 
@@ -1645,9 +1648,13 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     // --------------------------------------------------------------------------------------------
     // Tap count - number of taps between opens.
     // --------------------------------------------------------------------------------------------
-    @SmallTest
-    @Feature({"ContextualSearch"})
+    /**
+     * Tests the counter for the number of taps between opens.
+     * @SmallTest
+     * @Feature({"ContextualSearch"})
+     */
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @FlakyTest
     public void testTapCount() throws InterruptedException, TimeoutException {
         assertEquals(0, mPolicy.getTapCount());
 
