@@ -743,6 +743,9 @@ class VEAClient : public VideoEncodeAccelerator::Client {
 
   scoped_ptr<StreamValidator> validator_;
 
+  // The time when the first frame is submitted for encode.
+  base::TimeTicks first_frame_start_time_;
+
   // The time when the last encoded frame is ready.
   base::TimeTicks last_frame_ready_time_;
 
@@ -940,8 +943,8 @@ void VEAClient::UpdateTestStreamData(bool mid_stream_bitrate_switch,
 }
 
 double VEAClient::frames_per_second() {
-  CHECK(!encode_start_time_.empty());
-  base::TimeDelta duration = last_frame_ready_time_ - encode_start_time_[0];
+  CHECK_NE(num_encoded_frames_, 0UL);
+  base::TimeDelta duration = last_frame_ready_time_ - first_frame_start_time_;
   return num_encoded_frames_ / duration.InSecondsF();
 }
 
@@ -959,9 +962,10 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
     num_frames_to_encode_ = g_num_frames_to_encode;
 
   // Speed up vector insertion.
-  encode_start_time_.reserve(num_frames_to_encode_);
-  if (g_env->needs_encode_latency())
+  if (g_env->needs_encode_latency()) {
+    encode_start_time_.reserve(num_frames_to_encode_);
     encode_latencies_.reserve(num_frames_to_encode_);
+  }
 
   // We may need to loop over the stream more than once if more frames than
   // provided is required for bitrate tests.
@@ -1146,8 +1150,14 @@ void VEAClient::FeedEncoderWithOneInput() {
     ++num_keyframes_requested_;
   }
 
-  CHECK_EQ(input_id, static_cast<int32>(encode_start_time_.size()));
-  encode_start_time_.push_back(base::TimeTicks::Now());
+  if (input_id == 0) {
+    first_frame_start_time_ = base::TimeTicks::Now();
+  }
+
+  if (g_env->needs_encode_latency()) {
+    CHECK_EQ(input_id, static_cast<int32>(encode_start_time_.size()));
+    encode_start_time_.push_back(base::TimeTicks::Now());
+  }
   encoder_->Encode(video_frame, force_keyframe);
 }
 
