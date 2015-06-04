@@ -118,6 +118,10 @@ struct NET_EXPORT AlternativeService {
            port == other.port;
   }
 
+  bool operator!=(const AlternativeService& other) const {
+    return !this->operator==(other);
+  }
+
   bool operator<(const AlternativeService& other) const {
     if (protocol != other.protocol)
       return protocol < other.protocol;

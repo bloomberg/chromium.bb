@@ -172,8 +172,8 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   // These are used to delay updating the preferences when cached data in
   // |http_server_properties_impl_| is changing, and execute only one update per
   // simultaneous spdy_servers or spdy_settings or alternative_service changes.
-  // |location| specifies where this method is called from.
-  void ScheduleUpdatePrefsOnNetworkThread(Location location);
+  // |location| specifies where this method is called from. Virtual for testing.
+  virtual void ScheduleUpdatePrefsOnNetworkThread(Location location);
 
   // Starts the timers to update the prefs from cache. This are overridden in
   // tests to prevent the delay.

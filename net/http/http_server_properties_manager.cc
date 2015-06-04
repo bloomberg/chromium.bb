@@ -193,9 +193,15 @@ void HttpServerPropertiesManager::SetAlternativeService(
     const AlternativeService& alternative_service,
     double alternative_probability) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  AlternativeService old_alternative_service = GetAlternativeService(origin);
   http_server_properties_impl_->SetAlternativeService(
       origin, alternative_service, alternative_probability);
-  ScheduleUpdatePrefsOnNetworkThread(SET_ALTERNATIVE_SERVICE);
+  AlternativeService new_alternative_service = GetAlternativeService(origin);
+  // If |alternative_probability| was above the threashold now it is below or
+  // vice versa, then a different alternative_service will be returned from the
+  // old and if so, then persist.
+  if (old_alternative_service != new_alternative_service)
+    ScheduleUpdatePrefsOnNetworkThread(SET_ALTERNATIVE_SERVICE);
 }
 
 void HttpServerPropertiesManager::MarkAlternativeServiceBroken(
