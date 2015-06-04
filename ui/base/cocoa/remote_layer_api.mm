@@ -19,7 +19,9 @@ bool RemoteLayerAPISupported() {
 
   bool disabled_at_command_line =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRemoteCoreAnimation);
+          switches::kDisableRemoteCoreAnimation) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNSGLSurfaces);
   if (disabled_at_command_line)
     return false;
 

@@ -30,6 +30,7 @@ class SoftwareFrameData;
 namespace ui {
 
 class AcceleratedWidgetMac;
+class IOSurfaceNSGLSurface;
 
 // A class through which an AcceleratedWidget may be bound to draw the contents
 // of an NSView. An AcceleratedWidget may be bound to multiple different views
@@ -95,6 +96,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
   void GotAcceleratedIOSurfaceFrame(
       IOSurfaceID io_surface_id, gfx::Size pixel_size, float scale_factor);
 
+  void GotAcceleratedIOSurfaceFrameNSGL(
+      IOSurfaceID io_surface_id, gfx::Size pixel_size, float scale_factor);
+
   void AcknowledgeAcceleratedFrame();
 
   // Remove a layer from the heirarchy and destroy it. Because the accelerated
@@ -130,6 +134,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
 
   // The locally drawn software layer.
   base::scoped_nsobject<SoftwareLayer> software_layer_;
+
+  // The locally drawn NSOpenGLContext.
+  scoped_ptr<IOSurfaceNSGLSurface> io_surface_ns_gl_surface_;
 
   // If an accelerated frame has come in which has not yet been drawn and acked
   // then this is the latency info and the callback to make when the frame is

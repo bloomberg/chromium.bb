@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/message_loop/message_loop.h"
@@ -19,6 +20,7 @@
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accelerated_widget_mac/io_surface_context.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/gl_context.h"
@@ -28,14 +30,18 @@ namespace ui {
 // static
 scoped_refptr<IOSurfaceTexture> IOSurfaceTexture::Create(
     bool needs_gl_finish_workaround) {
-  scoped_refptr<IOSurfaceContext> offscreen_context =
-      IOSurfaceContext::Get(
-          IOSurfaceContext::kOffscreenContext);
-  if (!offscreen_context.get()) {
-    LOG(ERROR) << "Failed to create context for offscreen operations";
-    return NULL;
+  static bool use_ns_gl_surfaces =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNSGLSurfaces);
+  scoped_refptr<IOSurfaceContext> offscreen_context;
+  if (!use_ns_gl_surfaces) {
+    offscreen_context = IOSurfaceContext::Get(
+        IOSurfaceContext::kOffscreenContext);
+    if (!offscreen_context.get()) {
+      LOG(ERROR) << "Failed to create context for offscreen operations";
+      return NULL;
+    }
   }
-
   return new IOSurfaceTexture(offscreen_context, needs_gl_finish_workaround);
 }
 
@@ -48,7 +54,6 @@ IOSurfaceTexture::IOSurfaceTexture(
       eviction_queue_iterator_(eviction_queue_.Get().end()),
       eviction_has_been_drawn_since_updated_(false),
       needs_gl_finish_workaround_(needs_gl_finish_workaround) {
-  CHECK(offscreen_context_.get());
 }
 
 IOSurfaceTexture::~IOSurfaceTexture() {
@@ -59,6 +64,7 @@ IOSurfaceTexture::~IOSurfaceTexture() {
 
 bool IOSurfaceTexture::DrawIOSurface() {
   TRACE_EVENT0("browser", "IOSurfaceTexture::DrawIOSurface");
+  DCHECK(CGLGetCurrentContext());
 
   // If we have release the IOSurface, clear the screen to light grey and
   // early-out.
@@ -73,12 +79,13 @@ bool IOSurfaceTexture::DrawIOSurface() {
   GLint viewport[4];
   glGetIntegerv(GL_VIEWPORT, viewport);
   gfx::Rect viewport_rect(viewport[0], viewport[1], viewport[2], viewport[3]);
-  DCHECK_EQ(pixel_size_.ToString(), viewport_rect.size().ToString());
 
   // Set the projection matrix to match 1 unit to 1 pixel.
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(0, viewport_rect.width(), 0, viewport_rect.height(), -1, 1);
+  glOrtho(0, viewport_rect.width(),
+          pixel_size_.height() - viewport_rect.height(), pixel_size_.height(),
+          -1, 1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
@@ -165,8 +172,14 @@ bool IOSurfaceTexture::SetIOSurface(
   // Create the GL texture and set it to be backed by the IOSurface.
   CGLError cgl_error = kCGLNoError;
   {
-    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
-        offscreen_context_->cgl_context());
+    scoped_ptr<gfx::ScopedCGLSetCurrentContext> scoped_set_current_context;
+    if (offscreen_context_) {
+      scoped_set_current_context.reset(new gfx::ScopedCGLSetCurrentContext(
+          offscreen_context_->cgl_context()));
+    } else {
+      DCHECK(CGLGetCurrentContext());
+    }
+
     glGenTextures(1, &texture_);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
     glTexParameterf(
@@ -174,7 +187,7 @@ bool IOSurfaceTexture::SetIOSurface(
     glTexParameterf(
         GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     cgl_error = CGLTexImageIOSurface2D(
-        offscreen_context_->cgl_context(),
+        CGLGetCurrentContext(),
         GL_TEXTURE_RECTANGLE_ARB,
         GL_RGBA,
         rounded_size.width(),
@@ -202,8 +215,13 @@ bool IOSurfaceTexture::SetIOSurface(
 }
 
 void IOSurfaceTexture::ReleaseIOSurfaceAndTexture() {
-  gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
-      offscreen_context_->cgl_context());
+  scoped_ptr<gfx::ScopedCGLSetCurrentContext> scoped_set_current_context;
+  if (offscreen_context_) {
+    scoped_set_current_context.reset(new gfx::ScopedCGLSetCurrentContext(
+        offscreen_context_->cgl_context()));
+  } else {
+    DCHECK(CGLGetCurrentContext());
+  }
 
   if (texture_) {
     glDeleteTextures(1, &texture_);
@@ -216,7 +234,9 @@ void IOSurfaceTexture::ReleaseIOSurfaceAndTexture() {
 }
 
 bool IOSurfaceTexture::HasBeenPoisoned() const {
-  return offscreen_context_->HasBeenPoisoned();
+  if (offscreen_context_)
+    return offscreen_context_->HasBeenPoisoned();
+  return false;
 }
 
 GLenum IOSurfaceTexture::GetAndSaveGLError() {
@@ -272,6 +292,11 @@ void IOSurfaceTexture::EvictionDoEvict() {
 
     // Don't evict anything that has not yet been drawn.
     if (!surface->eviction_has_been_drawn_since_updated_)
+      continue;
+
+    // Don't evict anything that doesn't have an offscreen context (as we have
+    // context in which to delete the texture).
+    if (!surface->offscreen_context_)
       continue;
 
     // Evict the surface.
