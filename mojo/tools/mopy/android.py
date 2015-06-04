@@ -66,35 +66,30 @@ class AndroidShell(object):
     logging.getLogger().debug("Command: %s", " ".join(adb_command))
     return adb_command
 
-  def _ReadFifo(self, fifo_path, pipe, on_fifo_closed, max_attempts=5):
+  def _ReadFifo(self, path, pipe, on_fifo_closed, max_attempts=5):
     """
-    Reads |fifo_path| on the device and write the contents to |pipe|. Calls
-    |on_fifo_closed| when the fifo is closed. This method will try to find the
-    path up to |max_attempts|, waiting 1 second between each attempt. If it
-    cannot find |fifo_path|, a exception will be raised.
+    Reads the fifo at |path| on the device and write the contents to |pipe|.
+    Calls |on_fifo_closed| when the fifo is closed. This method will try to find
+    the path up to |max_attempts|, waiting 1 second between each attempt. If it
+    cannot find |path|, a exception will be raised.
     """
-    fifo_command = self._CreateADBCommand(
-        ['shell', 'test -e "%s"; echo $?' % fifo_path])
-
     def Run():
       def _WaitForFifo():
         for _ in xrange(max_attempts):
-          if subprocess.check_output(fifo_command)[0] == '0':
+          if self.device.FileExists(path):
             return
           time.sleep(1)
-        if on_fifo_closed:
-          on_fifo_closed()
+        on_fifo_closed()
         raise Exception("Unable to find fifo.")
       _WaitForFifo()
       stdout_cat = subprocess.Popen(self._CreateADBCommand([
-                                     'shell',
-                                     'cat',
-                                     fifo_path]),
+                                      'shell',
+                                      'cat',
+                                      path]),
                                     stdout=pipe)
       atexit.register(_ExitIfNeeded, stdout_cat)
       stdout_cat.wait()
-      if on_fifo_closed:
-        on_fifo_closed()
+      on_fifo_closed()
 
     thread = threading.Thread(target=Run, name="StdoutRedirector")
     thread.start()
@@ -157,9 +152,13 @@ class AndroidShell(object):
 
     logging.getLogger().debug("Using device: %s", self.device)
     self.device.EnableRoot()
-    self.device.Install(self.paths.apk_path)
 
-    atexit.register(self.StopShell)
+    # TODO(msw): Install fails often, retry as needed; http://crbug.com/493900
+    try:
+      self.device.Install(self.paths.apk_path)
+    except device_errors.CommandFailedError as e:
+      logging.getLogger().error("APK install failed:\n%s", str(e))
+      self.device.Install(self.paths.apk_path)
 
     extra_args = []
     if origin is 'localhost':
@@ -169,8 +168,7 @@ class AndroidShell(object):
 
     if gdb:
       # Remote debugging needs a port forwarded.
-      subprocess.check_call(self._CreateADBCommand(['forward', 'tcp:5039',
-                                                    'tcp:5039']))
+      self.device.adb.Forward('tcp:5039', 'tcp:5039')
 
     return extra_args
 
@@ -232,20 +230,11 @@ class AndroidShell(object):
     local_gdb_process.wait()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-  def StartShell(self,
-                 arguments,
-                 stdout=None,
-                 on_application_stop=None,
-                 gdb=False):
+  def StartShell(self, arguments, stdout, on_application_stop, gdb=False):
     """
-    Starts the mojo shell, passing it the given arguments.
-
+    Starts the shell with the given arguments, directing output to |stdout|.
     The |arguments| list must contain the "--origin=" arg from PrepareShellRun.
-    If |stdout| is not None, it should be a valid argument for subprocess.Popen.
     """
-
-    STDOUT_PIPE = "/data/data/%s/stdout.fifo" % self.target_package
-
     cmd = self._CreateADBCommand([
            'shell',
            'am',
@@ -256,20 +245,16 @@ class AndroidShell(object):
                                               'org.chromium.mojo.shell')])
 
     logcat_process = None
-
     if gdb:
       arguments += ['--wait-for-debugger']
       logcat_process = self.ShowLogs(stdout=subprocess.PIPE)
 
-    if stdout or on_application_stop:
-      subprocess.check_call(self._CreateADBCommand(
-          ['shell', 'rm', '-f', STDOUT_PIPE]))
-      arguments.append('--fifo-path=%s' % STDOUT_PIPE)
-      max_attempts = 5
-      if '--wait-for-debugger' in arguments:
-        max_attempts = 200
-      self._ReadFifo(STDOUT_PIPE, stdout, on_application_stop,
-                     max_attempts=max_attempts)
+    fifo_path = "/data/data/%s/stdout.fifo" % self.target_package
+    subprocess.check_call(self._CreateADBCommand(
+        ['shell', 'rm', '-f', fifo_path]))
+    arguments.append('--fifo-path=%s' % fifo_path)
+    max_attempts = 200 if '--wait-for-debugger' in arguments else 5
+    self._ReadFifo(fifo_path, stdout, on_application_stop, max_attempts)
 
     # Extract map-origin arguments.
     parameters = [a for a in arguments if not a.startswith(MAPPING_PREFIX)]
@@ -279,6 +264,7 @@ class AndroidShell(object):
     if parameters:
       cmd += ['--es', 'encodedParameters', json.dumps(parameters)]
 
+    atexit.register(self.StopShell)
     with open(os.devnull, 'w') as devnull:
       cmd_process = subprocess.Popen(cmd, stdout=devnull)
       if logcat_process:
@@ -287,10 +273,7 @@ class AndroidShell(object):
 
   def StopShell(self):
     """Stops the mojo shell."""
-    subprocess.check_call(self._CreateADBCommand(['shell',
-                                                  'am',
-                                                  'force-stop',
-                                                  self.target_package]))
+    self.device.ForceStop(self.target_package)
 
   def CleanLogs(self):
     """Cleans the logs on the device."""
