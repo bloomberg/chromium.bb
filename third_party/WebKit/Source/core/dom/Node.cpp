@@ -1402,7 +1402,6 @@ void Node::setTextContent(const String& text)
             setNodeValue(text);
             return;
         case ELEMENT_NODE:
-        case ATTRIBUTE_NODE:
         case DOCUMENT_FRAGMENT_NODE: {
             // FIXME: Merge this logic into replaceChildrenWithText.
             RefPtrWillBeRawPtr<ContainerNode> container = toContainerNode(this);
@@ -1424,6 +1423,7 @@ void Node::setTextContent(const String& text)
             }
             return;
         }
+        case ATTRIBUTE_NODE:
         case DOCUMENT_NODE:
         case DOCUMENT_TYPE_NODE:
             // Do nothing.
@@ -2444,10 +2444,10 @@ unsigned Node::lengthOfContents() const
     case Node::PROCESSING_INSTRUCTION_NODE:
         return toProcessingInstruction(this)->data().length();
     case Node::ELEMENT_NODE:
-    case Node::ATTRIBUTE_NODE:
     case Node::DOCUMENT_NODE:
     case Node::DOCUMENT_FRAGMENT_NODE:
         return toContainerNode(this)->countChildren();
+    case Node::ATTRIBUTE_NODE:
     case Node::DOCUMENT_TYPE_NODE:
         return 0;
     }
