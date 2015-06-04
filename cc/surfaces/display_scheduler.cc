@@ -127,12 +127,6 @@ bool DisplayScheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
   TRACE_EVENT2("cc", "DisplayScheduler::BeginFrame", "args", args.AsValue(),
                "now", now);
 
-  // Only service missed BeginFrames if they haven't already expired.
-  base::TimeTicks adjusted_deadline =
-      args.deadline - BeginFrameArgs::DefaultEstimatedParentDrawTime();
-  if (args.type == BeginFrameArgs::MISSED && now > adjusted_deadline)
-    return false;
-
   // If we get another BeginFrame before the previous deadline,
   // synchronously trigger the previous deadline before progressing.
   if (inside_begin_frame_deadline_interval_) {
@@ -141,7 +135,8 @@ bool DisplayScheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
 
   // Schedule the deadline.
   current_begin_frame_args_ = args;
-  current_begin_frame_args_.deadline = adjusted_deadline;
+  current_begin_frame_args_.deadline -=
+      BeginFrameArgs::DefaultEstimatedParentDrawTime();
   inside_begin_frame_deadline_interval_ = true;
   ScheduleBeginFrameDeadline();
 
