@@ -90,11 +90,8 @@ void MovePackets(PacketSavingConnection* source_conn,
       break;
     }
 
-    for (vector<QuicStreamFrame>::const_iterator
-         i =  framer.stream_frames().begin();
-         i != framer.stream_frames().end(); ++i) {
-      scoped_ptr<string> frame_data(i->GetDataAsString());
-      ASSERT_TRUE(crypto_framer.ProcessInput(*frame_data));
+    for (const QuicStreamFrame& stream_frame : framer.stream_frames()) {
+      ASSERT_TRUE(crypto_framer.ProcessInput(stream_frame.data));
       ASSERT_FALSE(crypto_visitor.error());
     }
   }
@@ -104,10 +101,8 @@ void MovePackets(PacketSavingConnection* source_conn,
 
   ASSERT_EQ(0u, crypto_framer.InputBytesRemaining());
 
-  for (vector<CryptoHandshakeMessage>::const_iterator
-       i = crypto_visitor.messages().begin();
-       i != crypto_visitor.messages().end(); ++i) {
-    dest_stream->OnHandshakeMessage(*i);
+  for (const CryptoHandshakeMessage& message : crypto_visitor.messages()) {
+    dest_stream->OnHandshakeMessage(message);
   }
 }
 

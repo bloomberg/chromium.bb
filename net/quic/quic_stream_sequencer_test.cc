@@ -86,7 +86,7 @@ class QuicStreamSequencerTest : public ::testing::Test {
     QuicStreamFrame frame;
     frame.stream_id = 1;
     frame.offset = byte_offset;
-    frame.data.Append(const_cast<char*>(data), strlen(data));
+    frame.data = StringPiece(data);
     frame.fin = true;
     sequencer_->OnStreamFrame(frame);
   }
@@ -95,7 +95,7 @@ class QuicStreamSequencerTest : public ::testing::Test {
     QuicStreamFrame frame;
     frame.stream_id = 1;
     frame.offset = byte_offset;
-    frame.data.Append(const_cast<char*>(data), strlen(data));
+    frame.data = StringPiece(data);
     frame.fin = false;
     sequencer_->OnStreamFrame(frame);
   }
@@ -368,7 +368,7 @@ TEST_F(QuicStreamSequencerTest, FrameOverlapsBufferedData) {
   const int kBufferedOffset = 10;
   const int kBufferedDataLength = 3;
   const int kNewDataLength = 3;
-  IOVector data = MakeIOVector(string(kNewDataLength, '.'));
+  StringPiece data(string(kNewDataLength, '.'));
 
   // No overlap if no buffered frames.
   EXPECT_TRUE(buffered_frames_->empty());
@@ -408,10 +408,10 @@ TEST_F(QuicStreamSequencerTest, DontAcceptOverlappingFrames) {
   // The peer should never send us non-identical stream frames which contain
   // overlapping byte ranges - if they do, we close the connection.
 
-  QuicStreamFrame frame1(kClientDataStreamId1, false, 1, MakeIOVector("hello"));
+  QuicStreamFrame frame1(kClientDataStreamId1, false, 1, StringPiece("hello"));
   sequencer_->OnStreamFrame(frame1);
 
-  QuicStreamFrame frame2(kClientDataStreamId1, false, 2, MakeIOVector("hello"));
+  QuicStreamFrame frame2(kClientDataStreamId1, false, 2, StringPiece("hello"));
   EXPECT_TRUE(sequencer_->FrameOverlapsBufferedData(frame2));
   EXPECT_CALL(stream_, CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME, _))
       .Times(1);

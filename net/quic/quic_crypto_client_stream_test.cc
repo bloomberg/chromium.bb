@@ -271,6 +271,9 @@ TEST_F(QuicCryptoClientStreamStatelessTest, StatelessReject) {
   InitializeFakeStatelessRejectServer();
   AdvanceHandshakeWithFakeServer();
 
+  EXPECT_EQ(1, server_stream_->num_handshake_messages());
+  EXPECT_EQ(0, server_stream_->num_handshake_messages_with_server_nonces());
+
   EXPECT_FALSE(client_stream_->encryption_established());
   EXPECT_FALSE(client_stream_->handshake_confirmed());
   // Even though the handshake was not complete, the cached client_state is

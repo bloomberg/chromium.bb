@@ -1281,22 +1281,16 @@ bool QuicFramer::ProcessStreamFrame(uint8 frame_type,
     return false;
   }
 
-  StringPiece frame_data;
   if (has_data_length) {
-    if (!reader_->ReadStringPiece16(&frame_data)) {
+    if (!reader_->ReadStringPiece16(&frame->data)) {
       set_detailed_error("Unable to read frame data.");
       return false;
     }
   } else {
-    if (!reader_->ReadStringPiece(&frame_data, reader_->BytesRemaining())) {
+    if (!reader_->ReadStringPiece(&frame->data, reader_->BytesRemaining())) {
       set_detailed_error("Unable to read frame data.");
       return false;
     }
-  }
-  // Point frame to the right data.
-  frame->data.Clear();
-  if (!frame_data.empty()) {
-    frame->data.Append(const_cast<char*>(frame_data.data()), frame_data.size());
   }
 
   return true;
@@ -1782,9 +1776,8 @@ size_t QuicFramer::ComputeFrameLength(
     case STREAM_FRAME:
       return GetMinStreamFrameSize(frame.stream_frame->stream_id,
                                    frame.stream_frame->offset,
-                                   last_frame_in_packet,
-                                   is_in_fec_group) +
-          frame.stream_frame->data.TotalBufferSize();
+                                   last_frame_in_packet, is_in_fec_group) +
+             frame.stream_frame->data.length();
     case ACK_FRAME: {
       return GetAckFrameSize(*frame.ack_frame, sequence_number_length);
     }
@@ -1906,15 +1899,14 @@ bool QuicFramer::AppendStreamFrame(
     return false;
   }
   if (!no_stream_frame_length) {
-    if ((frame.data.TotalBufferSize() > numeric_limits<uint16>::max()) ||
-        !writer->WriteUInt16(
-            static_cast<uint16>(frame.data.TotalBufferSize()))) {
+    if ((frame.data.size() > numeric_limits<uint16>::max()) ||
+        !writer->WriteUInt16(static_cast<uint16>(frame.data.size()))) {
       LOG(DFATAL) << "Writing stream frame length failed";
       return false;
     }
   }
 
-  if (!writer->WriteIOVector(frame.data)) {
+  if (!writer->WriteBytes(frame.data.data(), frame.data.size())) {
     LOG(DFATAL) << "Writing frame data failed.";
     return false;
   }

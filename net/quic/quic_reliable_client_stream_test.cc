@@ -99,8 +99,7 @@ TEST_P(QuicReliableClientStreamTest, OnFinRead) {
   stream_->OnStreamHeaders(uncompressed_headers);
   stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
 
-  IOVector iov;
-  QuicStreamFrame frame2(kStreamId, true, offset, iov);
+  QuicStreamFrame frame2(kStreamId, true, offset, StringPiece());
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
   stream_->OnStreamFrame(frame2);
 }

@@ -158,7 +158,7 @@ void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   }
 
   // This count includes duplicate data received.
-  size_t frame_payload_size = frame.data.TotalBufferSize();
+  size_t frame_payload_size = frame.data.size();
   stream_bytes_read_ += frame_payload_size;
 
   // Flow control is interested in tracking highest received offset.

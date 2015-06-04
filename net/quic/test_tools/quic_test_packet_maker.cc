@@ -167,7 +167,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeDataPacket(
     QuicStreamOffset offset,
     base::StringPiece data) {
   InitializeHeader(sequence_number, should_include_version);
-  QuicStreamFrame frame(stream_id, fin, offset, MakeIOVector(data));
+  QuicStreamFrame frame(stream_id, fin, offset, data);
   return MakePacket(header_, QuicFrame(&frame));
 }
 
@@ -194,9 +194,9 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
     headers_frame.set_has_priority(true);
     spdy_frame.reset(spdy_request_framer_.SerializeFrame(headers_frame));
   }
-  QuicStreamFrame frame(kHeadersStreamId, false, 0,
-                        MakeIOVector(base::StringPiece(spdy_frame->data(),
-                                                       spdy_frame->size())));
+  QuicStreamFrame frame(
+      kHeadersStreamId, false, 0,
+      base::StringPiece(spdy_frame->data(), spdy_frame->size()));
   return MakePacket(header_, QuicFrame(&frame));
 }
 
@@ -219,9 +219,9 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeResponseHeadersPacket(
     headers_frame.set_fin(fin);
     spdy_frame.reset(spdy_request_framer_.SerializeFrame(headers_frame));
   }
-  QuicStreamFrame frame(kHeadersStreamId, false, 0,
-                        MakeIOVector(base::StringPiece(spdy_frame->data(),
-                                                       spdy_frame->size())));
+  QuicStreamFrame frame(
+      kHeadersStreamId, false, 0,
+      base::StringPiece(spdy_frame->data(), spdy_frame->size()));
   return MakePacket(header_, QuicFrame(&frame));
 }
 

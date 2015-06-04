@@ -56,12 +56,12 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
     // Save a copy of the data so it is valid after the packet is processed.
-    stream_data_.push_back(frame.GetDataAsString());
+    string* string_data = new string();
+    frame.data.AppendToString(string_data);
+    stream_data_.push_back(string_data);
     QuicStreamFrame stream_frame(frame);
     // Make sure that the stream frame points to this data.
-    stream_frame.data.Clear();
-    stream_frame.data.Append(const_cast<char*>(stream_data_.back()->data()),
-                             stream_data_.back()->size());
+    stream_frame.data = StringPiece(*string_data);
     stream_frames_.push_back(stream_frame);
     return true;
   }

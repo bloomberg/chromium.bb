@@ -517,12 +517,29 @@ TEST_F(TcpCubicSenderTest, DontTrackAckPackets) {
 TEST_F(TcpCubicSenderTest, ConfigureInitialWindow) {
   QuicConfig config;
 
-  // Verify that kCOPT: kIW10 forces the congestion window to the default of 10.
   QuicTagVector options;
+  options.push_back(kIW03);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  sender_->SetFromConfig(config, Perspective::IS_SERVER);
+  EXPECT_EQ(3u, sender_->congestion_window());
+
+  options.clear();
   options.push_back(kIW10);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
   sender_->SetFromConfig(config, Perspective::IS_SERVER);
   EXPECT_EQ(10u, sender_->congestion_window());
+
+  options.clear();
+  options.push_back(kIW20);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  sender_->SetFromConfig(config, Perspective::IS_SERVER);
+  EXPECT_EQ(20u, sender_->congestion_window());
+
+  options.clear();
+  options.push_back(kIW50);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  sender_->SetFromConfig(config, Perspective::IS_SERVER);
+  EXPECT_EQ(50u, sender_->congestion_window());
 }
 
 TEST_F(TcpCubicSenderTest, ConfigureMinimumWindow) {

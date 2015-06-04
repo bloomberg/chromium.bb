@@ -192,7 +192,7 @@ int main(int argc, char *argv[]) {
   // Build the client, and try to connect.
   bool is_https = (FLAGS_port == 443);
   net::EpollServer epoll_server;
-  net::QuicServerId server_id(host, FLAGS_port, is_https,
+  net::QuicServerId server_id(url.host(), FLAGS_port, is_https,
                               net::PRIVACY_MODE_DISABLED);
   net::QuicVersionVector versions = net::QuicSupportedVersions();
   if (FLAGS_quic_version != -1) {

@@ -212,6 +212,14 @@ enum FecPolicy {
   FEC_PROTECT_OPTIONAL  // Data in the stream does not need FEC protection.
 };
 
+// Indicates FEC policy about when to send FEC packet.
+enum FecSendPolicy {
+  // Send FEC packet when FEC group is full or when FEC alarm goes off.
+  FEC_ANY_TRIGGER,
+  // Send FEC packet only when FEC alarm goes off.
+  FEC_ALARM_TRIGGER
+};
+
 enum QuicFrameType {
   // Regular frame types. The values set here cannot change without the
   // introduction of a new QUIC version.
@@ -666,19 +674,15 @@ struct NET_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,
                   QuicStreamOffset offset,
-                  IOVector data);
+                  base::StringPiece data);
 
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(
       std::ostream& os, const QuicStreamFrame& s);
 
-  // Returns a copy of the IOVector |data| as a heap-allocated string.
-  // Caller must take ownership of the returned string.
-  std::string* GetDataAsString() const;
-
   QuicStreamId stream_id;
   bool fin;
   QuicStreamOffset offset;  // Location of this data in the stream.
-  IOVector data;
+  base::StringPiece data;
 };
 
 // TODO(ianswett): Re-evaluate the trade-offs of hash_set vs set when framing
@@ -984,12 +988,10 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
   explicit RetransmittableFrames(EncryptionLevel level);
   ~RetransmittableFrames();
 
-  // Allocates a local copy of the referenced StringPiece has QuicStreamFrame
-  // use it.
-  // Takes ownership of |stream_frame|.
-  const QuicFrame& AddStreamFrame(QuicStreamFrame* stream_frame);
   // Takes ownership of the frame inside |frame|.
-  const QuicFrame& AddNonStreamFrame(const QuicFrame& frame);
+  const QuicFrame& AddFrame(const QuicFrame& frame);
+  // Takes ownership of the frame inside |frame| and |buffer|.
+  const QuicFrame& AddFrame(const QuicFrame& frame, char* buffer);
   // Removes all stream frames associated with |stream_id|.
   void RemoveFramesForStream(QuicStreamId stream_id);
 
@@ -1007,8 +1009,8 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
   QuicFrames frames_;
   const EncryptionLevel encryption_level_;
   IsHandshake has_crypto_handshake_;
-  // Data referenced by the StringPiece of a QuicStreamFrame.
-  std::vector<std::string*> stream_data_;
+  // Data referenced by the IOVector of a QuicStreamFrame.
+  std::vector<const char*> stream_data_;
 
   DISALLOW_COPY_AND_ASSIGN(RetransmittableFrames);
 };

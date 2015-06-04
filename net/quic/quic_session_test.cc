@@ -571,7 +571,7 @@ TEST_P(QuicSessionTestServer, IncreasedTimeoutAfterCryptoHandshake) {
 
 TEST_P(QuicSessionTestServer, RstStreamBeforeHeadersDecompressed) {
   // Send two bytes of payload.
-  QuicStreamFrame data1(kClientDataStreamId1, false, 0, MakeIOVector("HT"));
+  QuicStreamFrame data1(kClientDataStreamId1, false, 0, StringPiece("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
   session_.OnStreamFrames(frames);
@@ -591,7 +591,7 @@ TEST_P(QuicSessionTestServer, MultipleRstStreamsCauseSingleConnectionClose) {
   // multiple connection close frames.
 
   // Create valid stream.
-  QuicStreamFrame data1(kClientDataStreamId1, false, 0, MakeIOVector("HT"));
+  QuicStreamFrame data1(kClientDataStreamId1, false, 0, StringPiece("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
   session_.OnStreamFrames(frames);
@@ -778,7 +778,7 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingFinAndLocalReset) {
 
   const QuicStreamOffset kByteOffset =
       kInitialSessionFlowControlWindowForTest / 2;
-  QuicStreamFrame frame(stream->id(), true, kByteOffset, IOVector());
+  QuicStreamFrame frame(stream->id(), true, kByteOffset, StringPiece());
   vector<QuicStreamFrame> frames;
   frames.push_back(frame);
   session_.OnStreamFrames(frames);
@@ -820,8 +820,7 @@ TEST_P(QuicSessionTestServer, ConnectionFlowControlAccountingFinAfterRst) {
   // account the total number of bytes sent by the peer.
   const QuicStreamOffset kByteOffset = 5678;
   string body = "hello";
-  IOVector data = MakeIOVector(body);
-  QuicStreamFrame frame(stream->id(), true, kByteOffset, data);
+  QuicStreamFrame frame(stream->id(), true, kByteOffset, StringPiece(body));
   vector<QuicStreamFrame> frames;
   frames.push_back(frame);
   session_.OnStreamFrames(frames);
@@ -905,7 +904,7 @@ TEST_P(QuicSessionTestServer, FlowControlWithInvalidFinalOffset) {
   TestStream* stream = session_.CreateOutgoingDataStream();
   EXPECT_CALL(*connection_, SendRstStream(stream->id(), _, _));
   stream->Reset(QUIC_STREAM_CANCELLED);
-  QuicStreamFrame frame(stream->id(), true, kLargeOffset, IOVector());
+  QuicStreamFrame frame(stream->id(), true, kLargeOffset, StringPiece());
   vector<QuicStreamFrame> frames;
   frames.push_back(frame);
   session_.OnStreamFrames(frames);
@@ -954,7 +953,7 @@ TEST_P(QuicSessionTestServer, TooManyUnfinishedStreamsCauseConnectionClose) {
   const int kFirstStreamId = kClientDataStreamId1;
   const int kFinalStreamId = kClientDataStreamId1 + 2 * kMaxStreams + 1;
   for (int i = kFirstStreamId; i < kFinalStreamId; i += 2) {
-    QuicStreamFrame data1(i, false, 0, MakeIOVector("HT"));
+    QuicStreamFrame data1(i, false, 0, StringPiece("HT"));
     vector<QuicStreamFrame> frames;
     frames.push_back(data1);
     session_.OnStreamFrames(frames);

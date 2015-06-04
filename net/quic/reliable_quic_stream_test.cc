@@ -603,7 +603,7 @@ TEST_F(ReliableQuicStreamTest,
   // higher than the receive window offset.
   QuicStreamFrame frame(stream_->id(), false,
                         kInitialSessionFlowControlWindowForTest + 1,
-                        MakeIOVector("."));
+                        StringPiece("."));
   EXPECT_GT(frame.offset, QuicFlowControllerPeer::ReceiveWindowOffset(
                               stream_->flow_controller()));
 
@@ -619,12 +619,12 @@ TEST_F(ReliableQuicStreamTest, FinalByteOffsetFromFin) {
   EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
 
   QuicStreamFrame stream_frame_no_fin(stream_->id(), false, 1234,
-                                      MakeIOVector("."));
+                                      StringPiece("."));
   stream_->OnStreamFrame(stream_frame_no_fin);
   EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
 
   QuicStreamFrame stream_frame_with_fin(stream_->id(), true, 1234,
-                                        MakeIOVector("."));
+                                        StringPiece("."));
   stream_->OnStreamFrame(stream_frame_with_fin);
   EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
 }

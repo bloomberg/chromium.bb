@@ -7,6 +7,8 @@
 #include <string.h>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
@@ -63,7 +65,7 @@ TEST(IOVectorTest, Append) {
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     const int str_len = strlen(test_data[i]);
     const int append_len = str_len / 2;
-    // This should append a new block
+    // This should append a new block.
     iov.Append(const_cast<char*>(test_data[i]), append_len);
     length += append_len;
     ASSERT_EQ(i + 1, static_cast<size_t>(iov.Size()));
@@ -140,7 +142,7 @@ TEST(IOVectorTest, ConsumeHalfBlocks) {
     ASSERT_TRUE(iov2[0].iov_base == test_data[i] + tmp);
     ASSERT_EQ(iov2[0].iov_len, str_len - tmp);
 
-    // Consume the rest of the first block
+    // Consume the rest of the first block.
     consumed = iov.Consume(str_len - tmp);
     ASSERT_EQ(str_len - tmp, consumed);
     ASSERT_EQ(arraysize(test_data) - i - 1, static_cast<size_t>(iov.Size()));
@@ -197,13 +199,107 @@ TEST(IOVectorTest, ConsumeTooMuch) {
   }
 
   int consumed = 0;
-  consumed = iov.Consume(length);
-  // TODO(rtenneti): enable when chromium supports EXPECT_DFATAL.
-  /*
   EXPECT_DFATAL(
       {consumed = iov.Consume(length + 1);},
       "Attempting to consume 1 non-existent bytes.");
-  */
+  ASSERT_EQ(length, consumed);
+  const struct iovec* iov2 = iov.iovec();
+  ASSERT_EQ(0u, iov.Size());
+  ASSERT_TRUE(iov2 == nullptr);
+  ASSERT_TRUE(iov.LastBlockEnd() == nullptr);
+}
+
+TEST(IOVectorTest, ConsumeAndCopyHalfBlocks) {
+  IOVector iov;
+  int length = 0;
+
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
+    const int str_len = strlen(test_data[i]);
+    iov.Append(const_cast<char*>(test_data[i]), str_len);
+    length += str_len;
+  }
+  const char* endp = iov.LastBlockEnd();
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
+    const struct iovec* iov2 = iov.iovec();
+    const size_t str_len = strlen(test_data[i]);
+    size_t tmp = str_len / 2;
+
+    ASSERT_TRUE(iov2 != nullptr);
+    ASSERT_TRUE(iov2[0].iov_base == test_data[i]);
+    ASSERT_EQ(str_len, iov2[0].iov_len);
+
+    // Consume half of the first block.
+    scoped_ptr<char[]> buffer(new char[str_len]);
+    size_t consumed = iov.ConsumeAndCopy(tmp, buffer.get());
+    EXPECT_EQ(0, memcmp(test_data[i], buffer.get(), tmp));
+    ASSERT_EQ(tmp, consumed);
+    ASSERT_EQ(arraysize(test_data) - i, static_cast<size_t>(iov.Size()));
+    iov2 = iov.iovec();
+    ASSERT_TRUE(iov2 != nullptr);
+    ASSERT_TRUE(iov2[0].iov_base == test_data[i] + tmp);
+    ASSERT_EQ(iov2[0].iov_len, str_len - tmp);
+
+    // Consume the rest of the first block.
+    consumed = iov.ConsumeAndCopy(str_len - tmp, buffer.get());
+    ASSERT_EQ(str_len - tmp, consumed);
+    ASSERT_EQ(arraysize(test_data) - i - 1, static_cast<size_t>(iov.Size()));
+    iov2 = iov.iovec();
+    if (iov.Size() > 0) {
+      ASSERT_TRUE(iov2 != nullptr);
+      ASSERT_TRUE(iov.LastBlockEnd() == endp);
+    } else {
+      ASSERT_TRUE(iov2 == nullptr);
+      ASSERT_TRUE(iov.LastBlockEnd() == nullptr);
+    }
+  }
+}
+
+TEST(IOVectorTest, ConsumeAndCopyTwoAndHalfBlocks) {
+  IOVector iov;
+  size_t length = 0;
+
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
+    const int str_len = strlen(test_data[i]);
+    iov.Append(const_cast<char*>(test_data[i]), str_len);
+    length += str_len;
+  }
+  const size_t last_len = strlen(test_data[arraysize(test_data) - 1]);
+  const size_t half_len = last_len / 2;
+
+  const char* endp = iov.LastBlockEnd();
+  scoped_ptr<char[]> buffer(new char[length]);
+  size_t consumed = iov.ConsumeAndCopy(length - half_len, buffer.get());
+  ASSERT_EQ(length - half_len, consumed);
+  const struct iovec* iov2 = iov.iovec();
+  ASSERT_TRUE(iov2 != nullptr);
+  ASSERT_EQ(1u, iov.Size());
+  ASSERT_TRUE(iov2[0].iov_base ==
+              test_data[arraysize(test_data) - 1] + last_len - half_len);
+  ASSERT_EQ(half_len, iov2[0].iov_len);
+  ASSERT_TRUE(iov.LastBlockEnd() == endp);
+
+  consumed = iov.Consume(half_len);
+  ASSERT_EQ(half_len, consumed);
+  iov2 = iov.iovec();
+  ASSERT_EQ(0u, iov.Size());
+  ASSERT_TRUE(iov2 == nullptr);
+  ASSERT_TRUE(iov.LastBlockEnd() == nullptr);
+}
+
+TEST(IOVectorTest, ConsumeAndCopyTooMuch) {
+  IOVector iov;
+  int length = 0;
+
+  for (size_t i = 0; i < arraysize(test_data); ++i) {
+    const int str_len = strlen(test_data[i]);
+    iov.Append(const_cast<char*>(test_data[i]), str_len);
+    length += str_len;
+  }
+
+  int consumed = 0;
+  scoped_ptr<char[]> buffer(new char[length + 1]);
+  EXPECT_DFATAL({ consumed = iov.ConsumeAndCopy(length + 1, buffer.get()); },
+                "Attempting to consume 1 non-existent bytes.");
   ASSERT_EQ(length, consumed);
   const struct iovec* iov2 = iov.iovec();
   ASSERT_EQ(0u, iov.Size());

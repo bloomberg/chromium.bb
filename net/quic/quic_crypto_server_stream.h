@@ -68,6 +68,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
 
   uint8 num_handshake_messages() const { return num_handshake_messages_; }
 
+  uint8 num_handshake_messages_with_server_nonces() const {
+    return num_handshake_messages_with_server_nonces_;
+  }
+
   int num_server_config_update_messages_sent() const {
     return num_server_config_update_messages_sent_;
   }
@@ -166,6 +170,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
 
   // Number of handshake messages received by this stream.
   uint8 num_handshake_messages_;
+
+  // Number of handshake messages received by this stream that contain
+  // server nonces (indicating that this is a non-zero-RTT handshake
+  // attempt).
+  uint8 num_handshake_messages_with_server_nonces_;
 
   // Number of server config update (SCUP) messages sent by this stream.
   int num_server_config_update_messages_sent_;

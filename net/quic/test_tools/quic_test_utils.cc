@@ -538,7 +538,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   header.fec_flag = false;
   header.is_in_fec_group = NOT_IN_FEC_GROUP;
   header.fec_group = 0;
-  QuicStreamFrame stream_frame(1, false, 0, MakeIOVector(data));
+  QuicStreamFrame stream_frame(1, false, 0, StringPiece(data));
   QuicFrame frame(&stream_frame);
   QuicFrames frames;
   frames.push_back(frame);
@@ -576,7 +576,7 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   header.fec_flag = false;
   header.is_in_fec_group = NOT_IN_FEC_GROUP;
   header.fec_group = 0;
-  QuicStreamFrame stream_frame(1, false, 0, MakeIOVector(data));
+  QuicStreamFrame stream_frame(1, false, 0, StringPiece(data));
   QuicFrame frame(&stream_frame);
   QuicFrames frames;
   frames.push_back(frame);
@@ -663,7 +663,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   header.fec_group = 0;
 
   QuicStreamFrame stream_frame(kCryptoStreamId, false, 0,
-                               MakeIOVector(data->AsStringPiece()));
+                               data->AsStringPiece());
 
   QuicFrame frame(&stream_frame);
   QuicFrames frames;

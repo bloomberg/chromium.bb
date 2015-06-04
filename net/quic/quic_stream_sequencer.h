@@ -104,7 +104,7 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // bytes, and gaps.
   typedef std::map<QuicStreamOffset, std::string> FrameMap;
 
-  // Stores buffered frames (maps from sequence number -> frame data as string).
+  // Stores buffered frames (maps from byte offset -> frame data as string).
   FrameMap buffered_frames_;
 
   // The offset, if any, we got a stream termination for.  When this many bytes

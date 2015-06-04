@@ -34,6 +34,7 @@ QuicCryptoServerStream::QuicCryptoServerStream(
       crypto_config_(crypto_config),
       validate_client_hello_cb_(nullptr),
       num_handshake_messages_(0),
+      num_handshake_messages_with_server_nonces_(0),
       num_server_config_update_messages_sent_(0),
       use_stateless_rejects_if_peer_supported_(false),
       peer_supports_stateless_rejects_(false) {
@@ -227,6 +228,9 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
     const ValidateClientHelloResultCallback::Result& result,
     CryptoHandshakeMessage* reply,
     string* error_details) {
+  if (!result.info.server_nonce.empty()) {
+    ++num_handshake_messages_with_server_nonces_;
+  }
   // Store the bandwidth estimate from the client.
   if (result.cached_network_params.bandwidth_estimate_bytes_per_second() > 0) {
     previous_cached_network_params_.reset(

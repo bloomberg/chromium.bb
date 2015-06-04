@@ -100,7 +100,7 @@ scoped_ptr<base::Value> NetLogQuicStreamFrameCallback(
   dict->SetInteger("stream_id", frame->stream_id);
   dict->SetBoolean("fin", frame->fin);
   dict->SetString("offset", base::Uint64ToString(frame->offset));
-  dict->SetInteger("length", frame->data.TotalBufferSize());
+  dict->SetInteger("length", frame->data.size());
   return dict.Pass();
 }
 

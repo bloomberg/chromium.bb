@@ -104,8 +104,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
     EXPECT_EQ(STREAM_FRAME, frame.type);
     ASSERT_TRUE(frame.stream_frame);
     EXPECT_EQ(stream_id, frame.stream_frame->stream_id);
-    scoped_ptr<string> frame_data(frame.stream_frame->GetDataAsString());
-    EXPECT_EQ(data, *frame_data);
+    EXPECT_EQ(data, frame.stream_frame->data);
     EXPECT_EQ(offset, frame.stream_frame->offset);
     EXPECT_EQ(fin, frame.stream_frame->fin);
   }
@@ -162,8 +161,10 @@ INSTANTIATE_TEST_CASE_P(QuicPacketCreatorTests,
 
 TEST_P(QuicPacketCreatorTest, SerializeFrames) {
   frames_.push_back(QuicFrame(new QuicAckFrame(MakeAckFrame(0u))));
-  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
-  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, true, 0u, IOVector())));
+  frames_.push_back(
+      QuicFrame(new QuicStreamFrame(0u, false, 0u, StringPiece())));
+  frames_.push_back(
+      QuicFrame(new QuicStreamFrame(0u, true, 0u, StringPiece())));
   char buffer[kMaxPacketSize];
   SerializedPacket serialized =
       creator_.SerializeAllFrames(frames_, buffer, kMaxPacketSize);
@@ -194,7 +195,8 @@ TEST_P(QuicPacketCreatorTest, SerializeWithFEC) {
   // trigger an FEC packet.
   ASSERT_FALSE(creator_.ShouldSendFec(/*force_close=*/false));
 
-  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
+  frames_.push_back(
+      QuicFrame(new QuicStreamFrame(0u, false, 0u, StringPiece())));
   char buffer[kMaxPacketSize];
   SerializedPacket serialized =
       creator_.SerializeAllFrames(frames_, buffer, kMaxPacketSize);
@@ -455,9 +457,9 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
   QuicPacketCreatorPeer::SetSequenceNumberLength(&creator_,
                                                  PACKET_2BYTE_SEQUENCE_NUMBER);
   QuicStreamFrame* stream_frame =
-      new QuicStreamFrame(kCryptoStreamId, /*fin=*/false, 0u, IOVector());
+      new QuicStreamFrame(kCryptoStreamId, /*fin=*/false, 0u, StringPiece());
   RetransmittableFrames frames(ENCRYPTION_NONE);
-  frames.AddStreamFrame(stream_frame);
+  frames.AddFrame(QuicFrame(stream_frame));
   char buffer[kMaxPacketSize];
   SerializedPacket serialized = creator_.ReserializeAllFrames(
       frames, PACKET_1BYTE_SEQUENCE_NUMBER, buffer, kMaxPacketSize);
@@ -482,11 +484,13 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
 }
 
 TEST_P(QuicPacketCreatorTest, ReserializeFramesWithPadding) {
-  QuicStreamFrame* stream_frame =
-      new QuicStreamFrame(kCryptoStreamId, /*fin=*/false, /*offset=*/0,
-                          MakeIOVector("fake handshake message data"));
+  QuicFrame frame;
+  IOVector io_vector(MakeIOVector("fake handshake message data"));
+  scoped_ptr<char[]> stream_buffer;
+  creator_.CreateStreamFrame(kCryptoStreamId, &io_vector, 0u, false, &frame,
+                             &stream_buffer);
   RetransmittableFrames frames(ENCRYPTION_NONE);
-  frames.AddStreamFrame(stream_frame);
+  frames.AddFrame(frame);
   char buffer[kMaxPacketSize];
   SerializedPacket serialized = creator_.ReserializeAllFrames(
       frames, QuicPacketCreatorPeer::NextSequenceNumberLength(&creator_),
@@ -503,10 +507,13 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
     string data(capacity + delta, 'A');
     size_t bytes_free = 0 - delta;
 
-    QuicStreamFrame* stream_frame = new QuicStreamFrame(
-        kCryptoStreamId, /*fin=*/false, kOffset, MakeIOVector(data));
+    QuicFrame frame;
+    IOVector io_vector(MakeIOVector(data));
+    scoped_ptr<char[]> stream_buffer;
+    creator_.CreateStreamFrame(kCryptoStreamId, &io_vector, kOffset, false,
+                               &frame, &stream_buffer);
     RetransmittableFrames frames(ENCRYPTION_NONE);
-    frames.AddStreamFrame(stream_frame);
+    frames.AddFrame(frame);
     char buffer[kMaxPacketSize];
     SerializedPacket serialized = creator_.ReserializeAllFrames(
         frames, QuicPacketCreatorPeer::NextSequenceNumberLength(&creator_),
@@ -573,7 +580,8 @@ TEST_P(QuicPacketCreatorTest, SwitchFecOnOffWithNoGroup) {
 TEST_P(QuicPacketCreatorTest, SwitchFecOnOffWithGroupInProgress) {
   // Enable FEC protection, and send FEC packet every 6 packets.
   EXPECT_TRUE(SwitchFecProtectionOn(6));
-  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
+  frames_.push_back(
+      QuicFrame(new QuicStreamFrame(0u, false, 0u, StringPiece())));
   char buffer[kMaxPacketSize];
   SerializedPacket serialized =
       creator_.SerializeAllFrames(frames_, buffer, kMaxPacketSize);
@@ -607,8 +615,10 @@ TEST_P(QuicPacketCreatorTest, SwitchFecOnOffWithGroupInProgress) {
 TEST_P(QuicPacketCreatorTest, SwitchFecOnWithStreamFrameQueued) {
   // Add a stream frame to the creator.
   QuicFrame frame;
-  size_t consumed = creator_.CreateStreamFrame(
-      1u, MakeIOVector("test"), 0u, false, &frame);
+  IOVector io_vector(MakeIOVector("test"));
+  scoped_ptr<char[]> stream_buffer;
+  size_t consumed = creator_.CreateStreamFrame(1u, &io_vector, 0u, false,
+                                               &frame, &stream_buffer);
   EXPECT_EQ(4u, consumed);
   ASSERT_TRUE(frame.stream_frame);
   EXPECT_TRUE(creator_.AddSavedFrame(frame));
@@ -636,26 +646,34 @@ TEST_P(QuicPacketCreatorTest, SwitchFecOnWithStreamFrameQueued) {
 
 TEST_P(QuicPacketCreatorTest, CreateStreamFrame) {
   QuicFrame frame;
-  size_t consumed = creator_.CreateStreamFrame(1u, MakeIOVector("test"), 0u,
-                                               false, &frame);
+  IOVector io_vector(MakeIOVector("test"));
+  scoped_ptr<char[]> stream_buffer;
+  size_t consumed = creator_.CreateStreamFrame(1u, &io_vector, 0u, false,
+                                               &frame, &stream_buffer);
   EXPECT_EQ(4u, consumed);
   CheckStreamFrame(frame, 1u, "test", 0u, false);
-  delete frame.stream_frame;
+  RetransmittableFrames cleanup_frames(ENCRYPTION_NONE);
+  cleanup_frames.AddFrame(frame);
 }
 
 TEST_P(QuicPacketCreatorTest, CreateStreamFrameFin) {
   QuicFrame frame;
-  size_t consumed = creator_.CreateStreamFrame(1u, MakeIOVector("test"), 10u,
-                                               true, &frame);
+  IOVector io_vector(MakeIOVector("test"));
+  scoped_ptr<char[]> stream_buffer;
+  size_t consumed = creator_.CreateStreamFrame(1u, &io_vector, 10u, true,
+                                               &frame, &stream_buffer);
   EXPECT_EQ(4u, consumed);
   CheckStreamFrame(frame, 1u, "test", 10u, true);
-  delete frame.stream_frame;
+  RetransmittableFrames cleanup_frames(ENCRYPTION_NONE);
+  cleanup_frames.AddFrame(frame);
 }
 
 TEST_P(QuicPacketCreatorTest, CreateStreamFrameFinOnly) {
   QuicFrame frame;
-  size_t consumed = creator_.CreateStreamFrame(1u, IOVector(), 0u, true,
-                                               &frame);
+  IOVector io_vector;
+  scoped_ptr<char[]> stream_buffer;
+  size_t consumed = creator_.CreateStreamFrame(1u, &io_vector, 0u, true, &frame,
+                                               &stream_buffer);
   EXPECT_EQ(0u, consumed);
   CheckStreamFrame(frame, 1u, string(), 0u, true);
   delete frame.stream_frame;
@@ -672,9 +690,11 @@ TEST_P(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
                                     kClientDataStreamId1, kOffset));
     if (should_have_room) {
       QuicFrame frame;
-      size_t bytes_consumed = creator_.CreateStreamFrame(
-          kClientDataStreamId1, MakeIOVector("testdata"), kOffset, false,
-          &frame);
+      IOVector io_vector(MakeIOVector("testdata"));
+      scoped_ptr<char[]> stream_buffer;
+      size_t bytes_consumed =
+          creator_.CreateStreamFrame(kClientDataStreamId1, &io_vector, kOffset,
+                                     false, &frame, &stream_buffer);
       EXPECT_LT(0u, bytes_consumed);
       ASSERT_TRUE(creator_.AddSavedFrame(frame));
       char buffer[kMaxPacketSize];
@@ -697,8 +717,11 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumption) {
     string data(capacity + delta, 'A');
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
     QuicFrame frame;
-    size_t bytes_consumed = creator_.CreateStreamFrame(
-        kClientDataStreamId1, MakeIOVector(data), kOffset, false, &frame);
+    IOVector io_vector(MakeIOVector(data));
+    scoped_ptr<char[]> stream_buffer;
+    size_t bytes_consumed =
+        creator_.CreateStreamFrame(kClientDataStreamId1, &io_vector, kOffset,
+                                   false, &frame, &stream_buffer);
     EXPECT_EQ(capacity - bytes_free, bytes_consumed);
 
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
@@ -728,8 +751,11 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumptionWithFec) {
     string data(capacity + delta, 'A');
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
     QuicFrame frame;
-    size_t bytes_consumed = creator_.CreateStreamFrame(
-        kClientDataStreamId1, MakeIOVector(data), kOffset, false, &frame);
+    IOVector io_vector(MakeIOVector(data));
+    scoped_ptr<char[]> stream_buffer;
+    size_t bytes_consumed =
+        creator_.CreateStreamFrame(kClientDataStreamId1, &io_vector, kOffset,
+                                   false, &frame, &stream_buffer);
     EXPECT_EQ(capacity - bytes_free, bytes_consumed);
 
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
@@ -760,8 +786,10 @@ TEST_P(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
 
     QuicFrame frame;
+    IOVector io_vector(MakeIOVector(data));
+    scoped_ptr<char[]> stream_buffer;
     size_t bytes_consumed = creator_.CreateStreamFrame(
-        kCryptoStreamId, MakeIOVector(data), kOffset, false, &frame);
+        kCryptoStreamId, &io_vector, kOffset, false, &frame, &stream_buffer);
     EXPECT_LT(0u, bytes_consumed);
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
     char buffer[kMaxPacketSize];
@@ -794,8 +822,11 @@ TEST_P(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
 
     QuicFrame frame;
-    size_t bytes_consumed = creator_.CreateStreamFrame(
-        kClientDataStreamId1, MakeIOVector(data), kOffset, false, &frame);
+    IOVector io_vector(MakeIOVector(data));
+    scoped_ptr<char[]> stream_buffer;
+    size_t bytes_consumed =
+        creator_.CreateStreamFrame(kClientDataStreamId1, &io_vector, kOffset,
+                                   false, &frame, &stream_buffer);
     EXPECT_LT(0u, bytes_consumed);
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
     char buffer[kMaxPacketSize];
@@ -889,7 +920,8 @@ TEST_P(QuicPacketCreatorTest, SerializeFrame) {
   if (!GetParam().version_serialization) {
     creator_.StopSendingVersion();
   }
-  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
+  frames_.push_back(
+      QuicFrame(new QuicStreamFrame(0u, false, 0u, StringPiece())));
   char buffer[kMaxPacketSize];
   SerializedPacket serialized =
       creator_.SerializeAllFrames(frames_, buffer, kMaxPacketSize);
@@ -926,12 +958,15 @@ TEST_P(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
       PACKET_1BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP, &payload_length));
   QuicFrame frame;
   const string too_long_payload(payload_length * 2, 'a');
-  size_t consumed = creator_.CreateStreamFrame(
-      1u, MakeIOVector(too_long_payload), 0u, true, &frame);
+  IOVector io_vector(MakeIOVector(too_long_payload));
+  scoped_ptr<char[]> stream_buffer;
+  size_t consumed = creator_.CreateStreamFrame(1u, &io_vector, 0u, true, &frame,
+                                               &stream_buffer);
   EXPECT_EQ(payload_length, consumed);
   const string payload(payload_length, 'a');
   CheckStreamFrame(frame, 1u, payload, 0u, false);
-  delete frame.stream_frame;
+  RetransmittableFrames cleanup_frames(ENCRYPTION_NONE);
+  cleanup_frames.AddFrame(frame);
 }
 
 TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
@@ -954,8 +989,10 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
   EXPECT_TRUE(creator_.HasPendingFrames());
 
   QuicFrame frame;
-  size_t consumed = creator_.CreateStreamFrame(
-      1u, MakeIOVector("test"), 0u, false, &frame);
+  IOVector io_vector(MakeIOVector("test"));
+  scoped_ptr<char[]> stream_buffer;
+  size_t consumed = creator_.CreateStreamFrame(1u, &io_vector, 0u, false,
+                                               &frame, &stream_buffer);
   EXPECT_EQ(4u, consumed);
   ASSERT_TRUE(frame.stream_frame);
   EXPECT_TRUE(creator_.AddSavedFrame(frame));
@@ -1014,8 +1051,10 @@ TEST_P(QuicPacketCreatorTest, SerializeTruncatedAckFrameWithLargePacketSize) {
 
   // Make sure that an additional stream frame can be added to the packet.
   QuicFrame stream_frame;
-  size_t consumed = creator_.CreateStreamFrame(
-      2u, MakeIOVector("test"), 0u, false, &stream_frame);
+  IOVector io_vector(MakeIOVector("test"));
+  scoped_ptr<char[]> stream_buffer;
+  size_t consumed = creator_.CreateStreamFrame(2u, &io_vector, 0u, false,
+                                               &stream_frame, &stream_buffer);
   EXPECT_EQ(4u, consumed);
   ASSERT_TRUE(stream_frame.stream_frame);
   EXPECT_TRUE(creator_.AddSavedFrame(stream_frame));
@@ -1077,7 +1116,8 @@ TEST_P(QuicPacketCreatorTest, SerializeTruncatedAckFrameWithSmallPacketSize) {
 
 
 TEST_P(QuicPacketCreatorTest, EntropyFlag) {
-  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
+  frames_.push_back(
+      QuicFrame(new QuicStreamFrame(0u, false, 0u, StringPiece())));
 
   char buffer[kMaxPacketSize];
   for (int i = 0; i < 2; ++i) {
@@ -1104,7 +1144,8 @@ TEST_P(QuicPacketCreatorTest, EntropyFlag) {
 TEST_P(QuicPacketCreatorTest, ResetFecGroup) {
   // Enable FEC protection, and send FEC packet every 6 packets.
   EXPECT_TRUE(SwitchFecProtectionOn(6));
-  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
+  frames_.push_back(
+      QuicFrame(new QuicStreamFrame(0u, false, 0u, StringPiece())));
   char buffer[kMaxPacketSize];
   SerializedPacket serialized =
       creator_.SerializeAllFrames(frames_, buffer, kMaxPacketSize);
@@ -1156,8 +1197,10 @@ TEST_P(QuicPacketCreatorTest, ResetFecGroup) {
 TEST_P(QuicPacketCreatorTest, ResetFecGroupWithQueuedFrames) {
   // Add a stream frame to the creator.
   QuicFrame frame;
-  size_t consumed =
-      creator_.CreateStreamFrame(1u, MakeIOVector("test"), 0u, false, &frame);
+  IOVector io_vector(MakeIOVector("test"));
+  scoped_ptr<char[]> stream_buffer;
+  size_t consumed = creator_.CreateStreamFrame(1u, &io_vector, 0u, false,
+                                               &frame, &stream_buffer);
   EXPECT_EQ(4u, consumed);
   ASSERT_TRUE(frame.stream_frame);
   EXPECT_TRUE(creator_.AddSavedFrame(frame));

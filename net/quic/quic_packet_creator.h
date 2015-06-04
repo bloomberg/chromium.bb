@@ -81,12 +81,14 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Converts a raw payload to a frame which fits into the currently open
   // packet if there is one.  Returns the number of bytes consumed from data.
   // If data is empty and fin is true, the expected behavior is to consume the
-  // fin but return 0.
+  // fin but return 0.  If any data is consumed, it will be copied into a
+  // new buffer that |frame| will point to and will be stored in |buffer|.
   size_t CreateStreamFrame(QuicStreamId id,
-                           const IOVector& data,
+                           IOVector* data,
                            QuicStreamOffset offset,
                            bool fin,
-                           QuicFrame* frame);
+                           QuicFrame* frame,
+                           scoped_ptr<char[]>* buffer);
 
   // Serializes all frames into a single packet. All frames must fit into a
   // single packet. Also, sets the entropy hash of the serialized packet to a
@@ -148,6 +150,10 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   // Adds |frame| to the packet creator's list of frames to be serialized.
   // Returns false if the frame doesn't fit into the current packet.
   bool AddSavedFrame(const QuicFrame& frame);
+
+  // Identical to AddSavedFrame, but takes ownership of the buffer if it returns
+  // true.
+  bool AddSavedFrame(const QuicFrame& frame, char* buffer);
 
   // Serializes all frames which have been added and adds any which should be
   // retransmitted to |retransmittable_frames| if it's not nullptr. All frames
@@ -241,7 +247,9 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
 
   // Allows a frame to be added without creating retransmittable frames.
   // Particularly useful for retransmits using SerializeAllFrames().
-  bool AddFrame(const QuicFrame& frame, bool save_retransmittable_frames);
+  bool AddFrame(const QuicFrame& frame,
+                bool save_retransmittable_frames,
+                char* buffer);
 
   // Adds a padding frame to the current packet only if the current packet
   // contains a handshake message, and there is sufficient room to fit a

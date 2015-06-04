@@ -118,7 +118,7 @@ INSTANTIATE_TEST_CASE_P(Tests, QuicServerSessionTest,
 TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
   // Open a stream, then reset it.
   // Send two bytes of payload to open it.
-  QuicStreamFrame data1(kClientDataStreamId1, false, 0, MakeIOVector("HT"));
+  QuicStreamFrame data1(kClientDataStreamId1, false, 0, StringPiece("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
   session_->OnStreamFrames(frames);
@@ -148,7 +148,7 @@ TEST_P(QuicServerSessionTest, NeverOpenStreamDueToReset) {
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
 
   // Send two bytes of payload.
-  QuicStreamFrame data1(kClientDataStreamId1, false, 0, MakeIOVector("HT"));
+  QuicStreamFrame data1(kClientDataStreamId1, false, 0, StringPiece("HT"));
   vector<QuicStreamFrame> frames;
   frames.push_back(data1);
   visitor_->OnStreamFrames(frames);
@@ -162,9 +162,9 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
   vector<QuicStreamFrame> frames;
   // Send (empty) compressed headers followed by two bytes of data.
   frames.push_back(QuicStreamFrame(kClientDataStreamId1, false, 0,
-                                   MakeIOVector("\1\0\0\0\0\0\0\0HT")));
+                                   StringPiece("\1\0\0\0\0\0\0\0HT")));
   frames.push_back(QuicStreamFrame(kClientDataStreamId2, false, 0,
-                                   MakeIOVector("\2\0\0\0\0\0\0\0HT")));
+                                   StringPiece("\2\0\0\0\0\0\0\0HT")));
   visitor_->OnStreamFrames(frames);
   EXPECT_EQ(2u, session_->GetNumOpenStreams());
 
@@ -179,9 +179,9 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
   // data on the floor, but accept the packet because it has data for stream 5.
   frames.clear();
   frames.push_back(
-      QuicStreamFrame(kClientDataStreamId1, false, 2, MakeIOVector("TP")));
+      QuicStreamFrame(kClientDataStreamId1, false, 2, StringPiece("TP")));
   frames.push_back(
-      QuicStreamFrame(kClientDataStreamId2, false, 2, MakeIOVector("TP")));
+      QuicStreamFrame(kClientDataStreamId2, false, 2, StringPiece("TP")));
   visitor_->OnStreamFrames(frames);
   // The stream should never be opened, now that the reset is received.
   EXPECT_EQ(1u, session_->GetNumOpenStreams());

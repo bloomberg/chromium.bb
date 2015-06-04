@@ -79,6 +79,8 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
     // Takes ownership of |packet.packet| and |packet.retransmittable_frames|.
     virtual void OnSerializedPacket(const SerializedPacket& packet) = 0;
     virtual void CloseConnection(QuicErrorCode error, bool from_peer) = 0;
+    // Called when a FEC Group is reset (closed).
+    virtual void OnResetFecGroup() = 0;
   };
 
   // Interface which gets callbacks from the QuicPacketGenerator at interesting
@@ -211,13 +213,19 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // creator being ready to send an FEC packet, otherwise FEC packet is sent
   // as long as one is under construction in the creator. Also tries to turn
   // off FEC protection in the creator if it's off in the generator.
-  void MaybeSendFecPacketAndCloseGroup(bool force);
+  // When |fec_send_policy_| is FEC_SEND_QUIESCENCE, then send FEC
+  // packet if |is_fec_timeout| is true otherwise close the FEC group.
+  void MaybeSendFecPacketAndCloseGroup(bool force, bool is_fec_timeout);
 
   // Returns true if an FEC packet should be generated based on |force| and
   // current state of the generator and the creator.
   bool ShouldSendFecPacket(bool force);
 
-  void SendQueuedFrames(bool flush);
+  // Resets (closes) the FEC group and calls the Delegate's OnResetFecGroup.
+  // Asserts that FEC group is open.
+  void ResetFecGroup();
+
+  void SendQueuedFrames(bool flush, bool is_fec_timeout);
 
   // Test to see if we have pending ack, or control frames.
   bool HasPendingFrames() const;
@@ -226,8 +234,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   bool CanSendWithNextPendingFrameAddition() const;
   // Add exactly one pending frame, preferring ack frames over control frames.
   bool AddNextPendingFrame();
-
-  bool AddFrame(const QuicFrame& frame);
+  // Adds a frame and takes ownership of the underlying buffer if the addition
+  // was successful.
+  bool AddFrame(const QuicFrame& frame, char* buffer);
 
   void SerializeAndSendPacket();
 
@@ -247,6 +256,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // True if FEC protection is on. The creator may have an open FEC group even
   // if this variable is false.
   bool should_fec_protect_;
+
+  // FEC policy that specifies when to send FEC packet.
+  FecSendPolicy fec_send_policy_;
 
   // Flags to indicate the need for just-in-time construction of a frame.
   bool should_send_ack_;

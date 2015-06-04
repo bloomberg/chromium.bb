@@ -107,13 +107,6 @@ class TestEncrypter : public QuicEncrypter {
   ~TestEncrypter() override {}
   bool SetKey(StringPiece key) override { return true; }
   bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
-  bool Encrypt(StringPiece nonce,
-               StringPiece associated_data,
-               StringPiece plaintext,
-               unsigned char* output) override {
-    CHECK(false) << "Not implemented";
-    return false;
-  }
   bool EncryptPacket(QuicPacketSequenceNumber sequence_number,
                      StringPiece associated_data,
                      StringPiece plaintext,
@@ -237,12 +230,12 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
     ++frame_count_;
     // Save a copy of the data so it is valid after the packet is processed.
-    stream_data_.push_back(frame.GetDataAsString());
+    string* string_data = new string();
+    frame.data.AppendToString(string_data);
+    stream_data_.push_back(string_data);
     QuicStreamFrame* stream_frame = new QuicStreamFrame(frame);
     // Make sure that the stream frame points to this data.
-    stream_frame->data.Clear();
-    stream_frame->data.Append(const_cast<char*>(stream_data_.back()->data()),
-                              stream_data_.back()->size());
+    stream_frame->data = StringPiece(*string_data);
     stream_frames_.push_back(stream_frame);
     return true;
   }
@@ -435,8 +428,7 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
 
   // Checks if the supplied string matches data in the supplied StreamFrame.
   void CheckStreamFrameData(string str, QuicStreamFrame* frame) {
-    scoped_ptr<string> frame_data(frame->GetDataAsString());
-    EXPECT_EQ(str, *frame_data);
+    EXPECT_EQ(str, frame->data);
   }
 
   void CheckStreamFrameBoundaries(unsigned char* packet,
@@ -3078,11 +3070,8 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
   header.packet_sequence_number = UINT64_C(0x77123456789ABC);
   header.fec_group = 0;
 
-  QuicStreamFrame stream_frame;
-  stream_frame.stream_id = 0x01020304;
-  stream_frame.fin = true;
-  stream_frame.offset = UINT64_C(0xBA98FEDC32107654);
-  stream_frame.data = MakeIOVector("hello world!");
+  QuicStreamFrame stream_frame(0x01020304, true, UINT64_C(0xBA98FEDC32107654),
+                               StringPiece("hello world!"));
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&stream_frame));
@@ -3131,11 +3120,8 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketInFecGroup) {
   header.is_in_fec_group = IN_FEC_GROUP;
   header.fec_group = UINT64_C(0x77123456789ABC);
 
-  QuicStreamFrame stream_frame;
-  stream_frame.stream_id = 0x01020304;
-  stream_frame.fin = true;
-  stream_frame.offset = UINT64_C(0xBA98FEDC32107654);
-  stream_frame.data = MakeIOVector("hello world!");
+  QuicStreamFrame stream_frame(0x01020304, true, UINT64_C(0xBA98FEDC32107654),
+                               StringPiece("hello world!"));
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&stream_frame));
@@ -3180,11 +3166,8 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   header.packet_sequence_number = UINT64_C(0x77123456789ABC);
   header.fec_group = 0;
 
-  QuicStreamFrame stream_frame;
-  stream_frame.stream_id = 0x01020304;
-  stream_frame.fin = true;
-  stream_frame.offset = UINT64_C(0xBA98FEDC32107654);
-  stream_frame.data = MakeIOVector("hello world!");
+  QuicStreamFrame stream_frame(0x01020304, true, UINT64_C(0xBA98FEDC32107654),
+                               StringPiece("hello world!"));
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&stream_frame));
@@ -4023,7 +4006,6 @@ TEST_P(QuicFramerTest, BuildFecPacket) {
   header.packet_sequence_number = (UINT64_C(0x123456789ABC));
   header.is_in_fec_group = IN_FEC_GROUP;
   header.fec_group = UINT64_C(0x123456789ABB);
-  ;
 
   QuicFecData fec_data;
   fec_data.fec_group = 1;
@@ -4393,9 +4375,8 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
 static char kTestString[] = "At least 20 characters.";
 static QuicStreamId kTestQuicStreamId = 1;
 static bool ExpectedStreamFrame(const QuicStreamFrame& frame) {
-  scoped_ptr<string> data(frame.GetDataAsString());
   return frame.stream_id == kTestQuicStreamId && !frame.fin &&
-         frame.offset == 0 && *data == kTestString;
+         frame.offset == 0 && frame.data == kTestString;
   // FIN is hard-coded false in ConstructEncryptedPacket.
   // Offset 0 is hard-coded in ConstructEncryptedPacket.
 }

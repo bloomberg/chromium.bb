@@ -78,16 +78,6 @@ class TaggingEncrypter : public QuicEncrypter {
 
   bool SetNoncePrefix(StringPiece nonce_prefix) override { return true; }
 
-  bool Encrypt(StringPiece nonce,
-               StringPiece associated_data,
-               StringPiece plaintext,
-               unsigned char* output) override {
-    memcpy(output, plaintext.data(), plaintext.size());
-    output += plaintext.size();
-    memset(output, tag_, kTagSize);
-    return true;
-  }
-
   bool EncryptPacket(QuicPacketSequenceNumber sequence_number,
                      StringPiece associated_data,
                      StringPiece plaintext,
@@ -98,8 +88,9 @@ class TaggingEncrypter : public QuicEncrypter {
     if (max_output_length < len) {
       return false;
     }
-    Encrypt(StringPiece(), associated_data, plaintext,
-            reinterpret_cast<unsigned char*>(output));
+    memcpy(output, plaintext.data(), plaintext.size());
+    output += plaintext.size();
+    memset(output, tag_, kTagSize);
     *output_length = len;
     return true;
   }
@@ -618,8 +609,8 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
         creator_(QuicConnectionPeer::GetPacketCreator(&connection_)),
         generator_(QuicConnectionPeer::GetPacketGenerator(&connection_)),
         manager_(QuicConnectionPeer::GetSentPacketManager(&connection_)),
-        frame1_(1, false, 0, MakeIOVector(data1)),
-        frame2_(1, false, 3, MakeIOVector(data2)),
+        frame1_(1, false, 0, StringPiece(data1)),
+        frame2_(1, false, 3, StringPiece(data2)),
         sequence_number_length_(PACKET_6BYTE_SEQUENCE_NUMBER),
         connection_id_length_(PACKET_8BYTE_CONNECTION_ID) {
     connection_.set_visitor(&visitor_);
@@ -2091,9 +2082,7 @@ TEST_P(QuicConnectionTest, FramePackingSendv) {
   EXPECT_EQ(1u, writer_->stream_frames().size());
   QuicStreamFrame frame = writer_->stream_frames()[0];
   EXPECT_EQ(1u, frame.stream_id);
-  EXPECT_EQ("ABCD", string(static_cast<char*>
-                           (frame.data.iovec()[0].iov_base),
-                           (frame.data.iovec()[0].iov_len)));
+  EXPECT_EQ("ABCD", frame.data);
 }
 
 TEST_P(QuicConnectionTest, FramePackingSendvQueued) {

@@ -183,8 +183,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     RetransmittableFrames* frames = nullptr;
     if (retransmittable) {
       frames = new RetransmittableFrames(ENCRYPTION_NONE);
-      frames->AddStreamFrame(
-          new QuicStreamFrame(kStreamId, false, 0, IOVector()));
+      frames->AddFrame(
+          QuicFrame(new QuicStreamFrame(kStreamId, false, 0, StringPiece())));
     }
     return SerializedPacket(sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER,
                             packets_.back(), 0u, frames);
@@ -214,8 +214,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
                              kDefaultLength, HAS_RETRANSMITTABLE_DATA))
                     .Times(1).WillOnce(Return(true));
     SerializedPacket packet(CreateDataPacket(sequence_number));
-    packet.retransmittable_frames->AddStreamFrame(
-        new QuicStreamFrame(1, false, 0, IOVector()));
+    packet.retransmittable_frames->AddFrame(
+        QuicFrame(new QuicStreamFrame(1, false, 0, StringPiece())));
     manager_.OnPacketSent(&packet, 0, clock_.Now(),
                           packet.packet->length(), NOT_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);

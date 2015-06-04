@@ -114,19 +114,8 @@ QuicStreamFrame::QuicStreamFrame(const QuicStreamFrame& frame)
 QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
                                  bool fin,
                                  QuicStreamOffset offset,
-                                 IOVector data)
+                                 StringPiece data)
     : stream_id(stream_id), fin(fin), offset(offset), data(data) {
-}
-
-string* QuicStreamFrame::GetDataAsString() const {
-  string* data_string = new string();
-  data_string->reserve(data.TotalBufferSize());
-  for (size_t i = 0; i < data.Size(); ++i) {
-    data_string->append(static_cast<char*>(data.iovec()[i].iov_base),
-                        data.iovec()[i].iov_len);
-  }
-  DCHECK_EQ(data_string->size(), data.TotalBufferSize());
-  return data_string;
 }
 
 uint32 MakeQuicTag(char a, char b, char c, char d) {
@@ -457,8 +446,7 @@ ostream& operator<<(ostream& os, const QuicStreamFrame& stream_frame) {
   os << "stream_id { " << stream_frame.stream_id << " } "
      << "fin { " << stream_frame.fin << " } "
      << "offset { " << stream_frame.offset << " } "
-     << "data { "
-     << QuicUtils::StringToHexASCIIDump(*(stream_frame.GetDataAsString()))
+     << "data { " << QuicUtils::StringToHexASCIIDump(stream_frame.data)
      << " }\n";
   return os;
 }
@@ -599,27 +587,24 @@ RetransmittableFrames::~RetransmittableFrames() {
         DCHECK(false) << "Cannot delete type: " << it->type;
     }
   }
-  STLDeleteElements(&stream_data_);
+  for (const char* buffer : stream_data_) {
+    delete[] buffer;
+  }
 }
 
-const QuicFrame& RetransmittableFrames::AddStreamFrame(
-    QuicStreamFrame* stream_frame) {
-  // Make an owned copy of the stream frame's data.
-  stream_data_.push_back(stream_frame->GetDataAsString());
-  // Ensure the stream frame's IOVector points to the owned copy of the data.
-  stream_frame->data.Clear();
-  stream_frame->data.Append(const_cast<char*>(stream_data_.back()->data()),
-                            stream_data_.back()->size());
-  frames_.push_back(QuicFrame(stream_frame));
-  if (stream_frame->stream_id == kCryptoStreamId) {
+const QuicFrame& RetransmittableFrames::AddFrame(const QuicFrame& frame) {
+  return AddFrame(frame, nullptr);
+}
+
+const QuicFrame& RetransmittableFrames::AddFrame(const QuicFrame& frame,
+                                                 char* buffer) {
+  if (frame.type == STREAM_FRAME &&
+      frame.stream_frame->stream_id == kCryptoStreamId) {
     has_crypto_handshake_ = IS_HANDSHAKE;
   }
-  return frames_.back();
-}
-
-const QuicFrame& RetransmittableFrames::AddNonStreamFrame(
-    const QuicFrame& frame) {
-  DCHECK_NE(frame.type, STREAM_FRAME);
+  if (buffer != nullptr) {
+    stream_data_.push_back(buffer);
+  }
   frames_.push_back(frame);
   return frames_.back();
 }

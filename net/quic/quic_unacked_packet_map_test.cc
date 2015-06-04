@@ -43,7 +43,7 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
     RetransmittableFrames* frames = new RetransmittableFrames(ENCRYPTION_NONE);
     QuicStreamFrame* frame = new QuicStreamFrame();
     frame->stream_id = stream_id;
-    frames->AddStreamFrame(frame);
+    frames->AddFrame(QuicFrame(frame));
     return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
                             packets_.back(), 0, frames);
   }

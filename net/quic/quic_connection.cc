@@ -912,9 +912,8 @@ void QuicConnection::OnPacketComplete() {
     }
   }
 
-  for (size_t i = 0; i < last_stream_frames_.size(); ++i) {
-    stats_.stream_bytes_received +=
-        last_stream_frames_[i].data.TotalBufferSize();
+  for (const QuicStreamFrame& stream_frame : last_stream_frames_) {
+    stats_.stream_bytes_received += stream_frame.data.size();
   }
   // Process window updates, blocked, stream resets, acks, then congestion
   // feedback.
@@ -1654,6 +1653,14 @@ void QuicConnection::OnSerializedPacket(
     fec_alarm_->Cancel();
   }
   SendOrQueuePacket(QueuedPacket(serialized_packet, encryption_level_));
+}
+
+void QuicConnection::OnResetFecGroup() {
+  if (!fec_alarm_->IsSet()) {
+    return;
+  }
+  // If an FEC Group is closed with the FEC alarm set, cancel the alarm.
+  fec_alarm_->Cancel();
 }
 
 void QuicConnection::OnCongestionWindowChange() {

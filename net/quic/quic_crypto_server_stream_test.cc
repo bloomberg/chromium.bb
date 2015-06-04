@@ -241,6 +241,8 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   // On the first round, encryption will not be established.
   EXPECT_FALSE(server_stream_->encryption_established());
   EXPECT_FALSE(server_stream_->handshake_confirmed());
+  EXPECT_EQ(1, server_stream_->num_handshake_messages());
+  EXPECT_EQ(0, server_stream_->num_handshake_messages_with_server_nonces());
 
   // Now check the client state.
   QuicCryptoClientConfig::CachedState* client_state =
@@ -273,6 +275,8 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   // On the second round, encryption will be established.
   EXPECT_TRUE(server_stream_->encryption_established());
   EXPECT_TRUE(server_stream_->handshake_confirmed());
+  EXPECT_EQ(2, server_stream_->num_handshake_messages());
+  EXPECT_EQ(1, server_stream_->num_handshake_messages_with_server_nonces());
 }
 
 TEST_P(QuicCryptoServerStreamTest, NoStatelessRejectIfNoClientSupport) {

@@ -17,6 +17,7 @@
 using net::test::DefaultQuicConfig;
 using net::test::MockConnection;
 using net::test::SupportedVersions;
+using net::test::kClientDataStreamId1;
 using std::string;
 using testing::StrictMock;
 using testing::TestWithParam;
@@ -50,7 +51,7 @@ class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
         kInitialStreamFlowControlWindowForTest);
     session_.config()->SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
-    stream_.reset(new QuicSpdyClientStream(3, &session_));
+    stream_.reset(new QuicSpdyClientStream(kClientDataStreamId1, &session_));
   }
 
   StrictMock<MockConnection>* connection_;
@@ -113,7 +114,7 @@ TEST_P(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
 }
 
 TEST_P(QuicSpdyClientStreamTest, TestNoBidirectionalStreaming) {
-  QuicStreamFrame frame(3, false, 3, MakeIOVector("asd"));
+  QuicStreamFrame frame(kClientDataStreamId1, false, 3, StringPiece("asd"));
 
   EXPECT_FALSE(stream_->write_side_closed());
   stream_->OnStreamFrame(frame);
