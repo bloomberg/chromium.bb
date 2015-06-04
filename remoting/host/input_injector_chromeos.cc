@@ -42,6 +42,17 @@ ui::EventFlags MouseButtonToUIFlags(MouseEvent::MouseButton button) {
   }
 }
 
+bool IsModifierKey(ui::DomCode dom_code) {
+  return dom_code == ui::DomCode::CONTROL_RIGHT ||
+         dom_code == ui::DomCode::CONTROL_LEFT ||
+         dom_code == ui::DomCode::SHIFT_RIGHT ||
+         dom_code == ui::DomCode::SHIFT_LEFT ||
+         dom_code == ui::DomCode::ALT_RIGHT ||
+         dom_code == ui::DomCode::ALT_LEFT ||
+         dom_code == ui::DomCode::OS_RIGHT ||
+         dom_code == ui::DomCode::OS_LEFT;
+}
+
 }  // namespace
 
 // This class is run exclusively on the UI thread of the browser process.
@@ -101,12 +112,14 @@ void InputInjectorChromeos::Core::InjectKeyEvent(const KeyEvent& event) {
 void InputInjectorChromeos::Core::HandleAutoRepeat(ui::DomCode dom_code,
                                                    bool pressed) {
   if (pressed) {
+    // Key is already held down, so lift the key up to ensure this repeated
+    // press takes effect.
+    // TODO(jamiewalch): Fix SystemInputInjector::InjectKeyPress so that this
+    // work-around is not needed (crbug.com/496420).
     if (pressed_keys_.find(dom_code) != pressed_keys_.end()) {
-      // Key is already held down, so lift the key up to ensure this repeated
-      // press takes effect.
-      // TODO(kelvinp): Fix this code to inject auto-repeated key presses as
-      // the expected behavior of "down down down ... up" as opposed to current
-      // implementation "down up down ... up".
+      // Ignore repeats for modifier keys.
+      if (IsModifierKey(dom_code))
+        return;
       delegate_->InjectKeyPress(dom_code, false);
     }
 
