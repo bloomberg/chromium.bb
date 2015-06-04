@@ -446,7 +446,6 @@
 <translation id="4950138595962845479">Opcions...</translation>
 <translation id="4653235815000740718">S'ha produït un error durant la creació del mitjà de recuperació del sistema operatiu. No s'ha pogut trobar el dispositiu d'emmagatzematge utilitzat.</translation>
 <translation id="1407489512183974736">Retallat al centre</translation>
-<translation id="1870557287802238488">Permet mostrar la sol·licitud de la contrasenya a la navegació de les pàgines.</translation>
 <translation id="2688196195245426394">S'ha produït un error en registrar el dispositiu amb el servidor: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Connexió a Internet</translation>
 <translation id="1788636309517085411">Utilitza la predeterminada</translation>
@@ -1582,7 +1581,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY"/>, us pot resultar pràctic la prop
 <translation id="8094917007353911263">És possible que la xarxa que esteu fent servir requereixi que visiteu <ph name="BEGIN_BOLD"/><ph name="LOGIN_URL"/><ph name="END_BOLD"/>.</translation>
 <translation id="7676077734785147678">IME de l'extensió</translation>
 <translation id="8326478304147373412">PKCS #7, cadena de certificats</translation>
-<translation id="3242765319725186192">Clau compartida prèviament:</translation>
+<translation id="3242765319725186192">Clau precompartida d'IPSec:</translation>
 <translation id="8249048954461686687">Carpeta OEM</translation>
 <translation id="54870580363317966">Trieu un avatar per a aquest usuari supervisat.</translation>
 <translation id="2189826151768452760">Activa Economitzador de dades en mode de baixa fidelitat</translation>
@@ -1603,7 +1602,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="2134149231879627725">Deixeu que Google us ajudi a bloquejar el dispositiu, a ubicar-lo i a esborrar-ne les dades de manera remota.</translation>
 <translation id="1146204723345436916">Importa les adreces d'interès des d'un fitxer HTML...</translation>
 <translation id="2113921862428609753">Accés a la informació d'entitats</translation>
-<translation id="9190063653747922532">L2TP/IPsec + clau compartida prèviament</translation>
+<translation id="9190063653747922532">L2TP/IPsec + clau precompartida d'IPSec</translation>
 <translation id="5227536357203429560">Afegeix una xarxa privada...</translation>
 <translation id="732677191631732447">Cop&amp;ia l'URL de l'àudio</translation>
 <translation id="7224023051066864079">Màscara de subxarxa:</translation>
@@ -3188,7 +3187,6 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="6983783921975806247">OID registrat</translation>
 <translation id="394984172568887996">Importat d'IE</translation>
 <translation id="5311260548612583999">Clau privada (opcional): </translation>
-<translation id="2831904287943562142">Permet mostrar la sol·licitud de la contrasenya a la navegació de les pàgines. Això permet desar contrasenyes en més pàgines, però és possible que, de vegades, s'activi la sol·licitud quan no es pugui iniciar la sessió correctament.</translation>
 <translation id="8256319818471787266">Gosset</translation>
 <translation id="7568790562536448087">Actualització</translation>
 <translation id="3910699493603749297">Teclat de khmer</translation>
@@ -3375,7 +3373,8 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="4958202758642732872">Excepcions de pantalla completa</translation>
 <translation id="6990778048354947307">Tema fosc</translation>
 <translation id="8119631488458759651">elimina aquest lloc</translation>
-<translation id="5225324770654022472">Mostra la drecera d'Aplicacions</translation>
+<translation id="5225324770654022472">Mostra la drecera d'aplicacions 
+</translation>
 <translation id="1408803555324839240">No s'ha pogut crear l'usuari supervisat nou. Assegureu-vos que heu iniciat la sessió correctament i torneu-ho a provar.</translation>
 <translation id="6016551720757758985">Confirmació de Powerwash amb retorn a la versió anterior</translation>
 <translation id="4927753642311223124">No hi ha cap notificació, podeu continuar.</translation>
@@ -4343,7 +4342,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="1101112020367325578">No permetis mai els connectors de fora de la zona de proves a <ph name="HOST"/></translation>
 <translation id="6483805311199035658">S'està obrint <ph name="FILE"/>...</translation>
 <translation id="5465122519792752163">Teclat nepalès (InScript)</translation>
-<translation id="940425055435005472">Cos de lletra:</translation>
+<translation id="940425055435005472">Mida de la lletra:</translation>
 <translation id="494286511941020793">Ajuda per configurar servidors intermediaris</translation>
 <translation id="2765217105034171413">Petit</translation>
 <translation id="3590559774363307859">S'ha desat la contrasenya. Hi podeu accedir, així com a totes les <ph name="SAVED_PASSWORDS_LINK"/>, des de qualsevol navegador.</translation>
@@ -4501,7 +4500,7 @@ Després de crear un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="4669109953235344059">TORNA-HO A PROVAR</translation>
 <translation id="3758760622021964394">Aquesta pàgina vol desactivar el cursor del ratolí.</translation>
 <translation id="4165986682804962316">Configuració del lloc</translation>
-<translation id="4106164762195622179">Les pàgines que es mostren a les pestanyes d'incògnit no s'emmagatzemaran a l'historial del navegador, al magatzem de galetes ni a l'historial de cerca després d'haver tancat <ph name="BEGIN_BOLD"/>totes<ph name="END_BOLD"/> les pestanyes d'incògnit. Els fitxers que baixeu i les adreces d'interès que creeu es sí que es mantindran.</translation>
+<translation id="4106164762195622179">Les pàgines que es mostren a les pestanyes d'incògnit no s'emmagatzemaran a l'historial del navegador, al magatzem de galetes ni a l'historial de cerca després d'haver tancat <ph name="BEGIN_BOLD"/>totes<ph name="END_BOLD"/> les pestanyes d'incògnit. Els fitxers que baixeu i les adreces d'interès que creeu sí que es mantindran. </translation>
 <translation id="1209796539517632982">Servidors de noms automàtics</translation>
 <translation id="8392451568018454956">Menú d'opcions per a <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="6452181791372256707">Rebutja</translation>

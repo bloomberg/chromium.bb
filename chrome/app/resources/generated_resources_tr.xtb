@@ -459,7 +459,6 @@
 <translation id="4950138595962845479">Seçenekler...</translation>
 <translation id="4653235815000740718">OS kurtarma medyası oluşturulurken bir sorunla karşılaşıldı. Kullanılan depolama cihazı bulunamadı.</translation>
 <translation id="1407489512183974736">Ortala ve Kırp</translation>
-<translation id="1870557287802238488">Sayfa içi gezinmelerde şifre isteminin görüntülenmesini etkinleştir.</translation>
 <translation id="2688196195245426394">Cihaz sunucuya kaydedilirken hata oluştu: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">İnternet bağlantısı</translation>
 <translation id="1788636309517085411">Varsayılanı kullan</translation>
@@ -3215,7 +3214,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra istediğiniz zaman herhangi
 <translation id="6983783921975806247">Kayıtlı OID</translation>
 <translation id="394984172568887996">IE'den Al</translation>
 <translation id="5311260548612583999">Özel anahtar dosyası (isteğe bağlı):</translation>
-<translation id="2831904287943562142">Sayfa içi gezinmelerde şifre isteğini göstermeyi etkinleştirin. Bu seçenek, şifrelerin daha fazla sayfada kaydedilmesine olanak sağlar, ancak bazen başarılı olmayan giriş denemelerinde isteği tetikler.</translation>
 <translation id="8256319818471787266">Çomar</translation>
 <translation id="7568790562536448087">Güncelleniyor</translation>
 <translation id="3910699493603749297">Kmer klavye</translation>

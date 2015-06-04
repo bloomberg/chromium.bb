@@ -448,7 +448,6 @@
 <translation id="4950138595962845479">Opsi...</translation>
 <translation id="4653235815000740718">Ada masalah saat membuat media pemulihan OS. Perangkat penyimpanan yang dipakai tidak dapat ditemukan.</translation>
 <translation id="1407489512183974736">Dipangkas di Tengah</translation>
-<translation id="1870557287802238488">Munculkan permintaan sandi pada navigasi laman.</translation>
 <translation id="2688196195245426394">Terjadi kesalahan saat mendaftarkan perangkat dengan server: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Sambungan internet</translation>
 <translation id="1788636309517085411">Gunakan default</translation>
@@ -3198,7 +3197,6 @@ Setelan Anda membuat pengguna yang dilindungi baru, Anda dapat mengelola setelan
 <translation id="6983783921975806247">OID terdaftar</translation>
 <translation id="394984172568887996">Diimpor dari IE</translation>
 <translation id="5311260548612583999">Kunci pribadi (opsional):</translation>
-<translation id="2831904287943562142">Memungkinkan dimunculkannya permintaan sandi di navigasi laman. Tindakan ini memungkinkan penyimpanan sandi di laman lain namun terkadang dapat memicu permintaan pada upaya masuk yang tidak berhasil.</translation>
 <translation id="8256319818471787266">Bleki</translation>
 <translation id="7568790562536448087">Memperbarui</translation>
 <translation id="3910699493603749297">Keyboard Khmer</translation>

@@ -457,7 +457,6 @@
 <translation id="4950138595962845479">Tùy chọn...</translation>
 <translation id="4653235815000740718">Đã xảy ra sự cố khi tạo phương tiện khôi phục hệ điều hành. Không thể tìm thấy thiết bị lưu trữ đã sử dụng.</translation>
 <translation id="1407489512183974736">Cắt giữa</translation>
-<translation id="1870557287802238488">Cho phép hiển thị lời nhắc mật khẩu trên điều hướng trong trang.</translation>
 <translation id="2688196195245426394">Lỗi khi đăng ký thiết bị với máy chủ: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Kết nối Internet</translation>
 <translation id="1788636309517085411">Sử dụng mặc định</translation>
@@ -3224,7 +3223,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="6983783921975806247">OID đã Đăng ký</translation>
 <translation id="394984172568887996">Được Nhập từ IE</translation>
 <translation id="5311260548612583999">Tệp khóa cá nhân (tùy chọn):</translation>
-<translation id="2831904287943562142">Cho phép hiển thị lời nhắc mật khẩu trên điều hướng trong trang. Điều này cho phép lưu mật khẩu trên nhiều trang hơn nhưng đôi khi có thể kích hoạt lời nhắc trong các lần đăng nhập không thành công.</translation>
 <translation id="8256319818471787266">Cún con tinh nghịch</translation>
 <translation id="7568790562536448087">Đang cập nhật</translation>
 <translation id="3910699493603749297">Bàn phím tiếng Khmer</translation>

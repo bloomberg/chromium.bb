@@ -451,7 +451,6 @@ puis cliquez sur <ph name="BEGIN_BOLD"/>OK<ph name="END_BOLD"/>.</translation>
 <translation id="4950138595962845479">Options...</translation>
 <translation id="4653235815000740718">Un problème est survenu lors de la création du support de récupération du système d'exploitation. Le périphérique de stockage utilisé est introuvable.</translation>
 <translation id="1407489512183974736">Recadrer et centrer</translation>
-<translation id="1870557287802238488">Activer l'affichage de l'invite d'enregistrement du mot de passe lors de la navigation sur les pages</translation>
 <translation id="2688196195245426394">Erreur survenue lors de l'enregistrement de l'appareil avec le serveur : <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Connexion Internet</translation>
 <translation id="1788636309517085411">Utiliser les valeurs par défaut</translation>
@@ -3221,7 +3220,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="6983783921975806247">OID enregistré</translation>
 <translation id="394984172568887996">Importés depuis IE</translation>
 <translation id="5311260548612583999">Fichier de clé privée (facultatif) :</translation>
-<translation id="2831904287943562142">Activer l'affichage de l'invite d'enregistrement du mot de passe lors de la navigation sur les pages. Cette option permet d'enregistrer les mots de passe sur plus de pages, mais elle peut parfois déclencher l'invite lors de l'échec d'une tentative de connexion.</translation>
 <translation id="8256319818471787266">Médor</translation>
 <translation id="7568790562536448087">Mise à jour en cours</translation>
 <translation id="3910699493603749297">Clavier khmer</translation>

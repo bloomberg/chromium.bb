@@ -442,7 +442,6 @@
 <translation id="4950138595962845479">选项...</translation>
 <translation id="4653235815000740718">创建操作系统恢复媒体时出现问题。找不到已使用的存储设备。</translation>
 <translation id="1407489512183974736">居中并裁剪</translation>
-<translation id="1870557287802238488">允许在页内浏览时显示保存密码提示。</translation>
 <translation id="2688196195245426394">向服务器注册设备时出错：<ph name="CLIENT_ERROR"/>。</translation>
 <translation id="1528372117901087631">互联网连接。</translation>
 <translation id="1788636309517085411">使用默认设置</translation>
@@ -3174,7 +3173,6 @@
 <translation id="6983783921975806247">已注册的 OID</translation>
 <translation id="394984172568887996">从 IE 中导入</translation>
 <translation id="5311260548612583999">私有密钥文件（可选）：</translation>
-<translation id="2831904287943562142">允许在页内浏览时显示保存密码提示。启用此项后，用户可以在更多页面上保存密码，但是登录尝试失败时可能会触发该提示。</translation>
 <translation id="8256319818471787266">狗狗</translation>
 <translation id="7568790562536448087">更新</translation>
 <translation id="3910699493603749297">高棉语键盘</translation>

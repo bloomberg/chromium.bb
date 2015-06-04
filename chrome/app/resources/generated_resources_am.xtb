@@ -457,7 +457,6 @@
 <translation id="4950138595962845479">አማራጮች...</translation>
 <translation id="4653235815000740718">የስርዓተ ክወና ዳግም ማግኛ ማህደረ መረጃ በመፍጠር ላይ ሳለ አንድ ችግር ነበር። ስራ ላይ የዋለ የማከማቻ መሣሪያ ሊገኝ አልቻለም።</translation>
 <translation id="1407489512183974736">እስከ መሃከል የተከረከመ</translation>
-<translation id="1870557287802238488">በገጽ ውስጥ ዳሰሳዎች ላይ የይለፍ ቃል መጠየቂያ ማሳየትን ያንቁ።</translation>
 <translation id="2688196195245426394">መሣሪያውን በዚህ አገልጋይ ላይ በመመዝገብ ላይ ሳለ ስህተት፦ <ph name="CLIENT_ERROR"/>።</translation>
 <translation id="1528372117901087631">የበይነመረብ ግንኙነት</translation>
 <translation id="1788636309517085411">ነባሪን ይጠቀሙ</translation>
@@ -3236,7 +3235,6 @@ nil</translation>
 <translation id="6983783921975806247">የተመዘገበ OID</translation>
 <translation id="394984172568887996">ከIE የመጣ</translation>
 <translation id="5311260548612583999">የግል ቁልፍ ፋይል (ግድ ያይደል)፦</translation>
-<translation id="2831904287943562142">በገጽ ውስጥ ዳሰሳዎች ላይ የይለፍ ቃል መጠየቂያ ማሳየትን ያንቁ። ይህ በተጨማሪ ገጾች ላይ የይለፍ ቃሎችን ማስቀመጥን ይፈቅዳል ነገር ግን አንዳንድ ጊዜ ያልተሳካ በመለያ የመግባት ሙከራዎች በሚደረጉበት ጊዜ መጠየቂያውን ሊያስጀምረው ይችላል።</translation>
 <translation id="8256319818471787266">Sparky</translation>
 <translation id="7568790562536448087">በማዘመን ላይ</translation>
 <translation id="3910699493603749297">የክመር ቁልፍ ሰሌዳ</translation>

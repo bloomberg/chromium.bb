@@ -458,7 +458,6 @@
 <translation id="4950138595962845479">Opțiuni...</translation>
 <translation id="4653235815000740718">A apărut o problemă la crearea suportului de recuperare a sistemului de operare. Nu s-a găsit dispozitivul de stocare utilizat.</translation>
 <translation id="1407489512183974736">Pe centru, decupat</translation>
-<translation id="1870557287802238488">Activează afișarea solicitării de parolă pentru navigările în pagină.</translation>
 <translation id="2688196195245426394">Eroare la înregistrarea gadgetului pe server: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Conexiune la internet</translation>
 <translation id="1788636309517085411">Utilizează setările prestabilite</translation>
@@ -3239,7 +3238,6 @@ După ce creați un utilizator monitorizat, puteți gestiona setările oricând 
 <translation id="6983783921975806247">OID înregistrat</translation>
 <translation id="394984172568887996">Importate din IE</translation>
 <translation id="5311260548612583999">Fișier cheie privată (opțional):</translation>
-<translation id="2831904287943562142">Activează afișarea solicitării de parolă pentru navigările în pagină. Aceasta permite salvarea parolelor pe mai multe pagini, însă uneori poate să declanșeze solicitarea în cazul încercărilor de conectare nereușite.</translation>
 <translation id="8256319818471787266">Lăbuș</translation>
 <translation id="7568790562536448087">Se actualizează</translation>
 <translation id="3910699493603749297">Tastatură khmeră</translation>

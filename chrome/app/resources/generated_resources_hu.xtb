@@ -448,7 +448,6 @@
 <translation id="4950138595962845479">Beállítások...</translation>
 <translation id="4653235815000740718">Probléma lépett fel az OS-helyreállító adathordozó elkészítése során. A felhasználni kívánt tárolóeszköz nem található.</translation>
 <translation id="1407489512183974736">Középre, levágva</translation>
-<translation id="1870557287802238488">Jelszó mentésével kapcsolatos üzenetek megjelenítésének engedélyezése az oldalon belüli navigációban.</translation>
 <translation id="2688196195245426394">Hiba az eszköz szerveren való regisztrálásakor: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Internetkapcsolat</translation>
 <translation id="1788636309517085411">Alapbeállítás használata</translation>
@@ -3196,7 +3195,6 @@ Ha létrehozott egy felügyelt felhasználót, annak beállításait bármikor, 
 <translation id="6983783921975806247">Regisztrált OID</translation>
 <translation id="394984172568887996">Az IE alkalmazásból importálva</translation>
 <translation id="5311260548612583999">Privátkulcs-fájl (nem kötelező):</translation>
-<translation id="2831904287943562142">Jelszó mentésével kapcsolatos üzenetek megjelenítésének engedélyezése az oldalon belüli navigációknál. Ezzel több oldalon nyílik lehetőség a jelszavak mentésére, de esetenként a sikertelen bejelentkezési kísérleteknél is megjelennek a jelszó mentésével kapcsolatos üzenetek.</translation>
 <translation id="8256319818471787266">Bundi</translation>
 <translation id="7568790562536448087"> frissítése</translation>
 <translation id="3910699493603749297">Khmer billentyűzet</translation>

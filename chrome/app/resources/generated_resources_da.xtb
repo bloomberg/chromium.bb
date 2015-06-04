@@ -456,7 +456,6 @@
 <translation id="4950138595962845479">Indstillinger...</translation>
 <translation id="4653235815000740718">Der opstod et problem under oprettelsen af genoprettelsesmediet til operativsystemet. Den brugte lagerenhed kunne ikke findes.</translation>
 <translation id="1407489512183974736">Centrér, beskær</translation>
-<translation id="1870557287802238488">Aktivér visning af meddelelsen Husk adgangskode ved sidenavigation.</translation>
 <translation id="2688196195245426394">Fejl ved registrering af enheden med serveren: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Internetforbindelse</translation>
 <translation id="1788636309517085411">Brug standard</translation>
@@ -3204,7 +3203,6 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="6983783921975806247">Registreret OID</translation>
 <translation id="394984172568887996">Importeret fra IE</translation>
 <translation id="5311260548612583999">Privat nøglefil (valgfri):</translation>
-<translation id="2831904287943562142">Aktivér visning af meddelelsen Husk adgangskode ved sidenavigation. Dette giver dig mulighed for at gemme adgangskoder på flere sider, men kan nogle gange udløse meddelelsen ved mislykkede loginforsøg.</translation>
 <translation id="8256319818471787266">Fido</translation>
 <translation id="7568790562536448087">Opdatering</translation>
 <translation id="3910699493603749297">Khmerisk tastatur</translation>

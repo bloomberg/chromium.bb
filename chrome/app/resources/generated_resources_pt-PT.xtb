@@ -454,7 +454,6 @@
 <translation id="4950138595962845479">Opções...</translation>
 <translation id="4653235815000740718">Ocorreu um problema ao criar o suporte de dados de recuperação do SO. Não foi possível localizar o dispositivo de armazenamento utilizado.</translation>
 <translation id="1407489512183974736">Cortado no centro</translation>
-<translation id="1870557287802238488">Ativar apresentação da solicitação de palavra-passe em navegações de página.</translation>
 <translation id="2688196195245426394">Erro ao registar o dispositivo no servidor: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Ligação à internet</translation>
 <translation id="1788636309517085411">Utilizar predefinição</translation>
@@ -3206,7 +3205,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="6983783921975806247">OID registado</translation>
 <translation id="394984172568887996">Importado do IE</translation>
 <translation id="5311260548612583999">Ficheiro chave privada (opcional):</translation>
-<translation id="2831904287943562142">Ative a apresentação da solicitação de palavra-passe em navegações de página. Isto permite guardar palavras-passe em mais páginas, mas pode acionar ocasionalmente o aviso de tentativas de início de sessão sem êxito.</translation>
 <translation id="8256319818471787266">Pantufa</translation>
 <translation id="7568790562536448087">A atualizar</translation>
 <translation id="3910699493603749297">Teclado khmer</translation>

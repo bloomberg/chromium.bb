@@ -458,7 +458,6 @@
 <translation id="4950138595962845479">Opciones...</translation>
 <translation id="4653235815000740718">Se ha producido un error durante la creación del medio de recuperación del sistema operativo. No se ha podido encontrar el dispositivo de almacenamiento utilizado.</translation>
 <translation id="1407489512183974736">Centrar imagen recortada</translation>
-<translation id="1870557287802238488">Habilitar solicitud de contraseña en la navegación dentro de páginas.</translation>
 <translation id="2688196195245426394">Error al registrar el dispositivo en el servidor (<ph name="CLIENT_ERROR"/>)</translation>
 <translation id="1528372117901087631">Conexión a Internet</translation>
 <translation id="1788636309517085411">Utilizar valores predeterminados</translation>
@@ -3196,7 +3195,6 @@ Después de crear un nuevo usuario supervisado, podrás administrar su configura
 <translation id="6983783921975806247">OID registrado</translation>
 <translation id="394984172568887996">Importado de Internet Explorer</translation>
 <translation id="5311260548612583999">Clave privada (opcional):</translation>
-<translation id="2831904287943562142">Habilitar solicitud de contraseña en la navegación dentro de páginas. Esta opción permite guardar contraseñas en más páginas pero, en algunos casos, puede hacer que se muestre la solicitud al realizar intentos fallidos de inicio de sesión.</translation>
 <translation id="8256319818471787266">Perrito</translation>
 <translation id="7568790562536448087">Actualización</translation>
 <translation id="3910699493603749297">Teclado khmer</translation>

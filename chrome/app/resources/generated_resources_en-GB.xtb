@@ -455,7 +455,6 @@
 <translation id="4950138595962845479">Options...</translation>
 <translation id="4653235815000740718">There was a problem while creating OS recovery media. Used storage device could not be found.</translation>
 <translation id="1407489512183974736">Centre Cropped</translation>
-<translation id="1870557287802238488">Enable showing of password prompt on in-page navigations.</translation>
 <translation id="2688196195245426394">Error when registering the device with the server: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Internet connection</translation>
 <translation id="1788636309517085411">Use default</translation>
@@ -3211,7 +3210,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="6983783921975806247">Registered OID</translation>
 <translation id="394984172568887996">Imported From IE</translation>
 <translation id="5311260548612583999">Private key file (optional):</translation>
-<translation id="2831904287943562142">Enable showing of the password prompt on in-page navigation. This allows for saving passwords on more pages but might sometimes trigger the prompt on unsuccessful log-in attempts.</translation>
 <translation id="8256319818471787266">Sparky</translation>
 <translation id="7568790562536448087">Updating</translation>
 <translation id="3910699493603749297">Khmer keyboard</translation>

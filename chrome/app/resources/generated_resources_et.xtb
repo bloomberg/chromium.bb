@@ -456,7 +456,6 @@
 <translation id="4950138595962845479">Valikud...</translation>
 <translation id="4653235815000740718">OS-i taastekandja loomisel ilmnes tõrge. Kasutatud salvestusseadet ei leitud.</translation>
 <translation id="1407489512183974736">Keskel, kärbitud</translation>
-<translation id="1870557287802238488">Lehesisesel navigeerimisel parooliviiba kuvamise lubamine.</translation>
 <translation id="2688196195245426394">Seadme serveris registreerimisel ilmnes viga: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Interneti-ühendus</translation>
 <translation id="1788636309517085411">Vaikimisi kasutamine</translation>
@@ -3207,7 +3206,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="6983783921975806247">Registreeritud OID</translation>
 <translation id="394984172568887996">Imporditud IE'st</translation>
 <translation id="5311260548612583999">Privaatvõtme fail (valik.):</translation>
-<translation id="2831904287943562142">Lubab lehesisesel navigeerimisel parooliviiba kuvamise. See võimaldab salvestada paroole erinevatel lehtedel, aga võib mõnikord käivitada viiba ebaõnnestunud sisselogimiskatse korral.</translation>
 <translation id="8256319818471787266">Muri</translation>
 <translation id="7568790562536448087">Värskendamine</translation>
 <translation id="3910699493603749297">Khmeeri klaviatuur</translation>

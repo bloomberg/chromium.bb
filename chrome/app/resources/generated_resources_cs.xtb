@@ -451,7 +451,6 @@
 <translation id="4950138595962845479">Možnosti...</translation>
 <translation id="4653235815000740718">Při vytváření média pro obnovení operačního systému došlo k potížím. Vybrané úložné zařízení nebylo nalezeno.</translation>
 <translation id="1407489512183974736">Ořezat na střed</translation>
-<translation id="1870557287802238488">Aktivovat zobrazení výzvy k uložení hesla v navigacích na stránce</translation>
 <translation id="2688196195245426394">Při registraci zařízení na serveru došlo k chybě: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Připojení k internetu</translation>
 <translation id="1788636309517085411">Použít výchozí umístění</translation>
@@ -3189,7 +3188,6 @@ Zde poskytnutý diagnostický nástroj na řešení problémů s připojením v�
 <translation id="6983783921975806247">Registrovaný OID</translation>
 <translation id="394984172568887996">Importováno z aplikace IE</translation>
 <translation id="5311260548612583999">Soubor soukromého klíče (volitelné):</translation>
-<translation id="2831904287943562142">Aktivuje zobrazení výzvy k uložení hesla při navigaci na stránce. Umožňuje to uložení hesel na více stránkách, ale někdy to může vyvolat výzvu při neúspěšných pokusech o přihlášení.</translation>
 <translation id="8256319818471787266">Štěně</translation>
 <translation id="7568790562536448087">Aktualizace</translation>
 <translation id="3910699493603749297">Khmérská klávesnice</translation>

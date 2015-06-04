@@ -443,7 +443,6 @@
 <translation id="4950138595962845479">選項...</translation>
 <translation id="4653235815000740718">建立作業系統還原媒體時發生問題，找不到使用的儲存裝置。</translation>
 <translation id="1407489512183974736">置中並剪裁</translation>
-<translation id="1870557287802238488">允許在網頁內瀏覽時顯示密碼提示。</translation>
 <translation id="2688196195245426394">向伺服器註冊裝置時發生錯誤：<ph name="CLIENT_ERROR"/>。</translation>
 <translation id="1528372117901087631">網際網路連線</translation>
 <translation id="1788636309517085411">使用預設值</translation>
@@ -3187,7 +3186,6 @@
 <translation id="6983783921975806247">已註冊的 OID</translation>
 <translation id="394984172568887996">從 IE 匯入</translation>
 <translation id="5311260548612583999">秘密金鑰檔案 (選擇性)：</translation>
-<translation id="2831904287943562142">允許在網頁內瀏覽時顯示密碼提示。這可讓您在更多網頁上儲存密碼，但也可能在登入嘗試失敗時觸發提示。</translation>
 <translation id="8256319818471787266">小黃</translation>
 <translation id="7568790562536448087">更新</translation>
 <translation id="3910699493603749297">高棉文鍵盤</translation>

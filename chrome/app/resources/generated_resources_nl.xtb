@@ -462,7 +462,6 @@
 <translation id="4950138595962845479">Opties...</translation>
 <translation id="4653235815000740718">Er is een probleem opgetreden tijdens het maken van het OS-herstelmedium. Het gebruikte opslagapparaat kan niet worden gevonden.</translation>
 <translation id="1407489512183974736">Midden bijsnijden</translation>
-<translation id="1870557287802238488">Weergeven van wachtwoordprompt bij navigatie op pagina inschakelen.</translation>
 <translation id="2688196195245426394">Fout bij het registreren van het apparaat bij de server: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Internetverbinding</translation>
 <translation id="1788636309517085411">Standaard gebruiken</translation>
@@ -3228,7 +3227,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt toegevoegd, kun je de in
 <translation id="6983783921975806247">Geregistreerde OID</translation>
 <translation id="394984172568887996">Geïmporteerd uit Internet Explorer</translation>
 <translation id="5311260548612583999">Privésleutelbestand (optioneel):</translation>
-<translation id="2831904287943562142">Weergeven van de wachtwoord bij navigatie op pagina inschakelen. Hiermee kunnen wachtwoorden op meer pagina's worden opgeslagen, maar kan de prompt soms worden geactiveerd bij mislukte inlogpogingen.</translation>
 <translation id="8256319818471787266">Bello</translation>
 <translation id="7568790562536448087">Bijwerken</translation>
 <translation id="3910699493603749297">Khmer toetsenbord</translation>

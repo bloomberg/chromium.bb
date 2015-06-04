@@ -455,7 +455,6 @@
 <translation id="4950138595962845479">Mga Pagpipilian...</translation>
 <translation id="4653235815000740718">Nagkaproblema habang nililikha ang OS recovery media. Hindi matagpuan ang ginamit na storage device.</translation>
 <translation id="1407489512183974736">Gitnang Naka-crop</translation>
-<translation id="1870557287802238488">I-enable ang pagpapakita ng prompt ng password sa mga navigation na nasa page.</translation>
 <translation id="2688196195245426394">Error kapag inirerehistro ang device sa server: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Koneksyon sa Internet</translation>
 <translation id="1788636309517085411">Gamitin ang default</translation>
@@ -3220,7 +3219,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="6983783921975806247">Nakarehistrong OID</translation>
 <translation id="394984172568887996">Nag-import mula sa IE</translation>
 <translation id="5311260548612583999">Private key file (opsyonal): </translation>
-<translation id="2831904287943562142">I-enable ang pagpapakita ng prompt ng password sa mga navigation na nasa page. Nagbibigay-daan ito sa iyo para sa pagse-save ng mga password sa higit pang mga page ngunit minsan ay maaaring i-trigger ang prompt sa mga hindi matagumpay na pagsubok na mag-login.</translation>
 <translation id="8256319818471787266">Bantay</translation>
 <translation id="7568790562536448087">Ina-update</translation>
 <translation id="3910699493603749297">Khmer keyboard</translation>

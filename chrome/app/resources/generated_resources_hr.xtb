@@ -447,7 +447,6 @@
 <translation id="4950138595962845479">Opcije...</translation>
 <translation id="4653235815000740718">Došlo je do problema prilikom izrade medija za oporavak sustava. Nije bilo moguće pronaći upotrijebljeni uređaj za pohranu.</translation>
 <translation id="1407489512183974736">Centriraj obrezano</translation>
-<translation id="1870557287802238488">Omogući prikazivanje upita za unos zaporke na navigaciji po stranici.</translation>
 <translation id="2688196195245426394">Pogreška pri registraciji uređaja na poslužitelju: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Internetska veza</translation>
 <translation id="1788636309517085411">Upotrijebi zadano</translation>
@@ -3188,7 +3187,6 @@ Nakon što stvorite nadziranog korisnika, možete upravljati njegovim postavkama
 <translation id="6983783921975806247">Registrirani OID</translation>
 <translation id="394984172568887996">Uvezeno iz IE</translation>
 <translation id="5311260548612583999">Datoteka s os.klj. (neobav.)</translation>
-<translation id="2831904287943562142">Omogućuje prikazivanje upita za unos zaporke na navigaciji po stranici. To omogućuje spremanje zaporki na više stranica, ali ponekad može pokrenuti upit za neuspješne pokušaje prijave.</translation>
 <translation id="8256319818471787266">Bobi</translation>
 <translation id="7568790562536448087">Ažuriranje stavke</translation>
 <translation id="3910699493603749297">kmerska tipkovnica</translation>

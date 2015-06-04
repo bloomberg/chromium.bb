@@ -447,7 +447,6 @@
 <translation id="4950138595962845479">Opzioni...</translation>
 <translation id="4653235815000740718">Si è verificato un problema durante la creazione del supporto di ripristino del sistema operativo. Il dispositivo di archiviazione utilizzato non è stato trovato.</translation>
 <translation id="1407489512183974736">Ritagliato al centro</translation>
-<translation id="1870557287802238488">Abilita visualizzazione richiesta di password su navigazioni nelle pagine.</translation>
 <translation id="2688196195245426394">Errore durante la registrazione del dispositivo con il server. <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Connessione Internet</translation>
 <translation id="1788636309517085411">Usa posizione predefinita</translation>
@@ -3175,7 +3174,6 @@ Tentativo di identificazione del problema in corso...</translation>
 <translation id="6983783921975806247">OID registrato</translation>
 <translation id="394984172568887996">Importati da IE</translation>
 <translation id="5311260548612583999">File chiave privata (facoltativo):</translation>
-<translation id="2831904287943562142">Abilita la visualizzazione della richiesta di password su navigazioni nelle pagine. Questo flag consente di salvare le password su più pagine, ma a volte può visualizzare la finestra di richiesta in caso di tentativi di accesso non riusciti.</translation>
 <translation id="8256319818471787266">Fido</translation>
 <translation id="7568790562536448087">Aggiornamento</translation>
 <translation id="3910699493603749297">Tastiera Khmer</translation>

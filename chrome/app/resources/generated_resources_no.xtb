@@ -450,7 +450,6 @@
 <translation id="4950138595962845479">Alternativer</translation>
 <translation id="4653235815000740718">Det oppstod et problem under opprettelse av gjenopprettingsmedium for operativsystem. Fant ikke lagringsenheten som har blitt brukt.</translation>
 <translation id="1407489512183974736">Midstill og beskjær</translation>
-<translation id="1870557287802238488">Slå på visning av passordforespørsler i navigeringen på sider.</translation>
 <translation id="2688196195245426394">Feil under registreringen av enheten hos tjeneren: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Internett-tilkobling</translation>
 <translation id="1788636309517085411">Bruk standard</translation>
@@ -3199,7 +3198,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="6983783921975806247">Registrert OID</translation>
 <translation id="394984172568887996">Importert fra Internet Explorer</translation>
 <translation id="5311260548612583999">Privat nøkkelfil (valgfritt):</translation>
-<translation id="2831904287943562142">Slå på visning av passordforespørsler i navigeringen på sider. Dette gjør det mulig å lagre passord på flere sider. Det kan imidlertid noen ganger føre til at forespørselen vises ved mislykkede påloggingsforsøk.</translation>
 <translation id="8256319818471787266">Fido</translation>
 <translation id="7568790562536448087">Oppdaterer</translation>
 <translation id="3910699493603749297">Khmer-tastatur</translation>

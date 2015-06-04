@@ -459,7 +459,6 @@
 <translation id="4950138595962845479">Alternativ...</translation>
 <translation id="4653235815000740718">Det uppstod ett problem när återställningsmedia skapades för operativsystemet. Det gick inte att hitta lagringsenheten som användes.</translation>
 <translation id="1407489512183974736">Centrera och beskär</translation>
-<translation id="1870557287802238488">Aktivera fråga om att spara lösenord vid navigering på sidan.</translation>
 <translation id="2688196195245426394">Det uppstod ett fel när enheten registrerades med servern: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Internetanslutning</translation>
 <translation id="1788636309517085411">Använd standardinställning</translation>
@@ -3212,7 +3211,6 @@ När du har skapat en kontrollerad användare kan du hantera inställningarna n�
 <translation id="6983783921975806247">Registrerat OID</translation>
 <translation id="394984172568887996">Importerat från IE</translation>
 <translation id="5311260548612583999">Privat nyckelfil (valfritt):</translation>
-<translation id="2831904287943562142">Aktivera fråga om att spara lösenord vid navigering på sidan. Detta gör att du kan spara lösenordet på fler sidor, men i vissa fall kan det också leda till att frågan visas vid misslyckade inloggningsförsök.</translation>
 <translation id="8256319818471787266">Ludde</translation>
 <translation id="7568790562536448087">Uppdaterar</translation>
 <translation id="3910699493603749297">Khmeriskt tangentbord</translation>

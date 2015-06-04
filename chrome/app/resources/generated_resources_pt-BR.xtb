@@ -448,7 +448,6 @@
 <translation id="4950138595962845479">Opções...</translation>
 <translation id="4653235815000740718">Ocorreu um problema ao criar a mídia de recuperação de sistema operacional. Não foi possível encontrar o dispositivo de armazenamento usado.</translation>
 <translation id="1407489512183974736">Cortar para centralizar</translation>
-<translation id="1870557287802238488">Ativar exibição de solicitação de senha para navegação na página.</translation>
 <translation id="2688196195245426394">Erro ao registrar o dispositivo no cliente: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Conexão com a Internet</translation>
 <translation id="1788636309517085411">Usar padrão</translation>
@@ -3199,7 +3198,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="6983783921975806247">OID registrado</translation>
 <translation id="394984172568887996">Importado do IE</translation>
 <translation id="5311260548612583999">Arq. de chave privada (opcional):</translation>
-<translation id="2831904287943562142">Ativar exibição da solicitação de senha para navegação na página. Isso permite salvar senhas em mais páginas, mas pode, por vezes, acionar a solicitação em tentativas mal-sucedidas de login.</translation>
 <translation id="8256319818471787266">Totó</translation>
 <translation id="7568790562536448087">Atualização</translation>
 <translation id="3910699493603749297">Teclado em khmer</translation>

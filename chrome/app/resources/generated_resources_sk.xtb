@@ -454,7 +454,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9"/></translation>
 <translation id="4950138595962845479">Možnosti...</translation>
 <translation id="4653235815000740718">Pri vytváraní obnovovacieho média OS sa vyskytol problém. Nepodarilo sa nájsť používané zariadenie s ukladacím priestorom.</translation>
 <translation id="1407489512183974736">Orezať na stred</translation>
-<translation id="1870557287802238488">Povolenie zobrazovania výzvy na zadanie hesla v navigačných poliach na stránke</translation>
 <translation id="2688196195245426394">Pri registrácii zariadenia na serveri <ph name="CLIENT_ERROR"/> sa vyskytla chyba.</translation>
 <translation id="1528372117901087631">Pripojenie k internetu</translation>
 <translation id="1788636309517085411">Použiť predvolenú pozíciu</translation>
@@ -3205,7 +3204,6 @@ Po vytvorení nového kontrolovaného používateľa môžete kedykoľvek spravo
 <translation id="6983783921975806247">Registrovaný identifikátor OID</translation>
 <translation id="394984172568887996">Importované z prehliadača IE</translation>
 <translation id="5311260548612583999">Súkromný kľúč (nepovinné):</translation>
-<translation id="2831904287943562142">Povolí zobrazovanie výzvy na zadanie hesla v navigačných poliach na stránke. Umožní to ukladať heslá na viacerých stránkach, avšak môže niekedy vyvolať výzvu pri neúspešných pokusoch o prihlásenie.</translation>
 <translation id="8256319818471787266">Rexo</translation>
 <translation id="7568790562536448087">Prebieha aktualizácia</translation>
 <translation id="3910699493603749297">Klávesnica pre khmérčinu</translation>

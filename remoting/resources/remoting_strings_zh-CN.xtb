@@ -254,8 +254,6 @@
 <translation id="6570205395680337606">重置该应用。所有未保存的工作都将会丢失。</translation>
 <translation id="6284412385303060032">在控制台逻辑屏幕运行的主机已关闭。这是为了切换到在用户特定会话中运行的主机，以便为 Curtain 模式提供支持。</translation>
 <translation id="3596628256176442606">此服务允许来自 Chrome 远程访问客户端的连接。</translation>
-<translation id="1978866438647250517">• 改进了用户界面。
-• 在后台运行时消耗的数据流量更少。</translation>
 <translation id="4741792197137897469">身份验证失败。请重新登录 Chrome。</translation>
 <translation id="4277463233460010382">此计算机已配置为允许一个或多个客户端无需输入 PIN 即可进行连接。</translation>
 <translation id="837021510621780684">来自此计算机</translation>

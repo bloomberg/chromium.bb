@@ -448,7 +448,6 @@
 <translation id="4950138595962845479">Opciones...</translation>
 <translation id="4653235815000740718">Se produjo un error durante la creación de la recuperación de datos del SO. No se pudo encontrar el dispositivo de almacenamiento utilizado.</translation>
 <translation id="1407489512183974736">Centrar imagen recortada</translation>
-<translation id="1870557287802238488">Habilitar la aparición de la solicitud de contraseña cuando hay desplazamiento en una página</translation>
 <translation id="2688196195245426394">Se produjo un error al registrar el dispositivo en el servidor: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Conexión a Internet</translation>
 <translation id="1788636309517085411">Usar predeterminado</translation>
@@ -883,7 +882,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="3872166400289564527">Almacenamiento externo</translation>
 <translation id="1442912890475371290">Se bloqueó un intento de <ph name="BEGIN_LINK"/>acceso a una página en <ph name="DOMAIN"/><ph name="END_LINK"/>.</translation>
 <translation id="5912378097832178659">&amp;Editar motores de búsqueda...</translation>
-<translation id="8013526960933383914">Habilita el modo de escritorio unificado</translation>
+<translation id="8013526960933383914">Habilitar el modo de escritorio unificado</translation>
 <translation id="6732586201820838268">No se pudo establecer una conexión con el teléfono. Asegúrate de que tienes un teléfono Android compatible, y que esté encendido y al alcance de tu mano. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="3749289110408117711">Nombre del archivo</translation>
 <translation id="3893630138897523026">ChromeVox (comentarios por voz)</translation>
@@ -1859,7 +1858,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="2509739495444557741">No hay complementos instalados.</translation>
 <translation id="7075513071073410194">PKCS N. º 1 MD5 con encriptación RSA</translation>
 <translation id="7767646430896201896">Opciones:</translation>
-<translation id="1114335938027186412">La computadora contiene un dispositivo de seguridad del módulo de plataforma segura (TPM) que se usa para implementar varias funciones clave de seguridad en el Sistema operativo Chrome. Para obtener más información, visita el Centro de ayuda de Chromebook: https://support.google.com/chromebook/?p=tpm.</translation>
+<translation id="1114335938027186412">La computadora contiene un dispositivo de seguridad del Módulo de plataforma segura (TPM) que se usa para implementar varias funciones clave de seguridad en el Sistema operativo Chrome. Para obtener más información, visita el Centro de ayuda de Chromebook: https://support.google.com/chromebook/?p=tpm.</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7124398136655728606">Con Esc se elimina todo el búfer de edición previa</translation>
 <translation id="3344786168130157628">Nombre de punto de acceso:</translation>
@@ -3199,7 +3198,6 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="6983783921975806247">OID registrado</translation>
 <translation id="394984172568887996">Importado de Internet Explorer</translation>
 <translation id="5311260548612583999">Archivo de clave privada (opcional):</translation>
-<translation id="2831904287943562142">Habilita la aparición de la solicitud de contraseña cuando hay desplazamiento en una página. Esta acción permite que se guarden las contraseñas en más páginas, pero también es posible que active la solicitud en intentos de acceso fallidos.</translation>
 <translation id="8256319818471787266">Bobby</translation>
 <translation id="7568790562536448087">Actualizando</translation>
 <translation id="3910699493603749297">Teclado khmer</translation>
@@ -4826,7 +4824,7 @@ Luego de crear un usuario supervisado, puedes administrar su configuración en c
 <translation id="6626108645084335023">Esperando el sondeo del DNS</translation>
 <translation id="1903219944620007795">Para la entrada de texto, selecciona un idioma y visualiza los métodos de entrada disponibles.</translation>
 <translation id="1850508293116537636">Girar &amp;a la derecha</translation>
-<translation id="7291266260406617455">Habilita la opción de exigir que se guarden las contraseñas.</translation>
+<translation id="7291266260406617455">Habilitar la opción de exigir que se guarden las contraseñas</translation>
 <translation id="7209475358897642338">¿Cuál es tu idioma?</translation>
 <translation id="140520891692800925"><ph name="PROFILE_DISPLAY_NAME"/> (supervisado)</translation>
 <translation id="9149866541089851383">Edición...</translation>
@@ -5842,7 +5840,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="5832830184511718549">Utiliza un subproceso secundario para realizar la composición de páginas web. Esto permite un desplazamiento sin problemas, incluso cuando el subproceso principal no responda.</translation>
 <translation id="7943385054491506837">Inglés (Estados Unidos; Colemak)</translation>
 <translation id="8203365863660628138">Confirmar instalación</translation>
-<translation id="1635033183663317347">Instalado por tu custodia</translation>
+<translation id="1635033183663317347">Instalado por tu tutor</translation>
 <translation id="5457858494714903578">No puedes instalar una extensión no confiable con el ID &quot;<ph name="IMPORT_ID"/>&quot;.</translation>
 <translation id="7025325401470358758">Siguiente panel</translation>
 <translation id="3397561538744706497">9 x 16</translation>

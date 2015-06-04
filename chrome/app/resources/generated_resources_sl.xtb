@@ -454,7 +454,6 @@
 <translation id="4950138595962845479">Možnosti ...</translation>
 <translation id="4653235815000740718">Pri ustvarjanju nosilca podatkov za obnovitev operacijskega sistema je prišlo do težave. Uporabljene naprave za shranjevanje ni bilo mogoče najti.</translation>
 <translation id="1407489512183974736">Na sredino in obrezano</translation>
-<translation id="1870557287802238488">Omogoči prikazovanje poziva za geslo v krmarjenjih na strani.</translation>
 <translation id="2688196195245426394">Napaka pri registraciji naprave v strežniku: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Internetna povezava</translation>
 <translation id="1788636309517085411">Uporabi privzeto</translation>
@@ -3218,7 +3217,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na www.chrome.com/manage kad
 <translation id="6983783921975806247">Registriran OID</translation>
 <translation id="394984172568887996">Uvoženo iz IE</translation>
 <translation id="5311260548612583999">Dat. z zaseb. klj. (neobv.)</translation>
-<translation id="2831904287943562142">Omogoči prikaz poziva za geslo v krmarjenjih na strani. Tako se lahko gesla shranjujejo na več straneh, vendar se včasih poziv sproži pri neuspešnih poskusih prijave.</translation>
 <translation id="8256319818471787266">Piki</translation>
 <translation id="7568790562536448087">Posodabljanje</translation>
 <translation id="3910699493603749297">Tipkovnica za kmerščino</translation>

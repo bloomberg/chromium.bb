@@ -447,7 +447,6 @@
 <translation id="4950138595962845479">Asetukset...</translation>
 <translation id="4653235815000740718">Virhe käyttöjärjestelmän palautustietovälineen luomisessa. Tallennuslaitetta ei löydy.</translation>
 <translation id="1407489512183974736">Rajaa keskelle</translation>
-<translation id="1870557287802238488">Ota salasanakehoitus käyttöön sivulla navigoinnissa.</translation>
 <translation id="2688196195245426394">Virhe rekisteröitäessä laitetta palvelimelle: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Internetyhteys</translation>
 <translation id="1788636309517085411">Käytä oletusta</translation>
@@ -3180,7 +3179,6 @@ Kun olet luonut uuden valvotun käyttäjän, voit hallinnoida hänen asetuksiaan
 <translation id="6983783921975806247">Rekisteröity OID</translation>
 <translation id="394984172568887996">Tuotu IE:stä</translation>
 <translation id="5311260548612583999">Yksityinen avaintiedosto (valinnainen):</translation>
-<translation id="2831904287943562142">Ota salasanakehote käyttöön sivulla navigoinnissa. Sen avulla salasanoja voi tallentaa useammille sivuille, mutta se saattaa joskus aiheuttaa ilmoituksen epäonnistuneesta kirjautumisyrityksestä.</translation>
 <translation id="8256319818471787266">Musti</translation>
 <translation id="7568790562536448087">Päivitetään</translation>
 <translation id="3910699493603749297">Khmerinkielinen näppäimistö</translation>

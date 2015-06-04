@@ -449,7 +449,6 @@
 <translation id="4950138595962845479">オプション...</translation>
 <translation id="4653235815000740718">OS リカバリ メディアの作成中に問題が発生しました。使用するストレージ デバイスが見つかりません。</translation>
 <translation id="1407489512183974736">中央トリミング</translation>
-<translation id="1870557287802238488">ページ内のメニューでパスワード メッセージの表示を指定できるようにする</translation>
 <translation id="2688196195245426394">デバイスをサーバーに登録するときにエラーが発生しました: <ph name="CLIENT_ERROR"/>。</translation>
 <translation id="1528372117901087631">インターネット接続</translation>
 <translation id="1788636309517085411">デフォルトを使用</translation>
@@ -3212,7 +3211,6 @@
 <translation id="6983783921975806247">登録されている OID</translation>
 <translation id="394984172568887996">IE ブックマーク</translation>
 <translation id="5311260548612583999">秘密鍵ファイル（省略可能）:</translation>
-<translation id="2831904287943562142">ページ内のメニューでパスワード メッセージの表示を指定できるようにします。この機能を使用するとより多くのページでパスワードを保存できますが、ログインがうまくいかなかったときにもメッセージが表示されることがあります。</translation>
 <translation id="8256319818471787266">スパーキー</translation>
 <translation id="7568790562536448087">更新中:</translation>
 <translation id="3910699493603749297">クメール語キーボード</translation>

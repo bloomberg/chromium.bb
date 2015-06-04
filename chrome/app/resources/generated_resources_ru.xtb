@@ -447,7 +447,6 @@
 <translation id="4950138595962845479">Параметры…</translation>
 <translation id="4653235815000740718">При создании образа для восстановления системы произошла ошибка. Используемый накопитель не найден.</translation>
 <translation id="1407489512183974736">Кадрировать и выровнять по центру</translation>
-<translation id="1870557287802238488">Показывать запросы на сохранение паролей во время навигации</translation>
 <translation id="2688196195245426394">Ошибка при регистрации устройства на сервере: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Подключение к Интернету</translation>
 <translation id="1788636309517085411">Использовать по умолчанию</translation>
@@ -3197,7 +3196,6 @@
 <translation id="6983783921975806247">Зарегистрированный OID</translation>
 <translation id="394984172568887996">Импортировано из IE</translation>
 <translation id="5311260548612583999">Файл закрытого ключа (необязательно):</translation>
-<translation id="2831904287943562142">Позволяет сохранять пароли для большего числа страниц. Однако учтите, что запросы на сохранение будут отображаться даже в том случае, если вы неверно введете имя пользователя или пароль.</translation>
 <translation id="8256319818471787266">Дружок</translation>
 <translation id="7568790562536448087">Обновление</translation>
 <translation id="3910699493603749297">Кхмерская раскладка</translation>
@@ -3347,7 +3345,7 @@
 <translation id="5931146425219109062">Просмотр и изменение ваших данных на посещаемых сайтах</translation>
 <translation id="3655670868607891010">Если эта проблема возникает часто, изучите <ph name="HELP_LINK"/>.</translation>
 <translation id="4504940961672722399">Активируйте это расширение, нажав на значок или с помощью комбинации клавиш <ph name="EXTENSION_SHORTCUT"/>.</translation>
-<translation id="2523966157338854187">Заданные страницы:</translation>
+<translation id="2523966157338854187">Заданные страницы</translation>
 <translation id="4176463684765177261">Отключено</translation>
 <translation id="2483350027598201151">МБ</translation>
 <translation id="154603084978752493">Добавить как поисковую &amp;систему...</translation>
@@ -3418,7 +3416,7 @@
 <translation id="4910673011243110136">Частные сети</translation>
 <translation id="2527167509808613699">при любом типе подключения</translation>
 <translation id="653019979737152879">Синхронизация файла &quot;<ph name="FILE_NAME"/>&quot;…</translation>
-<translation id="8662795692588422978">Люди</translation>
+<translation id="8662795692588422978">Пользователи</translation>
 <translation id="8072988827236813198">Закрепить вкладки</translation>
 <translation id="2673589024369449924">Создать ярлык этого профиля на рабочем столе</translation>
 <translation id="4330523403413375536">Включить экспериментальные инструменты разработчика. Используйте панель настроек инструментов разработчика для переключения между экспериментами.</translation>
@@ -4982,7 +4980,7 @@
 <translation id="3954582159466790312">Вк&amp;лючить звук</translation>
 <translation id="1110772031432362678">Сети не найдены.</translation>
 <translation id="6187344976531853059">Перенос окон на другой рабочий стол дает неожиданные эффекты.</translation>
-<translation id="1839913225882990152">Описание проблемы.</translation>
+<translation id="1839913225882990152">Описание проблемы</translation>
 <translation id="3936390757709632190">&amp;Открыть аудиозапись на новой вкладке</translation>
 <translation id="8559748832541950395">Вы можете в любое время отключить запись Истории голосового управления или <ph name="BEGIN_LINK"/>изменить<ph name="END_LINK"/> сохраненные данные. Когда эта функция включена, мы можем получать данные со всех устройств, на которых вы вошли в аккаунт Google.</translation>
 <translation id="143027896309062157">Просмотр и изменение данных на вашем компьютере и посещаемых сайтах</translation>
@@ -5453,7 +5451,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8941882480823041320">К предыдущему слову</translation>
 <translation id="2489435327075806094">Скорость указателя:</translation>
 <translation id="2574102660421949343">Файлы cookie с сайта <ph name="DOMAIN"/> разрешены.</translation>
-<translation id="2773948261276885771">добавить</translation>
+<translation id="2773948261276885771">Довавить</translation>
 <translation id="3688526734140524629">Выбрать другую версию</translation>
 <translation id="4959447747655704388">Если вы готовы подвергнуть риску ваши личные данные, вы можете <ph name="BEGIN_LINK"/>перейти на зараженный сайт<ph name="END_LINK"/>.</translation>
 <translation id="7030084719913890980">Этот сайт пострадал от злоумышленников и может установить на ваш компьютер вредоносное ПО, которое крадет или удаляет личную информацию (например, фотографии, пароли, сообщения и реквизиты банковских карт).</translation>
@@ -5479,7 +5477,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4746971725921104503">Похоже, здесь уже есть пользователь с таким именем. <ph name="LINK_START"/>Импортировать данные пользователя <ph name="USER_DISPLAY_NAME"/> на это устройство<ph name="LINK_END"/>?</translation>
 <translation id="8142699993796781067">Частные сети</translation>
 <translation id="3517839692979918726"><ph name="APP_NAME"/> хочет предоставить доступ к вашему экрану. Выберите окно, которое вы хотите показать.</translation>
-<translation id="17513872634828108">Открыть вкладки</translation>
+<translation id="17513872634828108">Открытые вкладки</translation>
 <translation id="1374468813861204354">подсказки</translation>
 <translation id="5906065664303289925">Аппаратный адрес:</translation>
 <translation id="2498436043474441766">Добавление принтеров</translation>

@@ -448,7 +448,6 @@
 <translation id="4950138595962845479">Opcje</translation>
 <translation id="4653235815000740718">Wystąpił problem podczas tworzenia nośnika odzyskiwania systemu operacyjnego. Nie można znaleźć użytego urządzenia pamięci masowej.</translation>
 <translation id="1407489512183974736">Wyśrodkuj i przytnij</translation>
-<translation id="1870557287802238488">Włącz wyświetlanie prośby o hasło w nawigacji na stronie.</translation>
 <translation id="2688196195245426394">Podczas rejestrowania urządzenia na serwerze wystąpił błąd: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Połączenie internetowe</translation>
 <translation id="1788636309517085411">Użyj wartości domyślnej</translation>
@@ -3192,7 +3191,6 @@ Po utworzeniu nowego nadzorowanego użytkownika w każdej chwili możesz zarzą
 <translation id="6983783921975806247">Zarejestrowany identyfikator OID</translation>
 <translation id="394984172568887996">Importowane z IE</translation>
 <translation id="5311260548612583999">Plik kluczy (opcjonalnie):</translation>
-<translation id="2831904287943562142">Włącz wyświetlanie prośby o hasło w nawigacji na stronie. Pozwala to zapisywać hasła na wielu stronach, ale prośba może się czasem wyświetlić w przypadku nieudanej próby logowania.</translation>
 <translation id="8256319818471787266">Tofik</translation>
 <translation id="7568790562536448087">Aktualizowanie</translation>
 <translation id="3910699493603749297">Klawiatura khmerska</translation>

@@ -455,7 +455,6 @@
 <translation id="4950138595962845479">Opcijas...</translation>
 <translation id="4653235815000740718">Veidojot OS atkopšanas datu nesēju, radās problēma. Nevarēja atrast izmantoto atmiņas ierīci.</translation>
 <translation id="1407489512183974736">Apgriezt un centrēt</translation>
-<translation id="1870557287802238488">Iespējot paroles uzvednes rādīšanu, pārvietojoties lapās.</translation>
 <translation id="2688196195245426394">Reģistrējot ierīci serverī, radās kļūda: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Interneta savienojums</translation>
 <translation id="1788636309517085411">Izmantot noklusējumu</translation>
@@ -3207,7 +3206,6 @@ Kad esat izveidojis uzraudzītu lietotāju, varat pārvaldīt tā iestatījumus 
 <translation id="6983783921975806247">Reģistrētais OID</translation>
 <translation id="394984172568887996">Importēts no IE</translation>
 <translation id="5311260548612583999">Atslēgas fails (neob.):</translation>
-<translation id="2831904287943562142">Tiek iespējota paroles uzvednes rādīšana, pārvietojoties lapā. Tādējādi paroles var saglabāt lielākā skaitā lapu, taču dažreiz uzvedne var tikt aktivizēta nesekmīgiem pieteikšanās mēģinājumiem.</translation>
 <translation id="8256319818471787266">Džeris</translation>
 <translation id="7568790562536448087">Notiek atjaunināšana</translation>
 <translation id="3910699493603749297">Khmeru tastatūra</translation>

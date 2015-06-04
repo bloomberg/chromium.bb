@@ -21,9 +21,6 @@
 <translation id="5578795271662203820">Cerca aquesta imatge a <ph name="SEARCH_ENGINE"/></translation>
 <translation id="7764225426217299476">Afegeix una adreça</translation>
 <translation id="4816465935029283692">Tipus de dades</translation>
-<translation id="5098185943924922330">Ajudeu-nos a prioritzar les funcions i les millores en les quals hem de treballar enviant-nos informació sobre els fitxers, les aplicacions i els serveis que s'executaven en el moment de l'error.
-
-        Les estadístiques d'ús inclouen dades com ara les preferències, els clics en botons i l'ús de la memòria. No inclouen els URL de les pàgines web ni cap informació personal. Els informes d'error contenen informació del sistema en el moment de l'error i poden incloure els URL de pàgines web o informació personal en funció de l'activitat existent en el moment de l'error.</translation>
 <translation id="4042870126885713738">Mostra suggeriments quan no es resol una adreça web o quan no es pot establir una connexió</translation>
 <translation id="8237438615979997762">Les dades emmagatzemades en aquest dispositiu i les que s'emmagatzemin al compte de Google es conservaran en totes dues ubicacions. Tanmateix, les dades noves o els canvis que hi feu no se sincronitzaran entre si.</translation>
 <translation id="6831043979455480757">Tradueix</translation>
@@ -184,9 +181,9 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="8481940801237642152">La vostra connexió amb aquest lloc és privada, però és possible que algun usuari de la xarxa pugui canviar l'aspecte de la pàgina.</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="4807098396393229769">Titular de la targeta</translation>
-<translation id="6036158371062192100">Si activeu No segueixis, s'inclourà una sol·licitud al trànsit de navegació. Que s'apliqui o no dependrà de si algun lloc web respon a la sol·licitud i de com s'interpreta la sol·licitud.
+<translation id="6036158371062192100">Si activeu No segueixis, s'inclourà una sol·licitud al trànsit de navegació. Que s'apliqui o no dependrà de si algun lloc web respon a la sol·licitud i de com s'interpreta.
 
-Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud i us mostrin anuncis que no es basen en altres llocs web que heu visitat. Molts llocs web continuaran recopilant i utilitzant les vostres dades de navegació, per exemple, per millorar la seguretat, per proporcionar contingut, anuncis i recomanacions als seus llocs web, i per generar estadístiques d'informes.</translation>
+Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud mostrant-vos anuncis que no basats en altres llocs web que heu visitat. Molts llocs web continuaran recopilant i utilitzant les vostres dades de navegació, per exemple, per millorar la seguretat, per proporcionar contingut, anuncis i recomanacions als seus llocs web, i per generar estadístiques.</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="656628257199996201">Tradueix sempre: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="2387895666653383613">Canvia la mida del text</translation>
@@ -209,7 +206,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="3328801116991980348">Informació del lloc</translation>
 <translation id="7987073022710626672">Condicions del servei de Chrome</translation>
 <translation id="588258955323874662">Pantalla completa</translation>
-<translation id="5668404140385795438">Substitueix la sol·licitud d'un lloc web per evitar que s'apropi</translation>
+<translation id="5668404140385795438">Ignora la sol·licitud d'un lloc web per evitar que s'apropi la imatge</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="7493994139787901920"><ph name="VERSION"/> (última actualització: <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="7711895876052978264">Aquest lloc es mostra en pantalla completa
@@ -269,7 +266,7 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="4698413471314543145">Falta una funcionalitat crítica necessària per executar Chrome; la vostra instal·lació de Chrome no està completa o bé no és compatible amb aquesta versió d'Android.</translation>
 <translation id="1943432128510653496">Desa les contrasenyes</translation>
 <translation id="4113030288477039509">Gestionat per l'administrador</translation>
-<translation id="9100610230175265781">Es necessita una frase de contrasenya.</translation>
+<translation id="9100610230175265781">S'ha d'introduir una frase de contrasenya </translation>
 <translation id="1829244130665387512">Cerca a la pàgina</translation>
 <translation id="4148957013307229264">S'està instal·lant...</translation>
 <translation id="7096034533295549981">Carregant vídeo</translation>
@@ -365,7 +362,7 @@ Premeu el botó Enrere per sortir-ne.</translation>
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="4943872375798546930">No hi ha resultats</translation>
 <translation id="2139186145475833000">Afegeix a pantalla d'inici</translation>
-<translation id="2888126860611144412">Quan a Chrome</translation>
+<translation id="2888126860611144412">Quant a Chrome </translation>
 <translation id="7876243839304621966">Suprimeix-ho tot</translation>
 <translation id="5138299137310274655">La pàgina està en <ph name="SOURCE_LANGUAGE"/>. Voleu traduir-la i que es mostri en <ph name="TARGET_LANGUAGE"/>?</translation>
 <translation id="2913331724188855103">Permet que els llocs desin i llegeixin les dades de les galetes (recomanat)</translation>

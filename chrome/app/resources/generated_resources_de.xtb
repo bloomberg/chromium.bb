@@ -455,7 +455,6 @@
 <translation id="4950138595962845479">Optionen...</translation>
 <translation id="4653235815000740718">Beim Erstellen des Datenträgers für die OS-Wiederherstellung ist ein Problem aufgetreten. Das verwendete Speichergerät konnte nicht gefunden werden.</translation>
 <translation id="1407489512183974736">Zugeschnitten zentrieren</translation>
-<translation id="1870557287802238488">Einblenden der Passwort-Eingabeaufforderung in der seiteninternen Navigation aktivieren</translation>
 <translation id="2688196195245426394">Fehler bei der Registrierung des Geräts auf dem Server: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="1528372117901087631">Internetverbindung</translation>
 <translation id="1788636309517085411">Standardeinstellung verwenden</translation>
@@ -3184,7 +3183,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="6983783921975806247">Registrierte OID</translation>
 <translation id="394984172568887996">Aus Internet Explorer importiert</translation>
 <translation id="5311260548612583999">Private Schlüsseldatei (optional):</translation>
-<translation id="2831904287943562142">Aktiviert das Einblenden der Passwort-Eingabeaufforderung in der seiteninternen Navigation. So können Passwörter auf mehr Seiten gespeichert werden. Manchmal kann die Eingabeaufforderung jedoch bei Anmeldefehlern eingeblendet werden.</translation>
 <translation id="8256319818471787266">Bello</translation>
 <translation id="7568790562536448087">Aktualisierung läuft</translation>
 <translation id="3910699493603749297">Khmer-Tastatur</translation>
