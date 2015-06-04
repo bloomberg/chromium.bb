@@ -10,7 +10,7 @@
  * @type {string}
  * @const
  */
-var AUDIO_PLAYER_ICON = 'audio_player/icons/audio-player-64.png';
+var AUDIO_PLAYER_ICON = 'icons/audio-player-64.png';
 
 /**
  * Configuration of the audio player panel.
@@ -158,7 +158,7 @@ function open(playlist, reopen) {
                          fulfill.bind(null, null));
     });
   }).then(function() {
-    audioPlayer.setIcon('icons/audio-player-64.png');
+    audioPlayer.setIcon(AUDIO_PLAYER_ICON);
     audioPlayer.rawAppWindow.focus();
   }).catch(function(error) {
     console.error('Launch failed' + error.stack || error);
