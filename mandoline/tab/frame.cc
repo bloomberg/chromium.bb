@@ -43,11 +43,13 @@ Frame::Frame(FrameTree* tree,
 }
 
 Frame::~Frame() {
-  view_->RemoveObserver(this);
+  if (view_)
+    view_->RemoveObserver(this);
   STLDeleteElements(&children_);
   if (parent_)
     parent_->Remove(this);
-  view_->ClearLocalProperty(kFrame);
+  if (view_)
+    view_->ClearLocalProperty(kFrame);
   if (view_ownership_ == ViewOwnership::OWNS_VIEW)
     view_->Destroy();
 }
@@ -78,15 +80,20 @@ void Frame::Remove(Frame* node) {
 void Frame::OnViewDestroying(mojo::View* view) {
   if (parent_)
     parent_->Remove(this);
-  // Assume the view associated with the root is never deleted out from under
-  // us.
-  // TODO(sky): this is likely bogus. Change browser to create a child for
-  // each FrameTree.
-  DCHECK_NE(this, tree_->root());
 
   // Reset |view_ownership_| so we don't attempt to delete |view_| in the
   // destructor.
   view_ownership_ = ViewOwnership::DOESNT_OWN_VIEW;
+
+  // Assume the view associated with the root is never deleted out from under
+  // us.
+  // TODO(sky): Change browser to create a child for each FrameTree.
+  if (tree_->root() == this) {
+    view_->RemoveObserver(this);
+    view_ = nullptr;
+    return;
+  }
+
   delete this;
 }
 

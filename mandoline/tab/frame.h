@@ -52,7 +52,7 @@ class Frame : public mojo::ViewObserver {
   void OnViewDestroying(mojo::View* view) override;
 
   FrameTree* const tree_;
-  mojo::View* const view_;
+  mojo::View* view_;
   Frame* parent_;
   ViewOwnership view_ownership_;
   mojo::ServiceProviderImpl exposed_services_;
