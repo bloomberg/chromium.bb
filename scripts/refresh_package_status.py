@@ -2,14 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Refresh online Portage package status spreadsheet."""
+"""Refresh online Portage package status spreadsheet.
+
+This must be run inside the chroot.
+
+This script encapsulates the steps involved in updating the online Portage
+package status spreadsheet.
+
+It was created for use by a buildbot, but can be run manually.
+"""
 
 from __future__ import print_function
 
-import optparse
 import os
 
 from chromite.cbuildbot import constants
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import operation
 from chromite.lib import osutils
@@ -21,8 +29,8 @@ oper.verbose = True  # Without verbose Info messages don't show up.
 TMP_ROOT = '/tmp'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 # TODO(mtennant): Remove these two and replace with variables in gdata_lib.
-GDATA_CRED_FILE = '.gdata_cred.txt'
-GDATA_TOKEN_FILE = '.gdata_token'
+GDATA_CRED_FILE = os.path.expanduser('~/.gdata_cred.txt')
+GDATA_TOKEN_FILE = os.path.expanduser('~/.gdata_token')
 GENTOO_DIR = 'gentoo-portage'
 PRTG_GIT_URL = '%s/chromiumos/overlays/portage.git' % constants.EXTERNAL_GOB_URL
 FUNTOO_GIT_URL = 'git://github.com/funtoo/portage.git'
@@ -132,44 +140,19 @@ def RefreshPackageStatus(board, csv_root, test,
 
 def main(argv):
   """Main function."""
-  usage = 'Usage: %prog --board=<board>:... [options]'
-  epilog = ('\n'
-            'This must be run inside the chroot.\n'
-            'This script encapsulates the steps involved in updating the '
-            'online Portage package status spreadsheet.\n'
-            'It was created for use by a buildbot, but can be run manually.\n'
-            '\n')
-
-  class MyOptParser(optparse.OptionParser):
-    """Override default epilog formatter, which strips newlines."""
-
-    def format_epilog(self, formatter):
-      return self.epilog
-
-  parser = MyOptParser(usage=usage, epilog=epilog)
-  parser.add_option('--token-file', dest='token_file', type='string',
-                    action='store',
-                    default='%s/%s' % (os.environ['HOME'], GDATA_TOKEN_FILE),
-                    help='Path to gdata auth token file [default: "%default"]')
-  parser.add_option('--board', dest='board', type='string', action='store',
-                    default=None, help='Target board(s), colon-separated')
-  parser.add_option('--cred-file', dest='cred_file', type='string',
-                    action='store',
-                    default='%s/%s' % (os.environ['HOME'], GDATA_CRED_FILE),
-                    help='Path to gdata credentials file [default: "%default"]')
-  parser.add_option('--test-spreadsheet', dest='test',
-                    action='store_true', default=False,
-                    help='Upload changes to test spreadsheet instead')
-
-  (options, args) = parser.parse_args(argv)
-
-  if args:
-    parser.print_help()
-    oper.Die('No extra arguments allowed.')
-
-  if not options.board:
-    parser.print_help()
-    oper.Die('Board is required.')
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('--token-file', type='path', default=GDATA_TOKEN_FILE,
+                      help='Path to gdata auth token file '
+                           '[default: %(default)s]')
+  parser.add_argument('--board', type=str, required=True,
+                      help='Target board(s), colon-separated')
+  parser.add_argument('--cred-file', type='path', default=GDATA_CRED_FILE,
+                      help='Path to gdata credentials file '
+                           '[default: %(default)s]')
+  parser.add_argument('--test-spreadsheet', dest='test',
+                      action='store_true', default=False,
+                      help='Upload changes to test spreadsheet instead')
+  options = parser.parse_args(argv)
 
   csv_root = PrepareCSVRoot()
   PrepareBoards(options.board)
