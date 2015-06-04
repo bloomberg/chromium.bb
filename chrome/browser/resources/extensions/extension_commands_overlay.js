@@ -34,8 +34,9 @@ cr.define('extensions', function() {
       this.extensionCommandList_ = new ExtensionCommandList(
           /**@type {HTMLDivElement} */($('extension-command-list')));
 
-      $('extension-commands-dismiss').addEventListener('click',
-          this.handleDismiss_.bind(this));
+      $('extension-commands-dismiss').addEventListener('click', function() {
+        cr.dispatchSimpleEvent(overlay, 'cancelOverlay');
+      });
 
       // The ExtensionList will update us with its data, so we don't need to
       // handle that here.

@@ -41,19 +41,19 @@ cr.define('cr.ui', function() {
 
     doc.addEventListener('focus', function(event) {
       // Update visibility only when focus is actually changed.
-      self.updateVisiblity_();
+      self.updateVisibility();
     }, true);
 
     doc.addEventListener('focusout', function(event) {
       window.setTimeout(function() {
         if (!doc.hasFocus()) {
           self.focusByKeyboard_ = true;
-          self.updateVisiblity_();
+          self.updateVisibility();
         }
       }, 0);
     });
 
-    this.updateVisiblity_();
+    this.updateVisibility();
   }
 
   FocusOutlineManager.prototype = {
@@ -64,8 +64,7 @@ cr.define('cr.ui', function() {
      */
     focusByKeyboard_: true,
 
-    /** @private */
-    updateVisiblity_: function() {
+    updateVisibility: function() {
       this.visible = this.focusByKeyboard_;
     },
 

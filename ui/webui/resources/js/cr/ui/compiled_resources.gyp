@@ -13,5 +13,18 @@
       },
       'includes': ['../../../../../../third_party/closure_compiler/compile_js.gypi'],
     },
+    {
+      'target_name': 'overlay',
+      'variables': {
+        'depends': [
+          '../../cr.js',
+          '../../util.js',
+        ],
+        'externs': [
+          '../../../../../../third_party/closure_compiler/externs/chrome_send_externs.js',
+        ],
+      },
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
   ],
 }

@@ -292,8 +292,10 @@ cr.define('extensions', function() {
       cr.ui.overlay.globalInitialization();
       overlay.addEventListener('cancelOverlay', this.handleDismiss_.bind(this));
 
-      $('extension-error-overlay-dismiss').addEventListener(
-          'click', this.handleDismiss_.bind(this));
+      $('extension-error-overlay-dismiss').addEventListener('click',
+          function() {
+        cr.dispatchSimpleEvent(overlay, 'cancelOverlay');
+      });
 
       /**
        * The element of the full overlay.

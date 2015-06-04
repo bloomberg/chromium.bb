@@ -23,8 +23,9 @@ cr.define('extensions', function() {
       cr.ui.overlay.globalInitialization();
       overlay.addEventListener('cancelOverlay', this.handleDismiss_.bind(this));
 
-      $('pack-extension-dismiss').addEventListener('click',
-          this.handleDismiss_.bind(this));
+      $('pack-extension-dismiss').addEventListener('click', function() {
+        cr.dispatchSimpleEvent(overlay, 'cancelOverlay');
+      });
       $('pack-extension-commit').addEventListener('click',
           this.handleCommit_.bind(this));
       $('browse-extension-dir').addEventListener('click',

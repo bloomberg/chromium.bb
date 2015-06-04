@@ -386,9 +386,19 @@ cr.define('extensions', function() {
     }
 
     if (node) {
-      var lastFocused = document.activeElement;
+      var lastFocused;
+
+      var focusOutlineManager = cr.ui.FocusOutlineManager.forDocument(document);
+      if (focusOutlineManager.visible)
+        lastFocused = document.activeElement;
+
       $('overlay').addEventListener('cancelOverlay', function f() {
-        lastFocused.focus();
+        console.log('cancelOverlay');
+        console.log('lastFocused', lastFocused);
+        console.log('focusOutlineManager.visible', focusOutlineManager.visible);
+        if (lastFocused && focusOutlineManager.visible)
+          lastFocused.focus();
+
         $('overlay').removeEventListener('cancelOverlay', f);
       });
       node.classList.add('showing');

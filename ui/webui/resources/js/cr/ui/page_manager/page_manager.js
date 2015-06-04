@@ -476,9 +476,11 @@ cr.define('cr.ui.pageManager', function() {
       if (!overlay || !overlay.canShowPage())
         return false;
 
+      var focusOutlineManager = cr.ui.FocusOutlineManager.forDocument(document);
+
       // Save the currently focused element in the page for restoration later.
       var currentPage = this.getTopmostVisiblePage();
-      if (currentPage)
+      if (currentPage && focusOutlineManager.visible)
         currentPage.lastFocusedElement = document.activeElement;
 
       if ((!rootPage || !rootPage.sticky) &&
@@ -495,14 +497,11 @@ cr.define('cr.ui.pageManager', function() {
         overlay.didChangeHash();
       }
 
-      // Change focus to the overlay if any other control was focused by
-      // keyboard before. Otherwise, no one should have focus.
-      if (document.activeElement != document.body) {
-        if (cr.ui.FocusOutlineManager.forDocument(document).visible)
-          overlay.focus();
-        if (!overlay.pageDiv.contains(document.activeElement))
-          document.activeElement.blur();
-      }
+      if (focusOutlineManager.visible)
+        overlay.focus();
+
+      if (!overlay.pageDiv.contains(document.activeElement))
+        document.activeElement.blur();
 
       if ($('search-field') && $('search-field').value == '') {
         var section = overlay.associatedSection;
@@ -627,8 +626,14 @@ cr.define('cr.ui.pageManager', function() {
      */
     restoreLastFocusedElement_: function() {
       var currentPage = this.getTopmostVisiblePage();
-      if (currentPage.lastFocusedElement)
+
+      if (!currentPage.lastFocusedElement)
+        return;
+
+      if (cr.ui.FocusOutlineManager.forDocument(document).visible)
         currentPage.lastFocusedElement.focus();
+
+      currentPage.lastFocusedElement = null;
     },
 
     /**
