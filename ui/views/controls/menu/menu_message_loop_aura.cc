@@ -29,7 +29,7 @@
 #include "ui/views/controls/menu/menu_message_pump_dispatcher_win.h"
 #include "ui/views/win/hwnd_util.h"
 #else
-#include "ui/views/controls/menu/menu_event_dispatcher_linux.h"
+#include "ui/views/controls/menu/menu_event_dispatcher.h"
 #endif
 
 using aura::client::ScreenPositionClient;

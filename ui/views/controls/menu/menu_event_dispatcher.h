@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_VIEWS_CONTROLS_MENU_MENU_EVENT_DISPATCHER_H_
+#define UI_VIEWS_CONTROLS_MENU_MENU_EVENT_DISPATCHER_H_
+
 #include "base/macros.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 
@@ -30,3 +33,5 @@ class MenuEventDispatcher : public ui::PlatformEventDispatcher {
 
 }  // namespace internal
 }  // namespace views
+
+#endif  // UI_VIEWS_CONTROLS_MENU_MENU_EVENT_DISPATCHER_H_
