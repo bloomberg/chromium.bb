@@ -349,9 +349,8 @@ void CmaRenderer::OnVideoPipelineInitializeDone(
 
 void CmaRenderer::OnEosReached(bool is_audio) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CMALOG(kLogControl) << __FUNCTION__;
   if (state_ != kPlaying) {
-    LOG(WARNING) << "Ignoring a late EOS event";
+    LOG(WARNING) << __FUNCTION__ << " Ignoring a late EOS event";
     return;
   }
 
@@ -365,6 +364,9 @@ void CmaRenderer::OnEosReached(bool is_audio) {
 
   bool audio_finished = !has_audio_ || received_audio_eos_;
   bool video_finished = !has_video_ || received_video_eos_;
+  CMALOG(kLogControl) << __FUNCTION__
+                      << " audio_finished=" << audio_finished
+                      << " video_finished=" << video_finished;
   if (audio_finished && video_finished)
     ended_cb_.Run();
 }
