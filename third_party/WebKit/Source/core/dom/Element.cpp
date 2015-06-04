@@ -74,6 +74,7 @@
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/shadow/ShadowRootInit.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -1806,6 +1807,21 @@ CustomElementDefinition* Element::customElementDefinition() const
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ScriptState* scriptState, ExceptionState& exceptionState)
 {
     OriginsUsingFeatures::count(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
+    return createShadowRoot(exceptionState);
+}
+
+PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ScriptState* scriptState, ShadowRootInit& shadowRootInitDict, ExceptionState& exceptionState)
+{
+    ASSERT(RuntimeEnabledFeatures::createShadowRootWithParameterEnabled());
+    UseCounter::count(document(), UseCounter::ElementCreateShadowRootWithParameter);
+
+    OriginsUsingFeatures::count(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
+    // TODO(kochi): Add support for closed shadow root. crbug.com/459136
+    if (shadowRootInitDict.hasMode() && shadowRootInitDict.mode() == "closed") {
+        exceptionState.throwDOMException(NotSupportedError, "Closed shadow root is not implemented yet.");
+        return nullptr;
+    }
+
     return createShadowRoot(exceptionState);
 }
 

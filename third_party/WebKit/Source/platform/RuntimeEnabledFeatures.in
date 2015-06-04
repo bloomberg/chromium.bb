@@ -34,6 +34,7 @@ CompositorWorker status=experimental
 // Unified Chrome Compositor and Blink Animations engine (Project Heaviside). crbug.com/394772
 CompositorAnimationTimelines
 ContextMenu status=experimental
+CreateShadowRootWithParameter status=experimental
 CredentialManager status=test
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental

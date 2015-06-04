@@ -63,6 +63,7 @@ class PseudoElement;
 class ScrollState;
 class ScrollToOptions;
 class ShadowRoot;
+class ShadowRootInit;
 class StylePropertySet;
 
 enum SpellcheckAttributeState {
@@ -323,6 +324,7 @@ public:
     ElementShadow* shadow() const;
     ElementShadow& ensureShadow();
     PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRoot(ScriptState*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRoot(ScriptState*, ShadowRootInit&, ExceptionState&);
     PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRoot(ExceptionState&);
     ShadowRoot* shadowRoot() const;
     ShadowRoot* youngestShadowRoot() const;

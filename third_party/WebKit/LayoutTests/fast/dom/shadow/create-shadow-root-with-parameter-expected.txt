@@ -1,0 +1,12 @@
+Create open shadow root.
+PASS [object ShadowRoot] is non-null.
+Create closed shadow root.
+PASS host2.createShadowRoot({mode: 'closed'}) threw exception NotSupportedError: Failed to execute 'createShadowRoot' on 'Element': Closed shadow root is not implemented yet..
+Create shadow root with empty parameter.
+PASS [object ShadowRoot] is non-null.
+Create shadow root whose mode is neither open nor closed.
+PASS host4.createShadowRoot({mode: 'illegal'}) threw exception TypeError: Failed to execute 'createShadowRoot' on 'Element': The provided value 'illegal' is not a valid enum value of type ShadowRootMode..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
