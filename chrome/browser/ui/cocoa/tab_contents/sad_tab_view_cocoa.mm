@@ -199,19 +199,25 @@ static const CGFloat kMaxTopMargin = 100;
 
 @implementation SadTabView
 
++ (NSColor*)backgroundColor {
+  return [NSColor colorWithCalibratedWhite:245.0f/255.0f alpha:1.0];
+}
+
 - (instancetype)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
     [self setWantsLayer:YES];
 
-    NSColor* backgroundColor = [NSColor colorWithCalibratedWhite:245.0f/255.0f
-                                                           alpha:1.0];
-    [[self layer] setBackgroundColor:[backgroundColor cr_CGColor]];
-
-    container_.reset(
-        [[SadTabContainerView alloc] initWithBackgroundColor:backgroundColor]);
+    container_.reset([[SadTabContainerView alloc]
+        initWithBackgroundColor:[SadTabView backgroundColor]]);
     [self addSubview:container_];
   }
   return self;
+}
+
+- (CALayer*)makeBackingLayer {
+  CALayer* layer = [super makeBackingLayer];
+  [layer setBackgroundColor:[[SadTabView backgroundColor] cr_CGColor]];
+  return layer;
 }
 
 - (BOOL)isFlipped {
