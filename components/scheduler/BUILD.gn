@@ -60,14 +60,3 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
-
-# GYP version: components/scheduler.gypi:scheduler_test_support
-static_library("test_support") {
-  sources = rebase_path(scheduler_gypi_values.scheduler_test_support_sources,
-                        ".",
-                        "//components/scheduler")
-
-  deps = [
-    "//base",
-  ]
-}
