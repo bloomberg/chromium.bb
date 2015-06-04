@@ -31,7 +31,7 @@ class PlatformViewportWin : public PlatformViewport,
       : delegate_(delegate) {
   }
 
-  ~PlatformViewportWin() {
+  ~PlatformViewportWin() override {
     // Destroy the platform-window while |this| is still alive.
     platform_window_.reset();
   }
