@@ -28,8 +28,7 @@ namespace chromecast {
 class ConnectivityCheckerImpl
     : public ConnectivityChecker,
       public net::URLRequest::Delegate,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver,
-      public net::NetworkChangeNotifier::IPAddressObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   explicit ConnectivityCheckerImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
@@ -52,12 +51,9 @@ class ConnectivityCheckerImpl
   // Initializes ConnectivityChecker
   void Initialize();
 
-  // NetworkChangeNotifier::ConnectionTypeObserver implementation:
-  void OnConnectionTypeChanged(
+  // net::NetworkChangeNotifier::NetworkChangeObserver implementation:
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
-
-  // net::NetworkChangeNotifier::IPAddressObserver implementation:
-  void OnIPAddressChanged() override;
 
   // Cancels current connectivity checking in progress.
   void Cancel();

@@ -58,16 +58,14 @@ void ConnectivityCheckerImpl::Initialize() {
   builder.DisableHttpCache();
   url_request_context_.reset(builder.Build());
 
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&ConnectivityCheckerImpl::Check, this));
 }
 
 ConnectivityCheckerImpl::~ConnectivityCheckerImpl() {
   DCHECK(task_runner_.get());
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   task_runner_->DeleteSoon(FROM_HERE, url_request_.release());
   task_runner_->DeleteSoon(FROM_HERE, url_request_context_.release());
 }
@@ -110,20 +108,16 @@ void ConnectivityCheckerImpl::Check() {
   url_request_->Start();
 }
 
-void ConnectivityCheckerImpl::OnConnectionTypeChanged(
+void ConnectivityCheckerImpl::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  VLOG(2) << "OnConnectionTypeChanged " << type;
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+  VLOG(2) << "OnNetworkChanged " << type;
+  Cancel();
+
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE) {
     SetConnected(false);
+    return;
+  }
 
-  Cancel();
-  Check();
-}
-
-void ConnectivityCheckerImpl::OnIPAddressChanged() {
-  VLOG(2) << "OnIPAddressChanged";
-
-  Cancel();
   Check();
 }
 
