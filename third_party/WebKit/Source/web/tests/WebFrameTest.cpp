@@ -242,14 +242,14 @@ protected:
     std::string m_chromeURL;
 };
 
-enum ParametrizedWebFrameTestConfig {
+enum ParameterizedWebFrameTestConfig {
     Default,
     RootLayerScrolls
 };
 
-class ParametrizedWebFrameTest
+class ParameterizedWebFrameTest
     : public WebFrameTest
-    , public ::testing::WithParamInterface<ParametrizedWebFrameTestConfig>
+    , public ::testing::WithParamInterface<ParameterizedWebFrameTestConfig>
     , public FrameTestHelpers::SettingOverrider {
 public:
 
@@ -266,7 +266,7 @@ public:
 };
 
 // Friendly string for gtest failure messages.
-void PrintTo(ParametrizedWebFrameTestConfig config, ::std::ostream* os)
+void PrintTo(ParameterizedWebFrameTestConfig config, ::std::ostream* os)
 {
     switch (config) {
     case Default:
@@ -278,11 +278,11 @@ void PrintTo(ParametrizedWebFrameTestConfig config, ::std::ostream* os)
     }
 }
 
-INSTANTIATE_TEST_CASE_P(All, ParametrizedWebFrameTest, ::testing::Values(
-    ParametrizedWebFrameTestConfig::Default,
-    ParametrizedWebFrameTestConfig::RootLayerScrolls));
+INSTANTIATE_TEST_CASE_P(All, ParameterizedWebFrameTest, ::testing::Values(
+    ParameterizedWebFrameTestConfig::Default,
+    ParameterizedWebFrameTestConfig::RootLayerScrolls));
 
-TEST_P(ParametrizedWebFrameTest, ContentText)
+TEST_P(ParameterizedWebFrameTest, ContentText)
 {
     registerMockedHttpURLLoad("iframes_test.html");
     registerMockedHttpURLLoad("visible_iframe.html");
@@ -301,7 +301,7 @@ TEST_P(ParametrizedWebFrameTest, ContentText)
     EXPECT_EQ(std::string::npos, content.find("iframe with zero size"));
 }
 
-TEST_P(ParametrizedWebFrameTest, FrameForEnteredContext)
+TEST_P(ParameterizedWebFrameTest, FrameForEnteredContext)
 {
     registerMockedHttpURLLoad("iframes_test.html");
     registerMockedHttpURLLoad("visible_iframe.html");
@@ -316,7 +316,7 @@ TEST_P(ParametrizedWebFrameTest, FrameForEnteredContext)
     EXPECT_EQ(webViewHelper.webView()->mainFrame()->firstChild(), WebLocalFrame::frameForContext(webViewHelper.webView()->mainFrame()->firstChild()->mainWorldScriptContext()));
 }
 
-TEST_P(ParametrizedWebFrameTest, FormWithNullFrame)
+TEST_P(ParameterizedWebFrameTest, FormWithNullFrame)
 {
     registerMockedHttpURLLoad("form.html");
 
@@ -333,7 +333,7 @@ TEST_P(ParametrizedWebFrameTest, FormWithNullFrame)
     WebSearchableFormData searchableDataForm(forms[0]);
 }
 
-TEST_P(ParametrizedWebFrameTest, ChromePageJavascript)
+TEST_P(ParameterizedWebFrameTest, ChromePageJavascript)
 {
     registerMockedChromeURLLoad("history.html");
 
@@ -352,7 +352,7 @@ TEST_P(ParametrizedWebFrameTest, ChromePageJavascript)
     EXPECT_NE(std::string::npos, content.find("Clobbered"));
 }
 
-TEST_P(ParametrizedWebFrameTest, ChromePageNoJavascript)
+TEST_P(ParameterizedWebFrameTest, ChromePageNoJavascript)
 {
     registerMockedChromeURLLoad("history.html");
 
@@ -372,7 +372,7 @@ TEST_P(ParametrizedWebFrameTest, ChromePageNoJavascript)
     EXPECT_EQ(std::string::npos, content.find("Clobbered"));
 }
 
-TEST_P(ParametrizedWebFrameTest, LocationSetHostWithMissingPort)
+TEST_P(ParameterizedWebFrameTest, LocationSetHostWithMissingPort)
 {
     std::string fileName = "print-location-href.html";
     registerMockedHttpURLLoad(fileName);
@@ -392,7 +392,7 @@ TEST_P(ParametrizedWebFrameTest, LocationSetHostWithMissingPort)
     EXPECT_EQ("http://internal.test:0/" + fileName, content);
 }
 
-TEST_P(ParametrizedWebFrameTest, LocationSetEmptyPort)
+TEST_P(ParameterizedWebFrameTest, LocationSetEmptyPort)
 {
     std::string fileName = "print-location-href.html";
     registerMockedHttpURLLoad(fileName);
@@ -429,7 +429,7 @@ public:
     bool m_wasExecuted;
 };
 
-TEST_P(ParametrizedWebFrameTest, DidClearWindowObjectIsNotRecursive)
+TEST_P(ParameterizedWebFrameTest, DidClearWindowObjectIsNotRecursive)
 {
     EvaluateOnLoadWebFrameClient webFrameClient;
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -704,7 +704,7 @@ TEST_F(WebFrameCSSCallbackTest, InvalidSelector)
         << "An invalid selector shouldn't prevent other selectors from matching.";
 }
 
-TEST_P(ParametrizedWebFrameTest, DispatchMessageEventWithOriginCheck)
+TEST_P(ParameterizedWebFrameTest, DispatchMessageEventWithOriginCheck)
 {
     registerMockedHttpURLLoad("postmessage_test.html");
 
@@ -733,7 +733,7 @@ TEST_P(ParametrizedWebFrameTest, DispatchMessageEventWithOriginCheck)
     EXPECT_EQ(std::string::npos, content.find("Message 2."));
 }
 
-TEST_P(ParametrizedWebFrameTest, PostMessageThenDetach)
+TEST_P(ParameterizedWebFrameTest, PostMessageThenDetach)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad("about:blank");
@@ -795,7 +795,7 @@ static bool checkTextAutosizingMultiplier(Document* document, float multiplier)
     return multiplierChecked;
 }
 
-TEST_P(ParametrizedWebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers)
+TEST_P(ParameterizedWebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
@@ -824,7 +824,7 @@ TEST_P(ParametrizedWebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipli
     EXPECT_TRUE(checkTextAutosizingMultiplier(document, 1));
 }
 
-TEST_P(ParametrizedWebFrameTest, WorkingTextAutosizingMultipliers_VirtualViewport)
+TEST_P(ParameterizedWebFrameTest, WorkingTextAutosizingMultipliers_VirtualViewport)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     const std::string htmlFile = "fixed_layout.html";
@@ -845,7 +845,7 @@ TEST_P(ParametrizedWebFrameTest, WorkingTextAutosizingMultipliers_VirtualViewpor
     EXPECT_TRUE(checkTextAutosizingMultiplier(document, 2.0));
 }
 
-TEST_P(ParametrizedWebFrameTest, PinchViewportSetSizeInvalidatesTextAutosizingMultipliers)
+TEST_P(ParameterizedWebFrameTest, PinchViewportSetSizeInvalidatesTextAutosizingMultipliers)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("iframe_reload.html");
@@ -888,7 +888,7 @@ TEST_P(ParametrizedWebFrameTest, PinchViewportSetSizeInvalidatesTextAutosizingMu
     }
 }
 
-TEST_P(ParametrizedWebFrameTest, ZeroHeightPositiveWidthNotIgnored)
+TEST_P(ParameterizedWebFrameTest, ZeroHeightPositiveWidthNotIgnored)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
 
@@ -905,7 +905,7 @@ TEST_P(ParametrizedWebFrameTest, ZeroHeightPositiveWidthNotIgnored)
     EXPECT_EQ(viewportHeight, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
 }
 
-TEST_P(ParametrizedWebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag)
+TEST_P(ParameterizedWebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("no_viewport_tag.html");
@@ -934,7 +934,7 @@ TEST_P(ParametrizedWebFrameTest, DeviceScaleFactorUsesDefaultWithoutViewportTag)
     webViewHelper.webView()->mainFrame()->contentAsText(1024).utf8();
 }
 
-TEST_P(ParametrizedWebFrameTest, FixedLayoutInitializeAtMinimumScale)
+TEST_P(ParameterizedWebFrameTest, FixedLayoutInitializeAtMinimumScale)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
 
@@ -973,7 +973,7 @@ TEST_P(ParametrizedWebFrameTest, FixedLayoutInitializeAtMinimumScale)
     EXPECT_EQ(userPinchPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, WideDocumentInitializeAtMinimumScale)
+TEST_P(ParameterizedWebFrameTest, WideDocumentInitializeAtMinimumScale)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
 
@@ -1012,7 +1012,7 @@ TEST_P(ParametrizedWebFrameTest, WideDocumentInitializeAtMinimumScale)
     EXPECT_EQ(userPinchPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, DelayedViewportInitialScale)
+TEST_P(ParameterizedWebFrameTest, DelayedViewportInitialScale)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-auto-initial-scale.html");
@@ -1036,7 +1036,7 @@ TEST_P(ParametrizedWebFrameTest, DelayedViewportInitialScale)
     EXPECT_EQ(2, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, setLoadWithOverviewModeToFalse)
+TEST_P(ParameterizedWebFrameTest, setLoadWithOverviewModeToFalse)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-auto-initial-scale.html");
@@ -1056,7 +1056,7 @@ TEST_P(ParametrizedWebFrameTest, setLoadWithOverviewModeToFalse)
     EXPECT_EQ(1.0f, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, SetLoadWithOverviewModeToFalseAndNoWideViewport)
+TEST_P(ParameterizedWebFrameTest, SetLoadWithOverviewModeToFalseAndNoWideViewport)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("large-div.html");
@@ -1077,7 +1077,7 @@ TEST_P(ParametrizedWebFrameTest, SetLoadWithOverviewModeToFalseAndNoWideViewport
     EXPECT_EQ(1.0f, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, NoWideViewportIgnoresPageViewportWidth)
+TEST_P(ParameterizedWebFrameTest, NoWideViewportIgnoresPageViewportWidth)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-auto-initial-scale.html");
@@ -1098,7 +1098,7 @@ TEST_P(ParametrizedWebFrameTest, NoWideViewportIgnoresPageViewportWidth)
     EXPECT_EQ(viewportHeight, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
-TEST_P(ParametrizedWebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale)
+TEST_P(ParameterizedWebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-wide-2x-initial-scale.html");
@@ -1120,7 +1120,7 @@ TEST_P(ParametrizedWebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccoun
     EXPECT_EQ(viewportHeight / 2, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
-TEST_P(ParametrizedWebFrameTest, WideViewportSetsTo980WithoutViewportTag)
+TEST_P(ParameterizedWebFrameTest, WideViewportSetsTo980WithoutViewportTag)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("no_viewport_tag.html");
@@ -1141,7 +1141,7 @@ TEST_P(ParametrizedWebFrameTest, WideViewportSetsTo980WithoutViewportTag)
     EXPECT_EQ(980.0 / viewportWidth * viewportHeight, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
-TEST_P(ParametrizedWebFrameTest, WideViewportSetsTo980WithXhtmlMp)
+TEST_P(ParameterizedWebFrameTest, WideViewportSetsTo980WithXhtmlMp)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport/viewport-legacy-xhtmlmp.html");
@@ -1163,7 +1163,7 @@ TEST_P(ParametrizedWebFrameTest, WideViewportSetsTo980WithXhtmlMp)
     EXPECT_EQ(viewportHeight, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
-TEST_P(ParametrizedWebFrameTest, NoWideViewportAndHeightInMeta)
+TEST_P(ParameterizedWebFrameTest, NoWideViewportAndHeightInMeta)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-height-1000.html");
@@ -1182,7 +1182,7 @@ TEST_P(ParametrizedWebFrameTest, NoWideViewportAndHeightInMeta)
     EXPECT_EQ(viewportWidth, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
 }
 
-TEST_P(ParametrizedWebFrameTest, WideViewportSetsTo980WithAutoWidth)
+TEST_P(ParameterizedWebFrameTest, WideViewportSetsTo980WithAutoWidth)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-2x-initial-scale.html");
@@ -1203,7 +1203,7 @@ TEST_P(ParametrizedWebFrameTest, WideViewportSetsTo980WithAutoWidth)
     EXPECT_EQ(980.0 / viewportWidth * viewportHeight, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().height());
 }
 
-TEST_P(ParametrizedWebFrameTest, PageViewportInitialScaleOverridesLoadWithOverviewMode)
+TEST_P(ParameterizedWebFrameTest, PageViewportInitialScaleOverridesLoadWithOverviewMode)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-wide-2x-initial-scale.html");
@@ -1222,7 +1222,7 @@ TEST_P(ParametrizedWebFrameTest, PageViewportInitialScaleOverridesLoadWithOvervi
     EXPECT_EQ(2.0f, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, setInitialPageScaleFactorPermanently)
+TEST_P(ParameterizedWebFrameTest, setInitialPageScaleFactorPermanently)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
 
@@ -1254,7 +1254,7 @@ TEST_P(ParametrizedWebFrameTest, setInitialPageScaleFactorPermanently)
     EXPECT_EQ(1.0, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, PermanentInitialPageScaleFactorOverridesLoadWithOverviewMode)
+TEST_P(ParameterizedWebFrameTest, PermanentInitialPageScaleFactorOverridesLoadWithOverviewMode)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-auto-initial-scale.html");
@@ -1274,7 +1274,7 @@ TEST_P(ParametrizedWebFrameTest, PermanentInitialPageScaleFactorOverridesLoadWit
     EXPECT_EQ(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, PermanentInitialPageScaleFactorOverridesPageViewportInitialScale)
+TEST_P(ParameterizedWebFrameTest, PermanentInitialPageScaleFactorOverridesPageViewportInitialScale)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-wide-2x-initial-scale.html");
@@ -1293,7 +1293,7 @@ TEST_P(ParametrizedWebFrameTest, PermanentInitialPageScaleFactorOverridesPageVie
     EXPECT_EQ(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered)
+TEST_P(ParameterizedWebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     const char* pages[] = {
@@ -1329,7 +1329,7 @@ TEST_P(ParametrizedWebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered
     }
 }
 
-TEST_P(ParametrizedWebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth)
+TEST_P(ParameterizedWebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
 
@@ -1351,7 +1351,7 @@ TEST_P(ParametrizedWebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWid
     EXPECT_EQ(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, DocumentElementClientHeightWorksWithWrapContentMode)
+TEST_P(ParameterizedWebFrameTest, DocumentElementClientHeightWorksWithWrapContentMode)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("0-by-0.html");
@@ -1373,7 +1373,7 @@ TEST_P(ParametrizedWebFrameTest, DocumentElementClientHeightWorksWithWrapContent
     EXPECT_EQ(viewportWidth, document->documentElement()->clientWidth());
 }
 
-TEST_P(ParametrizedWebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode)
+TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("0-by-0.html");
@@ -1416,7 +1416,7 @@ TEST_P(ParametrizedWebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMod
     EXPECT_FALSE(compositor->containerLayer()->platformLayer()->masksToBounds());
 }
 
-TEST_P(ParametrizedWebFrameTest, SetForceZeroLayoutHeight)
+TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeight)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("200-by-300.html");
@@ -1493,7 +1493,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithRelayoutsWhenHeightChanged
     EXPECT_EQ(String("updatedValue"), element->innerText());
 }
 
-TEST_P(ParametrizedWebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations)
+TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("200-by-300.html");
@@ -1517,7 +1517,7 @@ TEST_P(ParametrizedWebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations)
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
 }
 
-TEST_P(ParametrizedWebFrameTest, SetForceZeroLayoutHeightWithWideViewportQuirk)
+TEST_P(ParameterizedWebFrameTest, SetForceZeroLayoutHeightWithWideViewportQuirk)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("200-by-300.html");
@@ -1539,7 +1539,7 @@ TEST_P(ParametrizedWebFrameTest, SetForceZeroLayoutHeightWithWideViewportQuirk)
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
 }
 
-TEST_P(ParametrizedWebFrameTest, WideViewportAndWideContentWithInitialScale)
+TEST_P(ParameterizedWebFrameTest, WideViewportAndWideContentWithInitialScale)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("wide_document_width_viewport.html");
@@ -1565,7 +1565,7 @@ TEST_P(ParametrizedWebFrameTest, WideViewportAndWideContentWithInitialScale)
     EXPECT_EQ(minimumPageScaleFactor, webViewHelper.webViewImpl()->minimumPageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, WideViewportQuirkClobbersHeight)
+TEST_P(ParameterizedWebFrameTest, WideViewportQuirkClobbersHeight)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-height-1000.html");
@@ -1589,7 +1589,7 @@ TEST_P(ParametrizedWebFrameTest, WideViewportQuirkClobbersHeight)
     EXPECT_EQ(1, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, LayoutSize320Quirk)
+TEST_P(ParameterizedWebFrameTest, LayoutSize320Quirk)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport/viewport-30.html");
@@ -1641,7 +1641,7 @@ TEST_P(ParametrizedWebFrameTest, LayoutSize320Quirk)
     EXPECT_EQ(800, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
 }
 
-TEST_P(ParametrizedWebFrameTest, ZeroValuesQuirk)
+TEST_P(ParameterizedWebFrameTest, ZeroValuesQuirk)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-zero-values.html");
@@ -1668,7 +1668,7 @@ TEST_P(ParametrizedWebFrameTest, ZeroValuesQuirk)
     EXPECT_EQ(1.0f, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, OverflowHiddenDisablesScrolling)
+TEST_P(ParameterizedWebFrameTest, OverflowHiddenDisablesScrolling)
 {
     registerMockedHttpURLLoad("body-overflow-hidden.html");
 
@@ -1687,7 +1687,7 @@ TEST_P(ParametrizedWebFrameTest, OverflowHiddenDisablesScrolling)
     EXPECT_FALSE(view->userInputScrollable(HorizontalScrollbar));
 }
 
-TEST_P(ParametrizedWebFrameTest, OverflowHiddenDisablesScrollingWithSetCanHaveScrollbars)
+TEST_P(ParameterizedWebFrameTest, OverflowHiddenDisablesScrollingWithSetCanHaveScrollbars)
 {
     registerMockedHttpURLLoad("body-overflow-hidden-short.html");
 
@@ -1729,7 +1729,7 @@ TEST_F(WebFrameTest, IgnoreOverflowHiddenQuirk)
     EXPECT_TRUE(view->userInputScrollable(VerticalScrollbar));
 }
 
-TEST_P(ParametrizedWebFrameTest, NonZeroValuesNoQuirk)
+TEST_P(ParameterizedWebFrameTest, NonZeroValuesNoQuirk)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-nonzero-values.html");
@@ -1756,7 +1756,7 @@ TEST_P(ParametrizedWebFrameTest, NonZeroValuesNoQuirk)
     EXPECT_EQ(expectedPageScaleFactor, webViewHelper.webView()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, setPageScaleFactorDoesNotLayout)
+TEST_P(ParameterizedWebFrameTest, setPageScaleFactorDoesNotLayout)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
@@ -1778,7 +1778,7 @@ TEST_P(ParametrizedWebFrameTest, setPageScaleFactorDoesNotLayout)
     EXPECT_EQ(prevLayoutCount, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutCount());
 }
 
-TEST_P(ParametrizedWebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout)
+TEST_P(ParameterizedWebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
 
@@ -1801,7 +1801,7 @@ TEST_P(ParametrizedWebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotL
 
 }
 
-TEST_P(ParametrizedWebFrameTest, pageScaleFactorWrittenToHistoryItem)
+TEST_P(ParameterizedWebFrameTest, pageScaleFactorWrittenToHistoryItem)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
@@ -1820,7 +1820,7 @@ TEST_P(ParametrizedWebFrameTest, pageScaleFactorWrittenToHistoryItem)
     EXPECT_EQ(3, toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->loader().currentItem()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, initialScaleWrittenToHistoryItem)
+TEST_P(ParameterizedWebFrameTest, initialScaleWrittenToHistoryItem)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
@@ -1842,7 +1842,7 @@ TEST_P(ParametrizedWebFrameTest, initialScaleWrittenToHistoryItem)
     EXPECT_EQ(minimumPageScaleFactor, toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->loader().currentItem()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, pageScaleFactorDoesntShrinkFrameView)
+TEST_P(ParameterizedWebFrameTest, pageScaleFactorDoesntShrinkFrameView)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("large-div.html");
@@ -1883,7 +1883,7 @@ TEST_P(ParametrizedWebFrameTest, pageScaleFactorDoesntShrinkFrameView)
     EXPECT_EQ(viewportHeightMinusScrollbar, frameViewSize.height());
 }
 
-TEST_P(ParametrizedWebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
+TEST_P(ParameterizedWebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
@@ -1904,7 +1904,7 @@ TEST_P(ParametrizedWebFrameTest, pageScaleFactorDoesNotApplyCssTransform)
     EXPECT_EQ(980, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
 }
 
-TEST_P(ParametrizedWebFrameTest, targetDensityDpiHigh)
+TEST_P(ParameterizedWebFrameTest, targetDensityDpiHigh)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-target-densitydpi-high.html");
@@ -1936,7 +1936,7 @@ TEST_P(ParametrizedWebFrameTest, targetDensityDpiHigh)
     }
 }
 
-TEST_P(ParametrizedWebFrameTest, targetDensityDpiDevice)
+TEST_P(ParameterizedWebFrameTest, targetDensityDpiDevice)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-target-densitydpi-device.html");
@@ -1962,7 +1962,7 @@ TEST_P(ParametrizedWebFrameTest, targetDensityDpiDevice)
     }
 }
 
-TEST_P(ParametrizedWebFrameTest, targetDensityDpiDeviceAndFixedWidth)
+TEST_P(ParameterizedWebFrameTest, targetDensityDpiDeviceAndFixedWidth)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-target-densitydpi-device-and-fixed-width.html");
@@ -1989,7 +1989,7 @@ TEST_P(ParametrizedWebFrameTest, targetDensityDpiDeviceAndFixedWidth)
     }
 }
 
-TEST_P(ParametrizedWebFrameTest, NoWideViewportAndScaleLessThanOne)
+TEST_P(ParameterizedWebFrameTest, NoWideViewportAndScaleLessThanOne)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-initial-scale-less-than-1.html");
@@ -2012,7 +2012,7 @@ TEST_P(ParametrizedWebFrameTest, NoWideViewportAndScaleLessThanOne)
     EXPECT_NEAR(1.0f / client.m_screenInfo.deviceScaleFactor, webViewHelper.webView()->pageScaleFactor(), 0.01f);
 }
 
-TEST_P(ParametrizedWebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWidth)
+TEST_P(ParameterizedWebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWidth)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-initial-scale-less-than-1-device-width.html");
@@ -2036,7 +2036,7 @@ TEST_P(ParametrizedWebFrameTest, NoWideViewportAndScaleLessThanOneWithDeviceWidt
     EXPECT_NEAR(1.0f / client.m_screenInfo.deviceScaleFactor, webViewHelper.webView()->pageScaleFactor(), 0.01f);
 }
 
-TEST_P(ParametrizedWebFrameTest, NoWideViewportAndNoViewportWithInitialPageScaleOverride)
+TEST_P(ParameterizedWebFrameTest, NoWideViewportAndNoViewportWithInitialPageScaleOverride)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("large-div.html");
@@ -2060,7 +2060,7 @@ TEST_P(ParametrizedWebFrameTest, NoWideViewportAndNoViewportWithInitialPageScale
     EXPECT_NEAR(enforcedPageScaleFactor, webViewHelper.webView()->pageScaleFactor(), 0.01f);
 }
 
-TEST_P(ParametrizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScale)
+TEST_P(ParameterizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScale)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-initial-scale-and-user-scalable-no.html");
@@ -2080,7 +2080,7 @@ TEST_P(ParametrizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScale)
     EXPECT_NEAR(1.0f, webViewHelper.webView()->pageScaleFactor(), 0.01f);
 }
 
-TEST_P(ParametrizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForNonWideViewport)
+TEST_P(ParameterizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForNonWideViewport)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-initial-scale-and-user-scalable-no.html");
@@ -2104,7 +2104,7 @@ TEST_P(ParametrizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForNonWi
     EXPECT_NEAR(1.0f / client.m_screenInfo.deviceScaleFactor, webViewHelper.webView()->pageScaleFactor(), 0.01f);
 }
 
-TEST_P(ParametrizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForWideViewport)
+TEST_P(ParameterizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForWideViewport)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("viewport-2x-initial-scale-non-user-scalable.html");
@@ -2125,7 +2125,7 @@ TEST_P(ParametrizedWebFrameTest, NoUserScalableQuirkIgnoresViewportScaleForWideV
     EXPECT_NEAR(1.0f, webViewHelper.webView()->pageScaleFactor(), 0.01f);
 }
 
-TEST_P(ParametrizedWebFrameTest, DesktopPageCanBeZoomedInWhenWideViewportIsTurnedOff)
+TEST_P(ParameterizedWebFrameTest, DesktopPageCanBeZoomedInWhenWideViewportIsTurnedOff)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("no_viewport_tag.html");
@@ -2255,7 +2255,7 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedLayout)
         url, initialPageScaleFactor, scrollOffset, viewportSize, shouldScaleRelativeToViewportWidth);
 }
 
-TEST_P(ParametrizedWebFrameTest, pageScaleFactorUpdatesScrollbars)
+TEST_P(ParameterizedWebFrameTest, pageScaleFactorUpdatesScrollbars)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed_layout.html");
@@ -2280,7 +2280,7 @@ TEST_P(ParametrizedWebFrameTest, pageScaleFactorUpdatesScrollbars)
     EXPECT_EQ(view->scrollSize(VerticalScrollbar), view->contentsSize().height() - view->visibleContentRect().height());
 }
 
-TEST_P(ParametrizedWebFrameTest, CanOverrideScaleLimits)
+TEST_P(ParameterizedWebFrameTest, CanOverrideScaleLimits)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
 
@@ -2371,7 +2371,7 @@ void simulateDoubleTap(WebViewImpl* webViewImpl, WebPoint& point, float& scale)
     simulatePageScale(webViewImpl, scale);
 }
 
-TEST_P(ParametrizedWebFrameTest, DivAutoZoomParamsTest)
+TEST_P(ParameterizedWebFrameTest, DivAutoZoomParamsTest)
 {
     registerMockedHttpURLLoad("get_scale_for_auto_zoom_into_div_test.html");
 
@@ -2424,7 +2424,7 @@ TEST_P(ParametrizedWebFrameTest, DivAutoZoomParamsTest)
     EXPECT_NEAR(tallDiv.y, scroll.y, 20);
 }
 
-TEST_P(ParametrizedWebFrameTest, DivAutoZoomWideDivTest)
+TEST_P(ParameterizedWebFrameTest, DivAutoZoomWideDivTest)
 {
     registerMockedHttpURLLoad("get_wide_div_for_auto_zoom_test.html");
 
@@ -2454,7 +2454,7 @@ TEST_P(ParametrizedWebFrameTest, DivAutoZoomWideDivTest)
     EXPECT_FLOAT_EQ(webViewHelper.webViewImpl()->minimumPageScaleFactor(), scale);
 }
 
-TEST_P(ParametrizedWebFrameTest, DivAutoZoomVeryTallTest)
+TEST_P(ParameterizedWebFrameTest, DivAutoZoomVeryTallTest)
 {
     // When a block is taller than the viewport and a zoom targets a lower part
     // of it, then we should keep the target point onscreen instead of snapping
@@ -2752,7 +2752,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
     EXPECT_FLOAT_EQ(legibleScale, scale);
 }
 
-TEST_P(ParametrizedWebFrameTest, BlockBoundTest)
+TEST_P(ParameterizedWebFrameTest, BlockBoundTest)
 {
     registerMockedHttpURLLoad("block_bound.html");
 
@@ -2786,7 +2786,7 @@ TEST_P(ParametrizedWebFrameTest, BlockBoundTest)
     EXPECT_RECT_EQ(rectRightBottom, blockBound);
 }
 
-TEST_P(ParametrizedWebFrameTest, DivMultipleTargetZoomMultipleDivsTest)
+TEST_P(ParameterizedWebFrameTest, DivMultipleTargetZoomMultipleDivsTest)
 {
     registerMockedHttpURLLoad("get_multiple_divs_for_auto_zoom_test.html");
 
@@ -2906,7 +2906,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     EXPECT_FALSE(needAnimation);
 }
 
-TEST_P(ParametrizedWebFrameTest, CharacterIndexAtPointWithPinchZoom)
+TEST_P(ParameterizedWebFrameTest, CharacterIndexAtPointWithPinchZoom)
 {
     registerMockedHttpURLLoad("sometext.html");
 
@@ -2928,7 +2928,7 @@ TEST_P(ParametrizedWebFrameTest, CharacterIndexAtPointWithPinchZoom)
     EXPECT_EQ(2ul, ix);
 }
 
-TEST_P(ParametrizedWebFrameTest, FirstRectForCharacterRangeWithPinchZoom)
+TEST_P(ParameterizedWebFrameTest, FirstRectForCharacterRangeWithPinchZoom)
 {
     registerMockedHttpURLLoad("textbox.html");
 
@@ -3024,7 +3024,7 @@ public:
     }
 };
 
-TEST_P(ParametrizedWebFrameTest, ReloadDoesntSetRedirect)
+TEST_P(ParameterizedWebFrameTest, ReloadDoesntSetRedirect)
 {
     // Test for case in http://crbug.com/73104. Reloading a frame very quickly
     // would sometimes call decidePolicyForNavigation with isRedirect=true
@@ -3113,7 +3113,7 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState)
     EXPECT_EQ(1.0f, webViewHelper.webViewImpl()->pageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, ReloadWhileProvisional)
+TEST_P(ParameterizedWebFrameTest, ReloadWhileProvisional)
 {
     // Test that reloading while the previous load is still pending does not cause the initial
     // request to get lost.
@@ -3133,7 +3133,7 @@ TEST_P(ParametrizedWebFrameTest, ReloadWhileProvisional)
     EXPECT_EQ(toKURL(m_baseURL + "fixed_layout.html"), toKURL(dataSource->request().url().spec()));
 }
 
-TEST_P(ParametrizedWebFrameTest, AppendRedirects)
+TEST_P(ParameterizedWebFrameTest, AppendRedirects)
 {
     const std::string firstURL = "about:blank";
     const std::string secondURL = "http://internal.test";
@@ -3152,7 +3152,7 @@ TEST_P(ParametrizedWebFrameTest, AppendRedirects)
     EXPECT_EQ(toKURL(secondURL), toKURL(redirects[1].spec().data()));
 }
 
-TEST_P(ParametrizedWebFrameTest, IframeRedirect)
+TEST_P(ParameterizedWebFrameTest, IframeRedirect)
 {
     registerMockedHttpURLLoad("iframe_redirect.html");
     registerMockedHttpURLLoad("visible_iframe.html");
@@ -3173,7 +3173,7 @@ TEST_P(ParametrizedWebFrameTest, IframeRedirect)
     EXPECT_EQ(toKURL("http://internal.test/visible_iframe.html"), toKURL(redirects[1].spec().data()));
 }
 
-TEST_P(ParametrizedWebFrameTest, ClearFocusedNodeTest)
+TEST_P(ParameterizedWebFrameTest, ClearFocusedNodeTest)
 {
     registerMockedHttpURLLoad("iframe_clear_focused_node_test.html");
     registerMockedHttpURLLoad("autofocus_input_field_iframe.html");
@@ -3249,7 +3249,7 @@ public:
 };
 
 // TODO(aa): Deflake this test.
-TEST_P(ParametrizedWebFrameTest, FLAKY_ContextNotificationsLoadUnload)
+TEST_P(ParameterizedWebFrameTest, FLAKY_ContextNotificationsLoadUnload)
 {
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
 
@@ -3289,7 +3289,7 @@ TEST_P(ParametrizedWebFrameTest, FLAKY_ContextNotificationsLoadUnload)
     ASSERT_TRUE(secondCreateNotification->Equals(firstReleaseNotification));
 }
 
-TEST_P(ParametrizedWebFrameTest, ContextNotificationsReload)
+TEST_P(ParameterizedWebFrameTest, ContextNotificationsReload)
 {
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
 
@@ -3326,7 +3326,7 @@ TEST_P(ParametrizedWebFrameTest, ContextNotificationsReload)
     EXPECT_EQ(0, secondRefreshNotification->worldId);
 }
 
-TEST_P(ParametrizedWebFrameTest, ContextNotificationsIsolatedWorlds)
+TEST_P(ParameterizedWebFrameTest, ContextNotificationsIsolatedWorlds)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
@@ -3370,7 +3370,7 @@ TEST_P(ParametrizedWebFrameTest, ContextNotificationsIsolatedWorlds)
     EXPECT_EQ(1, matchCount);
 }
 
-TEST_P(ParametrizedWebFrameTest, FindInPage)
+TEST_P(ParameterizedWebFrameTest, FindInPage)
 {
     registerMockedHttpURLLoad("find.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -3427,7 +3427,7 @@ TEST_P(ParametrizedWebFrameTest, FindInPage)
     ASSERT_TRUE(range.isNull());
 }
 
-TEST_P(ParametrizedWebFrameTest, GetContentAsPlainText)
+TEST_P(ParameterizedWebFrameTest, GetContentAsPlainText)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad("about:blank", true);
@@ -3469,7 +3469,7 @@ TEST_P(ParametrizedWebFrameTest, GetContentAsPlainText)
     EXPECT_EQ("Hello world", text.utf8());
 }
 
-TEST_P(ParametrizedWebFrameTest, GetFullHtmlOfPage)
+TEST_P(ParameterizedWebFrameTest, GetFullHtmlOfPage)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad("about:blank", true);
@@ -3511,7 +3511,7 @@ public:
     }
 };
 
-TEST_P(ParametrizedWebFrameTest, ExecuteScriptDuringDidCreateScriptContext)
+TEST_P(ParameterizedWebFrameTest, ExecuteScriptDuringDidCreateScriptContext)
 {
     registerMockedHttpURLLoad("hello_world.html");
 
@@ -3545,7 +3545,7 @@ private:
     int m_count;
 };
 
-TEST_P(ParametrizedWebFrameTest, FindInPageMatchRects)
+TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
 {
     registerMockedHttpURLLoad("find_in_page.html");
     registerMockedHttpURLLoad("find_in_page_frame.html");
@@ -3666,7 +3666,7 @@ TEST_P(ParametrizedWebFrameTest, FindInPageMatchRects)
     EXPECT_TRUE(mainFrame->findMatchMarkersVersion() != rectsVersion);
 }
 
-TEST_P(ParametrizedWebFrameTest, FindInPageSkipsHiddenFrames)
+TEST_P(ParameterizedWebFrameTest, FindInPageSkipsHiddenFrames)
 {
     registerMockedHttpURLLoad("find_in_hidden_frame.html");
 
@@ -3696,7 +3696,7 @@ TEST_P(ParametrizedWebFrameTest, FindInPageSkipsHiddenFrames)
     EXPECT_EQ(kNumResults, client.count());
 }
 
-TEST_P(ParametrizedWebFrameTest, FindOnDetachedFrame)
+TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame)
 {
     registerMockedHttpURLLoad("find_in_page.html");
     registerMockedHttpURLLoad("find_in_page_frame.html");
@@ -3735,7 +3735,7 @@ TEST_P(ParametrizedWebFrameTest, FindOnDetachedFrame)
     EXPECT_TRUE(client.findResultsAreReady());
 }
 
-TEST_P(ParametrizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
+TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
 {
     registerMockedHttpURLLoad("find_in_page.html");
     registerMockedHttpURLLoad("find_in_page_frame.html");
@@ -3774,7 +3774,7 @@ TEST_P(ParametrizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
     EXPECT_TRUE(client.findResultsAreReady());
 }
 
-TEST_P(ParametrizedWebFrameTest, FindDetachFrameWhileScopingStrings)
+TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings)
 {
     registerMockedHttpURLLoad("find_in_page.html");
     registerMockedHttpURLLoad("find_in_page_frame.html");
@@ -3813,7 +3813,7 @@ TEST_P(ParametrizedWebFrameTest, FindDetachFrameWhileScopingStrings)
     EXPECT_TRUE(client.findResultsAreReady());
 }
 
-TEST_P(ParametrizedWebFrameTest, ResetMatchCount)
+TEST_P(ParameterizedWebFrameTest, ResetMatchCount)
 {
     registerMockedHttpURLLoad("find_in_generated_frame.html");
 
@@ -3844,7 +3844,7 @@ TEST_P(ParametrizedWebFrameTest, ResetMatchCount)
     mainFrame->resetMatchCount();
 }
 
-TEST_P(ParametrizedWebFrameTest, SetTickmarks)
+TEST_P(ParameterizedWebFrameTest, SetTickmarks)
 {
     registerMockedHttpURLLoad("find.html");
 
@@ -3922,7 +3922,7 @@ static std::string selectionAsString(WebFrame* frame)
     return frame->selectionAsText().utf8();
 }
 
-TEST_P(ParametrizedWebFrameTest, SelectRange)
+TEST_P(ParameterizedWebFrameTest, SelectRange)
 {
     WebFrame* frame;
     WebRect startWebRect;
@@ -3951,7 +3951,7 @@ TEST_P(ParametrizedWebFrameTest, SelectRange)
     EXPECT_EQ("Some offscreen test text for testing.", selectionAsString(frame));
 }
 
-TEST_P(ParametrizedWebFrameTest, SelectRangeInIframe)
+TEST_P(ParameterizedWebFrameTest, SelectRangeInIframe)
 {
     WebFrame* frame;
     WebRect startWebRect;
@@ -3972,7 +3972,7 @@ TEST_P(ParametrizedWebFrameTest, SelectRangeInIframe)
     EXPECT_EQ("Some test text for testing.", selectionAsString(subframe));
 }
 
-TEST_P(ParametrizedWebFrameTest, SelectRangeDivContentEditable)
+TEST_P(ParameterizedWebFrameTest, SelectRangeDivContentEditable)
 {
     WebFrame* frame;
     WebRect startWebRect;
@@ -4007,7 +4007,7 @@ TEST_P(ParametrizedWebFrameTest, SelectRangeDivContentEditable)
 
 // positionForPoint returns the wrong values for contenteditable spans. See
 // http://crbug.com/238334.
-TEST_P(ParametrizedWebFrameTest, DISABLED_SelectRangeSpanContentEditable)
+TEST_P(ParameterizedWebFrameTest, DISABLED_SelectRangeSpanContentEditable)
 {
     WebFrame* frame;
     WebRect startWebRect;
@@ -4041,7 +4041,7 @@ TEST_P(ParametrizedWebFrameTest, DISABLED_SelectRangeSpanContentEditable)
     EXPECT_EQ("This text is initially selected. 16-char footer.", selectionAsString(frame));
 }
 
-TEST_P(ParametrizedWebFrameTest, SelectRangeCanMoveSelectionStart)
+TEST_P(ParameterizedWebFrameTest, SelectRangeCanMoveSelectionStart)
 {
     registerMockedHttpURLLoad("text_selection.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -4089,7 +4089,7 @@ TEST_P(ParametrizedWebFrameTest, SelectRangeCanMoveSelectionStart)
     // EXPECT_EQ("[ Editable 1. Editable 2.", selectionAsString(frame));
 }
 
-TEST_P(ParametrizedWebFrameTest, SelectRangeCanMoveSelectionEnd)
+TEST_P(ParameterizedWebFrameTest, SelectRangeCanMoveSelectionEnd)
 {
     registerMockedHttpURLLoad("text_selection.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -4137,7 +4137,7 @@ TEST_P(ParametrizedWebFrameTest, SelectRangeCanMoveSelectionEnd)
     // EXPECT_EQ("Editable 1. Editable 2. ]", selectionAsString(frame));
 }
 
-TEST_P(ParametrizedWebFrameTest, MoveRangeSelectionExtent)
+TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtent)
 {
     WebLocalFrameImpl* frame;
     WebRect startWebRect;
@@ -4171,7 +4171,7 @@ TEST_P(ParametrizedWebFrameTest, MoveRangeSelectionExtent)
     EXPECT_EQ("", selectionAsString(frame));
 }
 
-TEST_P(ParametrizedWebFrameTest, MoveRangeSelectionExtentCannotCollapse)
+TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtentCannotCollapse)
 {
     WebLocalFrameImpl* frame;
     WebRect startWebRect;
@@ -4196,7 +4196,7 @@ TEST_P(ParametrizedWebFrameTest, MoveRangeSelectionExtentCannotCollapse)
     EXPECT_EQ("This text is initially selected.", selectionAsString(frame));
 }
 
-TEST_P(ParametrizedWebFrameTest, MoveRangeSelectionExtentScollsInputField)
+TEST_P(ParameterizedWebFrameTest, MoveRangeSelectionExtentScollsInputField)
 {
     WebLocalFrameImpl* frame;
     WebRect startWebRect;
@@ -4223,7 +4223,7 @@ static int computeOffset(LayoutObject* layoutObject, int x, int y)
 
 // positionForPoint returns the wrong values for contenteditable spans. See
 // http://crbug.com/238334.
-TEST_P(ParametrizedWebFrameTest, DISABLED_PositionForPointTest)
+TEST_P(ParameterizedWebFrameTest, DISABLED_PositionForPointTest)
 {
     registerMockedHttpURLLoad("select_range_span_editable.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -4242,7 +4242,7 @@ TEST_P(ParametrizedWebFrameTest, DISABLED_PositionForPointTest)
 }
 
 #if !OS(MACOSX) && !OS(LINUX)
-TEST_P(ParametrizedWebFrameTest, SelectRangeStaysHorizontallyAlignedWhenMoved)
+TEST_P(ParameterizedWebFrameTest, SelectRangeStaysHorizontallyAlignedWhenMoved)
 {
     registerMockedHttpURLLoad("move_caret.html");
 
@@ -4286,7 +4286,7 @@ TEST_P(ParametrizedWebFrameTest, SelectRangeStaysHorizontallyAlignedWhenMoved)
     EXPECT_EQ(endRect, initialEndRect);
 }
 
-TEST_P(ParametrizedWebFrameTest, MoveCaretStaysHorizontallyAlignedWhenMoved)
+TEST_P(ParameterizedWebFrameTest, MoveCaretStaysHorizontallyAlignedWhenMoved)
 {
     WebLocalFrameImpl* frame;
     registerMockedHttpURLLoad("move_caret.html");
@@ -4479,7 +4479,7 @@ TEST_F(CompositedSelectionBoundsTest, EditableDiv) { runTest("composited_selecti
 TEST_F(CompositedSelectionBoundsTest, EmptyEditableInput) { runTest("composited_selection_bounds_empty_editable_input.html"); }
 TEST_F(CompositedSelectionBoundsTest, EmptyEditableArea) { runTest("composited_selection_bounds_empty_editable_area.html"); }
 
-TEST_P(ParametrizedWebFrameTest, CompositedSelectionBoundsCleared)
+TEST_P(ParameterizedWebFrameTest, CompositedSelectionBoundsCleared)
 {
     RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(true);
 
@@ -4563,7 +4563,7 @@ static WebGestureEvent fatTap(int x, int y)
     return event;
 }
 
-TEST_P(ParametrizedWebFrameTest, DisambiguationPopup)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopup)
 {
     const std::string htmlFile = "disambiguation_popup.html";
     registerMockedHttpURLLoad(htmlFile);
@@ -4618,7 +4618,7 @@ TEST_P(ParametrizedWebFrameTest, DisambiguationPopup)
     }
 }
 
-TEST_P(ParametrizedWebFrameTest, DisambiguationPopupNoContainer)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopupNoContainer)
 {
     registerMockedHttpURLLoad("disambiguation_popup_no_container.html");
 
@@ -4636,7 +4636,7 @@ TEST_P(ParametrizedWebFrameTest, DisambiguationPopupNoContainer)
     EXPECT_FALSE(client.triggered());
 }
 
-TEST_P(ParametrizedWebFrameTest, DisambiguationPopupMobileSite)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopupMobileSite)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     const std::string htmlFile = "disambiguation_popup_mobile_site.html";
@@ -4672,7 +4672,7 @@ TEST_P(ParametrizedWebFrameTest, DisambiguationPopupMobileSite)
     }
 }
 
-TEST_P(ParametrizedWebFrameTest, DisambiguationPopupViewportSite)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopupViewportSite)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     const std::string htmlFile = "disambiguation_popup_viewport_site.html";
@@ -4759,7 +4759,7 @@ TEST_F(WebFrameTest, DisambiguationPopupPinchViewport)
     EXPECT_FALSE(client.triggered());
 }
 
-TEST_P(ParametrizedWebFrameTest, DisambiguationPopupBlacklist)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopupBlacklist)
 {
     const unsigned viewportWidth = 500;
     const unsigned viewportHeight = 1000;
@@ -4792,7 +4792,7 @@ TEST_P(ParametrizedWebFrameTest, DisambiguationPopupBlacklist)
     EXPECT_FALSE(client.triggered());
 }
 
-TEST_P(ParametrizedWebFrameTest, DisambiguationPopupPageScale)
+TEST_P(ParameterizedWebFrameTest, DisambiguationPopupPageScale)
 {
     registerMockedHttpURLLoad("disambiguation_popup_page_scale.html");
 
@@ -4849,7 +4849,7 @@ private:
     bool m_commitCalled;
 };
 
-TEST_P(ParametrizedWebFrameTest, ReplaceNavigationAfterHistoryNavigation)
+TEST_P(ParameterizedWebFrameTest, ReplaceNavigationAfterHistoryNavigation)
 {
     TestSubstituteDataWebFrameClient webFrameClient;
 
@@ -4907,7 +4907,7 @@ public:
     bool m_didLoad;
 };
 
-TEST_P(ParametrizedWebFrameTest, HTMLDocument)
+TEST_P(ParameterizedWebFrameTest, HTMLDocument)
 {
     registerMockedHttpURLLoad("clipped-body.html");
 
@@ -4919,7 +4919,7 @@ TEST_P(ParametrizedWebFrameTest, HTMLDocument)
     EXPECT_EQ(1, webFrameClient.m_numBodies);
 }
 
-TEST_P(ParametrizedWebFrameTest, EmptyDocument)
+TEST_P(ParameterizedWebFrameTest, EmptyDocument)
 {
     registerMockedHttpURLLoad("pageserializer/green_rectangle.svg");
 
@@ -4931,7 +4931,7 @@ TEST_P(ParametrizedWebFrameTest, EmptyDocument)
     EXPECT_EQ(1, webFrameClient.m_numBodies); // The empty document that a new frame starts with triggers this.
 }
 
-TEST_P(ParametrizedWebFrameTest, MoveCaretSelectionTowardsWindowPointWithNoSelection)
+TEST_P(ParameterizedWebFrameTest, MoveCaretSelectionTowardsWindowPointWithNoSelection)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad("about:blank", true);
@@ -4960,7 +4960,7 @@ private:
     uint32_t m_hash;
 };
 
-TEST_P(ParametrizedWebFrameTest, ReplaceMisspelledRange)
+TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange)
 {
     registerMockedHttpURLLoad("spell.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -4991,7 +4991,7 @@ TEST_P(ParametrizedWebFrameTest, ReplaceMisspelledRange)
     EXPECT_EQ("_welcome_.", frame->contentAsText(std::numeric_limits<size_t>::max()).utf8());
 }
 
-TEST_P(ParametrizedWebFrameTest, RemoveSpellingMarkers)
+TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers)
 {
     registerMockedHttpURLLoad("spell.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5020,7 +5020,7 @@ TEST_P(ParametrizedWebFrameTest, RemoveSpellingMarkers)
     EXPECT_EQ(0U, document->markers().markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
 }
 
-TEST_P(ParametrizedWebFrameTest, RemoveSpellingMarkersUnderWords)
+TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords)
 {
     registerMockedHttpURLLoad("spell.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5052,7 +5052,7 @@ TEST_P(ParametrizedWebFrameTest, RemoveSpellingMarkersUnderWords)
     EXPECT_EQ(0U, documentMarkers2.size());
 }
 
-TEST_P(ParametrizedWebFrameTest, MarkerHashIdentifiers)
+TEST_P(ParameterizedWebFrameTest, MarkerHashIdentifiers)
 {
     registerMockedHttpURLLoad("spell.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5128,7 +5128,7 @@ private:
     WebTextCheckingCompletion* m_completion;
 };
 
-TEST_P(ParametrizedWebFrameTest, SlowSpellcheckMarkerPosition)
+TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition)
 {
     registerMockedHttpURLLoad("spell.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5160,7 +5160,7 @@ TEST_P(ParametrizedWebFrameTest, SlowSpellcheckMarkerPosition)
 
 // This test verifies that cancelling spelling request does not cause a
 // write-after-free when there's no spellcheck client set.
-TEST_P(ParametrizedWebFrameTest, CancelSpellingRequestCrash)
+TEST_P(ParameterizedWebFrameTest, CancelSpellingRequestCrash)
 {
     registerMockedHttpURLLoad("spell.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5180,7 +5180,7 @@ TEST_P(ParametrizedWebFrameTest, CancelSpellingRequestCrash)
     frame->frame()->spellChecker().cancelCheck();
 }
 
-TEST_P(ParametrizedWebFrameTest, SpellcheckResultErasesMarkers)
+TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers)
 {
     registerMockedHttpURLLoad("spell.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5209,7 +5209,7 @@ TEST_P(ParametrizedWebFrameTest, SpellcheckResultErasesMarkers)
     EXPECT_EQ(0U, document->markers().markers().size());
 }
 
-TEST_P(ParametrizedWebFrameTest, SpellcheckResultsSavedInDocument)
+TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument)
 {
     registerMockedHttpURLLoad("spell.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5265,7 +5265,7 @@ public:
     bool m_didAccessInitialDocument;
 };
 
-TEST_P(ParametrizedWebFrameTest, DidAccessInitialDocumentBody)
+TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBody)
 {
     // FIXME: Why is this local webViewClient needed instead of the default
     // WebViewHelper one? With out it there's some mysterious crash in the
@@ -5297,7 +5297,7 @@ TEST_P(ParametrizedWebFrameTest, DidAccessInitialDocumentBody)
     EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
 }
 
-TEST_P(ParametrizedWebFrameTest, DidAccessInitialDocumentNavigator)
+TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentNavigator)
 {
     // FIXME: Why is this local webViewClient needed instead of the default
     // WebViewHelper one? With out it there's some mysterious crash in the
@@ -5323,7 +5323,7 @@ TEST_P(ParametrizedWebFrameTest, DidAccessInitialDocumentNavigator)
     EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
 }
 
-TEST_P(ParametrizedWebFrameTest, DidAccessInitialDocumentViaJavascriptUrl)
+TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentViaJavascriptUrl)
 {
     TestAccessInitialDocumentWebFrameClient webFrameClient;
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5338,9 +5338,9 @@ TEST_P(ParametrizedWebFrameTest, DidAccessInitialDocumentViaJavascriptUrl)
 
 // Fails on the WebKit XP (deps) bot. http://crbug.com/312192
 #if OS(WIN)
-TEST_P(ParametrizedWebFrameTest, DISABLED_DidAccessInitialDocumentBodyBeforeModalDialog)
+TEST_P(ParameterizedWebFrameTest, DISABLED_DidAccessInitialDocumentBodyBeforeModalDialog)
 #else
-TEST_P(ParametrizedWebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
+TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
 #endif
 {
     // FIXME: Why is this local webViewClient needed instead of the default
@@ -5378,9 +5378,9 @@ TEST_P(ParametrizedWebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
 
 // Fails on the WebKit XP (deps) bot. http://crbug.com/312192
 #if OS(WIN)
-TEST_P(ParametrizedWebFrameTest, DISABLED_DidWriteToInitialDocumentBeforeModalDialog)
+TEST_P(ParameterizedWebFrameTest, DISABLED_DidWriteToInitialDocumentBeforeModalDialog)
 #else
-TEST_P(ParametrizedWebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
+TEST_P(ParameterizedWebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
 #endif
 {
     // FIXME: Why is this local webViewClient needed instead of the default
@@ -5502,7 +5502,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage)
     client.reset();
 }
 
-TEST_P(ParametrizedWebFrameTest, FirstPartyForCookiesForRedirect)
+TEST_P(ParameterizedWebFrameTest, FirstPartyForCookiesForRedirect)
 {
     WTF::String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
     filePath.append("/Source/web/tests/data/first_party.html");
@@ -5536,7 +5536,7 @@ public:
     }
 };
 
-TEST_P(ParametrizedWebFrameTest, SimulateFragmentAnchorMiddleClick)
+TEST_P(ParameterizedWebFrameTest, SimulateFragmentAnchorMiddleClick)
 {
     registerMockedHttpURLLoad("fragment_middle_click.html");
     TestNavigationPolicyWebFrameClient client;
@@ -5583,7 +5583,7 @@ private:
     int m_decidePolicyCallCount;
 };
 
-TEST_P(ParametrizedWebFrameTest, ModifiedClickNewWindow)
+TEST_P(ParameterizedWebFrameTest, ModifiedClickNewWindow)
 {
     registerMockedHttpURLLoad("ctrl_click.html");
     registerMockedHttpURLLoad("hello_world.html");
@@ -5608,7 +5608,7 @@ TEST_P(ParametrizedWebFrameTest, ModifiedClickNewWindow)
     EXPECT_EQ(2, webFrameClient.decidePolicyCallCount());
 }
 
-TEST_P(ParametrizedWebFrameTest, BackToReload)
+TEST_P(ParameterizedWebFrameTest, BackToReload)
 {
     registerMockedHttpURLLoad("fragment_middle_click.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5629,7 +5629,7 @@ TEST_P(ParametrizedWebFrameTest, BackToReload)
     EXPECT_EQ(WebURLRequest::ReloadIgnoringCacheData, frame->dataSource()->request().cachePolicy());
 }
 
-TEST_P(ParametrizedWebFrameTest, BackDuringChildFrameReload)
+TEST_P(ParameterizedWebFrameTest, BackDuringChildFrameReload)
 {
     registerMockedHttpURLLoad("page_with_blank_iframe.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5655,7 +5655,7 @@ TEST_P(ParametrizedWebFrameTest, BackDuringChildFrameReload)
     EXPECT_EQ(item.urlString(), WebString(mainFrameLoader.currentItem()->urlString()));
 }
 
-TEST_P(ParametrizedWebFrameTest, ReloadPost)
+TEST_P(ParameterizedWebFrameTest, ReloadPost)
 {
     registerMockedHttpURLLoad("reload_post.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5673,7 +5673,7 @@ TEST_P(ParametrizedWebFrameTest, ReloadPost)
     EXPECT_EQ(WebNavigationTypeFormResubmitted, frame->dataSource()->navigationType());
 }
 
-TEST_P(ParametrizedWebFrameTest, LoadHistoryItemReload)
+TEST_P(ParameterizedWebFrameTest, LoadHistoryItemReload)
 {
     registerMockedHttpURLLoad("fragment_middle_click.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -5752,7 +5752,7 @@ private:
     int m_childFrameCreationCount;
 };
 
-TEST_P(ParametrizedWebFrameTest, ReloadIframe)
+TEST_P(ParameterizedWebFrameTest, ReloadIframe)
 {
     registerMockedHttpURLLoad("iframe_reload.html");
     registerMockedHttpURLLoad("visible_iframe.html");
@@ -5800,7 +5800,7 @@ private:
     bool m_frameLoadTypeSameSeen;
 };
 
-TEST_P(ParametrizedWebFrameTest, NavigateToSame)
+TEST_P(ParameterizedWebFrameTest, NavigateToSame)
 {
     registerMockedHttpURLLoad("navigate_to_same.html");
     TestSameDocumentWebFrameClient client;
@@ -5836,7 +5836,7 @@ private:
     int m_numOfImageRequests;
 };
 
-TEST_P(ParametrizedWebFrameTest, NavigateToSameNoConditionalRequestForSubresource)
+TEST_P(ParameterizedWebFrameTest, NavigateToSameNoConditionalRequestForSubresource)
 {
     registerMockedHttpURLLoad("foo_with_image.html");
     registerMockedHttpURLLoad("white-1x1.png");
@@ -5850,7 +5850,7 @@ TEST_P(ParametrizedWebFrameTest, NavigateToSameNoConditionalRequestForSubresourc
     EXPECT_EQ(client.numOfImageRequests(), 2);
 }
 
-TEST_P(ParametrizedWebFrameTest, WebNodeImageContents)
+TEST_P(ParameterizedWebFrameTest, WebNodeImageContents)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad("about:blank", true);
@@ -5909,7 +5909,7 @@ private:
     int m_differentDocumentStartCount;
 };
 
-TEST_P(ParametrizedWebFrameTest, PushStateStartsAndStops)
+TEST_P(ParameterizedWebFrameTest, PushStateStartsAndStops)
 {
     registerMockedHttpURLLoad("push_state.html");
     TestStartStopCallbackWebFrameClient client;
@@ -5939,7 +5939,7 @@ private:
     WebHistoryCommitType m_lastCommitType;
 };
 
-TEST_P(ParametrizedWebFrameTest, SameDocumentHistoryNavigationCommitType)
+TEST_P(ParameterizedWebFrameTest, SameDocumentHistoryNavigationCommitType)
 {
     registerMockedHttpURLLoad("push_state.html");
     TestDidNavigateCommitTypeWebFrameClient client;
@@ -5977,7 +5977,7 @@ private:
 
 // Test which ensures that the first navigation in a subframe will always
 // result in history entry being replaced and not a new one added.
-TEST_P(ParametrizedWebFrameTest, DISABLED_FirstFrameNavigationReplacesHistory)
+TEST_P(ParameterizedWebFrameTest, DISABLED_FirstFrameNavigationReplacesHistory)
 {
     registerMockedHttpURLLoad("history.html");
     registerMockedHttpURLLoad("find.html");
@@ -6051,7 +6051,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite)
 }
 
 // Test that currentHistoryItem reflects the current page, not the provisional load.
-TEST_P(ParametrizedWebFrameTest, CurrentHistoryItem)
+TEST_P(ParameterizedWebFrameTest, CurrentHistoryItem)
 {
     registerMockedHttpURLLoad("fixed_layout.html");
     std::string url = m_baseURL + "fixed_layout.html";
@@ -6093,7 +6093,7 @@ private:
 };
 
 // Test that we don't crash if WebFrameClient::createChildFrame() fails.
-TEST_P(ParametrizedWebFrameTest, CreateChildFrameFailure)
+TEST_P(ParameterizedWebFrameTest, CreateChildFrameFailure)
 {
     registerMockedHttpURLLoad("create_child_frame_fail.html");
     FailCreateChildFrame client;
@@ -6103,7 +6103,7 @@ TEST_P(ParametrizedWebFrameTest, CreateChildFrameFailure)
     EXPECT_EQ(1, client.callCount());
 }
 
-TEST_P(ParametrizedWebFrameTest, fixedPositionInFixedViewport)
+TEST_P(ParameterizedWebFrameTest, fixedPositionInFixedViewport)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
     registerMockedHttpURLLoad("fixed-position-in-fixed-viewport.html");
@@ -6130,7 +6130,7 @@ TEST_P(ParametrizedWebFrameTest, fixedPositionInFixedViewport)
     EXPECT_EQ(500, leftRightFixed->offsetWidth());
 }
 
-TEST_P(ParametrizedWebFrameTest, FrameViewMoveWithSetFrameRect)
+TEST_P(ParameterizedWebFrameTest, FrameViewMoveWithSetFrameRect)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad("about:blank");
@@ -6208,7 +6208,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForTopControls)
     EXPECT_POINT_EQ(IntPoint(0, 1903), frameView->maximumScrollPosition());
 }
 
-TEST_P(ParametrizedWebFrameTest, FullscreenLayerSize)
+TEST_P(ParameterizedWebFrameTest, FullscreenLayerSize)
 {
     FakeCompositingWebViewClient client;
     registerMockedHttpURLLoad("fullscreen_div.html");
@@ -6276,7 +6276,7 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     ASSERT_TRUE(webScrollLayer->userScrollableVertical());
 }
 
-TEST_P(ParametrizedWebFrameTest, FullscreenMainFrame)
+TEST_P(ParameterizedWebFrameTest, FullscreenMainFrame)
 {
     FakeCompositingWebViewClient client;
     registerMockedHttpURLLoad("fullscreen_div.html");
@@ -6307,7 +6307,7 @@ TEST_P(ParametrizedWebFrameTest, FullscreenMainFrame)
     ASSERT_TRUE(webScrollLayer->userScrollableVertical());
 }
 
-TEST_P(ParametrizedWebFrameTest, FullscreenSubframe)
+TEST_P(ParameterizedWebFrameTest, FullscreenSubframe)
 {
     FakeCompositingWebViewClient client;
     registerMockedHttpURLLoad("fullscreen_iframe.html");
@@ -6373,7 +6373,7 @@ TEST_F(WebFrameTest, FullscreenMediaStreamVideo)
     context->notifyContextDestroyed();
 }
 
-TEST_P(ParametrizedWebFrameTest, FullscreenWithTinyViewport)
+TEST_P(ParameterizedWebFrameTest, FullscreenWithTinyViewport)
 {
     FakeCompositingWebViewClient client;
     registerMockedHttpURLLoad("viewport-tiny.html");
@@ -6413,7 +6413,7 @@ TEST_P(ParametrizedWebFrameTest, FullscreenWithTinyViewport)
     EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, FullscreenResizeWithTinyViewport)
+TEST_P(ParameterizedWebFrameTest, FullscreenResizeWithTinyViewport)
 {
     FakeCompositingWebViewClient client;
     registerMockedHttpURLLoad("viewport-tiny.html");
@@ -6459,7 +6459,7 @@ TEST_P(ParametrizedWebFrameTest, FullscreenResizeWithTinyViewport)
     EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
 }
 
-TEST_P(ParametrizedWebFrameTest, LayoutBlockPercentHeightDescendants)
+TEST_P(ParameterizedWebFrameTest, LayoutBlockPercentHeightDescendants)
 {
     registerMockedHttpURLLoad("percent-height-descendants.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -6488,7 +6488,7 @@ TEST_P(ParametrizedWebFrameTest, LayoutBlockPercentHeightDescendants)
     EXPECT_FALSE(anonymousBlock->hasPercentHeightDescendants());
 }
 
-TEST_P(ParametrizedWebFrameTest, HasVisibleContentOnVisibleFrames)
+TEST_P(ParameterizedWebFrameTest, HasVisibleContentOnVisibleFrames)
 {
     registerMockedHttpURLLoad("visible_frames.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -6498,7 +6498,7 @@ TEST_P(ParametrizedWebFrameTest, HasVisibleContentOnVisibleFrames)
     }
 }
 
-TEST_P(ParametrizedWebFrameTest, HasVisibleContentOnHiddenFrames)
+TEST_P(ParameterizedWebFrameTest, HasVisibleContentOnHiddenFrames)
 {
     registerMockedHttpURLLoad("hidden_frames.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -6522,7 +6522,7 @@ private:
     int m_manifestChangeCount;
 };
 
-TEST_P(ParametrizedWebFrameTest, NotifyManifestChange)
+TEST_P(ParameterizedWebFrameTest, NotifyManifestChange)
 {
     registerMockedHttpURLLoad("link-manifest-change.html");
 
@@ -6541,7 +6541,7 @@ static ResourcePtr<Resource> fetchManifest(Document* document, const KURL& url)
     return document->fetcher()->fetchSynchronously(fetchRequest);
 }
 
-TEST_P(ParametrizedWebFrameTest, ManifestFetch)
+TEST_P(ParameterizedWebFrameTest, ManifestFetch)
 {
     registerMockedHttpURLLoad("foo.html");
     registerMockedHttpURLLoad("link-manifest-fetch.json");
@@ -6555,7 +6555,7 @@ TEST_P(ParametrizedWebFrameTest, ManifestFetch)
     EXPECT_TRUE(resource->isLoaded());
 }
 
-TEST_P(ParametrizedWebFrameTest, ManifestCSPFetchAllow)
+TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchAllow)
 {
     URLTestHelpers::registerMockedURLLoad(toKURL(m_notBaseURL + "link-manifest-fetch.json"), "link-manifest-fetch.json");
     registerMockedHttpURLLoadWithCSP("foo.html", "manifest-src *");
@@ -6569,7 +6569,7 @@ TEST_P(ParametrizedWebFrameTest, ManifestCSPFetchAllow)
     EXPECT_TRUE(resource->isLoaded());
 }
 
-TEST_P(ParametrizedWebFrameTest, ManifestCSPFetchSelf)
+TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelf)
 {
     URLTestHelpers::registerMockedURLLoad(toKURL(m_notBaseURL + "link-manifest-fetch.json"), "link-manifest-fetch.json");
     registerMockedHttpURLLoadWithCSP("foo.html", "manifest-src 'self'");
@@ -6583,7 +6583,7 @@ TEST_P(ParametrizedWebFrameTest, ManifestCSPFetchSelf)
     EXPECT_EQ(0, resource.get()); // Fetching resource wasn't allowed.
 }
 
-TEST_P(ParametrizedWebFrameTest, ManifestCSPFetchSelfReportOnly)
+TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelfReportOnly)
 {
     URLTestHelpers::registerMockedURLLoad(toKURL(m_notBaseURL + "link-manifest-fetch.json"), "link-manifest-fetch.json");
     registerMockedHttpURLLoadWithCSP("foo.html", "manifest-src 'self'", /* report only */ true);
@@ -6612,7 +6612,7 @@ private:
     int m_defaultPresentationChangeCount;
 };
 
-TEST_P(ParametrizedWebFrameTest, NotifyDefaultPresentationChange)
+TEST_P(ParameterizedWebFrameTest, NotifyDefaultPresentationChange)
 {
     registerMockedHttpURLLoad("link-presentation-url-change.html");
 
@@ -6624,7 +6624,7 @@ TEST_P(ParametrizedWebFrameTest, NotifyDefaultPresentationChange)
 }
 
 
-TEST_P(ParametrizedWebFrameTest, ReloadBypassingCache)
+TEST_P(ParameterizedWebFrameTest, ReloadBypassingCache)
 {
     // Check that a reload ignoring cache on a frame will result in the cache
     // policy of the request being set to ReloadBypassingCache.
@@ -6651,7 +6651,7 @@ static void nodeImageTestValidation(const IntSize& referenceBitmapSize, DragImag
     EXPECT_EQ(0, memcmp(bitmap.getPixels(), dragBitmap.getPixels(), bitmap.getSize()));
 }
 
-TEST_P(ParametrizedWebFrameTest, NodeImageTestCSSTransform)
+TEST_P(ParameterizedWebFrameTest, NodeImageTestCSSTransform)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     OwnPtr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-transform"));
@@ -6660,7 +6660,7 @@ TEST_P(ParametrizedWebFrameTest, NodeImageTestCSSTransform)
     nodeImageTestValidation(IntSize(40, 40), dragImage.get());
 }
 
-TEST_P(ParametrizedWebFrameTest, NodeImageTestCSS3DTransform)
+TEST_P(ParameterizedWebFrameTest, NodeImageTestCSS3DTransform)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     OwnPtr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-css-3dtransform"));
@@ -6669,7 +6669,7 @@ TEST_P(ParametrizedWebFrameTest, NodeImageTestCSS3DTransform)
     nodeImageTestValidation(IntSize(20, 40), dragImage.get());
 }
 
-TEST_P(ParametrizedWebFrameTest, NodeImageTestInlineBlock)
+TEST_P(ParameterizedWebFrameTest, NodeImageTestInlineBlock)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     OwnPtr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-inlineblock"));
@@ -6678,7 +6678,7 @@ TEST_P(ParametrizedWebFrameTest, NodeImageTestInlineBlock)
     nodeImageTestValidation(IntSize(40, 40), dragImage.get());
 }
 
-TEST_P(ParametrizedWebFrameTest, NodeImageTestFloatLeft)
+TEST_P(ParameterizedWebFrameTest, NodeImageTestFloatLeft)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     OwnPtr<DragImage> dragImage = nodeImageTestSetup(&webViewHelper, std::string("case-float-left-overflow-hidden"));
@@ -6689,9 +6689,9 @@ TEST_P(ParametrizedWebFrameTest, NodeImageTestFloatLeft)
 
 // Crashes on Android: http://crbug.com/403804
 #if OS(ANDROID)
-TEST_P(ParametrizedWebFrameTest, DISABLED_PrintingBasic)
+TEST_P(ParameterizedWebFrameTest, DISABLED_PrintingBasic)
 #else
-TEST_P(ParametrizedWebFrameTest, PrintingBasic)
+TEST_P(ParameterizedWebFrameTest, PrintingBasic)
 #endif
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -6734,7 +6734,7 @@ private:
     bool m_didNotify;
 };
 
-TEST_P(ParametrizedWebFrameTest, ThemeColor)
+TEST_P(ParameterizedWebFrameTest, ThemeColor)
 {
     registerMockedHttpURLLoad("theme_color_test.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
@@ -6763,7 +6763,7 @@ TEST_P(ParametrizedWebFrameTest, ThemeColor)
 
 // Make sure that an embedder-triggered detach with a remote frame parent
 // doesn't leave behind dangling pointers.
-TEST_P(ParametrizedWebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame)
+TEST_P(ParameterizedWebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame)
 {
     // FIXME: Refactor some of this logic into WebViewHelper to make it easier to
     // write tests with a top-level remote frame.
@@ -7297,7 +7297,7 @@ private:
     WebHistoryCommitType m_historyCommitType;
 };
 
-TEST_P(ParametrizedWebFrameTest, RemoteFrameInitialCommitType)
+TEST_P(ParameterizedWebFrameTest, RemoteFrameInitialCommitType)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
@@ -7328,7 +7328,7 @@ public:
 // FIXME: This would be better as a unittest on DocumentThreadableLoader but it
 // requires spin-up of a frame. It may be possible to remove that requirement
 // and convert it to a unittest.
-TEST_P(ParametrizedWebFrameTest, LoaderOriginAccess)
+TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess)
 {
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad("about:blank");
@@ -7359,7 +7359,7 @@ TEST_P(ParametrizedWebFrameTest, LoaderOriginAccess)
     EXPECT_FALSE(client.failed());
 }
 
-TEST_P(ParametrizedWebFrameTest, DetachRemoteFrame)
+TEST_P(ParameterizedWebFrameTest, DetachRemoteFrame)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
@@ -7381,7 +7381,7 @@ public:
     std::vector<WebConsoleMessage> messages;
 };
 
-TEST_P(ParametrizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
+TEST_P(ParameterizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
 {
     registerMockedHttpURLLoad("hidden_frames.html");
     registerMockedChromeURLLoad("hello_world.html");
@@ -7419,7 +7419,7 @@ TEST_P(ParametrizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
     popupWebViewHelper.reset();
 }
 
-TEST_P(ParametrizedWebFrameTest, CreateLocalChildWithPreviousSibling)
+TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
 {
     FrameTestHelpers::TestWebViewClient viewClient;
     FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
