@@ -54,8 +54,8 @@ class ProfileOAuth2TokenServiceIOSProvider {
                               NSDate* expiration,
                               NSError* error)> AccessTokenCallback;
 
-  ProfileOAuth2TokenServiceIOSProvider() {};
-  virtual ~ProfileOAuth2TokenServiceIOSProvider() {};
+  ProfileOAuth2TokenServiceIOSProvider() {}
+  virtual ~ProfileOAuth2TokenServiceIOSProvider() {}
 
   // Initializes the shared authentication library. This method should be called
   // when loading credentials if the user is signed in to Chrome via the shared
