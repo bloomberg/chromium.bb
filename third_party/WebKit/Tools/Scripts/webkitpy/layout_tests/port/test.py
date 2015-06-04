@@ -103,7 +103,7 @@ class TestList(object):
 #
 # These numbers may need to be updated whenever we add or delete tests. This includes virtual tests.
 #
-TOTAL_TESTS = 113
+TOTAL_TESTS = 114
 TOTAL_SKIPS = 29
 
 UNEXPECTED_PASSES = 1
@@ -550,6 +550,8 @@ class TestPort(Port):
         return [
             VirtualTestSuite(prefix='virtual_passes', base='passes', args=['--virtual-arg']),
             VirtualTestSuite(prefix='skipped', base='failures/expected', args=['--virtual-arg2']),
+            VirtualTestSuite(prefix='references_use_default_args', base='passes/reftest.html',
+                             args=['--virtual-arg'], references_use_default_args=True),
         ]
 
 
