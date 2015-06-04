@@ -111,6 +111,8 @@ AccessibilityMatchPredicate PredicateForSearchKey(NSString* searchKey) {
     return [](BrowserAccessibility* start, BrowserAccessibility* current) {
       if (current->IsWebAreaForPresentationalIframe())
         return false;
+      if (!current->GetParent())
+        return false;
       return (current->GetRole() == ui::AX_ROLE_WEB_AREA ||
               current->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA);
     };
