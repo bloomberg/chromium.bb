@@ -507,6 +507,27 @@ class ConfigClassTest(cros_test_lib.TestCase):
     # Make sure we can dump debug content without crashing.
     self.assertNotEqual(config.DumpExpandedConfigToString(), '')
 
+class SiteConfigFindTest(cros_test_lib.TestCase):
+  """Tests related to Find helpers on SiteConfig."""
+
+  def testGetBoardsMockConfig(self):
+    site_config = MockSiteConfig()
+    self.assertEqual(
+        site_config.GetBoards(),
+        set(['x86-generic']))
+
+  def testGetBoardsComplexConfig(self):
+    site_config = MockSiteConfig()
+    site_config.AddConfigWithoutTemplate('build_a', boards=['foo_board'])
+    site_config.AddConfigWithoutTemplate('build_b', boards=['bar_board'])
+    site_config.AddConfigWithoutTemplate(
+        'build_c', boards=['foo_board', 'car_board'])
+
+    self.assertEqual(
+        site_config.GetBoards(),
+        set(['x86-generic', 'foo_board', 'bar_board', 'car_board']))
+
+
 class FindConfigsForBoardTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""
 

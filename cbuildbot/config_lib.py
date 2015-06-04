@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import copy
+import itertools
 import json
 
 from chromite.cbuildbot import constants
@@ -289,6 +290,11 @@ class SiteConfig(dict):
   #
   # Methods for searching a SiteConfig's contents.
   #
+  def GetBoards(self):
+    """Return an iterable of all boards in the SiteConfig."""
+    return set(itertools.chain.from_iterable(
+        x.boards for x in self.itervalues() if x.boards))
+
   def FindFullConfigsForBoard(self, board=None):
     """Returns full builder configs for a board.
 
