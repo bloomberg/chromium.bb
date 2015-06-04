@@ -30,7 +30,7 @@ using mojo::ViewManagerService;
 
 namespace view_manager {
 
-ViewManagerApp::ViewManagerApp() : app_impl_(nullptr) {
+ViewManagerApp::ViewManagerApp() : app_impl_(nullptr), is_headless_(false) {
 }
 
 ViewManagerApp::~ViewManagerApp() {}
