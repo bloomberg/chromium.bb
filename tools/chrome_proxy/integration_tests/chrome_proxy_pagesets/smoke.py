@@ -10,7 +10,6 @@ class SmokePage(page_module.Page):
 
   def __init__(self, url, page_set, name=''):
     super(SmokePage, self).__init__(url=url, page_set=page_set, name=name)
-    self.archive_data_file = '../data/chrome_proxy_smoke.json'
 
 
 class Page1(SmokePage):
@@ -21,7 +20,7 @@ class Page1(SmokePage):
 
   def __init__(self, page_set):
     super(Page1, self).__init__(
-      url='http://aws1.mdw.la/fw/',
+      url='http://check.googlezip.net/test.html',
       page_set=page_set,
       name='header validation')
 
@@ -47,7 +46,7 @@ class Page3(SmokePage):
 
   def __init__(self, page_set):
     super(Page3, self).__init__(
-      url='http://aws1.mdw.la/bypass/',
+      url='http://check.googlezip.net/block',
       page_set=page_set,
       name='bypass')
 
@@ -84,8 +83,7 @@ class SmokePageSet(page_set_module.PageSet):
   """ Chrome proxy test sites """
 
   def __init__(self):
-    super(SmokePageSet, self).__init__(
-      archive_data_file='../data/chrome_proxy_smoke.json')
+    super(SmokePageSet, self).__init__()
 
     self.AddUserStory(Page1(self))
     self.AddUserStory(Page2(self))

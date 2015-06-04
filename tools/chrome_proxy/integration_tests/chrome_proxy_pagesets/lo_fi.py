@@ -23,7 +23,7 @@ class LoFiPageSet(page_set_module.PageSet):
     super(LoFiPageSet, self).__init__()
 
     urls_list = [
-      'http://aws1.mdw.la/fw/buddy.jpg',
+      'http://check.googlezip.net/image.png',
     ]
 
     for url in urls_list:

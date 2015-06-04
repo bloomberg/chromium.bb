@@ -10,7 +10,6 @@ class BypassPage(page_module.Page):
 
   def __init__(self, url, page_set):
     super(BypassPage, self).__init__(url=url, page_set=page_set)
-    self.archive_data_file = '../data/chrome_proxy_bypass.json'
 
 
 class BypassPageSet(page_set_module.PageSet):
@@ -18,11 +17,10 @@ class BypassPageSet(page_set_module.PageSet):
   """ Chrome proxy test sites """
 
   def __init__(self):
-    super(BypassPageSet, self).__init__(
-      archive_data_file='../data/chrome_proxy_bypass.json')
+    super(BypassPageSet, self).__init__()
 
     urls_list = [
-      'http://aws1.mdw.la/bypass/',
+      'http://check.googlezip.net/block',
     ]
 
     for url in urls_list:

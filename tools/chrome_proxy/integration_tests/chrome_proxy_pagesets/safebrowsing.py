@@ -17,7 +17,6 @@ class SafebrowsingPage(page_module.Page):
 
   def __init__(self, url, page_set, expect_timeout):
     super(SafebrowsingPage, self).__init__(url=url, page_set=page_set)
-    self.archive_data_file = '../data/chrome_proxy_safebrowsing.json'
     self._expect_timeout = expect_timeout
 
   def RunNavigateSteps(self, action_runner):
@@ -35,8 +34,7 @@ class SafebrowsingPageSet(page_set_module.PageSet):
   """ Chrome proxy test sites """
 
   def __init__(self, expect_timeout=False):
-    super(SafebrowsingPageSet, self).__init__(
-      archive_data_file='../data/chrome_proxy_safebrowsing.json')
+    super(SafebrowsingPageSet, self).__init__()
 
     self.AddUserStory(
         SafebrowsingPage('http://www.ianfette.org/', self, expect_timeout))

@@ -19,7 +19,7 @@ class HTTPToDirectFallbackPageSet(page_set_module.PageSet):
 
     urls_list = [
       'http://check.googlezip.net/fallback',
-      'http://aws1.mdw.la/bypass',
+      'http://check.googlezip.net/block',
     ]
 
     for url in urls_list:

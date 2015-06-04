@@ -1,8 +1,0 @@
-{
-    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
-    "archives": {
-        "chrome_proxy_safebrowsing_000.wpr": [
-            "http://www.ianfette.org/"
-        ]
-    }
-}

@@ -33,7 +33,7 @@ class ClientTypePageSet(page_set_module.PageSet):
     # of the following pages, since there's no way to get the client type value
     # from a request that was bypassed.
     self.AddUserStory(ClientTypePage(
-        url='http://aws1.mdw.la/fw',
+        url='http://check.googlezip.net/test.html',
         page_set=self,
         bypass_for_client_type='none'))
 
