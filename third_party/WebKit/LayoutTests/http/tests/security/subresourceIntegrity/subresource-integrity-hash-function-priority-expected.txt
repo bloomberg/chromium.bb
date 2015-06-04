@@ -1,0 +1,5 @@
+CONSOLE ERROR: Failed to find a valid digest in the 'integrity' attribute for resource 'http://127.0.0.1:8000/security/subresourceIntegrity/call-success.js' with computed SHA-256 integrity 'B0_62fJSJFrdjEFR9ba04m_D-LHQ-zG6PGcaR0Trpxg='. The resource has been blocked.
+This is a testharness.js-based test.
+PASS Priority of stronger hash functions 
+Harness: the test ran to completion.
+

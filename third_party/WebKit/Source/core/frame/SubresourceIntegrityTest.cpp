@@ -186,6 +186,21 @@ protected:
     RefPtrWillBePersistent<HTMLScriptElement> scriptElement;
 };
 
+TEST_F(SubresourceIntegrityTest, Prioritization)
+{
+    EXPECT_EQ(HashAlgorithmSha256, SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithmSha256, HashAlgorithmSha256));
+    EXPECT_EQ(HashAlgorithmSha384, SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithmSha384, HashAlgorithmSha384));
+    EXPECT_EQ(HashAlgorithmSha512, SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithmSha512, HashAlgorithmSha512));
+
+    EXPECT_EQ(HashAlgorithmSha384, SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithmSha384, HashAlgorithmSha256));
+    EXPECT_EQ(HashAlgorithmSha512, SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithmSha512, HashAlgorithmSha256));
+    EXPECT_EQ(HashAlgorithmSha512, SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithmSha512, HashAlgorithmSha384));
+
+    EXPECT_EQ(HashAlgorithmSha384, SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithmSha256, HashAlgorithmSha384));
+    EXPECT_EQ(HashAlgorithmSha512, SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithmSha256, HashAlgorithmSha512));
+    EXPECT_EQ(HashAlgorithmSha512, SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithmSha384, HashAlgorithmSha512));
+}
+
 TEST_F(SubresourceIntegrityTest, ParseAlgorithm)
 {
     expectAlgorithm("sha256-", HashAlgorithmSha256);
@@ -372,7 +387,7 @@ TEST_F(SubresourceIntegrityTest, ParsingBase64)
 // End-to-end tests of ::CheckSubresourceIntegrity.
 //
 
-TEST_F(SubresourceIntegrityTest, DISABLED_CheckSubresourceIntegrityInSecureOrigin)
+TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInSecureOrigin)
 {
     document->updateSecurityOrigin(secureOrigin->isolatedCopy());
 
@@ -385,12 +400,13 @@ TEST_F(SubresourceIntegrityTest, DISABLED_CheckSubresourceIntegrityInSecureOrigi
     // Verify multiple hashes in an attribute.
     expectIntegrity(kSha256AndSha384Integrities, kBasicScript, secureURL, secureURL);
     expectIntegrity(kBadSha256AndGoodSha384Integrities, kBasicScript, secureURL, secureURL);
-    expectIntegrity(kGoodSha256AndBadSha384Integrities, kBasicScript, secureURL, secureURL);
 
     // The hash label must match the hash value.
     expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL, secureURL);
 
-    // With multiple values, at least one must match.
+    // With multiple values, at least one must match, and it must be the
+    // strongest hash algorithm.
+    expectIntegrityFailure(kGoodSha256AndBadSha384Integrities, kBasicScript, secureURL, secureURL);
     expectIntegrityFailure(kBadSha256AndBadSha384Integrities, kBasicScript, secureURL, secureURL);
 
     // Unsupported hash functions should succeed.
@@ -407,7 +423,7 @@ TEST_F(SubresourceIntegrityTest, DISABLED_CheckSubresourceIntegrityInSecureOrigi
     expectIntegrity(kSha256IntegrityWithMimeOption, kBasicScript, secureURL, secureURL, NoCors);
 }
 
-TEST_F(SubresourceIntegrityTest, DISABLED_CheckSubresourceIntegrityInInsecureOrigin)
+TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInInsecureOrigin)
 {
     // The same checks as CheckSubresourceIntegrityInSecureOrigin should pass
     // here, with the expection of the NoCors check at the end.
@@ -422,7 +438,8 @@ TEST_F(SubresourceIntegrityTest, DISABLED_CheckSubresourceIntegrityInInsecureOri
 
     expectIntegrity(kSha256AndSha384Integrities, kBasicScript, secureURL, insecureURL);
     expectIntegrity(kBadSha256AndGoodSha384Integrities, kBasicScript, secureURL, insecureURL);
-    expectIntegrity(kGoodSha256AndBadSha384Integrities, kBasicScript, secureURL, insecureURL);
+
+    expectIntegrityFailure(kGoodSha256AndBadSha384Integrities, kBasicScript, secureURL, insecureURL);
 
     // This check should fail because, unlike in the
     // CheckSubresourceIntegrityInSecureOrigin case, this is cross origin

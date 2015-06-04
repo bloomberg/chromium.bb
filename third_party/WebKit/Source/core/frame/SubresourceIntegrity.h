@@ -34,6 +34,7 @@ private:
     friend class SubresourceIntegrityTest;
     friend class SubresourceIntegrityTest_Parsing_Test;
     friend class SubresourceIntegrityTest_ParseAlgorithm_Test;
+    friend class SubresourceIntegrityTest_Prioritization_Test;
 
     enum AlgorithmParseResult {
         AlgorithmValid,
@@ -46,6 +47,7 @@ private:
         HashAlgorithm algorithm;
     };
 
+    static HashAlgorithm getPrioritizedHashFunction(HashAlgorithm, HashAlgorithm);
     static AlgorithmParseResult parseAlgorithm(const UChar*& begin, const UChar* end, HashAlgorithm&);
     static bool parseDigest(const UChar*& begin, const UChar* end, String& digest);
 

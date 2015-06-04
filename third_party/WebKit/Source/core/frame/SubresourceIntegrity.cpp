@@ -21,6 +21,7 @@
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/Vector.h"
+#include "wtf/dtoa/utils.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
@@ -65,6 +66,43 @@ static String digestToString(const DigestValue& digest)
     return base64URLEncode(reinterpret_cast<const char*>(digest.data()), digest.size(), Base64DoNotInsertLFs);
 }
 
+
+HashAlgorithm SubresourceIntegrity::getPrioritizedHashFunction(HashAlgorithm algorithm1, HashAlgorithm algorithm2)
+{
+    const HashAlgorithm weakerThanSha384[] = { HashAlgorithmSha256 };
+    const HashAlgorithm weakerThanSha512[] = { HashAlgorithmSha256, HashAlgorithmSha384 };
+
+    ASSERT(algorithm1 != HashAlgorithmSha1);
+    ASSERT(algorithm2 != HashAlgorithmSha1);
+
+    if (algorithm1 == algorithm2)
+        return algorithm1;
+
+    const HashAlgorithm* weakerAlgorithms = 0;
+    size_t length = 0;
+    switch (algorithm1) {
+    case HashAlgorithmSha256:
+        break;
+    case HashAlgorithmSha384:
+        weakerAlgorithms = weakerThanSha384;
+        length = ARRAY_SIZE(weakerThanSha384);
+        break;
+    case HashAlgorithmSha512:
+        weakerAlgorithms = weakerThanSha512;
+        length = ARRAY_SIZE(weakerThanSha512);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    };
+
+    for (size_t i = 0; i < length; i++) {
+        if (weakerAlgorithms[i] == algorithm2)
+            return algorithm1;
+    }
+
+    return algorithm2;
+}
+
 bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, const String& source, const KURL& resourceUrl, const Resource& resource)
 {
     if (!RuntimeEnabledFeatures::subresourceIntegrityEnabled())
@@ -90,8 +128,15 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
     if (!metadataList.size())
         return true;
 
+    HashAlgorithm strongestAlgorithm = HashAlgorithmSha256;
+    for (const IntegrityMetadata& metadata : metadataList)
+        strongestAlgorithm = getPrioritizedHashFunction(metadata.algorithm, strongestAlgorithm);
+
     DigestValue digest;
-    for (IntegrityMetadata& metadata : metadataList) {
+    for (const IntegrityMetadata& metadata : metadataList) {
+        if (metadata.algorithm != strongestAlgorithm)
+            continue;
+
         digest.clear();
         bool digestSuccess = computeDigest(metadata.algorithm, normalizedSource.data(), normalizedSource.length(), digest);
 
