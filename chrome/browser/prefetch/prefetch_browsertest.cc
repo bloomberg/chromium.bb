@@ -17,13 +17,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/network_change_notifier.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 using chrome_browser_net::NetworkPredictionOptions;
 using net::NetworkChangeNotifier;
 
 namespace {
 
-const char kPrefetchPage[] = "files/prerender/simple_prefetch.html";
+const char kPrefetchPage[] = "/prerender/simple_prefetch.html";
 
 class MockNetworkChangeNotifierWIFI : public NetworkChangeNotifier {
  public:
@@ -51,13 +52,18 @@ class PrefetchBrowserTestBase : public InProcessBrowserTest {
     }
   }
 
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    InProcessBrowserTest::SetUpOnMainThread();
+  }
+
   void SetPreference(NetworkPredictionOptions value) {
     browser()->profile()->GetPrefs()->SetInteger(
         prefs::kNetworkPredictionOptions, value);
   }
 
   bool RunPrefetchExperiment(bool expect_success, Browser* browser) {
-    GURL url = test_server()->GetURL(kPrefetchPage);
+    GURL url = embedded_test_server()->GetURL(kPrefetchPage);
 
     const base::string16 expected_title =
         expect_success ? base::ASCIIToUTF16("link onload")
@@ -85,7 +91,6 @@ class PrefetchBrowserTestPredictionDisabled : public PrefetchBrowserTestBase {
 // Prefetch is disabled via field experiment.  Prefetch should be dropped.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionDisabled,
                        ExperimentDisabled) {
-  CHECK(test_server()->Start());
   EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
   // Should not prefetch even if preference is ALWAYS.
   SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_ALWAYS);
@@ -94,7 +99,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionDisabled,
 
 // Prefetch should be allowed depending on preference and network type.
 IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPrediction, PreferenceWorks) {
-  CHECK(test_server()->Start());
   // Set real NetworkChangeNotifier singleton aside.
   scoped_ptr<NetworkChangeNotifier::DisableForTest> disable_for_test(
       new NetworkChangeNotifier::DisableForTest);
@@ -143,7 +147,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPrediction, IncognitoTest) {
   // WebContents for the incognito browser.
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
 
-  CHECK(test_server()->Start());
   EXPECT_TRUE(RunPrefetchExperiment(true, incognito_browser));
 }
 
