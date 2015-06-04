@@ -32,7 +32,7 @@
         // This changes the resolution of the canvas but keeps its layout size constant.
         canvas.width = canvas.width / 2;
         if (window.testRunner)
-          testRunner.layoutAndPaintAsyncThen(function(){ testRunner.notifyDone(); });
+          testRunner.notifyDone();
       }
     </script>
   </head>
