@@ -20,6 +20,7 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/test/test_web_contents_factory.h"
+#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_error_test_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -39,6 +40,10 @@ namespace {
 
 KeyedService* BuildAPI(content::BrowserContext* context) {
   return new DeveloperPrivateAPI(context);
+}
+
+KeyedService* BuildEventRouter(content::BrowserContext* profile) {
+  return new EventRouter(profile, ExtensionPrefs::Get(profile));
 }
 
 }  // namespace
@@ -221,9 +226,9 @@ void DeveloperPrivateApiUnitTest::SetUp() {
   browser_.reset(new Browser(params));
 
   // Allow the API to be created.
-  static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()))->
-      SetEventRouter(make_scoped_ptr(
-          new EventRouter(profile(), ExtensionPrefs::Get(profile()))));
+  EventRouterFactory::GetInstance()->SetTestingFactory(profile(),
+                                                       &BuildEventRouter);
+
   DeveloperPrivateAPI::GetFactoryInstance()->SetTestingFactory(
       profile(), &BuildAPI);
 }

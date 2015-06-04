@@ -11,6 +11,7 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/api/management/management_api_constants.h"
+#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -27,6 +28,10 @@ namespace {
 
 KeyedService* BuildManagementApi(content::BrowserContext* context) {
   return new ManagementAPI(context);
+}
+
+KeyedService* BuildEventRouter(content::BrowserContext* profile) {
+  return new extensions::EventRouter(profile, ExtensionPrefs::Get(profile));
 }
 
 }  // namespace
@@ -74,9 +79,9 @@ void ManagementApiUnitTest::SetUp() {
   InitializeEmptyExtensionService();
   ManagementAPI::GetFactoryInstance()->SetTestingFactory(profile(),
                                                          &BuildManagementApi);
-  static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()))->
-      SetEventRouter(make_scoped_ptr(
-          new EventRouter(profile(), ExtensionPrefs::Get(profile()))));
+
+  EventRouterFactory::GetInstance()->SetTestingFactory(profile(),
+                                                       &BuildEventRouter);
 
   browser_window_.reset(new TestBrowserWindow());
   Browser::CreateParams params(profile(), chrome::HOST_DESKTOP_TYPE_NATIVE);

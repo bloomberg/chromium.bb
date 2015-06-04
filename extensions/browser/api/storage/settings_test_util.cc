@@ -118,27 +118,6 @@ scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
   return extension;
 }
 
-// MockExtensionSystemWithEventRouter
-
-MockExtensionSystemWithEventRouter::MockExtensionSystemWithEventRouter(
-    content::BrowserContext* context)
-    : MockExtensionSystem(context) {
-}
-
-MockExtensionSystemWithEventRouter::~MockExtensionSystemWithEventRouter() {
-}
-
-KeyedService* MockExtensionSystemWithEventRouter::Build(
-    content::BrowserContext* context) {
-  return new MockExtensionSystemWithEventRouter(context);
-}
-
-EventRouter* MockExtensionSystemWithEventRouter::event_router() {
-  if (!event_router_.get())
-    event_router_.reset(new EventRouter(browser_context(), NULL));
-  return event_router_.get();
-}
-
 // ScopedSettingsFactory
 
 ScopedSettingsStorageFactory::ScopedSettingsStorageFactory() {}

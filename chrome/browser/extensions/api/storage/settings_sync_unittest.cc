@@ -19,6 +19,8 @@
 #include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
+#include "extensions/browser/event_router.h"
+#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/mock_extension_system.h"
 #include "extensions/browser/value_store/testing_value_store.h"
@@ -193,6 +195,15 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
   std::map<std::string, TestingValueStore*> created_;
 };
 
+KeyedService* MockExtensionSystemFactoryFunction(
+    content::BrowserContext* context) {
+  return new MockExtensionSystem(context);
+}
+
+KeyedService* BuildEventRouter(content::BrowserContext* profile) {
+  return new extensions::EventRouter(profile, nullptr);
+}
+
 }  // namespace
 
 class ExtensionSettingsSyncTest : public testing::Test {
@@ -214,8 +225,11 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
     ExtensionsBrowserClient::Get()
         ->GetExtensionSystemFactory()
-        ->SetTestingFactoryAndUse(
-            profile_.get(), &util::MockExtensionSystemWithEventRouter::Build);
+        ->SetTestingFactoryAndUse(profile_.get(),
+                                  &MockExtensionSystemFactoryFunction);
+
+    EventRouterFactory::GetInstance()->SetTestingFactory(profile_.get(),
+                                                         &BuildEventRouter);
   }
 
   void TearDown() override {

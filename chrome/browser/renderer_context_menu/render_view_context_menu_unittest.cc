@@ -295,7 +295,6 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnImage) {
 
 TEST_F(RenderViewContextMenuTest, ItemWithSameTitleFromTwoExtensions) {
   extensions::TestExtensionEnvironment env;
-  env.GetExtensionPrefs();  // Force creation before adding extensions.
 
   MenuManager* menu_manager =  // Owned by env.profile().
       static_cast<MenuManager*>(

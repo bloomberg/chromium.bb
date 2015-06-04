@@ -138,7 +138,12 @@ void EasyUnlockAppManagerImpl::ReloadApp() {
 bool EasyUnlockAppManagerImpl::SendUserUpdatedEvent(const std::string& user_id,
                                                     bool is_logged_in,
                                                     bool data_ready) {
-  extensions::EventRouter* event_router = extension_system_->event_router();
+  ExtensionService* extension_service = extension_system_->extension_service();
+  if (!extension_service)
+    return false;
+
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(extension_service->GetBrowserContext());
   if (!event_router)
     return false;
 
@@ -164,7 +169,12 @@ bool EasyUnlockAppManagerImpl::SendUserUpdatedEvent(const std::string& user_id,
 }
 
 bool EasyUnlockAppManagerImpl::SendAuthAttemptEvent() {
-  extensions::EventRouter* event_router = extension_system_->event_router();
+  ExtensionService* extension_service = extension_system_->extension_service();
+  if (!extension_service)
+    return false;
+
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(extension_service->GetBrowserContext());
   if (!event_router)
     return false;
 

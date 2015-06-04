@@ -11,9 +11,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/blob_holder.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/extension_system_provider.h"
-#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/extension.h"
@@ -40,7 +38,7 @@ class ShutdownNotifierFactory
   ShutdownNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(
             "ExtensionMessageFilter") {
-    DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+    DependsOn(EventRouterFactory::GetInstance());
     DependsOn(ProcessManagerFactory::GetInstance());
   }
   ~ShutdownNotifierFactory() override {}
@@ -54,7 +52,7 @@ ExtensionMessageFilter::ExtensionMessageFilter(int render_process_id,
                                                content::BrowserContext* context)
     : BrowserMessageFilter(ExtensionMsgStart),
       render_process_id_(render_process_id),
-      extension_system_(ExtensionSystem::Get(context)),
+      event_router_(EventRouter::Get(context)),
       process_manager_(ProcessManager::Get(context)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   shutdown_notifier_ =
@@ -72,7 +70,7 @@ ExtensionMessageFilter::~ExtensionMessageFilter() {
 }
 
 void ExtensionMessageFilter::ShutdownOnUIThread() {
-  extension_system_ = nullptr;
+  event_router_ = nullptr;
   process_manager_ = nullptr;
   shutdown_notifier_.reset();
 }
@@ -103,7 +101,7 @@ void ExtensionMessageFilter::OnDestruct() const {
 
 bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
   // If we have been shut down already, return.
-  if (!extension_system_)
+  if (!event_router_)
     return true;
 
   bool handled = true;
@@ -139,14 +137,13 @@ void ExtensionMessageFilter::OnExtensionAddListener(
   if (!process)
     return;
 
-  EventRouter* router = extension_system_->event_router();
-  if (!router)
+  if (!event_router_)
     return;
 
   if (crx_file::id_util::IdIsValid(extension_id)) {
-    router->AddEventListener(event_name, process, extension_id);
+    event_router_->AddEventListener(event_name, process, extension_id);
   } else if (listener_url.is_valid()) {
-    router->AddEventListenerForURL(event_name, process, listener_url);
+    event_router_->AddEventListenerForURL(event_name, process, listener_url);
   } else {
     NOTREACHED() << "Tried to add an event listener without a valid "
                  << "extension ID nor listener URL";
@@ -161,14 +158,13 @@ void ExtensionMessageFilter::OnExtensionRemoveListener(
   if (!process)
     return;
 
-  EventRouter* router = extension_system_->event_router();
-  if (!router)
+  if (!event_router_)
     return;
 
   if (crx_file::id_util::IdIsValid(extension_id)) {
-    router->RemoveEventListener(event_name, process, extension_id);
+    event_router_->RemoveEventListener(event_name, process, extension_id);
   } else if (listener_url.is_valid()) {
-    router->RemoveEventListenerForURL(event_name, process, listener_url);
+    event_router_->RemoveEventListenerForURL(event_name, process, listener_url);
   } else {
     NOTREACHED() << "Tried to remove an event listener without a valid "
                  << "extension ID nor listener URL";
@@ -177,20 +173,18 @@ void ExtensionMessageFilter::OnExtensionRemoveListener(
 
 void ExtensionMessageFilter::OnExtensionAddLazyListener(
     const std::string& extension_id, const std::string& event_name) {
-  EventRouter* router = extension_system_->event_router();
-  if (!router)
+  if (!event_router_)
     return;
 
-  router->AddLazyEventListener(event_name, extension_id);
+  event_router_->AddLazyEventListener(event_name, extension_id);
 }
 
 void ExtensionMessageFilter::OnExtensionRemoveLazyListener(
     const std::string& extension_id, const std::string& event_name) {
-  EventRouter* router = extension_system_->event_router();
-  if (!router)
+  if (!event_router_)
     return;
 
-  router->RemoveLazyEventListener(event_name, extension_id);
+  event_router_->RemoveLazyEventListener(event_name, extension_id);
 }
 
 void ExtensionMessageFilter::OnExtensionAddFilteredListener(
@@ -202,12 +196,11 @@ void ExtensionMessageFilter::OnExtensionAddFilteredListener(
   if (!process)
     return;
 
-  EventRouter* router = extension_system_->event_router();
-  if (!router)
+  if (!event_router_)
     return;
 
-  router->AddFilteredEventListener(
-      event_name, process, extension_id, filter, lazy);
+  event_router_->AddFilteredEventListener(event_name, process, extension_id,
+                                          filter, lazy);
 }
 
 void ExtensionMessageFilter::OnExtensionRemoveFilteredListener(
@@ -219,12 +212,11 @@ void ExtensionMessageFilter::OnExtensionRemoveFilteredListener(
   if (!process)
     return;
 
-  EventRouter* router = extension_system_->event_router();
-  if (!router)
+  if (!event_router_)
     return;
 
-  router->RemoveFilteredEventListener(
-      event_name, process, extension_id, filter, lazy);
+  event_router_->RemoveFilteredEventListener(event_name, process, extension_id,
+                                             filter, lazy);
 }
 
 void ExtensionMessageFilter::OnExtensionShouldSuspendAck(

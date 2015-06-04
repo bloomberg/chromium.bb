@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
@@ -16,7 +15,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/event_router_factory.h"
 
 // Factory to load one instance of TtsExtensionLoaderChromeOs per profile.
 class TtsEngineExtensionObserverFactory
@@ -38,7 +37,7 @@ class TtsEngineExtensionObserverFactory
       : BrowserContextKeyedServiceFactory(
             "TtsEngineExtensionObserver",
             BrowserContextDependencyManager::GetInstance()) {
-    DependsOn(extensions::ExtensionSystemFactory::GetInstance());
+    DependsOn(extensions::EventRouterFactory::GetInstance());
   }
 
   ~TtsEngineExtensionObserverFactory() override {}
@@ -67,10 +66,8 @@ TtsEngineExtensionObserver::TtsEngineExtensionObserver(Profile* profile)
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));
 
-  extensions::ExtensionSystem* system =
-      extensions::ExtensionSystem::Get(profile_);
-  DCHECK(system);
-  extensions::EventRouter* event_router = system->event_router();
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
   DCHECK(event_router);
   event_router->RegisterObserver(this, tts_engine_events::kOnSpeak);
   event_router->RegisterObserver(this, tts_engine_events::kOnStop);
@@ -97,10 +94,8 @@ void TtsEngineExtensionObserver::Shutdown() {
 
 bool TtsEngineExtensionObserver::IsLoadedTtsEngine(
     const std::string& extension_id) {
-  extensions::ExtensionSystem* system =
-      extensions::ExtensionSystem::Get(profile_);
-  DCHECK(system);
-  extensions::EventRouter* event_router = system->event_router();
+  extensions::EventRouter* event_router =
+      extensions::EventRouter::Get(profile_);
   DCHECK(event_router);
   if (event_router->ExtensionHasEventListener(extension_id,
                                               tts_engine_events::kOnSpeak) &&

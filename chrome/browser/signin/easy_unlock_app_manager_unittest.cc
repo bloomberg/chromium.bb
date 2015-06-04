@@ -19,6 +19,7 @@
 #include "components/proximity_auth/switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -230,11 +231,8 @@ class EasyUnlockAppEventConsumer {
 // events to EasyUnlockAppEventConsumer.
 class TestEventRouter : public extensions::EventRouter {
  public:
-  TestEventRouter(Profile* profile,
-                  extensions::ExtensionPrefs* extension_prefs,
-                  EasyUnlockAppEventConsumer* event_consumer)
-      : extensions::EventRouter(profile, extension_prefs),
-        event_consumer_(event_consumer) {}
+  TestEventRouter(Profile* profile, extensions::ExtensionPrefs* extension_prefs)
+      : extensions::EventRouter(profile, extension_prefs) {}
 
   ~TestEventRouter() override {}
 
@@ -253,11 +251,21 @@ class TestEventRouter : public extensions::EventRouter {
                                               event->event_args.get()));
   }
 
+  void set_event_consumer(EasyUnlockAppEventConsumer* event_consumer) {
+    event_consumer_ = event_consumer;
+  }
+
  private:
   EasyUnlockAppEventConsumer* event_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventRouter);
 };
+
+// TestEventRouter factory function
+KeyedService* TestEventRouterFactoryFunction(content::BrowserContext* context) {
+  return new TestEventRouter(static_cast<Profile*>(context),
+                             extensions::ExtensionPrefs::Get(context));
+}
 
 class EasyUnlockAppManagerTest : public testing::Test {
  public:
@@ -303,11 +311,10 @@ class EasyUnlockAppManagerTest : public testing::Test {
     extensions::ProcessManagerFactory::GetInstance()->SetTestingFactory(
         &profile_, &CreateTestProcessManager);
 
-    scoped_ptr<extensions::EventRouter> event_router(new TestEventRouter(
-        &profile_, extensions::ExtensionPrefs::Get(&profile_),
-        &event_consumer_));
-    event_router_ = event_router.get();
-    test_extension_system->SetEventRouter(event_router.Pass());
+    event_router_ = static_cast<TestEventRouter*>(
+        extensions::EventRouterFactory::GetInstance()->SetTestingFactoryAndUse(
+            &profile_, &TestEventRouterFactoryFunction));
+    event_router_->set_event_consumer(&event_consumer_);
 
     extension_service_->component_loader()->
         set_ignore_whitelist_for_testing(true);
@@ -333,7 +340,7 @@ class EasyUnlockAppManagerTest : public testing::Test {
 
   EasyUnlockAppEventConsumer event_consumer_;
   ExtensionService* extension_service_;
-  extensions::EventRouter* event_router_;
+  TestEventRouter* event_router_;
 
   base::CommandLine command_line_;
 

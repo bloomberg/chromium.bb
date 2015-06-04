@@ -139,10 +139,6 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // --enable-extension-activity-logging flag is set.
   bool IsDatabaseEnabled();
 
-  // Delayed initialization of ExtensionRegistry which waits until after the
-  // ExtensionSystem/ExtensionService are done with their own setup.
-  void StartObserving();
-
   // ScriptExecutionObserver implementation.
   // Fires when a ContentScript is executed.
   void OnScriptsExecuted(const content::WebContents* web_contents,

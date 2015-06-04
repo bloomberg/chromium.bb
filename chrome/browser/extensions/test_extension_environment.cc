@@ -14,6 +14,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
@@ -81,10 +82,8 @@ ExtensionService* TestExtensionEnvironment::GetExtensionService() {
 }
 
 ExtensionPrefs* TestExtensionEnvironment::GetExtensionPrefs() {
-  if (extension_prefs_ == NULL) {
-    extension_prefs_ = GetExtensionSystem()->CreateExtensionPrefs(
-        base::CommandLine::ForCurrentProcess(), base::FilePath());
-  }
+  if (extension_prefs_ == NULL)
+    extension_prefs_ = ExtensionPrefs::Get(profile_.get());
   return extension_prefs_;
 }
 

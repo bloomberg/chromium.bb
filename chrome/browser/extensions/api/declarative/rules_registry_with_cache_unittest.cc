@@ -49,10 +49,8 @@ class RulesRegistryWithCacheTest : public testing::Test {
                                         kRulesRegistryID)) {}
 
   void SetUp() override {
-    env_.GetExtensionPrefs();  // Force creation before adding extensions.
     // Note that env_.MakeExtension below also forces the creation of
     // ExtensionService.
-
     base::DictionaryValue manifest_extra;
     std::string key;
     CHECK(Extension::ProducePEM("test extension 1", &key));

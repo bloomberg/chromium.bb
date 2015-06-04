@@ -9,7 +9,7 @@
 namespace extensions {
 
 MockExtensionSystem::MockExtensionSystem(content::BrowserContext* context)
-    : browser_context_(context), event_router_(nullptr) {
+    : browser_context_(context) {
 }
 
 MockExtensionSystem::~MockExtensionSystem() {
@@ -44,10 +44,6 @@ StateStore* MockExtensionSystem::rules_store() {
 
 InfoMap* MockExtensionSystem::info_map() {
   return nullptr;
-}
-
-EventRouter* MockExtensionSystem::event_router() {
-  return event_router_;
 }
 
 QuotaService* MockExtensionSystem::quota_service() {

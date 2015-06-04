@@ -30,7 +30,6 @@ class BrowserContext;
 namespace extensions {
 
 class ContentVerifier;
-class EventRouter;
 class Extension;
 class ExtensionSet;
 class InfoMap;
@@ -81,9 +80,6 @@ class ExtensionSystem : public KeyedService {
 
   // Returns the IO-thread-accessible extension data.
   virtual InfoMap* info_map() = 0;
-
-  // The EventRouter is created at startup.
-  virtual EventRouter* event_router() = 0;
 
   // Returns the QuotaService that limits calls to certain extension functions.
   // Lives on the UI thread. Created at startup.

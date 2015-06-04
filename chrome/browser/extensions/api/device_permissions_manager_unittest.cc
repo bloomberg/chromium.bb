@@ -92,7 +92,6 @@ class DevicePermissionsManagerTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
     env_.reset(new extensions::TestExtensionEnvironment());
-    env_->GetExtensionPrefs();  // Force creation before adding extensions.
     extension_ =
         env_->MakeExtension(*base::test::ParseJson(
                                 "{"

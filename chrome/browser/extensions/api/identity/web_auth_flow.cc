@@ -101,7 +101,7 @@ void WebAuthFlow::Start() {
         base::FilePath(FILE_PATH_LITERAL("identity_scope_approval_dialog")));
   }
 
-  system->event_router()->DispatchEventWithLazyListener(
+  EventRouter::Get(profile_)->DispatchEventWithLazyListener(
       extension_misc::kIdentityApiUiAppId, event.Pass());
 }
 

@@ -565,6 +565,8 @@
       'browser/event_page_tracker.h',
       'browser/event_router.cc',
       'browser/event_router.h',
+      'browser/event_router_factory.cc',
+      'browser/event_router_factory.h',
       'browser/extension_error.cc',
       'browser/extension_error.h',
       'browser/extension_function.cc',

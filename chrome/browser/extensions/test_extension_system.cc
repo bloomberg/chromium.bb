@@ -9,21 +9,17 @@
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
-#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
@@ -59,25 +55,17 @@ ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
   // are not reflected in the pref service. One would need to
   // inject a new ExtensionPrefStore(extension_pref_value_map, false).
 
-  ExtensionPrefs* extension_prefs = ExtensionPrefs::Create(
-      profile_->GetPrefs(),
-      install_directory,
+  return ExtensionPrefs::Create(
+      profile_->GetPrefs(), install_directory,
       ExtensionPrefValueMapFactory::GetForBrowserContext(profile_),
       ExtensionsBrowserClient::Get()->CreateAppSorting().Pass(),
-      extensions_disabled,
-      std::vector<ExtensionPrefsObserver*>());
-    ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
-        profile_,
-        extension_prefs);
-    return extension_prefs;
+      extensions_disabled, std::vector<ExtensionPrefsObserver*>());
 }
 
 ExtensionService* TestExtensionSystem::CreateExtensionService(
     const base::CommandLine* command_line,
     const base::FilePath& install_directory,
     bool autoupdate_enabled) {
-  if (!ExtensionPrefs::Get(profile_))
-    CreateExtensionPrefs(command_line, install_directory);
   // The ownership of |value_store_| is immediately transferred to state_store_,
   // but we keep a naked pointer to the TestingValueStore.
   scoped_ptr<TestingValueStore> value_store(new TestingValueStore());
@@ -129,12 +117,6 @@ StateStore* TestExtensionSystem::rules_store() {
 }
 
 InfoMap* TestExtensionSystem::info_map() { return info_map_.get(); }
-
-void TestExtensionSystem::SetEventRouter(scoped_ptr<EventRouter> event_router) {
-  event_router_.reset(event_router.release());
-}
-
-EventRouter* TestExtensionSystem::event_router() { return event_router_.get(); }
 
 QuotaService* TestExtensionSystem::quota_service() {
   return quota_service_.get();

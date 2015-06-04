@@ -31,8 +31,6 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
   // Overridden from testing::Test:
   void SetUp() override {
     testing::Test::SetUp();
-    // Force creation of ExtensionPrefs before adding extensions.
-    env_.GetExtensionPrefs();
   }
 
  protected:

@@ -14,7 +14,6 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/app_view/app_view_constants.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
@@ -273,10 +272,10 @@ void AppViewGuest::LaunchAppAndFireEvent(
     scoped_ptr<base::DictionaryValue> data,
     const WebContentsCreatedCallback& callback,
     ExtensionHost* extension_host) {
-  ExtensionSystem* system = ExtensionSystem::Get(browser_context());
-  bool has_event_listener = system->event_router()->ExtensionHasEventListener(
-      extension_host->extension()->id(),
-      app_runtime::OnEmbedRequested::kEventName);
+  bool has_event_listener = EventRouter::Get(browser_context())
+                                ->ExtensionHasEventListener(
+                                    extension_host->extension()->id(),
+                                    app_runtime::OnEmbedRequested::kEventName);
   if (!has_event_listener) {
     callback.Run(nullptr);
     return;

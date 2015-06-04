@@ -14,7 +14,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/api/app_runtime/app_runtime_api.h"
-#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
@@ -97,8 +96,6 @@ void ShellExtensionSystem::Shutdown() {
 void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
   runtime_data_.reset(
       new RuntimeData(ExtensionRegistry::Get(browser_context_)));
-  event_router_.reset(
-      new EventRouter(browser_context_, ExtensionPrefs::Get(browser_context_)));
   quota_service_.reset(new QuotaService);
 }
 
@@ -130,10 +127,6 @@ InfoMap* ShellExtensionSystem::info_map() {
   if (!info_map_.get())
     info_map_ = new InfoMap;
   return info_map_.get();
-}
-
-EventRouter* ShellExtensionSystem::event_router() {
-  return event_router_.get();
 }
 
 QuotaService* ShellExtensionSystem::quota_service() {

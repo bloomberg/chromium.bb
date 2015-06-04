@@ -57,6 +57,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/file_reader.h"
@@ -1099,16 +1100,16 @@ void AccessibilityManager::PostLoadChromeVox(Profile* profile) {
 
   if (chrome_vox_loaded_on_lock_screen_ ||
       should_speak_chrome_vox_announcements_on_user_screen_) {
-    extensions::ExtensionSystem* system =
-        extensions::ExtensionSystem::Get(profile);
-    CHECK(system);
+    extensions::EventRouter* event_router =
+        extensions::EventRouter::Get(profile);
+    CHECK(event_router);
 
     scoped_ptr<base::ListValue> event_args(new base::ListValue());
     scoped_ptr<extensions::Event> event(
         new extensions::Event(extensions::api::accessibility_private::
                                   OnIntroduceChromeVox::kEventName,
                               event_args.Pass()));
-    system->event_router()->DispatchEventWithLazyListener(
+    event_router->DispatchEventWithLazyListener(
         extension_misc::kChromeVoxExtensionId, event.Pass());
   }
 

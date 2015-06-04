@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/granted_file_entry.h"
 #include "extensions/common/api/app_runtime.h"
@@ -31,12 +30,11 @@ void DispatchOnEmbedRequestedEventImpl(
     content::BrowserContext* context) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(app_embedding_request_data.release());
-  ExtensionSystem* system = ExtensionSystem::Get(context);
   scoped_ptr<Event> event(
       new Event(app_runtime::OnEmbedRequested::kEventName, args.Pass()));
   event->restrict_to_browser_context = context;
-  system->event_router()->DispatchEventWithLazyListener(extension_id,
-                                                        event.Pass());
+  EventRouter::Get(context)
+      ->DispatchEventWithLazyListener(extension_id, event.Pass());
 
   ExtensionPrefs::Get(context)
       ->SetLastLaunchTime(extension_id, base::Time::Now());

@@ -382,9 +382,7 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
                            switches::kEnableExtensionActivityLogging) ||
                        watchdog_apps_active_);
 
-  ExtensionSystem::Get(profile_)->ready().Post(
-      FROM_HERE,
-      base::Bind(&ActivityLog::StartObserving, base::Unretained(this)));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 
   if (!profile_->IsOffTheRecord())
     uma_policy_ = new UmaPolicy(profile_);
@@ -432,10 +430,6 @@ ActivityLog::~ActivityLog() {
 }
 
 // MAINTAIN STATUS. ------------------------------------------------------------
-
-void ActivityLog::StartObserving() {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-}
 
 void ActivityLog::ChooseDatabasePolicy() {
   if (!(IsDatabaseEnabled() || IsWatchdogAppActive()))

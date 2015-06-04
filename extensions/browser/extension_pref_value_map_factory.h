@@ -26,6 +26,8 @@ class ExtensionPrefValueMapFactory : public BrowserContextKeyedServiceFactory {
 
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+  content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const override;
 };
 
 #endif  // EXTENSIONS_BROWSER_EXTENSION_PREF_VALUE_MAP_FACTORY_H_

@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api_activity_monitor.h"
+#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -136,7 +137,7 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
 
 // static
 EventRouter* EventRouter::Get(content::BrowserContext* browser_context) {
-  return ExtensionSystem::Get(browser_context)->event_router();
+  return EventRouterFactory::GetForBrowserContext(browser_context);
 }
 
 // static

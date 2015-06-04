@@ -39,14 +39,12 @@
 #include "content/public/browser/url_data_source.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/content_verifier_delegate.h"
-#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
-#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/runtime_data.h"
@@ -99,7 +97,6 @@ ExtensionSystemImpl::Shared::~Shared() {
 }
 
 void ExtensionSystemImpl::Shared::InitPrefs() {
-  event_router_.reset(new EventRouter(profile_, ExtensionPrefs::Get(profile_)));
   // Two state stores. The latter, which contains declarative rules, must be
   // loaded immediately so that the rules are ready before we issue network
   // requests.
@@ -449,10 +446,6 @@ InfoMap* ExtensionSystemImpl::Shared::info_map() {
   return extension_info_map_.get();
 }
 
-EventRouter* ExtensionSystemImpl::Shared::event_router() {
-  return event_router_.get();
-}
-
 QuotaService* ExtensionSystemImpl::Shared::quota_service() {
   return quota_service_.get();
 }
@@ -516,10 +509,6 @@ StateStore* ExtensionSystemImpl::rules_store() {
 }
 
 InfoMap* ExtensionSystemImpl::info_map() { return shared_->info_map(); }
-
-EventRouter* ExtensionSystemImpl::event_router() {
-  return shared_->event_router();
-}
 
 const OneShotEvent& ExtensionSystemImpl::ready() const {
   return shared_->ready();

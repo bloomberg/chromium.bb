@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -44,7 +45,8 @@ struct Event;
 struct EventDispatchInfo;
 struct EventListenerInfo;
 
-class EventRouter : public content::NotificationObserver,
+class EventRouter : public KeyedService,
+                    public content::NotificationObserver,
                     public ExtensionRegistryObserver,
                     public EventListenerMap::Delegate,
                     public content::RenderProcessHostObserver {

@@ -26,7 +26,7 @@ class Size;
 
 namespace extensions {
 
-class ExtensionSystem;
+class EventRouter;
 class ProcessManager;
 
 // This class filters out incoming extension-specific IPC messages from the
@@ -84,7 +84,7 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   scoped_ptr<KeyedServiceShutdownNotifier::Subscription> shutdown_notifier_;
 
   // Owned by the browser context; should only be accessed on the UI thread.
-  ExtensionSystem* extension_system_;
+  EventRouter* event_router_;
   ProcessManager* process_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageFilter);

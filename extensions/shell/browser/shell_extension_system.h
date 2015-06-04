@@ -23,8 +23,6 @@ class BrowserContext;
 
 namespace extensions {
 
-class DeclarativeUserScriptManager;
-class EventRouter;
 class InfoMap;
 class ProcessManager;
 class RendererStartupHelper;
@@ -59,7 +57,6 @@ class ShellExtensionSystem : public ExtensionSystem {
   StateStore* state_store() override;
   StateStore* rules_store() override;
   InfoMap* info_map() override;
-  EventRouter* event_router() override;
   QuotaService* quota_service() override;
   void RegisterExtensionWithRequestContexts(
       const Extension* extension) override;
@@ -78,7 +75,6 @@ class ShellExtensionSystem : public ExtensionSystem {
   scoped_refptr<InfoMap> info_map_;
 
   scoped_ptr<RuntimeData> runtime_data_;
-  scoped_ptr<EventRouter> event_router_;
   scoped_ptr<QuotaService> quota_service_;
 
   // Signaled when the extension system has completed its startup tasks.

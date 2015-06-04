@@ -210,11 +210,8 @@ void ExtensionServiceTestBase::CreateExtensionService(
     const ExtensionServiceInitParams& params) {
   TestExtensionSystem* system =
       static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile_.get()));
-  if (!params.is_first_run) {
-    ExtensionPrefs* prefs = system->CreateExtensionPrefs(
-        base::CommandLine::ForCurrentProcess(), params.extensions_install_dir);
-    prefs->SetAlertSystemFirstRun();
-  }
+  if (!params.is_first_run)
+    ExtensionPrefs::Get(profile_.get())->SetAlertSystemFirstRun();
 
   service_ =
       system->CreateExtensionService(base::CommandLine::ForCurrentProcess(),

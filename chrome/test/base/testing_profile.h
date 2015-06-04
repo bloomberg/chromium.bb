@@ -381,6 +381,8 @@ class TestingProfile : public Profile {
   // cases.
   base::FilePath profile_path_;
 
+  base::FilePath extensions_path_;
+
   // We keep a weak pointer to the dependency manager we want to notify on our
   // death. Defaults to the Singleton implementation but overridable for
   // testing.

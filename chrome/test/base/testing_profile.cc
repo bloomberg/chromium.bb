@@ -100,6 +100,8 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "extensions/browser/event_router_factory.h"
+#include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_system.h"
 #endif
 
@@ -441,9 +443,23 @@ void TestingProfile::Init() {
   if (!IsOffTheRecord())
     CreateProfilePolicyConnector();
 
+  extensions_path_ = profile_path_.AppendASCII("Extensions");
+
 #if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
       this, extensions::TestExtensionSystem::Build);
+
+  extensions::TestExtensionSystem* test_extension_system =
+      static_cast<extensions::TestExtensionSystem*>(
+          extensions::ExtensionSystem::Get(this));
+  extensions::ExtensionPrefs* extension_prefs =
+      test_extension_system->CreateExtensionPrefs(
+          base::CommandLine::ForCurrentProcess(), extensions_path_);
+  extensions::ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
+      this, extension_prefs);
+
+  extensions::EventRouterFactory::GetInstance()->SetTestingFactory(this,
+                                                                   nullptr);
 #endif
 
   // Prefs for incognito profiles are set in CreateIncognitoPrefService() by

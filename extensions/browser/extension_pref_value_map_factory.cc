@@ -6,6 +6,7 @@
 
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_pref_value_map.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 ExtensionPrefValueMapFactory::ExtensionPrefValueMapFactory()
     : BrowserContextKeyedServiceFactory(
@@ -31,4 +32,11 @@ ExtensionPrefValueMapFactory* ExtensionPrefValueMapFactory::GetInstance() {
 KeyedService* ExtensionPrefValueMapFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new ExtensionPrefValueMap();
+}
+
+content::BrowserContext* ExtensionPrefValueMapFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  // Redirected in incognito.
+  return extensions::ExtensionsBrowserClient::Get()->GetOriginalContext(
+      context);
 }

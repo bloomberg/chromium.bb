@@ -2410,8 +2410,8 @@ bool ExtensionService::ShouldDelayExtensionUpdate(
   if (extensions::BackgroundInfo::HasPersistentBackgroundPage(old)) {
     // Delay installation if the extension listens for the onUpdateAvailable
     // event.
-    return system_->event_router()->ExtensionHasEventListener(
-        extension_id, kOnUpdateAvailableEvent);
+    return extensions::EventRouter::Get(profile_)
+        ->ExtensionHasEventListener(extension_id, kOnUpdateAvailableEvent);
   } else {
     // Delay installation if the extension is not idle.
     return !extensions::util::IsExtensionIdle(extension_id, profile_);

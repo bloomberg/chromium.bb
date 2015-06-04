@@ -16,7 +16,6 @@ namespace extensions {
 
 class ContentVerifier;
 class ExtensionSystemSharedFactory;
-class InstallVerifier;
 class NavigationObserver;
 class SharedUserScriptMaster;
 class StateStoreNotificationObserver;
@@ -43,7 +42,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
   StateStore* state_store() override;                              // shared
   StateStore* rules_store() override;                              // shared
   InfoMap* info_map() override;                                    // shared
-  EventRouter* event_router() override;                            // shared
   QuotaService* quota_service() override;  // shared
 
   void RegisterExtensionWithRequestContexts(
@@ -84,7 +82,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     ManagementPolicy* management_policy();
     SharedUserScriptMaster* shared_user_script_master();
     InfoMap* info_map();
-    EventRouter* event_router();
     QuotaService* quota_service();
     const OneShotEvent& ready() const { return ready_; }
     ContentVerifier* content_verifier();
@@ -98,9 +95,6 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<StateStoreNotificationObserver>
         state_store_notification_observer_;
     scoped_ptr<StateStore> rules_store_;
-    // LazyBackgroundTaskQueue is a dependency of
-    // MessageService and EventRouter.
-    scoped_ptr<EventRouter> event_router_;
     scoped_ptr<NavigationObserver> navigation_observer_;
     // Shared memory region manager for scripts statically declared in extension
     // manifests. This region is shared between all extensions.
