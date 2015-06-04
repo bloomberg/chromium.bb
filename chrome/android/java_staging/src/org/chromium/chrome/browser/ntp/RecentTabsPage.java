@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -166,6 +167,8 @@ public class RecentTabsPage
     }
 
     // ApplicationStatus.ActivityStateListener
+    // TODO(pkotwicz) fix to avoid suppressing warning
+    @SuppressLint("NewApi") // ViewGroup#isAttachedToWindow requires API level 19.
     @Override
     public void onActivityStateChange(Activity activity, int state) {
         // Called when the user locks the screen or moves Chrome to the background via the task
