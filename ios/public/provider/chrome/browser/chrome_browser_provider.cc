@@ -58,6 +58,10 @@ ChromeBrowserProvider::GetGeolocationUpdaterProvider() {
 void ChromeBrowserProvider::ShowTranslateSettings() {
 }
 
+bool ChromeBrowserProvider::IsBookmarkCollectionEnabled() {
+  return false;
+}
+
 const char* ChromeBrowserProvider::GetChromeUIScheme() {
   return nullptr;
 }

@@ -7,6 +7,8 @@
 
 #include "ios/chrome/browser/experimental_flags.h"
 
+#import <Foundation/Foundation.h>
+
 #include <string>
 
 #include "base/command_line.h"
@@ -15,11 +17,14 @@
 #include "base/strings/string_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/web_view_util.h"
 
 namespace {
 NSString* const kEnableAlertOnBackgroundUpload =
     @"EnableAlertsOnBackgroundUpload";
+NSString* const kEnableBookmarkRefreshImageOnEachVisit =
+    @"EnableBookmarkRefreshImageOnEachVisit";
 }  // namespace
 
 namespace experimental_flags {
@@ -27,6 +32,24 @@ namespace experimental_flags {
 bool IsAlertOnBackgroundUploadEnabled() {
   return [[NSUserDefaults standardUserDefaults]
       boolForKey:kEnableAlertOnBackgroundUpload];
+}
+
+bool IsBookmarkCollectionEnabled() {
+  return ios::GetChromeBrowserProvider()->IsBookmarkCollectionEnabled();
+}
+
+bool IsBookmarkImageFetchingOnVisitEnabled() {
+  if (!IsBookmarkCollectionEnabled())
+    return false;
+
+  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+  if ([user_defaults boolForKey:kEnableBookmarkRefreshImageOnEachVisit])
+    return true;
+
+  const char kFieldTrialName[] = "EnhancedBookmarks";
+  std::string enable_fetching = variations::GetVariationParamValue(
+      kFieldTrialName, "EnableImagesFetchingOnVisit");
+  return !enable_fetching.empty();
 }
 
 bool IsWKWebViewEnabled() {

@@ -15,6 +15,12 @@ namespace experimental_flags {
 // Whether background crash report upload should generate a local notification.
 bool IsAlertOnBackgroundUploadEnabled();
 
+// Whether the new bookmark collection experience is enabled.
+bool IsBookmarkCollectionEnabled();
+
+// Whether to extract salient images from pages at load time if bookmarked.
+bool IsBookmarkImageFetchingOnVisitEnabled();
+
 // Whether the app uses WKWebView instead of UIWebView.
 bool IsWKWebViewEnabled();
 

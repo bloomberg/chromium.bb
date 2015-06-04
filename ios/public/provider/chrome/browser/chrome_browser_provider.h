@@ -73,6 +73,8 @@ class ChromeBrowserProvider {
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
   // Displays the Translate settings screen.
   virtual void ShowTranslateSettings();
+  // Returns whether the new bookmark collection experience is enabled.
+  virtual bool IsBookmarkCollectionEnabled();
   // Returns the chrome UI scheme.
   // TODO(droger): Remove this method once chrome no longer needs to match
   // content.
