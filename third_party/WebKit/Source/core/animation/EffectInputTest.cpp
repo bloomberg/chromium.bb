@@ -29,7 +29,7 @@ protected:
         , m_isolate(v8::Isolate::GetCurrent())
         , m_scope(m_isolate)
     {
-        document.documentElement()->appendChild(element);
+        document.documentElement()->appendChild(element.get());
     }
 
     OwnPtr<DummyPageHolder> pageHolder;

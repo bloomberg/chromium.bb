@@ -31,7 +31,7 @@ protected:
         , element(document.createElement("foo", ASSERT_NO_EXCEPTION))
     {
         document.animationClock().resetTimeForTesting(document.timeline().zeroTime());
-        document.documentElement()->appendChild(element);
+        document.documentElement()->appendChild(element.get());
         EXPECT_EQ(0, document.timeline().currentTime());
     }
 
