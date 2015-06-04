@@ -4,8 +4,8 @@
 //
 // Some Google related utility functions.
 
-#ifndef COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H__
-#define COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H__
+#ifndef COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H_
+#define COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H_
 
 #include <string>
 
@@ -111,4 +111,4 @@ bool IsYoutubeDomainUrl(const GURL& url,
 
 }  // namespace google_util
 
-#endif  // COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H__
+#endif  // COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_UTIL_H_

@@ -14,6 +14,7 @@
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
@@ -57,6 +58,14 @@ GoogleURLTracker::GoogleURLTracker(scoped_ptr<GoogleURLTrackerClient> client,
 }
 
 GoogleURLTracker::~GoogleURLTracker() {
+}
+
+// static
+void GoogleURLTracker::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(prefs::kLastKnownGoogleURL,
+                               GoogleURLTracker::kDefaultGoogleHomepage);
+  registry->RegisterStringPref(prefs::kLastPromptedGoogleURL, std::string());
 }
 
 void GoogleURLTracker::RequestServerCheck(bool force) {

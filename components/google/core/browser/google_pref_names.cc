@@ -11,4 +11,7 @@ namespace prefs {
 // correct Google domain/country code for whatever location the user is in.
 const char kLastKnownGoogleURL[] = "browser.last_known_google_url";
 
+// String containing the last prompted Google URL.
+const char kLastPromptedGoogleURL[] = "browser.last_prompted_google_url";
+
 }  // namespace prefs
