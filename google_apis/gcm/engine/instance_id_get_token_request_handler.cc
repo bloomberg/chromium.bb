@@ -4,6 +4,7 @@
 
 #include "google_apis/gcm/engine/instance_id_get_token_request_handler.h"
 
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/gcm/base/gcm_util.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -51,6 +52,22 @@ void InstanceIDGetTokenRequestHandler::BuildRequestBody(std::string* body){
   // TODO(jianli): To work around server bug. To be removed when the server fix
   // is deployed.
   BuildFormEncoding(kSubtypeKey, authorized_entity_, body);
+}
+
+void InstanceIDGetTokenRequestHandler::ReportUMAs(
+    RegistrationRequest::Status status,
+    int retry_count,
+    base::TimeDelta complete_time) {
+  UMA_HISTOGRAM_ENUMERATION("InstanceID.GetToken.RequestStatus",
+                            status,
+                            RegistrationRequest::STATUS_COUNT);
+
+  // Other UMAs are only reported when the request succeeds.
+  if (status != RegistrationRequest::SUCCESS)
+    return;
+
+  UMA_HISTOGRAM_COUNTS("InstanceID.GetToken.RetryCount", retry_count);
+  UMA_HISTOGRAM_TIMES("InstanceID.GetToken.CompleteTime", complete_time);
 }
 
 }  // namespace gcm

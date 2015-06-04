@@ -4,6 +4,7 @@
 
 #include "google_apis/gcm/engine/instance_id_delete_token_request_handler.h"
 
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/gcm/base/gcm_util.h"
 #include "net/url_request/url_fetcher.h"
@@ -64,6 +65,22 @@ InstanceIDDeleteTokenRequestHandler::ParseResponse(
     return UnregistrationRequest::RESPONSE_PARSING_FAILED;
 
   return UnregistrationRequest::SUCCESS;
+}
+
+void InstanceIDDeleteTokenRequestHandler::ReportUMAs(
+    UnregistrationRequest::Status status,
+    int retry_count,
+    base::TimeDelta complete_time) {
+  UMA_HISTOGRAM_ENUMERATION("InstanceID.DeleteToken.RequestStatus",
+                            status,
+                            UnregistrationRequest::UNREGISTRATION_STATUS_COUNT);
+
+  // Other UMAs are only reported when the request succeeds.
+  if (status != UnregistrationRequest::SUCCESS)
+    return;
+
+  UMA_HISTOGRAM_COUNTS("InstanceID.DeleteToken.RetryCount", retry_count);
+  UMA_HISTOGRAM_TIMES("InstanceID.DeleteToken.CompleteTime", complete_time);
 }
 
 }  // namespace gcm

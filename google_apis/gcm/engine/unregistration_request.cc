@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -169,9 +168,13 @@ void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   UnregistrationRequest::Status status = ParseResponse(source);
 
   DVLOG(1) << "UnregistrationRequestStauts: " << status;
-  UMA_HISTOGRAM_ENUMERATION("GCM.UnregistrationRequestStatus",
-                            status,
-                            UNREGISTRATION_STATUS_COUNT);
+
+  DCHECK(custom_request_handler_.get());
+  custom_request_handler_->ReportUMAs(
+      status,
+      backoff_entry_.failure_count(),
+      base::TimeTicks::Now() - request_start_time_);
+
   recorder_->RecordUnregistrationResponse(request_info_.app_id, status);
 
   if (status == URL_FETCHING_FAILED ||
@@ -185,13 +188,6 @@ void UnregistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // status == SUCCESS || HTTP_NOT_OK || NO_RESPONSE_BODY ||
   // INVALID_PARAMETERS || UNKNOWN_ERROR
-
-  if (status == SUCCESS) {
-    UMA_HISTOGRAM_COUNTS("GCM.UnregistrationRetryCount",
-                         backoff_entry_.failure_count());
-    UMA_HISTOGRAM_TIMES("GCM.UnregistrationCompleteTime",
-                        base::TimeTicks::Now() - request_start_time_);
-  }
 
   callback_.Run(status);
 }

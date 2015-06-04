@@ -26,6 +26,9 @@ class GCM_EXPORT InstanceIDGetTokenRequestHandler :
 
    // RegistrationRequest overrides:
   void BuildRequestBody(std::string* body) override;
+  void ReportUMAs(RegistrationRequest::Status status,
+                  int retry_count,
+                  base::TimeDelta complete_time) override;
 
  private:
   std::string instance_id_;

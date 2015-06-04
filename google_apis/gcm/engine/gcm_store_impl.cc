@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
@@ -336,6 +337,17 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
     return;
   }
 
+  // |result->registrations| contains both GCM registrations and InstanceID
+  // tokens. Count them separately.
+  int gcm_registration_count = 0;
+  int instance_id_token_count = 0;
+  for (const auto& registration : result->registrations) {
+    if (StartsWithASCII(registration.first, "iid-", true))
+      instance_id_token_count++;
+    else
+      gcm_registration_count++;
+  }
+
   // Only record histograms if GCM had already been set up for this device.
   if (result->device_android_id != 0 && result->device_security_token != 0) {
     int64 file_size = 0;
@@ -343,20 +355,27 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
       UMA_HISTOGRAM_COUNTS("GCM.StoreSizeKB",
                            static_cast<int>(file_size / 1024));
     }
-    UMA_HISTOGRAM_COUNTS("GCM.RestoredRegistrations",
-                         result->registrations.size());
+
+    UMA_HISTOGRAM_COUNTS("GCM.RestoredRegistrations", gcm_registration_count);
     UMA_HISTOGRAM_COUNTS("GCM.RestoredOutgoingMessages",
                          result->outgoing_messages.size());
     UMA_HISTOGRAM_COUNTS("GCM.RestoredIncomingMessages",
                          result->incoming_messages.size());
+
+    UMA_HISTOGRAM_COUNTS("InstanceID.RestoredTokenCount",
+                         instance_id_token_count);
+    UMA_HISTOGRAM_COUNTS("InstanceID.RestoredIDCount",
+                         result->instance_id_data.size());
   }
 
-  DVLOG(1) << "Succeeded in loading " << result->registrations.size()
-           << " registrations, "
+  DVLOG(1) << "Succeeded in loading "
+           << gcm_registration_count << " GCM registrations, "
            << result->incoming_messages.size()
-           << " unacknowledged incoming messages and "
+           << " unacknowledged incoming messages "
            << result->outgoing_messages.size()
-           << " unacknowledged outgoing messages.";
+           << " unacknowledged outgoing messages, "
+           << result->instance_id_data.size() << " Instance IDs, "
+           << instance_id_token_count << " InstanceID tokens.";
   result->success = true;
   foreground_task_runner_->PostTask(FROM_HERE,
                                     base::Bind(callback,

@@ -13767,11 +13767,65 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="InstanceID.DeleteToken.CompleteTime" units="milliseconds">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Length of time taken to complete the DeleteToken request successfully. If
+    the request is retried multiple times, the length of time is counted for the
+    last successful retry.
+  </summary>
+</histogram>
+
+<histogram name="InstanceID.DeleteToken.RequestStatus"
+    enum="GCMUnregistrationRequestStatus">
+  <owner>juyik@chromium.org</owner>
+  <summary>Status code of the outcome of DeleteToken request.</summary>
+</histogram>
+
+<histogram name="InstanceID.DeleteToken.RetryCount">
+  <owner>jianli@chromium.org</owner>
+  <summary>Number of retries before DeleteToken succeeds.</summary>
+</histogram>
+
 <histogram name="InstanceID.Enabled" enum="BooleanEnabled">
   <owner>jianli@chromium.org</owner>
   <summary>
     Whether the Instance ID API is enabled. Checked when a chrome.instanceID
     function is called.
+  </summary>
+</histogram>
+
+<histogram name="InstanceID.GetToken.CompleteTime" units="milliseconds">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Length of time taken to complete the GetToken request successfully. If the
+    request is retried multiple times, the length of time is counted for the
+    last successful retry.
+  </summary>
+</histogram>
+
+<histogram name="InstanceID.GetToken.RequestStatus"
+    enum="GCMUnregistrationRequestStatus">
+  <owner>juyik@chromium.org</owner>
+  <summary>Status code of the outcome of GetToken request.</summary>
+</histogram>
+
+<histogram name="InstanceID.GetToken.RetryCount">
+  <owner>jianli@chromium.org</owner>
+  <summary>Number of retries before GetToken succeeds.</summary>
+</histogram>
+
+<histogram name="InstanceID.RestoredIDCount">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Number of Instance IDs restored from the persistent store at startup.
+  </summary>
+</histogram>
+
+<histogram name="InstanceID.RestoredTokenCount">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Number of InstanceID tokens restored from the persistent store at startup.
   </summary>
 </histogram>
 

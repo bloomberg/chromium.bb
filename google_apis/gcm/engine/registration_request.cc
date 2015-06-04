@@ -65,11 +65,6 @@ bool ShouldRetryWithStatus(RegistrationRequest::Status status) {
          status == RegistrationRequest::RESPONSE_PARSING_FAILED;
 }
 
-void RecordRegistrationStatusToUMA(RegistrationRequest::Status status) {
-  UMA_HISTOGRAM_ENUMERATION("GCM.RegistrationRequestStatus", status,
-                            RegistrationRequest::STATUS_COUNT);
-}
-
 }  // namespace
 
 RegistrationRequest::RequestInfo::RequestInfo(
@@ -228,11 +223,16 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
 void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string token;
   Status status = ParseResponse(source, &token);
-  RecordRegistrationStatusToUMA(status);
   recorder_->RecordRegistrationResponse(
       request_info_.app_id,
       source_to_record_,
       status);
+
+  DCHECK(custom_request_handler_.get());
+  custom_request_handler_->ReportUMAs(
+      status,
+      backoff_entry_.failure_count(),
+      base::TimeTicks::Now() - request_start_time_);
 
   if (ShouldRetryWithStatus(status)) {
     if (retries_left_ > 0) {
@@ -249,15 +249,13 @@ void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
         request_info_.app_id,
         source_to_record_,
         status);
-    RecordRegistrationStatusToUMA(status);
+
+    // Only REACHED_MAX_RETRIES is reported because the function will skip
+    // reporting count and time when status is not SUCCESS.
+    DCHECK(custom_request_handler_.get());
+    custom_request_handler_->ReportUMAs(status, 0, base::TimeDelta());
   }
 
-  if (status == SUCCESS) {
-    UMA_HISTOGRAM_COUNTS("GCM.RegistrationRetryCount",
-                         backoff_entry_.failure_count());
-    UMA_HISTOGRAM_TIMES("GCM.RegistrationCompleteTime",
-                        base::TimeTicks::Now() - request_start_time_);
-  }
   callback_.Run(status, token);
 }
 

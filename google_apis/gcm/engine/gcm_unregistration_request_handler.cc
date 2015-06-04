@@ -4,6 +4,7 @@
 
 #include "google_apis/gcm/engine/gcm_unregistration_request_handler.h"
 
+#include "base/metrics/histogram.h"
 #include "google_apis/gcm/base/gcm_util.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -63,6 +64,22 @@ UnregistrationRequest::Status GCMUnregistrationRequestHandler::ParseResponse(
   DVLOG(1) << "Not able to parse a meaningful output from response body."
            << response;
   return UnregistrationRequest::RESPONSE_PARSING_FAILED;
+}
+
+void GCMUnregistrationRequestHandler::ReportUMAs(
+    UnregistrationRequest::Status status,
+    int retry_count,
+    base::TimeDelta complete_time) {
+  UMA_HISTOGRAM_ENUMERATION("GCM.UnregistrationRequestStatus",
+                            status,
+                            UnregistrationRequest::UNREGISTRATION_STATUS_COUNT);
+
+  // Other UMAs are only reported when the request succeeds.
+  if (status != UnregistrationRequest::SUCCESS)
+    return;
+
+  UMA_HISTOGRAM_COUNTS("GCM.UnregistrationRetryCount", retry_count);
+  UMA_HISTOGRAM_TIMES("GCM.UnregistrationCompleteTime", complete_time);
 }
 
 }  // namespace gcm

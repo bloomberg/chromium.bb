@@ -86,6 +86,11 @@ class GCM_EXPORT UnregistrationRequest : public net::URLFetcherDelegate {
     // Parses the HTTP response. It is called after
     // UnregistrationRequest::ParseResponse to proceed the parsing.
     virtual Status ParseResponse(const net::URLFetcher* source) = 0;
+
+    // Reports various UMAs, including status, retry count and completion time.
+    virtual void ReportUMAs(Status status,
+                            int retry_count,
+                            base::TimeDelta complete_time) = 0;
   };
 
   // Creates an instance of UnregistrationRequest. |callback| will be called

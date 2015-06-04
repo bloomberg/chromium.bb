@@ -87,6 +87,11 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
     // RegistrationRequest::BuildRequestBody to append more custom info to
     // |body|. Note that the request body is encoded in HTTP form format.
     virtual void BuildRequestBody(std::string* body) = 0;
+
+    // Reports various UMAs, including status, retry count and completion time.
+    virtual void ReportUMAs(Status status,
+                            int retry_count,
+                            base::TimeDelta complete_time) = 0;
   };
 
   RegistrationRequest(
