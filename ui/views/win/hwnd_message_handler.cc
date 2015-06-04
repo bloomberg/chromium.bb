@@ -2308,6 +2308,9 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
   if (ui::GetTouchInputInfoWrapper(reinterpret_cast<HTOUCHINPUT>(l_param),
                                    num_points, input.get(),
                                    sizeof(TOUCHINPUT))) {
+    // input[i].dwTime doesn't necessarily relate to the system time at all,
+    // so use base::TimeTicks::Now().
+    const base::TimeTicks event_time = base::TimeTicks::Now();
     int flags = ui::GetModifiersFromKeyState();
     TouchEvents touch_events;
     for (int i = 0; i < num_points; ++i) {
@@ -2348,20 +2351,16 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
         touch_event_type = ui::ET_TOUCH_MOVED;
       }
       if (touch_event_type != ui::ET_UNKNOWN) {
-        // input[i].dwTime doesn't necessarily relate to the system time at all,
-        // so use base::TimeTicks::Now()
-        const base::TimeTicks now = base::TimeTicks::Now();
         ui::TouchEvent event(touch_event_type,
                              gfx::Point(point.x, point.y),
                              id_generator_.GetGeneratedID(input[i].dwID),
-                             now - base::TimeTicks());
+                             event_time - base::TimeTicks());
         event.set_flags(flags);
         event.latency()->AddLatencyNumberWithTimestamp(
             ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
             0,
             0,
-            base::TimeTicks::FromInternalValue(
-                event.time_stamp().ToInternalValue()),
+            event_time,
             1);
 
         touch_events.push_back(event);
