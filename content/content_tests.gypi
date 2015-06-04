@@ -338,6 +338,7 @@
       'browser/background_sync/background_sync_network_observer_unittest.cc',
       'browser/background_sync/background_sync_power_observer_unittest.cc',
       'browser/background_sync/background_sync_service_impl_unittest.cc',
+      'browser/browser_io_surface_manager_mac_unittest.cc',
       'browser/browser_thread_unittest.cc',
       'browser/browser_url_handler_impl_unittest.cc',
       'browser/byte_stream_unittest.cc',

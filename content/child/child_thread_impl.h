@@ -20,6 +20,10 @@
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "content/common/mac/io_surface_manager_token.h"
+#endif
+
 namespace base {
 class MessageLoop;
 
@@ -231,6 +235,9 @@ class CONTENT_EXPORT ChildThreadImpl
 #endif
 #if defined(USE_TCMALLOC)
   void OnGetTcmallocStats();
+#endif
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  void OnSetIOSurfaceManagerToken(const IOSurfaceManagerToken& token);
 #endif
 
   void EnsureConnected();

@@ -24,6 +24,10 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "content/common/mac/io_surface_manager_token.h"
+#endif
+
 namespace base {
 class CommandLine;
 class MessageLoop;
@@ -500,6 +504,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Whether or not the CHROMIUM_subscribe_uniform WebGL extension is enabled
   bool subscribe_uniform_enabled_;
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // Unique unguessable token that the child process is using to acquire
+  // IOSurface references.
+  IOSurfaceManagerToken io_surface_manager_token_;
+#endif
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

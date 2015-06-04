@@ -24,7 +24,11 @@
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #if !defined(OS_IOS)
+#include "base/containers/scoped_ptr_hash_map.h"
+#include "base/mac/scoped_mach_port.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/test/mock_chrome_application_mac.h"
+#include "content/common/mac/io_surface_manager.h"
 #endif
 #endif
 
@@ -95,6 +99,32 @@ class TestSurfaceTextureManager : public SurfaceTextureManager {
 };
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+class TestIOSurfaceManager : public IOSurfaceManager {
+ public:
+  // Overridden from IOSurfaceManager:
+  bool RegisterIOSurface(int io_surface_id,
+                         int client_id,
+                         IOSurfaceRef io_surface) override {
+    io_surfaces_.add(io_surface_id,
+                     make_scoped_ptr(new base::mac::ScopedMachSendRight(
+                         IOSurfaceCreateMachPort(io_surface))));
+    return true;
+  }
+  void UnregisterIOSurface(int io_surface_id, int client_id) override {
+    io_surfaces_.erase(io_surface_id);
+  }
+  IOSurfaceRef AcquireIOSurface(int io_surface_id) override {
+    return IOSurfaceLookupFromMachPort(io_surfaces_.get(io_surface_id)->get());
+  }
+
+ private:
+  using IOSurfaceMap =
+      base::ScopedPtrHashMap<int, scoped_ptr<base::mac::ScopedMachSendRight>>;
+  IOSurfaceMap io_surfaces_;
+};
+#endif
+
 }  // namespace
 
 ContentTestSuite::ContentTestSuite(int argc, char** argv)
@@ -137,6 +167,9 @@ void ContentTestSuite::Initialize() {
   listeners.Append(new TestInitializationListener);
 #if defined(OS_ANDROID)
   SurfaceTextureManager::SetInstance(new TestSurfaceTextureManager);
+#endif
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  IOSurfaceManager::SetInstance(new TestIOSurfaceManager);
 #endif
 }
 

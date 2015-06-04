@@ -461,6 +461,8 @@
       'browser/browser_child_process_host_impl.cc',
       'browser/browser_child_process_host_impl.h',
       'browser/browser_context.cc',
+      'browser/browser_io_surface_manager_mac.cc',
+      'browser/browser_io_surface_manager_mac.h',
       'browser/browser_ipc_logging.cc',
       'browser/browser_main.cc',
       'browser/browser_main.h',

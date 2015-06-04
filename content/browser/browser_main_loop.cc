@@ -97,6 +97,7 @@
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/memory/memory_pressure_monitor_mac.h"
 #include "content/browser/bootstrap_sandbox_mac.h"
+#include "content/browser/browser_io_surface_manager_mac.h"
 #include "content/browser/cocoa/system_hotkey_helper_mac.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/theme_helper_mac.h"
@@ -596,6 +597,13 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     screen_orientation_delegate_.reset(
         new ScreenOrientationDelegateAndroid());
     ScreenOrientationProvider::SetDelegate(screen_orientation_delegate_.get());
+  }
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  {
+    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:IOSurfaceManager");
+    IOSurfaceManager::SetInstance(BrowserIOSurfaceManager::GetInstance());
   }
 #endif
 

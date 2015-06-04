@@ -6,18 +6,14 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
+#include <vector>
+
 #include "base/logging.h"
+#include "content/common/mac/io_surface_manager.h"
 #include "ui/gl/gl_image_io_surface.h"
 
 namespace content {
 namespace {
-
-void AddBooleanValue(CFMutableDictionaryRef dictionary,
-                     const CFStringRef key,
-                     bool value) {
-  CFDictionaryAddValue(
-      dictionary, key, value ? kCFBooleanTrue : kCFBooleanFalse);
-}
 
 void AddIntegerValue(CFMutableDictionaryRef dictionary,
                      const CFStringRef key,
@@ -121,13 +117,15 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   AddIntegerValue(properties, kIOSurfaceHeight, size.height());
   AddIntegerValue(properties, kIOSurfaceBytesPerElement, BytesPerPixel(format));
   AddIntegerValue(properties, kIOSurfacePixelFormat, PixelFormat(format));
-  // TODO(reveman): Remove this when using a mach_port_t to transfer
-  // IOSurface to browser and renderer process. crbug.com/323304
-  AddBooleanValue(properties, kIOSurfaceIsGlobal, true);
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceCreate(properties));
   if (!io_surface)
     return gfx::GpuMemoryBufferHandle();
+
+  if (!IOSurfaceManager::GetInstance()->RegisterIOSurface(id, client_id,
+                                                          io_surface)) {
+    return gfx::GpuMemoryBufferHandle();
+  }
 
   {
     base::AutoLock lock(io_surfaces_lock_);
@@ -140,18 +138,21 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::IO_SURFACE_BUFFER;
   handle.id = id;
-  handle.io_surface_id = IOSurfaceGetID(io_surface);
   return handle;
 }
 
 void GpuMemoryBufferFactoryIOSurface::DestroyGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     int client_id) {
-  base::AutoLock lock(io_surfaces_lock_);
+  {
+    base::AutoLock lock(io_surfaces_lock_);
 
-  IOSurfaceMapKey key(id, client_id);
-  DCHECK(io_surfaces_.find(key) != io_surfaces_.end());
-  io_surfaces_.erase(key);
+    IOSurfaceMapKey key(id, client_id);
+    DCHECK(io_surfaces_.find(key) != io_surfaces_.end());
+    io_surfaces_.erase(key);
+  }
+
+  IOSurfaceManager::GetInstance()->UnregisterIOSurface(id, client_id);
 }
 
 gpu::ImageFactory* GpuMemoryBufferFactoryIOSurface::AsImageFactory() {

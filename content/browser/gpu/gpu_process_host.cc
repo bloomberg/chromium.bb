@@ -60,6 +60,11 @@
 #include "ui/gfx/x/x11_switches.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "content/browser/browser_io_surface_manager_mac.h"
+#include "content/common/child_process_messages.h"
+#endif
+
 namespace content {
 
 bool GpuProcessHost::gpu_enabled_ = true;
@@ -588,6 +593,11 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
 
 void GpuProcessHost::OnChannelConnected(int32 peer_pid) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnChannelConnected");
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  Send(new ChildProcessMsg_SetIOSurfaceManagerToken(
+      BrowserIOSurfaceManager::GetInstance()->GetGpuProcessToken()));
+#endif
 
   while (!queued_messages_.empty()) {
     Send(queued_messages_.front());

@@ -184,6 +184,10 @@
 #include "ui/gfx/win/dpi.h"
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include "content/browser/browser_io_surface_manager_mac.h"
+#endif
+
 #if defined(ENABLE_BROWSER_CDMS)
 #include "content/browser/media/cdm/browser_cdm_manager.h"
 #endif
@@ -1561,6 +1565,13 @@ void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
   tracked_objects::ThreadData::Status status =
       tracked_objects::ThreadData::status();
   Send(new ChildProcessMsg_SetProfilerStatus(status));
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  io_surface_manager_token_ =
+      BrowserIOSurfaceManager::GetInstance()->GenerateChildProcessToken(
+          GetID());
+  Send(new ChildProcessMsg_SetIOSurfaceManagerToken(io_surface_manager_token_));
+#endif
 }
 
 void RenderProcessHostImpl::OnChannelError() {
@@ -1678,6 +1689,14 @@ void RenderProcessHostImpl::Cleanup() {
     // reused in between now and when the Delete task runs.
     UnregisterHost(GetID());
   }
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (!io_surface_manager_token_.IsZero()) {
+    BrowserIOSurfaceManager::GetInstance()->InvalidateChildProcessToken(
+        io_surface_manager_token_);
+    io_surface_manager_token_.SetZero();
+  }
+#endif
 }
 
 void RenderProcessHostImpl::AddPendingView() {

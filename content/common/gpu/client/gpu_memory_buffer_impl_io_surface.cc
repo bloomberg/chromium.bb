@@ -5,6 +5,7 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
 
 #include "base/logging.h"
+#include "content/common/mac/io_surface_manager.h"
 
 namespace content {
 
@@ -27,7 +28,7 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
     Format format,
     const DestructionCallback& callback) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
-      IOSurfaceLookup(handle.io_surface_id));
+      IOSurfaceManager::GetInstance()->AcquireIOSurface(handle.id));
   if (!io_surface)
     return scoped_ptr<GpuMemoryBufferImpl>();
 
@@ -57,7 +58,6 @@ gfx::GpuMemoryBufferHandle GpuMemoryBufferImplIOSurface::GetHandle() const {
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::IO_SURFACE_BUFFER;
   handle.id = id_;
-  handle.io_surface_id = IOSurfaceGetID(io_surface_);
   return handle;
 }
 

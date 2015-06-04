@@ -18,6 +18,8 @@
 namespace gpu {
 
 struct GPU_EXPORT Mailbox {
+  using Name = int8_t[GL_MAILBOX_SIZE_CHROMIUM];
+
   Mailbox();
   bool IsZero() const;
   void SetZero();
@@ -31,7 +33,8 @@ struct GPU_EXPORT Mailbox {
   // check, only to catch bugs where clients forgot to call Mailbox::Generate.
   bool Verify() const;
 
-  int8_t name[GL_MAILBOX_SIZE_CHROMIUM];
+  Name name;
+
   bool operator<(const Mailbox& other) const {
     return memcmp(this, &other, sizeof other) < 0;
   }

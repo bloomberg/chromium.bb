@@ -30,9 +30,6 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferType type;
   GpuMemoryBufferId id;
   base::SharedMemoryHandle handle;
-#if defined(OS_MACOSX)
-  uint32 io_surface_id;
-#endif
 };
 
 // This interface typically correspond to a type of shared memory that is also

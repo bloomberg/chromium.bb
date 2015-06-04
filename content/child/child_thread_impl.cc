@@ -69,6 +69,10 @@
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "content/child/child_io_surface_manager_mac.h"
+#endif
+
 using tracked_objects::ThreadData;
 
 namespace content {
@@ -578,6 +582,10 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetTcmallocStats, OnGetTcmallocStats)
 #endif
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_SetIOSurfaceManagerToken,
+                        OnSetIOSurfaceManagerToken)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -631,6 +639,13 @@ void ChildThreadImpl::OnGetTcmallocStats() {
   base::allocator::GetStats(buffer, sizeof(buffer));
   result.append(buffer);
   Send(new ChildProcessHostMsg_TcmallocStats(result));
+}
+#endif
+
+#if defined(OS_MACOSX)
+void ChildThreadImpl::OnSetIOSurfaceManagerToken(
+    const IOSurfaceManagerToken& token) {
+  ChildIOSurfaceManager::GetInstance()->set_token(token);
 }
 #endif
 

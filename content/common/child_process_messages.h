@@ -17,6 +17,10 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
+#if defined(OS_MACOSX)
+#include "content/common/mac/io_surface_manager_token.h"
+#endif
+
 IPC_ENUM_TRAITS_MAX_VALUE(tracked_objects::ThreadData::Status,
                           tracked_objects::ThreadData::STATUS_LAST)
 
@@ -63,9 +67,6 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferHandle)
   IPC_STRUCT_TRAITS_MEMBER(id)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(handle)
-#if defined(OS_MACOSX)
-  IPC_STRUCT_TRAITS_MEMBER(io_surface_id)
-#endif
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuMemoryBuffer::Format,
@@ -117,6 +118,13 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProcessBackgrounded,
 #if defined(USE_TCMALLOC)
 // Sent to child process to request tcmalloc stats.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTcmallocStats)
+#endif
+
+#if defined(OS_MACOSX)
+// Sent to child processes to tell them what token to use when registering
+// and/or acquiring IOSurfaces.
+IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetIOSurfaceManagerToken,
+                     content::IOSurfaceManagerToken /* token */)
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////

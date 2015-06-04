@@ -7,14 +7,7 @@
 namespace gfx {
 
 GpuMemoryBufferHandle::GpuMemoryBufferHandle()
-    : type(EMPTY_BUFFER),
-      id(0),
-      handle(base::SharedMemory::NULLHandle())
-#if defined(OS_MACOSX)
-      ,
-      io_surface_id(0)
-#endif
-{
+    : type(EMPTY_BUFFER), id(0), handle(base::SharedMemory::NULLHandle()) {
 }
 
 }  // namespace gfx

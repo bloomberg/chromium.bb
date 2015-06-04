@@ -66,6 +66,8 @@
       'child/child_gpu_memory_buffer_manager.h',
       'child/child_histogram_message_filter.cc',
       'child/child_histogram_message_filter.h',
+      'child/child_io_surface_manager_mac.cc',
+      'child/child_io_surface_manager_mac.h',
       'child/child_message_filter.cc',
       'child/child_message_filter.h',
       'child/child_process.cc',

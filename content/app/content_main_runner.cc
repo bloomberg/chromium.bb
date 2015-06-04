@@ -86,7 +86,9 @@
 #if !defined(OS_IOS)
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "content/app/mac/mac_init.h"
+#include "content/browser/browser_io_surface_manager_mac.h"
 #include "content/browser/mach_broker_mac.h"
+#include "content/child/child_io_surface_manager_mac.h"
 #include "content/common/sandbox_init_mac.h"
 #endif  // !OS_IOS
 #endif  // OS_WIN
@@ -662,6 +664,18 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     if (!process_type.empty() &&
         (!delegate_ || delegate_->ShouldSendMachPort(process_type))) {
       MachBroker::ChildSendTaskPortToParent();
+    }
+
+    if (!command_line.HasSwitch(switches::kSingleProcess) &&
+        !process_type.empty() && (process_type == switches::kRendererProcess ||
+                                  process_type == switches::kGpuProcess)) {
+      base::mac::ScopedMachSendRight service_port =
+          BrowserIOSurfaceManager::LookupServicePort(getppid());
+      if (service_port.is_valid()) {
+        ChildIOSurfaceManager::GetInstance()->set_service_port(
+            service_port.release());
+        IOSurfaceManager::SetInstance(ChildIOSurfaceManager::GetInstance());
+      }
     }
 #elif defined(OS_WIN)
     SetupCRT(command_line);
