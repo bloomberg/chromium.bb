@@ -291,8 +291,11 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         ResourceLoaderOptions resourceLoaderOptions = ResourceFetcher::defaultResourceOptions();
         ResourceRequest resourceRequest(url);
         resourceRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeSameOrigin);
-        if (updateBehavior == UpdateForcedReload)
+        if (updateBehavior == UpdateForcedReload) {
             resourceRequest.setCachePolicy(ResourceRequestCachePolicy::ReloadBypassingCache);
+            // ImageLoader defers the load of images when in an ImageDocument. Don't defer this load on a forced reload.
+            m_loadingImageDocument = false;
+        }
         if (isHTMLPictureElement(element()->parentNode()) || !element()->fastGetAttribute(HTMLNames::srcsetAttr).isNull())
             resourceRequest.setRequestContext(WebURLRequest::RequestContextImageSet);
         FetchRequest request(resourceRequest, element()->localName(), resourceLoaderOptions);
