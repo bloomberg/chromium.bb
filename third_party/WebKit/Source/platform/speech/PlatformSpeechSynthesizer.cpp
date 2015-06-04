@@ -48,22 +48,10 @@ PlatformSpeechSynthesizer::PlatformSpeechSynthesizer(PlatformSpeechSynthesizerCl
 {
     m_webSpeechSynthesizerClient = new WebSpeechSynthesizerClientImpl(this, client);
     m_webSpeechSynthesizer = adoptPtr(Platform::current()->createSpeechSynthesizer(m_webSpeechSynthesizerClient));
-    ThreadState::current()->registerPreFinalizer(*this);
 }
 
 PlatformSpeechSynthesizer::~PlatformSpeechSynthesizer()
 {
-}
-
-// Since the m_webSpeechSynthesizer (i.e., TtsDispatcher in the chrome side)
-// holds a raw pointer back to the m_webSpeechSynthesizerClient, we need to
-// make sure that the raw pointer is cleared before the sweeping starts.
-// Otherwise, m_webSpeechSynthesizerClient might end up being lazily swept
-// before this PlatformSpeechSynthesizer object is, leaving
-// m_sweepSpeechSynthesizer with a dangling pointer to a freed object.
-void PlatformSpeechSynthesizer::dispose()
-{
-    m_webSpeechSynthesizer.clear();
 }
 
 void PlatformSpeechSynthesizer::speak(PlatformSpeechSynthesisUtterance* utterance)

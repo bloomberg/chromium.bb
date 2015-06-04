@@ -150,33 +150,12 @@ ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<WebS
     , m_outerWorker(worker)
     , m_wasStopped(false)
 {
-#if ENABLE(OILPAN)
-    ThreadState::current()->registerPreFinalizer(*this);
-#endif
     ASSERT(m_outerWorker);
     m_outerWorker->setProxy(this);
 }
 
 ServiceWorker::~ServiceWorker()
 {
-#if ENABLE(OILPAN)
-    ASSERT(!m_outerWorker);
-#endif
-}
-
-void ServiceWorker::dispose()
-{
-    // With Oilpan enabled, the observable lifetime of a ServiceWorker
-    // must not extend beyond when it has been deemed to be unreachable
-    // by the garbage collector. The embedder must be detached before
-    // it is eventually (lazily) swept, so as to prevent that. Otherwise
-    // the embedder might risk accessing a to-be-finalized object that
-    // is not in a valid state.
-    //
-    // The dispose() method is hooked up to the garbage collector by
-    // way of a "pre finalizer", a method that is run after marking
-    // has completed, but before any sweeping takes place.
-    m_outerWorker.clear();
 }
 
 } // namespace blink

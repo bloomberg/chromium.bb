@@ -270,9 +270,6 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     , m_hasBeenReset(false)
 #endif
 {
-#if ENABLE(OILPAN)
-    ThreadState::current()->registerPreFinalizer(*this);
-#endif
 }
 
 void LocalDOMWindow::clearDocument()
@@ -420,30 +417,20 @@ LocalDOMWindow::~LocalDOMWindow()
 #if ENABLE(OILPAN)
     // Cleared when detaching document.
     ASSERT(!m_eventQueue);
+
+    // Oilpan: should the LocalDOMWindow be GCed along with its LocalFrame without the
+    // frame having first notified its observers of imminent destruction, the
+    // LocalDOMWindow will not have had an opportunity to remove event listeners.
+    //
+    // Non-Oilpan, LocalDOMWindow::reset() will always be invoked, the last opportunity
+    // being via ~LocalFrame's setDOMWindow() call. Asserted for below.
+    if (frame())
+        removeAllEventListeners();
 #else
     ASSERT(m_hasBeenReset);
     ASSERT(m_document->isStopped());
     clearDocument();
 #endif
-}
-
-void LocalDOMWindow::dispose()
-{
-    // Oilpan: should the LocalDOMWindow be GCed along with its LocalFrame without the
-    // frame having first notified its observers of imminent destruction, the
-    // LocalDOMWindow will not have had an opportunity to remove event listeners.
-    // Do that here by way of a prefinalizing action.
-    //
-    // (Non-Oilpan, LocalDOMWindow::reset() will always be invoked, the last opportunity
-    // being via ~LocalFrame's setDOMWindow() call.)
-    if (!frame())
-        return;
-
-    // (Prefinalizing actions run to completion before the Oilpan GC start to lazily sweep,
-    // so keeping them short is worthwhile. Something that's worth keeping in mind when
-    // working out where to best place some actions that have to be performed very late
-    // on in LocalDOMWindow's lifetime.)
-    removeAllEventListeners();
 }
 
 ExecutionContext* LocalDOMWindow::executionContext() const

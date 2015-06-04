@@ -28,9 +28,6 @@ namespace blink {
 //    will be ignored.
 class CORE_EXPORT ScriptPromiseResolver : public RefCountedWillBeRefCountedGarbageCollected<ScriptPromiseResolver>, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseResolver);
-#if ENABLE(ASSERT)
-    WILL_BE_USING_PRE_FINALIZER(ScriptPromiseResolver, assertNotPending);
-#endif
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 public:
     static PassRefPtrWillBeRawPtr<ScriptPromiseResolver> create(ScriptState* scriptState)
@@ -40,10 +37,18 @@ public:
         return resolver.release();
     }
 
-#if !ENABLE(OILPAN) && ENABLE(ASSERT)
+#if ENABLE(ASSERT)
+    // Eagerly finalized so as to ensure valid access to executionContext()
+    // from the destructor's assert.
+    EAGERLY_FINALIZE();
+
     ~ScriptPromiseResolver() override
     {
-        assertNotPending();
+        // This assertion fails if:
+        //  - promise() is called at least once and
+        //  - this resolver is destructed before it is resolved, rejected or
+        //    the associated ExecutionContext is stopped.
+        ASSERT(m_state == ResolvedOrRejected || !m_isPromiseCalled || !executionContext() || executionContext()->activeDOMObjectsAreStopped());
     }
 #endif
 
@@ -106,19 +111,6 @@ private:
         Default,
         KeepAliveWhilePending,
     };
-
-#if ENABLE(ASSERT)
-    void assertNotPending()
-    {
-        // This assertion fails if:
-        //  - promise() is called at least once and
-        //  - this resolver is destructed before it is resolved, rejected or
-        //    the associated ExecutionContext is stopped.
-        // This function cannot be run in the destructor if
-        // ScriptPromiseResolver is on-heap.
-        ASSERT(m_state == ResolvedOrRejected || !m_isPromiseCalled || !executionContext() || executionContext()->activeDOMObjectsAreStopped());
-    }
-#endif
 
     template<typename T>
     void resolveOrReject(T value, ResolutionState newState)

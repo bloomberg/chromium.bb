@@ -132,7 +132,6 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* execution
     , m_stopped(false)
 {
     ASSERT(m_outerRegistration);
-    ThreadState::current()->registerPreFinalizer(*this);
 
     if (!executionContext)
         return;
@@ -143,13 +142,6 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(ExecutionContext* execution
 
 ServiceWorkerRegistration::~ServiceWorkerRegistration()
 {
-    ASSERT(!m_outerRegistration);
-}
-
-void ServiceWorkerRegistration::dispose()
-{
-    // See ServiceWorker::dispose() comment why this explicit dispose() action is needed.
-    m_outerRegistration.clear();
 }
 
 DEFINE_TRACE(ServiceWorkerRegistration)

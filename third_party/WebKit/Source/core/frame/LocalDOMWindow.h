@@ -66,7 +66,6 @@ enum PageshowEventPersistence {
 // please ping dcheng@chromium.org first. You probably don't want to do that.
 class CORE_EXPORT LocalDOMWindow final : public DOMWindow, public WillBeHeapSupplementable<LocalDOMWindow>, public DOMWindowLifecycleNotifier {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
-    WILL_BE_USING_PRE_FINALIZER(LocalDOMWindow, dispose);
 public:
     static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
     static PassRefPtrWillBeRawPtr<LocalDOMWindow> create(LocalFrame& frame)
@@ -74,7 +73,11 @@ public:
         return adoptRefWillBeNoop(new LocalDOMWindow(frame));
     }
     virtual ~LocalDOMWindow();
-    void dispose();
+
+    // LocalDOMWindow is eagerly finalized to allow the destructor
+    // to remove any event listeners still attached.
+    EAGERLY_FINALIZE();
+    DECLARE_VIRTUAL_TRACE();
 
     PassRefPtrWillBeRawPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
 
@@ -83,7 +86,6 @@ public:
     virtual LocalDOMWindow* toDOMWindow() override;
 
     // DOMWindow overrides:
-    DECLARE_VIRTUAL_TRACE();
     bool isLocalDOMWindow() const override { return true; }
     virtual LocalFrame* frame() const override;
     Screen* screen() const override;

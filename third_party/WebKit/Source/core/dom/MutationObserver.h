@@ -60,7 +60,6 @@ using MutationRecordVector = WillBeHeapVector<RefPtrWillBeMember<MutationRecord>
 
 class MutationObserver final : public RefCountedWillBeGarbageCollectedFinalized<MutationObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_PRE_FINALIZER(MutationObserver, dispose);
 public:
     enum MutationType {
         ChildList = 1 << 0,
@@ -96,6 +95,8 @@ public:
 
     WillBeHeapHashSet<RawPtrWillBeMember<Node>> getObservedNodes() const;
 
+    // Eagerly finalized as destructor accesses heap object members.
+    EAGERLY_FINALIZE();
     DECLARE_TRACE();
 
 private:
@@ -104,8 +105,6 @@ private:
     explicit MutationObserver(PassOwnPtrWillBeRawPtr<MutationCallback>);
     void deliver();
     bool shouldBeSuspended() const;
-
-    void dispose();
 
     OwnPtrWillBeMember<MutationCallback> m_callback;
     MutationRecordVector m_records;

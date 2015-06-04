@@ -26,24 +26,13 @@ MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MID
     , m_hasBeenDisposed(false)
     , m_sysexPermissionResolved(false)
 {
-#if ENABLE(OILPAN)
-#if ENABLE(ASSERT)
-    // A prefinalizer has already been registered for ScriptPromiseResolver;
-    // remove it and register a combined one as the infrastructure doesn't
-    // support multiple prefinalizers for an object.
-    ThreadState::current()->unregisterPreFinalizer(*static_cast<ScriptPromiseResolver*>(this));
-#endif
-    ThreadState::current()->registerPreFinalizer(*this);
-#endif
     if (options.hasSysex())
         m_requestSysex = options.sysex();
 }
 
 MIDIAccessInitializer::~MIDIAccessInitializer()
 {
-#if !ENABLE(OILPAN)
     dispose();
-#endif
 }
 
 void MIDIAccessInitializer::contextDestroyed()
@@ -69,9 +58,6 @@ void MIDIAccessInitializer::dispose()
     }
 
     m_hasBeenDisposed = true;
-#if ENABLE(OILPAN) && ENABLE(ASSERT)
-    ScriptPromiseResolver::dispose();
-#endif
 }
 
 ScriptPromise MIDIAccessInitializer::start()

@@ -25,9 +25,6 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
         m_state = ResolvedOrRejected;
         m_resolver.clear();
     }
-#if ENABLE(OILPAN) && ENABLE(ASSERT)
-    ThreadState::current()->registerPreFinalizer(*this);
-#endif
 }
 
 void ScriptPromiseResolver::suspend()

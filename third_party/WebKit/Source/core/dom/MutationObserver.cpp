@@ -64,21 +64,13 @@ MutationObserver::MutationObserver(PassOwnPtrWillBeRawPtr<MutationCallback> call
     : m_callback(callback)
     , m_priority(s_observerPriority++)
 {
-#if ENABLE(OILPAN)
-    ThreadState::current()->registerPreFinalizer(*this);
-#endif
 }
 
 MutationObserver::~MutationObserver()
 {
 #if !ENABLE(OILPAN)
     ASSERT(m_registrations.isEmpty());
-    dispose();
 #endif
-}
-
-void MutationObserver::dispose()
-{
     if (!m_records.isEmpty())
         InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
 }
