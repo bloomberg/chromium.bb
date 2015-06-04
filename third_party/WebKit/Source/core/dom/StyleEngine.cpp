@@ -603,26 +603,21 @@ PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const
 
     e->document().styleEngine().addPendingSheet();
 
-    if (!e->document().inQuirksMode()) {
-        AtomicString textContent(text);
+    AtomicString textContent(text);
 
-        WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<StyleSheetContents>>::AddResult result = m_textToSheetCache.add(textContent, nullptr);
-        if (result.isNewEntry || !result.storedValue->value) {
-            styleSheet = StyleEngine::parseSheet(e, text, startPosition, createdByParser);
-            if (result.isNewEntry && isCacheableForStyleElement(*styleSheet->contents())) {
-                result.storedValue->value = styleSheet->contents();
-                m_sheetToTextCache.add(styleSheet->contents(), textContent);
-            }
-        } else {
-            StyleSheetContents* contents = result.storedValue->value;
-            ASSERT(contents);
-            ASSERT(isCacheableForStyleElement(*contents));
-            ASSERT(contents->singleOwnerDocument() == e->document());
-            styleSheet = CSSStyleSheet::createInline(contents, e, startPosition);
+    WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<StyleSheetContents>>::AddResult result = m_textToSheetCache.add(textContent, nullptr);
+    if (result.isNewEntry || !result.storedValue->value) {
+        styleSheet = StyleEngine::parseSheet(e, text, startPosition, createdByParser);
+        if (result.isNewEntry && isCacheableForStyleElement(*styleSheet->contents())) {
+            result.storedValue->value = styleSheet->contents();
+            m_sheetToTextCache.add(styleSheet->contents(), textContent);
         }
     } else {
-        // FIXME: currently we don't cache StyleSheetContents inQuirksMode.
-        styleSheet = StyleEngine::parseSheet(e, text, startPosition, createdByParser);
+        StyleSheetContents* contents = result.storedValue->value;
+        ASSERT(contents);
+        ASSERT(isCacheableForStyleElement(*contents));
+        ASSERT(contents->singleOwnerDocument() == e->document());
+        styleSheet = CSSStyleSheet::createInline(contents, e, startPosition);
     }
 
     ASSERT(styleSheet);
