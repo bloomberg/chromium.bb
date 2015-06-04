@@ -191,7 +191,12 @@ void ConstructCommands(CommandService* command_service,
                                         CommandService::ANY_SCOPE,
                                         &named_commands)) {
     for (const auto& pair : named_commands) {
-      const Command& command = pair.second;
+      // TODO(devlin): For some reason beyond my knowledge, FindCommandByName
+      // returns different (and more current) data than GetNamedCommands.
+      // Unfortunately, some systems may be relying on the other data (which
+      // more closely matches manifest data).
+      Command command = command_service->FindCommandByName(
+          extension_id, pair.second.command_name());
       bool active = command.accelerator().key_code() != ui::VKEY_UNKNOWN;
       commands->push_back(
           make_linked_ptr(construct_command(command, active, false)));
