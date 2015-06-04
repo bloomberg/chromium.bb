@@ -1943,6 +1943,4 @@ crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
 crbug.com/495542 [ XP ] plugins/webview-plugin-lifecycle.html [ Failure ]
 
-Bug(wangxianzhu) virtual/slimmingpaint/fast/css/transformed-mask.html [ NeedsRebaseline ]
-Bug(wangxianzhu) virtual/slimmingpaint/svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
 Bug(wangxianzhu) virtual/slimmingpaint/fast/writing-mode/box-shadow-horizontal-bt.html [ NeedsRebaseline ]
