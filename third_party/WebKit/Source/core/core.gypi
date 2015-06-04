@@ -283,7 +283,6 @@
             'html/track/vtt/VTTCue.idl',
             'html/track/vtt/VTTRegion.idl',
             'html/track/vtt/VTTRegionList.idl',
-            'inspector/InjectedScriptHost.idl',
             'inspector/InspectorOverlayHost.idl',
             'loader/appcache/ApplicationCache.idl',
             'page/EventSource.idl',

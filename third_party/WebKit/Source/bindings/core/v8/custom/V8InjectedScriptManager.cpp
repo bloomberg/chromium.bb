@@ -32,14 +32,10 @@
 #include "core/inspector/InjectedScriptManager.h"
 
 #include "bindings/core/v8/BindingSecurity.h"
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8Debugger.h"
-#include "bindings/core/v8/V8InjectedScriptHost.h"
-#include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8Window.h"
+#include "bindings/core/v8/inspector/V8InjectedScriptHost.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptNative.h"
@@ -47,51 +43,18 @@
 
 namespace blink {
 
-InjectedScriptManager::CallbackData* InjectedScriptManager::createCallbackData()
-{
-    OwnPtrWillBeRawPtr<InjectedScriptManager::CallbackData> callbackData = InjectedScriptManager::CallbackData::create(this);
-    InjectedScriptManager::CallbackData* callbackDataPtr = callbackData.get();
-    m_callbackDataSet.add(callbackData.release());
-    return callbackDataPtr;
-}
-
-void InjectedScriptManager::removeCallbackData(InjectedScriptManager::CallbackData* callbackData)
-{
-    ASSERT(m_callbackDataSet.contains(callbackData));
-    callbackData->dispose();
-    m_callbackDataSet.remove(callbackData);
-}
-
-static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(v8::Isolate* isolate, PassRefPtrWillBeRawPtr<InjectedScriptHost> host, InjectedScriptManager* injectedScriptManager, v8::Local<v8::Object> creationContext)
-{
-    ASSERT(host);
-
-    v8::Local<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, &V8InjectedScriptHost::wrapperTypeInfo, host.get());
-    if (UNLIKELY(wrapper.IsEmpty()))
-        return wrapper;
-
-    // Create a weak reference to the v8 wrapper of InspectorBackend to deref
-    // InspectorBackend when the wrapper is garbage collected.
-    InjectedScriptManager::CallbackData* callbackData = injectedScriptManager->createCallbackData();
-    callbackData->host = host.get();
-    callbackData->handle.set(isolate, wrapper);
-    callbackData->handle.setWeak(callbackData, &InjectedScriptManager::setWeakCallback);
-
-    V8DOMWrapper::setNativeInfo(wrapper, &V8InjectedScriptHost::wrapperTypeInfo, host.get());
-    ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
-    return wrapper;
-}
-
 ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSource, ScriptState* inspectedScriptState, int id, InjectedScriptNative* injectedScriptNative)
 {
     v8::Isolate* isolate = inspectedScriptState->isolate();
     ScriptState::Scope scope(inspectedScriptState);
 
-    // Call custom code to create InjectedScripHost wrapper specific for the context
-    // instead of calling toV8() that would create the
-    // wrapper in the current context.
-    // FIXME: make it possible to use generic bindings factory for InjectedScriptHost.
-    v8::Local<v8::Object> scriptHostWrapper = createInjectedScriptHostV8Wrapper(inspectedScriptState->isolate(), m_injectedScriptHost, this, inspectedScriptState->context()->Global());
+    v8::Local<v8::FunctionTemplate> wrapperTemplate = m_injectedScriptHost->wrapperTemplate(isolate);
+    if (wrapperTemplate.IsEmpty()) {
+        wrapperTemplate = V8InjectedScriptHost::createWrapperTemplate(isolate);
+        m_injectedScriptHost->setWrapperTemplate(wrapperTemplate, isolate);
+    }
+
+    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(isolate, wrapperTemplate, m_injectedScriptHost);
     if (scriptHostWrapper.IsEmpty())
         return ScriptValue();
 
@@ -127,12 +90,6 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
     LocalFrame* frame = toLocalDOMWindow(V8Window::toImpl(holder))->frame();
 
     return BindingSecurity::shouldAllowAccessToFrame(scriptState->isolate(), frame, DoNotReportSecurityError);
-}
-
-void InjectedScriptManager::setWeakCallback(const v8::WeakCallbackInfo<InjectedScriptManager::CallbackData>& data)
-{
-    InjectedScriptManager::CallbackData* callbackData = data.GetParameter();
-    callbackData->injectedScriptManager->removeCallbackData(callbackData);
 }
 
 } // namespace blink
