@@ -241,6 +241,39 @@ import org.chromium.content_public.browser.NavigationHistory;
         return false;
     }
 
+    @Override
+    public boolean canCopyStateOver() {
+        return mNativeNavigationControllerAndroid != 0
+                && nativeCanCopyStateOver(mNativeNavigationControllerAndroid);
+    }
+
+    @Override
+    public boolean canPruneAllButLastCommitted() {
+        return mNativeNavigationControllerAndroid != 0
+                && nativeCanPruneAllButLastCommitted(mNativeNavigationControllerAndroid);
+    }
+
+    @Override
+    public void copyStateFrom(NavigationController source) {
+        if (mNativeNavigationControllerAndroid == 0) return;
+        NavigationControllerImpl sourceImpl = (NavigationControllerImpl) source;
+        if (sourceImpl.mNativeNavigationControllerAndroid == 0) return;
+        nativeCopyStateFrom(
+                mNativeNavigationControllerAndroid,
+                sourceImpl.mNativeNavigationControllerAndroid);
+    }
+
+    @Override
+    public void copyStateFromAndPrune(NavigationController source, boolean replaceEntry) {
+        if (mNativeNavigationControllerAndroid == 0) return;
+        NavigationControllerImpl sourceImpl = (NavigationControllerImpl) source;
+        if (sourceImpl.mNativeNavigationControllerAndroid == 0) return;
+        nativeCopyStateFromAndPrune(
+                mNativeNavigationControllerAndroid,
+                sourceImpl.mNativeNavigationControllerAndroid,
+                replaceEntry);
+    }
+
     @CalledByNative
     private static void addToNavigationHistory(Object history, Object navigationEntry) {
         ((NavigationHistory) history).addEntry((NavigationEntry) navigationEntry);
@@ -301,4 +334,11 @@ import org.chromium.content_public.browser.NavigationHistory;
     private native int nativeGetLastCommittedEntryIndex(long nativeNavigationControllerAndroid);
     private native boolean nativeRemoveEntryAtIndex(long nativeNavigationControllerAndroid,
             int index);
+    private native boolean nativeCanCopyStateOver(long nativeNavigationControllerAndroid);
+    private native boolean nativeCanPruneAllButLastCommitted(
+            long nativeNavigationControllerAndroid);
+    private native void nativeCopyStateFrom(long nativeNavigationControllerAndroid,
+            long sourceNavigationControllerAndroid);
+    private native void nativeCopyStateFromAndPrune(long nativeNavigationControllerAndroid,
+            long sourceNavigationControllerAndroid, boolean replaceEntry);
 }

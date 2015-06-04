@@ -340,4 +340,35 @@ jboolean NavigationControllerAndroid::RemoveEntryAtIndex(JNIEnv* env,
   return navigation_controller_->RemoveEntryAtIndex(index);
 }
 
+jboolean NavigationControllerAndroid::CanCopyStateOver(JNIEnv* env,
+                                                       jobject obj) {
+  return navigation_controller_->GetEntryCount() == 0 &&
+      !navigation_controller_->GetPendingEntry();
+}
+
+jboolean NavigationControllerAndroid::CanPruneAllButLastCommitted(JNIEnv* env,
+                                                                  jobject obj) {
+  return navigation_controller_->CanPruneAllButLastCommitted();
+}
+
+void NavigationControllerAndroid::CopyStateFrom(
+    JNIEnv* env,
+    jobject obj,
+    jlong source_navigation_controller_android) {
+  navigation_controller_->CopyStateFrom(
+      *(reinterpret_cast<NavigationControllerAndroid*>(
+          source_navigation_controller_android)->navigation_controller_));
+}
+
+void NavigationControllerAndroid::CopyStateFromAndPrune(
+    JNIEnv* env,
+    jobject obj,
+    jlong source_navigation_controller_android,
+    jboolean replace_entry) {
+  navigation_controller_->CopyStateFromAndPrune(
+      reinterpret_cast<NavigationControllerAndroid*>(
+          source_navigation_controller_android)->navigation_controller_,
+      replace_entry);
+}
+
 }  // namespace content

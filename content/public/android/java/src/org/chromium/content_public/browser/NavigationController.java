@@ -165,4 +165,29 @@ public interface NavigationController {
      *         call discards any transient or pending entries.
      */
     public boolean removeEntryAtIndex(int index);
+
+    /**
+     * @return Whether it is safe to call CopyStateFrom (i.e. the navigation state is empty).
+     */
+    public boolean canCopyStateOver();
+
+    /**
+     * @return Whether it is safe to call CopyStateFromAndPrune.
+     */
+    public boolean canPruneAllButLastCommitted();
+
+    /**
+     * Copies the navigation state from the given controller to this one. This one should be empty.
+     * @param source A source of the navigation state
+     */
+    public void copyStateFrom(NavigationController source);
+
+    /**
+     * A variant of CopyStateFrom. Removes all entries from this except the last committed entry,
+     * and inserts all entries from |source| before and including its last committed entry.
+     * See navigation_controller.h for more detailed description.
+     * @param source A source of the navigation state
+     * @param replaceEntry Whether to replace the current entry in source
+     */
+    public void copyStateFromAndPrune(NavigationController source, boolean replaceEntry);
 }

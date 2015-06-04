@@ -83,6 +83,15 @@ class CONTENT_EXPORT NavigationControllerAndroid {
   void ClearHistory(JNIEnv* env, jobject obj);
   int GetLastCommittedEntryIndex(JNIEnv* env, jobject obj);
   jboolean RemoveEntryAtIndex(JNIEnv* env, jobject obj, jint index);
+  jboolean CanCopyStateOver(JNIEnv* env, jobject obj);
+  jboolean CanPruneAllButLastCommitted(JNIEnv* env, jobject obj);
+  void CopyStateFrom(JNIEnv* env,
+                     jobject obj,
+                     jlong source_native_navigation_controller_android);
+  void CopyStateFromAndPrune(JNIEnv* env,
+                     jobject obj,
+                     jlong source_native_navigation_controller_android,
+                     jboolean replace_entry);
 
  private:
   NavigationController* navigation_controller_;

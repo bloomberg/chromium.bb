@@ -183,6 +183,24 @@ public class NavigationPopupTest extends ChromeShellTestBase {
         public boolean removeEntryAtIndex(int index) {
             return false;
         }
+
+        @Override
+        public boolean canCopyStateOver() {
+            return false;
+        }
+
+        @Override
+        public boolean canPruneAllButLastCommitted() {
+            return false;
+        }
+
+        @Override
+        public void copyStateFrom(NavigationController source) {
+        }
+
+        @Override
+        public void copyStateFromAndPrune(NavigationController source, boolean replaceEntry) {
+        }
     }
 
     @MediumTest
