@@ -21,7 +21,7 @@ TEST(ProcessMemoryDumpTest, Clear) {
   pmd1->process_totals()->set_resident_set_bytes(42);
   pmd1->set_has_process_totals();
 
-  pmd1->process_mmaps()->AddVMRegion({0});
+  pmd1->process_mmaps()->AddVMRegion(ProcessMemoryMaps::VMRegion());
   pmd1->set_has_process_mmaps();
 
   pmd1->AddOwnershipEdge(MemoryAllocatorDumpGuid(42),

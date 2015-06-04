@@ -78,7 +78,7 @@ uint64 ReadCounterBytes(std::istream* smaps) {
 uint32 ParseSmapsCounter(std::istream* smaps,
                          ProcessMemoryMaps::VMRegion* region) {
   // A smaps counter lines looks as follows: "RSS:  0 Kb\n"
-  uint32 res = 0;
+  uint32 res = 1;
   std::string counter_name;
   *smaps >> counter_name;
 
@@ -87,16 +87,18 @@ uint32 ParseSmapsCounter(std::istream* smaps,
   // the case.
   if (counter_name == "Pss:") {
     region->byte_stats_proportional_resident = ReadCounterBytes(smaps);
-    res = 1;
-  } else if (counter_name == "Private_Dirty:" ||
-             counter_name == "Private_Clean:") {
-    // For Private and Shared counters keep the sum of the dirty + clean stats.
-    region->byte_stats_private_resident += ReadCounterBytes(smaps);
-    res = 1;
-  } else if (counter_name == "Shared_Dirty:" ||
-             counter_name == "Shared_Clean:") {
-    region->byte_stats_shared_resident += ReadCounterBytes(smaps);
-    res = 1;
+  } else if (counter_name == "Private_Dirty:") {
+    region->byte_stats_private_dirty_resident = ReadCounterBytes(smaps);
+  } else if (counter_name == "Private_Clean:") {
+    region->byte_stats_private_clean_resident = ReadCounterBytes(smaps);
+  } else if (counter_name == "Shared_Dirty:") {
+    region->byte_stats_shared_dirty_resident = ReadCounterBytes(smaps);
+  } else if (counter_name == "Shared_Clean:") {
+    region->byte_stats_shared_clean_resident = ReadCounterBytes(smaps);
+  } else if (counter_name == "Swap:") {
+    region->byte_stats_swapped = ReadCounterBytes(smaps);
+  } else {
+    res = 0;
   }
 
 #ifndef NDEBUG
@@ -117,7 +119,7 @@ uint32 ReadLinuxProcSmapsFile(std::istream* smaps, ProcessMemoryMaps* pmm) {
   if (!smaps->good())
     return 0;
 
-  const uint32 kNumExpectedCountersPerRegion = 5;
+  const uint32 kNumExpectedCountersPerRegion = 6;
   uint32 counters_parsed_for_current_region = 0;
   uint32 num_valid_regions = 0;
   ProcessMemoryMaps::VMRegion region;
@@ -127,7 +129,7 @@ uint32 ReadLinuxProcSmapsFile(std::istream* smaps, ProcessMemoryMaps* pmm) {
     if (next == std::ifstream::traits_type::eof() || next == '\n')
       break;
     if (isxdigit(next) && !isupper(next)) {
-      region = {0};
+      region = ProcessMemoryMaps::VMRegion();
       counters_parsed_for_current_region = 0;
       should_add_current_region = ParseSmapsHeader(smaps, &region);
     } else {
