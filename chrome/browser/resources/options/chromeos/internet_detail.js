@@ -755,10 +755,12 @@ cr.define('options.internet', function() {
       }
 
       var showConfigure = false;
-      if (this.type_ == 'WiMAX' || this.type_ == 'VPN') {
+      if (this.type_ == 'VPN') {
+        showConfigure = true;
+      } else if (this.type_ == 'WiMAX' && connectState == 'NotConnected') {
         showConfigure = true;
       } else if (this.type_ == 'WiFi') {
-        showConfigure = (connectState != 'Connected' &&
+        showConfigure = (connectState == 'NotConnected' &&
                          (!connectable || onc.getWiFiSecurity() != 'None'));
       }
       $('details-internet-configure').hidden = !showConfigure;
