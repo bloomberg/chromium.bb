@@ -157,6 +157,14 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
     return false;
   }
 
+  if (std::find_if(visit_vector.begin(), visit_vector.end(),
+                   [](const history::VisitRow& visit) {
+                     return ui::PageTransitionCoreTypeIs(
+                         visit.transition, ui::PAGE_TRANSITION_TYPED);
+                   }) == visit_vector.end())
+    // This URL has no TYPED visits, don't sync it.
+    return false;
+
   syncer::ReadNode typed_url_root(trans);
   if (typed_url_root.InitTypeRoot(syncer::TYPED_URLS) !=
           syncer::BaseNode::INIT_OK) {
