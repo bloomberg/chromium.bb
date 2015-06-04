@@ -1942,5 +1942,3 @@ crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
 
 crbug.com/495542 [ XP ] plugins/webview-plugin-lifecycle.html [ Failure ]
-
-Bug(wangxianzhu) virtual/slimmingpaint/fast/writing-mode/box-shadow-horizontal-bt.html [ NeedsRebaseline ]
