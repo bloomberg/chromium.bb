@@ -118,7 +118,7 @@ struct MimeInfo {
 // Finds mime type of |ext| from |mappings|.
 const char* FindMimeType(const MimeInfo* mappings,
                          size_t mappings_len,
-                         const char* ext);
+                         const std::string& ext);
 
 }  // namespace net
 

@@ -27,9 +27,9 @@ bool GetPlatformMimeTypeFromExtension(const base::FilePath::StringType& ext,
                                       std::string* mime_type) {
   base::FilePath path_ext(ext);
   const std::string ext_narrow_str = path_ext.AsUTF8Unsafe();
-  const char* result = net::FindMimeType(mimetype_extension_mapping,
-                                         arraysize(mimetype_extension_mapping),
-                                         ext_narrow_str.c_str());
+  const char* result =
+      net::FindMimeType(mimetype_extension_mapping,
+                        arraysize(mimetype_extension_mapping), ext_narrow_str);
   if (result) {
     *mime_type = result;
     return true;

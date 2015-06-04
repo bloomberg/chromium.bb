@@ -110,15 +110,13 @@ static const MimeInfo secondary_mappings[] = {
 
 const char* FindMimeType(const MimeInfo* mappings,
                          size_t mappings_len,
-                         const char* ext) {
-  size_t ext_len = strlen(ext);
-
+                         const std::string& ext) {
   for (size_t i = 0; i < mappings_len; ++i) {
     const char* extensions = mappings[i].extensions;
     for (;;) {
       size_t end_pos = strcspn(extensions, ",");
-      if (end_pos == ext_len &&
-          base::strncasecmp(extensions, ext, ext_len) == 0)
+      if (end_pos == ext.size() &&
+          base::strncasecmp(extensions, ext.data(), ext.size()) == 0)
         return mappings[i].mime_type;
       extensions += end_pos;
       if (!*extensions)
@@ -171,9 +169,8 @@ bool MimeUtil::GetMimeTypeFromExtensionHelper(
 
   base::FilePath path_ext(ext);
   const string ext_narrow_str = path_ext.AsUTF8Unsafe();
-  const char* mime_type = FindMimeType(primary_mappings,
-                                       arraysize(primary_mappings),
-                                       ext_narrow_str.c_str());
+  const char* mime_type = FindMimeType(
+      primary_mappings, arraysize(primary_mappings), ext_narrow_str);
   if (mime_type) {
     *result = mime_type;
     return true;
@@ -183,7 +180,7 @@ bool MimeUtil::GetMimeTypeFromExtensionHelper(
     return true;
 
   mime_type = FindMimeType(secondary_mappings, arraysize(secondary_mappings),
-                           ext_narrow_str.c_str());
+                           ext_narrow_str);
   if (mime_type) {
     *result = mime_type;
     return true;
@@ -271,7 +268,7 @@ bool MimeUtil::MatchesMimeType(const std::string& mime_type_pattern,
   const std::string::size_type star = base_pattern.find('*');
   if (star == std::string::npos) {
     if (base_pattern.size() == base_type.size() &&
-        base::strncasecmp(base_pattern.c_str(), base_type.c_str(),
+        base::strncasecmp(base_pattern.data(), base_type.data(),
                           base_pattern.size()) == 0) {
       return MatchesMimeTypeParameters(mime_type_pattern, mime_type);
     } else {
