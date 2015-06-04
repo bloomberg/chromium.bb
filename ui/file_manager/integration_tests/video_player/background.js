@@ -62,6 +62,27 @@ function launch(testVolumeName, volumeType, entries, opt_selected) {
 }
 
 /**
+ * Opens video player with a single video.
+ * @param {string} volumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @param {TestEntryInfo} entry File to be opened.
+ * @return {Promise} Promise to be fulfilled with the video player element.
+ */
+function openSingleVideo(volumeName, volumeType, entry) {
+  var entries = [entry];
+  return launch(volumeName, volumeType, entries).then(function(args) {
+    var videoPlayer = args[1];
+
+    chrome.test.assertTrue('first-video' in videoPlayer.attributes);
+    chrome.test.assertTrue('last-video' in videoPlayer.attributes);
+    chrome.test.assertFalse('multiple' in videoPlayer.attributes);
+    chrome.test.assertFalse('disabled' in videoPlayer.attributes);
+    return args;
+  });
+};
+
+/**
  * Verifies if there are no Javascript errors in any of the app windows.
  * @param {function()} Completion callback.
  */
