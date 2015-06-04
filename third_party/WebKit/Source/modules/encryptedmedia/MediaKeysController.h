@@ -7,13 +7,11 @@
 
 #include "core/page/Page.h"
 #include "modules/ModulesExport.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 class ExecutionContext;
 class MediaKeysClient;
-class WebContentDecryptionModule;
 class WebEncryptedMediaClient;
 
 class MODULES_EXPORT MediaKeysController final : public NoBaseWillBeGarbageCollected<MediaKeysController>, public WillBeHeapSupplement<Page> {
@@ -29,6 +27,10 @@ public:
 private:
     explicit MediaKeysController(MediaKeysClient*);
     static const char* supplementName();
+
+    // Raw reference to the client implementation, which is currently owned
+    // by the WebView. Its lifetime extends past any m_client accesses.
+    // It is not on the Oilpan heap.
     MediaKeysClient* m_client;
 };
 

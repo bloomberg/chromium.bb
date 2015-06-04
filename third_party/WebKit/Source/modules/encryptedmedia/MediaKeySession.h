@@ -89,6 +89,9 @@ public:
     virtual bool hasPendingActivity() const override;
     virtual void stop() override;
 
+    // Oilpan: eagerly release owned m_session, which in turn
+    // drops the client reference back to this MediaKeySession object.
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:

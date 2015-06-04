@@ -6,12 +6,8 @@
 #define MediaKeysClientImpl_h
 
 #include "modules/encryptedmedia/MediaKeysClient.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
-
-class WebContentDecryptionModule;
-class WebEncryptedMediaClient;
 
 class MediaKeysClientImpl final : public MediaKeysClient {
 public:

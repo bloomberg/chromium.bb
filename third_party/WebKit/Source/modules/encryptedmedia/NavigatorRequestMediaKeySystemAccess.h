@@ -9,8 +9,8 @@
 #include "bindings/modules/v8/V8MediaKeySystemConfiguration.h"
 #include "core/frame/Navigator.h"
 #include "modules/encryptedmedia/MediaKeySystemConfiguration.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 

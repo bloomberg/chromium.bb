@@ -5,13 +5,9 @@
 #ifndef MediaKeysClient_h
 #define MediaKeysClient_h
 
-#include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
-
 namespace blink {
 
 class ExecutionContext;
-class WebContentDecryptionModule;
 class WebEncryptedMediaClient;
 
 class MediaKeysClient {
@@ -25,4 +21,3 @@ protected:
 } // namespace blink
 
 #endif // MediaKeysClient_h
-
