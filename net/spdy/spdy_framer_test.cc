@@ -569,7 +569,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
 class SpdyFramerPeer {
  public:
-  static size_t kControlFrameBufferSize() {
+  static size_t ControlFrameBufferSize() {
     return SpdyFramer::kControlFrameBufferSize;
   }
   static size_t GetNumberRequiredContinuationFrames(SpdyFramer* framer,
@@ -3781,8 +3781,8 @@ TEST_P(SpdyFramerTest, ControlFrameSizesAreValidated) {
   SpdyFramer framer(spdy_version_);
   // Create a GoAway frame that has a few extra bytes at the end.
   // We create enough overhead to overflow the framer's control frame buffer.
-  ASSERT_LE(SpdyFramerPeer::kControlFrameBufferSize(), 250u);
-  const size_t length = SpdyFramerPeer::kControlFrameBufferSize() + 1;
+  ASSERT_LE(SpdyFramerPeer::ControlFrameBufferSize(), 250u);
+  const size_t length = SpdyFramerPeer::ControlFrameBufferSize() + 1;
   const unsigned char kV3FrameData[] = {  // Also applies for V2.
     0x80, spdy_version_ch_, 0x00, 0x07,
     0x00, 0x00, 0x00, static_cast<unsigned char>(length),
@@ -3886,7 +3886,7 @@ TEST_P(SpdyFramerTest, ReadLargeSettingsFrame) {
                          7);
 
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeSettings(settings_ir));
-  EXPECT_LT(SpdyFramerPeer::kControlFrameBufferSize(), control_frame->size());
+  EXPECT_LT(SpdyFramerPeer::ControlFrameBufferSize(), control_frame->size());
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = false;
 
