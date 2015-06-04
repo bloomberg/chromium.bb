@@ -14,9 +14,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
-#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -338,7 +338,7 @@ void GaiaCookieManagerService::AddAccountToCookieWithToken(
 }
 
 bool GaiaCookieManagerService::ListAccounts(
-    std::vector<std::pair<std::string,bool> >* accounts) {
+    std::vector<gaia::ListedAccount>* accounts) {
   DCHECK(accounts);
   accounts->clear();
 
@@ -558,6 +558,11 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
     OnListAccountsFailure(GoogleServiceAuthError(
         GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE));
     return;
+  }
+
+  for (gaia::ListedAccount account : listed_accounts_) {
+    account.id = AccountTrackerService::PickAccountIdForAccount(
+        signin_client_->GetPrefs(), account.gaia_id, account.email);
   }
 
   list_accounts_fetched_once_ = true;

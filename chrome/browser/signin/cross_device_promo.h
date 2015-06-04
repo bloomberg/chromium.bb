@@ -44,7 +44,7 @@ class CrossDevicePromo : public KeyedService,
 
   // GaiaCookieManagerService::Observer:
   void OnGaiaAccountsInCookieUpdated(
-      const std::vector<std::pair<std::string, bool>>& accounts,
+      const std::vector<gaia::ListedAccount>& accounts,
       const GoogleServiceAuthError& error) override;
 
   // DeviceActivityFetcher::Observer:

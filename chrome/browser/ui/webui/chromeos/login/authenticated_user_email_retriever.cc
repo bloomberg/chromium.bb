@@ -29,12 +29,12 @@ AuthenticatedUserEmailRetriever::~AuthenticatedUserEmailRetriever() {
 
 void AuthenticatedUserEmailRetriever::OnListAccountsSuccess(
     const std::string& data) {
-  std::vector<std::pair<std::string, bool> > accounts;
+  std::vector<gaia::ListedAccount> accounts;
   gaia::ParseListAccountsData(data, &accounts);
   if (accounts.size() != 1)
     callback_.Run(std::string());
   else
-    callback_.Run(accounts.front().first);
+    callback_.Run(accounts.front().email);
 }
 
 void AuthenticatedUserEmailRetriever::OnListAccountsFailure(

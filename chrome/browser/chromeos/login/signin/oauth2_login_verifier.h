@@ -32,7 +32,7 @@ class OAuth2LoginVerifier : public GaiaCookieManagerService::Observer {
     // Invoked when account list is retrieved during post-merge session
     // verification.
     virtual void OnListAccountsSuccess(
-        const std::vector<std::pair<std::string, bool>>& accounts) = 0;
+        const std::vector<gaia::ListedAccount>& accounts) = 0;
 
     // Invoked when post-merge session verification fails.
     virtual void OnListAccountsFailure(bool connection_error) = 0;
@@ -57,8 +57,8 @@ class OAuth2LoginVerifier : public GaiaCookieManagerService::Observer {
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
   void OnGaiaAccountsInCookieUpdated(
-        const std::vector<std::pair<std::string, bool> >& accounts,
-        const GoogleServiceAuthError& error) override;
+      const std::vector<gaia::ListedAccount>& accounts,
+      const GoogleServiceAuthError& error) override;
 
   OAuth2LoginVerifier::Delegate* delegate_;
   GaiaCookieManagerService* cookie_manager_service_;

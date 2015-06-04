@@ -13,6 +13,20 @@ class GURL;
 
 namespace gaia {
 
+struct ListedAccount {
+  // The account's ID, as per Chrome, will be determined in the
+  // CookieManagerService.
+  std::string id;
+  std::string email;
+  std::string gaia_id;
+  std::string raw_email;
+  bool valid;
+
+  ListedAccount();
+  ~ListedAccount();
+  bool operator==(const ListedAccount& other) const;
+};
+
 // Perform basic canonicalization of |email_address|, taking into account that
 // gmail does not consider '.' or caps inside a username to matter.
 std::string CanonicalizeEmail(const std::string& email_address);
@@ -38,8 +52,7 @@ bool IsGaiaSignonRealm(const GURL& url);
 // login would succeed (i.e. the user does not need to reauthenticate).
 // If there an error parsing the JSON, then false is returned.
 bool ParseListAccountsData(
-    const std::string& data,
-    std::vector<std::pair<std::string, bool> >* accounts);
+    const std::string& data, std::vector<ListedAccount>* accounts);
 
 }  // namespace gaia
 

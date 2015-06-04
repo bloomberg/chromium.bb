@@ -11,6 +11,7 @@
 #include "base/timer/timer.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
 #include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -81,7 +82,7 @@ class GaiaCookieManagerService : public KeyedService,
     // If the ListAccounts call fails and the GCMS cannot recover, the reason
     // is passed in |error|.
     virtual void OnGaiaAccountsInCookieUpdated(
-        const std::vector<std::pair<std::string, bool> >& accounts,
+        const std::vector<gaia::ListedAccount>& accounts,
         const GoogleServiceAuthError& error) {}
 
    protected:
@@ -166,7 +167,7 @@ class GaiaCookieManagerService : public KeyedService,
   // parameter if return is false). The parameter will be assigned the current
   // cached accounts. If the accounts are not up to date, a ListAccounts fetch
   // is sent GAIA and Observer::OnGaiaAccountsInCookieUpdated will be called.
-  bool ListAccounts(std::vector<std::pair<std::string,bool> >* accounts);
+  bool ListAccounts(std::vector<gaia::ListedAccount>* accounts);
 
   // Add or remove observers of this helper.
   void AddObserver(Observer* observer);
@@ -275,7 +276,7 @@ class GaiaCookieManagerService : public KeyedService,
   // True once the ExternalCCResultFetcher has completed once.
   bool external_cc_result_fetched_;
 
-  std::vector<std::pair<std::string, bool> > listed_accounts_;
+  std::vector<gaia::ListedAccount> listed_accounts_;
 
   bool list_accounts_fetched_once_;
 

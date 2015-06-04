@@ -24,16 +24,16 @@
 
 namespace {
 
-class EmailEqualToFunc : public std::equal_to<std::pair<std::string, bool> > {
+class EmailEqualToFunc : public std::equal_to<gaia::ListedAccount> {
  public:
-  bool operator()(const std::pair<std::string, bool>& p1,
-                  const std::pair<std::string, bool>& p2) const;
+  bool operator()(const gaia::ListedAccount& p1,
+                  const gaia::ListedAccount& p2) const;
 };
 
 bool EmailEqualToFunc::operator()(
-    const std::pair<std::string, bool>& p1,
-    const std::pair<std::string, bool>& p2) const {
-  return p1.second == p2.second && gaia::AreEmailsSame(p1.first, p2.first);
+    const gaia::ListedAccount& p1,
+    const gaia::ListedAccount& p2) const {
+  return p1.valid == p2.valid && gaia::AreEmailsSame(p1.email, p2.email);
 }
 
 class AreEmailsSameFunc : public std::equal_to<std::string> {
@@ -46,6 +46,14 @@ bool AreEmailsSameFunc::operator()(
     const std::string& p1,
     const std::string& p2) const {
   return gaia::AreEmailsSame(p1, p2);
+}
+
+gaia::ListedAccount AccountFromEmail(const std::string& email) {
+  gaia::ListedAccount account;
+  account.email = email;
+  account.gaia_id = std::string();
+  account.valid = true;
+  return account;
 }
 
 }  // namespace
@@ -281,7 +289,7 @@ void AccountReconcilor::StartReconcile() {
 }
 
 void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
-        const std::vector<std::pair<std::string, bool> >& accounts,
+        const std::vector<gaia::ListedAccount>& accounts,
         const GoogleServiceAuthError& error) {
   VLOG(1) << "AccountReconcilor::OnGaiaAccountsInCookieUpdated: "
           << "CookieJar " << accounts.size() << " accounts, "
@@ -331,15 +339,15 @@ void AccountReconcilor::FinishReconcile() {
   DCHECK(add_to_cookie_.empty());
   int number_gaia_accounts = gaia_accounts_.size();
   bool are_primaries_equal = number_gaia_accounts > 0 &&
-      gaia::AreEmailsSame(primary_account_, gaia_accounts_[0].first);
+      gaia::AreEmailsSame(primary_account_, gaia_accounts_[0].email);
 
   // If there are any accounts in the gaia cookie but not in chrome, then
   // those accounts need to be removed from the cookie.  This means we need
   // to blow the cookie away.
   int removed_from_cookie = 0;
   for (size_t i = 0; i < gaia_accounts_.size(); ++i) {
-    const std::string& gaia_account = gaia_accounts_[i].first;
-    if (gaia_accounts_[i].second &&
+    const std::string& gaia_account = gaia_accounts_[i].email;
+    if (gaia_accounts_[i].valid &&
         chrome_accounts_.end() ==
             std::find_if(chrome_accounts_.begin(),
                          chrome_accounts_.end(),
@@ -349,7 +357,7 @@ void AccountReconcilor::FinishReconcile() {
   }
 
   bool rebuild_cookie = !are_primaries_equal || removed_from_cookie > 0;
-  std::vector<std::pair<std::string, bool> > original_gaia_accounts =
+  std::vector<gaia::ListedAccount> original_gaia_accounts =
       gaia_accounts_;
   if (rebuild_cookie) {
     VLOG(1) << "AccountReconcilor::FinishReconcile: rebuild cookie";
@@ -380,8 +388,8 @@ void AccountReconcilor::FinishReconcile() {
             std::find_if(gaia_accounts_.begin(),
                          gaia_accounts_.end(),
                          std::bind1st(EmailEqualToFunc(),
-                                      std::make_pair(add_to_cookie_copy[i],
-                                                     true)))) {
+                                      AccountFromEmail(add_to_cookie_copy[i]
+                                                       )))) {
       cookie_manager_service_->SignalComplete(
           add_to_cookie_copy[i],
           GoogleServiceAuthError::AuthErrorNone());
@@ -391,8 +399,8 @@ void AccountReconcilor::FinishReconcile() {
               std::find_if(original_gaia_accounts.begin(),
                            original_gaia_accounts.end(),
                            std::bind1st(EmailEqualToFunc(),
-                                        std::make_pair(add_to_cookie_copy[i],
-                                                       true)))) {
+                                        AccountFromEmail(add_to_cookie_copy[i]
+                                                         )))) {
         added_to_cookie++;
       }
     }

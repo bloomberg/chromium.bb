@@ -9,12 +9,16 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -36,7 +40,7 @@ class MockObserver : public GaiaCookieManagerService::Observer {
   MOCK_METHOD2(OnAddAccountToCookieCompleted,
                void(const std::string&, const GoogleServiceAuthError&));
   MOCK_METHOD2(OnGaiaAccountsInCookieUpdated,
-               void(const std::vector<std::pair<std::string, bool> >&,
+               void(const std::vector<gaia::ListedAccount>&,
                     const GoogleServiceAuthError&));
  private:
   GaiaCookieManagerService* helper_;
@@ -79,8 +83,15 @@ class GaiaCookieManagerServiceTest : public testing::Test {
         error_(GoogleServiceAuthError::SERVICE_ERROR),
         canceled_(GoogleServiceAuthError::REQUEST_CANCELED) {}
 
+  void SetUp() override {
+    pref_service_.registry()->RegisterIntegerPref(
+        prefs::kAccountIdMigrationState,
+        AccountTrackerService::MIGRATION_NOT_STARTED);
+    signin_client_.reset(new TestSigninClient(&pref_service_));
+  }
+
   OAuth2TokenService* token_service() { return &token_service_; }
-  TestSigninClient* signin_client() { return &signin_client_; }
+  TestSigninClient* signin_client() { return signin_client_.get(); }
 
   void SimulateUbertokenSuccess(UbertokenConsumer* consumer,
                                 const std::string& uber_token) {
@@ -147,7 +158,8 @@ class GaiaCookieManagerServiceTest : public testing::Test {
   GoogleServiceAuthError no_error_;
   GoogleServiceAuthError error_;
   GoogleServiceAuthError canceled_;
-  TestSigninClient signin_client_;
+  TestingPrefServiceSimple pref_service_;
+  scoped_ptr<TestSigninClient> signin_client_;
 };
 
 }  // namespace
@@ -512,7 +524,7 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFirstReturnsEmpty) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  std::vector<std::pair<std::string, bool> > list_accounts;
+  std::vector<gaia::ListedAccount> list_accounts;
 
   EXPECT_CALL(helper, StartFetchingListAccounts());
 
@@ -524,10 +536,14 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsOneAccount) {
   InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
   MockObserver observer(&helper);
 
-  std::vector<std::pair<std::string, bool> > list_accounts;
-  std::vector<std::pair<std::string, bool> > expected_accounts;
-  expected_accounts.push_back(std::pair<std::string, bool>(
-      "user@gmail.com", true));
+  std::vector<gaia::ListedAccount> list_accounts;
+  std::vector<gaia::ListedAccount> expected_accounts;
+  gaia::ListedAccount listed_account;
+  listed_account.email = "a@b.com";
+  listed_account.raw_email = "a@b.com";
+  listed_account.gaia_id = "8";
+  listed_account.valid = true;
+  expected_accounts.push_back(listed_account);
 
   EXPECT_CALL(helper, StartFetchingListAccounts());
   EXPECT_CALL(observer, OnGaiaAccountsInCookieUpdated(expected_accounts,
@@ -536,7 +552,7 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsOneAccount) {
   ASSERT_FALSE(helper.ListAccounts(&list_accounts));
 
   SimulateListAccountsSuccess(&helper,
-      "[\"f\", [[\"b\", 0, \"n\", \"user@gmail.com\", \"p\", 0, 0, 0, 0, 1]]]");
+      "[\"f\", [[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"]]]");
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ExternalCcResultFetcher) {

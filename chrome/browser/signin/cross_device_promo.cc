@@ -387,7 +387,7 @@ base::Time CrossDevicePromo::GetTimePref(const std::string& pref) {
 }
 
 void CrossDevicePromo::OnGaiaAccountsInCookieUpdated(
-    const std::vector<std::pair<std::string, bool>>& accounts,
+    const std::vector<gaia::ListedAccount>& accounts,
     const GoogleServiceAuthError& error) {
   VLOG(1) << "CrossDevicePromo::OnGaiaAccountsInCookieUpdated. "
           << accounts.size() << " accounts with auth error " << error.state();

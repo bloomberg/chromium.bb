@@ -330,10 +330,10 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieSuccess) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_RUNNING, reconcilor->GetState());
 
-  std::vector<std::pair<std::string, bool> > accounts;
+  std::vector<gaia::ListedAccount> accounts;
   ASSERT_TRUE(cookie_manager_service()->ListAccounts(&accounts));
   ASSERT_EQ(1u, accounts.size());
-  ASSERT_EQ(account_id, accounts[0].first);
+  ASSERT_EQ(account_id, accounts[0].email);
 }
 
 TEST_F(AccountReconcilorTest, GetAccountsFromCookieFailure) {
@@ -350,7 +350,7 @@ TEST_F(AccountReconcilorTest, GetAccountsFromCookieFailure) {
             reconcilor->GetState());
   base::RunLoop().RunUntilIdle();
 
-  std::vector<std::pair<std::string, bool> > accounts;
+  std::vector<gaia::ListedAccount> accounts;
   ASSERT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   ASSERT_EQ(0u, accounts.size());
 
@@ -397,7 +397,7 @@ TEST_P(AccountReconcilorTest, StartReconcileCookiesDisabled) {
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
 
   base::RunLoop().RunUntilIdle();
-  std::vector<std::pair<std::string, bool> > accounts;
+  std::vector<gaia::ListedAccount> accounts;
   // This will be the first call to ListAccounts.
   ASSERT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   ASSERT_FALSE(reconcilor->is_reconcile_started_);

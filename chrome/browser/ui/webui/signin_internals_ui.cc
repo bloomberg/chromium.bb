@@ -73,7 +73,7 @@ bool SignInInternalsUI::OverrideHandleWebUIMessage(
           "chrome.signin.getSigninInfo.handleReply",
           *about_signin_internals->GetSigninStatus());
 
-      std::vector<std::pair<std::string, bool>> cookie_accounts;
+      std::vector<gaia::ListedAccount> cookie_accounts;
       GaiaCookieManagerService* cookie_manager_service =
           GaiaCookieManagerServiceFactory::GetForProfile(profile);
       if (cookie_manager_service->ListAccounts(&cookie_accounts)) {

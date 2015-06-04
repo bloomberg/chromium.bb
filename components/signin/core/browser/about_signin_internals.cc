@@ -54,9 +54,11 @@ void AddSectionEntry(base::ListValue* section_list,
 
 void AddCookieEntry(base::ListValue* accounts_list,
                      const std::string& field_email,
+                     const std::string& field_gaia_id,
                      const std::string& field_valid) {
   scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
   entry->SetString("email", field_email);
+  entry->SetString("gaia_id", field_gaia_id);
   entry->SetString("valid", field_valid);
   accounts_list->Append(entry.release());
 }
@@ -343,7 +345,7 @@ void AboutSigninInternals::GoogleSignedOut(const std::string& account_id,
 }
 
 void AboutSigninInternals::OnGaiaAccountsInCookieUpdated(
-    const std::vector<std::pair<std::string, bool> >& gaia_accounts,
+    const std::vector<gaia::ListedAccount>& gaia_accounts,
     const GoogleServiceAuthError& error) {
   if (error.state() != GoogleServiceAuthError::NONE)
     return;
@@ -354,12 +356,17 @@ void AboutSigninInternals::OnGaiaAccountsInCookieUpdated(
 
   for (size_t i = 0; i < gaia_accounts.size(); ++i) {
     AddCookieEntry(cookie_info,
-                   gaia_accounts[i].first,
-                   gaia_accounts[i].second ? "Valid" : "Invalid");
+                   gaia_accounts[i].raw_email,
+                   gaia_accounts[i].gaia_id,
+                   gaia_accounts[i].valid ? "Valid" : "Invalid");
   }
 
-  if (gaia_accounts.size() == 0)
-    AddCookieEntry(cookie_info, "No Accounts Present.", "");
+  if (gaia_accounts.size() == 0) {
+    AddCookieEntry(cookie_info,
+                   "No Accounts Present.",
+                   std::string(),
+                   std::string());
+  }
 
   // Update the observers that the cookie's accounts are updated.
   FOR_EACH_OBSERVER(AboutSigninInternals::Observer,

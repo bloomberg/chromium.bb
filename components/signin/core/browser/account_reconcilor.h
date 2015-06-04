@@ -64,11 +64,6 @@ class AccountReconcilor : public KeyedService,
     return registered_with_token_service_;
   }
 
-  const std::vector<std::pair<std::string, bool> >& GetGaiaAccountsForTesting()
-      const {
-    return gaia_accounts_;
-  }
-
   friend class AccountReconcilorTest;
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, SigninManagerRegistration);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, Reauth);
@@ -140,7 +135,7 @@ class AccountReconcilor : public KeyedService,
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
   void OnGaiaAccountsInCookieUpdated(
-        const std::vector<std::pair<std::string, bool> >& accounts,
+        const std::vector<gaia::ListedAccount>& accounts,
         const GoogleServiceAuthError& error) override;
 
   // Overriden from OAuth2TokenService::Observer.
@@ -183,10 +178,9 @@ class AccountReconcilor : public KeyedService,
   // Used during reconcile action.
   // These members are used to validate the gaia cookie.  |gaia_accounts_|
   // holds the state of google accounts in the gaia cookie.  Each element is
-  // a pair that holds the email address of the account and a boolean that
-  // indicates whether the account is valid or not.  The accounts in the vector
-  // are ordered the in same way as the gaia cookie.
-  std::vector<std::pair<std::string, bool> > gaia_accounts_;
+  // holds the email address, gaia id and validity as returned from GAIA.  The
+  // accounts in the vector are ordered the in same way as the gaia cookie.
+  std::vector<gaia::ListedAccount> gaia_accounts_;
 
   // Used during reconcile action.
   // These members are used to validate the tokens in OAuth2TokenService.

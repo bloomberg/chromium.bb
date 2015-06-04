@@ -90,7 +90,7 @@ class AboutSigninInternals
 
   // GaiaCookieManagerService::Observer implementations.
   void OnGaiaAccountsInCookieUpdated(
-      const std::vector<std::pair<std::string, bool> >& gaia_accounts,
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
       const GoogleServiceAuthError& error) override;
 
  private:

@@ -61,7 +61,7 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseOneAccount(
       GaiaUrls::GetInstance()->ListAccountsURLWithSource(
           GaiaConstants::kChromeSource),
       base::StringPrintf(
-          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1]]]",
+          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1, \"22\"]]]",
           account),
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
@@ -74,7 +74,7 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseOneAccountWithExpiry(
       GaiaUrls::GetInstance()->ListAccountsURLWithSource(
           GaiaConstants::kChromeSource),
       base::StringPrintf(
-          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d]]]",
+          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d, \"22\"]]]",
           account, expired ? 0 : 1),
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
@@ -87,8 +87,8 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccounts(
       GaiaUrls::GetInstance()->ListAccountsURLWithSource(
           GaiaConstants::kChromeSource),
       base::StringPrintf(
-          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1], "
-          "[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1]]]",
+          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1, \"22\"], "
+          "[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1, \"24\"]]]",
           account1, account2),
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
@@ -102,8 +102,8 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccountsWithExpiry(
       GaiaUrls::GetInstance()->ListAccountsURLWithSource(
           GaiaConstants::kChromeSource),
       base::StringPrintf(
-          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d], "
-          "[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d]]]",
+          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d, \"28\"], "
+          "[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d, \"29\"]]]",
           account1, account1_expired ? 0 : 1,
           account2, account2_expired ? 0 : 1),
       net::HTTP_OK,

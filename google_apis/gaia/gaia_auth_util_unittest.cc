@@ -109,7 +109,7 @@ TEST(GaiaAuthUtilTest, IsGaiaSignonRealm) {
 }
 
 TEST(GaiaAuthUtilTest, ParseListAccountsData) {
-  std::vector<std::pair<std::string, bool> > accounts;
+  std::vector<ListedAccount> accounts;
   ASSERT_FALSE(ParseListAccountsData("", &accounts));
   ASSERT_EQ(0u, accounts.size());
 
@@ -130,58 +130,73 @@ TEST(GaiaAuthUtilTest, ParseListAccountsData) {
   ASSERT_EQ(0u, accounts.size());
 
   ASSERT_TRUE(ParseListAccountsData(
-      "[\"foo\", [[\"bar\", 0, \"name\", \"u@g.c\", \"photo\", 0, 0, 0]]]",
+      "[\"foo\", "
+          "[[\"bar\", 0, \"name\", \"u@g.c\", \"p\", 0, 0, 0, 0, 1, \"45\"]]]",
       &accounts));
   ASSERT_EQ(1u, accounts.size());
-  ASSERT_EQ("u@g.c", accounts[0].first);
-  ASSERT_TRUE(accounts[0].second);
+  ASSERT_EQ("u@g.c", accounts[0].email);
+  ASSERT_TRUE(accounts[0].valid);
 
   ASSERT_TRUE(ParseListAccountsData(
-      "[\"foo\", [[\"bar1\", 0, \"name1\", \"u1@g.c\", \"photo1\", 0, 0, 0], "
-                 "[\"bar2\", 0, \"name2\", \"u2@g.c\", \"photo2\", 0, 0, 0]]]",
+      "[\"foo\", "
+          "[[\"bar1\",0,\"name1\",\"u1@g.c\",\"photo1\",0,0,0,0,1,\"45\"], "
+          "[\"bar2\",0,\"name2\",\"u2@g.c\",\"photo2\",0,0,0,0,1,\"6\"]]]",
       &accounts));
   ASSERT_EQ(2u, accounts.size());
-  ASSERT_EQ("u1@g.c", accounts[0].first);
-  ASSERT_TRUE(accounts[0].second);
-  ASSERT_EQ("u2@g.c", accounts[1].first);
-  ASSERT_TRUE(accounts[1].second);
+  ASSERT_EQ("u1@g.c", accounts[0].email);
+  ASSERT_TRUE(accounts[0].valid);
+  ASSERT_EQ("u2@g.c", accounts[1].email);
+  ASSERT_TRUE(accounts[1].valid);
 
   ASSERT_TRUE(ParseListAccountsData(
-      "[\"foo\", [[\"b1\", 0, \"name1\", \"U1@g.c\", \"photo1\", 0, 0, 0], "
-                 "[\"b2\", 0, \"name2\", \"u.2@g.c\", \"photo2\", 0, 0, 0]]]",
+      "[\"foo\", "
+          "[[\"b1\", 0,\"name1\",\"U1@g.c\",\"photo1\",0,0,0,0,1,\"45\"], "
+          "[\"b2\",0,\"name2\",\"u.2@g.c\",\"photo2\",0,0,0,0,1,\"46\"]]]",
       &accounts));
   ASSERT_EQ(2u, accounts.size());
-  ASSERT_EQ(CanonicalizeEmail("U1@g.c"), accounts[0].first);
-  ASSERT_TRUE(accounts[0].second);
-  ASSERT_EQ(CanonicalizeEmail("u.2@g.c"), accounts[1].first);
-  ASSERT_TRUE(accounts[1].second);
+  ASSERT_EQ(CanonicalizeEmail("U1@g.c"), accounts[0].email);
+  ASSERT_TRUE(accounts[0].valid);
+  ASSERT_EQ(CanonicalizeEmail("u.2@g.c"), accounts[1].email);
+  ASSERT_TRUE(accounts[1].valid);
 }
 
 TEST(GaiaAuthUtilTest, ParseListAccountsDataValidSession) {
-  std::vector<std::pair<std::string, bool> > accounts;
-
-  // Missing valid session means: return account.
-  ASSERT_TRUE(ParseListAccountsData(
-      "[\"foo\", [[\"b\", 0, \"n\", \"u@g.c\", \"p\", 0, 0, 0]]]",
-      &accounts));
-  ASSERT_EQ(1u, accounts.size());
-  ASSERT_EQ("u@g.c", accounts[0].first);
-  ASSERT_TRUE(accounts[0].second);
+  std::vector<ListedAccount> accounts;
 
   // Valid session is true means: return account.
   ASSERT_TRUE(ParseListAccountsData(
-      "[\"foo\", [[\"b\", 0, \"n\", \"u@g.c\", \"p\", 0, 0, 0, 0, 1]]]",
+      "[\"foo\", [[\"b\",0,\"n\",\"u@g.c\",\"photo\",0,0,0,0,1,\"45\"]]]",
       &accounts));
   ASSERT_EQ(1u, accounts.size());
-  ASSERT_EQ("u@g.c", accounts[0].first);
-  ASSERT_TRUE(accounts[0].second);
+  ASSERT_EQ("u@g.c", accounts[0].email);
+  ASSERT_TRUE(accounts[0].valid);
 
   // Valid session is false means: return account with valid bit false.
   ASSERT_TRUE(ParseListAccountsData(
-      "[\"foo\", [[\"b\", 0, \"n\", \"u@g.c\", \"p\", 0, 0, 0, 0, 0]]]",
+      "[\"foo\", [[\"b\",0,\"n\",\"u@g.c\",\"photo\",0,0,0,0,0,\"45\"]]]",
       &accounts));
   ASSERT_EQ(1u, accounts.size());
-  ASSERT_FALSE(accounts[0].second);
+  ASSERT_FALSE(accounts[0].valid);
+}
+
+TEST(GaiaAuthUtilTest, ParseListAccountsDataGaiaId) {
+  std::vector<ListedAccount> accounts;
+
+  // Missing gaia id means: do not return account.
+  ASSERT_TRUE(ParseListAccountsData(
+      "[\"foo\", [[\"b\", 0, \"n\", \"u@g.c\", \"photo\", 0, 0, 0, 0, 1]]]",
+      &accounts));
+  ASSERT_EQ(0u, accounts.size());
+
+  // Valid gaia session means: return gaia session
+  ASSERT_TRUE(ParseListAccountsData(
+      "[\"foo\", "
+          "[[\"b\",0,\"n\",\"u@g.c\",\"photo\",0,0,0,0,1,\"9863\"]]]",
+      &accounts));
+  ASSERT_EQ(1u, accounts.size());
+  ASSERT_EQ("u@g.c", accounts[0].email);
+  ASSERT_TRUE(accounts[0].valid);
+  ASSERT_EQ("9863", accounts[0].gaia_id);
 }
 
 }  // namespace gaia
