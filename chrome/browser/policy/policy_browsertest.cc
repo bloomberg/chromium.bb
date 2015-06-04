@@ -2641,7 +2641,7 @@ static bool IsMinSSLFallbackVersionTLS12(Profile* profile) {
   return config.version_fallback_min == net::SSL_PROTOCOL_VERSION_TLS1_2;
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, SSLVersionFallbackMin) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_SSLVersionFallbackMin) {
   PrefService* prefs = g_browser_process->local_state();
 
   const std::string new_value("tls1.2");
