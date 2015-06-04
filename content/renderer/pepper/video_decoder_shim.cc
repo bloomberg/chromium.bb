@@ -37,7 +37,7 @@ namespace content {
 static const uint32_t kGrInvalidateState =
     kRenderTarget_GrGLBackendState | kTextureBinding_GrGLBackendState |
     kView_GrGLBackendState | kVertex_GrGLBackendState |
-    kProgram_GrGLBackendState;
+    kProgram_GrGLBackendState | kPixelStore_GrGLBackendState;
 
 // YUV->RGB converter class using a shader and FBO.
 class VideoDecoderShim::YUVConverter {
@@ -52,7 +52,6 @@ class VideoDecoderShim::YUVConverter {
   GLuint CompileShader(const char* name, GLuint type, const char* code);
   GLuint CreateProgram(const char* name, GLuint vshader, GLuint fshader);
   GLuint CreateTexture();
-  void SetTexcoordClamp(uint32_t stride, uint32_t width);
 
   scoped_refptr<cc_blink::ContextProviderWebContext> context_provider_;
   gpu::gles2::GLES2Interface* gl_;
@@ -75,10 +74,7 @@ class VideoDecoderShim::YUVConverter {
   GLuint uv_width_;
   GLuint uv_height_;
   uint32_t uv_height_divisor_;
-
-  GLfloat clamp_value_;
-  GLuint clamp_width_;
-  GLint clamp_width_loc_;
+  uint32_t uv_width_divisor_;
 
   GLint yuv_matrix_loc_;
   GLint yuv_adjust_loc_;
@@ -105,9 +101,7 @@ VideoDecoderShim::YUVConverter::YUVConverter(
       uv_width_(2),
       uv_height_(2),
       uv_height_divisor_(1),
-      clamp_value_(1.f),
-      clamp_width_(0),
-      clamp_width_loc_(0),
+      uv_width_divisor_(1),
       yuv_matrix_loc_(0),
       yuv_adjust_loc_(0) {
   DCHECK(gl_);
@@ -223,12 +217,10 @@ GLuint VideoDecoderShim::YUVConverter::CreateShader() {
       "precision mediump float;\n"
       "attribute vec2 position;\n"
       "varying vec2 texcoord;\n"
-      "uniform float clamp_width;\n"
       "void main()\n"
       "{\n"
       "    gl_Position = vec4( position.xy, 0, 1 );\n"
-      "    vec2 tmp = position*0.5+0.5;\n"
-      "    texcoord = vec2(min(tmp.x, clamp_width), tmp.y);\n"
+      "    texcoord = position*0.5+0.5;\n"
       "}";
 
   const char* frag_shader =
@@ -292,10 +284,6 @@ GLuint VideoDecoderShim::YUVConverter::CreateShader() {
   DCHECK(uniform_location != -1);
   gl_->Uniform1i(uniform_location, 3);
 
-  clamp_width_loc_ = gl_->GetUniformLocation(program, "clamp_width");
-  DCHECK(clamp_width_loc_ != -1);
-  gl_->Uniform1f(clamp_width_loc_, clamp_value_);
-
   gl_->UseProgram(0);
 
   yuv_matrix_loc_ = gl_->GetUniformLocation(program, "yuv_matrix");
@@ -351,20 +339,6 @@ bool VideoDecoderShim::YUVConverter::Initialize() {
   return (program_ != 0);
 }
 
-void VideoDecoderShim::YUVConverter::SetTexcoordClamp(uint32_t stride,
-                                                      uint32_t width) {
-  clamp_width_ = width;
-  if (width != stride) {
-    // Clamp texcoord width to avoid sampling padding pixels.
-    clamp_value_ = static_cast<float>(width) / static_cast<float>(stride);
-    // Further clamp to 1/2 pixel inside to avoid bilinear sampling errors.
-    clamp_value_ -= (1.f / (2.f * static_cast<float>(stride)));
-  } else {
-    // No clamping necessary if width and stride are equal.
-    clamp_value_ = 1.f;
-  }
-}
-
 void VideoDecoderShim::YUVConverter::Convert(
     const scoped_refptr<media::VideoFrame>& frame,
     GLuint tex_out) {
@@ -405,6 +379,7 @@ void VideoDecoderShim::YUVConverter::Convert(
       case media::VideoFrame::YV12A:
       case media::VideoFrame::I420:
         uv_height_divisor_ = 2;
+        uv_width_divisor_ = 2;
         yuv_adjust = yuv_adjust_constrained;
         int result;
         if (frame->metadata()->GetInteger(
@@ -420,7 +395,13 @@ void VideoDecoderShim::YUVConverter::Convert(
         }
         break;
       case media::VideoFrame::YV16:  // 422
+        uv_width_divisor_ = 2;
+        uv_height_divisor_ = 1;
+        yuv_matrix = yuv_to_rgb_rec601;
+        yuv_adjust = yuv_adjust_constrained;
+        break;
       case media::VideoFrame::YV24:  // 444
+        uv_width_divisor_ = 1;
         uv_height_divisor_ = 1;
         yuv_matrix = yuv_to_rgb_rec601;
         yuv_adjust = yuv_adjust_constrained;
@@ -438,8 +419,6 @@ void VideoDecoderShim::YUVConverter::Convert(
 
   gl_->PushGroupMarkerEXT(0, "YUVConverterContext");
 
-  bool set_clamp = false;
-
   uint32_t ywidth = frame->coded_size().width();
   uint32_t yheight = frame->coded_size().height();
 
@@ -450,38 +429,23 @@ void VideoDecoderShim::YUVConverter::Convert(
   uint32_t uvstride = frame->stride(media::VideoFrame::kUPlane);
 
   // The following code assumes that extended GLES 2.0 state like
-  // UNPACK_SKIP* and UNPACK_ROW_LENGTH (if available) are set to defaults.
+  // UNPACK_SKIP* (if available) are set to defaults.
   gl_->PixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  if (ystride != y_width_ || yheight != y_height_) {
-    // Choose width based on the stride.  Clamp texcoords below.
-    y_width_ = ystride;
+  if (ywidth != y_width_ || yheight != y_height_) {
+    y_width_ = ywidth;
     y_height_ = yheight;
 
-    uv_width_ = uvstride;
+    uv_width_ = y_width_ / uv_width_divisor_;
     uv_height_ = y_height_ / uv_height_divisor_;
 
-    SetTexcoordClamp(ystride, ywidth);
-    set_clamp = true;
-
     // Re-create to resize the textures and upload data.
+    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, ystride);
     gl_->ActiveTexture(GL_TEXTURE0);
     gl_->BindTexture(GL_TEXTURE_2D, y_texture_);
     gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, y_width_, y_height_, 0,
                     format_, GL_UNSIGNED_BYTE,
                     frame->data(media::VideoFrame::kYPlane));
-
-    gl_->ActiveTexture(GL_TEXTURE1);
-    gl_->BindTexture(GL_TEXTURE_2D, u_texture_);
-    gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, uv_width_, uv_height_,
-                    0, format_, GL_UNSIGNED_BYTE,
-                    frame->data(media::VideoFrame::kUPlane));
-
-    gl_->ActiveTexture(GL_TEXTURE2);
-    gl_->BindTexture(GL_TEXTURE_2D, v_texture_);
-    gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, uv_width_, uv_height_,
-                    0, format_, GL_UNSIGNED_BYTE,
-                    frame->data(media::VideoFrame::kVPlane));
 
     if (video_format_ == media::VideoFrame::YV12A) {
       DCHECK_EQ(frame->stride(media::VideoFrame::kYPlane),
@@ -494,37 +458,34 @@ void VideoDecoderShim::YUVConverter::Convert(
     } else {
       // if there is no alpha channel, then create a 2x2 texture with full
       // alpha.
+      gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, 0);
       const uint8_t alpha[4] = {0xff, 0xff, 0xff, 0xff};
       gl_->ActiveTexture(GL_TEXTURE3);
       gl_->BindTexture(GL_TEXTURE_2D, a_texture_);
       gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, 2, 2, 0, format_,
                       GL_UNSIGNED_BYTE, alpha);
     }
-  } else {
-    // Width may have changed even though stride remained the same.
-    if (clamp_width_ != ywidth) {
-      SetTexcoordClamp(ystride, ywidth);
-      set_clamp = true;
-    }
 
+    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, uvstride);
+    gl_->ActiveTexture(GL_TEXTURE1);
+    gl_->BindTexture(GL_TEXTURE_2D, u_texture_);
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, uv_width_, uv_height_,
+                    0, format_, GL_UNSIGNED_BYTE,
+                    frame->data(media::VideoFrame::kUPlane));
+
+    gl_->ActiveTexture(GL_TEXTURE2);
+    gl_->BindTexture(GL_TEXTURE_2D, v_texture_);
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format_, uv_width_, uv_height_,
+                    0, format_, GL_UNSIGNED_BYTE,
+                    frame->data(media::VideoFrame::kVPlane));
+  } else {
     // Bind textures and upload texture data
+    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, ystride);
     gl_->ActiveTexture(GL_TEXTURE0);
     gl_->BindTexture(GL_TEXTURE_2D, y_texture_);
     gl_->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, y_width_, y_height_, format_,
                        GL_UNSIGNED_BYTE,
                        frame->data(media::VideoFrame::kYPlane));
-
-    gl_->ActiveTexture(GL_TEXTURE1);
-    gl_->BindTexture(GL_TEXTURE_2D, u_texture_);
-    gl_->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, uv_width_, uv_height_, format_,
-                       GL_UNSIGNED_BYTE,
-                       frame->data(media::VideoFrame::kUPlane));
-
-    gl_->ActiveTexture(GL_TEXTURE2);
-    gl_->BindTexture(GL_TEXTURE_2D, v_texture_);
-    gl_->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, uv_width_, uv_height_, format_,
-                       GL_UNSIGNED_BYTE,
-                       frame->data(media::VideoFrame::kVPlane));
 
     if (video_format_ == media::VideoFrame::YV12A) {
       DCHECK_EQ(frame->stride(media::VideoFrame::kYPlane),
@@ -538,6 +499,19 @@ void VideoDecoderShim::YUVConverter::Convert(
       gl_->ActiveTexture(GL_TEXTURE3);
       gl_->BindTexture(GL_TEXTURE_2D, a_texture_);
     }
+
+    gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, uvstride);
+    gl_->ActiveTexture(GL_TEXTURE1);
+    gl_->BindTexture(GL_TEXTURE_2D, u_texture_);
+    gl_->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, uv_width_, uv_height_, format_,
+                       GL_UNSIGNED_BYTE,
+                       frame->data(media::VideoFrame::kUPlane));
+
+    gl_->ActiveTexture(GL_TEXTURE2);
+    gl_->BindTexture(GL_TEXTURE_2D, v_texture_);
+    gl_->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, uv_width_, uv_height_, format_,
+                       GL_UNSIGNED_BYTE,
+                       frame->data(media::VideoFrame::kVPlane));
   }
 
   gl_->BindFramebuffer(GL_FRAMEBUFFER, frame_buffer_);
@@ -556,10 +530,6 @@ void VideoDecoderShim::YUVConverter::Convert(
   gl_->Viewport(0, 0, ywidth, yheight);
 
   gl_->UseProgram(program_);
-
-  if (set_clamp) {
-    gl_->Uniform1f(clamp_width_loc_, clamp_value_);
-  }
 
   if (yuv_matrix) {
     gl_->UniformMatrix3fv(yuv_matrix_loc_, 1, 0, yuv_matrix);
@@ -596,6 +566,7 @@ void VideoDecoderShim::YUVConverter::Convert(
 
   gl_->ActiveTexture(GL_TEXTURE0);
   gl_->BindTexture(GL_TEXTURE_2D, 0);
+  gl_->PixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
   gl_->PopGroupMarkerEXT();
 
