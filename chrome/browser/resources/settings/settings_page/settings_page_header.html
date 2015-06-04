@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/more-routing/routing.html">
 
 <dom-module id="cr-settings-page-header">
   <link rel="import" type="css" href="settings_page_header.css">
@@ -12,7 +13,7 @@
         </div>
 
         <template is="dom-repeat" items="{{parentPages_}}">
-          <a href="{{urlFor_(item)}}">{{item.pageTitle}}</a>&nbsp;&gt;
+          <a href="{{urlFor_(item)}}">{{item.pageTitle}}</a>&nbsp;&gt;&nbsp;
         </template>
 
         <span>{{currentPageTitle_}}</span>

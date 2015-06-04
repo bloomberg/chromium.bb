@@ -81,7 +81,7 @@ Polymer({
    * @private
    */
   urlFor_: function(page) {
-    return page.route ? urlFor(page.route) : '';
+    return page.route ? MoreRouting.urlFor(page.route) : '';
   },
 
   /**
@@ -92,7 +92,7 @@ Polymer({
   getCurrentPageTitle_: function(pageStack) {
     if (pageStack.length == 0)
       return '';
-    return pageStack[0].pageTitle;
+    return pageStack[pageStack.length - 1].pageTitle;
   },
 
   /** @private */
@@ -103,8 +103,6 @@ Polymer({
       this.pageStack = this.pageStack.concat(this.selectedPage);
     } else if (this.selectedPage) {
       this.pageStack = [this.selectedPage];
-    } else {
-      this.pageStack = [];
     }
   },
 
