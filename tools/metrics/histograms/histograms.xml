@@ -37497,6 +37497,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="SharedMemory.TimeSpentMakingAnonymousMemory"
     units="milliseconds">
+  <obsolete>
+    Deprecated 2015-06 because the Finch experiment SharedMemoryCreateStrategy
+    has finished running.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <summary>
     The time spent making a new region of shared, anonymous memory. This metric

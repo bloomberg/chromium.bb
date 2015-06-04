@@ -10,14 +10,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <vector>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/histogram.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
 #include "base/profiler/scoped_tracker.h"
@@ -27,7 +24,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time/time.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
@@ -44,7 +40,6 @@ namespace {
 
 LazyInstance<Lock>::Leaky g_thread_lock_ = LAZY_INSTANCE_INITIALIZER;
 
-#if !defined(OS_ANDROID)
 struct ScopedPathUnlinkerTraits {
   static FilePath* InvalidValue() { return nullptr; }
 
@@ -62,39 +57,7 @@ struct ScopedPathUnlinkerTraits {
 // Unlinks the FilePath when the object is destroyed.
 typedef ScopedGeneric<FilePath*, ScopedPathUnlinkerTraits> ScopedPathUnlinker;
 
-const char kSharedMemoryBatchCreate[] = "kSharedMemoryBatchCreate";
-const char kSharedMemoryCreateStrategy[] = "SharedMemoryCreateStrategy";
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-const int kBatchSize = 5;
-
-// This variable must only be accessed if |g_thread_lock_| is held.
-LazyInstance<std::vector<FILE*>>::Leaky g_file_pool_ =
-    LAZY_INSTANCE_INITIALIZER;
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
-// Whether to generate more than 1 shared memory handle at a time, and store
-// the results in a pool.
-bool ShouldBatchCreateSharedMemory() {
-#if !defined(OS_MACOSX) || defined(OS_IOS)
-  return false;
-#endif  // !defined(OS_MACOSX) || defined(OS_IOS)
-
-  g_thread_lock_.Get().AssertAcquired();
-
-  static bool has_determined_group = false;
-  static bool batch_create_shared_memory = false;
-
-  if (has_determined_group)
-    return batch_create_shared_memory;
-
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kSharedMemoryCreateStrategy);
-  batch_create_shared_memory = group_name == kSharedMemoryBatchCreate;
-  has_determined_group = true;
-  return batch_create_shared_memory;
-}
-
+#if !defined(OS_ANDROID)
 // Makes a temporary file, fdopens it, and then unlinks it. |fp| is populated
 // with the fdopened FILE. |readonly_fd| is populated with the opened fd if
 // options.share_read_only is true. |path| is populated with the location of
@@ -143,39 +106,6 @@ bool CreateAnonymousSharedMemory(const SharedMemoryCreateOptions& options,
   }
   return true;
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-// This method must only be called on OSX, since it assumes that
-// |options.executable| has no effect. It also doesn't fill in |path|, which is
-// only used for error logging when |options.share_read_only| is false.
-bool CreateAnonymousSharedMemoryFromBatch(
-    const SharedMemoryCreateOptions& options,
-    ScopedFILE* fp,
-    FilePath* path) {
-  DCHECK(!options.share_read_only);
-  g_thread_lock_.Get().AssertAcquired();
-  std::vector<FILE*>& file_pool = g_file_pool_.Get();
-
-  if (file_pool.empty()) {
-    for (int i = 0; i < kBatchSize; ++i) {
-      ScopedFILE temp_fp;
-      FilePath temp_path;
-      bool result =
-          CreateAnonymousSharedMemory(options, &temp_fp, NULL, &temp_path);
-      if (result)
-        file_pool.push_back(temp_fp.release());
-    }
-  }
-
-  if (file_pool.empty())
-    return false;
-
-  FILE* file = file_pool.back();
-  file_pool.pop_back();
-  fp->reset(file);
-  return true;
-}
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -295,27 +225,10 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
   FilePath path;
   if (options.name_deprecated == NULL || options.name_deprecated->empty()) {
-    AutoLock a(g_thread_lock_.Get());
-
-    Time start_time = base::Time::Now();
-    if (options.share_read_only || !ShouldBatchCreateSharedMemory()) {
-      bool result =
-          CreateAnonymousSharedMemory(options, &fp, &readonly_fd, &path);
-      if (!result)
-        return false;
-    } else {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-      bool result = CreateAnonymousSharedMemoryFromBatch(options, &fp, &path);
-      if (!result)
-        return false;
-#else
-      NOTREACHED();
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-    }
-    if (!options.share_read_only) {
-      UMA_HISTOGRAM_TIMES("SharedMemory.TimeSpentMakingAnonymousMemory",
-                          Time::Now() - start_time);
-    }
+    bool result =
+        CreateAnonymousSharedMemory(options, &fp, &readonly_fd, &path);
+    if (!result)
+      return false;
   } else {
     if (!FilePathForMemoryName(*options.name_deprecated, &path))
       return false;
