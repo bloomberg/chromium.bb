@@ -1350,6 +1350,8 @@
             'editing/iterators/WordAwareIterator.cpp',
             'editing/MarkupAccumulator.cpp',
             'editing/MarkupAccumulator.h',
+            'editing/MarkupFormatter.cpp',
+            'editing/MarkupFormatter.h',
             'editing/MergeIdenticalElementsCommand.cpp',
             'editing/MergeIdenticalElementsCommand.h',
             'editing/MoveSelectionCommand.cpp',

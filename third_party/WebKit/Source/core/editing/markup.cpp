@@ -331,9 +331,9 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkupWithContext(Doc
 
     StringBuilder taggedMarkup;
     taggedMarkup.append(markup.left(fragmentStart));
-    MarkupAccumulator::appendComment(taggedMarkup, fragmentMarkerTag);
+    MarkupFormatter::appendComment(taggedMarkup, fragmentMarkerTag);
     taggedMarkup.append(markup.substring(fragmentStart, fragmentEnd - fragmentStart));
-    MarkupAccumulator::appendComment(taggedMarkup, fragmentMarkerTag);
+    MarkupFormatter::appendComment(taggedMarkup, fragmentMarkerTag);
     taggedMarkup.append(markup.substring(fragmentEnd));
 
     RefPtrWillBeRawPtr<DocumentFragment> taggedFragment = createFragmentFromMarkup(document, taggedMarkup.toString(), baseURL, parserContentPolicy);
@@ -522,7 +522,7 @@ String urlToMarkup(const KURL& url, const String& title)
     markup.appendLiteral("<a href=\"");
     markup.append(url.string());
     markup.appendLiteral("\">");
-    MarkupAccumulator::appendCharactersReplacingEntities(markup, title, 0, title.length(), EntityMaskInPCDATA);
+    MarkupFormatter::appendCharactersReplacingEntities(markup, title, 0, title.length(), EntityMaskInPCDATA);
     markup.appendLiteral("</a>");
     return markup.toString();
 }

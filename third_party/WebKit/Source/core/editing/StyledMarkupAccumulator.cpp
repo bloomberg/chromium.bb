@@ -129,12 +129,12 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
                 length -= start;
             }
         }
-        m_accumulator.appendCharactersReplacingEntities(out, str, start, length, m_accumulator.entityMaskForText(text));
+        MarkupFormatter::appendCharactersReplacingEntities(out, str, start, length, m_accumulator.entityMaskForText(text));
     } else {
         const bool useRenderedText = !enclosingElementWithTag(firstPositionInNode(&text), selectTag);
         String content = useRenderedText ? renderedText(text) : stringValueForRange(text);
         StringBuilder buffer;
-        MarkupAccumulator::appendCharactersReplacingEntities(buffer, content, 0, content.length(), EntityMaskInPCDATA);
+        MarkupFormatter::appendCharactersReplacingEntities(buffer, content, 0, content.length(), EntityMaskInPCDATA);
         out.append(convertHTMLTextToInterchangeFormat(buffer.toString(), text));
     }
 
@@ -236,7 +236,7 @@ void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style, bool is
 String StyledMarkupAccumulator::takeResults()
 {
     StringBuilder result;
-    result.reserveCapacity(MarkupAccumulator::totalLength(m_reversedPrecedingMarkup) + m_accumulator.length());
+    result.reserveCapacity(MarkupFormatter::totalLength(m_reversedPrecedingMarkup) + m_accumulator.length());
 
     for (size_t i = m_reversedPrecedingMarkup.size(); i > 0; --i)
         result.append(m_reversedPrecedingMarkup[i - 1]);
