@@ -4,8 +4,6 @@
 
 #include "net/spdy/spdy_http_stream.h"
 
-#include <vector>
-
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
@@ -72,28 +70,24 @@ class SpdyHttpStreamTest : public testing::Test,
     session_deps_.net_log = &net_log_;
   }
 
-  DeterministicSocketData* deterministic_data() {
-    return deterministic_data_.get();
-  }
-
  protected:
   void TearDown() override {
     crypto::ECSignatureCreator::SetFactoryForTesting(NULL);
     base::MessageLoop::current()->RunUntilIdle();
+    EXPECT_TRUE(sequenced_data_->AllReadDataConsumed());
+    EXPECT_TRUE(sequenced_data_->AllWriteDataConsumed());
   }
 
-  // Initializes the session using DeterministicSocketData.
+  // Initializes the session using SequencedSocketData.
   void InitSession(MockRead* reads,
                    size_t reads_count,
                    MockWrite* writes,
                    size_t writes_count,
                    const SpdySessionKey& key) {
-    deterministic_data_.reset(
-        new DeterministicSocketData(reads, reads_count, writes, writes_count));
-    session_deps_.deterministic_socket_factory->AddSocketDataProvider(
-        deterministic_data_.get());
-    http_session_ =
-        SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_);
+    sequenced_data_.reset(
+        new SequencedSocketData(reads, reads_count, writes, writes_count));
+    session_deps_.socket_factory->AddSocketDataProvider(sequenced_data_.get());
+    http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
     session_ = CreateInsecureSpdySession(http_session_, key, BoundNetLog());
   }
 
@@ -105,7 +99,7 @@ class SpdyHttpStreamTest : public testing::Test,
   SpdyTestUtil spdy_util_;
   TestNetLog net_log_;
   SpdySessionDependencies session_deps_;
-  scoped_ptr<DeterministicSocketData> deterministic_data_;
+  scoped_ptr<SequencedSocketData> sequenced_data_;
   scoped_refptr<HttpNetworkSession> http_session_;
   base::WeakPtr<SpdySession> session_;
 
@@ -179,8 +173,6 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
   EXPECT_FALSE(http_stream->GetLoadTimingInfo(&load_timing_info));
 
-  deterministic_data()->RunFor(3);
-
   callback.WaitForResult();
 
   // Can get timing information once the stream connects.
@@ -189,8 +181,6 @@ TEST_P(SpdyHttpStreamTest, SendRequest) {
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
 
   TestLoadTimingNotReused(*http_stream);
   http_stream->Close(true);
@@ -254,7 +244,6 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
                                                       callback1.callback()));
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
-  deterministic_data()->RunFor(1);
   EXPECT_LE(0, callback1.WaitForResult());
 
   TestLoadTimingNotReused(*http_stream1);
@@ -272,14 +261,10 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
                                                       callback2.callback()));
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
-  deterministic_data()->RunFor(1);
   EXPECT_LE(0, callback2.WaitForResult());
   TestLoadTimingReused(*http_stream2);
   EXPECT_TRUE(http_stream2->GetLoadTimingInfo(&load_timing_info2));
   EXPECT_EQ(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
-
-  // All the reads.
-  deterministic_data()->RunFor(6);
 
   // Read stream 1 to completion, before making sure we can still read load
   // timing from both streams.
@@ -300,22 +285,22 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
       spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
   scoped_ptr<SpdyFrame> body(
       framer.CreateDataFrame(1, kUploadData, kUploadDataSize, DATA_FLAG_FIN));
-  std::vector<MockWrite> writes;
-  int seq = 0;
-  writes.push_back(CreateMockWrite(*req, seq++));
-  writes.push_back(CreateMockWrite(*body, seq++));  // POST upload frame
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0),  // request
+      CreateMockWrite(*body, 1)  // POST upload frame
+  };
 
   scoped_ptr<SpdyFrame> resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
-  std::vector<MockRead> reads;
-  reads.push_back(CreateMockRead(*resp, seq++));
-  reads.push_back(CreateMockRead(*body, seq++));
-  reads.push_back(MockRead(SYNCHRONOUS, 0, seq++));  // EOF
+  MockRead reads[] = {
+      CreateMockRead(*resp, 2),
+      CreateMockRead(*body, 3),
+      MockRead(SYNCHRONOUS, 0, 4)  // EOF
+  };
 
   HostPortPair host_port_pair("www.example.org", 80);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
-  InitSession(vector_as_array(&reads), reads.size(), vector_as_array(&writes),
-              writes.size(), key);
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
   EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
 
   ChunkedUploadDataStream upload_stream(0);
@@ -345,14 +330,11 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
       headers, &response, callback.callback()));
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
-  deterministic_data()->RunFor(seq);
   callback.WaitForResult();
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
 }
 
 // Test to ensure the SpdyStream state machine does not get confused when a
@@ -411,7 +393,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
   // Complete the initial request write and the first chunk.
-  deterministic_data()->RunFor(2);
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -419,43 +401,35 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   upload_stream.AppendData(kUploadData1, kUploadData1Size, false);
   upload_stream.AppendData(kUploadData, kUploadDataSize, true);
 
-  // Finish writing all the chunks.
-  deterministic_data()->RunFor(2);
+  // Finish writing all the chunks and do all reads.
+  base::RunLoop().RunUntilIdle();
 
-  // Read response headers.
-  deterministic_data()->RunFor(1);
+  // Check response headers.
   ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
 
-  // Read and check |chunk1| response.
-  deterministic_data()->RunFor(1);
+  // Check |chunk1| response.
   scoped_refptr<IOBuffer> buf1(new IOBuffer(kUploadDataSize));
   ASSERT_EQ(kUploadDataSize,
             http_stream->ReadResponseBody(
                 buf1.get(), kUploadDataSize, callback.callback()));
   EXPECT_EQ(kUploadData, std::string(buf1->data(), kUploadDataSize));
 
-  // Read and check |chunk2| response.
-  deterministic_data()->RunFor(1);
+  // Check |chunk2| response.
   scoped_refptr<IOBuffer> buf2(new IOBuffer(kUploadData1Size));
   ASSERT_EQ(kUploadData1Size,
             http_stream->ReadResponseBody(
                 buf2.get(), kUploadData1Size, callback.callback()));
   EXPECT_EQ(kUploadData1, std::string(buf2->data(), kUploadData1Size));
 
-  // Read and check |chunk3| response.
-  deterministic_data()->RunFor(1);
+  // Check |chunk3| response.
   scoped_refptr<IOBuffer> buf3(new IOBuffer(kUploadDataSize));
   ASSERT_EQ(kUploadDataSize,
             http_stream->ReadResponseBody(
                 buf3.get(), kUploadDataSize, callback.callback()));
   EXPECT_EQ(kUploadData, std::string(buf3->data(), kUploadDataSize));
 
-  // Finish reading the |EOF|.
-  deterministic_data()->RunFor(1);
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
 }
 
 // Test that the SpdyStream state machine can handle sending a final empty data
@@ -508,40 +482,33 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
   // Complete the initial request write and the first chunk.
-  deterministic_data()->RunFor(2);
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
 
   // Now end the stream with an empty data frame and the FIN set.
   upload_stream.AppendData(NULL, 0, true);
 
-  // Finish writing the final frame.
-  deterministic_data()->RunFor(1);
+  // Finish writing the final frame, and perform all reads.
+  base::RunLoop().RunUntilIdle();
 
-  // Read response headers.
-  deterministic_data()->RunFor(1);
+  // Check response headers.
   ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
 
-  // Read and check |chunk1| response.
-  deterministic_data()->RunFor(1);
+  // Check |chunk1| response.
   scoped_refptr<IOBuffer> buf1(new IOBuffer(kUploadDataSize));
   ASSERT_EQ(kUploadDataSize,
             http_stream->ReadResponseBody(
                 buf1.get(), kUploadDataSize, callback.callback()));
   EXPECT_EQ(kUploadData, std::string(buf1->data(), kUploadDataSize));
 
-  // Read and check |chunk2| response.
-  deterministic_data()->RunFor(1);
+  // Check |chunk2| response.
   ASSERT_EQ(0,
             http_stream->ReadResponseBody(
                 buf1.get(), kUploadDataSize, callback.callback()));
 
-  // Finish reading the |EOF|.
-  deterministic_data()->RunFor(1);
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
 }
 
 // Test that the SpdyStream state machine handles a chunked upload with no
@@ -591,27 +558,21 @@ TEST_P(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
   // Complete writing request, followed by a FIN.
-  deterministic_data()->RunFor(2);
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
 
-  // Read response headers.
-  deterministic_data()->RunFor(1);
+  // Check response headers.
   ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
 
-  // Read and check |chunk| response.
-  deterministic_data()->RunFor(1);
+  // Check |chunk| response.
   scoped_refptr<IOBuffer> buf(new IOBuffer(1));
   ASSERT_EQ(0,
             http_stream->ReadResponseBody(
                 buf.get(), 1, callback.callback()));
 
-  // Finish reading the |EOF|.
-  deterministic_data()->RunFor(1);
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
 }
 
 // Test case for bug: http://code.google.com/p/chromium/issues/detail?id=50058
@@ -650,17 +611,12 @@ TEST_P(SpdyHttpStreamTest, SpdyURLTest) {
 
   EXPECT_EQ(base_url, http_stream->stream()->GetUrlFromHeaders().spec());
 
-  deterministic_data()->RunFor(3);
   callback.WaitForResult();
 
   // Because we abandoned the stream, we don't expect to find a session in the
   // pool anymore.
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key));
-  EXPECT_TRUE(deterministic_data()->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data()->AllWriteDataConsumed());
 }
-
-// The tests below are only for SPDY/3 and above.
 
 // Test the receipt of a WINDOW_UPDATE frame while waiting for a chunk to be
 // made available is handled correctly.
@@ -675,10 +631,11 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   scoped_ptr<SpdyFrame> window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, kUploadDataSize));
   MockRead reads[] = {
-    CreateMockRead(*window_update, 2),
-    CreateMockRead(*resp, 3),
-    CreateMockRead(*chunk1, 4),
-    MockRead(ASYNC, 0, 5)  // EOF
+      CreateMockRead(*window_update, 2),
+      MockRead(ASYNC, ERR_IO_PENDING, 3),
+      CreateMockRead(*resp, 4),
+      CreateMockRead(*chunk1, 5),
+      MockRead(ASYNC, 0, 6)  // EOF
   };
 
   HostPortPair host_port_pair("www.example.org", 80);
@@ -695,7 +652,6 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   request.upload_data_stream = &upload_stream;
 
   ASSERT_EQ(OK, upload_stream.Init(TestCompletionCallback().callback()));
-  upload_stream.AppendData(kUploadData, kUploadDataSize, true);
 
   BoundNetLog net_log;
   scoped_ptr<SpdyHttpStream> http_stream(new SpdyHttpStream(session_, true));
@@ -712,9 +668,11 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
   EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key));
 
   // Complete the initial request write and first chunk.
-  deterministic_data_->RunFor(2);
+  base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback.have_result());
   EXPECT_EQ(OK, callback.WaitForResult());
+
+  upload_stream.AppendData(kUploadData, kUploadDataSize, true);
 
   // Verify that the window size has decreased.
   ASSERT_TRUE(http_stream->stream() != NULL);
@@ -723,7 +681,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
             http_stream->stream()->send_window_size());
 
   // Read window update.
-  deterministic_data_->RunFor(1);
+  base::RunLoop().RunUntilIdle();
 
   // Verify the window update.
   ASSERT_TRUE(http_stream->stream() != NULL);
@@ -731,24 +689,22 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
                 SpdySession::GetDefaultInitialWindowSize(session_->protocol())),
             http_stream->stream()->send_window_size());
 
-  // Read response headers.
-  deterministic_data_->RunFor(1);
+  // Read rest of data.
+  sequenced_data_->CompleteRead();
+  base::RunLoop().RunUntilIdle();
+
+  // Check response headers.
   ASSERT_EQ(OK, http_stream->ReadResponseHeaders(callback.callback()));
 
-  // Read and check |chunk1| response.
-  deterministic_data_->RunFor(1);
+  // Check |chunk1| response.
   scoped_refptr<IOBuffer> buf1(new IOBuffer(kUploadDataSize));
   ASSERT_EQ(kUploadDataSize,
             http_stream->ReadResponseBody(
                 buf1.get(), kUploadDataSize, callback.callback()));
   EXPECT_EQ(kUploadData, std::string(buf1->data(), kUploadDataSize));
 
-  // Finish reading the |EOF|.
-  deterministic_data_->RunFor(1);
   ASSERT_TRUE(response.headers.get());
   ASSERT_EQ(200, response.headers->response_code());
-  EXPECT_TRUE(deterministic_data_->AllReadDataConsumed());
-  EXPECT_TRUE(deterministic_data_->AllWriteDataConsumed());
 }
 
 // TODO(willchan): Write a longer test for SpdyStream that exercises all
