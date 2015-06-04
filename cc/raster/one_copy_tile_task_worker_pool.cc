@@ -39,9 +39,9 @@ class RasterBufferImpl : public RasterBuffer {
         previous_content_id) {
       raster_resource_ =
           resource_pool->TryAcquireResourceWithContentId(previous_content_id);
-      raster_content_id_ = previous_content_id;
     }
     if (raster_resource_) {
+      raster_content_id_ = previous_content_id;
       DCHECK_EQ(resource_format, raster_resource_->format());
       DCHECK_EQ(output_resource->size().ToString(),
                 raster_resource_->size().ToString());
