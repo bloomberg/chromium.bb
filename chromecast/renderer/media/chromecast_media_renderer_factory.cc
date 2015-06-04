@@ -46,11 +46,12 @@ scoped_ptr<::media::Renderer> ChromecastMediaRendererFactory::CreateRenderer(
         ::media::CHANNEL_LAYOUT_STEREO,
         kDefaultSamplingRate, kDefaultBitsPerSample,
         buffer_size, ::media::AudioParameters::NO_EFFECTS);
-    ::media::AudioHardwareConfig audio_config(input_audio_params,
-                                              output_audio_params);
+
+    audio_config_.reset(new ::media::AudioHardwareConfig(input_audio_params,
+                                                         output_audio_params));
 
     default_render_factory_.reset(new ::media::DefaultRendererFactory(
-        media_log_, /*gpu_factories*/ nullptr, audio_config));
+        media_log_, /*gpu_factories*/ nullptr, *audio_config_));
   }
 
   DCHECK(default_render_factory_);

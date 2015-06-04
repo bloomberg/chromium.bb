@@ -10,6 +10,7 @@
 #include "media/base/renderer_factory.h"
 
 namespace media {
+class AudioHardwareConfig;
 class MediaLog;
 class DefaultRendererFactory;
 }
@@ -34,6 +35,9 @@ class ChromecastMediaRendererFactory : public ::media::RendererFactory {
   int render_frame_id_;
   scoped_refptr<::media::MediaLog> media_log_;
   scoped_ptr<::media::DefaultRendererFactory> default_render_factory_;
+
+  // Audio config for the default media renderer.
+  scoped_ptr<::media::AudioHardwareConfig> audio_config_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromecastMediaRendererFactory);
 };
