@@ -42,7 +42,6 @@
           },
           'compile_flags': [
             '-Wno-switch',
-            '-Wno-unused-but-set-variable',
           ],
           'include_dirs': [
             'overrides/liblouis',
