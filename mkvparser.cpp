@@ -2250,7 +2250,7 @@ bool CuePoint::Load(IMkvReader* pReader) {
 
   m_element_start = element_start;
   m_element_size = element_size;
-  
+
   return true;
 }
 
