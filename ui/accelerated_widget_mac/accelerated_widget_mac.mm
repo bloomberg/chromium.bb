@@ -6,13 +6,16 @@
 
 #include <map>
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/accelerated_widget_mac/io_surface_layer.h"
+#include "ui/accelerated_widget_mac/io_surface_ns_gl_surface.h"
 #include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gl/scoped_cgl.h"
 
@@ -94,6 +97,7 @@ void AcceleratedWidgetMac::ResetNSView() {
   DestroyIOSurfaceLayer(io_surface_layer_);
   DestroyCAContextLayer(ca_context_layer_);
   DestroySoftwareLayer();
+  io_surface_ns_gl_surface_.reset();
 
   last_swap_size_dip_ = gfx::Size();
   view_ = NULL;
@@ -129,6 +133,10 @@ void AcceleratedWidgetMac::GotAcceleratedFrame(
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::Size pixel_size, float scale_factor,
     const base::Closure& drawn_callback) {
+  static bool use_ns_gl_surfaces =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNSGLSurfaces);
+
   // Record the surface and latency info to use when acknowledging this frame.
   DCHECK(accelerated_frame_drawn_callback_.is_null());
   accelerated_frame_drawn_callback_ = drawn_callback;
@@ -148,7 +156,12 @@ void AcceleratedWidgetMac::GotAcceleratedFrame(
   switch (GetSurfaceHandleType(surface_handle)) {
     case kSurfaceHandleTypeIOSurface: {
       IOSurfaceID io_surface_id = IOSurfaceIDFromSurfaceHandle(surface_handle);
-      GotAcceleratedIOSurfaceFrame(io_surface_id, pixel_size, scale_factor);
+      if (use_ns_gl_surfaces) {
+        GotAcceleratedIOSurfaceFrameNSGL(
+            io_surface_id, pixel_size, scale_factor);
+      } else {
+        GotAcceleratedIOSurfaceFrame(io_surface_id, pixel_size, scale_factor);
+      }
       break;
     }
     case kSurfaceHandleTypeCAContext: {
@@ -193,6 +206,23 @@ void AcceleratedWidgetMac::GotAcceleratedCAContextFrame(
   // Remove any different-type layers that this is replacing.
   DestroyIOSurfaceLayer(io_surface_layer_);
   DestroySoftwareLayer();
+}
+
+void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrameNSGL(
+    IOSurfaceID io_surface_id, gfx::Size pixel_size, float scale_factor) {
+  if (!io_surface_ns_gl_surface_) {
+    io_surface_ns_gl_surface_.reset(
+        IOSurfaceNSGLSurface::Create(view_->AcceleratedWidgetGetNSView()));
+  }
+
+  if (!io_surface_ns_gl_surface_) {
+    LOG(ERROR) << "Failed to create IOSurfaceNSGLSurface";
+    AcknowledgeAcceleratedFrame();
+    return;
+  }
+
+  io_surface_ns_gl_surface_->GotFrame(io_surface_id, pixel_size, scale_factor);
+  AcknowledgeAcceleratedFrame();
 }
 
 void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrame(
