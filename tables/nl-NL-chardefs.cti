@@ -74,12 +74,6 @@ punctuation \x007D        23456               }                   RIGHT CURLY BR
 sign        \x007C        1456                |                   VERTICAL LINE
 # sign        \x007C        123456              |                   VERTICAL LINE
 
-# Micro sign
-# Definition missing from standard
-# Belgium, CBB and Dedicon use dots "56-134"
-
-sign        \x00B5        56-134              µ                   MICRO SIGN
-
 # Middle dot
 # Definition missing from standard
 # Belgium uses "5-256"

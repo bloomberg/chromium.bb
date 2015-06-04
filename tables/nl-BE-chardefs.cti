@@ -61,13 +61,6 @@ uplow       \x00D5\x00F5  246,246             Õõ                  LATIN CAPITA
 punctuation \x007B        12356               {                   LEFT CURLY BRACKET
 punctuation \x007D        23456               }                   RIGHT CURLY BRACKET
 
-# Micro sign
-# Definition missing from standard
-# Belgium and CBB use dots "56-134"
-# Dedicon uses dots "56-136"
-
-sign        \x00B5        56-134              µ                   MICRO SIGN
-
 # Middle dot
 # Definition missing from standard
 # Belgium uses "5-256"

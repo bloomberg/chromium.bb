@@ -133,6 +133,7 @@ punctuation \x00AB        2356                «                   LEFT-POINTING
 punctuation \x00AD        367                 ­                   SOFT HYPHEN
 sign        \x00B1        235-36              ±                   PLUS-MINUS SIGN
 sign        \x00B4        3                   ´                   ACUTE ACCENT
+sign        \x00B5        56-134              µ                   MICRO SIGN
 punctuation \x00BB        2356                »                   RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
 punctuation \x00BF        26                  ¿                   INVERTED QUESTION MARK
 math        \x00D7        236                 ×                   MULTIPLICATION SIGN
