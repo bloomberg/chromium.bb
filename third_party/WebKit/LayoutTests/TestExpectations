@@ -1903,7 +1903,6 @@ crbug.com/487878 [ Linux ] virtual/slimmingpaint/compositing/video-frame-size-ch
 crbug.com/488037 [ Win Debug ] tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Pass ImageOnlyFailure ]
 
 crbug.com/488101 fast/loader/unload-form-post-about-blank.html [ Pass Failure ]
-crbug.com/488185 fast/layers/layer-visibility-sublayer.html [ NeedsRebaseline ]
 
 crbug.com/481896 http/tests/inspector/compiler-source-mapping-debug.html [ NeedsManualRebaseline ]
 
