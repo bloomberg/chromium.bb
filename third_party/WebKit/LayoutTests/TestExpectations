@@ -1861,6 +1861,8 @@ crbug.com/471824 imported/web-platform-tests/pointerevents/ [ Skip ]
 crbug.com/471824 virtual/pointerevent/imported/web-platform-tests/pointerevents/pointerevent_touch-action-illegal.html [ Skip ]
 crbug.com/471824 virtual/pointerevent/imported/web-platform-tests/pointerevents/pointerevent_touch-action-verification.html [ Skip ]
 
+Bug(wangxianzhu) virtual/slimmingpaint/svg/repaint/outline-offset-shape.html [ NeedsRebaseline ]
+
 crbug.com/470429 inspector/tracing/worker-js-profile.html [ Pass Timeout Crash ]
 crbug.com/470429 virtual/deferred/inspector/tracing/worker-js-profile.html [ Pass Timeout Crash ]
 
