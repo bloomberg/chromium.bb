@@ -106,7 +106,7 @@ void ExternalCache::OnDamagedFileDetected(const base::FilePath& path) {
       return;
     }
   }
-  LOG(ERROR) << "ExternalCache cannot find external_crx " << path.value();
+  DLOG(ERROR) << "ExternalCache cannot find external_crx " << path.value();
 }
 
 void ExternalCache::RemoveExtensions(const std::vector<std::string>& ids) {
