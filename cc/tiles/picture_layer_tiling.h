@@ -45,7 +45,7 @@ class CC_EXPORT PictureLayerTilingClient {
   virtual const Region* GetPendingInvalidation() = 0;
   virtual const PictureLayerTiling* GetPendingOrActiveTwinTiling(
       const PictureLayerTiling* tiling) const = 0;
-  virtual TilePriority::PriorityBin GetMaxTilePriorityBin() const = 0;
+  virtual bool HasValidTilePriorities() const = 0;
   virtual bool RequiresHighResToDraw() const = 0;
 
  protected:

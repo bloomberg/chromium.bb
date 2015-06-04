@@ -91,8 +91,8 @@ class FixedInvalidationPictureLayerTilingClient
     return base_client_->GetPendingOrActiveTwinTiling(tiling);
   }
 
-  TilePriority::PriorityBin GetMaxTilePriorityBin() const override {
-    return base_client_->GetMaxTilePriorityBin();
+  bool HasValidTilePriorities() const override {
+    return base_client_->HasValidTilePriorities();
   }
 
   bool RequiresHighResToDraw() const override {

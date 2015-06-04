@@ -877,8 +877,9 @@ TilePriority PictureLayerTiling::ComputePriorityForTile(
   DCHECK_EQ(ComputePriorityRectTypeForTile(tile), priority_rect_type);
   DCHECK_EQ(TileAt(tile->tiling_i_index(), tile->tiling_j_index()), tile);
 
-  TilePriority::PriorityBin priority_bin = client_->GetMaxTilePriorityBin();
-
+  TilePriority::PriorityBin priority_bin = client_->HasValidTilePriorities()
+                                               ? TilePriority::NOW
+                                               : TilePriority::EVENTUALLY;
   switch (priority_rect_type) {
     case VISIBLE_RECT:
       return TilePriority(resolution_, priority_bin, 0);

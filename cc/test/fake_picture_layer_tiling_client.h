@@ -24,7 +24,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   ScopedTilePtr CreateTile(float contents_scale,
                            const gfx::Rect& rect) override;
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
-  TilePriority::PriorityBin GetMaxTilePriorityBin() const override;
+  bool HasValidTilePriorities() const override;
 
   void SetTileSize(const gfx::Size& tile_size);
   gfx::Size TileSize() const { return tile_size_; }
@@ -44,8 +44,8 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   }
   void set_text_rect(const gfx::Rect& rect) { text_rect_ = rect; }
   void set_invalidation(const Region& region) { invalidation_ = region; }
-  void set_max_tile_priority_bin(TilePriority::PriorityBin bin) {
-    max_tile_priority_bin_ = bin;
+  void set_has_valid_tile_priorities(bool has_valid_tile_priorities) {
+    has_valid_tile_priorities_ = has_valid_tile_priorities;
   }
   RasterSource* raster_source() { return pile_.get(); }
 
@@ -63,7 +63,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   PictureLayerTiling* twin_tiling_;
   gfx::Rect text_rect_;
   Region invalidation_;
-  TilePriority::PriorityBin max_tile_priority_bin_;
+  bool has_valid_tile_priorities_;
 };
 
 }  // namespace cc

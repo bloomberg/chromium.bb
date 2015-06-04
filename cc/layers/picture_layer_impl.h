@@ -61,7 +61,7 @@ class CC_EXPORT PictureLayerImpl
   const Region* GetPendingInvalidation() override;
   const PictureLayerTiling* GetPendingOrActiveTwinTiling(
       const PictureLayerTiling* tiling) const override;
-  TilePriority::PriorityBin GetMaxTilePriorityBin() const override;
+  bool HasValidTilePriorities() const override;
   bool RequiresHighResToDraw() const override;
   gfx::Rect GetEnclosingRectInTargetSpace() const override;
 
@@ -93,8 +93,6 @@ class CC_EXPORT PictureLayerImpl
   // Functions used by tile manager.
   PictureLayerImpl* GetPendingOrActiveTwinLayer() const;
   bool IsOnActiveOrPendingTree() const;
-  // Virtual for testing.
-  virtual bool HasValidTilePriorities() const;
 
   // Used for benchmarking
   RasterSource* GetRasterSource() const { return raster_source_.get(); }

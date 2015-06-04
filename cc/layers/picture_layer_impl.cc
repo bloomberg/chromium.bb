@@ -650,12 +650,6 @@ const PictureLayerTiling* PictureLayerImpl::GetPendingOrActiveTwinTiling(
   return twin_layer->tilings_->FindTilingWithScale(tiling->contents_scale());
 }
 
-TilePriority::PriorityBin PictureLayerImpl::GetMaxTilePriorityBin() const {
-  if (!HasValidTilePriorities())
-    return TilePriority::EVENTUALLY;
-  return TilePriority::NOW;
-}
-
 bool PictureLayerImpl::RequiresHighResToDraw() const {
   return layer_tree_impl()->RequiresHighResToDraw();
 }

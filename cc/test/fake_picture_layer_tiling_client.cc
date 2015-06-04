@@ -16,7 +16,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
       pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
       twin_set_(nullptr),
       twin_tiling_(nullptr),
-      max_tile_priority_bin_(TilePriority::NOW) {
+      has_valid_tile_priorities_(true) {
 }
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient(
@@ -27,7 +27,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
       pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
       twin_set_(nullptr),
       twin_tiling_(nullptr),
-      max_tile_priority_bin_(TilePriority::NOW) {
+      has_valid_tile_priorities_(true) {
 }
 
 FakePictureLayerTilingClient::~FakePictureLayerTilingClient() {
@@ -47,9 +47,8 @@ gfx::Size FakePictureLayerTilingClient::CalculateTileSize(
   return tile_size_;
 }
 
-TilePriority::PriorityBin FakePictureLayerTilingClient::GetMaxTilePriorityBin()
-    const {
-  return max_tile_priority_bin_;
+bool FakePictureLayerTilingClient::HasValidTilePriorities() const {
+  return has_valid_tile_priorities_;
 }
 
 const Region* FakePictureLayerTilingClient::GetPendingInvalidation() {
