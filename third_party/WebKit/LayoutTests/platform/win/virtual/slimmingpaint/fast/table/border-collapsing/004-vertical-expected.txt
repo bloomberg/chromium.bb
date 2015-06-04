@@ -222,7 +222,7 @@ layer at (0,0) size 800x911 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                   text run at (51,-3) width 44: "unless "
                   text run at (51,41) width 111: "that space is very"
                   text run at (69,-3) width 43: "small. "
-                  text run at (69,39) width 150: "Because of its margins,"
+                  text run at (69,39) width 149: "Because of its margins,"
                   text run at (87,-3) width 105: "the width of the "
                   text run at (87,101) width 78: "table should"
                   text run at (105,-3) width 120: "be less than 100%."

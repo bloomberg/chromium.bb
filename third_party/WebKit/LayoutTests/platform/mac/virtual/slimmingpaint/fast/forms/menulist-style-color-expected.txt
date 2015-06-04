@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
         text run at (70,0) width 4: " "
       LayoutMenuList {SELECT} at (74,1) size 52x18 [bgcolor=#F8F8F8]
         LayoutBlockFlow (anonymous) at (0,0) size 52x18
-          LayoutText (anonymous) at (8,2) size 21x13
-            text run at (8,2) width 21: "Red"
+          LayoutText (anonymous) at (8,2) size 20x13
+            text run at (8,2) width 20: "Red"
       LayoutText {#text} at (126,0) size 4x18
         text run at (126,0) width 4: " "
       LayoutMenuList {SELECT} at (130,1) size 121x18 [bgcolor=#008000] [border: (1px solid #A6A6A6)]

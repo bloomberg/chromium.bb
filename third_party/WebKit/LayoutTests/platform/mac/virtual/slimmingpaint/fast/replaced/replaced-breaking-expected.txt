@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow {DIV} at (0,0) size 32x470 [border: (1px solid #FF0000)]
+      LayoutBlockFlow {DIV} at (0,0) size 32x472 [border: (1px solid #FF0000)]
         LayoutTextControl {INPUT} at (1,1) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutTextControl {INPUT} at (1,20) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
@@ -38,11 +38,11 @@ layer at (0,0) size 800x600
               text run at (8,2) width 31: "select"
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {INPUT} at (3.91,290) size 12x12
-        LayoutBlockFlow {INPUT} at (3.91,308) size 12x12
+        LayoutBlockFlow {INPUT} at (3.91,292) size 12x12
+        LayoutBlockFlow {INPUT} at (3.91,310) size 12x12
         LayoutText {#text} at (0,0) size 0x0
-        LayoutBlockFlow {INPUT} at (3.91,326) size 12x13
-        LayoutBlockFlow {INPUT} at (3.91,345) size 12x13
+        LayoutBlockFlow {INPUT} at (3.91,328) size 12x13
+        LayoutBlockFlow {INPUT} at (3.91,347) size 12x13
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
@@ -50,31 +50,31 @@ layer at (12,12) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
 layer at (12,31) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
-layer at (9,208) size 48x45 clip at (10,209) size 35x43 scrollHeight 42
-  LayoutListBox {SELECT} at (1,200.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+layer at (9,209) size 48x45 clip at (10,210) size 35x43 scrollHeight 42
+  LayoutListBox {SELECT} at (1,201.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 34.80x14.19
       LayoutText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "select"
-layer at (9,251) size 48x45 clip at (10,252) size 35x43 scrollHeight 42
-  LayoutListBox {SELECT} at (1,243.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+layer at (9,253) size 48x45 clip at (10,254) size 35x43 scrollHeight 42
+  LayoutListBox {SELECT} at (1,245.44) size 47.80x44.56 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 34.80x14.19
       LayoutText {#text} at (2,0) size 31x13
         text run at (2,0) width 31: "select"
-layer at (9,369) size 27x27
-  LayoutIFrame {IFRAME} at (1,361) size 27x27 [border: (1px solid #000000)]
+layer at (9,371) size 27x27
+  LayoutIFrame {IFRAME} at (1,363) size 27x27 [border: (1px solid #000000)]
     layer at (0,0) size 25x25
       LayoutView at (0,0) size 25x25
     layer at (0,0) size 25x25
       LayoutBlockFlow {HTML} at (0,0) size 25x25
         LayoutBlockFlow {BODY} at (8,8) size 9x9
-layer at (9,396) size 27x27
-  LayoutIFrame {IFRAME} at (1,388) size 27x27 [border: (1px solid #000000)]
+layer at (9,398) size 27x27
+  LayoutIFrame {IFRAME} at (1,390) size 27x27 [border: (1px solid #000000)]
     layer at (0,0) size 25x25
       LayoutView at (0,0) size 25x25
     layer at (0,0) size 25x25
       LayoutBlockFlow {HTML} at (0,0) size 25x25
         LayoutBlockFlow {BODY} at (8,8) size 9x9
-layer at (9,423) size 27x27
-  LayoutEmbeddedObject {EMBED} at (1,415) size 27x27 [border: (1px solid #000000)]
-layer at (9,450) size 27x27
-  LayoutEmbeddedObject {EMBED} at (1,442) size 27x27 [border: (1px solid #000000)]
+layer at (9,425) size 27x27
+  LayoutEmbeddedObject {EMBED} at (1,417) size 27x27 [border: (1px solid #000000)]
+layer at (9,452) size 27x27
+  LayoutEmbeddedObject {EMBED} at (1,444) size 27x27 [border: (1px solid #000000)]

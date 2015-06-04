@@ -31,8 +31,8 @@ layer at (0,0) size 800x391
                 LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutBlockFlow {HR} at (0,35) size 784x2 [border: (1px inset #EEEEEE)]
         LayoutBlockFlow {P} at (0,53) size 784x36
-          LayoutText {#text} at (0,0) size 772x36
-            text run at (0,0) width 772: "And here's more. There should not be a difference in distance between the labels, nor any difference in distance between"
+          LayoutText {#text} at (0,0) size 771x36
+            text run at (0,0) width 771: "And here's more. There should not be a difference in distance between the labels, nor any difference in distance between"
             text run at (0,18) width 92: "the text fields."
         LayoutTable {DL} at (0,105) size 237x150
           LayoutTableSection (anonymous) at (0,0) size 237x150

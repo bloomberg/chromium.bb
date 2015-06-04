@@ -28,8 +28,8 @@ layer at (0,0) size 800x360
               LayoutText {#text} at (2,2) size 47x17
                 text run at (2,2) width 47: "Middle"
             LayoutTableCell {TD} at (409,95) size 53x22 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 49x17
-                text run at (2,2) width 49: "Bottom"
+              LayoutText {#text} at (2,2) size 48x17
+                text run at (2,2) width 48: "Bottom"
       LayoutTable {TABLE} at (0,211.44) size 464x119
         LayoutTableSection {TBODY} at (0,0) size 464x119
           LayoutTableRow {TR} at (0,2) size 464x115
@@ -40,8 +40,8 @@ layer at (0,0) size 800x360
               LayoutText {#text} at (2,2) size 47x17
                 text run at (2,2) width 47: "Middle"
             LayoutTableCell {TD} at (87,95) size 53x22 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 49x17
-                text run at (2,2) width 49: "Bottom"
+              LayoutText {#text} at (2,2) size 48x17
+                text run at (2,2) width 48: "Bottom"
             LayoutTableCell {TD} at (142,2) size 186x115 [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (2,4) size 182x107
                 text run at (2,4) width 182: "Data"

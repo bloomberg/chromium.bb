@@ -25,8 +25,8 @@ layer at (0,0) size 800x476
               LayoutText {#text} at (2,2) size 31x18
                 text run at (2,2) width 31: "Data"
             LayoutTableCell {TD} at (312,94) size 53x22 [border: (1px solid #000000)] [r=0 c=4 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 49x18
-                text run at (2,2) width 49: "Bottom"
+              LayoutText {#text} at (2,2) size 48x18
+                text run at (2,2) width 48: "Bottom"
             LayoutTableCell {TD} at (367,45) size 95x59 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 91x55
                 text run at (2,2) width 91: "Data"
@@ -46,8 +46,8 @@ layer at (0,0) size 800x476
               LayoutText {#text} at (2,2) size 47x18
                 text run at (2,2) width 47: "Middle"
             LayoutTableCell {TD} at (221,94) size 53x22 [border: (1px solid #000000)] [r=0 c=4 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 49x18
-                text run at (2,2) width 49: "Bottom"
+              LayoutText {#text} at (2,2) size 48x18
+                text run at (2,2) width 48: "Bottom"
             LayoutTableCell {TD} at (276,2) size 186x114 [border: (1px solid #000000)] [r=0 c=5 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 182x110
                 text run at (2,2) width 182: "Data"
@@ -61,8 +61,8 @@ layer at (0,0) size 800x476
               LayoutText {#text} at (2,2) size 91x55
                 text run at (2,2) width 91: "Data"
             LayoutTableCell {TD} at (131,94) size 53x22 [border: (1px solid #000000)] [r=0 c=2 rs=1 cs=1]
-              LayoutText {#text} at (2,2) size 49x18
-                text run at (2,2) width 49: "Bottom"
+              LayoutText {#text} at (2,2) size 48x18
+                text run at (2,2) width 48: "Bottom"
             LayoutTableCell {TD} at (186,74) size 35x22 [border: (1px solid #000000)] [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (2,2) size 31x18
                 text run at (2,2) width 31: "Data"
