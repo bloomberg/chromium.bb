@@ -9,15 +9,6 @@ Polymer({
 
   properties: {
     /**
-     * The index of the current page being viewed (0-based).
-     */
-    index: {
-      type: Number,
-      value: 0,
-      observer: 'indexChanged'
-    },
-
-    /**
      * The number of pages the document contains.
      */
     docLength: {
@@ -27,27 +18,19 @@ Polymer({
     },
 
     /**
-     * The current entry in the input field (1-based).
+     * The current page being viewed (1-based).
      */
     pageNo: {
       type: String,
-      value: '1',
-      observer: 'pageNoChanged'
-    },
-  },
-
-  pageNoChanged: function() {
-    var page = parseInt(this.pageNo);
-    if (!isNaN(page) && page != this.index + 1) {
-      this.fire('change-page', {page: page - 1});
-    } else {
-      // Repopulate the input.
-      this.indexChanged();
+      value: '1'
     }
   },
 
-  indexChanged: function() {
-    this.pageNo = String(this.index + 1);
+  pageNoCommitted: function() {
+    var page = parseInt(this.pageNo);
+    if (!isNaN(page)) {
+      this.fire('change-page', {page: page - 1});
+    }
   },
 
   docLengthChanged: function() {

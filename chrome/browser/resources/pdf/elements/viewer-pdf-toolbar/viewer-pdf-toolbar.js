@@ -20,9 +20,9 @@
       docTitle: String,
 
       /**
-       * The current index of the page being viewed (0-based).
+       * The number of the page being viewed (1-based).
        */
-      pageIndex: Number,
+      pageNo: Number,
 
       /**
        * Whether the document has bookmarks.

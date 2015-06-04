@@ -36,6 +36,29 @@ var tests = [
         plugin.getAttribute('src').indexOf('/pdf/test.pdf') != -1);
     chrome.test.succeed();
   },
+
+  /**
+   * Test that shouldIgnoreKeyEvents correctly searches through the shadow DOM
+   * to find input fields.
+   */
+  function testIgnoreKeyEvents() {
+    // Test that the traversal through the shadow DOM works correctly.
+    var toolbar = document.getElementById('material-toolbar');
+    toolbar.$.pageselector.$.input.focus();
+    chrome.test.assertTrue(shouldIgnoreKeyEvents(toolbar));
+
+    // Test case where the active element has a shadow root of its own.
+    toolbar.$.buttons.children[0].focus();
+    chrome.test.assertFalse(shouldIgnoreKeyEvents(toolbar));
+
+    chrome.test.assertFalse(
+        shouldIgnoreKeyEvents(document.getElementById('plugin')));
+
+    chrome.test.succeed();
+  }
 ];
 
-chrome.test.runTests(tests);
+var scriptingAPI = new PDFScriptingAPI(window, window);
+scriptingAPI.setLoadCallback(function() {
+  chrome.test.runTests(tests);
+});

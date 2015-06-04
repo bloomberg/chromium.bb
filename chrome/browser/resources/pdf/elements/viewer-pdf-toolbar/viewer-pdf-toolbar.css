@@ -15,6 +15,12 @@
 }
 
 #title {
+  /* paper-toolbar enforces a layout on anything with a title attribute which
+   * sets `flex: 1`. We must overwrite it here rather than with the 'flex-5'
+   * class.
+   * TODO(tsergeant): Remove this once it is fixed from the Polymer side.
+   */
+  flex: 5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -32,6 +38,10 @@
   text-align: right;
 }
 
+#buttons > paper-icon-button {
+  margin-right: 0;
+}
+
 paper-progress {
   height: 56px;
   position: absolute;
@@ -40,15 +50,15 @@ paper-progress {
 }
 
 paper-progress::shadow #activeProgress {
-  background-color: rgb(27, 168, 243);
+  background-color: rgb(50, 54, 57);
 }
 
 paper-progress::shadow #progressContainer {
-  background-color: rgb(100, 181, 246);
+  background-color: rgba(0, 0, 0, 0.3);
 }
 
 paper-toolbar {
-  background-color: rgb(27, 168, 243);
+  background-color: rgb(50, 54, 57);
   color: rgb(241, 241, 241);
   font-size: 1.5em;
   height: 56px;
@@ -58,7 +68,7 @@ paper-toolbar {
 }
 
 paper-toolbar /deep/ ::selection {
-  background: rgb(187, 222, 251);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 paper-toolbar /deep/ .toolbar-tools {

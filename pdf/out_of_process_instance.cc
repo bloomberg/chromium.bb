@@ -54,7 +54,7 @@ const char kAccessibleCopyable[] = "copyable";
 
 // PDF background colors.
 const uint32 kBackgroundColor = 0xFFCCCCCC;
-const uint32 kBackgroundColorMaterial = 0xFF424242;
+const uint32 kBackgroundColorMaterial = 0xFF525659;
 
 // Constants used in handling postMessage() messages.
 const char kType[] = "type";

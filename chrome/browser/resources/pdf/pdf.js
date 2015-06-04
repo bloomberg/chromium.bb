@@ -52,6 +52,23 @@ function onNavigateInNewTab(url) {
 }
 
 /**
+ * Whether keydown events should currently be ignored. Events are ignored when
+ * an editable element has focus, to allow for proper editing controls.
+ * @param {HTMLElement} activeElement The currently selected DOM node.
+ * @return {boolean} True if keydown events should be ignored.
+ */
+function shouldIgnoreKeyEvents(activeElement) {
+  while (activeElement.shadowRoot != null &&
+         activeElement.shadowRoot.activeElement != null) {
+    activeElement = activeElement.shadowRoot.activeElement;
+  }
+
+  return (activeElement.isContentEditable ||
+          activeElement.tagName == 'INPUT' ||
+          activeElement.tagName == 'TEXTAREA');
+}
+
+/**
  * The minimum number of pixels to offset the toolbar by from the bottom and
  * right side of the screen.
  */
@@ -205,6 +222,9 @@ PDFViewer.prototype = {
     var position = this.viewport_.position;
     // Certain scroll events may be sent from outside of the extension.
     var fromScriptingAPI = e.fromScriptingAPI;
+
+    if (shouldIgnoreKeyEvents(document.activeElement) || e.defaultPrevented)
+      return;
 
     var pageUpHandler = function() {
       // Go to the previous page if we are fit-to-page.
@@ -623,7 +643,7 @@ PDFViewer.prototype = {
     // Update the page indicator.
     var visiblePage = this.viewport_.getMostVisiblePage();
     if (this.isMaterial_) {
-      this.materialToolbar_.pageIndex = visiblePage;
+      this.materialToolbar_.pageNo = visiblePage + 1;
     } else {
       this.pageIndicator_.index = visiblePage;
       if (this.documentDimensions_.pageDimensions.length > 1 &&

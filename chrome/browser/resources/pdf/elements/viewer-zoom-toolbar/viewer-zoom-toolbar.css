@@ -14,18 +14,10 @@
   display: inline-block;
 }
 
-#main-zoom {
-  background-color: rgb(27, 168, 243);
-  display: block;
-  margin: auto;
-  margin-top: 2em;
-  overflow: visible;
-}
-
 #fit-to-width-button {
   display: block;
   margin: auto;
-  margin-top: 2em;
+  margin-top: 1em;
   overflow: visible;
 }
 

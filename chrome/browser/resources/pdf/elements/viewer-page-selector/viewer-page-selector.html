@@ -1,10 +1,14 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 
 <dom-module id="viewer-page-selector">
   <link rel="import" type="css" href="viewer-page-selector.css">
   <template>
-    <paper-input id="pageselector" value="{{pageNo}}" no-label-float></paper-input>
+    <paper-input-container id="pageselector" no-label-float>
+      <input id="input" is="iron-input" bind-value="{{pageNo}}" on-mouseup="select"
+          on-change="pageNoCommitted">
+    </paper-input-container>
     <span id="pagelength">/ <span>{{docLength}}</span></span>
   </template>
 </dom-module>
