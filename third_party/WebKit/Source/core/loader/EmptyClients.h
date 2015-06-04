@@ -142,7 +142,8 @@ public:
 
     void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) override;
 
-    void setCursorInternal(const Cursor&) override { }
+    void setCursor(const Cursor&) override { }
+    Cursor lastSetCursorForTesting() const override { return pointerCursor(); }
 
     void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override { }
 

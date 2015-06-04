@@ -191,15 +191,4 @@ void ChromeClient::print(LocalFrame* frame)
     printInternal(frame);
 }
 
-void ChromeClient::setCursor(const Cursor& cursor)
-{
-    m_lastSetMouseCursorForTesting = cursor;
-    setCursorInternal(cursor);
-}
-
-Cursor ChromeClient::getLastSetCursorForTesting() const
-{
-    return m_lastSetMouseCursorForTesting;
-}
-
 } // namespace blink

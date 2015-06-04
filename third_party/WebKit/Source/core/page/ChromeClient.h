@@ -136,9 +136,9 @@ public:
 
     // Methods used by HostWindow.
     virtual WebScreenInfo screenInfo() const = 0;
-    void setCursor(const Cursor&);
+    virtual void setCursor(const Cursor&) = 0;
     // End methods used by HostWindow.
-    Cursor getLastSetCursorForTesting() const;
+    virtual Cursor lastSetCursorForTesting() const = 0;
 
     virtual void scheduleAnimationForFrame(LocalFrame*) { }
 
@@ -254,13 +254,10 @@ protected:
     virtual bool runJavaScriptConfirmInternal(LocalFrame*, const String&) = 0;
     virtual bool runJavaScriptPromptInternal(LocalFrame*, const String& message, const String& defaultValue, String& result) = 0;
     virtual void printInternal(LocalFrame*) = 0;
-    virtual void setCursorInternal(const Cursor&) = 0;
 
 private:
     bool canRunModalIfDuringPageDismissal(Frame* mainFrame, DialogType, const String& message);
     void setToolTip(const HitTestResult&);
-
-    Cursor m_lastSetMouseCursorForTesting;
 };
 
 } // namespace blink

@@ -108,7 +108,8 @@ public:
     PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
     void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) override;
     void enumerateChosenDirectory(FileChooser*) override;
-    void setCursorInternal(const Cursor&) override;
+    void setCursor(const Cursor&) override;
+    Cursor lastSetCursorForTesting() const override;
     void needTouchEvents(bool needTouchEvents) override;
     void setTouchAction(TouchAction) override;
 
@@ -175,6 +176,7 @@ private:
     WebViewImpl* m_webView; // Weak pointer.
     WindowFeatures m_windowFeatures;
     Vector<PopupOpeningObserver*> m_popupOpeningObservers;
+    Cursor m_lastSetMouseCursorForTesting;
 };
 
 DEFINE_TYPE_CASTS(ChromeClientImpl, ChromeClient, client, client->isChromeClientImpl(), client.isChromeClientImpl());

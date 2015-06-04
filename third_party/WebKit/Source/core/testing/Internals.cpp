@@ -1972,7 +1972,7 @@ static const char* cursorTypeToString(Cursor::Type cursorType)
 
 String Internals::getCurrentCursorInfo()
 {
-    Cursor cursor = frame()->page()->chromeClient().getLastSetCursorForTesting();
+    Cursor cursor = frame()->page()->chromeClient().lastSetCursorForTesting();
 
     StringBuilder result;
     result.appendLiteral("type=");

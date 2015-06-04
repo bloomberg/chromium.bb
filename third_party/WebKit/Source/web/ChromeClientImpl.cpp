@@ -629,8 +629,14 @@ void ChromeClientImpl::enumerateChosenDirectory(FileChooser* fileChooser)
         chooserCompletion->didChooseFile(WebVector<WebString>());
 }
 
-void ChromeClientImpl::setCursorInternal(const Cursor& cursor)
+Cursor ChromeClientImpl::lastSetCursorForTesting() const
 {
+    return m_lastSetMouseCursorForTesting;
+}
+
+void ChromeClientImpl::setCursor(const Cursor& cursor)
+{
+    m_lastSetMouseCursorForTesting = cursor;
     setCursor(WebCursorInfo(cursor));
 }
 

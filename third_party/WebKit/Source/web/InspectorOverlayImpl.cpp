@@ -69,7 +69,7 @@ public:
         , m_overlay(overlay)
     { }
 
-    virtual void setCursorInternal(const Cursor& cursor) override
+    virtual void setCursor(const Cursor& cursor) override
     {
         m_client.setCursor(cursor);
     }

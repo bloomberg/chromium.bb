@@ -142,7 +142,7 @@ private:
         return IntSize(0, 0);
     }
 
-    void setCursorInternal(const Cursor& cursor) override
+    void setCursor(const Cursor& cursor) override
     {
         if (m_popup->m_webView->client())
             m_popup->m_webView->client()->didChangeCursor(WebCursorInfo(cursor));
