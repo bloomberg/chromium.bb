@@ -111,7 +111,7 @@ struct NET_EXPORT AlternativeService {
   AlternativeService& operator=(const AlternativeService& alternative_service) =
       default;
 
-  HostPortPair host_port_pair() { return HostPortPair(host, port); }
+  HostPortPair host_port_pair() const { return HostPortPair(host, port); }
 
   bool operator==(const AlternativeService& other) const {
     return protocol == other.protocol && host == other.host &&

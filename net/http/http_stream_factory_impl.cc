@@ -99,22 +99,21 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
     // Never share connection with other jobs for FTP requests.
     DCHECK(!request_info.url.SchemeIs("ftp"));
 
-    Job* alternate_job =
+    Job* alternative_job =
         new Job(this, session_, request_info, priority, server_ssl_config,
-                proxy_ssl_config, net_log.net_log());
-    request->AttachJob(alternate_job);
-    alternate_job->MarkAsAlternate(alternative_service);
+                proxy_ssl_config, alternative_service, net_log.net_log());
+    request->AttachJob(alternative_job);
 
-    job->WaitFor(alternate_job);
+    job->WaitFor(alternative_job);
     // Make sure to wait until we call WaitFor(), before starting
-    // |alternate_job|, otherwise |alternate_job| will not notify |job|
+    // |alternative_job|, otherwise |alternative_job| will not notify |job|
     // appropriately.
-    alternate_job->Start(request);
+    alternative_job->Start(request);
   }
 
-  // Even if |alternate_job| has already finished, it won't have notified the
-  // request yet, since we defer that to the next iteration of the MessageLoop,
-  // so starting |job| is always safe.
+  // Even if |alternative_job| has already finished, it will not have notified
+  // the request yet, since we defer that to the next iteration of the
+  // MessageLoop, so starting |job| is always safe.
   job->Start(request);
   return request;
 }
@@ -128,11 +127,9 @@ void HttpStreamFactoryImpl::PreconnectStreams(
   DCHECK(!for_websockets_);
   AlternativeService alternative_service =
       GetAlternativeServiceFor(request_info.url);
-  Job* job = new Job(this, session_, request_info, priority, server_ssl_config,
-                     proxy_ssl_config, session_->net_log());
-  if (alternative_service.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
-    job->MarkAsAlternate(alternative_service);
-  }
+  Job* job =
+      new Job(this, session_, request_info, priority, server_ssl_config,
+              proxy_ssl_config, alternative_service, session_->net_log());
   preconnect_job_set_.insert(job);
   job->Preconnect(num_streams);
 }

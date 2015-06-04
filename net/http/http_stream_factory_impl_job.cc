@@ -80,6 +80,24 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
                                 const SSLConfig& server_ssl_config,
                                 const SSLConfig& proxy_ssl_config,
                                 NetLog* net_log)
+    : Job(stream_factory,
+          session,
+          request_info,
+          priority,
+          server_ssl_config,
+          proxy_ssl_config,
+          AlternativeService(),
+          net_log) {
+}
+
+HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
+                                HttpNetworkSession* session,
+                                const HttpRequestInfo& request_info,
+                                RequestPriority priority,
+                                const SSLConfig& server_ssl_config,
+                                const SSLConfig& proxy_ssl_config,
+                                AlternativeService alternative_service,
+                                NetLog* net_log)
     : request_(NULL),
       request_info_(request_info),
       priority_(priority),
@@ -92,6 +110,7 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
       stream_factory_(stream_factory),
       next_state_(STATE_NONE),
       pac_request_(NULL),
+      alternative_service_(alternative_service),
       blocking_job_(NULL),
       waiting_job_(NULL),
       using_ssl_(false),
@@ -110,6 +129,10 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
       ptr_factory_(this) {
   DCHECK(stream_factory);
   DCHECK(session);
+  if (IsQuicAlternative()) {
+    DCHECK(session_->params().enable_quic);
+    using_quic_ = true;
+  }
 }
 
 HttpStreamFactoryImpl::Job::~Job() {
@@ -168,16 +191,6 @@ LoadState HttpStreamFactoryImpl::Job::GetLoadState() const {
       return using_quic_ ? LOAD_STATE_CONNECTING : connection_->GetLoadState();
     default:
       return LOAD_STATE_IDLE;
-  }
-}
-
-void HttpStreamFactoryImpl::Job::MarkAsAlternate(
-    AlternativeService alternative_service) {
-  DCHECK(!IsAlternate());
-  alternative_service_ = alternative_service;
-  if (alternative_service.protocol == QUIC) {
-    DCHECK(session_->params().enable_quic);
-    using_quic_ = true;
   }
 }
 
@@ -289,7 +302,7 @@ bool HttpStreamFactoryImpl::Job::CanUseExistingSpdySession() const {
   // TODO(ricea): Add "wss" back to this list when SPDY WebSocket support is
   // working.
   return origin_url_.SchemeIs("https") ||
-         proxy_info_.proxy_server().is_https() || IsSpdyAlternate();
+         proxy_info_.proxy_server().is_https() || IsSpdyAlternative();
 }
 
 void HttpStreamFactoryImpl::Job::OnStreamReadyCallback() {
@@ -555,7 +568,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
 
     default:
       DCHECK(result != ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN ||
-             IsAlternate());
+             IsSpdyAlternative() || IsQuicAlternative());
       if (job_status_ != STATUS_BROKEN) {
         DCHECK_EQ(STATUS_RUNNING, job_status_);
         job_status_ = STATUS_FAILED;
@@ -639,7 +652,7 @@ int HttpStreamFactoryImpl::Job::StartInternal() {
 }
 
 int HttpStreamFactoryImpl::Job::DoStart() {
-  if (IsAlternate()) {
+  if (IsSpdyAlternative() || IsQuicAlternative()) {
     server_ = alternative_service_.host_port_pair();
   } else {
     server_ = HostPortPair::FromURL(request_info_.url);
@@ -647,7 +660,7 @@ int HttpStreamFactoryImpl::Job::DoStart() {
   origin_url_ =
       stream_factory_->ApplyHostMappingRules(request_info_.url, &server_);
   valid_spdy_session_pool_.reset(new ValidSpdySessionPool(
-      session_->spdy_session_pool(), origin_url_, IsSpdyAlternate()));
+      session_->spdy_session_pool(), origin_url_, IsSpdyAlternative()));
 
   net_log_.BeginEvent(
       NetLog::TYPE_HTTP_STREAM_JOB,
@@ -691,7 +704,7 @@ int HttpStreamFactoryImpl::Job::DoResolveProxy() {
   // https://<alternative host>:<alternative port>/...
   // so the proxy resolution works with the actual destination, and so
   // that the correct socket pool is used.
-  if (IsSpdyAlternate()) {
+  if (IsSpdyAlternative()) {
     // TODO(rch):  Figure out how to make QUIC iteract with PAC
     // scripts.  By not re-writing the URL, we will query the PAC script
     // for the proxy to use to reach the original URL via TCP.  But
@@ -732,7 +745,7 @@ int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
     } else if (using_quic_ &&
                (!proxy_info_.is_quic() && !proxy_info_.is_direct())) {
       // QUIC can not be spoken to non-QUIC proxies.  This error should not be
-      // user visible, because the non-alternate job should be resumed.
+      // user visible, because the non-alternative Job should be resumed.
       result = ERR_NO_SUPPORTED_PROXIES;
     }
   }
@@ -782,7 +795,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
   using_ssl_ = origin_url_.SchemeIs("https") || origin_url_.SchemeIs("wss") ||
-               IsSpdyAlternate();
+               IsSpdyAlternative();
   using_spdy_ = false;
 
   if (ShouldForceQuic())
@@ -858,7 +871,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     establishing_tunnel_ = using_ssl_;
 
   // TODO(bnc): s/want_spdy_over_npn/expect_spdy_over_npn/
-  bool want_spdy_over_npn = IsAlternate();
+  bool want_spdy_over_npn = IsSpdyAlternative();
 
   if (proxy_info_.is_https()) {
     InitSSLConfig(proxy_info_.proxy_server().host_port_pair(),
@@ -1014,13 +1027,14 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     return result;
   }
 
-  if (IsSpdyAlternate() && !using_spdy_) {
+  if (IsSpdyAlternative() && !using_spdy_) {
     job_status_ = STATUS_BROKEN;
     MaybeMarkAlternativeServiceBroken();
     return ERR_NPN_NEGOTIATION_FAILED;
   }
 
-  if (!ssl_started && result < 0 && IsAlternate()) {
+  if (!ssl_started && result < 0 &&
+      (IsSpdyAlternative() || IsQuicAlternative())) {
     job_status_ = STATUS_BROKEN;
     // TODO(bnc): if (result == ERR_ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN), then
     // instead of marking alternative service broken, mark (origin, alternative
@@ -1056,7 +1070,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   if (using_ssl_) {
     DCHECK(ssl_started);
     if (IsCertificateError(result)) {
-      if (using_spdy_ && IsAlternate() && origin_url_.SchemeIs("http")) {
+      if (IsSpdyAlternative() && origin_url_.SchemeIs("http")) {
         // We ignore certificate errors for http over spdy.
         spdy_certificate_error_ = result;
         result = OK;
@@ -1107,8 +1121,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "462811 HttpStreamFactoryImpl::Job::DoCreateStream"));
   DCHECK(connection_->socket() || existing_spdy_session_.get() || using_quic_);
-  if (IsAlternate())
-    DCHECK(IsSpdyAlternate());
+  DCHECK(!IsQuicAlternative());
 
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
 
@@ -1119,7 +1132,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     SetSocketMotivation();
 
   if (!using_spdy_) {
-    DCHECK(!IsSpdyAlternate());
+    DCHECK(!IsSpdyAlternative());
     // We may get ftp scheme when fetching ftp resources through proxy.
     bool using_proxy = (proxy_info_.is_http() || proxy_info_.is_https()) &&
                        (request_info_.url.SchemeIs("http") ||
@@ -1249,7 +1262,7 @@ void HttpStreamFactoryImpl::Job::SetSocketMotivation() {
 bool HttpStreamFactoryImpl::Job::IsHttpsProxyAndHttpUrl() const {
   if (!proxy_info_.is_https())
     return false;
-  if (IsAlternate()) {
+  if (IsSpdyAlternative() || IsQuicAlternative()) {
     // We currently only support Alternate-Protocol where the original scheme
     // is http.
     DCHECK(origin_url_.SchemeIs("http"));
@@ -1258,13 +1271,13 @@ bool HttpStreamFactoryImpl::Job::IsHttpsProxyAndHttpUrl() const {
   return request_info_.url.SchemeIs("http");
 }
 
-bool HttpStreamFactoryImpl::Job::IsAlternate() const {
-  return alternative_service_.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL;
-}
-
-bool HttpStreamFactoryImpl::Job::IsSpdyAlternate() const {
+bool HttpStreamFactoryImpl::Job::IsSpdyAlternative() const {
   return alternative_service_.protocol >= NPN_SPDY_MINIMUM_VERSION &&
          alternative_service_.protocol <= NPN_SPDY_MAXIMUM_VERSION;
+}
+
+bool HttpStreamFactoryImpl::Job::IsQuicAlternative() const {
+  return alternative_service_.protocol == QUIC;
 }
 
 void HttpStreamFactoryImpl::Job::InitSSLConfig(const HostPortPair& server,
@@ -1437,12 +1450,11 @@ void HttpStreamFactoryImpl::Job::ReportJobSucceededForRequest() {
     // If an existing session was used, then no TCP connection was
     // started.
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_NO_RACE);
-  } else if (IsAlternate()) {
-    // This job was the alternate protocol job, and hence won the race.
+  } else if (IsSpdyAlternative() || IsQuicAlternative()) {
+    // This Job was the alternative Job, and hence won the race.
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_WON_RACE);
   } else {
-    // This job was the normal job, and hence the alternate protocol job lost
-    // the race.
+    // This Job was the normal Job, and hence the alternative Job lost the race.
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_LOST_RACE);
   }
 }
@@ -1458,7 +1470,7 @@ void HttpStreamFactoryImpl::Job::MaybeMarkAlternativeServiceBroken() {
   if (job_status_ == STATUS_RUNNING || other_job_status_ == STATUS_RUNNING)
     return;
 
-  if (IsAlternate()) {
+  if (IsSpdyAlternative() || IsQuicAlternative()) {
     if (job_status_ == STATUS_BROKEN && other_job_status_ == STATUS_SUCCEEDED) {
       HistogramBrokenAlternateProtocolLocation(
           BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_ALT);
@@ -1479,10 +1491,10 @@ void HttpStreamFactoryImpl::Job::MaybeMarkAlternativeServiceBroken() {
 HttpStreamFactoryImpl::Job::ValidSpdySessionPool::ValidSpdySessionPool(
     SpdySessionPool* spdy_session_pool,
     GURL& origin_url,
-    bool is_spdy_alternate)
+    bool is_spdy_alternative)
     : spdy_session_pool_(spdy_session_pool),
       origin_url_(origin_url),
-      is_spdy_alternate_(is_spdy_alternate) {
+      is_spdy_alternative_(is_spdy_alternative) {
 }
 
 int HttpStreamFactoryImpl::Job::ValidSpdySessionPool::FindAvailableSession(
@@ -1508,10 +1520,10 @@ int HttpStreamFactoryImpl::Job::ValidSpdySessionPool::
 int HttpStreamFactoryImpl::Job::ValidSpdySessionPool::
     CheckAlternativeServiceValidityForOrigin(
         base::WeakPtr<SpdySession> spdy_session) {
-  // For a SPDY alternate Job, server_.host() might be different than
+  // For an alternative Job, server_.host() might be different than
   // origin_url_.host(), therefore it needs to be verified that the former
   // provides a certificate that is valid for the latter.
-  if (!is_spdy_alternate_ || !spdy_session ||
+  if (!is_spdy_alternative_ || !spdy_session ||
       spdy_session->VerifyDomainAuthentication(origin_url_.host())) {
     return OK;
   }
@@ -1521,7 +1533,7 @@ int HttpStreamFactoryImpl::Job::ValidSpdySessionPool::
 ClientSocketPoolManager::SocketGroupType
 HttpStreamFactoryImpl::Job::GetSocketGroup() const {
   std::string scheme = origin_url_.scheme();
-  if (scheme == "https" || scheme == "wss" || IsSpdyAlternate())
+  if (scheme == "https" || scheme == "wss" || IsSpdyAlternative())
     return ClientSocketPoolManager::SSL_GROUP;
 
   if (scheme == "ftp")

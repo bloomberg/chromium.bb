@@ -36,12 +36,22 @@ class QuicHttpStream;
 // created for the StreamFactory.
 class HttpStreamFactoryImpl::Job {
  public:
+  // Constructor for non-alternative Job.
   Job(HttpStreamFactoryImpl* stream_factory,
       HttpNetworkSession* session,
       const HttpRequestInfo& request_info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
+      NetLog* net_log);
+  // Constructor for alternative Job.
+  Job(HttpStreamFactoryImpl* stream_factory,
+      HttpNetworkSession* session,
+      const HttpRequestInfo& request_info,
+      RequestPriority priority,
+      const SSLConfig& server_ssl_config,
+      const SSLConfig& proxy_ssl_config,
+      AlternativeService alternative_service,
       NetLog* net_log);
   ~Job();
 
@@ -55,10 +65,6 @@ class HttpStreamFactoryImpl::Job {
 
   int RestartTunnelWithProxyAuth(const AuthCredentials& credentials);
   LoadState GetLoadState() const;
-
-  // Marks this Job as the "alternate" job, from Alternate-Protocol or Alt-Svc
-  // using the specified alternate service.
-  void MarkAsAlternate(AlternativeService alternative_service);
 
   // Tells |this| to wait for |job| to resume it.
   void WaitFor(Job* job);
@@ -146,13 +152,14 @@ class HttpStreamFactoryImpl::Job {
    public:
     ValidSpdySessionPool(SpdySessionPool* spdy_session_pool,
                          GURL& origin_url,
-                         bool is_spdy_alternate);
+                         bool is_spdy_alternative);
 
     // Returns OK if a SpdySession was not found (in which case |spdy_session|
     // is set to nullptr), or if one was found (in which case |spdy_session| is
     // set to it) and it has an associated SSL certificate with is valid for
     // |origin_url_|, or if this requirement does not apply because the Job is
-    // not a SPDY alternate job.  Returns the appropriate error code otherwise,
+    // not a SPDY alternative job.  Returns the appropriate error code
+    // otherwise,
     // in which case |spdy_session| should not be used.
     int FindAvailableSession(const SpdySessionKey& key,
                              const BoundNetLog& net_log,
@@ -160,7 +167,7 @@ class HttpStreamFactoryImpl::Job {
 
     // Creates a SpdySession and sets |spdy_session| to point to it.  Returns OK
     // if the associated SSL certificate is valid for |origin_url_|, or if this
-    // requirement does not apply because the Job is not a SPDY alternate job.
+    // requirement does not apply because the Job is not a SPDY alternative job.
     // Returns the appropriate error code otherwise, in which case
     // |spdy_session| should not be used.
     int CreateAvailableSessionFromSocket(
@@ -174,14 +181,14 @@ class HttpStreamFactoryImpl::Job {
    private:
     // Returns OK if |spdy_session| has an associated SSL certificate with is
     // valid for |origin_url_|, or if this requirement does not apply because
-    // the Job is not a SPDY alternate job, or if |spdy_session| is null.
+    // the Job is not a SPDY alternative job, or if |spdy_session| is null.
     // Returns appropriate error code otherwise.
     int CheckAlternativeServiceValidityForOrigin(
         base::WeakPtr<SpdySession> spdy_session);
 
     SpdySessionPool* const spdy_session_pool_;
     const GURL origin_url_;
-    const bool is_spdy_alternate_;
+    const bool is_spdy_alternative_;
   };
 
   void OnStreamReadyCallback();
@@ -231,12 +238,9 @@ class HttpStreamFactoryImpl::Job {
 
   bool IsHttpsProxyAndHttpUrl() const;
 
-  // Returns true iff this Job is an alternate, that is, iff MarkAsAlternate has
-  // been called.
-  bool IsAlternate() const;
-
-  // Returns true if this Job is a SPDY alternate job.
-  bool IsSpdyAlternate() const;
+  // Is this a SPDY or QUIC alternative Job?
+  bool IsSpdyAlternative() const;
+  bool IsQuicAlternative() const;
 
   // Sets several fields of |ssl_config| for |server| based on the proxy info
   // and other factors.
@@ -319,10 +323,10 @@ class HttpStreamFactoryImpl::Job {
   // original request when host mapping rules are set-up.
   GURL origin_url_;
 
-  // AlternateProtocol for this job if this is an alternate job.
-  AlternativeService alternative_service_;
+  // AlternativeService for this Job if this is an alternative Job.
+  const AlternativeService alternative_service_;
 
-  // AlternateProtocol for the other job if this is not an alternate job.
+  // AlternativeService for the other Job if this is not an alternative Job.
   AlternativeService other_job_alternative_service_;
 
   // This is the Job we're dependent on. It will notify us if/when it's OK to
