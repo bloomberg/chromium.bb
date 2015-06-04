@@ -21,6 +21,12 @@ class MediaRouterDialogController
  public:
   ~MediaRouterDialogController() override;
 
+  // Gets a reference to the MediaRouterDialogController associated with
+  // |web_contents|, creating one if it does not exist. The returned pointer is
+  // guaranteed to be non-null.
+  static MediaRouterDialogController* GetOrCreateForWebContents(
+      content::WebContents* web_contents);
+
   // Shows the media router dialog modal to the initiator WebContents.
   // Creates the dialog if it did not exist prior to this call.
   // If the dialog already exists, brings the dialog to the front.

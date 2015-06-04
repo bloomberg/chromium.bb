@@ -623,6 +623,7 @@
       'browser/ui/views/extensions/extension_message_bubble_view_browsertest.cc',
       'browser/ui/views/frame/browser_view_browsertest.cc',
       'browser/ui/views/location_bar/zoom_bubble_view_browsertest.cc',
+      'browser/ui/views/media_router/media_router_ui_browsertest.cc',
       'browser/ui/views/profiles/avatar_menu_button_browsertest.cc',
       'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
       'browser/ui/views/toolbar/browser_actions_container_browsertest.cc',
@@ -2256,10 +2257,6 @@
             'browser/media/chrome_webrtc_getmediadevices_browsertest.cc',
          ],
         }],
-        ['enable_media_router==1', {
-          'sources': [ '<@(chrome_browser_tests_media_router_sources)' ],
-          'dependencies': [ 'browser/media/router/media_router.gyp:media_router_test_support' ],
-        }],
         ['OS=="win"', {
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
@@ -2446,6 +2443,15 @@
             'test/data/webui/print_preview.cc',
             'test/data/webui/print_preview.h',
             'test/data/webui/print_preview.js',
+          ],
+        }],
+        ['enable_media_router==1', {
+          'sources': [ '<@(chrome_browser_tests_media_router_sources)' ],
+          'dependencies': [ 'browser/media/router/media_router.gyp:media_router_test_support' ],
+          'conditions': [
+            ['toolkit_views==0', {
+              'sources!': [ 'browser/ui/views/media_router/media_router_ui_browsertest.cc' ],
+            }],
           ],
         }],
         ['enable_mdns==1', {

@@ -100,6 +100,16 @@ void MediaRouterDialogDelegate::GetDialogSize(gfx::Size* size) const {
 
 }  // namespace
 
+// static
+MediaRouterDialogController*
+MediaRouterDialogController::GetOrCreateForWebContents(
+    WebContents* web_contents) {
+  DCHECK(web_contents);
+  // This call does nothing if the controller already exists.
+  MediaRouterDialogController::CreateForWebContents(web_contents);
+  return MediaRouterDialogController::FromWebContents(web_contents);
+}
+
 class MediaRouterDialogController::DialogWebContentsObserver
     : public content::WebContentsObserver {
  public:

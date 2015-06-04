@@ -6,11 +6,14 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+
+using media_router::MediaRouterDialogController;
 
 MediaRouterAction::MediaRouterAction()
     : id_("media_router_action"),
@@ -63,40 +66,43 @@ bool MediaRouterAction::IsEnabled(
 
 bool MediaRouterAction::WantsToRun(
     content::WebContents* web_contents) const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool MediaRouterAction::HasPopup(
     content::WebContents* web_contents) const {
-  NOTIMPLEMENTED();
   return true;
 }
 
 void MediaRouterAction::HidePopup() {
-  NOTIMPLEMENTED();
+  GetMediaRouterDialogController()->CloseMediaRouterDialog();
 }
 
 gfx::NativeView MediaRouterAction::GetPopupNativeView() {
-  NOTIMPLEMENTED();
   return nullptr;
 }
 
 ui::MenuModel* MediaRouterAction::GetContextMenu() {
-  NOTIMPLEMENTED();
   return nullptr;
 }
 
 bool MediaRouterAction::CanDrag() const {
-  NOTIMPLEMENTED();
   return false;
 }
 
 bool MediaRouterAction::ExecuteAction(bool by_user) {
-  NOTIMPLEMENTED();
-  return false;
+  GetMediaRouterDialogController()->ShowMediaRouterDialog();
+  return true;
 }
 
 void MediaRouterAction::UpdateState() {
   NOTIMPLEMENTED();
+}
+
+MediaRouterDialogController*
+MediaRouterAction::GetMediaRouterDialogController() {
+  DCHECK(delegate_);
+  content::WebContents* web_contents = delegate_->GetCurrentWebContents();
+  DCHECK(web_contents);
+  return MediaRouterDialogController::GetOrCreateForWebContents(web_contents);
 }

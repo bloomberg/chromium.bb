@@ -7,6 +7,10 @@
 
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 
+namespace media_router {
+class MediaRouterDialogController;
+}  // namespace media_router
+
 // The class for the Media Router component action that will be shown in
 // the toolbar.
 class MediaRouterAction : public ToolbarActionViewController {
@@ -35,6 +39,11 @@ class MediaRouterAction : public ToolbarActionViewController {
   void UpdateState() override;
 
  private:
+  // Returns a reference to the MediaRouterDialogController associated with
+  // |delegate_|'s current WebContents. Guaranteed to be non-null.
+  // |delegate_| and its current WebContents must not be null.
+  media_router::MediaRouterDialogController* GetMediaRouterDialogController();
+
   const std::string id_;
   const base::string16 name_;
 
