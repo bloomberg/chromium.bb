@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
@@ -15,18 +14,6 @@
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-
-namespace {
-
-#if defined (OS_ANDROID) || defined(THREAD_SANITIZER)
-// Just do the bare minimum of audio checking on Android and under TSAN since
-// it's a bit sensitive to device performance.
-const char kUseLenientAudioChecking[] = "true";
-#else
-const char kUseLenientAudioChecking[] = "false";
-#endif
-
-}  // namespace
 
 namespace content {
 
@@ -196,10 +183,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio) {
-  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
-      "callAndRenegotiateToAudio("
-      "    %s, {audio: true, video:true}, {audio: true});",
-      kUseLenientAudioChecking));
+  MakeAudioDetectingPeerConnectionCall(
+      "callAndRenegotiateToAudio({audio: true, video:true}, {audio: true});");
 }
 
 // This test makes a call between pc1 and pc2 where a video only stream is sent
@@ -363,51 +348,44 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, AddTwoMediaStreamsToOnePC) {
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        EstablishAudioVideoCallAndEnsureAudioIsPlaying) {
-  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
-      "callAndEnsureAudioIsPlaying(%s, {audio:true, video:true});",
-      kUseLenientAudioChecking));
+  MakeAudioDetectingPeerConnectionCall(
+      "callAndEnsureAudioIsPlaying({audio:true, video:true});");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        EstablishAudioOnlyCallAndEnsureAudioIsPlaying) {
-  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
-      "callAndEnsureAudioIsPlaying(%s, {audio:true});",
-      kUseLenientAudioChecking));
+  MakeAudioDetectingPeerConnectionCall(
+      "callAndEnsureAudioIsPlaying({audio:true});");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        EstablishIsac16KCallAndEnsureAudioIsPlaying) {
-  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
-      "callWithIsac16KAndEnsureAudioIsPlaying(%s, {audio:true});",
-      kUseLenientAudioChecking));
+  MakeAudioDetectingPeerConnectionCall(
+      "callWithIsac16KAndEnsureAudioIsPlaying({audio:true});");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        EstablishAudioVideoCallAndVerifyRemoteMutingWorks) {
-  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
-      "callAndEnsureRemoteAudioTrackMutingWorks(%s);",
-      kUseLenientAudioChecking));
+  MakeAudioDetectingPeerConnectionCall(
+      "callAndEnsureRemoteAudioTrackMutingWorks();");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        EstablishAudioVideoCallAndVerifyLocalMutingWorks) {
-  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
-      "callAndEnsureLocalAudioTrackMutingWorks(%s);",
-      kUseLenientAudioChecking));
+  MakeAudioDetectingPeerConnectionCall(
+      "callAndEnsureLocalAudioTrackMutingWorks();");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        EnsureLocalVideoMuteDoesntMuteAudio) {
-  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
-      "callAndEnsureLocalVideoMutingDoesntMuteAudio(%s);",
-      kUseLenientAudioChecking));
+  MakeAudioDetectingPeerConnectionCall(
+      "callAndEnsureLocalVideoMutingDoesntMuteAudio();");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        EnsureRemoteVideoMuteDoesntMuteAudio) {
-  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
-      "callAndEnsureRemoteVideoMutingDoesntMuteAudio(%s);",
-      kUseLenientAudioChecking));
+  MakeAudioDetectingPeerConnectionCall(
+      "callAndEnsureRemoteVideoMutingDoesntMuteAudio();");
 }
 
 // Flaky on TSAN v2: http://crbug.com/373637
@@ -420,8 +398,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks) {
-  MakeAudioDetectingPeerConnectionCall(base::StringPrintf(
-      "callAndEnsureAudioTrackUnmutingWorks(%s);", kUseLenientAudioChecking));
+  MakeAudioDetectingPeerConnectionCall(
+      "callAndEnsureAudioTrackUnmutingWorks();");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CallAndVerifyVideoMutingWorks) {

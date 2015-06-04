@@ -115,8 +115,7 @@
 
   // The second set of constraints should request audio (e.g. audio:true) since
   // we expect audio to be playing after the second renegotiation.
-  function callAndRenegotiateToAudio(beLenient, constraints,
-                                     renegotiationConstraints) {
+  function callAndRenegotiateToAudio(constraints, renegotiationConstraints) {
     createConnections(null);
     navigator.webkitGetUserMedia(constraints,
         addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
@@ -129,7 +128,7 @@
           addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
 
       var onCallEstablished = function() {
-        ensureAudioPlaying(gSecondConnection, beLenient);
+        ensureAudioPlaying(gSecondConnection);
       };
 
       waitForConnectionToStabilize(gFirstConnection, onCallEstablished);
@@ -349,7 +348,7 @@
         offerOptions);
   }
 
-  function callAndEnsureAudioIsPlaying(beLenient, constraints) {
+  function callAndEnsureAudioIsPlaying(constraints) {
     createConnections(null);
 
     // Add the local stream to gFirstConnection to play one-way audio.
@@ -357,13 +356,13 @@
       addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
 
     var onCallEstablished = function() {
-      ensureAudioPlaying(gSecondConnection, beLenient);
+      ensureAudioPlaying(gSecondConnection);
     };
 
     waitForConnectionToStabilize(gFirstConnection, onCallEstablished);
   }
 
-  function callWithIsac16KAndEnsureAudioIsPlaying(beLenient, constraints) {
+  function callWithIsac16KAndEnsureAudioIsPlaying(constraints) {
     transformSdp = function(sdp) {
       sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
                         'm=audio $1 RTP/SAVPF 103 126\r\n');
@@ -373,7 +372,7 @@
 
       return sdp;
     }
-    callAndEnsureAudioIsPlaying(beLenient, constraints);
+    callAndEnsureAudioIsPlaying(constraints);
   }
 
   function enableRemoteVideo(peerConnection, enabled) {
@@ -396,8 +395,8 @@
     localStream.getAudioTracks()[0].enabled = enabled;
   }
 
-  function callAndEnsureRemoteAudioTrackMutingWorks(beLenient) {
-    callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
+  function callAndEnsureRemoteAudioTrackMutingWorks() {
+    callAndEnsureAudioIsPlaying({audio: true, video: true});
     setAllEventsOccuredHandler(function() {
       setAllEventsOccuredHandler(reportTestSuccess);
 
@@ -408,8 +407,8 @@
     });
   }
 
-  function callAndEnsureLocalAudioTrackMutingWorks(beLenient) {
-    callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
+  function callAndEnsureLocalAudioTrackMutingWorks() {
+    callAndEnsureAudioIsPlaying({audio: true, video: true});
     setAllEventsOccuredHandler(function() {
       setAllEventsOccuredHandler(reportTestSuccess);
 
@@ -420,8 +419,8 @@
     });
   }
 
-  function callAndEnsureAudioTrackUnmutingWorks(beLenient) {
-    callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
+  function callAndEnsureAudioTrackUnmutingWorks() {
+    callAndEnsureAudioIsPlaying({audio: true, video: true});
     setAllEventsOccuredHandler(function() {
       setAllEventsOccuredHandler(reportTestSuccess);
 
@@ -435,26 +434,26 @@
       }, 500);
 
       setTimeout(function() {
-        ensureAudioPlaying(gSecondConnection, beLenient);
+        ensureAudioPlaying(gSecondConnection);
       }, 1500);
     });
   }
 
-  function callAndEnsureLocalVideoMutingDoesntMuteAudio(beLenient) {
-    callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
+  function callAndEnsureLocalVideoMutingDoesntMuteAudio() {
+    callAndEnsureAudioIsPlaying({audio: true, video: true});
     setAllEventsOccuredHandler(function() {
       setAllEventsOccuredHandler(reportTestSuccess);
       enableLocalVideo(gFirstConnection, false);
-      ensureAudioPlaying(gSecondConnection, beLenient);
+      ensureAudioPlaying(gSecondConnection);
     });
   }
 
-  function callAndEnsureRemoteVideoMutingDoesntMuteAudio(beLenient) {
-    callAndEnsureAudioIsPlaying(beLenient, {audio: true, video: true});
+  function callAndEnsureRemoteVideoMutingDoesntMuteAudio() {
+    callAndEnsureAudioIsPlaying({audio: true, video: true});
     setAllEventsOccuredHandler(function() {
       setAllEventsOccuredHandler(reportTestSuccess);
       enableRemoteVideo(gSecondConnection, false);
-      ensureAudioPlaying(gSecondConnection, beLenient);
+      ensureAudioPlaying(gSecondConnection);
     });
   }
 

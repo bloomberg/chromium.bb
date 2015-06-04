@@ -10,14 +10,20 @@ var MAX_AUDIO_OUTPUT_ENERGY = 32768;
 // Queries WebRTC stats on |peerConnection| to find out whether audio is playing
 // on the connection. Note this does not necessarily mean the audio is actually
 // playing out (for instance if there's a bug in the WebRTC web media player).
-// If |beLenient| is true, we assume we're on a slow and unreliable bot and that
-// we should do a minimum of checking.
-function ensureAudioPlaying(peerConnection, beLenient) {
+function ensureAudioPlaying(peerConnection) {
   addExpectedEvent();
 
-  gatherAudioLevelSamples(peerConnection, 3 * 1000, function(samples) {
-    identifyFakeDeviceSignal_(samples, beLenient);
-    eventOccured();
+  var attempt = 1;
+  gatherAudioLevelSamples(peerConnection, function(samples) {
+    if (identifyFakeDeviceSignal_(samples)) {
+      eventOccured();
+      return true;
+    }
+    if (attempt++ % 5 == 0) {
+      console.log('Still waiting for the fake audio signal.');
+      console.log('Dumping samples so far for analysis: ' + samples);
+    }
+    return false;
   });
 }
 
@@ -25,12 +31,20 @@ function ensureAudioPlaying(peerConnection, beLenient) {
 // on the connection.
 function ensureSilence(peerConnection) {
   addExpectedEvent();
-  setTimeout(function() {
-    gatherAudioLevelSamples(peerConnection, 1 * 1000, function(samples) {
-      identifySilence_(samples);
+
+  var attempt = 1;
+  gatherAudioLevelSamples(peerConnection, function(samples) {
+    if (identifySilence_(samples)) {
       eventOccured();
-    });
-  }, 500);
+      return true;
+    }
+    if (attempt++ % 5 == 0) {
+      console.log('Still waiting for audio to go silent.');
+      console.log('Dumping samples so far for analysis: ' + samples);
+    }
+    return false;
+  });
+
 }
 
 // Not sure if this is a bug, but sometimes we get several audio ssrc's where
@@ -47,19 +61,24 @@ function workAroundSeveralReportsIssue(audioOutputLevels) {
   return Math.max(audioOutputLevels[0], audioOutputLevels[1]);
 }
 
-// Gathers samples from WebRTC stats as fast as possible for |durationMs|
-// milliseconds and calls back |callback| with an array with numbers in the
-// [0, 32768] range. There are no guarantees for how often we will be able to
-// collect values, but this function deliberately avoids setTimeout calls in
-// order be as insensitive as possible to starvation (particularly when this
-// code runs in parallel with other tests on a heavily loaded bot).
-function gatherAudioLevelSamples(peerConnection, durationMs, callback) {
-  console.log('Gathering audio samples for ' + durationMs + ' milliseconds...');
+// Gathers samples from WebRTC stats as fast as possible for and calls back
+// |callback| continuously with an array with numbers in the [0, 32768] range.
+// The array will grow continuously over time as we gather more samples. The
+// |callback| should return true when it is satisfied. It will be called about
+// once a second and can contain expensive processing (but faster = better).
+//
+// There are no guarantees for how often we will be able to collect values,
+// but this function deliberately avoids setTimeout calls in order be as
+// insensitive as possible to starvation (particularly when this code runs in
+// parallel with other tests on a heavily loaded bot).
+function gatherAudioLevelSamples(peerConnection, callback) {
+  console.log('Gathering audio samples...');
+  var callbackIntervalMs = 1000;
   var audioLevelSamples = []
 
   // If this times out and never found any audio output levels, the call
   // probably doesn't have an audio stream.
-  var startTime = new Date();
+  var lastRunAt = new Date();
   var gotStats = function(response) {
     audioOutputLevels = getAudioLevelFromStats_(response);
     if (audioOutputLevels.length == 0) {
@@ -70,12 +89,15 @@ function gatherAudioLevelSamples(peerConnection, durationMs, callback) {
     var outputLevel = workAroundSeveralReportsIssue(audioOutputLevels);
     audioLevelSamples.push(outputLevel);
 
-    var elapsed = new Date() - startTime;
-    if (elapsed > durationMs) {
-      console.log('Gathered all samples.');
-      callback(audioLevelSamples);
-      return;
+    var elapsed = new Date() - lastRunAt;
+    if (elapsed > callbackIntervalMs) {
+      if (callback(audioLevelSamples)) {
+        console.log('Done gathering samples: we found what we looked for.');
+        return;
+      }
+      lastRunAt = new Date();
     }
+    // Otherwise, continue as fast as we can.
     peerConnection.getStats(gotStats);
   }
   peerConnection.getStats(gotStats);
@@ -88,16 +110,11 @@ function gatherAudioLevelSamples(peerConnection, durationMs, callback) {
 * least two seconds since we expect to see at least three "peaks" in there
 * (we should see either 3 or 4 depending on how things line up).
 *
-* If |beLenient| is specified, we assume we're running on a slow device or
-* or under TSAN, and relax the checks quite a bit.
-*
 * @private
 */
-function identifyFakeDeviceSignal_(samples, beLenient) {
+function identifyFakeDeviceSignal_(samples) {
   var numPeaks = 0;
   var threshold = MAX_AUDIO_OUTPUT_ENERGY * 0.7;
-  if (beLenient)
-    threshold = MAX_AUDIO_OUTPUT_ENERGY * 0.6;
   var currentlyOverThreshold = false;
 
   // Detect when we have been been over the threshold and is going back again
@@ -108,16 +125,9 @@ function identifyFakeDeviceSignal_(samples, beLenient) {
     currentlyOverThreshold = samples[i] >= threshold;
   }
 
-  console.log('Number of peaks identified: ' + numPeaks);
-
-  var expectedPeaks = 2;
-  if (beLenient)
-    expectedPeaks = 1;
-
-  if (numPeaks < expectedPeaks)
-    failTest('Expected to see at least ' + expectedPeaks + ' peak(s) in ' +
-        'audio signal, got ' + numPeaks + '. Dumping samples for analysis: "' +
-        samples + '"');
+  var expectedPeaks = 3;
+  console.log(numPeaks + '/' + expectedPeaks + ' signal peaks identified.');
+  return numPeaks >= expectedPeaks;
 }
 
 /**
@@ -130,8 +140,8 @@ function identifySilence_(samples) {
 
   // If silent (like when muted), we should get very near zero audio level.
   console.log('Average audio level: ' + average);
-  if (average > 500)
-    failTest('Expected silence, but avg audio level was ' + average);
+
+  return average < 0.01 * MAX_AUDIO_OUTPUT_ENERGY;
 }
 
 /**
