@@ -255,7 +255,7 @@ public abstract class Preferences extends AppCompatActivity implements
             return true;
         } else if (item.getItemId() == R.id.menu_id_help_general) {
             HelpAndFeedback.getInstance(this).show(
-                    this, HelpAndFeedback.CONTEXT_SETTINGS, null, null);
+                    this, getString(R.string.help_context_settings), null, null);
             return true;
         }
         return super.onOptionsItemSelected(item);

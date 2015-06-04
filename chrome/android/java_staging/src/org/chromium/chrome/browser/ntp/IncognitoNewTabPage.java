@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.Canvas;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,21 +13,16 @@ import com.google.android.apps.chrome.R;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.NativePage;
-import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPageView.IncognitoNewTabPageManager;
-import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
  * Provides functionality when the user interacts with the Incognito NTP.
  */
 public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbnailProvider {
-
-    private static final String LEARN_MORE_INCOGNITO_LINK =
-            "https://www.google.com/support/chrome/bin/answer.py?answer=95464";
-
-    private final Tab mTab;
+    private final Activity mActivity;
 
     private final String mTitle;
     private final int mBackgroundColor;
@@ -39,7 +34,10 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
             new IncognitoNewTabPageManager() {
         @Override
         public void loadIncognitoLearnMore() {
-            mTab.loadUrl(new LoadUrlParams(LEARN_MORE_INCOGNITO_LINK));
+            HelpAndFeedback.getInstance(mActivity).show(
+                    mActivity,
+                    mActivity.getString(R.string.help_context_incognito_learn_more),
+                    null, null);
         }
 
         @Override
@@ -50,16 +48,15 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
 
     /**
      * Constructs an Incognito NewTabPage.
-     * @param context The context used to create the new tab page's View.
-     * @param tab The Tab that is showing this new tab page.
+     * @param activity The activity used to create the new tab page's View.
      */
-    public IncognitoNewTabPage(Context context, Tab tab) {
-        mTab = tab;
+    public IncognitoNewTabPage(Activity activity) {
+        mActivity = activity;
 
-        mTitle = context.getResources().getString(R.string.button_new_tab);
-        mBackgroundColor = context.getResources().getColor(R.color.ntp_bg_incognito);
+        mTitle = activity.getResources().getString(R.string.button_new_tab);
+        mBackgroundColor = activity.getResources().getColor(R.color.ntp_bg_incognito);
 
-        LayoutInflater inflater = LayoutInflater.from(context);
+        LayoutInflater inflater = LayoutInflater.from(activity);
         mIncognitoNewTabPageView =
                 (IncognitoNewTabPageView) inflater.inflate(R.layout.new_tab_page_incognito, null);
         mIncognitoNewTabPageView.initialize(mIncognitoNewTabPageManager);

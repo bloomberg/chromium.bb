@@ -15,6 +15,11 @@
         <attr name="imitateWebLink" format="boolean" />
     </declare-styleable>
 
+    <declare-styleable name="LearnMorePreference">
+        <!-- The context that should be sent to HelpAndFeedback activity. -->
+        <attr name="helpContext" format="string" />
+    </declare-styleable>
+
     <declare-styleable name="ChromeSwitchPreference">
         <!-- Prevents the summary text from being styled like title text in the
              case that the title is empty. -->

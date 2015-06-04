@@ -14,6 +14,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.UrlUtilities;
@@ -22,21 +23,6 @@ import org.chromium.chrome.browser.UrlUtilities;
  * Launches an activity that displays a relevant support page and has an option to provide feedback.
  */
 public class HelpAndFeedback {
-
-    // These constants should be in sync with the context names on go/mobilehelprecs.
-    // If the context ID cannot be found, the default help page will be shown to the user.
-    public static final String CONTEXT_NEW_TAB = "mobile_new_tab";
-    public static final String CONTEXT_SEARCH_RESULTS = "mobile_search_results";
-    public static final String CONTEXT_WEBPAGE = "mobile_webpage";
-    public static final String CONTEXT_SETTINGS = "mobile_settings";
-    public static final String CONTEXT_INCOGNITO = "mobile_incognito";
-    public static final String CONTEXT_BOOKMARKS = "mobile_bookmarks";
-    public static final String CONTEXT_HISTORY = "mobile_history";
-    public static final String CONTEXT_ERROR = "mobile_error";  // not used for now
-    public static final String CONTEXT_PRIVACY = "mobile_privacy";  // not added for now
-    public static final String CONTEXT_TRANSLATE = "mobile_translate";  // not added for now
-    public static final String CONTEXT_GENERAL = "mobile_general";
-
     protected static final String FALLBACK_SUPPORT_URL =
             "https://support.google.com/chrome/topic/6069782";
 
@@ -79,23 +65,23 @@ public class HelpAndFeedback {
      * @param isIncognito Whether we are in incognito mode or not.
      * @return Help context ID that matches the URL and incognito mode.
      */
-    public static String getHelpContextIdFromUrl(String url, boolean isIncognito) {
+    public static String getHelpContextIdFromUrl(Context context, String url, boolean isIncognito) {
         if (TextUtils.isEmpty(url)) {
-            return CONTEXT_GENERAL;
+            return context.getString(R.string.help_context_general);
         } else if (url.startsWith(UrlConstants.BOOKMARKS_URL)) {
-            return CONTEXT_BOOKMARKS;
+            return context.getString(R.string.help_context_bookmarks);
         } else if (url.equals(UrlConstants.HISTORY_URL)) {
-            return CONTEXT_HISTORY;
+            return context.getString(R.string.help_context_history);
         // Note: For www.google.com the following function returns false.
         } else if (UrlUtilities.nativeIsGoogleSearchUrl(url)) {
-            return CONTEXT_SEARCH_RESULTS;
+            return context.getString(R.string.help_context_search_results);
         // For incognito NTP, we want to show incognito help.
         } else if (isIncognito) {
-            return CONTEXT_INCOGNITO;
+            return context.getString(R.string.help_context_incognito);
         } else if (url.equals(UrlConstants.NTP_URL)) {
-            return CONTEXT_NEW_TAB;
+            return context.getString(R.string.help_context_new_tab);
         }
-        return CONTEXT_WEBPAGE;
+        return context.getString(R.string.help_context_webpage);
     }
 
     protected static void launchFallbackSupportUri(Context context) {

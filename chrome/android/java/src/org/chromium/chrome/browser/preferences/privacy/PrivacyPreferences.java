@@ -274,7 +274,7 @@ public class PrivacyPreferences extends PreferenceFragment
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_help_privacy) {
             HelpAndFeedback.getInstance(getActivity()).show(
-                    getActivity(), HelpAndFeedback.CONTEXT_PRIVACY, null, null);
+                    getActivity(), getString(R.string.help_context_privacy), null, null);
             return true;
         }
         return false;

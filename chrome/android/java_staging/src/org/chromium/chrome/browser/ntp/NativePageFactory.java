@@ -31,7 +31,7 @@ public class NativePageFactory {
         protected NativePage buildNewTabPage(Activity activity, Tab tab,
                 TabModelSelector tabModelSelector) {
             if (tab.isIncognito()) {
-                return new IncognitoNewTabPage(activity, tab);
+                return new IncognitoNewTabPage(activity);
             } else if (FeatureUtilities.isDocumentMode(activity)) {
                 return new DocumentNewTabPage(activity, tab, tabModelSelector);
             } else {

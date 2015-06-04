@@ -15,10 +15,8 @@
     <org.chromium.chrome.browser.preferences.TextMessagePreference
         android:title="@string/usage_and_crash_reports_description"/>
 
-    <org.chromium.chrome.browser.preferences.HyperlinkPreference
+    <org.chromium.chrome.browser.preferences.LearnMorePreference
         android:key="usage_and_crash_reports_learn_more"
-        android:title="@string/learn_more"
-        chrome:url="@string/usage_and_crash_reports_learn_more_url"
-        chrome:imitateWebLink="true" />
+        chrome:helpContext="@string/help_context_usage_reports"/>
 
 </PreferenceScreen>

@@ -427,10 +427,7 @@ For example, some websites may respond to this request by showing you ads that a
       <message name="IDS_USAGE_AND_CRASH_REPORTS_DESCRIPTION" desc="Description for 'Usage and crash reports' preference">
         Help us prioritize the features and improvements we should work on by sending Google information about the files, applications, and services running whenever you experience a crash.
 
-        Usage statistics include information such as preferences, button clicks, and memory usage. They do not include webpage URLs or any personal information. Crash reports contain system information at the time of the crash, and may contain web page URLs or personal information, depending on what was happening at the time of the crash.
-      </message>
-      <message name="IDS_USAGE_AND_CRASH_REPORTS_LEARN_MORE_URL" desc="URL for learning more about 'Usage and crash reports' preference" translateable="false">
-        https://support.google.com/chrome/answer/96817
+Usage statistics include information such as preferences, button clicks, and memory usage. They do not include webpage URLs or any personal information. Crash reports contain system information at the time of the crash, and may contain web page URLs or personal information, depending on what was happening at the time of the crash.
       </message>
 
       <!-- Accessibility preferences -->
@@ -636,10 +633,6 @@ particular permission.">
 
 To obtain new licenses, connect to the internet and play your downloaded content.
       </message>
-      <!-- Keep in sync with chrome/common/url_constants.cc -->
-      <message name="IDS_PROTECTED_CONTENT_LEARN_MORE_URL" desc="URL for learning more about device credential reset menu preference" translateable="false">
-        https://support.google.com/chrome/?p=mobile_protected_content
-      </message>
 
       <!-- Google translate preferences -->
       <message name="IDS_GOOGLE_TRANSLATE" desc='Title for the Google Translate settings screen. [CHAR-LIMIT=32]'>
@@ -698,9 +691,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_DATA_REDUCTION_PROXY_UNREACHABLE_WARN" desc="Warning message shown when Google data reduction proxy servers are not reachable.">
         Chrome is unable to reach Google servers for data compression. Your data savings may be limited.
-      </message>
-      <message name="IDS_REDUCE_DATA_USAGE_LEARN_URL" desc="URL for learn more about reducing_data_usage" translateable="false">
-        https://support.google.com/chrome/?p=mobile_bandwidth
       </message>
       <message name="IDS_SAFE_BROWSING_DESCRIPTION" desc="Description text for safe browsing">
         Chrome’s Safe Browsing system will also be used to detect malicious pages and protect you from phishing, malware, and harmful downloads.
@@ -2146,6 +2136,55 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 
       <message name="IDS_CLOSE_TAB" desc="Context menu option that allows the user to close the selected tab.">
         Close tab
+      </message>
+
+      <!-- Help and Feedback
+           These constants should be in sync with the context names on go/mobilehelprecs.
+           If the context ID cannot be found, the default help page will be shown to the user.-->
+      <message name="IDS_HELP_CONTEXT_NEW_TAB" translateable="false">
+        mobile_new_tab
+      </message>
+      <message name="IDS_HELP_CONTEXT_SEARCH_RESULTS" translateable="false">
+        mobile_search_results
+      </message>
+      <message name="IDS_HELP_CONTEXT_WEBPAGE" translateable="false">
+        mobile_webpage
+      </message>
+      <message name="IDS_HELP_CONTEXT_SETTINGS" translateable="false">
+        mobile_settings
+      </message>
+      <message name="IDS_HELP_CONTEXT_INCOGNITO" translateable="false">
+        mobile_incognito
+      </message>
+      <message name="IDS_HELP_CONTEXT_BOOKMARKS" translateable="false">
+        mobile_bookmarks
+      </message>
+      <message name="IDS_HELP_CONTEXT_HISTORY" translateable="false">
+        mobile_history
+      </message>
+      <message name="IDS_HELP_CONTEXT_ERROR" translateable="false">
+        mobile_error
+      </message>
+      <message name="IDS_HELP_CONTEXT_PRIVACY" translateable="false">
+        mobile_privacy
+      </message>
+      <message name="IDS_HELP_CONTEXT_TRANSLATE" translateable="false">
+        mobile_translate
+      </message>
+      <message name="IDS_HELP_CONTEXT_GENERAL" translateable="false">
+        mobile_general
+      </message>
+      <message name="IDS_HELP_CONTEXT_PROTECTED_CONTENT" translateable="false">
+        protected_content
+      </message>
+      <message name="IDS_HELP_CONTEXT_DATA_REDUCTION" translateable="false">
+        reduce_data_usage
+      </message>
+      <message name="IDS_HELP_CONTEXT_INCOGNITO_LEARN_MORE" translateable="false">
+        chrome_incognito
+      </message>
+      <message name="IDS_HELP_CONTEXT_USAGE_REPORTS" translateable="false">
+        send_crash_report
       </message>
     </messages>
   </release>

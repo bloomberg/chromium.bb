@@ -646,7 +646,7 @@ public abstract class CompositorChromeActivity extends ChromeActivity
             // Since reading back the compositor is asynchronous, we need to do the readback
             // before starting the GoogleHelp.
             final String helpContextId = HelpAndFeedback.getHelpContextIdFromUrl(
-                    currentTab.getUrl(), getCurrentTabModel().isIncognito());
+                    this, currentTab.getUrl(), getCurrentTabModel().isIncognito());
             final Activity mainActivity = this;
             startTakingCompositorActivityScreenshot(new GetBitmapCallback() {
                 @Override

@@ -20,9 +20,7 @@
         android:title="@string/learn_more"
         chrome:url="@string/data_reduction_experiment_link_url"
         chrome:imitateWebLink="true" />
-    <org.chromium.chrome.browser.preferences.HyperlinkPreference
+    <org.chromium.chrome.browser.preferences.LearnMorePreference
         android:key="data_reduction_learn_more"
-        android:title="@string/learn_more"
-        chrome:url="@string/reduce_data_usage_learn_url"
-        chrome:imitateWebLink="true" />
+        chrome:helpContext="@string/help_context_data_reduction" />
 </PreferenceScreen>

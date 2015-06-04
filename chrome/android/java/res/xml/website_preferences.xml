@@ -20,12 +20,10 @@
         android:summary="@string/allow_third_party_cookies_summary"
         android:defaultValue="true" />
     <!-- An hyperlink to explain more about Protected Media content settings. -->
-    <org.chromium.chrome.browser.preferences.HyperlinkPreference
+    <org.chromium.chrome.browser.preferences.LearnMorePreference
         android:key="protected_content_learn_more"
-        android:title="@string/learn_more"
         android:background="?android:attr/listDivider"
-        chrome:url="@string/protected_content_learn_more_url"
-        chrome:imitateWebLink="true" />
+        chrome:helpContext="@string/help_context_protected_content"/>
     <!-- Collapsible headers for sorting preferences. -->
     <org.chromium.chrome.browser.preferences.ExpandablePreferenceGroup
         android:key="blocked_group" />
