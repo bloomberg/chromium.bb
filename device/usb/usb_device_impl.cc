@@ -132,22 +132,23 @@ void UsbDeviceImpl::CheckUsbAccess(const ResultCallback& callback) {
   client->CheckPathAccess(devnode_, callback);
 }
 
-void UsbDeviceImpl::RequestUsbAccess(int interface_id,
-                                     const ResultCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  chromeos::PermissionBrokerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-  DCHECK(client) << "Could not get permission broker client.";
-  client->RequestPathAccess(devnode_, interface_id, callback);
-}
-
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 void UsbDeviceImpl::Open(const OpenCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+#if defined(OS_CHROMEOS)
+  chromeos::PermissionBrokerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
+  DCHECK(client) << "Could not get permission broker client.";
+  client->RequestPathAccess(
+      devnode_, -1,
+      base::Bind(&UsbDeviceImpl::OnPathRequestComplete, this, callback));
+#else
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UsbDeviceImpl::OpenOnBlockingThread, this, callback));
+#endif  // defined(OS_CHROMEOS)
 }
 
 bool UsbDeviceImpl::Close(scoped_refptr<UsbDeviceHandle> handle) {
@@ -246,6 +247,21 @@ void UsbDeviceImpl::RefreshConfiguration() {
 
   libusb_free_config_descriptor(platform_config);
 }
+
+#if defined(OS_CHROMEOS)
+
+void UsbDeviceImpl::OnPathRequestComplete(const OpenCallback& callback,
+                                          bool success) {
+  if (success) {
+    blocking_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&UsbDeviceImpl::OpenOnBlockingThread, this, callback));
+  } else {
+    callback.Run(nullptr);
+  }
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 void UsbDeviceImpl::OpenOnBlockingThread(const OpenCallback& callback) {
   PlatformUsbDeviceHandle handle;

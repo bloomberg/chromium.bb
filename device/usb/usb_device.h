@@ -43,10 +43,6 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // functions are no-ops and always return true.
   virtual void CheckUsbAccess(const ResultCallback& callback);
 
-  // Like CheckUsbAccess but actually changes the ownership of the device node.
-  virtual void RequestUsbAccess(int interface_id,
-                                const ResultCallback& callback);
-
   // Creates a UsbDeviceHandle for further manipulation.
   virtual void Open(const OpenCallback& callback) = 0;
 

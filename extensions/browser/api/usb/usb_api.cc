@@ -492,10 +492,10 @@ ExtensionFunction::ResponseAction UsbFindDevicesFunction::Run() {
 
   vendor_id_ = parameters->options.vendor_id;
   product_id_ = parameters->options.product_id;
-  interface_id_ = parameters->options.interface_id.get()
-                      ? *parameters->options.interface_id.get()
-                      : UsbDevicePermissionData::ANY_INTERFACE;
-  UsbDevicePermission::CheckParam param(vendor_id_, product_id_, interface_id_);
+  int interface_id = parameters->options.interface_id.get()
+                         ? *parameters->options.interface_id.get()
+                         : UsbDevicePermissionData::ANY_INTERFACE;
+  UsbDevicePermission::CheckParam param(vendor_id_, product_id_, interface_id);
   if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
           APIPermission::kUsbDevice, &param)) {
     return RespondNow(Error(kErrorPermissionDenied));
@@ -522,21 +522,8 @@ void UsbFindDevicesFunction::OnGetDevicesComplete(
         device->product_id() != product_id_) {
       barrier_.Run();
     } else {
-      device->RequestUsbAccess(
-          interface_id_,
-          base::Bind(&UsbFindDevicesFunction::OnRequestAccessComplete, this,
-                     device));
+      device->Open(base::Bind(&UsbFindDevicesFunction::OnDeviceOpened, this));
     }
-  }
-}
-
-void UsbFindDevicesFunction::OnRequestAccessComplete(
-    scoped_refptr<UsbDevice> device,
-    bool success) {
-  if (success) {
-    device->Open(base::Bind(&UsbFindDevicesFunction::OnDeviceOpened, this));
-  } else {
-    barrier_.Run();
   }
 }
 
@@ -708,21 +695,8 @@ ExtensionFunction::ResponseAction UsbOpenDeviceFunction::Run() {
     return RespondNow(Error(kErrorNoDevice));
   }
 
-  device->RequestUsbAccess(
-      -1, /* any interface, unused by the permission broker */
-      base::Bind(&UsbOpenDeviceFunction::OnRequestAccessComplete, this,
-                 device));
+  device->Open(base::Bind(&UsbOpenDeviceFunction::OnDeviceOpened, this));
   return RespondLater();
-}
-
-void UsbOpenDeviceFunction::OnRequestAccessComplete(
-    scoped_refptr<UsbDevice> device,
-    bool success) {
-  if (success) {
-    device->Open(base::Bind(&UsbOpenDeviceFunction::OnDeviceOpened, this));
-  } else {
-    Respond(Error(kErrorPermissionDenied));
-  }
 }
 
 void UsbOpenDeviceFunction::OnDeviceOpened(

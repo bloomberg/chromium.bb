@@ -25,12 +25,8 @@ UsbDevice::~UsbDevice() {
 }
 
 void UsbDevice::CheckUsbAccess(const ResultCallback& callback) {
-  callback.Run(true);
-}
-
-// Like CheckUsbAccess but actually changes the ownership of the device node.
-void UsbDevice::RequestUsbAccess(int interface_id,
-                                 const ResultCallback& callback) {
+  // By default assume that access to the device is allowed. This is implemented
+  // on Chrome OS by checking with permission_broker.
   callback.Run(true);
 }
 

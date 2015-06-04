@@ -34,10 +34,7 @@ class UsbDeviceImpl : public UsbDevice {
  public:
 // UsbDevice implementation:
 #if defined(OS_CHROMEOS)
-  // Only overridden on Chrome OS.
   void CheckUsbAccess(const ResultCallback& callback) override;
-  void RequestUsbAccess(int interface_id,
-                        const ResultCallback& callback) override;
 #endif  // OS_CHROMEOS
   void Open(const OpenCallback& callback) override;
   bool Close(scoped_refptr<UsbDeviceHandle> handle) override;
@@ -70,6 +67,9 @@ class UsbDeviceImpl : public UsbDevice {
   void RefreshConfiguration();
 
  private:
+#if defined(OS_CHROMEOS)
+  void OnPathRequestComplete(const OpenCallback& callback, bool success);
+#endif
   void OpenOnBlockingThread(const OpenCallback& callback);
   void Opened(PlatformUsbDeviceHandle platform_handle,
               const OpenCallback& callback);

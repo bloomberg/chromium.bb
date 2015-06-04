@@ -200,14 +200,8 @@ void OpenAndroidDevice(AndroidUsbDevices* devices,
                        crypto::RSAPrivateKey* rsa_key,
                        const base::Closure& barrier,
                        scoped_refptr<UsbDevice> device,
-                       int interface_id,
-                       bool success) {
+                       int interface_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!success) {
-    barrier.Run();
-    return;
-  }
-
   if (device->serial_number().empty()) {
     barrier.Run();
     return;
@@ -268,9 +262,7 @@ void OpenAndroidDevices(
         continue;
       }
 
-      device->RequestUsbAccess(j, base::Bind(&OpenAndroidDevice, devices,
-                                             rsa_key, barrier, device, j));
-
+      OpenAndroidDevice(devices, rsa_key, barrier, device, j);
       has_android_interface = true;
       break;
     }
