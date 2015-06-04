@@ -62,11 +62,6 @@ RefcountedBrowserContextKeyedServiceFactory::GetBrowserContextToUse(
   return context;
 }
 
-void RefcountedBrowserContextKeyedServiceFactory::
-    RegisterUserPrefsOnBrowserContextForTest(content::BrowserContext* context) {
-  KeyedServiceBaseFactory::RegisterUserPrefsOnContextForTest(context);
-}
-
 bool RefcountedBrowserContextKeyedServiceFactory::
     ServiceIsCreatedWithBrowserContext() const {
   return KeyedServiceBaseFactory::ServiceIsCreatedWithContext();

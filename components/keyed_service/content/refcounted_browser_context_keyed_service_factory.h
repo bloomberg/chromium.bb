@@ -30,16 +30,6 @@ class BrowserContext;
 class KEYED_SERVICE_EXPORT RefcountedBrowserContextKeyedServiceFactory
     : public RefcountedKeyedServiceFactory {
  public:
-  // Registers preferences used in this service on the pref service of
-  // |context|. This is the public interface and is safe to be called multiple
-  // times because testing code can have multiple services of the same type
-  // attached to a single |context|. Only test code is allowed to call this
-  // method.
-  // TODO(gab): This method can be removed entirely when
-  // PrefService::DeprecatedGetPrefRegistry() is phased out.
-  void RegisterUserPrefsOnBrowserContextForTest(
-      content::BrowserContext* context);
-
   // A function that supplies the instance of a KeyedService for a given
   // BrowserContext. This is used primarily for testing, where we want to feed
   // a specific mock into the BCKSF system.
