@@ -791,8 +791,7 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
             err);
     return -NaClXlateSystemError(err);
   }
-  NaClLog(3, "NaClHostDescMap: CreateFileMapping got handle %d\n",
-          (int)(uintptr_t)hMap);
+  NaClLog(3, "NaClHostDescMap: CreateFileMapping got handle %d\n", (int) hMap);
   NaClLog(3, "NaClHostDescMap: dwDesiredAccess 0x%x\n", dwDesiredAccess);
 
   retval = (uintptr_t) -NACL_ABI_EINVAL;
