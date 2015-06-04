@@ -300,8 +300,6 @@
         'common/android_webview_message_generator.h',
         'common/aw_content_client.cc',
         'common/aw_content_client.h',
-        'common/aw_crash_handler.cc',
-        'common/aw_crash_handler.h',
         'common/aw_hit_test_data.cc',
         'common/aw_hit_test_data.h',
         'common/aw_message_port_messages.h',

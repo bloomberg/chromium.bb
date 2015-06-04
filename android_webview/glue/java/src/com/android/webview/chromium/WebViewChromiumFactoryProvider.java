@@ -129,10 +129,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
         final PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
 
-        // Register the handler that will append the WebView version to logcat in case of a crash.
-        AwContentsStatics.registerCrashHandler(
-                "Version " + packageInfo.versionName + " (code " + packageInfo.versionCode + ")");
-
         // Load glue-layer support library.
         System.loadLibrary("webviewchromium_plat_support");
 
