@@ -406,6 +406,7 @@ class SmoothnessToughTextureUploadCases(perf_benchmark.PerfBenchmark):
     return 'smoothness.tough_texture_upload_cases'
 
 
+@benchmark.Disabled('reference')  # http://crbug.com/496684
 class SmoothnessToughAdCases(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics while displaying advertisements."""
   test = smoothness.Smoothness
