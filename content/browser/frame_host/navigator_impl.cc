@@ -125,37 +125,9 @@ void NavigatorImpl::DidStartProvisionalLoad(
   render_process_host->FilterURL(false, &validated_url);
 
   bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
-  NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
-  if (is_main_frame) {
-    // If there is no browser-initiated pending entry for this navigation and it
-    // is not for the error URL, create a pending entry using the current
-    // SiteInstance, and ensure the address bar updates accordingly.  We don't
-    // know the referrer or extra headers at this point, but the referrer will
-    // be set properly upon commit.
-    bool has_browser_initiated_pending_entry = pending_entry &&
-        !pending_entry->is_renderer_initiated();
-    if (!has_browser_initiated_pending_entry && !is_error_page) {
-      NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-          controller_->CreateNavigationEntry(validated_url,
-                                             content::Referrer(),
-                                             ui::PAGE_TRANSITION_LINK,
-                                             true /* is_renderer_initiated */,
-                                             std::string(),
-                                             controller_->GetBrowserContext()));
-      entry->set_site_instance(render_frame_host->GetSiteInstance());
-      // TODO(creis): If there's a pending entry already, find a safe way to
-      // update it instead of replacing it and copying over things like this.
-      if (pending_entry) {
-        entry->set_transferred_global_request_id(
-            pending_entry->transferred_global_request_id());
-        entry->set_should_replace_entry(pending_entry->should_replace_entry());
-        entry->SetRedirectChain(pending_entry->GetRedirectChain());
-      }
-      controller_->SetPendingEntry(entry);
-      if (delegate_)
-        delegate_->NotifyChangedNavigationState(content::INVALIDATE_TYPE_URL);
-    }
-  }
+  if (is_main_frame && !is_error_page)
+    DidStartMainFrameNavigation(validated_url,
+                                render_frame_host->GetSiteInstance());
 
   if (delegate_) {
     // Notify the observer about the start of the provisional load.
@@ -640,6 +612,8 @@ void NavigatorImpl::OnBeginNavigation(
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params,
     scoped_refptr<ResourceRequestBody> body) {
+  // TODO(clamy): the url sent by the renderer should be validated with
+  // FilterURL.
   // This is a renderer-initiated navigation.
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
@@ -667,8 +641,19 @@ void NavigatorImpl::OnBeginNavigation(
           controller_->GetEntryCount());
   frame_tree_node->SetNavigationRequest(navigation_request.Pass());
 
-  if (frame_tree_node->IsMainFrame())
+  if (frame_tree_node->IsMainFrame()) {
+    // Renderer-initiated main-frame navigations that need to swap processes
+    // will go to the browser via a OpenURL call, and then be handled by the
+    // same code path as browser-initiated navigations. For renderer-initiated
+    // main frame navigation that start via a BeginNavigation IPC, the
+    // RenderFrameHost will not be swapped. Therefore it is safe to call
+    // DidStartMainFrameNavigation with the SiteInstance from the current
+    // RenderFrameHost.
+    DidStartMainFrameNavigation(
+        common_params.url,
+        frame_tree_node->current_frame_host()->GetSiteInstance());
     navigation_data_.reset();
+  }
 
   BeginNavigation(frame_tree_node);
 }
@@ -909,6 +894,38 @@ void NavigatorImpl::RecordNavigationMetrics(
         time_to_network);
   }
   navigation_data_.reset();
+}
+
+void NavigatorImpl::DidStartMainFrameNavigation(
+    const GURL& url,
+    SiteInstanceImpl* site_instance) {
+  // If there is no browser-initiated pending entry for this navigation and it
+  // is not for the error URL, create a pending entry using the current
+  // SiteInstance, and ensure the address bar updates accordingly.  We don't
+  // know the referrer or extra headers at this point, but the referrer will
+  // be set properly upon commit.
+  NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
+  bool has_browser_initiated_pending_entry =
+      pending_entry && !pending_entry->is_renderer_initiated();
+  if (!has_browser_initiated_pending_entry) {
+    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+        controller_->CreateNavigationEntry(
+            url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
+            true /* is_renderer_initiated */, std::string(),
+            controller_->GetBrowserContext()));
+    entry->set_site_instance(site_instance);
+    // TODO(creis): If there's a pending entry already, find a safe way to
+    // update it instead of replacing it and copying over things like this.
+    if (pending_entry) {
+      entry->set_transferred_global_request_id(
+          pending_entry->transferred_global_request_id());
+      entry->set_should_replace_entry(pending_entry->should_replace_entry());
+      entry->SetRedirectChain(pending_entry->GetRedirectChain());
+    }
+    controller_->SetPendingEntry(entry);
+    if (delegate_)
+      delegate_->NotifyChangedNavigationState(content::INVALIDATE_TYPE_URL);
+  }
 }
 
 }  // namespace content
