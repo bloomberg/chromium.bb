@@ -8717,6 +8717,7 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "hw_tests": [],
+        "hwqual": false,
         "images": [
             "base"
         ],

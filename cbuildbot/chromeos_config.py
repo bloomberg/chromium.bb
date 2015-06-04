@@ -983,6 +983,7 @@ _noimagetest_boards = frozenset([
 ])
 
 _nohwqual_boards = frozenset([
+    'kayle',
     'lakitu',
 ])
 
