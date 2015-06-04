@@ -874,6 +874,7 @@
             '../cc/cc.gyp:cc',
             '../cc/cc_tests.gyp:cc_test_support',
             '../components/scheduler/scheduler.gyp:scheduler',
+            '../components/scheduler/scheduler.gyp:scheduler_test_support',
             '../gpu/blink/gpu_blink.gyp:gpu_blink',
             '../ipc/mojo/ipc_mojo.gyp:*',
             '../media/blink/media_blink.gyp:media_blink',

@@ -56,6 +56,7 @@ source_set("test_support") {
     public_deps += [ "//third_party/WebKit/public:blink" ]
     deps += [
       "//components/scheduler:scheduler",
+      "//components/scheduler:test_support",
       "//content/browser/speech/proto",
       "//content/public/child",
       "//content/gpu",
