@@ -114,6 +114,17 @@
         },
       ],
     }, { # 'use_system_libexif!=0
+      'conditions': [
+        ['sysroot!=""', {
+          'variables': {
+            'pkg-config': '../../build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)" "<(system_libdir)"',
+          },
+        }, {
+          'variables': {
+            'pkg-config': 'pkg-config'
+          },
+        }],
+      ],
       'targets': [
         {
           'target_name': 'libexif',
