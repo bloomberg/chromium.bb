@@ -59,13 +59,14 @@ source_set("enhanced_bookmarks") {
 }
 
 if (is_android) {
-  # GYP: //components/enhanced_bookmarks.gypi:enhanced_bookmarks_launch_location_srcjar
-  java_cpp_enum("enhanced_bookmarks_launch_location_srcjar") {
+  # GYP: //components/enhanced_bookmarks.gypi:enhanced_bookmarks_java_enums_srcjar
+  java_cpp_enum("enhanced_bookmarks_java_enums_srcjar") {
     sources = [
       "enhanced_bookmark_utils.h",
     ]
     outputs = [
       "org/chromium/chrome/browser/enhanced_bookmarks/LaunchLocation.java",
+      "org/chromium/chrome/browser/enhanced_bookmarks/ViewMode.java",
     ]
   }
 }

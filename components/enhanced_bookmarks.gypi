@@ -98,8 +98,8 @@
     ['OS=="android"', {
       'targets': [
         {
-          # GN: //components/enhanced_bookmarks:enhanced_bookmarks_launch_location_srcjar
-          'target_name': 'enhanced_bookmarks_launch_location_srcjar',
+          # GN: //components/enhanced_bookmarks:enhanced_bookmarks_java_enums_srcjar
+          'target_name': 'enhanced_bookmarks_java_enums_srcjar',
           'type': 'none',
           'variables': {
             'source_file': 'enhanced_bookmarks/enhanced_bookmark_utils.h',

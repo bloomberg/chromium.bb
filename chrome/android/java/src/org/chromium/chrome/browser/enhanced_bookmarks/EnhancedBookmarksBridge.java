@@ -268,6 +268,13 @@ public final class EnhancedBookmarksBridge {
     }
 
     /**
+     * @see |enhanced_bookmarks::GetDefaultViewMode()|
+     */
+    public static int getDefaultViewMode() {
+        return nativeGetDefaultViewMode();
+    }
+
+    /**
      * @return Return the cache if it is stored in the static weak reference, or create a new empty
      *         one if the reference is empty.
      */
@@ -337,4 +344,5 @@ public final class EnhancedBookmarksBridge {
             String url, SalientImageCallback callback);
     private native void nativeFetchImageForTab(long nativeEnhancedBookmarksBridge,
             WebContents webContents);
+    private static native int nativeGetDefaultViewMode();
 }

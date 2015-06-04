@@ -588,7 +588,7 @@
             '../base/base.gyp:base',
             '../components/components.gyp:bookmarks_java',
             '../components/components.gyp:dom_distiller_core_java',
-            '../components/components.gyp:enhanced_bookmarks_launch_location_srcjar',
+            '../components/components.gyp:enhanced_bookmarks_java_enums_srcjar',
             '../components/components.gyp:gcm_driver_java',
             '../components/components.gyp:invalidation_java',
             '../components/components.gyp:navigation_interception_java',

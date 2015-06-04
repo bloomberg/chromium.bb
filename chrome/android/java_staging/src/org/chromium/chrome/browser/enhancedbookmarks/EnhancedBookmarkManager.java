@@ -24,9 +24,11 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksBridge.FiltersObserver;
 import org.chromium.chrome.browser.enhanced_bookmarks.EnhancedBookmarksModel;
 import org.chromium.chrome.browser.enhanced_bookmarks.LaunchLocation;
+import org.chromium.chrome.browser.enhanced_bookmarks.ViewMode;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
@@ -50,11 +52,6 @@ import java.util.Stack;
 public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     private static final String PREF_LAST_USED_URL = "enhanced_bookmark_last_used_url";
     static final String PREF_WAS_IN_LIST_MODE = "enhanced_bookmark_list_mode_choice";
-    // TODO(ianwen): upstream these metrics upstream.
-    // UI modes for bookmarks presentation. Default option is grid mode.
-    static final int DEFAULT_MODE = 0;
-    static final int LIST_MODE = 1;
-    static final int GRID_MODE = 2;
 
     private Activity mActivity;
     private ViewGroup mMainView;
@@ -289,13 +286,17 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
 
     private void saveListModePreference() {
         PreferenceManager.getDefaultSharedPreferences(mActivity).edit()
-                .putInt(PREF_WAS_IN_LIST_MODE, mListModeEnabled ? LIST_MODE : GRID_MODE).apply();
+                .putInt(PREF_WAS_IN_LIST_MODE, mListModeEnabled ? ViewMode.LIST : ViewMode.GRID)
+                .apply();
     }
 
     private boolean getListModePreference() {
         int mode = PreferenceManager.getDefaultSharedPreferences(mActivity).getInt(
-                PREF_WAS_IN_LIST_MODE, DEFAULT_MODE);
-        return mode == LIST_MODE ? true : false;
+                PREF_WAS_IN_LIST_MODE, ViewMode.DEFAULT);
+
+        if (mode == ViewMode.DEFAULT) mode = EnhancedBookmarksBridge.getDefaultViewMode();
+
+        return mode == ViewMode.LIST ? true : false;
     }
 
     private void initListModeOptionTo(boolean isListModeEnabled) {
@@ -307,7 +308,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         // toggle, we record the list view state.
         int listViewstate = PreferenceManager.getDefaultSharedPreferences(getView().getContext())
                 .getInt(EnhancedBookmarkManager.PREF_WAS_IN_LIST_MODE,
-                        EnhancedBookmarkManager.DEFAULT_MODE);
+                        ViewMode.DEFAULT);
         RecordHistogram.recordEnumeratedHistogram("EnhancedBookmarks.ViewMode", listViewstate, 3);
     }
 
