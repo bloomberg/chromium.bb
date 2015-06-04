@@ -101,6 +101,7 @@ input[type='checkbox']:checked {
 }
 
 .gallery .image-container > .image {
+  left: 0;
   pointer-events: none;
   position: absolute;
   /* Duration and timing function are set in Javascript. */
