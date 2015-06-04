@@ -24,9 +24,6 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
             case CSSSelector::PseudoUnresolved:
                 feature = UseCounter::CSSSelectorPseudoUnresolved;
                 break;
-            case CSSSelector::PseudoShadow:
-                feature = UseCounter::CSSSelectorPseudoShadow;
-                break;
             case CSSSelector::PseudoContent:
                 feature = UseCounter::CSSSelectorPseudoContent;
                 break;
@@ -50,8 +47,6 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
             }
             if (feature != UseCounter::NumberOfFeatures)
                 context.useCounter()->count(feature);
-            if (current->relation() == CSSSelector::ShadowDeep)
-                context.useCounter()->count(UseCounter::CSSDeepCombinator);
             if (current->selectorList())
                 recordSelectorStats(context, *current->selectorList());
         }

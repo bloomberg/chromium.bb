@@ -1,3 +1,4 @@
+CONSOLE WARNING: /deep/ combinator is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.
 
   
 crbug.com/337616: test for querySelectorAll with ::shadow and /deep/

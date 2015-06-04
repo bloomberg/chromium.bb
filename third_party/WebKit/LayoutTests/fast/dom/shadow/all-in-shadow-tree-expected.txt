@@ -1,3 +1,4 @@
+CONSOLE WARNING: ::shadow pseudo-element is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.
 Test for issue 432257: Matched properties cache should work for all property.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

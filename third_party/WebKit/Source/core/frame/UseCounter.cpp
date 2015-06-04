@@ -911,6 +911,12 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedTouchForce:
         return "'Touch.webkitForce' is deprecated and will be removed in M47, around November 2015. Please use 'Touch.force' instead.";
 
+    case CSSDeepCombinator:
+        return "/deep/ combinator is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.";
+
+    case CSSSelectorPseudoShadow:
+        return "::shadow pseudo-element is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
