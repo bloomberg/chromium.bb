@@ -78,11 +78,9 @@ sign        \x007C        1456                |                   VERTICAL LINE
 
 # Micro sign
 # Definition missing from standard
-# Belgium and CBB use dots "56-134"
-# Dedicon uses dots "56-136"
+# Belgium, CBB and Dedicon use dots "56-134"
 
-sign        \x00B5        56-136              µ                   MICRO SIGN
-# sign        \x00B5        56-134              µ                   MICRO SIGN
+sign        \x00B5        56-134              µ                   MICRO SIGN
 
 # Middle dot
 # Definition missing from standard
