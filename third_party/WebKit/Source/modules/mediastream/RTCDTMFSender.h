@@ -68,6 +68,8 @@ public:
     // ActiveDOMObject
     virtual void stop() override;
 
+    // Oilpan: need to eagerly finalize m_handler
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:

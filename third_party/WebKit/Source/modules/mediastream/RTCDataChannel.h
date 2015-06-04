@@ -90,6 +90,9 @@ public:
     virtual ExecutionContext* executionContext() const override;
 
     void clearWeakMembers(Visitor*);
+
+    // Oilpan: need to eagerly finalize m_handler
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
     // WebRTCDataChannelHandlerClient

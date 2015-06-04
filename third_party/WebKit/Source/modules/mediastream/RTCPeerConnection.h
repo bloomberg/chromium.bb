@@ -145,11 +145,12 @@ public:
         return !m_closed && !m_stopped;
     }
 
+    // Oilpan: need to eagerly finalize m_peerHandler
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
     RTCPeerConnection(ExecutionContext*, RTCConfiguration*, WebMediaConstraints, ExceptionState&);
-
 
     static RTCConfiguration* parseConfiguration(const Dictionary&, ExceptionState&);
     static RTCOfferOptions* parseOfferOptions(const Dictionary&, ExceptionState&);

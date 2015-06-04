@@ -104,6 +104,8 @@ public:
     // WebSourceBufferClient interface
     virtual void initializationSegmentReceived() override;
 
+    // Oilpan: eagerly release owned m_webSourceBuffer
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:

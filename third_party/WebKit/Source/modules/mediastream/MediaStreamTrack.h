@@ -88,6 +88,8 @@ public:
 
     PassOwnPtr<AudioSourceProvider> createWebAudioSource();
 
+    // Oilpan: need to eagerly unregister as observer.
+    EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
 
 private:
