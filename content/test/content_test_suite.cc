@@ -153,7 +153,7 @@ void ContentTestSuite::Initialize() {
   }
   RegisterPathProvider();
 #if !defined(OS_IOS)
-  media::InitializeMediaLibraryForTesting();
+  media::InitializeMediaLibrary();
   // When running in a child process for Mac sandbox tests, the sandbox exists
   // to initialize GL, so don't do it here.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(

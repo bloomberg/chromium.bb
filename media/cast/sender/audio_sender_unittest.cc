@@ -67,7 +67,7 @@ class TestPacketSender : public PacketSender {
 class AudioSenderTest : public ::testing::Test {
  protected:
   AudioSenderTest() {
-    InitializeMediaLibraryForTesting();
+    InitializeMediaLibrary();
     testing_clock_ = new base::SimpleTestTickClock();
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);

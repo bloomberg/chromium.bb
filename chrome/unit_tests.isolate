@@ -73,7 +73,6 @@
     ['OS=="linux"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/locales/fr.pak',
         ],
@@ -102,7 +101,6 @@
         'files': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
           '<(PRODUCT_DIR)/exif.so',
-          '<(PRODUCT_DIR)/ffmpegsumo.so',
           '<(PRODUCT_DIR)/osmesa.so',
         ],
       },
@@ -112,7 +110,6 @@
         'files': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework.dSYM/',
           '<(PRODUCT_DIR)/exif.so.dSYM/',
-          '<(PRODUCT_DIR)/ffmpegsumo.so.dSYM/',
           '<(PRODUCT_DIR)/osmesa.so.dSYM/',
           '<(PRODUCT_DIR)/unit_tests.dSYM/',
         ],
@@ -126,7 +123,6 @@
           '../ui/base/glib/',
           '<(PRODUCT_DIR)/blacklist_test_dll_1.dll',
           '<(PRODUCT_DIR)/chrome_elf.dll',
-          '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libexif.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
           '<(PRODUCT_DIR)/verifier_test_dll_1.dll',

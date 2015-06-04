@@ -76,7 +76,7 @@ void BlinkMediaTestSuite::Initialize() {
 
   // Run this here instead of main() to ensure an AtExitManager is already
   // present.
-  media::InitializeMediaLibraryForTesting();
+  media::InitializeMediaLibrary();
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::V8Initializer::LoadV8Snapshot();

@@ -647,10 +647,7 @@ void RenderThreadImpl::Init() {
 
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.
-  base::FilePath media_path;
-  PathService::Get(DIR_MEDIA_LIBS, &media_path);
-  if (!media_path.empty())
-    media::InitializeMediaLibrary(media_path);
+  media::InitializeMediaLibrary();
 
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this))));
@@ -1106,10 +1103,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   EnableBlinkPlatformLogChannels(
       command_line.GetSwitchValueASCII(switches::kBlinkPlatformLogChannels));
-
-  if (!media::IsMediaLibraryInitialized()) {
-    WebRuntimeFeatures::enableWebAudio(false);
-  }
 
   RenderMediaClient::Initialize();
 

@@ -739,10 +739,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  if (!media::InitializeMediaLibrary(media_path)) {
-    LOG(ERROR) << "Failed to initialize FFmpeg.";
-    return 1;
-  }
+  media::InitializeMediaLibrary();
 
   base::FilePath source_path = cmd->GetSwitchValuePath(
       media::cast::kSourcePath);

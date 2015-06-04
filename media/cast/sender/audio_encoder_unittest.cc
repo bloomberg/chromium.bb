@@ -95,7 +95,7 @@ struct TestScenario {
 class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
  public:
   AudioEncoderTest() {
-    InitializeMediaLibraryForTesting();
+    InitializeMediaLibrary();
     testing_clock_ = new base::SimpleTestTickClock();
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
   }

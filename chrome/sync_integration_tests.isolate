@@ -29,7 +29,6 @@
     ['OS=="linux"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
         ],
       },
@@ -62,7 +61,6 @@
         'files': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
           '<(PRODUCT_DIR)/<(mac_product_name).app/',
-          '<(PRODUCT_DIR)/ffmpegsumo.so',
         ],
       },
     }],
@@ -71,7 +69,6 @@
         'files': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework.dSYM/',
           '<(PRODUCT_DIR)/<(mac_product_name).app.dSYM/',
-          '<(PRODUCT_DIR)/ffmpegsumo.so.dSYM/',
         ],
       },
     }],
@@ -79,7 +76,6 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/chrome_elf.dll',
-          '<(PRODUCT_DIR)/ffmpegsumo.dll',
         ],
       },
     }],

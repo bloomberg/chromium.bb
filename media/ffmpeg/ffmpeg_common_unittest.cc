@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "media/base/media.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_glue.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,7 +13,9 @@ namespace media {
 
 class FFmpegCommonTest : public testing::Test {
  public:
-  FFmpegCommonTest() { FFmpegGlue::InitializeFFmpeg(); }
+  FFmpegCommonTest() {
+    FFmpegGlue::InitializeFFmpeg();
+  }
   ~FFmpegCommonTest() override{};
 };
 
@@ -88,17 +91,6 @@ TEST_F(FFmpegCommonTest, UTCDateToTime_Valid) {
   EXPECT_EQ(56, exploded.second);
   EXPECT_EQ(0, exploded.millisecond);
 }
-
-#if defined(ALLOCATOR_SHIM) && defined(GTEST_HAS_DEATH_TEST)
-TEST_F(FFmpegCommonTest, WinAllocatorShimDeathTest) {
-  scoped_ptr<char, base::FreeDeleter> ptr;
-  // INT_MAX - 128 is carefully chosen to be below the default limit for
-  // ffmpeg allocations, but above the maximum allowed limit by the allocator
-  // shim, so we can be certain the code is being hit.
-  EXPECT_DEATH(ptr.reset(static_cast<char*>(av_malloc(INT_MAX - 128))), "");
-  ASSERT_TRUE(!ptr);
-}
-#endif
 
 TEST_F(FFmpegCommonTest, UTCDateToTime_Invalid) {
   const char* invalid_date_strings[] = {

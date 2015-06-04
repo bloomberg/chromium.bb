@@ -327,10 +327,8 @@
         'base/media_log_event.h',
         'base/media_permission.cc',
         'base/media_permission.h',
-        'base/media_posix.cc',
         'base/media_switches.cc',
         'base/media_switches.h',
-        'base/media_win.cc',
         'base/mime_util.cc',
         'base/mime_util.h',
         'base/moving_average.cc',
@@ -626,7 +624,6 @@
             'base/container_names.h',
             'base/media_file_checker.cc',
             'base/media_file_checker.h',
-            'base/media_posix.cc',
             'ffmpeg/ffmpeg_common.cc',
             'ffmpeg/ffmpeg_common.h',
             'filters/audio_file_reader.cc',
@@ -695,7 +692,6 @@
           'sources': [
             'base/media.cc',
             'base/media.h',
-            'base/media_stub.cc',
           ],
           'sources!': [
             'filters/opus_audio_decoder.cc',
@@ -1256,7 +1252,7 @@
             'test/pipeline_integration_test_base.cc',
           ],
         }],
-        ['os_posix==1 and OS!="mac"', {
+        ['(os_posix==1 and OS!="mac") or (OS=="win" and component!="shared_library" and win_use_allocator_shim==1)', {
           'conditions': [
             ['use_allocator!="none"', {
               'dependencies': [

@@ -88,11 +88,7 @@ MediaFactory::MediaFactory(
                                       ->HasSwitch(kEnableMojoMediaRenderer)),
       compositor_task_runner_(compositor_task_runner),
       shell_(shell) {
-  if (!media::IsMediaLibraryInitialized()) {
-    base::FilePath module_dir;
-    CHECK(PathService::Get(base::DIR_EXE, &module_dir));
-    CHECK(media::InitializeMediaLibrary(module_dir));
-  }
+  media::InitializeMediaLibrary();
 }
 
 MediaFactory::~MediaFactory() {

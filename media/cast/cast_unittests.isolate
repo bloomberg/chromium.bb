@@ -34,13 +34,6 @@
         ],
       },
     }],
-    ['OS=="linux"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/libffmpegsumo.so',
-        ],
-      },
-    }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'files': [
@@ -49,24 +42,10 @@
         ],
       },
     }],
-    ['OS=="mac"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/ffmpegsumo.so',
-        ],
-      },
-    }],
     ['OS=="mac" and asan==1 and fastbuild==0', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/cast_unittests.dSYM/',
-        ],
-      },
-    }],
-    ['OS=="win"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/ffmpegsumo.dll',
         ],
       },
     }],

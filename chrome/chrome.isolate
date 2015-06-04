@@ -6,7 +6,6 @@
     ['OS=="linux"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
         ],
       },
@@ -71,7 +70,6 @@
           '<(PRODUCT_DIR)/<(mac_product_name) Helper.app/',
           '<(PRODUCT_DIR)/<(mac_product_name).app/',
           '<(PRODUCT_DIR)/exif.so',
-          '<(PRODUCT_DIR)/ffmpegsumo.so',
         ],
       },
     }],
@@ -82,7 +80,6 @@
           '<(PRODUCT_DIR)/<(mac_product_name) Helper.app.dSYM/',
           '<(PRODUCT_DIR)/<(mac_product_name).app.dSYM/',
           '<(PRODUCT_DIR)/exif.so.dSYM/',
-          '<(PRODUCT_DIR)/ffmpegsumo.so.dSYM/',
         ],
       },
     }],
@@ -93,7 +90,6 @@
           '<(PRODUCT_DIR)/chrome_200_percent.pak',
           '<(PRODUCT_DIR)/chrome.dll',
           '<(PRODUCT_DIR)/chrome_elf.dll',
-          '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libexif.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
         ],

@@ -156,9 +156,6 @@ stage_install_common() {
   find "${STAGEDIR}/${INSTALLDIR}/locales" -type f -exec chmod 644 '{}' \;
   find "${STAGEDIR}/${INSTALLDIR}/locales" -type d -exec chmod 755 '{}' \;
 
-  # ffmpeg libs
-  install -m 644 -s "${BUILDDIR}/libffmpegsumo.so" "${STAGEDIR}/${INSTALLDIR}/"
-
   # Widevine CDM.
   if [ -f "${BUILDDIR}/libwidevinecdmadapter.so" ]; then
     install -m 644 -s "${BUILDDIR}/libwidevinecdmadapter.so" "${STAGEDIR}/${INSTALLDIR}/"
