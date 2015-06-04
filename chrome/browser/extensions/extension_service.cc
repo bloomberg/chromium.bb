@@ -2118,16 +2118,24 @@ void ExtensionService::RegisterContentSettings(
               profile_->GetOriginalProfile() != profile_)));
 }
 
-void ExtensionService::TrackTerminatedExtension(const Extension* extension) {
+void ExtensionService::TrackTerminatedExtension(
+    const std::string& extension_id) {
+  extensions_being_terminated_.erase(extension_id);
+
+  const Extension* extension = GetInstalledExtension(extension_id);
+  if (!extension) {
+    LOG(WARNING) << "Terminated extension is already removed.";
+    return;
+  }
+
   // No need to check for duplicates; inserting a duplicate is a no-op.
   registry_->AddTerminated(make_scoped_refptr(extension));
-  extensions_being_terminated_.erase(extension->id());
   UnloadExtension(extension->id(), UnloadedExtensionInfo::REASON_TERMINATE);
 }
 
 void ExtensionService::TerminateExtension(const std::string& extension_id) {
   const Extension* extension = GetInstalledExtension(extension_id);
-  TrackTerminatedExtension(extension);
+  TrackTerminatedExtension(extension->id());
 }
 
 void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
@@ -2268,7 +2276,7 @@ void ExtensionService::Observe(int type,
           base::Bind(
               &ExtensionService::TrackTerminatedExtension,
               AsWeakPtr(),
-              host->extension()));
+              host->extension()->id()));
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {

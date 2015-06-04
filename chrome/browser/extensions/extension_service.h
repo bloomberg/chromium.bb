@@ -449,7 +449,7 @@ class ExtensionService
 
 #if defined(UNIT_TEST)
   void TrackTerminatedExtensionForTest(const extensions::Extension* extension) {
-    TrackTerminatedExtension(extension);
+    TrackTerminatedExtension(extension->id());
   }
 
   void FinishInstallationForTest(const extensions::Extension* extension) {
@@ -523,9 +523,9 @@ class ExtensionService
   // external extensions.
   void OnAllExternalProvidersReady();
 
-  // Adds the given extension to the list of terminated extensions if
+  // Adds the given extension id to the list of terminated extensions if
   // it is not already there and unloads it.
-  void TrackTerminatedExtension(const extensions::Extension* extension);
+  void TrackTerminatedExtension(const std::string& extension_id);
 
   // Removes the extension with the given id from the list of
   // terminated extensions if it is there.
