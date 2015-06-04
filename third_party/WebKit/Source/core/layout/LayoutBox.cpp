@@ -4765,7 +4765,7 @@ bool LayoutBox::mustInvalidateBackgroundOrBorderPaintOnWidthChange() const
         return true;
 
     // Our fill layers are ok. Let's check border.
-    if (style()->hasBorder() && canRenderBorderImage())
+    if (style()->hasBorderDecoration() && canRenderBorderImage())
         return true;
 
     return false;
@@ -4784,7 +4784,7 @@ bool LayoutBox::mustInvalidateBackgroundOrBorderPaintOnHeightChange() const
         return true;
 
     // Our fill layers are ok.  Let's check border.
-    if (style()->hasBorder() && canRenderBorderImage())
+    if (style()->hasBorderDecoration() && canRenderBorderImage())
         return true;
 
     return false;
@@ -4792,7 +4792,7 @@ bool LayoutBox::mustInvalidateBackgroundOrBorderPaintOnHeightChange() const
 
 bool LayoutBox::canRenderBorderImage() const
 {
-    if (!style()->hasBorder())
+    if (!style()->hasBorderDecoration())
         return false;
 
     StyleImage* borderImage = style()->borderImage().image();

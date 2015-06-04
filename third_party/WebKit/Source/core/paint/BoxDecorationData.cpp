@@ -18,7 +18,7 @@ BoxDecorationData::BoxDecorationData(const LayoutBox& layoutBox)
     backgroundColor = layoutBox.style()->visitedDependentColor(CSSPropertyBackgroundColor);
     hasBackground = backgroundColor.alpha() || layoutBox.style()->hasBackgroundImage();
     ASSERT(hasBackground == layoutBox.style()->hasBackground());
-    hasBorder = layoutBox.style()->hasBorder();
+    hasBorderDecoration = layoutBox.style()->hasBorderDecoration();
     hasAppearance = layoutBox.style()->hasAppearance();
     bleedAvoidance = determineBackgroundBleedAvoidance(layoutBox);
 }
@@ -48,7 +48,7 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(co
     if (!hasBackground)
         return BackgroundBleedNone;
 
-    if (!hasBorder || !layoutBox.style()->hasBorderRadius() || layoutBox.canRenderBorderImage()) {
+    if (!hasBorderDecoration || !layoutBox.style()->hasBorderRadius() || layoutBox.canRenderBorderImage()) {
         if (layoutBox.backgroundShouldAlwaysBeClipped())
             return BackgroundBleedClipOnly;
         return BackgroundBleedNone;

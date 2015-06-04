@@ -695,7 +695,7 @@ LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
 // FIXME: This is incorrect for document element. Remove this when we enable slimming paint.
 static inline bool layoutObjectHasNoBoxEffectObsolete(const LayoutObject& object)
 {
-    return !object.style()->hasVisualOverflowingEffect() && !object.style()->hasBorder() && !object.style()->hasBackground();
+    return !object.style()->hasVisualOverflowingEffect() && !object.style()->hasBorderDecoration() && !object.style()->hasBackground();
 }
 
 bool LayoutObject::skipInvalidationWhenLaidOutChildren() const

@@ -391,7 +391,7 @@ void LayoutBoxModelObject::addChildFocusRingRects(Vector<LayoutRect>& rects, con
 bool LayoutBoxModelObject::calculateHasBoxDecorations() const
 {
     const ComputedStyle& styleToUse = styleRef();
-    return hasBackground() || styleToUse.hasBorder() || styleToUse.hasAppearance() || styleToUse.boxShadow();
+    return hasBackground() || styleToUse.hasBorderDecoration() || styleToUse.hasAppearance() || styleToUse.boxShadow();
 }
 
 void LayoutBoxModelObject::updateFromStyle()

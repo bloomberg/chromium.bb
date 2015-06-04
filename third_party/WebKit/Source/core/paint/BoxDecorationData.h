@@ -22,7 +22,7 @@ public:
     Color backgroundColor;
     BackgroundBleedAvoidance bleedAvoidance;
     bool hasBackground;
-    bool hasBorder;
+    bool hasBorderDecoration;
     bool hasAppearance;
 
 private:

@@ -47,7 +47,7 @@ void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, c
     BoxPainter(m_layoutFieldset).paintFillLayers(paintInfo, boxDecorationData.backgroundColor, m_layoutFieldset.style()->backgroundLayers(), paintRect);
     BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutFieldset.styleRef(), Inset);
 
-    if (!boxDecorationData.hasBorder)
+    if (!boxDecorationData.hasBorderDecoration)
         return;
 
     // Create a clipping region around the legend and paint the border as normal

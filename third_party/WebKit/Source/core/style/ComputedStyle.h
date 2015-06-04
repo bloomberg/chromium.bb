@@ -390,7 +390,9 @@ public:
     bool operator!=(const ComputedStyle& other) const { return !(*this == other); }
     bool isFloating() const { return noninherited_flags.floating != NoFloat; }
     bool hasMargin() const { return surround->margin.nonZero(); }
+    bool hasBorderFill() const { return surround->border.hasBorderFill(); }
     bool hasBorder() const { return surround->border.hasBorder(); }
+    bool hasBorderDecoration() const { return hasBorder() || hasBorderFill(); }
     bool hasPadding() const { return surround->padding.nonZero(); }
     bool hasMarginBeforeQuirk() const { return marginBefore().quirk(); }
     bool hasMarginAfterQuirk() const { return marginAfter().quirk(); }
@@ -1512,7 +1514,7 @@ public:
     bool hasChildDependentFlags() const { return emptyState() || hasExplicitlyInheritedProperties(); }
     void copyChildDependentFlagsFrom(const ComputedStyle&);
 
-    bool hasBoxDecorations() const { return hasBorder() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter() || resize() != RESIZE_NONE; }
+    bool hasBoxDecorations() const { return hasBorderDecoration() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter() || resize() != RESIZE_NONE; }
 
     bool borderObscuresBackground() const;
     void getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;

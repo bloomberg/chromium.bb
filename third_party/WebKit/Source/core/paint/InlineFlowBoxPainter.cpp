@@ -190,7 +190,7 @@ LayoutRect InlineFlowBoxPainter::paintRectForImageStrip(const LayoutPoint& paint
 InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintType(const LayoutRect& adjustedFrameRect, LayoutRect& adjustedClipRect) const
 {
     adjustedClipRect = adjustedFrameRect;
-    if (m_inlineFlowBox.parent() && m_inlineFlowBox.layoutObject().style()->hasBorder()) {
+    if (m_inlineFlowBox.parent() && m_inlineFlowBox.layoutObject().style()->hasBorderDecoration()) {
         const NinePieceImage& borderImage = m_inlineFlowBox.layoutObject().style()->borderImage();
         StyleImage* borderImageSource = borderImage.image();
         const ComputedStyle* styleToUse = m_inlineFlowBox.layoutObject().style(m_inlineFlowBox.isFirstLineStyle());

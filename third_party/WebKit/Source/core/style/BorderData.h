@@ -41,10 +41,16 @@ public:
         , m_bottomRight(Length(0, Fixed), Length(0, Fixed))
     {
     }
+
     bool hasBorder() const
     {
         bool haveImage = m_image.hasImage();
         return m_left.nonZero(!haveImage) || m_right.nonZero(!haveImage) || m_top.nonZero(!haveImage) || m_bottom.nonZero(!haveImage);
+    }
+
+    bool hasBorderFill() const
+    {
+        return m_image.hasImage() && m_image.fill();
     }
 
     bool hasBorderRadius() const

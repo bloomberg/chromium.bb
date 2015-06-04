@@ -140,7 +140,7 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(const PaintInfo& paintInfo
     paintBoxShadow(paintInfo, paintRect, style, Inset);
 
     // The theme will tell us whether or not we should also paint the CSS border.
-    if (boxDecorationData.hasBorder && boxDecorationData.bleedAvoidance != BackgroundBleedBackgroundOverBorder
+    if (boxDecorationData.hasBorderDecoration && boxDecorationData.bleedAvoidance != BackgroundBleedBackgroundOverBorder
         && (!boxDecorationData.hasAppearance || (!themePainted && LayoutTheme::theme().painter().paintBorderOnly(&m_layoutBox, paintInfo, snappedPaintRect)))
         && !(m_layoutBox.isTable() && toLayoutTable(&m_layoutBox)->collapseBorders()))
         paintBorder(m_layoutBox, paintInfo, paintRect, style, boxDecorationData.bleedAvoidance);
