@@ -21,6 +21,7 @@
 // http://dev.w3.org/csswg/cssom/#the-csspagerule-interface
 
 // TODO(philipj): CSSPageRule should inherit from CSSGroupingRule.
+// crbug.com/496381
 interface CSSPageRule : CSSRule {
     attribute DOMString selectorText;
     // TODO(philipj): style should have [PutForwards=cssText].

@@ -34,7 +34,7 @@
     ImplementedAs=DOMWindowCSS,
     WillBeGarbageCollected
 ] interface CSS {
-    // TODO(philipj): The supports() methods should be static.
+    // TODO(philipj): The supports() methods should be static. crbug.com/496369
     boolean supports(DOMString property, DOMString value);
     boolean supports(DOMString conditionText);
 };

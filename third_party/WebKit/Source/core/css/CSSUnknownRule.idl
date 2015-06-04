@@ -23,7 +23,7 @@
 // http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSUnknownRule
 // http://dev.w3.org/csswg/cssom/
 //
-// TODO(philipj): Remove CSSUnknownRule.
+// TODO(philipj): Remove CSSUnknownRule. crbug.com/496383
 
 interface CSSUnknownRule : CSSRule {
 };
