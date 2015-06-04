@@ -62,6 +62,7 @@ class WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
 
   scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
+  DevToolsMessageChunkProcessor chunk_processor_;
   WorkerState state_;
   WorkerId worker_id_;
   DISALLOW_COPY_AND_ASSIGN(WorkerDevToolsAgentHost);

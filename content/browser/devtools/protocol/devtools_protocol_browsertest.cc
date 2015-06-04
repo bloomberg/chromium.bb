@@ -12,6 +12,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_switches.h"
@@ -30,14 +31,23 @@ const char kParamsParam[] = "params";
 class DevToolsProtocolTest : public ContentBrowserTest,
                              public DevToolsAgentHostClient {
  public:
-  DevToolsProtocolTest() : has_dispatched_command(false) {}
+  DevToolsProtocolTest()
+      : last_sent_id_(0),
+        in_dispatch_(false) {
+  }
 
  protected:
   void SendCommand(const std::string& method,
                    scoped_ptr<base::DictionaryValue> params) {
+    SendCommand(method, params.Pass(), true);
+  }
+
+  void SendCommand(const std::string& method,
+                   scoped_ptr<base::DictionaryValue> params,
+                   bool wait) {
+    in_dispatch_ = true;
     base::DictionaryValue command;
-    has_dispatched_command = false;
-    command.SetInteger(kIdParam, 1);
+    command.SetInteger(kIdParam, ++last_sent_id_);
     command.SetString(kMethodParam, method);
     if (params)
       command.Set(kParamsParam, params.release());
@@ -47,8 +57,9 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     agent_host_->DispatchProtocolMessage(json_command);
     // Some messages are dispatched synchronously.
     // Only run loop if we are not finished yet.
-    if (!has_dispatched_command)
+    if (in_dispatch_ && wait)
       base::MessageLoop::current()->Run();
+    in_dispatch_ = false;
   }
 
   bool HasValue(const std::string& path) {
@@ -88,25 +99,36 @@ class DevToolsProtocolTest : public ContentBrowserTest,
 
   scoped_ptr<base::DictionaryValue> result_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
+  int last_sent_id_;
+  std::vector<int> result_ids_;
+  std::vector<std::string> notifications_;
 
  private:
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override {
     scoped_ptr<base::DictionaryValue> root(static_cast<base::DictionaryValue*>(
         base::JSONReader::DeprecatedRead(message)));
-    base::DictionaryValue* result;
-    EXPECT_TRUE(root->GetDictionary("result", &result));
-    result_.reset(result->DeepCopy());
-    if (base::MessageLoop::current()->is_running())
-      base::MessageLoop::current()->QuitNow();
-    has_dispatched_command = true;
+    int id;
+    if (root->GetInteger("id", &id)) {
+      result_ids_.push_back(id);
+      base::DictionaryValue* result;
+      EXPECT_TRUE(root->GetDictionary("result", &result));
+      result_.reset(result->DeepCopy());
+      in_dispatch_ = false;
+      if (base::MessageLoop::current()->is_running())
+        base::MessageLoop::current()->QuitNow();
+    } else {
+      std::string notification;
+      EXPECT_TRUE(root->GetString("method", &notification));
+      notifications_.push_back(notification);
+    }
   }
 
   void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override {
     EXPECT_TRUE(false);
   }
 
-  bool has_dispatched_command;
+  bool in_dispatch_;
 };
 
 class SyntheticKeyEventTest : public DevToolsProtocolTest {
@@ -318,6 +340,34 @@ IN_PROC_BROWSER_TEST_F(SyntheticGestureTest, MAYBE_SynthesizeTapGesture) {
       shell()->web_contents(),
       "domAutomationController.send(document.body.scrollTop)", &scroll_top));
   ASSERT_GT(scroll_top, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, NavigationPreservesMessages) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL test_url = test_server()->GetURL("files/devtools/navigation.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  SendCommand("Page.enable", nullptr, false);
+
+  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  test_url = GetTestUrl("devtools", "navigation.html");
+  params->SetString("url", test_url.spec());
+  SendCommand("Page.navigate", params.Pass(), true);
+
+  bool enough_results = result_ids_.size() >= 2u;
+  EXPECT_TRUE(enough_results);
+  if (enough_results) {
+    EXPECT_EQ(1, result_ids_[0]);  // Page.enable
+    EXPECT_EQ(2, result_ids_[1]);  // Page.navigate
+  }
+
+  enough_results = notifications_.size() >= 1u;
+  EXPECT_TRUE(enough_results);
+  bool found_frame_notification = false;
+  for (const std::string& notification : notifications_) {
+    if (notification == "Page.frameStartedLoading")
+      found_frame_notification = true;
+  }
+  EXPECT_TRUE(found_frame_notification);
 }
 
 }  // namespace content

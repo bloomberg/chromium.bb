@@ -55,13 +55,13 @@ void DevToolsProtocolHandler::HandleMessage(const std::string& message) {
 }
 
 bool DevToolsProtocolHandler::HandleOptionalMessage(
-    const std::string& message) {
+    const std::string& message, int* call_id) {
   scoped_ptr<base::DictionaryValue> command = ParseCommand(message);
   if (!command)
     return true;
   if (PassCommandToDelegate(command.get()))
     return true;
-  return HandleOptionalCommand(command.Pass());
+  return HandleOptionalCommand(command.Pass(), call_id);
 }
 
 bool DevToolsProtocolHandler::PassCommandToDelegate(
@@ -134,15 +134,17 @@ void DevToolsProtocolHandler::HandleCommand(
 }
 
 bool DevToolsProtocolHandler::HandleOptionalCommand(
-    scoped_ptr<base::DictionaryValue> command) {
-  int id = DevToolsProtocolClient::kNoId;
+    scoped_ptr<base::DictionaryValue> command, int* call_id) {
+  *call_id = DevToolsProtocolClient::kNoId;
   std::string method;
-  command->GetInteger(kIdParam, &id);
+  command->GetInteger(kIdParam, call_id);
   command->GetString(kMethodParam, &method);
   DevToolsProtocolDispatcher::CommandHandler command_handler(
       dispatcher_.FindCommandHandler(method));
-  if (!command_handler.is_null())
-    return command_handler.Run(id, TakeDictionary(command.get(), kParamsParam));
+  if (!command_handler.is_null()) {
+    return command_handler.Run(
+        *call_id, TakeDictionary(command.get(), kParamsParam));
+  }
   return false;
 }
 

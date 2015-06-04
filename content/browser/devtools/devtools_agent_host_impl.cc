@@ -77,8 +77,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
 
 DevToolsAgentHostImpl::DevToolsAgentHostImpl()
     : id_(base::GenerateGUID()),
-      client_(NULL),
-      message_buffer_size_(0) {
+      client_(NULL) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   g_instances.Get()[id_] = this;
 }
@@ -166,35 +165,6 @@ void DevToolsAgentHostImpl::SendMessageToClient(const std::string& message) {
   client_->DispatchProtocolMessage(this, message);
 }
 
-void DevToolsAgentHostImpl::ProcessChunkedMessageFromAgent(
-    const DevToolsMessageChunk& chunk) {
-  if (chunk.is_last && !chunk.post_state.empty())
-    state_cookie_ = chunk.post_state;
-
-  if (chunk.is_first && chunk.is_last) {
-    CHECK(message_buffer_size_ == 0);
-    SendMessageToClient(chunk.data);
-    return;
-  }
-
-  if (chunk.is_first) {
-    message_buffer_ = std::string();
-    message_buffer_.reserve(chunk.message_size);
-    message_buffer_size_ = chunk.message_size;
-  }
-
-  CHECK(message_buffer_.size() + chunk.data.size() <=
-      message_buffer_size_);
-  message_buffer_.append(chunk.data);
-
-  if (chunk.is_last) {
-    CHECK(message_buffer_.size() == message_buffer_size_);
-    SendMessageToClient(message_buffer_);
-    message_buffer_ = std::string();
-    message_buffer_size_ = 0;
-  }
-}
-
 // static
 void DevToolsAgentHost::DetachAllClients() {
   if (g_instances == NULL)
@@ -251,6 +221,49 @@ void DevToolsAgentHostImpl::Inspect(BrowserContext* browser_context) {
   DevToolsManager* manager = DevToolsManager::GetInstance();
   if (manager->delegate())
     manager->delegate()->Inspect(browser_context, this);
+}
+
+// DevToolsMessageChunkProcessor -----------------------------------------------
+
+DevToolsMessageChunkProcessor::DevToolsMessageChunkProcessor(
+    const SendMessageCallback& callback)
+    : callback_(callback),
+      message_buffer_size_(0),
+      last_call_id_(0) {
+}
+
+DevToolsMessageChunkProcessor::~DevToolsMessageChunkProcessor() {
+}
+
+void DevToolsMessageChunkProcessor::ProcessChunkedMessageFromAgent(
+    const DevToolsMessageChunk& chunk) {
+  if (chunk.is_last && !chunk.post_state.empty())
+    state_cookie_ = chunk.post_state;
+  if (chunk.is_last)
+    last_call_id_ = chunk.call_id;
+
+  if (chunk.is_first && chunk.is_last) {
+    CHECK(message_buffer_size_ == 0);
+    callback_.Run(chunk.data);
+    return;
+  }
+
+  if (chunk.is_first) {
+    message_buffer_ = std::string();
+    message_buffer_.reserve(chunk.message_size);
+    message_buffer_size_ = chunk.message_size;
+  }
+
+  CHECK(message_buffer_.size() + chunk.data.size() <=
+      message_buffer_size_);
+  message_buffer_.append(chunk.data);
+
+  if (chunk.is_last) {
+    CHECK(message_buffer_.size() == message_buffer_size_);
+    callback_.Run(message_buffer_);
+    message_buffer_ = std::string();
+    message_buffer_size_ = 0;
+  }
 }
 
 }  // namespace content

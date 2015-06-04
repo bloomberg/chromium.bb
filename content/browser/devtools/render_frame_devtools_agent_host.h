@@ -23,7 +23,6 @@ namespace content {
 class BrowserContext;
 class DevToolsFrameTraceRecorder;
 class DevToolsProtocolHandler;
-class RenderFrameHost;
 class RenderFrameHostImpl;
 
 #if defined(OS_ANDROID)
@@ -70,10 +69,11 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
  private:
   friend class DevToolsAgentHost;
-  explicit RenderFrameDevToolsAgentHost(RenderFrameHost*);
+  explicit RenderFrameDevToolsAgentHost(RenderFrameHostImpl*);
   ~RenderFrameDevToolsAgentHost() override;
 
-  static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(RenderFrameHost* host);
+  static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(
+      RenderFrameHostImpl* host);
   static void AppendAgentHostForFrameIfApplicable(
       DevToolsAgentHost::List* result,
       RenderFrameHost* host);
@@ -99,32 +99,31 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override;
+  void DidFailProvisionalLoad(
+      RenderFrameHost* render_frame_host,
+      const GURL& validated_url,
+      int error_code,
+      const base::string16& error_description) override;
+
+  void SetPending(RenderFrameHostImpl* host);
+  void CommitPending();
+  void DiscardPending();
+  void UpdateProtocolHandlers(RenderFrameHostImpl* host);
+
+  bool IsChildFrame();
 
   void OnClientAttached();
   void OnClientDetached();
 
-  void DisconnectRenderFrameHost();
-  void ConnectRenderFrameHost(RenderFrameHost* rvh);
-  void ReattachToRenderFrameHost(RenderFrameHost* rvh);
-
-  void SetRenderFrameHost(RenderFrameHost* rvh);
-  void ClearRenderFrameHost();
-
   void RenderFrameCrashed();
   void OnSwapCompositorFrame(const IPC::Message& message);
-  bool OnSetTouchEventEmulationEnabled(const IPC::Message& message);
-
-  void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
-
-  void ClientDetachedFromRenderer();
-
-  void InnerOnClientAttached();
-  void InnerClientDetachedFromRenderer();
-
-  bool IsChildFrame();
   void DestroyOnRenderFrameGone();
 
-  RenderFrameHostImpl* render_frame_host_;
+  class FrameHostHolder;
+
+  scoped_ptr<FrameHostHolder> current_;
+  scoped_ptr<FrameHostHolder> pending_;
+
   scoped_ptr<devtools::dom::DOMHandler> dom_handler_;
   scoped_ptr<devtools::input::InputHandler> input_handler_;
   scoped_ptr<devtools::inspector::InspectorHandler> inspector_handler_;
@@ -140,7 +139,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   scoped_ptr<PowerSaveBlockerImpl> power_save_blocker_;
 #endif
   scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
-  bool reattaching_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameDevToolsAgentHost);
 };

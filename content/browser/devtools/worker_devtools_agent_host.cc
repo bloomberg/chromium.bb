@@ -43,7 +43,9 @@ bool WorkerDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
   if (state_ != WORKER_INSPECTED)
     return true;
-  if (protocol_handler_->HandleOptionalMessage(message))
+
+  int call_id;
+  if (protocol_handler_->HandleOptionalMessage(message, &call_id))
     return true;
 
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
@@ -81,7 +83,7 @@ void WorkerDevToolsAgentHost::WorkerReadyForInspection() {
     AttachToWorker();
     if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
       host->Send(new DevToolsAgentMsg_Reattach(
-          worker_id_.second, GetId(), state_cookie_));
+          worker_id_.second, GetId(), chunk_processor_.state_cookie()));
     }
     OnAttachedStateChanged(true);
   }
@@ -121,6 +123,9 @@ WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(
           this,
           base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
                      base::Unretained(this)))),
+      chunk_processor_(
+          base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
+                     base::Unretained(this))),
       state_(WORKER_UNINSPECTED),
       worker_id_(worker_id) {
   WorkerCreated();
@@ -152,7 +157,7 @@ void WorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
   if (!IsAttached())
     return;
 
-  ProcessChunkedMessageFromAgent(message);
+  chunk_processor_.ProcessChunkedMessageFromAgent(message);
 }
 
 }  // namespace content

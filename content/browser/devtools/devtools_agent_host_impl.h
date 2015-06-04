@@ -47,11 +47,8 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   DevToolsAgentHostImpl();
   ~DevToolsAgentHostImpl() override;
 
-  std::string state_cookie_;
-
   void HostClosed();
   void SendMessageToClient(const std::string& message);
-  void ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
   static void NotifyCallbacks(DevToolsAgentHostImpl* agent_host, bool attached);
 
  private:
@@ -59,8 +56,25 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   const std::string id_;
   DevToolsAgentHostClient* client_;
+};
+
+class DevToolsMessageChunkProcessor {
+ public:
+  using SendMessageCallback = base::Callback<void(const std::string&)>;
+  explicit DevToolsMessageChunkProcessor(const SendMessageCallback& callback);
+  ~DevToolsMessageChunkProcessor();
+
+  std::string state_cookie() const { return state_cookie_; }
+  void set_state_cookie(const std::string& cookie) { state_cookie_ = cookie; }
+  int last_call_id() const { return last_call_id_; }
+  void ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
+
+ private:
+  SendMessageCallback callback_;
   std::string message_buffer_;
   uint32 message_buffer_size_;
+  std::string state_cookie_;
+  int last_call_id_;
 };
 
 }  // namespace content
