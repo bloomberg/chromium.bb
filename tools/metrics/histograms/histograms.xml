@@ -15816,7 +15816,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Media.VideoCaptureManager.Event" enum="VideoCaptureEvent">
   <owner>grunell@chromium.org</owner>
   <owner>mcasas@chromium.org</owner>
-  <summary>Counts video capture event, such as start and stop capture.</summary>
+  <summary>
+    Counts video capture event, such as start and stop capture. Note that the
+    ideal case is 50% start events and 50% normal stop events.
+  </summary>
 </histogram>
 
 <histogram name="Media.VideoCodec" enum="VideoCodec">
