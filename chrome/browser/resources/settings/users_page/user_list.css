@@ -1,0 +1,29 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+.clear-icon {
+  color: #6e6e6e;
+}
+
+.clear-icon::shadow iron-icon {
+  height: 18px;
+  width: 18px;
+}
+
+.user {
+  -webkit-padding-end: 8px;
+  -webkit-padding-start: 20px;
+  font-size: 0.75em;
+}
+
+.user:hover {
+  background-color: #f0f0f0;
+}
+
+.user-list {
+  border: 1px solid gray;
+  height: 160px;
+  overflow-y: auto;
+  padding: 10px 0;
+}

@@ -153,4 +153,27 @@
     Add
   </message>
 
+  <!-- Users Page -->
+  <message name="IDS_SETTINGS_USERS_PAGE_TITLE" desc="Name of the settings page which manages users on the device.">
+    Manage other users
+  </message>
+  <message name="IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL" desc="Label saying settings may only be modified by the device owner.">
+    These settings may only be modified by the owner:
+  </message>
+  <message name="IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL" desc="Label for the guest browsing setting.">
+    Enable Guest browsing
+  </message>
+  <message name="IDS_SETTINGS_USERS_SUPERVISED_USERS_LABEL" desc="Label for the supervised users setting.">
+    Enable supervised users
+  </message>
+  <message name="IDS_SETTINGS_USERS_SHOW_ON_SIGNIN_LABEL" desc="Label for the 'show users on sign-in screen' setting.">
+    Show usernames and photos on the sign-in screen
+  </message>
+  <message name="IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL" desc="Label for the setting for restricting sign in to specific users.">
+    Restrict sign-in to the following users:
+  </message>
+  <message name="IDS_SETTINGS_USERS_ADD_USERS_LABEL" desc="Label for the input field for adding users.">
+    Add users
+  </message>
+
 </grit-part>

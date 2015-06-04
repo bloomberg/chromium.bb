@@ -1,0 +1,54 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
+<link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+<link rel="import" href="user_list.html">
+
+<dom-module id="cr-settings-users-page">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="users_page.css">
+  <template>
+    <paper-material>
+      <div class="page-content">
+        <div i18n-content="usersModifiedByOwnerLabel"></div>
+        <div>
+          <cr-settings-checkbox
+              pref="{{prefs.cros.accounts.allowBWSI}}"
+              i18n-values="label:guestBrowsingLabel">
+          </cr-settings-checkbox>
+          <cr-settings-checkbox
+              pref="{{prefs.cros.accounts.supervisedUsersEnabled}}"
+              i18n-values="label:supervisedUsersLabel">
+          </cr-settings-checkbox>
+          <cr-settings-checkbox
+              pref="{{prefs.cros.accounts.showUserNamesOnSignIn}}"
+              i18n-values="label:showOnSigninLabel">
+          </cr-settings-checkbox>
+
+          <!-- TODO(orenb): Invert this pref!!! -->
+          <cr-settings-checkbox
+              pref="{{prefs.cros.accounts.allowGuest}}"
+              i18n-values="label:restrictSigninLabel">
+          </cr-settings-checkbox>
+        </div>
+        <div class="users">
+          <div>
+            <cr-settings-user-list prefs="{{prefs}}"></cr-settings-user-list>
+          </div>
+          <div>
+            <cr-input i18n-values="label:addUsersLabel" id="addUserInput"></cr-input>
+            <div class="add-user-button layout horizontal end-justified">
+              <cr-button i18n-content="addLabel" on-click="addUser_" raised>
+              </cr-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </paper-material>
+  </template>
+  <script src="users_page.js"></script>
+</dom-module>

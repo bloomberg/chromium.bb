@@ -3,6 +3,7 @@
  * found in the LICENSE file. */
 
 :host {
+  display: block;
   margin-bottom: 10px;
   margin-top: 10px;
 }

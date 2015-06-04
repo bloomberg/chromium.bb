@@ -83,6 +83,10 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
       IDS_SETTINGS_APPEARANCE_SHOW_BOOKMARKS_BAR_LABEL);
 }
 
+void AddCommonStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("addLabel", IDS_ADD);
+}
+
 void AddDownloadsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "downloadsPageTitle", IDS_SETTINGS_DOWNLOADS_PAGE_TITLE);
@@ -158,6 +162,23 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SEARCH_ENGINES_ADD_BUTTON_LABEL);
 }
 
+void AddUsersStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("usersPageTitle",
+                                  IDS_SETTINGS_USERS_PAGE_TITLE);
+  html_source->AddLocalizedString("usersModifiedByOwnerLabel",
+                                  IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL);
+  html_source->AddLocalizedString("guestBrowsingLabel",
+                                  IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL);
+  html_source->AddLocalizedString("supervisedUsersLabel",
+                                  IDS_SETTINGS_USERS_SUPERVISED_USERS_LABEL);
+  html_source->AddLocalizedString("showOnSigninLabel",
+                                  IDS_SETTINGS_USERS_SHOW_ON_SIGNIN_LABEL);
+  html_source->AddLocalizedString("restrictSigninLabel",
+                                  IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL);
+  html_source->AddLocalizedString("addUsersLabel",
+                                  IDS_SETTINGS_USERS_ADD_USERS_LABEL);
+}
+
 }  // namespace
 
 namespace settings {
@@ -165,6 +186,7 @@ namespace settings {
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   AddA11yStrings(html_source);
   AddAppearanceStrings(html_source);
+  AddCommonStrings(html_source);
   AddDownloadsStrings(html_source);
   AddDateTimeStrings(html_source);
 #if defined(OS_CHROMEOS)
@@ -172,6 +194,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
 #endif
   AddSearchStrings(html_source);
   AddSearchEnginesStrings(html_source);
+  AddUsersStrings(html_source);
   html_source->SetJsonPath(kLocalizedStringsFile);
 }
 
