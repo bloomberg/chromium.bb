@@ -15,8 +15,6 @@ details.
 It can also flash SPI by writing a 'magic flasher' U-Boot with a payload
 to the board.
 
-Usage: crosfw [options]
-
 The script is normally run from within the U-Boot directory which is
 .../src/third_party/u-boot/files
 
@@ -220,58 +218,58 @@ def ParseCmdline(argv):
     argv: Arguments to parse.
 
   Returns:
-    Tuple containing:
-      options: Command line options from optpase
-      args: List of command line arguments
+    The parsed options object
   """
-  parser = commandline.OptionParser(__doc__)
-  parser.add_option('-a', '--cbfargs', action='append',
-                    help='Pass extra arguments to cros_bundle_firmware')
-  parser.add_option('-b', '--board', type='string', default=default_board,
-                    help='Select board to build (daisy/peach_pit/link)')
-  parser.add_option('-B', '--build', action='store_false', default=True,
-                    help="Don't build U-Boot, just configure device tree")
-  parser.add_option('-C', '--console', action='store_false', default=True,
-                    help='Permit console output')
-  parser.add_option('-d', '--dt', default='seaboard',
-                    help='Select name of device tree file to use')
-  parser.add_option('-D', '--nodefaults', dest='use_defaults',
-                    action='store_false', default=True,
-                    help="Don't select default filenames for those not given")
-  parser.add_option('-F', '--flash', action='store_true', default=False,
-                    help='Create magic flasher for SPI flash')
-  parser.add_option('-M', '--mmc', action='store_true', default=False,
-                    help='Create magic flasher for eMMC')
-  parser.add_option('-i', '--incremental', action='store_true', default=False,
-                    help="Don't reconfigure and clean")
-  parser.add_option('-k', '--kernel', action='store_true', default=False,
-                    help='Send kernel to board also')
-  parser.add_option('-O', '--objdump', action='store_true', default=False,
-                    help='Write disassembly output')
-  parser.add_option('-r', '--run', action='store_false', default=True,
-                    help='Run the boot command')
-  parser.add_option('--ro', action='store_true', default=False,
-                    help='Create Chrome OS read-only image')
-  parser.add_option('--rw', action='store_true', default=False,
-                    help='Create Chrome OS read-write image')
-  parser.add_option('-s', '--separate', action='store_false', default=True,
-                    help='Link device tree into U-Boot, instead of separate')
-  parser.add_option('-S', '--secure', action='store_true', default=False,
-                    help='Use vboot_twostop secure boot')
-  parser.add_option('--small', action='store_true', default=False,
-                    help='Create Chrome OS small image')
-  parser.add_option('-t', '--trace', action='store_true', default=False,
-                    help='Enable trace support')
-  parser.add_option('-v', '--verbose', type='int', default=0,
-                    help='Make cros_bundle_firmware verbose')
-  parser.add_option('-V', '--verified', action='store_true', default=False,
-                    help='Include Chrome OS verified boot components')
-  parser.add_option('-w', '--write', action='store_false', default=True,
-                    help="Don't write image to board using usb/em100")
-  parser.add_option('-x', '--sdcard', action='store_true', default=False,
-                    help='Write to SD card instead of USB/em100')
-  parser.add_option('-z', '--size', action='store_true', default=False,
-                    help='Display U-Boot image size')
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('-a', '--cbfargs', action='append',
+                      help='Pass extra arguments to cros_bundle_firmware')
+  parser.add_argument('-b', '--board', type=str, default=default_board,
+                      help='Select board to build (daisy/peach_pit/link)')
+  parser.add_argument('-B', '--build', action='store_false', default=True,
+                      help="Don't build U-Boot, just configure device tree")
+  parser.add_argument('-C', '--console', action='store_false', default=True,
+                      help='Permit console output')
+  parser.add_argument('-d', '--dt', default='seaboard',
+                      help='Select name of device tree file to use')
+  parser.add_argument('-D', '--nodefaults', dest='use_defaults',
+                      action='store_false', default=True,
+                      help="Don't select default filenames for those not given")
+  parser.add_argument('-F', '--flash', action='store_true', default=False,
+                      help='Create magic flasher for SPI flash')
+  parser.add_argument('-M', '--mmc', action='store_true', default=False,
+                      help='Create magic flasher for eMMC')
+  parser.add_argument('-i', '--incremental', action='store_true', default=False,
+                      help="Don't reconfigure and clean")
+  parser.add_argument('-k', '--kernel', action='store_true', default=False,
+                      help='Send kernel to board also')
+  parser.add_argument('-O', '--objdump', action='store_true', default=False,
+                      help='Write disassembly output')
+  parser.add_argument('-r', '--run', action='store_false', default=True,
+                      help='Run the boot command')
+  parser.add_argument('--ro', action='store_true', default=False,
+                      help='Create Chrome OS read-only image')
+  parser.add_argument('--rw', action='store_true', default=False,
+                      help='Create Chrome OS read-write image')
+  parser.add_argument('-s', '--separate', action='store_false', default=True,
+                      help='Link device tree into U-Boot, instead of separate')
+  parser.add_argument('-S', '--secure', action='store_true', default=False,
+                      help='Use vboot_twostop secure boot')
+  parser.add_argument('--small', action='store_true', default=False,
+                      help='Create Chrome OS small image')
+  parser.add_argument('-t', '--trace', action='store_true', default=False,
+                      help='Enable trace support')
+  parser.add_argument('-v', '--verbose', type=int, default=0,
+                      help='Make cros_bundle_firmware verbose')
+  parser.add_argument('-V', '--verified', action='store_true', default=False,
+                      help='Include Chrome OS verified boot components')
+  parser.add_argument('-w', '--write', action='store_false', default=True,
+                      help="Don't write image to board using usb/em100")
+  parser.add_argument('-x', '--sdcard', action='store_true', default=False,
+                      help='Write to SD card instead of USB/em100')
+  parser.add_argument('-z', '--size', action='store_true', default=False,
+                      help='Display U-Boot image size')
+  parser.add_argument('target', nargs='?',
+                      help='The target to work on')
   return parser.parse_args(argv)
 
 
@@ -662,12 +660,11 @@ def main(argv):
   Args:
     argv: Program arguments.
   """
-  options, args = ParseCmdline(argv)
+  options = ParseCmdline(argv)
   base = SetupBuild(options)
 
   with parallel.BackgroundTaskRunner(Dumper) as queue:
-    target = args[0] if args else 'all'
-    RunBuild(options, base, target, queue)
+    RunBuild(options, base, options.target, queue)
 
     if options.write:
       WriteFirmware(options)
