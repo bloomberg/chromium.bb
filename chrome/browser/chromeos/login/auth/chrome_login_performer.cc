@@ -8,6 +8,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_user_login_flow.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
@@ -105,7 +106,7 @@ void ChromeLoginPerformer::RunOnlineWhitelistCheck(
     wildcard_login_checker_.reset(new policy::WildcardLoginChecker());
     if (refresh_token.empty()) {
       wildcard_login_checker_->StartWithSigninContext(
-          ProfileHelper::GetSigninProfile()->GetRequestContext(),
+          GetSigninRequestContext(),
           base::Bind(&ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted,
                      weak_factory_.GetWeakPtr(), success_callback,
                      failure_callback));
@@ -171,7 +172,7 @@ content::BrowserContext* ChromeLoginPerformer::GetSigninContext() {
 }
 
 net::URLRequestContextGetter* ChromeLoginPerformer::GetSigninRequestContext() {
-  return ProfileHelper::GetSigninProfile()->GetRequestContext();
+  return login::GetSigninContext();
 }
 
 void ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted(
