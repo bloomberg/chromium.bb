@@ -27,15 +27,17 @@
 [
     Constructor(DOMString type, optional SecurityPolicyViolationEventInit eventInitDict),
 ] interface SecurityPolicyViolationEvent : Event {
-    readonly attribute DOMString documentURI;
+    // TODO(philipj): The spec says "documentURL".
+    [Measure] readonly attribute DOMString documentURI;
     readonly attribute DOMString referrer;
-    readonly attribute DOMString blockedURI;
+    // TODO(philipj): The spec says "blockedURL".
+    [Measure] readonly attribute DOMString blockedURI;
     readonly attribute DOMString violatedDirective;
     readonly attribute DOMString effectiveDirective;
     readonly attribute DOMString originalPolicy;
     readonly attribute DOMString sourceFile;
+    // FIXME: The spec says "statusCode" is a DOMString.
+    [Measure] readonly attribute long      statusCode;
     readonly attribute long      lineNumber;
     readonly attribute long      columnNumber;
-    // FIXME: The spec says "statusCode" is a DOMString.
-    readonly attribute long      statusCode;
 };

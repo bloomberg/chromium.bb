@@ -709,6 +709,9 @@ public:
         V8HashChangeEvent_InitHashChangeEvent_Method = 803,
         ElementCreateShadowRootWithParameter = 804,
         V8KeyboardEvent_KeyIdentifier_AttributeGetter = 805,
+        V8SecurityPolicyViolationEvent_DocumentURI_AttributeGetter = 806,
+        V8SecurityPolicyViolationEvent_BlockedURI_AttributeGetter = 807,
+        V8SecurityPolicyViolationEvent_StatusCode_AttributeGetter = 808,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
