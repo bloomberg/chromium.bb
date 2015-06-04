@@ -1974,7 +1974,7 @@
         'use_cups%': 0,
       }],
 
-      ['enable_plugins==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
+      ['enable_plugins==1 and (OS=="linux" or OS=="mac" or OS=="win") and chromecast==0', {
         'enable_pepper_cdms%': 1,
       }, {
         'enable_pepper_cdms%': 0,
