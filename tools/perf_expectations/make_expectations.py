@@ -241,14 +241,15 @@ def Main(args):
     scanning = False
     for line in summarylist:
       jsondata = ConvertJsonIntoDict(line)
-
-      # TODO(iannucci): Remove this once http://crbug.com/336471 is resolved.
-      if 'Force the Chro' in jsondata['rev']:
+      try:
+        rev = int(jsondata['rev'])
+      except ValueError:
+        print ('Warning: skipping rev %r because could not be parsed '
+               'as an integer.' % jsondata['rev'])
         continue
-
-      if int(jsondata['rev']) <= revb:
+      if rev <= revb:
         scanning = True
-      if int(jsondata['rev']) < reva:
+      if rev < reva:
         break
 
       # We found the upper revision in the range.  Scan for trace data until we
