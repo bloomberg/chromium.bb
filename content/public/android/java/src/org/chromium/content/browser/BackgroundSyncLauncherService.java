@@ -61,8 +61,8 @@ public class BackgroundSyncLauncherService extends IntentService {
         }
     }
 
-    public BackgroundSyncLauncherService(String name) {
-        super(name);
+    public BackgroundSyncLauncherService() {
+        super("BackgroundSyncLauncherService");
     }
 
     @Override

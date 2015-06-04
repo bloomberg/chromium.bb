@@ -156,4 +156,11 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
         deleteLauncherInstance();
         startOnReceiveAndVerify(true);
     }
+
+    @SmallTest
+    @Feature({"BackgroundSync"})
+    public void testStartingService() {
+        Intent serviceIntent = new Intent(mContext, BackgroundSyncLauncherService.class);
+        mLauncherServiceReceiver.startWakefulService(mContext, serviceIntent);
+    }
 }
