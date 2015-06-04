@@ -59,8 +59,7 @@ const char kMediaRouterStableExtensionId[] = "fjhoaacokmgbjemoflkofnenfaiekifl";
 const char kChromeVoxExtensionId[] =
     "mndnfokpggljbaajbnioimlmbfngpief";
 const char kChromeVoxExtensionPath[] = "chromeos/chromevox";
-const char kChromeVoxManifestFilename[] = "manifest.json";
-const char kChromeVoxGuestManifestFilename[] = "manifest_guest.json";
+const char kGuestManifestFilename[] = "manifest_guest.json";
 const char kBrailleImeExtensionId[] =
     "jddehjeebkoimngcbdkaahpobgicbffp";
 const char kBrailleImeExtensionPath[] =

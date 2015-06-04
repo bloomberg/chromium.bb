@@ -29,6 +29,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
@@ -87,14 +88,20 @@ std::string GenerateId(const base::DictionaryValue* manifest,
 #if defined(OS_CHROMEOS)
 scoped_ptr<base::DictionaryValue>
 LoadManifestOnFileThread(
-    const base::FilePath& chromevox_path, const char* manifest_filename) {
+    const base::FilePath& root_directory,
+    const base::FilePath::CharType* manifest_filename) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   std::string error;
   scoped_ptr<base::DictionaryValue> manifest(
-      file_util::LoadManifest(chromevox_path, manifest_filename, &error));
-  CHECK(manifest) << error;
+      file_util::LoadManifest(root_directory, manifest_filename, &error));
+  if (!manifest) {
+    LOG(ERROR) << "Can't load "
+               << root_directory.Append(manifest_filename).AsUTF8Unsafe()
+               << ": " << error;
+    return nullptr;
+  }
   bool localized = extension_l10n_util::LocalizeExtension(
-      chromevox_path, manifest.get(), &error);
+      root_directory, manifest.get(), &error);
   CHECK(localized) << error;
   return manifest.Pass();
 }
@@ -395,45 +402,33 @@ void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
 #if defined(OS_CHROMEOS)
 void ComponentLoader::AddChromeVoxExtension(
     const base::Closure& done_cb) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::FilePath resources_path;
-  PathService::Get(chrome::DIR_RESOURCES, &resources_path);
+  CHECK(PathService::Get(chrome::DIR_RESOURCES, &resources_path));
 
   base::FilePath chromevox_path =
       resources_path.Append(extension_misc::kChromeVoxExtensionPath);
 
-  const char* manifest_filename =
-      IsNormalSession() ? extension_misc::kChromeVoxManifestFilename
-                        : extension_misc::kChromeVoxGuestManifestFilename;
+  const base::FilePath::CharType* manifest_filename =
+      IsNormalSession() ? extensions::kManifestFilename
+                        : extension_misc::kGuestManifestFilename;
+  AddWithManifestFile(
+      manifest_filename,
+      chromevox_path,
+      extension_misc::kChromeVoxExtensionId,
+      done_cb);
+}
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&LoadManifestOnFileThread, chromevox_path, manifest_filename),
-      base::Bind(&ComponentLoader::AddChromeVoxExtensionWithManifest,
+void ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
+  const base::FilePath::CharType* manifest_filename =
+      IsNormalSession() ? extensions::kManifestFilename
+                        : extension_misc::kGuestManifestFilename;
+  AddWithManifestFile(
+      manifest_filename,
+      base::FilePath(extension_misc::kSpeechSynthesisExtensionPath),
+      extension_misc::kSpeechSynthesisExtensionId,
+      base::Bind(&ComponentLoader::EnableFileSystemInGuestMode,
                  weak_factory_.GetWeakPtr(),
-                 chromevox_path,
-                 done_cb));
-}
-
-void ComponentLoader::AddChromeVoxExtensionWithManifest(
-    const base::FilePath& chromevox_path,
-    const base::Closure& done_cb,
-    scoped_ptr<base::DictionaryValue> manifest) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::string extension_id = Add(manifest.release(), chromevox_path, false);
-  CHECK_EQ(extension_misc::kChromeVoxExtensionId, extension_id);
-  if (!done_cb.is_null())
-    done_cb.Run();
-}
-
-std::string ComponentLoader::AddChromeOsSpeechSynthesisExtension() {
-  int idr = IsNormalSession() ? IDR_SPEECH_SYNTHESIS_MANIFEST
-                              : IDR_SPEECH_SYNTHESIS_GUEST_MANIFEST;
-  std::string id = Add(idr,
-      base::FilePath(extension_misc::kSpeechSynthesisExtensionPath));
-  EnableFileSystemInGuestMode(id);
-  return id;
+                 extension_misc::kChromeVoxExtensionId));
 }
 #endif
 
@@ -717,5 +712,41 @@ void ComponentLoader::EnableFileSystemInGuestMode(const std::string& id) {
   }
 #endif
 }
+
+#if defined(OS_CHROMEOS)
+void ComponentLoader::AddWithManifestFile(
+    const base::FilePath::CharType* manifest_filename,
+    const base::FilePath& root_directory,
+    const char* extension_id,
+    const base::Closure& done_cb) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&LoadManifestOnFileThread, root_directory, manifest_filename),
+      base::Bind(&ComponentLoader::FinishAddWithManifestFile,
+                 weak_factory_.GetWeakPtr(),
+                 root_directory,
+                 extension_id,
+                 done_cb));
+}
+
+void ComponentLoader::FinishAddWithManifestFile(
+    const base::FilePath& root_directory,
+    const char* extension_id,
+    const base::Closure& done_cb,
+    scoped_ptr<base::DictionaryValue> manifest) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!manifest)
+    return;  // Error already logged.
+  std::string actual_extension_id = Add(
+      manifest.release(),
+      root_directory,
+      false);
+  CHECK_EQ(extension_id, actual_extension_id);
+  if (!done_cb.is_null())
+    done_cb.Run();
+}
+#endif
 
 }  // namespace extensions
