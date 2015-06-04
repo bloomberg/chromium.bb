@@ -9420,6 +9420,19 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.CorruptPolicyExtensionWouldBeDisabled"
+    enum="BooleanHit">
+  <owner>asargent@chromium.org</owner>
+  <summary>
+    Fires when we detect corruption in an enterprise policy forced install
+    extension. See http://crbug.com/447040 for more background on why we don't
+    yet disable these. A useful comparison can be made between this value and
+    the number of policy forced extensions loaded at startup, which is logged in
+    the EXTERNAL_POLICY_DOWNLOAD bucket of the Extensions.ExtensionLocation
+    histogram.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.CrxFetchError" enum="NetErrorCodes">
   <owner>asargent@chromium.org</owner>
   <summary>Net error results from URLFetcher.</summary>
