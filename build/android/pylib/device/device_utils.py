@@ -290,7 +290,7 @@ class DeviceUtils(object):
     if 'needs_su' in self._cache:
       del self._cache['needs_su']
     self.adb.Root()
-    self.adb.WaitForDevice()
+    self.WaitUntilFullyBooted()
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def IsUserBuild(self, timeout=None, retries=None):

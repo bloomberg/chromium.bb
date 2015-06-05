@@ -140,6 +140,18 @@ class DeviceUtilsTest(mock_calls.TestCase):
         self.adb, default_timeout=10, default_retries=0)
     self.watchMethodCalls(self.call.adb, ignore=['GetDeviceSerial'])
 
+  def AdbCommandError(self, args=None, output=None, status=None, msg=None):
+    if args is None:
+      args = ['[unspecified]']
+    return mock.Mock(side_effect=device_errors.AdbCommandFailedError(
+        args, output, status, msg, str(self.device)))
+
+  def CommandError(self, msg=None):
+    if msg is None:
+      msg = 'Command failed'
+    return mock.Mock(side_effect=device_errors.CommandFailedError(
+        msg, str(self.device)))
+
   def ShellError(self, output=None, status=1):
     def action(cmd, *args, **kwargs):
       raise device_errors.AdbShellCommandFailedError(
@@ -152,12 +164,6 @@ class DeviceUtilsTest(mock_calls.TestCase):
     if msg is None:
       msg = 'Operation timed out'
     return mock.Mock(side_effect=device_errors.CommandTimeoutError(
-        msg, str(self.device)))
-
-  def CommandError(self, msg=None):
-    if msg is None:
-      msg = 'Command failed'
-    return mock.Mock(side_effect=device_errors.CommandFailedError(
         msg, str(self.device)))
 
 
@@ -259,8 +265,8 @@ class DeviceUtilsEnableRootTest(DeviceUtilsTest):
   def testEnableRoot_succeeds(self):
     with self.assertCalls(
         (self.call.device.IsUserBuild(), False),
-        self.call.adb.Root(),
-        self.call.adb.WaitForDevice()):
+         self.call.adb.Root(),
+         self.call.device.WaitUntilFullyBooted()):
       self.device.EnableRoot()
 
   def testEnableRoot_userBuild(self):
@@ -361,6 +367,27 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsTest):
         (self.call.adb.Shell('dumpsys wifi'),
          'stuff\nWi-Fi is enabled\nmore stuff\n')):
       self.device.WaitUntilFullyBooted(wifi=True)
+
+  def testWaitUntilFullyBooted_deviceNotInitiallyAvailable(self):
+    with self.assertCalls(
+        self.call.adb.WaitForDevice(),
+        # sd_card_ready
+        (self.call.device.GetExternalStoragePath(), self.AdbCommandError()),
+        # sd_card_ready
+        (self.call.device.GetExternalStoragePath(), self.AdbCommandError()),
+        # sd_card_ready
+        (self.call.device.GetExternalStoragePath(), self.AdbCommandError()),
+        # sd_card_ready
+        (self.call.device.GetExternalStoragePath(), self.AdbCommandError()),
+        # sd_card_ready
+        (self.call.device.GetExternalStoragePath(), '/fake/storage/path'),
+        (self.call.adb.Shell('test -d /fake/storage/path'), ''),
+        # pm_ready
+        (self.call.device.GetApplicationPath('android'),
+         'package:/some/fake/path'),
+        # boot_completed
+        (self.call.device.GetProp('sys.boot_completed'), '1')):
+      self.device.WaitUntilFullyBooted(wifi=False)
 
   def testWaitUntilFullyBooted_sdCardReadyFails_noPath(self):
     with self.assertCalls(
