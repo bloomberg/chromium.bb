@@ -80,6 +80,9 @@ public:
     BLINK_PLATFORM_EXPORT double workerStart() const;
     BLINK_PLATFORM_EXPORT void setWorkerStart(double);
 
+    BLINK_PLATFORM_EXPORT double workerReady() const;
+    BLINK_PLATFORM_EXPORT void setWorkerReady(double);
+
     BLINK_PLATFORM_EXPORT double sendStart() const;
     BLINK_PLATFORM_EXPORT void setSendStart(double);
 

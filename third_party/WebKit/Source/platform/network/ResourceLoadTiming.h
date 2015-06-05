@@ -50,6 +50,7 @@ public:
         timing->m_connectStart = m_connectStart;
         timing->m_connectEnd = m_connectEnd;
         timing->m_workerStart = m_workerStart;
+        timing->m_workerReady = m_workerReady;
         timing->m_sendStart = m_sendStart;
         timing->m_sendEnd = m_sendEnd;
         timing->m_receiveHeadersEnd = m_receiveHeadersEnd;
@@ -68,6 +69,7 @@ public:
             && m_connectStart == other.m_connectStart
             && m_connectEnd == other.m_connectEnd
             && m_workerStart == other.m_workerStart
+            && m_workerReady == other.m_workerReady
             && m_sendStart == other.m_sendStart
             && m_sendEnd == other.m_sendEnd
             && m_receiveHeadersEnd == other.m_receiveHeadersEnd
@@ -88,6 +90,7 @@ public:
     void setConnectStart(double connectStart) { m_connectStart = connectStart; }
     void setConnectEnd(double connectEnd) { m_connectEnd = connectEnd; }
     void setWorkerStart(double workerStart) { m_workerStart = workerStart; }
+    void setWorkerReady(double workerReady) { m_workerReady = workerReady; }
     void setSendStart(double sendStart) { m_sendStart = sendStart; }
     void setSendEnd(double sendEnd) { m_sendEnd = sendEnd; }
     void setReceiveHeadersEnd(double receiveHeadersEnd) { m_receiveHeadersEnd = receiveHeadersEnd; }
@@ -102,6 +105,7 @@ public:
     double connectStart() const { return m_connectStart; }
     double connectEnd() const { return m_connectEnd; }
     double workerStart() const { return m_workerStart; }
+    double workerReady() const { return m_workerReady; }
     double sendStart() const { return m_sendStart; }
     double sendEnd() const { return m_sendEnd; }
     double receiveHeadersEnd() const { return m_receiveHeadersEnd; }
@@ -120,6 +124,7 @@ private:
         , m_connectStart(0)
         , m_connectEnd(0)
         , m_workerStart(0)
+        , m_workerReady(0)
         , m_sendStart(0)
         , m_sendEnd(0)
         , m_receiveHeadersEnd(0)
@@ -143,6 +148,7 @@ private:
     double m_connectStart;
     double m_connectEnd;
     double m_workerStart;
+    double m_workerReady;
     double m_sendStart;
     double m_sendEnd;
     double m_receiveHeadersEnd;

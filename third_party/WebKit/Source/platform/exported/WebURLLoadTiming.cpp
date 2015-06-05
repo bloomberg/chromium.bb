@@ -131,6 +131,16 @@ void WebURLLoadTiming::setWorkerStart(double start)
     m_private->setWorkerStart(start);
 }
 
+double WebURLLoadTiming::workerReady() const
+{
+    return m_private->workerReady();
+}
+
+void WebURLLoadTiming::setWorkerReady(double ready)
+{
+    m_private->setWorkerReady(ready);
+}
+
 double WebURLLoadTiming::sendStart() const
 {
     return m_private->sendStart();
