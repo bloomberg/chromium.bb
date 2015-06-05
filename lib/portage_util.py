@@ -1191,7 +1191,8 @@ def RegenCache(overlay):
 
   # Regen for the whole repo.
   cros_build_lib.RunCommand(['egencache', '--update', '--repo', repo_name,
-                             '--jobs', str(multiprocessing.cpu_count())])
+                             '--jobs', str(multiprocessing.cpu_count())],
+                            cwd=overlay, enter_chroot=True)
   # If there was nothing new generated, then let's just bail.
   result = git.RunGit(overlay, ['status', '-s', 'metadata/'])
   if not result.output:

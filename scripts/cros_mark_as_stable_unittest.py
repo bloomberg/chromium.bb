@@ -98,12 +98,13 @@ class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
 
   def testNormalClean(self):
     """Clean up boards/packages with normal success"""
-    cros_mark_as_stable.CleanStalePackages(('board1', 'board2'), ['cow', 'car'])
+    cros_mark_as_stable.CleanStalePackages('.', ('board1', 'board2'),
+                                           ['cow', 'car'])
 
   def testNothingToUnmerge(self):
     """Clean up packages that don't exist (portage will exit 1)"""
     self.rc.AddCmdResult(partial_mock.In('emerge'), returncode=1)
-    cros_mark_as_stable.CleanStalePackages((), ['no/pkg'])
+    cros_mark_as_stable.CleanStalePackages('.', (), ['no/pkg'])
 
   def testUnmergeError(self):
     """Make sure random exit errors are not ignored"""
@@ -111,7 +112,7 @@ class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
     with parallel_unittest.ParallelMock():
       self.assertRaises(cros_build_lib.RunCommandError,
                         cros_mark_as_stable.CleanStalePackages,
-                        (), ['no/pkg'])
+                        '.', (), ['no/pkg'])
 
 
 class GitBranchTest(cros_test_lib.MockTestCase):

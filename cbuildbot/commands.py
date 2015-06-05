@@ -1221,18 +1221,15 @@ def CleanupChromeKeywordsFile(boards, buildroot):
       cros_build_lib.SudoRunCommand(['rm', '-f', keywords_file])
 
 
-def UprevPackages(buildroot, boards, overlays, enter_chroot=True):
+def UprevPackages(buildroot, boards, overlays):
   """Uprevs non-browser chromium os packages that have changed."""
   drop_file = _PACKAGE_FILE % {'buildroot': buildroot}
-  if enter_chroot:
-    overlays = [path_util.ToChrootPath(x) for x in overlays]
-    drop_file = path_util.ToChrootPath(drop_file)
   cmd = ['cros_mark_as_stable', '--all',
          '--boards=%s' % ':'.join(boards),
          '--overlays=%s' % ':'.join(overlays),
          '--drop_file=%s' % drop_file,
          'commit']
-  RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=enter_chroot)
+  RunBuildScript(buildroot, cmd, chromite_cmd=True)
 
 
 def UprevPush(buildroot, overlays, dryrun):

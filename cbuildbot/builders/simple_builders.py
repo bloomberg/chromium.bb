@@ -189,18 +189,20 @@ class SimpleBuilder(generic_builders.Builder):
 
   def _RunMasterPaladinOrChromePFQBuild(self):
     """Runs through the stages of the paladin or chrome PFQ master build."""
-    self._RunStage(build_stages.InitSDKStage)
     self._RunStage(build_stages.UprevStage)
+    self._RunStage(build_stages.InitSDKStage)
     # The CQ/Chrome PFQ master will not actually run the SyncChrome stage, but
     # we want the logic that gets triggered when SyncChrome stage is skipped.
     self._RunStage(chrome_stages.SyncChromeStage)
+    self._RunStage(build_stages.RegenPortageCacheStage)
     self._RunStage(test_stages.BinhostTestStage)
     self._RunStage(artifact_stages.MasterUploadPrebuiltsStage)
 
   def _RunDefaultTypeBuild(self):
     """Runs through the stages of a non-special-type build."""
-    self._RunStage(build_stages.InitSDKStage)
     self._RunStage(build_stages.UprevStage)
+    self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.RegenPortageCacheStage)
     self.RunSetupBoard()
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(chrome_stages.PatchChromeStage)

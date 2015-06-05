@@ -22,6 +22,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import portage_util
 
 
 class CleanUpStage(generic_stages.BuilderStage):
@@ -430,9 +431,8 @@ class UprevStage(generic_stages.BuilderStage):
   config_name = 'uprev'
   option_name = 'uprev'
 
-  def __init__(self, builder_run, boards=None, enter_chroot=True, **kwargs):
+  def __init__(self, builder_run, boards=None, **kwargs):
     super(UprevStage, self).__init__(builder_run, **kwargs)
-    self._enter_chroot = enter_chroot
     if boards is not None:
       self._boards = boards
 
@@ -441,5 +441,16 @@ class UprevStage(generic_stages.BuilderStage):
     overlays, _ = self._ExtractOverlays()
     commands.UprevPackages(self._build_root,
                            self._boards,
-                           overlays,
-                           enter_chroot=self._enter_chroot)
+                           overlays)
+
+
+class RegenPortageCacheStage(generic_stages.BuilderStage):
+  """Regenerates the Portage ebuild cache."""
+
+  # We only need to run this if we're pushing at least one overlay.
+  config_name = 'push_overlays'
+
+  def PerformStage(self):
+    _, push_overlays = self._ExtractOverlays()
+    inputs = [[overlay] for overlay in push_overlays if os.path.isdir(overlay)]
+    parallel.RunTasksInProcessPool(portage_util.RegenCache, inputs)

@@ -24,7 +24,7 @@ class ChrootSdkBuilder(simple_builders.SimpleBuilder):
     # Unlike normal CrOS builds, the SDK has no concept of pinned CrOS manifest
     # or specific Chrome version.  Use a datestamp instead.
     version = datetime.datetime.now().strftime('%Y.%m.%d.%H%M%S')
-    self._RunStage(build_stages.UprevStage, boards=[], enter_chroot=False)
+    self._RunStage(build_stages.UprevStage, boards=[])
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(build_stages.SetupBoardStage, constants.CHROOT_BUILDER_BOARD)
     self._RunStage(chrome_stages.SyncChromeStage)
