@@ -102,8 +102,8 @@ function testInherit()
 {
     var parentElement = document.createElement("div");
     document.body.appendChild(parentElement);
-    parentElement.style.gridTemplateColumns = "50px (last)";
-    parentElement.style.gridTemplateRows = "(first) 101%";
+    parentElement.style.gridTemplateColumns = "50px [last]";
+    parentElement.style.gridTemplateRows = "[first] 101%";
 
     element = document.createElement("div");
     parentElement.appendChild(element);
@@ -111,8 +111,8 @@ function testInherit()
     element.style.height = "100px";
     element.style.gridTemplateColumns = "inherit";
     element.style.gridTemplateRows = "inherit";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-columns')", "'50px (last)'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-rows')", "'(first) 101px'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-columns')", "'50px [last]'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-rows')", "'[first] 101px'");
 
     document.body.removeChild(parentElement);
 }
@@ -127,10 +127,10 @@ function testInitial()
     element.style.display = "grid";
     element.style.width = "300px";
     element.style.height = "150px";
-    element.style.gridTemplateColumns = "150% (last)";
-    element.style.gridTemplateRows = "(first) 1fr";
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-columns')", "'450px (last)'");
-    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-rows')", "'(first) 150px'");
+    element.style.gridTemplateColumns = "150% [last]";
+    element.style.gridTemplateRows = "[first] 1fr";
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-columns')", "'450px [last]'");
+    shouldBe("getComputedStyle(element, '').getPropertyValue('grid-template-rows')", "'[first] 150px'");
 
     element.style.display = "grid";
     element.style.gridTemplateColumns = "initial";

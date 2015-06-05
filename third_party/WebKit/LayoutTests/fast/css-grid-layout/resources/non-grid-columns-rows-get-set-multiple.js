@@ -62,15 +62,15 @@ function testInherit()
 {
     var parentElement = document.createElement("div");
     document.body.appendChild(parentElement);
-    parentElement.style.gridTemplateColumns = "50px 1fr (last)";
-    parentElement.style.gridTemplateRows = "101% (middle) 45px";
-    testGridDefinitionsValues(parentElement, "50px 1fr (last)", "101% (middle) 45px");
+    parentElement.style.gridTemplateColumns = "50px 1fr [last]";
+    parentElement.style.gridTemplateRows = "101% [middle] 45px";
+    testGridDefinitionsValues(parentElement, "50px 1fr [last]", "101% [middle] 45px");
 
     element = document.createElement("div");
     parentElement.appendChild(element);
     element.style.gridTemplateColumns = "inherit";
     element.style.gridTemplateRows = "inherit";
-    testGridDefinitionsValues(element, "50px 1fr (last)", "101% (middle) 45px");
+    testGridDefinitionsValues(element, "50px 1fr [last]", "101% [middle] 45px");
 
     document.body.removeChild(parentElement);
 }
@@ -82,9 +82,9 @@ function testInitial()
 {
     element = document.createElement("div");
     document.body.appendChild(element);
-    element.style.gridTemplateColumns = "150% (middle) 55px";
-    element.style.gridTemplateRows = "1fr (line) 2fr (line)";
-    testGridDefinitionsValues(element, "150% (middle) 55px", "1fr (line) 2fr (line)");
+    element.style.gridTemplateColumns = "150% [middle] 55px";
+    element.style.gridTemplateRows = "1fr [line] 2fr [line]";
+    testGridDefinitionsValues(element, "150% [middle] 55px", "1fr [line] 2fr [line]");
 
     element.style.gridTemplateColumns = "initial";
     element.style.gridTemplateRows = "initial";

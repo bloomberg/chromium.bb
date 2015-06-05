@@ -4,17 +4,17 @@
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .gridWithoutRepeat {
-    grid-template-columns: (a) 50px (b) 100px (c) 200px (d);
-    grid-template-rows: (e) 50px (f) 100px (g) 200px (h);
+    grid-template-columns: [a] 50px [b] 100px [c] 200px [d];
+    grid-template-rows: [e] 50px [f] 100px [g] 200px [h];
 }
 
 .gridWithRepeat {
-    grid-template-columns: (b) 50px (b) 100px (b) 200px (b);
-    grid-template-rows: (g) 50px (g) 100px (g) 200px (g);
+    grid-template-columns: [b] 50px [b] 100px [b] 200px [b];
+    grid-template-rows: [g] 50px [g] 100px [g] 200px [g];
 }
 
 .gridFromSpecs {
-    grid-template-columns: (A) 10px (B) 20px (C) 30px (A) 40px (B) 50px (C) 60px (A) 70px (B) 80px (C);
+    grid-template-columns: [A] 10px [B] 20px [C] 30px [A] 40px [B] 50px [C] 60px [A] 70px [B] 80px [C];
     grid-template-rows: 100px;
 }
 

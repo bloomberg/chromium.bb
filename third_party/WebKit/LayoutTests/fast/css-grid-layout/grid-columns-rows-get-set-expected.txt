@@ -176,12 +176,12 @@ PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is "no
 PASS element.style.gridTemplateRows is "none"
 
 Test setting grid-template-columns and grid-template-rows to 'inherit' through JS
-PASS getComputedStyle(element, '').getPropertyValue('grid-template-columns') is '50px (last)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is '(first) 101px'
+PASS getComputedStyle(element, '').getPropertyValue('grid-template-columns') is '50px [last]'
+PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is '[first] 101px'
 
 Test setting grid-template-columns and grid-template-rows to 'initial' through JS
-PASS getComputedStyle(element, '').getPropertyValue('grid-template-columns') is '450px (last)'
-PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is '(first) 150px'
+PASS getComputedStyle(element, '').getPropertyValue('grid-template-columns') is '450px [last]'
+PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is '[first] 150px'
 PASS getComputedStyle(element, '').getPropertyValue('grid-template-columns') is 'none'
 PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is 'none'
 PASS successfullyParsed is true
