@@ -362,6 +362,7 @@ def HasNoPerfResults(builder):
   if 'pnacl-buildonly-spec' in builder:
     return True
   return builder in [
+      'asan',
       'mac-toolchain_arm',
       'win-pnacl-x86_32',
       'linux-pnacl-x86_32-tests-mips',
