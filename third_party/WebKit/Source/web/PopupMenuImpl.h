@@ -30,6 +30,7 @@ public:
 private:
     PopupMenuImpl(ChromeClientImpl*, PopupMenuClient*);
 
+    bool hasTooManyItemsForStyling();
     void addOption(HTMLOptionElement&, bool enableExtraStyling, SharedBuffer*);
     void addOptGroup(HTMLOptGroupElement&, bool enableExtraStyling, SharedBuffer*);
     void addSeparator(HTMLHRElement&, bool enableExtraStyling, SharedBuffer*);

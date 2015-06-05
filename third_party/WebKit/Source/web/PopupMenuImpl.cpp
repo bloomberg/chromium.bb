@@ -15,6 +15,7 @@
 #include "core/html/HTMLHRElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/PagePopup.h"
@@ -26,11 +27,6 @@
 #include "web/WebViewImpl.h"
 
 namespace blink {
-
-// We don't make child style information if the popup will have a lot of items
-// because of a performance problem.
-// TODO(tkent): This is a workaround.  We should do a performance optimization.
-static const unsigned styledChildrenLimit = 100;
 
 class PopupMenuCSSFontSelector : public CSSFontSelector {
 public:
@@ -88,6 +84,19 @@ IntSize PopupMenuImpl::contentSize()
     return IntSize();
 }
 
+// We don't make child style information if the popup will have a lot of items
+// because of a performance problem.
+// TODO(tkent): This is a workaround.  We should do a performance optimization.
+bool PopupMenuImpl::hasTooManyItemsForStyling()
+{
+    // 300 is enough for world-wide countries.
+    const unsigned styledChildrenLimit = 300;
+
+    if (!isHTMLSelectElement(ownerElement()))
+        return false;
+    return toHTMLSelectElement(ownerElement()).listItems().size() > styledChildrenLimit;
+}
+
 void PopupMenuImpl::writeDocument(SharedBuffer* data)
 {
     IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(m_client->elementRectRelativeToViewport());
@@ -99,7 +108,7 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
         "window.dialogArguments = {\n", data);
     addProperty("selectedIndex", m_client->selectedIndex(), data);
     PagePopupClient::addString("children: [\n", data);
-    bool enableExtraStyling = ownerElement().countChildren() < styledChildrenLimit;
+    bool enableExtraStyling = !hasTooManyItemsForStyling();
     for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(ownerElement())) {
         if (isHTMLOptionElement(child))
             addOption(toHTMLOptionElement(child), enableExtraStyling, data);
@@ -379,7 +388,7 @@ void PopupMenuImpl::update()
     PagePopupClient::addString("window.updateData = {\n", data.get());
     PagePopupClient::addString("type: \"update\",\n", data.get());
     PagePopupClient::addString("children: [", data.get());
-    bool enableExtraStyling = ownerElement().countChildren() < styledChildrenLimit;
+    bool enableExtraStyling = !hasTooManyItemsForStyling();
     for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(ownerElement())) {
         if (isHTMLOptionElement(child))
             addOption(toHTMLOptionElement(child), enableExtraStyling, data.get());
