@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 // http://www.w3.org/TR/web-animations/#the-animationplayerevent-interface
-// Note: The latest draft removed this event.
-// http://w3c.github.io/web-animations/
+
+// TODO(dstockwell): This interface has been removed in the latest spec:
+// https://w3c.github.io/web-animations/
 
 [
     Constructor(DOMString type, optional AnimationPlayerEventInit eventInitDict),
@@ -13,4 +14,3 @@
     readonly attribute double currentTime;
     readonly attribute double timelineTime;
 };
-
