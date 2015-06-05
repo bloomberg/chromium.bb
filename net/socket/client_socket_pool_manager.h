@@ -94,7 +94,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManager {
 // |resolution_callback| will be invoked after the the hostname is
 // resolved.  If |resolution_callback| does not return OK, then the
 // connection will be aborted with that value.
-// If |want_spdy_over_ssl| is true, then after the SSL handshake is complete,
+// If |expect_spdy| is true, then after the SSL handshake is complete,
 // SPDY must have been negotiated or else it will be considered an error.
 int InitSocketHandleForHttpRequest(
     ClientSocketPoolManager::SocketGroupType group_type,
@@ -104,7 +104,7 @@ int InitSocketHandleForHttpRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    bool want_spdy_over_npn,
+    bool expect_spdy,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
@@ -130,7 +130,7 @@ int InitSocketHandleForWebSocketRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    bool want_spdy_over_npn,
+    bool expect_spdy,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
@@ -179,7 +179,7 @@ int PreconnectSocketsForHttpRequest(
     RequestPriority request_priority,
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
-    bool want_spdy_over_npn,
+    bool expect_spdy,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,

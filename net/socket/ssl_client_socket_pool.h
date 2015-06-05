@@ -42,15 +42,14 @@ class NET_EXPORT_PRIVATE SSLSocketParams
 
   // Exactly one of |direct_params|, |socks_proxy_params|, and
   // |http_proxy_params| must be non-NULL.
-  SSLSocketParams(
-      const scoped_refptr<TransportSocketParams>& direct_params,
-      const scoped_refptr<SOCKSSocketParams>& socks_proxy_params,
-      const scoped_refptr<HttpProxySocketParams>& http_proxy_params,
-      const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config,
-      PrivacyMode privacy_mode,
-      int load_flags,
-      bool want_spdy_over_npn);
+  SSLSocketParams(const scoped_refptr<TransportSocketParams>& direct_params,
+                  const scoped_refptr<SOCKSSocketParams>& socks_proxy_params,
+                  const scoped_refptr<HttpProxySocketParams>& http_proxy_params,
+                  const HostPortPair& host_and_port,
+                  const SSLConfig& ssl_config,
+                  PrivacyMode privacy_mode,
+                  int load_flags,
+                  bool expect_spdy);
 
   // Returns the type of the underlying connection.
   ConnectionType GetConnectionType() const;
@@ -71,7 +70,7 @@ class NET_EXPORT_PRIVATE SSLSocketParams
   const SSLConfig& ssl_config() const { return ssl_config_; }
   PrivacyMode privacy_mode() const { return privacy_mode_; }
   int load_flags() const { return load_flags_; }
-  bool want_spdy_over_npn() const { return want_spdy_over_npn_; }
+  bool expect_spdy() const { return expect_spdy_; }
   bool ignore_limits() const { return ignore_limits_; }
 
  private:
@@ -85,7 +84,7 @@ class NET_EXPORT_PRIVATE SSLSocketParams
   const SSLConfig ssl_config_;
   const PrivacyMode privacy_mode_;
   const int load_flags_;
-  const bool want_spdy_over_npn_;
+  const bool expect_spdy_;
   bool ignore_limits_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLSocketParams);

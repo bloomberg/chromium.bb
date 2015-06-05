@@ -870,8 +870,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   if (proxy_info_.is_http() || proxy_info_.is_https())
     establishing_tunnel_ = using_ssl_;
 
-  // TODO(bnc): s/want_spdy_over_npn/expect_spdy_over_npn/
-  bool want_spdy_over_npn = IsSpdyAlternative();
+  const bool expect_spdy = IsSpdyAlternative();
 
   if (proxy_info_.is_https()) {
     InitSSLConfig(proxy_info_.proxy_server().host_port_pair(),
@@ -899,9 +898,9 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     DCHECK(!stream_factory_->for_websockets_);
     return PreconnectSocketsForHttpRequest(
         GetSocketGroup(), server_, request_info_.extra_headers,
-        request_info_.load_flags, priority_, session_, proxy_info_,
-        want_spdy_over_npn, server_ssl_config_, proxy_ssl_config_,
-        request_info_.privacy_mode, net_log_, num_streams_);
+        request_info_.load_flags, priority_, session_, proxy_info_, expect_spdy,
+        server_ssl_config_, proxy_ssl_config_, request_info_.privacy_mode,
+        net_log_, num_streams_);
   }
 
   // If we can't use a SPDY session, don't bother checking for one after
@@ -917,18 +916,17 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
     websocket_server_ssl_config.next_protos.clear();
     return InitSocketHandleForWebSocketRequest(
         GetSocketGroup(), server_, request_info_.extra_headers,
-        request_info_.load_flags, priority_, session_, proxy_info_,
-        want_spdy_over_npn, websocket_server_ssl_config, proxy_ssl_config_,
+        request_info_.load_flags, priority_, session_, proxy_info_, expect_spdy,
+        websocket_server_ssl_config, proxy_ssl_config_,
         request_info_.privacy_mode, net_log_, connection_.get(),
         resolution_callback, io_callback_);
   }
 
   return InitSocketHandleForHttpRequest(
       GetSocketGroup(), server_, request_info_.extra_headers,
-      request_info_.load_flags, priority_, session_, proxy_info_,
-      want_spdy_over_npn, server_ssl_config_, proxy_ssl_config_,
-      request_info_.privacy_mode, net_log_, connection_.get(),
-      resolution_callback, io_callback_);
+      request_info_.load_flags, priority_, session_, proxy_info_, expect_spdy,
+      server_ssl_config_, proxy_ssl_config_, request_info_.privacy_mode,
+      net_log_, connection_.get(), resolution_callback, io_callback_);
 }
 
 int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
