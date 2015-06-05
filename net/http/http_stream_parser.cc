@@ -963,16 +963,25 @@ void HttpStreamParser::CalculateResponseBodySize() {
   // Figure how to determine EOF:
 
   // For certain responses, we know the content length is always 0. From
-  // RFC 2616 Section 4.3 Message Body:
+  // RFC 7230 Section 3.3 Message Body:
   //
-  // For response messages, whether or not a message-body is included with
-  // a message is dependent on both the request method and the response
-  // status code (section 6.1.1). All responses to the HEAD request method
-  // MUST NOT include a message-body, even though the presence of entity-
-  // header fields might lead one to believe they do. All 1xx
-  // (informational), 204 (no content), and 304 (not modified) responses
-  // MUST NOT include a message-body. All other responses do include a
-  // message-body, although it MAY be of zero length.
+  // The presence of a message body in a response depends on both the
+  // request method to which it is responding and the response status code
+  // (Section 3.1.2).  Responses to the HEAD request method (Section 4.3.2
+  // of [RFC7231]) never include a message body because the associated
+  // response header fields (e.g., Transfer-Encoding, Content-Length,
+  // etc.), if present, indicate only what their values would have been if
+  // the request method had been GET (Section 4.3.1 of [RFC7231]). 2xx
+  // (Successful) responses to a CONNECT request method (Section 4.3.6 of
+  // [RFC7231]) switch to tunnel mode instead of having a message body.
+  // All 1xx (Informational), 204 (No Content), and 304 (Not Modified)
+  // responses do not include a message body.  All other responses do
+  // include a message body, although the body might be of zero length.
+  //
+  // From RFC 7231 Section 6.3.6 205 Reset Content:
+  //
+  // Since the 205 status code implies that no additional content will be
+  // provided, a server MUST NOT generate a payload in a 205 response.
   if (response_->headers->response_code() / 100 == 1) {
     response_body_length_ = 0;
   } else {
