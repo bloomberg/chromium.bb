@@ -1626,6 +1626,8 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     protected void onPrimaryColorChanged() {
+        if (!getToolbarDataProvider().isUsingBrandColor()) return;
+
         super.onPrimaryColorChanged();
         if (mBrandColorTransitionActive) mBrandColorTransitionAnimation.cancel();
         if (!isVisualStateValidForBrandColorTransition(mVisualState)) {
