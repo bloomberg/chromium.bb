@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.document;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
@@ -32,6 +33,7 @@ public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActiv
         mContext = getInstrumentation().getTargetContext();
     }
 
+    @SmallTest
     public void testLaunchWithUrlNoScheme() throws Exception {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("www.google.com"));
         intent.setClassName(mContext.getPackageName(), ChromeLauncherActivity.class.getName());
