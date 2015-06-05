@@ -827,9 +827,10 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     osutils.SafeMakedirs(archive_dir)
     osutils.Touch(os.path.join(image_dir, image))
 
-    output_path = commands.BuildGceTarball(archive_dir, image_dir, image)
+    output_tar = commands.BuildGceTarball(archive_dir, image_dir, image)
+    self.assertEquals(output, output_tar)
 
-    self.assertEquals(os.path.join(archive_dir, output), output_path)
+    output_path = os.path.join(archive_dir, output_tar)
     self.assertExists(output_path)
 
     # GCE expects the tarball to be in a particular format.

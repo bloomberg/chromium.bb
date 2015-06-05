@@ -1898,7 +1898,7 @@ def BuildGceTarball(archive_dir, image_dir, image):
     image: Name of raw disk file.
 
   Returns:
-    The full local path of the output tarball.
+    The file name of the output tarball.
   """
   with osutils.TempDir() as tempdir:
     temp_disk_raw = os.path.join(tempdir, 'disk.raw')
@@ -1909,7 +1909,7 @@ def BuildGceTarball(archive_dir, image_dir, image):
     cros_build_lib.CreateTarball(
         output_file, tempdir, inputs=['disk.raw'],
         compression=cros_build_lib.COMP_GZIP, extra_args=['--dereference'])
-    return output_file
+    return os.path.basename(output_file)
 
 
 def BuildFirmwareArchive(buildroot, board, archive_dir):
