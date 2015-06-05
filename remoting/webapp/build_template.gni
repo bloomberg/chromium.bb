@@ -47,25 +47,30 @@ template("build_locales_listfile") {
 }
 
 template("build_webapp_html") {
-  target_jscompile = "${target_name}_jscompile"
-  target_jscompile_stamp = "$target_gen_dir/${target_jscompile}.stamp"
-  action(target_jscompile) {
-    js_files = remoting_webapp_js_proto_files + invoker.js_files
+  target_jscompile = ""
 
-    script = "../../third_party/closure_compiler/compile.py"
-    inputs = js_files
-    outputs = [
-      target_jscompile_stamp,
-    ]
+  if (run_jscompile) {
+    target_jscompile = "${target_name}_jscompile"
+    target_jscompile_stamp = "$target_gen_dir/${target_jscompile}.stamp"
+    action(target_jscompile) {
+      js_files = remoting_webapp_js_proto_files + invoker.js_files
 
-    args = [
-             "--strict",
-             "--no-single-file",
-             "--externs",
-             "../../third_party/closure_compiler/externs/chrome_extensions.js",
-             "--success-stamp",
-             rebase_path(target_jscompile_stamp, root_build_dir),
-           ] + rebase_path(js_files, root_build_dir)
+      script = "../../third_party/closure_compiler/compile.py"
+      inputs = js_files
+      outputs = [
+        target_jscompile_stamp,
+      ]
+
+      args = [
+        "--strict",
+        "--no-single-file",
+        "--externs",
+        "../../third_party/closure_compiler/externs/chrome_extensions.js",
+        "--success-stamp",
+        rebase_path(target_jscompile_stamp, root_build_dir),
+      ]
+      args += rebase_path(js_files, root_build_dir)
+    }
   }
 
   action(target_name) {
@@ -82,7 +87,7 @@ template("build_webapp_html") {
       html_output,
     ]
 
-    if (run_jscompile) {
+    if (target_jscompile != "") {
       deps = [
         ":$target_jscompile",
       ]
