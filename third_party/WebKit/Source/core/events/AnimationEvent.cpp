@@ -35,12 +35,9 @@ AnimationEvent::AnimationEvent()
 
 AnimationEvent::AnimationEvent(const AtomicString& type, const AnimationEventInit& initializer)
     : Event(type, initializer)
-    , m_elapsedTime(0.0)
+    , m_animationName(initializer.animationName())
+    , m_elapsedTime(initializer.elapsedTime())
 {
-    if (initializer.hasAnimationName())
-        m_animationName = initializer.animationName();
-    if (initializer.hasElapsedTime())
-        m_elapsedTime = initializer.elapsedTime();
 }
 
 AnimationEvent::AnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime)

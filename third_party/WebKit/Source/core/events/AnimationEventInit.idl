@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Non-standard.
+// http://dev.w3.org/csswg/css-animations/#interface-animationevent
 
 dictionary AnimationEventInit : EventInit {
-    DOMString animationName;
-    double elapsedTime;
+    DOMString animationName = "";
+    // TODO(philipj): elapsedTime should be float.
+    double elapsedTime = 0.0;
+    // TODO(philipj): DOMString pseudoElement = "";
 };

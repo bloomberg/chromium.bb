@@ -23,10 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://dev.w3.org/csswg/css-animations/#interface-animationevent
+
 [
     Constructor(DOMString type, optional AnimationEventInit eventInitDict),
 ] interface AnimationEvent : Event {
     readonly attribute DOMString animationName;
+    // TODO(philipj): elapsedTime should be float.
     readonly attribute double elapsedTime;
+    // TODO(philipj): readonly attribute DOMString pseudoElement;
 };
-

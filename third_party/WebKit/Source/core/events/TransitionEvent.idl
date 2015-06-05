@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/csswg/css-transitions/#Events-TransitionEvent
+// http://dev.w3.org/csswg/css-transitions/#transition-events
 
 [
     Constructor(DOMString type, optional TransitionEventInit eventInitDict),
 ] interface TransitionEvent : Event {
     readonly attribute DOMString propertyName;
+    // TODO(philipj): elapsedTime should be float.
     readonly attribute double elapsedTime;
     readonly attribute DOMString pseudoElement;
 };
-
