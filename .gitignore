@@ -75,13 +75,16 @@ TAGS
 /doc/liblouis.t2p/
 
 # /gnulib/
-/gnulib/getopt.h
-/gnulib/stdlib.h
-/gnulib/unistd.h
 /gnulib/arg-nonnull.h
-/gnulib/warn-on-use.h
 /gnulib/c++defs.h
-/gnulib/sys/types.h
+/gnulib/m4/absolute-header.m4
+/gnulib/m4/ld-output-def.m4
+/gnulib/stddef.h
+/gnulib/stdlib.h
+/gnulib/string.h
+/gnulib/sys/
+/gnulib/unistd.h
+/gnulib/warn-on-use.h
 
 # /liblouis/
 /liblouis/stamp-h1
@@ -173,5 +176,12 @@ TAGS
 /tools/lou_trace
 /tools/lou_translate
 /tools/*.exe
-/gnulib/m4/absolute-header.m4
-/gnulib/m4/ld-output-def.m4
+
+# /tools/gnulib
+/tools/gnulib/arg-nonnull.h
+/tools/gnulib/c++defs.h
+/tools/gnulib/stddef.h
+/tools/gnulib/stdlib.h
+/tools/gnulib/sys/
+/tools/gnulib/unistd.h
+/tools/gnulib/warn-on-use.h
