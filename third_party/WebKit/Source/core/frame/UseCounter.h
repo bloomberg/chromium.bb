@@ -725,6 +725,11 @@ public:
         V8FileReader_Error_AttributeGetter = 819,
         V8IDBRequest_Error_AttributeGetter = 820,
         V8IDBTransaction_Error_AttributeGetter = 821,
+        V8DOMStringList_Item_Method = 822,
+        V8Location_AncestorOrigins_AttributeGetter = 823,
+        V8IDBDatabase_ObjectStoreNames_AttributeGetter = 824,
+        V8IDBObjectStore_IndexNames_AttributeGetter = 825,
+        V8IDBTransaction_ObjectStoreNames_AttributeGetter = 826,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -53,7 +53,7 @@
 
     readonly attribute DOMString origin;
 
-    readonly attribute DOMStringList ancestorOrigins;
+    [Measure] readonly attribute DOMStringList ancestorOrigins;
 
     [NotEnumerable, ImplementedAs=href] DOMString toString();
     [NotEnumerable, CallWith=ThisValue] any valueOf();

@@ -41,7 +41,7 @@ enum IDBTransactionMode {
 ] interface IDBTransaction : EventTarget {
 
     // Properties
-    [RuntimeEnabled=IndexedDBExperimental] readonly attribute DOMStringList objectStoreNames;
+    [RuntimeEnabled=IndexedDBExperimental, Measure] readonly attribute DOMStringList objectStoreNames;
     readonly attribute IDBTransactionMode mode;
     readonly attribute IDBDatabase db;
     [Measure] readonly attribute DOMError error;
