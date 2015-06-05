@@ -12,11 +12,12 @@ var initialize_ExtensionsAuditsTest = function()
         launcherView._selectAllClicked(false);
         launcherView._auditPresentStateElement.checked = true;
 
-        var extensionCategories = document.evaluate("label[starts-with(.,'Extension ')]/input[@type='checkbox']",
-            WebInspector.panels.audits._launcherView._categoriesElement, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-
-        for (var i = 0; i < extensionCategories.snapshotLength; ++i)
-            extensionCategories.snapshotItem(i).click();
+        var extensionCategories = document.querySelectorAll(".audit-categories-container > label");
+        for (var i = 0; i < extensionCategories.length; ++i) {
+            var shouldBeEnabled = extensionCategories[i].textContent.includes("Extension");
+            if (shouldBeEnabled !== extensionCategories[i].checkboxElement.checked)
+                extensionCategories[i].checkboxElement.click();
+        }
 
         function onAuditsDone()
         {

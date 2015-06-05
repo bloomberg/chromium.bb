@@ -44,8 +44,6 @@ RUNNING TEST: extension_testAudits
                  <
                   /span
                  >
- Network Utilization
- Web Page Performance
 category.onAuditStarted fired
 All tests done.
 
