@@ -283,6 +283,7 @@
             'html/track/vtt/VTTCue.idl',
             'html/track/vtt/VTTRegion.idl',
             'html/track/vtt/VTTRegionList.idl',
+            'input/InputDevice.idl',
             'inspector/InspectorOverlayHost.idl',
             'loader/appcache/ApplicationCache.idl',
             'page/EventSource.idl',
@@ -2540,6 +2541,8 @@
             'events/WheelEvent.h',
             'events/WindowEventContext.cpp',
             'events/WindowEventContext.h',
+            'input/InputDevice.cpp',
+            'input/InputDevice.h',
         ],
         'webcore_html_files': [
             'html/ClassList.cpp',
@@ -3608,6 +3611,7 @@
             'html/canvas/WebGLContextAttributes.idl',
             'html/canvas/WebGLContextEventInit.idl',
             'html/track/TrackEventInit.idl',
+            'input/InputDeviceInit.idl',
             'page/EventSourceInit.idl',
         ],
         'generated_core_dictionary_files': [
@@ -3701,6 +3705,8 @@
             '<(blink_core_output_dir)/html/canvas/WebGLContextEventInit.h',
             '<(blink_core_output_dir)/html/track/TrackEventInit.cpp',
             '<(blink_core_output_dir)/html/track/TrackEventInit.h',
+            '<(blink_core_output_dir)/input/InputDeviceInit.cpp',
+            '<(blink_core_output_dir)/input/InputDeviceInit.h',
             '<(blink_core_output_dir)/page/EventSourceInit.cpp',
             '<(blink_core_output_dir)/page/EventSourceInit.h',
         ],

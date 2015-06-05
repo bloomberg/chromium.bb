@@ -3035,6 +3035,9 @@ interface ImageData
     getter height
     getter width
     method constructor
+interface InputDevice
+    getter firesTouchEvents
+    method constructor
 interface Int16Array
     attribute BYTES_PER_ELEMENT
     getter buffer
