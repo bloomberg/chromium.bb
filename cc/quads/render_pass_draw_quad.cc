@@ -12,8 +12,7 @@
 
 namespace cc {
 
-RenderPassDrawQuad::RenderPassDrawQuad()
-    : render_pass_id(RenderPassId(-1, -1)) {
+RenderPassDrawQuad::RenderPassDrawQuad() {
 }
 
 RenderPassDrawQuad::~RenderPassDrawQuad() {
@@ -30,7 +29,6 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 const gfx::Vector2dF& filters_scale,
                                 const FilterOperations& background_filters) {
   DCHECK_GT(render_pass_id.layer_id, 0);
-  DCHECK_GE(render_pass_id.index, 0);
 
   gfx::Rect opaque_rect;
   bool needs_blending = false;
@@ -61,7 +59,6 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 const gfx::Vector2dF& filters_scale,
                                 const FilterOperations& background_filters) {
   DCHECK_GT(render_pass_id.layer_id, 0);
-  DCHECK_GE(render_pass_id.index, 0);
 
   DrawQuad::SetAll(shared_quad_state, DrawQuad::RENDER_PASS, rect, opaque_rect,
                    visible_rect, needs_blending);

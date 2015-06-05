@@ -2239,8 +2239,11 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
       static_cast<int>(draw_cache_.vertex_opacity_data.size()),
       static_cast<float*>(&draw_cache_.vertex_opacity_data.front()));
 
+  DCHECK_LE(draw_cache_.matrix_data.size(),
+            static_cast<size_t>(std::numeric_limits<int>::max()) / 6u);
   // Draw the quads!
-  gl_->DrawElements(GL_TRIANGLES, 6 * draw_cache_.matrix_data.size(),
+  gl_->DrawElements(GL_TRIANGLES,
+                    6 * static_cast<int>(draw_cache_.matrix_data.size()),
                     GL_UNSIGNED_SHORT, 0);
 
   // Clear the cache.

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
@@ -214,7 +215,7 @@ DisplayItemList::AsValue() const {
   scoped_refptr<base::trace_event::TracedValue> state =
       new base::trace_event::TracedValue();
 
-  state->SetInteger("length", items_.size());
+  state->SetInteger("length", base::saturated_cast<int>(items_.size()));
   state->BeginArray("params.items");
   for (const DisplayItem* item : items_) {
     item->AsValueInto(state.get());
