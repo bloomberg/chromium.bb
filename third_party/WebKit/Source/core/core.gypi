@@ -3226,8 +3226,6 @@
             'layout/svg/SVGResourcesCache.cpp',
             'layout/svg/SVGResourcesCycleSolver.cpp',
             'layout/svg/SVGResourcesCycleSolver.h',
-            'layout/svg/SVGTextChunk.cpp',
-            'layout/svg/SVGTextChunk.h',
             'layout/svg/SVGTextChunkBuilder.cpp',
             'layout/svg/SVGTextChunkBuilder.h',
             'layout/svg/SVGTextFragment.h',
