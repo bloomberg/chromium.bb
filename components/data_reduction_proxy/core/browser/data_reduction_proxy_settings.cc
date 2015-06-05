@@ -213,7 +213,8 @@ void DataReductionProxySettings::UpdateIOData(bool at_startup) {
   data_reduction_proxy_service_->SetProxyPrefs(
       IsDataReductionProxyEnabled(), IsDataReductionProxyAlternativeEnabled(),
       at_startup);
-  data_reduction_proxy_service_->RetrieveConfig();
+  if (IsDataReductionProxyEnabled())
+    data_reduction_proxy_service_->RetrieveConfig();
 }
 
 void DataReductionProxySettings::MaybeActivateDataReductionProxy(
