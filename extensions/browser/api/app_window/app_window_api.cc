@@ -205,11 +205,14 @@ bool AppWindowCreateFunction::RunAsync() {
     if (!GetBoundsSpec(*options, &create_params, &error_))
       return false;
 
-    if (!AppWindowClient::Get()->IsCurrentChannelOlderThanDev() ||
-        extension()->location() == Manifest::COMPONENT) {
-      if (options->type == app_window::WINDOW_TYPE_PANEL) {
-        create_params.window_type = AppWindow::WINDOW_TYPE_PANEL;
-      }
+    if (options->type == app_window::WINDOW_TYPE_PANEL) {
+#if defined(USE_ASH)
+      // Currently panels for v2 apps are only implemented in Ash.
+      create_params.window_type = AppWindow::WINDOW_TYPE_PANEL;
+#else
+      WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING,
+                     "Panels are not supported on this platform");
+#endif
     }
 
     if (!GetFrameOptions(*options, &create_params))
