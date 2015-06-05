@@ -22,6 +22,8 @@
 	<string>1.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSMainNibFile</key>
+	<string>${MAIN_NIB_FILE}</string>
 	<key>UILaunchImages</key>
 	<array>
 		<dict>
@@ -103,6 +105,42 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.google.sso.chrome</string>
+				<string>${BUNDLE_ID_TEST_NAME}.http</string>
+				<string>${BUNDLE_ID_TEST_NAME}.https</string>
+				<string>${BUNDLE_ID_TEST_NAME}-x-callback</string>
+			</array>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.url</string>
+				<string>org.appextension.find-login-action</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Chrome Password Fill by App Extension Action</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.appextension.chrome-password-action</string>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.url</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>1Password Find Login Action</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.appextension.find-login-action</string>
+		</dict>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
