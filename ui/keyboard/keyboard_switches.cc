@@ -28,7 +28,10 @@ const char kEnableVirtualKeyboard[] = "enable-virtual-keyboard";
 const char kFloatingVirtualKeyboard[] = "floating-virtual-keyboard";
 const char kFloatingVirtualKeyboardDisabled[] ="disabled";
 const char kFloatingVirtualKeyboardEnabled[] ="enabled";
-const char kDisableSmartVirtualKeyboard[] = "disable-smart-virtual-keyboard";
+
+const char kSmartVirtualKeyboard[] = "smart-virtual-keyboard";
+const char kSmartVirtualKeyboardDisabled[] = "disabled";
+const char kSmartVirtualKeyboardEnabled[] = "enabled";
 
 const char kDisableVirtualKeyboardOverscroll[] =
     "disable-virtual-keyboard-overscroll";

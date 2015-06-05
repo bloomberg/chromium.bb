@@ -58245,6 +58245,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-2063014275" label="enable-web-bluetooth"/>
   <int value="-2047822258" label="enable-avfoundation"/>
   <int value="-2025367104" label="enable-material-design-ntp"/>
+  <int value="-2020721975" label="smart-virtual-keyboard"/>
   <int value="-2020024440" label="scroll-end-effect"/>
   <int value="-2017953534" label="enable-hosted-app-shim-creation"/>
   <int value="-2008272679" label="disable-webrtc-hw-encoding"/>

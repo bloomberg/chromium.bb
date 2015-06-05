@@ -14289,11 +14289,11 @@ After you create a new supervised user, you can manage their settings at any tim
       </message>
 
       <if expr="chromeos">
-        <message name="IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn off smart deployment of the virtual keyboard.">
-          Disable Smart Virtual Keyboard
+        <message name="IDS_FLAGS_SMART_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to toggle smart deployment of the virtual keyboard.">
+          Smart Deployment of the Virtual Keyboard
         </message>
-        <message name="IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_DESCRIPTION" desc="Description of about:flags option to turn off smart deployment of the virtual keyboard">
-          Disable smart deployment of the virtual keyboard.
+        <message name="IDS_FLAGS_SMART_VIRTUAL_KEYBOARD_DESCRIPTION" desc="Description of about:flags option to turn off smart deployment of the virtual keyboard">
+          Enable/Disable smart deployment of the virtual keyboard.
         </message>
 
         <message name="IDS_FLAGS_ENABLE_VIRTUAL_KEYBOARD_NAME" desc="Name of about:flags option to turn on the virtual keyboard">

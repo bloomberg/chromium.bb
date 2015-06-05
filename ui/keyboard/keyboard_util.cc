@@ -177,6 +177,13 @@ bool IsGestureEditingEnabled() {
   return keyboard_switch != switches::kGestureEditingDisabled;
 }
 
+bool IsSmartDeployEnabled() {
+  std::string keyboard_switch =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kSmartVirtualKeyboard);
+  return keyboard_switch != switches::kSmartVirtualKeyboardDisabled;
+}
+
 bool IsMaterialDesignEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableNewMDInputView);

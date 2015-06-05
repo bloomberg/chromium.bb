@@ -51,8 +51,8 @@ class VirtualKeyboardControllerTest : public AshTestBase {
   }
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        keyboard::switches::kDisableSmartVirtualKeyboard);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        keyboard::switches::kSmartVirtualKeyboard, "disabled");
     AshTestBase::SetUp();
     UpdateKeyboardDevices(std::vector<ui::KeyboardDevice>());
     UpdateTouchscreenDevices(std::vector<ui::TouchscreenDevice>());

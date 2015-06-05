@@ -429,6 +429,16 @@ const Experiment::Choice kFloatingVirtualKeyboardChoices[] = {
     keyboard::switches::kFloatingVirtualKeyboardEnabled},
 };
 
+const Experiment::Choice kSmartVirtualKeyboardChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    keyboard::switches::kSmartVirtualKeyboard,
+    keyboard::switches::kSmartVirtualKeyboardDisabled},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    keyboard::switches::kSmartVirtualKeyboard,
+    keyboard::switches::kSmartVirtualKeyboardEnabled},
+};
+
 const Experiment::Choice kGestureTypingChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
@@ -1402,6 +1412,13 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kFloatingVirtualKeyboardChoices)
   },
   {
+    "smart-virtual-keyboard",
+    IDS_FLAGS_SMART_VIRTUAL_KEYBOARD_NAME,
+    IDS_FLAGS_SMART_VIRTUAL_KEYBOARD_DESCRIPTION,
+    kOsCrOS,
+    MULTI_VALUE_TYPE(kSmartVirtualKeyboardChoices)
+  },
+  {
     "gesture-typing",
     IDS_FLAGS_GESTURE_TYPING_NAME,
     IDS_FLAGS_GESTURE_TYPING_DESCRIPTION,
@@ -1414,13 +1431,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_GESTURE_EDITING_DESCRIPTION,
     kOsCrOS,
     MULTI_VALUE_TYPE(kGestureEditingChoices)
-  },
-  {
-    "disable-smart-virtual-keyboard",
-    IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_NAME,
-    IDS_FLAGS_DISABLE_SMART_VIRTUAL_KEYBOARD_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(keyboard::switches::kDisableSmartVirtualKeyboard)
   },
 #endif
   {
