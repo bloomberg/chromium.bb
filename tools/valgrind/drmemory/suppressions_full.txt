@@ -1054,6 +1054,13 @@ name=http://crbug.com/64887 (GMock printing uninit data)
 ...
 *!testing::*::PrintBytesInObjectTo*
 
+# This is an EXPECT_DEATH() that hits a RELEASE_ASSERT(),
+# which intentionally writes to NULL in order to crash.
+UNADDRESSABLE ACCESS
+name=https://crbug.com/497344
+blink_platform.dll!blink::SecurityOrigin::addSuborigin
+*!blink::SecurityOriginTest_Suborigins_Test::TestBody
+
 ###############################################################
 # Proactively borrowed from memcheck/suppressions.txt.
 # We have not yet seen these, but we are expanding the sets of tests
