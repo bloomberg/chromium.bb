@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/locale_settings.h"
 #include "content/public/browser/web_ui_data_source.h"
 
 namespace {
@@ -74,6 +75,8 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
       "homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP);
   html_source->AddLocalizedString(
       "changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE);
+  html_source->AddLocalizedString(
+      "themesGalleryUrl", IDS_THEMES_GALLERY_URL);
 }
 
 void AddCommonStrings(content::WebUIDataSource* html_source) {

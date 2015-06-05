@@ -72,4 +72,9 @@ Polymer({
       readOnly: true,
     },
   },
+
+  /** @private */
+  openThemesGallery_: function() {
+    window.open(loadTimeData.getString('themesGalleryUrl'));
+  },
 });

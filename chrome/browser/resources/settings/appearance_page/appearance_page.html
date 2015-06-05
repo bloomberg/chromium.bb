@@ -13,7 +13,9 @@
     <paper-material>
       <div id="action-container">
         <cr-button i18n-content="setWallpaper"></cr-button>
-        <cr-button i18n-content="getThemes"></cr-button>
+        <cr-button id="get-themes" i18n-content="getThemes"
+            on-click="openThemesGallery_">
+        </cr-button>
         <cr-button i18n-content="resetToDefaultTheme" disabled></cr-button>
       </div>
       <hr>
