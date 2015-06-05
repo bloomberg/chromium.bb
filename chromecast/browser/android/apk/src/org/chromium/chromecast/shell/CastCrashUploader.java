@@ -4,23 +4,20 @@
 
 package org.chromium.chromecast.shell;
 
-import android.net.http.AndroidHttpClient;
-import android.util.Log;
-
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.InputStreamEntity;
+import org.chromium.base.Log;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.SequenceInputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -37,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  * explicitly blocks any post-dump hooks or uploading for Android builds.
  */
 public final class CastCrashUploader {
-    private static final String TAG = "CastCrashUploader";
+    private static final String TAG = Log.makeTag("CastCrashUploader");
     private static final String CRASH_REPORT_HOST = "clients2.google.com";
     private static final String CAST_SHELL_USER_AGENT = android.os.Build.MODEL + "/CastShell";
     // Multipart dump filename has format "[random string].dmp[pid]", e.g.
@@ -93,10 +90,9 @@ public final class CastCrashUploader {
      */
     private void queueAllCrashDumpUploads(boolean synchronous, String logFile) {
         if (mCrashDumpPath == null) return;
-        Log.d(TAG, "Checking for crash dumps");
+        Log.i(TAG, "Checking for crash dumps");
 
         LinkedList<Future> tasks = new LinkedList<Future>();
-        final AndroidHttpClient httpClient = AndroidHttpClient.newInstance(CAST_SHELL_USER_AGENT);
         File crashDumpDirectory = new File(mCrashDumpPath);
         for (File potentialDump : crashDumpDirectory.listFiles()) {
             String dumpName = potentialDump.getName();
@@ -111,22 +107,14 @@ public final class CastCrashUploader {
                 }
                 // Check if the dump we found has pid matching this process, and if so include
                 // this process's log.
-                // TODO(kjoswiak): Currently, logs are lost if dump cannot be uploaded right away.
+                // TODO(gunsch): Currently, logs are lost if dump cannot be uploaded right away.
                 if (dumpPid == android.os.Process.myPid()) {
-                    tasks.add(queueCrashDumpUpload(httpClient, potentialDump, new File(logFile)));
+                    tasks.add(queueCrashDumpUpload(potentialDump, new File(logFile)));
                 } else {
-                    tasks.add(queueCrashDumpUpload(httpClient, potentialDump, null));
+                    tasks.add(queueCrashDumpUpload(potentialDump, null));
                 }
             }
         }
-
-        // When finished uploading all of the queued dumps, release httpClient
-        tasks.add(mExecutorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                httpClient.close();
-            }
-        }));
 
         // Wait on tasks, if necessary.
         if (synchronous) {
@@ -142,12 +130,11 @@ public final class CastCrashUploader {
     /**
      * Enqueues a background task to upload a single crash dump file.
      */
-    private Future queueCrashDumpUpload(final AndroidHttpClient httpClient, final File dumpFile,
-            final File logFile) {
+    private Future queueCrashDumpUpload(final File dumpFile, final File logFile) {
         return mExecutorService.submit(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG, "Uploading dump crash log: " + dumpFile.getName());
+                Log.i(TAG, "Uploading dump crash log: %s", dumpFile.getName());
 
                 try {
                     InputStream uploadCrashDumpStream = new FileInputStream(dumpFile);
@@ -161,7 +148,7 @@ public final class CastCrashUploader {
                     String mimeBoundary = dumpFirstLine.substring(2);
 
                     if (logFile != null) {
-                        Log.d(TAG, "Including log file: " + logFile.getName());
+                        Log.i(TAG, "Including log file: %s", logFile.getName());
                         StringBuffer logHeader = new StringBuffer();
                         logHeader.append(dumpFirstLine);
                         logHeader.append("\n");
@@ -178,46 +165,77 @@ public final class CastCrashUploader {
                                 uploadCrashDumpStream);
                     }
 
-                    InputStreamEntity entity = new InputStreamEntity(uploadCrashDumpStream, -1);
-                    entity.setContentType("multipart/form-data; boundary=" + mimeBoundary);
-
-                    HttpPost uploadRequest = new HttpPost(mCrashReportUploadUrl);
-                    uploadRequest.setEntity(entity);
-                    HttpResponse response =
-                            httpClient.execute(new HttpHost(CRASH_REPORT_HOST), uploadRequest);
+                    HttpURLConnection connection =
+                            (HttpURLConnection) new URL(mCrashReportUploadUrl).openConnection();
 
                     // Expect a report ID as the entire response
-                    String responseLine = getFirstLine(response.getEntity().getContent());
+                    try {
+                        connection.setDoOutput(true);
+                        connection.setRequestProperty("Content-Type",
+                                "multipart/form-data; boundary=" + mimeBoundary);
+                        streamCopy(uploadCrashDumpStream, connection.getOutputStream());
 
-                    int statusCode = response.getStatusLine().getStatusCode();
-                    if (statusCode == HttpStatus.SC_OK) {
-                        Log.d(TAG, "Successfully uploaded to " + mCrashReportUploadUrl
-                                + ", report ID: " + responseLine);
-                    } else {
-                        Log.e(TAG, "Failed response (" + statusCode + "): " + responseLine);
+                        String responseLine = getFirstLine(connection.getInputStream());
 
-                        // 400 Bad Request is returned if the dump file is malformed. If requeset
-                        // is not malformed, shortcircuit before clean up to avoid deletion and
-                        // retry later, otherwise pass through and delete malformed file
-                        if (statusCode != HttpStatus.SC_BAD_REQUEST) {
-                            return;
+                        int responseCode = connection.getResponseCode();
+                        if (responseCode == HttpURLConnection.HTTP_OK
+                                || responseCode == HttpURLConnection.HTTP_CREATED
+                                || responseCode == HttpURLConnection.HTTP_ACCEPTED) {
+                            Log.i(TAG, "Successfully uploaded to %s, report ID: %s",
+                                    mCrashReportUploadUrl, responseLine);
+                        } else {
+                            Log.e(TAG, "Failed response (%d): %s", responseCode,
+                                    connection.getResponseMessage());
+
+                            // 400 Bad Request is returned if the dump file is malformed. If request
+                            // is not malformed, short-circuit before cleanup to avoid deletion and
+                            // retry later, otherwise pass through and delete malformed file.
+                            if (responseCode != HttpURLConnection.HTTP_BAD_REQUEST) {
+                                return;
+                            }
+                        }
+                    } catch (FileNotFoundException fnfe) {
+                        // Android's HttpURLConnection implementation fires FNFE on some errors.
+                        Log.e(TAG, "Failed response: " + connection.getResponseCode(), fnfe);
+                    } finally {
+                        connection.disconnect();
+                        dumpFileStream.close();
+                        if (logFileStream != null) {
+                            logFileStream.close();
                         }
                     }
 
                     // Delete the file so we don't re-upload it next time.
-                    uploadCrashDumpStream.close();
-                    dumpFileStream.close();
                     dumpFile.delete();
 
                     if (logFile != null && logFile.exists()) {
-                        logFileStream.close();
                         logFile.delete();
                     }
                 } catch (IOException e) {
-                    Log.e(TAG, "File I/O error trying to upload crash dump", e);
+                    Log.e(TAG, "Error occurred trying to upload crash dump", e);
                 }
             }
         });
+    }
+
+    /**
+     * Copies all available data from |inStream| to |outStream|. Closes both
+     * streams when done.
+     *
+     * @param inStream the stream to read
+     * @param outStream the stream to write to
+     * @throws IOException
+     */
+    private static void streamCopy(InputStream inStream,
+            OutputStream outStream) throws IOException {
+        byte[] temp = new byte[4096];
+        int bytesRead = inStream.read(temp);
+        while (bytesRead >= 0) {
+            outStream.write(temp, 0, bytesRead);
+            bytesRead = inStream.read(temp);
+        }
+        inStream.close();
+        outStream.close();
     }
 
     /**
