@@ -36,6 +36,7 @@
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
+#include "platform/heap/MarkingVisitor.h"
 #include "platform/heap/SafePoint.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
@@ -901,18 +902,14 @@ void ThreadState::preSweep()
 
         SweepForbiddenScope forbiddenScope(this);
         {
+            MarkingVisitor<Visitor::WeakProcessing> weakProcessingVisitor;
+
             // Disallow allocation during weak processing.
             NoAllocationScope noAllocationScope(this);
             {
                 // Perform thread-specific weak processing.
                 TRACE_EVENT0("blink_gc", "ThreadState::threadLocalWeakProcessing");
-                // TODO(haraken): It is wrong to unconditionally use
-                // s_markingVisitor, which is for GlobalMarking.
-                // ThreadTerminationGC should use a visitor for
-                // ThreadLocalMarking. However, a better fix is just to remove
-                // the visitor parameter. The only user of the visitor parameter
-                // is HashTable::process.
-                while (popAndInvokeThreadLocalWeakCallback(Heap::s_markingVisitor)) { }
+                while (popAndInvokeThreadLocalWeakCallback(&weakProcessingVisitor)) { }
             }
             {
                 TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");

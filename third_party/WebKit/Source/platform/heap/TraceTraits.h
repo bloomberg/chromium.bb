@@ -157,7 +157,7 @@ template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 template<typename T>
 void TraceTrait<T>::trace(Visitor* visitor, void* self)
 {
-    if (visitor->isGlobalMarkingVisitor()) {
+    if (visitor->markingMode() == Visitor::GlobalMarking) {
         // Switch to inlined global marking dispatch.
         static_cast<T*>(self)->trace(InlinedGlobalMarkingVisitor(visitor));
     } else {

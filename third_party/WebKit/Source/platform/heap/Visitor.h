@@ -330,6 +330,7 @@ public:
     enum MarkingMode {
         GlobalMarking,
         ThreadLocalMarking,
+        WeakProcessing,
     };
 
     virtual ~Visitor() { }
@@ -392,11 +393,11 @@ public:
     }
 #endif
 
-    inline bool isGlobalMarkingVisitor() const { return m_isGlobalMarkingVisitor; }
+    inline MarkingMode markingMode() const { return m_markingMode; }
 
 protected:
     explicit Visitor(MarkingMode markingMode)
-        : m_isGlobalMarkingVisitor(markingMode == GlobalMarking)
+        : m_markingMode(markingMode)
     { }
 
     virtual void registerWeakCellWithCallback(void**, WeakCallback) = 0;
@@ -410,6 +411,7 @@ protected:
 private:
     static Visitor* fromHelper(VisitorHelper<Visitor>* helper) { return static_cast<Visitor*>(helper); }
 
+    const MarkingMode m_markingMode;
     bool m_isGlobalMarkingVisitor;
 };
 
