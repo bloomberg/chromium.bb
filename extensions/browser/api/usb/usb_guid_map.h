@@ -47,6 +47,7 @@ class UsbGuidMap : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "UsbGuidMap"; }
   static const bool kServiceIsCreatedWithBrowserContext = false;
+  static const bool kServiceRedirectedInIncognito = true;
 
   // UsbService::Observer implementation.
   void OnDeviceRemovedCleanup(scoped_refptr<device::UsbDevice> device) override;
