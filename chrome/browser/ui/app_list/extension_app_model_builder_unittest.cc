@@ -23,6 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
@@ -183,7 +184,7 @@ TEST_F(ExtensionAppModelBuilderTest, Uninstall) {
 
 TEST_F(ExtensionAppModelBuilderTest, UninstallTerminatedApp) {
   const extensions::Extension* app =
-      service_->GetInstalledExtension(kPackagedApp2Id);
+      registry()->GetInstalledExtension(kPackagedApp2Id);
   ASSERT_TRUE(app != NULL);
 
   // Simulate an app termination.

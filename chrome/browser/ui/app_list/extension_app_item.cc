@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,7 +18,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -229,9 +228,10 @@ void ExtensionAppItem::Move(const ExtensionAppItem* prev,
 }
 
 const Extension* ExtensionAppItem::GetExtension() const {
-  const ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  const Extension* extension = service->GetInstalledExtension(extension_id_);
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  const Extension* extension = registry->GetInstalledExtension(
+      extension_id_);
   return extension;
 }
 

@@ -115,7 +115,7 @@ class ExtensionServiceInterface
   // Looks up an extension by ID, regardless of whether it's enabled,
   // disabled, blacklisted, or terminated. Use instead:
   //
-  //   ExtensionRegistry::GetExtensionById(id, ExtensionRegistry::EVERYTHING).
+  // ExtensionRegistry::GetInstalledExtension(id).
   virtual const extensions::Extension* GetInstalledExtension(
       const std::string& id) const = 0;
 

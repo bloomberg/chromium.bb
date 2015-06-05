@@ -132,6 +132,11 @@ const Extension* ExtensionRegistry::GetExtensionById(const std::string& id,
   return NULL;
 }
 
+const Extension* ExtensionRegistry::GetInstalledExtension(
+    const std::string& id) const {
+  return GetExtensionById(id, ExtensionRegistry::EVERYTHING);
+}
+
 bool ExtensionRegistry::AddEnabled(
     const scoped_refptr<const Extension>& extension) {
   return enabled_extensions_.Insert(extension);

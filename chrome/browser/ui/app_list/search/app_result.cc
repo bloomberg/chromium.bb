@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/app_list/search/app_result.h"
 
 #include "base/time/time.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
@@ -15,7 +14,6 @@
 #include "chrome/common/extensions/extension_metrics.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
@@ -41,8 +39,8 @@ AppResult::AppResult(Profile* profile,
     set_display_type(is_recommendation ? DISPLAY_RECOMMENDATION : DISPLAY_TILE);
 
   const extensions::Extension* extension =
-      extensions::ExtensionSystem::Get(profile_)->extension_service()
-          ->GetInstalledExtension(app_id_);
+      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+          app_id_);
   DCHECK(extension);
 
   is_platform_app_ = extension->is_platform_app();
@@ -83,8 +81,8 @@ void AppResult::UpdateFromLastLaunched(const base::Time& current_time,
 void AppResult::Open(int event_flags) {
   RecordHistogram(APP_SEARCH_RESULT);
   const extensions::Extension* extension =
-      extensions::ExtensionSystem::Get(profile_)->extension_service()
-          ->GetInstalledExtension(app_id_);
+      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+          app_id_);
   if (!extension)
     return;
 
