@@ -72,17 +72,6 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (!paintInfo.shouldPaintWithinRoot(&m_layoutTableCell) || m_layoutTableCell.style()->visibility() != VISIBLE)
         return;
 
-    LayoutRect paintRect = paintBounds(paintOffset, AddOffsetFromParent);
-
-    LayoutRect drawingCullRect(paintRect);
-    drawingCullRect.expandEdges(m_layoutTableCell.table()->outerBorderTop(), m_layoutTableCell.table()->outerBorderRight(),
-        m_layoutTableCell.table()->outerBorderBottom(), m_layoutTableCell.table()->outerBorderLeft());
-    if (drawingCullRect.y() >= paintInfo.rect.maxY())
-        return;
-
-    if (drawingCullRect.maxY() <= paintInfo.rect.y())
-        return;
-
     const CollapsedBorderValue* tableCurrentBorderValue = m_layoutTableCell.table()->currentBorderValue();
     if (!tableCurrentBorderValue)
         return;
@@ -101,25 +90,28 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (!shouldPaintTop && !shouldPaintBottom && !shouldPaintLeft && !shouldPaintRight)
         return;
 
-    GraphicsContext* graphicsContext = paintInfo.context;
-    LayoutObjectDrawingRecorder recorder(*graphicsContext, m_layoutTableCell, paintInfo.phase, drawingCullRect);
-    if (recorder.canUseCachedDrawing())
-        return;
-
-    bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
-
     // Adjust our x/y/width/height so that we paint the collapsed borders at the correct location.
     int topWidth = topBorderValue.width();
     int bottomWidth = bottomBorderValue.width();
     int leftWidth = leftBorderValue.width();
     int rightWidth = rightBorderValue.width();
 
+    LayoutRect paintRect = paintBounds(paintOffset, AddOffsetFromParent);
     IntRect borderRect = pixelSnappedIntRect(paintRect.x() - leftWidth / 2,
         paintRect.y() - topWidth / 2,
         paintRect.width() + leftWidth / 2 + (rightWidth + 1) / 2,
         paintRect.height() + topWidth / 2 + (bottomWidth + 1) / 2);
 
+    if (!borderRect.intersects(paintInfo.rect))
+        return;
+
+    GraphicsContext* graphicsContext = paintInfo.context;
+    LayoutObjectDrawingRecorder recorder(*graphicsContext, m_layoutTableCell, paintInfo.phase, borderRect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
     Color cellColor = m_layoutTableCell.resolveColor(CSSPropertyColor);
+    bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
 
     // We never paint diagonals at the joins.  We simply let the border with the highest
     // precedence paint on top of borders with lower precedence.
