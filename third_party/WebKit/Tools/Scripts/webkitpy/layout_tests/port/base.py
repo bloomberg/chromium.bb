@@ -1535,8 +1535,19 @@ class Port(object):
 
         name_str = name or '<unknown process name>'
         pid_str = str(pid or '<unknown>')
-        stdout_lines = (stdout or '<empty>').decode('utf8', 'replace').splitlines()
-        stderr_lines = (stderr or '<empty>').decode('utf8', 'replace').splitlines()
+
+        # We require stdout and stderr to be bytestrings, not character strings.
+        if stdout:
+            assert isinstance(stdout, str)
+            stdout_lines = stdout.decode('utf8', 'replace').splitlines()
+        else:
+            stdout_lines = [u'<empty>']
+        if stderr:
+            assert isinstance(stderr, str)
+            stderr_lines = stderr.decode('utf8', 'replace').splitlines()
+        else:
+            stderr_lines = [u'<empty>']
+
         return (stderr, 'crash log for %s (pid %s):\n%s\n%s\n' % (name_str, pid_str,
             '\n'.join(('STDOUT: ' + l) for l in stdout_lines),
             '\n'.join(('STDERR: ' + l) for l in stderr_lines)))
