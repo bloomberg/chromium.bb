@@ -410,6 +410,7 @@ void LayoutTable::simplifiedNormalFlowLayout()
         section->layoutRows();
         section->computeOverflowFromCells();
         section->updateLayerTransformAfterLayout();
+        section->addVisualEffectOverflow();
     }
 }
 
@@ -553,6 +554,7 @@ void LayoutTable::layout()
             setLogicalHeight(logicalHeight() + section->logicalHeight());
 
             section->updateLayerTransformAfterLayout();
+            section->addVisualEffectOverflow();
 
             section = sectionBelow(section);
         }
