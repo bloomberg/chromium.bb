@@ -63,7 +63,7 @@ void InputControllerEvdev::SetCapsLockEnabled(bool enabled) {
 }
 
 void InputControllerEvdev::SetNumLockEnabled(bool enabled) {
-  NOTIMPLEMENTED();
+  // No num lock on Chrome OS.
 }
 
 bool InputControllerEvdev::IsAutoRepeatEnabled() {

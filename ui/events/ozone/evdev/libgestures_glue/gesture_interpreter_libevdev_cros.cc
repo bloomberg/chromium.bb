@@ -398,7 +398,8 @@ void GestureInterpreterLibevdevCros::OnGestureMetrics(
                                  metrics->data[0],
                                  metrics->data[1],
                                  metrics->type);
-  NOTIMPLEMENTED();
+
+  // TODO(spang): Hook up metrics.
 }
 
 void GestureInterpreterLibevdevCros::DispatchChangedMouseButtons(
