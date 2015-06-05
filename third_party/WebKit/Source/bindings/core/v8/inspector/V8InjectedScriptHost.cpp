@@ -633,7 +633,11 @@ public:
         m_persistent.SetWeak(this, &WeakCallbackData::weakCallback, v8::WeakCallbackType::kParameter);
     }
 
-    RefPtrWillBePersistent<InjectedScriptHost> m_host;
+    // If kept as a strong Persistent<>, this back reference causes an Oilpan leak by
+    // way of v8. Sidestep by using a raw pointer; InjectedScriptHost is slated to
+    // become a non-Oilpan object.
+    GC_PLUGIN_IGNORE("466631")
+    RefPtrWillBeRawPtr<InjectedScriptHost> m_host;
 
 private:
     static void weakCallback(const v8::WeakCallbackInfo<WeakCallbackData>& info)
