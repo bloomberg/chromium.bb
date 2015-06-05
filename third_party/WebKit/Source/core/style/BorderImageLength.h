@@ -69,7 +69,11 @@ public:
 
     bool isZero() const
     {
-        return (isLength() && m_length.isZero()) || (isNumber() && m_number);
+        if (isLength())
+            return m_length.isZero();
+
+        ASSERT(isNumber());
+        return !m_number;
     }
 
 private:
