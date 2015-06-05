@@ -1033,46 +1033,6 @@ name=deliberate LazyInstance leak
 ...
 *!base::LazyInstance*::Pointer
 
-LEAK
-name=http://crbug.com/79933 (2)
-...
-*!TestURLRequestContext::TestURLRequestContext
-*!TestURLRequestContextGetter::GetURLRequestContext
-*!notifier::SingleLoginAttempt::SingleLoginAttempt
-*!notifier::Login::StartConnection
-*!syncer::InvalidationNotifier::UpdateCredentials
-*!syncer::NonBlockingInvalidationNotifier::Core::UpdateCredentials
-
-LEAK
-name=http://crbug.com/79933 (3)
-...
-*!TestURLRequestContext::TestURLRequestContext
-*!TestURLRequestContextGetter::GetURLRequestContext
-*!URLFetcher::Core::StartURLRequest
-
-LEAK
-name=http://crbug.com/79933 (4)
-*!generic_cpp_alloc
-*!operator new
-*!std::_Allocate<>
-*!std::allocator<>::allocate
-*!std::vector<>::_Insert_n
-*!std::vector<>::insert
-*!std::vector<>::push_back
-*!base::ObserverListBase<>::AddObserver
-...
-*!net::HttpNetworkSession::HttpNetworkSession
-*!notifier::ProxyResolvingClientSocket::ProxyResolvingClientSocket
-*!notifier::XmppClientSocketFactory::CreateTransportClientSocket
-*!notifier::ChromeAsyncSocket::Connect
-*!buzz::XmppClient::ProcessStartXmppLogin
-*!buzz::XmppClient::Process
-*!talk_base::Task::Step
-*!talk_base::TaskRunner::InternalRunTasks
-*!talk_base::TaskRunner::RunTasks
-*!notifier::TaskPump::CheckAndRunTasks
-*!base::internal::RunnableAdapter<>::Run
-
 # Test intentionally leaks an object.
 LEAK
 name=http://crbug.com/86301
@@ -1506,40 +1466,6 @@ LEAK
 name=http://crbug.com/115328
 ...
 *!GenericInfoViewTest_GenericInfoView_Test::TestBody
-
-LEAK
-name=http://crbug.com/117427 a
-...
-*!net::HostCache::Set
-*!net::HostResolverImpl::CacheResult
-*!net::HostResolverImpl::Job::CompleteRequests
-*!net::HostResolverImpl::Job::OnProcTaskComplete
-*!base::internal::RunnableAdapter<>::Run
-
-# Probably related to 117427.  Someone is not tearing down DNS resolution during
-# testing.
-LEAK
-name=http://crbug.com/117427 b
-*!generic_cpp_alloc
-*!operator new
-*!base::internal::WeakReferenceOwner::GetRef
-*!base::SupportsWeakPtr<>::AsWeakPtr
-*!net::HostResolverImpl::Job::Job
-*!net::HostResolverImpl::Resolve
-*!net::SingleRequestHostResolver::Resolve
-*!net::TransportConnectJob::DoResolveHost
-*!net::TransportConnectJob::DoLoop
-*!net::TransportConnectJob::ConnectInternal
-*!net::ConnectJob::Connect
-*!net::internal::ClientSocketPoolBaseHelper::RequestSocketInternal
-*!net::internal::ClientSocketPoolBaseHelper::RequestSocket
-*!net::ClientSocketPoolBase<>::RequestSocket
-*!net::TransportClientSocketPool::RequestSocket
-*!net::ClientSocketHandle::Init<>
-*!net::`anonymous namespace'::InitSocketPoolHelper
-*!net::InitSocketHandleForRawConnect
-*!notifier::ProxyResolvingClientSocket::ProcessProxyResolveDone
-*!base::internal::RunnableAdapter<>::Run
 
 # IE frame possible leak of COM object.
 LEAK
