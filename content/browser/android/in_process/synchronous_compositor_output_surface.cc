@@ -16,6 +16,7 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -243,11 +244,22 @@ void SynchronousCompositorOutputSurface::ReturnResources(
 
 void SynchronousCompositorOutputSurface::SetMemoryPolicy(size_t bytes_limit) {
   DCHECK(CalledOnValidThread());
+  bool became_zero = memory_policy_.bytes_limit_when_visible && !bytes_limit;
+  bool became_non_zero =
+      !memory_policy_.bytes_limit_when_visible && bytes_limit;
   memory_policy_.bytes_limit_when_visible = bytes_limit;
   memory_policy_.num_resources_limit = kNumResourcesLimit;
 
   if (client_)
     client_->SetMemoryPolicy(memory_policy_);
+
+  if (became_zero) {
+    // This is small hack to drop context resources without destroying it
+    // when this compositor is put into the background.
+    context_provider()->ContextSupport()->SetSurfaceVisible(false);
+  } else if (became_non_zero) {
+    context_provider()->ContextSupport()->SetSurfaceVisible(true);
+  }
 }
 
 void SynchronousCompositorOutputSurface::SetTreeActivationCallback(
