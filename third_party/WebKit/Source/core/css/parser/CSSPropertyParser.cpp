@@ -3672,6 +3672,17 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseGridBreadth(CS
     return createPrimitiveNumericValue(currentValue);
 }
 
+static bool containsOnlyDots(const String& string)
+{
+    ASSERT(!string.isEmpty());
+    StringImpl& text = *string.impl();
+    for (unsigned i = 0; i < text.length(); ++i) {
+        if (text[i] != '.')
+            return false;
+    }
+    return true;
+}
+
 bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap, const size_t rowCount, size_t& columnCount)
 {
     CSSParserValue* currentValue = m_valueList->current();
@@ -3697,7 +3708,7 @@ bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap,
         const String& gridAreaName = columnNames[currentCol];
 
         // Unamed areas are always valid (we consider them to be 1x1).
-        if (gridAreaName == ".")
+        if (containsOnlyDots(gridAreaName))
             continue;
 
         // We handle several grid areas with the same name at once to simplify the validation code.

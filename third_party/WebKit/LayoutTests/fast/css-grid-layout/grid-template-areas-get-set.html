@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE html>
 <html>
 <head>
 <link href="resources/grid.css" rel="stylesheet">
@@ -25,9 +25,54 @@
                          ".";
 }
 
+#gridWithSpanningRowsDotsTemplate {
+    grid-template-areas: "span"
+                         "....";
+}
+
 #gridWithDotColumn {
     grid-template-areas: "header ."
                          "footer .";
+}
+
+#gridWithDotsColumn {
+    grid-template-areas: "header ......"
+                         "footer ......";
+}
+
+#gridWithDotCells {
+    grid-template-areas: "first ."
+                         ". second";
+}
+
+#gridWithDotsCells {
+    grid-template-areas: "first ......"
+                         "..... second";
+}
+
+#gridWithComplexDotAreas {
+    grid-template-areas: ". header header ."
+                         ". . . ."
+                         "nav main main aside"
+                         "nav main main aside"
+                         ". . . aside"
+                         ". footer footer aside";
+}
+
+#gridWithComplexDotsAreas {
+    grid-template-areas: "... header header ....."
+                         "... ...... ...... ....."
+                         "nav main   main   aside"
+                         "nav main   main   aside"
+                         "... ...... ...... aside"
+                         "... footer footer aside";
+}
+
+#gridWithMixedDotAndDotsAreas {
+    grid-template-areas: "... title ."
+                         "..  main main"
+                         "nav ................... aside"
+                         ". footer ......";
 }
 
 #gridWithHorizontalRectangle {
@@ -51,7 +96,14 @@
 <div class="grid" id="gridWithTwoRowsTemplate"></div>
 <div class="grid" id="gridWithSpanningColumnsTemplate"></div>
 <div class="grid" id="gridWithSpanningRowsDotTemplate"></div>
+<div class="grid" id="gridWithSpanningRowsDotsTemplate"></div>
 <div class="grid" id="gridWithDotColumn"></div>
+<div class="grid" id="gridWithDotsColumn"></div>
+<div class="grid" id="gridWithDotCells"></div>
+<div class="grid" id="gridWithDotsCells"></div>
+<div class="grid" id="gridWithComplexDotAreas"></div>
+<div class="grid" id="gridWithComplexDotsAreas"></div>
+<div class="grid" id="gridWithMixedDotAndDotsAreas"></div>
 <div class="grid" id="gridWithHorizontalRectangle"></div>
 <div class="grid" id="gridWithVerticalRectangle"></div>
 <script>
@@ -76,8 +128,29 @@
     var gridWithSpanningRowsDotTemplate = document.getElementById("gridWithSpanningRowsDotTemplate");
     shouldBeEqualToString("window.getComputedStyle(gridWithSpanningRowsDotTemplate).getPropertyValue('grid-template-areas')", '"span" "."')
 
+    var gridWithSpanningRowsDotsTemplate = document.getElementById("gridWithSpanningRowsDotsTemplate");
+    shouldBeEqualToString("window.getComputedStyle(gridWithSpanningRowsDotsTemplate).getPropertyValue('grid-template-areas')", '"span" "."')
+
     var gridWithDotColumn = document.getElementById("gridWithDotColumn");
     shouldBeEqualToString("window.getComputedStyle(gridWithDotColumn).getPropertyValue('grid-template-areas')", '"header ." "footer ."')
+
+    var gridWithDotsColumn = document.getElementById("gridWithDotsColumn");
+    shouldBeEqualToString("window.getComputedStyle(gridWithDotsColumn).getPropertyValue('grid-template-areas')", '"header ." "footer ."')
+
+    var gridWithDotCells = document.getElementById("gridWithDotCells");
+    shouldBeEqualToString("window.getComputedStyle(gridWithDotCells).getPropertyValue('grid-template-areas')", '"first ." ". second"')
+
+    var gridWithDotsCells = document.getElementById("gridWithDotsCells");
+    shouldBeEqualToString("window.getComputedStyle(gridWithDotsCells).getPropertyValue('grid-template-areas')", '"first ." ". second"')
+
+    var gridWithComplexDotAreas = document.getElementById("gridWithComplexDotAreas");
+    shouldBeEqualToString("window.getComputedStyle(gridWithComplexDotAreas).getPropertyValue('grid-template-areas')", '". header header ." ". . . ." "nav main main aside" "nav main main aside" ". . . aside" ". footer footer aside"')
+
+    var gridWithComplexDotsAreas = document.getElementById("gridWithComplexDotsAreas");
+    shouldBeEqualToString("window.getComputedStyle(gridWithComplexDotsAreas).getPropertyValue('grid-template-areas')", '". header header ." ". . . ." "nav main main aside" "nav main main aside" ". . . aside" ". footer footer aside"')
+
+    var gridWithMixedDotAndDotsAreas = document.getElementById("gridWithMixedDotAndDotsAreas");
+    shouldBeEqualToString("window.getComputedStyle(gridWithMixedDotAndDotsAreas).getPropertyValue('grid-template-areas')", '". title ." ". main main" "nav . aside" ". footer ."')
 
     var gridWithHorizontalRectangle = document.getElementById("gridWithHorizontalRectangle");
     shouldBeEqualToString("window.getComputedStyle(gridWithHorizontalRectangle).getPropertyValue('grid-template-areas')", '"a a a" "a a a"');
