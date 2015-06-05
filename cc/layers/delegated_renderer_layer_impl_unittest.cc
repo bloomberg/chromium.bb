@@ -307,16 +307,16 @@ TEST_F(DelegatedRendererLayerImplTestSimple, AddsContributingRenderPasses) {
   // The DelegatedRendererLayer should have added its contributing RenderPasses
   // to the frame.
   EXPECT_EQ(4, frame.render_passes[1]->id.layer_id);
-  EXPECT_EQ(1u, frame.render_passes[1]->id.index);
+  EXPECT_EQ(1, frame.render_passes[1]->id.index);
   EXPECT_EQ(4, frame.render_passes[2]->id.layer_id);
-  EXPECT_EQ(2u, frame.render_passes[2]->id.index);
+  EXPECT_EQ(2, frame.render_passes[2]->id.index);
   // And all other RenderPasses should be non-delegated.
   EXPECT_NE(4, frame.render_passes[0]->id.layer_id);
-  EXPECT_EQ(0u, frame.render_passes[0]->id.index);
+  EXPECT_EQ(0, frame.render_passes[0]->id.index);
   EXPECT_NE(4, frame.render_passes[3]->id.layer_id);
-  EXPECT_EQ(0u, frame.render_passes[3]->id.index);
+  EXPECT_EQ(0, frame.render_passes[3]->id.index);
   EXPECT_NE(4, frame.render_passes[4]->id.layer_id);
-  EXPECT_EQ(0u, frame.render_passes[4]->id.index);
+  EXPECT_EQ(0, frame.render_passes[4]->id.index);
 
   // The DelegatedRendererLayer should have added its RenderPasses to the frame
   // in order.
@@ -341,9 +341,9 @@ TEST_F(DelegatedRendererLayerImplTestSimple,
   // The DelegatedRendererLayer should have added its contributing RenderPasses
   // to the frame.
   EXPECT_EQ(4, frame.render_passes[1]->id.layer_id);
-  EXPECT_EQ(1u, frame.render_passes[1]->id.index);
+  EXPECT_EQ(1, frame.render_passes[1]->id.index);
   EXPECT_EQ(4, frame.render_passes[2]->id.layer_id);
-  EXPECT_EQ(2u, frame.render_passes[2]->id.index);
+  EXPECT_EQ(2, frame.render_passes[2]->id.index);
 
   // The DelegatedRendererLayer should have added copies of its quads to
   // contributing RenderPasses.
@@ -485,20 +485,20 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsRenderPasses) {
   // The DelegatedRendererLayer should have added its contributing RenderPasses
   // to the frame.
   EXPECT_EQ(4, frame.render_passes[1]->id.layer_id);
-  EXPECT_EQ(1u, frame.render_passes[1]->id.index);
+  EXPECT_EQ(1, frame.render_passes[1]->id.index);
   EXPECT_EQ(4, frame.render_passes[2]->id.layer_id);
-  EXPECT_EQ(2u, frame.render_passes[2]->id.index);
+  EXPECT_EQ(2, frame.render_passes[2]->id.index);
   // The DelegatedRendererLayer should have added a RenderPass for its surface
   // to the frame.
   EXPECT_EQ(4, frame.render_passes[1]->id.layer_id);
-  EXPECT_EQ(0u, frame.render_passes[3]->id.index);
+  EXPECT_EQ(0, frame.render_passes[3]->id.index);
   // And all other RenderPasses should be non-delegated.
   EXPECT_NE(4, frame.render_passes[0]->id.layer_id);
-  EXPECT_EQ(0u, frame.render_passes[0]->id.index);
+  EXPECT_EQ(0, frame.render_passes[0]->id.index);
   EXPECT_NE(4, frame.render_passes[4]->id.layer_id);
-  EXPECT_EQ(0u, frame.render_passes[4]->id.index);
+  EXPECT_EQ(0, frame.render_passes[4]->id.index);
   EXPECT_NE(4, frame.render_passes[5]->id.layer_id);
-  EXPECT_EQ(0u, frame.render_passes[5]->id.index);
+  EXPECT_EQ(0, frame.render_passes[5]->id.index);
 
   // The DelegatedRendererLayer should have added its RenderPasses to the frame
   // in order.
@@ -524,9 +524,9 @@ TEST_F(DelegatedRendererLayerImplTestOwnSurface,
   // The DelegatedRendererLayer should have added its contributing RenderPasses
   // to the frame.
   EXPECT_EQ(4, frame.render_passes[1]->id.layer_id);
-  EXPECT_EQ(1u, frame.render_passes[1]->id.index);
+  EXPECT_EQ(1, frame.render_passes[1]->id.index);
   EXPECT_EQ(4, frame.render_passes[2]->id.layer_id);
-  EXPECT_EQ(2u, frame.render_passes[2]->id.index);
+  EXPECT_EQ(2, frame.render_passes[2]->id.index);
 
   // The DelegatedRendererLayer should have added copies of its quads to
   // contributing RenderPasses.
@@ -764,10 +764,10 @@ class DelegatedRendererLayerImplTestTransform
     ASSERT_EQ(num_render_passes, frame.render_passes.size());
     // The contributing render pass in the DelegatedRendererLayer.
     EXPECT_EQ(2, frame.render_passes[0]->id.layer_id);
-    EXPECT_EQ(1u, frame.render_passes[0]->id.index);
+    EXPECT_EQ(1, frame.render_passes[0]->id.index);
     // The root render pass.
     EXPECT_EQ(1, frame.render_passes.back()->id.layer_id);
-    EXPECT_EQ(0u, frame.render_passes.back()->id.index);
+    EXPECT_EQ(0, frame.render_passes.back()->id.index);
 
     const QuadList& contrib_delegated_quad_list =
         frame.render_passes[0]->quad_list;

@@ -55,7 +55,11 @@ struct Quad {
   RenderPassId render_pass_id;
 
  private:
-  Quad() : material(DrawQuad::INVALID), opacity(1.f), color(SK_ColorWHITE) {}
+  Quad()
+      : material(DrawQuad::INVALID),
+        opacity(1.f),
+        color(SK_ColorWHITE),
+        render_pass_id(-1, -1) {}
 };
 
 struct Pass {

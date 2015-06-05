@@ -87,9 +87,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   bool have_render_passes_to_push_;
   float inverse_device_scale_factor_;
   RenderPassList render_passes_in_draw_order_;
-
-  using RenderPassToIndexMap = base::hash_map<RenderPassId, size_t>;
-  RenderPassToIndexMap render_passes_index_by_id_;
+  base::hash_map<RenderPassId, int> render_passes_index_by_id_;
   ResourceProvider::ResourceIdSet resources_;
 
   int child_id_;

@@ -14,10 +14,9 @@ namespace cc {
 class CC_EXPORT RenderPassId {
  public:
   int layer_id;
-  size_t index;
+  int index;
 
-  RenderPassId() : layer_id(-1), index(0) {}
-  RenderPassId(int layer_id, size_t index) : layer_id(layer_id), index(index) {}
+  RenderPassId(int layer_id, int index) : layer_id(layer_id), index(index) {}
   void* AsTracingId() const;
 
   bool operator==(const RenderPassId& other) const {

@@ -5,7 +5,6 @@
 #include "cc/layers/layer_impl.h"
 
 #include "base/json/json_reader.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -1516,8 +1515,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   MathUtil::AddToTracedValue("position", position_, state);
 
   state->SetInteger("draws_content", DrawsContent());
-  state->SetInteger("gpu_memory_usage",
-                    base::saturated_cast<int>(GPUMemoryUsageInBytes()));
+  state->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
 
   MathUtil::AddToTracedValue(
       "scroll_offset", scroll_offset_ ? scroll_offset_->Current(IsActive())

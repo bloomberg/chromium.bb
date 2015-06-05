@@ -180,7 +180,7 @@ void DelegatedRendererLayerImpl::SetRenderPasses(
     RenderPassList::iterator to_take =
         render_passes_in_draw_order->begin() + i;
     render_passes_index_by_id_.insert(
-        RenderPassToIndexMap::value_type((*to_take)->id, i));
+        std::pair<RenderPassId, int>((*to_take)->id, i));
     scoped_ptr<RenderPass> taken_render_pass =
         render_passes_in_draw_order->take(to_take);
     render_passes_in_draw_order_.push_back(taken_render_pass.Pass());
@@ -210,13 +210,8 @@ void DelegatedRendererLayerImpl::ReleaseResources() {
   have_render_passes_to_push_ = false;
 }
 
-static inline size_t IndexToId(size_t index) {
-  return index + 1;
-}
-static inline size_t IdToIndex(size_t id) {
-  DCHECK_GT(id, 0u);
-  return id - 1;
-}
+static inline int IndexToId(int index) { return index + 1; }
+static inline int IdToIndex(int id) { return id - 1; }
 
 RenderPassId DelegatedRendererLayerImpl::FirstContributingRenderPassId() const {
   return RenderPassId(id(), IndexToId(0));
@@ -230,13 +225,13 @@ RenderPassId DelegatedRendererLayerImpl::NextContributingRenderPassId(
 bool DelegatedRendererLayerImpl::ConvertDelegatedRenderPassId(
     RenderPassId delegated_render_pass_id,
     RenderPassId* output_render_pass_id) const {
-  RenderPassToIndexMap::const_iterator found =
+  base::hash_map<RenderPassId, int>::const_iterator found =
       render_passes_index_by_id_.find(delegated_render_pass_id);
   if (found == render_passes_index_by_id_.end()) {
     // Be robust against a RenderPass id that isn't part of the frame.
     return false;
   }
-  size_t delegated_render_pass_index = found->second;
+  unsigned delegated_render_pass_index = found->second;
   *output_render_pass_id =
       RenderPassId(id(), IndexToId(delegated_render_pass_index));
   return true;
@@ -254,7 +249,7 @@ void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
                                           inverse_device_scale_factor_);
 
   for (size_t i = 0; i < render_passes_in_draw_order_.size() - 1; ++i) {
-    RenderPassId output_render_pass_id;
+    RenderPassId output_render_pass_id(-1, -1);
     bool present =
         ConvertDelegatedRenderPassId(render_passes_in_draw_order_[i]->id,
                                      &output_render_pass_id);
@@ -262,7 +257,7 @@ void DelegatedRendererLayerImpl::AppendContributingRenderPasses(
     // Don't clash with the RenderPass we generate if we own a RenderSurface.
     DCHECK(present) << render_passes_in_draw_order_[i]->id.layer_id << ", "
                     << render_passes_in_draw_order_[i]->id.index;
-    DCHECK_GT(output_render_pass_id.index, 0u);
+    DCHECK_GT(output_render_pass_id.index, 0);
 
     scoped_ptr<RenderPass> copy_pass =
         render_passes_in_draw_order_[i]->Copy(output_render_pass_id);
@@ -313,7 +308,7 @@ void DelegatedRendererLayerImpl::AppendQuads(
     // Verify that the RenderPass we are appending to was created by us.
     DCHECK(target_render_pass_id.layer_id == id());
 
-    size_t render_pass_index = IdToIndex(target_render_pass_id.index);
+    int render_pass_index = IdToIndex(target_render_pass_id.index);
     const RenderPass* delegated_render_pass =
         render_passes_in_draw_order_[render_pass_index];
     AppendRenderPassQuads(render_pass,
@@ -491,7 +486,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     } else {
       RenderPassId delegated_contributing_render_pass_id =
           RenderPassDrawQuad::MaterialCast(delegated_quad)->render_pass_id;
-      RenderPassId output_contributing_render_pass_id;
+      RenderPassId output_contributing_render_pass_id(-1, -1);
 
       bool present =
           ConvertDelegatedRenderPassId(delegated_contributing_render_pass_id,

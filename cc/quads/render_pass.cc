@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
@@ -53,7 +52,8 @@ scoped_ptr<RenderPass> RenderPass::Create(size_t shared_quad_state_list_size,
 }
 
 RenderPass::RenderPass()
-    : has_transparent_background(true),
+    : id(RenderPassId(-1, -1)),
+      has_transparent_background(true),
       quad_list(kDefaultNumQuadsToReserve),
       shared_quad_state_list(sizeof(SharedQuadState),
                              kDefaultNumSharedQuadStatesToReserve) {
@@ -62,14 +62,16 @@ RenderPass::RenderPass()
 // Each layer usually produces one shared quad state, so the number of layers
 // is a good hint for what to reserve here.
 RenderPass::RenderPass(size_t num_layers)
-    : has_transparent_background(true),
+    : id(RenderPassId(-1, -1)),
+      has_transparent_background(true),
       quad_list(kDefaultNumQuadsToReserve),
       shared_quad_state_list(sizeof(SharedQuadState), num_layers) {
 }
 
 RenderPass::RenderPass(size_t shared_quad_state_list_size,
                        size_t quad_list_size)
-    : has_transparent_background(true),
+    : id(RenderPassId(-1, -1)),
+      has_transparent_background(true),
       quad_list(quad_list_size),
       shared_quad_state_list(sizeof(SharedQuadState),
                              shared_quad_state_list_size) {
@@ -146,6 +148,7 @@ void RenderPass::SetNew(RenderPassId id,
                         const gfx::Rect& damage_rect,
                         const gfx::Transform& transform_to_root_target) {
   DCHECK_GT(id.layer_id, 0);
+  DCHECK_GE(id.index, 0);
   DCHECK(damage_rect.IsEmpty() || output_rect.Contains(damage_rect))
       << "damage_rect: " << damage_rect.ToString()
       << " output_rect: " << output_rect.ToString();
@@ -165,6 +168,7 @@ void RenderPass::SetAll(RenderPassId id,
                         const gfx::Transform& transform_to_root_target,
                         bool has_transparent_background) {
   DCHECK_GT(id.layer_id, 0);
+  DCHECK_GE(id.index, 0);
 
   this->id = id;
   this->output_rect = output_rect;
@@ -181,8 +185,7 @@ void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("damage_rect", damage_rect, value);
 
   value->SetBoolean("has_transparent_background", has_transparent_background);
-  value->SetInteger("copy_requests",
-                    base::saturated_cast<int>(copy_requests.size()));
+  value->SetInteger("copy_requests", copy_requests.size());
 
   value->BeginArray("shared_quad_state_list");
   for (const auto& shared_quad_state : shared_quad_state_list) {

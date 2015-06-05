@@ -402,7 +402,7 @@ static cc::DrawQuad* ReadDrawQuad(const Message* m,
 bool ParamTraits<cc::RenderPass>::Read(const Message* m,
                                        base::PickleIterator* iter,
                                        param_type* p) {
-  cc::RenderPassId id;
+  cc::RenderPassId id(-1, -1);
   gfx::Rect output_rect;
   gfx::Rect damage_rect;
   gfx::Transform transform_to_root_target;

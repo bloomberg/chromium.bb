@@ -10,7 +10,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/metrics/histogram.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/output/bsp_tree.h"
@@ -194,9 +193,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                const gfx::Rect& device_clip_rect,
                                bool disable_picture_quad_image_filtering) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
-  UMA_HISTOGRAM_COUNTS(
-      "Renderer4.renderPassCount",
-      base::saturated_cast<int>(render_passes_in_draw_order->size()));
+  UMA_HISTOGRAM_COUNTS("Renderer4.renderPassCount",
+                       render_passes_in_draw_order->size());
 
   const RenderPass* root_render_pass = render_passes_in_draw_order->back();
   DCHECK(root_render_pass);
