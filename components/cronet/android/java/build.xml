@@ -1,0 +1,18 @@
+<project>
+  <target name="doc" description="generate documentation">
+      <javadoc destdir="${doc.dir}"
+               windowtitle="Cronet API"
+               nohelp="yes"
+               notree="yes"
+               nodeprecated="yes"
+               >
+        <fileset dir="${source.dir}" defaultexcludes="yes">
+          <include name="**/*.java"/>
+          <!-- exclude legacy API -->
+          <exclude name="**/Chromium*.java"/>
+          <exclude name="**/ChunkedWritableByteChannel*.java"/>
+          <exclude name="**/HttpUrl*.java"/>
+        </fileset>
+      </javadoc>
+  </target>
+</project>

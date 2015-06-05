@@ -535,6 +535,19 @@
                 '<@(_outputs)',
               ],
             },
+            {
+              'action_name': 'generate javadoc',
+              'inputs': ['cronet/tools/generate_javadoc.py'] ,
+              'outputs': ['<(package_dir)/javadoc'],
+              'action': [
+                'python',
+                '<@(_inputs)',
+                '--source-dir=src',
+                '--output-dir=<(package_dir)/javadoc',
+                '--working-dir=cronet/android/java',
+              ],
+              'message': 'Generating Javadoc',
+            },
           ],
           'copies': [
             {
