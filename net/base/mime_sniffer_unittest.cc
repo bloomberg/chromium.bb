@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "net/base/mime_sniffer.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

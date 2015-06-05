@@ -99,7 +99,7 @@ TEST(MimeSnifferTest, PlainTextPerfTest) {
   base::ElapsedTimer elapsed_timer;
   RunLooksLikeBinary(plaintext, kMeasuredIterations);
   LOG(INFO) << (elapsed_timer.Elapsed().InMicroseconds() * 1000 * 1024 /
-                (static_cast<int64>(plaintext.size()) * kMeasuredIterations))
+                (static_cast<int64_t>(plaintext.size()) * kMeasuredIterations))
             << "ns per KB";
 }
 

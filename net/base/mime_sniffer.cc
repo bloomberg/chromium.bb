@@ -92,11 +92,11 @@
 // Note that our definition of HTML payload is much stricter than IE's
 // definition and roughly the same as Firefox's definition.
 
+#include <stdint.h>
 #include <string>
 
 #include "net/base/mime_sniffer.h"
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
@@ -949,10 +949,10 @@ bool LooksLikeBinary(const char* content, size_t size) {
   // one bit per byte, with 1 for a "binary" bit, and 0 for a "text" bit. The
   // least-significant bit represents byte 0x00, the most-significant bit
   // represents byte 0x1F.
-  const uint32 kBinaryBits =
+  const uint32_t kBinaryBits =
       ~(1u << '\t' | 1u << '\n' | 1u << '\r' | 1u << '\f' | 1u << '\x1b');
   for (size_t i = 0; i < size; ++i) {
-    uint8 byte = static_cast<uint8>(content[i]);
+    uint8_t byte = static_cast<uint8_t>(content[i]);
     if (byte < 0x20 && (kBinaryBits & (1u << byte)))
       return true;
   }
