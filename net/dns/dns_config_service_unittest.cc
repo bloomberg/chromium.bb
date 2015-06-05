@@ -332,25 +332,5 @@ TEST_F(DnsConfigServiceTest, WatchFailure) {
   EXPECT_TRUE(last_config_.Equals(bad_config));
 }
 
-#if (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_WIN)
-// TODO(szym): This is really an integration test and can time out if HOSTS is
-// huge. http://crbug.com/107810
-// On Android the hosts file is not user modifyable, so it's always tiny,
-// however devices used for testing are likely to have no network connectivity
-// and hence no DNS configuration so this test will just fail to find a valid
-// config.
-TEST_F(DnsConfigServiceTest, DISABLED_GetSystemConfig) {
-  service_.reset();
-  scoped_ptr<DnsConfigService> service(DnsConfigService::CreateSystemService());
-
-  service->ReadConfig(base::Bind(&DnsConfigServiceTest::OnConfigChanged,
-                                 base::Unretained(this)));
-  base::TimeDelta kTimeout = TestTimeouts::action_max_timeout();
-  WaitForConfig(kTimeout);
-  ASSERT_TRUE(last_config_.IsValid()) << "Did not receive DnsConfig in " <<
-      kTimeout.InSecondsF() << "s";
-}
-#endif  // OS_POSIX || OS_WIN
-
 }  // namespace net
 
