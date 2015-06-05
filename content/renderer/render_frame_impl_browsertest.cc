@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
@@ -59,6 +60,15 @@ class RenderFrameImplTest : public RenderViewTest {
 
     frame_ = RenderFrameImpl::FromRoutingID(kSubframeRouteId);
     EXPECT_TRUE(frame_->is_subframe_);
+  }
+
+  void TearDown() override {
+#if defined(LEAK_SANITIZER)
+     // Do this before shutting down V8 in RenderViewTest::TearDown().
+     // http://crbug.com/328552
+     __lsan_do_leak_check();
+#endif
+     RenderViewTest::TearDown();
   }
 
   // Loads the given HTML into the frame as a data: URL and blocks until
