@@ -182,5 +182,17 @@ TEST(SidecarListContainerTest, AddingAndRemovingElements) {
   EXPECT_EQ(container.end(), container.begin());
 }
 
+TEST(SidecarListContainerTest, RemoveLast) {
+  // We need only ensure that the sidecar is also destroyed on RemoveLast.
+  // The rest is logic already present in ListContainer.
+  bool sidecar_destroyed = false;
+  TestContainer container;
+  TestElement* element = container.AllocateAndConstruct<TestElement>();
+  new (container.GetSidecar(element)) TestSidecar(&sidecar_destroyed);
+  ASSERT_FALSE(sidecar_destroyed);
+  container.RemoveLast();
+  ASSERT_TRUE(sidecar_destroyed);
+}
+
 }  // namespace
 }  // namespace cc

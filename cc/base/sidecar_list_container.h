@@ -29,6 +29,10 @@ class SidecarListContainer {
   using SidecarDestroyer = void (*)(void* sidecar);
   using Iterator = typename ListContainer<BaseElementType>::Iterator;
   using ConstIterator = typename ListContainer<BaseElementType>::ConstIterator;
+  using ReverseIterator =
+      typename ListContainer<BaseElementType>::ReverseIterator;
+  using ConstReverseIterator =
+      typename ListContainer<BaseElementType>::ConstReverseIterator;
 
   explicit SidecarListContainer(size_t max_size_for_derived_class,
                                 size_t max_size_for_sidecar,
@@ -58,6 +62,11 @@ class SidecarListContainer {
   void clear() {
     DestroyAllSidecars();
     list_.clear();
+  }
+
+  void RemoveLast() {
+    destroyer_(GetSidecar(*list_.rbegin()));
+    list_.RemoveLast();
   }
 
   // This permits a client to exchange a pointer to an element to a pointer to

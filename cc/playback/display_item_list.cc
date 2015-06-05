@@ -160,6 +160,15 @@ void DisplayItemList::ProcessAppendedItems() {
     items_.clear();
 }
 
+void DisplayItemList::RemoveLast() {
+  // We cannot remove the last item if it has been squashed into a picture.
+  // The last item should not have been handled by ProcessAppendedItems, so we
+  // don't need to remove it from approximate_op_count_, etc.
+  DCHECK(retain_individual_display_items_);
+  DCHECK(!use_cached_picture_);
+  items_.RemoveLast();
+}
+
 void DisplayItemList::Finalize() {
   ProcessAppendedItems();
 

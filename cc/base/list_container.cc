@@ -53,6 +53,7 @@ class ListContainerBase::ListContainerCharAllocator {
       --capacity;
     }
 
+    bool IsEmpty() const { return !size; }
     bool IsFull() { return capacity == size; }
     size_t NumElementsAvailable() const { return capacity - size; }
 
@@ -60,6 +61,11 @@ class ListContainerBase::ListContainerCharAllocator {
       DCHECK_LT(size, capacity);
       ++size;
       return LastElement();
+    }
+
+    void RemoveLast() {
+      DCHECK(!IsEmpty());
+      --size;
     }
 
     char* Begin() const { return data.get(); }
@@ -74,32 +80,41 @@ class ListContainerBase::ListContainerCharAllocator {
   explicit ListContainerCharAllocator(size_t element_size)
       : element_size_(element_size),
         size_(0),
-        list_count_(0),
+        last_list_index_(0),
         last_list_(NULL) {
     AllocateNewList(kDefaultNumElementTypesToReserve);
+    last_list_ = storage_[last_list_index_];
   }
 
   ListContainerCharAllocator(size_t element_size, size_t element_count)
       : element_size_(element_size),
         size_(0),
-        list_count_(0),
+        last_list_index_(0),
         last_list_(NULL) {
     AllocateNewList(element_count > 0 ? element_count
                                       : kDefaultNumElementTypesToReserve);
+    last_list_ = storage_[last_list_index_];
   }
 
   ~ListContainerCharAllocator() {}
 
   void* Allocate() {
-    if (last_list_->IsFull())
-      AllocateNewList(last_list_->capacity * 2);
+    if (last_list_->IsFull()) {
+      // Only allocate a new list if there isn't a spare one still there from
+      // previous usage.
+      if (last_list_index_ + 1 >= storage_.size())
+        AllocateNewList(last_list_->capacity * 2);
+
+      ++last_list_index_;
+      last_list_ = storage_[last_list_index_];
+    }
 
     ++size_;
     return last_list_->AddElement();
   }
 
   size_t element_size() const { return element_size_; }
-  size_t list_count() const { return list_count_; }
+  size_t list_count() const { return storage_.size(); }
   size_t size() const { return size_; }
   bool IsEmpty() const { return size() == 0; }
 
@@ -115,10 +130,25 @@ class ListContainerBase::ListContainerCharAllocator {
   void Clear() {
     size_t initial_allocation_size = storage_.front()->capacity;
     storage_.clear();
-    list_count_ = 0;
     last_list_ = NULL;
+    last_list_index_ = 0;
     size_ = 0;
     AllocateNewList(initial_allocation_size);
+    last_list_ = storage_[last_list_index_];
+  }
+
+  void RemoveLast() {
+    DCHECK(!IsEmpty());
+    last_list_->RemoveLast();
+    if (last_list_->IsEmpty() && last_list_index_ > 0) {
+      --last_list_index_;
+      last_list_ = storage_[last_list_index_];
+
+      // If there are now two empty inner lists, free one of them.
+      if (last_list_index_ + 2 < storage_.size())
+        storage_.pop_back();
+    }
+    --size_;
   }
 
   void Erase(PositionInListContainerCharAllocator position) {
@@ -129,7 +159,7 @@ class ListContainerBase::ListContainerCharAllocator {
   }
 
   InnerList* InnerListById(size_t id) const {
-    DCHECK_LT(id, list_count_);
+    DCHECK_LT(id, storage_.size());
     return storage_[id];
   }
 
@@ -147,22 +177,10 @@ class ListContainerBase::ListContainerCharAllocator {
     // |size_| > 0 means that at least one vector in |storage_| will be
     // non-empty.
     DCHECK_GT(size_, 0u);
-    size_t id = list_count_ - 1;
+    size_t id = storage_.size() - 1;
     while (storage_[id]->size == 0)
       --id;
     return id;
-  }
-
-  void AllocateNewList(size_t list_size) {
-    ++list_count_;
-    scoped_ptr<InnerList> new_list(new InnerList);
-    storage_.push_back(new_list.Pass());
-    last_list_ = storage_.back();
-    InnerList* list = last_list_;
-    list->capacity = list_size;
-    list->size = 0;
-    list->step = element_size_;
-    list->data.reset(new char[list->capacity * list->step]);
   }
 
   size_t NumAvailableElementsInLastList() const {
@@ -170,10 +188,26 @@ class ListContainerBase::ListContainerCharAllocator {
   }
 
  private:
+  void AllocateNewList(size_t list_size) {
+    scoped_ptr<InnerList> new_list(new InnerList);
+    new_list->capacity = list_size;
+    new_list->size = 0;
+    new_list->step = element_size_;
+    new_list->data.reset(new char[list_size * element_size_]);
+    storage_.push_back(new_list.Pass());
+  }
+
   ScopedPtrVector<InnerList> storage_;
   const size_t element_size_;
+
+  // The number of elements in the list.
   size_t size_;
-  size_t list_count_;
+
+  // The index of the last list to have had elements added to it, or the only
+  // list if the container has not had elements added since being cleared.
+  size_t last_list_index_;
+
+  // This is equivalent to |storage_[last_list_index_]|.
   InnerList* last_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ListContainerCharAllocator);
@@ -273,6 +307,10 @@ ListContainerBase::ListContainerBase(size_t max_size_for_derived_class,
 }
 
 ListContainerBase::~ListContainerBase() {
+}
+
+void ListContainerBase::RemoveLast() {
+  data_->RemoveLast();
 }
 
 void ListContainerBase::EraseAndInvalidateAllPointers(

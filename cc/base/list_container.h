@@ -5,6 +5,7 @@
 #ifndef CC_BASE_LIST_CONTAINER_H_
 #define CC_BASE_LIST_CONTAINER_H_
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
@@ -141,8 +142,8 @@ class CC_EXPORT ListContainerBase {
     size_t index_;
   };
 
-  // Unlike the ListContainer method, this one does not invoke element
-  // destructors.
+  // Unlike the ListContainer methods, these do not invoke element destructors.
+  void RemoveLast();
   void EraseAndInvalidateAllPointers(Iterator position);
 
   ConstReverseIterator crbegin() const;
@@ -208,6 +209,14 @@ class ListContainer : public ListContainerBase {
   class ConstIterator;
   class ReverseIterator;
   class ConstReverseIterator;
+
+  // Removes the last element of the list and makes its space available for
+  // allocation.
+  void RemoveLast() {
+    DCHECK(!empty());
+    back()->~BaseElementType();
+    ListContainerBase::RemoveLast();
+  }
 
   // When called, all raw pointers that have been handed out are no longer
   // valid. Use with caution.

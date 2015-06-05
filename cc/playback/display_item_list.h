@@ -54,6 +54,11 @@ class CC_EXPORT DisplayItemList
     return items_.AllocateAndConstruct<DisplayItemType>();
   }
 
+  // Removes the last item. This cannot be called on lists with cached pictures
+  // (since the data may already have been incorporated into cached picture
+  // sizes, etc).
+  void RemoveLast();
+
   // Called after all items are appended, to process the items and, if
   // applicable, create an internally cached SkPicture.
   void Finalize();
