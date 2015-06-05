@@ -43,8 +43,9 @@ void DOMTimerCoordinator::removeTimeoutByID(int timeoutID)
 
 void DOMTimerCoordinator::didChangeTimerAlignmentInterval()
 {
+    double now = monotonicallyIncreasingTime();
     for (TimeoutMap::iterator iter = m_timers.begin(); iter != m_timers.end(); ++iter)
-        iter->value->didChangeAlignmentInterval();
+        iter->value->didChangeAlignmentInterval(now);
 }
 
 DEFINE_TRACE(DOMTimerCoordinator)
