@@ -49,7 +49,6 @@ class Setup {
   void InitIfNecessary(const gfx::Size& screen_size_in_pixels,
                        float device_pixel_ratio);
 
-  mojo::ApplicationImpl* app() const { return app_; }
   bool is_headless() const { return is_headless_; }
   bool did_init() const { return did_init_; }
 
@@ -66,6 +65,9 @@ class Setup {
   MediaFactory* media_factory() { return media_factory_.get(); }
 
  private:
+  // App for HTMLViewer, not the document's app.
+  // WARNING: do not expose this. It's too easy to use the wrong one.
+  // HTMLDocument should be using the application it creates, not this one.
   mojo::ApplicationImpl* app_;
 
   resource_provider::ResourceLoader resource_loader_;

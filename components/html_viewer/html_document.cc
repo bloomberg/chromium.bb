@@ -142,21 +142,20 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 
 }  // namespace
 
-HTMLDocument::HTMLDocument(
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    URLResponsePtr response,
-    mojo::ShellPtr shell,
-    Setup* setup)
-    : app_refcount_(setup->app()->app_lifetime_helper()->CreateAppRefCount()),
+HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
+                           mojo::ApplicationConnection* connection,
+                           URLResponsePtr response,
+                           Setup* setup)
+    : app_refcount_(
+          html_document_app->app_lifetime_helper()->CreateAppRefCount()),
+      html_document_app_(html_document_app),
       response_(response.Pass()),
-      shell_(shell.Pass()),
       web_view_(nullptr),
       root_(nullptr),
-      view_manager_client_factory_(shell_.get(), this),
+      view_manager_client_factory_(html_document_app->shell(), this),
       setup_(setup) {
-  exported_services_.AddService(this);
-  exported_services_.AddService(&view_manager_client_factory_);
-  exported_services_.Bind(services.Pass());
+  connection->AddService(this);
+  connection->AddService(&view_manager_client_factory_);
   if (setup_->did_init())
     Load(response_.Pass());
 }
@@ -272,13 +271,13 @@ void HTMLDocument::initializeLayerTreeView() {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:surfaces_service");
   mojo::SurfacePtr surface;
-  setup_->app()->ConnectToService(request.Pass(), &surface);
+  html_document_app_->ConnectToService(request.Pass(), &surface);
 
   // TODO(jamesr): Should be mojo:gpu_service
   mojo::URLRequestPtr request2(mojo::URLRequest::New());
   request2->url = mojo::String::From("mojo:view_manager");
   mojo::GpuPtr gpu_service;
-  setup_->app()->ConnectToService(request2.Pass(), &gpu_service);
+  html_document_app_->ConnectToService(request2.Pass(), &gpu_service);
   web_layer_tree_view_impl_.reset(new WebLayerTreeViewImpl(
       setup_->compositor_thread(), surface.Pass(), gpu_service.Pass()));
 }
@@ -292,8 +291,8 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
     const blink::WebURL& url,
     blink::WebMediaPlayerClient* client,
     blink::WebContentDecryptionModule* initial_cdm) {
-  return setup_->media_factory()->CreateMediaPlayer(frame, url, client,
-                                                    initial_cdm, shell_.get());
+  return setup_->media_factory()->CreateMediaPlayer(
+      frame, url, client, initial_cdm, html_document_app_->shell());
 }
 
 blink::WebFrame* HTMLDocument::createChildFrame(
@@ -409,7 +408,6 @@ void HTMLDocument::OnViewViewportMetricsChanged(
 void HTMLDocument::OnViewDestroyed(View* view) {
   DCHECK_EQ(view, root_);
   root_ = nullptr;
-  shell_->QuitApplication();
 }
 
 void HTMLDocument::OnViewInputEvent(View* view, const mojo::EventPtr& event) {

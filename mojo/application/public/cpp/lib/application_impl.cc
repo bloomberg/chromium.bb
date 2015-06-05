@@ -35,7 +35,8 @@ ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
       binding_(this, request.Pass()),
       termination_closure_(termination_closure),
       app_lifetime_helper_(this),
-      quit_requested_(false) {
+      quit_requested_(false),
+      weak_factory_(this) {
 }
 
 void ApplicationImpl::ClearConnections() {
@@ -140,7 +141,10 @@ void ApplicationImpl::OnQuitRequested(const Callback<void(bool)>& callback) {
 }
 
 void ApplicationImpl::OnConnectionError() {
+  base::WeakPtr<ApplicationImpl> ptr(weak_factory_.GetWeakPtr());
   QuitNow();
+  if (!ptr)
+    return;
   shell_ = nullptr;
 }
 

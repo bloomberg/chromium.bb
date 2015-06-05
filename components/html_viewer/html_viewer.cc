@@ -40,35 +40,44 @@ namespace html_viewer {
 
 class HTMLViewer;
 
-class HTMLViewerApplication : public mojo::Application {
+// ApplicationDelegate created by the content handler for a specific url.
+class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
  public:
-  HTMLViewerApplication(InterfaceRequest<Application> request,
-                        URLResponsePtr response,
-                        Setup* setup)
-      : app_refcount_(setup->app()->app_lifetime_helper()->CreateAppRefCount()),
+  HTMLDocumentApplicationDelegate(
+      mojo::InterfaceRequest<mojo::Application> request,
+      mojo::URLResponsePtr response,
+      Setup* setup,
+      scoped_ptr<mojo::AppRefCount> parent_app_refcount)
+      : app_(this,
+             request.Pass(),
+             base::Bind(&HTMLDocumentApplicationDelegate::OnTerminate,
+                        base::Unretained(this))),
+        parent_app_refcount_(parent_app_refcount.Pass()),
         url_(response->url),
-        binding_(this, request.Pass()),
         initial_response_(response.Pass()),
-        setup_(setup) {
+        setup_(setup) {}
+
+ private:
+  ~HTMLDocumentApplicationDelegate() override {}
+
+  // Callback from the quit closure. We key off this rather than
+  // ApplicationDelegate::Quit() as we don't want to shut down the messageloop
+  // when we quit (the messageloop is shared among multiple
+  // HTMLDocumentApplicationDelegates).
+  void OnTerminate() {
+    delete this;
   }
 
-  ~HTMLViewerApplication() override {
-  }
-
-  void Initialize(ShellPtr shell, const String& url) override {
-    shell_ = shell.Pass();
+  // ApplicationDelegate;
+  void Initialize(mojo::ApplicationImpl* app) override {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:network_service");
-    setup_->app()->ConnectToService(request.Pass(), &network_service_);
+    app_.ConnectToService(request.Pass(), (&network_service_));
   }
-
-  void AcceptConnection(const String& requestor_url,
-                        InterfaceRequest<ServiceProvider> services,
-                        ServiceProviderPtr exposed_services,
-                        const String& url) override {
+  bool ConfigureIncomingConnection(
+      mojo::ApplicationConnection* connection) override {
     if (initial_response_) {
-      OnResponseReceived(URLLoaderPtr(), services.Pass(),
-                         initial_response_.Pass());
+      OnResponseReceived(URLLoaderPtr(), connection, initial_response_.Pass());
     } else {
       URLLoaderPtr loader;
       network_service_->CreateURLLoader(GetProxy(&loader));
@@ -76,60 +85,59 @@ class HTMLViewerApplication : public mojo::Application {
       request->url = url_;
       request->auto_follow_redirects = true;
 
-      // |loader| will be pass to the OnResponseReceived method through a
+      // |loader| will be passed to the OnResponseReceived method through a
       // callback. Because order of evaluation is undefined, a reference to the
       // raw pointer is needed.
       mojo::URLLoader* raw_loader = loader.get();
       raw_loader->Start(
           request.Pass(),
-          base::Bind(&HTMLViewerApplication::OnResponseReceived,
+          base::Bind(&HTMLDocumentApplicationDelegate::OnResponseReceived,
                      base::Unretained(this), base::Passed(&loader),
-                     base::Passed(&services)));
+                     connection));
     }
+    return true;
   }
 
-  void OnQuitRequested(const mojo::Callback<void(bool)>& callback) override {
-    callback.Run(true);
-    delete this;
-  }
-
- private:
   void OnResponseReceived(URLLoaderPtr loader,
-                          InterfaceRequest<ServiceProvider> services,
+                          mojo::ApplicationConnection* connection,
                           URLResponsePtr response) {
     // HTMLDocument is destroyed when the hosting view is destroyed.
     // TODO(sky): when headless, this leaks.
-    new HTMLDocument(services.Pass(), response.Pass(), shell_.Pass(), setup_);
+    // TODO(sky): this needs to delete if serviceprovider goes away too.
+    new HTMLDocument(&app_, connection, response.Pass(), setup_);
   }
 
-  scoped_ptr<mojo::AppRefCount> app_refcount_;
-  String url_;
-  mojo::StrongBinding<mojo::Application> binding_;
-  ShellPtr shell_;
+  mojo::ApplicationImpl app_;
+  // AppRefCount of the parent (HTMLViewer).
+  scoped_ptr<mojo::AppRefCount> parent_app_refcount_;
+  const String url_;
   mojo::NetworkServicePtr network_service_;
   URLResponsePtr initial_response_;
   Setup* setup_;
 
-  DISALLOW_COPY_AND_ASSIGN(HTMLViewerApplication);
+  DISALLOW_COPY_AND_ASSIGN(HTMLDocumentApplicationDelegate);
 };
 
 class ContentHandlerImpl : public mojo::ContentHandler {
  public:
   ContentHandlerImpl(Setup* setup,
+                     mojo::ApplicationImpl* app,
                      mojo::InterfaceRequest<ContentHandler> request)
-      : setup_(setup),
-        binding_(this, request.Pass()) {}
+      : setup_(setup), app_(app), binding_(this, request.Pass()) {}
   ~ContentHandlerImpl() override {}
 
  private:
   // Overridden from ContentHandler:
   void StartApplication(InterfaceRequest<mojo::Application> request,
                         URLResponsePtr response) override {
-    // HTMLViewerApplication is owned by the binding.
-    new HTMLViewerApplication(request.Pass(), response.Pass(), setup_);
+    // HTMLDocumentApplicationDelegate deletes itself.
+    new HTMLDocumentApplicationDelegate(
+        request.Pass(), response.Pass(), setup_,
+        app_->app_lifetime_helper()->CreateAppRefCount());
   }
 
   Setup* setup_;
+  mojo::ApplicationImpl* app_;
   mojo::StrongBinding<mojo::ContentHandler> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerImpl);
@@ -138,12 +146,13 @@ class ContentHandlerImpl : public mojo::ContentHandler {
 class HTMLViewer : public mojo::ApplicationDelegate,
                    public mojo::InterfaceFactory<ContentHandler> {
  public:
-  HTMLViewer() {}
+  HTMLViewer() : app_(nullptr) {}
   ~HTMLViewer() override {}
 
  private:
   // Overridden from ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {
+    app_ = app;
     setup_.reset(new Setup(app));
   }
 
@@ -162,10 +171,11 @@ class HTMLViewer : public mojo::ApplicationDelegate,
   // Overridden from InterfaceFactory<ContentHandler>
   void Create(ApplicationConnection* connection,
               mojo::InterfaceRequest<ContentHandler> request) override {
-    new ContentHandlerImpl(setup_.get(), request.Pass());
+    new ContentHandlerImpl(setup_.get(), app_, request.Pass());
   }
 
   scoped_ptr<Setup> setup_;
+  mojo::ApplicationImpl* app_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };

@@ -51,16 +51,12 @@ class HTMLDocument : public blink::WebViewClient,
                      public mojo::InterfaceFactory<mojo::AxProvider> {
  public:
   // Load a new HTMLDocument with |response|.
-  //
-  // |services| should be used to implement a ServiceProvider which exposes
-  // services to the connecting application.
-  // Commonly, the connecting application is the ViewManager and it will
-  // request ViewManagerClient.
-  //
-  // |shell| is the Shell connection for this mojo::Application.
-  HTMLDocument(mojo::InterfaceRequest<mojo::ServiceProvider> services,
+  // |html_document_app| is the application this app was created in, and
+  // |connection| the specific connection triggering this new instance.
+  // |setup| is used to obtain init type state (such as resources).
+  HTMLDocument(mojo::ApplicationImpl* html_document_app,
+               mojo::ApplicationConnection* connection,
                mojo::URLResponsePtr response,
-               mojo::ShellPtr shell,
                Setup* setup);
   ~HTMLDocument() override;
 
@@ -140,10 +136,9 @@ class HTMLDocument : public blink::WebViewClient,
   void ConvertLocalFrameToRemoteFrame(blink::WebLocalFrame* frame);
 
   scoped_ptr<mojo::AppRefCount> app_refcount_;
+  mojo::ApplicationImpl* html_document_app_;
   mojo::URLResponsePtr response_;
-  mojo::ServiceProviderImpl exported_services_;
   mojo::ServiceProviderPtr embedder_service_provider_;
-  mojo::ShellPtr shell_;
   mojo::LazyInterfacePtr<mojo::NavigatorHost> navigator_host_;
   blink::WebView* web_view_;
   mojo::View* root_;
