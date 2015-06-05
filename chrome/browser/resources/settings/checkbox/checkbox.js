@@ -23,7 +23,18 @@ Polymer({
      */
     pref: {
       type: Object,
-      notify: true,
+      notify: true
+    },
+
+    inverted: {
+      type: Boolean,
+      value: false
+    },
+
+    checked: {
+      type: Boolean,
+      value: false,
+      observer: 'checkedChanged_'
     },
 
     label: {
@@ -37,8 +48,32 @@ Polymer({
     },
   },
 
+  observers: [
+    'prefValueChanged_(pref.value)'
+  ],
+
   /** @override */
   ready: function() {
     this.$.events.forward(this.$.checkbox, ['change']);
   },
+
+  /** @private */
+  prefValueChanged_: function(prefValue) {
+    // prefValue is initially undefined when Polymer initializes pref.
+    if (prefValue !== undefined) {
+      this.checked = this.getNewValue_(prefValue);
+    }
+  },
+
+  /** @private */
+  checkedChanged_: function() {
+    if (this.pref) {
+      this.pref.value = this.getNewValue_(this.checked);
+    }
+  },
+
+  /** @private */
+  getNewValue_: function(val) {
+    return this.inverted ? !val : val;
+  }
 });
