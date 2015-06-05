@@ -190,13 +190,6 @@ protected:
         // does, the object should not be marked & traced.
         return page->terminating();
     }
-
-#if ENABLE(ASSERT)
-    virtual void checkMarkingAllowed() override
-    {
-        ASSERT(ThreadState::current()->isInGC());
-    }
-#endif
 };
 
 } // namespace blink

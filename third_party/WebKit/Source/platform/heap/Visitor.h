@@ -407,10 +407,6 @@ protected:
     String m_hostName;
 #endif
 
-#if ENABLE(ASSERT)
-    virtual void checkMarkingAllowed() { }
-#endif
-
 private:
     static Visitor* fromHelper(VisitorHelper<Visitor>* helper) { return static_cast<Visitor*>(helper); }
 

@@ -71,10 +71,6 @@ private:
         return *static_cast<InlinedGlobalMarkingVisitor*>(helper);
     }
 
-#if ENABLE(ASSERT)
-    inline void checkMarkingAllowed() { m_visitor->checkMarkingAllowed(); }
-#endif
-
     Visitor* m_visitor;
 };
 

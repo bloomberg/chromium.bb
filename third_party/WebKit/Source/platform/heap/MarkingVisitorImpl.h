@@ -39,7 +39,7 @@ protected:
             return;
 
 #if ENABLE(ASSERT)
-        toDerived()->checkMarkingAllowed();
+        ASSERT(ThreadState::current()->isInGC());
         ASSERT(Heap::findPageFromAddress(header));
 #endif
         header->mark();
