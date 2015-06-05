@@ -29,14 +29,6 @@ NetworkServiceImpl::NetworkServiceImpl(
 NetworkServiceImpl::~NetworkServiceImpl() {
 }
 
-void NetworkServiceImpl::CreateURLLoader(InterfaceRequest<URLLoader> loader) {
-  // TODO(darin): Plumb origin_. Use for CORS.
-  // The loader will delete itself when the pipe is closed, unless a request is
-  // in progress. In which case, the loader will delete itself when the request
-  // is finished.
-  new URLLoaderImpl(context_, loader.Pass(), app_refcount_->Clone());
-}
-
 void NetworkServiceImpl::GetCookieStore(InterfaceRequest<CookieStore> store) {
   new CookieStoreImpl(context_, origin_, app_refcount_->Clone(), store.Pass());
 }

@@ -12,7 +12,7 @@
 #include "components/html_viewer/blink_url_request_type_converters.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
-#include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoadTiming.h"
@@ -71,13 +71,13 @@ WebURLRequestExtraData::WebURLRequestExtraData() {
 WebURLRequestExtraData::~WebURLRequestExtraData() {
 }
 
-WebURLLoaderImpl::WebURLLoaderImpl(mojo::NetworkService* network_service,
+WebURLLoaderImpl::WebURLLoaderImpl(mojo::URLLoaderFactory* url_loader_factory,
                                    MockWebBlobRegistryImpl* web_blob_registry)
     : client_(NULL),
       web_blob_registry_(web_blob_registry),
       referrer_policy_(blink::WebReferrerPolicyDefault),
       weak_factory_(this) {
-  network_service->CreateURLLoader(GetProxy(&url_loader_));
+  url_loader_factory->CreateURLLoader(GetProxy(&url_loader_));
 }
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {

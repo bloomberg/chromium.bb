@@ -71,7 +71,10 @@ BlinkPlatformImpl::BlinkPlatformImpl(
   if (app) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:network_service");
-    app->ConnectToService(request.Pass(), &network_service_);
+    mojo::ApplicationConnection* connection =
+        app->ConnectToApplication(request.Pass());
+    connection->ConnectToService(&network_service_);
+    connection->ConnectToService(&url_loader_factory_);
 
     mojo::CookieStorePtr cookie_store;
     network_service_->GetCookieStore(GetProxy(&cookie_store));
@@ -204,7 +207,7 @@ blink::WebData BlinkPlatformImpl::loadResource(const char* resource) {
 }
 
 blink::WebURLLoader* BlinkPlatformImpl::createURLLoader() {
-  return new WebURLLoaderImpl(network_service_.get(), &blob_registry_);
+  return new WebURLLoaderImpl(url_loader_factory_.get(), &blob_registry_);
 }
 
 blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {

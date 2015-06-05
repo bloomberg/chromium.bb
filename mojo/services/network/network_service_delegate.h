@@ -9,12 +9,14 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/services/network/network_context.h"
-#include "mojo/services/network/network_service_impl.h"
+#include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
 
 class NetworkServiceDelegate
     : public mojo::ApplicationDelegate,
-      public mojo::InterfaceFactory<mojo::NetworkService> {
+      public mojo::InterfaceFactory<mojo::NetworkService>,
+      public mojo::InterfaceFactory<mojo::URLLoaderFactory> {
  public:
   NetworkServiceDelegate();
   ~NetworkServiceDelegate() override;
@@ -29,6 +31,10 @@ class NetworkServiceDelegate
   // mojo::InterfaceFactory<mojo::NetworkService> implementation.
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::NetworkService> request) override;
+
+  // mojo::InterfaceFactory<mojo::URLLoaderFactory> implementation.
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<mojo::URLLoaderFactory> request) override;
 
  private:
   mojo::ApplicationImpl* app_;

@@ -19,6 +19,7 @@ mojom("interfaces") {
     "tcp_server_socket.mojom",
     "udp_socket.mojom",
     "url_loader.mojom",
+    "url_loader_factory.mojom",
     "web_socket.mojom",
   ]
 

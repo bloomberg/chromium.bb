@@ -22,7 +22,7 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/common/url_type_converters.h"
-#include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/shell/data_pipe_peek.h"
 #include "mojo/shell/switches.h"
 
@@ -31,13 +31,13 @@ namespace shell {
 
 NetworkFetcher::NetworkFetcher(bool disable_cache,
                                mojo::URLRequestPtr request,
-                               NetworkService* network_service,
+                               URLLoaderFactory* url_loader_factory,
                                const FetchCallback& loader_callback)
     : Fetcher(loader_callback),
       disable_cache_(false),
       url_(request->url.To<GURL>()),
       weak_ptr_factory_(this) {
-  StartNetworkRequest(request.Pass(), network_service);
+  StartNetworkRequest(request.Pass(), url_loader_factory);
 }
 
 NetworkFetcher::~NetworkFetcher() {
@@ -219,13 +219,13 @@ bool NetworkFetcher::PeekFirstLine(std::string* line) {
 }
 
 void NetworkFetcher::StartNetworkRequest(mojo::URLRequestPtr request,
-                                         NetworkService* network_service) {
+                                         URLLoaderFactory* url_loader_factory) {
   TRACE_EVENT_ASYNC_BEGIN1("mojo_shell", "NetworkFetcher::NetworkRequest", this,
                            "url", request->url.To<std::string>());
   request->auto_follow_redirects = false;
   request->bypass_cache = disable_cache_;
 
-  network_service->CreateURLLoader(GetProxy(&url_loader_));
+  url_loader_factory->CreateURLLoader(GetProxy(&url_loader_));
   url_loader_->Start(request.Pass(),
                      base::Bind(&NetworkFetcher::OnLoadComplete,
                                 weak_ptr_factory_.GetWeakPtr()));

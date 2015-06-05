@@ -11,15 +11,12 @@ import "network/public/interfaces/network_error.mojom";
 import "network/public/interfaces/tcp_bound_socket.mojom";
 import "network/public/interfaces/tcp_connected_socket.mojom";
 import "network/public/interfaces/udp_socket.mojom";
-import "network/public/interfaces/url_loader.mojom";
 import "network/public/interfaces/web_socket.mojom";
 
 // TODO Darin suggests that this should probably be two classes. One for
 // high-level origin-build requests like WebSockets and HTTP, and the other for
 // non-origin-bound low-level stuff like DNS, UDP, and TCP.
 interface NetworkService {
-  CreateURLLoader(URLLoader& loader);
-
   GetCookieStore(CookieStore& cookie_store);
 
   CreateWebSocket(WebSocket& socket);

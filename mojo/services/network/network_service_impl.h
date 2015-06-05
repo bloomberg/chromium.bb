@@ -24,7 +24,6 @@ class NetworkServiceImpl : public NetworkService {
   ~NetworkServiceImpl() override;
 
   // NetworkService methods:
-  void CreateURLLoader(InterfaceRequest<URLLoader> loader) override;
   void GetCookieStore(InterfaceRequest<CookieStore> store) override;
   void CreateWebSocket(InterfaceRequest<WebSocket> socket) override;
   void CreateTCPBoundSocket(

@@ -16,6 +16,7 @@
 #include "components/html_viewer/web_theme_engine_impl.h"
 #include "components/webcrypto/webcrypto_impl.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
 
@@ -111,6 +112,7 @@ class BlinkPlatformImpl : public blink::Platform {
   blink::WebScrollbarBehavior scrollbar_behavior_;
   BlinkResourceMap blink_resource_map_;
   mojo::NetworkServicePtr network_service_;
+  mojo::URLLoaderFactoryPtr url_loader_factory_;
   MockWebBlobRegistryImpl blob_registry_;
   scoped_ptr<WebCookieJarImpl> cookie_jar_;
   scoped_ptr<WebClipboardImpl> clipboard_;

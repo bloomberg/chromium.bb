@@ -10,6 +10,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/services/network/network_service_impl.h"
+#include "mojo/services/network/url_loader_factory_impl.h"
 
 NetworkServiceDelegate::NetworkServiceDelegate() : app_(nullptr) {}
 
@@ -26,7 +28,8 @@ void NetworkServiceDelegate::Initialize(mojo::ApplicationImpl* app) {
 bool NetworkServiceDelegate::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   DCHECK(context_);
-  connection->AddService(this);
+  connection->AddService<mojo::NetworkService>(this);
+  connection->AddService<mojo::URLLoaderFactory>(this);
   return true;
 }
 
@@ -41,6 +44,16 @@ void NetworkServiceDelegate::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::NetworkService> request) {
   new mojo::NetworkServiceImpl(
+      connection,
+      context_.get(),
+      app_->app_lifetime_helper()->CreateAppRefCount(),
+      request.Pass());
+}
+
+void NetworkServiceDelegate::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mojo::URLLoaderFactory> request) {
+  new mojo::URLLoaderFactoryImpl(
       connection,
       context_.get(),
       app_->app_lifetime_helper()->CreateAppRefCount(),

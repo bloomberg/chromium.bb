@@ -20,6 +20,7 @@
         'services/network/public/interfaces/tcp_server_socket.mojom',
         'services/network/public/interfaces/udp_socket.mojom',
         'services/network/public/interfaces/url_loader.mojom',
+        'services/network/public/interfaces/url_loader_factory.mojom',
         'services/network/public/interfaces/web_socket.mojom',
       ],
       'mojom_include_path': '<(DEPTH)/mojo/services',

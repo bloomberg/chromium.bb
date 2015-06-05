@@ -20,6 +20,7 @@
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
@@ -72,7 +73,10 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   void Initialize(mojo::ApplicationImpl* app) override {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:network_service");
-    app_.ConnectToService(request.Pass(), (&network_service_));
+    mojo::ApplicationConnection* connection =
+        app_.ConnectToApplication(request.Pass());
+    connection->ConnectToService(&network_service_);
+    connection->ConnectToService(&url_loader_factory_);
   }
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override {
@@ -80,7 +84,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
       OnResponseReceived(URLLoaderPtr(), connection, initial_response_.Pass());
     } else {
       URLLoaderPtr loader;
-      network_service_->CreateURLLoader(GetProxy(&loader));
+      url_loader_factory_->CreateURLLoader(GetProxy(&loader));
       mojo::URLRequestPtr request(mojo::URLRequest::New());
       request->url = url_;
       request->auto_follow_redirects = true;
@@ -112,6 +116,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   scoped_ptr<mojo::AppRefCount> parent_app_refcount_;
   const String url_;
   mojo::NetworkServicePtr network_service_;
+  mojo::URLLoaderFactoryPtr url_loader_factory_;
   URLResponsePtr initial_response_;
   Setup* setup_;
 

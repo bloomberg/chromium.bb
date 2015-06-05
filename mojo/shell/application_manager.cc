@@ -179,8 +179,8 @@ void ApplicationManager::ConnectToApplicationInternal(
     return;
   }
 
-  if (!network_service_)
-    ConnectToService(GURL("mojo:network_service"), &network_service_);
+  if (!url_loader_factory_)
+    ConnectToService(GURL("mojo:network_service"), &url_loader_factory_);
 
   const NativeApplicationCleanup cleanup =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -193,12 +193,13 @@ void ApplicationManager::ConnectToApplicationInternal(
     mojo::URLRequestPtr resolved_url_request(mojo::URLRequest::New());
     resolved_url_request->url = resolved_url.spec();
     new NetworkFetcher(disable_cache_, resolved_url_request.Pass(),
-                       network_service_.get(), base::Bind(callback, cleanup));
+                       url_loader_factory_.get(),
+                       base::Bind(callback, cleanup));
     return;
   }
 
   new NetworkFetcher(disable_cache_, requested_url.Pass(),
-                     network_service_.get(), base::Bind(callback, cleanup));
+                     url_loader_factory_.get(), base::Bind(callback, cleanup));
 }
 
 bool ApplicationManager::ConnectToRunningApplication(

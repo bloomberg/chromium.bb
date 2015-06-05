@@ -16,7 +16,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
 namespace mojo {
-class NetworkService;
+class URLLoaderFactory;
 }
 
 namespace html_viewer {
@@ -32,7 +32,7 @@ class WebURLRequestExtraData : public blink::WebURLRequest::ExtraData {
 
 class WebURLLoaderImpl : public blink::WebURLLoader {
  public:
-  explicit WebURLLoaderImpl(mojo::NetworkService* network_service,
+  explicit WebURLLoaderImpl(mojo::URLLoaderFactory* url_loader_factory,
                             MockWebBlobRegistryImpl* web_blob_registry);
 
  private:
