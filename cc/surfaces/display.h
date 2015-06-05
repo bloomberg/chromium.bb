@@ -62,6 +62,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   // what scale this was rendered at.
   void SetSurfaceId(SurfaceId id, float device_scale_factor);
   void Resize(const gfx::Size& new_size);
+  void SetExternalClip(const gfx::Rect& clip);
 
   SurfaceId CurrentSurfaceId();
 
@@ -106,6 +107,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   gfx::Size current_surface_size_;
   float device_scale_factor_;
   bool swapped_since_resize_;
+  gfx::Rect external_clip_;
   scoped_ptr<OutputSurface> output_surface_;
   DisplayScheduler* scheduler_;
   scoped_ptr<ResourceProvider> resource_provider_;

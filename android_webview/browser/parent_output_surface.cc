@@ -18,20 +18,14 @@ ParentOutputSurface::ParentOutputSurface(
 ParentOutputSurface::~ParentOutputSurface() {
 }
 
+void ParentOutputSurface::Reshape(const gfx::Size& size, float scale_factor) {
+  DCHECK_EQ(1.f, scale_factor);
+  surface_size_ = size;
+}
+
 void ParentOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   context_provider_->ContextGL()->ShallowFlushCHROMIUM();
   client_->DidSwapBuffers();
-}
-
-void ParentOutputSurface::SetDrawConstraints(const gfx::Size& surface_size,
-                                             const gfx::Rect& clip) {
-  DCHECK(client_);
-  surface_size_ = surface_size;
-  const gfx::Transform identity;
-  const gfx::Rect empty;
-  const bool resourceless_software_draw = false;
-  SetExternalDrawConstraints(
-      identity, empty, clip, clip, identity, resourceless_software_draw);
 }
 
 }  // namespace android_webview

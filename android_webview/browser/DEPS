@@ -7,7 +7,6 @@ include_rules = [
 
   "+cc",
   "-cc/blink",
-  "-cc/surfaces",
 
   "+components/auto_login_parser",
   "+components/autofill/content/browser",

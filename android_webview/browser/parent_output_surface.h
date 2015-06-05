@@ -16,11 +16,9 @@ class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
   ~ParentOutputSurface() override;
 
   // OutputSurface overrides.
-  void Reshape(const gfx::Size& size, float scale_factor) override {}
+  void Reshape(const gfx::Size& size, float scale_factor) override;
   void SwapBuffers(cc::CompositorFrame* frame) override;
   using cc::OutputSurface::SetExternalStencilTest;
-
-  void SetDrawConstraints(const gfx::Size& surface_size, const gfx::Rect& clip);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ParentOutputSurface);

@@ -156,6 +156,7 @@
       'type': 'static_library',
       'dependencies': [
         '../android_webview/native/webview_native.gyp:webview_native',
+        '../cc/cc.gyp:cc_surfaces',
         '../components/components.gyp:auto_login_parser',
         '../components/components.gyp:autofill_content_renderer',
         '../components/components.gyp:breakpad_host',

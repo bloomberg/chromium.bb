@@ -88,6 +88,10 @@ void Display::Resize(const gfx::Size& size) {
     scheduler_->EntireDisplayDamaged(current_surface_id_);
 }
 
+void Display::SetExternalClip(const gfx::Rect& clip) {
+  external_clip_ = clip;
+}
+
 void Display::InitializeRenderer() {
   if (resource_provider_)
     return;
@@ -180,7 +184,8 @@ bool Display::DrawAndSwap() {
 
   if (should_draw) {
     gfx::Rect device_viewport_rect = gfx::Rect(current_surface_size_);
-    gfx::Rect device_clip_rect = device_viewport_rect;
+    gfx::Rect device_clip_rect =
+        external_clip_.IsEmpty() ? device_viewport_rect : external_clip_;
     bool disable_picture_quad_image_filtering = false;
 
     renderer_->DecideRenderPassAllocationsForFrame(

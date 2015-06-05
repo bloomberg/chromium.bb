@@ -15,14 +15,14 @@
 #include "base/auto_reset.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/layers/delegated_frame_provider.h"
-#include "cc/layers/delegated_renderer_layer.h"
-#include "cc/layers/layer.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
-#include "cc/scheduler/begin_frame_source.h"
-#include "cc/trees/layer_tree_host.h"
-#include "cc/trees/layer_tree_settings.h"
+#include "cc/output/renderer_settings.h"
+#include "cc/quads/shared_quad_state.h"
+#include "cc/quads/surface_draw_quad.h"
+#include "cc/surfaces/display.h"
+#include "cc/surfaces/surface_factory.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -30,77 +30,44 @@
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace {
-cc::LayerSettings HardwareRendererLayerSettings() {
-  return cc::LayerSettings();
-}
-}
-
 namespace android_webview {
 
 HardwareRenderer::HardwareRenderer(SharedRendererState* state)
     : shared_renderer_state_(state),
       last_egl_context_(eglGetCurrentContext()),
-      stencil_enabled_(false),
-      viewport_clip_valid_for_dcheck_(false),
       gl_surface_(new AwGLSurface),
-      root_layer_(cc::Layer::Create(HardwareRendererLayerSettings())),
-      resource_collection_(new cc::DelegatedFrameResourceCollection),
       output_surface_(NULL) {
   DCHECK(last_egl_context_);
 
-  resource_collection_->SetClient(this);
-
-  cc::LayerTreeSettings settings;
+  cc::RendererSettings settings;
 
   // Should be kept in sync with compositor_impl_android.cc.
-  settings.renderer_settings.allow_antialiasing = false;
-  settings.renderer_settings.highp_threshold_min = 2048;
+  settings.allow_antialiasing = false;
+  settings.highp_threshold_min = 2048;
 
   // Webview does not own the surface so should not clear it.
-  settings.renderer_settings.should_clear_root_render_pass = false;
+  settings.should_clear_root_render_pass = false;
 
-  // TODO(enne): Update this this compositor to use a synchronous scheduler.
-  settings.single_thread_proxy_scheduler = false;
-
-  cc::LayerTreeHost::InitParams params;
-  params.client = this;
-  params.settings = &settings;
-  layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
-  layer_tree_host_->SetRootLayer(root_layer_);
-  layer_tree_host_->SetLayerTreeHostClientReady();
-  layer_tree_host_->set_has_transparent_background(true);
+  surface_manager_.reset(new cc::SurfaceManager);
+  surface_id_allocator_.reset(new cc::SurfaceIdAllocator(1));
+  display_.reset(new cc::Display(this, surface_manager_.get(), nullptr, nullptr,
+                                 settings));
+  surface_factory_.reset(new cc::SurfaceFactory(surface_manager_.get(), this));
 }
 
 HardwareRenderer::~HardwareRenderer() {
-  // Must reset everything before |resource_collection_| to ensure all
-  // resources are returned before resetting |resource_collection_| client.
-  layer_tree_host_.reset();
-  root_layer_ = NULL;
-  delegated_layer_ = NULL;
-  frame_provider_ = NULL;
-#if DCHECK_IS_ON()
-  // Check collection is empty.
-  cc::ReturnedResourceArray returned_resources;
-  resource_collection_->TakeUnusedResourcesForChildCompositor(
-      &returned_resources);
-  DCHECK_EQ(0u, returned_resources.size());
-#endif  // DCHECK_IS_ON()
-
-  resource_collection_->SetClient(NULL);
+  // Must reset everything before |surface_factory_| to ensure all
+  // resources are returned before resetting.
+  if (!root_id_.is_null())
+    surface_factory_->Destroy(root_id_);
+  if (!child_id_.is_null())
+    surface_factory_->Destroy(child_id_);
+  display_.reset();
+  surface_factory_.reset();
 
   // Reset draw constraints.
   shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
       ParentCompositorDrawConstraints());
-}
-
-void HardwareRenderer::DidBeginMainFrame() {
-  // This is called after OutputSurface is created, but before the impl frame
-  // starts. We set the draw constraints here.
-  DCHECK(output_surface_);
-  DCHECK(viewport_clip_valid_for_dcheck_);
-  output_surface_->SetExternalStencilTest(stencil_enabled_);
-  output_surface_->SetDrawConstraints(viewport_, clip_);
 }
 
 void HardwareRenderer::CommitFrame() {
@@ -119,35 +86,24 @@ void HardwareRenderer::CommitFrame() {
   DCHECK(!frame->gl_frame_data);
   DCHECK(!frame->software_frame_data);
 
-  // DelegatedRendererLayerImpl applies the inverse device_scale_factor of the
-  // renderer frame, assuming that the browser compositor will scale
-  // it back up to device scale.  But on Android we put our browser layers in
-  // physical pixels and set our browser CC device_scale_factor to 1, so this
-  // suppresses the transform.
+  // On Android we put our browser layers in physical pixels and set our
+  // browser CC device_scale_factor to 1, so suppress the transform between
+  // DIP and pixels.
   frame->delegated_frame_data->device_scale_factor = 1.0f;
 
   gfx::Size frame_size =
       frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
   bool size_changed = frame_size != frame_size_;
   frame_size_ = frame_size;
-
-  if (!frame_provider_.get() || size_changed) {
-    if (delegated_layer_.get()) {
-      delegated_layer_->RemoveFromParent();
-    }
-
-    frame_provider_ = new cc::DelegatedFrameProvider(
-        resource_collection_.get(), frame->delegated_frame_data.Pass());
-
-    delegated_layer_ = cc::DelegatedRendererLayer::Create(
-        HardwareRendererLayerSettings(), frame_provider_);
-    delegated_layer_->SetBounds(frame_size_);
-    delegated_layer_->SetIsDrawable(true);
-
-    root_layer_->AddChild(delegated_layer_);
-  } else {
-    frame_provider_->SetFrameData(frame->delegated_frame_data.Pass());
+  if (child_id_.is_null() || size_changed) {
+    if (!child_id_.is_null())
+      surface_factory_->Destroy(child_id_);
+    child_id_ = surface_id_allocator_->GenerateId();
+    surface_factory_->Create(child_id_);
   }
+
+  surface_factory_->SubmitFrame(child_id_, frame.Pass(),
+                                cc::SurfaceFactory::DrawCallback());
 }
 
 void HardwareRenderer::DrawGL(bool stencil_enabled,
@@ -168,58 +124,77 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   transform.matrix().setColMajorf(draw_info->transform);
   transform.Translate(scroll_offset_.x(), scroll_offset_.y());
 
-  viewport_.SetSize(draw_info->width, draw_info->height);
+  gfx::Size viewport(draw_info->width, draw_info->height);
   // Need to post the new transform matrix back to child compositor
   // because there is no onDraw during a Render Thread animation, and child
   // compositor might not have the tiles rasterized as the animation goes on.
   ParentCompositorDrawConstraints draw_constraints(
-      draw_info->is_layer, transform, gfx::Rect(viewport_));
+      draw_info->is_layer, transform, gfx::Rect(viewport));
   if (!child_frame_.get() || draw_constraints.NeedUpdate(*child_frame_)) {
     shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
         draw_constraints);
   }
 
-  if (!delegated_layer_.get())
+  if (child_id_.is_null())
     return;
 
-  layer_tree_host_->SetViewportSize(viewport_);
-  clip_.SetRect(draw_info->clip_left,
-                draw_info->clip_top,
-                draw_info->clip_right - draw_info->clip_left,
-                draw_info->clip_bottom - draw_info->clip_top);
-  stencil_enabled_ = stencil_enabled;
+  gfx::Rect clip(draw_info->clip_left, draw_info->clip_top,
+                 draw_info->clip_right - draw_info->clip_left,
+                 draw_info->clip_bottom - draw_info->clip_top);
 
-  delegated_layer_->SetTransform(transform);
+  // Create a frame with a single SurfaceDrawQuad referencing the child
+  // Surface and transformed using the given transform.
+  scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+  render_pass->SetAll(cc::RenderPassId(1, 1), gfx::Rect(viewport), clip,
+                      gfx::Transform(), true);
+
+  cc::SharedQuadState* quad_state =
+      render_pass->CreateAndAppendSharedQuadState();
+  quad_state->content_to_target_transform = transform;
+  quad_state->content_bounds = frame_size_;
+  quad_state->visible_content_rect = gfx::Rect(frame_size_);
+  quad_state->opacity = 1.f;
+
+  cc::SurfaceDrawQuad* surface_quad =
+      render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+  surface_quad->SetNew(quad_state, gfx::Rect(quad_state->content_bounds),
+                       gfx::Rect(quad_state->content_bounds), child_id_);
+
+  scoped_ptr<cc::DelegatedFrameData> delegated_frame(
+      new cc::DelegatedFrameData);
+  delegated_frame->render_pass_list.push_back(render_pass.Pass());
+  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  frame->delegated_frame_data = delegated_frame.Pass();
+
+  if (root_id_.is_null()) {
+    root_id_ = surface_id_allocator_->GenerateId();
+    surface_factory_->Create(root_id_);
+    display_->SetSurfaceId(root_id_, 1.f);
+  }
+  surface_factory_->SubmitFrame(root_id_, frame.Pass(),
+                                cc::SurfaceFactory::DrawCallback());
+
+  display_->Resize(viewport);
 
   gl_surface_->SetBackingFrameBufferObject(framebuffer_binding_ext);
-  {
-    base::AutoReset<bool> frame_resetter(&viewport_clip_valid_for_dcheck_,
-                                         true);
-    layer_tree_host_->SetNeedsRedrawRect(clip_);
-    layer_tree_host_->Composite(base::TimeTicks::Now());
+  if (!output_surface_) {
+    scoped_refptr<cc::ContextProvider> context_provider =
+        AwRenderThreadContextProvider::Create(
+            gl_surface_, DeferredGpuCommandService::GetInstance());
+    scoped_ptr<ParentOutputSurface> output_surface_holder(
+        new ParentOutputSurface(context_provider));
+    output_surface_ = output_surface_holder.get();
+    display_->Initialize(output_surface_holder.Pass(), nullptr);
   }
+  output_surface_->SetExternalStencilTest(stencil_enabled);
+  display_->SetExternalClip(clip);
+  display_->DrawAndSwap();
   gl_surface_->ResetBackingFrameBufferObject();
 }
 
-void HardwareRenderer::RequestNewOutputSurface() {
-  scoped_refptr<cc::ContextProvider> context_provider =
-      AwRenderThreadContextProvider::Create(
-          gl_surface_, DeferredGpuCommandService::GetInstance());
-  scoped_ptr<ParentOutputSurface> output_surface_holder(
-      new ParentOutputSurface(context_provider));
-  output_surface_ = output_surface_holder.get();
-  layer_tree_host_->SetOutputSurface(output_surface_holder.Pass());
-}
-
-void HardwareRenderer::DidFailToInitializeOutputSurface() {
-  RequestNewOutputSurface();
-}
-
-void HardwareRenderer::UnusedResourcesAreAvailable() {
-  cc::ReturnedResourceArray returned_resources;
-  resource_collection_->TakeUnusedResourcesForChildCompositor(
-      &returned_resources);
-  shared_renderer_state_->InsertReturnedResourcesOnRT(returned_resources);
+void HardwareRenderer::ReturnResources(
+    const cc::ReturnedResourceArray& resources) {
+  shared_renderer_state_->InsertReturnedResourcesOnRT(resources);
 }
 
 }  // namespace android_webview

@@ -7,17 +7,17 @@
 
 #include "android_webview/browser/shared_renderer_state.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/layers/delegated_frame_resource_collection.h"
-#include "cc/trees/layer_tree_host_client.h"
-#include "cc/trees/layer_tree_host_single_thread_client.h"
+#include "cc/surfaces/display_client.h"
+#include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_id.h"
 
 struct AwDrawGLInfo;
 
 namespace cc {
-class DelegatedFrameProvider;
-class DelegatedRendererLayer;
-class Layer;
-class LayerTreeHost;
+class Display;
+class SurfaceFactory;
+class SurfaceIdAllocator;
+class SurfaceManager;
 }
 
 namespace android_webview {
@@ -26,9 +26,8 @@ class AwGLSurface;
 class ChildFrame;
 class ParentOutputSurface;
 
-class HardwareRenderer : public cc::LayerTreeHostClient,
-                         public cc::LayerTreeHostSingleThreadClient,
-                         public cc::DelegatedFrameResourceCollectionClient {
+class HardwareRenderer : public cc::DisplayClient,
+                         public cc::SurfaceFactoryClient {
  public:
   explicit HardwareRenderer(SharedRendererState* state);
   ~HardwareRenderer() override;
@@ -38,34 +37,16 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
               AwDrawGLInfo* draw_info);
   void CommitFrame();
 
-  // cc::LayerTreeHostClient overrides.
-  void WillBeginMainFrame() override {}
-  void DidBeginMainFrame() override;
-  void BeginMainFrame(const cc::BeginFrameArgs& args) override {}
-  void BeginMainFrameNotExpectedSoon() override {}
-  void Layout() override {}
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override {}
-  void RequestNewOutputSurface() override;
-  void DidInitializeOutputSurface() override {}
-  void DidFailToInitializeOutputSurface() override;
-  void WillCommit() override {}
-  void DidCommit() override {}
-  void DidCommitAndDrawFrame() override {}
-  void DidCompleteSwapBuffers() override {}
-  void DidCompletePageScaleAnimation() override {}
-
-  // cc::LayerTreeHostSingleThreadClient overrides.
-  void DidPostSwapBuffers() override {}
-  void DidAbortSwapBuffers() override {}
-
-  // cc::DelegatedFrameResourceCollectionClient overrides.
-  void UnusedResourcesAreAvailable() override;
-
  private:
+  // cc::DisplayClient overrides.
+  void CommitVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval) override {}
+  void OutputSurfaceLost() override {}
+  void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override {}
+
+  // cc::SurfaceFactoryClient implementation.
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+
   SharedRendererState* shared_renderer_state_;
 
   typedef void* EGLContext;
@@ -77,24 +58,18 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
   // Infromation from UI on last commit.
   gfx::Vector2d scroll_offset_;
 
-  // Information from draw.
-  gfx::Size viewport_;
-  gfx::Rect clip_;
-  bool stencil_enabled_;
-  bool viewport_clip_valid_for_dcheck_;
-
   scoped_ptr<ChildFrame> child_frame_;
 
   scoped_refptr<AwGLSurface> gl_surface_;
 
-  scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
-  scoped_refptr<cc::Layer> root_layer_;
+  scoped_ptr<cc::SurfaceManager> surface_manager_;
+  scoped_ptr<cc::Display> display_;
+  scoped_ptr<cc::SurfaceFactory> surface_factory_;
+  scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  cc::SurfaceId child_id_;
+  cc::SurfaceId root_id_;
 
-  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection_;
-  scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
-  scoped_refptr<cc::DelegatedRendererLayer> delegated_layer_;
-
-  // This is owned indirectly by |layer_tree_host_|.
+  // This is owned by |display_|.
   ParentOutputSurface* output_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareRenderer);
