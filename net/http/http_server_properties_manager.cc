@@ -245,8 +245,15 @@ bool HttpServerPropertiesManager::WasAlternativeServiceRecentlyBroken(
 void HttpServerPropertiesManager::ConfirmAlternativeService(
     const AlternativeService& alternative_service) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  bool old_value = http_server_properties_impl_->IsAlternativeServiceBroken(
+      alternative_service);
   http_server_properties_impl_->ConfirmAlternativeService(alternative_service);
-  ScheduleUpdatePrefsOnNetworkThread(CONFIRM_ALTERNATIVE_SERVICE);
+  bool new_value = http_server_properties_impl_->IsAlternativeServiceBroken(
+      alternative_service);
+  // For persisting, we only care about the value returned by
+  // IsAlternativeServiceBroken. If that value changes, then call persist.
+  if (old_value != new_value)
+    ScheduleUpdatePrefsOnNetworkThread(CONFIRM_ALTERNATIVE_SERVICE);
 }
 
 void HttpServerPropertiesManager::ClearAlternativeService(

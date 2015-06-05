@@ -549,6 +549,52 @@ TEST_F(HttpServerPropertiesManagerTest, ClearAlternativeService) {
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
 }
 
+TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
+  ExpectPrefsUpdate();
+
+  HostPortPair spdy_server_mail("mail.google.com", 80);
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  AlternativeService alternative_service(NPN_SPDY_4, "mail.google.com", 443);
+
+  ExpectScheduleUpdatePrefsOnNetworkThread();
+  http_server_props_manager_->SetAlternativeService(spdy_server_mail,
+                                                    alternative_service, 1.0);
+
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  ExpectScheduleUpdatePrefsOnNetworkThread();
+  http_server_props_manager_->MarkAlternativeServiceBroken(alternative_service);
+  EXPECT_TRUE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_TRUE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  ExpectScheduleUpdatePrefsOnNetworkThread();
+  http_server_props_manager_->ConfirmAlternativeService(alternative_service);
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+  // ExpectScheduleUpdatePrefsOnNetworkThread() should be called only once.
+  http_server_props_manager_->ConfirmAlternativeService(alternative_service);
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+
+  // Run the task.
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+
+  EXPECT_FALSE(http_server_props_manager_->IsAlternativeServiceBroken(
+      alternative_service));
+  EXPECT_FALSE(http_server_props_manager_->WasAlternativeServiceRecentlyBroken(
+      alternative_service));
+}
+
 TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
   ExpectPrefsUpdate();
   ExpectScheduleUpdatePrefsOnNetworkThread();
