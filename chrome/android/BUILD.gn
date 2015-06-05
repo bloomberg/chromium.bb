@@ -820,9 +820,7 @@ jinja_template("chrome_public_test_apk_manifest") {
 }
 
 # GYP: //chrome/android/chrome_apk.gyp:chrome_public_test_apk
-android_apk("chrome_public_test_apk") {
-  testonly = true
-
+instrumentation_test_apk("chrome_public_test_apk") {
   # TODO(GYP,cjhopman): Does this need version code/name?
   apk_name = "ChromePublicTest"
   apk_under_test = ":chrome_public_apk"
@@ -832,4 +830,5 @@ android_apk("chrome_public_test_apk") {
     "//chrome/test/android:chrome_staging_test_support_java",
     "//chrome/android:chrome_staging_test_java",
   ]
+  isolate_file = "../chrome_public_test_apk.isolate"
 }
