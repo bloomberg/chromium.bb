@@ -9,7 +9,8 @@ from telemetry.page import page_set as page_set_module
 class SwiffyPage(page_module.Page):
 
   def __init__(self, url, page_set):
-    super(SwiffyPage, self).__init__(url=url, page_set=page_set)
+    super(SwiffyPage, self).__init__(url=url, page_set=page_set,
+                                     make_javascript_deterministic=False)
 
   def RunNavigateSteps(self, action_runner):
     super(SwiffyPage, self).RunNavigateSteps(action_runner)
