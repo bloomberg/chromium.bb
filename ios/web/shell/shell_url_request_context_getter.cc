@@ -40,7 +40,7 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     const base::FilePath& base_path,
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner,
-    const scoped_refptr<base::MessageLoopProxy>& cache_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& cache_task_runner)
     : base_path_(base_path),
       file_task_runner_(file_task_runner),
       network_task_runner_(network_task_runner),

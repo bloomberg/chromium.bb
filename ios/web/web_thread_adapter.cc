@@ -164,9 +164,9 @@ bool WebThread::GetCurrentThreadIdentifier(ID* identifier) {
 }
 
 // static
-scoped_refptr<base::MessageLoopProxy> WebThread::GetMessageLoopProxyForThread(
+scoped_refptr<base::SingleThreadTaskRunner> WebThread::GetTaskRunnerForThread(
     ID identifier) {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
+  return content::BrowserThread::GetTaskRunnerForThread(
       BrowserThreadIDFromWebThreadID(identifier));
 }
 
