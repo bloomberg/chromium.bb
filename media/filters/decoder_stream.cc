@@ -379,7 +379,6 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
     const scoped_refptr<Output>& output) {
   FUNCTION_DVLOG(2) << ": " << output->timestamp().InMilliseconds() << " ms";
   DCHECK(output.get());
-  DCHECK(!output->end_of_stream());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR)
       << state_;

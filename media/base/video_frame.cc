@@ -243,9 +243,9 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
   DCHECK(IsValidConfig(format, STORAGE_OWNED_MEMORY, new_coded_size,
                        visible_rect, natural_size));
 
-  scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format, STORAGE_OWNED_MEMORY, new_coded_size, visible_rect,
-                     natural_size, timestamp, false));
+  scoped_refptr<VideoFrame> frame(new VideoFrame(format, STORAGE_OWNED_MEMORY,
+                                                 new_coded_size, visible_rect,
+                                                 natural_size, timestamp));
   frame->AllocateYUV();
   return frame;
 }
@@ -265,7 +265,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
   Format texture_format = has_alpha ? ARGB : XRGB;
   scoped_refptr<VideoFrame> frame(
       new VideoFrame(texture_format, STORAGE_TEXTURE, coded_size, visible_rect,
-                     natural_size, mailbox_holders, timestamp, false));
+                     natural_size, mailbox_holders, timestamp));
   frame->mailbox_holders_release_cb_ = mailbox_holder_release_cb;
   frame->allow_overlay_ = allow_overlay;
   return frame;
@@ -288,7 +288,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapYUV420NativeTextures(
   mailbox_holders[kVPlane] = v_mailbox_holder;
   scoped_refptr<VideoFrame> frame(
       new VideoFrame(I420, STORAGE_TEXTURE, coded_size, visible_rect,
-                     natural_size, mailbox_holders, timestamp, false));
+                     natural_size, mailbox_holders, timestamp));
   frame->mailbox_holders_release_cb_ = mailbox_holder_release_cb;
   frame->allow_overlay_ = allow_overlay;
   return frame;
@@ -341,9 +341,9 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
   CHECK(IsValidConfig(format, STORAGE_UNOWNED_MEMORY, new_coded_size,
                       visible_rect, natural_size));
 
-  scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format, STORAGE_UNOWNED_MEMORY, new_coded_size,
-                     visible_rect, natural_size, timestamp, false));
+  scoped_refptr<VideoFrame> frame(new VideoFrame(format, STORAGE_UNOWNED_MEMORY,
+                                                 new_coded_size, visible_rect,
+                                                 natural_size, timestamp));
   frame->strides_[kYPlane] = y_stride;
   frame->strides_[kUPlane] = u_stride;
   frame->strides_[kVPlane] = v_stride;
@@ -377,9 +377,9 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   DCHECK_EQ(format, NV12);
 #endif
-  scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format, STORAGE_DMABUFS, coded_size, visible_rect,
-                     natural_size, timestamp, false));
+  scoped_refptr<VideoFrame> frame(new VideoFrame(format, STORAGE_DMABUFS,
+                                                 coded_size, visible_rect,
+                                                 natural_size, timestamp));
 
   for (size_t i = 0; i < dmabuf_fds.size(); ++i) {
     int duped_fd = HANDLE_EINTR(dup(dmabuf_fds[i]));
@@ -433,9 +433,9 @@ scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
     return NULL;
   }
 
-  scoped_refptr<VideoFrame> frame(
-      new VideoFrame(format, STORAGE_UNOWNED_MEMORY, coded_size, visible_rect,
-                     natural_size, timestamp, false));
+  scoped_refptr<VideoFrame> frame(new VideoFrame(format, STORAGE_UNOWNED_MEMORY,
+                                                 coded_size, visible_rect,
+                                                 natural_size, timestamp));
 
   frame->cv_pixel_buffer_.reset(cv_pixel_buffer, base::scoped_policy::RETAIN);
   return frame;
@@ -452,10 +452,11 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   CHECK_NE(frame->storage_type(), STORAGE_TEXTURE);
 
   DCHECK(frame->visible_rect().Contains(visible_rect));
-  scoped_refptr<VideoFrame> wrapped_frame(
-      new VideoFrame(frame->format(), frame->storage_type(),
-                     frame->coded_size(), visible_rect, natural_size,
-                     frame->timestamp(), frame->end_of_stream()));
+  scoped_refptr<VideoFrame> wrapped_frame(new VideoFrame(
+      frame->format(), frame->storage_type(), frame->coded_size(), visible_rect,
+      natural_size, frame->timestamp()));
+  if (frame->IsEndOfStream())
+    frame->metadata()->SetBoolean(VideoFrameMetadata::END_OF_STREAM, true);
 
   for (size_t i = 0; i < NumPlanes(frame->format()); ++i) {
     wrapped_frame->strides_[i] = frame->stride(i);
@@ -467,8 +468,11 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::CreateEOSFrame() {
-  return new VideoFrame(UNKNOWN, STORAGE_UNKNOWN, gfx::Size(), gfx::Rect(),
-                        gfx::Size(), kNoTimestamp(), true);
+  scoped_refptr<VideoFrame> frame =
+      new VideoFrame(UNKNOWN, STORAGE_UNKNOWN, gfx::Size(), gfx::Rect(),
+                     gfx::Size(), kNoTimestamp());
+  frame->metadata()->SetBoolean(VideoFrameMetadata::END_OF_STREAM, true);
+  return frame;
 }
 
 // static
@@ -512,9 +516,8 @@ scoped_refptr<VideoFrame> VideoFrame::CreateTransparentFrame(
 scoped_refptr<VideoFrame> VideoFrame::CreateHoleFrame(
     const gfx::Size& size) {
   DCHECK(IsValidConfig(UNKNOWN, STORAGE_HOLE, size, gfx::Rect(size), size));
-  scoped_refptr<VideoFrame> frame(
-      new VideoFrame(UNKNOWN, STORAGE_HOLE, size, gfx::Rect(size), size,
-                     base::TimeDelta(), false));
+  scoped_refptr<VideoFrame> frame(new VideoFrame(
+      UNKNOWN, STORAGE_HOLE, size, gfx::Rect(size), size, base::TimeDelta()));
   return frame;
 }
 #endif  // defined(VIDEO_HOLE)
@@ -596,49 +599,12 @@ int VideoFrame::PlaneBitsPerPixel(Format format, size_t plane) {
       SampleSize(format, plane).height();
 }
 
-void VideoFrame::AllocateYUV() {
-  DCHECK_EQ(storage_type_, STORAGE_OWNED_MEMORY);
-  static_assert(0 == kYPlane, "y plane data must be index 0");
-
-  size_t data_size = 0;
-  size_t offset[kMaxPlanes];
-  for (size_t plane = 0; plane < NumPlanes(format_); ++plane) {
-    // The *2 in alignment for height is because some formats (e.g. h264) allow
-    // interlaced coding, and then the size needs to be a multiple of two
-    // macroblocks (vertically). See
-    // libavcodec/utils.c:avcodec_align_dimensions2().
-    const size_t height = RoundUp(rows(plane), kFrameSizeAlignment * 2);
-    strides_[plane] = RoundUp(row_bytes(plane), kFrameSizeAlignment);
-    offset[plane] = data_size;
-    data_size += height * strides_[plane];
-  }
-
-  // The extra line of UV being allocated is because h264 chroma MC
-  // overreads by one line in some cases, see libavcodec/utils.c:
-  // avcodec_align_dimensions2() and libavcodec/x86/h264_chromamc.asm:
-  // put_h264_chroma_mc4_ssse3().
-  DCHECK(IsValidPlane(kUPlane, format_));
-  data_size += strides_[kUPlane] + kFrameSizePadding;
-
-  // FFmpeg expects the initialize allocation to be zero-initialized.  Failure
-  // to do so can lead to unitialized value usage.  See http://crbug.com/390941
-  uint8* data = reinterpret_cast<uint8*>(
-      base::AlignedAlloc(data_size, kFrameAddressAlignment));
-  memset(data, 0, data_size);
-
-  for (size_t plane = 0; plane < NumPlanes(format_); ++plane)
-    data_[plane] = data + offset[plane];
-
-  AddDestructionObserver(base::Bind(&ReleaseData, data));
-}
-
 VideoFrame::VideoFrame(Format format,
                        StorageType storage_type,
                        const gfx::Size& coded_size,
                        const gfx::Rect& visible_rect,
                        const gfx::Size& natural_size,
-                       base::TimeDelta timestamp,
-                       bool end_of_stream)
+                       base::TimeDelta timestamp)
     : format_(format),
       storage_type_(storage_type),
       coded_size_(coded_size),
@@ -648,7 +614,6 @@ VideoFrame::VideoFrame(Format format,
       shared_memory_offset_(0),
       timestamp_(timestamp),
       release_sync_point_(0),
-      end_of_stream_(end_of_stream),
       allow_overlay_(false) {
   DCHECK(IsValidConfig(format_, storage_type, coded_size_, visible_rect_,
                        natural_size_));
@@ -663,11 +628,14 @@ VideoFrame::VideoFrame(Format format,
                        const gfx::Rect& visible_rect,
                        const gfx::Size& natural_size,
                        base::TimeDelta timestamp,
-                       bool end_of_stream,
                        base::SharedMemoryHandle handle,
                        size_t shared_memory_offset)
-    : VideoFrame(format, storage_type, coded_size, visible_rect, natural_size,
-      timestamp, end_of_stream) {
+    : VideoFrame(format,
+                 storage_type,
+                 coded_size,
+                 visible_rect,
+                 natural_size,
+                 timestamp) {
   shared_memory_handle_ = handle;
   shared_memory_offset_ = shared_memory_offset;
 }
@@ -678,10 +646,13 @@ VideoFrame::VideoFrame(Format format,
                        const gfx::Rect& visible_rect,
                        const gfx::Size& natural_size,
                        const gpu::MailboxHolder(&mailbox_holders)[kMaxPlanes],
-                       base::TimeDelta timestamp,
-                       bool end_of_stream)
-    : VideoFrame(format, storage_type, coded_size, visible_rect, natural_size,
-      timestamp, end_of_stream) {
+                       base::TimeDelta timestamp)
+    : VideoFrame(format,
+                 storage_type,
+                 coded_size,
+                 visible_rect,
+                 natural_size,
+                 timestamp) {
   memcpy(&mailbox_holders_, mailbox_holders, sizeof(mailbox_holders_));
 }
 
@@ -728,10 +699,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
   scoped_refptr<VideoFrame> frame;
   if (storage_type == STORAGE_SHMEM) {
     frame = new VideoFrame(format, storage_type, new_coded_size, visible_rect,
-                           natural_size, timestamp, false, handle, data_offset);
+                           natural_size, timestamp, handle, data_offset);
   } else {
     frame = new VideoFrame(format, storage_type, new_coded_size, visible_rect,
-                           natural_size, timestamp, false);
+                           natural_size, timestamp);
   }
   frame->strides_[kYPlane] = new_coded_size.width();
   frame->strides_[kUPlane] = new_coded_size.width() / 2;
@@ -740,6 +711,42 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
   frame->data_[kUPlane] = data + new_coded_size.GetArea();
   frame->data_[kVPlane] = data + (new_coded_size.GetArea() * 5 / 4);
   return frame;
+}
+
+void VideoFrame::AllocateYUV() {
+  DCHECK_EQ(storage_type_, STORAGE_OWNED_MEMORY);
+  static_assert(0 == kYPlane, "y plane data must be index 0");
+
+  size_t data_size = 0;
+  size_t offset[kMaxPlanes];
+  for (size_t plane = 0; plane < NumPlanes(format_); ++plane) {
+    // The *2 in alignment for height is because some formats (e.g. h264) allow
+    // interlaced coding, and then the size needs to be a multiple of two
+    // macroblocks (vertically). See
+    // libavcodec/utils.c:avcodec_align_dimensions2().
+    const size_t height = RoundUp(rows(plane), kFrameSizeAlignment * 2);
+    strides_[plane] = RoundUp(row_bytes(plane), kFrameSizeAlignment);
+    offset[plane] = data_size;
+    data_size += height * strides_[plane];
+  }
+
+  // The extra line of UV being allocated is because h264 chroma MC
+  // overreads by one line in some cases, see libavcodec/utils.c:
+  // avcodec_align_dimensions2() and libavcodec/x86/h264_chromamc.asm:
+  // put_h264_chroma_mc4_ssse3().
+  DCHECK(IsValidPlane(kUPlane, format_));
+  data_size += strides_[kUPlane] + kFrameSizePadding;
+
+  // FFmpeg expects the initialize allocation to be zero-initialized.  Failure
+  // to do so can lead to unitialized value usage.  See http://crbug.com/390941
+  uint8* data = reinterpret_cast<uint8*>(
+      base::AlignedAlloc(data_size, kFrameAddressAlignment));
+  memset(data, 0, data_size);
+
+  for (size_t plane = 0; plane < NumPlanes(format_); ++plane)
+    data_[plane] = data + offset[plane];
+
+  AddDestructionObserver(base::Bind(&ReleaseData, data));
 }
 
 // static
@@ -841,6 +848,13 @@ size_t VideoFrame::shared_memory_offset() const {
 void VideoFrame::AddDestructionObserver(const base::Closure& callback) {
   DCHECK(!callback.is_null());
   done_callbacks_.push_back(callback);
+}
+
+bool VideoFrame::IsEndOfStream() const {
+  bool end_of_stream;
+  return metadata_.GetBoolean(VideoFrameMetadata::END_OF_STREAM,
+                              &end_of_stream) &&
+         end_of_stream;
 }
 
 void VideoFrame::UpdateReleaseSyncPoint(SyncPointClient* client) {

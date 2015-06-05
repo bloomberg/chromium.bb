@@ -155,7 +155,7 @@ TEST(VideoFrame, CreateFrame) {
 
   // Test an empty frame.
   frame = VideoFrame::CreateEOSFrame();
-  EXPECT_TRUE(frame->end_of_stream());
+  EXPECT_TRUE(frame->IsEndOfStream());
 }
 
 TEST(VideoFrame, CreateBlackFrame) {
@@ -170,7 +170,7 @@ TEST(VideoFrame, CreateBlackFrame) {
 
   // Test basic properties.
   EXPECT_EQ(0, frame->timestamp().InMicroseconds());
-  EXPECT_FALSE(frame->end_of_stream());
+  EXPECT_FALSE(frame->IsEndOfStream());
 
   // Test |frame| properties.
   EXPECT_EQ(VideoFrame::YV12, frame->format());

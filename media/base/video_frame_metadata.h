@@ -21,6 +21,13 @@ class MEDIA_EXPORT VideoFrameMetadata {
     CAPTURE_BEGIN_TIME,
     CAPTURE_END_TIME,
 
+    // Some VideoFrames have an indication of the color space used.  Use
+    // GetInteger()/SetInteger() and VideoFrame::ColorSpace enumeration.
+    COLOR_SPACE,
+
+    // Indicates if the current frame is the End of its current Stream.
+    END_OF_STREAM,
+
     // The estimated duration of this frame (i.e., the amount of time between
     // the media timestamp of this frame and the next).  Note that this is not
     // the same information provided by FRAME_RATE as the FRAME_DURATION can
@@ -35,10 +42,6 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // same for all frames in the same session.  Use Get/SetDouble() for this
     // key.
     FRAME_RATE,
-
-    // Some VideoFrames have an indication of the color space used.  Use
-    // GetInteger()/SetInteger() and VideoFrame::ColorSpace enumeration.
-    COLOR_SPACE,
 
     NUM_KEYS
   };

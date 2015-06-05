@@ -800,11 +800,10 @@ void VideoDecoderShim::DecoderImpl::OnOutputComplete(
   DCHECK(awaiting_decoder_);
 
   scoped_ptr<PendingFrame> pending_frame;
-  if (!frame->end_of_stream()) {
+  if (!frame->IsEndOfStream())
     pending_frame.reset(new PendingFrame(decode_id_, frame));
-  } else {
+  else
     pending_frame.reset(new PendingFrame(decode_id_));
-  }
 
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoDecoderShim::OnOutputComplete, shim_,

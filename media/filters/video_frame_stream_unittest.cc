@@ -189,7 +189,7 @@ class VideoFrameStreamTest
     DCHECK(pending_read_);
     frame_read_ = frame;
     last_read_status_ = status;
-    if (frame.get() && !frame->end_of_stream())
+    if (frame.get() && !frame->IsEndOfStream())
       num_decoded_frames_++;
     pending_read_ = false;
   }
@@ -223,7 +223,7 @@ class VideoFrameStreamTest
   void ReadAllFrames() {
     do {
       ReadOneFrame();
-    } while (frame_read_.get() && !frame_read_->end_of_stream());
+    } while (frame_read_.get() && !frame_read_->IsEndOfStream());
 
     const int total_num_frames = kNumConfigs * kNumBuffersInOneConfig;
     DCHECK_EQ(num_decoded_frames_, total_num_frames);
@@ -576,7 +576,7 @@ TEST_P(VideoFrameStreamTest, Read_DuringEndOfStreamDecode) {
 
   // The read output should indicate end of stream.
   ASSERT_TRUE(frame_read_.get());
-  EXPECT_TRUE(frame_read_->end_of_stream());
+  EXPECT_TRUE(frame_read_->IsEndOfStream());
 }
 
 // No Reset() before initialization is successfully completed.

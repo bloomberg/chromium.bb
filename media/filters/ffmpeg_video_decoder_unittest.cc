@@ -188,7 +188,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   }
 
   void FrameReady(const scoped_refptr<VideoFrame>& frame) {
-    DCHECK(!frame->end_of_stream());
+    DCHECK(!frame->IsEndOfStream());
     output_frames_.push_back(frame);
   }
 

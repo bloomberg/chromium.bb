@@ -368,7 +368,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 #endif
 
   // Returns true if this VideoFrame represents the end of the stream.
-  bool end_of_stream() const { return end_of_stream_; }
+  bool IsEndOfStream() const;
 
   base::TimeDelta timestamp() const { return timestamp_; }
   void set_timestamp(base::TimeDelta timestamp) {
@@ -405,15 +405,13 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              const gfx::Size& coded_size,
              const gfx::Rect& visible_rect,
              const gfx::Size& natural_size,
-             base::TimeDelta timestamp,
-             bool end_of_stream);
+             base::TimeDelta timestamp);
   VideoFrame(Format format,
              StorageType storage_type,
              const gfx::Size& coded_size,
              const gfx::Rect& visible_rect,
              const gfx::Size& natural_size,
              base::TimeDelta timestamp,
-             bool end_of_stream,
              base::SharedMemoryHandle handle,
              size_t shared_memory_offset);
   VideoFrame(Format format,
@@ -422,8 +420,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              const gfx::Rect& visible_rect,
              const gfx::Size& natural_size,
              const gpu::MailboxHolder(&mailbox_holders)[kMaxPlanes],
-             base::TimeDelta timestamp,
-             bool end_of_stream);
+             base::TimeDelta timestamp);
   virtual ~VideoFrame();
 
   static scoped_refptr<VideoFrame> WrapExternalStorage(
@@ -498,8 +495,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   base::Lock release_sync_point_lock_;
   uint32 release_sync_point_;
-
-  const bool end_of_stream_;
 
   VideoFrameMetadata metadata_;
 
