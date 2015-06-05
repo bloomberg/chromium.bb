@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
+#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/local_database_manager.h"
@@ -42,6 +43,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 
 using chrome_browser_interstitials::SecurityInterstitialIDNTest;
 using content::BrowserThread;
@@ -51,9 +53,9 @@ using content::WebContents;
 
 namespace {
 
-const char kEmptyPage[] = "files/empty.html";
-const char kMalwarePage[] = "files/safe_browsing/malware.html";
-const char kMalwareIframe[] = "files/safe_browsing/malware_iframe.html";
+const char kEmptyPage[] = "empty.html";
+const char kMalwarePage[] = "safe_browsing/malware.html";
+const char kMalwareIframe[] = "safe_browsing/malware_iframe.html";
 
 // A SafeBrowsingDatabaseManager class that allows us to inject the malicious
 // URLs.
@@ -381,8 +383,10 @@ class SafeBrowsingBlockingPageBrowserTest
     MalwareDetails::RegisterFactory(NULL);
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    ASSERT_TRUE(test_server()->Start());
+  void SetUpOnMainThread() override {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
   void SetURLThreatType(const GURL& url, SBThreatType threat_type) {
@@ -397,7 +401,7 @@ class SafeBrowsingBlockingPageBrowserTest
   // Adds a safebrowsing result of the current test threat to the fake
   // safebrowsing service, navigates to that page, and returns the url.
   GURL SetupWarningAndNavigate() {
-    GURL url = test_server()->GetURL(kEmptyPage);
+    GURL url = net::URLRequestMockHTTPJob::GetMockUrl(kEmptyPage);
     SetURLThreatType(url, GetParam());
 
     ui_test_utils::NavigateToURL(browser(), url);
@@ -409,8 +413,8 @@ class SafeBrowsingBlockingPageBrowserTest
   // navigates to a page with an iframe containing the threat site, and returns
   // the url of the parent page.
   GURL SetupThreatIframeWarningAndNavigate() {
-    GURL url = test_server()->GetURL(kMalwarePage);
-    GURL iframe_url = test_server()->GetURL(kMalwareIframe);
+    GURL url = net::URLRequestMockHTTPJob::GetMockUrl(kMalwarePage);
+    GURL iframe_url = net::URLRequestMockHTTPJob::GetMockUrl(kMalwareIframe);
     SetURLThreatType(iframe_url, GetParam());
 
     ui_test_utils::NavigateToURL(browser(), url);
@@ -493,9 +497,9 @@ class SafeBrowsingBlockingPageBrowserTest
   }
 
   void MalwareRedirectCancelAndProceed(const std::string& open_function) {
-    GURL load_url = test_server()->GetURL(
-        "files/safe_browsing/interstitial_cancel.html");
-    GURL malware_url("http://localhost/files/safe_browsing/malware.html");
+    GURL load_url = net::URLRequestMockHTTPJob::GetMockUrl(
+        "safe_browsing/interstitial_cancel.html");
+    GURL malware_url = net::URLRequestMockHTTPJob::GetMockUrl(kMalwarePage);
     SetURLThreatType(malware_url, GetParam());
 
     // Load the test page.
@@ -791,13 +795,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ReportingDisabled) {
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingExtendedReportingEnabled, true);
 
-  net::SpawnedTestServer https_server(
-      net::SpawnedTestServer::TYPE_HTTPS, net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
-  ASSERT_TRUE(https_server.Start());
-  GURL url = https_server.GetURL(kEmptyPage);
-
-  TestReportingDisabledAndDontProceed(url);
+  TestReportingDisabledAndDontProceed(
+      net::URLRequestMockHTTPJob::GetMockHttpsUrl(kEmptyPage));
 }
 
 // Verifies that the reporting checkbox is hidden when opt-in is
@@ -816,7 +815,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingExtendedReportingOptInAllowed, false);
 
-  TestReportingDisabledAndDontProceed(test_server()->GetURL(kEmptyPage));
+  TestReportingDisabledAndDontProceed(
+      net::URLRequestMockHTTPJob::GetMockUrl(kEmptyPage));
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, LearnMore) {

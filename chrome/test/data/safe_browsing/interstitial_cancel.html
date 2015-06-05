@@ -7,21 +7,16 @@ function openWinIFrame()
   tab = window.open("iframe_redirect_malware.html");
 }
 
-function openMalware()
-{
-  window.open("http://localhost");
-}
-
 function openWin()
 {
-  tab = window.open("/server-redirect?http://localhost/files/safe_browsing/malware.html");
+  tab = window.open("redirect_to_malware.html");
 }
 
 function stopWin()
 {
   tab.stop();
   // This will trigger a navigation event.
-  window.location = "http://localhost";
+  window.location = "/";
 }
 
 </script>
@@ -34,10 +29,6 @@ function stopWin()
 
 <form>
 <input type=button value="Stop Window" onclick="stopWin()">
-</form>
-
-<form>
-<input type=button value="Open malware in tab" onclick="openMalware()">
 </form>
 </body>
 
