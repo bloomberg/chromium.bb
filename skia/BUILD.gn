@@ -545,6 +545,7 @@ component("skia") {
 }
 
 # Separated out so it can be compiled with different flags for SSE.
+# TODO(GYP): This is wrong, it needs one target per arch http://crbug.com/496512
 source_set("skia_opts") {
   cflags = []
   defines = []
@@ -558,9 +559,10 @@ source_set("skia_opts") {
                 "ext/convolver_SSE2.h",
               ]
 
-    if (is_linux || is_mac) {
+    if (!is_win || is_clang) {
       cflags += [ "-msse4.1" ]
-    } else if (is_win) {
+    }
+    if (is_win) {
       defines += [ "SK_CPU_SSE_LEVEL=41" ]
     }
   } else if (current_cpu == "arm") {
