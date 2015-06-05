@@ -9,7 +9,7 @@
   'variables': {
     'chromium_code': 1,
     'package_name': 'chrome_public_apk',
-    'manifest_package%': 'org.chromium.chrome',
+    'manifest_package': 'org.chromium.chrome',
     'chrome_public_apk_manifest': '<(SHARED_INTERMEDIATE_DIR)/chrome_public_apk_manifest/AndroidManifest.xml',
     'chrome_public_test_apk_manifest': '<(SHARED_INTERMEDIATE_DIR)/chrome_public_test_apk_manifest/AndroidManifest.xml',
     'never_lint': 1,
@@ -140,7 +140,6 @@
         'res_extra_files': ['<!@(find <(res_channel_dir) -type f)'],
       },
       'dependencies': [
-        'chrome_template_resources',
         'custom_tabs_service_aidl',
         '<(DEPTH)/base/base.gyp:base_java',
         '<(DEPTH)/chrome/chrome.gyp:chrome_java',
@@ -191,8 +190,22 @@
       'includes': [ '../../build/java.gypi' ],
     },
     {
-      # GN: //chrome/android:chrome_template_resources
-      'target_name': 'chrome_template_resources',
+      # GN: //chrome/android:custom_tabs_service_aidl
+      'target_name': 'custom_tabs_service_aidl',
+      'type': 'none',
+      'variables': {
+        'aidl_interface_file': '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/common.aidl',
+        'aidl_import_include': '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs',
+      },
+      'sources': [
+        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionCallback.aidl',
+        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionService.aidl',
+      ],
+      'includes': [ '../../build/java_aidl.gypi' ],
+    },
+    {
+      # GN: //chrome/android:chrome_public_template_resources
+      'target_name': 'chrome_public_template_resources',
       'type': 'none',
       'variables': {
         'jinja_inputs_base_dir': '<(chrome_java_dir)/res_template',
@@ -212,20 +225,6 @@
         },
       },
       'includes': [ '../../build/android/jinja_template.gypi' ],
-    },
-    {
-      # GN: //chrome/android:custom_tabs_service_aidl
-      'target_name': 'custom_tabs_service_aidl',
-      'type': 'none',
-      'variables': {
-        'aidl_interface_file': '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/common.aidl',
-        'aidl_import_include': '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs',
-      },
-      'sources': [
-        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionCallback.aidl',
-        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionService.aidl',
-      ],
-      'includes': [ '../../build/java_aidl.gypi' ],
     },
     {
       # GN: //chrome/android:chrome_public
@@ -307,6 +306,7 @@
       },
       'dependencies': [
         'chrome_android_paks_copy',
+        'chrome_public_template_resources',
         'chrome_staging_java',
       ],
       'includes': [ 'chrome_apk.gypi' ],

@@ -621,7 +621,6 @@ android_resources("chrome_staging_java_resources") {
   ]
   custom_package = "com.google.android.apps.chrome"
   deps = [
-    ":chrome_template_resources",
     "//chrome/android:chrome_java_resources",
     "//components/policy:app_restrictions_resources",
     "//third_party/android_tools:android_support_v7_appcompat_resources",
@@ -630,16 +629,6 @@ android_resources("chrome_staging_java_resources") {
   if (!enable_configuration_policy) {
     deps -= [ "//components/policy:app_restrictions_resources" ]
   }
-}
-
-# GYP: //chrome/android/chrome_apk.gyp:chrome_template_resources
-jinja_template_resources("chrome_template_resources") {
-  resources = [
-    "java_staging/res_template/xml/searchable.xml",
-    "java_staging/res_template/xml/syncadapter.xml",
-  ]
-  res_dir = "java_staging/res_template"
-  variables = jinja_variables
 }
 
 # GYP: //chrome/android/chrome_apk.gyp:chrome_staging_test_java
@@ -764,6 +753,16 @@ jinja_template("chrome_public_apk_manifest") {
   variables = jinja_variables + [ "min_sdk_version=16" ]
 }
 
+# GYP: //chrome/android/chrome_apk.gyp:chrome_public_template_resources
+jinja_template_resources("chrome_public_template_resources") {
+  resources = [
+    "java_staging/res_template/xml/searchable.xml",
+    "java_staging/res_template/xml/syncadapter.xml",
+  ]
+  res_dir = "java_staging/res_template"
+  variables = jinja_variables
+}
+
 # GYP: //chrome/android/chrome_apk.gyp:libchrome_public
 shared_library("chrome_public") {
   deps = [
@@ -804,6 +803,7 @@ android_apk("chrome_public_apk") {
     ":chrome_public",
     ":chrome_public_apk_assets",
     ":chrome_public_apk_manifest",
+    ":chrome_public_template_resources",
     "//base:base_java",
     "//third_party/android_tools:google_play_services_default_resources",
   ]
