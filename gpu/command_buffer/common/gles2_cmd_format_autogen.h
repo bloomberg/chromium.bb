@@ -4624,14 +4624,12 @@ struct GetInternalformativ {
   void Init(GLenum _target,
             GLenum _format,
             GLenum _pname,
-            GLsizei _bufSize,
             uint32_t _params_shm_id,
             uint32_t _params_shm_offset) {
     SetHeader();
     target = _target;
     format = _format;
     pname = _pname;
-    bufSize = _bufSize;
     params_shm_id = _params_shm_id;
     params_shm_offset = _params_shm_offset;
   }
@@ -4640,11 +4638,10 @@ struct GetInternalformativ {
             GLenum _target,
             GLenum _format,
             GLenum _pname,
-            GLsizei _bufSize,
             uint32_t _params_shm_id,
             uint32_t _params_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_target, _format, _pname, _bufSize,
-                                       _params_shm_id, _params_shm_offset);
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _format, _pname, _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4652,13 +4649,12 @@ struct GetInternalformativ {
   uint32_t target;
   uint32_t format;
   uint32_t pname;
-  int32_t bufSize;
   uint32_t params_shm_id;
   uint32_t params_shm_offset;
 };
 
-static_assert(sizeof(GetInternalformativ) == 28,
-              "size of GetInternalformativ should be 28");
+static_assert(sizeof(GetInternalformativ) == 24,
+              "size of GetInternalformativ should be 24");
 static_assert(offsetof(GetInternalformativ, header) == 0,
               "offset of GetInternalformativ header should be 0");
 static_assert(offsetof(GetInternalformativ, target) == 4,
@@ -4667,12 +4663,10 @@ static_assert(offsetof(GetInternalformativ, format) == 8,
               "offset of GetInternalformativ format should be 8");
 static_assert(offsetof(GetInternalformativ, pname) == 12,
               "offset of GetInternalformativ pname should be 12");
-static_assert(offsetof(GetInternalformativ, bufSize) == 16,
-              "offset of GetInternalformativ bufSize should be 16");
-static_assert(offsetof(GetInternalformativ, params_shm_id) == 20,
-              "offset of GetInternalformativ params_shm_id should be 20");
-static_assert(offsetof(GetInternalformativ, params_shm_offset) == 24,
-              "offset of GetInternalformativ params_shm_offset should be 24");
+static_assert(offsetof(GetInternalformativ, params_shm_id) == 16,
+              "offset of GetInternalformativ params_shm_id should be 16");
+static_assert(offsetof(GetInternalformativ, params_shm_offset) == 20,
+              "offset of GetInternalformativ params_shm_offset should be 20");
 
 struct GetProgramiv {
   typedef GetProgramiv ValueType;

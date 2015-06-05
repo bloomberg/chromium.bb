@@ -943,13 +943,12 @@ void GetIntegerv(GLenum pname,
 void GetInternalformativ(GLenum target,
                          GLenum format,
                          GLenum pname,
-                         GLsizei bufSize,
                          uint32_t params_shm_id,
                          uint32_t params_shm_offset) {
   gles2::cmds::GetInternalformativ* c =
       GetCmdSpace<gles2::cmds::GetInternalformativ>();
   if (c) {
-    c->Init(target, format, pname, bufSize, params_shm_id, params_shm_offset);
+    c->Init(target, format, pname, params_shm_id, params_shm_offset);
   }
 }
 

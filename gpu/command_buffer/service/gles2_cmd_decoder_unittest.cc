@@ -44,7 +44,6 @@ using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArrayArgument;
-using ::testing::SetArgumentPointee;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
@@ -282,7 +281,53 @@ TEST_P(GLES2DecoderTest, IsTexture) {
   EXPECT_FALSE(DoIsTexture(client_texture_id_));
 }
 
-TEST_P(GLES2DecoderTest, ClientWaitSyncValid) {
+TEST_P(GLES3DecoderTest, GetInternalformativValidArgsSamples) {
+  const GLint kNumSampleCounts = 8;
+  typedef cmds::GetInternalformativ::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  EXPECT_CALL(*gl_, GetInternalformativ(GL_RENDERBUFFER, GL_RGBA8,
+                                        GL_NUM_SAMPLE_COUNTS, 1, _))
+      .WillOnce(SetArgPointee<4>(kNumSampleCounts))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetInternalformativ(GL_RENDERBUFFER, GL_RGBA8,
+                                        GL_SAMPLES, kNumSampleCounts,
+                                        result->GetData()))
+      .Times(1)
+      .RetiresOnSaturation();
+  result->size = 0;
+  cmds::GetInternalformativ cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA8, GL_SAMPLES,
+           shared_memory_id_, shared_memory_offset_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(kNumSampleCounts, result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES3DecoderTest, GetInternalformativValidArgsNumSampleCounts) {
+  const GLint kNumSampleCounts = 8;
+  typedef cmds::GetInternalformativ::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  EXPECT_CALL(*gl_, GetInternalformativ(GL_RENDERBUFFER, GL_RGBA8,
+                                        GL_NUM_SAMPLE_COUNTS, 1, _))
+      .WillOnce(SetArgPointee<4>(kNumSampleCounts))
+      .RetiresOnSaturation();
+  result->size = 0;
+  cmds::GetInternalformativ cmd;
+  cmd.Init(GL_RENDERBUFFER, GL_RGBA8, GL_NUM_SAMPLE_COUNTS,
+           shared_memory_id_, shared_memory_offset_);
+  decoder_->set_unsafe_es3_apis_enabled(true);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(1, result->GetNumResults());
+  EXPECT_EQ(kNumSampleCounts, result->GetData()[0]);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  decoder_->set_unsafe_es3_apis_enabled(false);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
+}
+
+TEST_P(GLES3DecoderTest, ClientWaitSyncValid) {
   typedef cmds::ClientWaitSync::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
   cmds::ClientWaitSync cmd;
@@ -461,7 +506,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
 
   // Test valid parameters work.
   EXPECT_CALL(*gl_, GenQueries(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BeginQuery(GL_ANY_SAMPLES_PASSED_EXT, kNewServiceId))
       .Times(1)
@@ -552,7 +597,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
 
   if (query_type.is_gl) {
     EXPECT_CALL(*gl, GenQueries(1, _))
-        .WillOnce(SetArgumentPointee<1>(service_id))
+        .WillOnce(SetArgPointee<1>(service_id))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, BeginQuery(query_type.type, service_id))
         .Times(1)
@@ -593,10 +638,10 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
   if (query_type.is_gl) {
     EXPECT_CALL(
         *gl, GetQueryObjectuiv(service_id, GL_QUERY_RESULT_AVAILABLE_EXT, _))
-        .WillOnce(SetArgumentPointee<2>(1))
+        .WillOnce(SetArgPointee<2>(1))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl, GetQueryObjectuiv(service_id, GL_QUERY_RESULT_EXT, _))
-        .WillOnce(SetArgumentPointee<2>(1))
+        .WillOnce(SetArgPointee<2>(1))
         .RetiresOnSaturation();
   }
   if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {

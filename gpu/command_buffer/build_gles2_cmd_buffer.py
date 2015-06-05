@@ -2725,8 +2725,12 @@ _FUNCTION_INFO = {
     'unsafe': True
   },
   'GetInternalformativ': {
-    'type': 'GETn',
+    'type': 'Custom',
+    'data_transfer_methods': ['shm'],
     'result': ['SizedResult<GLint>'],
+    'cmd_args':
+        'GLenumRenderBufferTarget target, GLenumRenderBufferFormat format, '
+        'GLenumInternalFormatParameter pname, GLint* params',
     'unsafe': True,
   },
   'GetMaxValueInBufferCHROMIUM': {
@@ -6376,11 +6380,9 @@ class GETnHandler(TypeHandler):
 }
 """
     else:
-     code = """  GLenum error = glGetError();
+     code = """  GLenum error = LOCAL_PEEK_GL_ERROR("%(func_name)s");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
-  } else {
-    LOCAL_SET_GL_ERROR(error, "%(func_name)s", "");
   }
   return error::kNoError;
 }

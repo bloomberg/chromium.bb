@@ -13176,6 +13176,59 @@ error::Error GLES2DecoderImpl::HandleWaitSync(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetInternalformativ(
+    uint32_t immediate_data_size, const void* cmd_data) {
+  if (!unsafe_es3_apis_enabled())
+    return error::kUnknownCommand;
+  const gles2::cmds::GetInternalformativ& c =
+      *static_cast<const gles2::cmds::GetInternalformativ*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLenum pname = static_cast<GLenum>(c.pname);
+  if (!validators_->render_buffer_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetInternalformativ", target, "target");
+    return error::kNoError;
+  }
+  if (!validators_->render_buffer_format.IsValid(format)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetInternalformativ", format, "format");
+    return error::kNoError;
+  }
+  if (!validators_->internal_format_parameter.IsValid(pname)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetInternalformativ", pname, "pname");
+    return error::kNoError;
+  }
+  typedef cmds::GetInternalformativ::Result Result;
+  GLsizei num_values = 0;
+  switch (pname) {
+    case GL_NUM_SAMPLE_COUNTS:
+      num_values = 1;
+      break;
+    case GL_SAMPLES:
+      {
+        GLint value = 0;
+        glGetInternalformativ(target, format, GL_NUM_SAMPLE_COUNTS, 1, &value);
+        num_values = static_cast<GLsizei>(value);
+      }
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
+  GLint* params = result ? result->GetData() : NULL;
+  if (params == NULL) {
+    return error::kOutOfBounds;
+  }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  glGetInternalformativ(target, format, pname, num_values, params);
+  result->SetNumResults(num_values);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleMapBufferRange(
     uint32_t immediate_data_size, const void* cmd_data) {
   if (!unsafe_es3_apis_enabled()) {

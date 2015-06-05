@@ -1103,44 +1103,6 @@ void GLES2Implementation::GetIntegerv(GLenum pname, GLint* params) {
   });
   CheckGLError();
 }
-void GLES2Implementation::GetInternalformativ(GLenum target,
-                                              GLenum format,
-                                              GLenum pname,
-                                              GLsizei bufSize,
-                                              GLint* params) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetInternalformativ("
-                     << GLES2Util::GetStringRenderBufferTarget(target) << ", "
-                     << GLES2Util::GetStringRenderBufferFormat(format) << ", "
-                     << GLES2Util::GetStringInternalFormatParameter(pname)
-                     << ", " << bufSize << ", "
-                     << static_cast<const void*>(params) << ")");
-  if (bufSize < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGetInternalformativ", "bufSize < 0");
-    return;
-  }
-  TRACE_EVENT0("gpu", "GLES2Implementation::GetInternalformativ");
-  if (GetInternalformativHelper(target, format, pname, bufSize, params)) {
-    return;
-  }
-  typedef cmds::GetInternalformativ::Result Result;
-  Result* result = GetResultAs<Result*>();
-  if (!result) {
-    return;
-  }
-  result->SetNumResults(0);
-  helper_->GetInternalformativ(target, format, pname, bufSize, GetResultShmId(),
-                               GetResultShmOffset());
-  WaitForCmd();
-  result->CopyResult(params);
-  GPU_CLIENT_LOG_CODE_BLOCK({
-    for (int32_t i = 0; i < result->GetNumResults(); ++i) {
-      GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
-    }
-  });
-  CheckGLError();
-}
 void GLES2Implementation::GetProgramiv(GLuint program,
                                        GLenum pname,
                                        GLint* params) {

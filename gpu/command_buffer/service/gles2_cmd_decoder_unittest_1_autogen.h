@@ -1552,31 +1552,7 @@ TEST_P(GLES2DecoderTest1, GetIntegervInvalidArgs1_1) {
   EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result->size);
 }
-
-TEST_P(GLES2DecoderTest1, GetInternalformativValidArgs) {
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  SpecializedSetup<cmds::GetInternalformativ, 0>(true);
-  typedef cmds::GetInternalformativ::Result Result;
-  Result* result = static_cast<Result*>(shared_memory_address_);
-  EXPECT_CALL(
-      *gl_, GetInternalformativ(GL_RENDERBUFFER, GL_RGBA4, GL_NUM_SAMPLE_COUNTS,
-                                4, result->GetData()));
-  result->size = 0;
-  cmds::GetInternalformativ cmd;
-  cmd.Init(GL_RENDERBUFFER, GL_RGBA4, GL_NUM_SAMPLE_COUNTS, 4,
-           shared_memory_id_, shared_memory_offset_);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(
-      decoder_->GetGLES2Util()->GLGetNumValuesReturned(GL_NUM_SAMPLE_COUNTS),
-      result->GetNumResults());
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
+// TODO(gman): GetInternalformativ
 
 TEST_P(GLES2DecoderTest1, GetProgramivValidArgs) {
   SpecializedSetup<cmds::GetProgramiv, 0>(true);
