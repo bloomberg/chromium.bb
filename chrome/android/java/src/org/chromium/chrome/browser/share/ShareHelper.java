@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.share;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
@@ -19,6 +23,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -70,6 +75,65 @@ public class ShareHelper {
     }
 
     /**
+     * Receiver to record the chosen component when sharing an Intent.
+     */
+    static class TargetChosenReceiver extends BroadcastReceiver {
+        private static final String EXTRA_RECEIVER_TOKEN = "receiver_token";
+        private static final Object LOCK = new Object();
+
+        private static String sTargetChosenReceiveAction;
+        private static TargetChosenReceiver sLastRegisteredReceiver;
+
+        static boolean isSupported() {
+            return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1;
+        }
+
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
+        static void sendChooserIntent(Activity activity, Intent sharingIntent) {
+            synchronized (LOCK) {
+                if (sTargetChosenReceiveAction == null) {
+                    sTargetChosenReceiveAction = activity.getPackageName() + "/"
+                            + TargetChosenReceiver.class.getName() + "_ACTION";
+                }
+                if (sLastRegisteredReceiver != null) {
+                    activity.unregisterReceiver(sLastRegisteredReceiver);
+                }
+                sLastRegisteredReceiver = new TargetChosenReceiver();
+                activity.registerReceiver(
+                        sLastRegisteredReceiver, new IntentFilter(sTargetChosenReceiveAction));
+            }
+
+            Intent intent = new Intent(sTargetChosenReceiveAction);
+            intent.setPackage(activity.getPackageName());
+            intent.putExtra(EXTRA_RECEIVER_TOKEN, sLastRegisteredReceiver.hashCode());
+            final PendingIntent callback = PendingIntent.getBroadcast(activity, 0, intent,
+                    PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
+            Intent chooserIntent = Intent.createChooser(sharingIntent,
+                    activity.getString(R.string.share_link_chooser_title),
+                    callback.getIntentSender());
+            activity.startActivity(chooserIntent);
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            synchronized (LOCK) {
+                if (sLastRegisteredReceiver != this) return;
+                context.unregisterReceiver(sLastRegisteredReceiver);
+                sLastRegisteredReceiver = null;
+            }
+            if (!intent.hasExtra(EXTRA_RECEIVER_TOKEN)
+                    || intent.getIntExtra(EXTRA_RECEIVER_TOKEN, 0) != this.hashCode()) {
+                return;
+            }
+
+            ComponentName target = intent.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT);
+            if (target != null) {
+                setLastShareComponentName(context, target);
+            }
+        }
+    }
+
+    /**
      * Clears all shared screenshot files.
      */
     public static void clearSharedScreenshots(final Context context) {
@@ -107,6 +171,8 @@ public class ShareHelper {
             Bitmap screenshot) {
         if (shareDirectly) {
             shareWithLastUsed(activity, title, url, screenshot);
+        } else if (TargetChosenReceiver.isSupported()) {
+            makeIntentAndShare(activity, title, url, screenshot, null);
         } else {
             showShareDialog(activity, title, url, screenshot);
         }
@@ -166,10 +232,19 @@ public class ShareHelper {
         makeIntentAndShare(activity, title, url, screenshot, component);
     }
 
+    private static void shareIntent(Activity activity, Intent sharingIntent) {
+        if (sharingIntent.getComponent() != null) {
+            activity.startActivity(sharingIntent);
+        } else {
+            assert TargetChosenReceiver.isSupported();
+            TargetChosenReceiver.sendChooserIntent(activity, sharingIntent);
+        }
+    }
+
     private static void makeIntentAndShare(final Activity activity, final String title,
             final String url, final Bitmap screenshot, final ComponentName component) {
         if (screenshot == null) {
-            activity.startActivity(getDirectShareIntentForComponent(title, url, null, component));
+            shareIntent(activity, getDirectShareIntentForComponent(title, url, null, component));
         } else {
             new AsyncTask<Void, Void, File>() {
                 @Override
@@ -207,7 +282,7 @@ public class ShareHelper {
                             != ApplicationState.HAS_DESTROYED_ACTIVITIES) {
                         Uri screenshotUri = saveFile == null
                                 ? null : UiUtils.getUriForImageCaptureFile(activity, saveFile);
-                        activity.startActivity(getDirectShareIntentForComponent(
+                        shareIntent(activity, getDirectShareIntentForComponent(
                                 title, url, screenshotUri, component));
                     }
                 }
