@@ -232,6 +232,7 @@
     { "name": "googlecode.com", "include_subdomains": true, "pins": "google" },
     { "name": "dl.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "translate.googleapis.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "gvt2.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "gvt3.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
 
     { "name": "webfilings.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
@@ -2885,6 +2886,7 @@
     "SPIDEROAK_COM",
     "BLOGGER_COM",
     "CHROME_COM",
-    "GVT3_COM"
+    "GVT3_COM",
+    "GVT2_COM"
   ]
 }
