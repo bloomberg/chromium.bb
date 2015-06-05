@@ -60,6 +60,7 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
     BGRA_8888,
     RGBX_8888,
     RGB_888,
+    BUFFER_FORMAT_LAST = RGB_888
   };
 
   enum BufferUsage {

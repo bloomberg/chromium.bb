@@ -27,6 +27,8 @@ class OZONE_BASE_EXPORT OverlayCandidatesOzone {
     gfx::OverlayTransform transform;
     // Format of the buffer to composite.
     SurfaceFactoryOzone::BufferFormat format;
+    // Size of the buffer, in pixels.
+    gfx::Size buffer_size;
     // Rect on the display to position the overlay to. Input rectangle may
     // not have integer coordinates, but when accepting for overlay, must
     // be modified by CheckOverlaySupport to output integer values.

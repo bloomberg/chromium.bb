@@ -8,9 +8,11 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
+#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace ui {
@@ -24,6 +26,9 @@ namespace {
 #ifndef DRM_CAP_CURSOR_HEIGHT
 #define DRM_CAP_CURSOR_HEIGHT 0x9
 #endif
+
+void EmptyFlipCallback(gfx::SwapResult) {
+}
 
 void UpdateCursorImage(DrmBuffer* cursor, const SkBitmap& image) {
   SkRect damage;
@@ -137,6 +142,36 @@ bool DrmWindow::SchedulePageFlip(bool is_sync,
 
   callback.Run(gfx::SwapResult::SWAP_ACK);
   return true;
+}
+
+bool DrmWindow::TestPageFlip(const std::vector<OverlayCheck_Params>& overlays,
+                             ScanoutBufferGenerator* buffer_generator) {
+  if (!controller_)
+    return true;
+  for (const auto& overlay : overlays) {
+    // It is possible that the cc rect we get actually falls off the edge of
+    // the screen. Usually this is prevented via things like status bars
+    // blocking overlaying or cc clipping it, but in case it wasn't properly
+    // clipped (since GL will render this situation fine) just ignore it here.
+    // This should be an extremely rare occurrance.
+    if (overlay.plane_z_order != 0 && !bounds().Contains(overlay.display_rect))
+      return false;
+  }
+
+  scoped_refptr<DrmDevice> drm = controller_->GetAllocationDrmDevice();
+  OverlayPlaneList planes;
+  for (const auto& overlay : overlays) {
+    gfx::Size size =
+        (overlay.plane_z_order == 0) ? bounds().size() : overlay.buffer_size;
+    scoped_refptr<ScanoutBuffer> buffer = buffer_generator->Create(drm, size);
+    if (!buffer)
+      return false;
+    planes.push_back(OverlayPlane(buffer, overlay.plane_z_order,
+                                  overlay.transform, overlay.display_rect,
+                                  gfx::RectF(gfx::Size(1, 1))));
+  }
+  return controller_->SchedulePageFlip(planes, true, true,
+                                       base::Bind(&EmptyFlipCallback));
 }
 
 const OverlayPlane* DrmWindow::GetLastModesetBuffer() {

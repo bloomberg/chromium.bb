@@ -13,6 +13,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_display_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
+#include "ui/ozone/platform/drm/gpu/scanout_buffer.h"
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace ui {
@@ -167,10 +168,12 @@ class DrmGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
 DrmGpuPlatformSupport::DrmGpuPlatformSupport(
     DrmDeviceManager* drm_device_manager,
     ScreenManager* screen_manager,
+    ScanoutBufferGenerator* buffer_generator,
     scoped_ptr<DrmGpuDisplayManager> display_manager)
     : sender_(NULL),
       drm_device_manager_(drm_device_manager),
       screen_manager_(screen_manager),
+      buffer_generator_(buffer_generator),
       display_manager_(display_manager.Pass()) {
   filter_ = new DrmGpuPlatformSupportMessageFilter(
       screen_manager, base::Bind(&DrmGpuPlatformSupport::SetIOTaskRunner,
@@ -217,6 +220,8 @@ bool DrmGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_GetHDCPState, OnGetHDCPState)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetHDCPState, OnSetHDCPState)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetGammaRamp, OnSetGammaRamp);
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_CheckOverlayCapabilities,
+                      OnCheckOverlayCapabilities)
   IPC_MESSAGE_UNHANDLED(handled = false);
   IPC_END_MESSAGE_MAP()
 
@@ -258,6 +263,14 @@ void DrmGpuPlatformSupport::OnCursorSet(gfx::AcceleratedWidget widget,
 void DrmGpuPlatformSupport::OnCursorMove(gfx::AcceleratedWidget widget,
                                          const gfx::Point& location) {
   screen_manager_->GetWindow(widget)->MoveCursor(location);
+}
+
+void DrmGpuPlatformSupport::OnCheckOverlayCapabilities(
+    gfx::AcceleratedWidget widget,
+    const std::vector<OverlayCheck_Params>& overlays) {
+  sender_->Send(new OzoneHostMsg_OverlayCapabilitiesReceived(
+      widget, screen_manager_->GetWindow(widget)
+                  ->TestPageFlip(overlays, buffer_generator_)));
 }
 
 void DrmGpuPlatformSupport::OnRefreshNativeDisplays() {

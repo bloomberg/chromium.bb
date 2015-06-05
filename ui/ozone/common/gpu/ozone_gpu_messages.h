@@ -29,8 +29,12 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::DisplayConnectionType,
 
 IPC_ENUM_TRAITS_MAX_VALUE(ui::HDCPState, ui::HDCP_STATE_LAST)
 
-// clang-format off
+IPC_ENUM_TRAITS_MAX_VALUE(gfx::OverlayTransform, gfx::OVERLAY_TRANSFORM_LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(ui::SurfaceFactoryOzone::BufferFormat,
+                          ui::SurfaceFactoryOzone::BUFFER_FORMAT_LAST)
+
+// clang-format off
 IPC_STRUCT_TRAITS_BEGIN(ui::DisplayMode_Params)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(is_interlaced)
@@ -58,6 +62,14 @@ IPC_STRUCT_TRAITS_BEGIN(ui::GammaRampRGBEntry)
   IPC_STRUCT_TRAITS_MEMBER(r)
   IPC_STRUCT_TRAITS_MEMBER(g)
   IPC_STRUCT_TRAITS_MEMBER(b)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ui::OverlayCheck_Params)
+  IPC_STRUCT_TRAITS_MEMBER(buffer_size)
+  IPC_STRUCT_TRAITS_MEMBER(transform)
+  IPC_STRUCT_TRAITS_MEMBER(format)
+  IPC_STRUCT_TRAITS_MEMBER(display_rect)
+  IPC_STRUCT_TRAITS_MEMBER(plane_z_order)
 IPC_STRUCT_TRAITS_END()
 
 // clang-format on
@@ -128,6 +140,10 @@ IPC_MESSAGE_CONTROL2(OzoneGpuMsg_SetGammaRamp,
                      int64_t,                             // display ID,
                      std::vector<ui::GammaRampRGBEntry>)  // lut
 
+IPC_MESSAGE_CONTROL2(OzoneGpuMsg_CheckOverlayCapabilities,
+                     gfx::AcceleratedWidget /* widget */,
+                     std::vector<ui::OverlayCheck_Params> /* overlays */)
+
 //------------------------------------------------------------------------------
 // Browser Messages
 // These messages are from the GPU to the browser process.
@@ -157,3 +173,8 @@ IPC_MESSAGE_CONTROL1(OzoneHostMsg_DisplayControlTaken, bool /* success */)
 // Response to OzoneGpuMsg_RelinquishDisplayControl.
 IPC_MESSAGE_CONTROL1(OzoneHostMsg_DisplayControlRelinquished,
                      bool /* success */)
+
+// Response for OzoneGpuMsg_CheckOverlayCapabilities
+IPC_MESSAGE_CONTROL2(OzoneHostMsg_OverlayCapabilitiesReceived,
+                     gfx::AcceleratedWidget /* widget */,
+                     bool /* result */)

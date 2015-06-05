@@ -11,7 +11,10 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/ozone_export.h"
+#include "ui/ozone/public/overlay_candidates_ozone.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
@@ -42,6 +45,19 @@ struct OZONE_EXPORT DisplaySnapshot_Params {
   DisplayMode_Params native_mode;
   int64_t product_id;
   std::string string_representation;
+};
+
+struct OZONE_EXPORT OverlayCheck_Params {
+  OverlayCheck_Params();
+  OverlayCheck_Params(
+      const OverlayCandidatesOzone::OverlaySurfaceCandidate& candidate);
+  ~OverlayCheck_Params();
+
+  gfx::Size buffer_size;
+  gfx::OverlayTransform transform;
+  SurfaceFactoryOzone::BufferFormat format;
+  gfx::Rect display_rect;
+  int plane_z_order;
 };
 
 }  // namespace ui

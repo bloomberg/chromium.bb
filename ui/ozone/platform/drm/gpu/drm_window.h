@@ -29,6 +29,8 @@ namespace ui {
 class DrmBuffer;
 class DrmDeviceManager;
 class HardwareDisplayController;
+struct OverlayCheck_Params;
+class ScanoutBufferGenerator;
 class ScreenManager;
 
 // A delegate of the platform window (DrmWindow) on the GPU process. This is
@@ -84,6 +86,8 @@ class OZONE_EXPORT DrmWindow {
   void QueueOverlayPlane(const OverlayPlane& plane);
 
   bool SchedulePageFlip(bool is_sync, const SwapCompletionCallback& callback);
+  bool TestPageFlip(const std::vector<OverlayCheck_Params>& planes,
+                    ScanoutBufferGenerator* buffer_generator);
 
   // Returns the last buffer associated with this window.
   const OverlayPlane* GetLastModesetBuffer();

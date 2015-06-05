@@ -158,7 +158,8 @@ class OzonePlatformGbm : public OzonePlatform {
     display_manager_.reset(new DrmDisplayHostManager(
         gpu_platform_support_host_.get(), device_manager_.get()));
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
-    overlay_manager_.reset(new DrmOverlayManager(use_surfaceless_));
+    overlay_manager_.reset(new DrmOverlayManager(
+        use_surfaceless_, gpu_platform_support_host_.get()));
 #if defined(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(make_scoped_ptr(
         new XkbKeyboardLayoutEngine(xkb_evdev_code_converter_)));
@@ -185,7 +186,7 @@ class OzonePlatformGbm : public OzonePlatform {
         screen_manager_.get(), drm_device_manager_.get()));
     gpu_platform_support_.reset(new DrmGpuPlatformSupport(
         drm_device_manager_.get(), screen_manager_.get(),
-        display_manager.Pass()));
+        buffer_generator_.get(), display_manager.Pass()));
   }
 
  private:

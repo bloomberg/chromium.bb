@@ -33,15 +33,18 @@ class DrmGpuDisplayManager;
 class DrmSurfaceFactory;
 class DrmWindow;
 class ScreenManager;
+class ScanoutBufferGenerator;
 
 struct DisplayMode_Params;
 struct DisplaySnapshot_Params;
+struct OverlayCheck_Params;
 struct GammaRampRGBEntry;
 
 class DrmGpuPlatformSupport : public GpuPlatformSupport {
  public:
   DrmGpuPlatformSupport(DrmDeviceManager* drm_device_manager,
                         ScreenManager* screen_manager,
+                        ScanoutBufferGenerator* buffer_generator,
                         scoped_ptr<DrmGpuDisplayManager> display_manager);
   ~DrmGpuPlatformSupport() override;
 
@@ -65,6 +68,9 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
                    const gfx::Point& location,
                    int frame_delay_ms);
   void OnCursorMove(gfx::AcceleratedWidget widget, const gfx::Point& location);
+  void OnCheckOverlayCapabilities(
+      gfx::AcceleratedWidget widget,
+      const std::vector<OverlayCheck_Params>& overlays);
 
   // Display related IPC handlers.
   void OnRefreshNativeDisplays();
@@ -87,6 +93,7 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
   IPC::Sender* sender_;                   // Not owned.
   DrmDeviceManager* drm_device_manager_;  // Not owned.
   ScreenManager* screen_manager_;         // Not owned.
+  ScanoutBufferGenerator* buffer_generator_;  // Not owned.
 
   scoped_ptr<DrmGpuDisplayManager> display_manager_;
   ScopedVector<GpuPlatformSupport> handlers_;

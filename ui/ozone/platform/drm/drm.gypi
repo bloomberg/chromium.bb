@@ -96,6 +96,8 @@
         'host/drm_gpu_platform_support_host.h',
         'host/drm_native_display_delegate.cc',
         'host/drm_native_display_delegate.h',
+        'host/drm_overlay_candidates_host.cc',
+        'host/drm_overlay_candidates_host.h',
         'host/drm_overlay_manager.cc',
         'host/drm_overlay_manager.h',
         'host/drm_window_host.cc',
