@@ -31,6 +31,7 @@ class ChrootSdkBuilder(simple_builders.SimpleBuilder):
     self._RunStage(chrome_stages.PatchChromeStage)
     self._RunStage(sdk_stages.SDKBuildToolchainsStage)
     self._RunStage(sdk_stages.SDKPackageStage, version=version)
+    self._RunStage(sdk_stages.SDKPackageToolchainOverlaysStage, version=version)
     self._RunStage(sdk_stages.SDKTestStage)
     self._RunStage(artifact_stages.UploadPrebuiltsStage,
                    constants.CHROOT_BUILDER_BOARD, version=version)
