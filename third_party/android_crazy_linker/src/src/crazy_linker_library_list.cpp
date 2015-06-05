@@ -431,7 +431,7 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
     return NULL;
 
   // Notify GDB of load.
-  lib->link_map_.l_addr = lib->load_address();
+  lib->link_map_.l_addr = lib->load_bias();
   lib->link_map_.l_name = const_cast<char*>(lib->base_name_);
   lib->link_map_.l_ld = reinterpret_cast<uintptr_t>(lib->view_.dynamic());
   Globals::GetRDebug()->AddEntry(&lib->link_map_);
