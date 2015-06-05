@@ -62,6 +62,12 @@ void FrameSetPainter::paintRowBorder(const PaintInfo& paintInfo, const IntRect& 
     }
 }
 
+static bool shouldPaintBorderAfter(const LayoutFrameSet::GridAxis& axis, size_t index)
+{
+    // Should not paint a border after the last frame along the axis.
+    return index + 1 < axis.m_sizes.size() && axis.m_allowBorder[index + 1];
+}
+
 void FrameSetPainter::paintBorders(const PaintInfo& paintInfo, const LayoutPoint& adjustedPaintOffset)
 {
     LayoutRect adjustedFrameRect(adjustedPaintOffset, m_layoutFrameSet.size());
@@ -69,16 +75,19 @@ void FrameSetPainter::paintBorders(const PaintInfo& paintInfo, const LayoutPoint
     if (recorder.canUseCachedDrawing())
         return;
 
+    LayoutUnit borderThickness = m_layoutFrameSet.frameSet()->border();
+    if (!borderThickness)
+        return;
+
     LayoutObject* child = m_layoutFrameSet.firstChild();
     size_t rows = m_layoutFrameSet.rows().m_sizes.size();
     size_t cols = m_layoutFrameSet.columns().m_sizes.size();
-    LayoutUnit borderThickness = m_layoutFrameSet.frameSet()->border();
     LayoutUnit yPos = 0;
     for (size_t r = 0; r < rows; r++) {
         LayoutUnit xPos = 0;
         for (size_t c = 0; c < cols; c++) {
             xPos += m_layoutFrameSet.columns().m_sizes[c];
-            if (borderThickness && m_layoutFrameSet.columns().m_allowBorder[c + 1]) {
+            if (shouldPaintBorderAfter(m_layoutFrameSet.columns(), c)) {
                 paintColumnBorder(paintInfo, pixelSnappedIntRect(
                     LayoutRect(adjustedPaintOffset.x() + xPos, adjustedPaintOffset.y() + yPos, borderThickness, m_layoutFrameSet.size().height())));
                 xPos += borderThickness;
@@ -88,7 +97,7 @@ void FrameSetPainter::paintBorders(const PaintInfo& paintInfo, const LayoutPoint
                 return;
         }
         yPos += m_layoutFrameSet.rows().m_sizes[r];
-        if (borderThickness && m_layoutFrameSet.rows().m_allowBorder[r + 1]) {
+        if (shouldPaintBorderAfter(m_layoutFrameSet.rows(), r)) {
             paintRowBorder(paintInfo, pixelSnappedIntRect(
                 LayoutRect(adjustedPaintOffset.x(), adjustedPaintOffset.y() + yPos, m_layoutFrameSet.size().width(), borderThickness)));
             yPos += borderThickness;

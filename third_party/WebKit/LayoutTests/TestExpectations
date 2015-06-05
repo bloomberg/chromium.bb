@@ -84,6 +84,11 @@ crbug.com/432129 virtual/slimmingpaint/fast/html/marquee-scroll.html [ Skip ]
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 crbug.com/421283 virtual/slimmingpaint/fast/html/marquee-scrollamount.html [ Skip ]
 
+crbug.com/496322 fast/frames/frame-set-scaling-centered.html [ NeedsRebaseline ]
+crbug.com/496322 fast/frames/frame-set-scaling-rotate.html [ NeedsRebaseline ]
+crbug.com/496322 fast/frames/frame-set-scaling-skew.html [ NeedsRebaseline ]
+crbug.com/496322 fast/frames/frame-set-scaling.html [ NeedsRebaseline ]
+
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 crbug.com/470482 virtual/slimmingpaint/fast/cookies/local-file-can-set-cookies.html [ Skip ]
