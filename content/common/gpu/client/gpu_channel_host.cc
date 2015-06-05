@@ -18,7 +18,7 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #include "content/public/common/sandbox_init.h"
 #endif
 
@@ -303,8 +303,9 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
   if (IsLost())
     return base::SharedMemory::NULLHandle();
 
-#if defined(OS_WIN)
-  // Windows needs to explicitly duplicate the handle out to another process.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // Windows and Mac need to explicitly duplicate the handle out to another
+  // process.
   base::SharedMemoryHandle target_handle;
   base::ProcessId peer_pid;
   {
@@ -313,22 +314,21 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
       return base::SharedMemory::NULLHandle();
     peer_pid = channel_->GetPeerPID();
   }
-  if (!BrokerDuplicateHandle(source_handle,
-                             peer_pid,
-                             &target_handle,
-                             FILE_GENERIC_READ | FILE_GENERIC_WRITE,
-                             0)) {
+#if defined(OS_WIN)
+  bool success =
+      BrokerDuplicateHandle(source_handle, peer_pid, &target_handle,
+                            FILE_GENERIC_READ | FILE_GENERIC_WRITE, 0);
+#elif defined(OS_MACOSX)
+  bool success = BrokerDuplicateSharedMemoryHandle(source_handle, peer_pid,
+                                                   &target_handle);
+#endif
+  if (!success)
     return base::SharedMemory::NULLHandle();
-  }
 
   return target_handle;
 #else
-  int duped_handle = HANDLE_EINTR(dup(source_handle.fd));
-  if (duped_handle < 0)
-    return base::SharedMemory::NULLHandle();
-
-  return base::FileDescriptor(duped_handle, true);
-#endif
+  return base::SharedMemory::DuplicateHandle(source_handle);
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
 int32 GpuChannelHost::ReserveTransferBufferId() {
