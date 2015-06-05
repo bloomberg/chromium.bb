@@ -315,4 +315,11 @@ void RootFrameViewport::serviceScrollAnimations(double monotonicTime)
     layoutViewport().serviceScrollAnimations(monotonicTime);
 }
 
+void RootFrameViewport::updateCompositorScrollAnimations()
+{
+    ScrollableArea::updateCompositorScrollAnimations();
+    layoutViewport().updateCompositorScrollAnimations();
+}
+
+
 } // namespace blink

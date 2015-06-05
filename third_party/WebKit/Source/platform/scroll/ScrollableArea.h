@@ -225,7 +225,7 @@ public:
     // animations.
     bool scheduleAnimation();
     virtual void serviceScrollAnimations(double monotonicTime);
-    void updateCompositorScrollAnimations();
+    virtual void updateCompositorScrollAnimations();
     virtual void registerForAnimation() { }
     virtual void deregisterForAnimation() { }
 
