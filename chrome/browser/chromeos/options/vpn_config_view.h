@@ -146,6 +146,7 @@ class VPNConfigView : public ChildNetworkConfigView,
   bool enable_server_ca_cert_;
   bool enable_otp_;
   bool enable_group_name_;
+  bool user_passphrase_required_;
 
   NetworkPropertyUIData ca_cert_ui_data_;
   NetworkPropertyUIData psk_passphrase_ui_data_;

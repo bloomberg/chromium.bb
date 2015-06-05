@@ -228,6 +228,7 @@ VPNConfigView::VPNConfigView(NetworkConfigView* parent,
       enable_server_ca_cert_(false),
       enable_otp_(false),
       enable_group_name_(false),
+      user_passphrase_required_(false),
       title_(0),
       layout_(NULL),
       server_textfield_(NULL),
@@ -280,7 +281,7 @@ views::View* VPNConfigView::GetInitiallyFocusedView() {
     else if (server_ca_cert_combobox_ && server_ca_cert_combobox_->enabled())
       return server_ca_cert_combobox_;
   }
-  if (user_passphrase_textfield_)
+  if (user_passphrase_textfield_ && user_passphrase_required_)
     return user_passphrase_textfield_;
   else if (otp_textfield_)
     return otp_textfield_;
@@ -713,7 +714,7 @@ void VPNConfigView::InitFromProperties(
 
   std::string provider_type, server_hostname, username, group_name;
   bool psk_passphrase_required = false;
-  bool user_passphrase_required = true;
+  user_passphrase_required_ = true;
   const base::DictionaryValue* provider_properties;
   if (service_properties.GetDictionaryWithoutPathExpansion(
           shill::kProviderProperty, &provider_properties)) {
@@ -740,7 +741,7 @@ void VPNConfigView::InitFromProperties(
       provider_properties->GetStringWithoutPathExpansion(
           shill::kOpenVPNUserProperty, &username);
       provider_properties->GetBooleanWithoutPathExpansion(
-          shill::kPassphraseRequiredProperty, &user_passphrase_required);
+          shill::kPassphraseRequiredProperty, &user_passphrase_required_);
     }
   }
   bool save_credentials = false;
@@ -764,7 +765,7 @@ void VPNConfigView::InitFromProperties(
   if (psk_passphrase_textfield_)
     psk_passphrase_textfield_->SetShowFake(!psk_passphrase_required);
   if (user_passphrase_textfield_)
-    user_passphrase_textfield_->SetShowFake(!user_passphrase_required);
+    user_passphrase_textfield_->SetShowFake(!user_passphrase_required_);
   if (save_credentials_checkbox_)
     save_credentials_checkbox_->SetChecked(save_credentials);
 
