@@ -702,6 +702,86 @@ public class ImeTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput", "Main"})
+    public void testAccentKeyCodesFromPhysicalKeyboard() throws Throwable {
+        DOMUtils.focusNode(mWebContents, "textarea");
+        assertWaitForKeyboardStatus(true);
+
+        mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
+
+        // h
+        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_H));
+        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_H));
+        assertEquals("h", mConnection.getTextBeforeCursor(9, 0));
+
+        // ALT-i  (circumflex accent key on virtual keyboard)
+        dispatchKeyEvent(
+                mConnection, new KeyEvent(
+                        0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("hˆ", mConnection.getTextBeforeCursor(9, 0));
+        dispatchKeyEvent(
+                mConnection, new KeyEvent(
+                        0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        assertEquals("hˆ", mConnection.getTextBeforeCursor(9, 0));
+
+        // o
+        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_O));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("hô", mConnection.getTextBeforeCursor(9, 0));
+        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_O));
+        assertEquals("hô", mConnection.getTextBeforeCursor(9, 0));
+        assertEquals(-1, mConnection.getComposingSpanEnd(mConnection.getEditable()));
+
+        // ALT-i
+        dispatchKeyEvent(
+                mConnection, new KeyEvent(
+                        0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        assertUpdateStateCall(mConnection, 1000);
+        dispatchKeyEvent(
+                mConnection, new KeyEvent(
+                        0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        assertEquals("hôˆ", mConnection.getTextBeforeCursor(9, 0));
+
+        // ALT-i again should have no effect
+        dispatchKeyEvent(
+                mConnection, new KeyEvent(
+                        0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        assertUpdateStateCall(mConnection, 1000);
+        dispatchKeyEvent(
+                mConnection, new KeyEvent(
+                        0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        assertEquals("hôˆ", mConnection.getTextBeforeCursor(9, 0));
+
+        // b (cannot be accented, should just appear after)
+        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_B));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("hôˆb", mConnection.getTextBeforeCursor(9, 0));
+        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_B));
+        assertEquals("hôˆb", mConnection.getTextBeforeCursor(9, 0));
+        assertEquals(-1, mConnection.getComposingSpanEnd(mConnection.getEditable()));
+
+        // ALT-i
+        dispatchKeyEvent(
+                mConnection, new KeyEvent(
+                        0, 0, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        assertUpdateStateCall(mConnection, 1000);
+        dispatchKeyEvent(
+                mConnection, new KeyEvent(
+                        0, 0, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_I, 0, KeyEvent.META_ALT_ON));
+        assertEquals("hôˆbˆ", mConnection.getTextBeforeCursor(9, 0));
+
+        // Backspace
+        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+        assertUpdateStateCall(mConnection, 1000);
+        assertEquals("hôˆb", mConnection.getTextBeforeCursor(9, 0));
+        dispatchKeyEvent(mConnection, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
+        assertEquals("hôˆb", mConnection.getTextBeforeCursor(9, 0));
+        assertEquals(-1, mConnection.getComposingSpanEnd(mConnection.getEditable()));
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testSetComposingRegionOutOfBounds() throws Throwable {
         DOMUtils.focusNode(mWebContents, "textarea");
         assertWaitForKeyboardStatus(true);
@@ -1052,6 +1132,15 @@ public class ImeTest extends ContentShellTestBase {
             @Override
             public void run() {
                 connection.deleteSurroundingText(before, after);
+            }
+        });
+    }
+
+    private void dispatchKeyEvent(final AdapterInputConnection connection, final KeyEvent event) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mImeAdapter.dispatchKeyEvent(event);
             }
         });
     }

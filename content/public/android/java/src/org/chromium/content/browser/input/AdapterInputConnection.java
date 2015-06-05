@@ -10,6 +10,7 @@ import android.text.InputType;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
@@ -42,6 +43,7 @@ public class AdapterInputConnection extends BaseInputConnection {
 
     private boolean mSingleLine;
     private int mNumNestedBatchEdits = 0;
+    private int mPendingAccent;
 
     private int mLastUpdateSelectionStart = INVALID_SELECTION;
     private int mLastUpdateSelectionEnd = INVALID_SELECTION;
@@ -242,6 +244,7 @@ public class AdapterInputConnection extends BaseInputConnection {
     public boolean setComposingText(CharSequence text, int newCursorPosition) {
         if (DEBUG) Log.w(TAG, "setComposingText [" + text + "] [" + newCursorPosition + "]");
         if (maybePerformEmptyCompositionWorkaround(text)) return true;
+        mPendingAccent = 0;
         super.setComposingText(text, newCursorPosition);
         updateSelectionIfRequired();
         return mImeAdapter.checkCompositionQueueAndCallNative(text, newCursorPosition, false);
@@ -254,6 +257,7 @@ public class AdapterInputConnection extends BaseInputConnection {
     public boolean commitText(CharSequence text, int newCursorPosition) {
         if (DEBUG) Log.w(TAG, "commitText [" + text + "] [" + newCursorPosition + "]");
         if (maybePerformEmptyCompositionWorkaround(text)) return true;
+        mPendingAccent = 0;
         super.commitText(text, newCursorPosition);
         updateSelectionIfRequired();
         return mImeAdapter.checkCompositionQueueAndCallNative(text, newCursorPosition,
@@ -351,6 +355,11 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (DEBUG) {
             Log.w(TAG, "deleteSurroundingText [" + beforeLength + " " + afterLength + "]");
         }
+
+        if (mPendingAccent != 0) {
+            finishComposingText();
+        }
+
         int originalBeforeLength = beforeLength;
         int originalAfterLength = afterLength;
         int availableBefore = Selection.getSelectionStart(mEditable);
@@ -403,15 +412,22 @@ public class AdapterInputConnection extends BaseInputConnection {
         int keycode = event.getKeyCode();
         int unicodeChar = event.getUnicodeChar();
 
+        // If this isn't a KeyDown event, no need to update composition state; just pass the key
+        // event through and return.
+        if (action != KeyEvent.ACTION_DOWN) {
+            mImeAdapter.translateAndSendNativeEvents(event);
+            return true;
+        }
+
         // If this is backspace/del or if the key has a character representation,
         // need to update the underlying Editable (i.e. the local representation of the text
         // being edited).  Some IMEs like Jellybean stock IME and Samsung IME mix in delete
         // KeyPress events instead of calling deleteSurroundingText.
-        if (action == KeyEvent.ACTION_DOWN && keycode == KeyEvent.KEYCODE_DEL) {
+        if (keycode == KeyEvent.KEYCODE_DEL) {
             deleteSurroundingTextImpl(1, 0, true);
-        } else if (action == KeyEvent.ACTION_DOWN && keycode == KeyEvent.KEYCODE_FORWARD_DEL) {
+        } else if (keycode == KeyEvent.KEYCODE_FORWARD_DEL) {
             deleteSurroundingTextImpl(0, 1, true);
-        } else if (action == KeyEvent.ACTION_DOWN && keycode == KeyEvent.KEYCODE_ENTER) {
+        } else if (keycode == KeyEvent.KEYCODE_ENTER) {
             // Finish text composition when pressing enter, as that may submit a form field.
             // TODO(aurimas): remove this workaround when crbug.com/278584 is fixed.
             beginBatchEdit();
@@ -419,7 +435,32 @@ public class AdapterInputConnection extends BaseInputConnection {
             mImeAdapter.translateAndSendNativeEvents(event);
             endBatchEdit();
             return true;
-        } else if (action == KeyEvent.ACTION_UP && unicodeChar != 0) {
+        } else if ((unicodeChar & KeyCharacterMap.COMBINING_ACCENT) != 0) {
+            // Store a pending accent character and make it the current composition.
+            int pendingAccent = unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK;
+            StringBuilder builder = new StringBuilder();
+            builder.appendCodePoint(pendingAccent);
+            setComposingText(builder.toString(), 1);
+            mPendingAccent = pendingAccent;
+            return true;
+        }
+
+        if (unicodeChar != 0) {
+            if (mPendingAccent != 0) {
+                int combined = KeyEvent.getDeadChar(mPendingAccent, unicodeChar);
+                if (combined != 0) {
+                    StringBuilder builder = new StringBuilder();
+                    builder.appendCodePoint(combined);
+                    commitText(builder.toString(), 1);
+                    return true;
+                }
+                // Noncombinable character; commit the accent character and fall through to sending
+                // the key event for the character afterwards.
+                finishComposingText();
+            }
+
+            // Update the mEditable state to reflect what Blink will do in response to the KeyDown
+            // for a unicode-mapped key event.
             int selectionStart = Selection.getSelectionStart(mEditable);
             int selectionEnd = Selection.getSelectionEnd(mEditable);
             if (selectionStart > selectionEnd) {
@@ -430,6 +471,7 @@ public class AdapterInputConnection extends BaseInputConnection {
             mEditable.replace(selectionStart, selectionEnd,
                     Character.toString((char) unicodeChar));
         }
+
         mImeAdapter.translateAndSendNativeEvents(event);
         return true;
     }
@@ -440,6 +482,9 @@ public class AdapterInputConnection extends BaseInputConnection {
     @Override
     public boolean finishComposingText() {
         if (DEBUG) Log.w(TAG, "finishComposingText");
+
+        mPendingAccent = 0;
+
         if (getComposingSpanStart(mEditable) == getComposingSpanEnd(mEditable)) {
             return true;
         }
@@ -472,6 +517,7 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (DEBUG) Log.w(TAG, "restartInput");
         getInputMethodManagerWrapper().restartInput(mInternalView);
         mNumNestedBatchEdits = 0;
+        mPendingAccent = 0;
     }
 
     /**
