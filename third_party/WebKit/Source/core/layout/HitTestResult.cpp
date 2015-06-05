@@ -241,6 +241,8 @@ String HitTestResult::title(TextDirection& dir) const
     dir = LTR;
     // Find the title in the nearest enclosing DOM node.
     // For <area> tags in image maps, walk the tree for the <area>, not the <img> using it.
+    if (m_innerNode.get())
+        m_innerNode->updateDistribution();
     for (Node* titleNode = m_innerNode.get(); titleNode; titleNode = ComposedTreeTraversal::parent(*titleNode)) {
         if (titleNode->isElementNode()) {
             String title = toElement(titleNode)->title();
