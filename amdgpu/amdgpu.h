@@ -777,9 +777,8 @@ int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
  *          <0 - Negative POSIX Error code
  *
 */
-int amdgpu_gpu_resource_query_gds_info(amdgpu_device_handle dev,
-					struct amdgpu_gds_resource_info *
-								gds_info);
+int amdgpu_query_gds_info(amdgpu_device_handle dev,
+			struct amdgpu_gds_resource_info *gds_info);
 
 
 /**

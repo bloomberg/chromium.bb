@@ -276,3 +276,28 @@ int amdgpu_query_heap_info(amdgpu_device_handle dev,
 
 	return 0;
 }
+
+int amdgpu_query_gds_info(amdgpu_device_handle dev,
+			struct amdgpu_gds_resource_info *gds_info)
+{
+	struct drm_amdgpu_info_gds gds_config = {};
+        int r;
+
+	if (gds_info == NULL)
+		return -EINVAL;
+
+        r = amdgpu_query_info(dev, AMDGPU_INFO_GDS_CONFIG,
+                              sizeof(gds_config), &gds_config);
+        if (r)
+                return r;
+
+	gds_info->gds_gfx_partition_size = gds_config.gds_gfx_partition_size;
+	gds_info->compute_partition_size = gds_config.compute_partition_size;
+	gds_info->gds_total_size = gds_config.gds_total_size;
+	gds_info->gws_per_gfx_partition = gds_config.gws_per_gfx_partition;
+	gds_info->gws_per_compute_partition = gds_config.gws_per_compute_partition;
+	gds_info->oa_per_gfx_partition = gds_config.oa_per_gfx_partition;
+	gds_info->oa_per_compute_partition = gds_config.oa_per_compute_partition;
+
+	return 0;
+}
