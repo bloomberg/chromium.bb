@@ -2,7 +2,8 @@ SUBDIRS = gnulib
 
 AM_CPPFLAGS =					\
 	-I$(top_srcdir)/liblouis		\
-	-I$(top_srcdir)/tools/gnulib
+	-I$(top_srcdir)/tools/gnulib		\
+	-I$(top_builddir)/tools/gnulib
 
 LDADD =							\
 	$(top_builddir)/liblouis/liblouis.la		\
