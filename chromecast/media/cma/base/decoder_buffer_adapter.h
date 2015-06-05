@@ -30,6 +30,7 @@ class DecoderBufferAdapter : public DecoderBufferBase {
   // DecoderBufferBase implementation.
   StreamId stream_id() const override;
   base::TimeDelta timestamp() const override;
+  void set_timestamp(const base::TimeDelta& timestamp) override;
   const uint8* data() const override;
   uint8* writable_data() const override;
   size_t data_size() const override;

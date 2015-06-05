@@ -31,6 +31,10 @@ base::TimeDelta DecoderBufferAdapter::timestamp() const {
   return buffer_->timestamp();
 }
 
+void DecoderBufferAdapter::set_timestamp(const base::TimeDelta& timestamp) {
+  buffer_->set_timestamp(timestamp);
+}
+
 const uint8* DecoderBufferAdapter::data() const {
   return buffer_->data();
 }

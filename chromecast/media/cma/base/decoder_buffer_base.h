@@ -33,6 +33,9 @@ class DecoderBufferBase
   // Returns the PTS of the frame.
   virtual base::TimeDelta timestamp() const = 0;
 
+  // Sets the PTS of the frame.
+  virtual void set_timestamp(const base::TimeDelta& timestamp) = 0;
+
   // Gets the frame data.
   virtual const uint8* data() const = 0;
   virtual uint8* writable_data() const = 0;
