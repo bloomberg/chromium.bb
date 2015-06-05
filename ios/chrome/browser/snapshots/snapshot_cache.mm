@@ -212,8 +212,8 @@ void ConvertAndSaveGreyImage(
   }
 
   base::PostTaskAndReplyWithResult(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE_USER_BLOCKING)
-          .get(),
+      web::WebThread::GetMessageLoopProxyForThread(
+          web::WebThread::FILE_USER_BLOCKING).get(),
       FROM_HERE, base::BindBlock(^base::scoped_nsobject<UIImage>() {
         // Retrieve the image on a high priority thread.
         return base::scoped_nsobject<UIImage>([ReadImageFromDisk(
@@ -401,9 +401,10 @@ void ConvertAndSaveGreyImage(
   // already in the cache, use it.
   UIImage* img = [imageDictionary_ objectForKey:sessionID];
   base::PostTaskAndReplyWithResult(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE_USER_BLOCKING)
-          .get(),
-      FROM_HERE, base::BindBlock(^base::scoped_nsobject<UIImage>() {
+      web::WebThread::GetMessageLoopProxyForThread(
+          web::WebThread::FILE_USER_BLOCKING).get(),
+      FROM_HERE,
+      base::BindBlock(^base::scoped_nsobject<UIImage>() {
         base::scoped_nsobject<UIImage> result([img retain]);
         // If the image is not in the cache, load it from disk.
         if (!result)
@@ -464,9 +465,10 @@ void ConvertAndSaveGreyImage(
   }
 
   base::PostTaskAndReplyWithResult(
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE_USER_BLOCKING)
-          .get(),
-      FROM_HERE, base::BindBlock(^base::scoped_nsobject<UIImage>() {
+      web::WebThread::GetMessageLoopProxyForThread(
+          web::WebThread::FILE_USER_BLOCKING).get(),
+      FROM_HERE,
+      base::BindBlock(^base::scoped_nsobject<UIImage>() {
         // Retrieve the image on a high priority thread.
         // Loading the file into NSData is more reliable.
         // -imageWithContentsOfFile would ocassionally claim the image was not a

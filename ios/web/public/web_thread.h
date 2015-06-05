@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner_util.h"
 
 namespace base {
@@ -83,8 +84,8 @@ class WebThread {
 
     // NOTE: do not add new threads here that are only used by a small number of
     // files. Instead you should just use a Thread class and pass its
-    // SingleThreadTaskRunner around. Named threads there are only for threads
-    // that are used in many places.
+    // MessageLoopProxy around. Named threads there are only for threads that
+    // are used in many places.
 
     // This identifier does not represent a thread.  Instead it counts the
     // number of well-known threads.  Insert new well-known threads before this
@@ -123,17 +124,18 @@ class WebThread {
       const tracked_objects::Location& from_here,
       const base::Callback<ReturnType(void)>& task,
       const base::Callback<void(ReplyArgType)>& reply) {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        GetTaskRunnerForThread(identifier);
-    return base::PostTaskAndReplyWithResult(task_runner.get(), from_here, task,
-                                            reply);
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
+        GetMessageLoopProxyForThread(identifier);
+    return base::PostTaskAndReplyWithResult(message_loop_proxy.get(), from_here,
+                                            task, reply);
   }
 
   template <class T>
   static bool DeleteSoon(ID identifier,
                          const tracked_objects::Location& from_here,
                          const T* object) {
-    return GetTaskRunnerForThread(identifier)->DeleteSoon(from_here, object);
+    return GetMessageLoopProxyForThread(identifier)
+        ->DeleteSoon(from_here, object);
   }
 
   // Simplified wrappers for posting to the blocking thread pool. Use this
@@ -200,9 +202,9 @@ class WebThread {
   // sets identifier to its ID.
   static bool GetCurrentThreadIdentifier(ID* identifier) WARN_UNUSED_RESULT;
 
-  // Callers can hold on to a refcounted SingleThreadTaskRunner beyond the
-  // lifetime of the thread.
-  static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForThread(
+  // Callers can hold on to a refcounted MessageLoopProxy beyond the lifetime
+  // of the thread.
+  static scoped_refptr<base::MessageLoopProxy> GetMessageLoopProxyForThread(
       ID identifier);
 
   // Returns an appropriate error message for when
