@@ -30,8 +30,6 @@ class LayoutSVGBlock : public LayoutBlockFlow {
 public:
     explicit LayoutSVGBlock(SVGElement*);
 
-    virtual LayoutRect visualOverflowRect() const override final;
-
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override final;
 
     virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override final;

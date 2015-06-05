@@ -36,16 +36,6 @@ LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
 {
 }
 
-LayoutRect LayoutSVGBlock::visualOverflowRect() const
-{
-    LayoutRect borderRect = borderBoxRect();
-
-    if (const ShadowList* textShadow = style()->textShadow())
-        textShadow->adjustRectForShadow(borderRect);
-
-    return borderRect;
-}
-
 void LayoutSVGBlock::updateFromStyle()
 {
     LayoutBlock::updateFromStyle();

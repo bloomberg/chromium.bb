@@ -368,7 +368,6 @@ void LayoutSVGText::layout()
     ASSERT(!scrollsOverflow());
     ASSERT(!hasControlClip());
     ASSERT(!positionedObjects());
-    ASSERT(!m_overflow);
     ASSERT(!isAnonymousBlock());
 
     if (!firstChild())
@@ -395,6 +394,9 @@ void LayoutSVGText::layout()
     // If we don't have any line boxes, then make sure the frame rect is still cleared.
     if (!firstLineBox())
         setFrameRect(LayoutRect());
+
+    m_overflow.clear();
+    addVisualEffectOverflow();
 
     if (!updateCachedBoundariesInParents)
         updateCachedBoundariesInParents = oldBoundaries != objectBoundingBox();
