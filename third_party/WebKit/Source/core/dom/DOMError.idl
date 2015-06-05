@@ -31,8 +31,9 @@
 // FIXME: DOMError has been removed from the spec. crbug.com/460725
 [
     Constructor(DOMString name, optional DOMString message = null),
-    GarbageCollected
+    GarbageCollected,
+    Measure,
 ] interface DOMError {
-    readonly attribute DOMString name;
-    readonly attribute DOMString message;
+    [Measure] readonly attribute DOMString name;
+    [Measure] readonly attribute DOMString message;
 };

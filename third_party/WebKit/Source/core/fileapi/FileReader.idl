@@ -60,7 +60,7 @@
     readonly attribute (DOMString or ArrayBuffer)? result;
 
     // TODO(philipj): error should be DOMError. crbug.com/496901
-    readonly attribute FileError? error;
+    [Measure] readonly attribute FileError? error;
 
     // event handler attributes
     attribute EventHandler onloadstart;

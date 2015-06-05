@@ -44,7 +44,7 @@ enum IDBTransactionMode {
     [RuntimeEnabled=IndexedDBExperimental] readonly attribute DOMStringList objectStoreNames;
     readonly attribute IDBTransactionMode mode;
     readonly attribute IDBDatabase db;
-    readonly attribute DOMError error;
+    [Measure] readonly attribute DOMError error;
 
     // Methods
     [RaisesException] IDBObjectStore objectStore (DOMString name);
