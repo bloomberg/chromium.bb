@@ -54,7 +54,7 @@ ScriptValue InjectedScriptManager::createInjectedScript(const String& scriptSour
         m_injectedScriptHost->setWrapperTemplate(wrapperTemplate, isolate);
     }
 
-    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(isolate, wrapperTemplate, m_injectedScriptHost);
+    v8::Local<v8::Object> scriptHostWrapper = V8InjectedScriptHost::wrap(wrapperTemplate, inspectedScriptState->context(), m_injectedScriptHost);
     if (scriptHostWrapper.IsEmpty())
         return ScriptValue();
 

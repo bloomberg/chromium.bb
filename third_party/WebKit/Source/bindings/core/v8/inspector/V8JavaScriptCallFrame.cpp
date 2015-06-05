@@ -5,7 +5,11 @@
 #include "config.h"
 #include "bindings/core/v8/inspector/V8JavaScriptCallFrame.h"
 
+#include "bindings/core/v8/inspector/InspectorWrapper.h"
+#include "core/inspector/JavaScriptCallFrame.h"
 #include "wtf/RefPtr.h"
+#include "wtf/StdLibExtras.h"
+#include <algorithm>
 
 namespace blink {
 
@@ -133,12 +137,11 @@ void scopeTypeMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     info.GetReturnValue().Set(impl->scopeType(scopeIndex));
 }
 
-struct V8AttributeConfiguration {
-    const char* name;
-    v8::AccessorNameGetterCallback callback;
-};
+char hiddenPropertyName[] = "v8inspector::JavaScriptCallFrame";
+char className[] = "V8JavaScriptCallFrame";
+using JavaScriptCallFrameWrapper = InspectorWrapper<JavaScriptCallFrame, hiddenPropertyName, className>;
 
-const V8AttributeConfiguration V8JavaScriptCallFrameAttributes[] = {
+const JavaScriptCallFrameWrapper::V8AttributeConfiguration V8JavaScriptCallFrameAttributes[] = {
     {"scopeChain", scopeChainAttributeGetterCallback},
     {"thisObject", thisObjectAttributeGetterCallback},
     {"returnValue", returnValueAttributeGetterCallback},
@@ -154,98 +157,34 @@ const V8AttributeConfiguration V8JavaScriptCallFrameAttributes[] = {
     {"isAtReturn", isAtReturnAttributeGetterCallback},
 };
 
-struct V8MethodConfiguration {
-    const char* name;
-    v8::FunctionCallback callback;
-};
-
-const V8MethodConfiguration V8JavaScriptCallFrameMethods[] = {
+const JavaScriptCallFrameWrapper::V8MethodConfiguration V8JavaScriptCallFrameMethods[] = {
     {"evaluateWithExceptionDetails", evaluateWithExceptionDetailsMethodCallback},
     {"restart", restartMethodCallback},
     {"setVariableValue", setVariableValueMethodCallback},
     {"scopeType", scopeTypeMethodCallback},
 };
 
-class WeakCallbackData final {
-public:
-    WeakCallbackData(v8::Isolate* isolate, PassRefPtr<JavaScriptCallFrame> frame, v8::Local<v8::Object> wrapper)
-        : m_frame(frame)
-        , m_persistent(isolate, wrapper)
-    {
-        m_persistent.SetWeak(this, &WeakCallbackData::weakCallback, v8::WeakCallbackType::kParameter);
-    }
-
-    RefPtr<JavaScriptCallFrame> m_frame;
-
-private:
-    static void weakCallback(const v8::WeakCallbackInfo<WeakCallbackData>& info)
-    {
-        delete info.GetParameter();
-    }
-
-    v8::Global<v8::Object> m_persistent;
-};
-
 } // namespace
 
 v8::Local<v8::FunctionTemplate> V8JavaScriptCallFrame::createWrapperTemplate(v8::Isolate* isolate)
 {
-    v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate);
-
-    functionTemplate->SetClassName(v8::String::NewFromUtf8(isolate, "JavaScriptCallFrame", v8::NewStringType::kInternalized).ToLocalChecked());
-    v8::Local<v8::ObjectTemplate> instanceTemplate = functionTemplate->InstanceTemplate();
-    for (auto& config : V8JavaScriptCallFrameAttributes) {
-        v8::Local<v8::Name> v8name = v8::String::NewFromUtf8(isolate, config.name, v8::NewStringType::kInternalized).ToLocalChecked();
-        instanceTemplate->SetAccessor(v8name, config.callback);
-    }
-
-    for (auto& config : V8JavaScriptCallFrameMethods) {
-        v8::Local<v8::Name> v8name = v8::String::NewFromUtf8(isolate, config.name, v8::NewStringType::kInternalized).ToLocalChecked();
-        v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, config.callback);
-        functionTemplate->RemovePrototype();
-        instanceTemplate->Set(v8name, functionTemplate);
-    }
-
-    return functionTemplate;
+    Vector<InspectorWrapperBase::V8MethodConfiguration> methods(WTF_ARRAY_LENGTH(V8JavaScriptCallFrameMethods));
+    std::copy(V8JavaScriptCallFrameMethods, V8JavaScriptCallFrameMethods + WTF_ARRAY_LENGTH(V8JavaScriptCallFrameMethods), methods.begin());
+    Vector<InspectorWrapperBase::V8AttributeConfiguration> attributes(WTF_ARRAY_LENGTH(V8JavaScriptCallFrameAttributes));
+    std::copy(V8JavaScriptCallFrameAttributes, V8JavaScriptCallFrameAttributes + WTF_ARRAY_LENGTH(V8JavaScriptCallFrameAttributes), attributes.begin());
+    return JavaScriptCallFrameWrapper::createWrapperTemplate(isolate, methods, attributes);
 }
 
 v8::Local<v8::Object> V8JavaScriptCallFrame::wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassRefPtr<JavaScriptCallFrame> frame)
 {
-    RefPtr<JavaScriptCallFrame> impl(frame);
-    v8::Local<v8::Function> function;
-    if (!constructorTemplate->GetFunction(context).ToLocal(&function))
-        return v8::Local<v8::Object>();
-
-    v8::MaybeLocal<v8::Object> maybeResult = function->NewInstance(context);
-    v8::Local<v8::Object> result;
-    if (!maybeResult.ToLocal(&result))
-        return v8::Local<v8::Object>();
-
-    v8::Isolate* isolate = context->GetIsolate();
-    v8::Local<v8::External> objectReference = v8::External::New(isolate, new WeakCallbackData(isolate, impl, result));
-    result->SetHiddenValue(hiddenPropertyName(isolate), objectReference);
-
     // Store template for .caller callback
-    impl->setWrapperTemplate(constructorTemplate, isolate);
-
-    return result;
+    frame->setWrapperTemplate(constructorTemplate, context->GetIsolate());
+    return JavaScriptCallFrameWrapper::wrap(constructorTemplate, context, frame);
 }
 
 JavaScriptCallFrame* V8JavaScriptCallFrame::unwrap(v8::Local<v8::Object> object)
 {
-    v8::Isolate* isolate = object->GetIsolate();
-    v8::Local<v8::Value> value = object->GetHiddenValue(hiddenPropertyName(isolate));
-    if (value.IsEmpty())
-        return nullptr;
-    if (!value->IsExternal())
-        return nullptr;
-    void* data = value.As<v8::External>()->Value();
-    return reinterpret_cast<WeakCallbackData*>(data)->m_frame.get();
-}
-
-v8::Local<v8::String> V8JavaScriptCallFrame::hiddenPropertyName(v8::Isolate* isolate)
-{
-    return v8::String::NewFromUtf8(isolate, "v8inspector::JavaScriptCallFrame", v8::NewStringType::kInternalized).ToLocalChecked();
+    return JavaScriptCallFrameWrapper::unwrap(object);
 }
 
 } // namespace blink

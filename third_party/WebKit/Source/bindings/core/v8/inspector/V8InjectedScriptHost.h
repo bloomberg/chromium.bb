@@ -15,8 +15,8 @@ class InjectedScriptHost;
 
 class V8InjectedScriptHost {
 public:
-    static v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::FunctionTemplate> constructorTemplate, PassRefPtrWillBeRawPtr<InjectedScriptHost>);
-    static InjectedScriptHost* toImpl(v8::Local<v8::Object>);
+    static v8::Local<v8::Object> wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context>, PassRefPtrWillBeRawPtr<InjectedScriptHost>);
+    static InjectedScriptHost* unwrap(v8::Local<v8::Object>);
     static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate*);
 
     static void clearConsoleMessagesCallback(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -45,9 +45,6 @@ public:
     static void bindCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void objectForIdCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void idToObjectGroupNameCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-
-private:
-    static v8::Local<v8::String> hiddenPropertyName(v8::Isolate*);
 };
 
 } // namespace blink
