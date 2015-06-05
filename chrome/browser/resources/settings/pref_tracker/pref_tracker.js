@@ -68,14 +68,11 @@
           // HACK ALERT: This is the best clue we have as to the pref key for
           // this tracker. This value should not be relied upon anywhere or
           // actually used besides for this error message.
-          var keyHint = '';
-          var parentPrefString = this.parentNode && this.parentNode.host &&
-              this.parentNode.host.getAttribute('pref');
-          if (parentPrefString) {
-            keyHint = parentPrefString.match(/{{([a-z0-9._]+)}}/)[1];
-          }
+          var parentControlHTML = this.parentNode && this.parentNode.host &&
+              this.parentNode.host.outerHTML;
 
-          throw new Error('Pref not found. Key Hint: ' + keyHint);
+          throw new Error('Pref not found. Parent control:' +
+              (parentControlHTML || 'Unknown');
         }
       });
     },
