@@ -31,8 +31,6 @@
         'CrNet.mm',
         'crnet_environment.h',
         'crnet_environment.mm',
-        'crnet_net_log.h',
-        'crnet_net_log.cc',
       ],
       'defines': [
         # TODO(stuartmorgan): Revisit the way this is set, and the above is

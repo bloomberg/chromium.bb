@@ -10,16 +10,17 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #import "ios/crnet/CrNet.h"
-#include "ios/crnet/crnet_net_log.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
 namespace net {
 class HttpCache;
 class NetworkChangeNotifier;
+class NetLog;
 class ProxyConfigService;
 class SdchManager;
 class URLRequestContextGetter;
+class WriteToFileNetLogObserver;
 }
 
 class CrNetHttpProtocolHandlerDelegate;
@@ -143,9 +144,8 @@ class CrNetEnvironment {
   scoped_ptr<net::URLRequestContext> main_context_;
   scoped_ptr<CrNetHttpProtocolHandlerDelegate> http_protocol_handler_delegate_;
   std::string user_agent_product_name_;
-  base::Lock net_log_lock_;
-  bool net_log_started_;
-  scoped_ptr<CrNetNetLog> net_log_;
+  scoped_ptr<net::NetLog> net_log_;
+  scoped_ptr<net::WriteToFileNetLogObserver> net_log_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CrNetEnvironment);
 };

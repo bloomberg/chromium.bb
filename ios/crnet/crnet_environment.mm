@@ -8,6 +8,9 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/i18n/icu_util.h"
 #include "base/json/json_writer.h"
 #include "base/mac/bind_objc_block.h"
@@ -32,6 +35,8 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_util.h"
+#include "net/log/net_log.h"
+#include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/channel_id_service.h"
@@ -154,11 +159,6 @@ void CrNetEnvironment::Initialize() {
 void CrNetEnvironment::StartNetLog(base::FilePath::StringType file_name,
     bool log_bytes) {
   DCHECK(file_name.length());
-  base::AutoLock lock(net_log_lock_);
-  if (net_log_started_) {
-    return;
-  }
-  net_log_started_ = true;
   PostToFileUserBlockingThread(FROM_HERE,
       base::Bind(&CrNetEnvironment::StartNetLogInternal,
                  base::Unretained(this), file_name, log_bytes));
@@ -169,21 +169,31 @@ void CrNetEnvironment::StartNetLogInternal(
   DCHECK(base::MessageLoop::current() ==
          file_user_blocking_thread_->message_loop());
   DCHECK(file_name.length());
-  if (!net_log_.get()) {
-    net_log_.reset(new CrNetNetLog());
-    main_context_.get()->set_net_log(net_log_.get());
-  }
-  CrNetNetLog::Mode mode = log_bytes ? CrNetNetLog::LOG_ALL_BYTES :
-                                       CrNetNetLog::LOG_STRIP_PRIVATE_DATA;
-  net_log_->Start(base::FilePath(file_name), mode);
+  DCHECK(net_log_);
+
+  if (net_log_observer_)
+    return;
+
+  base::FilePath temp_dir;
+  if (!base::GetTempDir(&temp_dir))
+    return;
+
+  base::FilePath full_path = temp_dir.Append(file_name);
+  base::ScopedFILE file(base::OpenFile(full_path, "w"));
+  if (!file)
+    return;
+
+  net::NetLogCaptureMode capture_mode = log_bytes ?
+      net::NetLogCaptureMode::IncludeSocketBytes() :
+      net::NetLogCaptureMode::Default();
+
+  net_log_observer_.reset(new net::WriteToFileNetLogObserver());
+  net_log_observer_->set_capture_mode(capture_mode);
+  net_log_observer_->StartObserving(net_log_.get(), file.Pass(), nullptr,
+                                    nullptr);
 }
 
 void CrNetEnvironment::StopNetLog() {
-  base::AutoLock lock(net_log_lock_);
-  if (!net_log_started_) {
-    return;
-  }
-  net_log_started_ = false;
   PostToFileUserBlockingThread(FROM_HERE,
       base::Bind(&CrNetEnvironment::StopNetLogInternal,
       base::Unretained(this)));
@@ -192,8 +202,9 @@ void CrNetEnvironment::StopNetLog() {
 void CrNetEnvironment::StopNetLogInternal() {
   DCHECK(base::MessageLoop::current() ==
          file_user_blocking_thread_->message_loop());
-  if (net_log_.get()) {
-    net_log_->Stop();
+  if (net_log_observer_) {
+    net_log_observer_->StopObserving(nullptr);
+    net_log_observer_.reset();
   }
 }
 
@@ -270,7 +281,6 @@ void CrNetEnvironment::Install() {
   main_context_getter_ = new CrNetURLRequestContextGetter(
       main_context_.get(), network_io_thread_->task_runner());
   SetRequestFilterBlock(nil);
-  net_log_started_ = false;
 }
 
 void CrNetEnvironment::InstallIntoSessionConfiguration(
@@ -421,6 +431,9 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   job_factory->SetProtocolHandler(
       "file", new net::FileProtocolHandler(file_thread_->task_runner()));
   main_context_->set_job_factory(job_factory);
+
+  net_log_.reset(new net::NetLog());
+  main_context_->set_net_log(net_log_.get());
 }
 
 std::string CrNetEnvironment::user_agent() {
