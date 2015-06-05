@@ -712,6 +712,11 @@ public:
         V8SecurityPolicyViolationEvent_DocumentURI_AttributeGetter = 806,
         V8SecurityPolicyViolationEvent_BlockedURI_AttributeGetter = 807,
         V8SecurityPolicyViolationEvent_StatusCode_AttributeGetter = 808,
+        HTMLLinkElementDisabled = 809,
+        V8HTMLLinkElement_Disabled_AttributeGetter = 810,
+        V8HTMLLinkElement_Disabled_AttributeSetter = 811,
+        V8HTMLStyleElement_Disabled_AttributeGetter = 812,
+        V8HTMLStyleElement_Disabled_AttributeSetter = 813,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

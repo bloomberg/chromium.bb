@@ -24,7 +24,7 @@
 interface HTMLLinkElement : HTMLElement {
     // FIXME: The disabled attribute has been removed from the spec:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=14703
-    [Reflect] attribute boolean disabled;
+    [Reflect, Measure] attribute boolean disabled;
     [Reflect, URL] attribute DOMString href;
     [Reflect, ReflectOnly=("anonymous","use-credentials"), ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString? crossOrigin;
     [Reflect] attribute DOMString rel;

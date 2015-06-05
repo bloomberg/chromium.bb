@@ -43,6 +43,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/SubresourceIntegrity.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/LinkDefaultPresentation.h"
 #include "core/html/LinkManifest.h"
@@ -183,6 +184,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
         m_media = value.lower();
         process();
     } else if (name == disabledAttr) {
+        UseCounter::count(document(), UseCounter::HTMLLinkElementDisabled);
         if (LinkStyle* link = linkStyle())
             link->setDisabledState(!value.isNull());
     } else {
@@ -222,8 +224,10 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
             m_link = LinkDefaultPresentation::create(this);
         } else {
             OwnPtrWillBeRawPtr<LinkStyle> link = LinkStyle::create(this);
-            if (fastHasAttribute(disabledAttr))
+            if (fastHasAttribute(disabledAttr)) {
+                UseCounter::count(document(), UseCounter::HTMLLinkElementDisabled);
                 link->setDisabledState(true);
+            }
             m_link = link.release();
         }
     }
