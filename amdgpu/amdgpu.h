@@ -251,28 +251,6 @@ struct amdgpu_gds_resource_info {
 	uint32_t   oa_per_compute_partition;
 };
 
-
-
-/**
- *  Structure describing result of request to allocate GDS
- *
- *  \sa amdgpu_gpu_resource_gds_alloc
- *
-*/
-struct amdgpu_gds_alloc_info {
-	/** Handle assigned to gds allocation */
-	amdgpu_bo_handle resource_handle;
-
-	/** How much was really allocated */
-	uint32_t   gds_memory_size;
-
-	/** Number of GWS resources allocated */
-	uint32_t   gws;
-
-	/** Number of OA resources allocated */
-	uint32_t   oa;
-};
-
 /**
  * Structure describing IB
  *
@@ -779,44 +757,6 @@ int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
 */
 int amdgpu_query_gds_info(amdgpu_device_handle dev,
 			struct amdgpu_gds_resource_info *gds_info);
-
-
-/**
- * Allocate GDS partitions
- *
- * \param   dev	       - \c [in] Device handle. See #amdgpu_device_initialize()
- * \param   gds_size   - \c [in] Size of gds allocation. Must be aligned
- *				accordingly.
- * \param   alloc_info - \c [out] Pointer to structure to receive information
- *				  about allocation
- *
- * \return   0 on success\n
- *          >0 - AMD specific error code\n
- *          <0 - Negative POSIX Error code
- *
- *
-*/
-int amdgpu_gpu_resource_gds_alloc(amdgpu_device_handle dev,
-				   uint32_t gds_size,
-				   struct amdgpu_gds_alloc_info *alloc_info);
-
-
-
-
-/**
- * Release GDS resource. When GDS and associated resources not needed any
- * more UMD should free them
- *
- * \param   dev	   - \c [in] Device handle. See #amdgpu_device_initialize()
- * \param   handle - \c [in] Handle assigned to GDS allocation
- *
- * \return   0 on success\n
- *          >0 - AMD specific error code\n
- *          <0 - Negative POSIX Error code
- *
-*/
-int amdgpu_gpu_resource_gds_free(amdgpu_bo_handle handle);
-
 
 
 /*
