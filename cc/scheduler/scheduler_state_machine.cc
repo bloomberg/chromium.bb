@@ -34,6 +34,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       consecutive_checkerboard_animations_(0),
       max_pending_swaps_(1),
       pending_swaps_(0),
+      swaps_with_current_output_surface_(0),
       needs_redraw_(false),
       needs_animate_(false),
       needs_prepare_tiles_(false),
@@ -217,6 +218,8 @@ void SchedulerStateMachine::AsValueInto(
                     consecutive_checkerboard_animations_);
   state->SetInteger("max_pending_swaps_", max_pending_swaps_);
   state->SetInteger("pending_swaps_", pending_swaps_);
+  state->SetInteger("swaps_with_current_output_surface",
+                    swaps_with_current_output_surface_);
   state->SetBoolean("needs_redraw", needs_redraw_);
   state->SetBoolean("needs_animate_", needs_animate_);
   state->SetBoolean("needs_prepare_tiles", needs_prepare_tiles_);
@@ -1019,6 +1022,8 @@ void SchedulerStateMachine::SetMaxSwapsPending(int max) {
 
 void SchedulerStateMachine::DidSwapBuffers() {
   pending_swaps_++;
+  swaps_with_current_output_surface_++;
+
   DCHECK_LE(pending_swaps_, max_pending_swaps_);
 
   did_perform_swap_in_last_draw_ = true;
@@ -1026,7 +1031,6 @@ void SchedulerStateMachine::DidSwapBuffers() {
 }
 
 void SchedulerStateMachine::DidSwapBuffersComplete() {
-  DCHECK_GT(pending_swaps_, 0);
   pending_swaps_--;
 }
 
@@ -1144,6 +1148,7 @@ void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
   }
   did_create_and_initialize_first_output_surface_ = true;
   pending_swaps_ = 0;
+  swaps_with_current_output_surface_ = 0;
 }
 
 void SchedulerStateMachine::NotifyBeginMainFrameStarted() {

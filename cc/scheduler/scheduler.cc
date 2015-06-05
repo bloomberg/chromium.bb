@@ -226,6 +226,7 @@ void Scheduler::DidSwapBuffers() {
 }
 
 void Scheduler::DidSwapBuffersComplete() {
+  DCHECK_GT(state_machine_.pending_swaps(), 0) << AsValue()->ToString();
   state_machine_.DidSwapBuffersComplete();
   ProcessScheduledActions();
 }
@@ -772,14 +773,16 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
                    estimated_parent_draw_time_.InMillisecondsF());
   state->SetBoolean("last_set_needs_begin_frame_",
                     frame_source_->NeedsBeginFrames());
-  state->SetInteger("begin_retro_frame_args_",
+  state->SetInteger("begin_retro_frame_args",
                     static_cast<int>(begin_retro_frame_args_.size()));
-  state->SetBoolean("begin_retro_frame_task_",
+  state->SetBoolean("begin_retro_frame_task",
                     !begin_retro_frame_task_.IsCancelled());
-  state->SetBoolean("begin_impl_frame_deadline_task_",
+  state->SetBoolean("begin_impl_frame_deadline_task",
                     !begin_impl_frame_deadline_task_.IsCancelled());
-  state->SetBoolean("advance_commit_state_task_",
+  state->SetBoolean("advance_commit_state_task",
                     !advance_commit_state_task_.IsCancelled());
+  state->SetString("inside_action",
+                   SchedulerStateMachine::ActionToString(inside_action_));
   state->BeginDictionary("begin_impl_frame_args");
   begin_impl_frame_tracker_.AsValueInto(Now(), state);
   state->EndDictionary();

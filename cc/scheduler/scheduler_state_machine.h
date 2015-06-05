@@ -179,6 +179,8 @@ class CC_EXPORT SchedulerStateMachine {
   // Notification from the OutputSurface that a swap has been consumed.
   void DidSwapBuffersComplete();
 
+  int pending_swaps() const { return pending_swaps_; }
+
   // Indicates whether to prioritize impl thread latency (i.e., animation
   // smoothness) over new content activation.
   void SetImplLatencyTakesPriority(bool impl_latency_takes_priority);
@@ -320,6 +322,7 @@ class CC_EXPORT SchedulerStateMachine {
   int consecutive_checkerboard_animations_;
   int max_pending_swaps_;
   int pending_swaps_;
+  int swaps_with_current_output_surface_;
   bool needs_redraw_;
   bool needs_animate_;
   bool needs_prepare_tiles_;
