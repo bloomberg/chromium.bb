@@ -211,6 +211,7 @@ GLHelperHolder::CreateContext3D() {
           0,  // offscreen
           url, gpu_channel_host.get(), attrs, lose_context_when_out_of_memory,
           limits, nullptr));
+  context->SetContextType(BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (context->InitializeOnCurrentThread()) {
     context->traceBeginCHROMIUM(
         "gpu_toplevel",
