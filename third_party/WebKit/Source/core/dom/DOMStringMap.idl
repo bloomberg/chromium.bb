@@ -32,12 +32,11 @@
 ] interface DOMStringMap {
     [ImplementedAs=item] getter DOMString (DOMString name);
     [RaisesException] setter void (DOMString name, DOMString value);
-    // FIXME: The deleter return type should be void. crbug.com/462920
-    deleter boolean (DOMString name);
+    deleter void (DOMString name);
 
     // FIXME: The indexed getter, setter and deleter are not in the
     // spec and simply converts the index to a string.
     [NotEnumerable] getter DOMString (unsigned long index);
     [RaisesException] setter void (unsigned long index, DOMString value);
-    deleter boolean (unsigned long index);
+    deleter void (unsigned long index);
 };
