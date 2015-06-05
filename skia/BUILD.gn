@@ -557,21 +557,54 @@ component("skia") {
 }
 
 # Separated out so it can be compiled with different flags for SSE.
-# TODO(GYP): This is wrong, it needs one target per arch http://crbug.com/496512
+if (current_cpu == "x86" || current_cpu == "x64") {
+  source_set("skia_opts_sse3") {
+    sources = gypi_skia_opts.ssse3_sources
+    if (!is_win || is_clang) {
+      cflags = [ "-mssse3" ]
+    }
+    if (is_win) {
+      defines = [ "SK_CPU_SSE_LEVEL=31" ]
+    }
+    visibility = [ ":skia_opts" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":skia_config",
+      ":skia_library_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
+  }
+  source_set("skia_opts_sse4") {
+    sources = gypi_skia_opts.sse41_sources
+    if (!is_win || is_clang) {
+      cflags = [ "-msse4.1" ]
+    }
+    if (is_win) {
+      defines = [ "SK_CPU_SSE_LEVEL=41" ]
+    }
+    visibility = [ ":skia_opts" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [
+      ":skia_config",
+      ":skia_library_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
+  }
+}
 source_set("skia_opts") {
   cflags = []
   defines = []
 
-  if (current_cpu == "x86" || current_cpu == "x64") {
-    sources = gypi_skia_opts.sse2_sources + gypi_skia_opts.ssse3_sources +
-              gypi_skia_opts.sse41_sources
+  deps = [
+    "//base",
+  ]
 
-    if (!is_win || is_clang) {
-      cflags += [ "-msse4.1" ]
-    }
-    if (is_win) {
-      defines += [ "SK_CPU_SSE_LEVEL=41" ]
-    }
+  if (current_cpu == "x86" || current_cpu == "x64") {
+    sources = gypi_skia_opts.sse2_sources
+    deps += [
+      ":skia_opts_sse3",
+      ":skia_opts_sse4",
+    ]
   } else if (current_cpu == "arm") {
     # The assembly uses the frame pointer register (r7 in Thumb/r11 in
     # ARM), the compiler doesn't like that.
@@ -614,10 +647,6 @@ source_set("skia_opts") {
     ":skia_config",
     ":skia_library_config",
     "//build/config/compiler:no_chromium_code",
-  ]
-
-  deps = [
-    "//base",
   ]
 
   visibility = [ ":skia" ]
