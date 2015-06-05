@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/fileapi/mock_file_change_observer.h"
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/mock_special_storage_policy.h"
@@ -156,12 +157,10 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
     storage_policy_ = new MockSpecialStoragePolicy();
 
-    quota_manager_ =
-        new storage::QuotaManager(false /* is_incognito */,
-                                  data_dir_.path(),
-                                  base::MessageLoopProxy::current().get(),
-                                  base::MessageLoopProxy::current().get(),
-                                  storage_policy_.get());
+    quota_manager_ = new storage::QuotaManager(
+        false /* is_incognito */, data_dir_.path(),
+        base::ThreadTaskRunnerHandle::Get().get(),
+        base::ThreadTaskRunnerHandle::Get().get(), storage_policy_.get());
 
     // Every time we create a new sandbox_file_system helper,
     // it creates another context, which creates another path manager,
@@ -231,10 +230,9 @@ class ObfuscatedFileUtilTest : public testing::Test {
 
   scoped_ptr<ObfuscatedFileUtil> CreateObfuscatedFileUtil(
       storage::SpecialStoragePolicy* storage_policy) {
-    return scoped_ptr<ObfuscatedFileUtil>(
-      ObfuscatedFileUtil::CreateForTesting(
-          storage_policy, data_dir_path(), NULL,
-          base::MessageLoopProxy::current().get()));
+    return scoped_ptr<ObfuscatedFileUtil>(ObfuscatedFileUtil::CreateForTesting(
+        storage_policy, data_dir_path(), NULL,
+        base::ThreadTaskRunnerHandle::Get().get()));
   }
 
   ObfuscatedFileUtil* ofu() {

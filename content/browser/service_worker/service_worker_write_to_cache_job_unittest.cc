@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -95,10 +98,9 @@ class SSLCertificateErrorJob : public net::URLRequestTestJob {
                                auto_advance),
         weak_factory_(this) {}
   void Start() override {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SSLCertificateErrorJob::NotifyError,
-                   weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&SSLCertificateErrorJob::NotifyError,
+                              weak_factory_.GetWeakPtr()));
   }
   void NotifyError() {
     net::SSLInfo info;

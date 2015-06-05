@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
 #include <queue>
+#include <string>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
@@ -55,10 +57,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
  public:
   MockMediaStreamDispatcherHost(
       const ResourceContext::SaltCallback salt_callback,
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       MediaStreamManager* manager)
       : MediaStreamDispatcherHost(kProcessId, salt_callback, manager),
-        message_loop_(message_loop),
+        task_runner_(task_runner),
         current_ipc_(NULL) {}
 
   // A list of mock methods.
@@ -155,7 +157,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     // Notify that the event have occurred.
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
-    message_loop_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
+    task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
 
     label_ = label;
     audio_devices_ = audio_device_list;
@@ -169,7 +171,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     if (!quit_closures_.empty()) {
       base::Closure quit_closure = quit_closures_.front();
       quit_closures_.pop();
-      message_loop_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
+      task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
     }
 
     label_= "";
@@ -190,7 +192,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                               const StreamDeviceInfo& device) {
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
-    message_loop_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
+    task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
     label_ = label;
     opened_device_ = device;
   }
@@ -199,11 +201,11 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                            const StreamDeviceInfoArray& devices) {
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
-    message_loop_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
+    task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
     enumerated_devices_ = devices;
   }
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   IPC::Message* current_ipc_;
   std::queue<base::Closure> quit_closures_;
 };
@@ -223,7 +225,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
         thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         origin_("https://test.com") {
     audio_manager_.reset(
-        new media::MockAudioManager(base::MessageLoopProxy::current()));
+        new media::MockAudioManager(base::ThreadTaskRunnerHandle::Get()));
     // Make sure we use fake devices to avoid long delays.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
@@ -237,7 +239,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 #if defined(OS_WIN)
     // Override the Video Capture Thread that MediaStreamManager constructs.
     media_stream_manager_->video_capture_manager()->set_device_task_runner(
-        base::MessageLoopProxy::current());
+        base::ThreadTaskRunnerHandle::Get());
 #endif
 
     MockResourceContext* mock_resource_context =
@@ -246,8 +248,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
     host_ = new MockMediaStreamDispatcherHost(
         mock_resource_context->GetMediaDeviceIDSalt(),
-        base::MessageLoopProxy::current(),
-        media_stream_manager_.get());
+        base::ThreadTaskRunnerHandle::Get(), media_stream_manager_.get());
 
     // Use the fake content client and browser.
     content_client_.reset(new TestContentClient());

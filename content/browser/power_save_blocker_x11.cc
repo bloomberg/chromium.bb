@@ -21,7 +21,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/nix/xdg_util.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/browser_thread.h"

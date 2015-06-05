@@ -9,8 +9,11 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace content {
 class LocationProviderAndroid;
@@ -73,7 +76,7 @@ class AndroidLocationApiAdapter {
   // Guards against the following member which is accessed on Geolocation
   // thread and the JNI main thread looper.
   base::Lock lock_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace content

@@ -5,8 +5,9 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_storage_impl.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -33,17 +34,15 @@ const char kSessionOnlyManifest[] = "http://www.sessiononly.com/cache.manifest";
 
 class MockURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
-  MockURLRequestContextGetter(
-      net::URLRequestContext* context,
-      base::MessageLoopProxy* message_loop_proxy)
-      : context_(context), message_loop_proxy_(message_loop_proxy) {
-  }
+  MockURLRequestContextGetter(net::URLRequestContext* context,
+                              base::SingleThreadTaskRunner* task_runner)
+      : context_(context), task_runner_(task_runner) {}
 
   net::URLRequestContext* GetURLRequestContext() override { return context_; }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override {
-    return message_loop_proxy_;
+    return task_runner_;
   }
 
  protected:
@@ -51,7 +50,7 @@ class MockURLRequestContextGetter : public net::URLRequestContextGetter {
 
  private:
   net::URLRequestContext* context_;
-  scoped_refptr<base::SingleThreadTaskRunner> message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace
@@ -101,7 +100,7 @@ ChromeAppCacheServiceTest::CreateAppCacheServiceImpl(
   scoped_refptr<MockURLRequestContextGetter> mock_request_context_getter =
       new MockURLRequestContextGetter(
           browser_context_.GetResourceContext()->GetRequestContext(),
-          message_loop_.message_loop_proxy().get());
+          message_loop_.task_runner().get());
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,

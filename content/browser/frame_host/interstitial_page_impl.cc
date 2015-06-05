@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -289,10 +291,9 @@ void InterstitialPageImpl::Hide() {
   // Delete this and call Shutdown on the RVH asynchronously, as we may have
   // been called from a RVH delegate method, and we can't delete the RVH out
   // from under itself.
-  base::MessageLoop::current()->PostNonNestableTask(
-      FROM_HERE,
-      base::Bind(&InterstitialPageImpl::Shutdown,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
+      FROM_HERE, base::Bind(&InterstitialPageImpl::Shutdown,
+                            weak_ptr_factory_.GetWeakPtr()));
   render_view_host_ = NULL;
   frame_tree_.root()->ResetForNewProcess();
   controller_->delegate()->DetachInterstitialPage();

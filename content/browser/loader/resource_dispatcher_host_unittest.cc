@@ -8,13 +8,15 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
@@ -442,7 +444,7 @@ class URLRequestBigJob : public net::URLRequestSimpleJob {
   }
 
   base::TaskRunner* GetTaskRunner() const override {
-    return base::MessageLoopProxy::current().get();
+    return base::ThreadTaskRunnerHandle::Get().get();
   }
 
  private:
@@ -922,7 +924,7 @@ class ResourceDispatcherHostTest : public testing::Test,
     scoped_ptr<IPC::Message> ack(
         new ResourceHostMsg_DataReceived_ACK(request_id));
 
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&GenerateIPCMessage, filter_, base::Passed(&ack)));
   }

@@ -5,9 +5,12 @@
 #include "content/browser/web_contents/web_contents_view_aura.h"
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -46,9 +49,8 @@ namespace {
 // for details.
 void GiveItSomeTime() {
   base::RunLoop run_loop;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      run_loop.QuitClosure(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
       base::TimeDelta::FromMillisecondsD(10));
   run_loop.Run();
 }

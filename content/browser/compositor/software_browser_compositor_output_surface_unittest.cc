@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
@@ -91,7 +91,7 @@ void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
 
   compositor_.reset(new ui::Compositor(gfx::kNullAcceleratedWidget,
                                        context_factory,
-                                       base::MessageLoopProxy::current()));
+                                       base::ThreadTaskRunnerHandle::Get()));
 }
 
 void SoftwareBrowserCompositorOutputSurfaceTest::TearDown() {

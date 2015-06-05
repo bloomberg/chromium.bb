@@ -6,8 +6,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
@@ -43,7 +43,7 @@ class DOMStorageContextImplTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     storage_policy_ = new MockSpecialStoragePolicy;
     task_runner_ =
-        new MockDOMStorageTaskRunner(base::MessageLoopProxy::current().get());
+        new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get());
     context_ = new DOMStorageContextImpl(temp_dir_.path(),
                                          base::FilePath(),
                                          storage_policy_.get(),

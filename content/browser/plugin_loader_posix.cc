@@ -5,9 +5,10 @@
 #include "content/browser/plugin_loader_posix.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/utility_process_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_list.h"
@@ -29,8 +30,8 @@ void PluginLoaderPosix::GetPlugins(
   std::vector<WebPluginInfo> cached_plugins;
   if (PluginList::Singleton()->GetPluginsNoRefresh(&cached_plugins)) {
     // Can't assume the caller is reentrant.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(callback, cached_plugins));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, cached_plugins));
     return;
   }
 
@@ -226,7 +227,7 @@ void PluginLoaderPosix::FinishedLoadingPlugins() {
   PluginList::Singleton()->SetPlugins(loaded_plugins_);
 
   for (auto& callback : callbacks_) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, loaded_plugins_));
   }
   callbacks_.clear();

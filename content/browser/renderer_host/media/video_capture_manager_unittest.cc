@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
@@ -88,7 +87,7 @@ class VideoCaptureManagerTest : public testing::Test {
             vcm_->video_capture_device_factory());
     const int32 kNumberOfFakeDevices = 2;
     video_capture_device_factory_->set_number_of_devices(kNumberOfFakeDevices);
-    vcm_->Register(listener_.get(), message_loop_->message_loop_proxy().get());
+    vcm_->Register(listener_.get(), message_loop_->task_runner().get());
     frame_observer_.reset(new MockFrameObserver());
   }
 

@@ -9,9 +9,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
 #include "cc/output/compositor_frame.h"
@@ -594,7 +595,7 @@ GpuProcessTransportFactory::CreateContextCommon(
 }
 
 void GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback() {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&GpuProcessTransportFactory::OnLostMainThreadSharedContext,
                  callback_factory_.GetWeakPtr()));

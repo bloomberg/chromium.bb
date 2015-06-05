@@ -6,7 +6,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/mock_appcache_service.h"

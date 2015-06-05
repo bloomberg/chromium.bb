@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "content/public/test/mock_storage_client.h"
 #include "storage/browser/quota/quota_manager.h"

@@ -8,8 +8,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "net/base/net_errors.h"
@@ -564,12 +564,9 @@ class DatabaseTracker_TestHelper_Test {
       scoped_refptr<MockSpecialStoragePolicy> special_storage_policy =
           new MockSpecialStoragePolicy;
       special_storage_policy->AddSessionOnly(GURL(kOrigin2Url));
-      scoped_refptr<DatabaseTracker> tracker(
-          new DatabaseTracker(temp_dir.path(),
-                              false,
-                              special_storage_policy.get(),
-                              NULL,
-                              base::MessageLoopProxy::current().get()));
+      scoped_refptr<DatabaseTracker> tracker(new DatabaseTracker(
+          temp_dir.path(), false, special_storage_policy.get(), NULL,
+          base::ThreadTaskRunnerHandle::Get().get()));
 
       // Open two new databases.
       tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
@@ -644,12 +641,9 @@ class DatabaseTracker_TestHelper_Test {
       scoped_refptr<MockSpecialStoragePolicy> special_storage_policy =
           new MockSpecialStoragePolicy;
       special_storage_policy->AddSessionOnly(GURL(kOrigin2Url));
-      scoped_refptr<DatabaseTracker> tracker(
-          new DatabaseTracker(temp_dir.path(),
-                              false,
-                              special_storage_policy.get(),
-                              NULL,
-                              base::MessageLoopProxy::current().get()));
+      scoped_refptr<DatabaseTracker> tracker(new DatabaseTracker(
+          temp_dir.path(), false, special_storage_policy.get(), NULL,
+          base::ThreadTaskRunnerHandle::Get().get()));
       tracker->SetForceKeepSessionState();
 
       // Open two new databases.

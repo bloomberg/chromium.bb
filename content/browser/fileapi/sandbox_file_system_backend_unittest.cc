@@ -10,8 +10,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/test/test_file_system_options.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -79,10 +79,8 @@ class SandboxFileSystemBackendTest : public testing::Test {
   void SetUpNewDelegate(const storage::FileSystemOptions& options) {
     delegate_.reset(new SandboxFileSystemBackendDelegate(
         NULL /* quota_manager_proxy */,
-        base::MessageLoopProxy::current().get(),
-        data_dir_.path(),
-        NULL /* special_storage_policy */,
-        options));
+        base::ThreadTaskRunnerHandle::Get().get(), data_dir_.path(),
+        NULL /* special_storage_policy */, options));
   }
 
   void SetUpNewBackend(const storage::FileSystemOptions& options) {
