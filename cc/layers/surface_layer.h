@@ -37,10 +37,6 @@ class CC_EXPORT SurfaceLayer : public Layer {
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
-  void CalculateContentsScale(float ideal_contents_scale,
-                              float* contents_scale_x,
-                              float* contents_scale_y,
-                              gfx::Size* content_bounds) override;
 
  protected:
   SurfaceLayer(const LayerSettings& settings,

@@ -94,15 +94,8 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
 
   layer_impl->SetSurfaceId(surface_id_);
-}
-
-void SurfaceLayer::CalculateContentsScale(float ideal_contents_scale,
-                                          float* contents_scale_x,
-                                          float* contents_scale_y,
-                                          gfx::Size* content_bounds) {
-  *content_bounds = surface_size_;
-  *contents_scale_x = surface_scale_;
-  *contents_scale_y = surface_scale_;
+  layer_impl->SetSurfaceSize(surface_size_);
+  layer_impl->SetSurfaceScale(surface_scale_);
 }
 
 void SurfaceLayer::CreateNewDestroySequence() {

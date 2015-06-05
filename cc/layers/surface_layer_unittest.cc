@@ -116,36 +116,6 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   EXPECT_EQ(2u, required_seq.size());
 }
 
-static void CalcDrawProps(FakeLayerTreeHost* host, float device_scale_factor) {
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      host->root_layer(), gfx::Size(500, 500), &render_surface_layer_list);
-  inputs.device_scale_factor = device_scale_factor;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-}
-
-// Check that setting content scale on the surface works.
-TEST_F(SurfaceLayerTest, ScaleSurface) {
-  SurfaceSequence blank_change;
-  SurfaceId required_id;
-  std::set<SurfaceSequence> required_seq;
-  scoped_refptr<SurfaceLayer> layer(SurfaceLayer::Create(
-      layer_settings_, base::Bind(&SatisfyCallback, &blank_change),
-      base::Bind(&RequireCallback, &required_id, &required_seq)));
-  gfx::Size surface_size(10, 15);
-  layer->SetSurfaceId(SurfaceId(1), 2.f, surface_size);
-  layer->SetBounds(gfx::Size(25, 45));
-  layer_tree_host_->SetRootLayer(layer);
-
-  CalcDrawProps(layer_tree_host_.get(), 5.f);
-  EXPECT_EQ(2.f, layer->contents_scale_x());
-  EXPECT_EQ(2.f, layer->contents_scale_y());
-  EXPECT_EQ(surface_size.ToString(), layer->content_bounds().ToString());
-
-  layer_tree_host_->SetRootLayer(nullptr);
-  layer_tree_host_.reset();
-}
-
 // Check that SurfaceSequence is sent through swap promise.
 class SurfaceLayerSwapPromise : public LayerTreeTest {
  public:

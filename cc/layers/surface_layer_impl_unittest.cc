@@ -23,6 +23,8 @@ TEST(SurfaceLayerImplTest, Occlusion) {
   surface_layer_impl->SetDrawsContent(true);
   SurfaceId surface_id(9);
   surface_layer_impl->SetSurfaceId(surface_id);
+  surface_layer_impl->SetSurfaceScale(1.f);
+  surface_layer_impl->SetSurfaceSize(layer_size);
 
   impl.CalcDrawProps(viewport_size);
 

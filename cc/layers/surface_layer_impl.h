@@ -20,6 +20,8 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   ~SurfaceLayerImpl() override;
 
   void SetSurfaceId(SurfaceId surface_id);
+  void SetSurfaceScale(float scale);
+  void SetSurfaceSize(const gfx::Size& size);
 
   // LayerImpl overrides.
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -36,6 +38,8 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   const char* LayerTypeAsString() const override;
 
   SurfaceId surface_id_;
+  gfx::Size surface_size_;
+  float surface_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayerImpl);
 };
