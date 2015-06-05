@@ -10,6 +10,7 @@ from chromite.cli import command
 from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib
 from chromite.lib import image_lib
 
 
@@ -87,16 +88,24 @@ class ImageCommand(command.CliCommand):
     elif self.options.board:
       board = self.options.board
 
-    image_lib.BuildImage(
-        board,
-        adjust_part=self.options.adjust_part,
-        app_id=app_id,
-        boot_args=self.options.boot_args,
-        enable_bootcache=self.options.enable_bootcache,
-        enable_rootfs_verification=self.options.enable_rootfs_verification,
-        output_root=self.options.output_root,
-        disk_layout=self.options.disk_layout,
-        enable_serial=self.options.enable_serial,
-        kernel_log_level=self.options.kernel_log_level,
-        packages=packages,
-        image_types=self.options.image_types)
+    try:
+      image_lib.BuildImage(
+          board,
+          adjust_part=self.options.adjust_part,
+          app_id=app_id,
+          boot_args=self.options.boot_args,
+          enable_bootcache=self.options.enable_bootcache,
+          enable_rootfs_verification=self.options.enable_rootfs_verification,
+          output_root=self.options.output_root,
+          disk_layout=self.options.disk_layout,
+          enable_serial=self.options.enable_serial,
+          kernel_log_level=self.options.kernel_log_level,
+          packages=packages,
+          image_types=self.options.image_types)
+    except image_lib.AppIdError:
+      cros_build_lib.Die('Invalid field \'%s\' in blueprint %s: %s.  It should '
+                         'be a UUID in the canonical {8-4-4-4-12} format, e.g. '
+                         '{01234567-89AB-CDEF-0123-456789ABCDEF}.' %
+                         (blueprint_lib.APP_ID_FIELD,
+                          self.options.blueprint,
+                          app_id))

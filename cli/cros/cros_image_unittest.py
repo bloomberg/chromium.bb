@@ -32,7 +32,8 @@ class MockImageCommand(command_unittest.MockCommand):
     return super(MockImageCommand, self).Run(inst)
 
 
-class ImageCommandTest(cros_test_lib.WorkspaceTestCase):
+class ImageCommandTest(cros_test_lib.WorkspaceTestCase,
+                       cros_test_lib.OutputTestCase):
   """Test class for our ImageCommand class."""
 
   def SetupCommandMock(self, cmd_args):
@@ -102,8 +103,7 @@ class ImageCommandTest(cros_test_lib.WorkspaceTestCase):
 
     args = ['--blueprint=//foo.json']
     self.SetupCommandMock(args)
-    with self.assertRaises(image_lib.AppIdError):
-      self.cmd_mock.inst.Run()
+    self.AssertFuncSystemExitNonZero(self.cmd_mock.inst.Run)
 
   def testOutputRootInWorkspace(self):
     """Tests running the image command with an output root in the workspace."""
