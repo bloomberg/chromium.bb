@@ -302,6 +302,9 @@ ChromePermissionMessageRule::GetAllRules() {
            IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_PRODUCT),
        {APIPermission::kUsbDeviceUnknownProduct},
        {}},
+      {IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_VENDOR,
+       {APIPermission::kUsbDeviceUnknownVendor},
+       {}},
       {new SimpleListFormatter(IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST),
        {APIPermission::kUsbDeviceList},
        {}},
@@ -535,17 +538,6 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kInterceptAllKeys},
        {}},
 
-      // Settings override permission messages.
-      {IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE,
-       {APIPermission::kHomepage},
-       {}},
-      {IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE,
-       {APIPermission::kSearchProvider},
-       {}},
-      {IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE,
-       {APIPermission::kStartupPages},
-       {}},
-
       {IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE,
        {APIPermission::kAudioCapture, APIPermission::kVideoCapture},
        {}},
@@ -595,19 +587,17 @@ ChromePermissionMessageRule::GetAllRules() {
 
       // API permission rules:
       // SettingsOverrideAPIPermission:
-      {IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE,
+      {new SingleParameterFormatter(
+           IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE),
        {APIPermission::kHomepage},
        {}},
-      {IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE,
-       {APIPermission::kStartupPages},
-       {}},
-      {IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE,
+      {new SingleParameterFormatter(
+           IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE),
        {APIPermission::kSearchProvider},
        {}},
-
-      // USBDevicePermission:
-      {IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_VENDOR,
-       {APIPermission::kUsbDeviceUnknownVendor},
+      {new SingleParameterFormatter(
+           IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE),
+       {APIPermission::kStartupPages},
        {}},
 
       // Other rules:
