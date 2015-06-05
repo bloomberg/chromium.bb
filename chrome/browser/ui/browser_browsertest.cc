@@ -1415,7 +1415,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 
   EXPECT_FALSE(
       dev_tools_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
-  EXPECT_FALSE(
+
+  // App windows can show location bars, for example when they navigate away
+  // from their starting origin.
+  EXPECT_TRUE(
       app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/extensions/bookmark_app_browser_controller.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +18,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "net/base/net_util.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -25,9 +26,11 @@ namespace extensions {
 namespace {
 
 bool IsSameOriginOrMoreSecure(const GURL& app_url, const GURL& page_url) {
+  const std::string www("www.");
   return (app_url.scheme() == page_url.scheme() ||
           page_url.scheme() == url::kHttpsScheme) &&
-         app_url.host() == page_url.host() &&
+         (app_url.host() == page_url.host() ||
+          www + app_url.host() == page_url.host()) &&
          app_url.port() == page_url.port();
 }
 
@@ -39,32 +42,37 @@ bool IsWebAppFrameEnabled() {
 }  // namespace
 
 // static
-bool BookmarkAppBrowserController::IsForBookmarkApp(Browser* browser) {
+bool HostedAppBrowserController::IsForHostedApp(Browser* browser) {
   const std::string extension_id =
       web_app::GetExtensionIdFromApplicationName(browser->app_name());
   const Extension* extension =
       ExtensionRegistry::Get(browser->profile())->GetExtensionById(
           extension_id, ExtensionRegistry::EVERYTHING);
-  return extension && extension->from_bookmark();
+  return extension && extension->is_hosted_app();
 }
 
-BookmarkAppBrowserController::BookmarkAppBrowserController(Browser* browser)
+HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
     : browser_(browser),
       extension_id_(
-          web_app::GetExtensionIdFromApplicationName(browser->app_name())),
-      should_use_web_app_frame_(browser->host_desktop_type() ==
-                                    chrome::HOST_DESKTOP_TYPE_ASH &&
-                                IsWebAppFrameEnabled()) {
+          web_app::GetExtensionIdFromApplicationName(browser->app_name())) {
+  const Extension* extension =
+      ExtensionRegistry::Get(browser->profile())->GetExtensionById(
+          extension_id_, ExtensionRegistry::EVERYTHING);
+  DCHECK(extension);
+  should_use_web_app_frame_ =
+      extension->from_bookmark() &&
+      browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH &&
+      IsWebAppFrameEnabled();
 }
 
-BookmarkAppBrowserController::~BookmarkAppBrowserController() {
+HostedAppBrowserController::~HostedAppBrowserController() {
 }
 
-bool BookmarkAppBrowserController::SupportsLocationBar() {
+bool HostedAppBrowserController::SupportsLocationBar() const {
   return !should_use_web_app_frame();
 }
 
-bool BookmarkAppBrowserController::ShouldShowLocationBar() {
+bool HostedAppBrowserController::ShouldShowLocationBar() const {
   const Extension* extension =
       ExtensionRegistry::Get(browser_->profile())->GetExtensionById(
           extension_id_, ExtensionRegistry::EVERYTHING);
@@ -77,7 +85,7 @@ bool BookmarkAppBrowserController::ShouldShowLocationBar() {
   if (!extension || !web_contents)
     return false;
 
-  if (!extension->from_bookmark())
+  if (!extension->is_hosted_app())
     return false;
 
   // Don't show a location bar until a navigation has occurred.
@@ -96,7 +104,8 @@ bool BookmarkAppBrowserController::ShouldShowLocationBar() {
                                     web_contents->GetLastCommittedURL()));
 }
 
-void BookmarkAppBrowserController::UpdateLocationBarVisibility(bool animate) {
+void HostedAppBrowserController::UpdateLocationBarVisibility(
+    bool animate) const {
   if (!SupportsLocationBar())
     return;
 

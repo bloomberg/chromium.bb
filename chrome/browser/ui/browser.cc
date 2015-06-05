@@ -107,7 +107,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
-#include "chrome/browser/ui/extensions/bookmark_app_browser_controller.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/fast_unload_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -418,9 +418,9 @@ Browser::Browser(const CreateParams& params)
   if (chrome::IsInstantExtendedAPIEnabled() && is_type_tabbed())
     instant_controller_.reset(new BrowserInstantController(this));
 
-  if (extensions::BookmarkAppBrowserController::IsForBookmarkApp(this)) {
-    bookmark_app_controller_.reset(
-        new extensions::BookmarkAppBrowserController(this));
+  if (extensions::HostedAppBrowserController::IsForHostedApp(this)) {
+    hosted_app_controller_.reset(
+        new extensions::HostedAppBrowserController(this));
   }
 
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_INIT);
@@ -429,8 +429,8 @@ Browser::Browser(const CreateParams& params)
 
   window_ = params.window ? params.window : CreateBrowserWindow(this);
 
-  if (bookmark_app_controller_)
-    bookmark_app_controller_->UpdateLocationBarVisibility(false);
+  if (hosted_app_controller_)
+    hosted_app_controller_->UpdateLocationBarVisibility(false);
 
   // Create the extension window controller before sending notifications.
   extension_window_controller_.reset(
@@ -1438,8 +1438,8 @@ void Browser::NavigationStateChanged(WebContents* source,
                        content::INVALIDATE_TYPE_LOAD))
     command_controller_->TabStateChanged();
 
-  if (bookmark_app_controller_)
-    bookmark_app_controller_->UpdateLocationBarVisibility(true);
+  if (hosted_app_controller_)
+    hosted_app_controller_->UpdateLocationBarVisibility(true);
 }
 
 void Browser::VisibleSSLStateChanged(const WebContents* source) {
@@ -2429,8 +2429,8 @@ bool Browser::SupportsLocationBar() const {
   if (!is_app())
     return !is_trusted_source();
 
-  if (bookmark_app_controller_)
-    return bookmark_app_controller_->SupportsLocationBar();
+  if (hosted_app_controller_)
+    return hosted_app_controller_->SupportsLocationBar();
 
   return false;
 }
@@ -2441,8 +2441,8 @@ bool Browser::ShouldUseWebAppFrame() const {
   if (!is_app())
     return false;
 
-  if (bookmark_app_controller_)
-    return bookmark_app_controller_->should_use_web_app_frame();
+  if (hosted_app_controller_)
+    return hosted_app_controller_->should_use_web_app_frame();
 
   return false;
 }
