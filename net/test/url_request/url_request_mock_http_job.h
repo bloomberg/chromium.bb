@@ -48,6 +48,11 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
 
   // Given the path to a file relative to the path passed to AddUrlHandler(),
   // construct a mock URL.
+  static GURL GetMockUrl(const std::string& path);
+  static GURL GetMockHttpsUrl(const std::string& path);
+
+  // Like above, but takes a FilePath. These methods are deprecated. Prefer the
+  // std::string versions. See http://crbug.com/496936.
   static GURL GetMockUrl(const base::FilePath& path);
   static GURL GetMockHttpsUrl(const base::FilePath& path);
 

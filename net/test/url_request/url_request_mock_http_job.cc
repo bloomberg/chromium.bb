@@ -91,13 +91,8 @@ std::string DoFileIO(const base::FilePath& file_path) {
 
 // For a given file |path| and |scheme|, return the URL served by the
 // URlRequestMockHTTPJob.
-GURL GetMockUrlForScheme(const base::FilePath& path,
-                         const std::string& scheme) {
-  std::string url = scheme + "://" + kMockHostname + "/";
-  std::string path_str = path.MaybeAsASCII();
-  DCHECK(!path_str.empty());  // We only expect ASCII paths in tests.
-  url.append(path_str);
-  return GURL(url);
+GURL GetMockUrlForScheme(const std::string& path, const std::string& scheme) {
+  return GURL(scheme + "://" + kMockHostname + "/" + path);
 }
 
 }  // namespace
@@ -115,13 +110,27 @@ void URLRequestMockHTTPJob::AddUrlHandlers(
 }
 
 // static
-GURL URLRequestMockHTTPJob::GetMockUrl(const base::FilePath& path) {
+GURL URLRequestMockHTTPJob::GetMockUrl(const std::string& path) {
   return GetMockUrlForScheme(path, "http");
 }
 
 // static
-GURL URLRequestMockHTTPJob::GetMockHttpsUrl(const base::FilePath& path) {
+GURL URLRequestMockHTTPJob::GetMockHttpsUrl(const std::string& path) {
   return GetMockUrlForScheme(path, "https");
+}
+
+// static
+GURL URLRequestMockHTTPJob::GetMockUrl(const base::FilePath& path) {
+  std::string path_str = path.MaybeAsASCII();
+  DCHECK(!path_str.empty());  // We only expect ASCII paths in tests.
+  return GetMockUrlForScheme(path_str, "http");
+}
+
+// static
+GURL URLRequestMockHTTPJob::GetMockHttpsUrl(const base::FilePath& path) {
+  std::string path_str = path.MaybeAsASCII();
+  DCHECK(!path_str.empty());  // We only expect ASCII paths in tests.
+  return GetMockUrlForScheme(path_str, "https");
 }
 
 // static
