@@ -1093,30 +1093,80 @@ void ExecUploadProcessOrTerminate(const BreakpadInfo& info,
   static const char msg[] = "Cannot upload crash dump: cannot exec "
                             "/sbin/crash_reporter\n";
 #else
+  // Compress |dumpfile| with gzip.
+  const pid_t gzip_child = sys_fork();
+  if (gzip_child < 0) {
+    static const char msg[] = "sys_fork() for gzip process failed.\n";
+    WriteLog(msg, sizeof(msg) - 1);
+    sys__exit(1);
+  }
+  if (!gzip_child) {
+    // gzip process.
+    const char* args[] = {
+      "/bin/gzip",
+      "-f",  // Do not prompt to verify before overwriting.
+      dumpfile,
+      nullptr,
+    };
+    execve(args[0], const_cast<char**>(args), environ);
+    static const char msg[] = "Cannot exec gzip.\n";
+    WriteLog(msg, sizeof(msg) - 1);
+    sys__exit(1);
+  }
+  // Wait for gzip process.
+  int status = 0;
+  if (sys_waitpid(gzip_child, &status, 0) != gzip_child ||
+      !WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+    static const char msg[] = "sys_waitpid() for gzip process failed.\n";
+    WriteLog(msg, sizeof(msg) - 1);
+    sys_kill(gzip_child, SIGKILL);
+    sys__exit(1);
+  }
+
+  static const char kGzipExtension[] = ".gz";
+  const size_t gzip_file_size = my_strlen(dumpfile) + sizeof(kGzipExtension);
+  char* const gzip_file = reinterpret_cast<char*>(allocator->Alloc(
+      gzip_file_size));
+  my_strlcpy(gzip_file, dumpfile, gzip_file_size);
+  my_strlcat(gzip_file, kGzipExtension, gzip_file_size);
+
+  // Rename |gzip_file| to |dumpfile| (the original file was deleted by gzip).
+  if (rename(gzip_file, dumpfile)) {
+    static const char msg[] = "Failed to rename gzipped file.\n";
+    WriteLog(msg, sizeof(msg) - 1);
+    sys__exit(1);
+  }
+
   // The --header argument to wget looks like:
+  //   --header=Content-Encoding: gzip
   //   --header=Content-Type: multipart/form-data; boundary=XYZ
   // where the boundary has two fewer leading '-' chars
+  static const char header_content_encoding[] =
+      "--header=Content-Encoding: gzip";
   static const char header_msg[] =
       "--header=Content-Type: multipart/form-data; boundary=";
-  char* const header = reinterpret_cast<char*>(allocator->Alloc(
-      sizeof(header_msg) - 1 + strlen(mime_boundary) - 2 + 1));
-  memcpy(header, header_msg, sizeof(header_msg) - 1);
-  memcpy(header + sizeof(header_msg) - 1, mime_boundary + 2,
-         strlen(mime_boundary) - 2);
-  // We grab the NUL byte from the end of |mime_boundary|.
+  const size_t header_content_type_size =
+      sizeof(header_msg) - 1 + my_strlen(mime_boundary) - 2 + 1;
+  char* const header_content_type = reinterpret_cast<char*>(allocator->Alloc(
+      header_content_type_size));
+  my_strlcpy(header_content_type, header_msg, header_content_type_size);
+  my_strlcat(header_content_type, mime_boundary + 2, header_content_type_size);
 
   // The --post-file argument to wget looks like:
   //   --post-file=/tmp/...
   static const char post_file_msg[] = "--post-file=";
+  const size_t post_file_size =
+      sizeof(post_file_msg) - 1 + my_strlen(dumpfile) + 1;
   char* const post_file = reinterpret_cast<char*>(allocator->Alloc(
-       sizeof(post_file_msg) - 1 + strlen(dumpfile) + 1));
-  memcpy(post_file, post_file_msg, sizeof(post_file_msg) - 1);
-  memcpy(post_file + sizeof(post_file_msg) - 1, dumpfile, strlen(dumpfile));
+      post_file_size));
+  my_strlcpy(post_file, post_file_msg, post_file_size);
+  my_strlcat(post_file, dumpfile, post_file_size);
 
   static const char kWgetBinary[] = "/usr/bin/wget";
   const char* args[] = {
     kWgetBinary,
-    header,
+    header_content_encoding,
+    header_content_type,
     post_file,
     kUploadURL,
     "--timeout=10",  // Set a timeout so we don't hang forever.
@@ -1341,7 +1391,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
     }
   } else {
     if (info.upload) {
-      memcpy(temp_file, temp_file_template, sizeof(temp_file_template));
+      my_memcpy(temp_file, temp_file_template, sizeof(temp_file_template));
 
       for (unsigned i = 0; i < 10; ++i) {
         uint64_t t;
