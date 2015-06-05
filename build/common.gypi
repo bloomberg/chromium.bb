@@ -247,7 +247,7 @@
             'enable_app_list%': 0,
           }],
 
-          ['use_aura==1 or (OS!="win" and OS!="mac" and OS!="ios" and OS!="android")', {
+          ['use_aura==1 and OS!="android"', {
             'use_default_render_theme%': 1,
           }, {
             'use_default_render_theme%': 0,

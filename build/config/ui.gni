@@ -56,7 +56,7 @@ if (is_linux && use_glib) {
 # with the Aura window manager.
 ui_compositor_image_transport = use_aura && is_linux
 
-use_default_render_theme = use_aura || is_linux
+use_default_render_theme = use_aura && !is_android
 
 # Indicates if the UI toolkit depends on X11.
 use_x11 = is_linux && !use_ozone
