@@ -100,10 +100,6 @@ HostResolver::RequestInfo::RequestInfo(const HostPortPair& host_port_pair)
 HostResolver::~HostResolver() {
 }
 
-AddressFamily HostResolver::GetDefaultAddressFamily() const {
-  return ADDRESS_FAMILY_UNSPECIFIED;
-}
-
 void HostResolver::SetDnsClientEnabled(bool enabled) {
 }
 

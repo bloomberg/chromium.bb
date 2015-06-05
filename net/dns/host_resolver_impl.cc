@@ -1844,10 +1844,8 @@ HostResolverImpl::HostResolverImpl(const Options& options, NetLog* net_log)
     : max_queued_jobs_(0),
       proc_params_(NULL, options.max_retry_attempts),
       net_log_(net_log),
-      default_address_family_(ADDRESS_FAMILY_UNSPECIFIED),
       received_dns_config_(false),
       num_dns_failures_(0),
-      probe_ipv6_support_(true),
       use_local_ipv6_(false),
       last_ipv6_probe_result_(true),
       resolved_known_ipv6_hostname_(false),
@@ -2032,16 +2030,6 @@ void HostResolverImpl::CancelRequest(RequestHandle req_handle) {
   job->CancelRequest(req);
 }
 
-void HostResolverImpl::SetDefaultAddressFamily(AddressFamily address_family) {
-  DCHECK(CalledOnValidThread());
-  default_address_family_ = address_family;
-  probe_ipv6_support_ = false;
-}
-
-AddressFamily HostResolverImpl::GetDefaultAddressFamily() const {
-  return default_address_family_;
-}
-
 void HostResolverImpl::SetDnsClientEnabled(bool enabled) {
   DCHECK(CalledOnValidThread());
 #if defined(ENABLE_BUILT_IN_DNS)
@@ -2088,14 +2076,8 @@ bool HostResolverImpl::ResolveAsIP(const Key& key,
 
   *net_error = OK;
   AddressFamily family = GetAddressFamily(*ip_number);
-  if (family == ADDRESS_FAMILY_IPV6 &&
-      !probe_ipv6_support_ &&
-      default_address_family_ == ADDRESS_FAMILY_IPV4) {
-    // Don't return IPv6 addresses if default address family is set to IPv4,
-    // and probes are disabled.
-    *net_error = ERR_NAME_NOT_RESOLVED;
-  } else if (key.address_family != ADDRESS_FAMILY_UNSPECIFIED &&
-             key.address_family != family) {
+  if (key.address_family != ADDRESS_FAMILY_UNSPECIFIED &&
+      key.address_family != family) {
     // Don't return IPv6 addresses for IPv4 queries, and vice versa.
     *net_error = ERR_NAME_NOT_RESOLVED;
   } else {
@@ -2208,22 +2190,18 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
   AddressFamily effective_address_family = info.address_family();
 
   if (info.address_family() == ADDRESS_FAMILY_UNSPECIFIED) {
-    if (probe_ipv6_support_ && !use_local_ipv6_ &&
+    if (!use_local_ipv6_ &&
         // When resolving IPv4 literals, there's no need to probe for IPv6.
         // When resolving IPv6 literals, there's no benefit to artificially
         // limiting our resolution based on a probe.  Prior logic ensures
         // that this query is UNSPECIFIED (see info.address_family()
-        // check above) and that |default_address_family_| is UNSPECIFIED
-        // (|prove_ipv6_support_| is false if |default_address_family_| is
-        // set) so the code requesting the resolution should be amenable to
-        // receiving a IPv6 resolution.
+        // check above) so the code requesting the resolution should be amenable
+        // to receiving a IPv6 resolution.
         ip_number == nullptr) {
       if (!IsIPv6Reachable(net_log)) {
         effective_address_family = ADDRESS_FAMILY_IPV4;
         effective_flags |= HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
       }
-    } else {
-      effective_address_family = default_address_family_;
     }
   }
 
