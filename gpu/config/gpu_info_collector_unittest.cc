@@ -151,5 +151,76 @@ TEST_F(GPUInfoCollectorTest, CollectGraphicsInfoGL) {
   EXPECT_EQ(test_values_.gl_extensions, gpu_info.gl_extensions);
 }
 
+class CollectDriverInfoGLTest : public testing::Test {
+ public:
+  CollectDriverInfoGLTest() {}
+  ~CollectDriverInfoGLTest() override {}
+
+  void SetUp() override {}
+  void TearDown() override {}
+};
+
+TEST_F(CollectDriverInfoGLTest, CollectDriverInfoGL) {
+  const struct {
+    const char* gl_renderer;
+    const char* gl_vendor;
+    const char* gl_version;
+    const char* expected_driver_version;
+  } kTestStrings[] = {
+#if defined(OS_ANDROID)
+    {"Adreno (TM) 320",
+     "Qualcomm",
+     "OpenGL ES 2.0 V@14.0 AU@04.02 (CL@3206)",
+     "14.0"},
+    {"Adreno (TM) 420", "Qualcomm", "OpenGL ES 3.0 V@84.0 AU@ (CL@)", "84.0"},
+    {"PowerVR Rogue G6430",
+     "Imagination Technologies",
+     "OpenGL ES 3.1 build 1.4@3283119",
+     "1.4"},
+    {"Mali-T604", "ARM", "OpenGL ES 3.1", "0"},
+    {"NVIDIA Tegra",
+     "NVIDIA Corporation",
+     "OpenGL ES 3.1 NVIDIA 343.00",
+     "343.00"},
+    {"NVIDIA Tegra 3",
+     "NVIDIA Corporation",
+     "OpenGL ES 2.0 14.01003",
+     "14.01003"},
+    {"random GPU",
+     "random vendor",
+     "OpenGL ES 2.0 with_long_version_string=1.2.3.4",
+     "1.2"},
+    {"random GPU",
+     "random vendor",
+     "OpenGL ES 2.0 with_short_version_string=1",
+     "0"},
+    {"random GPU",
+     "random vendor",
+     "OpenGL ES 2.0 with_no_version_string",
+     "0"},
+#elif defined(OS_MACOSX)
+    {"Intel Iris Pro OpenGL Engine",
+     "Intel Inc.",
+     "2.1 INTEL-10.6.20",
+     "10.6.20"},
+#elif defined(OS_LINUX)
+    {"Quadro K2000/PCIe/SSE2",
+     "NVIDIA Corporation",
+     "4.4.0 NVIDIA 331.79",
+     "331.79"},
+#endif
+    {NULL, NULL, NULL, NULL}
+  };
+
+  GPUInfo gpu_info;
+  for (int i = 0; kTestStrings[i].gl_renderer != NULL; ++i) {
+    gpu_info.gl_renderer = kTestStrings[i].gl_renderer;
+    gpu_info.gl_vendor = kTestStrings[i].gl_vendor;
+    gpu_info.gl_version = kTestStrings[i].gl_version;
+    EXPECT_EQ(CollectDriverInfoGL(&gpu_info), kCollectInfoSuccess);
+    EXPECT_EQ(gpu_info.driver_version, kTestStrings[i].expected_driver_version);
+  }
+}
+
 }  // namespace gpu
 

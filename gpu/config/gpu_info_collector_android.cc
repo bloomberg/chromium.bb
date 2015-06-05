@@ -18,10 +18,13 @@
 namespace {
 
 std::string GetDriverVersionFromString(const std::string& version_string) {
-  // Extract driver version from the second number in a string like:
-  // "OpenGL ES 2.0 V@6.0 AU@ (CL@2946718)"
-
-  // Exclude first "2.0".
+  // We expect that android GL_VERSION strings will be of a form
+  // similar to: "OpenGL ES 2.0 V@6.0 AU@ (CL@2946718)" where the
+  // first match to [0-9][0-9.]* is the OpenGL ES version number, and
+  // the second match to [0-9][0-9.]* is the driver version (in this
+  // case, 6.0).
+  // It is currently assumed that the driver version has at least one
+  // period in it, and only the first two components are significant.
   size_t begin = version_string.find_first_of("0123456789");
   if (begin == std::string::npos)
     return "0";
