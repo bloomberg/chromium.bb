@@ -497,11 +497,6 @@ TEST(RectTest, ToEnclosedRect) {
       std::numeric_limits<int>::max() },
     { 20000.5f, 20000.5f, 0.5f, 0.5f,
       20001, 20001, 0, 0 },
-    { std::numeric_limits<float>::quiet_NaN(),
-      std::numeric_limits<float>::quiet_NaN(),
-      std::numeric_limits<float>::quiet_NaN(),
-      std::numeric_limits<float>::quiet_NaN(),
-      0, 0, 0, 0 }
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
@@ -549,11 +544,6 @@ TEST(RectTest, ToEnclosingRect) {
       std::numeric_limits<int>::max() },
     { 20000.5f, 20000.5f, 0.5f, 0.5f,
       20000, 20000, 1, 1 },
-    { std::numeric_limits<float>::quiet_NaN(),
-      std::numeric_limits<float>::quiet_NaN(),
-      std::numeric_limits<float>::quiet_NaN(),
-      std::numeric_limits<float>::quiet_NaN(),
-      0, 0, 0, 0 }
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {

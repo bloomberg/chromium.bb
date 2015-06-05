@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/bookmark_app_bubble_view.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,7 +16,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -47,7 +47,7 @@ class WebAppInfoImageSource : public gfx::ImageSkiaSource {
 
  private:
   gfx::ImageSkiaRep GetImageForScale(float scale) override {
-    int size = gfx::ClampToInt(dip_size_ * scale);
+    int size = base::saturated_cast<int>(dip_size_ * scale);
     for (const auto& icon_info : info_.icons) {
       if (icon_info.width == size) {
         return gfx::ImageSkiaRep(icon_info.data, scale);

@@ -10,32 +10,7 @@
 
 namespace gfx {
 
-TEST(SafeIntegerConversions, ClampToInt) {
-  EXPECT_EQ(0, ClampToInt(std::numeric_limits<float>::quiet_NaN()));
-
-  float max = std::numeric_limits<int>::max();
-  float min = std::numeric_limits<int>::min();
-  float infinity = std::numeric_limits<float>::infinity();
-
-  int int_max = std::numeric_limits<int>::max();
-  int int_min = std::numeric_limits<int>::min();
-
-  EXPECT_EQ(int_max, ClampToInt(infinity));
-  EXPECT_EQ(int_max, ClampToInt(max));
-  EXPECT_EQ(int_max, ClampToInt(max + 100));
-
-  EXPECT_EQ(-100, ClampToInt(-100.5f));
-  EXPECT_EQ(0, ClampToInt(0));
-  EXPECT_EQ(100, ClampToInt(100.5f));
-
-  EXPECT_EQ(int_min, ClampToInt(-infinity));
-  EXPECT_EQ(int_min, ClampToInt(min));
-  EXPECT_EQ(int_min, ClampToInt(min - 100));
-}
-
 TEST(SafeIntegerConversions, ToFlooredInt) {
-  EXPECT_EQ(0, ToFlooredInt(std::numeric_limits<float>::quiet_NaN()));
-
   float max = std::numeric_limits<int>::max();
   float min = std::numeric_limits<int>::min();
   float infinity = std::numeric_limits<float>::infinity();
@@ -57,8 +32,6 @@ TEST(SafeIntegerConversions, ToFlooredInt) {
 }
 
 TEST(SafeIntegerConversions, ToCeiledInt) {
-  EXPECT_EQ(0, ToCeiledInt(std::numeric_limits<float>::quiet_NaN()));
-
   float max = std::numeric_limits<int>::max();
   float min = std::numeric_limits<int>::min();
   float infinity = std::numeric_limits<float>::infinity();
@@ -80,8 +53,6 @@ TEST(SafeIntegerConversions, ToCeiledInt) {
 }
 
 TEST(SafeIntegerConversions, ToRoundedInt) {
-  EXPECT_EQ(0, ToRoundedInt(std::numeric_limits<float>::quiet_NaN()));
-
   float max = std::numeric_limits<int>::max();
   float min = std::numeric_limits<int>::min();
   float infinity = std::numeric_limits<float>::infinity();

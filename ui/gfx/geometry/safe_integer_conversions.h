@@ -8,34 +8,25 @@
 #include <cmath>
 #include <limits>
 
+#include "base/numerics/safe_conversions.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 
-inline int ClampToInt(float value) {
-  if (value != value)
-    return 0; // no int NaN.
-  if (value >= std::numeric_limits<int>::max())
-    return std::numeric_limits<int>::max();
-  if (value <= std::numeric_limits<int>::min())
-    return std::numeric_limits<int>::min();
-  return static_cast<int>(value);
-}
-
 inline int ToFlooredInt(float value) {
-  return ClampToInt(std::floor(value));
+  return base::saturated_cast<int>(std::floor(value));
 }
 
 inline int ToCeiledInt(float value) {
-  return ClampToInt(std::ceil(value));
+  return base::saturated_cast<int>(std::ceil(value));
 }
 
 inline int ToFlooredInt(double value) {
-  return ClampToInt(std::floor(value));
+  return base::saturated_cast<int>(std::floor(value));
 }
 
 inline int ToCeiledInt(double value) {
-  return ClampToInt(std::ceil(value));
+  return base::saturated_cast<int>(std::ceil(value));
 }
 
 inline int ToRoundedInt(float value) {
@@ -44,7 +35,7 @@ inline int ToRoundedInt(float value) {
     rounded = std::floor(value + 0.5f);
   else
     rounded = std::ceil(value - 0.5f);
-  return ClampToInt(rounded);
+  return base::saturated_cast<int>(rounded);
 }
 
 inline int ToRoundedInt(double value) {
@@ -53,7 +44,7 @@ inline int ToRoundedInt(double value) {
     rounded = std::floor(value + 0.5);
   else
     rounded = std::ceil(value - 0.5);
-  return ClampToInt(rounded);
+  return base::saturated_cast<int>(rounded);
 }
 
 inline bool IsExpressibleAsInt(float value) {

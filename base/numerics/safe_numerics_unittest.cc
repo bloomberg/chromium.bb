@@ -562,6 +562,8 @@ TEST(SafeNumerics, CastTests) {
   double double_small = 1.0;
   double double_large = numeric_limits<double>::max();
   double double_infinity = numeric_limits<float>::infinity();
+  double double_large_int = numeric_limits<int>::max();
+  double double_small_int = numeric_limits<int>::min();
 
   // Just test that the casts compile, since the other tests cover logic.
   EXPECT_EQ(0, checked_cast<int>(static_cast<size_t>(0)));
@@ -594,5 +596,7 @@ TEST(SafeNumerics, CastTests) {
   EXPECT_EQ(saturated_cast<int>(double_large), numeric_limits<int>::max());
   EXPECT_EQ(saturated_cast<float>(double_large), double_infinity);
   EXPECT_EQ(saturated_cast<float>(-double_large), -double_infinity);
+  EXPECT_EQ(numeric_limits<int>::min(), saturated_cast<int>(double_small_int));
+  EXPECT_EQ(numeric_limits<int>::max(), saturated_cast<int>(double_large_int));
 }
 

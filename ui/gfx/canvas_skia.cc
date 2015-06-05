@@ -7,10 +7,10 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/shadow_value.h"
@@ -141,7 +141,7 @@ void Canvas::SizeStringFloat(const base::string16& text,
     std::vector<base::string16> strings;
     ElideRectangleText(text, font_list, *width, INT_MAX, wrap_behavior,
                        &strings);
-    Rect rect(ClampToInt(*width), INT_MAX);
+    Rect rect(base::saturated_cast<int>(*width), INT_MAX);
     scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
     UpdateRenderText(rect, base::string16(), font_list, flags, 0,
                      render_text.get());
@@ -161,7 +161,8 @@ void Canvas::SizeStringFloat(const base::string16& text,
     *height = h;
   } else {
     scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-    Rect rect(ClampToInt(*width), ClampToInt(*height));
+    Rect rect(base::saturated_cast<int>(*width),
+              base::saturated_cast<int>(*height));
     base::string16 adjusted_text = text;
     StripAcceleratorChars(flags, &adjusted_text);
     UpdateRenderText(rect, adjusted_text, font_list, flags, 0,

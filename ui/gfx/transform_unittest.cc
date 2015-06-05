@@ -448,10 +448,6 @@ TEST(XFormTest, ConcatTranslate2D) {
     { 0, 0, 10.0f, 20.0f, 10, 20},
     { 0, 0, -10.0f, -20.0f, 0, 0},
     { 0, 0, -10.0f, -20.0f, -10, -20},
-    { 0, 0,
-      std::numeric_limits<float>::quiet_NaN(),
-      std::numeric_limits<float>::quiet_NaN(),
-      10, 20},
   };
 
   Transform xform;
@@ -481,7 +477,6 @@ TEST(XFormTest, ConcatScale2D) {
     { 1, .1f, 1},
     { 1, 100.0f, 100},
     { 1, -1.0f, -100},
-    { 1, std::numeric_limits<float>::quiet_NaN(), 1}
   };
 
   Transform xform;
@@ -513,7 +508,6 @@ TEST(XFormTest, ConcatRotate2D) {
     { 1, 0, 90.0f, 0, 1},
     { 1, 0, 360.0f, 0, 1},
     { 1, 0, 0.0f, 0, 1},
-    { 1, 0, std::numeric_limits<float>::quiet_NaN(), 1, 0}
   };
 
   Transform xform;
@@ -541,10 +535,6 @@ TEST(XFormTest, SetTranslate2D) {
     { 0, 0, 10.0f, 20.0f, 10, 20},
     { 10, 20, 10.0f, 20.0f, 20, 40},
     { 10, 20, 0.0f, 0.0f, 10, 20},
-    { 0, 0,
-      std::numeric_limits<float>::quiet_NaN(),
-      std::numeric_limits<float>::quiet_NaN(),
-      0, 0}
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
@@ -597,7 +587,6 @@ TEST(XFormTest, SetScale2D) {
     { 1, 1.0f, 1},
     { 1, 0.0f, 0},
     { 0, 10.0f, 0},
-    { 1, std::numeric_limits<float>::quiet_NaN(), 0},
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
