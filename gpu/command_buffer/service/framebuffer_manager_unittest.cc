@@ -446,46 +446,22 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
 
   // Try format that doesn't work with COLOR_ATTACHMENT0
   texture_manager_->SetTarget(texture1.get(), GL_TEXTURE_2D);
-  texture_manager_->SetLevelInfo(texture1.get(),
-                                GL_TEXTURE_2D,
-                                kLevel1,
-                                kBadFormat1,
-                                kWidth1,
-                                kHeight1,
-                                kDepth,
-                                kBorder,
-                                kBadFormat1,
-                                kType,
-                                true);
+  texture_manager_->SetLevelInfo(
+      texture1.get(), GL_TEXTURE_2D, kLevel1, kBadFormat1, kWidth1, kHeight1,
+      kDepth, kBorder, kBadFormat1, kType, gfx::Rect(kWidth1, kHeight1));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
 
   // Try a good format.
-  texture_manager_->SetLevelInfo(texture1.get(),
-                                GL_TEXTURE_2D,
-                                kLevel1,
-                                kFormat1,
-                                kWidth1,
-                                kHeight1,
-                                kDepth,
-                                kBorder,
-                                kFormat1,
-                                kType,
-                                false);
+  texture_manager_->SetLevelInfo(texture1.get(), GL_TEXTURE_2D, kLevel1,
+                                 kFormat1, kWidth1, kHeight1, kDepth, kBorder,
+                                 kFormat1, kType, gfx::Rect());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete());
   EXPECT_FALSE(framebuffer_->IsCleared());
-  texture_manager_->SetLevelInfo(texture1.get(),
-                                GL_TEXTURE_2D,
-                                kLevel1,
-                                kFormat1,
-                                kWidth1,
-                                kHeight1,
-                                kDepth,
-                                kBorder,
-                                kFormat1,
-                                kType,
-                                true);
+  texture_manager_->SetLevelInfo(texture1.get(), GL_TEXTURE_2D, kLevel1,
+                                 kFormat1, kWidth1, kHeight1, kDepth, kBorder,
+                                 kFormat1, kType, gfx::Rect(kWidth1, kHeight1));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete());
   EXPECT_TRUE(framebuffer_->IsCleared());
@@ -507,17 +483,9 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
       texture_manager_->GetTexture(kTextureClient2Id));
   ASSERT_TRUE(texture2.get() != NULL);
   texture_manager_->SetTarget(texture2.get(), GL_TEXTURE_2D);
-  texture_manager_->SetLevelInfo(texture2.get(),
-                                GL_TEXTURE_2D,
-                                kLevel2,
-                                kFormat2,
-                                kWidth2,
-                                kHeight2,
-                                kDepth,
-                                kBorder,
-                                kFormat2,
-                                kType,
-                                true);
+  texture_manager_->SetLevelInfo(texture2.get(), GL_TEXTURE_2D, kLevel2,
+                                 kFormat2, kWidth2, kHeight2, kDepth, kBorder,
+                                 kFormat2, kType, gfx::Rect(kWidth2, kHeight2));
 
   framebuffer_->AttachTexture(
       GL_COLOR_ATTACHMENT0, texture2.get(), kTarget2, kLevel2, kSamples2);
@@ -536,17 +504,9 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_TRUE(attachment->cleared());
 
   // Check changing attachment
-  texture_manager_->SetLevelInfo(texture2.get(),
-                                GL_TEXTURE_2D,
-                                kLevel3,
-                                kFormat3,
-                                kWidth3,
-                                kHeight3,
-                                kDepth,
-                                kBorder,
-                                kFormat3,
-                                kType,
-                                false);
+  texture_manager_->SetLevelInfo(texture2.get(), GL_TEXTURE_2D, kLevel3,
+                                 kFormat3, kWidth3, kHeight3, kDepth, kBorder,
+                                 kFormat3, kType, gfx::Rect());
   attachment = framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0);
   ASSERT_TRUE(attachment != NULL);
   EXPECT_EQ(kWidth3, attachment->width());
@@ -561,17 +521,9 @@ TEST_F(FramebufferInfoTest, AttachTexture) {
   EXPECT_FALSE(framebuffer_->IsCleared());
 
   // Set to size 0
-  texture_manager_->SetLevelInfo(texture2.get(),
-                                GL_TEXTURE_2D,
-                                kLevel3,
-                                kFormat3,
-                                0,
-                                0,
-                                kDepth,
-                                kBorder,
-                                kFormat3,
-                                kType,
-                                false);
+  texture_manager_->SetLevelInfo(texture2.get(), GL_TEXTURE_2D, kLevel3,
+                                 kFormat3, 0, 0, kDepth, kBorder, kFormat3,
+                                 kType, gfx::Rect());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT),
             framebuffer_->IsPossiblyComplete());
 
@@ -627,9 +579,9 @@ TEST_F(FramebufferInfoTest, DrawBuffers) {
   scoped_refptr<TextureRef> texture1(
       texture_manager_->GetTexture(kTextureClientId[1]));
   texture_manager_->SetTarget(texture1.get(), GL_TEXTURE_2D);
-  texture_manager_->SetLevelInfo(
-      texture1.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4,
-      1, 0, GL_RGBA, GL_UNSIGNED_BYTE, false);
+  texture_manager_->SetLevelInfo(texture1.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4,
+                                 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                                 gfx::Rect());
 
   const Framebuffer::Attachment* attachment1 =
       framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT1);
@@ -719,17 +671,9 @@ TEST_F(FramebufferInfoFloatTest, AttachFloatTexture) {
   EXPECT_EQ(static_cast<GLenum>(0), framebuffer_->GetColorAttachmentFormat());
 
   texture_manager_->SetTarget(texture.get(), GL_TEXTURE_2D);
-  texture_manager_->SetLevelInfo(texture.get(),
-                                GL_TEXTURE_2D,
-                                kLevel,
-                                kInternalFormat,
-                                kWidth,
-                                kHeight,
-                                kDepth,
-                                kBorder,
-                                kFormat,
-                                kType,
-                                false);
+  texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, kLevel,
+                                 kInternalFormat, kWidth, kHeight, kDepth,
+                                 kBorder, kFormat, kType, gfx::Rect());
   // Texture with a sized float internalformat is allowed as an attachment
   // since float color attachment extension is present.
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),

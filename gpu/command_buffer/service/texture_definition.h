@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 class GLImage;
@@ -84,7 +85,7 @@ class TextureDefinition {
               GLint border,
               GLenum format,
               GLenum type,
-              bool cleared);
+              const gfx::Rect& cleared_rect);
     ~LevelInfo();
 
     GLenum target;
@@ -95,7 +96,7 @@ class TextureDefinition {
     GLint border;
     GLenum format;
     GLenum type;
-    bool cleared;
+    gfx::Rect cleared_rect;
   };
 
   unsigned int version_;

@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/gpu_export.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_image.h"
 
 namespace gpu {
@@ -182,6 +183,10 @@ class GPU_EXPORT Texture {
     return immutable_;
   }
 
+  // Get the cleared rectangle for a particular level. Returns an empty
+  // rectangle if level does not exist.
+  gfx::Rect GetLevelClearedRect(GLenum target, GLint level) const;
+
   // Whether a particular level/face is cleared.
   bool IsLevelCleared(GLenum target, GLint level) const;
 
@@ -227,7 +232,7 @@ class GPU_EXPORT Texture {
     LevelInfo(const LevelInfo& rhs);
     ~LevelInfo();
 
-    bool cleared;
+    gfx::Rect cleared_rect;
     GLenum target;
     GLint level;
     GLenum internal_format;
@@ -250,18 +255,17 @@ class GPU_EXPORT Texture {
   };
 
   // Set the info for a particular level.
-  void SetLevelInfo(
-      const FeatureInfo* feature_info,
-      GLenum target,
-      GLint level,
-      GLenum internal_format,
-      GLsizei width,
-      GLsizei height,
-      GLsizei depth,
-      GLint border,
-      GLenum format,
-      GLenum type,
-      bool cleared);
+  void SetLevelInfo(const FeatureInfo* feature_info,
+                    GLenum target,
+                    GLint level,
+                    GLenum internal_format,
+                    GLsizei width,
+                    GLsizei height,
+                    GLsizei depth,
+                    GLint border,
+                    GLenum format,
+                    GLenum type,
+                    const gfx::Rect& cleared_rect);
 
   // In GLES2 "texture complete" means it has all required mips for filtering
   // down to a 1x1 pixel texture, they are in the correct order, they are all
@@ -280,6 +284,11 @@ class GPU_EXPORT Texture {
   bool npot() const {
     return npot_;
   }
+
+  // Marks a |rect| of a particular level as cleared.
+  void SetLevelClearedRect(GLenum target,
+                           GLint level,
+                           const gfx::Rect& cleared_rect);
 
   // Marks a particular level as cleared or uncleared.
   void SetLevelCleared(GLenum target, GLint level, bool cleared);
@@ -374,7 +383,10 @@ class GPU_EXPORT Texture {
 
   // Updates the uncleared mip count in all the managers referencing this
   // texture.
-  void UpdateMipCleared(LevelInfo* info, bool cleared);
+  void UpdateMipCleared(LevelInfo* info,
+                        GLsizei width,
+                        GLsizei height,
+                        const gfx::Rect& cleared_rect);
 
   // Computes the CanRenderCondition flag.
   CanRenderCondition GetCanRenderCondition() const;
@@ -649,33 +661,37 @@ class GPU_EXPORT TextureManager {
       GLenum target);
 
   // Set the info for a particular level in a TexureInfo.
-  void SetLevelInfo(
-      TextureRef* ref,
-      GLenum target,
-      GLint level,
-      GLenum internal_format,
-      GLsizei width,
-      GLsizei height,
-      GLsizei depth,
-      GLint border,
-      GLenum format,
-      GLenum type,
-      bool cleared);
+  void SetLevelInfo(TextureRef* ref,
+                    GLenum target,
+                    GLint level,
+                    GLenum internal_format,
+                    GLsizei width,
+                    GLsizei height,
+                    GLsizei depth,
+                    GLint border,
+                    GLenum format,
+                    GLenum type,
+                    const gfx::Rect& cleared_rect);
 
   // Adapter to call above function.
   void SetLevelInfoFromParams(TextureRef* ref,
                               const gpu::AsyncTexImage2DParams& params) {
-    SetLevelInfo(
-        ref, params.target, params.level, params.internal_format,
-        params.width, params.height, 1 /* depth */,
-        params.border, params.format,
-        params.type, true /* cleared */);
+    SetLevelInfo(ref, params.target, params.level, params.internal_format,
+                 params.width, params.height, 1 /* depth */, params.border,
+                 params.format, params.type,
+                 gfx::Rect(params.width, params.height) /* cleared_rect */);
   }
 
   Texture* Produce(TextureRef* ref);
 
   // Maps an existing texture into the texture manager, at a given client ID.
   TextureRef* Consume(GLuint client_id, Texture* texture);
+
+  // Sets |rect| of mip as cleared.
+  void SetLevelClearedRect(TextureRef* ref,
+                           GLenum target,
+                           GLint level,
+                           const gfx::Rect& cleared_rect);
 
   // Sets a mip as cleared.
   void SetLevelCleared(TextureRef* ref, GLenum target,

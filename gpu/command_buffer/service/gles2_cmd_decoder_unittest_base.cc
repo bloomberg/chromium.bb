@@ -657,22 +657,23 @@ void GLES2DecoderTestBase::SetBucketAsCStrings(
   ClearSharedMemory();
 }
 
-void GLES2DecoderTestBase::SetupClearTextureExpectations(
-      GLuint service_id,
-      GLuint old_service_id,
-      GLenum bind_target,
-      GLenum target,
-      GLint level,
-      GLenum internal_format,
-      GLenum format,
-      GLenum type,
-      GLsizei width,
-      GLsizei height) {
+void GLES2DecoderTestBase::SetupClearTextureExpectations(GLuint service_id,
+                                                         GLuint old_service_id,
+                                                         GLenum bind_target,
+                                                         GLenum target,
+                                                         GLint level,
+                                                         GLenum internal_format,
+                                                         GLenum format,
+                                                         GLenum type,
+                                                         GLint xoffset,
+                                                         GLint yoffset,
+                                                         GLsizei width,
+                                                         GLsizei height) {
   EXPECT_CALL(*gl_, BindTexture(bind_target, service_id))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, TexImage2D(
-      target, level, internal_format, width, height, 0, format, type, _))
+  EXPECT_CALL(*gl_, TexSubImage2D(target, level, xoffset, yoffset, width,
+                                  height, format, type, _))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindTexture(bind_target, old_service_id))

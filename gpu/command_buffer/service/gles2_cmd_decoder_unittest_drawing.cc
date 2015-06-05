@@ -1820,26 +1820,12 @@ TEST_P(GLES2DecoderWithShaderTest, DrawArraysClearsAfterTexImage2DNULL) {
   DoTexImage2D(
       GL_TEXTURE_2D, 1, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
   // Expect 2 levels will be cleared.
-  SetupClearTextureExpectations(kServiceTextureId,
-                                kServiceTextureId,
-                                GL_TEXTURE_2D,
-                                GL_TEXTURE_2D,
-                                0,
-                                GL_RGBA,
-                                GL_RGBA,
-                                GL_UNSIGNED_BYTE,
-                                2,
-                                2);
-  SetupClearTextureExpectations(kServiceTextureId,
-                                kServiceTextureId,
-                                GL_TEXTURE_2D,
-                                GL_TEXTURE_2D,
-                                1,
-                                GL_RGBA,
-                                GL_RGBA,
-                                GL_UNSIGNED_BYTE,
-                                1,
-                                1);
+  SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
+                                GL_TEXTURE_2D, GL_TEXTURE_2D, 0, GL_RGBA,
+                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 2, 2);
+  SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
+                                GL_TEXTURE_2D, GL_TEXTURE_2D, 1, GL_RGBA,
+                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 1, 1);
   SetupExpectationsForApplyingDefaultDirtyState();
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -1867,26 +1853,12 @@ TEST_P(GLES2DecoderWithShaderTest, DrawElementsClearsAfterTexImage2DNULL) {
   DoTexImage2D(
       GL_TEXTURE_2D, 1, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
   // Expect 2 levels will be cleared.
-  SetupClearTextureExpectations(kServiceTextureId,
-                                kServiceTextureId,
-                                GL_TEXTURE_2D,
-                                GL_TEXTURE_2D,
-                                0,
-                                GL_RGBA,
-                                GL_RGBA,
-                                GL_UNSIGNED_BYTE,
-                                2,
-                                2);
-  SetupClearTextureExpectations(kServiceTextureId,
-                                kServiceTextureId,
-                                GL_TEXTURE_2D,
-                                GL_TEXTURE_2D,
-                                1,
-                                GL_RGBA,
-                                GL_RGBA,
-                                GL_UNSIGNED_BYTE,
-                                1,
-                                1);
+  SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
+                                GL_TEXTURE_2D, GL_TEXTURE_2D, 0, GL_RGBA,
+                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 2, 2);
+  SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
+                                GL_TEXTURE_2D, GL_TEXTURE_2D, 1, GL_RGBA,
+                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 1, 1);
   SetupExpectationsForApplyingDefaultDirtyState();
 
   EXPECT_CALL(*gl_,
@@ -2107,26 +2079,14 @@ TEST_P(GLES2DecoderManualInitTest, DrawArraysClearsAfterTexImage2DNULLCubemap) {
                  shm_offset);
   }
   // Expect 2 levels will be cleared.
-  SetupClearTextureExpectations(kServiceTextureId,
-                                kServiceTextureId,
+  SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
                                 GL_TEXTURE_CUBE_MAP,
-                                GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-                                0,
-                                GL_RGBA,
-                                GL_RGBA,
-                                GL_UNSIGNED_BYTE,
-                                2,
-                                2);
-  SetupClearTextureExpectations(kServiceTextureId,
-                                kServiceTextureId,
+                                GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA,
+                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 2, 2);
+  SetupClearTextureExpectations(kServiceTextureId, kServiceTextureId,
                                 GL_TEXTURE_CUBE_MAP,
-                                GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-                                1,
-                                GL_RGBA,
-                                GL_RGBA,
-                                GL_UNSIGNED_BYTE,
-                                1,
-                                1);
+                                GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 1, GL_RGBA,
+                                GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 1, 1);
   AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
   SetupExpectationsForApplyingDefaultDirtyState();
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
@@ -2310,9 +2270,9 @@ TEST_P(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
                0,
                0);
 
-  // Enable GL_SCISSOR_TEST to make sure we disable it in the clear,
-  // then re-enable it.
-  DoEnableDisable(GL_SCISSOR_TEST, true);
+  // Disable GL_SCISSOR_TEST to make sure we enable it in the clear,
+  // then disable it again.
+  DoEnableDisable(GL_SCISSOR_TEST, false);
 
   EXPECT_CALL(*gl_, GenFramebuffersEXT(1, _)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, BindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _))
@@ -2336,10 +2296,13 @@ TEST_P(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
                                   GLES2Decoder::kDefaultStencilMask);
   EXPECT_CALL(*gl_, ClearDepth(1.0f)).Times(1).RetiresOnSaturation();
   SetupExpectationsForDepthMask(true);
-  SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, false);
+  EXPECT_CALL(*gl_, Scissor(0.0f, 0.0f, 1.0f, 1.0f))
+      .Times(1)
+      .RetiresOnSaturation();
 
   EXPECT_CALL(*gl_, Clear(GL_DEPTH_BUFFER_BIT)).Times(1).RetiresOnSaturation();
 
+  EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST)).Times(1).RetiresOnSaturation();
   SetupExpectationsForRestoreClearState(0.0f, 0.0f, 0.0f, 0.0f, 0, 1.0f, true);
 
   EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1, _)).Times(1).RetiresOnSaturation();

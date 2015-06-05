@@ -191,6 +191,33 @@ struct Vec4f {
   GLfloat v[4];
 };
 
+// Returns the union of |rect1| and |rect2| if one of the rectangles is empty,
+// contains the other rectangle or shares an edge with the other rectangle.
+bool CombineAdjacentRects(const gfx::Rect& rect1,
+                          const gfx::Rect& rect2,
+                          gfx::Rect* result) {
+  // Return |rect2| if |rect1| is empty or |rect2| contains |rect1|.
+  if (rect1.IsEmpty() || rect2.Contains(rect1)) {
+    *result = rect2;
+    return true;
+  }
+
+  // Return |rect1| if |rect2| is empty or |rect1| contains |rect2|.
+  if (rect2.IsEmpty() || rect1.Contains(rect2)) {
+    *result = rect1;
+    return true;
+  }
+
+  // Return the union of |rect1| and |rect2| if they share an edge.
+  if (rect1.SharesEdgeWith(rect2)) {
+    *result = gfx::UnionRects(rect1, rect2);
+    return true;
+  }
+
+  // Return false if it's not possible to combine |rect1| and |rect2|.
+  return false;
+}
+
 }  // namespace
 
 class GLES2DecoderImpl;
@@ -1271,12 +1298,12 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool ClearLevel(Texture* texture,
                   unsigned target,
                   int level,
-                  unsigned internal_format,
                   unsigned format,
                   unsigned type,
+                  int xoffset,
+                  int yoffset,
                   int width,
-                  int height,
-                  bool is_texture_immutable) override;
+                  int height) override;
 
   // Restore all GL state that affects clearing.
   void RestoreClearState();
@@ -3691,17 +3718,12 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
   GLenum target = offscreen_saved_color_texture_info_->texture()->target();
   glBindTexture(target, offscreen_saved_color_texture_info_->service_id());
   texture_manager()->SetLevelInfo(
-      offscreen_saved_color_texture_info_.get(),
-      GL_TEXTURE_2D,
+      offscreen_saved_color_texture_info_.get(), GL_TEXTURE_2D,
       0,  // level
-      GL_RGBA,
-      offscreen_size_.width(),
-      offscreen_size_.height(),
+      GL_RGBA, offscreen_size_.width(), offscreen_size_.height(),
       1,  // depth
       0,  // border
-      GL_RGBA,
-      GL_UNSIGNED_BYTE,
-      true);
+      GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(offscreen_size_));
   texture_manager()->SetParameteri(
       "UpdateParentTextureInfo",
       GetErrorState(),
@@ -8875,16 +8897,15 @@ void GLES2DecoderImpl::DoBufferSubData(
       &state_, target, offset, size, data);
 }
 
-bool GLES2DecoderImpl::ClearLevel(
-    Texture* texture,
-    unsigned target,
-    int level,
-    unsigned internal_format,
-    unsigned format,
-    unsigned type,
-    int width,
-    int height,
-    bool is_texture_immutable) {
+bool GLES2DecoderImpl::ClearLevel(Texture* texture,
+                                  unsigned target,
+                                  int level,
+                                  unsigned format,
+                                  unsigned type,
+                                  int xoffset,
+                                  int yoffset,
+                                  int width,
+                                  int height) {
   uint32 channels = GLES2Util::GetChannelsForFormat(format);
   if (feature_info_->feature_flags().angle_depth_texture &&
       (channels & GLES2Util::kDepth) != 0) {
@@ -8910,9 +8931,11 @@ bool GLES2DecoderImpl::ClearLevel(
     state_.SetDeviceStencilMaskSeparate(GL_BACK, kDefaultStencilMask);
     glClearDepth(1.0f);
     state_.SetDeviceDepthMask(GL_TRUE);
-    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
+    glScissor(xoffset, yoffset, width, height);
     glClear(GL_DEPTH_BUFFER_BIT | (have_stencil ? GL_STENCIL_BUFFER_BIT : 0));
 
+    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
     RestoreClearState();
 
     glDeleteFramebuffersEXT(1, &fb);
@@ -8960,17 +8983,11 @@ bool GLES2DecoderImpl::ClearLevel(
   memset(zero.get(), 0, size);
   glBindTexture(texture->target(), texture->service_id());
 
-  bool has_images = texture->HasImages();
   GLint y = 0;
   while (y < height) {
     GLint h = y + tile_height > height ? height - y : tile_height;
-    if (is_texture_immutable || h != height || has_images) {
-      glTexSubImage2D(target, level, 0, y, width, h, format, type, zero.get());
-    } else {
-      glTexImage2D(
-          target, level, internal_format, width, h, 0, format, type,
-          zero.get());
-    }
+    glTexSubImage2D(target, level, xoffset, yoffset + y, width, h, format, type,
+                    zero.get());
     y += tile_height;
   }
   TextureRef* bound_texture =
@@ -9331,9 +9348,9 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
       target, level, internal_format, width, height, border, image_size, data);
   GLenum error = LOCAL_PEEK_GL_ERROR("glCompressedTexImage2D");
   if (error == GL_NO_ERROR) {
-    texture_manager()->SetLevelInfo(
-        texture_ref, target, level, internal_format,
-        width, height, 1, border, 0, 0, true);
+    texture_manager()->SetLevelInfo(texture_ref, target, level, internal_format,
+                                    width, height, 1, border, 0, 0,
+                                    gfx::Rect(width, height));
   }
 
   // This may be a slow command.  Exit command processing to allow for
@@ -9518,9 +9535,9 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage3D(
                          border, image_size, data);
   GLenum error = LOCAL_PEEK_GL_ERROR("glCompressedTexImage3D");
   if (error == GL_NO_ERROR) {
-    texture_manager()->SetLevelInfo(
-        texture_ref, target, level, internal_format,
-        width, height, depth, border, 0, 0, true);
+    texture_manager()->SetLevelInfo(texture_ref, target, level, internal_format,
+                                    width, height, depth, border, 0, 0,
+                                    gfx::Rect(width, height));
   }
 
   // This may be a slow command.  Exit command processing to allow for
@@ -9984,19 +10001,25 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       copyY != y ||
       copyWidth != width ||
       copyHeight != height) {
-    // some part was clipped so clear the texture.
-    if (!ClearLevel(texture, target, level, internal_format, internal_format,
-                    GL_UNSIGNED_BYTE, width, height, texture->IsImmutable())) {
+    // some part was clipped so clear the rect.
+    uint32 pixels_size = 0;
+    if (!GLES2Util::ComputeImageDataSizes(
+            width, height, 1, internal_format, GL_UNSIGNED_BYTE,
+            state_.unpack_alignment, &pixels_size, NULL, NULL)) {
       LOCAL_SET_GL_ERROR(
           GL_OUT_OF_MEMORY, "glCopyTexImage2D", "dimensions too big");
       return;
     }
+    scoped_ptr<char[]> zero(new char[pixels_size]);
+    memset(zero.get(), 0, pixels_size);
+    ScopedModifyPixels modify(texture_ref);
+    glTexImage2D(target, level, internal_format, width, height, border,
+                 internal_format, GL_UNSIGNED_BYTE, zero.get());
     if (copyHeight > 0 && copyWidth > 0) {
       GLint dx = copyX - x;
       GLint dy = copyY - y;
       GLint destX = dx;
       GLint destY = dy;
-      ScopedModifyPixels modify(texture_ref);
       glCopyTexSubImage2D(target, level,
                           destX, destY, copyX, copyY,
                           copyWidth, copyHeight);
@@ -10008,9 +10031,9 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   }
   GLenum error = LOCAL_PEEK_GL_ERROR("glCopyTexImage2D");
   if (error == GL_NO_ERROR) {
-    texture_manager()->SetLevelInfo(
-        texture_ref, target, level, internal_format, width, height, 1,
-        border, internal_format, GL_UNSIGNED_BYTE, true);
+    texture_manager()->SetLevelInfo(texture_ref, target, level, internal_format,
+                                    width, height, 1, border, internal_format,
+                                    GL_UNSIGNED_BYTE, gfx::Rect(width, height));
   }
 
   // This may be a slow command.  Exit command processing to allow for
@@ -10098,11 +10121,22 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
 
   if (xoffset != 0 || yoffset != 0 || width != size.width() ||
       height != size.height()) {
-    if (!texture_manager()->ClearTextureLevel(this, texture_ref, target,
-                                              level)) {
-      LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopyTexSubImage2D",
-                         "dimensions too big");
-      return;
+    gfx::Rect cleared_rect;
+    if (CombineAdjacentRects(texture->GetLevelClearedRect(target, level),
+                             gfx::Rect(xoffset, yoffset, width, height),
+                             &cleared_rect)) {
+      DCHECK_GE(cleared_rect.size().GetArea(),
+                texture->GetLevelClearedRect(target, level).size().GetArea());
+      texture_manager()->SetLevelClearedRect(texture_ref, target, level,
+                                             cleared_rect);
+    } else {
+      // Otherwise clear part of texture level that is not already cleared.
+      if (!texture_manager()->ClearTextureLevel(this, texture_ref, target,
+                                                level)) {
+        LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopyTexSubImage2D",
+                           "dimensions too big");
+        return;
+      }
     }
   } else {
     // Write all pixels in below.
@@ -10247,11 +10281,22 @@ error::Error GLES2DecoderImpl::DoTexSubImage2D(
   DCHECK(ok);
   if (xoffset != 0 || yoffset != 0 ||
       width != tex_width || height != tex_height) {
-    if (!texture_manager()->ClearTextureLevel(this, texture_ref,
-                                              target, level)) {
-      LOCAL_SET_GL_ERROR(
-          GL_OUT_OF_MEMORY, "glTexSubImage2D", "dimensions too big");
-      return error::kNoError;
+    gfx::Rect cleared_rect;
+    if (CombineAdjacentRects(texture->GetLevelClearedRect(target, level),
+                             gfx::Rect(xoffset, yoffset, width, height),
+                             &cleared_rect)) {
+      DCHECK_GE(cleared_rect.size().GetArea(),
+                texture->GetLevelClearedRect(target, level).size().GetArea());
+      texture_manager()->SetLevelClearedRect(texture_ref, target, level,
+                                             cleared_rect);
+    } else {
+      // Otherwise clear part of texture level that is not already cleared.
+      if (!texture_manager()->ClearTextureLevel(this, texture_ref, target,
+                                                level)) {
+        LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexSubImage2D",
+                           "dimensions too big");
+        return error::kNoError;
+      }
     }
     ScopedTextureUploadTimer timer(&texture_state_);
     glTexSubImage2D(
@@ -11766,8 +11811,8 @@ void GLES2DecoderImpl::DoTexImageIOSurface2DCHROMIUM(
   }
 
   texture_manager()->SetLevelInfo(
-      texture_ref, target, 0, GL_RGBA, width, height, 1, 0,
-      GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, true);
+      texture_ref, target, 0, GL_RGBA, width, height, 1, 0, GL_BGRA,
+      GL_UNSIGNED_INT_8_8_8_8_REV, gfx::Rect(width, height));
 
 #else
   LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
@@ -11990,7 +12035,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(GLenum target,
 
     texture_manager()->SetLevelInfo(
         dest_texture_ref, GL_TEXTURE_2D, 0, internal_format, source_width,
-        source_height, 1, 0, internal_format, dest_type, true);
+        source_height, 1, 0, internal_format, dest_type,
+        gfx::Rect(source_width, source_height));
   } else {
     texture_manager()->SetLevelCleared(dest_texture_ref, GL_TEXTURE_2D, 0,
                                        true);
@@ -12136,11 +12182,22 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(GLenum target,
   DCHECK(ok);
   if (xoffset != 0 || yoffset != 0 || width != dest_width ||
       height != dest_height) {
-    if (!texture_manager()->ClearTextureLevel(this, dest_texture_ref, target,
-                                              0)) {
-      LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopySubTextureCHROMIUM",
-                         "destination texture dimensions too big");
-      return;
+    gfx::Rect cleared_rect;
+    if (CombineAdjacentRects(dest_texture->GetLevelClearedRect(target, 0),
+                             gfx::Rect(xoffset, yoffset, width, height),
+                             &cleared_rect)) {
+      DCHECK_GE(cleared_rect.size().GetArea(),
+                dest_texture->GetLevelClearedRect(target, 0).size().GetArea());
+      texture_manager()->SetLevelClearedRect(dest_texture_ref, target, 0,
+                                             cleared_rect);
+    } else {
+      // Otherwise clear part of texture level that is not already cleared.
+      if (!texture_manager()->ClearTextureLevel(this, dest_texture_ref, target,
+                                                0)) {
+        LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glCopySubTextureCHROMIUM",
+                           "destination texture dimensions too big");
+        return;
+      }
     }
   } else {
     texture_manager()->SetLevelCleared(dest_texture_ref, GL_TEXTURE_2D, 0,
@@ -12286,9 +12343,9 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
     GLsizei level_width = width;
     GLsizei level_height = height;
     for (int ii = 0; ii < levels; ++ii) {
-      texture_manager()->SetLevelInfo(
-          texture_ref, target, ii, format,
-          level_width, level_height, 1, 0, format, type, false);
+      texture_manager()->SetLevelInfo(texture_ref, target, ii, format,
+                                      level_width, level_height, 1, 0, format,
+                                      type, gfx::Rect());
       level_width = std::max(1, level_width >> 1);
       level_height = std::max(1, level_height >> 1);
     }
@@ -12638,9 +12695,9 @@ void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
 
   gfx::Size size = gl_image->GetSize();
   texture_manager()->SetLevelInfo(
-      texture_ref, target, 0, gl_image->GetInternalFormat(),
-      size.width(), size.height(), 1, 0,
-      gl_image->GetInternalFormat(), GL_UNSIGNED_BYTE, true);
+      texture_ref, target, 0, gl_image->GetInternalFormat(), size.width(),
+      size.height(), 1, 0, gl_image->GetInternalFormat(), GL_UNSIGNED_BYTE,
+      gfx::Rect(size));
   texture_manager()->SetLevelImage(texture_ref, target, 0, gl_image);
 }
 
@@ -12679,7 +12736,7 @@ void GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM(
 
   texture_manager()->SetLevelInfo(
       texture_ref, target, 0, gl_image->GetInternalFormat(), 0, 0, 1, 0,
-      gl_image->GetInternalFormat(), GL_UNSIGNED_BYTE, false);
+      gl_image->GetInternalFormat(), GL_UNSIGNED_BYTE, gfx::Rect());
 }
 
 error::Error GLES2DecoderImpl::HandleTraceBeginCHROMIUM(

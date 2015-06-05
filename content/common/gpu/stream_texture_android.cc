@@ -41,17 +41,9 @@ bool StreamTexture::Create(
         new StreamTexture(owner_stub, stream_id, texture->service_id()));
     gfx::Size size = gl_image->GetSize();
     texture_manager->SetTarget(texture, GL_TEXTURE_EXTERNAL_OES);
-    texture_manager->SetLevelInfo(texture,
-                                  GL_TEXTURE_EXTERNAL_OES,
-                                  0,
-                                  GL_RGBA,
-                                  size.width(),
-                                  size.height(),
-                                  1,
-                                  0,
-                                  GL_RGBA,
-                                  GL_UNSIGNED_BYTE,
-                                  true);
+    texture_manager->SetLevelInfo(texture, GL_TEXTURE_EXTERNAL_OES, 0, GL_RGBA,
+                                  size.width(), size.height(), 1, 0, GL_RGBA,
+                                  GL_UNSIGNED_BYTE, gfx::Rect(size));
     texture_manager->SetLevelImage(
         texture, GL_TEXTURE_EXTERNAL_OES, 0, gl_image.get());
     return true;

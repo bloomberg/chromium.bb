@@ -379,8 +379,7 @@ MemoryTypeTracker* Texture::GetMemTracker() {
 }
 
 Texture::LevelInfo::LevelInfo()
-    : cleared(true),
-      target(0),
+    : target(0),
       level(-1),
       internal_format(0),
       width(0),
@@ -393,7 +392,7 @@ Texture::LevelInfo::LevelInfo()
 }
 
 Texture::LevelInfo::LevelInfo(const LevelInfo& rhs)
-    : cleared(rhs.cleared),
+    : cleared_rect(rhs.cleared_rect),
       target(rhs.target),
       level(rhs.level),
       internal_format(rhs.internal_format),
@@ -540,17 +539,9 @@ bool Texture::MarkMipmapsGenerated(
       width = std::max(1, width >> 1);
       height = std::max(1, height >> 1);
       depth = std::max(1, depth >> 1);
-      SetLevelInfo(feature_info,
-                   target,
-                   level,
-                   level0_info.internal_format,
-                   width,
-                   height,
-                   depth,
-                   level0_info.border,
-                   level0_info.format,
-                   level0_info.type,
-                   true);
+      SetLevelInfo(feature_info, target, level, level0_info.internal_format,
+                   width, height, depth, level0_info.border, level0_info.format,
+                   level0_info.type, gfx::Rect(width, height));
     }
   }
 
@@ -665,7 +656,9 @@ bool Texture::TextureMipComplete(const Texture::LevelInfo& level0_face,
   return complete;
 }
 
-void Texture::SetLevelCleared(GLenum target, GLint level, bool cleared) {
+void Texture::SetLevelClearedRect(GLenum target,
+                                  GLint level,
+                                  const gfx::Rect& cleared_rect) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   DCHECK_LT(static_cast<size_t>(face_index),
@@ -674,7 +667,19 @@ void Texture::SetLevelCleared(GLenum target, GLint level, bool cleared) {
             face_infos_[face_index].level_infos.size());
   Texture::LevelInfo& info =
       face_infos_[face_index].level_infos[level];
-  UpdateMipCleared(&info, cleared);
+  UpdateMipCleared(&info, info.width, info.height, cleared_rect);
+  UpdateCleared();
+}
+
+void Texture::SetLevelCleared(GLenum target, GLint level, bool cleared) {
+  DCHECK_GE(level, 0);
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
+  DCHECK_LT(static_cast<size_t>(face_index), face_infos_.size());
+  DCHECK_LT(static_cast<size_t>(level),
+            face_infos_[face_index].level_infos.size());
+  Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
+  UpdateMipCleared(&info, info.width, info.height,
+                   cleared ? gfx::Rect(info.width, info.height) : gfx::Rect());
   UpdateCleared();
 }
 
@@ -703,10 +708,17 @@ void Texture::UpdateSafeToRenderFrom(bool cleared) {
     (*it)->manager()->UpdateSafeToRenderFrom(delta);
 }
 
-void Texture::UpdateMipCleared(LevelInfo* info, bool cleared) {
-  if (info->cleared == cleared)
+void Texture::UpdateMipCleared(LevelInfo* info,
+                               GLsizei width,
+                               GLsizei height,
+                               const gfx::Rect& cleared_rect) {
+  bool was_cleared = info->cleared_rect == gfx::Rect(info->width, info->height);
+  info->width = width;
+  info->height = height;
+  info->cleared_rect = cleared_rect;
+  bool cleared = info->cleared_rect == gfx::Rect(info->width, info->height);
+  if (cleared == was_cleared)
     return;
-  info->cleared = cleared;
   int delta = cleared ? -1 : +1;
   num_uncleared_mips_ += delta;
   for (RefSet::iterator it = refs_.begin(); it != refs_.end(); ++it)
@@ -751,18 +763,17 @@ void Texture::IncAllFramebufferStateChangeCount() {
     (*it)->manager()->IncFramebufferStateChangeCount();
 }
 
-void Texture::SetLevelInfo(
-    const FeatureInfo* feature_info,
-    GLenum target,
-    GLint level,
-    GLenum internal_format,
-    GLsizei width,
-    GLsizei height,
-    GLsizei depth,
-    GLint border,
-    GLenum format,
-    GLenum type,
-    bool cleared) {
+void Texture::SetLevelInfo(const FeatureInfo* feature_info,
+                           GLenum target,
+                           GLint level,
+                           GLenum internal_format,
+                           GLsizei width,
+                           GLsizei height,
+                           GLsizei depth,
+                           GLint border,
+                           GLenum format,
+                           GLenum type,
+                           const gfx::Rect& cleared_rect) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   DCHECK_LT(static_cast<size_t>(face_index),
@@ -807,20 +818,19 @@ void Texture::SetLevelInfo(
   info.target = target;
   info.level = level;
   info.internal_format = internal_format;
-  info.width = width;
-  info.height = height;
   info.depth = depth;
   info.border = border;
   info.format = format;
   info.type = type;
   info.image = 0;
 
+  UpdateMipCleared(&info, width, height, cleared_rect);
+
   estimated_size_ -= info.estimated_size;
   GLES2Util::ComputeImageDataSizes(
       width, height, 1, format, type, 4, &info.estimated_size, NULL, NULL);
   estimated_size_ += info.estimated_size;
 
-  UpdateMipCleared(&info, cleared);
   max_level_set_ = std::max(max_level_set_, level);
   Update(feature_info);
   UpdateCleared();
@@ -1146,6 +1156,18 @@ bool Texture::ClearRenderableLevels(GLES2Decoder* decoder) {
   return true;
 }
 
+gfx::Rect Texture::GetLevelClearedRect(GLenum target, GLint level) const {
+  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
+  if (face_index >= face_infos_.size() ||
+      level >= static_cast<GLint>(face_infos_[face_index].level_infos.size())) {
+    return gfx::Rect();
+  }
+
+  const Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
+
+  return info.cleared_rect;
+}
+
 bool Texture::IsLevelCleared(GLenum target, GLint level) const {
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   if (face_index >= face_infos_.size() ||
@@ -1155,7 +1177,7 @@ bool Texture::IsLevelCleared(GLenum target, GLint level) const {
 
   const Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
 
-  return info.cleared;
+  return info.cleared_rect == gfx::Rect(info.width, info.height);
 }
 
 void Texture::InitTextureMaxAnisotropyIfNeeded(GLenum target) {
@@ -1180,21 +1202,41 @@ bool Texture::ClearLevel(
   DCHECK(target == info.target);
 
   if (info.target == 0 ||
-      info.cleared ||
-      info.width == 0 ||
-      info.height == 0 ||
-      info.depth == 0) {
+      info.cleared_rect == gfx::Rect(info.width, info.height) ||
+      info.width == 0 || info.height == 0 || info.depth == 0) {
     return true;
   }
 
-  // NOTE: It seems kind of gross to call back into the decoder for this
-  // but only the decoder knows all the state (like unpack_alignment_) that's
-  // needed to be able to call GL correctly.
-  bool cleared = decoder->ClearLevel(
-      this, info.target, info.level, info.internal_format, info.format,
-      info.type, info.width, info.height, immutable_);
-  UpdateMipCleared(&info, cleared);
-  return info.cleared;
+  // Clear all remaining sub regions.
+  const int x[] = {
+      0, info.cleared_rect.x(), info.cleared_rect.right(), info.width};
+  const int y[] = {
+      0, info.cleared_rect.y(), info.cleared_rect.bottom(), info.height};
+
+  for (size_t j = 0; j < 3; ++j) {
+    for (size_t i = 0; i < 3; ++i) {
+      // Center of nine patch is already cleared.
+      if (j == 1 && i == 1)
+        continue;
+
+      gfx::Rect rect(x[i], y[j], x[i + 1] - x[i], y[j + 1] - y[j]);
+      if (rect.IsEmpty())
+        continue;
+
+      // NOTE: It seems kind of gross to call back into the decoder for this
+      // but only the decoder knows all the state (like unpack_alignment_)
+      // that's needed to be able to call GL correctly.
+      bool cleared = decoder->ClearLevel(this, info.target, info.level,
+                                         info.format, info.type, rect.x(),
+                                         rect.y(), rect.width(), rect.height());
+      if (!cleared)
+        return false;
+    }
+  }
+
+  UpdateMipCleared(&info, info.width, info.height,
+                   gfx::Rect(info.width, info.height));
+  return true;
 }
 
 void Texture::SetLevelImage(
@@ -1373,43 +1415,17 @@ scoped_refptr<TextureRef>
     SetTarget(default_texture.get(), target);
     if (needs_faces) {
       for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
-        SetLevelInfo(default_texture.get(),
-                     GLES2Util::IndexToGLFaceTarget(ii),
-                     0,
-                     GL_RGBA,
-                     1,
-                     1,
-                     1,
-                     0,
-                     GL_RGBA,
-                     GL_UNSIGNED_BYTE,
-                     true);
+        SetLevelInfo(default_texture.get(), GLES2Util::IndexToGLFaceTarget(ii),
+                     0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     gfx::Rect(1, 1));
       }
     } else {
       if (needs_initialization) {
-        SetLevelInfo(default_texture.get(),
-                     GL_TEXTURE_2D,
-                     0,
-                     GL_RGBA,
-                     1,
-                     1,
-                     1,
-                     0,
-                     GL_RGBA,
-                     GL_UNSIGNED_BYTE,
-                     true);
+        SetLevelInfo(default_texture.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1,
+                     0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
       } else {
-        SetLevelInfo(default_texture.get(),
-                     GL_TEXTURE_EXTERNAL_OES,
-                     0,
-                     GL_RGBA,
-                     1,
-                     1,
-                     1,
-                     0,
-                     GL_RGBA,
-                     GL_UNSIGNED_BYTE,
-                     true);
+        SetLevelInfo(default_texture.get(), GL_TEXTURE_EXTERNAL_OES, 0, GL_RGBA,
+                     1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
       }
     }
   }
@@ -1443,6 +1459,14 @@ void TextureManager::SetTarget(TextureRef* ref, GLenum target) {
       ->SetTarget(feature_info_.get(), target, MaxLevelsForTarget(target));
 }
 
+void TextureManager::SetLevelClearedRect(TextureRef* ref,
+                                         GLenum target,
+                                         GLint level,
+                                         const gfx::Rect& cleared_rect) {
+  DCHECK(ref);
+  ref->texture()->SetLevelClearedRect(target, level, cleared_rect);
+}
+
 void TextureManager::SetLevelCleared(TextureRef* ref,
                                      GLenum target,
                                      GLint level,
@@ -1470,33 +1494,25 @@ bool TextureManager::ClearTextureLevel(
   return result;
 }
 
-void TextureManager::SetLevelInfo(
-    TextureRef* ref,
-    GLenum target,
-    GLint level,
-    GLenum internal_format,
-    GLsizei width,
-    GLsizei height,
-    GLsizei depth,
-    GLint border,
-    GLenum format,
-    GLenum type,
-    bool cleared) {
+void TextureManager::SetLevelInfo(TextureRef* ref,
+                                  GLenum target,
+                                  GLint level,
+                                  GLenum internal_format,
+                                  GLsizei width,
+                                  GLsizei height,
+                                  GLsizei depth,
+                                  GLint border,
+                                  GLenum format,
+                                  GLenum type,
+                                  const gfx::Rect& cleared_rect) {
+  DCHECK(gfx::Rect(width, height).Contains(cleared_rect));
   DCHECK(ref);
   Texture* texture = ref->texture();
 
   texture->GetMemTracker()->TrackMemFree(texture->estimated_size());
-  texture->SetLevelInfo(feature_info_.get(),
-                        target,
-                        level,
-                        internal_format,
-                        width,
-                        height,
-                        depth,
-                        border,
-                        format,
-                        type,
-                        cleared);
+  texture->SetLevelInfo(feature_info_.get(), target, level, internal_format,
+                        width, height, depth, border, format, type,
+                        cleared_rect);
   texture->GetMemTracker()->TrackMemAlloc(texture->estimated_size());
 }
 
@@ -1947,10 +1963,9 @@ void TextureManager::DoTexImage(
 
   if (level_is_same && !args.pixels) {
     // Just set the level texture but mark the texture as uncleared.
-    SetLevelInfo(
-        texture_ref,
-        args.target, args.level, args.internal_format, args.width, args.height,
-        args.depth, args.border, args.format, args.type, false);
+    SetLevelInfo(texture_ref, args.target, args.level, args.internal_format,
+                 args.width, args.height, args.depth, args.border, args.format,
+                 args.type, gfx::Rect());
     texture_state->tex_image_failed = false;
     return;
   }
@@ -1993,9 +2008,9 @@ void TextureManager::DoTexImage(
   GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, function_name);
   if (error == GL_NO_ERROR) {
     SetLevelInfo(
-        texture_ref,
-        args.target, args.level, args.internal_format, args.width, args.height,
-        args.depth, args.border, args.format, args.type, args.pixels != NULL);
+        texture_ref, args.target, args.level, args.internal_format, args.width,
+        args.height, args.depth, args.border, args.format, args.type,
+        args.pixels != NULL ? gfx::Rect(args.width, args.height) : gfx::Rect());
     texture_state->tex_image_failed = false;
   }
 }

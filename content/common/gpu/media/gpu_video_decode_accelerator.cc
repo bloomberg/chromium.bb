@@ -479,17 +479,9 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
         texture_target_ == GL_TEXTURE_RECTANGLE_ARB) {
       // These textures have their dimensions defined by the underlying storage.
       // Use |texture_dimensions_| for this size.
-      texture_manager->SetLevelInfo(texture_ref,
-                                    texture_target_,
-                                    0,
-                                    GL_RGBA,
-                                    texture_dimensions_.width(),
-                                    texture_dimensions_.height(),
-                                    1,
-                                    0,
-                                    GL_RGBA,
-                                    0,
-                                    false);
+      texture_manager->SetLevelInfo(
+          texture_ref, texture_target_, 0, GL_RGBA, texture_dimensions_.width(),
+          texture_dimensions_.height(), 1, 0, GL_RGBA, 0, gfx::Rect());
     } else {
       // For other targets, texture dimensions should already be defined.
       GLsizei width = 0, height = 0;
@@ -506,7 +498,8 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
           video_decode_accelerator_.get()->GetSurfaceInternalFormat();
       if (format != GL_RGBA) {
         texture_manager->SetLevelInfo(texture_ref, texture_target_, 0, format,
-                                      width, height, 1, 0, format, 0, false);
+                                      width, height, 1, 0, format, 0,
+                                      gfx::Rect());
       }
     }
     buffers.push_back(media::PictureBuffer(buffer_ids[i], texture_dimensions_,

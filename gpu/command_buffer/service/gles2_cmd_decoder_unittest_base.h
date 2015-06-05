@@ -335,17 +335,18 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
 
   void DeleteIndexBuffer();
 
-  void SetupClearTextureExpectations(
-      GLuint service_id,
-      GLuint old_service_id,
-      GLenum bind_target,
-      GLenum target,
-      GLint level,
-      GLenum internal_format,
-      GLenum format,
-      GLenum type,
-      GLsizei width,
-      GLsizei height);
+  void SetupClearTextureExpectations(GLuint service_id,
+                                     GLuint old_service_id,
+                                     GLenum bind_target,
+                                     GLenum target,
+                                     GLint level,
+                                     GLenum internal_format,
+                                     GLenum format,
+                                     GLenum type,
+                                     GLint xoffset,
+                                     GLint yoffset,
+                                     GLsizei width,
+                                     GLsizei height);
 
   void SetupExpectationsForRestoreClearState(
       GLclampf restore_red,

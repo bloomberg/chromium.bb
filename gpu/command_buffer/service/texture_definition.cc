@@ -311,8 +311,7 @@ TextureDefinition::LevelInfo::LevelInfo()
       depth(0),
       border(0),
       format(0),
-      type(0),
-      cleared(false) {
+      type(0) {
 }
 
 TextureDefinition::LevelInfo::LevelInfo(GLenum target,
@@ -323,7 +322,7 @@ TextureDefinition::LevelInfo::LevelInfo(GLenum target,
                                         GLint border,
                                         GLenum format,
                                         GLenum type,
-                                        bool cleared)
+                                        const gfx::Rect& cleared_rect)
     : target(target),
       internal_format(internal_format),
       width(width),
@@ -332,7 +331,8 @@ TextureDefinition::LevelInfo::LevelInfo(GLenum target,
       border(border),
       format(format),
       type(type),
-      cleared(cleared) {}
+      cleared_rect(cleared_rect) {
+}
 
 TextureDefinition::LevelInfo::~LevelInfo() {}
 
@@ -379,7 +379,7 @@ TextureDefinition::TextureDefinition(
   const Texture::LevelInfo& level = first_face.level_infos[0];
   level_info_ = LevelInfo(level.target, level.internal_format, level.width,
                           level.height, level.depth, level.border, level.format,
-                          level.type, level.cleared);
+                          level.type, level.cleared_rect);
 }
 
 TextureDefinition::~TextureDefinition() {
@@ -421,7 +421,7 @@ void TextureDefinition::UpdateTextureInternal(Texture* texture) const {
                           level_info_.internal_format, level_info_.width,
                           level_info_.height, level_info_.depth,
                           level_info_.border, level_info_.format,
-                          level_info_.type, level_info_.cleared);
+                          level_info_.type, level_info_.cleared_rect);
   }
 
   if (image_buffer_.get()) {
@@ -489,7 +489,8 @@ bool TextureDefinition::Matches(const Texture* texture) const {
 }
 
 bool TextureDefinition::SafeToRenderFrom() const {
-  return level_info_.cleared;
+  return level_info_.cleared_rect.Contains(
+      gfx::Rect(level_info_.width, level_info_.height));
 }
 
 }  // namespace gles2

@@ -214,18 +214,17 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Provides detail about a lost context if one occurred.
   virtual error::ContextLostReason GetContextLostReason() = 0;
 
-  // Clears a level of a texture
+  // Clears a level sub area of a texture
   // Returns false if a GL error should be generated.
-  virtual bool ClearLevel(
-      Texture* texture,
-      unsigned target,
-      int level,
-      unsigned internal_format,
-      unsigned format,
-      unsigned type,
-      int width,
-      int height,
-      bool is_texture_immutable) = 0;
+  virtual bool ClearLevel(Texture* texture,
+                          unsigned target,
+                          int level,
+                          unsigned format,
+                          unsigned type,
+                          int xoffset,
+                          int yoffset,
+                          int width,
+                          int height) = 0;
 
   virtual ErrorState* GetErrorState() = 0;
 

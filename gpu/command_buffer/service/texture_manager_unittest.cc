@@ -548,87 +548,33 @@ TEST_F(TextureTest, SetTargetTextureExternalOES) {
 TEST_F(TextureTest, ZeroSizeCanNotRender) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         1,
-                         1,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         0,
-                         0,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
 }
 
 TEST_F(TextureTest, EstimatedSize) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         8,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 8, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(8, 4));
   EXPECT_EQ(8u * 4u * 4u, texture_ref_->texture()->estimated_size());
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         2,
-                         GL_RGBA,
-                         8,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 2, GL_RGBA, 8, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(8, 4));
   EXPECT_EQ(8u * 4u * 4u * 2u, texture_ref_->texture()->estimated_size());
 }
 
 TEST_F(TextureMemoryTrackerTest, EstimatedSize) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 128, MemoryTracker::kUnmanaged);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         8,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 8, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(8, 4));
   EXPECT_MEMORY_ALLOCATION_CHANGE(128, 0, MemoryTracker::kUnmanaged);
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 256, MemoryTracker::kUnmanaged);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         2,
-                         GL_RGBA,
-                         8,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 2, GL_RGBA, 8, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(8, 4));
   // Add expectation for texture deletion.
   EXPECT_MEMORY_ALLOCATION_CHANGE(256, 0, MemoryTracker::kUnmanaged);
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 0, MemoryTracker::kUnmanaged);
@@ -637,17 +583,8 @@ TEST_F(TextureMemoryTrackerTest, EstimatedSize) {
 TEST_F(TextureMemoryTrackerTest, SetParameterPool) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 128, MemoryTracker::kUnmanaged);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         8,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 8, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(8, 4));
   EXPECT_MEMORY_ALLOCATION_CHANGE(128, 0, MemoryTracker::kUnmanaged);
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 128, MemoryTracker::kManaged);
   SetParameter(texture_ref_.get(),
@@ -665,21 +602,12 @@ TEST_F(TextureTest, POT2D) {
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   // Check Setting level 0 to POT
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
-  EXPECT_EQ(0, texture->num_uncleared_mips());
+  EXPECT_TRUE(texture->SafeToRenderFrom());
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   // Set filters to something that will work with a single mip.
   SetParameter(
@@ -700,34 +628,16 @@ TEST_F(TextureTest, POT2D) {
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Change a mip.
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   // Set a level past the number of mips that would get generated.
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         3,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 3, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   // Make mips.
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_ref_.get()));
@@ -739,17 +649,8 @@ TEST_F(TextureTest, POT2D) {
 TEST_F(TextureMemoryTrackerTest, MarkMipmapsGenerated) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 64, MemoryTracker::kUnmanaged);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
   EXPECT_MEMORY_ALLOCATION_CHANGE(64, 0, MemoryTracker::kUnmanaged);
   EXPECT_MEMORY_ALLOCATION_CHANGE(0, 84, MemoryTracker::kUnmanaged);
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_ref_.get()));
@@ -762,51 +663,24 @@ TEST_F(TextureTest, UnusedMips) {
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   // Set level zero to large size.
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_ref_.get()));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Set level zero to large smaller (levels unused mips)
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         2,
-                         2,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_ref_.get()));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Set an unused level to some size
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         4,
-                         GL_RGBA,
-                         16,
-                         16,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 4, GL_RGBA, 16, 16,
+                         1, 0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(16, 16));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
@@ -818,17 +692,8 @@ TEST_F(TextureTest, NPOT2D) {
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   // Check Setting level 0 to NPOT
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         4,
-                         5,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 5, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 5));
   EXPECT_TRUE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
@@ -847,17 +712,8 @@ TEST_F(TextureTest, NPOT2D) {
   EXPECT_TRUE(manager_->CanRender(texture_ref_.get()));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Change it to POT.
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
@@ -884,8 +740,8 @@ TEST_F(TextureTest, NPOT2DNPOTOK) {
   manager.SetTarget(texture_ref, GL_TEXTURE_2D);
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
   // Check Setting level 0 to NPOT
-  manager.SetLevelInfo(texture_ref,
-      GL_TEXTURE_2D, 0, GL_RGBA, 4, 5, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
+  manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_RGBA, 4, 5, 1, 0,
+                       GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 5));
   EXPECT_TRUE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager.CanGenerateMipmaps(texture_ref));
@@ -903,102 +759,54 @@ TEST_F(TextureTest, POTCubeMap) {
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_CUBE_MAP), texture->target());
   // Check Setting level 0 each face to POT
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0,
+                         GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(4, 4));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0,
+                         GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(4, 4));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0,
+                         GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(4, 4));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0,
+                         GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(4, 4));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0,
+                         GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(4, 4));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_FALSE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_FALSE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   EXPECT_FALSE(manager_->CanRender(texture_ref_.get()));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0,
+                         GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(4, 4));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(TextureTestHelper::IsCubeComplete(texture));
@@ -1014,33 +822,17 @@ TEST_F(TextureTest, POTCubeMap) {
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
 
   // Change a mip.
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-                         1,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 1,
+                         GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(4, 4));
   EXPECT_FALSE(TextureTestHelper::IsNPOT(texture));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(TextureTestHelper::IsCubeComplete(texture));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   // Set a level past the number of mips that would get generated.
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-                         3,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 3,
+                         GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                         gfx::Rect(4, 4));
   EXPECT_TRUE(manager_->CanGenerateMipmaps(texture_ref_.get()));
   // Make mips.
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_ref_.get()));
@@ -1050,17 +842,8 @@ TEST_F(TextureTest, POTCubeMap) {
 
 TEST_F(TextureTest, GetLevelSize) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_3D);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_3D,
-                         1,
-                         GL_RGBA,
-                         4,
-                         5,
-                         6,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_3D, 1, GL_RGBA, 4, 5, 6,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 5));
   GLsizei width = -1;
   GLsizei height = -1;
   GLsizei depth = -1;
@@ -1084,17 +867,8 @@ TEST_F(TextureTest, GetLevelSize) {
 
 TEST_F(TextureTest, GetLevelType) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         4,
-                         5,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 4, 5, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 5));
   GLenum type = 0;
   GLenum format = 0;
   Texture* texture = texture_ref_->texture();
@@ -1112,17 +886,8 @@ TEST_F(TextureTest, GetLevelType) {
 
 TEST_F(TextureTest, ValidForTexture) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         4,
-                         5,
-                         6,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 4, 5, 6,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 5));
   // Check bad face.
   Texture* texture = texture_ref_->texture();
   EXPECT_FALSE(texture->ValidForTexture(
@@ -1190,8 +955,8 @@ TEST_F(TextureTest, FloatNotLinear) {
   manager.SetTarget(texture_ref, GL_TEXTURE_2D);
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
-  manager.SetLevelInfo(texture_ref,
-      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_FLOAT, true);
+  manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
+                       GL_RGBA, GL_FLOAT, gfx::Rect(1, 1));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   TestHelper::SetTexParameteriWithExpectations(
       gl_.get(), error_state_.get(), &manager,
@@ -1222,8 +987,8 @@ TEST_F(TextureTest, FloatLinear) {
   manager.SetTarget(texture_ref, GL_TEXTURE_2D);
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
-  manager.SetLevelInfo(texture_ref,
-      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_FLOAT, true);
+  manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
+                       GL_RGBA, GL_FLOAT, gfx::Rect(1, 1));
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   manager.Destroy(false);
 }
@@ -1246,8 +1011,8 @@ TEST_F(TextureTest, HalfFloatNotLinear) {
   manager.SetTarget(texture_ref, GL_TEXTURE_2D);
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
-  manager.SetLevelInfo(texture_ref,
-      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_HALF_FLOAT_OES, true);
+  manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
+                       GL_RGBA, GL_HALF_FLOAT_OES, gfx::Rect(1, 1));
   EXPECT_FALSE(TextureTestHelper::IsTextureComplete(texture));
   TestHelper::SetTexParameteriWithExpectations(
       gl_.get(), error_state_.get(), &manager,
@@ -1278,8 +1043,8 @@ TEST_F(TextureTest, HalfFloatLinear) {
   manager.SetTarget(texture_ref, GL_TEXTURE_2D);
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
-  manager.SetLevelInfo(texture_ref,
-      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_HALF_FLOAT_OES, true);
+  manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
+                       GL_RGBA, GL_HALF_FLOAT_OES, gfx::Rect(1, 1));
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   manager.Destroy(false);
 }
@@ -1322,9 +1087,8 @@ TEST_F(TextureTest, DepthTexture) {
   TextureRef* texture_ref = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(texture_ref != NULL);
   manager.SetTarget(texture_ref, GL_TEXTURE_2D);
-  manager.SetLevelInfo(
-      texture_ref, GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 4, 4, 1, 0,
-      GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, false);
+  manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 4, 4,
+                       1, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, gfx::Rect());
   EXPECT_FALSE(manager.CanGenerateMipmaps(texture_ref));
   manager.Destroy(false);
 }
@@ -1338,17 +1102,8 @@ TEST_F(TextureTest, SafeUnsafe) {
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(0, texture->num_uncleared_mips());
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   EXPECT_FALSE(texture->SafeToRenderFrom());
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
   EXPECT_TRUE(manager_->HaveUnclearedMips());
@@ -1358,17 +1113,8 @@ TEST_F(TextureTest, SafeUnsafe) {
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
   EXPECT_FALSE(manager_->HaveUnclearedMips());
   EXPECT_EQ(0, texture->num_uncleared_mips());
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         8,
-                         8,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 8, 8, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   EXPECT_FALSE(texture->SafeToRenderFrom());
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
   EXPECT_TRUE(manager_->HaveUnclearedMips());
@@ -1378,28 +1124,10 @@ TEST_F(TextureTest, SafeUnsafe) {
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
   EXPECT_FALSE(manager_->HaveUnclearedMips());
   EXPECT_EQ(0, texture->num_uncleared_mips());
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         8,
-                         8,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 8, 8, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   EXPECT_FALSE(texture->SafeToRenderFrom());
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
   EXPECT_TRUE(manager_->HaveUnclearedMips());
@@ -1414,17 +1142,8 @@ TEST_F(TextureTest, SafeUnsafe) {
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
   EXPECT_FALSE(manager_->HaveUnclearedMips());
   EXPECT_EQ(0, texture->num_uncleared_mips());
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         8,
-                         8,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 8, 8, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   EXPECT_FALSE(texture->SafeToRenderFrom());
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
   EXPECT_TRUE(manager_->HaveUnclearedMips());
@@ -1444,31 +1163,13 @@ TEST_F(TextureTest, SafeUnsafe) {
   EXPECT_FALSE(manager_->HaveUnclearedMips());
   Texture* texture2 = texture_ref2->texture();
   EXPECT_EQ(0, texture2->num_uncleared_mips());
-  manager_->SetLevelInfo(texture_ref2.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         8,
-                         8,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref2.get(), GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(8, 8));
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
   EXPECT_FALSE(manager_->HaveUnclearedMips());
   EXPECT_EQ(0, texture2->num_uncleared_mips());
-  manager_->SetLevelInfo(texture_ref2.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         8,
-                         8,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref2.get(), GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
   EXPECT_TRUE(manager_->HaveUnclearedMips());
   EXPECT_EQ(1, texture2->num_uncleared_mips());
@@ -1478,17 +1179,8 @@ TEST_F(TextureTest, SafeUnsafe) {
       manager_->GetTexture(kClient3Id));
   ASSERT_TRUE(texture_ref3.get() != NULL);
   manager_->SetTarget(texture_ref3.get(), GL_TEXTURE_2D);
-  manager_->SetLevelInfo(texture_ref3.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         8,
-                         8,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref3.get(), GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
   EXPECT_TRUE(manager_->HaveUnclearedMips());
   Texture* texture3 = texture_ref3->texture();
@@ -1502,28 +1194,10 @@ TEST_F(TextureTest, SafeUnsafe) {
   EXPECT_FALSE(manager_->HaveUnclearedMips());
   EXPECT_EQ(0, texture3->num_uncleared_mips());
 
-  manager_->SetLevelInfo(texture_ref2.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         8,
-                         8,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
-  manager_->SetLevelInfo(texture_ref3.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         8,
-                         8,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref2.get(), GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(1, 1, 1, 1));
+  manager_->SetLevelInfo(texture_ref3.get(), GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4, 4, 4));
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
   EXPECT_TRUE(manager_->HaveUnclearedMips());
   EXPECT_EQ(1, texture2->num_uncleared_mips());
@@ -1552,28 +1226,10 @@ TEST_F(TextureTest, ClearTexture) {
   EXPECT_CALL(*decoder_, ClearLevel(_, _, _, _, _, _, _, _, _))
       .WillRepeatedly(Return(true));
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   Texture* texture = texture_ref_->texture();
   EXPECT_FALSE(texture->SafeToRenderFrom());
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
@@ -1584,28 +1240,10 @@ TEST_F(TextureTest, ClearTexture) {
   EXPECT_FALSE(manager_->HaveUnsafeTextures());
   EXPECT_FALSE(manager_->HaveUnclearedMips());
   EXPECT_EQ(0, texture->num_uncleared_mips());
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         4,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 4, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 3));
   EXPECT_FALSE(texture->SafeToRenderFrom());
   EXPECT_TRUE(manager_->HaveUnsafeTextures());
   EXPECT_TRUE(manager_->HaveUnclearedMips());
@@ -1629,17 +1267,8 @@ TEST_F(TextureTest, UseDeletedTexture) {
   static const GLuint kService2Id = 12;
   // Make the default texture renderable
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         1,
-                         1,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   // Make a new texture
   manager_->CreateTexture(kClient2Id, kService2Id);
@@ -1653,17 +1282,8 @@ TEST_F(TextureTest, UseDeletedTexture) {
   EXPECT_FALSE(manager_->CanRender(texture_ref.get()));
   EXPECT_TRUE(manager_->HaveUnrenderableTextures());
   // Check that we can still manipulate it and it effects the manager.
-  manager_->SetLevelInfo(texture_ref.get(),
-                         GL_TEXTURE_2D,
-                         0,
-                         GL_RGBA,
-                         1,
-                         1,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   EXPECT_TRUE(manager_->CanRender(texture_ref.get()));
   EXPECT_FALSE(manager_->HaveUnrenderableTextures());
   EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService2Id)))
@@ -1674,17 +1294,8 @@ TEST_F(TextureTest, UseDeletedTexture) {
 
 TEST_F(TextureTest, GetLevelImage) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         2,
-                         2,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
   Texture* texture = texture_ref_->texture();
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
   // Set image.
@@ -1696,17 +1307,8 @@ TEST_F(TextureTest, GetLevelImage) {
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
   manager_->SetLevelImage(texture_ref_.get(), GL_TEXTURE_2D, 1, image.get());
   // Image should be reset when SetLevelInfo is called.
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         2,
-                         2,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
 }
 
@@ -1722,17 +1324,8 @@ bool InSet(std::set<std::string>* string_set, const std::string& str) {
 
 TEST_F(TextureTest, AddToSignature) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         2,
-                         2,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
   std::string signature1;
   std::string signature2;
   manager_->AddToSignature(texture_ref_.get(), GL_TEXTURE_2D, 1, &signature1);
@@ -1741,140 +1334,59 @@ TEST_F(TextureTest, AddToSignature) {
   EXPECT_FALSE(InSet(&string_set, signature1));
 
   // check changing 1 thing makes a different signature.
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         4,
-                         2,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 4, 2, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 2));
   manager_->AddToSignature(texture_ref_.get(), GL_TEXTURE_2D, 1, &signature2);
   EXPECT_FALSE(InSet(&string_set, signature2));
 
   // check putting it back makes the same signature.
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         2,
-                         2,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(2, 2));
   signature2.clear();
   manager_->AddToSignature(texture_ref_.get(), GL_TEXTURE_2D, 1, &signature2);
   EXPECT_EQ(signature1, signature2);
 
   // Check setting cleared status does not change signature.
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         2,
-                         2,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   signature2.clear();
   manager_->AddToSignature(texture_ref_.get(), GL_TEXTURE_2D, 1, &signature2);
   EXPECT_EQ(signature1, signature2);
 
   // Check changing other settings changes signature.
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         2,
-                         4,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 4, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   signature2.clear();
   manager_->AddToSignature(texture_ref_.get(), GL_TEXTURE_2D, 1, &signature2);
   EXPECT_FALSE(InSet(&string_set, signature2));
 
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         2,
-                         2,
-                         2,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 2,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   signature2.clear();
   manager_->AddToSignature(texture_ref_.get(), GL_TEXTURE_2D, 1, &signature2);
   EXPECT_FALSE(InSet(&string_set, signature2));
 
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         2,
-                         2,
-                         1,
-                         1,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1,
+                         1, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   signature2.clear();
   manager_->AddToSignature(texture_ref_.get(), GL_TEXTURE_2D, 1, &signature2);
   EXPECT_FALSE(InSet(&string_set, signature2));
 
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         2,
-                         2,
-                         1,
-                         0,
-                         GL_RGB,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1,
+                         0, GL_RGB, GL_UNSIGNED_BYTE, gfx::Rect());
   signature2.clear();
   manager_->AddToSignature(texture_ref_.get(), GL_TEXTURE_2D, 1, &signature2);
   EXPECT_FALSE(InSet(&string_set, signature2));
 
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         2,
-                         2,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_FLOAT,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1,
+                         0, GL_RGBA, GL_FLOAT, gfx::Rect());
   signature2.clear();
   manager_->AddToSignature(texture_ref_.get(), GL_TEXTURE_2D, 1, &signature2);
   EXPECT_FALSE(InSet(&string_set, signature2));
 
   // put it back
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         GL_TEXTURE_2D,
-                         1,
-                         GL_RGBA,
-                         2,
-                         2,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         false);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1,
+                         0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   signature2.clear();
   manager_->AddToSignature(texture_ref_.get(), GL_TEXTURE_2D, 1, &signature2);
   EXPECT_EQ(signature1, signature2);
@@ -1958,7 +1470,7 @@ class ProduceConsumeTextureTest : public TextureTest,
               GLsizei depth,
               GLint border,
               GLenum type,
-              bool cleared)
+              const gfx::Rect& cleared_rect)
         : target(target),
           format(format),
           width(width),
@@ -1966,7 +1478,7 @@ class ProduceConsumeTextureTest : public TextureTest,
           depth(depth),
           border(border),
           type(type),
-          cleared(cleared) {}
+          cleared_rect(cleared_rect) {}
 
     LevelInfo()
         : target(0),
@@ -1975,14 +1487,13 @@ class ProduceConsumeTextureTest : public TextureTest,
           height(-1),
           depth(1),
           border(0),
-          type(0),
-          cleared(false) {}
+          type(0) {}
 
     bool operator==(const LevelInfo& other) const {
       return target == other.target && format == other.format &&
              width == other.width && height == other.height &&
              depth == other.depth && border == other.border &&
-             type == other.type && cleared == other.cleared;
+             type == other.type && cleared_rect == other.cleared_rect;
     }
 
     GLenum target;
@@ -1992,23 +1503,15 @@ class ProduceConsumeTextureTest : public TextureTest,
     GLsizei depth;
     GLint border;
     GLenum type;
-    bool cleared;
+    gfx::Rect cleared_rect;
   };
 
   void SetLevelInfo(TextureRef* texture_ref,
                     GLint level,
                     const LevelInfo& info) {
-    manager_->SetLevelInfo(texture_ref,
-                           info.target,
-                           level,
-                           info.format,
-                           info.width,
-                           info.height,
-                           info.depth,
-                           info.border,
-                           info.format,
-                           info.type,
-                           info.cleared);
+    manager_->SetLevelInfo(texture_ref, info.target, level, info.format,
+                           info.width, info.height, info.depth, info.border,
+                           info.format, info.type, info.cleared_rect);
   }
 
   static LevelInfo GetLevelInfo(const TextureRef* texture_ref,
@@ -2021,7 +1524,7 @@ class ProduceConsumeTextureTest : public TextureTest,
                                       &info.height, &info.depth));
     EXPECT_TRUE(texture->GetLevelType(target, level, &info.type,
                                       &info.format));
-    info.cleared = texture->IsLevelCleared(target, level);
+    info.cleared_rect = texture->GetLevelClearedRect(target, level);
     return info;
   }
 
@@ -2049,8 +1552,8 @@ TEST_F(ProduceConsumeTextureTest, ProduceConsume2D) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D);
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_2D), texture->target());
-  LevelInfo level0(
-      GL_TEXTURE_2D, GL_RGBA, 4, 4, 1, 0, GL_UNSIGNED_BYTE, true);
+  LevelInfo level0(GL_TEXTURE_2D, GL_RGBA, 4, 4, 1, 0, GL_UNSIGNED_BYTE,
+                   gfx::Rect(4, 4));
   SetLevelInfo(texture_ref_.get(), 0, level0);
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture_ref_.get()));
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
@@ -2062,10 +1565,8 @@ TEST_F(ProduceConsumeTextureTest, ProduceConsume2D) {
   // Make this texture bigger with more levels, and make sure they get
   // clobbered correctly during Consume().
   manager_->SetTarget(texture2_.get(), GL_TEXTURE_2D);
-  SetLevelInfo(
-      texture2_.get(),
-      0,
-      LevelInfo(GL_TEXTURE_2D, GL_RGBA, 16, 16, 1, 0, GL_UNSIGNED_BYTE, false));
+  SetLevelInfo(texture2_.get(), 0, LevelInfo(GL_TEXTURE_2D, GL_RGBA, 16, 16, 1,
+                                             0, GL_UNSIGNED_BYTE, gfx::Rect()));
   EXPECT_TRUE(manager_->MarkMipmapsGenerated(texture2_.get()));
   texture = texture2_->texture();
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
@@ -2093,8 +1594,8 @@ TEST_F(ProduceConsumeTextureTest, ProduceConsumeClearRectangle) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_RECTANGLE_ARB);
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_RECTANGLE_ARB), texture->target());
-  LevelInfo level0(
-      GL_TEXTURE_RECTANGLE_ARB, GL_RGBA, 1, 1, 1, 0, GL_UNSIGNED_BYTE, false);
+  LevelInfo level0(GL_TEXTURE_RECTANGLE_ARB, GL_RGBA, 1, 1, 1, 0,
+                   GL_UNSIGNED_BYTE, gfx::Rect());
   SetLevelInfo(texture_ref_.get(), 0, level0);
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   Texture* produced_texture = Produce(texture_ref_.get());
@@ -2121,8 +1622,8 @@ TEST_F(ProduceConsumeTextureTest, ProduceConsumeExternal) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_EXTERNAL_OES);
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES), texture->target());
-  LevelInfo level0(
-      GL_TEXTURE_EXTERNAL_OES, GL_RGBA, 1, 1, 1, 0, GL_UNSIGNED_BYTE, false);
+  LevelInfo level0(GL_TEXTURE_EXTERNAL_OES, GL_RGBA, 1, 1, 1, 0,
+                   GL_UNSIGNED_BYTE, gfx::Rect());
   SetLevelInfo(texture_ref_.get(), 0, level0);
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   Texture* produced_texture = Produce(texture_ref_.get());
@@ -2143,17 +1644,8 @@ TEST_P(ProduceConsumeTextureTest, ProduceConsumeTextureWithImage) {
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(target), texture->target());
   scoped_refptr<gfx::GLImage> image(new gfx::GLImageStub);
-  manager_->SetLevelInfo(texture_ref_.get(),
-                         target,
-                         0,
-                         GL_RGBA,
-                         0,
-                         0,
-                         1,
-                         0,
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         true);
+  manager_->SetLevelInfo(texture_ref_.get(), target, 0, GL_RGBA, 0, 0, 1, 0,
+                         GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   manager_->SetLevelImage(texture_ref_.get(), target, 0, image.get());
   GLuint service_id = texture->service_id();
   Texture* produced_texture = Produce(texture_ref_.get());
@@ -2178,22 +1670,10 @@ TEST_F(ProduceConsumeTextureTest, ProduceConsumeCube) {
   manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_CUBE_MAP);
   Texture* texture = texture_ref_->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_CUBE_MAP), texture->target());
-  LevelInfo face0(GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-                  GL_RGBA,
-                  1,
-                  1,
-                  1,
-                  0,
-                  GL_UNSIGNED_BYTE,
-                  true);
-  LevelInfo face5(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-                  GL_RGBA,
-                  3,
-                  3,
-                  1,
-                  0,
-                  GL_UNSIGNED_BYTE,
-                  true);
+  LevelInfo face0(GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_RGBA, 1, 1, 1, 0,
+                  GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
+  LevelInfo face5(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, GL_RGBA, 3, 3, 1, 0,
+                  GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
   SetLevelInfo(texture_ref_.get(), 0, face0);
   SetLevelInfo(texture_ref_.get(), 0, face5);
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
@@ -2343,17 +1823,8 @@ TEST_F(SharedTextureTest, TextureSafetyAccounting) {
   EXPECT_FALSE(texture_manager2_->HaveUnsafeTextures());
   EXPECT_FALSE(texture_manager2_->HaveUnclearedMips());
 
-  texture_manager1_->SetLevelInfo(ref1.get(),
-                                  GL_TEXTURE_2D,
-                                  0,
-                                  GL_RGBA,
-                                  1,
-                                  1,
-                                  1,
-                                  0,
-                                  GL_RGBA,
-                                  GL_UNSIGNED_BYTE,
-                                  false);
+  texture_manager1_->SetLevelInfo(ref1.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1,
+                                  1, 0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
   EXPECT_FALSE(texture_manager1_->HaveUnrenderableTextures());
   EXPECT_TRUE(texture_manager1_->HaveUnsafeTextures());
   EXPECT_TRUE(texture_manager1_->HaveUnclearedMips());
@@ -2393,17 +1864,9 @@ TEST_F(SharedTextureTest, FBOCompletenessCheck) {
 
   // Make FBO complete in manager 1.
   texture_manager1_->SetTarget(ref1.get(), GL_TEXTURE_2D);
-  texture_manager1_->SetLevelInfo(ref1.get(),
-                                  GL_TEXTURE_2D,
-                                  0,
-                                  GL_RGBA,
-                                  1,
-                                  1,
-                                  1,
-                                  0,
-                                  GL_RGBA,
-                                  GL_UNSIGNED_BYTE,
-                                  true);
+  texture_manager1_->SetLevelInfo(ref1.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1,
+                                  1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                                  gfx::Rect(1, 1));
   EXPECT_EQ(kCompleteValue, framebuffer1->IsPossiblyComplete());
   framebuffer_manager1.MarkAsComplete(framebuffer1.get());
   EXPECT_TRUE(framebuffer_manager1.IsComplete(framebuffer1.get()));
@@ -2422,17 +1885,9 @@ TEST_F(SharedTextureTest, FBOCompletenessCheck) {
   EXPECT_TRUE(framebuffer_manager2.IsComplete(framebuffer2.get()));
 
   // Change level for texture, both FBOs should be marked incomplete
-  texture_manager1_->SetLevelInfo(ref1.get(),
-                                  GL_TEXTURE_2D,
-                                  0,
-                                  GL_RGBA,
-                                  1,
-                                  1,
-                                  1,
-                                  0,
-                                  GL_RGBA,
-                                  GL_UNSIGNED_BYTE,
-                                  true);
+  texture_manager1_->SetLevelInfo(ref1.get(), GL_TEXTURE_2D, 0, GL_RGBA, 1, 1,
+                                  1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                                  gfx::Rect(1, 1));
   EXPECT_FALSE(framebuffer_manager1.IsComplete(framebuffer1.get()));
   EXPECT_EQ(kCompleteValue, framebuffer1->IsPossiblyComplete());
   framebuffer_manager1.MarkAsComplete(framebuffer1.get());
@@ -2461,17 +1916,8 @@ TEST_F(SharedTextureTest, Memory) {
   // Newly created texture is unrenderable.
   scoped_refptr<TextureRef> ref1 = texture_manager1_->CreateTexture(10, 10);
   texture_manager1_->SetTarget(ref1.get(), GL_TEXTURE_2D);
-  texture_manager1_->SetLevelInfo(ref1.get(),
-                                  GL_TEXTURE_2D,
-                                  0,
-                                  GL_RGBA,
-                                  10,
-                                  10,
-                                  1,
-                                  0,
-                                  GL_RGBA,
-                                  GL_UNSIGNED_BYTE,
-                                  false);
+  texture_manager1_->SetLevelInfo(ref1.get(), GL_TEXTURE_2D, 0, GL_RGBA, 10, 10,
+                                  1, 0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
 
   EXPECT_LT(0u, ref1->texture()->estimated_size());
   EXPECT_EQ(initial_memory1 + ref1->texture()->estimated_size(),
@@ -2509,17 +1955,9 @@ TEST_F(SharedTextureTest, Images) {
       texture_manager2_->Consume(20, ref1->texture());
 
   texture_manager1_->SetTarget(ref1.get(), GL_TEXTURE_2D);
-  texture_manager1_->SetLevelInfo(ref1.get(),
-                                  GL_TEXTURE_2D,
-                                  1,
-                                  GL_RGBA,
-                                  2,
-                                  2,
-                                  1,
-                                  0,
-                                  GL_RGBA,
-                                  GL_UNSIGNED_BYTE,
-                                  true);
+  texture_manager1_->SetLevelInfo(ref1.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2,
+                                  1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                                  gfx::Rect(2, 2));
   EXPECT_FALSE(ref1->texture()->HasImages());
   EXPECT_FALSE(ref2->texture()->HasImages());
   EXPECT_FALSE(texture_manager1_->HaveImages());
@@ -2536,17 +1974,9 @@ TEST_F(SharedTextureTest, Images) {
   EXPECT_TRUE(ref2->texture()->HasImages());
   EXPECT_TRUE(texture_manager1_->HaveImages());
   EXPECT_TRUE(texture_manager2_->HaveImages());
-  texture_manager1_->SetLevelInfo(ref1.get(),
-                                  GL_TEXTURE_2D,
-                                  1,
-                                  GL_RGBA,
-                                  2,
-                                  2,
-                                  1,
-                                  0,
-                                  GL_RGBA,
-                                  GL_UNSIGNED_BYTE,
-                                  true);
+  texture_manager1_->SetLevelInfo(ref1.get(), GL_TEXTURE_2D, 1, GL_RGBA, 2, 2,
+                                  1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                                  gfx::Rect(2, 2));
   EXPECT_FALSE(ref1->texture()->HasImages());
   EXPECT_FALSE(ref2->texture()->HasImages());
   EXPECT_FALSE(texture_manager1_->HaveImages());

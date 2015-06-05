@@ -47,29 +47,19 @@ class MailboxManagerTest : public GpuServiceTest {
     texture->SetTarget(NULL, target, max_level);
   }
 
-  void SetLevelInfo(
-      Texture* texture,
-      GLenum target,
-      GLint level,
-      GLenum internal_format,
-      GLsizei width,
-      GLsizei height,
-      GLsizei depth,
-      GLint border,
-      GLenum format,
-      GLenum type,
-      bool cleared) {
-    texture->SetLevelInfo(NULL,
-                          target,
-                          level,
-                          internal_format,
-                          width,
-                          height,
-                          depth,
-                          border,
-                          format,
-                          type,
-                          cleared);
+  void SetLevelInfo(Texture* texture,
+                    GLenum target,
+                    GLint level,
+                    GLenum internal_format,
+                    GLsizei width,
+                    GLsizei height,
+                    GLsizei depth,
+                    GLint border,
+                    GLenum format,
+                    GLenum type,
+                    const gfx::Rect& cleared_rect) {
+    texture->SetLevelInfo(NULL, target, level, internal_format, width, height,
+                          depth, border, format, type, cleared_rect);
   }
 
   void SetLevelCleared(Texture* texture,
@@ -211,17 +201,8 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
     const GLsizei levels_needed = TextureManager::ComputeMipMapCount(
         GL_TEXTURE_2D, kMaxTextureWidth, kMaxTextureHeight, kMaxTextureDepth);
     SetTarget(texture, GL_TEXTURE_2D, levels_needed);
-    SetLevelInfo(texture,
-                 GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 1,
-                 1,
-                 1,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                 true);
+    SetLevelInfo(texture, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
     SetParameter(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     SetParameter(texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     return texture;
@@ -352,17 +333,8 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
   EXPECT_EQ(kNewTextureId, new_texture->service_id());
 
   // Resize original texture
-  SetLevelInfo(texture,
-               GL_TEXTURE_2D,
-               0,
-               GL_RGBA,
-               16,
-               32,
-               1,
-               0,
-               GL_RGBA,
-               GL_UNSIGNED_BYTE,
-               true);
+  SetLevelInfo(texture, GL_TEXTURE_2D, 0, GL_RGBA, 16, 32, 1, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, gfx::Rect(16, 32));
   // Should have been orphaned
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 
@@ -379,17 +351,8 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeResize) {
   // Should have gotten a new attachment
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) != NULL);
   // Resize original texture again....
-  SetLevelInfo(texture,
-               GL_TEXTURE_2D,
-               0,
-               GL_RGBA,
-               64,
-               64,
-               1,
-               0,
-               GL_RGBA,
-               GL_UNSIGNED_BYTE,
-               true);
+  SetLevelInfo(texture, GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 1, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, gfx::Rect(64, 64));
   // ...and immediately delete the texture which should save the changes.
   SetupUpdateTexParamExpectations(
       kNewTextureId, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
@@ -624,17 +587,8 @@ TEST_F(MailboxManagerSyncTest, SyncIncompleteTexture) {
   EXPECT_FALSE(new_texture->IsDefined());
 
   // Change cleared to false.
-  SetLevelInfo(texture,
-               GL_TEXTURE_2D,
-               0,
-               GL_RGBA,
-               1,
-               1,
-               1,
-               0,
-               GL_RGBA,
-               GL_UNSIGNED_BYTE,
-               true);
+  SetLevelInfo(texture, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
   SetParameter(texture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   SetParameter(texture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   EXPECT_TRUE(texture->IsDefined());
