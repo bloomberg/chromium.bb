@@ -81,6 +81,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   base::WeakPtr<HttpServerProperties> GetWeakPtr() override;
   void Clear() override;
   bool SupportsRequestPriority(const HostPortPair& server) override;
+  bool GetSupportsSpdy(const HostPortPair& server) override;
   void SetSupportsSpdy(const HostPortPair& server, bool support_spdy) override;
   bool RequiresHTTP11(const HostPortPair& server) override;
   void SetHTTP11Required(const HostPortPair& server) override;

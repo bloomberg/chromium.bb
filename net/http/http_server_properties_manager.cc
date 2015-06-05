@@ -155,12 +155,20 @@ bool HttpServerPropertiesManager::SupportsRequestPriority(
   return http_server_properties_impl_->SupportsRequestPriority(server);
 }
 
+bool HttpServerPropertiesManager::GetSupportsSpdy(const HostPortPair& server) {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  return http_server_properties_impl_->GetSupportsSpdy(server);
+}
+
 void HttpServerPropertiesManager::SetSupportsSpdy(const HostPortPair& server,
                                                   bool support_spdy) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
 
+  bool old_support_spdy = http_server_properties_impl_->GetSupportsSpdy(server);
   http_server_properties_impl_->SetSupportsSpdy(server, support_spdy);
-  ScheduleUpdatePrefsOnNetworkThread(SUPPORTS_SPDY);
+  bool new_support_spdy = http_server_properties_impl_->GetSupportsSpdy(server);
+  if (old_support_spdy != new_support_spdy)
+    ScheduleUpdatePrefsOnNetworkThread(SUPPORTS_SPDY);
 }
 
 bool HttpServerPropertiesManager::RequiresHTTP11(const HostPortPair& server) {

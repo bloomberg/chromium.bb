@@ -390,6 +390,8 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
   EXPECT_FALSE(
       http_server_props_manager_->SupportsRequestPriority(spdy_server_mail));
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
+  // ExpectScheduleUpdatePrefsOnNetworkThread() should be called only once.
+  http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
 
   // Run the task.
   base::RunLoop().RunUntilIdle();

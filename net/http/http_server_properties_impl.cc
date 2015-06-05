@@ -157,14 +157,23 @@ bool HttpServerPropertiesImpl::SupportsRequestPriority(
   if (host_port_pair.host().empty())
     return false;
 
-  SpdyServerHostPortMap::iterator spdy_host_port =
-      spdy_servers_map_.Get(host_port_pair.ToString());
-  if (spdy_host_port != spdy_servers_map_.end() && spdy_host_port->second)
+  if (GetSupportsSpdy(host_port_pair))
     return true;
 
   const AlternativeService alternative_service =
       GetAlternativeService(host_port_pair);
   return alternative_service.protocol == QUIC;
+}
+
+bool HttpServerPropertiesImpl::GetSupportsSpdy(
+    const HostPortPair& host_port_pair) {
+  DCHECK(CalledOnValidThread());
+  if (host_port_pair.host().empty())
+    return false;
+
+  SpdyServerHostPortMap::iterator spdy_host_port =
+      spdy_servers_map_.Get(host_port_pair.ToString());
+  return spdy_host_port != spdy_servers_map_.end() && spdy_host_port->second;
 }
 
 void HttpServerPropertiesImpl::SetSupportsSpdy(

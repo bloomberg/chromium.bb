@@ -218,6 +218,9 @@ class NET_EXPORT HttpServerProperties {
   // request prioritization.
   virtual bool SupportsRequestPriority(const HostPortPair& server) = 0;
 
+  // Returns the value set by SetSupportsSpdy(). If not set, returns false.
+  virtual bool GetSupportsSpdy(const HostPortPair& server) = 0;
+
   // Add |server| into the persistent store. Should only be called from IO
   // thread.
   virtual void SetSupportsSpdy(const HostPortPair& server,
