@@ -931,6 +931,13 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
 // using the same SiteInstance.
 TEST_F(NavigatorTestWithBrowserSideNavigation,
        SpeculativeRendererReuseSwappedOutRFH) {
+  // This test doesn't make sense in --site-per-process where swapped out
+  // RenderFrameHost is no longer used.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return;
+  }
+
   // Navigate to an initial site.
   const GURL kUrl1("http://wikipedia.org/");
   contents()->NavigateAndCommit(kUrl1);

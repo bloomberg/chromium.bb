@@ -130,6 +130,7 @@ bool TestWebContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
     int opener_route_id,
     int proxy_routing_id,
+    const FrameReplicationState& replicated_frame_state,
     bool for_main_frame) {
   UpdateMaxPageIDIfNecessary(render_view_host);
   // This will go to a TestRenderViewHost.
@@ -137,7 +138,9 @@ bool TestWebContents::CreateRenderViewForRenderManager(
       render_view_host)->CreateRenderView(base::string16(),
                                           opener_route_id,
                                           proxy_routing_id,
-                                          -1, false);
+                                          -1,
+                                          replicated_frame_state,
+                                          false);
   return true;
 }
 

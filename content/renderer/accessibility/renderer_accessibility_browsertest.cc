@@ -6,6 +6,7 @@
 #include "base/time/time.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_message_enums.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/render_frame_impl.h"
@@ -156,6 +157,14 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
 
 TEST_F(RendererAccessibilityTest,
        MAYBE_AccessibilityMessagesQueueWhileSwappedOut) {
+  // This test breaks down in --site-per-process, as swapping out destroys
+  // the main frame and it cannot be further navigated.
+  // TODO(nasko): Figure out what this behavior looks like when swapped out
+  // no longer exists.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return;
+  }
   std::string html =
       "<body>"
       "  <p>Hello, world.</p>"

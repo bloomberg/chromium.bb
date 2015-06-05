@@ -459,6 +459,8 @@ TEST_F(WebContentsImplTest, NavigateToExcessivelyLongURL) {
 // Test that navigating across a site boundary creates a new RenderViewHost
 // with a new SiteInstance.  Going back should do the same.
 TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
+  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
   TestRenderFrameHost* orig_rfh = contents()->GetMainFrame();
   int orig_rvh_delete_count = 0;
   orig_rfh->GetRenderViewHost()->set_delete_counter(&orig_rvh_delete_count);
@@ -523,9 +525,9 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_EQ(url2, contents()->GetVisibleURL());
   EXPECT_NE(instance1, instance2);
   EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
-  // We keep the original RFH around, swapped out.
-  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->IsOnSwappedOutList(
-      orig_rfh));
+  // We keep a proxy for the original RFH's SiteInstance.
+  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->GetRenderFrameProxyHost(
+      orig_rfh->GetSiteInstance()));
   EXPECT_EQ(orig_rvh_delete_count, 0);
 
   // Going back should switch SiteInstances again.  The first SiteInstance is
@@ -538,7 +540,8 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
     contents()->GetMainFrame()->PrepareForCommit();
   }
   TestRenderFrameHost* goback_rfh = contents()->GetPendingMainFrame();
-  EXPECT_EQ(orig_rfh, goback_rfh);
+  if (!is_site_per_process)
+    EXPECT_EQ(orig_rfh, goback_rfh);
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Navigations should be suspended in goback_rfh until BeforeUnloadACK.
@@ -555,9 +558,9 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(goback_rfh, contents()->GetMainFrame());
   EXPECT_EQ(instance1, contents()->GetSiteInstance());
-  // The pending RFH should now be swapped out, not deleted.
+  // There should be a proxy for the pending RFH SiteInstance.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->
-      IsOnSwappedOutList(pending_rfh));
+      GetRenderFrameProxyHost(pending_rfh->GetSiteInstance()));
   EXPECT_EQ(pending_rvh_delete_count, 0);
   pending_rfh->OnSwappedOut();
 
@@ -776,9 +779,9 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   EXPECT_EQ(url2, contents()->GetVisibleURL());
   EXPECT_NE(new_instance, orig_instance);
   EXPECT_FALSE(contents()->GetPendingMainFrame());
-  // We keep the original RFH around, swapped out.
-  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->IsOnSwappedOutList(
-      orig_rfh));
+  // We keep a proxy for the original RFH's SiteInstance.
+  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->GetRenderFrameProxyHost(
+      orig_rfh->GetSiteInstance()));
   EXPECT_EQ(orig_rvh_delete_count, 0);
   orig_rfh->OnSwappedOut();
 

@@ -1201,7 +1201,7 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
   // Going back, the first entry should still appear unprivileged.
   controller.GoBack();
   new_rfh->PrepareForCommit();
-  orig_rfh->SendNavigate(0, entry1_id, false, url1);
+  contents()->GetPendingMainFrame()->SendNavigate(0, entry1_id, false, url1);
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(0, controller.GetLastCommittedEntry()->bindings());
 }
@@ -2857,6 +2857,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   fail_load_params.error_description = base::string16();
   fail_load_params.url = url;
   fail_load_params.showing_repost_interstitial = false;
+  main_test_rfh()->InitializeRenderFrameIfNeeded();
   main_test_rfh()->OnMessageReceived(
       FrameHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
                                                   fail_load_params));

@@ -537,11 +537,6 @@ void RenderFrameImpl::CreateFrame(
     const FrameReplicationState& replicated_state,
     CompositorDependencies* compositor_deps,
     const FrameMsg_NewFrame_WidgetParams& widget_params) {
-  // TODO(nasko): For now, this message is only sent for subframes, as the
-  // top level frame is created when the RenderView is created through the
-  // ViewMsg_New IPC.
-  CHECK_NE(MSG_ROUTING_NONE, parent_routing_id);
-
   blink::WebLocalFrame* web_frame;
   RenderFrameImpl* render_frame;
   if (proxy_routing_id == MSG_ROUTING_NONE) {
@@ -578,6 +573,7 @@ void RenderFrameImpl::CreateFrame(
         replicated_state.sandbox_flags);
   }
   render_frame->SetWebFrame(web_frame);
+  CHECK_IMPLIES(parent_routing_id == MSG_ROUTING_NONE, !web_frame->parent());
 
   if (widget_params.routing_id != MSG_ROUTING_NONE) {
     CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -700,7 +696,9 @@ RenderFrameImpl::~RenderFrameImpl() {
     }
 
     // Ensure the RenderView doesn't point to this object, once it is destroyed.
-    CHECK_EQ(render_view_->main_render_frame_, this);
+    // TODO(nasko): Add a check that the |main_render_frame_| of |render_view_|
+    // is |this|, once the object is no longer leaked.
+    // See https://crbug.com/464764.
     render_view_->main_render_frame_ = nullptr;
   }
 
@@ -1152,7 +1150,8 @@ void RenderFrameImpl::OnSwapOut(
     // TODO(creis): Should we be stopping all frames here and using
     // StopAltErrorPageFetcher with RenderView::OnStop, or just stopping this
     // frame?
-    OnStop();
+    if (!is_site_per_process)
+      OnStop();
 
     // Transfer settings such as initial drawing parameters to the remote frame,
     // if one is created, that will replace this frame.
@@ -1163,7 +1162,7 @@ void RenderFrameImpl::OnSwapOut(
     // run a second time, thanks to a check in FrameLoader::stopLoading.
     // TODO(creis): Need to add a better way to do this that avoids running the
     // beforeunload handler. For now, we just run it a second time silently.
-    if (!is_site_per_process || is_main_frame)
+    if (!is_site_per_process)
       NavigateToSwappedOutURL();
 
     // Let WebKit know that this view is hidden so it can drop resources and
@@ -1182,19 +1181,16 @@ void RenderFrameImpl::OnSwapOut(
 
   Send(new FrameHostMsg_SwapOut_ACK(routing_id_));
 
+  RenderViewImpl* render_view = render_view_.get();
+
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy, if one is created.
   if (proxy) {
-    if (!is_main_frame) {
+    if (is_site_per_process || !is_main_frame) {
       frame_->swap(proxy->web_frame());
 
       if (is_loading)
         proxy->OnDidStartLoading();
-
-      if (is_site_per_process) {
-        // TODO(nasko): delete the frame here, since we've replaced it with a
-        // proxy.
-      }
     }
   }
 
@@ -1206,12 +1202,24 @@ void RenderFrameImpl::OnSwapOut(
   // in proxy->web_frame(), the RemoteFrame will not exist for main frames.
   // When we do an unconditional swap for all frames, we can remove
   // !is_main_frame below.
-  if (is_site_per_process && proxy && !is_main_frame)
+  if (is_site_per_process && proxy)
     proxy->SetReplicatedState(replicated_frame_state);
 
   // Safe to exit if no one else is using the process.
-  if (is_main_frame)
-    render_view_->WasSwappedOut();
+  // TODO(nasko): Remove the dependency on RenderViewImpl here and ref count
+  // the process based on the lifetime of this RenderFrameImpl object.
+  if (is_main_frame) {
+    render_view->WasSwappedOut();
+
+    // TODO(nasko): Currently, this RenderFrame is leaked due to
+    // https://crbug.com/464764, therefore the destructor won't be invoked to
+    // destroy this object. Until this bug is fixed, set the main frame of the
+    // RenderView to null here.
+    if (is_site_per_process) {
+      CHECK_EQ(render_view_->main_render_frame_, this);
+      render_view->main_render_frame_ = nullptr;
+    }
+  }
 }
 
 void RenderFrameImpl::OnContextMenuClosed(
@@ -2593,10 +2601,13 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     proxy_routing_id_ = MSG_ROUTING_NONE;
 
     // If this is the main frame going from a remote frame to a local frame,
-    // it needs to set RenderViewImpl's pointer for the main frame to itself.
+    // it needs to set RenderViewImpl's pointer for the main frame to itself
+    // and ensure RenderWidget is no longer in swapped out mode.
     if (!is_subframe_) {
       CHECK(!render_view_->main_render_frame_);
       render_view_->main_render_frame_ = this;
+      if (render_view_->is_swapped_out())
+        render_view_->SetSwappedOut(false);
     }
   }
 

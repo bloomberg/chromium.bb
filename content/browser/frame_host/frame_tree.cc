@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -17,6 +18,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
@@ -226,9 +228,14 @@ void FrameTree::CreateProxiesForSiteInstance(
     RenderViewHostImpl* render_view_host =
         source->frame_tree()->GetRenderViewHost(site_instance);
     if (!render_view_host) {
-      root()->render_manager()->CreateRenderFrame(
-          site_instance, nullptr, MSG_ROUTING_NONE,
-          CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN, nullptr);
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSitePerProcess)) {
+        root()->render_manager()->CreateRenderFrameProxy(site_instance);
+      } else {
+        root()->render_manager()->CreateRenderFrame(
+            site_instance, nullptr, MSG_ROUTING_NONE,
+            CREATE_RF_SWAPPED_OUT | CREATE_RF_HIDDEN, nullptr);
+      }
     } else {
       root()->render_manager()->EnsureRenderViewInitialized(
           source, render_view_host, site_instance);
@@ -265,7 +272,6 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(SiteInstance* site_instance,
                                                     int main_frame_routing_id,
                                                     bool swapped_out,
                                                     bool hidden) {
-  DCHECK(main_frame_routing_id != MSG_ROUTING_NONE);
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
   if (iter != render_view_host_map_.end()) {
@@ -274,7 +280,8 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(SiteInstance* site_instance,
     // Otherwise return the existing RenderViewHost for the SiteInstance.
     RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
         iter->second->GetMainFrame());
-    if (main_frame->frame_tree_node()->render_manager()->IsPendingDeletion(
+    if (main_frame &&
+        main_frame->frame_tree_node()->render_manager()->IsPendingDeletion(
             main_frame)) {
       render_view_host_pending_shutdown_map_.insert(
           std::pair<int, RenderViewHostImpl*>(site_instance->GetId(),

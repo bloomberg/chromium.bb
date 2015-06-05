@@ -278,6 +278,7 @@ bool RenderViewHostImpl::CreateRenderView(
     int opener_route_id,
     int proxy_route_id,
     int32 max_page_id,
+    const FrameReplicationState& replicated_frame_state,
     bool window_was_created_with_opener) {
   TRACE_EVENT0("renderer_host,navigation",
                "RenderViewHostImpl::CreateRenderView");
@@ -319,6 +320,7 @@ bool RenderViewHostImpl::CreateRenderView(
   // Ensure the RenderView sets its opener correctly.
   params.opener_route_id = opener_route_id;
   params.swapped_out = !is_active_;
+  params.replicated_frame_state = replicated_frame_state;
   params.proxy_routing_id = proxy_route_id;
   params.hidden = is_hidden();
   params.never_visible = delegate_->IsNeverVisible();
@@ -328,11 +330,6 @@ bool RenderViewHostImpl::CreateRenderView(
   params.min_size = min_size_for_auto_resize();
   params.max_size = max_size_for_auto_resize();
   GetResizeParams(&params.initial_size);
-  if (!is_active_) {
-    params.replicated_frame_state =
-        static_cast<RenderFrameHostImpl*>(GetMainFrame())->frame_tree_node()
-            ->current_replication_state();
-  }
 
   if (!Send(new ViewMsg_New(params)))
     return false;
@@ -353,10 +350,12 @@ bool RenderViewHostImpl::CreateRenderView(
   // Let our delegate know that we created a RenderView.
   delegate_->RenderViewCreated(this);
 
-  // Since this method creates the main RenderFrame in the renderer process,
+  // Since this method can create the main RenderFrame in the renderer process,
   // set the proper state on its corresponding RenderFrameHost.
-  RenderFrameHostImpl::FromID(GetProcess()->GetID(), main_frame_routing_id_)
-      ->SetRenderFrameCreated(true);
+  if (main_frame_routing_id_ != MSG_ROUTING_NONE) {
+    RenderFrameHostImpl::FromID(GetProcess()->GetID(), main_frame_routing_id_)
+        ->SetRenderFrameCreated(true);
+  }
 
   return true;
 }

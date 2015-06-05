@@ -1007,8 +1007,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   FrameTreeNode* root =
       static_cast<WebContentsImpl*>(shell()->web_contents())->
           GetFrameTree()->root();
-  TestNavigationObserver observer(shell()->web_contents());
-
   ASSERT_EQ(2U, root->child_count());
 
   GURL site_b_url(

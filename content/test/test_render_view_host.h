@@ -39,6 +39,7 @@ namespace content {
 class SiteInstance;
 class TestRenderFrameHost;
 class TestWebContents;
+struct FrameReplicationState;
 
 // Utility function to initialize FrameHostMsg_DidCommitProvisionalLoad_Params
 // with given parameters.
@@ -232,12 +233,19 @@ class TestRenderViewHost
   // RenderWidgetHost overrides (same value, but in the Mock* type)
   MockRenderProcessHost* GetProcess() const override;
 
+  bool CreateTestRenderView(const base::string16& frame_name,
+                            int opener_route_id,
+                            int proxy_route_id,
+                            int32 max_page_id,
+                            bool window_was_created_with_opener) override;
+
   // RenderViewHost overrides --------------------------------------------------
 
   bool CreateRenderView(const base::string16& frame_name,
                         int opener_route_id,
                         int proxy_route_id,
                         int32 max_page_id,
+                        const FrameReplicationState& replicated_frame_state,
                         bool window_was_created_with_opener) override;
   bool IsFullscreenGranted() const override;
 

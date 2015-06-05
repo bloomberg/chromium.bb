@@ -638,6 +638,7 @@ RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
       top_controls_constraints_(TOP_CONTROLS_STATE_BOTH),
 #endif
       has_scrolled_focused_editable_node_into_rect_(false),
+      main_render_frame_(nullptr),
       speech_recognition_dispatcher_(NULL),
       mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
@@ -668,23 +669,57 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   // Ensure we start with a valid next_page_id_ from the browser.
   DCHECK_GE(next_page_id_, 0);
 
-  main_render_frame_ = RenderFrameImpl::Create(
-      this, params.main_frame_routing_id);
-  // The main frame WebLocalFrame object is closed by
-  // RenderFrameImpl::frameDetached().
-  WebLocalFrame* web_frame = WebLocalFrame::create(
-      blink::WebTreeScopeType::Document, main_render_frame_);
-  main_render_frame_->SetWebFrame(web_frame);
+  if (params.main_frame_routing_id != MSG_ROUTING_NONE) {
+    main_render_frame_ = RenderFrameImpl::Create(
+        this, params.main_frame_routing_id);
+    // The main frame WebLocalFrame object is closed by
+    // RenderFrameImpl::frameDetached().
+    WebLocalFrame* web_frame = WebLocalFrame::create(
+        blink::WebTreeScopeType::Document, main_render_frame_);
+    main_render_frame_->SetWebFrame(web_frame);
+  }
 
   compositor_deps_ = compositor_deps;
   webwidget_ = WebView::create(this);
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(webwidget_));
+
+  g_view_map.Get().insert(std::make_pair(webview(), this));
+  g_routing_id_view_map.Get().insert(std::make_pair(routing_id_, this));
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
   if (command_line.HasSwitch(switches::kStatsCollectionController))
     stats_collection_observer_.reset(new StatsCollectionObserver(this));
+
+  RenderFrameProxy* proxy = NULL;
+  if (params.proxy_routing_id != MSG_ROUTING_NONE) {
+    CHECK(params.swapped_out);
+    if (main_render_frame_) {
+      proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
+          main_render_frame_, params.proxy_routing_id,
+          blink::WebTreeScopeType::Document);
+      main_render_frame_->set_render_frame_proxy(proxy);
+    } else {
+      proxy = RenderFrameProxy::CreateFrameProxy(
+          params.proxy_routing_id,
+          MSG_ROUTING_NONE,
+          routing_id_,
+          params.replicated_frame_state);
+    }
+  }
+
+  // In --site-per-process, just use the WebRemoteFrame as the main frame.
+  if (command_line.HasSwitch(switches::kSitePerProcess) && proxy) {
+    webview()->setMainFrame(proxy->web_frame());
+    // Initialize the WebRemoteFrame with information replicated from the
+    // browser process.
+    proxy->SetReplicatedState(params.replicated_frame_state);
+  } else {
+    webview()->setMainFrame(main_render_frame_->GetWebFrame());
+  }
+  if (main_render_frame_)
+    main_render_frame_->Initialize();
 
 #if defined(OS_ANDROID)
   content_detectors_.push_back(linked_ptr<ContentDetector>(
@@ -717,8 +752,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
     CompleteInit();
   }
 
-  g_view_map.Get().insert(std::make_pair(webview(), this));
-  g_routing_id_view_map.Get().insert(std::make_pair(routing_id_, this));
   webview()->setDeviceScaleFactor(device_scale_factor_);
   webview()->setDisplayMode(display_mode_);
   webview()->settings()->setPreferCompositingToLCDTextEnabled(
@@ -729,26 +762,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
       command_line.HasSwitch(switches::kRootLayerScrolls));
 
   ApplyWebPreferences(webkit_preferences_, webview());
-
-  RenderFrameProxy* proxy = NULL;
-  if (params.proxy_routing_id != MSG_ROUTING_NONE) {
-    CHECK(params.swapped_out);
-    proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
-        main_render_frame_, params.proxy_routing_id,
-        blink::WebTreeScopeType::Document);
-    main_render_frame_->set_render_frame_proxy(proxy);
-  }
-
-  // In --site-per-process, just use the WebRemoteFrame as the main frame.
-  if (command_line.HasSwitch(switches::kSitePerProcess) && proxy) {
-    webview()->setMainFrame(proxy->web_frame());
-    // Initialize the WebRemoteFrame with information replicated from the
-    // browser process.
-    proxy->SetReplicatedState(params.replicated_frame_state);
-  } else {
-    webview()->setMainFrame(main_render_frame_->GetWebFrame());
-  }
-  main_render_frame_->Initialize();
 
   if (switches::IsTouchDragDropEnabled())
     webview()->settings()->setTouchDragDropEnabled(true);

@@ -640,6 +640,12 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
 // Ensure the RenderViewImpl sends an ACK to a SwapOut request, even if it is
 // already swapped out.  http://crbug.com/93427.
 TEST_F(RenderViewImplTest, SendSwapOutACK) {
+  // This test is invalid in --site-per-process mode, as swapped-out is no
+  // longer used.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return;
+  }
   LoadHTML("<div>Page A</div>");
   int initial_page_id = view_page_id();
 
@@ -686,6 +692,13 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
 // Ensure the RenderViewImpl reloads the previous page if a reload request
 // arrives while it is showing swappedout://.  http://crbug.com/143155.
 TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
+  // This test is invalid in --site-per-process mode, as swapped-out is no
+  // longer used.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return;
+  }
+
   // Load page A.
   LoadHTML("<div>Page A</div>");
 

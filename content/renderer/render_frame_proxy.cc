@@ -6,12 +6,14 @@
 
 #include <map>
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -65,7 +67,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
   RenderViewImpl* render_view = NULL;
   blink::WebRemoteFrame* web_frame = NULL;
   if (parent_routing_id == MSG_ROUTING_NONE) {
-    // Create a top level frame.
+    // Create a top level WebRemoteFrame.
     render_view = RenderViewImpl::FromRoutingID(render_view_routing_id);
     web_frame =
         blink::WebRemoteFrame::create(replicated_state.scope, proxy.get());
@@ -292,12 +294,15 @@ void RenderFrameProxy::OnDisownOpener() {
   // When there is a RenderFrame for this proxy, tell it to disown its opener.
   // TODO(creis): Remove this when we only have WebRemoteFrames and make sure
   // they know they have an opener.
-  RenderFrameImpl* render_frame =
-      RenderFrameImpl::FromRoutingID(frame_routing_id_);
-  if (render_frame) {
-    if (render_frame->GetWebFrame()->opener())
-      render_frame->GetWebFrame()->setOpener(NULL);
-    return;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    RenderFrameImpl* render_frame =
+        RenderFrameImpl::FromRoutingID(frame_routing_id_);
+    if (render_frame) {
+      if (render_frame->GetWebFrame()->opener())
+        render_frame->GetWebFrame()->setOpener(NULL);
+      return;
+    }
   }
 
   if (web_frame_->opener())

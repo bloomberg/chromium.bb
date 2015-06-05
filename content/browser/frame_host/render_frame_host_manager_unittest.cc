@@ -330,7 +330,9 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     if (old_rfh != active_rfh && !rfh_observer.deleted()) {
       EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT,
                 old_rfh->rfh_state());
-      if (!old_rfh->GetSiteInstance()->active_frame_count()) {
+      if (!old_rfh->GetSiteInstance()->active_frame_count() ||
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+               switches::kSitePerProcess)) {
         expecting_rfh_shutdown = true;
         EXPECT_TRUE(
             old_rfh->frame_tree_node()->render_manager()->IsPendingDeletion(
@@ -344,7 +346,10 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
       old_rfh->OnSwappedOut();
       if (expecting_rfh_shutdown) {
         EXPECT_TRUE(rfh_observer.deleted());
-        EXPECT_TRUE(rvh_observer.deleted());
+        if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kSitePerProcess)) {
+          EXPECT_TRUE(rvh_observer.deleted());
+        }
       } else {
         EXPECT_EQ(RenderFrameHostImpl::STATE_SWAPPED_OUT,
                   old_rfh->rfh_state());
@@ -527,6 +532,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   // Navigate our first tab to a chrome url and then to the destination.
   NavigateActiveAndCommit(kChromeURL);
   TestRenderFrameHost* ntp_rfh = contents()->GetMainFrame();
+  TestRenderViewHost* ntp_rvh = ntp_rfh->GetRenderViewHost();
 
   // Send an update favicon message and make sure it works.
   {
@@ -559,14 +565,20 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
 
   // The old renderer, being slow, now updates the favicon. It should be
   // filtered out and not take effect.
-  EXPECT_TRUE(ntp_rfh->is_swapped_out());
   {
     PluginFaviconMessageObserver observer(contents());
     EXPECT_TRUE(
-        ntp_rfh->GetRenderViewHost()->OnMessageReceived(
+        ntp_rvh->OnMessageReceived(
             ViewHostMsg_UpdateFaviconURL(
                 dest_rfh->GetRenderViewHost()->GetRoutingID(), icons)));
     EXPECT_FALSE(observer.favicon_received());
+  }
+
+  // In --site-per-process, the RenderFrameHost is deleted on cross-process
+  // navigation, so the rest of the test case doesn't apply.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return;
   }
 
 #if defined(ENABLE_PLUGINS)
@@ -673,6 +685,13 @@ TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
   const GURL kUrl1("http://foo.com");
   const GURL kUrl2("http://www.google.com/");
 
+  // This test is invalid in --site-per-process mode, as swapped-out is no
+  // longer used.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return;
+  }
+
   // Navigate to the first site.
   NavigateActiveAndCommit(kUrl1);
   TestRenderFrameHost* initial_rfh = contents()->GetMainFrame();
@@ -711,6 +730,12 @@ TEST_F(RenderFrameHostManagerTest, DropCreateChildFrameWhileSwappedOut) {
 }
 
 TEST_F(RenderFrameHostManagerTest, WhiteListSwapCompositorFrame) {
+  // TODO(nasko): Check with kenrb whether this test can be rewritten and
+  // whether it makes sense when swapped out is replaced with proxies.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return;
+  }
   TestRenderFrameHost* swapped_out_rfh = CreateSwappedOutRenderFrameHost();
   TestRenderWidgetHostView* swapped_out_rwhv =
       static_cast<TestRenderWidgetHostView*>(
@@ -731,6 +756,13 @@ TEST_F(RenderFrameHostManagerTest, WhiteListSwapCompositorFrame) {
 // Test if RenderViewHost::GetRenderWidgetHosts() only returns active
 // widgets.
 TEST_F(RenderFrameHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {
+  // This test is invalid in --site-per-process mode, as swapped-out is no
+  // longer used.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return;
+  }
+
   TestRenderFrameHost* swapped_out_rfh = CreateSwappedOutRenderFrameHost();
   EXPECT_TRUE(swapped_out_rfh->is_swapped_out());
 
@@ -752,6 +784,13 @@ TEST_F(RenderFrameHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {
 // including swapped out ones.
 TEST_F(RenderFrameHostManagerTest,
        GetRenderWidgetHostsWithinGetAllRenderWidgetHosts) {
+  // This test is invalid in --site-per-process mode, as swapped-out is no
+  // longer used.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return;
+  }
+
   TestRenderFrameHost* swapped_out_rfh = CreateSwappedOutRenderFrameHost();
   EXPECT_TRUE(swapped_out_rfh->is_swapped_out());
 
@@ -1109,7 +1148,8 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
       web_contents1->GetRenderManagerForTesting();
   // Test the case that new RVH is considered live.
   manager1->current_host()->CreateRenderView(
-      base::string16(), -1, MSG_ROUTING_NONE, -1, false);
+      base::string16(), -1, MSG_ROUTING_NONE, -1,
+      FrameReplicationState(), false);
   EXPECT_TRUE(manager1->current_host()->IsRenderViewLive());
   EXPECT_TRUE(manager1->current_frame_host()->IsRenderFrameLive());
 
@@ -1143,7 +1183,8 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   // Make sure the new RVH is considered live.  This is usually done in
   // RenderWidgetHost::Init when opening a new tab from a link.
   manager2->current_host()->CreateRenderView(
-      base::string16(), -1, MSG_ROUTING_NONE, -1, false);
+      base::string16(), -1, MSG_ROUTING_NONE, -1,
+      FrameReplicationState(), false);
   EXPECT_TRUE(manager2->current_host()->IsRenderViewLive());
 
   const GURL kUrl2("chrome://foo/bar");
@@ -1313,8 +1354,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
 
   // The back navigation commits.
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
-  rfh1->SendNavigate(entry1->GetPageID(), entry1->GetUniqueID(), false,
-                     entry1->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigate(
+      entry1->GetPageID(), entry1->GetUniqueID(), false, entry1->GetURL());
   EXPECT_TRUE(rfh2->IsWaitingForUnloadACK());
   EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh2->rfh_state());
 
@@ -1322,14 +1363,17 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   contents()->GetController().GoForward();
   contents()->GetMainFrame()->PrepareForCommit();
   const NavigationEntry* entry2 = contents()->GetController().GetPendingEntry();
-  rfh2->SendNavigate(entry2->GetPageID(), entry2->GetUniqueID(), false,
-                     entry2->GetURL());
-  EXPECT_EQ(rfh2, main_test_rfh());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, rfh2->rfh_state());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
-  rfh1->OnSwappedOut();
-  EXPECT_TRUE(rfh1->is_swapped_out());
-  EXPECT_EQ(RenderFrameHostImpl::STATE_SWAPPED_OUT, rfh1->rfh_state());
+  contents()->GetPendingMainFrame()->SendNavigate(
+      entry2->GetPageID(), entry2->GetUniqueID(), false, entry2->GetURL());
+  EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, main_test_rfh()->rfh_state());
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    EXPECT_EQ(rfh2, main_test_rfh());
+    EXPECT_EQ(RenderFrameHostImpl::STATE_PENDING_SWAP_OUT, rfh1->rfh_state());
+    rfh1->OnSwappedOut();
+    EXPECT_TRUE(rfh1->is_swapped_out());
+    EXPECT_EQ(RenderFrameHostImpl::STATE_SWAPPED_OUT, rfh1->rfh_state());
+  }
 }
 
 // Test that we create swapped out RFHs for the opener chain when navigating an
@@ -1339,23 +1383,27 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
   const GURL kChromeUrl("chrome://foo");
+  bool is_site_per_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess);
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
   TestRenderFrameHost* rfh1 = main_test_rfh();
+  scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
+  RenderFrameHostDeletedObserver rfh1_deleted_observer(rfh1);
   TestRenderViewHost* rvh1 = test_rvh();
 
   // Create 2 new tabs and simulate them being the opener chain for the main
   // tab.  They should be in the same SiteInstance.
   scoped_ptr<TestWebContents> opener1(
-      TestWebContents::Create(browser_context(), rfh1->GetSiteInstance()));
+      TestWebContents::Create(browser_context(), site_instance1.get()));
   RenderFrameHostManager* opener1_manager =
       opener1->GetRenderManagerForTesting();
   contents()->SetOpener(opener1.get());
 
   scoped_ptr<TestWebContents> opener2(
-      TestWebContents::Create(browser_context(), rfh1->GetSiteInstance()));
+      TestWebContents::Create(browser_context(), site_instance1.get()));
   RenderFrameHostManager* opener2_manager =
       opener2->GetRenderManagerForTesting();
   opener1->SetOpener(opener2.get());
@@ -1365,16 +1413,21 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   contents()->NavigateAndCommit(kUrl2);
   TestRenderFrameHost* rfh2 = main_test_rfh();
   TestRenderViewHost* rvh2 = test_rvh();
-  EXPECT_NE(rfh1->GetSiteInstance(), rfh2->GetSiteInstance());
-  EXPECT_TRUE(rfh1->GetSiteInstance()->IsRelatedSiteInstance(
-                  rfh2->GetSiteInstance()));
+  EXPECT_NE(site_instance1, rfh2->GetSiteInstance());
+  EXPECT_TRUE(site_instance1->IsRelatedSiteInstance(rfh2->GetSiteInstance()));
 
   // Ensure rvh1 is placed on swapped out list of the current tab.
-  EXPECT_TRUE(manager->IsOnSwappedOutList(rfh1));
-  EXPECT_TRUE(manager->IsRVHOnSwappedOutList(rvh1));
-  EXPECT_EQ(rfh1,
-            manager->GetRenderFrameProxyHost(rfh1->GetSiteInstance())
-                ->render_frame_host());
+  if (!is_site_per_process) {
+    EXPECT_TRUE(manager->IsRVHOnSwappedOutList(rvh1));
+    EXPECT_FALSE(rfh1_deleted_observer.deleted());
+    EXPECT_TRUE(manager->IsOnSwappedOutList(rfh1));
+    EXPECT_EQ(rfh1,
+              manager->GetRenderFrameProxyHost(site_instance1.get())
+                  ->render_frame_host());
+  } else {
+    EXPECT_TRUE(rfh1_deleted_observer.deleted());
+    EXPECT_TRUE(manager->GetRenderFrameProxyHost(site_instance1.get()));
+  }
   EXPECT_EQ(rvh1,
             manager->GetSwappedOutRenderViewHost(rvh1->GetSiteInstance()));
 
@@ -1384,9 +1437,13 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   RenderFrameHostImpl* opener1_rfh = opener1_proxy->render_frame_host();
   TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
       opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_TRUE(opener1_manager->IsOnSwappedOutList(opener1_rfh));
-  EXPECT_TRUE(opener1_manager->IsRVHOnSwappedOutList(opener1_rvh));
-  EXPECT_TRUE(opener1_rfh->is_swapped_out());
+  if (!is_site_per_process) {
+    EXPECT_TRUE(opener1_manager->IsOnSwappedOutList(opener1_rfh));
+    EXPECT_TRUE(opener1_manager->IsRVHOnSwappedOutList(opener1_rvh));
+    EXPECT_TRUE(opener1_rfh->is_swapped_out());
+  } else {
+    EXPECT_FALSE(opener1_rfh);
+  }
   EXPECT_FALSE(opener1_rvh->is_active());
 
   // Ensure a swapped out RFH and RVH is created in the second opener tab.
@@ -1395,17 +1452,20 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   RenderFrameHostImpl* opener2_rfh = opener2_proxy->render_frame_host();
   TestRenderViewHost* opener2_rvh = static_cast<TestRenderViewHost*>(
       opener2_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_TRUE(opener2_manager->IsOnSwappedOutList(opener2_rfh));
-  EXPECT_TRUE(opener2_manager->IsRVHOnSwappedOutList(opener2_rvh));
-  EXPECT_TRUE(opener2_rfh->is_swapped_out());
+  if (!is_site_per_process) {
+    EXPECT_TRUE(opener2_manager->IsOnSwappedOutList(opener2_rfh));
+    EXPECT_TRUE(opener2_manager->IsRVHOnSwappedOutList(opener2_rvh));
+    EXPECT_TRUE(opener2_rfh->is_swapped_out());
+  } else {
+    EXPECT_FALSE(opener2_rfh);
+  }
   EXPECT_FALSE(opener2_rvh->is_active());
 
   // Navigate to a cross-BrowsingInstance URL.
   contents()->NavigateAndCommit(kChromeUrl);
   TestRenderFrameHost* rfh3 = main_test_rfh();
-  EXPECT_NE(rfh1->GetSiteInstance(), rfh3->GetSiteInstance());
-  EXPECT_FALSE(rfh1->GetSiteInstance()->IsRelatedSiteInstance(
-                   rfh3->GetSiteInstance()));
+  EXPECT_NE(site_instance1, rfh3->GetSiteInstance());
+  EXPECT_FALSE(site_instance1->IsRelatedSiteInstance(rfh3->GetSiteInstance()));
 
   // No scripting is allowed across BrowsingInstances, so we should not create
   // swapped out RVHs for the opener chain in this case.
@@ -1427,6 +1487,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpener) {
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = main_test_rfh();
+  scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
 
   // Create a new tab and simulate having it be the opener for the main tab.
   scoped_ptr<TestWebContents> opener1(
@@ -1438,7 +1499,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpener) {
   // BrowsingInstance).
   contents()->NavigateAndCommit(kUrl2);
   TestRenderFrameHost* rfh2 = main_test_rfh();
-  EXPECT_NE(rfh1->GetSiteInstance(), rfh2->GetSiteInstance());
+  EXPECT_NE(site_instance1, rfh2->GetSiteInstance());
 
   // Disown the opener from rfh2.
   rfh2->DidDisownOpener();
@@ -1476,11 +1537,12 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
-  TestRenderFrameHost* rfh1 = main_test_rfh();
+  scoped_refptr<SiteInstanceImpl> site_instance1 =
+      main_test_rfh()->GetSiteInstance();
 
   // Create a new tab and simulate having it be the opener for the main tab.
   scoped_ptr<TestWebContents> opener1(
-      TestWebContents::Create(browser_context(), rfh1->GetSiteInstance()));
+      TestWebContents::Create(browser_context(), site_instance1.get()));
   contents()->SetOpener(opener1.get());
   EXPECT_TRUE(contents()->HasOpener());
 
@@ -1488,9 +1550,9 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
   // BrowsingInstance).
   contents()->NavigateAndCommit(kUrl2);
   TestRenderFrameHost* rfh2 = main_test_rfh();
-  EXPECT_NE(rfh1->GetSiteInstance(), rfh2->GetSiteInstance());
+  EXPECT_NE(site_instance1, rfh2->GetSiteInstance());
 
-  // Start a back navigation so that rfh1 becomes the pending RFH.
+  // Start a back navigation.
   contents()->GetController().GoBack();
   contents()->GetMainFrame()->PrepareForCommit();
 
@@ -1502,8 +1564,8 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
 
   // The back navigation commits.
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
-  rfh1->SendNavigate(entry1->GetPageID(), entry1->GetUniqueID(), false,
-                     entry1->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigate(
+      entry1->GetPageID(), entry1->GetUniqueID(), false, entry1->GetURL());
 
   // Ensure the opener is still cleared.
   EXPECT_FALSE(contents()->HasOpener());
@@ -1517,11 +1579,12 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
-  TestRenderFrameHost* rfh1 = main_test_rfh();
+  scoped_refptr<SiteInstanceImpl> site_instance1 =
+      main_test_rfh()->GetSiteInstance();
 
   // Create a new tab and simulate having it be the opener for the main tab.
   scoped_ptr<TestWebContents> opener1(
-      TestWebContents::Create(browser_context(), rfh1->GetSiteInstance()));
+      TestWebContents::Create(browser_context(), site_instance1.get()));
   contents()->SetOpener(opener1.get());
   EXPECT_TRUE(contents()->HasOpener());
 
@@ -1529,15 +1592,14 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
   // BrowsingInstance).
   contents()->NavigateAndCommit(kUrl2);
   TestRenderFrameHost* rfh2 = main_test_rfh();
-  EXPECT_NE(rfh1->GetSiteInstance(), rfh2->GetSiteInstance());
+  EXPECT_NE(site_instance1, rfh2->GetSiteInstance());
 
   // Commit a back navigation before the DidDisownOpener message arrives.
-  // rfh1 will be kept alive because of the opener tab.
   contents()->GetController().GoBack();
   contents()->GetMainFrame()->PrepareForCommit();
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
-  rfh1->SendNavigate(entry1->GetPageID(), entry1->GetUniqueID(), false,
-                     entry1->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigate(
+      entry1->GetPageID(), entry1->GetUniqueID(), false, entry1->GetURL());
 
   // Disown the opener from rfh2.
   rfh2->DidDisownOpener();
@@ -1563,7 +1625,8 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
 
   // Make sure the new opener RVH is considered live.
   opener1_manager->current_host()->CreateRenderView(
-      base::string16(), -1, MSG_ROUTING_NONE, -1, false);
+      base::string16(), -1, MSG_ROUTING_NONE, -1,
+      FrameReplicationState(), false);
   EXPECT_TRUE(opener1_manager->current_host()->IsRenderViewLive());
   EXPECT_TRUE(opener1_manager->current_frame_host()->IsRenderFrameLive());
 
@@ -1634,9 +1697,14 @@ TEST_F(RenderFrameHostManagerTest, EnableWebUIWithSwappedOutOpener) {
   RenderFrameHostImpl* opener1_rfh = opener1_proxy->render_frame_host();
   TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
       opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_TRUE(opener1_manager->IsOnSwappedOutList(opener1_rfh));
-  EXPECT_TRUE(opener1_manager->IsRVHOnSwappedOutList(opener1_rvh));
-  EXPECT_TRUE(opener1_rfh->is_swapped_out());
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    EXPECT_TRUE(opener1_manager->IsOnSwappedOutList(opener1_rfh));
+    EXPECT_TRUE(opener1_manager->IsRVHOnSwappedOutList(opener1_rvh));
+    EXPECT_TRUE(opener1_rfh->is_swapped_out());
+  } else {
+    EXPECT_FALSE(opener1_rfh);
+  }
   EXPECT_FALSE(opener1_rvh->is_active());
 
   // Ensure the new RVH has WebUI bindings.
@@ -1874,9 +1942,14 @@ TEST_F(RenderFrameHostManagerTest, SwapOutFrameAfterSwapOutACK) {
   // Simulate the swap out ack.
   rfh1->OnSwappedOut();
 
-  // rfh1 should be swapped out.
-  EXPECT_FALSE(rfh_deleted_observer.deleted());
-  EXPECT_TRUE(rfh1->is_swapped_out());
+  // rfh1 should be swapped out or deleted in --site-per-process.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    EXPECT_FALSE(rfh_deleted_observer.deleted());
+    EXPECT_TRUE(rfh1->is_swapped_out());
+  } else {
+    EXPECT_TRUE(rfh_deleted_observer.deleted());
+  }
 }
 
 // Test that the RenderViewHost is properly swapped out if a navigation in the
@@ -1896,7 +1969,8 @@ TEST_F(RenderFrameHostManagerTest,
 
   // Increment the number of active frames in SiteInstanceImpl so that rfh1 is
   // not deleted on swap out.
-  rfh1->GetSiteInstance()->increment_active_frame_count();
+  scoped_refptr<SiteInstanceImpl> site_instance = rfh1->GetSiteInstance();
+  site_instance->increment_active_frame_count();
 
   // Navigate to new site, simulating onbeforeunload approval.
   controller().LoadURL(
@@ -1919,12 +1993,19 @@ TEST_F(RenderFrameHostManagerTest,
   rfh1->OnSwappedOut();
 
   // rfh1 should be swapped out.
-  EXPECT_FALSE(rfh_deleted_observer.deleted());
-  EXPECT_TRUE(rfh1->is_swapped_out());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    EXPECT_TRUE(rfh_deleted_observer.deleted());
+    EXPECT_TRUE(contents()->GetFrameTree()->root()->render_manager()
+                ->GetRenderFrameProxyHost(site_instance.get()));
+  } else {
+    EXPECT_FALSE(rfh_deleted_observer.deleted());
+    EXPECT_TRUE(rfh1->is_swapped_out());
+  }
 }
 
-// Test that a RenderFrameHost is properly deleted or swapped out when a
-// cross-site navigation is cancelled.
+// Test that a RenderFrameHost is properly deleted when a cross-site navigation
+// is cancelled.
 TEST_F(RenderFrameHostManagerTest,
        CancelPendingProperlyDeletesOrSwaps) {
   const GURL kUrl1("http://www.google.com/");
@@ -1964,13 +2045,24 @@ TEST_F(RenderFrameHostManagerTest,
     RenderFrameHostDeletedObserver rfh_deleted_observer(pending_rfh);
 
     // Increment the number of active frames in the new SiteInstance, which will
-    // cause the pending RFH to be swapped out instead of deleted.
-    pending_rfh->GetSiteInstance()->increment_active_frame_count();
+    // cause the pending RFH to be deleted and a RenderFrameProxyHost to be
+    // created.
+    scoped_refptr<SiteInstanceImpl> site_instance =
+        pending_rfh->GetSiteInstance();
+    site_instance->increment_active_frame_count();
 
     contents()->GetMainFrame()->OnMessageReceived(
         FrameHostMsg_BeforeUnload_ACK(0, false, now, now));
     EXPECT_FALSE(contents()->CrossProcessNavigationPending());
-    EXPECT_FALSE(rfh_deleted_observer.deleted());
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+      EXPECT_TRUE(rfh_deleted_observer.deleted());
+      EXPECT_TRUE(contents()->GetFrameTree()->root()->render_manager()
+                  ->GetRenderFrameProxyHost(site_instance.get()));
+    } else {
+      EXPECT_FALSE(rfh_deleted_observer.deleted());
+    }
   }
 }
 

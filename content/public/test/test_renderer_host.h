@@ -132,11 +132,12 @@ class RenderViewHostTester {
   virtual ~RenderViewHostTester() {}
 
   // Gives tests access to RenderViewHostImpl::CreateRenderView.
-  virtual bool CreateRenderView(const base::string16& frame_name,
-                                int opener_route_id,
-                                int proxy_routing_id,
-                                int32 max_page_id,
-                                bool created_with_opener) = 0;
+  virtual bool CreateTestRenderView(
+      const base::string16& frame_name,
+      int opener_route_id,
+      int proxy_routing_id,
+      int32 max_page_id,
+      bool created_with_opener) = 0;
 
   // Makes the WasHidden/WasShown calls to the RenderWidget that
   // tell it it has been hidden or restored from having been hidden.

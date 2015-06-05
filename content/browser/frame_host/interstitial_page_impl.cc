@@ -565,6 +565,7 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
                                       MSG_ROUTING_NONE,
                                       MSG_ROUTING_NONE,
                                       max_page_id,
+                                      FrameReplicationState(),
                                       false);
   controller_->delegate()->RenderFrameForInterstitialPageCreated(
       frame_tree_.root()->current_frame_host());

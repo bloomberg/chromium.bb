@@ -61,10 +61,12 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   bool CrossProcessNavigationPending();
 
   // Prevent interaction with views.
-  bool CreateRenderViewForRenderManager(RenderViewHost* render_view_host,
-                                        int opener_route_id,
-                                        int proxy_routing_id,
-                                        bool for_main_frame) override;
+  bool CreateRenderViewForRenderManager(
+      RenderViewHost* render_view_host,
+      int opener_route_id,
+      int proxy_routing_id,
+      const FrameReplicationState& replicated_frame_state,
+      bool for_main_frame) override;
   void UpdateRenderViewSizeForRenderManager() override {}
 
   // Returns a clone of this TestWebContents. The returned object is also a

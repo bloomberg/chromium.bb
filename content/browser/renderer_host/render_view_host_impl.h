@@ -57,6 +57,7 @@ class SessionStorageNamespaceImpl;
 class TestRenderViewHost;
 struct FileChooserFileInfo;
 struct FileChooserParams;
+struct FrameReplicationState;
 
 #if defined(COMPILER_MSVC)
 // RenderViewHostImpl is the bottom of a diamond-shaped hierarchy,
@@ -202,11 +203,13 @@ class CONTENT_EXPORT RenderViewHostImpl
   // created with an opener. (The opener may have been closed since.)
   // The |proxy_route_id| is only used when creating a RenderView in swapped out
   // state.
-  virtual bool CreateRenderView(const base::string16& frame_name,
-                                int opener_route_id,
-                                int proxy_route_id,
-                                int32 max_page_id,
-                                bool window_was_created_with_opener);
+  virtual bool CreateRenderView(
+      const base::string16& frame_name,
+      int opener_route_id,
+      int proxy_route_id,
+      int32 max_page_id,
+      const FrameReplicationState& replicated_frame_state,
+      bool window_was_created_with_opener);
 
   base::TerminationStatus render_view_termination_status() const {
     return render_view_termination_status_;
@@ -299,6 +302,9 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   int main_frame_routing_id() const {
     return main_frame_routing_id_;
+  }
+  void set_main_frame_routing_id(int routing_id) {
+    main_frame_routing_id_ = routing_id;
   }
 
   void OnTextSurroundingSelectionResponse(const base::string16& content,

@@ -44,6 +44,7 @@ class RenderWidgetHostView;
 class TestWebContents;
 class WebUIImpl;
 struct CommonNavigationParams;
+struct FrameReplicationState;
 
 // Manages RenderFrameHosts for a FrameTreeNode. It maintains a
 // current_frame_host() which is the content currently visible to the user. When
@@ -121,6 +122,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
         RenderViewHost* render_view_host,
         int opener_route_id,
         int proxy_routing_id,
+        const FrameReplicationState& replicated_frame_state,
         bool for_main_frame_navigation) = 0;
     virtual bool CreateRenderFrameForRenderManager(
         RenderFrameHost* render_frame_host,

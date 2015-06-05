@@ -170,11 +170,15 @@ ContentSettingsObserver::ContentSettingsObserver(
   ClearBlockedContentSettings();
   render_frame->GetWebFrame()->setContentSettingsClient(this);
 
-  if (render_frame->GetRenderView()->GetMainRenderFrame() != render_frame) {
+  content::RenderFrame* main_frame =
+      render_frame->GetRenderView()->GetMainRenderFrame();
+  // TODO(nasko): The main frame is not guaranteed to be in the same process
+  // with this frame with --site-per-process. This code needs to be updated
+  // to handle this case. See https://crbug.com/496670.
+  if (main_frame && main_frame != render_frame) {
     // Copy all the settings from the main render frame to avoid race conditions
-    // when initializing this data. See http://crbug.com/333308.
-    ContentSettingsObserver* parent = ContentSettingsObserver::Get(
-        render_frame->GetRenderView()->GetMainRenderFrame());
+    // when initializing this data. See https://crbug.com/333308.
+    ContentSettingsObserver* parent = ContentSettingsObserver::Get(main_frame);
     allow_displaying_insecure_content_ =
         parent->allow_displaying_insecure_content_;
     allow_running_insecure_content_ = parent->allow_running_insecure_content_;

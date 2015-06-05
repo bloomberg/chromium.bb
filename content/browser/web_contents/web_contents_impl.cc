@@ -3962,11 +3962,16 @@ bool WebContentsImpl::AddMessageToConsole(int32 level,
 int WebContentsImpl::CreateSwappedOutRenderView(
     SiteInstance* instance) {
   int render_view_routing_id = MSG_ROUTING_NONE;
-  GetRenderManager()->CreateRenderFrame(
-      instance, nullptr, MSG_ROUTING_NONE,
-      CREATE_RF_SWAPPED_OUT | CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
-          CREATE_RF_HIDDEN,
-      &render_view_routing_id);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess)) {
+    GetRenderManager()->CreateRenderFrameProxy(instance);
+  } else {
+    GetRenderManager()->CreateRenderFrame(
+        instance, nullptr, MSG_ROUTING_NONE,
+        CREATE_RF_SWAPPED_OUT | CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
+            CREATE_RF_HIDDEN,
+        &render_view_routing_id);
+  }
   return render_view_routing_id;
 }
 
@@ -4157,11 +4162,18 @@ int WebContentsImpl::CreateOpenerRenderViews(SiteInstance* instance) {
   // Create a swapped out RenderView in the given SiteInstance if none exists,
   // setting its opener to the given route_id.  Return the new view's route_id.
   int render_view_routing_id = MSG_ROUTING_NONE;
-  GetRenderManager()->CreateRenderFrame(instance, nullptr, opener_route_id,
-                                        CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSitePerProcess)) {
+    GetRenderManager()->CreateRenderFrameProxy(instance);
+    render_view_routing_id =
+        frame_tree_.GetRenderViewHost(instance)->GetRoutingID();
+  } else {
+    GetRenderManager()->CreateRenderFrame(instance, nullptr, opener_route_id,
+                                          CREATE_RF_FOR_MAIN_FRAME_NAVIGATION |
                                             CREATE_RF_SWAPPED_OUT |
                                             CREATE_RF_HIDDEN,
-                                        &render_view_routing_id);
+                                          &render_view_routing_id);
+  }
   return render_view_routing_id;
 }
 
@@ -4183,6 +4195,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
     int opener_route_id,
     int proxy_routing_id,
+    const FrameReplicationState& replicated_frame_state,
     bool for_main_frame_navigation) {
   TRACE_EVENT0("browser,navigation",
                "WebContentsImpl::CreateRenderViewForRenderManager");
@@ -4214,6 +4227,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
                                               opener_route_id,
                                               proxy_routing_id,
                                               max_page_id,
+                                              replicated_frame_state,
                                               created_with_opener_)) {
     return false;
   }
@@ -4274,10 +4288,9 @@ WebContentsAndroid* WebContentsImpl::GetWebContentsAndroid() {
 }
 
 bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
-  return CreateRenderViewForRenderManager(GetRenderViewHost(),
-                                          MSG_ROUTING_NONE,
-                                          MSG_ROUTING_NONE,
-                                          true);
+  return CreateRenderViewForRenderManager(
+      GetRenderViewHost(), MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+      frame_tree_.root()->current_replication_state(), true);
 }
 
 #elif defined(OS_MACOSX)

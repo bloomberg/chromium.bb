@@ -236,11 +236,23 @@ TestRenderViewHost::~TestRenderViewHost() {
     ++*delete_counter_;
 }
 
+bool TestRenderViewHost::CreateTestRenderView(
+    const base::string16& frame_name,
+    int opener_route_id,
+    int proxy_route_id,
+    int32 max_page_id,
+    bool window_was_created_with_opener) {
+  return CreateRenderView(frame_name, opener_route_id, proxy_route_id,
+                          max_page_id, FrameReplicationState(),
+                          window_was_created_with_opener);
+}
+
 bool TestRenderViewHost::CreateRenderView(
     const base::string16& frame_name,
     int opener_route_id,
     int proxy_route_id,
     int32 max_page_id,
+    const FrameReplicationState& replicated_frame_state,
     bool window_was_created_with_opener) {
   DCHECK(!IsRenderViewLive());
   set_renderer_initialized(true);

@@ -69,7 +69,10 @@ HistoryEntry::HistoryNode* HistoryEntry::HistoryNode::CloneAndReplace(
         item_.documentSequenceNumber());
   }
 
-  if (clone_children_of_target || !is_target_frame) {
+  // TODO(creis): This needs to be updated to handle HistoryEntry in
+  // subframe processes, where the main frame isn't guaranteed to be in the
+  // same process.
+  if (current_frame && (clone_children_of_target || !is_target_frame)) {
     for (WebFrame* child = current_frame->GetWebFrame()->firstChild(); child;
          child = child->nextSibling()) {
       RenderFrameImpl* child_render_frame =
