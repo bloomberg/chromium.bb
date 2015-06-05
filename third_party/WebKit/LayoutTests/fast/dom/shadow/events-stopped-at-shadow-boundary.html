@@ -138,9 +138,6 @@ function testEventsInMultipleShadowTrees()
 
 function test()
 {
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
     testEventsShoudBeStoppedAtShadowBoundary()
     testEventsFiredOnDistributedNodesShouldNotBeStoppedAtShadowBoundary();
     testEventsInMultipleShadowTrees();

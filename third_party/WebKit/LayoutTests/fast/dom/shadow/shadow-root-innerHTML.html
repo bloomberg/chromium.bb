@@ -12,9 +12,6 @@ description("This tests the innerHTML property of a shadow root.");
 if (!window.internals)
     debug('This test runs on DRT only');
 
-if (window.testRunner) {
-    testRunner.dumpAsText();
-
 host = document.createElement("div");
 document.body.appendChild(host);
 root = host.createShadowRoot();
@@ -41,7 +38,6 @@ shouldBe("root.firstChild.nodeName", "'P'");
 shouldBe("root.querySelectorAll('div')", "[]");
 shouldBe("root.getElementById('p3').innerHTML", "'HelloWorld'");
 
-}
 var successfullyParsed = true;
 </script>
 </body>

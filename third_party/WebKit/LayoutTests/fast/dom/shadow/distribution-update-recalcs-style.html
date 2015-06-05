@@ -34,11 +34,8 @@ sr.getElementById("contentId").select = "#span-child";
 shouldBe('getColorProperty("div-child")', '"rgb(255, 0, 0)"');
 shouldBe('getColorProperty("span-child")', '"rgb(0, 0, 255)"');
 
-if (window.testRunner) {
-    testRunner.dumpAsText();
+if (window.testRunner)
     testRunner.notifyDone();
-}
-
 </script>
 </body>
 </html>

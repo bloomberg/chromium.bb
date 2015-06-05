@@ -58,9 +58,6 @@ function doTest() {
     if (!window.internals)
         return;
 
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
     for (var i = 0; i < dataOfValidCases.length; ++i) {
         test(dataOfValidCases[i], true);
     }

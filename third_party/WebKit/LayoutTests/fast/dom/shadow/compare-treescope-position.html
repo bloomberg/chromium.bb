@@ -10,9 +10,6 @@
 <script>
 description("Tests for TreeScope.comparePosition().");
 
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 document.getElementById('sandbox').appendChild(
     createDOM('div', {'id': 'a1'},
               createDOM('div', {'id': 'a2'},
@@ -26,7 +23,7 @@ document.getElementById('sandbox').appendChild(
                                                    createDOM('div', {'id': 'c2'},
                                                           createShadowRoot({'id': 'sr3'},
                                                                            createDOM('div', {'id': 'c3'}))))))));
-                                
+
 var sr1, sr2, sr3;
 
 function testCompareTreeScopePosition()

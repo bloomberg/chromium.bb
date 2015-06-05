@@ -14,9 +14,6 @@ description("This tests the activeElement property of a ShadowRoot.");
 if (!window.internals)
     debug('This test runs on DRT only');
 
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 document.getElementById('sandbox').appendChild(
     createDOM('div', {},
               createDOM('div', {'id': 'node-in-document', 'tabindex': 1}),

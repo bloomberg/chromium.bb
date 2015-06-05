@@ -64,9 +64,6 @@ function backgroundColorShouldBe(selector, expected) {
 function test() {
     debug("crbug/474687 :focus style should properly be applied to shadow hosts.");
 
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
     var xmenu1 = document.getElementById("XMenu1");
     xmenu1.focus();
     navigateFocusForward();

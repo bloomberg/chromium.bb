@@ -10,9 +10,6 @@
 <script>
 description("Tests for Node.compareDocumentPosition() for nodes in shadow tree.");
 
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 document.getElementById('sandbox').appendChild(
     createDOM('div', {'id': 'a1'},
               createDOM('div', {'id': 'a2'},

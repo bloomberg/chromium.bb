@@ -27,8 +27,6 @@ var oldestShadowRoot;
 var youngerShadowRoot;
 function test()
 {
-    if (window.testRunner)
-        testRunner.dumpAsText();
     if (window.internals)
         window.internals.settings.setAuthorShadowDOMForAnyElementEnabled(true);
 

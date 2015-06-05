@@ -65,15 +65,7 @@ function testMouseEventOffset()
     shouldBe("eventRecords['top']['offsetX']", "80 / 2 + 100");
 }
 
-function test()
-{
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
-    testMouseEventOffset();
-}
-
-test();
+testMouseEventOffset();
 </script>
 </body>
 </html>

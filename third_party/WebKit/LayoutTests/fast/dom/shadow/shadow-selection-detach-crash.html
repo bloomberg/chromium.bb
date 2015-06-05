@@ -7,10 +7,8 @@ description("Garbage collection of Selection objects with shorter lifetimes must
 // itself from its window on finalization.
 
 self.jsTestIsAsync = true;
-if (window.testRunner) {
-    testRunner.dumpAsText();
+if (window.testRunner)
     testRunner.waitUntilDone();
-}
 
 function runTest() {
     var out = document.getElementById("out");

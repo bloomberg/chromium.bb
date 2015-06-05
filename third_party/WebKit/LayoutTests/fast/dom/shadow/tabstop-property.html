@@ -113,16 +113,8 @@ function test() {
     shouldBeEqualToString("div.getAttribute('tabstop')", "invalid");
 }
 
-function run_test() {
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
-    test();
-
-    debug('Test finished.');
-}
-
-run_test();
+test();
+debug('Test finished.');
 </script>
 </body>
 </html>

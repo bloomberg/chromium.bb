@@ -25,9 +25,6 @@ function prepareDomTree(parent)
 
 function test()
 {
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
     prepareDomTree(document.body);
     shouldBeEqualToString("getNodeInTreeOfTrees('divA/inputB').id", 'inputB');
     shouldBeEqualToString("getNodeInTreeOfTrees('divA/divC').id", 'divC');

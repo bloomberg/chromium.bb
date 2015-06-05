@@ -12,9 +12,6 @@
 <script>
 description("Tests for ShadowRoot JS APIs. Can only run within DRT");
 
-if (window.testRunner)
-    testRunner.dumpAsText();
-
 // (which is always enabled in testing).
 shouldBeDefined("window.ShadowRoot");
 shouldThrow("new window.ShadowRoot(document.createElement('div'))");

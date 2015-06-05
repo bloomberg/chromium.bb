@@ -146,9 +146,6 @@ function test() {
 }
 
 function run_tests() {
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
     if (!window.eventSender) {
         testFailed('');
         return;
