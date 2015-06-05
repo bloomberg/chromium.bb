@@ -32,7 +32,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/FormAssociatedElement.h"
-#include "core/page/EventHandler.h"
+#include "core/input/EventHandler.h"
 
 namespace blink {
 

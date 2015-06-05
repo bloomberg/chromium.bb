@@ -41,10 +41,10 @@
 #include "core/html/MediaController.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/shadow/MediaControls.h"
+#include "core/input/EventHandler.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutVideo.h"
-#include "core/page/EventHandler.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {

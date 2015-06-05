@@ -36,9 +36,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/input/EventHandler.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutView.h"
-#include "core/page/EventHandler.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {

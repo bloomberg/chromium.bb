@@ -32,9 +32,9 @@
 #include "core/events/WheelEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/input/EventHandler.h"
 #include "core/layout/LayoutBox.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "platform/scroll/ScrollbarTheme.h"
 

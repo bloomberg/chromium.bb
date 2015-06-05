@@ -33,9 +33,9 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/input/EventHandler.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "platform/JSONValues.h"
 #include "platform/PlatformTouchEvent.h"

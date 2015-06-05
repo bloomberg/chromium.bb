@@ -36,9 +36,9 @@
 #include "core/editing/TypingCommand.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/input/EventHandler.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/EventHandler.h"
 
 namespace blink {
 

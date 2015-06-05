@@ -40,12 +40,12 @@
 #include "core/html/forms/StepRange.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/input/EventHandler.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutSliderContainer.h"
 #include "core/layout/LayoutSliderThumb.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/page/EventHandler.h"
 
 namespace blink {
 

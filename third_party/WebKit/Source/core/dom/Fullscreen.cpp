@@ -38,10 +38,10 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/EventHandler.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {

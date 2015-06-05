@@ -29,7 +29,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
-#include "core/page/EventHandler.h"
+#include "core/input/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/page/TouchDisambiguation.h"
 #include "platform/geometry/IntRect.h"

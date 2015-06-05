@@ -11,8 +11,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/PinchViewport.h"
+#include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
-#include "core/page/EventHandler.h"
 #include "platform/geometry/DoubleRect.h"
 
 namespace blink {

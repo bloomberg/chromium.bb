@@ -34,10 +34,10 @@
 #include "core/events/RelatedEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLMenuElement.h"
+#include "core/input/EventHandler.h"
 #include "core/page/ContextMenuClient.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/CustomContextMenuProvider.h"
-#include "core/page/EventHandler.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 
