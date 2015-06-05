@@ -345,8 +345,16 @@ void HttpServerPropertiesManager::SetServerNetworkStats(
     const HostPortPair& host_port_pair,
     ServerNetworkStats stats) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  ServerNetworkStats old_stats;
+  const ServerNetworkStats* old_stats_ptr =
+      http_server_properties_impl_->GetServerNetworkStats(host_port_pair);
+  if (http_server_properties_impl_->GetServerNetworkStats(host_port_pair))
+    old_stats = *old_stats_ptr;
   http_server_properties_impl_->SetServerNetworkStats(host_port_pair, stats);
-  ScheduleUpdatePrefsOnNetworkThread(SET_SERVER_NETWORK_STATS);
+  ServerNetworkStats new_stats =
+      *(http_server_properties_impl_->GetServerNetworkStats(host_port_pair));
+  if (old_stats != new_stats)
+    ScheduleUpdatePrefsOnNetworkThread(SET_SERVER_NETWORK_STATS);
 }
 
 const ServerNetworkStats* HttpServerPropertiesManager::GetServerNetworkStats(

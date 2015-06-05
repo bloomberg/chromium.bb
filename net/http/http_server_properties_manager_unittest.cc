@@ -625,6 +625,8 @@ TEST_F(HttpServerPropertiesManagerTest, ServerNetworkStats) {
   ServerNetworkStats stats1;
   stats1.srtt = base::TimeDelta::FromMicroseconds(10);
   http_server_props_manager_->SetServerNetworkStats(mail_server, stats1);
+  // ExpectScheduleUpdatePrefsOnNetworkThread() should be called only once.
+  http_server_props_manager_->SetServerNetworkStats(mail_server, stats1);
 
   // Run the task.
   base::RunLoop().RunUntilIdle();

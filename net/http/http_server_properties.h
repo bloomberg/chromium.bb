@@ -187,6 +187,14 @@ struct NET_EXPORT SupportsQuic {
 struct NET_EXPORT ServerNetworkStats {
   ServerNetworkStats() : bandwidth_estimate(QuicBandwidth::Zero()) {}
 
+  bool operator==(const ServerNetworkStats& other) const {
+    return srtt == other.srtt && bandwidth_estimate == other.bandwidth_estimate;
+  }
+
+  bool operator!=(const ServerNetworkStats& other) const {
+    return !this->operator==(other);
+  }
+
   base::TimeDelta srtt;
   QuicBandwidth bandwidth_estimate;
 };
@@ -313,6 +321,7 @@ class NET_EXPORT HttpServerProperties {
   virtual void SetSupportsQuic(bool used_quic,
                                const IPAddressNumber& last_address) = 0;
 
+  // Sets |stats| for |host_port_pair|.
   virtual void SetServerNetworkStats(const HostPortPair& host_port_pair,
                                      ServerNetworkStats stats) = 0;
 
