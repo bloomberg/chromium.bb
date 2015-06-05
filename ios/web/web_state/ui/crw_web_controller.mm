@@ -2741,7 +2741,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       // Record the URL so that errors reported following the 'NO' reply can be
       // safely ignored.
       [_openedApplicationURL addObject:request.URL];
-      return NO;
+      if ([self cancellable])
+        [_delegate webPageOrderedClose];
     }
     return NO;
   }
