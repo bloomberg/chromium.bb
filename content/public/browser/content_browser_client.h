@@ -53,6 +53,10 @@ namespace gfx {
 class ImageSkia;
 }
 
+namespace mojo {
+class ApplicationDelegate;
+}
+
 namespace net {
 class CookieOptions;
 class NetLog;
@@ -577,6 +581,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void OverrideRenderFrameMojoServices(
       ServiceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
+
+  using StaticMojoApplicationMap =
+      std::map<GURL, base::Callback<scoped_ptr<mojo::ApplicationDelegate>()>>;
+
+  // Registers in-process Mojo application loaders with the browser's global
+  // Mojo shell.
+  virtual void RegisterMojoApplications(StaticMojoApplicationMap* apps) {}
 
   // Registers additional navigator.connect service factories available in a
   // particular NavigatorConnectContext.

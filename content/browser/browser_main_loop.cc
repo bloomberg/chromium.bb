@@ -39,6 +39,7 @@
 #include "content/browser/histogram_synchronizer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/media_internals.h"
+#include "content/browser/mojo/mojo_shell_context.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
@@ -897,6 +898,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 
+  mojo_shell_context_.reset();
+
 #if !defined(OS_IOS)
   if (RenderProcessHost::run_renderer_in_process())
     RenderProcessHostImpl::ShutDownInProcessRenderer();
@@ -1252,6 +1255,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif  // defined(OS_MACOSX)
 
 #endif  // !defined(OS_IOS)
+
+  mojo_shell_context_.reset(new MojoShellContext);
 
   return result_code_;
 }

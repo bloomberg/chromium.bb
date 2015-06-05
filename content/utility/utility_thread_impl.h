@@ -10,9 +10,12 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
+#include "content/common/process_control.mojom.h"
 #include "content/public/utility/utility_thread.h"
+#include "mojo/common/weak_binding_set.h"
 
 namespace base {
 class FilePath;
@@ -21,6 +24,7 @@ class FilePath;
 namespace content {
 class BlinkPlatformImpl;
 class UtilityBlinkPlatformImpl;
+class UtilityProcessControlImpl;
 
 #if defined(COMPILER_MSVC)
 // See explanation for other RenderViewHostImpl which is the same issue.
@@ -54,10 +58,19 @@ class UtilityThreadImpl : public UtilityThread,
   void OnLoadPlugins(const std::vector<base::FilePath>& plugin_paths);
 #endif
 
+  void BindProcessControlRequest(
+      mojo::InterfaceRequest<content::ProcessControl> request);
+
   // True when we're running in batch mode.
   bool batch_mode_;
 
   scoped_ptr<UtilityBlinkPlatformImpl> blink_platform_impl_;
+
+  // Process control for Mojo application hosting.
+  scoped_ptr<UtilityProcessControlImpl> process_control_;
+
+  // Bindings to the ProcessControl impl.
+  mojo::WeakBindingSet<ProcessControl> process_control_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThreadImpl);
 };

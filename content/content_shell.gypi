@@ -234,6 +234,8 @@
         'shell/renderer/shell_content_renderer_client.h',
         'shell/renderer/shell_render_view_observer.cc',
         'shell/renderer/shell_render_view_observer.h',
+        'shell/utility/shell_content_utility_client.cc',
+        'shell/utility/shell_content_utility_client.h',
       ],
       'msvs_settings': {
         'VCLinkerTool': {

@@ -5,7 +5,17 @@
 #ifndef CONTENT_PUBLIC_UTILITY_CONTENT_UTILITY_CLIENT_H_
 #define CONTENT_PUBLIC_UTILITY_CONTENT_UTILITY_CLIENT_H_
 
+#include <map>
+
+#include "base/callback_forward.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/public/common/content_client.h"
+
+class GURL;
+
+namespace mojo {
+class ApplicationDelegate;
+}
 
 namespace content {
 
@@ -14,6 +24,9 @@ class ServiceRegistry;
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentUtilityClient {
  public:
+  using StaticMojoApplicationMap =
+      std::map<GURL, base::Callback<scoped_ptr<mojo::ApplicationDelegate>()>>;
+
   virtual ~ContentUtilityClient() {}
 
   // Notifies us that the UtilityThread has been created.
@@ -24,6 +37,9 @@ class CONTENT_EXPORT ContentUtilityClient {
 
   // Registers Mojo services.
   virtual void RegisterMojoServices(ServiceRegistry* registry) {}
+
+  // Registers Mojo applications.
+  virtual void RegisterMojoApplications(StaticMojoApplicationMap* apps) {}
 };
 
 }  // namespace content

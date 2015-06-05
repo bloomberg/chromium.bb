@@ -15,6 +15,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/utility/utility_blink_platform_impl.h"
+#include "content/utility/utility_process_control_impl.h"
 #include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
@@ -85,6 +86,11 @@ void UtilityThreadImpl::Init() {
     blink::initialize(blink_platform_impl_.get());
   }
   GetContentClient()->utility()->UtilityThreadStarted();
+
+  process_control_.reset(new UtilityProcessControlImpl);
+  service_registry()->AddService(base::Bind(
+      &UtilityThreadImpl::BindProcessControlRequest, base::Unretained(this)));
+
   GetContentClient()->utility()->RegisterMojoServices(service_registry());
 }
 
@@ -134,5 +140,11 @@ void UtilityThreadImpl::OnLoadPlugins(
   ReleaseProcessIfNeeded();
 }
 #endif
+
+void UtilityThreadImpl::BindProcessControlRequest(
+    mojo::InterfaceRequest<ProcessControl> request) {
+  DCHECK(process_control_);
+  process_control_bindings_.AddBinding(process_control_.get(), request.Pass());
+}
 
 }  // namespace content

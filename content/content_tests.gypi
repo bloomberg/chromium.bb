@@ -83,6 +83,8 @@
       'public/test/test_file_system_options.h',
       'public/test/test_launcher.cc',
       'public/test/test_launcher.h',
+      'public/test/test_mojo_app.cc',
+      'public/test/test_mojo_app.h',
       'public/test/test_navigation_observer.cc',
       'public/test/test_navigation_observer.h',
       'public/test/test_notification_tracker.cc',
@@ -222,6 +224,7 @@
       'browser/media/media_canplaytype_browsertest.cc',
       'browser/media/media_source_browsertest.cc',
       'browser/message_port_provider_browsertest.cc',
+      'browser/mojo_shell_browsertest.cc',
       'browser/net_info_browsertest.cc',
       'browser/plugin_browsertest.cc',
       'browser/renderer_host/input/touch_action_browsertest.cc',
@@ -788,6 +791,7 @@
       'target_name': 'test_support_content',
       'type': 'static_library',
       'dependencies': [
+        '../mojo/mojo_base.gyp:mojo_application_base',
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
@@ -795,6 +799,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
+        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../ui/accessibility/accessibility.gyp:ax_gen',
         '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '../ui/base/ui_base.gyp:ui_base',
@@ -862,6 +867,7 @@
             }],
           ],
           'dependencies': [
+            'content_test_mojo_bindings',
             'content.gyp:content_child',
             'content.gyp:content_common',
             'content.gyp:content_gpu',
@@ -880,6 +886,8 @@
             '../media/blink/media_blink.gyp:media_blink',
             '../media/media.gyp:media',
             '../media/midi/midi.gyp:midi',
+            '../mojo/mojo_base.gyp:mojo_application_base',
+            '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../ppapi/ppapi_internal.gyp:ppapi_host',
             '../ppapi/ppapi_internal.gyp:ppapi_proxy',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
@@ -887,6 +895,7 @@
             '../storage/storage_browser.gyp:storage',
             '../storage/storage_common.gyp:storage_common',
             '../third_party/WebKit/public/blink.gyp:blink',
+            '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../ui/compositor/compositor.gyp:compositor_test_support',
             '../ui/surface/surface.gyp:surface',
             '../v8/tools/gyp/v8.gyp:v8',
@@ -1314,6 +1323,15 @@
           ],
         },
         {
+          # GN version: //content/test:test_mojo_bindings
+          'target_name': 'content_test_mojo_bindings',
+          'type': 'static_library',
+          'sources': [
+            'public/test/test_mojo_service.mojom',
+          ],
+          'includes': [ '../third_party/mojo/mojom_bindings_generator.gypi' ],
+        },
+        {
           # GN version: //content/test:web_ui_test_mojo_bindings
           'target_name': 'web_ui_test_mojo_bindings',
           'type': 'static_library',
@@ -1352,6 +1370,7 @@
             '../ipc/ipc.gyp:test_support_ipc',
             '../media/media.gyp:media_test_support',
             '../media/media.gyp:shared_memory_support',
+            '../mojo/mojo_base.gyp:mojo_application_base',
             '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../net/net.gyp:net_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_host',

@@ -50,6 +50,7 @@ source_set("browser_sources") {
 
     # We expose skia headers in the public API.
     "//skia",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",
   ]
   deps = [

@@ -45,6 +45,7 @@ class BrowserOnlineStateObserver;
 class BrowserShutdownImpl;
 class BrowserThreadImpl;
 class MediaStreamManager;
+class MojoShellContext;
 class ResourceDispatcherHostImpl;
 class SpeechRecognitionManagerImpl;
 class StartupTaskRunner;
@@ -231,6 +232,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   scoped_ptr<base::Thread> indexed_db_thread_;
+  scoped_ptr<MojoShellContext> mojo_shell_context_;
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.
   scoped_ptr<media::UserInputMonitor> user_input_monitor_;

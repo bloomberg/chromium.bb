@@ -486,8 +486,11 @@ mojom("mojo_bindings") {
     "geolocation_service.mojom",
     "permission_service.mojom",
     "presentation/presentation_service.mojom",
+    "process_control.mojom",
     "render_frame_setup.mojom",
   ]
+
+  import_dirs = [ "//mojo/services" ]
 
   deps = [
     "//content/public/common:mojo_bindings",

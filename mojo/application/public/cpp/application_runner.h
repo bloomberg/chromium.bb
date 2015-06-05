@@ -37,6 +37,13 @@ class ApplicationRunner {
   // Once the various parameters have been set above, use Run to initialize an
   // ApplicationImpl wired to the provided delegate, and run a MessageLoop until
   // the application exits.
+  //
+  // Iff |init_base| is true, the runner will perform some initialization of
+  // base globals (e.g. CommandLine and AtExitManager) before starting the
+  // application.
+  MojoResult Run(MojoHandle shell_handle, bool init_base);
+
+  // Calls Run above with |init_base| set to |true|.
   MojoResult Run(MojoHandle shell_handle);
 
  private:

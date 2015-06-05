@@ -2,5 +2,7 @@ include_rules = [
   "+components/scheduler/child",
   "+content/child",
   "+content/public/utility",
+  "+mojo/application",
+  "+mojo/shell",
   "+sandbox/win/src",
 ]

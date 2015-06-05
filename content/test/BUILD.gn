@@ -55,6 +55,7 @@ source_set("test_support") {
 
     public_deps += [ "//third_party/WebKit/public:blink" ]
     deps += [
+      ":content_test_mojo_bindings",
       "//components/scheduler:scheduler",
       "//components/scheduler:test_support",
       "//content/browser/speech/proto",
@@ -68,6 +69,8 @@ source_set("test_support") {
       "//cc:test_support",
       "//ipc/mojo",
       "//media",
+      "//mojo/application/public/cpp:cpp_for_chromium",
+      "//mojo/environment:chromium",
       "//ppapi/host",
       "//ppapi/proxy",
       "//ppapi/proxy:test_support",
@@ -201,6 +204,12 @@ source_set("browsertest_support") {
   }
 }
 
+mojom("content_test_mojo_bindings") {
+  sources = [
+    "../public/test/test_mojo_service.mojom",
+  ]
+}
+
 mojom("web_ui_test_mojo_bindings") {
   sources = [
     "data/web_ui_test_mojo_bindings.mojom",
@@ -279,6 +288,7 @@ if (!is_mac) {
       "//media/audio:test_support",
       "//media/base:test_support",
       "//media:shared_memory_support",
+      "//mojo/application/public/cpp:cpp_for_chromium",
       "//mojo/environment:chromium",
       "//net:test_support",
       "//ppapi/host",

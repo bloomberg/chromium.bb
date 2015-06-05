@@ -27,6 +27,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/layout_test_content_renderer_client.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
+#include "content/shell/utility/shell_content_utility_client.h"
 #include "media/base/media_switches.h"
 #include "media/base/mime_util.h"
 #include "net/cookies/cookie_monster.h"
@@ -344,6 +345,11 @@ ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
                              : new ShellContentRendererClient);
 
   return renderer_client_.get();
+}
+
+ContentUtilityClient* ShellMainDelegate::CreateContentUtilityClient() {
+  utility_client_.reset(new ShellContentUtilityClient);
+  return utility_client_.get();
 }
 
 }  // namespace content

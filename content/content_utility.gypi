@@ -6,6 +6,12 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../courgette/courgette.gyp:courgette_lib',
+    '../mojo/mojo_base.gyp:mojo_application_base',
+    '../mojo/mojo_base.gyp:mojo_application_bindings',
+    '../mojo/mojo_base.gyp:mojo_common_lib',
+    '../mojo/mojo_shell.gyp:mojo_shell_lib',
+    '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+    '../url/url.gyp:url_lib',
   ],
   'variables': {
     'utility_sources': [
@@ -14,6 +20,8 @@
       'utility/utility_blink_platform_impl.cc',
       'utility/utility_blink_platform_impl.h',
       'utility/utility_main.cc',
+      'utility/utility_process_control_impl.cc',
+      'utility/utility_process_control_impl.h',
       'utility/utility_thread_impl.cc',
       'utility/utility_thread_impl.h',
       'utility/webthread_impl_for_utility_thread.cc',

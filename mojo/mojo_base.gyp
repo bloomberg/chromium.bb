@@ -185,10 +185,10 @@
         ],
       },
       'dependencies': [
-        'mojo_services.gyp:network_service_bindings_mojom',
+        'mojo_services.gyp:network_service_bindings_generation',
       ],
       'export_dependent_settings': [
-        'mojo_services.gyp:network_service_bindings_mojom',
+        'mojo_services.gyp:network_service_bindings_generation',
       ],
       'includes': [ '../third_party/mojo/mojom_bindings_generator_explicit.gypi' ],
     },
@@ -221,9 +221,7 @@
       ],
       'dependencies': [
         'mojo_application_bindings',
-      ],
-      'export_dependent_settings': [
-        'mojo_application_bindings',
+        'mojo_common_lib',
       ],
     },
     {
@@ -232,10 +230,11 @@
       'type': 'static_library',
       'dependencies': [
         'mojo_application_bindings_mojom',
+        'mojo_services.gyp:network_service_bindings_lib',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
       'export_dependent_settings': [
-        '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+        'mojo_services.gyp:network_service_bindings_lib',
       ],
     },
     {

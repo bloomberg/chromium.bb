@@ -1,6 +1,7 @@
 include_rules = [
   "-content",
   "+content/public",
+  "+mojo/application",
   "+v8/include/v8.h",
 ]
 

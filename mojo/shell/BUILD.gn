@@ -26,6 +26,8 @@ source_set("shell") {
     "query_util.h",
     "shell_impl.cc",
     "shell_impl.h",
+    "static_application_loader.cc",
+    "static_application_loader.h",
     "switches.cc",
     "switches.h",
   ]

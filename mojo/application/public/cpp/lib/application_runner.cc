@@ -13,19 +13,10 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/message_pump_mojo.h"
 
-int g_argc;
-const char* const* g_argv;
-#if !defined(OS_WIN)
-extern "C" {
-__attribute__((visibility("default"))) void InitCommandLineArgs(
-    int argc, const char* const* argv) {
-  g_argc = argc;
-  g_argv = argv;
-}
-}
-#endif
-
 namespace mojo {
+
+int g_application_runner_argc;
+const char* const* g_application_runner_argv;
 
 ApplicationRunner::ApplicationRunner(ApplicationDelegate* delegate)
     : delegate_(scoped_ptr<ApplicationDelegate>(delegate)),
@@ -35,7 +26,7 @@ ApplicationRunner::ApplicationRunner(ApplicationDelegate* delegate)
 ApplicationRunner::~ApplicationRunner() {}
 
 void ApplicationRunner::InitBaseCommandLine() {
-  base::CommandLine::Init(g_argc, g_argv);
+  base::CommandLine::Init(g_application_runner_argc, g_application_runner_argv);
 }
 
 void ApplicationRunner::set_message_loop_type(base::MessageLoop::Type type) {
@@ -45,16 +36,19 @@ void ApplicationRunner::set_message_loop_type(base::MessageLoop::Type type) {
   message_loop_type_ = type;
 }
 
-MojoResult ApplicationRunner::Run(MojoHandle application_request_handle) {
+MojoResult ApplicationRunner::Run(MojoHandle application_request_handle,
+                                  bool init_base) {
   DCHECK(!has_run_);
   has_run_ = true;
 
-  InitBaseCommandLine();
-  base::AtExitManager at_exit;
-
+  scoped_ptr<base::AtExitManager> at_exit;
+  if (init_base) {
+    InitBaseCommandLine();
+    at_exit.reset(new base::AtExitManager);
 #ifndef NDEBUG
-  base::debug::EnableInProcessStackDumping();
+    base::debug::EnableInProcessStackDumping();
 #endif
+  }
 
   {
     scoped_ptr<base::MessageLoop> loop;
@@ -77,6 +71,10 @@ MojoResult ApplicationRunner::Run(MojoHandle application_request_handle) {
     delegate_.reset();
   }
   return MOJO_RESULT_OK;
+}
+
+MojoResult ApplicationRunner::Run(MojoHandle application_request_handle) {
+  return Run(application_request_handle, true);
 }
 
 }  // namespace mojo
