@@ -68,6 +68,9 @@ class BluetoothLowEnergyCharacteristicsFinder
       device::BluetoothAdapter* adapter,
       device::BluetoothGattCharacteristic* characteristic) override;
 
+  // For testing. Used to mock this class.
+  BluetoothLowEnergyCharacteristicsFinder();
+
  private:
   // Handles the discovery of a new characteristic.
   void HandleCharacteristicUpdate(

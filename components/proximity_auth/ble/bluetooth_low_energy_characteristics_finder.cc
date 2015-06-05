@@ -45,6 +45,10 @@ BluetoothLowEnergyCharacteristicsFinder::
 }
 
 BluetoothLowEnergyCharacteristicsFinder::
+    BluetoothLowEnergyCharacteristicsFinder() {
+}
+
+BluetoothLowEnergyCharacteristicsFinder::
     ~BluetoothLowEnergyCharacteristicsFinder() {
   ResetCallbacks();
   if (adapter_) {

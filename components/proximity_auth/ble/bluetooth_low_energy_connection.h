@@ -59,11 +59,25 @@ class BluetoothLowEnergyConnection : public Connection,
     kDisconnectSignal = 3,
   };
 
+  // The sub-state of a proximity_auth::BluetoothLowEnergyConnection class
+  // extends the IN_PROGRESS state of proximity_auth::Connection::Status.
+  enum class SubStatus {
+    DISCONNECTED,
+    WAITING_GATT_CONNECTION,
+    GATT_CONNECTION_ESTABLISHED,
+    WAITING_CHARACTERISTICS,
+    CHARACTERISTICS_FOUND,
+    WAITING_NOTIFY_SESSION,
+    NOTIFY_SESSION_READY,
+    WAITING_RESPONSE_SIGNAL,
+    CONNECTED,
+  };
+
   // Constructs a Bluetooth low energy connection to the service with
   // |remote_service_| on the |remote_device|. The |adapter| must be already
   // initaalized and ready. The GATT connection may alreaady be established and
-  // pass through |gatt_connection|. If |gatt_connection| is NULL, a subsequent
-  // call to Connect() must be made.
+  // pass through |gatt_connection|. A subsequent call to Connect() must be
+  // made.
   BluetoothLowEnergyConnection(
       const RemoteDevice& remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
@@ -80,22 +94,16 @@ class BluetoothLowEnergyConnection : public Connection,
   void Disconnect() override;
 
  protected:
-  // The sub-state of a proximity_auth::BluetoothLowEnergyConnection class
-  // extends the IN_PROGRESS state of proximity_auth::Connection::Status.
-  enum class SubStatus {
-    DISCONNECTED,
-    WAITING_GATT_CONNECTION,
-    GATT_CONNECTION_ESTABLISHED,
-    WAITING_CHARACTERISTICS,
-    CHARACTERISTICS_FOUND,
-    WAITING_NOTIFY_SESSION,
-    NOTIFY_SESSION_READY,
-    WAITING_RESPONSE_SIGNAL,
-    CONNECTED,
-  };
-
+  // Exposed for testing.
   void SetSubStatus(SubStatus status);
   SubStatus sub_status() { return sub_status_; }
+
+  // Virtual for testing.
+  virtual BluetoothLowEnergyCharacteristicsFinder* CreateCharacteristicsFinder(
+      const BluetoothLowEnergyCharacteristicsFinder::SuccessCallback&
+          success_callback,
+      const BluetoothLowEnergyCharacteristicsFinder::ErrorCallback&
+          error_callback);
 
   // proximity_auth::Connection
   void SendMessageImpl(scoped_ptr<WireMessage> message) override;

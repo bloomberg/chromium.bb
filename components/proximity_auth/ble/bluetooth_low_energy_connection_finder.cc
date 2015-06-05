@@ -223,6 +223,7 @@ void BluetoothLowEnergyConnectionFinder::OnGattConnectionCreated(
 
   connection_ = CreateConnection(gatt_connection.Pass());
   connection_->AddObserver(this);
+  connection_->Connect();
 
   StopDiscoverySession();
 }

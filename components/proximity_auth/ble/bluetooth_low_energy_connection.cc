@@ -45,6 +45,7 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
       remote_service_({remote_service_uuid, ""}),
       to_peripheral_char_({to_peripheral_char_uuid, ""}),
       from_peripheral_char_({from_peripheral_char_uuid, ""}),
+      connection_(gatt_connection.Pass()),
       sub_status_(SubStatus::DISCONNECTED),
       receiving_bytes_(false),
       write_remote_characteristic_pending_(false),
@@ -55,9 +56,6 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
 
   start_time_ = base::TimeTicks::Now();
   adapter_->AddObserver(this);
-
-  if (gatt_connection && gatt_connection->IsConnected())
-    OnGattConnectionCreated(gatt_connection.Pass());
 }
 
 BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {
@@ -69,6 +67,11 @@ BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {
 }
 
 void BluetoothLowEnergyConnection::Connect() {
+  if (connection_ && connection_->IsConnected()) {
+    OnGattConnectionCreated(connection_.Pass());
+    return;
+  }
+
   BluetoothDevice* remote_device = GetRemoteDevice();
   if (remote_device) {
     SetSubStatus(SubStatus::WAITING_GATT_CONNECTION);
@@ -84,15 +87,17 @@ void BluetoothLowEnergyConnection::Connect() {
 // connect to BLE devices advertising the SmartLock service (assuming this
 // device has no other connection).
 void BluetoothLowEnergyConnection::Disconnect() {
-  ClearWriteRequestsQueue();
-  StopNotifySession();
-  SetSubStatus(SubStatus::DISCONNECTED);
-  if (connection_) {
-    connection_.reset();
-    BluetoothDevice* device = GetRemoteDevice();
-    if (device) {
-      VLOG(1) << "Forget device " << device->GetAddress();
-      device->Forget(base::Bind(&base::DoNothing));
+  if (sub_status_ != SubStatus::DISCONNECTED) {
+    ClearWriteRequestsQueue();
+    StopNotifySession();
+    SetSubStatus(SubStatus::DISCONNECTED);
+    if (connection_) {
+      connection_.reset();
+      BluetoothDevice* device = GetRemoteDevice();
+      if (device) {
+        VLOG(1) << "Forget device " << device->GetAddress();
+        device->Forget(base::Bind(&base::DoNothing));
+      }
     }
   }
 }
@@ -213,16 +218,22 @@ void BluetoothLowEnergyConnection::OnGattConnectionCreated(
     scoped_ptr<device::BluetoothGattConnection> gatt_connection) {
   connection_ = gatt_connection.Pass();
   SetSubStatus(SubStatus::WAITING_CHARACTERISTICS);
+  characteristic_finder_.reset(CreateCharacteristicsFinder(
+      base::Bind(&BluetoothLowEnergyConnection::OnCharacteristicsFound,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&BluetoothLowEnergyConnection::OnCharacteristicsFinderError,
+                 weak_ptr_factory_.GetWeakPtr())));
+}
 
-  characteristic_finder_ =
-      make_scoped_ptr(new BluetoothLowEnergyCharacteristicsFinder(
-          adapter_, GetRemoteDevice(), remote_service_, to_peripheral_char_,
-          from_peripheral_char_,
-          base::Bind(&BluetoothLowEnergyConnection::OnCharacteristicsFound,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(
-              &BluetoothLowEnergyConnection::OnCharacteristicsFinderError,
-              weak_ptr_factory_.GetWeakPtr())));
+BluetoothLowEnergyCharacteristicsFinder*
+BluetoothLowEnergyConnection::CreateCharacteristicsFinder(
+    const BluetoothLowEnergyCharacteristicsFinder::SuccessCallback&
+        success_callback,
+    const BluetoothLowEnergyCharacteristicsFinder::ErrorCallback&
+        error_callback) {
+  return new BluetoothLowEnergyCharacteristicsFinder(
+      adapter_, GetRemoteDevice(), remote_service_, to_peripheral_char_,
+      from_peripheral_char_, success_callback, error_callback);
 }
 
 void BluetoothLowEnergyConnection::OnCharacteristicsFound(
@@ -355,7 +366,7 @@ void BluetoothLowEnergyConnection::OnWriteRemoteCharacteristicError(
 
   // Increases the number of failed attempts and retry.
   DCHECK(!write_requests_queue_.empty());
-  if (write_requests_queue_.front().number_of_failed_attempts++ >=
+  if (++write_requests_queue_.front().number_of_failed_attempts >=
       max_number_of_write_attempts_) {
     Disconnect();
     return;
