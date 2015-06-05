@@ -18,22 +18,10 @@
    },
 
   'targets': [
-    # Due to an unfortunate intersection of lameness between gcc and gyp,
-    # we have to build the *_SSE2.cpp files in a separate target.  The
-    # gcc lameness is that, in order to compile SSE2 intrinsics code, it
-    # must be passed the -msse2 flag.  However, with this flag, it may
-    # emit SSE2 instructions even for scalar code, such as the CPUID
-    # test used to test for the presence of SSE2.  So that, and all other
-    # code must be compiled *without* -msse2.  The gyp lameness is that it
-    # does not allow file-specific CFLAGS, so we must create this extra
-    # target for those files to be compiled with -msse2.
-    #
-    # This is actually only a problem on 32-bit Linux (all Intel Macs have
-    # SSE2, Linux x86_64 has SSE2 by definition, and MSC will happily emit
-    # SSE2 from instrinsics, which generating plain ol' 386 for everything
-    # else).  However, to keep the .gyp file simple and avoid platform-specific
-    # build breakage, we do this on all platforms.
-
+    # SSE files have to be built in a separate target, because gcc needs
+    # different -msse flags for different SSE levels which enable use of SSE
+    # intrinsics but also allow emission of SSE2 instructions for scalar code.
+    # gyp does not allow per-file compiler flags.
     # For about the same reason, we need to compile the ARM opts files
     # separately as well.
     {
@@ -49,13 +37,12 @@
       ],
       'include_dirs': [ '<@(include_dirs)' ],
       'conditions': [
-        [ 'os_posix == 1 and OS != "mac" and OS != "android" and \
-           target_arch != "arm" and target_arch != "arm64" and \
-           target_arch != "mipsel" and target_arch != "mips64el"', {
-          'cflags': [ '-msse2' ],
-        }],
         [ 'target_arch != "arm" and target_arch != "mipsel" and \
            target_arch != "arm64" and target_arch != "mips64el"', {
+          # Chrome builds with -msse2 locally, so sse2_sources could in theory
+          # be in the regular skia target. But we need skia_opts for arm
+          # anyway, so putting sse2_sources here is simpler than making this
+          # conditionally a type none target on x86.
           'sources': [ '<@(sse2_sources)' ],
           'dependencies': [
             'skia_opts_ssse3',

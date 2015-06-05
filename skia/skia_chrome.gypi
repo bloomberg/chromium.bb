@@ -9,7 +9,6 @@
 {
   'dependencies': [
     'skia_library',
-    'skia_chrome_opts',
     '../base/base.gyp:base',
     '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
   ],
@@ -85,14 +84,22 @@
         'ext/skia_utils_base.cc',
       ],
     }],
-    ['OS == "ios"', {
-      'dependencies!': [
-        'skia_chrome_opts',
-      ],
-    }],
     [ 'OS != "android" and (OS != "linux" or use_cairo==1)', {
       'sources!': [
         'ext/bitmap_platform_device_skia.cc',
+      ],
+    }],
+    [ 'OS != "ios" and target_arch != "arm" and target_arch != "mipsel" and \
+       target_arch != "arm64" and target_arch != "mips64el"', {
+      'sources': [
+        'ext/convolver_SSE2.cc',
+        'ext/convolver_SSE2.h',
+      ],
+    }],
+    [ 'target_arch == "mipsel" and mips_dsp_rev >= 2',{
+      'sources': [
+        'ext/convolver_mips_dspr2.cc',
+        'ext/convolver_mips_dspr2.h',
       ],
     }],
   ],

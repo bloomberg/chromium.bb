@@ -318,6 +318,18 @@ component("skia") {
     "ext/skia_utils_win.h",
   ]
 
+  if (current_cpu == "x86" || current_cpu == "x64") {
+    sources += [
+      "ext/convolver_SSE2.cc",
+      "ext/convolver_SSE2.h",
+    ]
+  } else if (current_cpu == "mipsel" && mips_dsp_rev >= 2) {
+    sources += [
+      "ext/convolver_mips_dspr2.cc",
+      "ext/convolver_mips_dspr2.h",
+    ]
+  }
+
   # The skia gypi values are relative to the skia_dir, so we need to rebase.
   sources += gypi_skia_core.sources
   sources += gypi_skia_effects.sources
@@ -552,12 +564,7 @@ source_set("skia_opts") {
 
   if (current_cpu == "x86" || current_cpu == "x64") {
     sources = gypi_skia_opts.sse2_sources + gypi_skia_opts.ssse3_sources +
-              gypi_skia_opts.sse41_sources +
-              [
-                # Chrome-specific.
-                "ext/convolver_SSE2.cc",
-                "ext/convolver_SSE2.h",
-              ]
+              gypi_skia_opts.sse41_sources
 
     if (!is_win || is_clang) {
       cflags += [ "-msse4.1" ]
@@ -590,13 +597,6 @@ source_set("skia_opts") {
 
     if (mips_dsp_rev >= 1) {
       sources = gypi_skia_opts.mips_dsp_sources
-      if (mips_dsp_rev >= 2) {
-        sources += [
-          # Chrome-specific.
-          "ext/convolver_mips_dspr2.cc",
-          "ext/convolver_mips_dspr2.h",
-        ]
-      }
     } else {
       sources = gypi_skia_opts.none_sources
     }

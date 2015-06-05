@@ -88,37 +88,6 @@
   # targets that are not dependent upon the component type
   'targets': [
     {
-      'target_name': 'skia_chrome_opts',
-      'type': 'static_library',
-      'include_dirs': [
-        '..',
-        'config',
-        '../third_party/skia/include/core',
-      ],
-      'conditions': [
-        [ 'os_posix == 1 and OS != "mac" and OS != "android" and \
-            target_arch != "arm" and target_arch != "mipsel" and \
-            target_arch != "arm64" and target_arch != "mips64el"', {
-          'cflags': [
-            '-msse2',
-          ],
-        }],
-        [ 'target_arch != "arm" and target_arch != "mipsel" and \
-           target_arch != "arm64" and target_arch != "mips64el"', {
-          'sources': [
-            'ext/convolver_SSE2.cc',
-            'ext/convolver_SSE2.h',
-          ],
-        }],
-        [ 'target_arch == "mipsel" and mips_dsp_rev >= 2',{
-          'sources': [
-            'ext/convolver_mips_dspr2.cc',
-            'ext/convolver_mips_dspr2.h',
-          ],
-        }],
-      ],
-    },
-    {
       'target_name': 'image_operations_bench',
       'type': 'executable',
       'dependencies': [
