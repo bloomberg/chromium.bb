@@ -1,11 +1,9 @@
-main frame - has 1 onunload handler(s)
 ALERT: LOADED
 ALERT: State popped - FirstEntry (type string)
 ALERT: hashChanged - Last path component of location is document-destroyed-navigate-back-with-fragment-scroll.html#FirstEntry
 ALERT: State popped - SecondEntry (type string)
 ALERT: hashChanged - Last path component of location is document-destroyed-navigate-back-with-fragment-scroll.html#SecondEntry
 ALERT: Navigating back...
-main frame - has 1 onunload handler(s)
 ALERT: LOADED
 ALERT: Page shown - SecondEntryWillLaterBeReactivated (type string)
 ALERT: State popped - FirstEntryWillLaterBeReactivated (type string)

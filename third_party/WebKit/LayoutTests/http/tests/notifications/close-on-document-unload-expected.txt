@@ -1,5 +1,0 @@
-main frame - has 1 onunload handler(s)
-This is a testharness.js-based test.
-PASS Closing a notification in the "unload" event does not crash. 
-Harness: the test ran to completion.
-

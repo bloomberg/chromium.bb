@@ -1,4 +1,3 @@
-frame "<!--framePath //<!--frame0-->-->" - has 1 onunload handler(s)
 CONSOLE ERROR: Blocked alert('mainFrame beforeunload PASS') during beforeunload.
 CONSOLE ERROR: Blocked confirm('mainFrame beforeunload PASS') during beforeunload.
 CONSOLE ERROR: Blocked prompt('mainFrame beforeunload PASS') during beforeunload.

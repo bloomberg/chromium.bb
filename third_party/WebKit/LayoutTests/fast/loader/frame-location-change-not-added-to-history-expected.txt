@@ -1,4 +1,3 @@
-main frame - has 1 onunload handler(s)
 history.length = 1
 
 ============== Back Forward List ==============

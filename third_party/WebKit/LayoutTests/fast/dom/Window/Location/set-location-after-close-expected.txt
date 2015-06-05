@@ -1,4 +1,3 @@
-main frame - has 1 onunload handler(s)
 Updating window.location after the window has been closed, without crashing.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

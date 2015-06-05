@@ -1,7 +1,3 @@
-main frame - has 1 onunload handler(s)
-main frame - has 1 onunload handler(s)
-main frame - has 1 onunload handler(s)
-main frame - has 1 onunload handler(s)
 You should NOT see an active forward button.
 
 ============== Back Forward List ==============

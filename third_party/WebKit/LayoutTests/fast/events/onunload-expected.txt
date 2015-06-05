@@ -1,3 +1,2 @@
-main frame - has 1 onunload handler(s)
 CONSOLE ERROR: Blocked alert('unload') during unload.
 You should have seen an unload alert appear.
