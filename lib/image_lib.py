@@ -103,15 +103,18 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
   DEV_STAGE = 'dev'
   TEST_STAGE = 'test'
   SUMMARIZE_STAGE = 'summarize'
+  SUMMARIZE_STAGE_START = 'operation: summarize'
+  SUMMARIZE_STAGE_STOP = 'operation: done summarize'
 
   def __init__(self):
     super(BrilloImageOperation, self).__init__()
     self._stage_name = None
     self._done = False
+    self._enable_print = False
 
   def _StageEnter(self, output):
     """Return stage's name if we are entering a stage, else False."""
-    events = ['operation: summarize',
+    events = [self.SUMMARIZE_STAGE_START,
               'operation: creating test image',
               'operation: creating developer image',
               'operation: creating base image']
@@ -127,7 +130,7 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
     events = ['operation: done creating base image',
               'operation: done creating developer image',
               'operation: done creating test image',
-              'operation: done summarize']
+              self.SUMMARIZE_STAGE_STOP]
     for event in events:
       if event in output:
         return True
@@ -206,7 +209,13 @@ class BrilloImageOperation(operation.ParallelEmergeOperation):
     if self._stage_name == self.SUMMARIZE_STAGE and not self._done:
       summarize_stage_prefix = 'INFO    : '
       for line in output.split('\n'):
-        if summarize_stage_prefix in line:
+        if self.SUMMARIZE_STAGE_START in line:
+          self._enable_print = True
+          continue
+        if self.SUMMARIZE_STAGE_STOP in line:
+          self._enable_print = False
+          break
+        if summarize_stage_prefix in line and self._enable_print:
           line = line.replace(summarize_stage_prefix, '')
           logging.notice(line)
 
