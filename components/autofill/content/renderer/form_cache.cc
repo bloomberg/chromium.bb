@@ -81,6 +81,8 @@ std::vector<FormData> FormCache::ExtractNewForms() {
   if (document.isNull())
     return forms;
 
+  initial_checked_state_.clear();
+  initial_select_values_.clear();
   WebVector<WebFormElement> web_forms;
   document.forms(web_forms);
 
@@ -115,6 +117,14 @@ std::vector<FormData> FormCache::ExtractNewForms() {
 
     if (form.fields.size() >= kRequiredAutofillFields &&
         !ContainsKey(parsed_forms_, form)) {
+      for (auto it = parsed_forms_.begin(); it != parsed_forms_.end(); ++it) {
+        if (it->SameFormAs(form)) {
+          parsed_forms_.erase(it);
+          break;
+        }
+      }
+
+      SaveInitialValues(control_elements);
       forms.push_back(form);
       parsed_forms_.insert(form);
     }
@@ -144,8 +154,10 @@ std::vector<FormData> FormCache::ExtractNewForms() {
 
   if (synthetic_form.fields.size() >= kRequiredAutofillFields &&
       !parsed_forms_.count(synthetic_form)) {
+    SaveInitialValues(control_elements);
     forms.push_back(synthetic_form);
     parsed_forms_.insert(synthetic_form);
+    parsed_forms_.erase(synthetic_form_);
     synthetic_form_ = synthetic_form;
   }
   return forms;
@@ -299,26 +311,33 @@ size_t FormCache::ScanFormControlElements(
 
     // Save original values of <select> elements so we can restore them
     // when |ClearFormWithNode()| is invoked.
+    if (IsSelectElement(element) || IsTextAreaElement(element)) {
+      ++num_editable_elements;
+    } else {
+      const WebInputElement input_element = element.toConst<WebInputElement>();
+      if (!IsCheckableElement(&input_element))
+        ++num_editable_elements;
+    }
+  }
+  return num_editable_elements;
+}
+
+void FormCache::SaveInitialValues(
+    const std::vector<WebFormControlElement>& control_elements) {
+  for (const WebFormControlElement& element : control_elements) {
     if (IsSelectElement(element)) {
       const WebSelectElement select_element =
           element.toConst<WebSelectElement>();
       initial_select_values_.insert(
           std::make_pair(select_element, select_element.value()));
-      ++num_editable_elements;
-    } else if (IsTextAreaElement(element)) {
-      ++num_editable_elements;
     } else {
-      const WebInputElement input_element =
-          element.toConst<WebInputElement>();
-      if (IsCheckableElement(&input_element)) {
+      const WebInputElement* input_element = toWebInputElement(&element);
+      if (IsCheckableElement(input_element)) {
         initial_checked_state_.insert(
-            std::make_pair(input_element, input_element.isChecked()));
-      } else {
-        ++num_editable_elements;
+            std::make_pair(*input_element, input_element->isChecked()));
       }
     }
   }
-  return num_editable_elements;
 }
 
 }  // namespace autofill

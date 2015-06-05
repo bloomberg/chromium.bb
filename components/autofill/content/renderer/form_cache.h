@@ -57,6 +57,10 @@ class FormCache {
       const std::vector<blink::WebFormControlElement>& control_elements,
       bool log_deprecation_messages);
 
+  // Saves initial state of checkbox and select elements.
+  void SaveInitialValues(
+      const std::vector<blink::WebFormControlElement>& control_elements);
+
   // The frame this FormCache is associated with.
   const blink::WebFrame& frame_;
 
