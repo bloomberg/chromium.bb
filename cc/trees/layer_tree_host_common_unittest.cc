@@ -2676,6 +2676,30 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectForPerspectiveUnprojection) {
   EXPECT_EQ(expected, actual);
 }
 
+TEST_F(LayerTreeHostCommonTest,
+       VisibleRectsForPositionedRootLayerClippedByViewport) {
+  scoped_refptr<Layer> root =
+      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  gfx::Transform identity_matrix;
+  // Root layer is positioned at (60, 70). The default device viewport size
+  // is (0, 0, 100x100) in target space. So the root layer's visible rect
+  // will be clipped by the viewport to be (0, 0, 40x30) in layer's space.
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(60, 70), gfx::Size(100, 100), true,
+                               false);
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
+            root->render_surface()->DrawableContentRect());
+  // In target space, not clipped.
+  EXPECT_EQ(gfx::Rect(60, 70, 100, 100), root->drawable_content_rect());
+  // In layer space, clipped.
+  EXPECT_EQ(gfx::Rect(0, 0, 40, 30), root->visible_content_rect());
+}
+
 TEST_F(LayerTreeHostCommonTest, DrawableAndVisibleContentRectsForSimpleLayers) {
   scoped_refptr<Layer> root = Layer::Create(layer_settings());
   scoped_refptr<LayerWithForcedDrawsContent> child1 =

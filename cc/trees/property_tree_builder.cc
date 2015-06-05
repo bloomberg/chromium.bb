@@ -282,6 +282,8 @@ bool AddTransformNodeIfNeeded(
   if (is_root) {
     node->data.post_local.Scale(post_local_scale_factor,
                                 post_local_scale_factor);
+    node->data.post_local.Translate(layer->position().x(),
+                                    layer->position().y());
   } else {
     node->data.post_local_scale_factor = post_local_scale_factor;
     node->data.source_offset = source_offset;
