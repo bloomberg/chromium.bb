@@ -112,11 +112,12 @@ static bool DecompressZlib(uint8_t* out, int out_len, base::StringPiece in) {
 // updates |data| to remove the header on return. Caller takes ownership of the
 // returned pointer.
 static base::DictionaryValue* ReadHeader(base::StringPiece* data) {
-  if (data->size() < 2)
-    return NULL;
   uint16_t header_len;
-  memcpy(&header_len, data->data(), 2);  // Assumes little-endian.
-  data->remove_prefix(2);
+  if (data->size() < sizeof(header_len))
+    return NULL;
+  // Assumes little-endian.
+  memcpy(&header_len, data->data(), sizeof(header_len));
+  data->remove_prefix(sizeof(header_len));
 
   if (data->size() < header_len)
     return NULL;
@@ -145,16 +146,17 @@ static bool ReadCRL(base::StringPiece* data, std::string* out_parent_spki_hash,
   out_parent_spki_hash->assign(data->data(), crypto::kSHA256Length);
   data->remove_prefix(crypto::kSHA256Length);
 
-  if (data->size() < sizeof(uint32_t))
-    return false;
   uint32_t num_serials;
+  if (data->size() < sizeof(num_serials))
+    return false;
   // Assumes little endian.
-  memcpy(&num_serials, data->data(), sizeof(uint32_t));
+  memcpy(&num_serials, data->data(), sizeof(num_serials));
+  data->remove_prefix(sizeof(num_serials));
+
   if (num_serials > 32 * 1024 * 1024)  // Sanity check.
     return false;
 
   out_serials->reserve(num_serials);
-  data->remove_prefix(sizeof(uint32_t));
 
   for (uint32_t i = 0; i < num_serials; ++i) {
     if (data->size() < sizeof(uint8_t))
@@ -214,13 +216,13 @@ static const unsigned kMaxUncompressedChangesLength = 1024 * 1024;
 static bool ReadChanges(base::StringPiece* data,
                         std::vector<uint8_t>* out_changes) {
   uint32_t uncompressed_size, compressed_size;
-  if (data->size() < 2 * sizeof(uint32_t))
+  if (data->size() < sizeof(uncompressed_size) + sizeof(compressed_size))
     return false;
   // Assumes little endian.
-  memcpy(&uncompressed_size, data->data(), sizeof(uint32_t));
-  data->remove_prefix(4);
-  memcpy(&compressed_size, data->data(), sizeof(uint32_t));
-  data->remove_prefix(4);
+  memcpy(&uncompressed_size, data->data(), sizeof(uncompressed_size));
+  data->remove_prefix(sizeof(uncompressed_size));
+  memcpy(&compressed_size, data->data(), sizeof(compressed_size));
+  data->remove_prefix(sizeof(compressed_size));
 
   if (uncompressed_size > kMaxUncompressedChangesLength)
     return false;
@@ -261,10 +263,9 @@ static bool ReadDeltaCRL(base::StringPiece* data,
       out_serials->push_back(old_serials[i]);
       i++;
     } else if (*k == SYMBOL_INSERT) {
-      uint8_t serial_length;
       if (data->size() < sizeof(uint8_t))
         return false;
-      memcpy(&serial_length, data->data(), sizeof(uint8_t));
+      uint8_t serial_length = data->data()[0];
       data->remove_prefix(sizeof(uint8_t));
 
       if (data->size() < serial_length)
