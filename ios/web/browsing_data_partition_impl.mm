@@ -23,12 +23,12 @@
 // being observed for KVO changes in the |mode| value. |browserState| cannot be
 // null and the |browserState|'s associated CRWBrowsingDataStore must be
 // |browsingDataStore|.
-// The |browsingDataStore|'s mode must not already be SYNCHRONIZING.
+// The |browsingDataStore|'s mode must not already be |CHANGING|.
 - (void)startObservingBrowsingDataStore:(CRWBrowsingDataStore*)browsingDataStore
                            browserState:(web::BrowserState*)browserState;
 
 // Stops observing |browsingDataStore| for its |mode| change.
-// The |browsingDataStore|'s mode must not be SYNCHRONIZING.
+// The |browsingDataStore|'s mode must not be |CHANGING|.
 - (void)stopObservingBrowsingDataStore:(CRWBrowsingDataStore*)browsingDataStore;
 @end
 
@@ -42,7 +42,7 @@
       web::BrowserState::GetBrowsingDataPartition(browserState);
   DCHECK(browsing_data_partition);
   DCHECK_EQ(browsing_data_partition->GetBrowsingDataStore(), browsingDataStore);
-  DCHECK_NE(SYNCHRONIZING, browsingDataStore.mode);
+  DCHECK_NE(web::CHANGING, browsingDataStore.mode);
 
   [browsingDataStore addObserver:self
                       forKeyPath:@"mode"
@@ -52,7 +52,7 @@
 
 - (void)stopObservingBrowsingDataStore:
         (CRWBrowsingDataStore*)browsingDataStore {
-  DCHECK_NE(SYNCHRONIZING, browsingDataStore.mode);
+  DCHECK_NE(web::CHANGING, browsingDataStore.mode);
 
   [browsingDataStore removeObserver:self forKeyPath:@"mode"];
 }
@@ -65,7 +65,7 @@
   DCHECK([browsingDataStore isKindOfClass:[CRWBrowsingDataStore class]]);
   DCHECK(context);
 
-  if (browsingDataStore.mode == SYNCHRONIZING) {
+  if (browsingDataStore.mode == web::CHANGING) {
     ++self.outOfSyncStoreCount;
     return;
   }
@@ -76,9 +76,9 @@
   bool activeState = activeStateManager->IsActive();
   // Check if the |browsingDataStore|'s associated ActiveStateManager's active
   // state is still out of sync.
-  if (activeState && browsingDataStore.mode == INACTIVE) {
+  if (activeState && browsingDataStore.mode == web::INACTIVE) {
     [browsingDataStore makeActiveWithCompletionHandler:nil];
-  } else if (!activeState && browsingDataStore.mode == ACTIVE) {
+  } else if (!activeState && browsingDataStore.mode == web::ACTIVE) {
     [browsingDataStore makeInactiveWithCompletionHandler:nil];
   }
 
@@ -115,7 +115,7 @@ BrowsingDataPartitionImpl::~BrowsingDataPartitionImpl() {
   if (active_state_manager_) {
     active_state_manager_->RemoveObserver(this);
   }
-  DCHECK_NE(SYNCHRONIZING, [browsing_data_store_ mode]);
+  DCHECK_NE(CHANGING, [browsing_data_store_ mode]);
   [g_browsing_data_store_mode_observer
       stopObservingBrowsingDataStore:browsing_data_store_];
 }

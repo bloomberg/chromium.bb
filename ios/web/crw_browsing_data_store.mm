@@ -61,12 +61,12 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 - (SEL)browsingDataManagerSelectorForRemoveOperationType;
 
 // Redefined to be read-write. Must be called from the main thread.
-@property(nonatomic, assign) CRWBrowsingDataStoreMode mode;
+@property(nonatomic, assign) web::BrowsingDataStoreMode mode;
 // Sets the mode iff there are no more stash or restore operations that are
 // still pending. |mode| can only be either |ACTIVE| or |INACTIVE|.
 // |handler| is called immediately (in the same runloop) with a BOOL indicating
 // whether the mode change was successful or not. |handler| can be nil.
-- (void)finalizeChangeToMode:(CRWBrowsingDataStoreMode)mode
+- (void)finalizeChangeToMode:(web::BrowsingDataStoreMode)mode
     andCallCompletionHandler:(void (^)(BOOL modeChangeWasSuccessful))handler;
 
 // Changes the mode of the CRWBrowsingDataStore to |mode|. This is an
@@ -75,7 +75,7 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 // |completionHandler| is called on the main thread. This block has no return
 // value and takes a single BOOL argument that indicates whether or not the
 // mode change was successfully changed to |mode|.
-- (void)changeMode:(CRWBrowsingDataStoreMode)mode
+- (void)changeMode:(web::BrowsingDataStoreMode)mode
     completionHandler:(void (^)(BOOL modeChangeWasSuccessful))completionHandler;
 
 // The number of stash or restore operations that are still pending.
@@ -107,7 +107,7 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
   // The delegate.
   base::WeakNSProtocol<id<CRWBrowsingDataStoreDelegate>> _delegate;
   // The mode of the CRWBrowsingDataStore.
-  CRWBrowsingDataStoreMode _mode;
+  web::BrowsingDataStoreMode _mode;
   // The dictionary that maps a browsing data type to its
   // CRWBrowsingDataManager.
   base::scoped_nsobject<NSDictionary> _browsingDataTypeMap;
@@ -117,7 +117,7 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
   // The last dispatched stash or restore operation that was enqueued to be run.
   base::scoped_nsobject<NSOperation> _lastDispatchedStashOrRestoreOperation;
   // The number of stash or restore operations that are still pending. If this
-  // value > 0 the mode of the CRWBrowsingDataStore is SYNCHRONIZING. The mode
+  // value > 0 the mode of the CRWBrowsingDataStore is |CHANGING|. The mode
   // can be made ACTIVE or INACTIVE only be set when this value is 0.
   NSUInteger _numberOfPendingStashOrRestoreOperations;
 }
@@ -163,7 +163,7 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
     web::ActiveStateManager* activeStateManager =
         web::BrowserState::GetActiveStateManager(browserState);
     DCHECK(activeStateManager);
-    _mode = activeStateManager->IsActive() ? ACTIVE : INACTIVE;
+    _mode = activeStateManager->IsActive() ? web::ACTIVE : web::INACTIVE;
     // TODO(shreyasv): If the creation of CRWBrowsingDataManagers turns out to
     // be an expensive operations re-visit this with a lazy-evaluation approach.
     base::scoped_nsobject<CRWCookieBrowsingDataManager>
@@ -232,10 +232,10 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
 }
 
 - (SEL)browsingDataManagerSelectorForRemoveOperationType {
-  if (self.mode == ACTIVE) {
+  if (self.mode == web::ACTIVE) {
     return @selector(removeDataAtCanonicalPath);
   }
-  if (self.mode == INACTIVE) {
+  if (self.mode == web::INACTIVE) {
     return @selector(removeDataAtStashPath);
   }
   DCHECK(_lastDispatchedStashOrRestoreOperation);
@@ -264,17 +264,17 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
   return [super automaticallyNotifiesObserversForKey:(NSString*)key];
 }
 
-- (CRWBrowsingDataStoreMode)mode {
+- (web::BrowsingDataStoreMode)mode {
   DCHECK([NSThread isMainThread]);
   return _mode;
 }
 
-- (void)setMode:(CRWBrowsingDataStoreMode)mode {
+- (void)setMode:(web::BrowsingDataStoreMode)mode {
   DCHECK([NSThread isMainThread]);
   if (_mode == mode) {
     return;
   }
-  if (mode == ACTIVE || mode == INACTIVE) {
+  if (mode == web::ACTIVE || mode == web::INACTIVE) {
     DCHECK(!self.numberOfPendingStashOrRestoreOperations);
   }
   [self willChangeValueForKey:@"mode"];
@@ -282,10 +282,10 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
   [self didChangeValueForKey:@"mode"];
 }
 
-- (void)finalizeChangeToMode:(CRWBrowsingDataStoreMode)mode
+- (void)finalizeChangeToMode:(web::BrowsingDataStoreMode)mode
     andCallCompletionHandler:(void (^)(BOOL modeChangeWasSuccessful))handler {
   DCHECK([NSThread isMainThread]);
-  DCHECK_NE(SYNCHRONIZING, mode);
+  DCHECK_NE(web::CHANGING, mode);
 
   BOOL modeChangeWasSuccessful = NO;
   if (!self.numberOfPendingStashOrRestoreOperations) {
@@ -313,17 +313,17 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
         (void (^)(BOOL success))completionHandler {
   DCHECK([NSThread isMainThread]);
 
-  [self changeMode:ACTIVE completionHandler:completionHandler];
+  [self changeMode:web::ACTIVE completionHandler:completionHandler];
 }
 
 - (void)makeInactiveWithCompletionHandler:
         (void (^)(BOOL success))completionHandler {
   DCHECK([NSThread isMainThread]);
 
-  [self changeMode:INACTIVE completionHandler:completionHandler];
+  [self changeMode:web::INACTIVE completionHandler:completionHandler];
 }
 
-- (void)changeMode:(CRWBrowsingDataStoreMode)mode
+- (void)changeMode:(web::BrowsingDataStoreMode)mode
     completionHandler:
         (void (^)(BOOL modeChangeWasSuccessful))completionHandler {
   DCHECK([NSThread isMainThread]);
@@ -343,7 +343,7 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
   }
 
   OperationType operationType = NONE;
-  if (mode == ACTIVE) {
+  if (mode == web::ACTIVE) {
     // By default a |RESTORE| operation is performed when the mode is changed
     // to |ACTIVE|.
     operationType = RESTORE;
@@ -398,7 +398,7 @@ NSString* const kStashOperationName = @"CRWBrowsingDataStore.STASH";
   DCHECK(selector);
 
   if (operationType == RESTORE || operationType == STASH) {
-    [self setMode:SYNCHRONIZING];
+    [self setMode:web::CHANGING];
     ++self.numberOfPendingStashOrRestoreOperations;
     completionHandler = ^{
       --self.numberOfPendingStashOrRestoreOperations;
