@@ -551,7 +551,7 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
 #if defined(OS_WIN)
               shm_handle,
 #else
-              shm_handle.fd,
+              base::SharedMemory::GetFdFromSharedMemoryHandle(shm_handle),
 #endif
               static_cast<size_t>(size))));
           break;

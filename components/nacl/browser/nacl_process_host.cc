@@ -946,7 +946,10 @@ bool NaClProcessHost::StartNaClExecution() {
       DLOG(ERROR) << "Failed to allocate memory buffer";
       return false;
     }
-    base::ScopedFD memory_fd(dup(memory_buffer.handle().fd));
+    base::SharedMemoryHandle duped_handle =
+        base::SharedMemory::DuplicateHandle(memory_buffer.handle());
+    base::ScopedFD memory_fd(
+        base::SharedMemory::GetFdFromSharedMemoryHandle(duped_handle));
     if (!memory_fd.is_valid()) {
       DLOG(ERROR) << "Failed to dup() a file descriptor";
       return false;
