@@ -119,6 +119,7 @@ class SSLConfigServicePref : public net::SSLConfigService {
 };
 
 void SSLConfigServicePref::GetSSLConfig(net::SSLConfig* config) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   *config = cached_config_;
 }
 

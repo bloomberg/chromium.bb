@@ -2633,15 +2633,33 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_FileURLBlacklist) {
   CheckURLIsBlocked(browser(), file_path2.c_str());
 }
 
-static bool IsMinSSLFallbackVersionTLS12(Profile* profile) {
-  scoped_refptr<net::SSLConfigService> config_service(
-      profile->GetSSLConfigService());
+namespace {
+
+void GetSSLVersionFallbackMinOnIOThread(
+    const scoped_refptr<net::SSLConfigService>& config_service,
+    uint16_t* version_fallback_min) {
   net::SSLConfig config;
   config_service->GetSSLConfig(&config);
-  return config.version_fallback_min == net::SSL_PROTOCOL_VERSION_TLS1_2;
+  *version_fallback_min = config.version_fallback_min;
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_SSLVersionFallbackMin) {
+uint16_t GetSSLVersionFallbackMin(Profile* profile) {
+  scoped_refptr<net::SSLConfigService> config_service(
+      profile->GetSSLConfigService());
+  uint16_t version_fallback_min;
+  base::RunLoop loop;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&GetSSLVersionFallbackMinOnIOThread, config_service,
+                 base::Unretained(&version_fallback_min)),
+      loop.QuitClosure());
+  loop.Run();
+  return version_fallback_min;
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, SSLVersionFallbackMin) {
   PrefService* prefs = g_browser_process->local_state();
 
   const std::string new_value("tls1.2");
@@ -2649,7 +2667,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_SSLVersionFallbackMin) {
       prefs->GetString(prefs::kSSLVersionFallbackMin));
 
   EXPECT_NE(default_value, new_value);
-  EXPECT_FALSE(IsMinSSLFallbackVersionTLS12(browser()->profile()));
+  EXPECT_NE(net::SSL_PROTOCOL_VERSION_TLS1_2,
+            GetSSLVersionFallbackMin(browser()->profile()));
 
   PolicyMap policies;
   policies.Set(key::kSSLVersionFallbackMin,
@@ -2659,7 +2678,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_SSLVersionFallbackMin) {
                NULL);
   UpdateProviderPolicy(policies);
 
-  EXPECT_TRUE(IsMinSSLFallbackVersionTLS12(browser()->profile()));
+  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1_2,
+            GetSSLVersionFallbackMin(browser()->profile()));
 }
 
 #if !defined(OS_MACOSX)
