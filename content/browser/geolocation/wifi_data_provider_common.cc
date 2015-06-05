@@ -5,6 +5,8 @@
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -80,10 +82,9 @@ void WifiDataProviderCommon::DoWifiScanTask() {
 }
 
 void WifiDataProviderCommon::ScheduleNextScan(int interval) {
-  client_loop()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&WifiDataProviderCommon::DoWifiScanTask,
-                 weak_factory_.GetWeakPtr()),
+  client_loop()->task_runner()->PostDelayedTask(
+      FROM_HERE, base::Bind(&WifiDataProviderCommon::DoWifiScanTask,
+                            weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(interval));
 }
 

@@ -9,7 +9,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace content {
 
@@ -40,7 +41,8 @@ void CacheStorageScheduler::RunOperationIfIdle() {
     // TODO(jkarlin): Run multiple operations in parallel where allowed.
     base::Closure closure = pending_operations_.front();
     pending_operations_.pop_front();
-    base::MessageLoopProxy::current()->PostTask(FROM_HERE, base::Bind(closure));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(closure));
   }
 }
 

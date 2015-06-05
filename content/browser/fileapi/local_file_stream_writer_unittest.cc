@@ -11,8 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -77,8 +77,8 @@ class LocalFileStreamWriterTest : public testing::Test {
     return path;
   }
 
-  base::MessageLoopProxy* file_task_runner() const {
-    return file_thread_.message_loop_proxy().get();
+  base::SingleThreadTaskRunner* file_task_runner() const {
+    return file_thread_.task_runner().get();
   }
 
   LocalFileStreamWriter* CreateWriter(const base::FilePath& path,

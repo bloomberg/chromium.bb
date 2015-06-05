@@ -9,10 +9,13 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -521,7 +524,7 @@ void StoragePartitionImplMap::AsyncObliterate(
       FROM_HERE,
       base::Bind(&BlockingObliteratePath, browser_context_->GetPath(),
                  domain_root, paths_to_keep,
-                 base::MessageLoopProxy::current(), on_gc_required));
+                 base::ThreadTaskRunnerHandle::Get(), on_gc_required));
 }
 
 void StoragePartitionImplMap::GarbageCollect(

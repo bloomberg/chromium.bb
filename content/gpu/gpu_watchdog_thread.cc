@@ -13,8 +13,10 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -75,9 +77,8 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
 void GpuWatchdogThread::PostAcknowledge() {
   // Called on the monitored thread. Responds with OnAcknowledge. Cannot use
   // the method factory. Rely on reference counting instead.
-  message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuWatchdogThread::OnAcknowledge, this));
+  task_runner()->PostTask(FROM_HERE,
+                          base::Bind(&GpuWatchdogThread::OnAcknowledge, this));
 }
 
 void GpuWatchdogThread::CheckArmed() {
@@ -162,10 +163,9 @@ void GpuWatchdogThread::OnAcknowledge() {
   bool was_suspended = (base::Time::Now() > suspension_timeout_);
 
   // The monitored thread has responded. Post a task to check it again.
-  message_loop()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&GpuWatchdogThread::OnCheck, weak_factory_.GetWeakPtr(),
-          was_suspended),
+  task_runner()->PostDelayedTask(
+      FROM_HERE, base::Bind(&GpuWatchdogThread::OnCheck,
+                            weak_factory_.GetWeakPtr(), was_suspended),
       0.5 * timeout_);
 }
 
@@ -194,13 +194,12 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
   // Post a task to the monitored thread that does nothing but wake up the
   // TaskObserver. Any other tasks that are pending on the watched thread will
   // also wake up the observer. This simply ensures there is at least one.
-  watched_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&base::DoNothing));
+  watched_message_loop_->task_runner()->PostTask(FROM_HERE,
+                                                 base::Bind(&base::DoNothing));
 
   // Post a task to the watchdog thread to exit if the monitored thread does
   // not respond in time.
-  message_loop()->PostDelayedTask(
+  task_runner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
                  weak_factory_.GetWeakPtr()),
@@ -341,9 +340,8 @@ bool GpuWatchdogThread::MatchXEventAtom(XEvent* event) {
 
 #endif
 void GpuWatchdogThread::AddPowerObserver() {
-  message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuWatchdogThread::OnAddPowerObserver, this));
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&GpuWatchdogThread::OnAddPowerObserver, this));
 }
 
 void GpuWatchdogThread::OnAddPowerObserver() {

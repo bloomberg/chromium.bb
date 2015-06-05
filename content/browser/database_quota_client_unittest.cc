@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/database/database_quota_client.h"
@@ -72,10 +74,9 @@ class MockDatabaseTracker : public DatabaseTracker {
                           const net::CompletionCallback& callback) override {
     ++delete_called_count_;
     if (async_delete()) {
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&MockDatabaseTracker::AsyncDeleteDataForOrigin, this,
-                     callback));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&MockDatabaseTracker::AsyncDeleteDataForOrigin,
+                                this, callback));
       return net::ERR_IO_PENDING;
     }
     return net::OK;
@@ -207,7 +208,7 @@ class DatabaseQuotaClientTest : public testing::Test {
 
 
 TEST_F(DatabaseQuotaClientTest, GetOriginUsage) {
-  DatabaseQuotaClient client(base::MessageLoopProxy::current().get(),
+  DatabaseQuotaClient client(base::ThreadTaskRunnerHandle::Get().get(),
                              mock_tracker());
 
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kTemp));
@@ -222,7 +223,7 @@ TEST_F(DatabaseQuotaClientTest, GetOriginUsage) {
 }
 
 TEST_F(DatabaseQuotaClientTest, GetOriginsForHost) {
-  DatabaseQuotaClient client(base::MessageLoopProxy::current().get(),
+  DatabaseQuotaClient client(base::ThreadTaskRunnerHandle::Get().get(),
                              mock_tracker());
 
   EXPECT_EQ(kOriginA.host(), kOriginB.host());
@@ -247,7 +248,7 @@ TEST_F(DatabaseQuotaClientTest, GetOriginsForHost) {
 }
 
 TEST_F(DatabaseQuotaClientTest, GetOriginsForType) {
-  DatabaseQuotaClient client(base::MessageLoopProxy::current().get(),
+  DatabaseQuotaClient client(base::ThreadTaskRunnerHandle::Get().get(),
                              mock_tracker());
 
   EXPECT_TRUE(GetOriginsForType(&client, kTemp).empty());
@@ -262,7 +263,7 @@ TEST_F(DatabaseQuotaClientTest, GetOriginsForType) {
 }
 
 TEST_F(DatabaseQuotaClientTest, DeleteOriginData) {
-  DatabaseQuotaClient client(base::MessageLoopProxy::current().get(),
+  DatabaseQuotaClient client(base::ThreadTaskRunnerHandle::Get().get(),
                              mock_tracker());
 
   // Perm deletions are short circuited in the Client and

@@ -9,11 +9,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 #include "content/browser/media/media_internals.h"
@@ -224,9 +226,9 @@ int VideoCaptureManager::Open(const StreamDeviceInfo& device_info) {
   // Notify our listener asynchronously; this ensures that we return
   // |capture_session_id| to the caller of this function before using that same
   // id in a listener event.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&VideoCaptureManager::OnOpened, this,
-                 device_info.device.type, capture_session_id));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&VideoCaptureManager::OnOpened, this,
+                            device_info.device.type, capture_session_id));
   return capture_session_id;
 }
 
@@ -255,9 +257,9 @@ void VideoCaptureManager::Close(int capture_session_id) {
   }
 
   // Notify listeners asynchronously, and forget the session.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&VideoCaptureManager::OnClosed, this, session_it->second.type,
-                 capture_session_id));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&VideoCaptureManager::OnClosed, this,
+                            session_it->second.type, capture_session_id));
   sessions_.erase(session_it);
 }
 

@@ -7,7 +7,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/resource_context.h"
@@ -261,12 +264,10 @@ class MockCanceledBeforeSentPluginProcessHostClient
     set_host(host);
     // This gets called right before we request the plugin<=>renderer channel,
     // so we have to post a task to cancel it.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&PluginProcessHost::CancelPendingRequest,
-                   base::Unretained(host),
-                   this));
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&PluginProcessHost::CancelPendingRequest,
+                              base::Unretained(host), this));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&QuitUIMessageLoopFromIOThread));
   }
 

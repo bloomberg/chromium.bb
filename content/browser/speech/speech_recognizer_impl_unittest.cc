@@ -19,7 +19,6 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::MessageLoopProxy;
 using media::AudioInputController;
 using media::AudioInputStream;
 using media::AudioManager;
@@ -58,7 +57,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
     recognizer_ = new SpeechRecognizerImpl(
         this, kTestingSessionId, false, false, sr_engine);
     audio_manager_.reset(new media::MockAudioManager(
-        base::MessageLoop::current()->message_loop_proxy().get()));
+        base::MessageLoop::current()->task_runner().get()));
     recognizer_->SetAudioManagerForTesting(audio_manager_.get());
 
     int audio_packet_length_bytes =

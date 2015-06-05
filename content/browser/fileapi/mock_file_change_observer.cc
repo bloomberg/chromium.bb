@@ -4,6 +4,8 @@
 
 #include "content/browser/fileapi/mock_file_change_observer.h"
 
+#include "base/thread_task_runner_handle.h"
+
 namespace storage {
 
 MockFileChangeObserver::MockFileChangeObserver()
@@ -20,7 +22,7 @@ MockFileChangeObserver::~MockFileChangeObserver() {}
 ChangeObserverList MockFileChangeObserver::CreateList(
     MockFileChangeObserver* observer) {
   ChangeObserverList list;
-  return list.AddObserver(observer, base::MessageLoopProxy::current().get());
+  return list.AddObserver(observer, base::ThreadTaskRunnerHandle::Get().get());
 }
 
 void MockFileChangeObserver::OnCreateFile(const FileSystemURL& url) {

@@ -10,9 +10,11 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_histograms.h"
@@ -79,10 +81,9 @@ void AppCacheURLRequestJob::MaybeBeginDelivery() {
   if (has_been_started() && has_delivery_orders()) {
     // Start asynchronously so that all error reporting and data
     // callbacks happen as they would for network requests.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AppCacheURLRequestJob::BeginDelivery,
-                   weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AppCacheURLRequestJob::BeginDelivery,
+                              weak_factory_.GetWeakPtr()));
   }
 }
 

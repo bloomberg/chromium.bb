@@ -4,6 +4,9 @@
 
 #include "content/browser/background_sync/background_sync_network_observer.h"
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -47,7 +50,8 @@ bool BackgroundSyncNetworkObserver::NetworkSufficient(
 void BackgroundSyncNetworkObserver::NotifyNetworkChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::MessageLoop::current()->PostTask(FROM_HERE, network_changed_callback_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                network_changed_callback_);
 }
 
 void BackgroundSyncNetworkObserver::OnNetworkChanged(

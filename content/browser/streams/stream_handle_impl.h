@@ -11,7 +11,7 @@
 #include "content/public/browser/stream_handle.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -30,7 +30,7 @@ class StreamHandleImpl : public StreamHandle {
 
   base::WeakPtr<Stream> stream_;
   GURL url_;
-  base::MessageLoopProxy* stream_message_loop_;
+  base::SingleThreadTaskRunner* stream_task_runner_;
   std::vector<base::Closure> close_listeners_;
 };
 

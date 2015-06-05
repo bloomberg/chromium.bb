@@ -42,7 +42,7 @@
 #endif
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace content {
@@ -181,13 +181,12 @@ class CONTENT_EXPORT PluginServiceImpl
   void RegisterPepperPlugins();
 
   // Run on the blocking pool to load the plugins synchronously.
-  void GetPluginsInternal(base::MessageLoopProxy* target_loop,
+  void GetPluginsInternal(base::SingleThreadTaskRunner* target_task_runner,
                           const GetPluginsCallback& callback);
 
 #if defined(OS_POSIX)
-  void GetPluginsOnIOThread(
-      base::MessageLoopProxy* target_loop,
-      const GetPluginsCallback& callback);
+  void GetPluginsOnIOThread(base::SingleThreadTaskRunner* target_task_runner,
+                            const GetPluginsCallback& callback);
 #endif
 
   // Binding directly to GetAllowedPluginForOpenChannelToPlugin() isn't possible

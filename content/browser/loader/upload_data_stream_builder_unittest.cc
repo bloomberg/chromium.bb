@@ -9,9 +9,8 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/common/resource_request_body.h"
 #include "net/base/io_buffer.h"
@@ -78,7 +77,8 @@ TEST(UploadDataStreamBuilderTest, CreateUploadDataStreamWithoutBlob) {
   request_body->set_identifier(kIdentifier);
 
   scoped_ptr<net::UploadDataStream> upload(UploadDataStreamBuilder::Build(
-      request_body.get(), NULL, NULL, base::MessageLoopProxy::current().get()));
+      request_body.get(), NULL, NULL,
+      base::ThreadTaskRunnerHandle::Get().get()));
 
   EXPECT_EQ(kIdentifier, upload->identifier());
   ASSERT_TRUE(upload->GetElementReaders());
@@ -146,12 +146,9 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
         upload_element2.length(),
         upload_element2.expected_modification_time());
 
-    scoped_ptr<net::UploadDataStream> upload(
-        UploadDataStreamBuilder::Build(
-            request_body.get(),
-            &blob_storage_context,
-            NULL,
-            base::MessageLoopProxy::current().get()));
+    scoped_ptr<net::UploadDataStream> upload(UploadDataStreamBuilder::Build(
+        request_body.get(), &blob_storage_context, NULL,
+        base::ThreadTaskRunnerHandle::Get().get()));
 
     ASSERT_TRUE(upload->GetElementReaders());
     ASSERT_EQ(2U, upload->GetElementReaders()->size());
@@ -165,10 +162,8 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
     request_body->AppendBlob(blob_id0);
 
     upload = UploadDataStreamBuilder::Build(
-        request_body.get(),
-        &blob_storage_context,
-        NULL,
-        base::MessageLoopProxy::current().get());
+        request_body.get(), &blob_storage_context, NULL,
+        base::ThreadTaskRunnerHandle::Get().get());
     ASSERT_TRUE(upload->GetElementReaders());
     ASSERT_EQ(0U, upload->GetElementReaders()->size());
 
@@ -177,10 +172,8 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
     request_body->AppendBlob(blob_id1);
 
     upload = UploadDataStreamBuilder::Build(
-        request_body.get(),
-        &blob_storage_context,
-        NULL,
-        base::MessageLoopProxy::current().get());
+        request_body.get(), &blob_storage_context, NULL,
+        base::ThreadTaskRunnerHandle::Get().get());
     ASSERT_TRUE(upload->GetElementReaders());
     ASSERT_EQ(2U, upload->GetElementReaders()->size());
     EXPECT_TRUE(AreElementsEqual(
@@ -201,10 +194,8 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
         upload_element2.expected_modification_time());
 
     upload = UploadDataStreamBuilder::Build(
-        request_body.get(),
-        &blob_storage_context,
-        NULL,
-        base::MessageLoopProxy::current().get());
+        request_body.get(), &blob_storage_context, NULL,
+        base::ThreadTaskRunnerHandle::Get().get());
     ASSERT_TRUE(upload->GetElementReaders());
     ASSERT_EQ(4U, upload->GetElementReaders()->size());
     EXPECT_TRUE(AreElementsEqual(
@@ -228,11 +219,9 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
         upload_element2.expected_modification_time());
     request_body->AppendBlob(blob_id1);
 
-    upload =
-        UploadDataStreamBuilder::Build(request_body.get(),
-                                       &blob_storage_context,
-                                       NULL,
-                                       base::MessageLoopProxy::current().get());
+    upload = UploadDataStreamBuilder::Build(
+        request_body.get(), &blob_storage_context, NULL,
+        base::ThreadTaskRunnerHandle::Get().get());
     ASSERT_TRUE(upload->GetElementReaders());
     ASSERT_EQ(4U, upload->GetElementReaders()->size());
     EXPECT_TRUE(AreElementsEqual(
@@ -257,10 +246,8 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
         upload_element2.expected_modification_time());
 
     upload = UploadDataStreamBuilder::Build(
-        request_body.get(),
-        &blob_storage_context,
-        NULL,
-        base::MessageLoopProxy::current().get());
+        request_body.get(), &blob_storage_context, NULL,
+        base::ThreadTaskRunnerHandle::Get().get());
     ASSERT_TRUE(upload->GetElementReaders());
     ASSERT_EQ(4U, upload->GetElementReaders()->size());
     EXPECT_TRUE(AreElementsEqual(
@@ -287,10 +274,8 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
         upload_element2.expected_modification_time());
 
     upload = UploadDataStreamBuilder::Build(
-        request_body.get(),
-        &blob_storage_context,
-        NULL,
-        base::MessageLoopProxy::current().get());
+        request_body.get(), &blob_storage_context, NULL,
+        base::ThreadTaskRunnerHandle::Get().get());
     ASSERT_TRUE(upload->GetElementReaders());
     ASSERT_EQ(8U, upload->GetElementReaders()->size());
     EXPECT_TRUE(AreElementsEqual(
@@ -341,7 +326,7 @@ TEST(UploadDataStreamBuilderTest,
     scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
     scoped_ptr<net::UploadDataStream> upload(UploadDataStreamBuilder::Build(
         request_body.get(), &blob_storage_context, NULL,
-        base::MessageLoopProxy::current().get()));
+        base::ThreadTaskRunnerHandle::Get().get()));
 
     request_body = new ResourceRequestBody();
     request_body->AppendBlob(blob_id);
@@ -350,7 +335,7 @@ TEST(UploadDataStreamBuilderTest,
 
     upload = UploadDataStreamBuilder::Build(
         request_body.get(), &blob_storage_context, NULL,
-        base::MessageLoopProxy::current().get());
+        base::ThreadTaskRunnerHandle::Get().get());
     ASSERT_TRUE(upload->GetElementReaders());
     const auto& readers = *upload->GetElementReaders();
     ASSERT_EQ(3U, readers.size());

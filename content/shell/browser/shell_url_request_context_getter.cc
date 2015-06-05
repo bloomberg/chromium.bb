@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -93,7 +94,7 @@ net::NetworkDelegate* ShellURLRequestContextGetter::CreateNetworkDelegate() {
 
 net::ProxyConfigService* ShellURLRequestContextGetter::GetProxyConfigService() {
   return net::ProxyService::CreateSystemProxyConfigService(
-      io_loop_->message_loop_proxy(), file_loop_->message_loop_proxy());
+      io_loop_->task_runner(), file_loop_->task_runner());
 }
 
 net::ProxyService* ShellURLRequestContextGetter::GetProxyService() {

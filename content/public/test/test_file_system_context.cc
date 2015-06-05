@@ -5,6 +5,7 @@
 #include "content/public/test/test_file_system_context.h"
 
 #include "base/memory/scoped_vector.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_backend.h"
 #include "content/public/test/test_file_system_options.h"
@@ -19,7 +20,7 @@ storage::FileSystemContext* CreateFileSystemContextForTesting(
     const base::FilePath& base_path) {
   ScopedVector<storage::FileSystemBackend> additional_providers;
   additional_providers.push_back(new TestFileSystemBackend(
-      base::MessageLoopProxy::current().get(), base_path));
+      base::ThreadTaskRunnerHandle::Get().get(), base_path));
   return CreateFileSystemContextWithAdditionalProvidersForTesting(
       quota_manager_proxy, additional_providers.Pass(), base_path);
 }
@@ -30,14 +31,12 @@ CreateFileSystemContextWithAdditionalProvidersForTesting(
     ScopedVector<storage::FileSystemBackend> additional_providers,
     const base::FilePath& base_path) {
   return new storage::FileSystemContext(
-      base::MessageLoopProxy::current().get(),
-      base::MessageLoopProxy::current().get(),
+      base::ThreadTaskRunnerHandle::Get().get(),
+      base::ThreadTaskRunnerHandle::Get().get(),
       storage::ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
-      quota_manager_proxy,
-      additional_providers.Pass(),
-      std::vector<storage::URLRequestAutoMountHandler>(),
-      base_path,
+      quota_manager_proxy, additional_providers.Pass(),
+      std::vector<storage::URLRequestAutoMountHandler>(), base_path,
       CreateAllowFileAccessOptions());
 }
 
@@ -47,15 +46,12 @@ storage::FileSystemContext* CreateFileSystemContextWithAutoMountersForTesting(
     const std::vector<storage::URLRequestAutoMountHandler>& auto_mounters,
     const base::FilePath& base_path) {
   return new storage::FileSystemContext(
-      base::MessageLoopProxy::current().get(),
-      base::MessageLoopProxy::current().get(),
+      base::ThreadTaskRunnerHandle::Get().get(),
+      base::ThreadTaskRunnerHandle::Get().get(),
       storage::ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
-      quota_manager_proxy,
-      additional_providers.Pass(),
-      auto_mounters,
-      base_path,
-      CreateAllowFileAccessOptions());
+      quota_manager_proxy, additional_providers.Pass(), auto_mounters,
+      base_path, CreateAllowFileAccessOptions());
 }
 
 storage::FileSystemContext* CreateIncognitoFileSystemContextForTesting(
@@ -63,14 +59,12 @@ storage::FileSystemContext* CreateIncognitoFileSystemContextForTesting(
     const base::FilePath& base_path) {
   ScopedVector<storage::FileSystemBackend> additional_providers;
   return new storage::FileSystemContext(
-      base::MessageLoopProxy::current().get(),
-      base::MessageLoopProxy::current().get(),
+      base::ThreadTaskRunnerHandle::Get().get(),
+      base::ThreadTaskRunnerHandle::Get().get(),
       storage::ExternalMountPoints::CreateRefCounted().get(),
       make_scoped_refptr(new MockSpecialStoragePolicy()).get(),
-      quota_manager_proxy,
-      additional_providers.Pass(),
-      std::vector<storage::URLRequestAutoMountHandler>(),
-      base_path,
+      quota_manager_proxy, additional_providers.Pass(),
+      std::vector<storage::URLRequestAutoMountHandler>(), base_path,
       CreateIncognitoFileSystemOptions());
 }
 

@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
@@ -180,7 +182,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   template <class Method>
   void RunTestOnIOThread(Method method) {
     test_finished_event_ .reset(new base::WaitableEvent(false, false));
-    io_thread_->message_loop()->PostTask(
+    io_thread_->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&AppCacheRequestHandlerTest::MethodWrapper<Method>,
                    base::Unretained(this), method));
@@ -221,10 +223,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
     DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AppCacheRequestHandlerTest::TestFinishedUnwound,
-                   base::Unretained(this)));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AppCacheRequestHandlerTest::TestFinishedUnwound,
+                              base::Unretained(this)));
   }
 
   void TestFinishedUnwound() {
@@ -242,7 +243,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
       TestFinished();
       return;
     }
-    base::MessageLoop::current()->PostTask(FROM_HERE, task_stack_.top());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_stack_.top());
     task_stack_.pop();
   }
 

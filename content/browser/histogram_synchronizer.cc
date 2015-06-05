@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_delta_serialization.h"
 #include "base/pickle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/histogram_controller.h"
@@ -319,7 +321,7 @@ void HistogramSynchronizer::InternalPostTask(base::MessageLoop* thread,
                                              const base::Closure& callback) {
   if (callback.is_null() || !thread)
     return;
-  thread->PostTask(FROM_HERE, callback);
+  thread->task_runner()->PostTask(FROM_HERE, callback);
 }
 
 int HistogramSynchronizer::GetNextAvailableSequenceNumber(

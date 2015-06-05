@@ -5,7 +5,8 @@
 #include "content/public/test/frame_load_waiter.h"
 
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace content {
 
@@ -21,7 +22,8 @@ void FrameLoadWaiter::Wait() {
 void FrameLoadWaiter::DidFinishLoad() {
   // Post a task to quit instead of quitting directly, since the load completion
   // may trigger other IPCs that tests are expecting.
-  base::MessageLoop::current()->PostTask(FROM_HERE, run_loop_.QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop_.QuitClosure());
 }
 
 }  // namespace content
