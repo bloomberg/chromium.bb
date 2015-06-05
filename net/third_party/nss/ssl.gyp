@@ -3,22 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'conditions': [
-    [ 'os_posix == 1 and OS != "mac" and OS != "ios"', {
-      'conditions': [
-        ['sysroot!=""', {
-          'variables': {
-            'pkg-config': '../../../build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)" "<(system_libdir)"',
-          },
-        }, {
-          'variables': {
-            'pkg-config': 'pkg-config'
-          },
-        }],
-      ],
-    }],
-  ],
-
   'targets': [
     {
       'target_name': 'libssl',

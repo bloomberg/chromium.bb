@@ -1106,13 +1106,6 @@
       'target_name': 'browser_chromeos',
       'type': 'static_library',
       'variables': {
-        'conditions': [
-          ['sysroot!=""', {
-            'pkg-config': '../build/linux/pkg-config-wrapper "<(sysroot)" "<(target_arch)" "<(system_libdir)"',
-          }, {
-            'pkg-config': 'pkg-config'
-          }],
-        ],
         # Override to dynamically link the cras (ChromeOS audio) library.
         'use_cras%': 0,
         'enable_wexit_time_destructors': 1,
