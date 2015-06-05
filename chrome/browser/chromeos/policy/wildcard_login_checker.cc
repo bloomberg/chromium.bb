@@ -41,8 +41,8 @@ void WildcardLoginChecker::StartWithSigninContext(
   CHECK(!user_info_fetcher_);
 
   start_timestamp_ = base::Time::Now();
-
   callback_ = callback;
+
   token_fetcher_.reset(new PolicyOAuth2TokenFetcher());
   token_fetcher_->StartWithSigninContext(
       signin_context.get(), g_browser_process->system_request_context(),
@@ -57,8 +57,8 @@ void WildcardLoginChecker::StartWithRefreshToken(
   CHECK(!user_info_fetcher_);
 
   start_timestamp_ = base::Time::Now();
-
   callback_ = callback;
+
   token_fetcher_.reset(new PolicyOAuth2TokenFetcher());
   token_fetcher_->StartWithRefreshToken(
       refresh_token, g_browser_process->system_request_context(),
@@ -71,6 +71,8 @@ void WildcardLoginChecker::StartWithAccessToken(
     const StatusCallback& callback) {
   CHECK(!token_fetcher_);
   CHECK(!user_info_fetcher_);
+
+  start_timestamp_ = base::Time::Now();
   callback_ = callback;
 
   StartUserInfoFetcher(access_token);
