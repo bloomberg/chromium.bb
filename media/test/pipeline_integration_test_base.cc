@@ -25,6 +25,7 @@
 
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::AtLeast;
 using ::testing::AtMost;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
@@ -113,7 +114,9 @@ PipelineStatus PipelineIntegrationTestBase::Start(const std::string& filename,
       .Times(AtMost(1))
       .WillRepeatedly(SaveArg<0>(&metadata_));
   EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
-      .Times(AtMost(1));
+      .Times(AnyNumber());
+  EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_NOTHING))
+      .Times(AnyNumber());
   CreateDemuxer(filename);
 
   if (cdm_context) {
