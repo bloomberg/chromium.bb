@@ -677,8 +677,12 @@ class OptionValues(cros_build_lib.FrozenAttributesMixin, optparse.Values):
     self.parsed_args = None
 
 
-class OptionParser(optparse.OptionParser, BaseParser):
-  """Custom parser adding our custom option class in.
+PassedOption = collections.namedtuple(
+    'PassedOption', ['opt_inst', 'opt_str', 'value_str'])
+
+
+class FilteringParser(optparse.OptionParser, BaseParser):
+  """Custom option parser for filtering options.
 
   Aside from adding a couple of types (path for absolute paths,
   gs_path for google storage urls, and log_level for logging level control),
@@ -687,7 +691,7 @@ class OptionParser(optparse.OptionParser, BaseParser):
   pass in logging=False to the constructor.
   """
 
-  DEFAULT_OPTION_CLASS = Option
+  DEFAULT_OPTION_CLASS = FilteringOption
 
   def __init__(self, usage=None, **kwargs):
     BaseParser.__init__(self, **kwargs)
@@ -701,28 +705,11 @@ class OptionParser(optparse.OptionParser, BaseParser):
     if values is None:
       values = OptionValues(defaults=self.defaults)
 
+    values.parsed_args = []
+
     opts, remaining = optparse.OptionParser.parse_args(
         self, args=args, values=values)
     return self.DoPostParseSetup(opts, remaining)
-
-
-PassedOption = collections.namedtuple(
-    'PassedOption', ['opt_inst', 'opt_str', 'value_str'])
-
-
-class FilteringParser(OptionParser):
-  """Custom option parser for filtering options."""
-
-  DEFAULT_OPTION_CLASS = FilteringOption
-
-  def parse_args(self, args=None, values=None):
-    # If no Values object is specified then use our custom OptionValues.
-    if values is None:
-      values = OptionValues(defaults=self.defaults)
-
-    values.parsed_args = []
-
-    return OptionParser.parse_args(self, args=args, values=values)
 
   def AddParsedArg(self, opt_inst, opt_str, value_str):
     """Add a parsed argument with attributes.

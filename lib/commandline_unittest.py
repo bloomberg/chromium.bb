@@ -43,13 +43,13 @@ class GSPathTest(cros_test_lib.OutputTestCase):
 
   @staticmethod
   def _ParseCommandLine(argv):
-    parser = commandline.OptionParser()
-    parser.add_option('-g', '--gs-path', type='gs_path',
-                      help='GS path that contains the chrome to deploy.')
+    parser = commandline.ArgumentParser()
+    parser.add_argument('-g', '--gs-path', type='gs_path',
+                        help='GS path that contains the chrome to deploy.')
     return parser.parse_args(argv)
 
   def _RunGSPathTestCase(self, raw, parsed):
-    options, _ = self._ParseCommandLine(['--gs-path', raw])
+    options = self._ParseCommandLine(['--gs-path', raw])
     self.assertEquals(options.gs_path, parsed)
 
   def testNoGSPathCorrectionNeeded(self):
@@ -411,7 +411,7 @@ class ParseArgsTest(cros_test_lib.TestCase):
 
     parsed = parser.parse_args(argv)
 
-    if isinstance(parser, commandline.OptionParser):
+    if isinstance(parser, commandline.FilteringParser):
       # optparse returns options and args separately.
       options, args = parsed
       self.assertEquals(['foobar'], args)
@@ -439,9 +439,6 @@ class ParseArgsTest(cros_test_lib.TestCase):
     self.assertRaises(commandline.cros_build_lib.AttributeFrozenError,
                       setattr, options, 'aaa', 'Arnold')
     self.assertEquals('Arick', options.aaa)
-
-  def testOptionParser(self):
-    self._TestParser(self._CreateOptionParser(commandline.OptionParser))
 
   def testFilterParser(self):
     self._TestParser(self._CreateOptionParser(commandline.FilteringParser))
