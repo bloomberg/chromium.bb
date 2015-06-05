@@ -78,12 +78,14 @@ bool PermissionBubbleManager::Enabled() {
 
 PermissionBubbleManager::PermissionBubbleManager(
     content::WebContents* web_contents)
-  : content::WebContentsObserver(web_contents),
-    require_user_gesture_(false),
-    bubble_showing_(false),
-    view_(NULL),
-    request_url_has_loaded_(false),
-    weak_factory_(this) {}
+    : content::WebContentsObserver(web_contents),
+      require_user_gesture_(false),
+      bubble_showing_(false),
+      view_(NULL),
+      request_url_has_loaded_(false),
+      auto_response_for_test_(NONE),
+      weak_factory_(this) {
+}
 
 PermissionBubbleManager::~PermissionBubbleManager() {
   if (view_ != NULL)
@@ -346,6 +348,10 @@ void PermissionBubbleManager::TriggerShowBubble() {
   // case we may do in-line calling of finalization.
   bubble_showing_ = true;
   view_->Show(requests_, accept_states_);
+
+  // If in testing mode, automatically respond to the bubble that was shown.
+  if (auto_response_for_test_ != NONE)
+    DoAutoResponseForTesting();
 }
 
 void PermissionBubbleManager::FinalizeBubble() {
@@ -414,3 +420,18 @@ bool PermissionBubbleManager::HasUserGestureRequest(
   return false;
 }
 
+void PermissionBubbleManager::DoAutoResponseForTesting() {
+  switch (auto_response_for_test_) {
+    case ACCEPT_ALL:
+      Accept();
+      break;
+    case DENY_ALL:
+      Deny();
+      break;
+    case DISMISS:
+      Closing();
+      break;
+    case NONE:
+      NOTREACHED();
+  }
+}

@@ -30,6 +30,13 @@ class PermissionBubbleManager
       public content::WebContentsUserData<PermissionBubbleManager>,
       public PermissionBubbleView::Delegate {
  public:
+  enum AutoResponseType {
+    NONE,
+    ACCEPT_ALL,
+    DENY_ALL,
+    DISMISS
+  };
+
   // Return the enabled state of permissions bubbles.
   // Controlled by a flag and FieldTrial.
   static bool Enabled();
@@ -63,6 +70,14 @@ class PermissionBubbleManager
   // If |required| is true, requests will be silently queued until a request
   // comes in with a user gesture.
   void RequireUserGesture(bool required);
+
+  // Do NOT use this methods in production code. Use this methods in browser
+  // tests that need to accept or deny permissions when requested in
+  // JavaScript. Your test needs to set this appropriately, and then the bubble
+  // will proceed as desired as soon as Show() is called.
+  void set_auto_response_for_test(AutoResponseType response) {
+    auto_response_for_test_ = response;
+  }
 
  private:
   friend class DownloadRequestLimiterTest;
@@ -119,6 +134,8 @@ class PermissionBubbleManager
   bool HasUserGestureRequest(
       const std::vector<PermissionBubbleRequest*>& queue);
 
+  void DoAutoResponseForTesting();
+
   // Whether to delay displaying the bubble until a request with a user gesture.
   // False by default, unless RequireUserGesture(bool) changes the value.
   bool require_user_gesture_;
@@ -139,6 +156,8 @@ class PermissionBubbleManager
   bool request_url_has_loaded_;
 
   std::vector<bool> accept_states_;
+
+  AutoResponseType auto_response_for_test_;
 
   base::WeakPtrFactory<PermissionBubbleManager> weak_factory_;
 };
