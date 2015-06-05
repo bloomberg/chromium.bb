@@ -456,7 +456,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       &force_youtube_safety_mode_,
       pref_service);
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
+  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 
   chrome_http_user_agent_settings_.reset(
@@ -467,25 +467,25 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   if (!IsOffTheRecord()) {
     google_services_user_account_id_.Init(
         prefs::kGoogleServicesUserAccountId, pref_service);
-    google_services_user_account_id_.MoveToThread(io_task_runner);
+    google_services_user_account_id_.MoveToThread(io_message_loop_proxy);
 
     sync_disabled_.Init(sync_driver::prefs::kSyncManaged, pref_service);
-    sync_disabled_.MoveToThread(io_task_runner);
+    sync_disabled_.MoveToThread(io_message_loop_proxy);
 
     signin_allowed_.Init(prefs::kSigninAllowed, pref_service);
-    signin_allowed_.MoveToThread(io_task_runner);
+    signin_allowed_.MoveToThread(io_message_loop_proxy);
   }
 
   quick_check_enabled_.Init(prefs::kQuickCheckEnabled,
                             local_state_pref_service);
-  quick_check_enabled_.MoveToThread(io_task_runner);
+  quick_check_enabled_.MoveToThread(io_message_loop_proxy);
 
   media_device_id_salt_ = new MediaDeviceIDSalt(pref_service, IsOffTheRecord());
 
   network_prediction_options_.Init(prefs::kNetworkPredictionOptions,
                                    pref_service);
 
-  network_prediction_options_.MoveToThread(io_task_runner);
+  network_prediction_options_.MoveToThread(io_message_loop_proxy);
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<policy::PolicyCertVerifier> verifier =
@@ -505,24 +505,28 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       pool->GetSequencedTaskRunner(pool->GetSequenceToken());
-  url_blacklist_manager_.reset(new policy::URLBlacklistManager(
-      pref_service, background_task_runner, io_task_runner, callback,
-      base::Bind(policy::OverrideBlacklistForURL)));
+  url_blacklist_manager_.reset(
+      new policy::URLBlacklistManager(
+          pref_service,
+          background_task_runner,
+          io_message_loop_proxy,
+          callback,
+          base::Bind(policy::OverrideBlacklistForURL)));
 
   if (!IsOffTheRecord()) {
     // Add policy headers for non-incognito requests.
     policy::PolicyHeaderService* policy_header_service =
         policy::PolicyHeaderServiceFactory::GetForBrowserContext(profile);
     if (policy_header_service) {
-      policy_header_helper_ =
-          policy_header_service->CreatePolicyHeaderIOHelper(io_task_runner);
+      policy_header_helper_ = policy_header_service->CreatePolicyHeaderIOHelper(
+          io_message_loop_proxy);
     }
   }
 #endif
 
   incognito_availibility_pref_.Init(
       prefs::kIncognitoModeAvailability, pref_service);
-  incognito_availibility_pref_.MoveToThread(io_task_runner);
+  incognito_availibility_pref_.MoveToThread(io_message_loop_proxy);
 
   initialized_on_UI_thread_ = true;
 

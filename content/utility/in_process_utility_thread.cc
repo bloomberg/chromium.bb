@@ -4,9 +4,6 @@
 
 #include "content/utility/in_process_utility_thread.h"
 
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
 #include "content/utility/utility_thread_impl.h"
 
@@ -31,9 +28,10 @@ InProcessUtilityThread::~InProcessUtilityThread() {
 void InProcessUtilityThread::Init() {
   // We need to return right away or else the main thread that started us will
   // hang.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&InProcessUtilityThread::InitInternal,
-                            base::Unretained(this)));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&InProcessUtilityThread::InitInternal,
+                 base::Unretained(this)));
 }
 
 void InProcessUtilityThread::CleanUp() {

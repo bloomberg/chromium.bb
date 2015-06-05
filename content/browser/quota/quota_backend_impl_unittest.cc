@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/message_loop/message_loop.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -129,7 +129,7 @@ class QuotaBackendImplTest : public testing::Test {
   }
 
   base::SequencedTaskRunner* file_task_runner() {
-    return base::ThreadTaskRunnerHandle::Get().get();
+    return base::MessageLoopProxy::current().get();
   }
 
   base::FilePath GetUsageCachePath(const GURL& origin,

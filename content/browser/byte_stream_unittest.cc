@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -103,8 +104,9 @@ ByteStreamTest::ByteStreamTest()
 TEST_F(ByteStreamTest, ByteStream_PushBack) {
   scoped_ptr<ByteStreamWriter> byte_stream_input;
   scoped_ptr<ByteStreamReader> byte_stream_output;
-  CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
-                   3 * 1024, &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      3 * 1024, &byte_stream_input, &byte_stream_output);
 
   // Push a series of IO buffers on; test pushback happening and
   // that it's advisory.
@@ -157,8 +159,9 @@ TEST_F(ByteStreamTest, ByteStream_PushBack) {
 TEST_F(ByteStreamTest, ByteStream_Flush) {
   scoped_ptr<ByteStreamWriter> byte_stream_input;
   scoped_ptr<ByteStreamReader> byte_stream_output;
-  CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
-                   1024, &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      1024, &byte_stream_input, &byte_stream_output);
 
   EXPECT_TRUE(Write(byte_stream_input.get(), 1));
   message_loop_.RunUntilIdle();
@@ -196,8 +199,9 @@ TEST_F(ByteStreamTest, ByteStream_Flush) {
 TEST_F(ByteStreamTest, ByteStream_PushBackSplit) {
   scoped_ptr<ByteStreamWriter> byte_stream_input;
   scoped_ptr<ByteStreamReader> byte_stream_output;
-  CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
-                   9 * 1024, &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      9 * 1024, &byte_stream_input, &byte_stream_output);
 
   // Push a series of IO buffers on; test pushback happening and
   // that it's advisory.
@@ -250,8 +254,9 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
   size_t output_length;
 
   // Empty stream, non-error case.
-  CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
-                   3 * 1024, &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      3 * 1024, &byte_stream_input, &byte_stream_output);
   EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   byte_stream_input->Close(0);
@@ -261,8 +266,9 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
   EXPECT_EQ(0, byte_stream_output->GetStatus());
 
   // Non-empty stream, non-error case.
-  CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
-                   3 * 1024, &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      3 * 1024, &byte_stream_input, &byte_stream_output);
   EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
@@ -278,8 +284,9 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
   const int kFakeErrorCode = 22;
 
   // Empty stream, error case.
-  CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
-                   3 * 1024, &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      3 * 1024, &byte_stream_input, &byte_stream_output);
   EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   byte_stream_input->Close(kFakeErrorCode);
@@ -289,8 +296,9 @@ TEST_F(ByteStreamTest, ByteStream_CompleteTransmits) {
   EXPECT_EQ(kFakeErrorCode, byte_stream_output->GetStatus());
 
   // Non-empty stream, error case.
-  CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
-                   3 * 1024, &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      3 * 1024, &byte_stream_input, &byte_stream_output);
   EXPECT_EQ(ByteStreamReader::STREAM_EMPTY,
             byte_stream_output->Read(&output_io_buffer, &output_length));
   EXPECT_TRUE(Write(byte_stream_input.get(), 1024));
@@ -311,8 +319,9 @@ TEST_F(ByteStreamTest, ByteStream_SinkCallback) {
 
   scoped_ptr<ByteStreamWriter> byte_stream_input;
   scoped_ptr<ByteStreamReader> byte_stream_output;
-  CreateByteStream(message_loop_.task_runner(), task_runner, 10000,
-                   &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), task_runner,
+      10000, &byte_stream_input, &byte_stream_output);
 
   scoped_refptr<net::IOBuffer> output_io_buffer;
   size_t output_length;
@@ -362,8 +371,9 @@ TEST_F(ByteStreamTest, ByteStream_SourceCallback) {
 
   scoped_ptr<ByteStreamWriter> byte_stream_input;
   scoped_ptr<ByteStreamReader> byte_stream_output;
-  CreateByteStream(task_runner, message_loop_.task_runner(), 10000,
-                   &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      task_runner, message_loop_.message_loop_proxy(),
+      10000, &byte_stream_input, &byte_stream_output);
 
   scoped_refptr<net::IOBuffer> output_io_buffer;
   size_t output_length;
@@ -423,8 +433,9 @@ TEST_F(ByteStreamTest, ByteStream_SinkInterrupt) {
 
   scoped_ptr<ByteStreamWriter> byte_stream_input;
   scoped_ptr<ByteStreamReader> byte_stream_output;
-  CreateByteStream(message_loop_.task_runner(), task_runner, 10000,
-                   &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), task_runner,
+      10000, &byte_stream_input, &byte_stream_output);
 
   scoped_refptr<net::IOBuffer> output_io_buffer;
   size_t output_length;
@@ -469,8 +480,9 @@ TEST_F(ByteStreamTest, ByteStream_SourceInterrupt) {
 
   scoped_ptr<ByteStreamWriter> byte_stream_input;
   scoped_ptr<ByteStreamReader> byte_stream_output;
-  CreateByteStream(task_runner, message_loop_.task_runner(), 10000,
-                   &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      task_runner, message_loop_.message_loop_proxy(),
+      10000, &byte_stream_input, &byte_stream_output);
 
   scoped_refptr<net::IOBuffer> output_io_buffer;
   size_t output_length;
@@ -520,8 +532,9 @@ TEST_F(ByteStreamTest, ByteStream_ZeroCallback) {
 
   scoped_ptr<ByteStreamWriter> byte_stream_input;
   scoped_ptr<ByteStreamReader> byte_stream_output;
-  CreateByteStream(message_loop_.task_runner(), task_runner, 10000,
-                   &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), task_runner,
+      10000, &byte_stream_input, &byte_stream_output);
 
   base::Closure intermediate_callback;
 
@@ -539,8 +552,9 @@ TEST_F(ByteStreamTest, ByteStream_ZeroCallback) {
 TEST_F(ByteStreamTest, ByteStream_CloseWithoutAnyWrite) {
   scoped_ptr<ByteStreamWriter> byte_stream_input;
   scoped_ptr<ByteStreamReader> byte_stream_output;
-  CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
-                   3 * 1024, &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      3 * 1024, &byte_stream_input, &byte_stream_output);
 
   byte_stream_input->Close(0);
   message_loop_.RunUntilIdle();
@@ -554,8 +568,9 @@ TEST_F(ByteStreamTest, ByteStream_CloseWithoutAnyWrite) {
 TEST_F(ByteStreamTest, ByteStream_FlushWithoutAnyWrite) {
   scoped_ptr<ByteStreamWriter> byte_stream_input;
   scoped_ptr<ByteStreamReader> byte_stream_output;
-  CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
-                   3 * 1024, &byte_stream_input, &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      3 * 1024, &byte_stream_input, &byte_stream_output);
 
   byte_stream_input->Flush();
   message_loop_.RunUntilIdle();
@@ -575,9 +590,10 @@ TEST_F(ByteStreamTest, ByteStream_FlushWithoutAnyWrite) {
 TEST_F(ByteStreamTest, ByteStream_WriteOverflow) {
   scoped_ptr<ByteStreamWriter> byte_stream_input;
   scoped_ptr<ByteStreamReader> byte_stream_output;
-  CreateByteStream(message_loop_.task_runner(), message_loop_.task_runner(),
-                   std::numeric_limits<size_t>::max(), &byte_stream_input,
-                   &byte_stream_output);
+  CreateByteStream(
+      message_loop_.message_loop_proxy(), message_loop_.message_loop_proxy(),
+      std::numeric_limits<size_t>::max(),
+      &byte_stream_input, &byte_stream_output);
 
   EXPECT_TRUE(Write(byte_stream_input.get(), 1));
   // 1 + size_t max -> Overflow.

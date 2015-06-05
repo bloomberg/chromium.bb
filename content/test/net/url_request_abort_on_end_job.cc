@@ -7,10 +7,7 @@
 #include <cstring>
 
 #include "base/compiler_specific.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/test/net/url_request_abort_on_end_job.h"
 #include "net/base/io_buffer.h"
@@ -105,9 +102,10 @@ void URLRequestAbortOnEndJob::StartAsync() {
 }
 
 void URLRequestAbortOnEndJob::Start() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&URLRequestAbortOnEndJob::StartAsync,
-                            weak_factory_.GetWeakPtr()));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&URLRequestAbortOnEndJob::StartAsync,
+                 weak_factory_.GetWeakPtr()));
 }
 
 bool URLRequestAbortOnEndJob::ReadRawData(net::IOBuffer* buf,

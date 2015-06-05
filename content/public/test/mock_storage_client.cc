@@ -6,12 +6,10 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "net/base/net_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 
@@ -94,7 +92,7 @@ void MockStorageClient::OnQuotaManagerDestroyed() {
 void MockStorageClient::GetOriginUsage(const GURL& origin_url,
                                        StorageType type,
                                        const GetUsageCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&MockStorageClient::RunGetOriginUsage,
                  weak_factory_.GetWeakPtr(), origin_url, type, callback));
@@ -102,23 +100,25 @@ void MockStorageClient::GetOriginUsage(const GURL& origin_url,
 
 void MockStorageClient::GetOriginsForType(
     StorageType type, const GetOriginsCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MockStorageClient::RunGetOriginsForType,
-                            weak_factory_.GetWeakPtr(), type, callback));
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MockStorageClient::RunGetOriginsForType,
+                 weak_factory_.GetWeakPtr(), type, callback));
 }
 
 void MockStorageClient::GetOriginsForHost(
     StorageType type, const std::string& host,
     const GetOriginsCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MockStorageClient::RunGetOriginsForHost,
-                            weak_factory_.GetWeakPtr(), type, host, callback));
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&MockStorageClient::RunGetOriginsForHost,
+                 weak_factory_.GetWeakPtr(), type, host, callback));
 }
 
 void MockStorageClient::DeleteOriginData(
     const GURL& origin, StorageType type,
     const DeletionCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&MockStorageClient::RunDeleteOriginData,
                  weak_factory_.GetWeakPtr(), origin, type, callback));

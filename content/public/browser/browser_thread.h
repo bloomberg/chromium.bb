@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -88,7 +88,7 @@ class CONTENT_EXPORT BrowserThread {
 
     // NOTE: do not add new threads here that are only used by a small number of
     // files. Instead you should just use a Thread class and pass its
-    // task runner around. Named threads there are only for threads that
+    // MessageLoopProxy around. Named threads there are only for threads that
     // are used in many places.
 
     // This identifier does not represent a thread.  Instead it counts the
@@ -130,10 +130,10 @@ class CONTENT_EXPORT BrowserThread {
       const tracked_objects::Location& from_here,
       const base::Callback<ReturnType(void)>& task,
       const base::Callback<void(ReplyArgType)>& reply) {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
         GetMessageLoopProxyForThread(identifier);
-    return base::PostTaskAndReplyWithResult(task_runner.get(), from_here, task,
-                                            reply);
+    return base::PostTaskAndReplyWithResult(
+        message_loop_proxy.get(), from_here, task, reply);
   }
 
   template <class T>
@@ -216,10 +216,10 @@ class CONTENT_EXPORT BrowserThread {
   // sets identifier to its ID.  Otherwise returns false.
   static bool GetCurrentThreadIdentifier(ID* identifier) WARN_UNUSED_RESULT;
 
-  // Callers can hold on to a refcounted task runner beyond the lifetime
+  // Callers can hold on to a refcounted MessageLoopProxy beyond the lifetime
   // of the thread.
-  static scoped_refptr<base::SingleThreadTaskRunner>
-  GetMessageLoopProxyForThread(ID identifier);
+  static scoped_refptr<base::MessageLoopProxy> GetMessageLoopProxyForThread(
+      ID identifier);
 
   // Returns a pointer to the thread's message loop, which will become
   // invalid during shutdown, so you probably shouldn't hold onto it.

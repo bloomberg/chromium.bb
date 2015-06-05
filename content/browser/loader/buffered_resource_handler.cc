@@ -7,12 +7,9 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "components/mime_util/mime_util.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_stats.h"
@@ -199,7 +196,7 @@ void BufferedResourceHandler::Resume() {
       NOTREACHED();
       break;
     case STATE_REPLAYING:
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&BufferedResourceHandler::CallReplayReadCompleted,
                      weak_ptr_factory_.GetWeakPtr()));

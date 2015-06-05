@@ -9,10 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
@@ -98,8 +96,8 @@ class FileWriterDelegateTest : public PlatformTest {
 
   int64 GetFileSizeOnDisk(const char* test_file_path) {
     // There might be in-flight flush/write.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(&base::DoNothing));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
 
     FileSystemURL url = GetFileSystemURL(test_file_path);
@@ -179,7 +177,7 @@ class FileWriterDelegateTestJob : public net::URLRequestJob {
   }
 
   void Start() override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&FileWriterDelegateTestJob::NotifyHeadersComplete, this));
   }

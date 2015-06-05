@@ -6,8 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
 #include "content/browser/streams/stream_handle_impl.h"
 #include "content/browser/streams/stream_read_observer.h"
@@ -36,9 +35,11 @@ Stream::Stream(StreamRegistry* registry,
       write_observer_(write_observer),
       stream_handle_(NULL),
       weak_ptr_factory_(this) {
-  CreateByteStream(base::ThreadTaskRunnerHandle::Get(),
-                   base::ThreadTaskRunnerHandle::Get(), kDeferSizeThreshold,
-                   &writer_, &reader_);
+  CreateByteStream(base::MessageLoopProxy::current(),
+                   base::MessageLoopProxy::current(),
+                   kDeferSizeThreshold,
+                   &writer_,
+                   &reader_);
 
   // Setup callback for writing.
   writer_->RegisterCallback(base::Bind(&Stream::OnSpaceAvailable,
@@ -121,7 +122,7 @@ void Stream::Finalize() {
   writer_.reset();
 
   // Continue asynchronously.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&Stream::OnDataAvailable, weak_ptr_factory_.GetWeakPtr()));
 }

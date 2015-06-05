@@ -12,13 +12,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_database.h"
 #include "content/browser/appcache/appcache_entry.h"
@@ -137,9 +136,8 @@ class AppCacheStorageImpl::DatabaseTask
     : public base::RefCountedThreadSafe<DatabaseTask> {
  public:
   explicit DatabaseTask(AppCacheStorageImpl* storage)
-      : storage_(storage),
-        database_(storage->database_),
-        io_thread_(base::ThreadTaskRunnerHandle::Get()) {
+      : storage_(storage), database_(storage->database_),
+        io_thread_(base::MessageLoopProxy::current()) {
     DCHECK(io_thread_.get());
   }
 
@@ -180,7 +178,7 @@ class AppCacheStorageImpl::DatabaseTask
   void CallRunCompleted(base::TimeTicks schedule_time);
   void OnFatalError();
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
+  scoped_refptr<base::MessageLoopProxy> io_thread_;
 };
 
 void AppCacheStorageImpl::DatabaseTask::Schedule() {
@@ -316,7 +314,7 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
   if (!storage_->is_disabled()) {
     storage_->usage_map_.swap(usage_map_);
     const base::TimeDelta kDelay = base::TimeDelta::FromMinutes(5);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&AppCacheStorageImpl::DelayedStartDeletingUnusedResponses,
                    storage_->weak_factory_.GetWeakPtr()),
@@ -1740,9 +1738,10 @@ void AppCacheStorageImpl::StartDeletingResponses(
 void AppCacheStorageImpl::ScheduleDeleteOneResponse() {
   DCHECK(!is_response_deletion_scheduled_);
   const base::TimeDelta kBriefDelay = base::TimeDelta::FromMilliseconds(10);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&AppCacheStorageImpl::DeleteOneResponse,
-                            weak_factory_.GetWeakPtr()),
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&AppCacheStorageImpl::DeleteOneResponse,
+                 weak_factory_.GetWeakPtr()),
       kBriefDelay);
   is_response_deletion_scheduled_ = true;
 }
@@ -1825,9 +1824,10 @@ void AppCacheStorageImpl::GetPendingForeignMarkingsForCache(
 
 void AppCacheStorageImpl::ScheduleSimpleTask(const base::Closure& task) {
   pending_simple_tasks_.push_back(task);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&AppCacheStorageImpl::RunOnePendingSimpleTask,
-                            weak_factory_.GetWeakPtr()));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&AppCacheStorageImpl::RunOnePendingSimpleTask,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void AppCacheStorageImpl::RunOnePendingSimpleTask() {

@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/public/test/async_file_test_helper.h"
@@ -72,7 +71,7 @@ class BlobURLRequestJobTest : public testing::Test {
       return new BlobURLRequestJob(request, network_delegate,
                                    test_->GetSnapshotFromBuilder(),
                                    test_->file_system_context_.get(),
-                                   base::ThreadTaskRunnerHandle::Get().get());
+                                   base::MessageLoopProxy::current().get());
     }
 
    private:

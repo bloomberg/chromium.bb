@@ -12,10 +12,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/mock_storage_client.h"
@@ -25,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using base::MessageLoopProxy;
 using storage::kQuotaErrorAbort;
 using storage::kQuotaErrorInvalidModification;
 using storage::kQuotaErrorNotSupported;
@@ -91,9 +92,10 @@ class QuotaManagerTest : public testing::Test {
 
  protected:
   void ResetQuotaManager(bool is_incognito) {
-    quota_manager_ = new QuotaManager(is_incognito, data_dir_.path(),
-                                      base::ThreadTaskRunnerHandle::Get().get(),
-                                      base::ThreadTaskRunnerHandle::Get().get(),
+    quota_manager_ = new QuotaManager(is_incognito,
+                                      data_dir_.path(),
+                                      MessageLoopProxy::current().get(),
+                                      MessageLoopProxy::current().get(),
                                       mock_special_storage_policy_.get());
     // Don't (automatically) start the eviction for testing.
     quota_manager_->eviction_disabled_ = true;

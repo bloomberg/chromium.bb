@@ -4,10 +4,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "base/location.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -30,8 +27,10 @@ namespace {
 
 void GiveItSomeTime() {
   base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(10));
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(10));
   run_loop.Run();
 }
 

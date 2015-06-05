@@ -4,10 +4,8 @@
 
 #include "content/browser/compositor/software_browser_compositor_output_surface.h"
 
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
@@ -40,9 +38,11 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
         swap_time, 1);
   }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RenderWidgetHostImpl::CompositorFrameDrawn,
-                            frame->metadata.latency_info));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &RenderWidgetHostImpl::CompositorFrameDrawn,
+          frame->metadata.latency_info));
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
   if (vsync_provider) {

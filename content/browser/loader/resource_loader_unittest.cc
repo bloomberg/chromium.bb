@@ -6,11 +6,9 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/location.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
 #include "content/browser/loader/resource_loader_delegate.h"
@@ -106,7 +104,7 @@ class LoaderDestroyingCertStore : public net::ClientCertStore {
                       net::CertificateList* selected_certs,
                       const base::Closure& callback) override {
     // Don't destroy |loader_| while it's on the stack.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&LoaderDestroyingCertStore::DoCallback,
                               base::Unretained(loader_), callback));
   }
@@ -137,7 +135,7 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
     scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
         new net::SSLCertRequestInfo);
     cert_request_info->cert_authorities = test_authorities();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&MockClientCertURLRequestJob::NotifyCertificateRequested,
                    this, cert_request_info));
@@ -409,7 +407,7 @@ class NonChunkedUploadDataStream : public net::UploadDataStream {
 void CreateTemporaryError(
     base::File::Error error,
     const CreateTemporaryFileStreamCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, error, base::Passed(scoped_ptr<net::FileStream>()),
                  scoped_refptr<ShareableFileReference>()));
@@ -781,7 +779,7 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
     // Create mock file streams and a ShareableFileReference.
     scoped_ptr<net::testing::MockFileStream> file_stream(
         new net::testing::MockFileStream(file.Pass(),
-                                         base::ThreadTaskRunnerHandle::Get()));
+                                         base::MessageLoopProxy::current()));
     file_stream_ = file_stream.get();
     deletable_file_ = ShareableFileReference::GetOrCreate(
         temp_path_,
@@ -804,9 +802,10 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
   void PostCallback(
       scoped_ptr<net::FileStream> file_stream,
       const CreateTemporaryFileStreamCallback& callback) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, base::File::FILE_OK,
-                              base::Passed(&file_stream), deletable_file_));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::File::FILE_OK,
+                   base::Passed(&file_stream), deletable_file_));
   }
 
   base::FilePath temp_path_;

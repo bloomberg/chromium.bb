@@ -4,10 +4,7 @@
 
 #include "content/browser/streams/stream_url_request_job.h"
 
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/browser/streams/stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -83,7 +80,7 @@ void StreamURLRequestJob::OnDataAvailable(Stream* stream) {
 // net::URLRequestJob methods.
 void StreamURLRequestJob::Start() {
   // Continue asynchronously.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&StreamURLRequestJob::DidStart, weak_factory_.GetWeakPtr()));
 }

@@ -8,9 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -61,10 +59,11 @@ void BrowserShutdownProfileDumper::WriteTracesToDisc() {
   base::WaitableEvent flush_complete_event(false, false);
   base::Thread flush_thread("browser_shutdown_trace_event_flush");
   flush_thread.Start();
-  flush_thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BrowserShutdownProfileDumper::EndTraceAndFlush,
-                            base::Unretained(this),
-                            base::Unretained(&flush_complete_event)));
+  flush_thread.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&BrowserShutdownProfileDumper::EndTraceAndFlush,
+                 base::Unretained(this),
+                 base::Unretained(&flush_complete_event)));
 
   bool original_wait_allowed = base::ThreadRestrictions::SetWaitAllowed(true);
   flush_complete_event.Wait();

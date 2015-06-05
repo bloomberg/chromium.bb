@@ -7,14 +7,16 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/message_loop/message_loop_proxy.h"
 
+using base::MessageLoopProxy;
 using testing::_;
 using testing::Invoke;
 
 namespace content {
 
-FakeAccessTokenStore::FakeAccessTokenStore() : originating_task_runner_(NULL) {
+FakeAccessTokenStore::FakeAccessTokenStore()
+    : originating_message_loop_(NULL) {
   ON_CALL(*this, LoadAccessTokens(_))
       .WillByDefault(Invoke(this,
                             &FakeAccessTokenStore::DefaultLoadAccessTokens));
@@ -24,9 +26,9 @@ FakeAccessTokenStore::FakeAccessTokenStore() : originating_task_runner_(NULL) {
 }
 
 void FakeAccessTokenStore::NotifyDelegateTokensLoaded() {
-  DCHECK(originating_task_runner_);
-  if (!originating_task_runner_->BelongsToCurrentThread()) {
-    originating_task_runner_->PostTask(
+  DCHECK(originating_message_loop_);
+  if (!originating_message_loop_->BelongsToCurrentThread()) {
+    originating_message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&FakeAccessTokenStore::NotifyDelegateTokensLoaded, this));
     return;
@@ -38,7 +40,7 @@ void FakeAccessTokenStore::NotifyDelegateTokensLoaded() {
 
 void FakeAccessTokenStore::DefaultLoadAccessTokens(
     const LoadAccessTokensCallbackType& callback) {
-  originating_task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
+  originating_message_loop_ = MessageLoopProxy::current().get();
   callback_ = callback;
 }
 

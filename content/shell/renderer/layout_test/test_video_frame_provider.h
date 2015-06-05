@@ -10,7 +10,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class MessageLoopProxy;
 }
 
 namespace content {
@@ -46,7 +46,7 @@ class TestVideoFrameProvider : public VideoFrameProvider {
 
   void GenerateFrame();
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   gfx::Size size_;
   State state_;
 

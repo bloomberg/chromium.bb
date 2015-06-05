@@ -10,11 +10,8 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/location.h"
 #include "base/memory/scoped_vector.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
@@ -323,9 +320,10 @@ ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
 void ServiceWorkerURLRequestJob::MaybeStartRequest() {
   if (is_started_ && response_type_ != NOT_DETERMINED) {
     // Start asynchronously.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&ServiceWorkerURLRequestJob::StartRequest,
-                              weak_factory_.GetWeakPtr()));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ServiceWorkerURLRequestJob::StartRequest,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 

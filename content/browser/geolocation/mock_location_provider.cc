@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 
 namespace content {
 MockLocationProvider* MockLocationProvider::instance_ = NULL;
@@ -22,7 +22,7 @@ MockLocationProvider::MockLocationProvider(MockLocationProvider** self_ref)
     : state_(STOPPED),
       is_permission_granted_(false),
       self_ref_(self_ref),
-      provider_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      provider_loop_(base::MessageLoopProxy::current()) {
   CHECK(self_ref_);
   CHECK(*self_ref_ == NULL);
   *self_ref_ = this;
@@ -34,15 +34,16 @@ MockLocationProvider::~MockLocationProvider() {
 }
 
 void MockLocationProvider::HandlePositionChanged(const Geoposition& position) {
-  if (provider_task_runner_->BelongsToCurrentThread()) {
+  if (provider_loop_->BelongsToCurrentThread()) {
     // The location arbitrator unit tests rely on this method running
     // synchronously.
     position_ = position;
     NotifyCallback(position_);
   } else {
-    provider_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&MockLocationProvider::HandlePositionChanged,
-                              base::Unretained(this), position));
+    provider_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&MockLocationProvider::HandlePositionChanged,
+                   base::Unretained(this), position));
   }
 }
 
@@ -103,9 +104,11 @@ class AutoMockLocationProvider : public MockLocationProvider {
   void UpdateListenersIfNeeded() {
     if (!listeners_updated_) {
       listeners_updated_ = true;
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&MockLocationProvider::HandlePositionChanged,
-                                weak_factory_.GetWeakPtr(), position_));
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&MockLocationProvider::HandlePositionChanged,
+                     weak_factory_.GetWeakPtr(),
+                     position_));
     }
   }
 

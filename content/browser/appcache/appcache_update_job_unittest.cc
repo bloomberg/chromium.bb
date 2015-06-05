@@ -4,11 +4,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_host.h"
@@ -606,7 +603,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   template <class Method>
   void RunTestOnIOThread(Method method) {
     event_.reset(new base::WaitableEvent(false, false));
-    io_thread_->task_runner()->PostTask(
+    io_thread_->message_loop()->PostTask(
         FROM_HERE, base::Bind(method, base::Unretained(this)));
 
     // Wait until task is done before exiting the test.
@@ -2986,9 +2983,10 @@ class AppCacheUpdateJobTest : public testing::Test,
   void UpdateFinished() {
     // We unwind the stack prior to finishing up to let stack-based objects
     // get deleted.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
-                              base::Unretained(this)));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
+                   base::Unretained(this)));
   }
 
   void UpdateFinishedUnwound() {

@@ -5,9 +5,7 @@
 #include "content/browser/device_sensors/data_fetcher_shared_memory_base.h"
 
 #include "base/bind.h"
-#include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
@@ -131,10 +129,11 @@ bool DataFetcherSharedMemoryBase::StartFetchingDeviceData(
   if (GetType() != FETCHER_TYPE_DEFAULT) {
     if (!InitAndStartPollingThreadIfNecessary())
       return false;
-    polling_thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&PollingThread::AddConsumer,
-                              base::Unretained(polling_thread_.get()),
-                              consumer_type, buffer));
+    polling_thread_->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&PollingThread::AddConsumer,
+                   base::Unretained(polling_thread_.get()),
+                   consumer_type, buffer));
   } else {
     if (!Start(consumer_type, buffer))
       return false;
@@ -151,10 +150,11 @@ bool DataFetcherSharedMemoryBase::StopFetchingDeviceData(
     return true;
 
   if (GetType() != FETCHER_TYPE_DEFAULT) {
-    polling_thread_->task_runner()->PostTask(
+    polling_thread_->message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&PollingThread::RemoveConsumer,
-                   base::Unretained(polling_thread_.get()), consumer_type));
+                   base::Unretained(polling_thread_.get()),
+                   consumer_type));
   } else {
     if (!Stop(consumer_type))
       return false;

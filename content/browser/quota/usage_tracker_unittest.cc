@@ -3,10 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/location.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "net/base/net_util.h"
 #include "storage/browser/quota/usage_tracker.h"
@@ -59,8 +56,8 @@ class MockQuotaClient : public QuotaClient {
                       const GetUsageCallback& callback) override {
     EXPECT_EQ(kStorageTypeTemporary, type);
     int64 usage = GetUsage(origin);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, usage));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, usage));
   }
 
   void GetOriginsForType(StorageType type,
@@ -71,8 +68,8 @@ class MockQuotaClient : public QuotaClient {
          itr != usage_map_.end(); ++itr) {
       origins.insert(itr->first);
     }
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, origins));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, origins));
   }
 
   void GetOriginsForHost(StorageType type,
@@ -85,8 +82,8 @@ class MockQuotaClient : public QuotaClient {
       if (net::GetHostOrSpecFromURL(itr->first) == host)
         origins.insert(itr->first);
     }
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, origins));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::Bind(callback, origins));
   }
 
   void DeleteOriginData(const GURL& origin,
@@ -94,7 +91,7 @@ class MockQuotaClient : public QuotaClient {
                         const DeletionCallback& callback) override {
     EXPECT_EQ(kStorageTypeTemporary, type);
     usage_map_.erase(origin);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(callback, kQuotaStatusOk));
   }
 

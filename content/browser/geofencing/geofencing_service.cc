@@ -4,10 +4,8 @@
 
 #include "content/browser/geofencing/geofencing_service.h"
 
-#include "base/location.h"
 #include "base/memory/singleton.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/geofencing/geofencing_provider.h"
 #include "content/browser/geofencing/geofencing_registration_delegate.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,7 +17,7 @@ namespace {
 
 void RunSoon(const base::Closure& callback) {
   if (!callback.is_null())
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 }  // namespace

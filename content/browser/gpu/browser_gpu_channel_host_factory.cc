@@ -7,11 +7,8 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/location.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
@@ -126,7 +123,7 @@ class BrowserGpuChannelHostFactory::EstablishRequest
   IPC::ChannelHandle channel_handle_;
   gpu::GPUInfo gpu_info_;
   bool finished_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<base::MessageLoopProxy> main_loop_;
 };
 
 scoped_refptr<BrowserGpuChannelHostFactory::EstablishRequest>
@@ -135,10 +132,10 @@ BrowserGpuChannelHostFactory::EstablishRequest::Create(CauseForGpuLaunch cause,
                                                        int gpu_host_id) {
   scoped_refptr<EstablishRequest> establish_request =
       new EstablishRequest(cause, gpu_client_id, gpu_host_id);
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+  scoped_refptr<base::MessageLoopProxy> loop =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   // PostTask outside the constructor to ensure at least one reference exists.
-  task_runner->PostTask(
+  loop->PostTask(
       FROM_HERE,
       base::Bind(&BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO,
                  establish_request));
@@ -155,7 +152,7 @@ BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
       gpu_host_id_(gpu_host_id),
       reused_gpu_process_(false),
       finished_(false),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      main_loop_(base::MessageLoopProxy::current()) {
 }
 
 void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
@@ -215,7 +212,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO(
 
 void BrowserGpuChannelHostFactory::EstablishRequest::FinishOnIO() {
   event_.Signal();
-  main_task_runner_->PostTask(
+  main_loop_->PostTask(
       FROM_HERE,
       base::Bind(&BrowserGpuChannelHostFactory::EstablishRequest::FinishOnMain,
                  this));
@@ -231,7 +228,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::FinishOnMain() {
 }
 
 void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(main_loop_->BelongsToCurrentThread());
   {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is fixed.
     tracked_objects::ScopedTracker tracking_profile(
@@ -251,7 +248,7 @@ void BrowserGpuChannelHostFactory::EstablishRequest::Wait() {
 }
 
 void BrowserGpuChannelHostFactory::EstablishRequest::Cancel() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK(main_loop_->BelongsToCurrentThread());
   finished_ = true;
 }
 

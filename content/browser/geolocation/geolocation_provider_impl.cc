@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/geolocation/location_arbitrator_impl.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -121,7 +121,7 @@ void GeolocationProviderImpl::OnClientsChanged() {
                       use_high_accuracy);
   }
 
-  task_runner()->PostTask(FROM_HERE, task);
+  message_loop()->PostTask(FROM_HERE, task);
 }
 
 void GeolocationProviderImpl::StopProviders() {
@@ -139,7 +139,7 @@ void GeolocationProviderImpl::StartProviders(bool use_high_accuracy) {
 void GeolocationProviderImpl::InformProvidersPermissionGranted() {
   DCHECK(IsRunning());
   if (!OnGeolocationThread()) {
-    task_runner()->PostTask(
+    message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&GeolocationProviderImpl::InformProvidersPermissionGranted,
                    base::Unretained(this)));

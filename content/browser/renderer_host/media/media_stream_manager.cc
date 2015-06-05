@@ -1670,7 +1670,8 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   // buggy third party Direct Show modules, http://crbug.com/428958.
   video_capture_thread_.init_com_with_mta(false);
   CHECK(video_capture_thread_.Start());
-  video_capture_manager_->Register(this, video_capture_thread_.task_runner());
+  video_capture_manager_->Register(this,
+                                   video_capture_thread_.message_loop_proxy());
 #else
   video_capture_manager_->Register(this, device_task_runner_);
 #endif

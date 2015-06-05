@@ -4,7 +4,6 @@
 
 #include "content/public/test/mock_blob_url_request_context.h"
 
-#include "base/thread_task_runner_handle.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"
@@ -17,9 +16,10 @@ MockBlobURLRequestContext::MockBlobURLRequestContext(
     : blob_storage_context_(new storage::BlobStorageContext) {
   // Job factory owns the protocol handler.
   job_factory_.SetProtocolHandler(
-      "blob", new storage::BlobProtocolHandler(
-                  blob_storage_context_.get(), file_system_context,
-                  base::ThreadTaskRunnerHandle::Get()));
+      "blob",
+      new storage::BlobProtocolHandler(blob_storage_context_.get(),
+                                       file_system_context,
+                                       base::MessageLoopProxy::current()));
   set_job_factory(&job_factory_);
 }
 

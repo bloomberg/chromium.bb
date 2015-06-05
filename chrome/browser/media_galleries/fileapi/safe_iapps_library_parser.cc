@@ -64,10 +64,10 @@ void SafeIAppsLibraryParser::StartProcessOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(INITIAL_STATE, parser_state_);
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   utility_process_host_ =
-      UtilityProcessHost::Create(this, task_runner.get())->AsWeakPtr();
+      UtilityProcessHost::Create(this, message_loop_proxy.get())->AsWeakPtr();
   utility_process_host_->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_MEDIA_LIBRARY_FILE_CHECKER_NAME));
   // Wait for the startup notification before sending the main IPC to the

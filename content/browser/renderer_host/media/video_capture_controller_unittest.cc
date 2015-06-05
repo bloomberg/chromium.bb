@@ -8,11 +8,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
@@ -74,10 +73,14 @@ class MockVideoCaptureControllerEventHandler
       const base::TimeTicks& timestamp,
       scoped_ptr<base::DictionaryValue> metadata) override {
     DoBufferReady(id, coded_size);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&VideoCaptureController::ReturnBuffer,
-                   base::Unretained(controller_), id, this, buffer_id, 0));
+                   base::Unretained(controller_),
+                   id,
+                   this,
+                   buffer_id,
+                   0));
   }
   void OnMailboxBufferReady(
       VideoCaptureControllerID id,
@@ -87,16 +90,19 @@ class MockVideoCaptureControllerEventHandler
       const base::TimeTicks& timestamp,
       scoped_ptr<base::DictionaryValue> metadata) override {
     DoMailboxBufferReady(id);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&VideoCaptureController::ReturnBuffer,
-                              base::Unretained(controller_), id, this,
-                              buffer_id, mailbox_holder.sync_point));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&VideoCaptureController::ReturnBuffer,
+                   base::Unretained(controller_),
+                   id,
+                   this,
+                   buffer_id,
+                   mailbox_holder.sync_point));
   }
   void OnEnded(VideoCaptureControllerID id) override {
     DoEnded(id);
     // OnEnded() must respond by (eventually) unregistering the client.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
+    base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(base::IgnoreResult(&VideoCaptureController::RemoveClient),
                    base::Unretained(controller_), id, this));
   }

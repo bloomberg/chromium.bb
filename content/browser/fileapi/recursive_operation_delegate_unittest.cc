@@ -10,10 +10,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/location.h"
+#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/public/test/sandbox_file_system_test_helper.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/fileapi/file_system_operation.h"
@@ -116,7 +115,7 @@ void ReportStatus(base::File::Error* out_error,
 void CallCancelLater(storage::RecursiveOperationDelegate* operation,
                      int counter) {
   if (counter > 0) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(&CallCancelLater, base::Unretained(operation), counter - 1));
     return;

@@ -10,11 +10,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/location.h"
 #include "base/pickle.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/mock_appcache_service.h"
@@ -78,7 +75,7 @@ class AppCacheResponseTest : public testing::Test {
   template <class Method>
   void RunTestOnIOThread(Method method) {
     test_finished_event_ .reset(new base::WaitableEvent(false, false));
-    io_thread_->task_runner()->PostTask(
+    io_thread_->message_loop()->PostTask(
         FROM_HERE, base::Bind(&AppCacheResponseTest::MethodWrapper<Method>,
                               base::Unretained(this), method));
     test_finished_event_->Wait();
@@ -119,7 +116,7 @@ class AppCacheResponseTest : public testing::Test {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
     DCHECK(base::MessageLoop::current() == io_thread_->message_loop());
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&AppCacheResponseTest::TestFinishedUnwound,
                               base::Unretained(this)));
   }
@@ -149,7 +146,7 @@ class AppCacheResponseTest : public testing::Test {
     if (immediate)
       task.Run();
     else
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
+      base::MessageLoop::current()->PostTask(FROM_HERE, task);
   }
 
   // Wrappers to call AppCacheResponseReader/Writer Read and Write methods
@@ -739,7 +736,7 @@ class AppCacheResponseTest : public testing::Test {
     reader_.reset();
 
     // Wait a moment to verify no callbacks.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&AppCacheResponseTest::VerifyNoCallbacks,
                               base::Unretained(this)),
         base::TimeDelta::FromMilliseconds(10));

@@ -7,9 +7,7 @@
 #include <set>
 #include <vector>
 
-#include "base/location.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
@@ -486,10 +484,8 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   base::SequencedTaskRunner* idb_task_runner =
       BrowserThread::CurrentlyOn(BrowserThread::UI) &&
               BrowserMainLoop::GetInstance()
-          ? BrowserMainLoop::GetInstance()
-                ->indexed_db_thread()
-                ->task_runner()
-                .get()
+          ? BrowserMainLoop::GetInstance()->indexed_db_thread()
+                ->message_loop_proxy().get()
           : NULL;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context =
       new IndexedDBContextImpl(path,

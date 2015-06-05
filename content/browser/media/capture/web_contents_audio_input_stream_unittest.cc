@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -201,7 +201,8 @@ class WebContentsAudioInputStreamTest : public testing::Test {
   }
 
   void Open() {
-    mock_vais_ = new MockVirtualAudioInputStream(audio_thread_.task_runner());
+    mock_vais_ =
+        new MockVirtualAudioInputStream(audio_thread_.message_loop_proxy());
     EXPECT_CALL(*mock_vais_, Open());
     EXPECT_CALL(*mock_vais_, Close());  // At Close() time.
 
@@ -340,7 +341,7 @@ class WebContentsAudioInputStreamTest : public testing::Test {
   }
 
   void RunOnAudioThread(const base::Closure& closure) {
-    audio_thread_.task_runner()->PostTask(FROM_HERE, closure);
+    audio_thread_.message_loop()->PostTask(FROM_HERE, closure);
   }
 
   // Block the calling thread until OnData() callbacks are being made.

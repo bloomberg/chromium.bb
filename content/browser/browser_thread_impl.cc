@@ -10,7 +10,8 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread_delegate.h"
@@ -36,14 +37,15 @@ static const char* g_browser_thread_names[BrowserThread::ID_COUNT] = {
   "Chrome_IOThread",  // IO
 };
 
-// An implementation of SingleThreadTaskRunner to be used in conjunction
+// An implementation of MessageLoopProxy to be used in conjunction
 // with BrowserThread.
-class BrowserThreadTaskRunner : public base::SingleThreadTaskRunner {
+class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
  public:
-  explicit BrowserThreadTaskRunner(BrowserThread::ID identifier)
-      : id_(identifier) {}
+  explicit BrowserThreadMessageLoopProxy(BrowserThread::ID identifier)
+      : id_(identifier) {
+  }
 
-  // SingleThreadTaskRunner implementation.
+  // MessageLoopProxy implementation.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,
                        base::TimeDelta delay) override {
@@ -62,28 +64,28 @@ class BrowserThreadTaskRunner : public base::SingleThreadTaskRunner {
   }
 
  protected:
-  ~BrowserThreadTaskRunner() override {}
+  ~BrowserThreadMessageLoopProxy() override {}
 
  private:
   BrowserThread::ID id_;
-  DISALLOW_COPY_AND_ASSIGN(BrowserThreadTaskRunner);
+  DISALLOW_COPY_AND_ASSIGN(BrowserThreadMessageLoopProxy);
 };
 
-// A separate helper is used just for the task runners, in order to avoid
-// needing to initialize the globals to create a task runner.
-struct BrowserThreadTaskRunners {
-  BrowserThreadTaskRunners() {
+// A separate helper is used just for the proxies, in order to avoid needing
+// to initialize the globals to create a proxy.
+struct BrowserThreadProxies {
+  BrowserThreadProxies() {
     for (int i = 0; i < BrowserThread::ID_COUNT; ++i) {
       proxies[i] =
-          new BrowserThreadTaskRunner(static_cast<BrowserThread::ID>(i));
+          new BrowserThreadMessageLoopProxy(static_cast<BrowserThread::ID>(i));
     }
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> proxies[BrowserThread::ID_COUNT];
+  scoped_refptr<base::MessageLoopProxy> proxies[BrowserThread::ID_COUNT];
 };
 
-base::LazyInstance<BrowserThreadTaskRunners>::Leaky g_task_runners =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<BrowserThreadProxies>::Leaky
+    g_proxies = LAZY_INSTANCE_INITIALIZER;
 
 struct BrowserThreadGlobals {
   BrowserThreadGlobals()
@@ -329,10 +331,9 @@ bool BrowserThreadImpl::PostTaskHelper(
                                   : NULL;
   if (message_loop) {
     if (nestable) {
-      message_loop->task_runner()->PostDelayedTask(from_here, task, delay);
+      message_loop->PostDelayedTask(from_here, task, delay);
     } else {
-      message_loop->task_runner()->PostNonNestableDelayedTask(from_here, task,
-                                                              delay);
+      message_loop->PostNonNestableDelayedTask(from_here, task, delay);
     }
   }
 
@@ -516,9 +517,9 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
 }
 
 // static
-scoped_refptr<base::SingleThreadTaskRunner>
+scoped_refptr<base::MessageLoopProxy>
 BrowserThread::GetMessageLoopProxyForThread(ID identifier) {
-  return g_task_runners.Get().proxies[identifier];
+  return g_proxies.Get().proxies[identifier];
 }
 
 // static

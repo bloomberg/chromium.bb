@@ -8,8 +8,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/browser/quota/mock_quota_manager.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/mock_storage_client.h"
@@ -45,9 +45,10 @@ class MockQuotaManagerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     policy_ = new MockSpecialStoragePolicy;
-    manager_ = new MockQuotaManager(false /* is_incognito */, data_dir_.path(),
-                                    base::ThreadTaskRunnerHandle::Get().get(),
-                                    base::ThreadTaskRunnerHandle::Get().get(),
+    manager_ = new MockQuotaManager(false /* is_incognito */,
+                                    data_dir_.path(),
+                                    base::MessageLoopProxy::current().get(),
+                                    base::MessageLoopProxy::current().get(),
                                     policy_.get());
   }
 

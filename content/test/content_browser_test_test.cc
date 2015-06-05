@@ -5,10 +5,7 @@
 #include "content/public/test/content_browser_test.h"
 
 #include "base/command_line.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -61,7 +58,7 @@ void CallbackChecker(bool* non_nested_task_ran) {
 
 IN_PROC_BROWSER_TEST_F(ContentBrowserTestSanityTest, NonNestableTask) {
   bool non_nested_task_ran = false;
-  base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
+  base::MessageLoop::current()->PostNonNestableTask(
       FROM_HERE, base::Bind(&CallbackChecker, &non_nested_task_ran));
   content::RunAllPendingInMessageLoop();
   ASSERT_TRUE(non_nested_task_ran);

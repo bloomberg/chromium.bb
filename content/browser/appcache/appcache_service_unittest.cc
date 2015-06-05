@@ -6,11 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/location.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/mock_appcache_storage.h"
@@ -70,9 +67,9 @@ class MockResponseReader : public AppCacheResponseReader {
 
  private:
   void ScheduleUserCallback(int result) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MockResponseReader::InvokeUserCompletionCallback,
-                              weak_factory_.GetWeakPtr(), result));
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&MockResponseReader::InvokeUserCompletionCallback,
+                   weak_factory_.GetWeakPtr(), result));
   }
 
   scoped_ptr<net::HttpResponseInfo> info_;
