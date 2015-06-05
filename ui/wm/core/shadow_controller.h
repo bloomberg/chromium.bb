@@ -51,8 +51,10 @@ class WM_EXPORT ShadowController :
   ~ShadowController() override;
 
   // aura::client::ActivationChangeObserver overrides:
-  void OnWindowActivated(aura::Window* gained_active,
-                         aura::Window* lost_active) override;
+  void OnWindowActivated(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* gained_active,
+      aura::Window* lost_active) override;
 
  private:
   class Impl;

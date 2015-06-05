@@ -56,8 +56,10 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   void UpdateBrowserItemState();
 
   // aura::client::ActivationChangeObserver overrides:
-  void OnWindowActivated(aura::Window* gained_active,
-                         aura::Window* lost_active) override;
+  void OnWindowActivated(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* gained_active,
+      aura::Window* lost_active) override;
 
   // aura::WindowObserver overrides:
   void OnWindowDestroyed(aura::Window* window) override;

@@ -902,8 +902,10 @@ void DockedWindowLayoutManager::OnWindowDestroying(aura::Window* window) {
 // DockedWindowLayoutManager, aura::client::ActivationChangeObserver
 // implementation:
 
-void DockedWindowLayoutManager::OnWindowActivated(aura::Window* gained_active,
-                                                  aura::Window* lost_active) {
+void DockedWindowLayoutManager::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   if (gained_active && IsPopupOrTransient(gained_active))
     return;
   // Ignore if the window that is not managed by this was activated.

@@ -14,11 +14,23 @@ namespace client {
 
 class AURA_EXPORT ActivationChangeObserver {
  public:
-  // Called when |active| gains focus, or there is no active window
-  // (|active| is NULL in this case.) |old_active| refers to the
+  // The reason or cause of a window activation change.
+  enum class ActivationReason {
+    // When a window is activated due to a call to the ActivationClient API.
+    ACTIVATION_CLIENT,
+    // When a user clicks or taps a window in the 2-dimensional screen space.
+    INPUT_EVENT,
+    // When a new window is activated as a side effect of a window
+    // disposition changing.
+    WINDOW_DISPOSITION_CHANGED,
+  };
+
+  // Called when |gained_active| gains focus, or there is no active window
+  // (|gained_active| is NULL in this case.) |lost_active| refers to the
   // previous active window or NULL if there was no previously active
-  // window.
-  virtual void OnWindowActivated(Window* gained_active,
+  // window. |reason| specifies the cause of the activation change.
+  virtual void OnWindowActivated(ActivationReason reason,
+                                 Window* gained_active,
                                  Window* lost_active) = 0;
 
   // Called when during window activation the currently active window is

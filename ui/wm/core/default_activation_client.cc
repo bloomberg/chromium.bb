@@ -40,7 +40,7 @@ class DefaultActivationClient::Deleter : public aura::WindowObserver {
 // DefaultActivationClient, public:
 
 DefaultActivationClient::DefaultActivationClient(aura::Window* root_window)
-    : last_active_(NULL) {
+    : last_active_(nullptr) {
   aura::client::SetActivationClient(root_window, this);
   new Deleter(this, root_window);
 }
@@ -59,6 +59,14 @@ void DefaultActivationClient::RemoveObserver(
 }
 
 void DefaultActivationClient::ActivateWindow(aura::Window* window) {
+  ActivateWindowImpl(aura::client::ActivationChangeObserver::ActivationReason::
+                         ACTIVATION_CLIENT,
+                     window);
+}
+
+void DefaultActivationClient::ActivateWindowImpl(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* window) {
   aura::Window* last_active = GetActiveWindow();
   if (last_active == window)
     return;
@@ -69,41 +77,45 @@ void DefaultActivationClient::ActivateWindow(aura::Window* window) {
   window->parent()->StackChildAtTop(window);
   window->AddObserver(this);
 
-  FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver,
-                    observers_,
-                    OnWindowActivated(window, last_active));
+  FOR_EACH_OBSERVER(aura::client::ActivationChangeObserver, observers_,
+                    OnWindowActivated(reason, window, last_active));
 
   aura::client::ActivationChangeObserver* observer =
       aura::client::GetActivationChangeObserver(last_active);
-  if (observer)
-    observer->OnWindowActivated(window, last_active);
+  if (observer) {
+    observer->OnWindowActivated(reason, window, last_active);
+  }
   observer = aura::client::GetActivationChangeObserver(window);
-  if (observer)
-    observer->OnWindowActivated(window, last_active);
+  if (observer) {
+    observer->OnWindowActivated(reason, window, last_active);
+  }
 }
 
 void DefaultActivationClient::DeactivateWindow(aura::Window* window) {
   aura::client::ActivationChangeObserver* observer =
       aura::client::GetActivationChangeObserver(window);
-  if (observer)
-    observer->OnWindowActivated(NULL, window);
+  if (observer) {
+    observer->OnWindowActivated(aura::client::ActivationChangeObserver::
+                                    ActivationReason::ACTIVATION_CLIENT,
+                                nullptr, window);
+  }
   if (last_active_)
     ActivateWindow(last_active_);
 }
 
 aura::Window* DefaultActivationClient::GetActiveWindow() {
   if (active_windows_.empty())
-    return NULL;
+    return nullptr;
   return active_windows_.back();
 }
 
 aura::Window* DefaultActivationClient::GetActivatableWindow(
     aura::Window* window) {
-  return NULL;
+  return nullptr;
 }
 
 aura::Window* DefaultActivationClient::GetToplevelWindow(aura::Window* window) {
-  return NULL;
+  return nullptr;
 }
 
 bool DefaultActivationClient::CanActivateWindow(aura::Window* window) const {
@@ -115,14 +127,16 @@ bool DefaultActivationClient::CanActivateWindow(aura::Window* window) const {
 
 void DefaultActivationClient::OnWindowDestroyed(aura::Window* window) {
   if (window == last_active_)
-    last_active_ = NULL;
+    last_active_ = nullptr;
 
   if (window == GetActiveWindow()) {
     active_windows_.pop_back();
     aura::Window* next_active = GetActiveWindow();
     if (next_active && aura::client::GetActivationChangeObserver(next_active)) {
-      aura::client::GetActivationChangeObserver(next_active)->OnWindowActivated(
-          next_active, NULL);
+      aura::client::GetActivationChangeObserver(next_active)
+          ->OnWindowActivated(aura::client::ActivationChangeObserver::
+                                  ActivationReason::WINDOW_DISPOSITION_CHANGED,
+                              next_active, nullptr);
     }
     return;
   }

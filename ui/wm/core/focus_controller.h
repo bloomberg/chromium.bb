@@ -12,6 +12,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
+#include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/wm_export.h"
 
@@ -24,16 +25,19 @@ class FocusRules;
 // only one focused and one active window at a time. When focus or activation
 // changes notifications are sent using the
 // aura::client::Focus/ActivationChangeObserver interfaces.
-// Changes to focus and activation can be from three sources:
-// . the Aura Client API (implemented here in aura::client::ActivationClient).
-//   (The FocusController must be set as the ActivationClient implementation
-//    for all RootWindows).
-// . input events (implemented here in ui::EventHandler).
-//   (The FocusController must be registered as a pre-target handler for
-//    the applicable environment owner, either a RootWindow or another type).
-// . Window disposition changes (implemented here in aura::WindowObserver).
-//   (The FocusController registers itself as an observer of the active and
-//    focused windows).
+// Changes to focus and activation can be from three sources. The source can be
+// determined by the ActivationReason parameter in
+// ActivationChangeObserver::OnWindowActivated(...).
+// . ActivationReason::ACTIVATION_CLIENT: The Aura Client API (implemented here
+//   in aura::client::ActivationClient). (The FocusController must be set as the
+//   ActivationClient implementation for all RootWindows).
+// . ActivationReason::INPUT_EVENT: Input events (implemented here in
+//   ui::EventHandler). (The FocusController must be registered as a pre-target
+//   handler for the applicable environment owner, either a RootWindow or
+//   another type).
+// . ActivationReason::WINDOW_DISPOSITION_CHANGED: Window disposition changes
+//   (implemented here in aura::WindowObserver). (The FocusController registers
+//   itself as an observer of the active and focused windows).
 class WM_EXPORT FocusController : public aura::client::ActivationClient,
                                   public aura::client::FocusClient,
                                   public ui::EventHandler,
@@ -75,18 +79,26 @@ class WM_EXPORT FocusController : public aura::client::ActivationClient,
   void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override;
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
 
+  // Internal implementation that coordinates window focus and activation
+  // changes.
+  void FocusAndActivateWindow(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* window);
+
   // Internal implementation that sets the focused window, fires events etc.
   // This function must be called with a valid focusable window.
   void SetFocusedWindow(aura::Window* window);
 
   // Internal implementation that sets the active window, fires events etc.
   // This function must be called with a valid |activatable_window|.
-  // |requested window| refers to the window that was passed in to an external
+  // |requested_window| refers to the window that was passed in to an external
   // request (e.g. FocusWindow or ActivateWindow). It may be NULL, e.g. if
   // SetActiveWindow was not called by an external request. |activatable_window|
   // refers to the actual window to be activated, which may be different.
-  void SetActiveWindow(aura::Window* requested_window,
-                       aura::Window* activatable_window);
+  void SetActiveWindow(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* requested_window,
+      aura::Window* activatable_window);
 
   // Called when a window's disposition changed such that it and its hierarchy
   // are no longer focusable/activatable. |next| is a valid window that is used

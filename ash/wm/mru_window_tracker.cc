@@ -174,8 +174,10 @@ void MruWindowTracker::SetActiveWindow(aura::Window* active_window) {
   mru_windows_.push_front(active_window);
 }
 
-void MruWindowTracker::OnWindowActivated(aura::Window* gained_active,
-                                         aura::Window* lost_active) {
+void MruWindowTracker::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   if (!ignore_window_activations_)
     SetActiveWindow(gained_active);
 }

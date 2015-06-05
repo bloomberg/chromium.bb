@@ -176,8 +176,10 @@ class ASH_EXPORT ShelfLayoutManager
   void OnLockStateChanged(bool locked) override;
 
   // Overriden from aura::client::ActivationChangeObserver:
-  void OnWindowActivated(aura::Window* gained_active,
-                         aura::Window* lost_active) override;
+  void OnWindowActivated(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* gained_active,
+      aura::Window* lost_active) override;
 
   // Overridden from ash::LockStateObserver:
   void OnLockStateEvent(LockStateObserver::EventType event) override;

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
+#include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/wm_export.h"
 
@@ -50,6 +51,10 @@ class WM_EXPORT DefaultActivationClient : public aura::client::ActivationClient,
 
   ~DefaultActivationClient() override;
   void RemoveActiveWindow(aura::Window* window);
+
+  void ActivateWindowImpl(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* window);
 
   // This class explicitly does NOT store the active window in a window property
   // to make sure that ActivationChangeObserver is not treated as part of the

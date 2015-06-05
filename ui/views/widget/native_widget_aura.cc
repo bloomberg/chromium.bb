@@ -936,8 +936,10 @@ bool NativeWidgetAura::ShouldActivate() const {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, aura::client::ActivationChangeObserver implementation:
 
-void NativeWidgetAura::OnWindowActivated(aura::Window* gained_active,
-                                         aura::Window* lost_active) {
+void NativeWidgetAura::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   DCHECK(window_ == gained_active || window_ == lost_active);
   if (GetWidget()->GetFocusManager()) {
     if (window_ == gained_active)

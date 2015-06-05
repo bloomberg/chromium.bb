@@ -190,8 +190,10 @@ void ShelfWindowWatcher::FinishObservingRemovedWindow(aura::Window* window) {
   RemoveShelfItem(window);
 }
 
-void ShelfWindowWatcher::OnWindowActivated(aura::Window* gained_active,
-                                           aura::Window* lost_active) {
+void ShelfWindowWatcher::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   if (gained_active && HasShelfItemForWindow(gained_active))
     UpdateShelfItemStatus(gained_active, true);
   if (lost_active && HasShelfItemForWindow(lost_active))

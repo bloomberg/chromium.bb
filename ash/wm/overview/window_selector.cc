@@ -505,8 +505,10 @@ void WindowSelector::OnWindowDestroying(aura::Window* window) {
     restore_focus_window_ = nullptr;
 }
 
-void WindowSelector::OnWindowActivated(aura::Window* gained_active,
-                                       aura::Window* lost_active) {
+void WindowSelector::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   if (ignore_activations_ ||
       !gained_active ||
       gained_active == text_filter_widget_->GetNativeWindow()) {
@@ -534,7 +536,9 @@ void WindowSelector::OnWindowActivated(aura::Window* gained_active,
 
 void WindowSelector::OnAttemptToReactivateWindow(aura::Window* request_active,
                                                  aura::Window* actual_active) {
-  OnWindowActivated(request_active, actual_active);
+  OnWindowActivated(aura::client::ActivationChangeObserver::ActivationReason::
+                        ACTIVATION_CLIENT,
+                    request_active, actual_active);
 }
 
 void WindowSelector::ContentsChanged(views::Textfield* sender,

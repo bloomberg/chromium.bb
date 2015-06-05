@@ -179,8 +179,10 @@ class ASH_EXPORT DockedWindowLayoutManager
   void OnWindowDestroying(aura::Window* window) override;
 
   // aura::client::ActivationChangeObserver:
-  void OnWindowActivated(aura::Window* gained_active,
-                         aura::Window* lost_active) override;
+  void OnWindowActivated(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* gained_active,
+      aura::Window* lost_active) override;
 
  private:
   class ShelfWindowObserver;

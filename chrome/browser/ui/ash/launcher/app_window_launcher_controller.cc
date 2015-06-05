@@ -127,8 +127,10 @@ void AppWindowLauncherController::OnWindowDestroying(aura::Window* window) {
   UnregisterApp(window);
 }
 
-void AppWindowLauncherController::OnWindowActivated(aura::Window* new_active,
-                                                    aura::Window* old_active) {
+void AppWindowLauncherController::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* new_active,
+    aura::Window* old_active) {
   // Make the newly active window the active (first) entry in the controller.
   AppWindowLauncherItemController* new_controller =
       ControllerForWindow(new_active);

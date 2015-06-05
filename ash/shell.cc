@@ -1177,8 +1177,10 @@ void Shell::OnEvent(ui::Event* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, aura::client::ActivationChangeObserver implementation:
 
-void Shell::OnWindowActivated(aura::Window* gained_active,
-                              aura::Window* lost_active) {
+void Shell::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   if (gained_active)
     target_root_window_ = gained_active->GetRootWindow();
 }

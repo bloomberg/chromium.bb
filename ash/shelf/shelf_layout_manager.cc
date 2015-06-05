@@ -529,8 +529,10 @@ void ShelfLayoutManager::OnLockStateChanged(bool locked) {
   UpdateShelfVisibilityAfterLoginUIChange();
 }
 
-void ShelfLayoutManager::OnWindowActivated(aura::Window* gained_active,
-                                           aura::Window* lost_active) {
+void ShelfLayoutManager::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   UpdateAutoHideStateNow();
 }
 

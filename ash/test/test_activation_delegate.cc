@@ -44,8 +44,10 @@ bool TestActivationDelegate::ShouldActivate() const {
   return activate_;
 }
 
-void TestActivationDelegate::OnWindowActivated(aura::Window* gained_active,
-                                               aura::Window* lost_active) {
+void TestActivationDelegate::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   DCHECK(window_ == gained_active || window_ == lost_active);
   if (window_ == gained_active) {
     activated_count_++;

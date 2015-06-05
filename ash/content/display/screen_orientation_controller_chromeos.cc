@@ -128,8 +128,10 @@ void ScreenOrientationController::SetDisplayRotation(
   }
 }
 
-void ScreenOrientationController::OnWindowActivated(aura::Window* gained_active,
-                                                    aura::Window* lost_active) {
+void ScreenOrientationController::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   ApplyLockForActiveWindow();
 }
 

@@ -59,8 +59,10 @@ class AppWindowLauncherController
   void OnWindowDestroying(aura::Window* window) override;
 
   // Overriden from client::ActivationChangeObserver:
-  void OnWindowActivated(aura::Window* gained_active,
-                         aura::Window* lost_active) override;
+  void OnWindowActivated(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* gained_active,
+      aura::Window* lost_active) override;
 
  protected:
   // Registers a app window with the shelf and this object.

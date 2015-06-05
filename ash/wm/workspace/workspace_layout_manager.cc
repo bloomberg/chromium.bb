@@ -245,8 +245,10 @@ void WorkspaceLayoutManager::OnWindowBoundsChanged(aura::Window* window,
 // WorkspaceLayoutManager,
 // aura::client::ActivationChangeObserver implementation:
 
-void WorkspaceLayoutManager::OnWindowActivated(aura::Window* gained_active,
-                                               aura::Window* lost_active) {
+void WorkspaceLayoutManager::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   wm::WindowState* window_state = wm::GetWindowState(gained_active);
   if (window_state && window_state->IsMinimized() &&
       !gained_active->IsVisible()) {

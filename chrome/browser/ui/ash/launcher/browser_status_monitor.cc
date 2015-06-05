@@ -164,8 +164,10 @@ void BrowserStatusMonitor::UpdateBrowserItemState() {
       UpdateBrowserItemState();
 }
 
-void BrowserStatusMonitor::OnWindowActivated(aura::Window* gained_active,
-                                             aura::Window* lost_active) {
+void BrowserStatusMonitor::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   Browser* browser = NULL;
   content::WebContents* contents_from_gained = NULL;
   content::WebContents* contents_from_lost = NULL;

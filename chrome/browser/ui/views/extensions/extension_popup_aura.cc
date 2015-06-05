@@ -53,8 +53,10 @@ void ExtensionPopupAura::OnWidgetDestroying(views::Widget* widget) {
   }
 }
 
-void ExtensionPopupAura::OnWindowActivated(aura::Window* gained_active,
-                                           aura::Window* lost_active) {
+void ExtensionPopupAura::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   // Close on anchor window activation (ie. user clicked the browser window).
   // DesktopNativeWidgetAura does not trigger the expected browser widget
   // [de]activation events when activating widgets in its own root window.

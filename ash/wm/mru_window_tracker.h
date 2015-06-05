@@ -65,8 +65,10 @@ class ASH_EXPORT MruWindowTracker
   void SetActiveWindow(aura::Window* active_window);
 
   // Overridden from aura::client::ActivationChangeObserver:
-  void OnWindowActivated(aura::Window* gained_active,
-                         aura::Window* lost_active) override;
+  void OnWindowActivated(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* gained_active,
+      aura::Window* lost_active) override;
 
   // Overridden from WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;

@@ -113,7 +113,8 @@ class ShadowController::Impl :
   ~Impl() override;
 
   // Forwarded from ShadowController.
-  void OnWindowActivated(aura::Window* gained_active,
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
                          aura::Window* lost_active);
 
   // Checks if |window| is visible and contains a property requesting a shadow.
@@ -183,7 +184,8 @@ void ShadowController::Impl::OnWindowDestroyed(aura::Window* window) {
   observer_manager_.Remove(window);
 }
 
-void ShadowController::Impl::OnWindowActivated(aura::Window* gained_active,
+void ShadowController::Impl::OnWindowActivated(ActivationReason reason,
+                                               aura::Window* gained_active,
                                                aura::Window* lost_active) {
   if (gained_active) {
     Shadow* shadow = GetShadowForWindow(gained_active);
@@ -271,9 +273,10 @@ ShadowController::~ShadowController() {
   activation_client_->RemoveObserver(this);
 }
 
-void ShadowController::OnWindowActivated(aura::Window* gained_active,
+void ShadowController::OnWindowActivated(ActivationReason reason,
+                                         aura::Window* gained_active,
                                          aura::Window* lost_active) {
-  impl_->OnWindowActivated(gained_active, lost_active);
+  impl_->OnWindowActivated(reason, gained_active, lost_active);
 }
 
 // ShadowController::TestApi ---------------------------------------------------

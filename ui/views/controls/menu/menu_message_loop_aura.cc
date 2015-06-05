@@ -60,8 +60,10 @@ class ActivationChangeObserverImpl
   ~ActivationChangeObserverImpl() override { Cleanup(); }
 
   // aura::client::ActivationChangeObserver:
-  void OnWindowActivated(aura::Window* gained_active,
-                         aura::Window* lost_active) override {
+  void OnWindowActivated(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* gained_active,
+      aura::Window* lost_active) override {
     if (!controller_->drag_in_progress())
       controller_->CancelAll();
   }

@@ -1111,8 +1111,10 @@ bool DesktopNativeWidgetAura::ShouldActivate() const {
 // DesktopNativeWidgetAura, aura::client::ActivationChangeObserver
 //    implementation:
 
-void DesktopNativeWidgetAura::OnWindowActivated(aura::Window* gained_active,
-                                                aura::Window* lost_active) {
+void DesktopNativeWidgetAura::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   DCHECK(content_window_ == gained_active || content_window_ == lost_active);
   if (gained_active == content_window_ && restore_focus_on_activate_) {
     restore_focus_on_activate_ = false;

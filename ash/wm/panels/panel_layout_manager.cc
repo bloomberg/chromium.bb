@@ -513,8 +513,10 @@ void PanelLayoutManager::OnPostWindowStateTypeChange(
 ////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, aura::client::ActivationChangeObserver implementation:
 
-void PanelLayoutManager::OnWindowActivated(aura::Window* gained_active,
-                                           aura::Window* lost_active) {
+void PanelLayoutManager::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
   // Ignore if the panel that is not managed by this was activated.
   if (gained_active && gained_active->type() == ui::wm::WINDOW_TYPE_PANEL &&
       gained_active->parent() == panel_container_) {

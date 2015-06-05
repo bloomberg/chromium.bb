@@ -33,7 +33,8 @@ class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
                                   public aura::client::FocusChangeObserver {
  public:
   FocusNotificationObserver()
-      : activation_changed_count_(0),
+      : last_activation_reason_(ActivationReason::ACTIVATION_CLIENT),
+        activation_changed_count_(0),
         focus_changed_count_(0),
         reactivation_count_(0),
         reactivation_requested_window_(NULL),
@@ -43,6 +44,9 @@ class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
   void ExpectCounts(int activation_changed_count, int focus_changed_count) {
     EXPECT_EQ(activation_changed_count, activation_changed_count_);
     EXPECT_EQ(focus_changed_count, focus_changed_count_);
+  }
+  ActivationReason last_activation_reason() const {
+    return last_activation_reason_;
   }
   int reactivation_count() const {
     return reactivation_count_;
@@ -56,8 +60,10 @@ class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
 
  private:
   // Overridden from aura::client::ActivationChangeObserver:
-  void OnWindowActivated(aura::Window* gained_active,
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
                          aura::Window* lost_active) override {
+    last_activation_reason_ = reason;
     ++activation_changed_count_;
   }
   void OnAttemptToReactivateWindow(aura::Window* request_active,
@@ -73,6 +79,7 @@ class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
     ++focus_changed_count_;
   }
 
+  ActivationReason last_activation_reason_;
   int activation_changed_count_;
   int focus_changed_count_;
   int reactivation_count_;
@@ -115,7 +122,8 @@ class RecordingActivationAndFocusChangeObserver
   }
 
   // Overridden from aura::client::ActivationChangeObserver:
-  void OnWindowActivated(aura::Window* gained_active,
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
                          aura::Window* lost_active) override {
     if (lost_active && lost_active == deleter_->GetDeletedWindow())
       was_notified_with_deleted_window_ = true;
@@ -158,7 +166,8 @@ class DeleteOnLoseActivationChangeObserver :
   }
 
   // Overridden from aura::client::ActivationChangeObserver:
-  void OnWindowActivated(aura::Window* gained_active,
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
                          aura::Window* lost_active) override {
     if (window_ && lost_active == window_) {
       delete lost_active;
@@ -303,7 +312,8 @@ class FocusShiftingActivationObserver
 
  private:
   // Overridden from aura::client::ActivationChangeObserver:
-  void OnWindowActivated(aura::Window* gained_active,
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
                          aura::Window* lost_active) override {
     // Shift focus to a child. This should prevent the default focusing from
     // occurring in FocusController::FocusWindow().
@@ -499,6 +509,11 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
   // Input events do not change focus if the window can not be focused.
   virtual bool IsInputEvent() = 0;
 
+  // Returns the expected ActivationReason caused by calling the
+  // ActivatedWindowDirect(...) or DeactivateWindowDirect(...) methods.
+  virtual aura::client::ActivationChangeObserver::ActivationReason
+  GetExpectedActivationReason() const = 0;
+
   void FocusWindowById(int id) {
     aura::Window* window = root_window()->GetChildById(id);
     DCHECK(window);
@@ -579,6 +594,8 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
 
     ActivateWindowById(2);
     root_observer.ExpectCounts(1, 1);
+    EXPECT_EQ(GetExpectedActivationReason(),
+              root_observer.last_activation_reason());
     observer1.ExpectCounts(1, 1);
     observer2.ExpectCounts(1, 1);
   }
@@ -895,6 +912,12 @@ class FocusControllerApiTest : public FocusControllerDirectTestBase {
     DeactivateWindow(window);
   }
   bool IsInputEvent() override { return false; }
+  // Overridden from FocusControllerDirectTestBase:
+  aura::client::ActivationChangeObserver::ActivationReason
+  GetExpectedActivationReason() const override {
+    return aura::client::ActivationChangeObserver::ActivationReason::
+        ACTIVATION_CLIENT;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerApiTest);
 };
@@ -937,7 +960,13 @@ class FocusControllerMouseEventTest : public FocusControllerDirectTestBase {
     ui::test::EventGenerator generator(root_window(), next_activatable);
     generator.ClickLeftButton();
   }
+  // Overridden from FocusControllerDirectTestBase:
   bool IsInputEvent() override { return true; }
+  aura::client::ActivationChangeObserver::ActivationReason
+  GetExpectedActivationReason() const override {
+    return aura::client::ActivationChangeObserver::ActivationReason::
+        INPUT_EVENT;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerMouseEventTest);
 };
@@ -963,6 +992,11 @@ class FocusControllerGestureEventTest : public FocusControllerDirectTestBase {
     generator.GestureTapAt(window->bounds().CenterPoint());
   }
   bool IsInputEvent() override { return true; }
+  aura::client::ActivationChangeObserver::ActivationReason
+  GetExpectedActivationReason() const override {
+    return aura::client::ActivationChangeObserver::ActivationReason::
+        INPUT_EVENT;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerGestureEventTest);
 };
@@ -976,6 +1010,14 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
 
   aura::Window* GetDispositionWindow(aura::Window* window) {
     return parent_ ? window->parent() : window;
+  }
+
+  // Returns the expected ActivationReason caused by calling the
+  // ActivatedWindowDirect(...) or DeactivateWindowDirect(...) methods.
+  aura::client::ActivationChangeObserver::ActivationReason
+  GetExpectedActivationReason() const {
+    return aura::client::ActivationChangeObserver::ActivationReason::
+        WINDOW_DISPOSITION_CHANGED;
   }
 
   // Change the disposition of |window| in such a way as it will lose focus.
@@ -1038,6 +1080,8 @@ class FocusControllerImplicitTestBase : public FocusControllerTestBase {
 
     ChangeWindowDisposition(w2);
     root_observer.ExpectCounts(1, 1);
+    EXPECT_EQ(GetExpectedActivationReason(),
+              root_observer.last_activation_reason());
     observer2.ExpectCounts(1, 1);
     observer3.ExpectCounts(1, 1);
   }
