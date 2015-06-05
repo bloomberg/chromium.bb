@@ -9,10 +9,8 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/quota/quota_reservation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,7 +40,7 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
       storage::FileSystemType type,
       int64 delta,
       const QuotaReservationManager::ReserveQuotaCallback& callback) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(callback), base::File::FILE_OK, delta));
   }

@@ -9,11 +9,9 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/browser/quota/mock_quota_manager.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/public/test/async_file_test_helper.h"
@@ -81,7 +79,7 @@ class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
     void StartPreWriteValidation(
         const ResultCallback& result_callback) override {
       // Post the result since a real validator must do work asynchronously.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(result_callback, result_));
     }
 
@@ -94,7 +92,7 @@ class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
         result = base::File::FILE_ERROR_SECURITY;
       }
       // Post the result since a real validator must do work asynchronously.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(result_callback, result));
     }
 
@@ -149,7 +147,7 @@ class ScopedThreadStopper {
     if (thread_) {
       // Give another chance for deleted streams to perform Close.
       base::RunLoop run_loop;
-      thread_->task_runner()->PostTaskAndReply(
+      thread_->message_loop_proxy()->PostTaskAndReply(
           FROM_HERE, base::Bind(&base::DoNothing), run_loop.QuitClosure());
       run_loop.Run();
       thread_->Stop();
@@ -193,12 +191,13 @@ class CopyOrMoveOperationTestHelper {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.path();
     quota_manager_ =
-        new MockQuotaManager(false /* is_incognito */, base_dir,
-                             base::ThreadTaskRunnerHandle::Get().get(),
-                             base::ThreadTaskRunnerHandle::Get().get(),
-                             NULL /* special storage policy */);
+        new MockQuotaManager(false /* is_incognito */,
+                                    base_dir,
+                                    base::MessageLoopProxy::current().get(),
+                                    base::MessageLoopProxy::current().get(),
+                                    NULL /* special storage policy */);
     quota_manager_proxy_ = new MockQuotaManagerProxy(
-        quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
+        quota_manager_.get(), base::MessageLoopProxy::current().get());
     file_system_context_ =
         CreateFileSystemContextForTesting(quota_manager_proxy_.get(), base_dir);
 
@@ -729,8 +728,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper) {
   ScopedThreadStopper thread_stopper(&file_thread);
   ASSERT_TRUE(thread_stopper.is_valid());
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      file_thread.task_runner();
+  scoped_refptr<base::MessageLoopProxy> task_runner =
+      file_thread.message_loop_proxy();
 
   scoped_ptr<storage::FileStreamReader> reader(
       storage::FileStreamReader::CreateForLocalFile(
@@ -785,8 +784,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelperWithFlush) {
   ScopedThreadStopper thread_stopper(&file_thread);
   ASSERT_TRUE(thread_stopper.is_valid());
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      file_thread.task_runner();
+  scoped_refptr<base::MessageLoopProxy> task_runner =
+      file_thread.message_loop_proxy();
 
   scoped_ptr<storage::FileStreamReader> reader(
       storage::FileStreamReader::CreateForLocalFile(
@@ -836,8 +835,8 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
   ScopedThreadStopper thread_stopper(&file_thread);
   ASSERT_TRUE(thread_stopper.is_valid());
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      file_thread.task_runner();
+  scoped_refptr<base::MessageLoopProxy> task_runner =
+      file_thread.message_loop_proxy();
 
   scoped_ptr<storage::FileStreamReader> reader(
       storage::FileStreamReader::CreateForLocalFile(
@@ -855,7 +854,7 @@ TEST(LocalFileSystemCopyOrMoveOperationTest, StreamCopyHelper_Cancel) {
       base::TimeDelta());  // For testing, we need all the progress.
 
   // Call Cancel() later.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&CopyOrMoveOperationDelegate::StreamCopyHelper::Cancel,
                  base::Unretained(&helper)));

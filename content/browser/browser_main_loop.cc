@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/memory_pressure_monitor.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/pending_task.h"
@@ -17,7 +17,6 @@
 #include "base/process/process_metrics.h"
 #include "base/profiler/scoped_profile.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system_monitor/system_monitor.h"
@@ -630,7 +629,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 
 #if defined(TCMALLOC_TRACE_MEMORY_SUPPORTED)
   trace_memory_controller_.reset(new base::trace_event::TraceMemoryController(
-      base::MessageLoop::current()->task_runner(),
+      base::MessageLoop::current()->message_loop_proxy(),
       ::HeapProfilerWithPseudoStackStart, ::HeapProfilerStop,
       ::GetHeapProfile));
 #endif
@@ -715,13 +714,13 @@ void BrowserMainLoop::CreateStartupTasks() {
   // First time through, we really want to create all the tasks
   if (!startup_task_runner_.get()) {
 #if defined(OS_ANDROID)
-    startup_task_runner_ = make_scoped_ptr(
-        new StartupTaskRunner(base::Bind(&BrowserStartupComplete),
-                              base::ThreadTaskRunnerHandle::Get()));
+    startup_task_runner_ = make_scoped_ptr(new StartupTaskRunner(
+        base::Bind(&BrowserStartupComplete),
+        base::MessageLoop::current()->message_loop_proxy()));
 #else
-    startup_task_runner_ = make_scoped_ptr(
-        new StartupTaskRunner(base::Callback<void(int)>(),
-                              base::ThreadTaskRunnerHandle::Get()));
+    startup_task_runner_ = make_scoped_ptr(new StartupTaskRunner(
+        base::Callback<void(int)>(),
+        base::MessageLoop::current()->message_loop_proxy()));
 #endif
     StartupTask pre_create_threads =
         base::Bind(&BrowserMainLoop::PreCreateThreads, base::Unretained(this));
@@ -1208,7 +1207,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
         "startup",
         "BrowserMainLoop::BrowserThreadsStarted::InitUserInputMonitor");
     user_input_monitor_ = media::UserInputMonitor::Create(
-        io_thread_->task_runner(), main_thread_->task_runner());
+        io_thread_->message_loop_proxy(), main_thread_->message_loop_proxy());
   }
 
   {
@@ -1312,8 +1311,8 @@ void BrowserMainLoop::MainMessageLoopRun() {
 #else
   DCHECK(base::MessageLoopForUI::IsCurrent());
   if (parameters_.ui_task) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  *parameters_.ui_task);
+    base::MessageLoopForUI::current()->PostTask(FROM_HERE,
+                                                *parameters_.ui_task);
   }
 
   base::RunLoop run_loop;

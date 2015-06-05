@@ -6,9 +6,8 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::ShareableFileReference;
@@ -17,8 +16,8 @@ namespace content {
 
 TEST(ShareableFileReferenceTest, TestReferences) {
   base::MessageLoop message_loop;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::ThreadTaskRunnerHandle::Get();
+  scoped_refptr<base::MessageLoopProxy> loop_proxy =
+      base::MessageLoopProxy::current();
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -32,7 +31,7 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   reference1 = ShareableFileReference::Get(file);
   EXPECT_FALSE(reference1.get());
   reference1 = ShareableFileReference::GetOrCreate(
-      file, ShareableFileReference::DELETE_ON_FINAL_RELEASE, task_runner.get());
+      file, ShareableFileReference::DELETE_ON_FINAL_RELEASE, loop_proxy.get());
   EXPECT_TRUE(reference1.get());
   EXPECT_TRUE(file == reference1->path());
 
@@ -41,7 +40,7 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   reference2 = ShareableFileReference::Get(file);
   EXPECT_EQ(reference1.get(), reference2.get());
   reference2 = ShareableFileReference::GetOrCreate(
-      file, ShareableFileReference::DELETE_ON_FINAL_RELEASE, task_runner.get());
+      file, ShareableFileReference::DELETE_ON_FINAL_RELEASE, loop_proxy.get());
   EXPECT_EQ(reference1.get(), reference2.get());
 
   // Drop the first reference, the file and reference should still be there.

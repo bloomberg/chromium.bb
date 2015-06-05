@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/browser/browser_thread_impl.h"
@@ -43,9 +44,10 @@ class IndexedDBQuotaClientTest : public testing::Test {
     browser_context_.reset(new TestBrowserContext());
 
     scoped_refptr<storage::QuotaManager> quota_manager =
-        new MockQuotaManager(false /*in_memory*/, browser_context_->GetPath(),
-                             base::MessageLoop::current()->task_runner(),
-                             base::MessageLoop::current()->task_runner(),
+        new MockQuotaManager(false /*in_memory*/,
+                             browser_context_->GetPath(),
+                             base::MessageLoop::current()->message_loop_proxy(),
+                             base::MessageLoop::current()->message_loop_proxy(),
                              browser_context_->GetSpecialStoragePolicy());
 
     idb_context_ =

@@ -307,7 +307,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   void SetUp() override;
   void TearDown() override;
 
-  scoped_refptr<base::SingleThreadTaskRunner> IOTaskRunner() {
+  scoped_refptr<base::MessageLoopProxy> IOMessageLoopProxy() {
     return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
   base::Process Launch(const std::string& name);
@@ -442,7 +442,7 @@ base::Process CloudPrintProxyPolicyStartupTest::Launch(
   startup_channel_ = IPC::ChannelProxy::Create(startup_channel_id_,
                                                IPC::Channel::MODE_SERVER,
                                                this,
-                                               IOTaskRunner());
+                                               IOMessageLoopProxy());
 
 #if defined(OS_POSIX)
   base::FileHandleMappingVector ipc_file_list;
@@ -467,7 +467,7 @@ void CloudPrintProxyPolicyStartupTest::WaitForConnect() {
       IPC::ChannelProxy::Create(GetServiceProcessChannel(),
                                 IPC::Channel::MODE_NAMED_CLIENT,
                                 ServiceProcessControl::GetInstance(),
-                                IOTaskRunner()));
+                                IOMessageLoopProxy()));
 }
 
 bool CloudPrintProxyPolicyStartupTest::Send(IPC::Message* message) {

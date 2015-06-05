@@ -10,9 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
@@ -34,15 +32,16 @@ void InvokeLocalStorageUsageCallbackHelper(
 }
 
 void GetLocalStorageUsageHelper(
-    base::SingleThreadTaskRunner* reply_task_runner,
+    base::MessageLoopProxy* reply_loop,
     DOMStorageContextImpl* context,
     const DOMStorageContext::GetLocalStorageUsageCallback& callback) {
   std::vector<LocalStorageUsageInfo>* infos =
       new std::vector<LocalStorageUsageInfo>;
   context->GetLocalStorageUsage(infos, true);
-  reply_task_runner->PostTask(
-      FROM_HERE, base::Bind(&InvokeLocalStorageUsageCallbackHelper, callback,
-                            base::Owned(infos)));
+  reply_loop->PostTask(
+      FROM_HERE,
+      base::Bind(&InvokeLocalStorageUsageCallbackHelper,
+                 callback, base::Owned(infos)));
 }
 
 void InvokeSessionStorageUsageCallbackHelper(
@@ -52,15 +51,16 @@ void InvokeSessionStorageUsageCallbackHelper(
 }
 
 void GetSessionStorageUsageHelper(
-    base::SingleThreadTaskRunner* reply_task_runner,
+    base::MessageLoopProxy* reply_loop,
     DOMStorageContextImpl* context,
     const DOMStorageContext::GetSessionStorageUsageCallback& callback) {
   std::vector<SessionStorageUsageInfo>* infos =
       new std::vector<SessionStorageUsageInfo>;
   context->GetSessionStorageUsage(infos);
-  reply_task_runner->PostTask(
-      FROM_HERE, base::Bind(&InvokeSessionStorageUsageCallbackHelper, callback,
-                            base::Owned(infos)));
+  reply_loop->PostTask(
+      FROM_HERE,
+      base::Bind(&InvokeSessionStorageUsageCallbackHelper,
+                 callback, base::Owned(infos)));
 }
 
 }  // namespace
@@ -89,19 +89,25 @@ DOMStorageContextWrapper::~DOMStorageContextWrapper() {
 void DOMStorageContextWrapper::GetLocalStorageUsage(
     const GetLocalStorageUsageCallback& callback) {
   DCHECK(context_.get());
-  context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&GetLocalStorageUsageHelper,
-                 base::ThreadTaskRunnerHandle::Get(), context_, callback));
+  context_->task_runner()
+      ->PostShutdownBlockingTask(FROM_HERE,
+                                 DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+                                 base::Bind(&GetLocalStorageUsageHelper,
+                                            base::MessageLoopProxy::current(),
+                                            context_,
+                                            callback));
 }
 
 void DOMStorageContextWrapper::GetSessionStorageUsage(
     const GetSessionStorageUsageCallback& callback) {
   DCHECK(context_.get());
-  context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&GetSessionStorageUsageHelper,
-                 base::ThreadTaskRunnerHandle::Get(), context_, callback));
+  context_->task_runner()
+      ->PostShutdownBlockingTask(FROM_HERE,
+                                 DOMStorageTaskRunner::PRIMARY_SEQUENCE,
+                                 base::Bind(&GetSessionStorageUsageHelper,
+                                            base::MessageLoopProxy::current(),
+                                            context_,
+                                            callback));
 }
 
 void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin) {

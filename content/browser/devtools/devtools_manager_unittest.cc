@@ -3,10 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
@@ -143,8 +140,9 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   // Start with a short timeout.
   inspected_rvh->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
   // Wait long enough for first timeout and see if it fired.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitClosure(),
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
       TimeDelta::FromMilliseconds(10));
   base::MessageLoop::current()->Run();
   EXPECT_FALSE(delegate.renderer_unresponsive_received());
@@ -154,8 +152,9 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   // Start with a short timeout.
   inspected_rvh->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
   // Wait long enough for first timeout and see if it fired.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitClosure(),
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
       TimeDelta::FromMilliseconds(10));
   base::MessageLoop::current()->Run();
   EXPECT_TRUE(delegate.renderer_unresponsive_received());

@@ -53,13 +53,12 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -634,9 +633,9 @@ void WebContentsCaptureMachine::DidCopyFromBackingStore(
     UMA_HISTOGRAM_TIMES("TabCapture.CopyTimeBitmap", now - start_time);
     TRACE_EVENT_ASYNC_STEP_INTO0("gpu.capture", "Capture", target.get(),
                                  "Render");
-    render_thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&RenderVideoFrame, bitmap, target,
-                              base::Bind(deliver_frame_cb, start_time)));
+    render_thread_->message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
+        &RenderVideoFrame, bitmap, target,
+        base::Bind(deliver_frame_cb, start_time)));
   } else {
     // Capture can fail due to transient issues, so just skip this frame.
     DVLOG(1) << "CopyFromBackingStore failed; skipping frame.";

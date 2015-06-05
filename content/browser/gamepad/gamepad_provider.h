@@ -13,13 +13,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
 #include "base/system_monitor/system_monitor.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace base {
-class SingleThreadTaskRunner;
+class MessageLoopProxy;
 class Thread;
 }
 
@@ -104,11 +105,11 @@ class CONTENT_EXPORT GamepadProvider :
   base::Lock user_gesture_lock_;
   struct ClosureAndThread {
     ClosureAndThread(const base::Closure& c,
-                     const scoped_refptr<base::SingleThreadTaskRunner>& m);
+                     const scoped_refptr<base::MessageLoopProxy>& m);
     ~ClosureAndThread();
 
     base::Closure closure;
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner;
+    scoped_refptr<base::MessageLoopProxy> message_loop;
   };
   typedef std::vector<ClosureAndThread> UserGestureObserverVector;
   UserGestureObserverVector user_gesture_observers_;

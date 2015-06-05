@@ -6,10 +6,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/location.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
@@ -79,7 +77,7 @@ class MediaStreamManagerTest : public ::testing::Test {
  public:
   MediaStreamManagerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+        message_loop_(base::MessageLoopProxy::current()) {
     // Create our own MediaStreamManager. Use fake devices to run on the bots.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
@@ -95,7 +93,7 @@ class MediaStreamManagerTest : public ::testing::Test {
                         const MediaStreamDevices& devices,
                         scoped_ptr<MediaStreamUIProxy> ui_proxy) {
     Response(index);
-    task_runner_->PostTask(FROM_HERE, run_loop_.QuitClosure());
+    message_loop_->PostTask(FROM_HERE, run_loop_.QuitClosure());
   }
 
  protected:
@@ -119,7 +117,7 @@ class MediaStreamManagerTest : public ::testing::Test {
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::RunLoop run_loop_;
 
  private:

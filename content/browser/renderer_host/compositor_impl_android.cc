@@ -82,7 +82,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     capabilities_.adjust_deadline_for_parent = false;
     capabilities_.max_frames_pending = 2;
     compositor_impl_ = compositor_impl;
-    main_thread_ = base::ThreadTaskRunnerHandle::Get();
+    main_thread_ = base::MessageLoopProxy::current();
   }
 
   void SwapBuffers(cc::CompositorFrame* frame) override {
@@ -130,7 +130,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
                                 gfx::SwapResult)>
       swap_buffers_completion_callback_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  scoped_refptr<base::MessageLoopProxy> main_thread_;
   base::WeakPtr<CompositorImpl> compositor_impl_;
 };
 
@@ -307,7 +307,7 @@ void CompositorImpl::PostComposite(CompositingTrigger trigger) {
   // Unretained because we cancel the task on shutdown.
   current_composite_task_.reset(new base::CancelableClosure(
       base::Bind(&CompositorImpl::Composite, base::Unretained(this), trigger)));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE, current_composite_task_->callback(), delay);
 }
 
@@ -657,7 +657,7 @@ void CompositorImpl::CreateOutputSurface() {
         real_output_surface.Pass(), manager, HostSharedBitmapManager::current(),
         BrowserGpuMemoryBufferManager::current(),
         host_->settings().renderer_settings,
-        base::ThreadTaskRunnerHandle::Get()));
+        base::MessageLoopProxy::current()));
     scoped_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
         new cc::SurfaceDisplayOutputSurface(
             manager, surface_id_allocator_.get(), context_provider));

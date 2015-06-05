@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/power_profiler/power_profiler_service.h"
@@ -89,7 +90,8 @@ class PowerProfilerServiceTest : public testing::Test {
     service_.reset(new PowerProfilerService(
         make_scoped_ptr<PowerDataProvider>(
             new TestPowerDataProvider(kNumEvents)),
-        message_loop_.task_runner(), base::TimeDelta::FromMilliseconds(1)));
+        message_loop_.message_loop_proxy(),
+        base::TimeDelta::FromMilliseconds(1)));
     EXPECT_TRUE(service_->IsAvailable());
   }
 

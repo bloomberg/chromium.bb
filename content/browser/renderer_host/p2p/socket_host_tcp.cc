@@ -4,8 +4,6 @@
 
 #include "content/browser/renderer_host/p2p/socket_host_tcp.h"
 
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "content/common/p2p_messages.h"
 #include "ipc/ipc_sender.h"
@@ -119,9 +117,10 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
     // the connect always happens asynchronously.
     base::MessageLoop* message_loop = base::MessageLoop::current();
     CHECK(message_loop);
-    message_loop->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&P2PSocketHostTcpBase::OnConnected,
-                              base::Unretained(this), status));
+    message_loop->PostTask(
+        FROM_HERE,
+        base::Bind(&P2PSocketHostTcpBase::OnConnected,
+                   base::Unretained(this), status));
   }
 
   return state_ != STATE_ERROR;

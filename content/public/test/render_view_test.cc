@@ -6,9 +6,7 @@
 
 #include <cctype>
 
-#include "base/location.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/frame_messages.h"
@@ -135,8 +133,7 @@ RenderViewTest::~RenderViewTest() {
 }
 
 void RenderViewTest::ProcessPendingMessages() {
-  msg_loop_.task_runner()->PostTask(FROM_HERE,
-                                    base::MessageLoop::QuitClosure());
+  msg_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   msg_loop_.Run();
 }
 

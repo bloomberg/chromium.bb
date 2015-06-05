@@ -9,9 +9,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/thread_test_helper.h"
 #include "content/browser/browser_main_loop.h"
@@ -143,7 +142,8 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
                    GURL("file:///")),
         base::Bind(&IndexedDBBrowserTest::DidGetDiskUsage, this));
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-        BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
+        BrowserMainLoop::GetInstance()->indexed_db_thread()->
+            message_loop_proxy()));
     EXPECT_TRUE(helper->Run());
     // Wait for DidGetDiskUsage to be called.
     base::MessageLoop::current()->RunUntilIdle();
@@ -156,8 +156,10 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
         base::Bind(&IndexedDBContextImpl::GetOriginBlobFileCount, GetContext(),
                    GURL("file:///")),
         base::Bind(&IndexedDBBrowserTest::DidGetBlobFileCount, this));
-    scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-        BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
+    scoped_refptr<base::ThreadTestHelper> helper(
+        new base::ThreadTestHelper(BrowserMainLoop::GetInstance()
+                                       ->indexed_db_thread()
+                                       ->message_loop_proxy()));
     EXPECT_TRUE(helper->Run());
     // Wait for DidGetBlobFileCount to be called.
     base::MessageLoop::current()->RunUntilIdle();
@@ -321,7 +323,8 @@ class IndexedDBBrowserTestWithPreexistingLevelDB : public IndexedDBBrowserTest {
         base::Bind(
             &CopyLevelDBToProfile, shell(), context, EnclosingLevelDBDir()));
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-        BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
+        BrowserMainLoop::GetInstance()->indexed_db_thread()->
+            message_loop_proxy()));
     ASSERT_TRUE(helper->Run());
   }
 
@@ -474,8 +477,10 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginDeletesBlobs) {
   GetContext()->TaskRunner()->PostTask(
       FROM_HERE, base::Bind(&IndexedDBContextImpl::DeleteForOrigin,
                             GetContext(), GURL("file:///")));
-  scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-      BrowserMainLoop::GetInstance()->indexed_db_thread()->task_runner()));
+  scoped_refptr<base::ThreadTestHelper> helper(
+      new base::ThreadTestHelper(BrowserMainLoop::GetInstance()
+                                     ->indexed_db_thread()
+                                     ->message_loop_proxy()));
   ASSERT_TRUE(helper->Run());
   EXPECT_EQ(0, RequestDiskUsage());
 }

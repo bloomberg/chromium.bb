@@ -12,12 +12,11 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/lazy_instance.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -640,17 +639,19 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     // is guaranteed because request for mime type is placed in the
     // message loop before request for data. And correspondingly their
     // replies are put on the IO thread in the same order.
-    target_message_loop->task_runner()->PostTask(
+    target_message_loop->PostTask(
         FROM_HERE,
-        base::Bind(&GetMimeTypeOnUI, scoped_refptr<URLDataSourceImpl>(source),
+        base::Bind(&GetMimeTypeOnUI,
+                   scoped_refptr<URLDataSourceImpl>(source),
                    path, job->AsWeakPtr()));
 
     // The DataSource wants StartDataRequest to be called on a specific thread,
     // usually the UI thread, for this path.
-    target_message_loop->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&URLDataManagerBackend::CallStartRequest,
-                              make_scoped_refptr(source), path,
-                              render_process_id, render_frame_id, request_id));
+    target_message_loop->PostTask(
+        FROM_HERE,
+        base::Bind(&URLDataManagerBackend::CallStartRequest,
+                   make_scoped_refptr(source), path, render_process_id,
+                   render_frame_id, request_id));
   }
   return true;
 }

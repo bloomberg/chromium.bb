@@ -5,14 +5,11 @@
 #include "content/browser/service_worker/service_worker_version.h"
 
 #include "base/command_line.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -75,7 +72,7 @@ const char kClaimClientsShutdownErrorMesage[] =
 
 void RunSoon(const base::Closure& callback) {
   if (!callback.is_null())
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
 template <typename CallbackArray, typename Arg>

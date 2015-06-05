@@ -5,10 +5,8 @@
 #include "content/public/test/fake_speech_recognition_manager.h"
 
 #include "base/bind.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager_delegate.h"
 #include "content/public/common/speech_recognition_result.h"
@@ -81,7 +79,7 @@ void FakeSpeechRecognitionManager::StartSession(int session_id) {
 
   if (should_send_fake_response_) {
     // Give the fake result in a short while.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(
             &FakeSpeechRecognitionManager::SetFakeRecognitionResult,

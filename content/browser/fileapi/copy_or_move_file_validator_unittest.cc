@@ -6,10 +6,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/location.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/public/test/async_file_test_helper.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_file_system_backend.h"
@@ -224,7 +221,7 @@ class TestCopyOrMoveFileValidatorFactory
     void StartPreWriteValidation(
         const ResultCallback& result_callback) override {
       // Post the result since a real validator must do work asynchronously.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(result_callback, result_));
     }
 
@@ -232,7 +229,7 @@ class TestCopyOrMoveFileValidatorFactory
         const base::FilePath& dest_platform_path,
         const ResultCallback& result_callback) override {
       // Post the result since a real validator must do work asynchronously.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
+      base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(result_callback, write_result_));
     }
 

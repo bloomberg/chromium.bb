@@ -10,10 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -103,8 +101,8 @@ class LocalFileStreamReaderTest : public testing::Test {
                                 new_modified_time));
   }
 
-  base::SingleThreadTaskRunner* file_task_runner() const {
-    return file_thread_.task_runner().get();
+  base::MessageLoopProxy* file_task_runner() const {
+    return file_thread_.message_loop_proxy().get();
   }
 
   base::FilePath test_dir() const { return dir_.path(); }

@@ -5,12 +5,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
@@ -1086,8 +1083,9 @@ TEST_F(GestureEventQueueTest, DebounceDefersFollowingGestureEvents) {
   EXPECT_EQ(2U, GestureEventQueueSize());
   EXPECT_EQ(3U, GestureEventDebouncingQueueSize());
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitClosure(),
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::MessageLoop::QuitClosure(),
       TimeDelta::FromMilliseconds(5));
   base::MessageLoop::current()->Run();
 

@@ -8,7 +8,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/public/test/test_file_system_options.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,8 +37,10 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     delegate_.reset(new storage::SandboxFileSystemBackendDelegate(
         NULL /* quota_manager_proxy */,
-        base::ThreadTaskRunnerHandle::Get().get(), data_dir_.path(),
-        NULL /* special_storage_policy */, CreateAllowFileAccessOptions()));
+        base::MessageLoopProxy::current().get(),
+        data_dir_.path(),
+        NULL /* special_storage_policy */,
+        CreateAllowFileAccessOptions()));
   }
 
   bool IsAccessValid(const FileSystemURL& url) const {

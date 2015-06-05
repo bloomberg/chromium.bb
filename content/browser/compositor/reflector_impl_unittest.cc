@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -118,7 +119,7 @@ class ReflectorImplTest : public testing::Test {
         scoped_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
     message_loop_.reset(new base::MessageLoop());
-    task_runner_ = message_loop_->task_runner();
+    proxy_ = message_loop_->message_loop_proxy();
     compositor_task_runner_ = new FakeTaskRunner();
     compositor_.reset(new ui::Compositor(gfx::kNullAcceleratedWidget,
                                          context_factory,
@@ -165,7 +166,7 @@ class ReflectorImplTest : public testing::Test {
   scoped_refptr<cc::ContextProvider> context_provider_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<base::MessageLoop> message_loop_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::MessageLoopProxy> proxy_;
   scoped_ptr<ui::Compositor> compositor_;
   scoped_ptr<ui::Layer> root_layer_;
   scoped_ptr<ui::Layer> mirroring_layer_;

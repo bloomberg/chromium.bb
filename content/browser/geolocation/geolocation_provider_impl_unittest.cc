@@ -4,10 +4,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/browser/geolocation/geolocation_provider_impl.h"
@@ -141,9 +140,11 @@ bool GeolocationProviderTest::ProvidersStarted() {
   DCHECK(provider_->IsRunning());
   DCHECK(base::MessageLoop::current() == &message_loop_);
   bool started;
-  provider_->task_runner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&GeolocationProviderTest::GetProvidersStarted,
-                            base::Unretained(this), &started),
+  provider_->message_loop_proxy()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GeolocationProviderTest::GetProvidersStarted,
+                 base::Unretained(this),
+                 &started),
       base::MessageLoop::QuitClosure());
   message_loop_.Run();
   return started;
@@ -157,9 +158,11 @@ void GeolocationProviderTest::GetProvidersStarted(bool* started) {
 void GeolocationProviderTest::SendMockLocation(const Geoposition& position) {
   DCHECK(provider_->IsRunning());
   DCHECK(base::MessageLoop::current() == &message_loop_);
-  provider_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&GeolocationProviderImpl::OnLocationUpdate,
-                            base::Unretained(provider_.get()), position));
+  provider_->message_loop()
+      ->PostTask(FROM_HERE,
+                 base::Bind(&GeolocationProviderImpl::OnLocationUpdate,
+                            base::Unretained(provider_.get()),
+                            position));
 }
 
 // Regression test for http://crbug.com/59377

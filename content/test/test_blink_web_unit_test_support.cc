@@ -95,7 +95,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
 
   scoped_refptr<base::SingleThreadTaskRunner> dummy_task_runner;
   scoped_ptr<base::ThreadTaskRunnerHandle> dummy_task_runner_handle;
-  if (!base::ThreadTaskRunnerHandle::IsSet()) {
+  if (!base::MessageLoopProxy::current()) {
     // Dummy task runner is initialized here because the blink::initialize
     // creates IsolateHolder which needs the current task runner handle. There
     // should be no task posted to this task runner. The message loop is not

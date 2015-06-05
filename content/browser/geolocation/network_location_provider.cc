@@ -5,10 +5,7 @@
 #include "content/browser/geolocation/network_location_provider.h"
 
 #include "base/bind.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/browser/access_token_store.h"
 
@@ -202,9 +199,10 @@ bool NetworkLocationProvider::StartProvider(bool high_accuracy) {
   wifi_data_provider_manager_ =
       WifiDataProviderManager::Register(&wifi_data_update_callback_);
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&NetworkLocationProvider::RequestPosition,
-                            weak_factory_.GetWeakPtr()),
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&NetworkLocationProvider::RequestPosition,
+                 weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kDataCompleteWaitSeconds));
   // Get the wifi data.
   is_wifi_data_complete_ = wifi_data_provider_manager_->GetData(&wifi_data_);

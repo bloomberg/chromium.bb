@@ -18,6 +18,8 @@
 #include "ui/compositor/reflector.h"
 #include "ui/gfx/geometry/size.h"
 
+namespace base { class MessageLoopProxy; }
+
 namespace gfx { class Rect; }
 
 namespace ui {

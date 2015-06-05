@@ -4,8 +4,7 @@
 
 #include "content/public/test/mock_render_thread.h"
 
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_process_observer.h"
@@ -64,7 +63,7 @@ bool MockRenderThread::Send(IPC::Message* msg) {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> MockRenderThread::GetTaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
+  return base::MessageLoopProxy::current();
 }
 
 IPC::SyncChannel* MockRenderThread::GetChannel() {

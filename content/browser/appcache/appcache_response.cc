@@ -7,14 +7,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_math.h"
 #include "base/pickle.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -92,7 +90,7 @@ AppCacheResponseIO::~AppCacheResponseIO() {
 }
 
 void AppCacheResponseIO::ScheduleIOCompletionCallback(int result) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&AppCacheResponseIO::OnIOComplete,
                             weak_factory_.GetWeakPtr(), result));
 }

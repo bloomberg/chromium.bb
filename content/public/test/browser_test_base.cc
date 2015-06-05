@@ -8,8 +8,7 @@
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
 #include "base/i18n/icu_util.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/test/test_timeouts.h"
@@ -336,7 +335,7 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
       RenderProcessHostImpl::GetInProcessRendererThreadForTesting();
   CHECK(renderer_loop);
 
-  renderer_loop->task_runner()->PostTask(
+  renderer_loop->PostTask(
       FROM_HERE,
       base::Bind(&RunTaskOnRendererThread, task, runner->QuitClosure()));
   runner->Run();

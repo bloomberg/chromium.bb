@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/tracked_objects.h"
 
 namespace content {
@@ -23,8 +23,8 @@ DOMStorageWorkerPoolTaskRunner::DOMStorageWorkerPoolTaskRunner(
     base::SequencedWorkerPool* sequenced_worker_pool,
     base::SequencedWorkerPool::SequenceToken primary_sequence_token,
     base::SequencedWorkerPool::SequenceToken commit_sequence_token,
-    base::SingleThreadTaskRunner* delayed_task_task_runner)
-    : task_runner_(delayed_task_task_runner),
+    base::MessageLoopProxy* delayed_task_loop)
+    : message_loop_(delayed_task_loop),
       sequenced_worker_pool_(sequenced_worker_pool),
       primary_sequence_token_(primary_sequence_token),
       commit_sequence_token_(commit_sequence_token) {
@@ -46,7 +46,7 @@ bool DOMStorageWorkerPoolTaskRunner::PostDelayedTask(
         base::SequencedWorkerPool::BLOCK_SHUTDOWN);
   }
   // Post a task to call this->PostTask() after the delay.
-  return task_runner_->PostDelayedTask(
+  return message_loop_->PostDelayedTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&DOMStorageWorkerPoolTaskRunner::PostTask),
                  this, from_here, task),
@@ -79,8 +79,8 @@ DOMStorageWorkerPoolTaskRunner::IDtoToken(SequenceID id) const {
 // MockDOMStorageTaskRunner
 
 MockDOMStorageTaskRunner::MockDOMStorageTaskRunner(
-    base::SingleThreadTaskRunner* task_runner)
-    : task_runner_(task_runner) {
+    base::MessageLoopProxy* message_loop)
+    : message_loop_(message_loop) {
 }
 
 MockDOMStorageTaskRunner::~MockDOMStorageTaskRunner() {
@@ -90,18 +90,18 @@ bool MockDOMStorageTaskRunner::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
-  return task_runner_->PostTask(from_here, task);
+  return message_loop_->PostTask(from_here, task);
 }
 
 bool MockDOMStorageTaskRunner::PostShutdownBlockingTask(
     const tracked_objects::Location& from_here,
     SequenceID sequence_id,
     const base::Closure& task) {
-  return task_runner_->PostTask(from_here, task);
+  return message_loop_->PostTask(from_here, task);
 }
 
 bool MockDOMStorageTaskRunner::IsRunningOnSequence(SequenceID) const {
-  return task_runner_->RunsTasksOnCurrentThread();
+  return message_loop_->RunsTasksOnCurrentThread();
 }
 
 }  // namespace content

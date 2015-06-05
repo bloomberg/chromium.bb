@@ -8,11 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -98,7 +96,7 @@ class ViewHttpCacheJob : public net::URLRequestJob {
 };
 
 void ViewHttpCacheJob::Start() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ViewHttpCacheJob::StartAsync, weak_factory_.GetWeakPtr()));
 }

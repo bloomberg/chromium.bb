@@ -5,11 +5,8 @@
 #include "content/browser/renderer_host/websocket_host.h"
 
 #include "base/basictypes.h"
-#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/websocket_dispatcher_host.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -358,10 +355,14 @@ void WebSocketHost::OnAddChannelRequest(
 
   DCHECK(!channel_);
   if (delay_ > base::TimeDelta()) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&WebSocketHost::AddChannel, weak_ptr_factory_.GetWeakPtr(),
-                   socket_url, requested_protocols, origin, render_frame_id),
+        base::Bind(&WebSocketHost::AddChannel,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   socket_url,
+                   requested_protocols,
+                   origin,
+                   render_frame_id),
         delay_);
   } else {
     AddChannel(socket_url, requested_protocols, origin, render_frame_id);
@@ -393,10 +394,11 @@ void WebSocketHost::AddChannel(
     // We post OnFlowControl() here using |weak_ptr_factory_| instead of
     // calling SendFlowControl directly, because |this| may have been deleted
     // after channel_->SendAddChannelRequest().
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&WebSocketHost::OnFlowControl,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              pending_flow_control_quota_));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebSocketHost::OnFlowControl,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   pending_flow_control_quota_));
     pending_flow_control_quota_ = 0;
   }
 
