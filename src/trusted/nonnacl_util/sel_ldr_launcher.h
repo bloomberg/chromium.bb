@@ -84,6 +84,12 @@ class SelLdrLauncherBase {
   // After starting the sel_ldr process.
   /////////////////////////////////////////////////////////////////////////////
 
+  // Connects bootstrap socket.
+  bool ConnectBootstrapSocket();
+
+  // Retrieves the socket address.
+  bool RetrieveSockAddr();
+
   // Sets up the command channel |command|.
   bool SetupCommand(NaClSrpcChannel* command);
 
@@ -103,12 +109,6 @@ class SelLdrLauncherBase {
   NaClHandle channel_;
 
  private:
-  // Connects bootstrap socket.
-  bool ConnectBootstrapSocket();
-
-  // Retrieves the socket address.
-  bool RetrieveSockAddr();
-
   // lifetime of bootstrap_socket_ must be at least that of factory_
   scoped_ptr<DescWrapperFactory> factory_;
   scoped_ptr<DescWrapper> bootstrap_socket_;
