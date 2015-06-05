@@ -24,18 +24,19 @@ namespace autofill_private = extensions::api::autofill_private;
 namespace {
 
 // Get the multi-valued element for |type| and return it as a |vector|.
+// TODO(khorimoto): remove this function since multi-valued types are
+// deprecated.
 scoped_ptr<std::vector<std::string>> GetValueList(
     const autofill::AutofillProfile& profile, autofill::ServerFieldType type) {
   scoped_ptr<std::vector<std::string>> list(new std::vector<std::string>);
 
   std::vector<base::string16> values;
   if (autofill::AutofillType(type).group() == autofill::NAME) {
-    profile.GetMultiInfo(
-        autofill::AutofillType(type),
-        g_browser_process->GetApplicationLocale(),
-        &values);
+    values.push_back(
+        profile.GetInfo(autofill::AutofillType(type),
+                        g_browser_process->GetApplicationLocale()));
   } else {
-    profile.GetRawMultiInfo(type, &values);
+    values.push_back(profile.GetRawInfo(type));
   }
 
   // |Get[Raw]MultiInfo()| always returns at least one, potentially empty, item.

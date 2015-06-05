@@ -167,8 +167,8 @@ class AutofillProfileSyncableService
       AutofillProfile* autofill_profile);
 
   // Calls merge_into->OverwriteWithOrAddTo() and then checks if the
-  // |merge_into| has extra data. Returns |true| if |merge_into| posseses some
-  // multi-valued field values that are not in |merge_from|.
+  // |merge_into| has extra data. Returns true if |merge_from| needs updating to
+  // be in sync with |merge_into|.
   // TODO(isherman): Seems like this should return |true| if |merge_into| was
   // modified at all: http://crbug.com/248440
   static bool MergeProfile(const AutofillProfile& merge_from,

@@ -423,27 +423,15 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
   specifics->set_use_count(profile.use_count());
   specifics->set_use_date(profile.use_date().ToTimeT());
 
-  std::vector<base::string16> values;
-  profile.GetRawMultiInfo(NAME_FIRST, &values);
-  for (size_t i = 0; i < values.size(); ++i) {
-    specifics->add_name_first(LimitData(UTF16ToUTF8(values[i])));
-  }
-
-  profile.GetRawMultiInfo(NAME_MIDDLE, &values);
-  for (size_t i = 0; i < values.size(); ++i) {
-    specifics->add_name_middle(LimitData(UTF16ToUTF8(values[i])));
-  }
-
-  profile.GetRawMultiInfo(NAME_LAST, &values);
-  for (size_t i = 0; i < values.size(); ++i) {
-    specifics->add_name_last(LimitData(UTF16ToUTF8(values[i])));
-  }
-
-  profile.GetRawMultiInfo(NAME_FULL, &values);
-  for (size_t i = 0; i < values.size(); ++i) {
-    specifics->add_name_full(LimitData(UTF16ToUTF8(values[i])));
-  }
-
+  // TODO(estade): this should be set_name_first.
+  specifics->add_name_first(
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(NAME_FIRST))));
+  specifics->add_name_middle(
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(NAME_MIDDLE))));
+  specifics->add_name_last(
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(NAME_LAST))));
+  specifics->add_name_full(
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(NAME_FULL))));
   specifics->set_address_home_line1(
       LimitData(UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE1))));
   specifics->set_address_home_line2(
@@ -465,6 +453,7 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
           UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY))));
   specifics->set_address_home_language_code(LimitData(profile.language_code()));
 
+  std::vector<base::string16> values;
   profile.GetRawMultiInfo(EMAIL_ADDRESS, &values);
   for (size_t i = 0; i < values.size(); ++i) {
     specifics->add_email_address(LimitData(UTF16ToUTF8(values[i])));
@@ -659,9 +648,8 @@ bool AutofillProfileSyncableService::MergeProfile(
     const AutofillProfile& merge_from,
     AutofillProfile* merge_into,
     const std::string& app_locale) {
-  // Overwrites all single values and adds to multi-values. Does not overwrite
-  // GUID.
-  merge_into->OverwriteWithOrAddTo(merge_from, app_locale);
+  // Overwrites all values. Does not overwrite GUID.
+  merge_into->OverwriteWith(merge_from, app_locale);
   return !merge_into->EqualsForSyncPurposes(merge_from);
 }
 

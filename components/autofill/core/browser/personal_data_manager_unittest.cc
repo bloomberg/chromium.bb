@@ -1283,10 +1283,10 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   base::MessageLoop::current()->Run();
 
   AutofillProfile expected(base::GenerateGUID(), "https://www.example.com");
-  test::SetProfileInfo(
-      &expected, "George", NULL, "Washington", "theprez@gmail.com", NULL,
-      "1600 Pennsylvania Avenue", "Suite A", "San Francisco", "California",
-      "94102", NULL, "(650) 555-6666");
+  test::SetProfileInfo(&expected, "George", nullptr, "Washington",
+                       "theprez@gmail.com", nullptr, "1600 Pennsylvania Avenue",
+                       "Suite A", "San Francisco", "California", "94102",
+                       nullptr, "(650) 555-6666");
   const std::vector<AutofillProfile*>& results1 = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results1.size());
   EXPECT_EQ(0, expected.Compare(*results1[0]));
@@ -1317,8 +1317,8 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
   // Country gets added.
   test::CreateTestFormField("Country:", "country", "USA", "text", &field);
   form2.fields.push_back(field);
-  // Phone gets updated.
-  test::CreateTestFormField("Phone:", "phone", "6502231234", "text", &field);
+  // Same phone number with different formatting doesn't create a new profile.
+  test::CreateTestFormField("Phone:", "phone", "650-555-6666", "text", &field);
   form2.fields.push_back(field);
 
   FormStructure form_structure2(form2);
@@ -1334,11 +1334,8 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
 
   const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
 
-  // Add multi-valued phone number to expectation.  Also, country gets added.
-  std::vector<base::string16> values;
-  expected.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
-  values.push_back(ASCIIToUTF16("(650) 223-1234"));
-  expected.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, values);
+  // Phone formatting is updated.  Also, country gets added.
+  expected.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("650-555-6666"));
   expected.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
@@ -2136,7 +2133,9 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
 }
 
 // Ensure that if a verified profile already exists, aggregated profiles cannot
-// modify it in any way.
+// modify it in any way. This also checks the profile merging/matching algorithm
+// works: if either the full name OR all the non-empty name pieces match, the
+// profile is a match.
 TEST_F(PersonalDataManagerTest, AggregateExistingVerifiedProfileWithConflict) {
   // Start with a verified profile.
   AutofillProfile profile(base::GenerateGUID(), "Chrome settings");
@@ -2157,14 +2156,14 @@ TEST_F(PersonalDataManagerTest, AggregateExistingVerifiedProfileWithConflict) {
   // Simulate a form submission with conflicting info.
   FormData form;
   FormFieldData field;
-  test::CreateTestFormField(
-      "First name:", "first_name", "Marion", "text", &field);
+  test::CreateTestFormField("First name:", "first_name", "Marion Mitchell",
+                            "text", &field);
   form.fields.push_back(field);
   test::CreateTestFormField(
       "Last name:", "last_name", "Morrison", "text", &field);
   form.fields.push_back(field);
-  test::CreateTestFormField(
-      "Email:", "email", "other.email@example.com", "text", &field);
+  test::CreateTestFormField("Email:", "email", "johnwayne@me.xyz", "text",
+                            &field);
   form.fields.push_back(field);
   test::CreateTestFormField(
       "Address:", "address1", "123 Zoo St.", "text", &field);
@@ -2192,6 +2191,29 @@ TEST_F(PersonalDataManagerTest, AggregateExistingVerifiedProfileWithConflict) {
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, profile.Compare(*results[0]));
+
+  // Try the same thing, but without "Mitchell". The profiles should still match
+  // because the non empty name pieces (first and last) match that stored in the
+  // profile.
+  test::CreateTestFormField("First name:", "first_name", "Marion", "text",
+                            &field);
+  form.fields[0] = field;
+
+  FormStructure form_structure2(form);
+  form_structure2.DetermineHeuristicTypes();
+  EXPECT_TRUE(
+      personal_data_->ImportFormData(form_structure2, &imported_credit_card));
+  EXPECT_FALSE(imported_credit_card);
+
+  // Wait for the refresh, which in this case is a no-op.
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  // Expect that no new profile is saved.
+  const std::vector<AutofillProfile*>& results2 = personal_data_->GetProfiles();
+  ASSERT_EQ(1U, results2.size());
+  EXPECT_EQ(0, profile.Compare(*results2[0]));
 }
 
 // Ensure that if a verified credit card already exists, aggregated credit cards
@@ -2265,7 +2287,8 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
   AutofillProfile new_verified_profile = profile;
   new_verified_profile.set_guid(base::GenerateGUID());
   new_verified_profile.set_origin("Chrome settings");
-  new_verified_profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Fizzbang, Inc."));
+  new_verified_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                                  ASCIIToUTF16("1 234 567-8910"));
   EXPECT_TRUE(new_verified_profile.IsVerified());
 
   personal_data_->SaveImportedProfile(new_verified_profile);
@@ -2275,8 +2298,7 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
       .WillOnce(QuitMainMessageLoop());
   base::MessageLoop::current()->Run();
 
-  // Expect that the existing profile is not modified, and instead the new
-  // profile is added.
+  // The new profile should be merged into the existing one.
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, new_verified_profile.Compare(*results[0]));
@@ -2303,7 +2325,8 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithExistingVerifiedData) {
 
   AutofillProfile new_verified_profile = profile;
   new_verified_profile.set_guid(base::GenerateGUID());
-  new_verified_profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Fizzbang, Inc."));
+  new_verified_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                                  ASCIIToUTF16("1 234 567-8910"));
   EXPECT_TRUE(new_verified_profile.IsVerified());
 
   personal_data_->SaveImportedProfile(new_verified_profile);
@@ -2314,11 +2337,9 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithExistingVerifiedData) {
   base::MessageLoop::current()->Run();
 
   // The new profile should be merged into the existing one.
-  AutofillProfile expected_profile = profile;
-  expected_profile.SetRawInfo(COMPANY_NAME, ASCIIToUTF16("Fizzbang, Inc."));
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(1U, results.size());
-  EXPECT_EQ(expected_profile, *results[0]);
+  EXPECT_EQ(0, new_verified_profile.Compare(*results[0]));
 }
 
 // Ensure that verified credit cards can be saved via SaveImportedCreditCard.

@@ -830,27 +830,18 @@ TEST(AutofillProfileTest, IsSubsetOf) {
   EXPECT_FALSE(a->IsSubsetOf(*b, "en-US"));
 }
 
-TEST(AutofillProfileTest, OverwriteWithOrAddTo) {
+TEST(AutofillProfileTest, OverwriteWith) {
   AutofillProfile a(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&a, "Marion", "Mitchell", "Morrison",
                        "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US",
                        "12345678910");
-  std::vector<base::string16> first_names;
-  a.GetRawMultiInfo(NAME_FIRST, &first_names);
-  first_names.push_back(ASCIIToUTF16("Marion"));
-  a.SetRawMultiInfo(NAME_FIRST, first_names);
-
-  std::vector<base::string16> last_names;
-  a.GetRawMultiInfo(NAME_LAST, &last_names);
-  last_names[last_names.size() - 1] = ASCIIToUTF16("Morrison");
-  a.SetRawMultiInfo(NAME_LAST, last_names);
 
   // Create an identical profile except that the new profile:
   //   (1) Has a different origin,
   //   (2) Has a different address line 2,
   //   (3) Lacks a company name,
-  //   (4) Has a different full name variant, and
+  //   (4) Has a different full name, and
   //   (5) Has a language code.
   AutofillProfile b = a;
   b.set_guid(base::GenerateGUID());
@@ -858,21 +849,15 @@ TEST(AutofillProfileTest, OverwriteWithOrAddTo) {
   b.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("area 51"));
   b.SetRawInfo(COMPANY_NAME, base::string16());
 
-  std::vector<base::string16> names;
-  b.GetMultiInfo(AutofillType(NAME_FULL), "en-US", &names);
-  names.push_back(ASCIIToUTF16("Marion M. Morrison"));
-  b.SetRawMultiInfo(NAME_FULL, names);
+  b.SetRawInfo(NAME_FULL, ASCIIToUTF16("Marion M. Morrison"));
   b.set_language_code("en");
 
-  a.OverwriteWithOrAddTo(b, "en-US");
+  a.OverwriteWith(b, "en-US");
   EXPECT_EQ("Chrome settings", a.origin());
   EXPECT_EQ(ASCIIToUTF16("area 51"), a.GetRawInfo(ADDRESS_HOME_LINE2));
   EXPECT_EQ(ASCIIToUTF16("Fox"), a.GetRawInfo(COMPANY_NAME));
-  a.GetMultiInfo(AutofillType(NAME_FULL), "en-US", &names);
-  ASSERT_EQ(3U, names.size());
-  EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison"), names[0]);
-  EXPECT_EQ(ASCIIToUTF16("Marion Morrison"), names[1]);
-  EXPECT_EQ(ASCIIToUTF16("Marion M. Morrison"), names[2]);
+  base::string16 name = a.GetInfo(AutofillType(NAME_FULL), "en-US");
+  EXPECT_EQ(ASCIIToUTF16("Marion M. Morrison"), name);
   EXPECT_EQ("en", a.language_code());
 }
 
@@ -950,132 +935,6 @@ TEST(AutofillProfileTest, Compare) {
                ASCIIToUTF16("line one\nline two\nline three"));
   EXPECT_GT(0, a.Compare(b));
   EXPECT_LT(0, b.Compare(a));
-}
-
-TEST(AutofillProfileTest, MultiValueNames) {
-  AutofillProfile p(base::GenerateGUID(), "https://www.example.com/");
-  const base::string16 kJohnDoe(ASCIIToUTF16("John Doe"));
-  const base::string16 kJohnPDoe(ASCIIToUTF16("John P. Doe"));
-  std::vector<base::string16> set_values;
-  set_values.push_back(kJohnDoe);
-  set_values.push_back(kJohnPDoe);
-  p.SetRawMultiInfo(NAME_FULL, set_values);
-
-  // Expect regular |GetInfo| returns the first element.
-  EXPECT_EQ(kJohnDoe, p.GetRawInfo(NAME_FULL));
-
-  // Ensure that we get out what we put in.
-  std::vector<base::string16> get_values;
-  p.GetRawMultiInfo(NAME_FULL, &get_values);
-  ASSERT_EQ(2UL, get_values.size());
-  EXPECT_EQ(kJohnDoe, get_values[0]);
-  EXPECT_EQ(kJohnPDoe, get_values[1]);
-
-  // Update the values.
-  AutofillProfile p2 = p;
-  EXPECT_EQ(0, p.Compare(p2));
-  const base::string16 kNoOne(ASCIIToUTF16("No One"));
-  set_values[1] = kNoOne;
-  p.SetRawMultiInfo(NAME_FULL, set_values);
-  p.GetRawMultiInfo(NAME_FULL, &get_values);
-  ASSERT_EQ(2UL, get_values.size());
-  EXPECT_EQ(kJohnDoe, get_values[0]);
-  EXPECT_EQ(kNoOne, get_values[1]);
-  EXPECT_NE(0, p.Compare(p2));
-
-  // Delete values.
-  set_values.clear();
-  p.SetRawMultiInfo(NAME_FULL, set_values);
-  p.GetRawMultiInfo(NAME_FULL, &get_values);
-  ASSERT_EQ(1UL, get_values.size());
-  EXPECT_EQ(base::string16(), get_values[0]);
-
-  // Expect regular |GetInfo| returns empty value.
-  EXPECT_EQ(base::string16(), p.GetRawInfo(NAME_FULL));
-}
-
-TEST(AutofillProfileTest, MultiValueEmails) {
-  AutofillProfile p(base::GenerateGUID(), "https://www.example.com/");
-  const base::string16 kJohnDoe(ASCIIToUTF16("john@doe.com"));
-  const base::string16 kJohnPDoe(ASCIIToUTF16("john_p@doe.com"));
-  std::vector<base::string16> set_values;
-  set_values.push_back(kJohnDoe);
-  set_values.push_back(kJohnPDoe);
-  p.SetRawMultiInfo(EMAIL_ADDRESS, set_values);
-
-  // Expect regular |GetInfo| returns the first element.
-  EXPECT_EQ(kJohnDoe, p.GetRawInfo(EMAIL_ADDRESS));
-
-  // Ensure that we get out what we put in.
-  std::vector<base::string16> get_values;
-  p.GetRawMultiInfo(EMAIL_ADDRESS, &get_values);
-  ASSERT_EQ(2UL, get_values.size());
-  EXPECT_EQ(kJohnDoe, get_values[0]);
-  EXPECT_EQ(kJohnPDoe, get_values[1]);
-
-  // Update the values.
-  AutofillProfile p2 = p;
-  EXPECT_EQ(0, p.Compare(p2));
-  const base::string16 kNoOne(ASCIIToUTF16("no@one.com"));
-  set_values[1] = kNoOne;
-  p.SetRawMultiInfo(EMAIL_ADDRESS, set_values);
-  p.GetRawMultiInfo(EMAIL_ADDRESS, &get_values);
-  ASSERT_EQ(2UL, get_values.size());
-  EXPECT_EQ(kJohnDoe, get_values[0]);
-  EXPECT_EQ(kNoOne, get_values[1]);
-  EXPECT_NE(0, p.Compare(p2));
-
-  // Delete values.
-  set_values.clear();
-  p.SetRawMultiInfo(EMAIL_ADDRESS, set_values);
-  p.GetRawMultiInfo(EMAIL_ADDRESS, &get_values);
-  ASSERT_EQ(1UL, get_values.size());
-  EXPECT_EQ(base::string16(), get_values[0]);
-
-  // Expect regular |GetInfo| returns empty value.
-  EXPECT_EQ(base::string16(), p.GetRawInfo(EMAIL_ADDRESS));
-}
-
-TEST(AutofillProfileTest, MultiValuePhone) {
-  AutofillProfile p(base::GenerateGUID(), "https://www.example.com/");
-  const base::string16 kJohnDoe(ASCIIToUTF16("4151112222"));
-  const base::string16 kJohnPDoe(ASCIIToUTF16("4151113333"));
-  std::vector<base::string16> set_values;
-  set_values.push_back(kJohnDoe);
-  set_values.push_back(kJohnPDoe);
-  p.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
-
-  // Expect regular |GetInfo| returns the first element.
-  EXPECT_EQ(kJohnDoe, p.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
-
-  // Ensure that we get out what we put in.
-  std::vector<base::string16> get_values;
-  p.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
-  ASSERT_EQ(2UL, get_values.size());
-  EXPECT_EQ(kJohnDoe, get_values[0]);
-  EXPECT_EQ(kJohnPDoe, get_values[1]);
-
-  // Update the values.
-  AutofillProfile p2 = p;
-  EXPECT_EQ(0, p.Compare(p2));
-  const base::string16 kNoOne(ASCIIToUTF16("4152110000"));
-  set_values[1] = kNoOne;
-  p.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
-  p.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
-  ASSERT_EQ(2UL, get_values.size());
-  EXPECT_EQ(kJohnDoe, get_values[0]);
-  EXPECT_EQ(kNoOne, get_values[1]);
-  EXPECT_NE(0, p.Compare(p2));
-
-  // Delete values.
-  set_values.clear();
-  p.SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, set_values);
-  p.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &get_values);
-  ASSERT_EQ(1UL, get_values.size());
-  EXPECT_EQ(base::string16(), get_values[0]);
-
-  // Expect regular |GetInfo| returns empty value.
-  EXPECT_EQ(base::string16(), p.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 }
 
 TEST(AutofillProfileTest, IsPresentButInvalid) {

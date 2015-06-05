@@ -52,6 +52,11 @@ void DataDrivenTest::RunDataDrivenTest(
 void DataDrivenTest::RunOneDataDrivenTest(
     const base::FilePath& test_file_name,
     const base::FilePath& output_directory) {
+  // iOS doesn't get rid of removed test files. TODO(estade): remove this after
+  // all iOS bots are clobbered.
+  if (test_file_name.BaseName().value() == FILE_PATH_LITERAL("multimerge.in"))
+    return;
+
   ASSERT_TRUE(base::DirectoryExists(output_directory));
   SCOPED_TRACE(test_file_name.BaseName().value());
 

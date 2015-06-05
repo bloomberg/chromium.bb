@@ -160,7 +160,7 @@ NameInfo& NameInfo::operator=(const NameInfo& info) {
   return *this;
 }
 
-bool NameInfo::ParsedNamesAreEqual(const NameInfo& info) {
+bool NameInfo::ParsedNamesAreEqual(const NameInfo& info) const {
   l10n::CaseInsensitiveCompare compare;
   return compare.StringsEqual(given_, info.given_) &&
          compare.StringsEqual(middle_, info.middle_) &&

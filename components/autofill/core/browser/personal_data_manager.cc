@@ -997,19 +997,14 @@ std::string PersonalDataManager::MergeProfile(
   // If we have already saved this address, merge in any missing values.
   // Only merge with the first match.
   for (AutofillProfile* existing_profile : existing_profiles) {
-    if (!matching_profile_found &&
-        !new_profile.PrimaryValue().empty() &&
-        AutofillProfile::AreProfileStringsSimilar(
-            existing_profile->PrimaryValue(),
-            new_profile.PrimaryValue())) {
+    if (!matching_profile_found && !new_profile.PrimaryValue().empty() &&
+        existing_profile->SaveAdditionalInfo(new_profile, app_locale)) {
       // Unverified profiles should always be updated with the newer data,
       // whereas verified profiles should only ever be overwritten by verified
       // data.  If an automatically aggregated profile would overwrite a
       // verified profile, just drop it.
       matching_profile_found = true;
       guid = existing_profile->guid();
-      if (!existing_profile->IsVerified() || new_profile.IsVerified())
-        existing_profile->OverwriteWithOrAddTo(new_profile, app_locale);
     }
     merged_profiles->push_back(*existing_profile);
   }

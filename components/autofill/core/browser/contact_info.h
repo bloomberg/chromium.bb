@@ -25,7 +25,7 @@ class NameInfo : public FormGroup {
 
   // Compares |NameInfo| objects for |given_|, |middle_| and |family_| names,
   // ignoring their case differences.
-  bool ParsedNamesAreEqual(const NameInfo& info);
+  bool ParsedNamesAreEqual(const NameInfo& info) const;
 
   // FormGroup:
   base::string16 GetRawInfo(ServerFieldType type) const override;
