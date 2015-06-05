@@ -7,8 +7,11 @@
 
 #include "components/scheduler/child/prioritizing_task_queue_selector.h"
 #include "components/scheduler/child/task_queue_manager.h"
-#include "components/scheduler/child/time_source.h"
 #include "components/scheduler/scheduler_export.h"
+
+namespace base {
+class TickClock;
+}
 
 namespace scheduler {
 
@@ -93,7 +96,7 @@ class SCHEDULER_EXPORT SchedulerHelper {
   uint64 GetAndClearTaskWasRunOnQueueBitmap();
 
   // Test helpers.
-  void SetTimeSourceForTesting(scoped_ptr<TimeSource> time_source);
+  void SetTimeSourceForTesting(scoped_ptr<base::TickClock> time_source);
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
   TaskQueueManager* GetTaskQueueManagerForTesting();
 
@@ -110,7 +113,7 @@ class SCHEDULER_EXPORT SchedulerHelper {
   scoped_refptr<base::SingleThreadTaskRunner> control_after_wakeup_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
-  scoped_ptr<TimeSource> time_source_;
+  scoped_ptr<base::TickClock> time_source_;
 
   const char* tracing_category_;
   const char* disabled_by_default_tracing_category_;

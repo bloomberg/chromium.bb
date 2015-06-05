@@ -15,7 +15,7 @@ TestTimeSource::TestTimeSource(scoped_refptr<cc::TestNowSource> time_source)
 TestTimeSource::~TestTimeSource() {
 }
 
-base::TimeTicks TestTimeSource::Now() const {
+base::TimeTicks TestTimeSource::NowTicks() {
   return time_source_->Now();
 }
 

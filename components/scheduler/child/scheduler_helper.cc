@@ -4,10 +4,10 @@
 
 #include "components/scheduler/child/scheduler_helper.h"
 
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/scheduler/child/nestable_single_thread_task_runner.h"
-#include "components/scheduler/child/time_source.h"
 
 namespace scheduler {
 
@@ -32,7 +32,7 @@ SchedulerHelper::SchedulerHelper(
           QueueId::CONTROL_TASK_AFTER_WAKEUP_QUEUE)),
       default_task_runner_(
           task_queue_manager_->TaskRunnerForQueue(QueueId::DEFAULT_TASK_QUEUE)),
-      time_source_(new TimeSource),
+      time_source_(new base::DefaultTickClock),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category) {
@@ -89,7 +89,7 @@ SchedulerHelper::ControlAfterWakeUpTaskRunner() {
 }
 
 void SchedulerHelper::SetTimeSourceForTesting(
-    scoped_ptr<TimeSource> time_source) {
+    scoped_ptr<base::TickClock> time_source) {
   CheckOnValidThread();
   time_source_ = time_source.Pass();
 }
@@ -105,7 +105,7 @@ TaskQueueManager* SchedulerHelper::GetTaskQueueManagerForTesting() {
 }
 
 base::TimeTicks SchedulerHelper::Now() const {
-  return time_source_->Now();
+  return time_source_->NowTicks();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> SchedulerHelper::TaskRunnerForQueue(

@@ -6,7 +6,7 @@
 #define COMPONENTS_SCHEDULER_CHILD_TEST_TIME_SOURCE_H_
 
 #include "base/memory/ref_counted.h"
-#include "components/scheduler/child/time_source.h"
+#include "base/time/tick_clock.h"
 
 namespace cc {
 class TestNowSource;
@@ -14,12 +14,12 @@ class TestNowSource;
 
 namespace scheduler {
 
-class TestTimeSource : public TimeSource {
+class TestTimeSource : public base::TickClock {
  public:
   explicit TestTimeSource(scoped_refptr<cc::TestNowSource> time_source);
   ~TestTimeSource() override;
 
-  base::TimeTicks Now() const override;
+  base::TimeTicks NowTicks() override;
 
  private:
   scoped_refptr<cc::TestNowSource> time_source_;

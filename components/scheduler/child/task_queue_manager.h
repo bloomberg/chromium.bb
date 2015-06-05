@@ -15,7 +15,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "components/scheduler/child/task_queue_selector.h"
-#include "components/scheduler/child/time_source.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace base {
@@ -23,6 +22,7 @@ namespace trace_event {
 class ConvertableToTraceFormat;
 class TracedValue;
 }
+class TickClock;
 }
 
 namespace scheduler {
@@ -32,7 +32,6 @@ class TaskQueue;
 }
 class NestableSingleThreadTaskRunner;
 class TaskQueueSelector;
-class TimeSource;
 
 // The task queue manager provides N task queues and a selector interface for
 // choosing which task queue to service next. Each task queue consists of two
@@ -158,7 +157,7 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
   void RemoveTaskObserver(base::MessageLoop::TaskObserver* task_observer);
 
-  void SetTimeSourceForTesting(scoped_ptr<TimeSource> time_source);
+  void SetTimeSourceForTesting(scoped_ptr<base::TickClock> time_source);
 
   // Returns a bitmap where a bit is set iff a task on the corresponding queue
   // was run since the last call to GetAndClearTaskWasRunOnQueueBitmap.
@@ -248,7 +247,7 @@ class SCHEDULER_EXPORT TaskQueueManager : public TaskQueueSelector::Observer {
 
   int work_batch_size_;
 
-  scoped_ptr<TimeSource> time_source_;
+  scoped_ptr<base::TickClock> time_source_;
 
   base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
 
