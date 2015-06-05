@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings-specific Chromium strings (included from chromium_strings.grd). -->
+<grit-part>
+  <!-- Sync Page -->
+  <message name="IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT" desc="Text alerting the user that synced data is encrypted.">
+    For added security, Chromium will encrypt your data.
+  </message>
+</grit-part>

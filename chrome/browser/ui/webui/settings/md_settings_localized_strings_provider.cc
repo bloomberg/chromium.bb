@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -150,6 +151,53 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SEARCH_ENGINES_ADD_BUTTON_LABEL);
 }
 
+void AddSyncStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("syncPageTitle",
+                                  IDS_SETTINGS_SYNC_PAGE_TITLE);
+  html_source->AddLocalizedString("syncEverythingMenuOption",
+                                  IDS_SETTINGS_SYNC_EVERYTHING_MENU_OPTION);
+  html_source->AddLocalizedString("chooseWhatToSyncMenuOption",
+                                  IDS_SETTINGS_CHOOSE_WHAT_TO_SYNC_MENU_OPTION);
+  html_source->AddLocalizedString("appCheckboxLabel",
+                                  IDS_SETTINGS_APPS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("extensionsCheckboxLabel",
+                                  IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("settingsCheckboxLabel",
+                                  IDS_SETTINGS_SETTINGS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("autofillCheckboxLabel",
+                                  IDS_SETTINGS_AUTOFILL_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("historyCheckboxLabel",
+                                  IDS_SETTINGS_HISTORY_CHECKBOX_LABEL);
+  html_source->AddLocalizedString(
+      "themesAndWallpapersCheckboxLabel",
+      IDS_SETTINGS_THEMES_AND_WALLPAPERS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("bookmarksCheckboxLabel",
+                                  IDS_SETTINGS_BOOKMARKS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("passwordsCheckboxLabel",
+                                  IDS_SETTINGS_PASSWORDS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("openTabsCheckboxLabel",
+                                  IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL);
+  html_source->AddLocalizedString("encryptionOptionsTitle",
+                                  IDS_SETTINGS_ENCRYPTION_OPTIONS_TITLE);
+  html_source->AddLocalizedString("syncDataEncryptedText",
+                                  IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT);
+  html_source->AddLocalizedString(
+      "encryptWithGoogleCredentialsLabel",
+      IDS_SETTINGS_ENCRYPT_WITH_GOOGLE_CREDENTIALS_LABEL);
+  html_source->AddLocalizedString(
+      "encryptWithSyncPassphraseLabel",
+      IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LABEL);
+  html_source->AddLocalizedString(
+      "encryptWithSyncPassphraseLearnMoreLink",
+      IDS_SETTINGS_ENCRYPT_WITH_SYNC_PASSPHRASE_LEARN_MORE_LINK);
+  html_source->AddLocalizedString("useDefaultSettingsButton",
+                                  IDS_SETTINGS_USE_DEFAULT_SETTINGS_BUTTON);
+  html_source->AddLocalizedString("cancelButton",
+                                  IDS_SETTINGS_CANCEL_BUTTON);
+  html_source->AddLocalizedString("okButton",
+                                  IDS_SETTINGS_OK_BUTTON);
+}
+
 void AddUsersStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("usersPageTitle",
                                   IDS_SETTINGS_USERS_PAGE_TITLE);
@@ -182,6 +230,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
 #endif
   AddSearchStrings(html_source);
   AddSearchEnginesStrings(html_source);
+  AddSyncStrings(html_source);
   AddUsersStrings(html_source);
   html_source->SetJsonPath(kLocalizedStringsFile);
 }
