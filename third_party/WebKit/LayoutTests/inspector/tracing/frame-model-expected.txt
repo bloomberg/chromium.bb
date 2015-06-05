@@ -5,6 +5,7 @@ Test: main thread only
     cpuTime : 4.001
     duration : 16
     endTime : 1016.001
+    idle : false
     startTime : 1000.001
     timeByCategory : {
         other : 0.004
@@ -15,6 +16,7 @@ Test: main thread only
     cpuTime : 12.994
     duration : 16
     endTime : 1032.001
+    idle : false
     startTime : 1016.001
     timeByCategory : {
         other : 3.998
@@ -26,6 +28,7 @@ Test: main thread only
     cpuTime : 1.999
     duration : 16
     endTime : 1048.001
+    idle : false
     startTime : 1032.001
     timeByCategory : {
         other : 1.999
@@ -36,6 +39,7 @@ Test: impl-side only
     cpuTime : 0
     duration : 30
     endTime : 1030
+    idle : false
     startTime : 1000
     timeByCategory : {
     }
@@ -44,6 +48,7 @@ Test: impl-side only
     cpuTime : 0
     duration : 16
     endTime : 1046
+    idle : false
     startTime : 1030
     timeByCategory : {
     }
@@ -52,6 +57,7 @@ Test: impl-side only
     cpuTime : 2.997
     duration : 32
     endTime : 1078
+    idle : false
     startTime : 1046
     timeByCategory : {
         painting : 2.997
@@ -61,6 +67,7 @@ Test: impl-side only
     cpuTime : 0
     duration : 3
     endTime : 1081
+    idle : false
     startTime : 1078
     timeByCategory : {
     }
@@ -70,6 +77,7 @@ Test: impl-side with commits
     cpuTime : 32.999
     duration : 46
     endTime : 1046
+    idle : false
     startTime : 1000
     timeByCategory : {
         other : 3.003
@@ -82,6 +90,7 @@ Test: impl-side with commits
     cpuTime : 11.999
     duration : 16
     endTime : 1062
+    idle : false
     startTime : 1046
     timeByCategory : {
         other : 11.988003
@@ -93,6 +102,7 @@ Test: impl-side with interleaving commits
     cpuTime : 12.999
     duration : 14.001
     endTime : 1014.001
+    idle : false
     startTime : 1000
     timeByCategory : {
         other : 12.986003
@@ -103,6 +113,7 @@ Test: impl-side with interleaving commits
     cpuTime : 12.999
     duration : 16
     endTime : 1030.001
+    idle : false
     startTime : 1014.001
     timeByCategory : {
         other : 0.003
@@ -114,6 +125,7 @@ Test: impl-side with interleaving commits
     cpuTime : 12.999
     duration : 16
     endTime : 1046.001
+    idle : false
     startTime : 1030.001
     timeByCategory : {
         other : 0.003
@@ -126,6 +138,7 @@ Test: pre-frame time accounting
     cpuTime : 2.999
     duration : 3.001
     endTime : 1035.001
+    idle : false
     startTime : 1032
     timeByCategory : {
         other : 1.601
@@ -137,6 +150,7 @@ Test: pre-frame time accounting
     cpuTime : 0
     duration : 28
     endTime : 1063.001
+    idle : false
     startTime : 1035.001
     timeByCategory : {
     }
@@ -145,6 +159,7 @@ Test: pre-frame time accounting
     cpuTime : 20.998
     duration : 8.001
     endTime : 1071.002
+    idle : false
     startTime : 1063.001
     timeByCategory : {
         other : 6.005
@@ -157,6 +172,7 @@ Test: pre-frame time accounting
     cpuTime : 8.998
     duration : 10
     endTime : 1081.002
+    idle : false
     startTime : 1071.002
     timeByCategory : {
         other : 5.002
@@ -168,6 +184,7 @@ Test: pre-frame time accounting
     cpuTime : 0
     duration : 15
     endTime : 1096.002
+    idle : false
     startTime : 1081.002
     timeByCategory : {
     }
@@ -177,6 +194,7 @@ Test: record processing order
     cpuTime : 15.999
     duration : 13.005
     endTime : 1013.005
+    idle : false
     startTime : 1000
     timeByCategory : {
         other : 0.005
@@ -188,6 +206,7 @@ Test: record processing order
     cpuTime : 0
     duration : 16.996
     endTime : 1030.001
+    idle : false
     startTime : 1013.005
     timeByCategory : {
     }
@@ -196,6 +215,7 @@ Test: record processing order
     cpuTime : 31.999
     duration : 32
     endTime : 1062.001
+    idle : false
     startTime : 1030.001
     timeByCategory : {
         other : 1.005
@@ -207,6 +227,7 @@ Test: record processing order
     cpuTime : 0
     duration : 18
     endTime : 1080.001
+    idle : false
     startTime : 1062.001
     timeByCategory : {
     }
@@ -216,6 +237,7 @@ Test: commits without activation
     cpuTime : 0
     duration : 14.001
     endTime : 1014.001
+    idle : false
     startTime : 1000
     timeByCategory : {
     }
@@ -224,6 +246,7 @@ Test: commits without activation
     cpuTime : 0
     duration : 16
     endTime : 1030.001
+    idle : false
     startTime : 1014.001
     timeByCategory : {
     }
@@ -232,7 +255,51 @@ Test: commits without activation
     cpuTime : 0
     duration : 16
     endTime : 1046.001
+    idle : false
     startTime : 1030.001
+    timeByCategory : {
+    }
+}
+Test: Idle frames
+{
+    cpuTime : 12.999
+    duration : 14.001
+    endTime : 1014.001
+    idle : false
+    startTime : 1000
+    timeByCategory : {
+        other : 0.003
+        painting : 7.999
+        scripting : 4.997
+    }
+}
+{
+    cpuTime : 0
+    duration : 249.999
+    endTime : 1264
+    idle : true
+    startTime : 1014.001
+    timeByCategory : {
+    }
+}
+{
+    cpuTime : 24
+    duration : 32.001
+    endTime : 1296.001
+    idle : false
+    startTime : 1264
+    timeByCategory : {
+        other : 0.5
+        painting : 0.5
+        scripting : 23
+    }
+}
+{
+    cpuTime : 0
+    duration : 15.999
+    endTime : 1312
+    idle : false
+    startTime : 1296.001
     timeByCategory : {
     }
 }
