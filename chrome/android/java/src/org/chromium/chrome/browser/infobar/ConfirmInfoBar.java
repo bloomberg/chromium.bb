@@ -24,15 +24,14 @@ public class ConfirmInfoBar extends InfoBar {
     /** Notified when one of the buttons is clicked. */
     private final InfoBarListeners.Confirm mConfirmListener;
 
-    public ConfirmInfoBar(long nativeInfoBar, InfoBarListeners.Confirm confirmListener,
-            int iconDrawableId, Bitmap iconBitmap, String message, String linkText,
-            String primaryButtonText, String secondaryButtonText) {
+    public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int iconDrawableId,
+            Bitmap iconBitmap, String message, String linkText, String primaryButtonText,
+            String secondaryButtonText) {
         super(confirmListener, iconDrawableId, iconBitmap, message);
         mPrimaryButtonText = primaryButtonText;
         mSecondaryButtonText = secondaryButtonText;
         mTertiaryButtonText = linkText;
         mConfirmListener = confirmListener;
-        setNativeInfoBar(nativeInfoBar);
     }
 
     @Override
@@ -46,18 +45,7 @@ public class ConfirmInfoBar extends InfoBar {
             mConfirmListener.onConfirmInfoBarButtonClicked(this, isPrimaryButton);
         }
 
-        if (mNativeInfoBarPtr != 0) {
-            int action = isPrimaryButton ? InfoBar.ACTION_TYPE_OK : InfoBar.ACTION_TYPE_CANCEL;
-            nativeOnButtonClicked(mNativeInfoBarPtr, action, "");
-        }
-    }
-
-    @Override
-    public void onCloseButtonClicked() {
-        if (mNativeInfoBarPtr != 0) {
-            nativeOnCloseButtonClicked(mNativeInfoBarPtr);
-        } else {
-            super.dismissJavaOnlyInfoBar();
-        }
+        int action = isPrimaryButton ? InfoBar.ACTION_TYPE_OK : InfoBar.ACTION_TYPE_CANCEL;
+        onButtonClicked(action, "");
     }
 }

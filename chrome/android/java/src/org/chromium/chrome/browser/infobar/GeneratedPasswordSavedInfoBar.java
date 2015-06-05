@@ -20,17 +20,15 @@ public class GeneratedPasswordSavedInfoBar extends InfoBar {
 
     /**
      * Creates and shows the infobar to notify that the generated password was saved.
-     * @param nativeInfoBar Pointer to the native infobar.
      * @param iconDrawableId Drawable ID corresponding to the icon that the infobar will show.
      * @param messageText Message to display in the infobar.
      * @param inlineLinkRangeStart The start of the range of the messageText that should be a link.
      * @param inlineLinkRangeEnd The end of the range of the messageText that should be a link.
      * @param buttonLabel String to display on the button.
      */
-    public GeneratedPasswordSavedInfoBar(long nativeInfoBar, int iconDrawableId, String messageText,
+    public GeneratedPasswordSavedInfoBar(int iconDrawableId, String messageText,
             int inlineLinkRangeStart, int inlineLinkRangeEnd, String buttonLabel) {
         super(null, iconDrawableId, null, null);
-        setNativeInfoBar(nativeInfoBar);
         mMessageText = messageText;
         mInlineLinkRangeStart = inlineLinkRangeStart;
         mInlineLinkRangeEnd = inlineLinkRangeEnd;
@@ -62,15 +60,6 @@ public class GeneratedPasswordSavedInfoBar extends InfoBar {
      */
     @Override
     public void onButtonClicked(boolean isPrimaryButton) {
-        nativeOnButtonClicked(mNativeInfoBarPtr, InfoBar.ACTION_TYPE_OK, "");
-    }
-
-    /**
-     * Called when the close button is clicked. Notifies the native infobar, which closes the
-     * infobar.
-     */
-    @Override
-    public void onCloseButtonClicked() {
-        nativeOnCloseButtonClicked(mNativeInfoBarPtr);
+        onButtonClicked(InfoBar.ACTION_TYPE_OK, "");
     }
 }

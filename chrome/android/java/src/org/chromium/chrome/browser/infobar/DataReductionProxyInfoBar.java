@@ -31,8 +31,8 @@ public class DataReductionProxyInfoBar extends ConfirmInfoBar {
         DataReductionProxyInfoBarDelegate.launch(webContents, linkUrl);
     }
 
-    DataReductionProxyInfoBar(long nativeInfoBar, int iconDrawableId) {
-        super(nativeInfoBar, null, iconDrawableId, null, sTitle, sLinkText, null, null);
+    DataReductionProxyInfoBar(int iconDrawableId) {
+        super(null, iconDrawableId, null, sTitle, sLinkText, null, null);
     }
 
     @Override

@@ -32,9 +32,4 @@ public class MessageInfoBar extends InfoBar {
             CharSequence title) {
         super(listener, iconResourceId, null, title);
     }
-
-    @Override
-    public void onCloseButtonClicked() {
-        super.dismissJavaOnlyInfoBar();
-    }
 }

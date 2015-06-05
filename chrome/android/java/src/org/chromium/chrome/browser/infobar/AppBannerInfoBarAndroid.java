@@ -45,9 +45,8 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
     private final String mAppUrl;
 
     // Banner for native apps.
-    private AppBannerInfoBarAndroid(
-            long nativeInfoBar, String appTitle, Bitmap iconBitmap, AppData data) {
-        super(nativeInfoBar, null, 0, iconBitmap, appTitle, null, data.installButtonText(), null);
+    private AppBannerInfoBarAndroid(String appTitle, Bitmap iconBitmap, AppData data) {
+        super(null, 0, iconBitmap, appTitle, null, data.installButtonText(), null);
         mAppTitle = appTitle;
         mAppData = data;
         mAppUrl = null;
@@ -55,9 +54,8 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
     }
 
     // Banner for web apps.
-    private AppBannerInfoBarAndroid(
-            long nativeInfoBar, String appTitle, Bitmap iconBitmap, String url) {
-        super(nativeInfoBar, null, 0, iconBitmap, appTitle, null, getAddToHomescreenText(), null);
+    private AppBannerInfoBarAndroid(String appTitle, Bitmap iconBitmap, String url) {
+        super(null, 0, iconBitmap, appTitle, null, getAddToHomescreenText(), null);
         mAppTitle = appTitle;
         mAppData = null;
         mAppUrl = url;
@@ -170,13 +168,12 @@ public class AppBannerInfoBarAndroid extends ConfirmInfoBar implements View.OnCl
 
     @CalledByNative
     private static InfoBar createNativeAppInfoBar(
-            long nativeInfoBar, String appTitle, Bitmap iconBitmap, AppData appData) {
-        return new AppBannerInfoBarAndroid(nativeInfoBar, appTitle, iconBitmap, appData);
+            String appTitle, Bitmap iconBitmap, AppData appData) {
+        return new AppBannerInfoBarAndroid(appTitle, iconBitmap, appData);
     }
 
     @CalledByNative
-    private static InfoBar createWebAppInfoBar(
-            long nativeInfoBar, String appTitle, Bitmap iconBitmap, String url) {
-        return new AppBannerInfoBarAndroid(nativeInfoBar, appTitle, iconBitmap, url);
+    private static InfoBar createWebAppInfoBar(String appTitle, Bitmap iconBitmap, String url) {
+        return new AppBannerInfoBarAndroid(appTitle, iconBitmap, url);
     }
 }

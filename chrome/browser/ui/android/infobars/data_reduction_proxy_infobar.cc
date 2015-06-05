@@ -43,10 +43,7 @@ DataReductionProxyInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       Java_DataReductionProxyInfoBarDelegate_create(env));
 
   return Java_DataReductionProxyInfoBarDelegate_showDataReductionProxyInfoBar(
-      env,
-      java_data_reduction_proxy_delegate_.obj(),
-      reinterpret_cast<intptr_t>(this),
-      GetEnumeratedIconId());
+      env, java_data_reduction_proxy_delegate_.obj(), GetEnumeratedIconId());
 }
 
 DataReductionProxyInfoBarDelegate* DataReductionProxyInfoBar::GetDelegate() {

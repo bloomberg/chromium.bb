@@ -33,37 +33,28 @@ public class DownloadOverwriteInfoBar extends InfoBar {
     private final String mDirFullPath;
 
     @CalledByNative
-    private static InfoBar createInfoBar(
-            long nativeInfoBar, String fileName, String dirName, String dirFullPath) {
-        return new DownloadOverwriteInfoBar(nativeInfoBar, fileName, dirName, dirFullPath);
+    private static InfoBar createInfoBar(String fileName, String dirName, String dirFullPath) {
+        return new DownloadOverwriteInfoBar(fileName, dirName, dirFullPath);
     }
 
     /**
      * Constructs DownloadOverwriteInfoBar.
-     * @param nativeInfoBarPtr Pointer value of the native infobar.
      * @param fileName The file name. ex) example.jpg
      * @param dirName The dir name. ex) Downloads
      * @param dirFullPath The full dir path. ex) sdcards/Downloads
      */
-    private DownloadOverwriteInfoBar(
-            long nativeInfoBarPtr, String fileName, String dirName, String dirFullPath) {
+    private DownloadOverwriteInfoBar(String fileName, String dirName, String dirFullPath) {
         super(null, R.drawable.infobar_downloading, null, null);
         mFileName = fileName;
         mDirName = dirName;
         mDirFullPath = dirFullPath;
-        setNativeInfoBar(nativeInfoBarPtr);
-    }
-
-    @Override
-    public void onCloseButtonClicked() {
-        if (mNativeInfoBarPtr != 0) nativeOnCloseButtonClicked(mNativeInfoBarPtr);
     }
 
     @Override
     public void onButtonClicked(boolean isPrimaryButton) {
         int action = isPrimaryButton ? InfoBar.ACTION_TYPE_OVERWRITE
                                      : InfoBar.ACTION_TYPE_CREATE_NEW_FILE;
-        if (mNativeInfoBarPtr != 0) nativeOnButtonClicked(mNativeInfoBarPtr, action, "");
+        onButtonClicked(action, "");
     }
 
     private CharSequence getMessageText(Context context) {

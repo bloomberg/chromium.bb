@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -28,41 +27,30 @@ import org.chromium.chrome.browser.signin.AccountManagementFragment;
  * full name in case they are available.
  */
 public class AccountChooserInfoBar extends InfoBar {
+    private long mNativePtr;
     private final Credential[] mCredentials;
     private final ImageView[] mAvatarViews;
 
     /**
      * Creates and shows the infobar wich allows user to choose credentials for login.
-     * @param nativeInfoBar Pointer to the native infobar.
      * @param enumeratedIconId Enum ID corresponding to the icon that the infobar will show.
      * @param credentials Credentials to display in the infobar.
      */
     @CalledByNative
-    private static InfoBar show(
-            long nativeInfoBar, int enumeratedIconId, Credential[] credentials) {
-        return new AccountChooserInfoBar(
-                nativeInfoBar, ResourceId.mapToDrawableId(enumeratedIconId), credentials);
+    private static InfoBar show(int enumeratedIconId, Credential[] credentials) {
+        return new AccountChooserInfoBar(ResourceId.mapToDrawableId(enumeratedIconId), credentials);
     }
 
     /**
      * Creates and shows the infobar  which allows user to choose credentials.
-     * @param nativeInfoBar Pointer to the native infobar.
      * @param iconDrawableId Drawable ID corresponding to the icon that the infobar will show.
      * @param credentials Credentials to display in the infobar.
      */
-    public AccountChooserInfoBar(long nativeInfoBar, int iconDrawableId, Credential[] credentials) {
+    public AccountChooserInfoBar(int iconDrawableId, Credential[] credentials) {
         super(null /* Infobar Listener */, iconDrawableId, null /* bitmap*/,
                 null /* message to show */);
-        setNativeInfoBar(nativeInfoBar);
         mCredentials = credentials.clone();
         mAvatarViews = new ImageView[mCredentials.length];
-    }
-
-
-    @Override
-    public void onCloseButtonClicked() {
-        // Notifies the native infobar, which closes the infobar.
-        nativeOnCloseButtonClicked(mNativeInfoBarPtr);
     }
 
     @Override
@@ -97,8 +85,9 @@ public class AccountChooserInfoBar extends InfoBar {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 if (convertView == null) {
-                    convertView = (LinearLayout) LayoutInflater.from(getContext()).inflate(
-                        R.layout.account_chooser_infobar_item, parent, false);
+                    convertView =
+                            LayoutInflater.from(getContext())
+                                    .inflate(R.layout.account_chooser_infobar_item, parent, false);
                 } else {
                     int oldPosition = (int) convertView.getTag();
                     mAvatarViews[oldPosition] = null;
@@ -126,7 +115,7 @@ public class AccountChooserInfoBar extends InfoBar {
                     @Override
                     public void onClick(View view) {
                         nativeOnCredentialClicked(
-                                mNativeInfoBarPtr, currentCredentialIndex, credentialType);
+                                mNativePtr, currentCredentialIndex, credentialType);
                     }
                 });
                 return convertView;
@@ -153,6 +142,17 @@ public class AccountChooserInfoBar extends InfoBar {
     private void createCustomButtonsView(InfoBarLayout layout) {
         layout.setButtons(getContext().getString(R.string.no_thanks), null);
         layout.setCustomViewInButtonRow(OverflowSelector.createOverflowSelector(getContext()));
+    }
+
+    @CalledByNative
+    private void setNativePtr(long nativePtr) {
+        mNativePtr = nativePtr;
+    }
+
+    @Override
+    protected void onNativeDestroyed() {
+        mNativePtr = 0;
+        super.onNativeDestroyed();
     }
 
     private native void nativeOnCredentialClicked(

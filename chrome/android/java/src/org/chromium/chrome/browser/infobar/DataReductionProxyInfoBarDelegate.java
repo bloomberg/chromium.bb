@@ -30,18 +30,16 @@ public class DataReductionProxyInfoBarDelegate {
 
     /**
      * Creates and begins the process for showing a DataReductionProxyInfoBarDelegate.
-     * @param nativeInfoBar Pointer to the C++ InfoBar corresponding to the Java InfoBar.
      * @param enumeratedIconId ID corresponding to the icon that will be shown for the InfoBar.
      *                         The ID must have been mapped using the ResourceMapper class before
      *                         passing it to this function.
      */
     @CalledByNative
-    InfoBar showDataReductionProxyInfoBar(long nativeInfoBar, int enumeratedIconId) {
+    InfoBar showDataReductionProxyInfoBar(int enumeratedIconId) {
         int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
-        DataReductionProxyInfoBar infoBar = new DataReductionProxyInfoBar(
-                nativeInfoBar, drawableId);
+        DataReductionProxyInfoBar infoBar = new DataReductionProxyInfoBar(drawableId);
         return infoBar;
     }
 
-    protected static native void nativeLaunch(WebContents webContents, String linkUrl);
+    private static native void nativeLaunch(WebContents webContents, String linkUrl);
 }

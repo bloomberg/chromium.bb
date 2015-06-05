@@ -35,15 +35,14 @@ class TranslateInfoBar : public InfoBarAndroid {
       JNIEnv* env) override;
   void ProcessButton(int action, const std::string& action_value) override;
   void PassJavaInfoBar(InfoBarAndroid* source) override;
+  void SetJavaInfoBar(
+      const base::android::JavaRef<jobject>& java_info_bar) override;
 
   void TransferOwnership(TranslateInfoBar* destination,
                          translate::TranslateStep new_type);
-  void SetJavaDelegate(jobject delegate);
   bool ShouldDisplayNeverTranslateInfoBarOnCancel();
 
   translate::TranslateInfoBarDelegate* GetDelegate();
-
-  base::android::ScopedJavaGlobalRef<jobject> java_translate_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBar);
 };

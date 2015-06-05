@@ -44,7 +44,9 @@ class InfoBarAndroid : public infobars::InfoBar {
   virtual base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) = 0;
 
-  void set_java_infobar(const base::android::JavaRef<jobject>& java_info_bar);
+  virtual void SetJavaInfoBar(
+      const base::android::JavaRef<jobject>& java_info_bar);
+  jobject GetJavaInfoBar();
   bool HasSetJavaInfoBar() const;
 
   // Tells the Java-side counterpart of this InfoBar to point to the replacement
@@ -74,6 +76,7 @@ class InfoBarAndroid : public infobars::InfoBar {
   virtual void ProcessButton(int action,
                              const std::string& action_value) = 0;
   void CloseInfoBar();
+  InfoBarAndroid* infobar_android() { return this; }
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_info_bar_;

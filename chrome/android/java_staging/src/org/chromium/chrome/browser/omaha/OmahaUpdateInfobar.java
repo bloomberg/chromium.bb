@@ -34,10 +34,10 @@ public class OmahaUpdateInfobar extends ConfirmInfoBar {
     private static final int ACTION_DISMISSED = 3;
     private static final int ACTION_MAX = 3;
 
-    private String mUrl;
-    private Context mActivityContext;
+    private final String mUrl;
+    private final Context mActivityContext;
     private boolean mActionTaken;
-    private long mShownTime;
+    private final long mShownTime;
 
     /**
      * Listens for the InfoBar being dismissed and checks whether it was caused by a user action
@@ -65,8 +65,8 @@ public class OmahaUpdateInfobar extends ConfirmInfoBar {
 
     public OmahaUpdateInfobar(Context activityContext, String message, String buttonMessage,
                 String url) {
-        super(0, new DismissListener(), R.drawable.infobar_warning, null, message, null,
-                buttonMessage, null);
+        super(new DismissListener(), R.drawable.infobar_warning, null, message, null, buttonMessage,
+                null);
         mActivityContext = activityContext;
         mUrl = url;
         mShownTime = SystemClock.uptimeMillis();

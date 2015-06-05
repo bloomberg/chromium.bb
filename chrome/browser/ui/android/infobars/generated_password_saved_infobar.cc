@@ -33,7 +33,7 @@ GeneratedPasswordSavedInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       static_cast<GeneratedPasswordSavedInfoBarDelegateAndroid*>(delegate());
 
   return Java_GeneratedPasswordSavedInfoBarDelegate_show(
-      env, reinterpret_cast<intptr_t>(this), GetEnumeratedIconId(),
+      env, GetEnumeratedIconId(),
       base::android::ConvertUTF16ToJavaString(
           env, infobar_delegate->message_text()).obj(),
       infobar_delegate->inline_link_range().start(),

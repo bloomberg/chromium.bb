@@ -21,20 +21,31 @@ InfoBarAndroid::InfoBarAndroid(scoped_ptr<infobars::InfoBarDelegate> delegate)
 }
 
 InfoBarAndroid::~InfoBarAndroid() {
+  if (!java_info_bar_.is_null()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_InfoBar_onNativeDestroyed(env, java_info_bar_.obj());
+  }
 }
 
 void InfoBarAndroid::ReassignJavaInfoBar(InfoBarAndroid* replacement) {
   DCHECK(replacement);
   if (!java_info_bar_.is_null()) {
-    replacement->set_java_infobar(java_info_bar_);
+    replacement->SetJavaInfoBar(java_info_bar_);
     java_info_bar_.Reset();
   }
 }
 
-void InfoBarAndroid::set_java_infobar(
+void InfoBarAndroid::SetJavaInfoBar(
     const base::android::JavaRef<jobject>& java_info_bar) {
   DCHECK(java_info_bar_.is_null());
   java_info_bar_.Reset(java_info_bar);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_InfoBar_setNativeInfoBar(env, java_info_bar.obj(),
+                                reinterpret_cast<intptr_t>(this));
+}
+
+jobject InfoBarAndroid::GetJavaInfoBar() {
+  return java_info_bar_.obj();
 }
 
 bool InfoBarAndroid::HasSetJavaInfoBar() const {

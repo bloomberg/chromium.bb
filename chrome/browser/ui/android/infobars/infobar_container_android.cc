@@ -63,7 +63,7 @@ void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
       android_bar->CreateRenderInfoBar(env);
   Java_InfoBarContainer_addInfoBar(
       env, weak_java_infobar_container_.get(env).obj(), java_infobar.obj());
-  android_bar->set_java_infobar(java_infobar);
+  android_bar->SetJavaInfoBar(java_infobar);
 }
 
 void InfoBarContainerAndroid::PlatformSpecificReplaceInfoBar(

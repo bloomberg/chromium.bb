@@ -13,6 +13,7 @@ import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.CheckBox;
 
+import org.chromium.base.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -34,25 +35,30 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
     public static final int ALWAYS_PANEL = 3;
     public static final int MAX_PANEL_INDEX = 4;
 
+    private long mNativeTranslateInfoBarPtr;
     private int mInfoBarType;
     private final TranslateOptions mOptions;
     private int mOptionsPanelViewType;
     private TranslateSubPanel mSubPanel;
     private final boolean mShouldShowNeverBar;
-    private final TranslateInfoBarDelegate mTranslateDelegate;
 
-    public TranslateInfoBar(long nativeInfoBarPtr, TranslateInfoBarDelegate delegate,
-            int infoBarType, int sourceLanguageIndex, int targetLanguageIndex,
-            boolean autoTranslatePair, boolean shouldShowNeverBar,
+    @CalledByNative
+    private static InfoBar show(int translateBarType, int sourceLanguageIndex,
+            int targetLanguageIndex, boolean autoTranslatePair, boolean showNeverInfobar,
             boolean triggeredFromMenu, String[] languages) {
+        return new TranslateInfoBar(translateBarType, sourceLanguageIndex, targetLanguageIndex,
+                autoTranslatePair, showNeverInfobar, triggeredFromMenu, languages);
+    }
+
+    private TranslateInfoBar(int infoBarType, int sourceLanguageIndex, int targetLanguageIndex,
+            boolean autoTranslatePair, boolean shouldShowNeverBar, boolean triggeredFromMenu,
+            String[] languages) {
         super(null, R.drawable.infobar_translate, null, null);
-        mTranslateDelegate = delegate;
         mOptions = new TranslateOptions(sourceLanguageIndex, targetLanguageIndex, languages,
                 autoTranslatePair, triggeredFromMenu);
         mInfoBarType = infoBarType;
         mShouldShowNeverBar = shouldShowNeverBar;
         mOptionsPanelViewType = NO_PANEL;
-        setNativeInfoBar(nativeInfoBarPtr);
     }
 
     @Override
@@ -61,7 +67,7 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
             // Make it behave exactly as the Nope Button.
             onButtonClicked(false);
         } else {
-            nativeOnCloseButtonClicked(mNativeInfoBarPtr);
+            super.onCloseButtonClicked();
         }
     }
 
@@ -205,11 +211,7 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
 
     private void onTranslateInfoBarButtonClicked(int action) {
         onOptionsChanged();
-
-        // We need to re-check if the pointer is null now because applying options (like never
-        // translate this site) can sometimes trigger closing the InfoBar.
-        if (mNativeInfoBarPtr == 0) return;
-        nativeOnButtonClicked(mNativeInfoBarPtr, action, "");
+        onButtonClicked(action, "");
     }
 
     @Override
@@ -226,15 +228,12 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
 
     @Override
     public void onOptionsChanged() {
-        if (mNativeInfoBarPtr == 0) return;
+        if (mNativeTranslateInfoBarPtr == 0) return;
 
         if (mOptions.optionsChanged()) {
-            mTranslateDelegate.applyTranslateOptions(mNativeInfoBarPtr,
-                    mOptions.sourceLanguageIndex(),
-                    mOptions.targetLanguageIndex(),
-                    mOptions.alwaysTranslateLanguageState(),
-                    mOptions.neverTranslateLanguageState(),
-                    mOptions.neverTranslateDomainState());
+            nativeApplyTranslateOptions(mNativeTranslateInfoBarPtr, mOptions.sourceLanguageIndex(),
+                    mOptions.targetLanguageIndex(), mOptions.alwaysTranslateLanguageState(),
+                    mOptions.neverTranslateLanguageState(), mOptions.neverTranslateDomainState());
         }
     }
 
@@ -331,13 +330,28 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
         return mInfoBarType;
     }
 
-    void changeInfoBarTypeAndNativePointer(int infoBarType, long newNativePointer) {
+    @CalledByNative
+    private void setNativePtr(long nativePtr) {
+        mNativeTranslateInfoBarPtr = nativePtr;
+    }
+
+    @Override
+    protected void onNativeDestroyed() {
+        mNativeTranslateInfoBarPtr = 0;
+        super.onNativeDestroyed();
+    }
+
+    @CalledByNative
+    private void changeTranslateInfoBarType(int infoBarType) {
         if (infoBarType >= 0 && infoBarType < MAX_INFOBAR_INDEX) {
             mInfoBarType = infoBarType;
-            replaceNativePointer(newNativePointer);
             updateViewForCurrentState(createView());
         } else {
             assert false : "Trying to change the InfoBar to a type that is invalid.";
         }
     }
+
+    private native void nativeApplyTranslateOptions(long nativeTranslateInfoBar,
+            int sourceLanguageIndex, int targetLanguageIndex, boolean alwaysTranslate,
+            boolean neverTranslateLanguage, boolean neverTranslateSite);
 }

@@ -40,8 +40,7 @@ DownloadOverwriteInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       base::android::ConvertUTF8ToJavaString(env, delegate->GetDirFullPath());
   base::android::ScopedJavaLocalRef<jobject> java_infobar(
       Java_DownloadOverwriteInfoBar_createInfoBar(
-          env, reinterpret_cast<intptr_t>(this), j_file_name.obj(),
-          j_dir_name.obj(), j_dir_full_path.obj()));
+          env, j_file_name.obj(), j_dir_name.obj(), j_dir_full_path.obj()));
   return java_infobar;
 }
 

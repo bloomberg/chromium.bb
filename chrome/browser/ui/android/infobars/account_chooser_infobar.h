@@ -33,6 +33,8 @@ class AccountChooserInfoBar : public InfoBarAndroid {
       JNIEnv* env) override;
   void ProcessButton(int action, const std::string& action_value) override;
   AccountChooserInfoBarDelegateAndroid* GetDelegate();
+  void SetJavaInfoBar(
+      const base::android::JavaRef<jobject>& java_info_bar) override;
 
   DISALLOW_COPY_AND_ASSIGN(AccountChooserInfoBar);
 };

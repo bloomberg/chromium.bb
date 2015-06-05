@@ -24,19 +24,18 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
     private final String mTitle;
 
     @CalledByNative
-    private static InfoBar show(long nativeInfoBar, int enumeratedIconId, String message,
-            int titleLinkStart, int titleLinkEnd, String primaryButtonText,
-            String secondaryButtonText, boolean isMoreButtonNeeded) {
-        return new SavePasswordInfoBar(nativeInfoBar, ResourceId.mapToDrawableId(enumeratedIconId),
-                message, titleLinkStart, titleLinkEnd, primaryButtonText, secondaryButtonText,
+    private static InfoBar show(int enumeratedIconId, String message, int titleLinkStart,
+            int titleLinkEnd, String primaryButtonText, String secondaryButtonText,
+            boolean isMoreButtonNeeded) {
+        return new SavePasswordInfoBar(ResourceId.mapToDrawableId(enumeratedIconId), message,
+                titleLinkStart, titleLinkEnd, primaryButtonText, secondaryButtonText,
                 isMoreButtonNeeded);
     }
 
-    private SavePasswordInfoBar(long nativeInfoBar, int iconDrawbleId, String message,
-            int titleLinkStart, int titleLinkEnd, String primaryButtonText,
-            String secondaryButtonText, boolean isMoreButtonNeeded) {
-        super(nativeInfoBar, null, iconDrawbleId, null, message, null, primaryButtonText,
-                secondaryButtonText);
+    private SavePasswordInfoBar(int iconDrawbleId, String message, int titleLinkStart,
+            int titleLinkEnd, String primaryButtonText, String secondaryButtonText,
+            boolean isMoreButtonNeeded) {
+        super(null, iconDrawbleId, null, message, null, primaryButtonText, secondaryButtonText);
         mIsMoreButtonNeeded = isMoreButtonNeeded;
         mTitleLinkRangeStart = titleLinkStart;
         mTitleLinkRangeEnd = titleLinkEnd;

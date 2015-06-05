@@ -54,9 +54,9 @@ base::android::ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(
   }
 
   return Java_ConfirmInfoBarDelegate_showConfirmInfoBar(
-      env, java_confirm_delegate_.obj(), reinterpret_cast<intptr_t>(this),
-      GetEnumeratedIconId(), java_bitmap.obj(), message_text.obj(),
-      link_text.obj(), ok_button_text.obj(), cancel_button_text.obj());
+      env, java_confirm_delegate_.obj(), GetEnumeratedIconId(),
+      java_bitmap.obj(), message_text.obj(), link_text.obj(),
+      ok_button_text.obj(), cancel_button_text.obj());
 }
 
 void ConfirmInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
