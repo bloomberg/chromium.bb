@@ -74,10 +74,10 @@ class MEDIA_EXPORT DecoderSelector {
                      const base::Closure& waiting_for_decryption_key_cb);
 
  private:
-  void DecryptingDecoderInitDone(bool success);
+  void DecryptingDecoderInitDone(PipelineStatus status);
   void DecryptingDemuxerStreamInitDone(PipelineStatus status);
   void InitializeDecoder();
-  void DecoderInitDone(bool success);
+  void DecoderInitDone(PipelineStatus status);
   void ReturnNullDecoder();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

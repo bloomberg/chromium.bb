@@ -27,7 +27,6 @@ class MockCallback : public base::RefCountedThreadSafe<MockCallback> {
  public:
   MockCallback();
   MOCK_METHOD0(Run, void());
-  MOCK_METHOD1(RunWithBool, void(bool));
   MOCK_METHOD1(RunWithStatus, void(PipelineStatus));
 
  protected:
@@ -45,12 +44,6 @@ base::Closure NewExpectedClosure() {
   StrictMock<MockCallback>* callback = new StrictMock<MockCallback>();
   EXPECT_CALL(*callback, Run());
   return base::Bind(&MockCallback::Run, callback);
-}
-
-base::Callback<void(bool)> NewExpectedBoolCB(bool success) {
-  StrictMock<MockCallback>* callback = new StrictMock<MockCallback>();
-  EXPECT_CALL(*callback, RunWithBool(success));
-  return base::Bind(&MockCallback::RunWithBool, callback);
 }
 
 PipelineStatusCB NewExpectedStatusCB(PipelineStatus status) {

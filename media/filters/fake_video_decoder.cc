@@ -47,7 +47,7 @@ std::string FakeVideoDecoder::GetDisplayName() const {
 
 void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   bool low_delay,
-                                  const InitCB& init_cb,
+                                  const PipelineStatusCB& status_cb,
                                   const OutputCB& output_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(config.IsValidConfig());
@@ -56,7 +56,7 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(reset_cb_.IsNull()) << "No reinitialization during pending reset.";
 
   current_config_ = config;
-  init_cb_.SetCallback(BindToCurrentLoop(init_cb));
+  init_cb_.SetCallback(BindToCurrentLoop(status_cb));
 
   // Don't need BindToCurrentLoop() because |output_cb_| is only called from
   // RunDecodeCallback() which is posted from Decode().
@@ -69,10 +69,10 @@ void FakeVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (fail_to_initialize_) {
     state_ = STATE_ERROR;
-    init_cb_.RunOrHold(false);
+    init_cb_.RunOrHold(DECODER_ERROR_NOT_SUPPORTED);
   } else {
     state_ = STATE_NORMAL;
-    init_cb_.RunOrHold(true);
+    init_cb_.RunOrHold(PIPELINE_OK);
   }
 }
 

@@ -39,7 +39,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   std::string GetDisplayName() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
-                  const InitCB& init_cb,
+                  const PipelineStatusCB& status_cb,
                   const OutputCB& output_cb) override;
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
               const DecodeCB& decode_cb) override;

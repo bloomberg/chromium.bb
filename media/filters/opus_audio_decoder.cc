@@ -254,20 +254,20 @@ std::string OpusAudioDecoder::GetDisplayName() const {
 }
 
 void OpusAudioDecoder::Initialize(const AudioDecoderConfig& config,
-                                  const InitCB& init_cb,
+                                  const PipelineStatusCB& status_cb,
                                   const OutputCB& output_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
+  PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
 
   config_ = config;
   output_cb_ = BindToCurrentLoop(output_cb);
 
   if (!ConfigureDecoder()) {
-    bound_init_cb.Run(false);
+    initialize_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
-  bound_init_cb.Run(true);
+  initialize_cb.Run(PIPELINE_OK);
 }
 
 void OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,

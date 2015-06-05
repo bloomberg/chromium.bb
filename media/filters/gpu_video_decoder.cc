@@ -105,17 +105,15 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size,
       coded_size.height() >= min_resolution.height());
 }
 
-// Report |success| to UMA and run |cb| with it.  This is super-specific to the
+// Report |status| to UMA and run |cb| with it.  This is super-specific to the
 // UMA stat reported because the UMA_HISTOGRAM_ENUMERATION API requires a
 // callsite to always be called with the same stat name (can't parameterize it).
 static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
-    const VideoDecoder::InitCB& cb,
-    bool success) {
-  // TODO(xhwang): Report |success| directly.
-  PipelineStatus status = success ? PIPELINE_OK : DECODER_ERROR_NOT_SUPPORTED;
+    const PipelineStatusCB& cb,
+    PipelineStatus status) {
   UMA_HISTOGRAM_ENUMERATION(
       "Media.GpuVideoDecoderInitializeStatus", status, PIPELINE_STATUS_MAX + 1);
-  cb.Run(success);
+  cb.Run(status);
 }
 
 std::string GpuVideoDecoder::GetDisplayName() const {
@@ -124,16 +122,16 @@ std::string GpuVideoDecoder::GetDisplayName() const {
 
 void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool /* low_delay */,
-                                 const InitCB& init_cb,
+                                 const PipelineStatusCB& orig_status_cb,
                                  const OutputCB& output_cb) {
   DVLOG(3) << "Initialize()";
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(config.IsValidConfig());
   DCHECK(!config.is_encrypted());
 
-  InitCB bound_init_cb =
+  PipelineStatusCB status_cb =
       base::Bind(&ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB,
-                 BindToCurrentLoop(init_cb));
+                 BindToCurrentLoop(orig_status_cb));
 
   bool previously_initialized = config_.IsValidConfig();
   DVLOG(1) << "(Re)initializing GVD with config: "
@@ -143,12 +141,12 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // (http://crbug.com/260224).
   if (previously_initialized && (config_.profile() != config.profile())) {
     DVLOG(1) << "Codec or profile changed, cannot reinitialize.";
-    bound_init_cb.Run(false);
+    status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
   if (!IsProfileSupported(config.profile(), config.coded_size())) {
-    bound_init_cb.Run(false);
+    status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
@@ -160,18 +158,18 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
     // Reinitialization with a different config (but same codec and profile).
     // VDA should handle it by detecting this in-stream by itself,
     // no need to notify it.
-    bound_init_cb.Run(true);
+    status_cb.Run(PIPELINE_OK);
     return;
   }
 
   vda_ = factories_->CreateVideoDecodeAccelerator().Pass();
   if (!vda_ || !vda_->Initialize(config.profile(), this)) {
-    bound_init_cb.Run(false);
+    status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
   DVLOG(3) << "GpuVideoDecoder::Initialize() succeeded.";
-  bound_init_cb.Run(true);
+  status_cb.Run(PIPELINE_OK);
 }
 
 void GpuVideoDecoder::DestroyPictureBuffers(PictureBufferMap* buffers) {

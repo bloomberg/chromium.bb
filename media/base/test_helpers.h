@@ -28,7 +28,6 @@ class DecoderBuffer;
 
 // Return a callback that expects to be run once.
 base::Closure NewExpectedClosure();
-base::Callback<void(bool)> NewExpectedBoolCB(bool success);
 PipelineStatusCB NewExpectedStatusCB(PipelineStatus status);
 
 // Helper class for running a message loop until a callback has run. Useful for

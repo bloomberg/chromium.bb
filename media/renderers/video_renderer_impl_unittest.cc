@@ -97,26 +97,24 @@ class VideoRendererImplTest : public testing::TestWithParam<bool> {
         .WillRepeatedly(Invoke(this, &VideoRendererImplTest::FlushRequested));
 
     // Initialize, we shouldn't have any reads.
-    InitializeRenderer(low_delay, true);
+    InitializeRenderer(PIPELINE_OK, low_delay);
   }
 
-  void InitializeRenderer(bool low_delay, bool expect_to_success) {
-    SCOPED_TRACE(
-        base::StringPrintf("InitializeRenderer(%d)", expect_to_success));
+  void InitializeRenderer(PipelineStatus expected, bool low_delay) {
+    SCOPED_TRACE(base::StringPrintf("InitializeRenderer(%d)", expected));
     WaitableMessageLoopEvent event;
-    CallInitialize(event.GetPipelineStatusCB(), low_delay, expect_to_success);
-    event.RunAndWaitForStatus(expect_to_success ? PIPELINE_OK
-                                                : DECODER_ERROR_NOT_SUPPORTED);
+    CallInitialize(event.GetPipelineStatusCB(), low_delay, expected);
+    event.RunAndWaitForStatus(expected);
   }
 
   void CallInitialize(const PipelineStatusCB& status_cb,
                       bool low_delay,
-                      bool expect_to_success) {
+                      PipelineStatus decoder_status) {
     if (low_delay)
       demuxer_stream_.set_liveness(DemuxerStream::LIVENESS_LIVE);
     EXPECT_CALL(*decoder_, Initialize(_, _, _, _))
         .WillOnce(
-            DoAll(SaveArg<3>(&output_cb_), RunCallback<2>(expect_to_success)));
+            DoAll(SaveArg<3>(&output_cb_), RunCallback<2>(decoder_status)));
     EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
     renderer_->Initialize(
         &demuxer_stream_, status_cb, media::SetDecryptorReadyCB(),
@@ -532,7 +530,7 @@ TEST_P(VideoRendererImplTest, DestroyDuringOutstandingRead) {
 }
 
 TEST_P(VideoRendererImplTest, VideoDecoder_InitFailure) {
-  InitializeRenderer(false, false);
+  InitializeRenderer(DECODER_ERROR_NOT_SUPPORTED, false);
   Destroy();
 }
 

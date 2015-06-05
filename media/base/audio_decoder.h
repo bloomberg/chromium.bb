@@ -26,13 +26,10 @@ class MEDIA_EXPORT AudioDecoder {
   // TODO(rileya): Now that both AudioDecoder and VideoDecoder Status enums
   // match, break them into a decoder_status.h.
   enum Status {
-    kOk,          // We're all good.
-    kAborted,     // We aborted as a result of Reset() or destruction.
+    kOk,  // We're all good.
+    kAborted,  // We aborted as a result of Reset() or destruction.
     kDecodeError  // A decoding error occurred.
   };
-
-  // Callback for VideoDecoder initialization.
-  typedef base::Callback<void(bool success)> InitCB;
 
   // Callback for AudioDecoder to return a decoded frame whenever it becomes
   // available. Only non-EOS frames should be returned via this callback.
@@ -56,10 +53,10 @@ class MEDIA_EXPORT AudioDecoder {
 
   // Initializes an AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.
-  //  |init_cb| is used to return initialization status.
+  //  |statistics_cb| is used to update global pipeline statistics.
   //  |output_cb| is called for decoded audio buffers (see Decode()).
   virtual void Initialize(const AudioDecoderConfig& config,
-                          const InitCB& init_cb,
+                          const PipelineStatusCB& status_cb,
                           const OutputCB& output_cb) = 0;
 
   // Requests samples to be decoded. Only one decode may be in flight at any

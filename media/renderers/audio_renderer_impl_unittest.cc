@@ -106,7 +106,8 @@ class AudioRendererImplTest : public ::testing::Test {
 
   void ExpectUnsupportedAudioDecoder() {
     EXPECT_CALL(*decoder_, Initialize(_, _, _))
-        .WillOnce(DoAll(SaveArg<2>(&output_cb_), RunCallback<1>(false)));
+        .WillOnce(DoAll(SaveArg<2>(&output_cb_),
+                        RunCallback<1>(DECODER_ERROR_NOT_SUPPORTED)));
   }
 
   MOCK_METHOD1(OnStatistics, void(const PipelineStatistics&));
@@ -130,7 +131,8 @@ class AudioRendererImplTest : public ::testing::Test {
 
   void Initialize() {
     EXPECT_CALL(*decoder_, Initialize(_, _, _))
-        .WillOnce(DoAll(SaveArg<2>(&output_cb_), RunCallback<1>(true)));
+        .WillOnce(DoAll(SaveArg<2>(&output_cb_),
+                        RunCallback<1>(PIPELINE_OK)));
     InitializeWithStatus(PIPELINE_OK);
 
     next_timestamp_.reset(new AudioTimestampHelper(kInputSamplesPerSecond));
@@ -148,7 +150,8 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void InitializeAndDestroy() {
-    EXPECT_CALL(*decoder_, Initialize(_, _, _)).WillOnce(RunCallback<1>(true));
+    EXPECT_CALL(*decoder_, Initialize(_, _, _))
+        .WillOnce(RunCallback<1>(PIPELINE_OK));
 
     WaitableMessageLoopEvent event;
     InitializeRenderer(event.GetPipelineStatusCB());
@@ -173,7 +176,7 @@ class AudioRendererImplTest : public ::testing::Test {
     event.RunAndWaitForStatus(PIPELINE_ERROR_ABORT);
   }
 
-  void EnterPendingDecoderInitState(const AudioDecoder::InitCB& cb) {
+  void EnterPendingDecoderInitState(PipelineStatusCB cb) {
     init_decoder_cb_ = cb;
   }
 
@@ -395,7 +398,7 @@ class AudioRendererImplTest : public ::testing::Test {
   // Run during DecodeDecoder() to unblock WaitForPendingRead().
   base::Closure wait_for_pending_decode_cb_;
 
-  AudioDecoder::InitCB init_decoder_cb_;
+  PipelineStatusCB init_decoder_cb_;
   bool ended_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImplTest);

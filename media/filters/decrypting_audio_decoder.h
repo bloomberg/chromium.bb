@@ -39,7 +39,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   // AudioDecoder implementation.
   std::string GetDisplayName() const override;
   void Initialize(const AudioDecoderConfig& config,
-                  const InitCB& init_cb,
+                  const PipelineStatusCB& status_cb,
                   const OutputCB& output_cb) override;
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
               const DecodeCB& decode_cb) override;
@@ -93,7 +93,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
 
   State state_;
 
-  InitCB init_cb_;
+  PipelineStatusCB init_cb_;
   OutputCB output_cb_;
   DecodeCB decode_cb_;
   base::Closure reset_cb_;

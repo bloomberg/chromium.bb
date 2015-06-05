@@ -147,7 +147,7 @@ std::string FFmpegAudioDecoder::GetDisplayName() const {
 }
 
 void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
-                                    const InitCB& init_cb,
+                                    const PipelineStatusCB& status_cb,
                                     const OutputCB& output_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!config.is_encrypted());
@@ -155,17 +155,17 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
   FFmpegGlue::InitializeFFmpeg();
 
   config_ = config;
-  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
+  PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
 
   if (!config.IsValidConfig() || !ConfigureDecoder()) {
-    bound_init_cb.Run(false);
+    initialize_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
 
   // Success!
   output_cb_ = BindToCurrentLoop(output_cb);
   state_ = kNormal;
-  bound_init_cb.Run(true);
+  initialize_cb.Run(PIPELINE_OK);
 }
 
 void FFmpegAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,

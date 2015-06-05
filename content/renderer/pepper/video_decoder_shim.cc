@@ -633,7 +633,7 @@ class VideoDecoderShim::DecoderImpl {
   void Stop();
 
  private:
-  void OnInitDone(bool success);
+  void OnPipelineStatus(media::PipelineStatus status);
   void DoDecode();
   void OnDecodeComplete(media::VideoDecoder::Status status);
   void OnOutputComplete(const scoped_refptr<media::VideoFrame>& frame);
@@ -692,7 +692,7 @@ void VideoDecoderShim::DecoderImpl::Initialize(
 
   decoder_->Initialize(
       config, true /* low_delay */,
-      base::Bind(&VideoDecoderShim::DecoderImpl::OnInitDone,
+      base::Bind(&VideoDecoderShim::DecoderImpl::OnPipelineStatus,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&VideoDecoderShim::DecoderImpl::OnOutputComplete,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -731,8 +731,20 @@ void VideoDecoderShim::DecoderImpl::Stop() {
   // This instance is deleted once we exit this scope.
 }
 
-void VideoDecoderShim::DecoderImpl::OnInitDone(bool success) {
-  int32_t result = success ? PP_OK : PP_ERROR_NOTSUPPORTED;
+void VideoDecoderShim::DecoderImpl::OnPipelineStatus(
+    media::PipelineStatus status) {
+  int32_t result;
+  switch (status) {
+    case media::PIPELINE_OK:
+      result = PP_OK;
+      break;
+    case media::DECODER_ERROR_NOT_SUPPORTED:
+      result = PP_ERROR_NOTSUPPORTED;
+      break;
+    default:
+      result = PP_ERROR_FAILED;
+      break;
+  }
 
   // Calculate how many textures the shim should create.
   uint32_t shim_texture_pool_size = media::limits::kMaxVideoFrames + 1;

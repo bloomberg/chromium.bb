@@ -26,13 +26,13 @@ struct DecoderStreamTraits<DemuxerStream::AUDIO> {
   typedef AudioBuffer OutputType;
   typedef AudioDecoder DecoderType;
   typedef DecryptingAudioDecoder DecryptingDecoderType;
-  typedef base::Callback<void(bool success)> InitCB;
+  typedef base::Callback<void(bool success)> StreamInitCB;
   typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
 
   static std::string ToString();
   static void InitializeDecoder(DecoderType* decoder,
                                 DemuxerStream* stream,
-                                const InitCB& init_cb,
+                                const PipelineStatusCB& status_cb,
                                 const OutputCB& output_cb);
   static bool NeedsBitstreamConversion(DecoderType* decoder) { return false; }
   static void ReportStatistics(const StatisticsCB& statistics_cb,
@@ -45,13 +45,13 @@ struct DecoderStreamTraits<DemuxerStream::VIDEO> {
   typedef VideoFrame OutputType;
   typedef VideoDecoder DecoderType;
   typedef DecryptingVideoDecoder DecryptingDecoderType;
-  typedef base::Callback<void(bool success)> InitCB;
+  typedef base::Callback<void(bool success)> StreamInitCB;
   typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
 
   static std::string ToString();
   static void InitializeDecoder(DecoderType* decoder,
                                 DemuxerStream* stream,
-                                const InitCB& init_cb,
+                                const PipelineStatusCB& status_cb,
                                 const OutputCB& output_cb);
   static bool NeedsBitstreamConversion(DecoderType* decoder);
   static void ReportStatistics(const StatisticsCB& statistics_cb,
