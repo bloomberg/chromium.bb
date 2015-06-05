@@ -21,9 +21,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/test/animation_test_common.h"
-#include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_content_layer_impl.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -9379,8 +9377,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
       make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
   scoped_refptr<LayerWithForcedDrawsContent> grandchild =
       make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<FakeContentLayer> greatgrandchild(
-      FakeContentLayer::Create(layer_settings(), &client));
+  scoped_refptr<FakePictureLayer> greatgrandchild(
+      FakePictureLayer::Create(layer_settings(), &client));
   SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(100, 100), true, false);
   SetLayerPropertiesForTesting(child.get(), identity, gfx::Point3F(),
@@ -9452,8 +9450,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
   scoped_ptr<LayerImpl> grandchild =
       LayerImpl::Create(host_impl.active_tree(), 3);
 
-  scoped_ptr<FakeContentLayerImpl> greatgrandchild(
-      FakeContentLayerImpl::Create(host_impl.active_tree(), 4));
+  scoped_ptr<FakePictureLayerImpl> greatgrandchild(
+      FakePictureLayerImpl::Create(host_impl.active_tree(), 4));
 
   child->SetDrawsContent(true);
   grandchild->SetDrawsContent(true);
