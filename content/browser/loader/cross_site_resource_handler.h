@@ -49,9 +49,6 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
   CONTENT_EXPORT static void SetLeakRequestsForTesting(
       bool leak_requests_for_testing);
 
-  // Returns whether the handler is deferred.
-  bool did_defer_for_testing() const { return did_defer_; }
-
  private:
   // Prepare to transfer the cross-site response to a new RenderFrameHost, by
   // asking it to issue an identical request (on the UI thread).
