@@ -272,8 +272,6 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     return NOPSEUDO;
 }
 
-// TODO(timloh): Unify with CSSSelectorParser, which also compares pseudo names as strings
-
 // Could be made smaller and faster by replacing pointer with an
 // offset into a string buffer and making the bit fields smaller but
 // that could not be maintained by hand.
