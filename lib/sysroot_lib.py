@@ -23,6 +23,12 @@ class ConfigurationError(Exception):
   """Raised when an invalid configuration is found."""
 
 
+STANDARD_FIELD_PORTDIR_OVERLAY = 'PORTDIR_OVERLAY'
+STANDARD_FIELD_CHOST = 'CHOST'
+STANDARD_FIELD_BOARD_OVERLAY = 'BOARD_OVERLAY'
+STANDARD_FIELD_BOARD_USE = 'BOARD_USE'
+STANDARD_FIELD_ARCH = 'ARCH'
+
 _PORTAGE_WRAPPER_TEMPLATE = """#!/bin/sh
 
 # If we try to use sudo when the sandbox is active, we get ugly warnings that
@@ -143,6 +149,7 @@ class Sysroot(object):
 
     Args:
       field: Field from the standard configuration file to get.
+        One of STANDARD_FIELD_* from above.
     """
     return osutils.SourceEnvironment(self._config_file,
                                      [field], multiline=True).get(field)
@@ -216,7 +223,7 @@ class Sysroot(object):
       friendly_name: if not None, create friendly wrappers with |friendly_name|
         added to the command.
     """
-    chost = self.GetStandardField('CHOST')
+    chost = self.GetStandardField(STANDARD_FIELD_CHOST)
     for cmd in ('ebuild', 'eclean', 'emaint', 'equery', 'portageq', 'qcheck',
                 'qdepends', 'qfile', 'qlist', 'qmerge', 'qsize'):
       args = {'sysroot': self.path, 'chost': chost, 'command': cmd}
@@ -356,7 +363,7 @@ class Sysroot(object):
 
   # Source make.conf from each overlay."""]
 
-    overlay_list = self.GetStandardField('BOARD_OVERLAY')
+    overlay_list = self.GetStandardField(STANDARD_FIELD_BOARD_OVERLAY)
     boto_config = ''
     for overlay in overlay_list.splitlines():
       make_conf = os.path.join(overlay, 'make.conf')
@@ -392,7 +399,7 @@ class Sysroot(object):
       chrome_only: If True, generate only the binhost for chrome.
       local_only: If True, use binary packages from local boards only.
     """
-    board = self.GetStandardField('BOARD_USE')
+    board = self.GetStandardField(STANDARD_FIELD_BOARD_USE)
     if local_only:
       if not board:
         return ''
@@ -489,7 +496,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
       board: Board name.
     """
     prefixes = []
-    arch = self.GetStandardField('ARCH')
+    arch = self.GetStandardField(STANDARD_FIELD_ARCH)
     if arch in _ARCH_MAPPING:
       prefixes.append(_ARCH_MAPPING[arch])
 
@@ -557,7 +564,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     The generated portage profile depends on the profiles of all used bricks in
     order as well as the general brillo profile for this architecture.
     """
-    overlays = self.GetStandardField('BOARD_OVERLAY').splitlines()
+    overlays = self.GetStandardField(STANDARD_FIELD_BOARD_OVERLAY).splitlines()
     profile_list = [os.path.join(o, 'profiles', 'base') for o in overlays]
 
     # Keep only the profiles that exist.
@@ -566,7 +573,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     # Add the arch specific profile.
     # The profile list is ordered from the lowest to the highest priority. This
     # profile has to go first so that other profiles can override it.
-    arch = self.GetStandardField('ARCH')
+    arch = self.GetStandardField(STANDARD_FIELD_ARCH)
     profile_list.insert(0, 'chromiumos:default/linux/%s/brillo' % arch)
 
     generated_parent = os.path.join(self.path, 'build', 'generated_profile',
