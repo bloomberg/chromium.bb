@@ -42,7 +42,7 @@
     Delay before click:
   </message>
   <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_EXTREMELY_SHORT" desc="Description of an extremely short delay before clicks.">
-    extremeley short
+    extremely short
   </message>
   <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_SHORT" desc="Description of a very short delay before clicks.">
     very short
@@ -73,10 +73,10 @@
   <message name="IDS_SETTINGS_RESET_TO_DEFAULT_THEME" desc="Name of the control which resets the browser theme back to the default theme.">
     Reset to default theme
   </message>
-  <message name="IDS_SETTINGS_APPEARANCE_SHOW_HOME_BUTTON_LABEL" desc="Label for the checkbox which enables or disables showing the home button in the toolbar.">
+  <message name="IDS_SETTINGS_SHOW_HOME_BUTTON" desc="Label for the checkbox which enables or disables showing the home button in the toolbar.">
     Show home button
   </message>
-  <message name="IDS_SETTINGS_APPEARANCE_SHOW_BOOKMARKS_BAR_LABEL" desc="Label for the checkbox which enables or disables showing the bookmarks bar in the toolbar.">
+  <message name="IDS_SETTINGS_SHOW_BOOKMARKS_BAR" desc="Label for the checkbox which enables or disables showing the bookmarks bar in the toolbar.">
     Always show the bookmarks bar
   </message>
   <message name="IDS_SETTINGS_HOME_PAGE_NTP" desc="Description of the New Tab Page when set as the home page.">
@@ -90,13 +90,13 @@
   <message name="IDS_SETTINGS_DOWNLOADS_PAGE_TITLE" desc="Name of the settings page which displays download preferences.">
     Downloads
   </message>
-  <message name="IDS_SETTINGS_DOWNLOADS_LOCATION_LABEL" desc="Label for the input which allows the user to specify the default download directory.">
+  <message name="IDS_SETTINGS_DOWNLOAD_LOCATION" desc="Label for the input which allows the user to specify the default download directory.">
     Download location:
   </message>
-  <message name="IDS_SETTINGS_DOWNLOADS_CHANGE_LOCATION_BUTTON" desc="Text for the button which allows the user to change the default download directory.">
+  <message name="IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION" desc="Text for the button which allows the user to change the default download directory.">
     Change
   </message>
-  <message name="IDS_SETTINGS_DOWNLOADS_PROMPT_FOR_DOWNLOAD_LABEL" desc="Label for the checkbox which enables a prompt for the user to choose a download location for each download instead of using the default.">
+  <message name="IDS_SETTINGS_PROMPT_FOR_DOWNLOAD" desc="Label for the checkbox which enables a prompt for the user to choose a download location for each download instead of using the default.">
     Ask where to save each file before downloading
   </message>
 
@@ -104,13 +104,13 @@
   <message name="IDS_SETTINGS_DATE_TIME_PAGE_TITLE" desc="Name of the settings page which displays date and time preferences.">
     Date &amp; Time
   </message>
-  <message name="IDS_SETTINGS_DATE_TIME_TIME_ZONE_LABEL" desc="Label for the picker which allows users to choose their time zone.">
+  <message name="IDS_SETTINGS_TIME_ZONE" desc="Label for the picker which allows users to choose their time zone.">
     Time zone:
   </message>
-  <message name="IDS_SETTINGS_DATE_TIME_24_HOUR_CLOCK_LABEL" desc="Label for the checkbox which enables a 24-hour clock (as opposed to a 12-hour clock).">
+  <message name="IDS_SETTINGS_USE_24_HOUR_CLOCK" desc="Label for the checkbox which enables a 24-hour clock (as opposed to a 12-hour clock).">
     Use 24-hour clock
   </message>
-  <message name="IDS_SETTINGS_DATE_TIME_AUTOMATICALLY_SET" desc="Text which explains that the date and time are automatically set.">
+  <message name="IDS_SETTINGS_DATE_TIME_SET_AUTOMATICALLY" desc="Text which explains that the date and time are automatically set.">
     Date and time are set automatically.
   </message>
 

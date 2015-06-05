@@ -48,7 +48,7 @@ void DownloadsHandler::HandleSelectDownloadLocation(
   info.support_drive = true;
   select_folder_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_FOLDER,
-      l10n_util::GetStringUTF16(IDS_SETTINGS_DOWNLOADS_LOCATION_LABEL),
+      l10n_util::GetStringUTF16(IDS_SETTINGS_DOWNLOAD_LOCATION),
       pref_service->GetFilePath(prefs::kDownloadDefaultDirectory), &info, 0,
       base::FilePath::StringType(),
       web_ui()->GetWebContents()->GetTopLevelNativeWindow(), NULL);

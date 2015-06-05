@@ -19,9 +19,8 @@
         <cr-button i18n-content="resetToDefaultTheme" disabled></cr-button>
       </div>
       <hr>
-      <cr-settings-checkbox
-          pref="{{prefs.browser.show_home_button}}"
-          i18n-values="label:appearanceShowHomeButtonLabel">
+      <cr-settings-checkbox pref="{{prefs.browser.show_home_button}}"
+          i18n-values="label:showHomeButton">
       </cr-settings-checkbox>
       <div id="change-home-page-section"
           hidden$="[[!prefs.browser.show_home_button.value]]">
@@ -33,9 +32,8 @@
           </a>
       </div>
     </div>
-      <cr-settings-checkbox
-          pref="{{prefs.bookmark_bar.show_on_all_tabs}}"
-          i18n-values="label:appearanceShowBookmarksBarLabel">
+      <cr-settings-checkbox pref="{{prefs.bookmark_bar.show_on_all_tabs}}"
+          i18n-values="label:showBookmarksBar">
       </cr-settings-checkbox>
     </paper-material>
   </template>

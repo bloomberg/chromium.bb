@@ -66,11 +66,9 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME);
   html_source->AddLocalizedString(
-      "appearanceShowHomeButtonLabel",
-      IDS_SETTINGS_APPEARANCE_SHOW_HOME_BUTTON_LABEL);
+      "showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON);
   html_source->AddLocalizedString(
-      "appearanceShowBookmarksBarLabel",
-      IDS_SETTINGS_APPEARANCE_SHOW_BOOKMARKS_BAR_LABEL);
+      "showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR);
   html_source->AddLocalizedString(
       "homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP);
   html_source->AddLocalizedString(
@@ -87,28 +85,22 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "downloadsPageTitle", IDS_SETTINGS_DOWNLOADS_PAGE_TITLE);
   html_source->AddLocalizedString(
-      "downloadsLocationLabel", IDS_SETTINGS_DOWNLOADS_LOCATION_LABEL);
+      "downloadLocation", IDS_SETTINGS_DOWNLOAD_LOCATION);
   html_source->AddLocalizedString(
-      "downloadsChangeLocationButton",
-      IDS_SETTINGS_DOWNLOADS_CHANGE_LOCATION_BUTTON);
+      "changeDownloadLocation", IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION);
   html_source->AddLocalizedString(
-      "downloadsPromptForDownloadLabel",
-      IDS_SETTINGS_DOWNLOADS_PROMPT_FOR_DOWNLOAD_LABEL);
+      "promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD);
 }
 
 void AddDateTimeStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
-      "dateTimePageTitle",
-      IDS_SETTINGS_DATE_TIME_PAGE_TITLE);
+      "dateTimePageTitle", IDS_SETTINGS_DATE_TIME_PAGE_TITLE);
   html_source->AddLocalizedString(
-      "dateTimeTimeZoneLabel",
-      IDS_SETTINGS_DATE_TIME_TIME_ZONE_LABEL);
+      "timeZone", IDS_SETTINGS_TIME_ZONE);
   html_source->AddLocalizedString(
-      "dateTime24HourClockLabel",
-      IDS_SETTINGS_DATE_TIME_24_HOUR_CLOCK_LABEL);
+      "use24HourClock", IDS_SETTINGS_USE_24_HOUR_CLOCK);
   html_source->AddLocalizedString(
-      "dateTimeAutomaticallySet",
-      IDS_SETTINGS_DATE_TIME_AUTOMATICALLY_SET);
+      "dateTimeSetAutomatically", IDS_SETTINGS_DATE_TIME_SET_AUTOMATICALLY);
 }
 
 #if defined(OS_CHROMEOS)

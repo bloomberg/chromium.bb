@@ -13,19 +13,18 @@
     <paper-material>
       <div class="horizontal layout center">
         <div class="layout horizontal center">
-          <div id="locationLabel" i18n-content="downloadsLocationLabel"></div>
+          <div id="locationLabel" i18n-content="downloadLocation"></div>
           <cr-input id="downloadsPath" floating-label="false"
-                value="{{prefs.download.default_directory.value}}"
-                readonly aria-labelledby="locationLabel">
+              value="{{prefs.download.default_directory.value}}"
+              readonly aria-labelledby="locationLabel">
           </cr-input>
         </div>
         <cr-button id="changeDownloadsPath" on-click="selectDownloadLocation_"
-            i18n-content="downloadsChangeLocationButton">
+            i18n-content="changeDownloadLocation">
         </cr-button>
       </div>
-      <cr-settings-checkbox
-          pref="{{prefs.download.prompt_for_download}}"
-          i18n-values="label:downloadsPromptForDownloadLabel">
+      <cr-settings-checkbox pref="{{prefs.download.prompt_for_download}}"
+          i18n-values="label:promptForDownload">
       </cr-settings-checkbox>
     </paper-material>
   </template>

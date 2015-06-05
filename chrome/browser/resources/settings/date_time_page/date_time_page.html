@@ -9,13 +9,13 @@
   <template>
     <paper-material class="layout veritcal">
       <div class="horizontal layout center">
-        <span class="time-zone-label" i18n-content="dateTimeTimeZoneLabel"></span>
+        <span class="time-zone-label" i18n-content="timeZone"></span>
       </div>
-      <cr-settings-checkbox
-          pref="{{prefs.settings.clock.use_24hour_clock}}"
-          i18n-values="label:dateTime24HourClockLabel">
+      <cr-settings-checkbox pref="{{prefs.settings.clock.use_24hour_clock}}"
+          i18n-values="label:use24HourClock">
       </cr-settings-checkbox>
-      <span id="setAutomatically" i18n-content="dateTimeAutomaticallySet"></span>
+      <span id="setAutomatically" i18n-content="dateTimeSetAutomatically">
+      </span>
     </paper-material>
   </template>
   <script src="date_time_page.js"></script>
