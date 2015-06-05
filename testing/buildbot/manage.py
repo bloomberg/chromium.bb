@@ -36,6 +36,14 @@ SKIP = {
   # http://crbug.com/441429
   'Linux Trusty (32)', 'Linux Trusty (dbg)(32)',
 
+  # http://crbug.com/480053
+  'Linux GN',
+  'linux_chromium_gn_rel',
+
+  # Unmaintained builders on chromium.fyi
+  'ClangToTMac',
+  'ClangToTMacASan',
+
   # One off builders. Note that Swarming does support ARM.
   'Linux ARM Cross-Compile',
   'Site Isolation Linux',
