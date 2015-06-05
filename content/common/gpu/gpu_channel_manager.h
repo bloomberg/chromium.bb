@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
@@ -61,8 +60,7 @@ class MessageRouter;
 // managing the lifetimes of GPU channels and forwarding IPC requests from the
 // browser process to them based on the corresponding renderer ID.
 class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
-                          public IPC::Sender,
-                          public base::trace_event::MemoryDumpProvider {
+                          public IPC::Sender {
  public:
   GpuChannelManager(MessageRouter* router,
                     GpuWatchdog* watchdog,
@@ -105,9 +103,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   GpuMemoryBufferFactory* gpu_memory_buffer_factory() {
     return gpu_memory_buffer_factory_.get();
   }
-
-  // base::trace_event::MemoryDumpProvider implementation.
-  bool OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
   typedef base::ScopedPtrHashMap<int, scoped_ptr<GpuChannel>> GpuChannelMap;

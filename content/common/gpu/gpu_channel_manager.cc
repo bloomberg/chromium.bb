@@ -4,14 +4,11 @@
 
 #include "content/common/gpu/gpu_channel_manager.h"
 
-#include <algorithm>
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/trace_event/memory_dump_manager.h"
-#include "base/trace_event/process_memory_dump.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_memory_manager.h"
@@ -115,8 +112,6 @@ GpuChannelManager::GpuChannelManager(
   DCHECK(router_);
   DCHECK(io_task_runner);
   DCHECK(shutdown_event);
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, io_task_runner_);
   channel_->AddFilter(filter_.get());
 }
 
@@ -346,23 +341,6 @@ gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
         gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size());
   }
   return default_offscreen_surface_.get();
-}
-
-bool GpuChannelManager::OnMemoryDump(
-    base::trace_event::ProcessMemoryDump* pmd) {
-  for (const auto& channel : gpu_channels_) {
-    auto dump_name = channel.second->GetChannelName();
-    std::replace(dump_name.begin(), dump_name.end(), '.', '_');
-
-    base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
-        base::StringPrintf("gl/%s", dump_name.c_str()));
-
-    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                    channel.second->GetMemoryUsage());
-  }
-
-  return true;
 }
 
 void GpuChannelManager::OnRelinquishResources() {
