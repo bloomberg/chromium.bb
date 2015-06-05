@@ -224,6 +224,10 @@ bool GaiaAuthFetcher::HasPendingFetch() {
   return fetch_pending_;
 }
 
+void GaiaAuthFetcher::SetPendingFetch(bool pending_fetch) {
+  fetch_pending_ = pending_fetch;
+}
+
 void GaiaAuthFetcher::CancelRequest() {
   fetcher_.reset();
   fetch_pending_ = false;

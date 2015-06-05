@@ -224,7 +224,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   bool HasPendingFetch();
 
   // Stop any URL fetches in progress.
-  void CancelRequest();
+  virtual void CancelRequest();
 
   // From a URLFetcher result, generate an appropriate error.
   // From the API documentation, both IssueAuthToken and ClientLogin have
@@ -254,6 +254,8 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
                               const net::ResponseCookies& cookies,
                               const net::URLRequestStatus& status,
                               int response_code);
+
+  void SetPendingFetch(bool pending_fetch);
 
  private:
   // ClientLogin body constants that don't change
