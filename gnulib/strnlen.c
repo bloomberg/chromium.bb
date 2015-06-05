@@ -1,5 +1,6 @@
-/* Substitute for and wrapper around <stdarg.h>.
-   Copyright (C) 2008-2013 Free Software Foundation, Inc.
+/* Find the length of STRING, but scan at most MAXLEN characters.
+   Copyright (C) 2005-2007, 2009-2015 Free Software Foundation, Inc.
+   Written by Simon Josefsson.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,22 +15,16 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef _@GUARD_PREFIX@_STDARG_H
+#include <config.h>
 
-#if __GNUC__ >= 3
-@PRAGMA_SYSTEM_HEADER@
-#endif
-@PRAGMA_COLUMNS@
+#include <string.h>
 
-/* The include_next requires a split double-inclusion guard.  */
-#@INCLUDE_NEXT@ @NEXT_STDARG_H@
+/* Find the length of STRING, but scan at most MAXLEN characters.
+   If no '\0' terminator is found in that many characters, return MAXLEN.  */
 
-#ifndef _@GUARD_PREFIX@_STDARG_H
-#define _@GUARD_PREFIX@_STDARG_H
-
-#ifndef va_copy
-# define va_copy(a,b) ((a) = (b))
-#endif
-
-#endif /* _@GUARD_PREFIX@_STDARG_H */
-#endif /* _@GUARD_PREFIX@_STDARG_H */
+size_t
+strnlen (const char *string, size_t maxlen)
+{
+  const char *end = memchr (string, '\0', maxlen);
+  return end ? (size_t) (end - string) : maxlen;
+}
