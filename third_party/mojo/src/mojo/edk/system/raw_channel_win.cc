@@ -105,7 +105,7 @@ class RawChannelWin : public RawChannel {
     bool pending_write_no_lock() const;
     base::MessageLoopForIO::IOContext* write_context_no_lock();
     // Instructs the object to wait for an |OnIOCompleted()| notification.
-    void OnPendingWriteStartedNoLock();
+    void OnPendingWriteStartedNoLock(size_t platform_handles_written);
 
     // |base::MessageLoopForIO::IOHandler| implementation:
     // Must be called on the I/O thread. It could be called before or after
@@ -155,6 +155,7 @@ class RawChannelWin : public RawChannel {
     // object is still attached to the owner, and only on the I/O thread
     // afterwards.
     bool pending_write_;
+    size_t platform_handles_written_;
     base::MessageLoopForIO::IOContext write_context_;
 
     DISALLOW_COPY_AND_ASSIGN(RawChannelIOHandler);
@@ -190,7 +191,8 @@ RawChannelWin::RawChannelIOHandler::RawChannelIOHandler(
       owner_(owner),
       suppress_self_destruct_(false),
       pending_read_(false),
-      pending_write_(false) {
+      pending_write_(false),
+      platform_handles_written_(0) {
   memset(&read_context_.overlapped, 0, sizeof(read_context_.overlapped));
   read_context_.handler = this;
   memset(&write_context_.overlapped, 0, sizeof(write_context_.overlapped));
@@ -236,11 +238,13 @@ RawChannelWin::RawChannelIOHandler::write_context_no_lock() {
   return &write_context_;
 }
 
-void RawChannelWin::RawChannelIOHandler::OnPendingWriteStartedNoLock() {
+void RawChannelWin::RawChannelIOHandler::OnPendingWriteStartedNoLock(
+    size_t platform_handles_written) {
   DCHECK(owner_);
   owner_->write_lock().AssertAcquired();
   DCHECK(!pending_write_);
   pending_write_ = true;
+  platform_handles_written_ = platform_handles_written;
 }
 
 void RawChannelWin::RawChannelIOHandler::OnIOCompleted(
@@ -339,7 +343,12 @@ void RawChannelWin::RawChannelIOHandler::OnWriteCompleted(DWORD bytes_written,
 
   // Note: |OnWriteCompleted()| may detach us from |owner_|.
   if (error == ERROR_SUCCESS) {
-    owner_->OnWriteCompleted(IO_SUCCEEDED, 0, bytes_written);
+    // Reset |platform_handles_written_| before calling |OnWriteCompleted()|
+    // since that function may call back to this class and set it again.
+    size_t local_platform_handles_written_ = platform_handles_written_;
+    platform_handles_written_ = 0;
+    owner_->OnWriteCompleted(IO_SUCCEEDED, local_platform_handles_written_,
+                             bytes_written);
   } else if (error == ERROR_BROKEN_PIPE) {
     owner_->OnWriteCompleted(IO_FAILED_SHUTDOWN, 0, 0);
   } else {
@@ -537,7 +546,7 @@ RawChannel::IOResult RawChannelWin::WriteNoLock(
   // packet. If we do get one for errors, |RawChannelIOHandler::OnIOCompleted()|
   // will crash so we will learn about it.
 
-  io_handler_->OnPendingWriteStartedNoLock();
+  io_handler_->OnPendingWriteStartedNoLock(num_platform_handles);
   return IO_PENDING;
 }
 
@@ -547,7 +556,6 @@ RawChannel::IOResult RawChannelWin::ScheduleWriteNoLock() {
   DCHECK(io_handler_);
   DCHECK(!io_handler_->pending_write_no_lock());
 
-  // TODO(vtl): Do something with |platform_handles_written|.
   size_t platform_handles_written = 0;
   size_t bytes_written = 0;
   IOResult io_result = WriteNoLock(&platform_handles_written, &bytes_written);
@@ -555,7 +563,7 @@ RawChannel::IOResult RawChannelWin::ScheduleWriteNoLock() {
     DCHECK(skip_completion_port_on_success_);
 
     // We have finished writing successfully. Queue a notification manually.
-    io_handler_->OnPendingWriteStartedNoLock();
+    io_handler_->OnPendingWriteStartedNoLock(platform_handles_written);
     // |io_handler_| won't go away before that task is run, so it is safe to use
     // |base::Unretained()|.
     message_loop_for_io()->PostTask(
