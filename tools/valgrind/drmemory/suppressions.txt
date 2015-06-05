@@ -571,18 +571,6 @@ name=http://crbug.com/382784
 *!media::AudioDeviceThread::Thread::Run
 *!media::AudioDeviceThread::Thread::ThreadMain
 
-HANDLE LEAK
-name=http://crbug.com/383408
-system call NtCreateEvent
-...
-*!base::internal::LockImpl::Lock
-*!mojo::system::MessagePipe::RemoveWaiter
-*!mojo::system::MessagePipeDispatcher::RemoveWaiterImplNoLock
-*!mojo::system::Dispatcher::RemoveWaiter
-*!mojo::system::Core::WaitManyInternal
-*!mojo::system::Core::WaitMany
-*!MojoWaitMany
-
 UNADDRESSABLE ACCESS
 name=IntentionalCrashPluginTest.plugin_client.cc
 npapi_test_plugin.dll!NP_Initialize
@@ -781,8 +769,6 @@ blink_web.dll!blink::ChromeClientImpl::attachRootGraphicsLayer
 HANDLE LEAK
 name=http://crbug.com/487500
 system call NtCreateEvent
-...
-v8.dll!v8::base::Mutex::Lock
-base.dll!base::`anonymous namespace'::WorkItemCallback
-ntdll.dll!vsnprintf
-ntdll.dll!TpCallbackIndependent
+ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
+ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
+ntdll.dll!RtlIntegerToUnicodeString
