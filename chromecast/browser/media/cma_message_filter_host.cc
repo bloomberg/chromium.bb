@@ -297,9 +297,12 @@ void UpdateVideoSurfaceHost(int surface_id, const gfx::QuadF& quad) {
 
 }  // namespace
 
-CmaMessageFilterHost::CmaMessageFilterHost(int render_process_id)
+CmaMessageFilterHost::CmaMessageFilterHost(
+    int render_process_id,
+    const media::CreatePipelineDeviceCB& create_pipeline_device_cb)
     : content::BrowserMessageFilter(CastMediaMsgStart),
       process_id_(render_process_id),
+      create_pipeline_device_cb_(create_pipeline_device_cb),
       task_runner_(CmaMessageLoop::GetTaskRunner()),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -382,10 +385,9 @@ void CmaMessageFilterHost::CreateMedia(int media_id, LoadType load_type) {
       base::Bind(&SetMediaPipeline,
                  process_id_, media_id, media_pipeline_host.get()));
   task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&MediaPipelineHost::Initialize,
-                 base::Unretained(media_pipeline_host.get()),
-                 load_type, client));
+      FROM_HERE, base::Bind(&MediaPipelineHost::Initialize,
+                            base::Unretained(media_pipeline_host.get()),
+                            load_type, client, create_pipeline_device_cb_));
   std::pair<MediaPipelineMap::iterator, bool> ret =
     media_pipelines_.insert(
         std::make_pair(media_id, media_pipeline_host.release()));

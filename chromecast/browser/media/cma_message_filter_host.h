@@ -12,6 +12,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "chromecast/common/media/cma_ipc_common.h"
+#include "chromecast/media/cma/backend/media_pipeline_device.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,7 +43,9 @@ class MediaPipelineHost;
 class CmaMessageFilterHost
     : public content::BrowserMessageFilter {
  public:
-  explicit CmaMessageFilterHost(int render_process_id);
+  CmaMessageFilterHost(
+      int render_process_id,
+      const media::CreatePipelineDeviceCB& create_pipeline_device_cb);
 
   // content::BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -109,6 +112,9 @@ class CmaMessageFilterHost
   // Render process ID correponding to this message filter.
   const int process_id_;
 
+  // Factory function for device-specific part of media pipeline creation
+  media::CreatePipelineDeviceCB create_pipeline_device_cb_;
+
   // List of media pipeline and message loop media pipelines are running on.
   MediaPipelineMap media_pipelines_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -123,4 +129,3 @@ class CmaMessageFilterHost
 }  // namespace chromecast
 
 #endif  // CHROMECAST_BROWSER_MEDIA_CMA_MESSAGE_FILTER_HOST_H_
-

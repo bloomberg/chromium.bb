@@ -24,6 +24,7 @@
 #include "chromecast/browser/media/cma_message_filter_host.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
+#include "chromecast/media/cma/backend/media_pipeline_device.h"
 #include "components/crash/app/breakpad_linux.h"
 #include "components/crash/browser/crash_handler_host_linux.h"
 #include "components/network_hints/browser/network_hints_message_filter.h"
@@ -75,7 +76,11 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
 #if !defined(OS_ANDROID)
   scoped_refptr<media::CmaMessageFilterHost> cma_message_filter(
-      new media::CmaMessageFilterHost(host->GetID()));
+      new media::CmaMessageFilterHost(
+          host->GetID(),
+          base::Bind(
+              &CastContentBrowserClient::PlatformCreateMediaPipelineDevice,
+              base::Unretained(this))));
   host->AddFilter(cma_message_filter.get());
 #endif  // !defined(OS_ANDROID)
 

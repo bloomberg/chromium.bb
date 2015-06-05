@@ -41,9 +41,9 @@ class CastContentRendererClient : public content::ContentRendererClient {
   void AddKeySystems(
       std::vector< ::media::KeySystemInfo>* key_systems) override;
 #if !defined(OS_ANDROID)
-  scoped_ptr<media::RendererFactory> CreateMediaRendererFactory(
+  scoped_ptr<::media::RendererFactory> CreateMediaRendererFactory(
       content::RenderFrame* render_frame,
-      const scoped_refptr<media::MediaLog>& media_log) override;
+      const scoped_refptr<::media::MediaLog>& media_log) override;
 #endif
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
   void DeferMediaLoad(content::RenderFrame* render_frame,

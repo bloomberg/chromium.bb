@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chromecast/common/media/cma_ipc_common.h"
+#include "chromecast/media/cma/backend/media_pipeline_device.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "media/base/pipeline_status.h"
 
@@ -40,8 +41,10 @@ class MediaPipelineHost {
   MediaPipelineHost();
   ~MediaPipelineHost();
 
-  void Initialize(LoadType load_type,
-                  const MediaPipelineClient& client);
+  void Initialize(
+      LoadType load_type,
+      const MediaPipelineClient& client,
+      const media::CreatePipelineDeviceCB& create_pipeline_device_cb);
 
   void SetAvPipe(TrackId track_id,
                  scoped_ptr<base::SharedMemory> shared_mem,
@@ -83,4 +86,3 @@ class MediaPipelineHost {
 }  // namespace chromecast
 
 #endif  // CHROMECAST_BROWSER_MEDIA_MEDIA_PIPELINE_HOST_H_
-

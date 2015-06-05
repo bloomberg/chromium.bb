@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_DEVICE_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_DEVICE_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -32,7 +33,12 @@ class MediaPipelineDevice {
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineDevice);
 };
 
-// Factory to create a MediaPipelineDevice.
+// Factory method to create a MediaPipelineDevice.
+typedef base::Callback<scoped_ptr<MediaPipelineDevice>(
+    const MediaPipelineDeviceParams&)> CreatePipelineDeviceCB;
+
+// Direct creation of vendor-specific media device pipeline.
+// TODO(halliwell): move into libcast_media
 scoped_ptr<MediaPipelineDevice> CreateMediaPipelineDevice(
     const MediaPipelineDeviceParams& params);
 

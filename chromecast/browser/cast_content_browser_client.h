@@ -30,6 +30,11 @@ class HostResolver;
 }
 
 namespace chromecast {
+namespace media {
+class MediaPipelineDevice;
+class MediaPipelineDeviceParams;
+}
+
 namespace shell {
 
 class CastBrowserMainParts;
@@ -47,6 +52,13 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
   // should be added when launching a new render process.
   std::vector<scoped_refptr<content::BrowserMessageFilter>>
   PlatformGetBrowserMessageFilters();
+
+#if !defined(OS_ANDROID)
+  // Creates a MediaPipelineDevice (CMA backend) for media playback, called
+  // once per media player instance.
+  scoped_ptr<media::MediaPipelineDevice> PlatformCreateMediaPipelineDevice(
+      const media::MediaPipelineDeviceParams& params);
+#endif
 
   // content::ContentBrowserClient implementation:
   content::BrowserMainParts* CreateBrowserMainParts(
