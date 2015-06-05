@@ -85,6 +85,9 @@ typedef int32_t           ssize_t;
  *
  * Only including range values actually used in our codebase.
  */
+#if _MSC_VER >= 1800
+#include <stdint.h>
+#else
 # if !defined(UINT8_MAX)
 #  define UINT8_MAX      NACL_UMAX_VAL(uint8_t)
 # endif
@@ -122,6 +125,7 @@ typedef int32_t           ssize_t;
 #  define INT64_MIN      NACL_MIN_VAL(int64_t)
 # endif
 #endif
+#endif  /* _MSC_VER >= 1800 */
 
 EXTERN_C_BEGIN
 
