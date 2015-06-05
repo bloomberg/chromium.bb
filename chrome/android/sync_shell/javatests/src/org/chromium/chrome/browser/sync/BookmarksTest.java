@@ -37,6 +37,7 @@ public class BookmarksTest extends SyncTestBase {
 
     private BookmarksBridge mBookmarksBridge;
 
+    // A container to store bookmark information for data verification.
     private static class Bookmark {
         public final String id;
         public final String title;
@@ -56,18 +57,22 @@ public class BookmarksTest extends SyncTestBase {
             @Override
             public void run() {
                 mBookmarksBridge = new BookmarksBridge(Profile.getLastUsedProfile());
+                // The BookmarksBridge needs to know how to handle partner bookmarks.
+                // Without this call to fake that knowledge for testing, it crashes.
                 mBookmarksBridge.loadEmptyPartnerBookmarkShimForTesting();
             }
         });
+        setupTestAccountAndSignInToSync(CLIENT_ID);
+        // Make sure initial state is clean.
+        assertClientBookmarkCount(0);
+        assertServerBookmarkCountWithName(0, TITLE);
+        assertServerBookmarkCountWithName(0, MODIFIED_TITLE);
     }
 
-    // Test syncing bookmark data from server to client: a new bookmark and a tombstone.
+    // Test syncing a new bookmark from server to client.
     @LargeTest
     @Feature({"Sync"})
-    public void testDownloadAndDeleteBookmark() throws Exception {
-        setupTestAccountAndSignInToSync(CLIENT_ID);
-        assertClientBookmarkCount(0);
-
+    public void testDownloadBookmark() throws Exception {
         addServerBookmarkAndSync(TITLE, URL);
         List<Bookmark> bookmarks = getClientBookmarks();
         assertEquals("Only the injected bookmark should exist on the client.",
@@ -75,23 +80,39 @@ public class BookmarksTest extends SyncTestBase {
         Bookmark bookmark = bookmarks.get(0);
         assertEquals("The wrong title was found for the bookmark.", TITLE, bookmark.title);
         assertEquals("The wrong URL was found for the bookmark.", URL, bookmark.url);
+    }
 
+    // Test syncing a bookmark tombstone from server to client.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testDownloadBookmarkTombstone() throws Exception {
+        // Add the entity to test deleting.
+        addServerBookmarkAndSync(TITLE, URL);
+        waitForServerBookmarkCountWithName(1, TITLE);
+        waitForClientBookmarkCount(1);
+
+        // Delete on server, sync, and verify deleted locally.
+        Bookmark bookmark = getClientBookmarks().get(0);
         mFakeServerHelper.deleteEntity(bookmark.id);
         waitForServerBookmarkCountWithName(0, TITLE);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         waitForClientBookmarkCount(0);
     }
 
-    // Test syncing bookmark data from client to server: a new bookmark, a modification,
-    // and a tombstone.
+    // Test syncing a new bookmark from client to server.
     @LargeTest
     @Feature({"Sync"})
-    public void testUploadModifyAndDeleteBookmark() throws Exception {
-        setupTestAccountAndSignInToSync(CLIENT_ID);
-        assertClientBookmarkCount(0);
-        assertServerBookmarkCountWithName(0, TITLE);
-        assertServerBookmarkCountWithName(0, MODIFIED_TITLE);
+    public void testUploadBookmark() throws Exception {
+        addClientBookmark(TITLE, URL);
+        waitForClientBookmarkCount(1);
+        waitForServerBookmarkCountWithName(1, TITLE);
+    }
 
+    // Test syncing a bookmark modification from client to server.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testUploadBookmarkModification() throws Exception {
+        // Add the entity to test modifying.
         BookmarkId bookmarkId = addClientBookmark(TITLE, URL);
         waitForClientBookmarkCount(1);
         waitForServerBookmarkCountWithName(1, TITLE);
@@ -99,6 +120,16 @@ public class BookmarksTest extends SyncTestBase {
         setClientBookmarkTitle(bookmarkId, MODIFIED_TITLE);
         waitForServerBookmarkCountWithName(1, MODIFIED_TITLE);
         assertServerBookmarkCountWithName(0, TITLE);
+    }
+
+    // Test syncing a bookmark tombstone from client to server.
+    @LargeTest
+    @Feature({"Sync"})
+    public void testUploadBookmarkTombstone() throws Exception {
+        // Add the entity to test deleting.
+        BookmarkId bookmarkId = addClientBookmark(TITLE, URL);
+        waitForClientBookmarkCount(1);
+        waitForServerBookmarkCountWithName(1, TITLE);
 
         deleteClientBookmark(bookmarkId);
         waitForClientBookmarkCount(0);
