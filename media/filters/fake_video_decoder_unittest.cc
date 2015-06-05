@@ -47,17 +47,17 @@ class FakeVideoDecoderTest
     Destroy();
   }
 
-  void InitializeWithConfigAndExpectStatus(const VideoDecoderConfig& config,
-                                           PipelineStatus status) {
+  void InitializeWithConfigAndExpectResult(const VideoDecoderConfig& config,
+                                           bool success) {
     decoder_->Initialize(
-        config, false, NewExpectedStatusCB(status),
+        config, false, NewExpectedBoolCB(success),
         base::Bind(&FakeVideoDecoderTest::FrameReady, base::Unretained(this)));
     message_loop_.RunUntilIdle();
     current_config_ = config;
   }
 
   void Initialize() {
-    InitializeWithConfigAndExpectStatus(TestVideoConfig::Normal(), PIPELINE_OK);
+    InitializeWithConfigAndExpectResult(TestVideoConfig::Normal(), true);
   }
 
   void EnterPendingInitState() {
@@ -252,8 +252,7 @@ TEST_P(FakeVideoDecoderTest, Initialize) {
 
 TEST_P(FakeVideoDecoderTest, SimulateFailureToInitialize) {
   decoder_->SimulateFailureToInit();
-  InitializeWithConfigAndExpectStatus(TestVideoConfig::Normal(),
-                                      DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigAndExpectResult(TestVideoConfig::Normal(), false);
   Decode();
   EXPECT_EQ(last_decode_status_, VideoDecoder::kDecodeError);
 }
@@ -345,7 +344,7 @@ TEST_P(FakeVideoDecoderTest, ReadWithHold_DecodingDelay) {
 TEST_P(FakeVideoDecoderTest, Reinitialize) {
   Initialize();
   ReadOneFrame();
-  InitializeWithConfigAndExpectStatus(TestVideoConfig::Large(), PIPELINE_OK);
+  InitializeWithConfigAndExpectResult(TestVideoConfig::Large(), true);
   ReadOneFrame();
 }
 
@@ -353,8 +352,7 @@ TEST_P(FakeVideoDecoderTest, SimulateFailureToReinitialize) {
   Initialize();
   ReadOneFrame();
   decoder_->SimulateFailureToInit();
-  InitializeWithConfigAndExpectStatus(TestVideoConfig::Normal(),
-                                      DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigAndExpectResult(TestVideoConfig::Normal(), false);
   Decode();
   EXPECT_EQ(last_decode_status_, VideoDecoder::kDecodeError);
 }

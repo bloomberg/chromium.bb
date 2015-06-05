@@ -44,7 +44,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   std::string GetDisplayName() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
-                  const PipelineStatusCB& status_cb,
+                  const InitCB& init_cb,
                   const OutputCB& output_cb) override;
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
               const DecodeCB& decode_cb) override;

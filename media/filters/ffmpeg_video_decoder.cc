@@ -162,7 +162,7 @@ std::string FFmpegVideoDecoder::GetDisplayName() const {
 
 void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                     bool low_delay,
-                                    const PipelineStatusCB& status_cb,
+                                    const InitCB& init_cb,
                                     const OutputCB& output_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!config.is_encrypted());
@@ -171,10 +171,10 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
   FFmpegGlue::InitializeFFmpeg();
 
   config_ = config;
-  PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
+  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
 
   if (!config.IsValidConfig() || !ConfigureDecoder(low_delay)) {
-    initialize_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
+    bound_init_cb.Run(false);
     return;
   }
 
@@ -182,7 +182,7 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Success!
   state_ = kNormal;
-  initialize_cb.Run(PIPELINE_OK);
+  bound_init_cb.Run(true);
 }
 
 void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,

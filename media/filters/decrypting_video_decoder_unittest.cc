@@ -81,11 +81,11 @@ class DecryptingVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*this, DecryptorSet(expected_result));
   }
 
-  // Initializes the |decoder_| and expects |status|. Note the initialization
+  // Initializes the |decoder_| and expects |success|. Note the initialization
   // can succeed or fail.
-  void InitializeAndExpectStatus(const VideoDecoderConfig& config,
-                                 PipelineStatus status) {
-    decoder_->Initialize(config, false, NewExpectedStatusCB(status),
+  void InitializeAndExpectResult(const VideoDecoderConfig& config,
+                                 bool success) {
+    decoder_->Initialize(config, false, NewExpectedBoolCB(success),
                          base::Bind(&DecryptingVideoDecoderTest::FrameReady,
                                     base::Unretained(this)));
     message_loop_.RunUntilIdle();
@@ -99,7 +99,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
-    InitializeAndExpectStatus(TestVideoConfig::NormalEncrypted(), PIPELINE_OK);
+    InitializeAndExpectResult(TestVideoConfig::NormalEncrypted(), true);
   }
 
   // Reinitialize the |decoder_| and expects it to succeed.
@@ -110,7 +110,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
-    InitializeAndExpectStatus(TestVideoConfig::LargeEncrypted(), PIPELINE_OK);
+    InitializeAndExpectResult(TestVideoConfig::LargeEncrypted(), true);
   }
 
   // Decode |buffer| and expect DecodeDone to get called with |status|.
@@ -259,8 +259,7 @@ TEST_F(DecryptingVideoDecoderTest, Initialize_Normal) {
 
 TEST_F(DecryptingVideoDecoderTest, Initialize_NullDecryptor) {
   ExpectDecryptorNotification(NULL, false);
-  InitializeAndExpectStatus(TestVideoConfig::NormalEncrypted(),
-                            DECODER_ERROR_NOT_SUPPORTED);
+  InitializeAndExpectResult(TestVideoConfig::NormalEncrypted(), false);
 }
 
 TEST_F(DecryptingVideoDecoderTest, Initialize_Failure) {
@@ -270,8 +269,7 @@ TEST_F(DecryptingVideoDecoderTest, Initialize_Failure) {
       .WillRepeatedly(SaveArg<1>(&key_added_cb_));
   EXPECT_CALL(*this, RequestDecryptorNotification(_)).Times(2);
 
-  InitializeAndExpectStatus(TestVideoConfig::NormalEncrypted(),
-                            DECODER_ERROR_NOT_SUPPORTED);
+  InitializeAndExpectResult(TestVideoConfig::NormalEncrypted(), false);
 }
 
 TEST_F(DecryptingVideoDecoderTest, Reinitialize_Normal) {
@@ -289,9 +287,8 @@ TEST_F(DecryptingVideoDecoderTest, Reinitialize_Failure) {
       .WillOnce(RunCallback<1>(false));
 
   // Reinitialize() expects the reinitialization to succeed. Call
-  // InitializeAndExpectStatus() directly to test the reinitialization failure.
-  InitializeAndExpectStatus(TestVideoConfig::NormalEncrypted(),
-                            DECODER_ERROR_NOT_SUPPORTED);
+  // InitializeAndExpectResult() directly to test the reinitialization failure.
+  InitializeAndExpectResult(TestVideoConfig::NormalEncrypted(), false);
 }
 
 // Test normal decrypt and decode case.
@@ -413,9 +410,8 @@ TEST_F(DecryptingVideoDecoderTest, Destroy_DuringDecryptorRequested) {
   DecryptorReadyCB decryptor_ready_cb;
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .WillOnce(SaveArg<0>(&decryptor_ready_cb));
-  decoder_->Initialize(TestVideoConfig::NormalEncrypted(),
-                       false,
-                       NewExpectedStatusCB(DECODER_ERROR_NOT_SUPPORTED),
+  decoder_->Initialize(TestVideoConfig::NormalEncrypted(), false,
+                       NewExpectedBoolCB(false),
                        base::Bind(&DecryptingVideoDecoderTest::FrameReady,
                                   base::Unretained(this)));
   message_loop_.RunUntilIdle();
@@ -439,8 +435,7 @@ TEST_F(DecryptingVideoDecoderTest, Destroy_DuringPendingDecoderInit) {
   EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(SaveArg<1>(&pending_init_cb_));
 
-  InitializeAndExpectStatus(TestVideoConfig::NormalEncrypted(),
-                            DECODER_ERROR_NOT_SUPPORTED);
+  InitializeAndExpectResult(TestVideoConfig::NormalEncrypted(), false);
   EXPECT_FALSE(pending_init_cb_.is_null());
 
   Destroy();

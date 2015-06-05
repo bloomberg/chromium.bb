@@ -39,7 +39,7 @@ std::string DecryptingVideoDecoder::GetDisplayName() const {
 
 void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                         bool /* low_delay */,
-                                        const PipelineStatusCB& status_cb,
+                                        const InitCB& init_cb,
                                         const OutputCB& output_cb) {
   DVLOG(2) << "Initialize()";
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -51,7 +51,7 @@ void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(config.IsValidConfig());
   DCHECK(config.is_encrypted());
 
-  init_cb_ = BindToCurrentLoop(status_cb);
+  init_cb_ = BindToCurrentLoop(init_cb);
   output_cb_ = BindToCurrentLoop(output_cb);
   weak_this_ = weak_factory_.GetWeakPtr();
   config_ = config;
@@ -146,7 +146,7 @@ DecryptingVideoDecoder::~DecryptingVideoDecoder() {
     base::ResetAndReturn(&set_decryptor_ready_cb_).Run(DecryptorReadyCB());
   pending_buffer_to_decode_ = NULL;
   if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+    base::ResetAndReturn(&init_cb_).Run(false);
   if (!decode_cb_.is_null())
     base::ResetAndReturn(&decode_cb_).Run(kAborted);
   if (!reset_cb_.is_null())
@@ -164,7 +164,7 @@ void DecryptingVideoDecoder::SetDecryptor(
   set_decryptor_ready_cb_.Reset();
 
   if (!decryptor) {
-    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+    base::ResetAndReturn(&init_cb_).Run(false);
     state_ = kError;
     decryptor_attached_cb.Run(false);
     return;
@@ -189,7 +189,7 @@ void DecryptingVideoDecoder::FinishInitialization(bool success) {
   DCHECK(decode_cb_.is_null());  // No Decode() before initialization finished.
 
   if (!success) {
-    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+    base::ResetAndReturn(&init_cb_).Run(false);
     decryptor_ = NULL;
     state_ = kError;
     return;
@@ -202,7 +202,7 @@ void DecryptingVideoDecoder::FinishInitialization(bool success) {
 
   // Success!
   state_ = kIdle;
-  base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
+  base::ResetAndReturn(&init_cb_).Run(true);
 }
 
 

@@ -68,16 +68,16 @@ class FFmpegVideoDecoderTest : public testing::Test {
     InitializeWithConfig(TestVideoConfig::Normal());
   }
 
-  void InitializeWithConfigAndStatus(const VideoDecoderConfig& config,
-                                     PipelineStatus status) {
-    decoder_->Initialize(config, false, NewExpectedStatusCB(status),
+  void InitializeWithConfigWithResult(const VideoDecoderConfig& config,
+                                      bool success) {
+    decoder_->Initialize(config, false, NewExpectedBoolCB(success),
                          base::Bind(&FFmpegVideoDecoderTest::FrameReady,
                                     base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
   void InitializeWithConfig(const VideoDecoderConfig& config) {
-    InitializeWithConfigAndStatus(config, PIPELINE_OK);
+    InitializeWithConfigWithResult(config, true);
   }
 
   void Reinitialize() {
@@ -217,8 +217,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_Normal) {
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_UnsupportedDecoder) {
   // Test avcodec_find_decoder() returning NULL.
-  InitializeWithConfigAndStatus(TestVideoConfig::Invalid(),
-                                DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigWithResult(TestVideoConfig::Invalid(), false);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_UnsupportedPixelFormat) {
@@ -227,7 +226,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_UnsupportedPixelFormat) {
                             VideoFrame::UNKNOWN,
                             kCodedSize, kVisibleRect, kNaturalSize,
                             NULL, 0, false);
-  InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigWithResult(config, false);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_OpenDecoderFails) {
@@ -236,7 +235,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_OpenDecoderFails) {
                             kVideoFormat,
                             kCodedSize, kVisibleRect, kNaturalSize,
                             NULL, 0, false);
-  InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigWithResult(config, false);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioNumeratorZero) {
@@ -250,7 +249,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioNumeratorZero) {
                             NULL,
                             0,
                             false);
-  InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigWithResult(config, false);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioDenominatorZero) {
@@ -264,7 +263,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioDenominatorZero) {
                             NULL,
                             0,
                             false);
-  InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigWithResult(config, false);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioNumeratorNegative) {
@@ -278,7 +277,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioNumeratorNegative) {
                             NULL,
                             0,
                             false);
-  InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigWithResult(config, false);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioDenominatorNegative) {
@@ -292,7 +291,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioDenominatorNegative) {
                             NULL,
                             0,
                             false);
-  InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigWithResult(config, false);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioNumeratorTooLarge) {
@@ -308,7 +307,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioNumeratorTooLarge) {
                             NULL,
                             0,
                             false);
-  InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigWithResult(config, false);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioDenominatorTooLarge) {
@@ -323,7 +322,7 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioDenominatorTooLarge) {
                             NULL,
                             0,
                             false);
-  InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigWithResult(config, false);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Reinitialize_Normal) {
@@ -333,8 +332,7 @@ TEST_F(FFmpegVideoDecoderTest, Reinitialize_Normal) {
 
 TEST_F(FFmpegVideoDecoderTest, Reinitialize_Failure) {
   Initialize();
-  InitializeWithConfigAndStatus(TestVideoConfig::Invalid(),
-                                DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigWithResult(TestVideoConfig::Invalid(), false);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Reinitialize_AfterDecodeFrame) {

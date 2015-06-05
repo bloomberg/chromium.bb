@@ -25,10 +25,13 @@ class MEDIA_EXPORT VideoDecoder {
   // TODO(rileya): Now that both AudioDecoder and VideoDecoder Status enums
   // match, break them into a decoder_status.h.
   enum Status {
-    kOk,  // Everything went as planned.
-    kAborted,  // Decode was aborted as a result of Reset() being called.
+    kOk,          // Everything went as planned.
+    kAborted,     // Decode was aborted as a result of Reset() being called.
     kDecodeError  // Decoding error happened.
   };
+
+  // Callback for VideoDecoder initialization.
+  typedef base::Callback<void(bool success)> InitCB;
 
   // Callback for VideoDecoder to return a decoded frame whenever it becomes
   // available. Only non-EOS frames should be returned via this callback.
@@ -51,7 +54,7 @@ class MEDIA_EXPORT VideoDecoder {
   virtual std::string GetDisplayName() const = 0;
 
   // Initializes a VideoDecoder with the given |config|, executing the
-  // |status_cb| upon completion. |output_cb| is called for each output frame
+  // |init_cb| upon completion. |output_cb| is called for each output frame
   // decoded by Decode().
   //
   // If |low_delay| is true then the decoder is not allowed to queue frames,
@@ -64,10 +67,10 @@ class MEDIA_EXPORT VideoDecoder {
   // 1) The VideoDecoder will be reinitialized if it was initialized before.
   //    Upon reinitialization, all internal buffered frames will be dropped.
   // 2) This method should not be called during pending decode or reset.
-  // 3) No VideoDecoder calls should be made before |status_cb| is executed.
+  // 3) No VideoDecoder calls should be made before |init_cb| is executed.
   virtual void Initialize(const VideoDecoderConfig& config,
                           bool low_delay,
-                          const PipelineStatusCB& status_cb,
+                          const InitCB& init_cb,
                           const OutputCB& output_cb) = 0;
 
   // Requests a |buffer| to be decoded. The status of the decoder and decoded

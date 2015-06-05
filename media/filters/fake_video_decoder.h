@@ -44,7 +44,7 @@ class FakeVideoDecoder : public VideoDecoder {
   std::string GetDisplayName() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
-                  const PipelineStatusCB& status_cb,
+                  const InitCB& init_cb,
                   const OutputCB& output_cb) override;
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
               const DecodeCB& decode_cb) override;
@@ -101,7 +101,7 @@ class FakeVideoDecoder : public VideoDecoder {
 
   State state_;
 
-  CallbackHolder<PipelineStatusCB> init_cb_;
+  CallbackHolder<InitCB> init_cb_;
   CallbackHolder<base::Closure> reset_cb_;
 
   OutputCB output_cb_;

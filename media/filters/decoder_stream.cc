@@ -506,7 +506,7 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::OnDecoderReinitialized(PipelineStatus status) {
+void DecoderStream<StreamType>::OnDecoderReinitialized(bool success) {
   FUNCTION_DVLOG(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_REINITIALIZING_DECODER);
@@ -517,7 +517,7 @@ void DecoderStream<StreamType>::OnDecoderReinitialized(PipelineStatus status) {
   // Also, Reset() can be called during pending ReinitializeDecoder().
   // This function needs to handle them all!
 
-  if (status != PIPELINE_OK) {
+  if (!success) {
     // Reinitialization failed. Try to fall back to one of the remaining
     // decoders. This will consume at least one decoder so doing it more than
     // once is safe.

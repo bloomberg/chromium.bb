@@ -79,8 +79,8 @@ class DecryptingAudioDecoderTest : public testing::Test {
     Destroy();
   }
 
-  void InitializeAndExpectStatus(const AudioDecoderConfig& config,
-                                 PipelineStatus status) {
+  void InitializeAndExpectResult(const AudioDecoderConfig& config,
+                                 bool success) {
     // Initialize data now that the config is known. Since the code uses
     // invalid values (that CreateEmptyBuffer() doesn't support), tweak them
     // just for CreateEmptyBuffer().
@@ -94,7 +94,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
                                                     kNoTimestamp());
     decoded_frame_list_.push_back(decoded_frame_);
 
-    decoder_->Initialize(config, NewExpectedStatusCB(status),
+    decoder_->Initialize(config, NewExpectedBoolCB(success),
                          base::Bind(&DecryptingAudioDecoderTest::FrameReady,
                                     base::Unretained(this)));
     message_loop_.RunUntilIdle();
@@ -119,7 +119,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
     config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
                        CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true, true,
                        base::TimeDelta(), 0);
-    InitializeAndExpectStatus(config_, PIPELINE_OK);
+    InitializeAndExpectResult(config_, true);
   }
 
   void Reinitialize() {
@@ -132,7 +132,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
         .WillOnce(RunCallback<1>(true));
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kAudio, _))
               .WillOnce(SaveArg<1>(&key_added_cb_));
-    decoder_->Initialize(new_config, NewExpectedStatusCB(PIPELINE_OK),
+    decoder_->Initialize(new_config, NewExpectedBoolCB(true),
                          base::Bind(&DecryptingAudioDecoderTest::FrameReady,
                                     base::Unretained(this)));
   }
@@ -288,7 +288,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_UnencryptedAudioConfig) {
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, false);
 
-  InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeAndExpectResult(config, false);
 }
 
 // Ensure decoder handles invalid audio configs without crashing.
@@ -296,7 +296,7 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_InvalidAudioConfig) {
   AudioDecoderConfig config(kUnknownAudioCodec, kUnknownSampleFormat,
                             CHANNEL_LAYOUT_STEREO, 0, NULL, 0, true);
 
-  InitializeAndExpectStatus(config, PIPELINE_ERROR_DECODE);
+  InitializeAndExpectResult(config, false);
 }
 
 // Ensure decoder handles unsupported audio configs without crashing.
@@ -307,14 +307,14 @@ TEST_F(DecryptingAudioDecoderTest, Initialize_UnsupportedAudioConfig) {
 
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true);
-  InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeAndExpectResult(config, false);
 }
 
 TEST_F(DecryptingAudioDecoderTest, Initialize_NullDecryptor) {
   ExpectDecryptorNotification(NULL, false);
   AudioDecoderConfig config(kCodecVorbis, kSampleFormatPlanarF32,
                             CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true);
-  InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeAndExpectResult(config, false);
 }
 
 // Test normal decrypt and decode case.
