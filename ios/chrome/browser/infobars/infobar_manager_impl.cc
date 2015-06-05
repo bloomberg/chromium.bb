@@ -21,18 +21,14 @@ namespace {
 infobars::InfoBarDelegate::NavigationDetails
 NavigationDetailsFromLoadCommittedDetails(
     const web::LoadCommittedDetails& load_details) {
-  const ui::PageTransition transition = load_details.item->GetTransitionType();
   infobars::InfoBarDelegate::NavigationDetails navigation_details;
-  navigation_details.is_main_frame = ui::PageTransitionIsMainFrame(transition);
-  navigation_details.is_redirect = ui::PageTransitionIsRedirect(transition);
-  navigation_details.is_reload =
-      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD);
-
-  // web::LoadCommittedDetails don't store this information, default to false.
-  navigation_details.did_replace_entry = false;
   navigation_details.entry_id = load_details.item->GetUniqueID();
+  const ui::PageTransition transition = load_details.item->GetTransitionType();
   navigation_details.is_navigation_to_different_page =
-      navigation_details.is_main_frame && !load_details.is_in_page;
+      ui::PageTransitionIsMainFrame(transition) && !load_details.is_in_page;
+  // web::LoadCommittedDetails doesn't store this information, default to false.
+  navigation_details.did_replace_entry = false;
+  navigation_details.is_redirect = ui::PageTransitionIsRedirect(transition);
 
   return navigation_details;
 }

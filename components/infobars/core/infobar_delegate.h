@@ -62,9 +62,6 @@ class InfoBarDelegate {
     bool is_navigation_to_different_page;
     // True if the entry replaced the existing one.
     bool did_replace_entry;
-    // True for the main frame, false for a sub-frame.
-    bool is_main_frame;
-    bool is_reload;
     bool is_redirect;
   };
 
