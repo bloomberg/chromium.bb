@@ -28,9 +28,28 @@ var availableTests = [
           chrome.test.succeed();
         });
   },
+  function setPref_CrOSSetting() {
+    chrome.settingsPrivate.setPref(
+        'cros.accounts.allowBWSI',
+        false,
+        kTestPageId,
+        function(success) {
+          callbackResult(success);
+          chrome.test.succeed();
+        });
+  },
   function getPref() {
     chrome.settingsPrivate.getPref(
         kTestPrefName,
+        function(value) {
+          chrome.test.assertTrue(value !== null);
+          callbackResult(true);
+          chrome.test.succeed();
+        });
+  },
+  function getPref_CrOSSetting() {
+    chrome.settingsPrivate.getPref(
+        'cros.accounts.allowBWSI',
         function(value) {
           chrome.test.assertTrue(value !== null);
           callbackResult(true);
@@ -57,6 +76,21 @@ var availableTests = [
     chrome.settingsPrivate.setPref(
         kTestPrefName,
         kTestPrefValue,
+        kTestPageId,
+        function() {});
+  },
+  function onPrefsChanged_CrOSSetting() {
+    chrome.settingsPrivate.onPrefsChanged.addListener(function(prefs) {
+      chrome.test.assertTrue(prefs.length > 0);
+      chrome.test.assertEq('cros.accounts.allowBWSI', prefs[0].key);
+      chrome.test.assertEq(false, prefs[0].value);
+      callbackResult(true);
+      chrome.test.succeed();
+    });
+
+    chrome.settingsPrivate.setPref(
+        'cros.accounts.allowBWSI',
+        false,
         kTestPageId,
         function() {});
   },

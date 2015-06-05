@@ -13,76 +13,24 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/common/switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 namespace extensions {
 
 namespace {
-
-const char kTestPrefName[] = "download.default_directory";
-const char kTestPrefValue[] = "/Downloads";
-
-class TestDelegate : public SettingsPrivateDelegate {
- public:
-  explicit TestDelegate(Profile* profile) : SettingsPrivateDelegate(profile) {}
-
-  bool SetPref(const std::string& name, const base::Value* value) override {
-    // Write to the actual pref service, so that the SettingsPrivateEventRouter
-    // dispatches an onPrefsChanged event.
-    PrefService* pref_service = profile_->GetPrefs();
-    pref_service->Set(name.c_str(), *value);
-    return true;
-  }
-
-  scoped_ptr<base::Value> GetPref(const std::string& name) override {
-    if (name.compare(kTestPrefName) != 0)
-      return base::Value::CreateNullValue();
-
-    return CreateTestPrefObject()->ToValue();
-  }
-
-  scoped_ptr<base::Value> GetAllPrefs() override {
-    base::ListValue* list_value = new base::ListValue();
-    list_value->Append(CreateTestPrefObject()->ToValue().release());
-    return make_scoped_ptr(list_value);
-  }
-
-  ~TestDelegate() override {}
-
- private:
-  scoped_ptr<api::settings_private::PrefObject> CreateTestPrefObject() {
-    scoped_ptr<api::settings_private::PrefObject> pref_object(
-        new api::settings_private::PrefObject());
-    pref_object->key = std::string(kTestPrefName);
-    pref_object->type = api::settings_private::PrefType::PREF_TYPE_STRING;
-    pref_object->value.reset(new base::StringValue(kTestPrefValue));
-    return pref_object.Pass();
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
-};
 
 class SettingsPrivateApiTest : public ExtensionApiTest {
  public:
   SettingsPrivateApiTest() {}
   ~SettingsPrivateApiTest() override {}
 
-  static KeyedService* GetSettingsPrivateDelegate(
-      content::BrowserContext* profile) {
-    CHECK(s_test_delegate_);
-    return s_test_delegate_;
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
-  }
-
-  void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
-    if (!s_test_delegate_)
-      s_test_delegate_ = new TestDelegate(profile());
-
-    SettingsPrivateDelegateFactory::GetInstance()->SetTestingFactory(
-        profile(), &SettingsPrivateApiTest::GetSettingsPrivateDelegate);
-    content::RunAllPendingInMessageLoop();
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitch(chromeos::switches::kStubCrosSettings);
+#endif
   }
 
  protected:
@@ -92,16 +40,10 @@ class SettingsPrivateApiTest : public ExtensionApiTest {
                                kFlagLoadAsComponent);
   }
 
-  // Static pointer to the TestDelegate so that it can be accessed in
-  // GetSettingsPrivateDelegate() passed to SetTestingFactory().
-  static TestDelegate* s_test_delegate_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateApiTest);
 };
 
-// static
-TestDelegate* SettingsPrivateApiTest::s_test_delegate_ = NULL;
 
 }  // namespace
 
@@ -120,5 +62,19 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetAllPrefs) {
 IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, OnPrefsChanged) {
   EXPECT_TRUE(RunSettingsSubtest("onPrefsChanged")) << message_;
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetPref_CrOSSetting) {
+  EXPECT_TRUE(RunSettingsSubtest("getPref_CrOSSetting")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, SetPref_CrOSSetting) {
+  EXPECT_TRUE(RunSettingsSubtest("setPref_CrOSSetting")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, OnPrefsChanged_CrOSSetting) {
+  EXPECT_TRUE(RunSettingsSubtest("onPrefsChanged_CrOSSetting")) << message_;
+}
+#endif
 
 }  // namespace extensions

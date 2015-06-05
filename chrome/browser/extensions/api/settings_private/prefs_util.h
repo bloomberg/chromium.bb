@@ -17,31 +17,62 @@ class Profile;
 
 namespace extensions {
 
-namespace prefs_util {
+class PrefsUtil {
 
-using TypedPrefMap = std::map<std::string, api::settings_private::PrefType>;
+ public:
+  using TypedPrefMap = std::map<std::string, api::settings_private::PrefType>;
 
-// Gets the list of whitelisted pref keys -- that is, those which correspond to
-// prefs that clients of the settingsPrivate API may retrieve and manipulate.
-const TypedPrefMap& GetWhitelistedKeys();
+  explicit PrefsUtil(Profile* profile);
+  virtual ~PrefsUtil();
 
-// Gets the value of the pref with the given |name|. Returns a pointer to an
-// empty PrefObject if no pref is found for |name|.
-scoped_ptr<api::settings_private::PrefObject> GetPref(Profile* profile,
-                                                      const std::string& name);
+  // Gets the list of whitelisted pref keys -- that is, those which correspond
+  // to prefs that clients of the settingsPrivate API may retrieve and
+  // manipulate.
+  const TypedPrefMap& GetWhitelistedKeys();
 
-// Returns whether |pref_name| corresponds to a pref whose type is URL.
-bool IsPrefTypeURL(const std::string& pref_name);
+  // Gets the value of the pref with the given |name|. Returns a pointer to an
+  // empty PrefObject if no pref is found for |name|.
+  virtual scoped_ptr<api::settings_private::PrefObject> GetPref(
+      const std::string& name);
 
-// Returns whether |pref_name| corresponds to a pref that is user modifiable
-// (i.e., not made restricted by a user or device policy).
-bool IsPrefUserModifiable(Profile* profile, const std::string& pref_name);
+  // Sets the pref with the given name and value in the proper PrefService.
+  virtual bool SetPref(const std::string& name, const base::Value* value);
 
-// Returns a pointer to the appropriate PrefService instance for the given
-// |pref_name|.
-PrefService* FindServiceForPref(Profile* profile, const std::string& pref_name);
+  // Appends the given |value| to the list setting specified by the path in
+  // |setting|.
+  virtual bool AppendToListCrosSetting(const std::string& setting,
+                                       const base::Value& value);
 
-}  // namespace prefs_util
+  // Removes the given |value| from the list setting specified by the path in
+  // |setting|.
+  virtual bool RemoveFromListCrosSetting(const std::string& setting,
+                                         const base::Value& value);
+
+  // Returns a pointer to the appropriate PrefService instance for the given
+  // |pref_name|.
+  virtual PrefService* FindServiceForPref(const std::string& pref_name);
+
+  // Returns whether or not the given pref is a CrOS-specific setting.
+  virtual bool IsCrosSetting(const std::string& pref_name);
+
+ protected:
+  // Returns whether |pref_name| corresponds to a pref whose type is URL.
+  bool IsPrefTypeURL(const std::string& pref_name);
+
+  // Returns whether |pref_name| corresponds to a pref that is user modifiable
+  // (i.e., not made restricted by a user or device policy).
+  bool IsPrefUserModifiable(const std::string& pref_name);
+
+  api::settings_private::PrefType GetType(const std::string& name,
+                                          base::Value::Type type);
+
+  scoped_ptr<api::settings_private::PrefObject> GetCrosSettingsPref(
+      const std::string& name);
+
+  bool SetCrosSettingsPref(const std::string& name, const base::Value* value);
+
+  Profile* profile_;  // weak
+};
 
 }  // namespace extensions
 

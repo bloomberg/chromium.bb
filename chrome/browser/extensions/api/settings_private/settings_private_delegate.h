@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_function.h"
@@ -44,6 +45,7 @@ class SettingsPrivateDelegate : public KeyedService {
 
  protected:
   Profile* profile_;  // weak; not owned by us
+  scoped_ptr<PrefsUtil> prefs_util_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateDelegate);

@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "content/public/browser/browser_context.h"
@@ -32,6 +31,7 @@ SettingsPrivateEventRouter::SettingsPrivateEventRouter(
   }
 
   Profile* profile = Profile::FromBrowserContext(context_);
+  prefs_util_.reset(new PrefsUtil(profile));
   user_prefs_registrar_.Init(profile->GetPrefs());
   local_state_registrar_.Init(g_browser_process->local_state());
 }
@@ -49,9 +49,11 @@ void SettingsPrivateEventRouter::Shutdown() {
     event_router->UnregisterObserver(this);
 
   if (listening_) {
-    const prefs_util::TypedPrefMap& keys = prefs_util::GetWhitelistedKeys();
+    cros_settings_subscription_map_.clear();
+    const PrefsUtil::TypedPrefMap& keys = prefs_util_->GetWhitelistedKeys();
     for (const auto& it : keys) {
-      FindRegistrarForPref(it.first)->Remove(it.first);
+      if (!prefs_util_->IsCrosSetting(it.first))
+        FindRegistrarForPref(it.first)->Remove(it.first);
     }
   }
   listening_ = false;
@@ -73,8 +75,7 @@ void SettingsPrivateEventRouter::OnListenerRemoved(
 PrefChangeRegistrar* SettingsPrivateEventRouter::FindRegistrarForPref(
     const std::string& pref_name) {
   Profile* profile = Profile::FromBrowserContext(context_);
-  if (prefs_util::FindServiceForPref(profile, pref_name) ==
-      profile->GetPrefs()) {
+  if (prefs_util_->FindServiceForPref(pref_name) == profile->GetPrefs()) {
     return &user_prefs_registrar_;
   }
   return &local_state_registrar_;
@@ -86,24 +87,41 @@ void SettingsPrivateEventRouter::StartOrStopListeningForPrefsChanges() {
       api::settings_private::OnPrefsChanged::kEventName);
 
   if (should_listen && !listening_) {
-    const prefs_util::TypedPrefMap& keys = prefs_util::GetWhitelistedKeys();
+    const PrefsUtil::TypedPrefMap& keys = prefs_util_->GetWhitelistedKeys();
     for (const auto& it : keys) {
-      FindRegistrarForPref(it.first)->Add(
-          it.first,
-          base::Bind(&SettingsPrivateEventRouter::OnPreferenceChanged,
-                     base::Unretained(this), user_prefs_registrar_.prefs()));
+      std::string pref_name = it.first;
+      if (prefs_util_->IsCrosSetting(pref_name)) {
+#if defined(OS_CHROMEOS)
+        scoped_ptr<chromeos::CrosSettings::ObserverSubscription> observer =
+            chromeos::CrosSettings::Get()->AddSettingsObserver(
+                pref_name.c_str(),
+                base::Bind(&SettingsPrivateEventRouter::OnPreferenceChanged,
+                           base::Unretained(this), pref_name));
+        linked_ptr<chromeos::CrosSettings::ObserverSubscription> subscription(
+            observer.release());
+        cros_settings_subscription_map_.insert(
+            make_pair(pref_name, subscription));
+#endif
+      } else {
+        FindRegistrarForPref(it.first)
+            ->Add(pref_name,
+                  base::Bind(&SettingsPrivateEventRouter::OnPreferenceChanged,
+                             base::Unretained(this)));
+      }
     }
   } else if (!should_listen && listening_) {
-    const prefs_util::TypedPrefMap& keys = prefs_util::GetWhitelistedKeys();
+    const PrefsUtil::TypedPrefMap& keys = prefs_util_->GetWhitelistedKeys();
     for (const auto& it : keys) {
-      FindRegistrarForPref(it.first)->Remove(it.first);
+      if (prefs_util_->IsCrosSetting(it.first))
+        cros_settings_subscription_map_.erase(it.first);
+      else
+        FindRegistrarForPref(it.first)->Remove(it.first);
     }
   }
   listening_ = should_listen;
 }
 
 void SettingsPrivateEventRouter::OnPreferenceChanged(
-    PrefService* service,
     const std::string& pref_name) {
   EventRouter* event_router = EventRouter::Get(context_);
   if (!event_router->HasEventListener(
@@ -111,9 +129,8 @@ void SettingsPrivateEventRouter::OnPreferenceChanged(
     return;
   }
 
-  Profile* profile = Profile::FromBrowserContext(context_);
   api::settings_private::PrefObject* pref_object =
-      prefs_util::GetPref(profile, pref_name).release();
+      prefs_util_->GetPref(pref_name).release();
 
   std::vector<linked_ptr<api::settings_private::PrefObject>> prefs;
   prefs.push_back(linked_ptr<api::settings_private::PrefObject>(pref_object));
