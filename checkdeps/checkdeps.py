@@ -42,7 +42,8 @@ class DepsChecker(DepsBuilder):
                verbose=False,
                being_tested=False,
                ignore_temp_rules=False,
-               skip_tests=False):
+               skip_tests=False,
+               resolve_dotdot=False):
     """Creates a new DepsChecker.
 
     Args:
@@ -55,6 +56,7 @@ class DepsChecker(DepsBuilder):
         self, base_directory, verbose, being_tested, ignore_temp_rules)
 
     self._skip_tests = skip_tests
+    self._resolve_dotdot = resolve_dotdot
     self.results_formatter = results.NormalResultsFormatter(verbose)
 
   def Report(self):
@@ -75,7 +77,8 @@ class DepsChecker(DepsBuilder):
     processing, and calling Report() will print a report of results.
     """
     java = java_checker.JavaChecker(self.base_directory, self.verbose)
-    cpp = cpp_checker.CppChecker(self.verbose)
+    cpp = cpp_checker.CppChecker(
+        self.verbose, self._resolve_dotdot, self.base_directory)
     checkers = dict(
         (extension, checker)
         for checker in [java, cpp] for extension in checker.EXTENSIONS)
@@ -192,12 +195,19 @@ def main():
   option_parser.add_option(
       '', '--json',
       help='Path to JSON output file')
+  option_parser.add_option(
+      '', '--resolve-dotdot',
+      action='store_true', dest='resolve_dotdot', default=False,
+      help='resolve leading ../ in include directive paths relative '
+           'to the file perfoming the inclusion.')
+
   options, args = option_parser.parse_args()
 
   deps_checker = DepsChecker(options.base_directory,
                              verbose=options.verbose,
                              ignore_temp_rules=options.ignore_temp_rules,
-                             skip_tests=options.skip_tests)
+                             skip_tests=options.skip_tests,
+                             resolve_dotdot=options.resolve_dotdot)
   base_directory = deps_checker.base_directory  # Default if needed, normalized
 
   # Figure out which directory we have to check.

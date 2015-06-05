@@ -34,8 +34,10 @@ class CppChecker(object):
   _EXTRACT_INCLUDE_PATH = re.compile(
       '[ \t]*#[ \t]*(?:include|import)[ \t]+"(.*)"')
 
-  def __init__(self, verbose):
+  def __init__(self, verbose, resolve_dotdot=False, root_dir=''):
     self._verbose = verbose
+    self._resolve_dotdot = resolve_dotdot
+    self._root_dir = root_dir
 
   def CheckLine(self, rules, line, dependee_path, fail_on_temp_allow=False):
     """Checks the given line with the given rule set.
@@ -64,6 +66,11 @@ class CppChecker(object):
       if self._verbose:
         print ' WARNING: include specified with no directory: ' + include_path
       return True, None
+
+    if self._resolve_dotdot and '../' in include_path:
+      dependee_dir = os.path.dirname(dependee_path)
+      include_path = os.path.normpath(os.path.join(dependee_dir, include_path))
+      include_path = os.path.relpath(include_path, self._root_dir)
 
     rule = rules.RuleApplyingTo(include_path, dependee_path)
     if (rule.allow == Rule.DISALLOW or
