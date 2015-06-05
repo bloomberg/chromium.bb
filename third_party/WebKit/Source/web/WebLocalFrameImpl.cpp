@@ -208,6 +208,7 @@
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/WebTreeScopeType.h"
+#include "skia/ext/platform_device.h"
 #include "web/AssociatedURLLoader.h"
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/FindInPageCoordinates.h"
@@ -360,7 +361,8 @@ public:
             return 0;
 
         IntRect pageRect = m_pageRects[pageNumber];
-        SkPictureBuilder pictureBuilder(pageRect);
+        SkPictureBuilder pictureBuilder(pageRect, GraphicsContext::NothingDisabled, &skia::getMetaData(*canvas));
+        pictureBuilder.context().setPrinting(true);
 
         float scale = spoolPage(pictureBuilder.context(), pageNumber);
         pictureBuilder.endRecording()->playback(canvas);
@@ -385,7 +387,9 @@ public:
         int totalHeight = numPages * (pageSizeInPixels.height() + 1) - 1;
         IntRect allPagesRect(0, 0, pageWidth, totalHeight);
 
-        SkPictureBuilder pictureBuilder(allPagesRect);
+        SkPictureBuilder pictureBuilder(allPagesRect, GraphicsContext::NothingDisabled, &skia::getMetaData(*canvas));
+        pictureBuilder.context().setPrinting(true);
+
         GraphicsContext& context = pictureBuilder.context();
 
         // Fill the whole background by white.
@@ -440,8 +444,6 @@ protected:
     {
         IntRect pageRect = m_pageRects[pageNumber];
         float scale = m_printedPageWidth / pageRect.width();
-
-        context.setPrinting(true);
 
         AffineTransform transform;
 #if OS(POSIX) && !OS(MACOSX)
@@ -520,7 +522,9 @@ protected:
     // instead. Returns the scale to be applied.
     virtual float spoolPage(GraphicsContext& context, int pageNumber) override
     {
-        m_plugin->printPage(pageNumber, &context);
+        IntRect pageRect = m_pageRects[pageNumber];
+        m_plugin->printPage(pageNumber, &context, pageRect);
+
         return 1.0;
     }
 

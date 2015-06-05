@@ -37,6 +37,7 @@
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/GraphicsContextState.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "wtf/FastAllocBase.h"
@@ -73,13 +74,13 @@ public:
         FullyDisabled = 1 // Do absolutely minimal work to remove the cost of the context from performance tests.
     };
 
-    explicit GraphicsContext(DisplayItemList*, DisabledMode = NothingDisabled);
+    explicit GraphicsContext(DisplayItemList*, DisabledMode = NothingDisabled, SkMetaData* = 0);
 
     // TODO(chrishtr): Once Slimming Paint launches this should be removed (crbug.com/471333).
     // A 0 canvas is allowed, but in such cases the context must only have canvas
     // related commands called when within a beginRecording/endRecording block.
     // Furthermore, save/restore calls must be balanced any time the canvas is 0.
-    static PassOwnPtr<GraphicsContext> deprecatedCreateWithCanvas(SkCanvas*, DisabledMode = NothingDisabled);
+    static PassOwnPtr<GraphicsContext> deprecatedCreateWithCanvas(SkCanvas*, DisabledMode = NothingDisabled, SkMetaData* = 0);
 
     ~GraphicsContext();
 
@@ -306,7 +307,7 @@ public:
     static PassRefPtr<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);
 
 private:
-    explicit GraphicsContext(SkCanvas*, DisplayItemList*, DisabledMode = NothingDisabled);
+    explicit GraphicsContext(SkCanvas*, DisplayItemList*, DisabledMode = NothingDisabled, SkMetaData* = 0);
 
     const GraphicsContextState* immutableState() const { return m_paintState; }
 
@@ -370,6 +371,8 @@ private:
 
     bool isRecording() const;
 
+    const SkMetaData& metaData() const { return m_metaData; }
+
     // null indicates painting is contextDisabled. Never delete this object.
     SkCanvas* m_canvas;
 
@@ -393,6 +396,8 @@ private:
     Vector<OwnPtr<RecordingState>> m_recordingStateStack;
     SkPictureRecorder m_pictureRecorder;
 
+    SkMetaData m_metaData;
+
 #if ENABLE(ASSERT)
     unsigned m_layerCount;
     bool m_disableDestructionChecks;
@@ -405,6 +410,7 @@ private:
 
     unsigned m_accelerated : 1;
     unsigned m_printing : 1;
+    unsigned m_hasMetaData : 1;
 };
 
 } // namespace blink

@@ -250,6 +250,7 @@ WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient
         webViewClient = defaultWebViewClient();
     m_webView = WebViewImpl::create(webViewClient);
     m_webView->settings()->setJavaScriptEnabled(enableJavascript);
+    m_webView->settings()->setPluginsEnabled(true);
     if (updateSettingsFunc)
         updateSettingsFunc(m_webView->settings());
     else

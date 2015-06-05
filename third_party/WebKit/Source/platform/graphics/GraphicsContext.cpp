@@ -34,6 +34,7 @@
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/weborigin/KURL.h"
+#include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -75,19 +76,19 @@ private:
     const SkMatrix m_savedMatrix;
 };
 
-GraphicsContext::GraphicsContext(DisplayItemList* displayItemList, DisabledMode disableContextOrPainting)
-    : GraphicsContext(nullptr, displayItemList, disableContextOrPainting)
+GraphicsContext::GraphicsContext(DisplayItemList* displayItemList, DisabledMode disableContextOrPainting, SkMetaData* metaData)
+    : GraphicsContext(nullptr, displayItemList, disableContextOrPainting, metaData)
 {
     // TODO(chrishtr): switch the type of the parameter to DisplayItemList&.
     ASSERT(displayItemList);
 }
 
-PassOwnPtr<GraphicsContext> GraphicsContext::deprecatedCreateWithCanvas(SkCanvas* canvas, DisabledMode disableContextOrPainting)
+PassOwnPtr<GraphicsContext> GraphicsContext::deprecatedCreateWithCanvas(SkCanvas* canvas, DisabledMode disableContextOrPainting, SkMetaData* metaData)
 {
-    return adoptPtr(new GraphicsContext(canvas, nullptr, disableContextOrPainting));
+    return adoptPtr(new GraphicsContext(canvas, nullptr, disableContextOrPainting, metaData));
 }
 
-GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemList, DisabledMode disableContextOrPainting)
+GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemList, DisabledMode disableContextOrPainting, SkMetaData* metaData)
     : m_canvas(canvas)
     , m_originalCanvas(canvas)
     , m_displayItemList(displayItemList)
@@ -102,7 +103,11 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas, DisplayItemList* displayItemL
     , m_deviceScaleFactor(1.0f)
     , m_accelerated(false)
     , m_printing(false)
+    , m_hasMetaData(!!metaData)
 {
+    if (metaData)
+        m_metaData = *metaData;
+
     // FIXME: Do some tests to determine how many states are typically used, and allocate
     // several here.
     m_paintStateStack.append(GraphicsContextState::create());
@@ -402,12 +407,17 @@ void GraphicsContext::beginRecording(const FloatRect& bounds)
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         m_canvas = m_pictureRecorder.beginRecording(bounds, 0);
+        if (m_hasMetaData)
+            skia::getMetaData(*m_canvas) = m_metaData;
         return;
     }
 
     m_recordingStateStack.append(
         RecordingState::Create(m_canvas, getTotalMatrix()));
+
     m_canvas = m_recordingStateStack.last()->recorder().beginRecording(bounds, 0);
+    if (m_hasMetaData)
+        skia::getMetaData(*m_canvas) = m_metaData;
 }
 
 PassRefPtr<const SkPicture> GraphicsContext::endRecording()

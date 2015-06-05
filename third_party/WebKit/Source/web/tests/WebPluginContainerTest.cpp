@@ -46,8 +46,10 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebPluginParams.h"
+#include "public/web/WebPrintParams.h"
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 #include "web/WebViewImpl.h"
@@ -76,27 +78,52 @@ protected:
     std::string m_baseURL;
 };
 
+class TestPluginWebFrameClient;
+
 // Subclass of FakeWebPlugin that has a selection of 'x' as plain text and 'y' as markup text.
 class TestPlugin : public FakeWebPlugin {
 public:
-    TestPlugin(WebFrame* frame, const WebPluginParams& params)
+    TestPlugin(WebFrame* frame, const WebPluginParams& params, TestPluginWebFrameClient* testClient)
         : FakeWebPlugin(frame, params)
     {
+        m_testClient = testClient;
     }
 
     virtual bool hasSelection() const { return true; }
     virtual WebString selectionAsText() const { return WebString("x"); }
     virtual WebString selectionAsMarkup() const { return WebString("y"); }
+    virtual bool supportsPaginatedPrint() { return true; }
+    virtual int printBegin(const WebPrintParams& printParams) { return 1; }
+    virtual bool printPage(int pageNumber, WebCanvas*);
+private:
+    TestPluginWebFrameClient* m_testClient;
 };
 
 class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
     virtual WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) override
     {
         if (params.mimeType == WebString::fromUTF8("application/x-webkit-test-webplugin"))
-            return new TestPlugin(frame, params);
+            return new TestPlugin(frame, params, this);
+        if (params.mimeType == WebString::fromUTF8("application/pdf"))
+            return new TestPlugin(frame, params, this);
         return WebFrameClient::createPlugin(frame, params);
     }
+
+public:
+    void onPrintPage() { m_printedPage = true; }
+    bool printedAtLeastOnePage() { return m_printedPage; }
+
+private:
+    bool m_printedPage = false;
 };
+
+bool TestPlugin::printPage(int pageNumber, WebCanvas* canvas)
+{
+    ASSERT(m_testClient);
+    m_testClient->onPrintPage();
+    return true;
+}
+
 
 WebPluginContainer* getWebPluginContainer(WebView* webView, const WebString& id)
 {
@@ -132,6 +159,52 @@ TEST_F(WebPluginContainerTest, WindowToLocalPointTest)
     WebPoint point4 = pluginContainerTwo->rootFrameToLocalPoint(WebPoint(-10, 10));
     ASSERT_EQ(10, point4.x);
     ASSERT_EQ(10, point4.y);
+}
+
+TEST_F(WebPluginContainerTest, PrintOnePage)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("test.pdf"), WebString::fromUTF8("application/pdf"));
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    TestPluginWebFrameClient* testClient = new TestPluginWebFrameClient();
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, testClient);
+    ASSERT(webView);
+    webView->layout();
+    runPendingTasks();
+    WebFrame* frame = webView->mainFrame();
+
+    WebPrintParams printParams;
+    printParams.printContentArea.width = 500;
+    printParams.printContentArea.height = 500;
+
+    frame->printBegin(printParams);
+    SkPictureRecorder recorder;
+    frame->printPage(0, recorder.beginRecording(IntRect()));
+    frame->printEnd();
+    ASSERT(testClient->printedAtLeastOnePage());
+}
+
+TEST_F(WebPluginContainerTest, PrintAllPages)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("test.pdf"), WebString::fromUTF8("application/pdf"));
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    TestPluginWebFrameClient* testClient = new TestPluginWebFrameClient();
+    WebView* webView = webViewHelper.initializeAndLoad(m_baseURL + "test.pdf", true, testClient);
+    ASSERT(webView);
+    webView->layout();
+    runPendingTasks();
+    WebFrame* frame = webView->mainFrame();
+
+    WebPrintParams printParams;
+    printParams.printContentArea.width = 500;
+    printParams.printContentArea.height = 500;
+
+    frame->printBegin(printParams);
+    SkPictureRecorder recorder;
+    frame->printPagesWithBoundaries(recorder.beginRecording(IntRect()), WebSize());
+    frame->printEnd();
+    ASSERT(testClient->printedAtLeastOnePage());
 }
 
 TEST_F(WebPluginContainerTest, LocalToWindowPointTest)
