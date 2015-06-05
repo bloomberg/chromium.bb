@@ -24,8 +24,6 @@ declare_args() {
   blink_asserts_always_on = false
 }
 
-use_default_render_theme = use_aura
-
 # Whether Android ARM or x86 build uses OpenMAX DL FFT. Currently only
 # supported on Android ARMv7+, ia32 or x64 without webview. When enabled, this
 # will also enable WebAudio support on Android ARM, ia32 and x64. Default is
