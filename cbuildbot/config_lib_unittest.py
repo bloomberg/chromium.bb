@@ -310,7 +310,7 @@ class ConfigClassTest(cros_test_lib.TestCase):
     "_templates": {}
 }""")
 
-    loaded = config_lib.CreateConfigFromString(config_str)
+    loaded = config_lib.LoadConfigFromString(config_str)
     loaded_str = loaded.SaveConfigToString()
 
     self.assertEqual(config, loaded)
@@ -361,7 +361,7 @@ class ConfigClassTest(cros_test_lib.TestCase):
     }
 }"""
 
-    config = config_lib.CreateConfigFromString(src_str)
+    config = config_lib.LoadConfigFromString(src_str)
     config_str = config.SaveConfigToString()
 
     # Verify that the dumped object matches the source object.
@@ -387,7 +387,7 @@ class ConfigClassTest(cros_test_lib.TestCase):
             retry=False, suite_min_duts=1))
 
     # Load an save again, just to make sure there are no changes.
-    loaded = config_lib.CreateConfigFromString(config_str)
+    loaded = config_lib.LoadConfigFromString(config_str)
     loaded_str = loaded.SaveConfigToString()
 
     self.assertEqual(config, loaded)

@@ -40,7 +40,7 @@ class ConfigDumpTest(GenerateChromeosConfigTestBase):
   def testDump(self):
     """Make sure the json & config are kept in sync"""
     new_dump = self.all_configs.SaveConfigToString()
-    old_dump = osutils.ReadFile(chromeos_config.CONFIG_FILE).rstrip()
+    old_dump = osutils.ReadFile(config_lib.CONFIG_FILE).rstrip()
 
     self.assertTrue(
         new_dump == old_dump, 'config_dump.json does not match the '
@@ -50,7 +50,7 @@ class ConfigDumpTest(GenerateChromeosConfigTestBase):
   def testSaveLoadReload(self):
     """Make sure that loading and reloading the config is a no-op."""
     dump = self.all_configs.SaveConfigToString()
-    loaded = config_lib.CreateConfigFromString(dump)
+    loaded = config_lib.LoadConfigFromString(dump)
     self.assertEqual(self.all_configs, loaded)
 
 

@@ -1033,8 +1033,7 @@ def main(argv):
 
   # The location of the SiteConfig is still hardcoded in a Chrome OS specific
   # way... for now.
-  site_config = config_lib.CreateConfigFromFile(
-      chromeos_config.CONFIG_FILE)
+  site_config = config_lib.LoadConfigFromFile()
 
   # Turn on strict sudo checks.
   cros_build_lib.STRICT_SUDO = True
