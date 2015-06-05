@@ -10,7 +10,7 @@
 #include "chromecast/media/cma/base/balanced_media_task_runner_factory.h"
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
-#include "chromecast/media/cma/base/media_task_runner.h"
+#include "chromecast/media/cma/base/simple_media_task_runner.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
@@ -19,52 +19,14 @@
 namespace chromecast {
 namespace media {
 
-namespace {
-
-class DummyMediaTaskRunner : public MediaTaskRunner {
- public:
-  DummyMediaTaskRunner(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
-
-  // MediaTaskRunner implementation.
-  bool PostMediaTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task,
-      base::TimeDelta timestamp) override;
-
- private:
-  ~DummyMediaTaskRunner() override;
-
-  scoped_refptr<base::SingleThreadTaskRunner> const task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyMediaTaskRunner);
-};
-
-DummyMediaTaskRunner::DummyMediaTaskRunner(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-  : task_runner_(task_runner) {
-}
-
-DummyMediaTaskRunner::~DummyMediaTaskRunner() {
-}
-
-bool DummyMediaTaskRunner::PostMediaTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task,
-    base::TimeDelta timestamp) {
-  return task_runner_->PostTask(from_here, task);
-}
-
-}  // namespace
-
 DemuxerStreamAdapter::DemuxerStreamAdapter(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<BalancedMediaTaskRunnerFactory>&
-    media_task_runner_factory,
+        media_task_runner_factory,
     ::media::DemuxerStream* demuxer_stream)
     : task_runner_(task_runner),
       media_task_runner_factory_(media_task_runner_factory),
-      media_task_runner_(new DummyMediaTaskRunner(task_runner)),
+      media_task_runner_(new SimpleMediaTaskRunner(task_runner)),
       demuxer_stream_(demuxer_stream),
       is_pending_read_(false),
       is_pending_demuxer_read_(false),

@@ -108,6 +108,8 @@
         'cma/base/decoder_config_adapter.h',
         'cma/base/media_task_runner.cc',
         'cma/base/media_task_runner.h',
+        'cma/base/simple_media_task_runner.cc',
+        'cma/base/simple_media_task_runner.h',         
       ],
     },
     {
