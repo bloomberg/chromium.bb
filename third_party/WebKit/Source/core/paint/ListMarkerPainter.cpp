@@ -27,6 +27,8 @@ void ListMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pai
 
     LayoutPoint boxOrigin(paintOffset + m_layoutListMarker.location());
     LayoutRect overflowRect(m_layoutListMarker.visualOverflowRect());
+    if (m_layoutListMarker.selectionState() != LayoutObject::SelectionNone)
+        overflowRect.unite(m_layoutListMarker.localSelectionRect());
     overflowRect.moveBy(boxOrigin);
 
     IntRect pixelSnappedOverflowRect = pixelSnappedIntRect(overflowRect);
