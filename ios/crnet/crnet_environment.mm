@@ -55,21 +55,21 @@ class CrNetURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   CrNetURLRequestContextGetter(
       net::URLRequestContext* context,
-      const scoped_refptr<base::MessageLoopProxy>& loop)
-      : context_(context), loop_(loop) {}
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+      : context_(context), task_runner_(task_runner) {}
 
   net::URLRequestContext* GetURLRequestContext() override { return context_; }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override {
-    return loop_;
+    return task_runner_;
   }
  private:
   // Must be called on the IO thread.
   ~CrNetURLRequestContextGetter() override {}
 
   net::URLRequestContext* context_;
-  scoped_refptr<base::MessageLoopProxy> loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   DISALLOW_COPY_AND_ASSIGN(CrNetURLRequestContextGetter);
 };
 
@@ -260,7 +260,7 @@ void CrNetEnvironment::Install() {
   // delegates will receive callbacks.
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
-      network_io_thread_->message_loop_proxy(), nullptr));
+      network_io_thread_->task_runner(), nullptr));
 
   PostToNetworkThread(FROM_HERE,
       base::Bind(&CrNetEnvironment::InitializeOnNetworkThread,
@@ -268,7 +268,7 @@ void CrNetEnvironment::Install() {
 
   net::SetURLRequestContextForNSSHttpIO(main_context_.get());
   main_context_getter_ = new CrNetURLRequestContextGetter(
-      main_context_.get(), network_io_thread_->message_loop_proxy());
+      main_context_.get(), network_io_thread_->task_runner());
   SetRequestFilterBlock(nil);
   net_log_started_ = false;
 }
@@ -310,7 +310,7 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   net::RequestTracker::AddGlobalNetworkClientFactory(
       [[[WebPNetworkClientFactory alloc]
           initWithTaskRunner:file_user_blocking_thread_
-                                 ->message_loop_proxy()] autorelease]);
+                                 ->task_runner()] autorelease]);
 
 #if 0
   // TODO(huey): Re-enable this once SDCH supports SSL and dictionaries from
@@ -373,12 +373,10 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
       base::mac::NSStringToFilePath([dirs objectAtIndex:0]);
   cache_path = cache_path.Append(FILE_PATH_LITERAL("crnet"));
   net::HttpCache::DefaultBackend* main_backend =
-      new net::HttpCache::DefaultBackend(
-          net::DISK_CACHE,
-          net::CACHE_BACKEND_DEFAULT,
-          cache_path,
-          0,  // Default cache size.
-          network_cache_thread_->message_loop_proxy());
+      new net::HttpCache::DefaultBackend(net::DISK_CACHE,
+                                         net::CACHE_BACKEND_DEFAULT, cache_path,
+                                         0,  // Default cache size.
+                                         network_cache_thread_->task_runner());
 
   net::HttpNetworkSession::Params params;
   params.host_resolver = main_context_->host_resolver();
@@ -421,7 +419,7 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
       new net::URLRequestJobFactoryImpl;
   job_factory->SetProtocolHandler("data", new net::DataProtocolHandler);
   job_factory->SetProtocolHandler(
-      "file", new net::FileProtocolHandler(file_thread_->message_loop_proxy()));
+      "file", new net::FileProtocolHandler(file_thread_->task_runner()));
   main_context_->set_job_factory(job_factory);
 }
 

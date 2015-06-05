@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/web/public/web_thread_delegate.h"
@@ -32,14 +32,13 @@ const char* g_web_thread_names[WebThread::ID_COUNT] = {
     "Web_IOThread",                // IO
 };
 
-// An implementation of MessageLoopProxy to be used in conjunction
+// An implementation of SingleThreadTaskRunner to be used in conjunction
 // with WebThread.
-class WebThreadMessageLoopProxy : public base::MessageLoopProxy {
+class WebThreadTaskRunner : public base::SingleThreadTaskRunner {
  public:
-  explicit WebThreadMessageLoopProxy(WebThread::ID identifier)
-      : id_(identifier) {}
+  explicit WebThreadTaskRunner(WebThread::ID identifier) : id_(identifier) {}
 
-  // MessageLoopProxy implementation.
+  // SingleThreadTaskRunner implementation.
   bool PostDelayedTask(const tracked_objects::Location& from_here,
                        const base::Closure& task,
                        base::TimeDelta delay) override {
@@ -57,26 +56,26 @@ class WebThreadMessageLoopProxy : public base::MessageLoopProxy {
   }
 
  protected:
-  ~WebThreadMessageLoopProxy() override {}
+  ~WebThreadTaskRunner() override {}
 
  private:
   WebThread::ID id_;
-  DISALLOW_COPY_AND_ASSIGN(WebThreadMessageLoopProxy);
+  DISALLOW_COPY_AND_ASSIGN(WebThreadTaskRunner);
 };
 
-// A separate helper is used just for the proxies, in order to avoid needing
-// to initialize the globals to create a proxy.
-struct WebThreadProxies {
-  WebThreadProxies() {
+// A separate helper is used just for the task runners, in order to avoid
+// needing to initialize the globals to create a task runner.
+struct WebThreadTaskRunners {
+  WebThreadTaskRunners() {
     for (int i = 0; i < WebThread::ID_COUNT; ++i) {
-      proxies[i] = new WebThreadMessageLoopProxy(static_cast<WebThread::ID>(i));
+      task_runners[i] = new WebThreadTaskRunner(static_cast<WebThread::ID>(i));
     }
   }
 
-  scoped_refptr<base::MessageLoopProxy> proxies[WebThread::ID_COUNT];
+  scoped_refptr<base::SingleThreadTaskRunner> task_runners[WebThread::ID_COUNT];
 };
 
-base::LazyInstance<WebThreadProxies>::Leaky g_proxies =
+base::LazyInstance<WebThreadTaskRunners>::Leaky g_task_runners =
     LAZY_INSTANCE_INITIALIZER;
 
 struct WebThreadGlobals {
@@ -451,7 +450,7 @@ bool WebThread::PostTaskAndReply(ID identifier,
                                  const tracked_objects::Location& from_here,
                                  const base::Closure& task,
                                  const base::Closure& reply) {
-  return GetMessageLoopProxyForThread(identifier)
+  return GetTaskRunnerForThread(identifier)
       ->PostTaskAndReply(from_here, task, reply);
 }
 
@@ -479,9 +478,9 @@ bool WebThread::GetCurrentThreadIdentifier(ID* identifier) {
 }
 
 // static
-scoped_refptr<base::MessageLoopProxy> WebThread::GetMessageLoopProxyForThread(
+scoped_refptr<base::SingleThreadTaskRunner> WebThread::GetTaskRunnerForThread(
     ID identifier) {
-  return g_proxies.Get().proxies[identifier];
+  return g_task_runners.Get().task_runners[identifier];
 }
 
 // static

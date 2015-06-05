@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -32,7 +31,7 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
       const base::FilePath& base_path,
       const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner,
-      const scoped_refptr<base::MessageLoopProxy>& cache_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& cache_task_runner);
 
   // net::URLRequestContextGetter implementation.
   net::URLRequestContext* GetURLRequestContext() override;
@@ -46,7 +45,7 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   base::FilePath base_path_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
-  scoped_refptr<base::MessageLoopProxy> cache_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> cache_task_runner_;
   scoped_ptr<net::ProxyConfigService> proxy_config_service_;
   scoped_ptr<net::NetworkDelegate> network_delegate_;
   scoped_ptr<net::URLRequestContextStorage> storage_;

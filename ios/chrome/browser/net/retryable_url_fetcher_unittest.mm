@@ -60,7 +60,7 @@ class RetryableURLFetcherTest : public PlatformTest {
 
 TEST_F(RetryableURLFetcherTest, TestResponse200) {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop_.message_loop_proxy());
+      new net::TestURLRequestContextGetter(message_loop_.task_runner());
   base::scoped_nsobject<RetryableURLFetcher> retryableFetcher(
       [[RetryableURLFetcher alloc]
           initWithRequestContextGetter:request_context_getter.get()
@@ -81,7 +81,7 @@ TEST_F(RetryableURLFetcherTest, TestResponse200) {
 
 TEST_F(RetryableURLFetcherTest, TestResponse404) {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
-      new net::TestURLRequestContextGetter(message_loop_.message_loop_proxy());
+      new net::TestURLRequestContextGetter(message_loop_.task_runner());
   base::scoped_nsobject<RetryableURLFetcher> retryableFetcher(
       [[RetryableURLFetcher alloc]
           initWithRequestContextGetter:request_context_getter.get()
