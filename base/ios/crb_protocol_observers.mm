@@ -5,9 +5,68 @@
 #import "base/ios/crb_protocol_observers.h"
 
 #include <objc/runtime.h>
+#include <algorithm>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+
+@interface CRBProtocolObservers () {
+  base::scoped_nsobject<Protocol> _protocol;
+  // ivars declared here are private to the implementation but must be
+  // public for allowing the C++ |Iterator| class access to those ivars.
+ @public
+  // vector of weak pointers to observers.
+  std::vector<__unsafe_unretained id> _observers;
+  // The nested level of observer iteration.
+  // A depth of 0 means nobody is currently iterating on the list of observers.
+  int _invocationDepth;
+}
+
+// Removes nil observers from the list and is called when the
+// |_invocationDepth| reaches 0.
+- (void)compact;
+
+@end
+
+namespace {
+
+class Iterator {
+ public:
+  explicit Iterator(CRBProtocolObservers* protocol_observers);
+  ~Iterator();
+  id GetNext();
+
+ private:
+  CRBProtocolObservers* protocol_observers_;
+  size_t index_;
+  size_t max_index_;
+};
+
+Iterator::Iterator(CRBProtocolObservers* protocol_observers)
+    : protocol_observers_(protocol_observers),
+      index_(0),
+      max_index_(protocol_observers->_observers.size()) {
+  DCHECK(protocol_observers_);
+  ++protocol_observers->_invocationDepth;
+}
+
+Iterator::~Iterator() {
+  if (protocol_observers_ && --protocol_observers_->_invocationDepth == 0)
+    [protocol_observers_ compact];
+}
+
+id Iterator::GetNext() {
+  if (!protocol_observers_)
+    return nil;
+  auto& observers = protocol_observers_->_observers;
+  // Skip nil elements.
+  size_t max_index = std::min(max_index_, observers.size());
+  while (index_ < max_index && !observers[index_])
+    ++index_;
+  return index_ < max_index ? observers[index_++] : nil;
+}
+}
 
 @interface CRBProtocolObservers ()
 
@@ -16,12 +75,9 @@
 
 @end
 
-@implementation CRBProtocolObservers {
-  base::scoped_nsobject<Protocol> _protocol;
-  base::scoped_nsobject<NSHashTable> _observers;
-}
+@implementation CRBProtocolObservers
 
-+ (CRBProtocolObservers*)observersWithProtocol:(Protocol*)protocol {
++ (instancetype)observersWithProtocol:(Protocol*)protocol {
   return [[[self alloc] initWithProtocol:protocol] autorelease];
 }
 
@@ -34,7 +90,6 @@
   self = [super init];
   if (self) {
     _protocol.reset([protocol retain]);
-    _observers.reset([[NSHashTable weakObjectsHashTable] retain]);
   }
   return self;
 }
@@ -44,12 +99,34 @@
 }
 
 - (void)addObserver:(id)observer {
+  DCHECK(observer);
   DCHECK([observer conformsToProtocol:self.protocol]);
-  [_observers addObject:observer];
+
+  if (std::find(_observers.begin(), _observers.end(), observer) !=
+      _observers.end())
+    return;
+
+  _observers.push_back(observer);
 }
 
 - (void)removeObserver:(id)observer {
-  [_observers removeObject:observer];
+  DCHECK(observer);
+  auto it = std::find(_observers.begin(), _observers.end(), observer);
+  if (it != _observers.end()) {
+    if (_invocationDepth)
+      *it = nil;
+    else
+      _observers.erase(it);
+  }
+}
+
+- (BOOL)empty {
+  int count = 0;
+  for (id observer : _observers) {
+    if (observer != nil)
+      ++count;
+  }
+  return count == 0;
 }
 
 #pragma mark - NSObject
@@ -80,9 +157,13 @@
 }
 
 - (void)forwardInvocation:(NSInvocation*)invocation {
+  DCHECK(invocation);
+  if (_observers.empty())
+    return;
   SEL selector = [invocation selector];
-  base::scoped_nsobject<NSArray> observers([[_observers allObjects] retain]);
-  for (id observer in observers.get()) {
+  Iterator it(self);
+  id observer;
+  while ((observer = it.GetNext()) != nil) {
     if ([observer respondsToSelector:selector])
       [invocation invokeWithTarget:observer];
   }
@@ -90,10 +171,20 @@
 
 - (void)executeOnObservers:(ExecutionWithObserverBlock)callback {
   DCHECK(callback);
-  base::scoped_nsobject<NSArray> observers([[_observers allObjects] retain]);
-  for (id observer in observers.get()) {
+  if (_observers.empty())
+    return;
+  Iterator it(self);
+  id observer;
+  while ((observer = it.GetNext()) != nil)
     callback(observer);
-  }
+}
+
+#pragma mark - Private
+
+- (void)compact {
+  DCHECK(!_invocationDepth);
+  _observers.erase(std::remove(_observers.begin(), _observers.end(), nil),
+                   _observers.end());
 }
 
 @end

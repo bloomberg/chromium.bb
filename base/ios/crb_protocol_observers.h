@@ -13,6 +13,10 @@ typedef void (^ExecutionWithObserverBlock)(id);
 // protocol. The container forwards method invocations to its contained
 // observers, so that sending a message to all the observers is as simple as
 // sending the message to the container.
+// It is safe for an observer to remove itself or another observer while being
+// notified. It is also safe to add an other observer while being notified but
+// the newly added observer will not be notified as part of the current
+// notification dispatch.
 @interface CRBProtocolObservers : NSObject
 
 // The Objective-C protocol that the observers in this container conform to.
@@ -20,13 +24,16 @@ typedef void (^ExecutionWithObserverBlock)(id);
 
 // Returns a CRBProtocolObservers container for observers that conform to
 // |protocol|.
-+ (CRBProtocolObservers*)observersWithProtocol:(Protocol*)protocol;
++ (instancetype)observersWithProtocol:(Protocol*)protocol;
 
 // Adds |observer| to this container.
 - (void)addObserver:(id)observer;
 
 // Remove |observer| from this container.
 - (void)removeObserver:(id)observer;
+
+// Returns true if there are currently no observers.
+- (BOOL)empty;
 
 // Executes callback on every observer. |callback| cannot be nil.
 - (void)executeOnObservers:(ExecutionWithObserverBlock)callback;
