@@ -685,6 +685,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void SetAsyncPixelTransferManagerForTest(
       AsyncPixelTransferManager* manager) override;
   void SetIgnoreCachedStateForTest(bool ignore) override;
+  void SetAllowExit(bool allow_exit) override;
   void ProcessFinishedAsyncTransfers();
 
   bool GetServiceTextureId(uint32 client_texture_id,
@@ -1997,6 +1998,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   GLuint validation_fbo_multisample_;
   GLuint validation_fbo_;
 
+  bool allow_exit_;
+
   typedef gpu::gles2::GLES2Decoder::Error (GLES2DecoderImpl::*CmdHandler)(
       uint32 immediate_data_size,
       const void* data);
@@ -2509,7 +2512,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       gpu_debug_commands_(false),
       validation_texture_(0),
       validation_fbo_multisample_(0),
-      validation_fbo_(0) {
+      validation_fbo_(0),
+      allow_exit_(false) {
   DCHECK(group);
 
   // The shader translator is used for WebGL even when running on EGL
@@ -4492,6 +4496,10 @@ void GLES2DecoderImpl::RestoreAllAttributes() const {
 
 void GLES2DecoderImpl::SetIgnoreCachedStateForTest(bool ignore) {
   state_.SetIgnoreCachedStateForTest(ignore);
+}
+
+void GLES2DecoderImpl::SetAllowExit(bool allow_exit) {
+  allow_exit_ = allow_exit;
 }
 
 void GLES2DecoderImpl::OnFboChanged() const {
@@ -11326,11 +11334,10 @@ void GLES2DecoderImpl::MarkContextLost(error::ContextLostReason reason) {
   current_decoder_error_ = error::kLostContext;
   context_was_lost_ = true;
 
-  // Some D3D drivers cannot recover from device lost in the GPU process
-  // sandbox. Allow a new GPU process to launch.
-  if (workarounds().exit_on_context_lost) {
-    LOG(ERROR) << "Exiting GPU process because some drivers cannot reset"
-               << " a D3D device in the Chrome GPU process sandbox.";
+  // Work around issues with recovery by allowing a new GPU process to launch.
+  if (workarounds().exit_on_context_lost && allow_exit_) {
+    LOG(ERROR) << "Exiting GPU process because some drivers cannot recover"
+               << " from problems.";
 #if defined(OS_WIN)
     base::win::SetShouldCrashOnProcessDetach(false);
 #endif
