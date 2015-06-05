@@ -145,6 +145,9 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
 
     private boolean mIsReaderModePanelHidden;
     private boolean mIsReaderModePanelDismissed;
+    private boolean mIsFullscreenModeEntered;
+    private boolean mIsInfobarContainerShown;
+
     private ContentViewCore mDistilledContentViewCore;
     private boolean mDidStartLoad;
     private boolean mDidFinishLoad;
@@ -191,7 +194,6 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
      * Destroys the panel and associated resources.
      */
     public void onDestroy() {
-        mLayoutAnimations = null;
         hideButtonBar();
     }
 
@@ -538,20 +540,23 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         animateTo(mX, 1.0f, true);
     }
 
+    private boolean isReaderModeCurrentlyAllowed() {
+        return !mIsReaderModePanelHidden && !mIsReaderModePanelDismissed
+                && !mIsFullscreenModeEntered && !mIsInfobarContainerShown;
+    }
+
     private void nonAnimatedUpdateButtomButtonBar() {
         final int status = mReaderModeHost.getReaderModeStatus();
         final Tab tab = mReaderModeHost.getTab();
 
         if (mReaderModeButtonView != null
-                && (status != ReaderModeManager.POSSIBLE || mIsReaderModePanelHidden
-                        || mIsReaderModePanelDismissed)) {
+                && (status != ReaderModeManager.POSSIBLE || !isReaderModeCurrentlyAllowed())) {
             mReaderModeButtonView.dismiss(true);
             mReaderModeButtonView = null;
             return;
         }
         if (mReaderModeButtonView == null
-                && (status == ReaderModeManager.POSSIBLE && !mIsReaderModePanelHidden
-                        && !mIsReaderModePanelDismissed)) {
+                && (status == ReaderModeManager.POSSIBLE && isReaderModeCurrentlyAllowed())) {
             mReaderModeButtonView = ReaderModeButtonView.create(tab.getContentViewCore(),
                     new ReaderModeButtonViewDelegate() {
                         @Override
@@ -583,8 +588,7 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
 
         final int status = mReaderModeHost.getReaderModeStatus();
         if (isPanelWithinScreenBounds()
-                && (status != ReaderModeManager.POSSIBLE
-                        || mIsReaderModePanelHidden || mIsReaderModePanelDismissed)) {
+                && (status != ReaderModeManager.POSSIBLE || !isReaderModeCurrentlyAllowed())) {
             animateTo(0.0f, -1.0f, true);
             mReaderModeHost.destroyReaderModeControl();
             destroyDistilledContentViewCore();
@@ -593,8 +597,7 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         }
 
         if (!isPanelWithinScreenBounds()
-                && (status == ReaderModeManager.POSSIBLE
-                        && !mIsReaderModePanelHidden && !mIsReaderModePanelDismissed)) {
+                && (status == ReaderModeManager.POSSIBLE && isReaderModeCurrentlyAllowed())) {
             animateTo(0.0f, 0.0f, true);
             mReaderModeHost.createReaderModeControl();
             requestUpdate();
@@ -684,6 +687,8 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
     }
 
     private void enterDistilledMode() {
+        if (!isReaderModeCurrentlyAllowed()) return;
+
         RecordUserAction.record("DomDistiller_DistilledPageOpened");
         mSlidingT = -1.0f;
         requestUpdate();
@@ -732,9 +737,8 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
      * Hides the reader mode button bar if shown.
      */
     public void hideButtonBar() {
-        if (mIsReaderModePanelHidden) return;
-
         mIsReaderModePanelHidden = true;
+        mLayoutAnimations = null;
         updateBottomButtonBar();
     }
 
@@ -742,9 +746,8 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
      * Dismisses the reader mode button bar if shown.
      */
     public void dismissButtonBar() {
-        if (mIsReaderModePanelDismissed) return;
-
         mIsReaderModePanelDismissed = true;
+        mLayoutAnimations = null;
         updateBottomButtonBar();
     }
 
@@ -753,6 +756,40 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
      */
     public void unhideButtonBar() {
         mIsReaderModePanelHidden = false;
+        updateBottomButtonBar();
+    }
+
+    /**
+     * Temporarily hides the reader mode button while the video is shown.
+     */
+    public void onEnterFullscreen() {
+        mIsFullscreenModeEntered = true;
+        mLayoutAnimations = null;
+        updateBottomButtonBar();
+    }
+
+    /**
+     * Re-shows the reader mode button if necessary once the video is exited.
+     */
+    public void onExitFullscreen() {
+        mIsFullscreenModeEntered = false;
+        updateBottomButtonBar();
+    }
+
+    /**
+     * Temporarily hides the reader mode button while the infobars are shown.
+     */
+    public void onShowInfobarContainer() {
+        mIsInfobarContainerShown = true;
+        mLayoutAnimations = null;
+        updateBottomButtonBar();
+    }
+
+    /**
+     * Re-shows the reader mode button if necessary once the infobars are dismissed.
+     */
+    public void onHideInfobarContainer() {
+        mIsInfobarContainerShown = false;
         updateBottomButtonBar();
     }
 

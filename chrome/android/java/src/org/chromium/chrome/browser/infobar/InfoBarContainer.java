@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
@@ -52,6 +53,27 @@ public class InfoBarContainer extends SwipableOverlayView {
          * Notifies the subscriber when an animation is completed.
          */
         void notifyAnimationFinished(int animationType);
+    }
+
+    /**
+     * An observer that is notified of changes to a {@link InfoBarContainer} object.
+     */
+    public interface InfoBarContainerObserver {
+        /**
+         * Called when an {@link InfoBar} is about to be added (before the animation).
+         * @param container The notifying {@link InfoBarContainer}
+         * @param infoBar An {@link InfoBar} being added
+         * @param isFirst Whether the infobar container was empty
+         */
+        void onAddInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isFirst);
+
+        /**
+         * Called when an {@link InfoBar} is about to be removed (before the animation).
+         * @param container The notifying {@link InfoBarContainer}
+         * @param infoBar An {@link InfoBar} being removed
+         * @param isLast Whether the infobar container is going to be empty
+         */
+        void onRemoveInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isLast);
     }
 
     private static class InfoBarTransitionInfo {
@@ -111,6 +133,9 @@ public class InfoBarContainer extends SwipableOverlayView {
 
     private Paint mTopBorderPaint;
 
+    private final ObserverList<InfoBarContainerObserver> mObservers =
+            new ObserverList<InfoBarContainerObserver>();
+
     public InfoBarContainer(Context context, int tabId, ViewGroup parentView, Tab tab) {
         super(context, null);
         tab.addObserver(getTabObserver());
@@ -145,6 +170,22 @@ public class InfoBarContainer extends SwipableOverlayView {
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
         mNativeInfoBarContainer = nativeInit();
+    }
+
+    /**
+     * Adds an {@link InfoBarContainerObserver}.
+     * @param observer The {@link InfoBarContainerObserver} to add.
+     */
+    public void addObserver(InfoBarContainerObserver observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /**
+     * Removes a {@link InfoBarContainerObserver}.
+     * @param observer The {@link InfoBarContainerObserver} to remove.
+     */
+    public void removeObserver(InfoBarContainerObserver observer) {
+        mObservers.removeObserver(observer);
     }
 
     @Override
@@ -254,6 +295,11 @@ public class InfoBarContainer extends SwipableOverlayView {
             return;
         }
 
+        // We notify observers immediately (before the animation starts).
+        for (InfoBarContainerObserver observer : mObservers) {
+            observer.onAddInfoBar(this, infoBar, mInfoBars.isEmpty());
+        }
+
         // We add the infobar immediately to mInfoBars but we wait for the animation to end to
         // notify it's been added, as tests rely on this notification but expects the infobar view
         // to be available when they get the notification.
@@ -312,6 +358,11 @@ public class InfoBarContainer extends SwipableOverlayView {
             return;
         }
 
+        // Notify observers immediately, before the animation begins.
+        for (InfoBarContainerObserver observer : mObservers) {
+            observer.onRemoveInfoBar(this, infoBar, mInfoBars.isEmpty());
+        }
+
         // If an InfoBar is told to hide itself before it has a chance to be shown, don't bother
         // with animating any of it.
         boolean collapseAnimations = false;
@@ -325,9 +376,7 @@ public class InfoBarContainer extends SwipableOverlayView {
                     assert !collapseAnimations;
                     collapseAnimations = true;
                 }
-                if (collapseAnimations) {
-                    mInfoBarTransitions.remove(info);
-                }
+                if (collapseAnimations) mInfoBarTransitions.remove(info);
             }
         }
 

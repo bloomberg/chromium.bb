@@ -22,6 +22,9 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
 import org.chromium.chrome.browser.dom_distiller.ReaderModePanel.ReaderModePanelHost;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
+import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.components.dom_distiller.content.DistillablePageUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -35,7 +38,7 @@ import org.chromium.ui.base.DeviceFormFactor;
  * top controls when a reader mode page has finished loading.
  */
 public class ReaderModeManager extends EmptyTabObserver
-        implements ContextualSearchObserver, ReaderModePanelHost {
+        implements ContextualSearchObserver, InfoBarContainerObserver, ReaderModePanelHost {
 
     /**
      * Observer for changes to the current status of reader mode.
@@ -124,6 +127,8 @@ public class ReaderModeManager extends EmptyTabObserver
         ContextualSearchManager contextualSearchManager = getContextualSearchManager(tab);
         if (contextualSearchManager != null) contextualSearchManager.removeObserver(this);
 
+        if (mTab.getInfoBarContainer() != null) mTab.getInfoBarContainer().removeObserver(this);
+
         if (mReaderModePanel != null) mReaderModePanel.onDestroy();
 
         if (mWebContentsObserver != null) {
@@ -150,6 +155,19 @@ public class ReaderModeManager extends EmptyTabObserver
         }
         ContextualSearchManager contextualSearchManager = getContextualSearchManager(tab);
         if (contextualSearchManager != null) contextualSearchManager.addObserver(this);
+
+        if (tab.getInfoBarContainer() != null) tab.getInfoBarContainer().addObserver(this);
+    }
+
+    @Override
+    public void onToggleFullscreenMode(Tab tab, boolean enable) {
+        if (mReaderModePanel == null) return;
+
+        if (enable) {
+            mReaderModePanel.onEnterFullscreen();
+        } else {
+            mReaderModePanel.onExitFullscreen();
+        }
     }
 
     // ContextualSearchObserver:
@@ -161,6 +179,17 @@ public class ReaderModeManager extends EmptyTabObserver
     @Override
     public void onHideContextualSearch() {
         if (mReaderModePanel != null) mReaderModePanel.unhideButtonBar();
+    }
+
+    // InfoBarContainerObserver:
+    @Override
+    public void onAddInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isFirst) {
+        if (isFirst && mReaderModePanel != null) mReaderModePanel.onShowInfobarContainer();
+    }
+
+    @Override
+    public void onRemoveInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isLast) {
+        if (isLast && mReaderModePanel != null) mReaderModePanel.onHideInfobarContainer();
     }
 
     // ReaderModePanelHost:
