@@ -290,7 +290,10 @@ void FrameLoader::replaceDocumentWhileExecutingJavaScriptURL(const String& sourc
 void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitType, HistoryNavigationType navigationType)
 {
     RefPtrWillBeRawPtr<HistoryItem> oldItem = m_currentItem;
-    m_currentItem = historyCommitType == BackForwardCommit ? RawPtr<HistoryItem>(m_provisionalItem.release()) : HistoryItem::create();
+    if (historyCommitType == BackForwardCommit)
+        m_currentItem = m_provisionalItem.release();
+    else
+        m_currentItem = HistoryItem::create();
     m_currentItem->setURL(m_documentLoader->urlForHistory());
     m_currentItem->setDocumentState(m_frame->document()->formElementsState());
     m_currentItem->setTarget(m_frame->tree().uniqueName());
