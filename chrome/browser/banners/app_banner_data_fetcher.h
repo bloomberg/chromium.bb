@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_delegate.h"
+#include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/manifest.h"
@@ -115,8 +116,8 @@ class AppBannerDataFetcher
   bool FetchIcon(const GURL& image_url);
 
   // Creates a banner for the app using the given |icon|.
-  virtual infobars::InfoBar* CreateBanner(const SkBitmap* icon,
-                                          const base::string16& title);
+  virtual void ShowBanner(const SkBitmap* icon,
+                          const base::string16& title) = 0;
 
   // Records that a banner was shown. The |event_name| corresponds to the RAPPOR
   // metric being recorded.
@@ -129,7 +130,7 @@ class AppBannerDataFetcher
   void OnFetchComplete(const GURL& url, const SkBitmap* icon) override;
 
   // Shows a banner for the app, if the given |icon| is valid.
-  virtual void ShowBanner(const SkBitmap* icon);
+  virtual void RequestShowBanner(const SkBitmap* icon);
 
   // Record that the banner could be shown at this point, if the triggering
   // heuristic allowed.

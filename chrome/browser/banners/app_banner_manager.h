@@ -44,12 +44,14 @@ class AppBannerManager : public content::WebContentsObserver,
                      const GURL& validated_url) override;
 
  protected:
+  AppBannerManager(content::WebContents* web_contents, int icon_size);
+
   void ReplaceWebContents(content::WebContents* web_contents);
 
   // Creates an AppBannerDataFetcher, which constructs an app banner.
   virtual AppBannerDataFetcher* CreateAppBannerDataFetcher(
       base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,
-      const int ideal_icon_size);
+      const int ideal_icon_size) = 0;
 
   // Return whether the AppBannerDataFetcher is active.
   bool IsFetcherActive();

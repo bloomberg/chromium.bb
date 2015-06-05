@@ -31,8 +31,8 @@ class AppBannerDataFetcherAndroid : public AppBannerDataFetcher {
 
   std::string GetBannerType() override;
   std::string GetAppIdentifier() override;
-  infobars::InfoBar* CreateBanner(const SkBitmap* icon,
-                                  const base::string16& title) override;
+  void ShowBanner(const SkBitmap* icon,
+                  const base::string16& title) override;
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> native_app_data_;

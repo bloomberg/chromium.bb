@@ -155,33 +155,18 @@ void AppBannerInfoBarDelegateAndroid::InfoBarDismissed() {
   if (!web_contents)
     return;
 
-  TrackDismissEvent(DISMISS_EVENT_CLOSE_BUTTON);
-
   web_contents->GetMainFrame()->Send(
       new ChromeViewMsg_AppBannerDismissed(
           web_contents->GetMainFrame()->GetRoutingID(),
           event_request_id_));
 
   if (!native_app_data_.is_null()) {
-    AppBannerSettingsHelper::RecordBannerEvent(
-        web_contents, web_contents->GetURL(),
-        native_app_package_,
-        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK,
-        AppBannerDataFetcher::GetCurrentTime());
-
-    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                            "AppBanner.NativeApp.Dismissed",
-                                            web_contents->GetURL());
+    AppBannerSettingsHelper::RecordBannerDismissEvent(
+        web_contents, native_app_package_, AppBannerSettingsHelper::NATIVE);
   } else if (!web_app_data_.IsEmpty()) {
-    AppBannerSettingsHelper::RecordBannerEvent(
-        web_contents, web_contents->GetURL(),
-        web_app_data_.start_url.spec(),
-        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_BLOCK,
-        AppBannerDataFetcher::GetCurrentTime());
-
-    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                            "AppBanner.WebApp.Dismissed",
-                                            web_contents->GetURL());
+    AppBannerSettingsHelper::RecordBannerDismissEvent(
+        web_contents, web_app_data_.start_url.spec(),
+        AppBannerSettingsHelper::WEB);
   }
 }
 
@@ -224,11 +209,9 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
     SendBannerAccepted(web_contents, "play");
     return was_opened;
   } else if (!web_app_data_.IsEmpty()) {
-    AppBannerSettingsHelper::RecordBannerEvent(
-        web_contents, web_contents->GetURL(),
-        web_app_data_.start_url.spec(),
-        AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
-        AppBannerDataFetcher::GetCurrentTime());
+    AppBannerSettingsHelper::RecordBannerInstallEvent(
+        web_contents, web_app_data_.start_url.spec(),
+        AppBannerSettingsHelper::WEB);
 
     ShortcutInfo info;
     info.UpdateFromManifest(web_app_data_);
@@ -239,11 +222,7 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
                    info,
                    *app_icon_.get()));
 
-    TrackInstallEvent(INSTALL_EVENT_WEB_APP_INSTALLED);
     SendBannerAccepted(web_contents, "web");
-    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                            "AppBanner.WebApp.Installed",
-                                            web_contents->GetURL());
     return true;
   }
 

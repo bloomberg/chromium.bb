@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_runner.h"
+#include "chrome/browser/banners/app_banner_data_fetcher_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -81,9 +82,9 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
                   bool expected_to_show) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    scoped_refptr<AppBannerDataFetcher> fetcher(
-        new AppBannerDataFetcher(web_contents, weak_factory_.GetWeakPtr(),
-                                 128));
+    scoped_refptr<AppBannerDataFetcherDesktop> fetcher(
+        new AppBannerDataFetcherDesktop(web_contents,
+                                        weak_factory_.GetWeakPtr(), 128));
 
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();

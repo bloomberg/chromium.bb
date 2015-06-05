@@ -34,6 +34,14 @@ AppBannerManager::AppBannerManager(int icon_size)
       weak_factory_(this) {
 }
 
+AppBannerManager::AppBannerManager(content::WebContents* web_contents,
+                                   int icon_size)
+    : content::WebContentsObserver(web_contents),
+      ideal_icon_size_(icon_size),
+      data_fetcher_(nullptr),
+      weak_factory_(this) {
+}
+
 AppBannerManager::~AppBannerManager() {
   CancelActiveFetcher();
 }
@@ -63,7 +71,6 @@ void AppBannerManager::DidFinishLoad(
   data_fetcher_->Start(validated_url);
 }
 
-
 bool AppBannerManager::HandleNonWebApp(const std::string& platform,
                                        const GURL& url,
                                        const std::string& id) {
@@ -74,13 +81,6 @@ void AppBannerManager::ReplaceWebContents(content::WebContents* web_contents) {
   Observe(web_contents);
   if (data_fetcher_.get())
     data_fetcher_.get()->ReplaceWebContents(web_contents);
-}
-
-AppBannerDataFetcher* AppBannerManager::CreateAppBannerDataFetcher(
-    base::WeakPtr<AppBannerDataFetcher::Delegate> weak_delegate,
-    const int ideal_icon_size) {
-  return new AppBannerDataFetcher(web_contents(), weak_delegate,
-                                  ideal_icon_size);
 }
 
 void AppBannerManager::CancelActiveFetcher() {

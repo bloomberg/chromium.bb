@@ -5,6 +5,7 @@
 #include "chrome/browser/android/banners/app_banner_data_fetcher_android.h"
 
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -41,9 +42,8 @@ std::string AppBannerDataFetcherAndroid::GetAppIdentifier() {
       ? AppBannerDataFetcher::GetAppIdentifier() : native_app_package_;
 }
 
-infobars::InfoBar* AppBannerDataFetcherAndroid::CreateBanner(
-    const SkBitmap* icon,
-    const base::string16& title) {
+void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,
+                                             const base::string16& title) {
   content::WebContents* web_contents = GetWebContents();
   DCHECK(web_contents);
 
@@ -66,8 +66,8 @@ infobars::InfoBar* AppBannerDataFetcherAndroid::CreateBanner(
     if (infobar)
       RecordDidShowBanner("AppBanner.NativeApp.Shown");
   }
-
-  return infobar;
+  InfoBarService::FromWebContents(web_contents)
+      ->AddInfoBar(make_scoped_ptr(infobar));
 }
 
 }  // namespace banners

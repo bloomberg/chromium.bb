@@ -46,12 +46,29 @@ class AppBannerSettingsHelper {
     APP_BANNER_EVENT_NUM_EVENTS,
   };
 
+  enum AppBannerRapporMetric {
+    WEB,
+    NATIVE,
+  };
+
   // The content setting basically records a simplified subset of history.
   // For privacy reasons this needs to be cleared. The ClearHistoryForURLs
   // function removes any information from the banner content settings for the
   // given URls.
   static void ClearHistoryForURLs(Profile* profile,
                                   const std::set<GURL>& origin_urls);
+
+  // Record a banner installation event, for either a WEB or NATIVE app.
+  static void RecordBannerInstallEvent(
+      content::WebContents* web_contents,
+      const std::string& package_name_or_start_url,
+      AppBannerRapporMetric rappor_metric);
+
+  // Record a banner dismissal event, for either a WEB or NATIVE app.
+  static void RecordBannerDismissEvent(
+      content::WebContents* web_contents,
+      const std::string& package_name_or_start_url,
+      AppBannerRapporMetric rappor_metric);
 
   static void RecordBannerEvent(content::WebContents* web_contents,
                                 const GURL& origin_url,

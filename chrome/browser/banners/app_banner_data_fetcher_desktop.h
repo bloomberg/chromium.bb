@@ -1,0 +1,42 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_BANNERS_APP_BANNER_DATA_FETCHER_DESKTOP_H_
+#define CHROME_BROWSER_BANNERS_APP_BANNER_DATA_FETCHER_DESKTOP_H_
+
+#include "chrome/browser/banners/app_banner_data_fetcher.h"
+
+namespace extensions {
+class BookmarkAppHelper;
+class Extension;
+}  // namespace extensions
+
+namespace banners {
+
+// Fetches data required to show a banner for the URL currently shown by the
+// WebContents. Extends the regular fetch to support desktop web apps.
+class AppBannerDataFetcherDesktop : public AppBannerDataFetcher {
+ public:
+  AppBannerDataFetcherDesktop(content::WebContents* web_contents,
+                              base::WeakPtr<Delegate> weak_delegate,
+                              int ideal_icon_size);
+
+  void ShowBanner(const SkBitmap* icon, const base::string16& title) override;
+
+  // Callback for finishing bookmark app creation
+  void FinishCreateBookmarkApp(const extensions::Extension* extension,
+                               const WebApplicationInfo& web_app_info);
+
+ protected:
+  ~AppBannerDataFetcherDesktop() override;
+
+ private:
+  scoped_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppBannerDataFetcherDesktop);
+};
+
+}  // namespace banners
+
+#endif  // CHROME_BROWSER_BANNERS_APP_BANNER_DATA_FETCHER_DESKTOP_H_

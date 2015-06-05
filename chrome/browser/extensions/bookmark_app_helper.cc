@@ -491,6 +491,16 @@ void BookmarkAppHelper::Create(const CreateBookmarkAppCallback& callback) {
   }
 }
 
+void BookmarkAppHelper::CreateFromAppBanner(
+    const CreateBookmarkAppCallback& callback,
+    const content::Manifest& manifest) {
+  DCHECK(!manifest.short_name.is_null() || !manifest.name.is_null());
+  DCHECK(manifest.start_url.is_valid());
+
+  callback_ = callback;
+  OnDidGetManifest(manifest);
+}
+
 void BookmarkAppHelper::OnDidGetManifest(const content::Manifest& manifest) {
   if (contents_->IsBeingDestroyed())
     return;

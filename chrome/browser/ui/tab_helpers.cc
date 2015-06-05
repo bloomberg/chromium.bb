@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/window_android_helper.h"
 #else
+#include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
@@ -195,6 +196,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   TabDialogs::CreateForWebContents(web_contents);
   ThumbnailTabHelper::CreateForWebContents(web_contents);
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAddToShelf)) {
+    banners::AppBannerManagerDesktop::CreateForWebContents(web_contents);
+  }
 #endif
 
 #if defined(OS_WIN)

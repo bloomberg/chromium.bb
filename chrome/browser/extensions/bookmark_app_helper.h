@@ -98,6 +98,10 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // Begins the asynchronous bookmark app creation.
   void Create(const CreateBookmarkAppCallback& callback);
 
+  // Begins the asynchronous bookmark app creation from an app banner.
+  void CreateFromAppBanner(const CreateBookmarkAppCallback& callback,
+                           const content::Manifest& manifest);
+
  private:
   friend class TestBookmarkAppHelper;
 
