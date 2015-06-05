@@ -59,8 +59,8 @@ class DrmGpuPlatformSupport : public GpuPlatformSupport {
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  void OnCreateWindowDelegate(gfx::AcceleratedWidget widget);
-  void OnDestroyWindowDelegate(gfx::AcceleratedWidget widget);
+  void OnCreateWindow(gfx::AcceleratedWidget widget);
+  void OnDestroyWindow(gfx::AcceleratedWidget widget);
   void OnWindowBoundsChanged(gfx::AcceleratedWidget widget,
                              const gfx::Rect& bounds);
   void OnCursorSet(gfx::AcceleratedWidget widget,

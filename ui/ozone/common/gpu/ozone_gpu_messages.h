@@ -89,13 +89,13 @@ IPC_MESSAGE_CONTROL4(OzoneGpuMsg_CursorSet,
 IPC_MESSAGE_CONTROL2(OzoneGpuMsg_CursorMove,
                      gfx::AcceleratedWidget, gfx::Point)
 
-// Explicit creation of a WindowDelegate. We explicitly create the window
-// delegate such that any state change in the window is not lost while the
-// surface is created on the GPU side.
-IPC_MESSAGE_CONTROL1(OzoneGpuMsg_CreateWindowDelegate,
+// Explicit creation of a window. We explicitly create the window such
+// that any state change in the window is not lost while the surface is
+// created on the GPU side.
+IPC_MESSAGE_CONTROL1(OzoneGpuMsg_CreateWindow,
                      gfx::AcceleratedWidget /* widget */)
 
-IPC_MESSAGE_CONTROL1(OzoneGpuMsg_DestroyWindowDelegate,
+IPC_MESSAGE_CONTROL1(OzoneGpuMsg_DestroyWindow,
                      gfx::AcceleratedWidget /* widget */)
 
 // Updates the location and size of the widget on the screen.

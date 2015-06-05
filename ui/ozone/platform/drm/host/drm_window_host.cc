@@ -45,7 +45,7 @@ DrmWindowHost::~DrmWindowHost() {
   cursor_->OnWindowRemoved(widget_);
 
   sender_->RemoveChannelObserver(this);
-  sender_->Send(new OzoneGpuMsg_DestroyWindowDelegate(widget_));
+  sender_->Send(new OzoneGpuMsg_DestroyWindow(widget_));
 }
 
 void DrmWindowHost::Initialize() {
@@ -179,7 +179,7 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& native_event) {
 }
 
 void DrmWindowHost::OnChannelEstablished() {
-  sender_->Send(new OzoneGpuMsg_CreateWindowDelegate(widget_));
+  sender_->Send(new OzoneGpuMsg_CreateWindow(widget_));
   SendBoundsChange();
 }
 

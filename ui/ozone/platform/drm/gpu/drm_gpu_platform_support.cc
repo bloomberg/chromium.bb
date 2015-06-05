@@ -122,8 +122,8 @@ class DrmGpuPlatformSupportMessageFilter : public IPC::MessageFilter {
 
   bool MessageAffectsCursorState(uint32 message_type) {
     switch (message_type) {
-      case OzoneGpuMsg_CreateWindowDelegate::ID:
-      case OzoneGpuMsg_DestroyWindowDelegate::ID:
+      case OzoneGpuMsg_CreateWindow::ID:
+      case OzoneGpuMsg_DestroyWindow::ID:
       case OzoneGpuMsg_WindowBoundsChanged::ID:
       case OzoneGpuMsg_ConfigureNativeDisplay::ID:
       case OzoneGpuMsg_DisableNativeDisplay::ID:
@@ -199,9 +199,8 @@ bool DrmGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(DrmGpuPlatformSupport, message)
-  IPC_MESSAGE_HANDLER(OzoneGpuMsg_CreateWindowDelegate, OnCreateWindowDelegate)
-  IPC_MESSAGE_HANDLER(OzoneGpuMsg_DestroyWindowDelegate,
-                      OnDestroyWindowDelegate)
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_CreateWindow, OnCreateWindow)
+  IPC_MESSAGE_HANDLER(OzoneGpuMsg_DestroyWindow, OnDestroyWindow)
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_WindowBoundsChanged, OnWindowBoundsChanged)
 
   IPC_MESSAGE_HANDLER(OzoneGpuMsg_CursorSet, OnCursorSet)
@@ -233,16 +232,14 @@ bool DrmGpuPlatformSupport::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-void DrmGpuPlatformSupport::OnCreateWindowDelegate(
-    gfx::AcceleratedWidget widget) {
+void DrmGpuPlatformSupport::OnCreateWindow(gfx::AcceleratedWidget widget) {
   scoped_ptr<DrmWindow> delegate(
       new DrmWindow(widget, drm_device_manager_, screen_manager_));
   delegate->Initialize();
   screen_manager_->AddWindow(widget, delegate.Pass());
 }
 
-void DrmGpuPlatformSupport::OnDestroyWindowDelegate(
-    gfx::AcceleratedWidget widget) {
+void DrmGpuPlatformSupport::OnDestroyWindow(gfx::AcceleratedWidget widget) {
   scoped_ptr<DrmWindow> delegate = screen_manager_->RemoveWindow(widget);
   delegate->Shutdown();
 }
