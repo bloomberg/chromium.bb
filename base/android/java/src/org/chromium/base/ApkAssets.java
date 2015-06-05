@@ -21,11 +21,11 @@ public class ApkAssets {
     private static final String LOGTAG = "ApkAssets";
 
     @CalledByNative
-    public static long[] openAsset(Context context, String fileName) {
+    public static long[] open(Context context, String fileName) {
         AssetFileDescriptor afd = null;
         try {
             AssetManager manager = context.getAssets();
-            afd = manager.openFd(fileName);
+            afd = manager.openNonAssetFd(fileName);
             return new long[] { afd.getParcelFileDescriptor().detachFd(),
                                 afd.getStartOffset(),
                                 afd.getLength() };

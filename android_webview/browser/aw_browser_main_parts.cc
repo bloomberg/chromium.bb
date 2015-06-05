@@ -61,7 +61,8 @@ int AwBrowserMainParts::PreCreateThreads() {
       base::android::GetDefaultLocale(),
       NULL,
       ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
-  std::string locale = l10n_util::GetApplicationLocale(std::string()) + ".pak";
+  std::string locale =
+      "assets/" + l10n_util::GetApplicationLocale(std::string()) + ".pak";
   int pak_fd = base::android::OpenApkAsset(locale, &pak_region);
   if (pak_fd != -1) {
     ui::ResourceBundle::CleanupSharedInstance();
@@ -74,7 +75,8 @@ int AwBrowserMainParts::PreCreateThreads() {
 
   // Try to directly mmap the webviewchromium.pak from the apk. Fall back to
   // load from file, using PATH_SERVICE, otherwise.
-  pak_fd = base::android::OpenApkAsset("webviewchromium.pak", &pak_region);
+  pak_fd = base::android::OpenApkAsset("assets/webviewchromium.pak",
+                                       &pak_region);
   if (pak_fd != -1) {
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
         base::File(pak_fd), pak_region, ui::SCALE_FACTOR_NONE);

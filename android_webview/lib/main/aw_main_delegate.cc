@@ -106,11 +106,11 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess.
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
 #ifdef __LP64__
-  const char kNativesFileName[] = "natives_blob_64.bin";
-  const char kSnapshotFileName[] = "snapshot_blob_64.bin";
+  const char kNativesFileName[] = "assets/natives_blob_64.bin";
+  const char kSnapshotFileName[] = "assets/snapshot_blob_64.bin";
 #else
-  const char kNativesFileName[] = "natives_blob_32.bin";
-  const char kSnapshotFileName[] = "snapshot_blob_32.bin";
+  const char kNativesFileName[] = "assets/natives_blob_32.bin";
+  const char kSnapshotFileName[] = "assets/snapshot_blob_32.bin";
 #endif // __LP64__
   // TODO(gsennton) we should use
   // gin::IsolateHolder::kNativesFileName/kSnapshotFileName
@@ -121,7 +121,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       kV8SnapshotDataDescriptor, kSnapshotFileName));
 #endif
   CHECK(base::android::RegisterApkAssetWithGlobalDescriptors(
-      kAndroidICUDataDescriptor, base::i18n::kIcuDataFileName));
+      kAndroidICUDataDescriptor, "assets/icudtl.dat"));
 
   return false;
 }

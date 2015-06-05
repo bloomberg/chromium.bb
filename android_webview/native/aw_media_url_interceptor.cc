@@ -21,7 +21,8 @@ bool AwMediaUrlInterceptor::Intercept(const std::string& url,
 
   if (StartsWithASCII(url, asset_file_prefix, true)) {
     std::string filename(url);
-    ReplaceFirstSubstringAfterOffset(&filename, 0, asset_file_prefix, "");
+    ReplaceFirstSubstringAfterOffset(
+        &filename, 0, asset_file_prefix, "assets/");
     base::MemoryMappedFile::Region region =
         base::MemoryMappedFile::Region::kWholeFile;
     *fd = base::android::OpenApkAsset(filename, &region);

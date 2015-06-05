@@ -18,13 +18,15 @@ bool RegisterApkAssets(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-int OpenApkAsset(const std::string& filename,
+int OpenApkAsset(const std::string& file_path,
                  base::MemoryMappedFile::Region* region) {
+  // The AAssetManager API of the NDK is does not expose a method for accessing
+  // raw resources :(.
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jlongArray> jarr = Java_ApkAssets_openAsset(
+  ScopedJavaLocalRef<jlongArray> jarr = Java_ApkAssets_open(
       env,
       base::android::GetApplicationContext(),
-      base::android::ConvertUTF8ToJavaString(env, filename).Release());
+      base::android::ConvertUTF8ToJavaString(env, file_path).Release());
   std::vector<jlong> results;
   base::android::JavaLongArrayToLongVector(env, jarr.obj(), &results);
   CHECK_EQ(3U, results.size());
@@ -35,10 +37,10 @@ int OpenApkAsset(const std::string& filename,
 }
 
 bool RegisterApkAssetWithGlobalDescriptors(base::GlobalDescriptors::Key key,
-                                           const std::string& asset_filename) {
+                                           const std::string& file_path) {
   base::MemoryMappedFile::Region region =
       base::MemoryMappedFile::Region::kWholeFile;
-  int asset_fd = OpenApkAsset(asset_filename, &region);
+  int asset_fd = OpenApkAsset(file_path, &region);
   if (asset_fd != -1) {
     base::GlobalDescriptors::GetInstance()->Set(key, asset_fd, region);
   }
