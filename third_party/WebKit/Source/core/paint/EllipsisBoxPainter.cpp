@@ -23,23 +23,29 @@ void EllipsisBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& pa
 
 void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom, const ComputedStyle& style)
 {
+    bool isPrinting = m_ellipsisBox.layoutObject().document().printing();
+    bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && m_ellipsisBox.selectionState() != LayoutObject::SelectionNone;
+
+    LayoutRect paintRect(m_ellipsisBox.logicalFrameRect());
+    if (haveSelection)
+        paintRect.unite(LayoutRect(m_ellipsisBox.selectionRect()));
+    paintRect = m_ellipsisBox.logicalRectToPhysicalRect(paintRect);
+    paintRect.moveBy(paintOffset);
+
     GraphicsContext* context = paintInfo.context;
+    DrawingRecorder recorder(*context, m_ellipsisBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), paintRect);
+    if (recorder.canUseCachedDrawing())
+        return;
+
     LayoutPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping();
     boxOrigin.moveBy(paintOffset);
     LayoutRect boxRect(boxOrigin, LayoutSize(m_ellipsisBox.logicalWidth(), m_ellipsisBox.virtualLogicalHeight()));
 
-    DrawingRecorder recorder(*context, m_ellipsisBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), boxRect);
-    if (recorder.canUseCachedDrawing())
-        return;
-
     GraphicsContextStateSaver stateSaver(*context);
     if (!m_ellipsisBox.isHorizontal())
         context->concatCTM(TextPainter::rotation(boxRect, TextPainter::Clockwise));
-    const Font& font = style.font();
-    LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
 
-    bool isPrinting = m_ellipsisBox.layoutObject().document().printing();
-    bool haveSelection = !isPrinting && paintInfo.phase != PaintPhaseTextClip && m_ellipsisBox.selectionState() != LayoutObject::SelectionNone;
+    const Font& font = style.font();
 
     if (haveSelection)
         paintSelection(context, boxOrigin, style, font);
@@ -51,6 +57,7 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
         textStyle = TextPainter::selectionPaintingStyle(m_ellipsisBox.layoutObject(), true, paintInfo.forceBlackText(), isPrinting, textStyle);
 
     TextRun textRun = constructTextRun(&m_ellipsisBox.layoutObject(), font, m_ellipsisBox.ellipsisStr(), style, TextRun::AllowTrailingExpansion);
+    LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
     TextPainter textPainter(context, font, textRun, textOrigin, boxRect, m_ellipsisBox.isHorizontal());
     textPainter.paint(0, m_ellipsisBox.ellipsisStr().length(), m_ellipsisBox.ellipsisStr().length(), textStyle);
 }
