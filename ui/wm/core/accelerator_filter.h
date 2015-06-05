@@ -28,9 +28,8 @@ class WM_EXPORT AcceleratorFilter : public ui::EventHandler {
                     ui::AcceleratorHistory* accelerator_history);
   ~AcceleratorFilter() override;
 
-  // ui::EventHandler:
+  // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
   scoped_ptr<AcceleratorDelegate> delegate_;

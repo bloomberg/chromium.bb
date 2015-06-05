@@ -19,7 +19,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator_history.h"
 #include "ui/events/event.h"
-#include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -134,35 +133,6 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
   EXPECT_FALSE(press_volume_up.stopped_propagation());
 }
 #endif  // defined(OS_CHROMEOS)
-
-// Tests that pressing 'SEARCH' + LeftMouseClick, which will be rewritten as a
-// RightMouseClick, will not toggle the AppList.
-// This test will fail without the code to clear the current accelerator in
-// the accelerator history present in |AcceleratorFilter::OnMouseEvent()|.
-TEST_F(AcceleratorFilterTest, SearchClickDoesntToggleAppList) {
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
-  generator.PressKey(ui::VKEY_LWIN, 0);
-  generator.ClickLeftButton();
-  generator.ReleaseKey(ui::VKEY_LWIN, 0);
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
-}
-
-// Make sure that synthesized mouse events don't interfere with tracking
-// the key accelerators.
-TEST_F(AcceleratorFilterTest, SynthesizeMouseEventsAreIgnored) {
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  const gfx::Point origin(0, 0);
-
-  EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
-  generator.PressKey(ui::VKEY_LWIN, 0);
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, origin, origin,
-                             ui::EventTimeForNow(), ui::EF_IS_SYNTHESIZED, 0);
-  generator.Dispatch(&mouse_event);
-  generator.ReleaseKey(ui::VKEY_LWIN, 0);
-  EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
-}
 
 }  // namespace test
 }  // namespace ash

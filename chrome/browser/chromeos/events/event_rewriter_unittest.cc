@@ -3112,18 +3112,18 @@ TEST_F(EventRewriterTest, TestRewrittenModifierClick) {
   device_list.push_back(10);
   ui::TouchFactory::GetInstance()->SetPointerDeviceForTest(device_list);
 
-  // Remap Control to Search.
+  // Remap Control to Alt.
   TestingPrefServiceSyncable prefs;
   chromeos::Preferences::RegisterProfilePrefs(prefs.registry());
   IntegerPrefMember control;
   control.Init(prefs::kLanguageRemapControlKeyTo, &prefs);
-  control.SetValue(chromeos::input_method::kSearchKey);
+  control.SetValue(chromeos::input_method::kAltKey);
 
   EventRewriter rewriter(NULL);
   rewriter.KeyboardDeviceAddedForTesting(kKeyboardDeviceId, "PC Keyboard");
   rewriter.set_pref_service_for_testing(&prefs);
 
-  // Check that Control + Left Button is converted (via Search + Left Button)
+  // Check that Control + Left Button is converted (via Alt + Left Button)
   // to Right Button.
   ui::ScopedXI2Event xev;
   xev.InitGenericButtonEvent(10, ui::ET_MOUSE_PRESSED, gfx::Point(),
@@ -3138,7 +3138,7 @@ TEST_F(EventRewriterTest, TestRewrittenModifierClick) {
   EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
   EXPECT_FALSE(ui::EF_LEFT_MOUSE_BUTTON & result->flags());
   EXPECT_FALSE(ui::EF_CONTROL_DOWN & result->flags());
-  EXPECT_FALSE(ui::EF_COMMAND_DOWN & result->flags());
+  EXPECT_FALSE(ui::EF_ALT_DOWN & result->flags());
   EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
 #endif
 }
@@ -3155,28 +3155,28 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   TestingPrefServiceSyncable prefs;
   EventRewriter rewriter(NULL);
   rewriter.set_pref_service_for_testing(&prefs);
-  const int kLeftAndSearchFlag = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_COMMAND_DOWN;
+  const int kLeftAndAltFlag = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN;
 
-  // Test Search + Left click.
+  // Test Alt + Left click.
   {
     ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), kLeftAndSearchFlag,
+                         ui::EventTimeForNow(), kLeftAndAltFlag,
                          ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_press(&press);
     test_press.set_source_device_id(10);
     // Sanity check.
     EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
-    EXPECT_EQ(kLeftAndSearchFlag, press.flags());
+    EXPECT_EQ(kLeftAndAltFlag, press.flags());
     scoped_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, press, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndSearchFlag & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), kLeftAndSearchFlag,
+                           ui::EventTimeForNow(), kLeftAndAltFlag,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(10);
@@ -3184,41 +3184,41 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndSearchFlag & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
 #if defined(USE_X11)
-  // Test Search + Left click, using XI2 native events.
+  // Test Alt + Left click, using XI2 native events.
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_PRESSED, gfx::Point(),
-                               kLeftAndSearchFlag);
+                               kLeftAndAltFlag);
     ui::MouseEvent press(xev);
     // Sanity check.
     EXPECT_EQ(ui::ET_MOUSE_PRESSED, press.type());
-    EXPECT_EQ(kLeftAndSearchFlag, press.flags());
+    EXPECT_EQ(kLeftAndAltFlag, press.flags());
     scoped_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, press, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndSearchFlag & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, gfx::Point(),
-                               kLeftAndSearchFlag);
+                               kLeftAndAltFlag);
     ui::MouseEvent release(xev);
     scoped_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndSearchFlag & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
 #endif
 
-  // No SEARCH in first click.
+  // No ALT in frst click.
   {
     ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
@@ -3233,18 +3233,18 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   }
   {
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), kLeftAndSearchFlag,
+                           ui::EventTimeForNow(), kLeftAndAltFlag,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(10);
     scoped_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
-    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_COMMAND_DOWN, result->flags());
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
     EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
 #if defined(USE_X11)
-  // No SEARCH in first click, using XI2 native events.
+  // No ALT in frst click, using XI2 native events.
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_PRESSED, gfx::Point(),
@@ -3259,20 +3259,20 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, gfx::Point(),
-                               kLeftAndSearchFlag);
+                               kLeftAndAltFlag);
     ui::MouseEvent release(xev);
     scoped_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
-    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_COMMAND_DOWN, result->flags());
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
     EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
 #endif
 
-  // SEARCH on different device.
+  // ALT on different device.
   {
     ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), kLeftAndSearchFlag,
+                         ui::EventTimeForNow(), kLeftAndAltFlag,
                          ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_press(&press);
     test_press.set_source_device_id(11);
@@ -3280,24 +3280,24 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, press, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndSearchFlag & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), kLeftAndSearchFlag,
+                           ui::EventTimeForNow(), kLeftAndAltFlag,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(10);
     scoped_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
-    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_COMMAND_DOWN, result->flags());
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
     EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                           ui::EventTimeForNow(), kLeftAndSearchFlag,
+                           ui::EventTimeForNow(), kLeftAndAltFlag,
                            ui::EF_LEFT_MOUSE_BUTTON);
     ui::EventTestApi test_release(&release);
     test_release.set_source_device_id(11);
@@ -3305,44 +3305,44 @@ TEST_F(EventRewriterTest, DontRewriteIfNotRewritten) {
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndSearchFlag & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
 #if defined(USE_X11)
-  // SEARCH on different device, using XI2 native events.
+  // ALT on different device, using XI2 native events.
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(11, ui::ET_MOUSE_PRESSED, gfx::Point(),
-                               kLeftAndSearchFlag);
+                               kLeftAndAltFlag);
     ui::MouseEvent press(xev);
     scoped_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, press, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndSearchFlag & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(10, ui::ET_MOUSE_RELEASED, gfx::Point(),
-                               kLeftAndSearchFlag);
+                               kLeftAndAltFlag);
     ui::MouseEvent release(xev);
     scoped_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
-    EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON | ui::EF_COMMAND_DOWN, result->flags());
+    EXPECT_TRUE((ui::EF_LEFT_MOUSE_BUTTON | ui::EF_ALT_DOWN) & result->flags());
     EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON, result->changed_button_flags());
   }
   {
     ui::ScopedXI2Event xev;
     xev.InitGenericButtonEvent(11, ui::ET_MOUSE_RELEASED, gfx::Point(),
-                               kLeftAndSearchFlag);
+                               kLeftAndAltFlag);
     ui::MouseEvent release(xev);
     scoped_ptr<ui::Event> new_event;
     const ui::MouseEvent* result =
         RewriteMouseButtonEvent(&rewriter, release, &new_event);
     EXPECT_TRUE(ui::EF_RIGHT_MOUSE_BUTTON & result->flags());
-    EXPECT_FALSE(kLeftAndSearchFlag & result->flags());
+    EXPECT_FALSE(kLeftAndAltFlag & result->flags());
     EXPECT_EQ(ui::EF_RIGHT_MOUSE_BUTTON, result->changed_button_flags());
   }
 #endif

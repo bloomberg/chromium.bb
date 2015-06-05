@@ -35,7 +35,7 @@ class ImeKeyboard;
 // - converts top-row function keys to special keys where necessary;
 // - handles various key combinations like Search+Backspace -> Delete
 //   and Search+number to Fnumber;
-// - handles key/pointer combinations like Search+Button1 -> Button3.
+// - handles key/pointer combinations like Alt+Button1 -> Button3.
 class EventRewriter : public ui::EventRewriter {
  public:
   enum DeviceType {

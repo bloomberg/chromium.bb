@@ -898,13 +898,12 @@ void EventRewriter::RewriteLocatedEvent(const ui::Event& event,
 
 int EventRewriter::RewriteModifierClick(const ui::MouseEvent& mouse_event,
                                         int* flags) {
-  // Remap Search+Button1 to Button3.
-  const int kSearchLeftButton =
-      (ui::EF_COMMAND_DOWN | ui::EF_LEFT_MOUSE_BUTTON);
-  if (((*flags & kSearchLeftButton) == kSearchLeftButton) &&
+  // Remap Alt+Button1 to Button3.
+  const int kAltLeftButton = (ui::EF_ALT_DOWN | ui::EF_LEFT_MOUSE_BUTTON);
+  if (((*flags & kAltLeftButton) == kAltLeftButton) &&
       ((mouse_event.type() == ui::ET_MOUSE_PRESSED) ||
        pressed_device_ids_.count(mouse_event.source_device_id()))) {
-    *flags &= ~kSearchLeftButton;
+    *flags &= ~kAltLeftButton;
     *flags |= ui::EF_RIGHT_MOUSE_BUTTON;
     if (mouse_event.type() == ui::ET_MOUSE_PRESSED)
       pressed_device_ids_.insert(mouse_event.source_device_id());
