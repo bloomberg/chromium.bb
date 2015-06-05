@@ -265,6 +265,8 @@ crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/d
 crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/047.html [ Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/048.html [ Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ Failure Timeout ]
+crbug.com/490511 imported/web-platform-tests/html/rendering/non-replaced-elements/tables/table-border-1.html [ ImageOnlyFailure ]
+crbug.com/490511 imported/web-platform-tests/html/rendering/non-replaced-elements/tables/table-border-2.html [ ImageOnlyFailure ]
 
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]

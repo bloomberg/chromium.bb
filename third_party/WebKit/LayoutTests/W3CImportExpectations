@@ -100,7 +100,6 @@ imported/web-platform-tests/geolocation-API [ Skip ]
 imported/web-platform-tests/hr-time [ Skip ]
 ## Owners: tkent@chromium.org
 # imported/web-platform-tests/html [ Pass ]
-imported/web-platform-tests/html/rendering [ Skip ]
 imported/web-platform-tests/html/semantics [ Skip ]
 imported/web-platform-tests/html/syntax [ Skip ]
 imported/web-platform-tests/html/the-xhtml-syntax [ Skip ]
