@@ -34,6 +34,7 @@
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
 #include "core/style/StyleReflection.h"
+#include "core/style/StyleScrollSnapData.h"
 #include "core/style/TransformOrigin.h"
 #include "platform/LengthSize.h"
 #include "platform/fonts/FontDescription.h"
@@ -73,7 +74,7 @@ public:
     static LineBoxContain convertLineBoxContain(StyleResolverState&, CSSValue*);
     static Length convertLineHeight(StyleResolverState&, CSSValue*);
     static float convertNumberOrPercentage(StyleResolverState&, CSSValue*);
-    static LengthPoint convertObjectPosition(StyleResolverState&, CSSValue*);
+    static LengthPoint convertPosition(StyleResolverState&, CSSValue*);
     static float convertPerspective(StyleResolverState&, CSSValue*);
     static LengthPoint convertPerspectiveOrigin(StyleResolverState&, CSSValue*);
     static Length convertQuirkyLength(StyleResolverState&, CSSValue*);
@@ -93,6 +94,10 @@ public:
     static bool convertGridTrackList(CSSValue*, Vector<GridTrackSize>&, NamedGridLinesMap&, OrderedNamedGridLines&, StyleResolverState&);
     static void createImplicitNamedGridLinesFromGridArea(const NamedGridAreaMap&, NamedGridLinesMap&, GridTrackSizingDirection);
     static void convertOrderedNamedGridLinesMapToNamedGridLinesMap(const OrderedNamedGridLines&, NamedGridLinesMap&);
+
+    static ScrollSnapPoints convertSnapPoints(StyleResolverState&, CSSValue*);
+    static Vector<LengthPoint> convertSnapCoordinates(StyleResolverState&, CSSValue*);
+    static LengthPoint convertSnapDestination(StyleResolverState&, CSSValue*);
 };
 
 template <typename T>

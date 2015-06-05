@@ -561,6 +561,12 @@ enum TextIndentType { TextIndentNormal, TextIndentHanging };
 
 enum CSSBoxType { BoxMissing = 0, MarginBox, BorderBox, PaddingBox, ContentBox };
 
+enum ScrollSnapType {
+    ScrollSnapTypeNone,
+    ScrollSnapTypeMandatory,
+    ScrollSnapTypeProximity
+};
+
 } // namespace blink
 
 #endif // ComputedStyleConstants_h

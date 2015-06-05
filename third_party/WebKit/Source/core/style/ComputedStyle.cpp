@@ -126,6 +126,7 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(InitialStyleTag)
     rareNonInheritedData.access()->m_filter.init();
     rareNonInheritedData.access()->m_grid.init();
     rareNonInheritedData.access()->m_gridItem.init();
+    rareNonInheritedData.access()->m_scrollSnap.init();
     rareInheritedData.init();
     inherited.init();
     m_svgStyle.init();

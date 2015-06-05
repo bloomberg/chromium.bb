@@ -210,6 +210,11 @@ rx
 ry
 scrollBehavior
 scrollBlocksOn
+scrollSnapCoordinate
+scrollSnapDestination
+scrollSnapPointsX
+scrollSnapPointsY
+scrollSnapType
 setProperty
 shapeImageThreshold
 shapeMargin

@@ -649,7 +649,7 @@ static Length convertPositionLength(StyleResolverState& state, CSSPrimitiveValue
     return StyleBuilderConverter::convertLength(state, primitiveValue);
 }
 
-LengthPoint StyleBuilderConverter::convertObjectPosition(StyleResolverState& state, CSSValue* value)
+LengthPoint StyleBuilderConverter::convertPosition(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Pair* pair = primitiveValue->getPairValue();
@@ -899,6 +899,40 @@ TransformOrigin StyleBuilderConverter::convertTransformOrigin(StyleResolverState
         convertOriginLength<CSSValueTop, CSSValueBottom>(state, primitiveValueY),
         StyleBuilderConverter::convertComputedLength<float>(state, primitiveValueZ)
     );
+}
+
+ScrollSnapPoints StyleBuilderConverter::convertSnapPoints(StyleResolverState& state, CSSValue* value)
+{
+    // Handles: none | repeat(<length>)
+    ScrollSnapPoints points;
+    points.hasRepeat = false;
+
+    if (!value->isFunctionValue())
+        return points;
+
+    CSSFunctionValue* repeatFunction = toCSSFunctionValue(value);
+    ASSERT_WITH_SECURITY_IMPLICATION(repeatFunction->length() == 1);
+    points.repeatOffset = convertLength(state, toCSSPrimitiveValue(repeatFunction->item(0)));
+    points.hasRepeat = true;
+
+    return points;
+}
+
+Vector<LengthPoint> StyleBuilderConverter::convertSnapCoordinates(StyleResolverState& state, CSSValue* value)
+{
+    // Handles: none | <position>#
+    Vector<LengthPoint> coordinates;
+
+    if (!value->isValueList())
+        return coordinates;
+
+    CSSValueList* valueList = toCSSValueList(value);
+    coordinates.reserveInitialCapacity(valueList->length());
+    for (auto& snapCoordinate : *valueList) {
+        coordinates.uncheckedAppend(convertPosition(state, snapCoordinate.get()));
+    }
+
+    return coordinates;
 }
 
 } // namespace blink

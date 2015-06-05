@@ -357,6 +357,9 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
         return valueID == CSSValueNormal || valueID == CSSValuePre || valueID == CSSValuePreWrap || valueID == CSSValuePreLine || valueID == CSSValueNowrap;
     case CSSPropertyWordBreak: // normal | break-all | keep-all | break-word (this is a custom extension)
         return valueID == CSSValueNormal || valueID == CSSValueBreakAll || valueID == CSSValueKeepAll || valueID == CSSValueBreakWord;
+    case CSSPropertyScrollSnapType: // none | mandatory | proximity
+        ASSERT(RuntimeEnabledFeatures::cssScrollSnapPointsEnabled());
+        return valueID == CSSValueNone || valueID == CSSValueMandatory || valueID == CSSValueProximity;
     default:
         ASSERT_NOT_REACHED();
         return false;
@@ -450,6 +453,7 @@ bool CSSParserFastPaths::isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWhiteSpace:
     case CSSPropertyWordBreak:
     case CSSPropertyWordWrap:
+    case CSSPropertyScrollSnapType:
         return true;
     case CSSPropertyAlignItems:
     case CSSPropertyAlignSelf:

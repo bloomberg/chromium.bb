@@ -55,6 +55,7 @@
 #include "core/style/StyleRareInheritedData.h"
 #include "core/style/StyleRareNonInheritedData.h"
 #include "core/style/StyleReflection.h"
+#include "core/style/StyleScrollSnapData.h"
 #include "core/style/StyleSelfAlignmentData.h"
 #include "core/style/StyleSurroundData.h"
 #include "core/style/StyleTransformData.h"
@@ -949,6 +950,12 @@ public:
     WebScrollBlocksOn scrollBlocksOn() const { return static_cast<WebScrollBlocksOn>(rareNonInheritedData->m_scrollBlocksOn); }
     bool hasScrollBlocksOn() const { return scrollBlocksOn() != WebScrollBlocksOnNone; }
 
+    ScrollSnapType scrollSnapType() const { return static_cast<ScrollSnapType>(rareNonInheritedData->m_scrollSnapType); }
+    ScrollSnapPoints scrollSnapPointsX() const { return rareNonInheritedData->m_scrollSnap->m_xPoints; }
+    ScrollSnapPoints scrollSnapPointsY() const { return rareNonInheritedData->m_scrollSnap->m_yPoints; }
+    Vector<LengthPoint> scrollSnapCoordinate() const { return rareNonInheritedData->m_scrollSnap->m_coordinates; }
+    LengthPoint scrollSnapDestination() const { return rareNonInheritedData->m_scrollSnap->m_destination; }
+
     const Vector<CSSPropertyID>& willChangeProperties() const { return rareNonInheritedData->m_willChange->m_properties; }
     bool willChangeContents() const { return rareNonInheritedData->m_willChange->m_contents; }
     bool willChangeScrollPosition() const { return rareNonInheritedData->m_willChange->m_scrollPosition; }
@@ -1377,6 +1384,12 @@ public:
     void setScrollBehavior(ScrollBehavior b) { SET_VAR(rareNonInheritedData, m_scrollBehavior, b); }
     void setScrollBlocksOn(WebScrollBlocksOn b) { SET_VAR(rareNonInheritedData, m_scrollBlocksOn, b); }
 
+    void setScrollSnapType(ScrollSnapType b) { SET_VAR(rareNonInheritedData, m_scrollSnapType, b); }
+    void setScrollSnapPointsX(const ScrollSnapPoints& b) { SET_VAR(rareNonInheritedData.access()->m_scrollSnap, m_xPoints, b); }
+    void setScrollSnapPointsY(const ScrollSnapPoints& b) { SET_VAR(rareNonInheritedData.access()->m_scrollSnap, m_yPoints, b); }
+    void setScrollSnapDestination(const LengthPoint& b) { SET_VAR(rareNonInheritedData.access()->m_scrollSnap, m_destination, b); }
+    void setScrollSnapCoordinate(const Vector<LengthPoint>& b) { SET_VAR(rareNonInheritedData.access()->m_scrollSnap, m_coordinates, b); }
+
     void setWillChangeProperties(const Vector<CSSPropertyID>& properties) { SET_VAR(rareNonInheritedData.access()->m_willChange, m_properties, properties); }
     void setWillChangeContents(bool b) { SET_VAR(rareNonInheritedData.access()->m_willChange, m_contents, b); }
     void setWillChangeScrollPosition(bool b) { SET_VAR(rareNonInheritedData.access()->m_willChange, m_scrollPosition, b); }
@@ -1654,6 +1667,11 @@ public:
     static ShadowList* initialTextShadow() { return 0; }
     static ScrollBehavior initialScrollBehavior() { return ScrollBehaviorAuto; }
     static WebScrollBlocksOn initialScrollBlocksOn() { return WebScrollBlocksOnNone; }
+    static ScrollSnapType initialScrollSnapType() { return ScrollSnapTypeNone; }
+    static ScrollSnapPoints initialScrollSnapPointsX() { return ScrollSnapPoints(); }
+    static ScrollSnapPoints initialScrollSnapPointsY() { return ScrollSnapPoints(); }
+    static LengthPoint initialScrollSnapDestination() { return LengthPoint(Length(0, Fixed), Length(0, Fixed)); }
+    static Vector<LengthPoint> initialScrollSnapCoordinate() { return Vector<LengthPoint>(); }
 
     // The initial value is 'none' for grid tracks.
     static Vector<GridTrackSize> initialGridTemplateColumns() { return Vector<GridTrackSize>(); }

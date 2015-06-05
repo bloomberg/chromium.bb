@@ -832,6 +832,8 @@
             'style/StylePendingImage.h',
             'style/StyleRareInheritedData.cpp',
             'style/StyleRareNonInheritedData.cpp',
+            'style/StyleScrollSnapData.cpp',
+            'style/StyleScrollSnapData.h',
             'style/StyleSelfAlignmentData.h',
             'style/StyleSurroundData.cpp',
             'style/StyleTransformData.cpp',

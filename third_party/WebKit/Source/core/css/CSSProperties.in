@@ -225,7 +225,7 @@ motion-offset runtime_flag=CSSMotionPath, animatable, converter=convertLength
 motion-path runtime_flag=CSSMotionPath, custom_all
 motion-rotation runtime_flag=CSSMotionPath, animatable, custom_all
 object-fit type_name=ObjectFit
-object-position animatable, converter=convertObjectPosition
+object-position animatable, converter=convertPosition
 opacity animatable, type_name=float
 order type_name=int
 orphans animatable, inherited, type_name=short, custom_all
@@ -256,6 +256,11 @@ rx animatable, svg, converter=convertLength
 ry animatable, svg, converter=convertLength
 scroll-behavior runtime_flag=CSSOMSmoothScroll, type_name=ScrollBehavior
 scroll-blocks-on runtime_flag=CSSScrollBlocksOn, converter=convertFlags<WebScrollBlocksOn>
+scroll-snap-type runtime_flag=CSSScrollSnapPoints, type_name=ScrollSnapType
+scroll-snap-points-x runtime_flag=CSSScrollSnapPoints, converter=convertSnapPoints
+scroll-snap-points-y runtime_flag=CSSScrollSnapPoints, converter=convertSnapPoints
+scroll-snap-destination runtime_flag=CSSScrollSnapPoints, converter=convertPosition
+scroll-snap-coordinate runtime_flag=CSSScrollSnapPoints, converter=convertSnapCoordinates
 shape-image-threshold animatable, type_name=float
 shape-margin animatable, converter=convertLength
 shape-outside animatable, converter=convertShapeValue

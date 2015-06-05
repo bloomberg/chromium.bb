@@ -532,6 +532,11 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyAliasWebkitShapeImageThreshold: return 496;
     case CSSPropertyAliasWebkitShapeMargin: return 497;
     case CSSPropertyAliasWebkitShapeOutside: return 498;
+    case CSSPropertyScrollSnapType: return 499;
+    case CSSPropertyScrollSnapPointsX: return 500;
+    case CSSPropertyScrollSnapPointsY: return 501;
+    case CSSPropertyScrollSnapCoordinate: return 502;
+    case CSSPropertyScrollSnapDestination: return 503;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -548,7 +553,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 498; }
+static int maximumCSSSampleId() { return 503; }
 
 void UseCounter::muteForInspector()
 {

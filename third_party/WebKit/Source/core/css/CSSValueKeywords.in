@@ -1075,3 +1075,8 @@ path
 
 calc
 -webkit-calc
+
+// scroll-snap-type
+// none
+mandatory
+proximity

@@ -4719,6 +4719,39 @@ template<> inline CSSPrimitiveValue::operator ScrollBehavior() const
     return ScrollBehaviorAuto;
 }
 
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ScrollSnapType snapType)
+    : CSSValue(PrimitiveClass)
+{
+    m_primitiveUnitType = CSS_VALUE_ID;
+    switch (snapType) {
+    case ScrollSnapTypeNone:
+        m_value.valueID = CSSValueNone;
+        break;
+    case ScrollSnapTypeMandatory:
+        m_value.valueID = CSSValueMandatory;
+        break;
+    case ScrollSnapTypeProximity:
+        m_value.valueID = CSSValueProximity;
+        break;
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator ScrollSnapType() const
+{
+    switch (getValueID()) {
+    case CSSValueNone:
+        return ScrollSnapTypeNone;
+    case CSSValueMandatory:
+        return ScrollSnapTypeMandatory;
+    case CSSValueProximity:
+        return ScrollSnapTypeProximity;
+    default:
+        break;
+    }
+    ASSERT_NOT_REACHED();
+    return ScrollSnapTypeNone;
+}
+
 } // namespace blink
 
 #endif

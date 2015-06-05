@@ -727,7 +727,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return result;
     }
     case CSSPropertyObjectPosition:
-        parsedValue = parseObjectPosition();
+        parsedValue = parsePosition(m_valueList);
         break;
     case CSSPropertyListStyleImage:     // <uri> | none | inherit
     case CSSPropertyBorderImageSource:
@@ -1495,6 +1495,17 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         validPrimitive = false;
         break;
 
+    case CSSPropertyScrollSnapPointsX:
+    case CSSPropertyScrollSnapPointsY:
+        parsedValue = parseScrollSnapPoints();
+        break;
+    case CSSPropertyScrollSnapCoordinate:
+        parsedValue = parseScrollSnapCoordinate();
+        break;
+    case CSSPropertyScrollSnapDestination:
+        parsedValue = parsePosition(m_valueList);
+        break;
+
     default:
         return parseSVGValue(propId, important);
     }
@@ -2006,6 +2017,44 @@ bool CSSPropertyParser::parse4Values(CSSPropertyID propId, const CSSPropertyID *
     }
 
     return true;
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseScrollSnapPoints()
+{
+    CSSParserValue* value = m_valueList->current();
+
+    if (value->id == CSSValueNone) {
+        m_valueList->next();
+        return cssValuePool().createIdentifierValue(CSSValueNone);
+    }
+
+    if (value->unit == CSSParserValue::Function && value->function->id == CSSValueRepeat) {
+        // The spec defines the following grammar: repeat( <length>)
+        CSSParserValueList* arguments = value->function->args.get();
+        if (!arguments || arguments->size() != 1)
+            return nullptr;
+
+        CSSParserValue* repeatValue = arguments->valueAt(0);
+        if (!validUnit(repeatValue, FNonNeg | FLength | FPercent))
+            return nullptr;
+
+        RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValueRepeat);
+        result->append(parseValidPrimitive(repeatValue->id, repeatValue));
+        m_valueList->next();
+        return result.release();
+    }
+
+    return nullptr;
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseScrollSnapCoordinate()
+{
+    if (m_valueList->current()->id == CSSValueNone) {
+        m_valueList->next();
+        return cssValuePool().createIdentifierValue(CSSValueNone);
+    }
+
+    return parsePositionList(m_valueList);
 }
 
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parsePage()
@@ -5549,14 +5598,35 @@ bool CSSPropertyParser::parseFlex(CSSParserValueList* args, bool important)
     return true;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseObjectPosition()
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePosition(CSSParserValueList* valueList)
 {
     RefPtrWillBeRawPtr<CSSValue> xValue = nullptr;
     RefPtrWillBeRawPtr<CSSValue> yValue = nullptr;
-    parseFillPosition(m_valueList, xValue, yValue);
+    parseFillPosition(valueList, xValue, yValue);
     if (!xValue || !yValue)
         return nullptr;
     return createPrimitiveValuePair(toCSSPrimitiveValue(xValue.get()), toCSSPrimitiveValue(yValue.get()), Pair::KeepIdenticalValues);
+}
+
+// Parses a list of comma separated positions. i.e., <position>#
+PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parsePositionList(CSSParserValueList* valueList)
+{
+    RefPtrWillBeRawPtr<CSSValueList> positions = CSSValueList::createCommaSeparated();
+    while (true) {
+        // parsePosition consumes values until it reaches a separator [,/],
+        // an invalid token, or end of the list
+        RefPtrWillBeRawPtr<CSSValue> position = parsePosition(valueList);
+        if (!position)
+            return nullptr;
+        positions->append(position);
+
+        if (!valueList->current())
+            break;
+        if (!consumeComma(valueList) || !valueList->current())
+            return nullptr;
+    }
+
+    return positions.release();
 }
 
 class BorderImageParseContext {
@@ -7150,6 +7220,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFilter()
 
     return list.release();
 }
+
 PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransformOrigin()
 {
     CSSParserValue* value = m_valueList->current();

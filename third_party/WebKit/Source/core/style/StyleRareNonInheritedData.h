@@ -38,6 +38,7 @@
 #include "core/style/NinePieceImage.h"
 #include "core/style/ShapeValue.h"
 #include "core/style/StyleContentAlignmentData.h"
+#include "core/style/StyleScrollSnapData.h"
 #include "core/style/StyleSelfAlignmentData.h"
 #include "platform/LengthPoint.h"
 #include "wtf/OwnPtr.h"
@@ -117,6 +118,7 @@ public:
 
     DataRef<StyleGridData> m_grid;
     DataRef<StyleGridItemData> m_gridItem;
+    DataRef<StyleScrollSnapData> m_scrollSnap;
 
     OwnPtr<ContentData> m_content;
     OwnPtr<CounterDirectiveMap> m_counterDirectives;
@@ -189,6 +191,8 @@ public:
     unsigned m_scrollBehavior: 2;
 
     unsigned m_scrollBlocksOn: 3; // WebScrollBlocksOn
+
+    unsigned m_scrollSnapType: 2; // ScrollSnapType
 
     // Plugins require accelerated compositing for reasons external to blink.
     // In which case, we need to update the ComputedStyle on the LayoutEmbeddedObject,

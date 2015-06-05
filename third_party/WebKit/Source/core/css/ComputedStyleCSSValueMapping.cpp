@@ -1342,6 +1342,42 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::valueForFont(cons
     return list.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> valueForScrollSnapDestination(const LengthPoint& destination, const ComputedStyle& style)
+{
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+    list->append(zoomAdjustedPixelValueForLength(destination.x(), style));
+    list->append(zoomAdjustedPixelValueForLength(destination.y(), style));
+    return list.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> valueForScrollSnapPoints(const ScrollSnapPoints& points, const ComputedStyle& style)
+{
+    if (points.hasRepeat) {
+        RefPtrWillBeRawPtr<CSSFunctionValue> repeat = CSSFunctionValue::create(CSSValueRepeat);
+        repeat->append(zoomAdjustedPixelValueForLength(points.repeatOffset, style));
+        return repeat.release();
+    }
+
+    return cssValuePool().createIdentifierValue(CSSValueNone);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> valueForScrollSnapCoordinate(const Vector<LengthPoint>& coordinates, const ComputedStyle& style)
+{
+    if (coordinates.isEmpty())
+        return cssValuePool().createIdentifierValue(CSSValueNone);
+
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+
+    for (auto& coordinate : coordinates) {
+        auto pair = CSSValueList::createSpaceSeparated();
+        pair->append(zoomAdjustedPixelValueForLength(coordinate.x(), style));
+        pair->append(zoomAdjustedPixelValueForLength(coordinate.y(), style));
+        list->append(pair);
+    }
+
+    return list.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const ComputedStyle& style, const LayoutObject* layoutObject, Node* styledNode, bool allowVisitedStyle)
 {
     const SVGComputedStyle& svgStyle = style.svgStyle();
@@ -2592,6 +2628,16 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return zoomAdjustedPixelValueForLength(svgStyle.rx(), style);
     case CSSPropertyRy:
         return zoomAdjustedPixelValueForLength(svgStyle.ry(), style);
+    case CSSPropertyScrollSnapType:
+        return cssValuePool().createValue(style.scrollSnapType());
+    case CSSPropertyScrollSnapPointsX:
+        return valueForScrollSnapPoints(style.scrollSnapPointsX(), style);
+    case CSSPropertyScrollSnapPointsY:
+        return valueForScrollSnapPoints(style.scrollSnapPointsY(), style);
+    case CSSPropertyScrollSnapCoordinate:
+        return valueForScrollSnapCoordinate(style.scrollSnapCoordinate(), style);
+    case CSSPropertyScrollSnapDestination:
+        return valueForScrollSnapDestination(style.scrollSnapDestination(), style);
 
     case CSSPropertyAll:
         return nullptr;
