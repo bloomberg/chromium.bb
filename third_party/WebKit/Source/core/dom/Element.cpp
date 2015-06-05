@@ -1111,11 +1111,13 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
     StyleResolver* styleResolver = document().styleResolver();
     bool testShouldInvalidateStyle = inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange;
 
-    if (isStyledElement() && name == styleAttr) {
-        styleAttributeChanged(newValue, reason);
-    } else if (isStyledElement() && isPresentationAttribute(name)) {
-        elementData()->m_presentationAttributeStyleIsDirty = true;
-        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
+    if (isStyledElement()) {
+        if (name == styleAttr) {
+            styleAttributeChanged(newValue, reason);
+        } else if (isPresentationAttribute(name)) {
+            elementData()->m_presentationAttributeStyleIsDirty = true;
+            setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
+        }
     }
 
     if (name == HTMLNames::idAttr) {
