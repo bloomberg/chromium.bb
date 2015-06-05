@@ -1316,6 +1316,13 @@ test("base_unittests") {
     "//third_party/icu",
   ]
 
+  data = [
+    "test/data/",
+
+    # TODO(dpranke): Remove when icu declares this directly.
+    "$root_out_dir/icudtl.dat",
+  ]
+
   # Allow more direct string conversions on platforms with native utf8
   # strings
   if (is_mac || is_ios || is_chromeos) {

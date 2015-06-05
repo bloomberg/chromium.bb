@@ -16,6 +16,7 @@ import ast
 import json
 import os
 import pipes
+import pprint
 import shlex
 import shutil
 import sys
@@ -75,7 +76,7 @@ class MetaBuildWrapper(object):
                             help='analyze whether changes to a set of files '
                                  'will cause a set of binaries to be rebuilt.')
     AddCommonOptions(subp)
-    subp.add_argument('path', type=str, nargs=1,
+    subp.add_argument('path', nargs=1,
                       help='path build was generated into.')
     subp.add_argument('input_path', nargs=1,
                       help='path to a file containing the input arguments '
@@ -88,9 +89,22 @@ class MetaBuildWrapper(object):
     subp = subps.add_parser('gen',
                             help='generate a new set of build files')
     AddCommonOptions(subp)
-    subp.add_argument('path', type=str, nargs=1,
+    subp.add_argument('path', nargs=1,
                       help='path to generate build into')
     subp.set_defaults(func=self.CmdGen)
+
+    subp = subps.add_parser('isolate',
+                            help='build isolates')
+    AddCommonOptions(subp)
+    subp.add_argument('path', nargs=1,
+                      help='path build was generated into.')
+    subp.add_argument('input_path', nargs=1,
+                      help='path to a file containing the input arguments '
+                           'as a JSON object.')
+    subp.add_argument('output_path', nargs=1,
+                      help='path to a file containing the output arguments '
+                           'as a JSON object.')
+    subp.set_defaults(func=self.CmdIsolate)
 
     subp = subps.add_parser('lookup',
                             help='look up the command for a given config or '
@@ -127,6 +141,17 @@ class MetaBuildWrapper(object):
     if vals['type'] == 'gyp':
       return self.RunGYPGen(self.args.path[0], vals)
 
+    raise MBErr('Unknown meta-build type "%s"' % vals['type'])
+
+  def CmdIsolate(self):
+    vals = self.GetConfig()
+    if vals['type'] == 'gn':
+      return self.RunGNIsolate(vals)
+    if vals['type'] == 'gyp':
+      # For GYP builds the .isolate files are checked in and the
+      # .isolate.gen.json files are generated during the compile,
+      # so there is no work to do here.
+      return 0
     raise MBErr('Unknown meta-build type "%s"' % vals['type'])
 
   def CmdLookup(self):
@@ -367,6 +392,123 @@ class MetaBuildWrapper(object):
 
     return ret
 
+  def RunGNIsolate(self, vals):
+    build_path = self.args.path[0]
+    inp = self.ReadInputJSON(['targets'])
+    if self.args.verbose:
+      self.Print()
+      self.Print('isolate input:')
+      self.PrintJSON(inp)
+      self.Print()
+    output_path = self.args.output_path[0]
+
+    for target in inp['targets']:
+      runtime_deps_path = self.ToAbsPath(build_path, target + '.runtime_deps')
+
+      if not self.Exists(runtime_deps_path):
+        self.WriteFailureAndRaise('"%s" does not exist' % runtime_deps_path,
+                                  output_path)
+
+      command, extra_files = self.GetIsolateCommand(target, vals)
+
+      runtime_deps = self.ReadFile(runtime_deps_path).splitlines()
+
+
+      isolate_path = self.ToAbsPath(build_path, target + '.isolate')
+      self.WriteFile(isolate_path,
+        pprint.pformat({
+          'variables': {
+            'command': command,
+            'files': sorted(runtime_deps + extra_files),
+            'read_only': 1,
+          }
+        }) + '\n')
+
+      self.WriteJSON(
+        {
+          'args': [
+            '--isolated',
+            self.ToSrcRelPath('%s/%s.isolated' % (build_path, target)),
+            '--isolate',
+            self.ToSrcRelPath('%s/%s.isolate' % (build_path, target)),
+          ],
+          'dir': self.chromium_src_dir,
+          'version': 1,
+        },
+        isolate_path + '.gen.json',
+      )
+
+    return 0
+
+  def GetIsolateCommand(self, target, vals):
+    output_path = self.args.output_path[0]
+
+    extra_files = []
+
+    # TODO(dpranke): We should probably pull this from
+    # the test list info in //testing/buildbot/*.json,
+    # and assert that the test has can_use_on_swarming_builders: True,
+    # but we hardcode it here for now.
+    test_type = {}.get(target, 'gtest_test')
+
+    # This needs to mirror the settings in //build/config/ui.gni:
+    # use_x11 = is_linux && !use_ozone.
+    # TODO(dpranke): Figure out how to keep this in sync better.
+    use_x11 = (sys.platform == 'linux2' and
+               not 'target_os="android"' in vals['gn_args'] and
+               not 'use_ozone=true' in vals['gn_args'])
+
+    asan = 'is_asan=true' in vals['gn_args']
+    msan = 'is_msan=true' in vals['gn_args']
+    tsan = 'is_tsan=true' in vals['gn_args']
+
+    executable_suffix = '.exe' if sys.platform == 'win32' else ''
+
+    if test_type == 'gtest_test':
+      extra_files.append('../../testing/test_env.py')
+
+      if use_x11:
+        # TODO(dpranke): Figure out some way to figure out which
+        # test steps really need xvfb.
+        extra_files.append('xdisplaycheck')
+        extra_files.append('../../testing/xvfb.py')
+
+        cmdline = [
+          '../../testing/xvfb.py',
+          '.',
+          './' + str(target),
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=%d' % asan,
+          '--msan=%d' % msan,
+          '--tsan=%d' % tsan,
+        ]
+      else:
+        cmdline = [
+          '../../testing/test_env.py',
+          '.',
+          './' + str(target) + executable_suffix,
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=%d' % asan,
+          '--msan=%d' % msan,
+          '--tsan=%d' % tsan,
+        ]
+    else:
+      # TODO(dpranke): Handle script_tests and other types of
+      # swarmed tests.
+      self.WriteFailureAndRaise('unknown test type "%s" for %s' %
+                                (test_type, target),
+                                output_path)
+
+
+    return cmdline, extra_files
+
+  def ToAbsPath(self, build_path, relpath):
+    return os.path.join(self.chromium_src_dir,
+                        self.ToSrcRelPath(build_path),
+                        relpath)
+
   def ToSrcRelPath(self, path):
     """Returns a relative path from the top of the repo."""
     # TODO: Support normal paths in addition to source-absolute paths.
@@ -401,7 +543,7 @@ class MetaBuildWrapper(object):
     return cmd
 
   def RunGNAnalyze(self, _vals):
-    inp = self.GetAnalyzeInput()
+    inp = self.ReadInputJSON(['files', 'targets'])
     if self.args.verbose:
       self.Print()
       self.Print('analyze input:')
@@ -480,7 +622,7 @@ class MetaBuildWrapper(object):
 
     return 0
 
-  def GetAnalyzeInput(self):
+  def ReadInputJSON(self, required_keys):
     path = self.args.input_path[0]
     output_path = self.args.output_path[0]
     if not self.Exists(path):
@@ -491,12 +633,11 @@ class MetaBuildWrapper(object):
     except Exception as e:
       self.WriteFailureAndRaise('Failed to read JSON input from "%s": %s' %
                                 (path, e), output_path)
-    if not 'files' in inp:
-      self.WriteFailureAndRaise('input file is missing a "files" key',
-                                output_path)
-    if not 'targets' in inp:
-      self.WriteFailureAndRaise('input file is missing a "targets" key',
-                                output_path)
+
+    for k in required_keys:
+      if not k in inp:
+        self.WriteFailureAndRaise('input file is missing a "%s" key' % k,
+                                  output_path)
 
     return inp
 
