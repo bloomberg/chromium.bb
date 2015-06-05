@@ -13,6 +13,7 @@ import com.google.android.apps.chrome.R;
 
 import org.chromium.chrome.browser.CompositorChromeActivity;
 import org.chromium.chrome.browser.ContentViewUtil;
+import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
@@ -20,6 +21,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -27,6 +29,20 @@ import org.chromium.ui.base.WindowAndroid;
  * A chrome tab that is only used as a custom tab.
  */
 public class CustomTab extends ChromeTab {
+    private static class LoadUrlTabObserver extends EmptyTabObserver {
+        private ChromeBrowserConnection mChromeBrowserConnection;
+        private long mSessionId;
+
+        @Override
+        public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+            mChromeBrowserConnection.registerLaunch(mSessionId, params.getUrl());
+        }
+
+        public LoadUrlTabObserver(ChromeBrowserConnection chromeBrowserConnection, long sessionId) {
+            mChromeBrowserConnection = chromeBrowserConnection;
+            mSessionId = sessionId;
+        }
+    }
 
     private TabChromeContextMenuItemDelegate
             mContextMenuDelegate = new TabChromeContextMenuItemDelegate() {
@@ -45,13 +61,15 @@ public class CustomTab extends ChromeTab {
             long sessionId, String url, int parentTabId) {
         super(Tab.generateValidId(Tab.INVALID_TAB_ID), activity, false, windowAndroid,
                 TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);
-        WebContents webContents = ChromeBrowserConnection.getInstance(activity.getApplication())
-                                          .takePrerenderedUrl(sessionId, url, null);
+        ChromeBrowserConnection browserConnection =
+                ChromeBrowserConnection.getInstance(activity.getApplication());
+        WebContents webContents = browserConnection.takePrerenderedUrl(sessionId, url, null);
         if (webContents == null) {
             webContents = ContentViewUtil.createWebContents(isIncognito(), false);
         }
         initialize(webContents, activity.getTabContentManager(), false);
         getView().requestFocus();
+        addObserver(new LoadUrlTabObserver(browserConnection, sessionId));
     }
 
     @Override

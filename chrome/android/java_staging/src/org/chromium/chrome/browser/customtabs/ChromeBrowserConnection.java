@@ -18,6 +18,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.util.LongSparseArray;
 import android.util.SparseArray;
 
@@ -25,6 +26,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.content.browser.ChildProcessLauncher;
@@ -34,6 +36,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -43,6 +46,12 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     private static final String TAG = Log.makeTag("ChromeConnection");
     private static final long RESULT_OK = 0;
     private static final long RESULT_ERROR = -1;
+
+    // Values for the "CustomTabs.PredictionStatus" UMA histogram. Append-only.
+    private static final int NO_PREDICTION = 0;
+    private static final int GOOD_PREDICTION = 1;
+    private static final int BAD_PREDICTION = 2;
+    private static final int PREDICTION_STATUS_COUNT = 3;
 
     private static final Object sConstructionLock = new Object();
     private static ChromeBrowserConnection sInstance;
@@ -54,10 +63,14 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     private static class SessionParams {
         public final int mUid;
         private ServiceConnection mServiceConnection;
+        private String mPredictedUrl;
+        private long mLastMayLaunchUrlTimestamp;
 
         public SessionParams(int uid) {
             mUid = uid;
             mServiceConnection = null;
+            mPredictedUrl = null;
+            mLastMayLaunchUrlTimestamp = 0;
         }
 
         public ServiceConnection getServiceConnection() {
@@ -66,6 +79,19 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
 
         public void setServiceConnection(ServiceConnection serviceConnection) {
             mServiceConnection = serviceConnection;
+        }
+
+        public void setPredictionMetrics(String predictedUrl, long lastMayLaunchUrlTimestamp) {
+            mPredictedUrl = predictedUrl;
+            mLastMayLaunchUrlTimestamp = lastMayLaunchUrlTimestamp;
+        }
+
+        public String getPredictedUrl() {
+            return mPredictedUrl;
+        }
+
+        public long getLastMayLaunchUrlTimestamp() {
+            return mLastMayLaunchUrlTimestamp;
         }
     }
 
@@ -182,6 +208,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         synchronized (mLock) {
             SessionParams sessionParams = mSessionParams.get(sessionId);
             if (sessionParams == null || sessionParams.mUid != uid) return RESULT_ERROR;
+            sessionParams.setPredictionMetrics(url, SystemClock.elapsedRealtime());
         }
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
@@ -192,6 +219,35 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         });
         // TODO(lizeb): Prerendering.
         return sessionId;
+    }
+
+    /**
+     * Registers a launch of a |url| for a given |sessionId|.
+     *
+     * This is used for accounting.
+     */
+    void registerLaunch(long sessionId, String url) {
+        int outcome;
+        long elapsedTimeMs = -1;
+        synchronized (mLock) {
+            SessionParams sessionParams = mSessionParams.get(sessionId);
+            if (sessionParams == null) {
+                outcome = NO_PREDICTION;
+            } else {
+                String predictedUrl = sessionParams.getPredictedUrl();
+                outcome = predictedUrl == null ? NO_PREDICTION
+                        : predictedUrl.equals(url) ? GOOD_PREDICTION : BAD_PREDICTION;
+                elapsedTimeMs = SystemClock.elapsedRealtime()
+                        - sessionParams.getLastMayLaunchUrlTimestamp();
+                sessionParams.setPredictionMetrics(null, 0);
+            }
+        }
+        RecordHistogram.recordEnumeratedHistogram(
+                "CustomTabs.PredictionStatus", outcome, PREDICTION_STATUS_COUNT);
+        if (outcome == GOOD_PREDICTION) {
+            RecordHistogram.recordCustomTimesHistogram("CustomTabs.PredictionToLaunch",
+                    elapsedTimeMs, 1, TimeUnit.MINUTES.toMillis(3), TimeUnit.MILLISECONDS, 100);
+        }
     }
 
     /**

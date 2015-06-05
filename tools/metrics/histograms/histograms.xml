@@ -4420,6 +4420,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="CustomTabs.PredictionStatus" enum="PredictionStatus">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    For Custom Tabs, records whether mayLaunchUrl() has been called, and if so,
+    whether the call was later matched by a URL launch.
+  </summary>
+</histogram>
+
+<histogram name="CustomTabs.PredictionToLaunch" units="ms">
+  <owner>lizeb@chromium.org</owner>
+  <summary>
+    When a URL prediction succeeds, time in ms between the prediction and the
+    actual launch.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.AutoLoFiRequestHeaderState"
     enum="DataReductionProxyAutoLoFiRequestHeaderState">
   <owner>tbansal@chromium.org</owner>
@@ -62348,6 +62364,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="PreconnectTriggerUsed" type="int">
   <int value="0" label="The pre-connect triggered host was not accessed"/>
   <int value="1" label="The pre-connect triggered host was accessed"/>
+</enum>
+
+<enum name="PredictionStatus" type="int">
+  <int value="0" label="No prediction"/>
+  <int value="1" label="Successful prediction"/>
+  <int value="2" label="Wrong prediction"/>
 </enum>
 
 <enum name="PrefetchStatus" type="int">
