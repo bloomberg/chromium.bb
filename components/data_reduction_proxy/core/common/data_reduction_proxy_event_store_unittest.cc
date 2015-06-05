@@ -42,6 +42,12 @@ class DataReductionProxyEventStoreTest : public testing::Test {
     return entries[0];
   }
 
+  net::TestNetLogEntry GetLatestEntry() const {
+    net::TestNetLogEntry::List entries;
+    net_log_->GetEntries(&entries);
+    return entries.back();
+  }
+
   DataReductionProxyEventStore* event_store() { return event_store_.get(); }
 
   DataReductionProxyEventCreator* event_creator() {
@@ -155,6 +161,49 @@ TEST_F(DataReductionProxyEventStoreTest, TestEndSecureProxyCheck) {
             entry.type);
   EXPECT_EQ(DataReductionProxyEventStorageDelegate::CHECK_SUCCESS,
             secure_proxy_check_state());
+}
+
+TEST_F(DataReductionProxyEventStoreTest, TestEndSecureProxyCheckFailed) {
+  const struct {
+    const char* test_case;
+    int net_error;
+    int http_response_code;
+    bool secure_proxy_check_succeeded;
+    bool expected_proxy_check_succeeded;
+  } tests[] = {
+      {
+       "Succeeded", net::OK, net::HTTP_OK, true, true,
+      },
+      {
+       "Net failure", net::ERR_CONNECTION_RESET, -1, false, false,
+      },
+      {
+       "HTTP failure", net::OK, net::HTTP_NOT_FOUND, false, false,
+      },
+      {
+       "Bad content", net::OK, net::HTTP_OK, false, false,
+      },
+  };
+  size_t expected_event_count = 0;
+  EXPECT_EQ(expected_event_count, net_log()->GetSize());
+  EXPECT_EQ(expected_event_count++, event_count());
+  EXPECT_EQ(DataReductionProxyEventStorageDelegate::CHECK_UNKNOWN,
+            secure_proxy_check_state());
+  for (const auto& test : tests) {
+    event_creator()->EndSecureProxyCheck(bound_net_log(), test.net_error,
+                                         test.http_response_code,
+                                         test.secure_proxy_check_succeeded);
+    EXPECT_EQ(expected_event_count, net_log()->GetSize()) << test.test_case;
+    EXPECT_EQ(expected_event_count++, event_count()) << test.test_case;
+    net::TestNetLogEntry entry = GetLatestEntry();
+    EXPECT_EQ(net::NetLog::TYPE_DATA_REDUCTION_PROXY_CANARY_REQUEST, entry.type)
+        << test.test_case;
+    EXPECT_EQ(test.secure_proxy_check_succeeded
+                  ? DataReductionProxyEventStorageDelegate::CHECK_SUCCESS
+                  : DataReductionProxyEventStorageDelegate::CHECK_FAILED,
+              secure_proxy_check_state())
+        << test.test_case;
+  }
 }
 
 }  // namespace data_reduction_proxy

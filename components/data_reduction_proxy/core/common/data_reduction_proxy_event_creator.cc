@@ -257,8 +257,8 @@ void DataReductionProxyEventCreator::EndSecureProxyCheck(
   PostBoundNetLogSecureProxyCheckEvent(
       net_log, net::NetLog::TYPE_DATA_REDUCTION_PROXY_CANARY_REQUEST,
       net::NetLog::PHASE_END,
-      net_error == 0 ? DataReductionProxyEventStorageDelegate::CHECK_SUCCESS
-                     : DataReductionProxyEventStorageDelegate::CHECK_FAILED,
+      succeeded ? DataReductionProxyEventStorageDelegate::CHECK_SUCCESS
+                : DataReductionProxyEventStorageDelegate::CHECK_FAILED,
       parameters_callback);
 }
 
