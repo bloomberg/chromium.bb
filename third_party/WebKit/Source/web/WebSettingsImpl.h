@@ -94,7 +94,6 @@ public:
     virtual void setEnableTouchAdjustment(bool) override;
     virtual bool multiTargetTapNotificationEnabled() override;
     virtual void setMultiTargetTapNotificationEnabled(bool) override;
-    virtual void setRegionBasedColumnsEnabled(bool) override;
     virtual void setExperimentalWebGLEnabled(bool) override;
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     virtual void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
