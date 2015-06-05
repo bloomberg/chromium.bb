@@ -20,12 +20,11 @@
 #ifndef SVGTextChunkBuilder_h
 #define SVGTextChunkBuilder_h
 
-#include "platform/transforms/AffineTransform.h"
-#include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
+class AffineTransform;
 class SVGInlineTextBox;
 struct SVGTextFragment;
 
@@ -41,7 +40,6 @@ public:
     SVGTextChunkBuilder();
 
     void processTextChunks(const Vector<SVGInlineTextBox*>&);
-    void finalizeTransformMatrices(const Vector<SVGInlineTextBox*>&) const;
 
 protected:
     typedef Vector<SVGInlineTextBox*>::const_iterator BoxListConstIterator;
@@ -50,9 +48,8 @@ protected:
 
 private:
     void processTextLengthSpacingCorrection(bool isVerticalText, float textLengthShift, Vector<SVGTextFragment>&, unsigned& atCharacter);
+    void applyTextLengthScaleAdjustment(const AffineTransform&, Vector<SVGTextFragment>&);
     void processTextAnchorCorrection(bool isVerticalText, float textAnchorShift, Vector<SVGTextFragment>&);
-
-    HashMap<SVGInlineTextBox*, AffineTransform> m_textBoxTransformations;
 };
 
 class SVGTextPathChunkBuilder final : public SVGTextChunkBuilder {

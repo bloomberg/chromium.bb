@@ -269,11 +269,7 @@ void SVGTextLayoutEngine::finishLayout()
     SVGTextChunkBuilder chunkLayoutBuilder;
     chunkLayoutBuilder.processTextChunks(m_lineLayoutBoxes);
 
-    // Finalize transform matrices, after the chunk layout corrections have been applied, and all fragment x/y positions are finalized.
-    if (!m_lineLayoutBoxes.isEmpty()) {
-        chunkLayoutBuilder.finalizeTransformMatrices(m_lineLayoutBoxes);
-        m_lineLayoutBoxes.clear();
-    }
+    m_lineLayoutBoxes.clear();
 }
 
 bool SVGTextLayoutEngine::currentLogicalCharacterAttributes(SVGTextLayoutAttributes*& logicalAttributes)

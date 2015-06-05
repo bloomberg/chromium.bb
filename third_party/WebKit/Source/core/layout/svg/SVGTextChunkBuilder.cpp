@@ -24,6 +24,7 @@
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGTextContentElement.h"
+#include "platform/transforms/AffineTransform.h"
 
 namespace blink {
 
@@ -249,7 +250,7 @@ void SVGTextChunkBuilder::handleTextChunk(BoxListConstIterator boxStart, BoxList
                     buildSpacingAndGlyphsTransform(isVerticalText, textLengthScale, fragments.first(), spacingAndGlyphsTransform);
                 }
 
-                m_textBoxTransformations.set(textBox, spacingAndGlyphsTransform);
+                applyTextLengthScaleAdjustment(spacingAndGlyphsTransform, fragments);
             }
         }
     }
@@ -268,10 +269,7 @@ void SVGTextChunkBuilder::handleTextChunk(BoxListConstIterator boxStart, BoxList
 
 void SVGTextChunkBuilder::processTextLengthSpacingCorrection(bool isVerticalText, float textLengthShift, Vector<SVGTextFragment>& fragments, unsigned& atCharacter)
 {
-    unsigned fragmentCount = fragments.size();
-    for (unsigned i = 0; i < fragmentCount; ++i) {
-        SVGTextFragment& fragment = fragments[i];
-
+    for (SVGTextFragment& fragment : fragments) {
         if (isVerticalText)
             fragment.y += textLengthShift * atCharacter;
         else
@@ -281,33 +279,21 @@ void SVGTextChunkBuilder::processTextLengthSpacingCorrection(bool isVerticalText
     }
 }
 
+void SVGTextChunkBuilder::applyTextLengthScaleAdjustment(const AffineTransform& spacingAndGlyphsTransform, Vector<SVGTextFragment>& fragments)
+{
+    for (SVGTextFragment& fragment : fragments) {
+        ASSERT(fragment.lengthAdjustTransform.isIdentity());
+        fragment.lengthAdjustTransform = spacingAndGlyphsTransform;
+    }
+}
+
 void SVGTextChunkBuilder::processTextAnchorCorrection(bool isVerticalText, float textAnchorShift, Vector<SVGTextFragment>& fragments)
 {
-    unsigned fragmentCount = fragments.size();
-    for (unsigned i = 0; i < fragmentCount; ++i) {
-        SVGTextFragment& fragment = fragments[i];
-
+    for (SVGTextFragment& fragment : fragments) {
         if (isVerticalText)
             fragment.y += textAnchorShift;
         else
             fragment.x += textAnchorShift;
-    }
-}
-
-void SVGTextChunkBuilder::finalizeTransformMatrices(const Vector<SVGInlineTextBox*>& boxes) const
-{
-    if (m_textBoxTransformations.isEmpty())
-        return;
-
-    for (SVGInlineTextBox* textBox : boxes) {
-        AffineTransform textBoxTransformation = m_textBoxTransformations.get(textBox);
-        if (textBoxTransformation.isIdentity())
-            continue;
-
-        for (SVGTextFragment& fragment : textBox->textFragments()) {
-            ASSERT(fragment.lengthAdjustTransform.isIdentity());
-            fragment.lengthAdjustTransform = textBoxTransformation;
-        }
     }
 }
 
