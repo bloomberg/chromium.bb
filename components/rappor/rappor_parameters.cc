@@ -10,19 +10,14 @@
 namespace rappor {
 
 std::string RapporParameters::ToString() const {
-  return base::StringPrintf(
-      "{ %d, %d, %d, { %d, %d, %d, %d }, { %d, %d, %d, %d }, %d }",
+  return base::StringPrintf("{ %d, %d, %d, %d, %d, %d, %d, %d }",
       num_cohorts,
       bloom_filter_size_bytes,
       bloom_filter_hash_function_count,
-      string_noise.fake_prob,
-      string_noise.fake_one_prob,
-      string_noise.one_coin_prob,
-      string_noise.zero_coin_prob,
-      flag_noise.fake_prob,
-      flag_noise.fake_one_prob,
-      flag_noise.one_coin_prob,
-      flag_noise.zero_coin_prob,
+      fake_prob,
+      fake_one_prob,
+      one_coin_prob,
+      zero_coin_prob,
       recording_level);
 }
 

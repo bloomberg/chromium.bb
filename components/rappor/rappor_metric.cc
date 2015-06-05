@@ -39,7 +39,7 @@ void RapporMetric::AddSample(const std::string& str) {
 }
 
 ByteVector RapporMetric::GetReport(const std::string& secret) const {
-  return internal::GenerateReport(secret, parameters().string_noise, bytes());
+  return internal::GenerateReport(secret, parameters(), bytes());
 }
 
 void RapporMetric::SetBytesForTesting(const ByteVector& bytes) {

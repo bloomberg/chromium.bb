@@ -23,12 +23,9 @@ components/rappor/rappor_service.cc.
   <summary>
     Stricter parameters for metrics collected from a broader population.
   </summary>
-  <parameters num-cohorts="128" bytes="1" hash-functions="2"
+  <parameters num-cohorts="128" bytes="1" hash-functions="2" fake-prob="0.5"
+      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
       reporting-level="COARSE"/>
-  <string-noise fake-prob="0.5" fake-one-prob="0.5" one-coin-prob="0.75"
-      zero-coin-prob="0.25"/>
-  <flag-noise fake-prob="0.25" fake-one-prob="0.5" one-coin-prob="0.875"
-      zero-coin-prob="0.125"/>
 </rappor-parameters>
 
 <rappor-parameters name="ETLD_PLUS_ONE">
@@ -36,24 +33,18 @@ components/rappor/rappor_service.cc.
     Deprecated parameters for collecting the domain and registry of a URL from
     UMA opt-in users.
   </summary>
-  <parameters num-cohorts="128" bytes="16" hash-functions="2"
+  <parameters num-cohorts="128" bytes="16" hash-functions="2" fake-prob="0.5"
+      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
       reporting-level="FINE"/>
-  <string-noise fake-prob="0.5" fake-one-prob="0.5" one-coin-prob="0.75"
-      zero-coin-prob="0.25"/>
-  <flag-noise fake-prob="0.25" fake-one-prob="0.5" one-coin-prob="0.875"
-      zero-coin-prob="0.125"/>
 </rappor-parameters>
 
 <rappor-parameters name="UMA_RAPPOR_TYPE">
   <summary>
     Parameters suitable for metrics from UMA opt-in users.
   </summary>
-  <parameters num-cohorts="128" bytes="4" hash-functions="2"
+  <parameters num-cohorts="128" bytes="4" hash-functions="2" fake-prob="0.5"
+      fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
       reporting-level="FINE"/>
-  <string-noise fake-prob="0.5" fake-one-prob="0.5" one-coin-prob="0.75"
-      zero-coin-prob="0.25"/>
-  <flag-noise fake-prob="0.25" fake-one-prob="0.5" one-coin-prob="0.875"
-      zero-coin-prob="0.125"/>
 </rappor-parameters>
 
 </rappor-parameter-types>

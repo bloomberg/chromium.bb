@@ -14,7 +14,7 @@ namespace rappor {
 namespace internal {
 
 ByteVector GenerateReport(const std::string& secret,
-                          const NoiseParameters& parameters,
+                          const RapporParameters& parameters,
                           const ByteVector& value) {
   // Generate a deterministically random mask of fake data using the
   // client's secret key + real data as a seed.  The inclusion of the secret

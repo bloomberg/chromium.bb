@@ -10,13 +10,9 @@
 namespace rappor {
 
 enum Probability {
-  PROBABILITY_9375,  // 93.75%
-  PROBABILITY_875,   // 87.5%
   PROBABILITY_75,    // 75%
   PROBABILITY_50,    // 50%
   PROBABILITY_25,    // 25%
-  PROBABILITY_125,   // 12.5%
-  PROBABILITY_0625,  // 06.25%
 };
 
 
@@ -30,21 +26,6 @@ enum RecordingLevel {
   // Metrics suitable for UMA opt-in users.
   FINE_LEVEL,
 };
-
-
-// Parameters controlling how much noise to add to a field.
-struct NoiseParameters {
-  // The probability that a bit will be redacted with fake data.
-  Probability fake_prob;
-  // The probability that a fake bit will be a one.
-  Probability fake_one_prob;
-
-  // The probability that a one bit in the redacted data reports as one.
-  Probability one_coin_prob;
-  // The probability that a zero bit in the redacted data reports as one.
-  Probability zero_coin_prob;
-};
-
 
 // An object describing a rappor metric and the parameters used to generate it.
 //
@@ -67,11 +48,15 @@ struct RapporParameters {
   // The number of hash functions used in the Bloom filter.
   int bloom_filter_hash_function_count;
 
-  // Noise parameters for string fields.
-  NoiseParameters string_noise;
+  // The probability that a bit will be redacted with fake data.
+  Probability fake_prob;
+  // The probability that a fake bit will be a one.
+  Probability fake_one_prob;
 
-  // Noise parameters for flags fields.
-  NoiseParameters flag_noise;
+  // The probability that a one bit in the redacted data reports as one.
+  Probability one_coin_prob;
+  // The probability that a zero bit in the redacted data reports as one.
+  Probability zero_coin_prob;
 
   // The reporting level this metric is reported at.
   RecordingLevel recording_level;

@@ -51,14 +51,6 @@ class Sample {
   // RapporService::MakeSampleObj to create a sample.
   Sample(int32_t cohort_seed, const RapporParameters& parameters);
 
-  // Generate randomized report for one field and store it in |reports|.
-  void ExportField(const std::string& secret,
-                   const std::string& metric_name,
-                   const std::string& field_name,
-                   uint64_t field_value,
-                   const NoiseParameters& parameters,
-                   RapporReports* reports) const;
-
   const RapporParameters parameters_;
 
   // Offset used for bloom filter hash functions.
@@ -68,8 +60,7 @@ class Sample {
   std::map<std::string, size_t> sizes_;
 
   // The non-randomized report values for each field.
-  std::map<std::string, uint64_t> flags_fields_;
-  std::map<std::string, uint64_t> string_fields_;
+  std::map<std::string, uint64_t> fields_;
 
   DISALLOW_COPY_AND_ASSIGN(Sample);
 };
