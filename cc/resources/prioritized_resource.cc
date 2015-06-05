@@ -25,7 +25,9 @@ PrioritizedResource::PrioritizedResource(PrioritizedResourceManager* manager,
       is_self_managed_(false),
       backing_(NULL),
       manager_(NULL) {
-  bytes_ = Resource::MemorySizeBytes(size, format);
+  // We can use UncheckedMemorySizeBytes here, since the size is controlled by
+  // the compositor (used for tiles).
+  bytes_ = Resource::UncheckedMemorySizeBytes(size, format);
   if (manager)
     manager->RegisterTexture(this);
 }
@@ -51,7 +53,9 @@ void PrioritizedResource::SetDimensions(const gfx::Size& size,
     is_above_priority_cutoff_ = false;
     format_ = format;
     size_ = size;
-    bytes_ = Resource::MemorySizeBytes(size, format);
+    // We can use UncheckedMemorySizeBytes here, since the size is controlled by
+    // the compositor (used for tiles).
+    bytes_ = Resource::UncheckedMemorySizeBytes(size, format);
     DCHECK(manager_ || !backing_);
     if (manager_)
       manager_->ReturnBackingTexture(this);

@@ -9,6 +9,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -772,12 +773,13 @@ void ResourceProvider::CopyToResource(ResourceId id,
     gl->BindTexture(GL_TEXTURE_2D, resource->gl_id);
 
     if (resource->format == ETC1) {
-      // TODO(vmpstr): Make this overflow safe. crbug.com/495867
-      int num_bytes =
-          image_size.width() * image_size.height() * BitsPerPixel(ETC1) / 8;
+      base::CheckedNumeric<int> num_bytes = BitsPerPixel(ETC1);
+      num_bytes *= image_size.width();
+      num_bytes *= image_size.height();
+      num_bytes /= 8;
       gl->CompressedTexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(ETC1),
                                image_size.width(), image_size.height(), 0,
-                               num_bytes, image);
+                               num_bytes.ValueOrDie(), image);
     } else {
       gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_size.width(),
                         image_size.height(), GLDataFormat(resource->format),

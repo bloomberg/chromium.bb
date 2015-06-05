@@ -431,7 +431,10 @@ void PixelBufferTileTaskWorkerPool::CheckForCompletedUploads() {
     DCHECK(state_it != raster_task_states_.end());
     RasterTaskState& state = *state_it;
 
-    bytes_pending_upload_ -= task->resource()->bytes();
+    // We can use UncheckedMemorySizeBytes here, since these tasks come from
+    // tiles, the size of which is controlled by the compositor.
+    bytes_pending_upload_ -= Resource::UncheckedMemorySizeBytes(
+        task->resource()->size(), task->resource()->format());
 
     task->WillComplete();
     task->CompleteOnOriginThread(this);
@@ -537,7 +540,10 @@ void PixelBufferTileTaskWorkerPool::ScheduleMoreTasks() {
     // but if it's the only task allow it to complete no matter what its size,
     // to prevent starvation of the task queue.
     size_t new_bytes_pending_upload = bytes_pending_upload;
-    new_bytes_pending_upload += task->resource()->bytes();
+    // We can use UncheckedMemorySizeBytes here, since these tasks come from
+    // tiles, the size of which is controlled by the compositor.
+    new_bytes_pending_upload += Resource::UncheckedMemorySizeBytes(
+        task->resource()->size(), task->resource()->format());
     if (new_bytes_pending_upload > max_bytes_pending_upload_ &&
         bytes_pending_upload) {
       did_throttle_raster_tasks |= item.task_sets;
@@ -701,7 +707,10 @@ void PixelBufferTileTaskWorkerPool::CheckForCompletedRasterizerTasks() {
     resource_provider_->BeginSetPixels(raster_task->resource()->id());
     has_performed_uploads_since_last_flush_ = true;
 
-    bytes_pending_upload_ += raster_task->resource()->bytes();
+    // We can use UncheckedMemorySizeBytes here, since these tasks come from
+    // tiles, the size of which is controlled by the compositor.
+    bytes_pending_upload_ += Resource::UncheckedMemorySizeBytes(
+        raster_task->resource()->size(), raster_task->resource()->format());
     raster_tasks_with_pending_upload_.push_back(raster_task);
     state.type = RasterTaskState::UPLOADING;
   }

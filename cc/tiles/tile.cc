@@ -66,8 +66,12 @@ void Tile::AsValueInto(base::trace_event::TracedValue* value) const {
 }
 
 size_t Tile::GPUMemoryUsageInBytes() const {
-  if (draw_info_.resource_)
-    return draw_info_.resource_->bytes();
+  if (draw_info_.resource_) {
+    // We can use UncheckedSizeInBytes, since the tile size is determined by the
+    // compositor.
+    return Resource::UncheckedMemorySizeBytes(draw_info_.resource_->size(),
+                                              draw_info_.resource_->format());
+  }
   return 0;
 }
 

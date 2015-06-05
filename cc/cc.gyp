@@ -461,7 +461,6 @@
         'resources/priority_calculator.cc',
         'resources/priority_calculator.h',
         'resources/release_callback.h',
-        'resources/resource.cc',
         'resources/resource.h',
         'resources/resource_format.cc',
         'resources/resource_format.h',

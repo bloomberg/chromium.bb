@@ -47,7 +47,8 @@ scoped_ptr<ScopedResource> ResourcePool::AcquireResource(
       continue;
 
     unused_resources_.erase(it);
-    unused_memory_usage_bytes_ -= resource->bytes();
+    unused_memory_usage_bytes_ -=
+        Resource::UncheckedMemorySizeBytes(size, format);
     return make_scoped_ptr(resource);
   }
 
@@ -55,7 +56,9 @@ scoped_ptr<ScopedResource> ResourcePool::AcquireResource(
       ScopedResource::Create(resource_provider_);
   resource->AllocateManaged(size, target_, format);
 
-  memory_usage_bytes_ += resource->bytes();
+  DCHECK(Resource::VerifySizeInBytes(resource->size(), resource->format()));
+  memory_usage_bytes_ +=
+      Resource::UncheckedMemorySizeBytes(resource->size(), resource->format());
   ++resource_count_;
   return resource.Pass();
 }
@@ -75,7 +78,8 @@ scoped_ptr<ScopedResource> ResourcePool::TryAcquireResourceWithContentId(
   DCHECK(resource_provider_->CanLockForWrite(resource->id()));
 
   unused_resources_.erase(it);
-  unused_memory_usage_bytes_ -= resource->bytes();
+  unused_memory_usage_bytes_ -=
+      Resource::UncheckedMemorySizeBytes(resource->size(), resource->format());
   return make_scoped_ptr(resource);
 }
 
@@ -108,8 +112,10 @@ void ResourcePool::ReduceResourceUsage() {
     // memory is necessarily returned to the OS.
     ScopedResource* resource = unused_resources_.front().resource;
     unused_resources_.pop_front();
-    memory_usage_bytes_ -= resource->bytes();
-    unused_memory_usage_bytes_ -= resource->bytes();
+    size_t resource_bytes = Resource::UncheckedMemorySizeBytes(
+        resource->size(), resource->format());
+    memory_usage_bytes_ -= resource_bytes;
+    unused_memory_usage_bytes_ -= resource_bytes;
     --resource_count_;
     delete resource;
   }
@@ -145,7 +151,8 @@ void ResourcePool::CheckBusyResources(bool wait_if_needed) {
 
 void ResourcePool::DidFinishUsingResource(ScopedResource* resource,
                                           uint64_t content_id) {
-  unused_memory_usage_bytes_ += resource->bytes();
+  unused_memory_usage_bytes_ +=
+      Resource::UncheckedMemorySizeBytes(resource->size(), resource->format());
   unused_resources_.push_back(PoolResource(resource, content_id));
 }
 

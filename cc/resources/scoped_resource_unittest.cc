@@ -32,7 +32,8 @@ TEST(ScopedResourceTest, NewScopedResource) {
 
   // New scoped textures do not have a size yet.
   EXPECT_EQ(gfx::Size(), texture->size());
-  EXPECT_EQ(0u, texture->bytes());
+  EXPECT_EQ(0u, Resource::UncheckedMemorySizeBytes(texture->size(),
+                                                   texture->format()));
 }
 
 TEST(ScopedResourceTest, CreateScopedResource) {
@@ -51,7 +52,8 @@ TEST(ScopedResourceTest, CreateScopedResource) {
 
   // The texture has an allocated byte-size now.
   size_t expected_bytes = 30 * 30 * 4;
-  EXPECT_EQ(expected_bytes, texture->bytes());
+  EXPECT_EQ(expected_bytes, Resource::UncheckedMemorySizeBytes(
+                                texture->size(), texture->format()));
 
   EXPECT_LT(0u, texture->id());
   EXPECT_EQ(static_cast<unsigned>(RGBA_8888), texture->format());

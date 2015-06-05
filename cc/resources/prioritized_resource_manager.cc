@@ -256,8 +256,7 @@ void PrioritizedResourceManager::AcquireBackingTextureIfNeeded(
   if (!backing) {
     EvictBackingsToReduceMemory(memory_available_bytes_ - texture->bytes(),
                                 PriorityCalculator::AllowEverythingCutoff(),
-                                EVICT_ONLY_RECYCLABLE,
-                                DO_NOT_UNLINK_BACKINGS,
+                                EVICT_ONLY_RECYCLABLE, DO_NOT_UNLINK_BACKINGS,
                                 resource_provider);
     backing =
         CreateBacking(texture->size(), texture->format(), resource_provider);
@@ -323,7 +322,8 @@ void PrioritizedResourceManager::ReduceWastedMemory(
       break;
     if ((*it)->in_parent_compositor())
       continue;
-    wasted_memory += (*it)->bytes();
+    wasted_memory +=
+        Resource::UncheckedMemorySizeBytes((*it)->size(), (*it)->format());
   }
   size_t wasted_memory_to_allow = memory_available_bytes_ / 10;
   // If the external priority cutoff indicates that unused memory should be
@@ -454,7 +454,8 @@ PrioritizedResource::Backing* PrioritizedResourceManager::CreateBacking(
       ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
   PrioritizedResource::Backing* backing = new PrioritizedResource::Backing(
       resource_id, resource_provider, size, format);
-  memory_use_bytes_ += backing->bytes();
+  memory_use_bytes_ +=
+      Resource::UncheckedMemorySizeBytes(backing->size(), backing->format());
   return backing;
 }
 
@@ -470,7 +471,8 @@ void PrioritizedResourceManager::EvictFirstBackingResource(
   // we can delete the resource while the main thread is running, but we cannot
   // unlink backings while the main thread is running.
   backing->DeleteResource(resource_provider);
-  memory_use_bytes_ -= backing->bytes();
+  memory_use_bytes_ -=
+      Resource::UncheckedMemorySizeBytes(backing->size(), backing->format());
   backings_.pop_front();
   base::AutoLock scoped_lock(evicted_backings_lock_);
   evicted_backings_.push_back(backing);

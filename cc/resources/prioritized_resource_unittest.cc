@@ -39,7 +39,7 @@ class PrioritizedResourceTest : public testing::Test {
   }
 
   size_t TexturesMemorySize(size_t texture_count) {
-    return Resource::MemorySizeBytes(texture_size_, texture_format_) *
+    return Resource::UncheckedMemorySizeBytes(texture_size_, texture_format_) *
            texture_count;
   }
 
