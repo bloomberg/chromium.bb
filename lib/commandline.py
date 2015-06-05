@@ -62,7 +62,7 @@ class ChrootRequiredError(Exception):
       chroot_args: Arguments to pass directly to cros_sdk.
       extra_env: Environmental variables to set in the chroot.
     """
-    super(ChrootRequiredError, self).__init__(self)
+    super(ChrootRequiredError, self).__init__()
     self.cmd = cmd
     self.chroot_args = chroot_args
     self.extra_env = extra_env
@@ -84,7 +84,7 @@ class ExecRequiredError(Exception):
     Args:
       cmd: Command line to run inside the chroot as a list of strings.
     """
-    super(ExecRequiredError, self).__init__(self)
+    super(ExecRequiredError, self).__init__()
     self.cmd = cmd
 
 
