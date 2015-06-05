@@ -8,8 +8,11 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
-static_library("test_runner") {
+component("test_runner") {
   testonly = true
+
+  defines = [ "TEST_RUNNER_IMPLEMENTATION" ]
+
   sources = [
     "accessibility_controller.cc",
     "accessibility_controller.h",
@@ -61,6 +64,7 @@ static_library("test_runner") {
     "test_preferences.h",
     "test_runner.cc",
     "test_runner.h",
+    "test_runner_export.h",
     "text_input_controller.cc",
     "text_input_controller.h",
     "web_ax_object_proxy.cc",
@@ -84,14 +88,16 @@ static_library("test_runner") {
   deps = [
     ":resources",
     "//base",
-    "//base:base_static",
     "//cc",
     "//gin",
+    "//gpu",
     "//skia",
     "//third_party/WebKit/public:blink",
+    "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//url",
     "//v8",
 
     #'copy_test_netscape_plugin',  TODO(GYP)

@@ -5,14 +5,17 @@
 #ifndef COMPONENTS_TEST_RUNNER_APP_BANNER_CLIENT_H_
 #define COMPONENTS_TEST_RUNNER_APP_BANNER_CLIENT_H_
 
+#include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "components/test_runner/test_runner_export.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 
 namespace test_runner {
 
 // Test app banner client that holds on to callbacks and allows the test runner
 // to resolve them.
-class AppBannerClient : public blink::WebAppBannerClient {
+class TEST_RUNNER_EXPORT AppBannerClient
+    : public NON_EXPORTED_BASE(blink::WebAppBannerClient) {
  public:
   AppBannerClient();
   virtual ~AppBannerClient();

@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_TEST_RUNNER_MOCK_SCREEN_ORIENTATION_CLIENT_H_
 #define COMPONENTS_TEST_RUNNER_MOCK_SCREEN_ORIENTATION_CLIENT_H_
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "components/test_runner/test_runner_export.h"
 #include "third_party/WebKit/public/platform/WebLockOrientationCallback.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationClient.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
@@ -17,7 +19,8 @@ class WebLocalFrame;
 
 namespace test_runner {
 
-class MockScreenOrientationClient : public blink::WebScreenOrientationClient {
+class TEST_RUNNER_EXPORT MockScreenOrientationClient
+    : public NON_EXPORTED_BASE(blink::WebScreenOrientationClient) {
  public:
   explicit MockScreenOrientationClient();
   virtual ~MockScreenOrientationClient();

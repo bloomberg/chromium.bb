@@ -681,8 +681,7 @@ void BlinkTestRunner::ResolveBeforeInstallPromptPromise(
       int request_id, const std::string& platform) {
   test_runner::WebTestInterfaces* interfaces =
       LayoutTestRenderProcessObserver::GetInstance()->test_interfaces();
-  interfaces->GetTestInterfaces()->GetAppBannerClient()->ResolvePromise(
-      request_id, platform);
+  interfaces->GetAppBannerClient()->ResolvePromise(request_id, platform);
 }
 
 blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(

@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "components/test_runner/test_runner_export.h"
+
 namespace test_runner {
 
 inline bool IsASCIIAlpha(char ch) {
@@ -17,7 +19,7 @@ inline bool IsNotASCIIAlpha(char ch) {
   return !IsASCIIAlpha(ch);
 }
 
-std::string NormalizeLayoutTestURL(const std::string& url);
+TEST_RUNNER_EXPORT std::string NormalizeLayoutTestURL(const std::string& url);
 
 }  // namespace test_runner
 

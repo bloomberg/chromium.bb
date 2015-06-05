@@ -12,6 +12,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/test_runner/test_runner_export.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_runner.h"
 #include "v8/include/v8.h"
@@ -65,6 +66,7 @@ class TestRunner : public WebTestRunner,
 
   // WebTestRunner implementation.
   bool ShouldGeneratePixelResults() override;
+  bool ShouldStayOnPageAfterHandlingBeforeUnload() const override;
   bool ShouldDumpAsAudio() const override;
   void GetAudioData(std::vector<unsigned char>* buffer_view) const override;
   bool ShouldDumpBackForwardList() const override;
@@ -105,7 +107,6 @@ class TestRunner : public WebTestRunner,
   bool shouldDumpStatusCallbacks() const;
   bool shouldDumpProgressFinishedCallback() const;
   bool shouldDumpSpellCheckCallbacks() const;
-  bool shouldStayOnPageAfterHandlingBeforeUnload() const;
   bool shouldWaitUntilExternalURLLoad() const;
   const std::set<std::string>* httpHeadersToClear() const;
   void setTopLoadingFrame(blink::WebFrame*, bool);

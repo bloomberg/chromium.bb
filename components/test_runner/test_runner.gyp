@@ -3,25 +3,33 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    # This turns on e.g. the filename-based detection of which
+    # platforms to include source files on (e.g. files ending in
+    # _mac.h or _mac.cc are only compiled on MacOSX).
+    'chromium_code': 1,
+  },
   'targets': [
     {
       # GN version: //components/test_runner:test_runner
       'target_name': 'test_runner',
-      'type': 'static_library',
-      'variables': {
-        'chromium_code': 1,
-      },
+      'type': '<(component)',
+      'defines': [
+        'TEST_RUNNER_IMPLEMENTATION',
+      ],
       'dependencies': [
         'resources',
         '../../base/base.gyp:base',
-        '../../base/base.gyp:base_static',
         '../../cc/cc.gyp:cc',
         '../../gin/gin.gyp:gin',
+        '../../gpu/gpu.gyp:gpu',
         '../../skia/skia.gyp:skia',
         '../../third_party/WebKit/public/blink.gyp:blink',
+        '../../ui/events/events.gyp:dom_keycode_converter',
         '../../ui/events/events.gyp:events_base',
         '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
+        '../../url/url.gyp:url_lib',
         '../../v8/tools/gyp/v8.gyp:v8',
       ],
       'include_dirs': [
@@ -77,6 +85,7 @@
         'test_plugin.h',
         'test_runner.cc',
         'test_runner.h',
+        'test_runner_export.h',
         'test_preferences.cc',
         'test_preferences.h',
         'text_input_controller.cc',
@@ -173,9 +182,6 @@
           # GN version: //components/test_runner:layout_test_helper
           'target_name': 'layout_test_helper',
           'type': 'executable',
-          'variables': {
-            'chromium_code': 1,
-          },
           'sources': [
             'helper/layout_test_helper_mac.mm',
             'helper/layout_test_helper_win.cc',

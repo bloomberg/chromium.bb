@@ -6,6 +6,7 @@
 #define COMPONENTS_TEST_RUNNER_WEB_TEST_INTERFACES_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "components/test_runner/test_runner_export.h"
 
 namespace blink {
 class WebAppBannerClient;
@@ -24,12 +25,13 @@ class WebView;
 
 namespace test_runner {
 
+class AppBannerClient;
 class TestInterfaces;
 class WebTestDelegate;
 class WebTestProxyBase;
 class WebTestRunner;
 
-class WebTestInterfaces {
+class TEST_RUNNER_EXPORT WebTestInterfaces {
  public:
   WebTestInterfaces();
   ~WebTestInterfaces();
@@ -56,6 +58,7 @@ class WebTestInterfaces {
   blink::WebAudioDevice* CreateAudioDevice(double sample_rate);
 
   scoped_ptr<blink::WebAppBannerClient> CreateAppBannerClient();
+  AppBannerClient* GetAppBannerClient();
 
   TestInterfaces* GetTestInterfaces();
 

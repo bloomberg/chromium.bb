@@ -86,4 +86,8 @@ WebTestInterfaces::CreateAppBannerClient() {
   return client.Pass();
 }
 
+AppBannerClient* WebTestInterfaces::GetAppBannerClient() {
+  return interfaces_->GetAppBannerClient();
+}
+
 }  // namespace test_runner

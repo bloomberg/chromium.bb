@@ -7,10 +7,10 @@
 
 #include "base/basictypes.h"
 #include "components/test_runner/mock_screen_orientation_client.h"
-#include "components/test_runner/test_interfaces.h"
-#include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_test_delegate.h"
+#include "components/test_runner/web_test_interfaces.h"
 #include "components/test_runner/web_test_proxy.h"
+#include "components/test_runner/web_test_runner.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace test_runner {
@@ -145,20 +145,20 @@ class WebFrameTestProxy : public Base {
   }
 
   virtual void runModalAlertDialog(const blink::WebString& message) {
-    base_proxy_->delegate_->PrintMessage(std::string("ALERT: ") +
-                                         message.utf8().data() + "\n");
+    base_proxy_->GetDelegate()->PrintMessage(std::string("ALERT: ") +
+                                             message.utf8().data() + "\n");
   }
 
   virtual bool runModalConfirmDialog(const blink::WebString& message) {
-    base_proxy_->delegate_->PrintMessage(std::string("CONFIRM: ") +
-                                         message.utf8().data() + "\n");
+    base_proxy_->GetDelegate()->PrintMessage(std::string("CONFIRM: ") +
+                                             message.utf8().data() + "\n");
     return true;
   }
 
   virtual bool runModalPromptDialog(const blink::WebString& message,
                                     const blink::WebString& default_value,
                                     blink::WebString*) {
-    base_proxy_->delegate_->PrintMessage(
+    base_proxy_->GetDelegate()->PrintMessage(
         std::string("PROMPT: ") + message.utf8().data() + ", default text: " +
         default_value.utf8().data() + "\n");
     return true;
@@ -166,10 +166,11 @@ class WebFrameTestProxy : public Base {
 
   virtual bool runModalBeforeUnloadDialog(bool is_reload,
                                           const blink::WebString& message) {
-    base_proxy_->delegate_->PrintMessage(std::string("CONFIRM NAVIGATION: ") +
-                                         message.utf8().data() + "\n");
-    return !base_proxy_->test_interfaces_->GetTestRunner()
-                ->shouldStayOnPageAfterHandlingBeforeUnload();
+    base_proxy_->GetDelegate()->PrintMessage(
+        std::string("CONFIRM NAVIGATION: ") + message.utf8().data() + "\n");
+    return !base_proxy_->GetInterfaces()
+                ->TestRunner()
+                ->ShouldStayOnPageAfterHandlingBeforeUnload();
   }
 
   virtual void showContextMenu(

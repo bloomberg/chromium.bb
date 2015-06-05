@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_TEST_RUNNER_TEST_PREFERENCES_H_
 #define COMPONENTS_TEST_RUNNER_TEST_PREFERENCES_H_
 
+#include "components/test_runner/test_runner_export.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
@@ -15,7 +16,7 @@ class WebView;
 
 namespace test_runner {
 
-struct TestPreferences {
+struct TEST_RUNNER_EXPORT TestPreferences {
     int default_font_size;
     int minimum_font_size;
     bool dom_paste_allowed;

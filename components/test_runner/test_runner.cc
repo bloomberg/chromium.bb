@@ -1781,6 +1781,11 @@ bool TestRunner::ShouldGeneratePixelResults() {
   return generate_pixel_results_;
 }
 
+bool TestRunner::ShouldStayOnPageAfterHandlingBeforeUnload() const {
+  return should_stay_on_page_after_handling_before_unload_;
+}
+
+
 void TestRunner::setShouldGeneratePixelResults(bool value) {
   generate_pixel_results_ = value;
 }
@@ -1883,10 +1888,6 @@ bool TestRunner::shouldDumpSelectionRect() const {
 
 bool TestRunner::isPrinting() const {
   return is_printing_;
-}
-
-bool TestRunner::shouldStayOnPageAfterHandlingBeforeUnload() const {
-  return should_stay_on_page_after_handling_before_unload_;
 }
 
 bool TestRunner::shouldWaitUntilExternalURLLoad() const {

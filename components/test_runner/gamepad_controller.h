@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/weak_ptr.h"
+#include "components/test_runner/test_runner_export.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace blink {
@@ -19,7 +20,8 @@ namespace test_runner {
 
 class WebTestDelegate;
 
-class GamepadController : public base::SupportsWeakPtr<GamepadController> {
+class TEST_RUNNER_EXPORT GamepadController
+    : public base::SupportsWeakPtr<GamepadController> {
  public:
   static base::WeakPtr<GamepadController> Create(WebTestDelegate* delegate);
   ~GamepadController();

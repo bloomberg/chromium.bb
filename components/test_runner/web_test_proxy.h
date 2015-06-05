@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/test_runner/test_runner_export.h"
 #include "components/test_runner/web_task.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -88,10 +89,12 @@ class WebTestInterfaces;
 // when it requires a behavior to be different from the usual, it will call
 // WebTestProxyBase that implements the expected behavior.
 // See WebTestProxy class comments for more information.
-class WebTestProxyBase {
+class TEST_RUNNER_EXPORT WebTestProxyBase {
  public:
   void SetInterfaces(WebTestInterfaces* interfaces);
+  WebTestInterfaces* GetInterfaces();
   void SetDelegate(WebTestDelegate* delegate);
+  WebTestDelegate* GetDelegate();
   void set_widget(blink::WebWidget* widget) { web_widget_ = widget; }
 
   void Reset();
@@ -247,6 +250,7 @@ class WebTestProxyBase {
 
   blink::WebWidget* web_widget() const { return web_widget_; }
 
+  WebTestInterfaces* web_test_interfaces_;
   TestInterfaces* test_interfaces_;
   WebTestDelegate* delegate_;
   blink::WebWidget* web_widget_;
