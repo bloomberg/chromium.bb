@@ -42,7 +42,7 @@ void MediaTestSuite::Initialize() {
   base::TestSuite::Initialize();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kEnableInbandTextTracks);
-  media::InitializeMediaLibrary();
+  media::InitializeMediaLibraryForTesting();
 }
 
 }  // namespace

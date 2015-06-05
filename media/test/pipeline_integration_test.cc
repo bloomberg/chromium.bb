@@ -631,7 +631,8 @@ class PipelineIntegrationTestHost : public mojo::test::ApplicationTestBase,
 
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    InitializeMediaLibrary();
+    if (!IsMediaLibraryInitialized())
+      InitializeMediaLibraryForTesting();
   }
 
  protected:

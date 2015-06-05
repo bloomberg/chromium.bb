@@ -769,6 +769,13 @@
           ],
           'copies': [
             {
+              # Copy FFmpeg binaries for audio/video support.
+              'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
+              'files': [
+                '<(PRODUCT_DIR)/ffmpegsumo.so',
+              ],
+            },
+            {
               'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
               'files': [
                 '<(PRODUCT_DIR)/crash_inspector',

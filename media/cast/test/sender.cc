@@ -204,8 +204,13 @@ int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
 
-  // Prepare media module for FFmpeg decoding.
-  media::InitializeMediaLibrary();
+  // Load the media module for FFmpeg decoding.
+  base::FilePath path;
+  PathService::Get(base::DIR_MODULE, &path);
+  if (!media::InitializeMediaLibrary(path)) {
+    LOG(ERROR) << "Could not initialize media library.";
+    return 1;
+  }
 
   base::Thread test_thread("Cast sender test app thread");
   base::Thread audio_thread("Cast audio encoder thread");

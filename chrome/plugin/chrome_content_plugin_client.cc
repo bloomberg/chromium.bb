@@ -43,8 +43,11 @@ void ChromeContentPluginClient::PreSandboxInitialization() {
     LOG(ERROR) << "Failed to load crypto32.dll: " << error.ToString();
 #endif // defined(OS_WIN)
 
-  // Initialize media libraries for the Chromoting client plugin.
-  media::InitializeMediaLibrary();
+  // Load media libraries for the Chromoting client plugin.
+  base::FilePath media_path;
+  PathService::Get(content::DIR_MEDIA_LIBS, &media_path);
+  if (!media_path.empty())
+    media::InitializeMediaLibrary(media_path);
 
 #endif // defined(ENABLE_REMOTING)
 }

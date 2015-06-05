@@ -14,8 +14,8 @@ int main(int argc, char** argv) {
   // single-threaded.
   net::EnableSSLServerSockets();
 
-  // Ensures that media library and specific CPU features are initialized.
-  media::InitializeMediaLibrary();
+  // Ensures runtime specific CPU features are initialized.
+  media::InitializeCPUSpecificMediaFeatures();
 
   return base::LaunchUnitTests(
       argc, argv, base::Bind(&base::TestSuite::Run,

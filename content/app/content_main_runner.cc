@@ -282,7 +282,12 @@ int RunZygote(const MainFunctionParams& main_function_params,
   ScopedVector<ZygoteForkDelegate> zygote_fork_delegates;
   if (delegate) {
     delegate->ZygoteStarting(&zygote_fork_delegates);
-    media::InitializeMediaLibrary();
+    // Each Renderer we spawn will re-attempt initialization of the media
+    // libraries, at which point failure will be detected and handled, so
+    // we do not need to cope with initialization failures here.
+    base::FilePath media_path;
+    if (PathService::Get(DIR_MEDIA_LIBS, &media_path))
+      media::InitializeMediaLibrary(media_path);
   }
 
   // This function call can return multiple times, once per fork().

@@ -81,6 +81,7 @@ SRC_NAMES=(
     "${SRC_APP_NAME} Helper.app"
     "crashpad_handler"
     "exif.so"
+    "ffmpegsumo.so"
 )
 
 # PDF.plugin is optional. Only include it if present.

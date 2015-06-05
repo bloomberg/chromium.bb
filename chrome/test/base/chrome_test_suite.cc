@@ -82,7 +82,7 @@ void ChromeTestSuite::Initialize() {
   // ChromeOS.  That means we are autotest and, if ASAN is used,
   // external libraries load crashes.
   if (!IsCrosPythonProcess())
-    media::InitializeMediaLibrary();
+    media::InitializeMediaLibraryForTesting();
 #endif
 
   // Initialize after overriding paths as some content paths depend on correct

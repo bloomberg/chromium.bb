@@ -127,9 +127,19 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   blink::WebRuntimeFeatures::enableNotifications(true);
   blink::WebRuntimeFeatures::enableTouch(true);
 
-  // Initialize libraries for media and enable the media player.
-  media::InitializeMediaLibrary();
-  blink::WebRuntimeFeatures::enableMediaPlayer(true);
+  // Load libraries for media and enable the media player.
+  bool enable_media = false;
+  base::FilePath module_path;
+  if (PathService::Get(base::DIR_MODULE, &module_path)) {
+#if defined(OS_MACOSX)
+    if (base::mac::AmIBundled())
+      module_path = module_path.DirName().DirName().DirName();
+#endif
+    if (media::InitializeMediaLibrary(module_path))
+      enable_media = true;
+  }
+  blink::WebRuntimeFeatures::enableMediaPlayer(enable_media);
+  LOG_IF(WARNING, !enable_media) << "Failed to initialize the media library.\n";
 
   file_utilities_.set_sandbox_enabled(false);
 

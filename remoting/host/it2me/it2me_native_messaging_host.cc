@@ -50,8 +50,8 @@ It2MeNativeMessagingHost::It2MeNativeMessagingHost(
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
-  // Ensures that media library and specific CPU features are initialized.
-  media::InitializeMediaLibrary();
+  // Ensures runtime specific CPU features are initialized.
+  media::InitializeCPUSpecificMediaFeatures();
 
   const ServiceUrls* service_urls = ServiceUrls::GetInstance();
   const bool xmpp_server_valid =

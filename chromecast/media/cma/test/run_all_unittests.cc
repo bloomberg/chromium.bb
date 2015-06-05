@@ -33,7 +33,7 @@ void CmaTestSuite::Initialize() {
 
   // Initialize the FFMpeg library.
   // Note: at this time, AtExitManager is already present.
-  media::InitializeMediaLibrary();
+  media::InitializeMediaLibraryForTesting();
 }
 
 int main(int argc, char** argv) {

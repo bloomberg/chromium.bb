@@ -68,6 +68,7 @@
     ['OS=="linux"', {
       'variables': {
         'files': [
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
         ],
       },
@@ -75,6 +76,7 @@
     ['OS=="mac"', {
       'variables': {
         'files': [
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
           '<(PRODUCT_DIR)/osmesa.so',
         ],
       },
@@ -82,6 +84,7 @@
     ['OS=="win"', {
       'variables': {
         'files': [
+          '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
         ],
       },
@@ -90,6 +93,7 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/content_unittests.dSYM/',
+          '<(PRODUCT_DIR)/ffmpegsumo.so.dSYM/',
           '<(PRODUCT_DIR)/osmesa.so.dSYM/',
         ],
       },

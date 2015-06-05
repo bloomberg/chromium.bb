@@ -65,8 +65,11 @@ void ExtensionsHandler::PreSandboxStartup() {
   // Initialize libexif for image metadata parsing.
   metadata::ImageMetadataExtractor::InitializeLibrary();
 
-  // Initialize media libraries for media file validation.
-  media::InitializeMediaLibrary();
+  // Load media libraries for media file validation.
+  base::FilePath media_path;
+  PathService::Get(content::DIR_MEDIA_LIBS, &media_path);
+  if (!media_path.empty())
+    media::InitializeMediaLibrary(media_path);
 }
 
 bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {

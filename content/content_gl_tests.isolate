@@ -24,12 +24,27 @@
         ],
       },
     }],
+    ['OS=="linux"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
+        ],
+      },
+    }],
+    ['OS=="mac"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+        ],
+      },
+    }],
     ['OS=="win"', {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/d3dcompiler_47.dll',
           '<(PRODUCT_DIR)/libEGL.dll',
           '<(PRODUCT_DIR)/libGLESv2.dll',
+          '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/osmesa.dll',
         ],
       },

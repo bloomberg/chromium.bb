@@ -100,7 +100,7 @@ class LayerTreeHostImplTest : public testing::Test,
         reduce_memory_result_(true),
         current_limit_bytes_(0),
         current_priority_cutoff_value_(0) {
-    media::InitializeMediaLibrary();
+    media::InitializeMediaLibraryForTesting();
   }
 
   LayerTreeSettings DefaultSettings() {

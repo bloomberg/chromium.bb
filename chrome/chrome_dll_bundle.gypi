@@ -136,6 +136,7 @@
       'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
       'files': [
         '<(PRODUCT_DIR)/exif.so',
+        '<(PRODUCT_DIR)/ffmpegsumo.so',
       ],
     },
     {
