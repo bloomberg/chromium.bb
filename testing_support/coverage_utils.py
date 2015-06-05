@@ -64,7 +64,7 @@ def covered_main(includes, require_native=None, required_percentage=100.0):
 
   COVERAGE.stop()
   if COVERAGE.report() < required_percentage:
-    print 'FATAL: not at required %f% coverage.' % required_percentage
+    print 'FATAL: not at required %f%% coverage.' % required_percentage
     retcode = 2
 
   return retcode
