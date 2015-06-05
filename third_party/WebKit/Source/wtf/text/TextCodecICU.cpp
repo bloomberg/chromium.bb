@@ -71,16 +71,20 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
     for (int32_t i = 0; i < numEncodings; ++i) {
         const char* name = ucnv_getAvailableName(i);
         UErrorCode error = U_ZERO_ERROR;
-        // Try MIME before trying IANA to pick up commonly used names like
-        // 'EUC-JP' instead of horrendously long names like
-        // 'Extended_UNIX_Code_Packed_Format_for_Japanese'.
-        const char* standardName = ucnv_getStandardName(name, "MIME", &error);
-        if (!U_SUCCESS(error) || !standardName) {
+#if !defined(USING_SYSTEM_ICU)
+        const char* primaryStandard = "HTML";
+        const char* secondaryStandard = "MIME";
+#else
+        const char* primaryStandard = "MIME";
+        const char* secondaryStandard = "IANA";
+#endif
+        const char* standardName = ucnv_getStandardName(name, primaryStandard, &error);
+        if (U_FAILURE(error) || !standardName) {
             error = U_ZERO_ERROR;
             // Try IANA to pick up 'windows-12xx' and other names
             // which are not preferred MIME names but are widely used.
-            standardName = ucnv_getStandardName(name, "IANA", &error);
-            if (!U_SUCCESS(error) || !standardName)
+            standardName = ucnv_getStandardName(name, secondaryStandard, &error);
+            if (U_FAILURE(error) || !standardName)
                 continue;
         }
 
@@ -90,6 +94,7 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
         // 1. Treat GB2312 encoding as GBK (its more modern superset), to match other browsers.
         // 2. On the Web, GB2312 is encoded as EUC-CN or HZ, while ICU provides a native encoding
         //    for encoding GB_2312-80 and several others. So, we need to override this behavior, too.
+#if defined(USING_SYSTEM_ICU)
         if (!strcmp(standardName, "GB2312") || !strcmp(standardName, "GB_2312-80"))
             standardName = "GBK";
         // Similarly, EUC-KR encodings all map to an extended version, but
@@ -101,6 +106,7 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
             standardName = "windows-1254";
         else if (!strcmp(standardName, "TIS-620"))
             standardName = "windows-874";
+#endif
 
         registrar(standardName, standardName);
 
@@ -116,6 +122,12 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
             }
     }
 
+    // These two entries have to be added here because ICU's converter table
+    // cannot have both ISO-8859-8-I and ISO-8859-8.
+    registrar("csISO88598I", "ISO-8859-8-I");
+    registrar("logical", "ISO-8859-8-I");
+
+#if defined(USING_SYSTEM_ICU)
     // Additional alias for MacCyrillic not present in ICU.
     registrar("maccyrillic", "x-mac-cyrillic");
 
@@ -131,9 +143,7 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("csgb231280", "GBK");
     registrar("x-euc-cn", "GBK");
     registrar("x-gbk", "GBK");
-    registrar("csISO88598I", "ISO-8859-8-I");
     registrar("koi", "KOI8-R");
-    registrar("logical", "ISO-8859-8-I");
     registrar("visual", "ISO-8859-8");
     registrar("winarabic", "windows-1256");
     registrar("winbaltic", "windows-1257");
@@ -176,8 +186,6 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
     // and Firefox (as of Oct 2014), but not in the upstream ICU.
     // Three entries for windows-1252 need not be listed here because
     // TextCodecLatin1 registers them.
-    // FIXME: We may introduce SYSTEM_ICU and enclose this block
-    // with |#if SYSTEM_ICU| because Chromium's ICU has them all.
     registrar("csiso58gb231280", "GBK");
     registrar("csiso88596e", "ISO-8859-6");
     registrar("csiso88596i", "ISO-8859-6");
@@ -212,6 +220,7 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("x-cp1256", "windows-1256");
     registrar("x-cp1257", "windows-1257");
     registrar("x-cp1258", "windows-1258");
+#endif
 }
 
 void TextCodecICU::registerCodecs(TextCodecRegistrar registrar)
@@ -237,7 +246,9 @@ void TextCodecICU::registerCodecs(TextCodecRegistrar registrar)
 TextCodecICU::TextCodecICU(const TextEncoding& encoding)
     : m_encoding(encoding)
     , m_converterICU(0)
+#if defined(USING_SYSTEM_ICU)
     , m_needsGBKFallbacks(false)
+#endif
 {
 }
 
@@ -261,8 +272,10 @@ void TextCodecICU::createICUConverter() const
 {
     ASSERT(!m_converterICU);
 
+#if defined(USING_SYSTEM_ICU)
     const char* name = m_encoding.name();
     m_needsGBKFallbacks = name[0] == 'G' && name[1] == 'B' && name[2] == 'K' && !name[3];
+#endif
 
     UErrorCode err;
 
@@ -367,32 +380,41 @@ String TextCodecICU::decode(const char* bytes, size_t length, FlushBehavior flus
         sawError = true;
     }
 
+#if !defined(USING_SYSTEM_ICU)
+    // Chrome's copy of ICU does not have the issue described below.
+    return result.toString();
+#else
     String resultString = result.toString();
 
     // <http://bugs.webkit.org/show_bug.cgi?id=17014>
     // Simplified Chinese pages use the code A3A0 to mean "full-width space", but ICU decodes it as U+E5E5.
-    if (!strcmp(m_encoding.name(), "GBK") || !strcasecmp(m_encoding.name(), "gb18030"))
-        resultString.replace(0xE5E5, ideographicSpaceCharacter);
+    if (!strcmp(m_encoding.name(), "GBK")) {
+        if (!strcasecmp(m_encoding.name(), "gb18030"))
+            resultString.replace(0xE5E5, ideographicSpaceCharacter);
+        // Make GBK compliant to the encoding spec and align with GB18030
+        resultString.replace(0x01F9, 0xE7C8);
+        // FIXME: Once https://www.w3.org/Bugs/Public/show_bug.cgi?id=28740#c3
+        // is resolved, add U+1E3F => 0xE7C7.
+    }
 
     return resultString;
+#endif
 }
 
-// We need to apply these fallbacks ourselves as they are not currently supported by ICU and
-// they were provided by the old TEC encoding path. Needed to fix <rdar://problem/4708689>.
+#if defined(USING_SYSTEM_ICU)
+// U+01F9 and U+1E3F have to be mapped to xA8xBF and xA8xBC per the encoding
+// spec, but ICU converter does not have them.
 static UChar fallbackForGBK(UChar32 character)
 {
     switch (character) {
     case 0x01F9:
-        return 0xE7C8;
+        return 0xE7C8; // mapped to xA8xBF by ICU.
     case 0x1E3F:
-        return 0xE7C7;
-    case 0x22EF:
-        return 0x2026;
-    case 0x301C:
-        return 0xFF5E;
+        return 0xE7C7; // mapped to xA8xBC by ICU.
     }
     return 0;
 }
+#endif
 
 // Invalid character handler when writing escaped entities for unrepresentable
 // characters. See the declaration of TextCodec::encode for more.
@@ -409,6 +431,7 @@ static void urlEscapedEntityCallback(const void* context, UConverterFromUnicodeA
         UCNV_FROM_U_CALLBACK_ESCAPE(context, fromUArgs, codeUnits, length, codePoint, reason, err);
 }
 
+#if defined(USING_SYSTEM_ICU)
 // Substitutes special GBK characters, escaping all other unassigned entities.
 static void gbkCallbackEscape(const void* context, UConverterFromUnicodeArgs* fromUArgs, const UChar* codeUnits, int32_t length,
     UChar32 codePoint, UConverterCallbackReason reason, UErrorCode* err)
@@ -452,6 +475,7 @@ static void gbkCallbackSubstitute(const void* context, UConverterFromUnicodeArgs
     }
     UCNV_FROM_U_CALLBACK_SUBSTITUTE(context, fromUArgs, codeUnits, length, codePoint, reason, err);
 }
+#endif // USING_SYSTEM_ICU
 
 class TextCodecInput {
 public:
@@ -488,13 +512,25 @@ CString TextCodecICU::encodeInternal(const TextCodecInput& input, UnencodableHan
     switch (handling) {
         case QuestionMarksForUnencodables:
             ucnv_setSubstChars(m_converterICU, "?", 1, &err);
+#if !defined(USING_SYSTEM_ICU)
+            ucnv_setFromUCallBack(m_converterICU, UCNV_FROM_U_CALLBACK_SUBSTITUTE, 0, 0, 0, &err);
+#else
             ucnv_setFromUCallBack(m_converterICU, m_needsGBKFallbacks ? gbkCallbackSubstitute : UCNV_FROM_U_CALLBACK_SUBSTITUTE, 0, 0, 0, &err);
+#endif
             break;
         case EntitiesForUnencodables:
+#if !defined(USING_SYSTEM_ICU)
+            ucnv_setFromUCallBack(m_converterICU, UCNV_FROM_U_CALLBACK_ESCAPE, UCNV_ESCAPE_XML_DEC, 0, 0, &err);
+#else
             ucnv_setFromUCallBack(m_converterICU, m_needsGBKFallbacks ? gbkCallbackEscape : UCNV_FROM_U_CALLBACK_ESCAPE, UCNV_ESCAPE_XML_DEC, 0, 0, &err);
+#endif
             break;
         case URLEncodedEntitiesForUnencodables:
+#if !defined(USING_SYSTEM_ICU)
+            ucnv_setFromUCallBack(m_converterICU, urlEscapedEntityCallback, 0, 0, 0, &err);
+#else
             ucnv_setFromUCallBack(m_converterICU, m_needsGBKFallbacks ? gbkUrlEscapedEntityCallack : urlEscapedEntityCallback, 0, 0, 0, &err);
+#endif
             break;
     }
 

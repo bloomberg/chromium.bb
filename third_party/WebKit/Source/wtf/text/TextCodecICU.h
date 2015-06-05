@@ -58,15 +58,19 @@ private:
 
     void createICUConverter() const;
     void releaseICUConverter() const;
+#if defined(USING_SYSTEM_ICU)
     bool needsGBKFallbacks() const { return m_needsGBKFallbacks; }
     void setNeedsGBKFallbacks(bool needsFallbacks) { m_needsGBKFallbacks = needsFallbacks; }
+#endif
 
     int decodeToBuffer(UChar* buffer, UChar* bufferLimit, const char*& source,
         const char* sourceLimit, int32_t* offsets, bool flush, UErrorCode&);
 
     TextEncoding m_encoding;
     mutable UConverter* m_converterICU;
+#if defined(USING_SYSTEM_ICU)
     mutable bool m_needsGBKFallbacks;
+#endif
 };
 
 struct ICUConverterWrapper {

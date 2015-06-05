@@ -67,6 +67,11 @@ config("config") {
       #'cflags': ['<!@(../../../tools/clang/scripts/blink_gc_plugin_flags.py enable-oilpan=<(enable_oilpan) dump-graph=<(blink_gc_plugin_dump_graph))'],
     }
   }
+
+  ## TODO(GYP) : gn does not yet support use_system_icu.
+  #if (use_system_icu) {
+  #  defines += [ "USING_SYSTEM_ICU" ]
+  #}
 }
 
 # The follow configs apply to all targets except for unit tests, which rely on

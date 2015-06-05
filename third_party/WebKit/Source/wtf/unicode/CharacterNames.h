@@ -60,7 +60,9 @@ const UChar hyphenCharacter = 0x2010;
 const UChar hyphenMinusCharacter = 0x002D;
 const UChar ideographicCommaCharacter = 0x3001;
 const UChar ideographicFullStopCharacter = 0x3002;
+#if defined(USING_SYSTEM_ICU)
 const UChar ideographicSpaceCharacter = 0x3000;
+#endif
 const UChar inhibitArabicFormShapingCharacter = 0x206C;
 const UChar inhibitSymmetricSwappingCharacter = 0x206A;
 const UChar latinCapitalLetterIWithDotAbove = 0x0130;
@@ -132,7 +134,9 @@ using WTF::Unicode::hyphenCharacter;
 using WTF::Unicode::hyphenMinusCharacter;
 using WTF::Unicode::ideographicCommaCharacter;
 using WTF::Unicode::ideographicFullStopCharacter;
+#if defined(USING_SYSTEM_ICU)
 using WTF::Unicode::ideographicSpaceCharacter;
+#endif
 using WTF::Unicode::inhibitArabicFormShapingCharacter;
 using WTF::Unicode::inhibitSymmetricSwappingCharacter;
 using WTF::Unicode::latinCapitalLetterIWithDotAbove;

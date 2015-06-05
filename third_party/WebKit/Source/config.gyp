@@ -117,6 +117,11 @@
             'MEMORY_TOOL_REPLACES_ALLOCATOR',
           ],
         }],
+        ['use_system_icu==1', {
+          'defines': [
+            'USING_SYSTEM_ICU',
+          ],
+        }],
       ],
     },
   },
