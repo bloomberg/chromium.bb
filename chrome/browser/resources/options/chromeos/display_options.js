@@ -223,7 +223,9 @@ cr.define('options', function() {
         chrome.send('setDisplayMode', [display.id, resolution]);
       }).bind(this);
       $('display-options-orientation-selection').onchange = (function(ev) {
-        chrome.send('setOrientation', [this.displays_[this.focusedIndex_].id,
+        var displayIndex =
+          (this.focusedIndex_ === null) ? 0 : this.focusedIndex_;
+        chrome.send('setOrientation', [this.displays_[displayIndex].id,
                                        ev.target.value]);
       }).bind(this);
       $('display-options-color-profile-selection').onchange = (function(ev) {
@@ -636,8 +638,11 @@ cr.define('options', function() {
       $('display-options-set-primary').disabled = true;
       $('display-options-toggle-mirroring').disabled = false;
       $('selected-display-start-calibrating-overscan').disabled = true;
-      $('display-options-orientation-selection').disabled = true;
       var display = this.displays_[0];
+      var orientation = $('display-options-orientation-selection');
+      orientation.disabled = false;
+      var orientationOptions = orientation.getElementsByTagName('option');
+      orientationOptions[display.orientation].selected = true;
       $('selected-display-name').textContent =
           loadTimeData.getString('mirroringDisplay');
       var resolution = $('display-options-resolution-selection');
