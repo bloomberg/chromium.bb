@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/observer_list.h"
+#include "base/sys_info.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/android/in_process/context_provider_in_process.h"
 #include "content/browser/android/in_process/synchronous_compositor_external_begin_frame_source.h"
@@ -180,7 +181,12 @@ SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor() {
   gpu::GLInProcessContextSharedMemoryLimits mem_limits;
   // This is half of what RenderWidget uses because synchronous compositor
   // pipeline is only one frame deep.
-  mem_limits.mapped_memory_reclaim_limit = 6 * 1024 * 1024;
+  if (base::SysInfo::IsLowEndDevice()) {
+    // But twice of half here because 16bit texture is not supported.
+    mem_limits.mapped_memory_reclaim_limit = 2 * 1024 * 1024;
+  } else {
+    mem_limits.mapped_memory_reclaim_limit = 6 * 1024 * 1024;
+  }
   ContextHolder holder =
       CreateContextHolder(attributes, nullptr, mem_limits, true);
   return ContextProviderInProcess::Create(holder.command_buffer.Pass(),
