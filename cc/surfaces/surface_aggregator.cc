@@ -228,9 +228,10 @@ void SurfaceAggregator::HandleSurfaceQuad(
   SurfaceSet::iterator it = referenced_surfaces_.insert(surface_id).first;
   // TODO(vmpstr): provider check is a hack for unittests that don't set up a
   // resource provider.
+  ResourceProvider::ResourceIdMap empty_map;
   const ResourceProvider::ResourceIdMap& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(ChildIdForSurface(surface))
-                : ResourceProvider::ResourceIdMap();
+                : empty_map;
   bool merge_pass =
       surface_quad->shared_quad_state->opacity == 1.f && copy_requests.empty();
 
@@ -439,9 +440,10 @@ void SurfaceAggregator::CopyPasses(const DelegatedFrameData* frame_data,
 
   // TODO(vmpstr): provider check is a hack for unittests that don't set up a
   // resource provider.
+  ResourceProvider::ResourceIdMap empty_map;
   const ResourceProvider::ResourceIdMap& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(ChildIdForSurface(surface))
-                : ResourceProvider::ResourceIdMap();
+                : empty_map;
   for (size_t i = 0; i < source_pass_list.size(); ++i) {
     const RenderPass& source = *source_pass_list[i];
 
