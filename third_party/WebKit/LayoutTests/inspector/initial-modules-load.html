@@ -13,7 +13,7 @@ function test()
 
         function testCreateElementsPanel(next)
         {
-            WebInspector.inspectorView.panel("elements").then(InspectorTest.dumpLoadedModules.bind(InspectorTest, next));
+            WebInspector.inspectorView.panel("elements").then(InspectorTest.dumpLoadedModules.bind(InspectorTest, self.runtime.loadModulePromise("animation").then(next)));
         },
 
         function testCreateNetworkPanel(next)

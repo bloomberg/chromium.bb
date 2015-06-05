@@ -32,6 +32,7 @@ Loaded modules:
 
 Running: testCreateNetworkPanel
 Loaded modules:
+    animation
     bindings
     common
     components
@@ -51,6 +52,7 @@ Loaded modules:
 
 Running: testShowSourcesPanel
 Loaded modules:
+    animation
     bindings
     common
     components
@@ -72,6 +74,7 @@ Loaded modules:
 
 Running: testOpenUISourceCode
 Loaded modules:
+    animation
     bindings
     common
     components

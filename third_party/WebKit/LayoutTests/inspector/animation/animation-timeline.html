@@ -26,6 +26,11 @@ function startAnimationWithStepTiming()
     player = node.animate([{ width: "100px", easing: "step(5, end)" }, { width: "200px", easing: "step-start" }], 200);
 }
 
+var initialize_Animations = function() {
+
+    InspectorTest.preloadModule("animation");
+}
+
 function test()
 {
     InspectorTest.selectNodeWithId("node", step1);
