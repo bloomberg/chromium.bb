@@ -21,6 +21,7 @@
     'dev_gyp_debug': ['gyp', 'debug', 'shared', 'full_symbols'],
     'dev_gn_release': ['gn', 'release', 'shared'],
     'dev_gyp_release': ['gyp', 'release', 'shared'],
+    'gn_linux_upload': ['gn_linux_upload'],
     'gn_release_bot': ['gn', 'release_bot'],
     'gn_release_bot_x86': ['gn', 'release_bot', 'x86'],
     'gn_release_trybot': ['gn', 'release_trybot'],
@@ -87,6 +88,16 @@
     'full_symbols': {
       'gn_args': 'symbol_level=2',
       'gyp_defines': 'fastbuild=0',
+    },
+
+    'gn_linux_upload': {
+      'type': 'gn',
+
+      # We don't want to require a runtime dependency on glib in the
+      # GN binary; ideally we could just turn glib off, but that doesn't
+      # actually work, so we need to pretend to be doing an ozone build
+      # in order for the flag to actually take effect.
+      'gn_args': 'use_ozone=true use_glib=false',
     },
 
     'gn': {'type': 'gn'},
@@ -194,9 +205,7 @@
       'linux_chromium_gn_chromeos_dbg': 'chromeos_gn_debug_bot',
       'linux_chromium_gn_dbg': 'gn_debug_bot',
       'linux_chromium_gn_rel': 'gn_release_trybot',
-      'linux_chromium_gn_upload': 'gn_release_bot',
-      'linux_chromium_gn_upload_x64': 'gn_release_bot', # TODO(dpranke): Remove me.
-      'linux_chromium_gn_upload_x86': 'gn_release_bot_x86', # TODO(dpranke): Remove me.
+      'linux_chromium_gn_upload': 'gn_linux_upload',
     },
     'tryserver.chromium.mac': {
       'mac_chromium_gn_dbg': 'gn_debug_static_bot',
