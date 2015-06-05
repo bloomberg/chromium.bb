@@ -1,7 +1,7 @@
 This HACKING file describes the development environment.  	-*- org -*-
 
   Copyright (C) 2008, 2009, 2011 ViewPlus Technologies, Inc. and Abilitiessoft, Inc.
-  Copyright (C) 2012, 2013, 2014 Swiss Library for the Blind, Visually Impaired and Print Disabled 
+  Copyright (C) 2012, 2013, 2014,2015 Swiss Library for the Blind, Visually Impaired and Print Disabled
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -18,9 +18,9 @@ The development sources are available through git at github.com:
   https://github.com/liblouis/liblouis
 
 ** Build requirements
-This distribution uses Automake, Autoconf, and Libtool. If you are
-getting the sources from git (or change configure.ac), you'll need to
-have these tools installed to (re)build. Optionally (if you want to
+To build Automake, Autoconf, and Libtool are used. If you are getting
+the sources from git (or change configure.ac), you'll need to have
+these tools installed to (re)build. Optionally (if you want to
 generate man pages) you'll also need help2man. All of these programs
 are available from ftp://ftp.gnu.org/gnu.
 
@@ -32,18 +32,40 @@ Note that if you are using Homebrew to install liblouis (see below),
 the build dependencies are installed automatically.
 
 ** Gnulib
-This distribution also uses Gnulib (http://www.gnu.org/software/gnulib). If
-you want to update from the current gnulib, install gnulib, and then run
-gnulib-tool --import in the top-level directory.
+Gnulib (http://www.gnu.org/software/gnulib) is used to provide
+portable basic functionality to programs and libraries. We use two
+instances of gnulib, one to provide portable functions such as
+~malloc~, ~strndup~, etc to the library and another one to provide
+portable functionality such as ~getopt~, ~progname~ or
+~version-etc~ to the tools.
 
-For the record, the first time invocation was
-  gnulib-tool --import --lib=libgnu --source-base=gnulib \
-  	      --m4-base=gnulib/m4 --aux-dir=build-aux --libtool \
-	      --macro-prefix=gl getopt-gnu progname version-etc
+The first time invocation to import gnulib for the library was
+
+  gnulib-tool --add-import --lib=libgnu --source-base=gnulib \
+              --m4-base=gnulib/m4 --aux-dir=build-aux --libtool \
+	      --macro-prefix=gl --no-vc-files \
+	      malloc-gnu realloc-gnu strndup
+
+and for the tools
+
+  gnulib-tool --add-import --lib=libgnutools --source-base=tools/gnulib \
+              --m4-base=tools/gnulib/m4 --aux-dir=build-aux --libtool \
+	      --macro-prefix=gl_tools --no-vc-files \
+	      getopt-gnu malloc-gnu progname version-etc
+
 More modules might have been added since. The currently-used gnulib
 modules and other gnulib information are recorded in
-gnulib/m4/gnulib-cache.m4. Given a source checkout of gnulib, you can
-update the files with gnulib-tool --import.
+~gnulib/m4/gnulib-cache.m4~ and ~tools/gnulib/m4/gnulib-cache.m4~.
+
+If you want to update from the current gnulib, install gnulib, and
+then run the following commands in the top-level directory.
+
+  gnulib-tool --add-import --lib=libgnu --source-base=gnulib \
+              --m4-base=gnulib/m4 --aux-dir=build-aux --libtool \
+	      --macro-prefix=gl --no-vc-files
+  gnulib-tool --add-import --lib=libgnutools --source-base=tools/gnulib \
+              --m4-base=tools/gnulib/m4 --aux-dir=build-aux --libtool \
+	      --macro-prefix=gl_tools --no-vc-files
 
 ** How to build
 After getting the sources from git, with 
