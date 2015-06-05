@@ -49,10 +49,9 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope, 
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ShadowRoot);
     friend class WTF::DoublyLinkedListNode<ShadowRoot>;
 public:
-    // FIXME: We will support multiple shadow subtrees, however current implementation does not work well
-    // if a shadow root is dynamically created. So we prohibit multiple shadow subtrees
-    // in several elements for a while.
-    // See https://bugs.webkit.org/show_bug.cgi?id=77503 and related bugs.
+    // FIXME: Current implementation does not work well if a shadow root is dynamically created.
+    // So multiple shadow subtrees in several elements are prohibited.
+    // See https://github.com/w3c/webcomponents/issues/102 and http://crbug.com/234020
     enum ShadowRootType {
         UserAgentShadowRoot = 0,
         OpenShadowRoot
