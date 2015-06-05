@@ -150,13 +150,13 @@ void CastMainDelegate::InitializeResourceBundle() {
 }
 
 content::ContentBrowserClient* CastMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(new CastContentBrowserClient);
+  browser_client_ = CastContentBrowserClient::Create();
   return browser_client_.get();
 }
 
 content::ContentRendererClient*
 CastMainDelegate::CreateContentRendererClient() {
-  renderer_client_.reset(new CastContentRendererClient);
+  renderer_client_ = CastContentRendererClient::Create();
   return renderer_client_.get();
 }
 

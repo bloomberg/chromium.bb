@@ -27,7 +27,10 @@ void PlatformAddRendererNativeBindings(blink::WebLocalFrame* frame);
 
 class CastContentRendererClient : public content::ContentRendererClient {
  public:
-  CastContentRendererClient();
+  // Creates an implementation of CastContentRendererClient. Platform should
+  // link in an implementation as needed.
+  static scoped_ptr<CastContentRendererClient> Create();
+
   ~CastContentRendererClient() override;
 
   // Returns any MessageFilters from the platform implementation that should
@@ -48,6 +51,9 @@ class CastContentRendererClient : public content::ContentRendererClient {
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
   void DeferMediaLoad(content::RenderFrame* render_frame,
                       const base::Closure& closure) override;
+
+ protected:
+  CastContentRendererClient();
 
  private:
   scoped_ptr<network_hints::PrescientNetworkingDispatcher>

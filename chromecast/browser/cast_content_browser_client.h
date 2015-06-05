@@ -42,7 +42,10 @@ class URLRequestContextFactory;
 
 class CastContentBrowserClient: public content::ContentBrowserClient {
  public:
-  CastContentBrowserClient();
+  // Creates an implementation of CastContentBrowserClient. Platform should
+  // link in an implementation as needed.
+  static scoped_ptr<CastContentBrowserClient> Create();
+
   ~CastContentBrowserClient() override;
 
   // Appends extra command line arguments before launching a new process.
@@ -118,6 +121,9 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
   OverrideCreateExternalVideoSurfaceContainer(
       content::WebContents* web_contents) override;
 #endif  // defined(OS_ANDROID) && defined(VIDEO_HOLE)
+
+ protected:
+  CastContentBrowserClient();
 
  private:
   void AddNetworkHintsMessageFilter(int render_process_id,
