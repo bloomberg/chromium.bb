@@ -209,44 +209,6 @@ base::string16 GetFormGroupInfo(const FormGroup& form_group,
       form_group.GetInfo(type, app_locale);
 }
 
-template <class T>
-void CopyRawValuesToItems(ServerFieldType type,
-                          const std::vector<base::string16>& values,
-                          const T& prototype,
-                          std::vector<T>* form_group_items) {
-  form_group_items->resize(values.size(), prototype);
-  for (size_t i = 0; i < form_group_items->size(); ++i) {
-    (*form_group_items)[i].SetRawInfo(type, values[i]);
-  }
-  // Must have at least one (possibly empty) element.
-  form_group_items->resize(std::max<size_t>(1UL, values.size()), prototype);
-}
-
-template <class T>
-void CopyValuesToItems(AutofillType type,
-                       const std::vector<base::string16>& values,
-                       const T& prototype,
-                       const std::string& app_locale,
-                       std::vector<T>* form_group_items) {
-  form_group_items->resize(values.size(), prototype);
-  for (size_t i = 0; i < form_group_items->size(); ++i) {
-    (*form_group_items)[i].SetInfo(type, values[i], app_locale);
-  }
-  // Must have at least one (possibly empty) element.
-  form_group_items->resize(std::max<size_t>(1UL, values.size()), prototype);
-}
-
-template <class T>
-void CopyItemsToValues(const AutofillType& type,
-                       const std::vector<T>& form_group_items,
-                       const std::string& app_locale,
-                       std::vector<base::string16>* values) {
-  values->resize(form_group_items.size());
-  for (size_t i = 0; i < values->size(); ++i) {
-    (*values)[i] = GetFormGroupInfo(form_group_items[i], type, app_locale);
-  }
-}
-
 // Collapse compound field types to their "full" type.  I.e. First name
 // collapses to full name, area code collapses to full phone, etc.
 void CollapseCompoundFieldTypes(ServerFieldTypeSet* type_set) {
@@ -303,15 +265,13 @@ AutofillProfile::AutofillProfile(const std::string& guid,
                                  const std::string& origin)
     : AutofillDataModel(guid, origin),
       record_type_(LOCAL_PROFILE),
-      email_(1),
-      phone_number_(1, PhoneNumber(this)) {
+      phone_number_(this) {
 }
 
 AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
     : AutofillDataModel(base::GenerateGUID(), std::string()),
       record_type_(type),
-      email_(1),
-      phone_number_(1, PhoneNumber(this)),
+      phone_number_(this),
       server_id_(server_id) {
   DCHECK(type == SERVER_PROFILE);
 }
@@ -319,12 +279,12 @@ AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
 AutofillProfile::AutofillProfile()
     : AutofillDataModel(base::GenerateGUID(), std::string()),
       record_type_(LOCAL_PROFILE),
-      email_(1),
-      phone_number_(1, PhoneNumber(this)) {
+      phone_number_(this) {
 }
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
-    : AutofillDataModel(std::string(), std::string()) {
+    : AutofillDataModel(std::string(), std::string()),
+      phone_number_(this) {
   operator=(profile);
 }
 
@@ -348,9 +308,7 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   email_ = profile.email_;
   company_ = profile.company_;
   phone_number_ = profile.phone_number_;
-
-  for (size_t i = 0; i < phone_number_.size(); ++i)
-    phone_number_[i].set_profile(this);
+  phone_number_.set_profile(this);
 
   address_ = profile.address_;
   set_language_code(profile.language_code());
@@ -423,16 +381,10 @@ void AutofillProfile::SetRawMultiInfo(
   switch (AutofillType(type).group()) {
     case NAME:
     case NAME_BILLING:
-      SetRawInfo(type, values.empty() ? base::string16() : values[0]);
-      break;
-
     case EMAIL:
-      CopyRawValuesToItems(type, values, EmailInfo(), &email_);
-      break;
-
     case PHONE_HOME:
     case PHONE_BILLING:
-      CopyRawValuesToItems(type, values, PhoneNumber(this), &phone_number_);
+      SetRawInfo(type, values.empty() ? base::string16() : values[0]);
       break;
 
     default:
@@ -845,22 +797,13 @@ void AutofillProfile::GetSupportedTypes(
     (*it)->GetSupportedTypes(supported_types);
 }
 
+// TODO(estade): remove this function.
 void AutofillProfile::GetMultiInfoImpl(
     const AutofillType& type,
     const std::string& app_locale,
     std::vector<base::string16>* values) const {
-  switch (type.group()) {
-    case EMAIL:
-      CopyItemsToValues(type, email_, app_locale, values);
-      break;
-    case PHONE_HOME:
-    case PHONE_BILLING:
-      CopyItemsToValues(type, phone_number_, app_locale, values);
-      break;
-    default:
-      values->resize(1);
-      (*values)[0] = GetFormGroupInfo(*this, type, app_locale);
-  }
+  values->resize(1);
+  (*values)[0] = GetFormGroupInfo(*this, type, app_locale);
 }
 
 base::string16 AutofillProfile::ConstructInferredLabel(
@@ -1017,9 +960,9 @@ void AutofillProfile::CreateInferredLabelsHelper(
 AutofillProfile::FormGroupList AutofillProfile::FormGroups() const {
   FormGroupList v(5);
   v[0] = &name_;
-  v[1] = &email_[0];
+  v[1] = &email_;
   v[2] = &company_;
-  v[3] = &phone_number_[0];
+  v[3] = &phone_number_;
   v[4] = &address_;
   return v;
 }
@@ -1036,14 +979,14 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
       return &name_;
 
     case EMAIL:
-      return &email_[0];
+      return &email_;
 
     case COMPANY:
       return &company_;
 
     case PHONE_HOME:
     case PHONE_BILLING:
-      return &phone_number_[0];
+      return &phone_number_;
 
     case ADDRESS_HOME:
     case ADDRESS_BILLING:

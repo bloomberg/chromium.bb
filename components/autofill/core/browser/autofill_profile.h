@@ -240,9 +240,9 @@ class AutofillProfile : public AutofillDataModel {
 
   // Personal information for this profile.
   NameInfo name_;
-  std::vector<EmailInfo> email_;
+  EmailInfo email_;
   CompanyInfo company_;
-  std::vector<PhoneNumber> phone_number_;
+  PhoneNumber phone_number_;
   Address address_;
 
   // The BCP 47 language code that can be used to format |address_| for display.

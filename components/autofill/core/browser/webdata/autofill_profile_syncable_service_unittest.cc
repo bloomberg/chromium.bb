@@ -141,15 +141,10 @@ scoped_ptr<AutofillProfile> ConstructCompleteProfile() {
   profile->SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("K."));
   profile->SetRawInfo(NAME_LAST, ASCIIToUTF16("Doe"));
 
-  std::vector<base::string16> emails;
-  emails.push_back(ASCIIToUTF16("user@example.com"));
-  emails.push_back(ASCIIToUTF16("superuser@example.org"));
-  profile->SetRawMultiInfo(EMAIL_ADDRESS, emails);
-
-  std::vector<base::string16> phones;
-  phones.push_back(ASCIIToUTF16("1.800.555.1234"));
-  phones.push_back(ASCIIToUTF16("1.866.650.0000"));
-  profile->SetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, phones);
+  profile->SetRawInfo(EMAIL_ADDRESS,
+                      ASCIIToUTF16("user@example.com"));
+  profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
+                      ASCIIToUTF16("1.800.555.1234"));
 
   profile->SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
                       ASCIIToUTF16("123 Fake St.\n"
@@ -188,10 +183,8 @@ syncer::SyncData ConstructCompleteSyncData() {
   specifics->add_name_full("John K. Doe, Jr.");
 
   specifics->add_email_address("user@example.com");
-  specifics->add_email_address("superuser@example.org");
 
   specifics->add_phone_home_whole_number("1.800.555.1234");
-  specifics->add_phone_home_whole_number("1.866.650.0000");
 
   specifics->set_address_home_line1("123 Fake St.");
   specifics->set_address_home_line2("Apt. 42");
@@ -595,39 +588,6 @@ TEST_F(AutofillProfileSyncableServiceTest, UpdateField) {
   EXPECT_FALSE(AutofillProfileSyncableService::UpdateField(
       COMPANY_NAME, company2, &profile));
   EXPECT_EQ(profile.GetRawInfo(COMPANY_NAME), ASCIIToUTF16(company2));
-}
-
-TEST_F(AutofillProfileSyncableServiceTest, UpdateMultivaluedField) {
-  AutofillProfile profile(kGuid1, kHttpsOrigin);
-
-  std::vector<base::string16> values;
-  values.push_back(ASCIIToUTF16("1@1.com"));
-  values.push_back(ASCIIToUTF16("2@1.com"));
-  profile.SetRawMultiInfo(EMAIL_ADDRESS, values);
-
-  ::google::protobuf::RepeatedPtrField<std::string> specifics_fields;
-  specifics_fields.AddAllocated(new std::string("2@1.com"));
-  specifics_fields.AddAllocated(new std::string("3@1.com"));
-
-  EXPECT_TRUE(AutofillProfileSyncableService::UpdateMultivaluedField(
-      EMAIL_ADDRESS, specifics_fields, &profile));
-  profile.GetRawMultiInfo(EMAIL_ADDRESS, &values);
-  ASSERT_TRUE(values.size() == 2);
-  EXPECT_EQ(values[0], ASCIIToUTF16("2@1.com"));
-  EXPECT_EQ(values[1], ASCIIToUTF16("3@1.com"));
-
-  EXPECT_FALSE(AutofillProfileSyncableService::UpdateMultivaluedField(
-      EMAIL_ADDRESS, specifics_fields, &profile));
-  profile.GetRawMultiInfo(EMAIL_ADDRESS, &values);
-  ASSERT_EQ(values.size(), 2U);
-  EXPECT_EQ(values[0], ASCIIToUTF16("2@1.com"));
-  EXPECT_EQ(values[1], ASCIIToUTF16("3@1.com"));
-  EXPECT_TRUE(AutofillProfileSyncableService::UpdateMultivaluedField(
-      EMAIL_ADDRESS, ::google::protobuf::RepeatedPtrField<std::string>(),
-      &profile));
-  profile.GetRawMultiInfo(EMAIL_ADDRESS, &values);
-  ASSERT_EQ(values.size(), 1U);  // Always have at least an empty string.
-  EXPECT_EQ(values[0], ASCIIToUTF16(""));
 }
 
 TEST_F(AutofillProfileSyncableServiceTest, MergeProfile) {
