@@ -252,8 +252,14 @@ void HttpServerPropertiesManager::ConfirmAlternativeService(
 void HttpServerPropertiesManager::ClearAlternativeService(
     const HostPortPair& origin) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  const AlternativeServiceMap& map =
+      http_server_properties_impl_->alternative_service_map();
+  size_t old_size = map.size();
   http_server_properties_impl_->ClearAlternativeService(origin);
-  ScheduleUpdatePrefsOnNetworkThread(CLEAR_ALTERNATIVE_SERVICE);
+  size_t new_size = map.size();
+  // Persist only if we have deleted an entry.
+  if (old_size != new_size)
+    ScheduleUpdatePrefsOnNetworkThread(CLEAR_ALTERNATIVE_SERVICE);
 }
 
 const AlternativeServiceMap&

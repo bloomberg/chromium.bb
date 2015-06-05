@@ -528,6 +528,27 @@ TEST_F(HttpServerPropertiesManagerTest, GetAlternativeService) {
   EXPECT_EQ(NPN_SPDY_4, alternative_service.protocol);
 }
 
+TEST_F(HttpServerPropertiesManagerTest, ClearAlternativeService) {
+  ExpectPrefsUpdate();
+  ExpectScheduleUpdatePrefsOnNetworkThread();
+
+  HostPortPair spdy_server_mail("mail.google.com", 80);
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+  AlternativeService alternative_service(NPN_SPDY_4, "mail.google.com", 443);
+  http_server_props_manager_->SetAlternativeService(spdy_server_mail,
+                                                    alternative_service, 1.0);
+  ExpectScheduleUpdatePrefsOnNetworkThread();
+  http_server_props_manager_->ClearAlternativeService(spdy_server_mail);
+  // ExpectScheduleUpdatePrefsOnNetworkThread() should be called only once.
+  http_server_props_manager_->ClearAlternativeService(spdy_server_mail);
+
+  // Run the task.
+  base::RunLoop().RunUntilIdle();
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+
+  EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
+}
+
 TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
   ExpectPrefsUpdate();
   ExpectScheduleUpdatePrefsOnNetworkThread();
