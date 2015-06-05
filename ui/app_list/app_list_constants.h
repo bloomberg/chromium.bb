@@ -43,8 +43,7 @@ APP_LIST_EXPORT extern const SkColor kFolderTitleHintTextColor;
 APP_LIST_EXPORT extern const SkColor kFolderBubbleColor;
 APP_LIST_EXPORT extern const SkColor kFolderShadowColor;
 APP_LIST_EXPORT extern const float kFolderBubbleRadius;
-APP_LIST_EXPORT extern const float kFolderShadowRadius;
-APP_LIST_EXPORT extern const float kFolderShadowOffsetY;
+APP_LIST_EXPORT extern const float kFolderBubbleOffsetY;
 
 APP_LIST_EXPORT extern const SkColor kCardBackgroundColor;
 

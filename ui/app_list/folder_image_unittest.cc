@@ -74,8 +74,7 @@ class FolderImageTest : public testing::Test {
  protected:
   void AddAppWithColoredIcon(const std::string& id, SkColor icon_color) {
     scoped_ptr<AppListItem> item(new AppListItem(id));
-    item->SetIcon(CreateSquareBitmapWithColor(kListIconSize, icon_color),
-                  false);
+    item->SetIcon(CreateSquareBitmapWithColor(kListIconSize, icon_color));
     app_list_model_.AddItem(item.Pass());
   }
 
@@ -138,8 +137,8 @@ TEST_F(FolderImageTest, UpdateItemTest) {
   gfx::ImageSkia icon1 = folder_image_.icon();
 
   // Change an item's icon. Ensure that the observer fired and the icon changed.
-  app_list_model_.FindItem("app2")->SetIcon(
-      CreateSquareBitmapWithColor(kListIconSize, SK_ColorMAGENTA), false);
+  app_list_model_.FindItem("app2")
+      ->SetIcon(CreateSquareBitmapWithColor(kListIconSize, SK_ColorMAGENTA));
   EXPECT_TRUE(observer_.updated());
   observer_.Reset();
   EXPECT_FALSE(ImagesAreEqual(icon1, folder_image_.icon()));

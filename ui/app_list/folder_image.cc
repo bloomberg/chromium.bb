@@ -77,17 +77,12 @@ void FolderImageSource::DrawIcon(gfx::Canvas* canvas,
 }
 
 void FolderImageSource::Draw(gfx::Canvas* canvas) {
-  // Draw circle for folder shadow.
-  gfx::PointF shadow_center(size().width() / 2, size().height() / 2);
   SkPaint paint;
+  // Draw circle for folder bubble.
+  gfx::PointF bubble_center(size().width() / 2, size().height() / 2);
+  bubble_center.Offset(0, -kFolderBubbleOffsetY);
   paint.setStyle(SkPaint::kFill_Style);
   paint.setAntiAlias(true);
-  paint.setColor(kFolderShadowColor);
-  canvas->sk_canvas()->drawCircle(shadow_center.x(), shadow_center.y(),
-                                  kFolderShadowRadius, paint);
-  // Draw circle for folder bubble.
-  gfx::PointF bubble_center(shadow_center);
-  bubble_center.Offset(0, -kFolderShadowOffsetY);
   paint.setColor(kFolderBubbleColor);
   canvas->sk_canvas()->drawCircle(bubble_center.x(), bubble_center.y(),
                                   kFolderBubbleRadius, paint);

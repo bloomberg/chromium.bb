@@ -48,8 +48,7 @@ const SkColor kFolderBubbleColor = SK_ColorWHITE;
 // Color of the folder bubble shadow.
 const SkColor kFolderShadowColor = SkColorSetRGB(0xBF, 0xBF, 0xBF);
 const float kFolderBubbleRadius = 23;
-const float kFolderShadowRadius = 23.5;
-const float kFolderShadowOffsetY = 1;
+const float kFolderBubbleOffsetY = 1;
 
 const SkColor kCardBackgroundColor = SK_ColorWHITE;
 
@@ -164,8 +163,8 @@ gfx::ShadowValue GetShadowForZHeight(int z_height) {
 
 const gfx::ShadowValues& IconStartShadows() {
   CR_DEFINE_STATIC_LOCAL(const gfx::ShadowValues, icon_shadows,
-                         (1, gfx::ShadowValue(gfx::Vector2d(0, 2), 2,
-                                              SkColorSetARGB(0x24, 0, 0, 0))));
+                         (1, gfx::ShadowValue(gfx::Vector2d(0, 1), 2,
+                                              SkColorSetARGB(0x33, 0, 0, 0))));
   return icon_shadows;
 }
 

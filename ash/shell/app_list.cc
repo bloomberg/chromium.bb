@@ -144,7 +144,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
 WindowTypeShelfItem::WindowTypeShelfItem(const std::string& id, Type type)
     : app_list::AppListItem(id), type_(type) {
   std::string title(GetTitle(type));
-  SetIcon(GetIcon(type), false);
+  SetIcon(GetIcon(type));
   SetName(title);
 }
 

@@ -30,8 +30,7 @@ AppListTestModel::AppListTestItem::AppListTestItem(
     AppListTestModel* model)
     : AppListItem(id),
       model_(model) {
-  SetIcon(CreateImageSkia(kGridIconDimension, kGridIconDimension),
-          false /* has_shadow */);
+  SetIcon(CreateImageSkia(kGridIconDimension, kGridIconDimension));
 }
 
 AppListTestModel::AppListTestItem::~AppListTestItem() {

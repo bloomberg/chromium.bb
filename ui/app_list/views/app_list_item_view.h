@@ -44,7 +44,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   ~AppListItemView() override;
 
   // Set the icon of this image, adding a drop shadow if |has_shadow|.
-  void SetIcon(const gfx::ImageSkia& icon, bool has_shadow);
+  void SetIcon(const gfx::ImageSkia& icon);
 
   void SetItemName(const base::string16& display_name,
                    const base::string16& full_name);

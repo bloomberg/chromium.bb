@@ -438,7 +438,7 @@ TEST_F(AppsGridControllerTest, ModelUpdate) {
   EXPECT_NSEQ(@"UpdatedItem", [button title]);
 
   // Test icon updates through the model observer by ensuring the icon changes.
-  item_model->SetIcon(gfx::ImageSkia(), false);
+  item_model->SetIcon(gfx::ImageSkia());
   NSSize icon_size = [[button image] size];
   EXPECT_EQ(0, icon_size.width);
   EXPECT_EQ(0, icon_size.height);
@@ -447,7 +447,7 @@ TEST_F(AppsGridControllerTest, ModelUpdate) {
   const int kTestImageSize = 10;
   const int kTargetImageSize = 48;
   bitmap.setInfo(SkImageInfo::MakeN32Premul(kTestImageSize, kTestImageSize));
-  item_model->SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(bitmap), false);
+  item_model->SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
   icon_size = [[button image] size];
   // Icon should always be resized to 48x48.
   EXPECT_EQ(kTargetImageSize, icon_size.width);

@@ -159,13 +159,10 @@ scoped_ptr<AppListItem> FastShowPickler::UnpickleAppListItem(
   if (!it->ReadString(&short_name))
     return scoped_ptr<AppListItem>();
   result->SetNameAndShortName(name, short_name);
-  bool has_shadow = false;
-  if (!it->ReadBool(&has_shadow))
-    return scoped_ptr<AppListItem>();
   gfx::ImageSkia icon;
   if (!UnpickleImage(it, &icon))
     return scoped_ptr<AppListItem>();
-  result->SetIcon(icon, has_shadow);
+  result->SetIcon(icon);
   return result.Pass();
 }
 
@@ -177,8 +174,6 @@ bool FastShowPickler::PickleAppListItem(base::Pickle* pickle,
     return false;
   if (!pickle->WriteString(item->short_name()))
     return false;
-  if (!pickle->WriteBool(item->has_shadow()))
-    return false;
   if (!PickleImage(pickle, item->icon()))
     return false;
   return true;
@@ -187,13 +182,13 @@ bool FastShowPickler::PickleAppListItem(base::Pickle* pickle,
 void FastShowPickler::CopyOverItem(AppListItem* src_item,
                                    AppListItem* dest_item) {
   dest_item->SetNameAndShortName(src_item->name(), src_item->short_name());
-  dest_item->SetIcon(src_item->icon(), src_item->has_shadow());
+  dest_item->SetIcon(src_item->icon());
   // Do not set folder_id, pass that to AppListModel::AddItemToFolder() instead.
 }
 
 // The version of the pickle format defined here. This needs to be incremented
 // whenever this format is changed so new clients can invalidate old versions.
-const int FastShowPickler::kVersion = 3;
+const int FastShowPickler::kVersion = 4;
 
 scoped_ptr<base::Pickle> FastShowPickler::PickleAppListModelForFastShow(
     AppListModel* model) {

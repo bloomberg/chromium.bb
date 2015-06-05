@@ -11,7 +11,6 @@ namespace app_list {
 
 AppListItem::AppListItem(const std::string& id)
     : id_(id),
-      has_shadow_(false),
       highlighted_(false),
       is_installing_(false),
       percent_downloaded_(-1) {
@@ -21,9 +20,8 @@ AppListItem::~AppListItem() {
   FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemBeingDestroyed());
 }
 
-void AppListItem::SetIcon(const gfx::ImageSkia& icon, bool has_shadow) {
+void AppListItem::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
-  has_shadow_ = has_shadow;
   FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemIconChanged());
 }
 

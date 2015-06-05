@@ -110,7 +110,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   AddChildView(title_);
   AddChildView(progress_bar_);
 
-  SetIcon(item->icon(), item->has_shadow());
+  SetIcon(item->icon());
   SetItemName(base::UTF8ToUTF16(item->GetDisplayName()),
               base::UTF8ToUTF16(item->name()));
   SetItemIsInstalling(item->is_installing());
@@ -128,7 +128,7 @@ AppListItemView::~AppListItemView() {
     item_weak_->RemoveObserver(this);
 }
 
-void AppListItemView::SetIcon(const gfx::ImageSkia& icon, bool has_shadow) {
+void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
   // Clear icon and bail out if item icon is empty.
   if (icon.isNull()) {
     icon_->SetImage(NULL);
@@ -139,12 +139,7 @@ void AppListItemView::SetIcon(const gfx::ImageSkia& icon, bool has_shadow) {
       icon,
       skia::ImageOperations::RESIZE_BEST,
       gfx::Size(kGridIconDimension, kGridIconDimension)));
-  if (has_shadow || app_list::switches::IsExperimentalAppListEnabled()) {
-    shadow_animator_.SetOriginalImage(resized);
-    return;
-  }
-
-  icon_->SetImage(resized);
+  shadow_animator_.SetOriginalImage(resized);
 }
 
 void AppListItemView::SetUIState(UIState state) {
@@ -560,7 +555,7 @@ void AppListItemView::SetTitleSubpixelAA() {
 }
 
 void AppListItemView::ItemIconChanged() {
-  SetIcon(item_weak_->icon(), item_weak_->has_shadow());
+  SetIcon(item_weak_->icon());
 }
 
 void AppListItemView::ItemNameChanged() {

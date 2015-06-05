@@ -85,7 +85,7 @@ std::string AppListFolderItem::GenerateId() {
 }
 
 void AppListFolderItem::OnFolderImageUpdated() {
-  SetIcon(folder_image_.icon(), false);
+  SetIcon(folder_image_.icon());
 }
 
 }  // namespace app_list

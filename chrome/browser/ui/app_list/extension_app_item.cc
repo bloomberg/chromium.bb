@@ -196,7 +196,7 @@ void ExtensionAppItem::UpdateIcon() {
   if (has_overlay_)
     icon = gfx::ImageSkia(new ShortcutOverlayImageSource(icon), icon.size());
 
-  SetIcon(icon, true);
+  SetIcon(icon);
 }
 
 void ExtensionAppItem::Move(const ExtensionAppItem* prev,

@@ -274,7 +274,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   NSImage* buttonImage = gfx::NSImageFromImageSkiaWithColorSpace(
       icon, base::mac::GetSRGBColorSpace());
   [[self button] setImage:buttonImage];
-  [[[self button] cell] setHasShadow:[self model]->has_shadow()];
+  [[[self button] cell] setHasShadow:true];
 }
 
 - (void)setModel:(app_list::AppListItem*)itemModel {
