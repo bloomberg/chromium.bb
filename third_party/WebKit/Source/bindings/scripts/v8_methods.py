@@ -124,6 +124,8 @@ def method_context(interface, method, is_visible=True):
         includes.add('core/dom/DOMArrayBuffer.h')
         includes.add('core/dom/MessagePort.h')
 
+    if 'LenientThis' in extended_attributes:
+        raise Exception('[LenientThis] is not supported for operations.')
 
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]

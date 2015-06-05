@@ -133,7 +133,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceOwnProper
 };
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceOwnPropertiesDerivedAccessors[] = {
-    {"exposeJSAccessorAttribute", TestInterfaceOwnPropertiesDerivedV8Internal::exposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesDerivedV8Internal::exposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts},
+    {"exposeJSAccessorAttribute", TestInterfaceOwnPropertiesDerivedV8Internal::exposeJSAccessorAttributeAttributeGetterCallback, TestInterfaceOwnPropertiesDerivedV8Internal::exposeJSAccessorAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestInterfaceOwnPropertiesDerivedTemplate(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)

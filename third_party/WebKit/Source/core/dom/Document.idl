@@ -123,9 +123,7 @@ interface Document : Node {
     boolean queryCommandSupported(DOMString commandId);
     DOMString queryCommandValue(DOMString commandId);
 
-    // special event handler IDL attributes that only apply to Document objects
-    // FIXME: onreadystatechange should use [LenientThis].
-    attribute EventHandler onreadystatechange;
+    [LenientThis] attribute EventHandler onreadystatechange;
 
     // HTML obsolete features
     // https://html.spec.whatwg.org/#Document-partial

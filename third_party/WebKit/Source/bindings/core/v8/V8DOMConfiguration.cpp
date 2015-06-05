@@ -102,6 +102,11 @@ void installAccessorInternal(v8::Isolate* isolate, v8::Local<ObjectOrTemplate> p
         if (accessor.setterForMainWorld)
             setterCallback = accessor.setterForMainWorld;
     }
+    // Support [LenientThis] by not specifying the signature.  V8 does not do
+    // the type checking against holder if no signature is specified.  Note that
+    // info.Holder() passed to callbacks will be *unsafe*.
+    if (accessor.holderCheckConfiguration == V8DOMConfiguration::DoNotCheckHolder)
+        signature = v8::Local<v8::Signature>();
     prototypeOrTemplate->SetAccessorProperty(
         v8AtomicString(isolate, accessor.name),
         functionOrTemplate(isolate, getterCallback, accessor.data, signature, 0, prototypeOrTemplate),

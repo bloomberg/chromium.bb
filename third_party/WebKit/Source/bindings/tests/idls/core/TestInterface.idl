@@ -114,6 +114,8 @@
     Promise promiseMethodPartialOverload(Window window);
     static Promise staticPromiseMethodPartialOverload();
 
+    [LenientThis] attribute any lenientThisAttribute;
+
     [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingMethod(TestInterfaceEmpty testInterfaceEmptyArg);
 };
 

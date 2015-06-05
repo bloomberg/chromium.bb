@@ -70,9 +70,8 @@
     attribute EventHandler onloadedmetadata;
     attribute EventHandler onloadstart;
     attribute EventHandler onmousedown;
-    // FIXME: onmouseevent and onmouseleave should have [LenientThis].
-    attribute EventHandler onmouseenter;
-    attribute EventHandler onmouseleave;
+    [LenientThis] attribute EventHandler onmouseenter;
+    [LenientThis] attribute EventHandler onmouseleave;
     attribute EventHandler onmousemove;
     attribute EventHandler onmouseout;
     attribute EventHandler onmouseover;

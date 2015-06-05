@@ -125,6 +125,7 @@ def attribute_context(interface, attribute):
             extended_attributes['RaisesException'] in (None, 'Getter'),
         'is_implemented_in_private_script': is_implemented_in_private_script,
         'is_keep_alive_for_gc': keep_alive_for_gc,
+        'is_lenient_this': 'LenientThis' in extended_attributes,
         'is_nullable': idl_type.is_nullable,
         'is_explicit_nullable': idl_type.is_explicit_nullable,
         'is_partial_interface_member':
@@ -215,7 +216,7 @@ def getter_context(interface, attribute, context):
     context.update({
         'cpp_value': cpp_value,
         'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(
-            cpp_value=cpp_value, creation_context='info.Holder()',
+            cpp_value=cpp_value, creation_context='holder',
             extended_attributes=extended_attributes),
         'v8_set_return_value_for_main_world': v8_set_return_value_statement(for_main_world=True),
         'v8_set_return_value': v8_set_return_value_statement(),

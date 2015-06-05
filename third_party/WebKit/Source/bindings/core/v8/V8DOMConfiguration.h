@@ -54,6 +54,11 @@ public:
         OnPrototype,
     };
 
+    enum HolderCheckConfiguration {
+        CheckHolder,
+        DoNotCheckHolder,
+    };
+
     // AttributeConfiguration translates into calls to SetAccessor() on either
     // the instance or the prototype ObjectTemplate, based on |instanceOrPrototypeConfiguration|.
     struct AttributeConfiguration {
@@ -65,8 +70,8 @@ public:
         const WrapperTypeInfo* data;
         v8::AccessControl settings;
         v8::PropertyAttribute attribute;
-        ExposeConfiguration exposeConfiguration;
-        InstanceOrPrototypeConfiguration instanceOrPrototypeConfiguration;
+        unsigned exposeConfiguration : 1; // ExposeConfiguration
+        unsigned instanceOrPrototypeConfiguration : 1; // InstanceOrPrototypeConfiguration
     };
 
     static void installAttributes(v8::Isolate*, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const AttributeConfiguration*, size_t attributeCount);
@@ -86,7 +91,8 @@ public:
         const WrapperTypeInfo* data;
         v8::AccessControl settings;
         v8::PropertyAttribute attribute;
-        ExposeConfiguration exposeConfiguration;
+        unsigned exposeConfiguration : 1; // ExposeConfiguration
+        unsigned holderCheckConfiguration : 1; // HolderCheckConfiguration
     };
 
     static void installAccessors(v8::Isolate*, v8::Local<v8::ObjectTemplate> prototypeTemplate, v8::Local<v8::Signature>, const AccessorConfiguration*, size_t accessorCount);

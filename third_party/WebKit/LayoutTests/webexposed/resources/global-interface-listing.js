@@ -41,7 +41,7 @@ interfaceNames.forEach(function(interfaceName) {
     var prototype = this[interfaceName].prototype;
     Object.getOwnPropertyNames(prototype).forEach(function(propertyName) {
         var descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
-        if (typeof descriptor.value !== 'undefined') {
+        if ('value' in descriptor) {
             var type = typeof descriptor.value === 'function' ? 'method' : 'attribute';
             propertyStrings.push('    ' + type + ' ' + propertyName);
         } else {
