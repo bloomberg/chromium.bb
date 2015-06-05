@@ -19,12 +19,8 @@
 #include "ipc/ipc_platform_file.h"
 #include "native_client/src/public/nacl_desc.h"
 #include "native_client/src/public/nacl_desc_custom.h"
-#include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
-#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_quota.h"
 #include "native_client/src/trusted/desc/nacl_desc_quota_interface.h"
-#include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -569,7 +565,7 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
         case ppapi::proxy::SerializedHandle::FILE: {
           // Create the NaClDesc for the file descriptor. If quota checking is
           // required, wrap it in a NaClDescQuota.
-          NaClDesc* desc = NaClDescIoDescFromHandleAllocCtor(
+          NaClDesc* desc = NaClDescIoMakeFromHandle(
 #if defined(OS_WIN)
               iter->descriptor(),
 #else
@@ -648,7 +644,7 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
     scoped_ptr<IPC::Message> new_msg = CreateOpenResourceReply(orig_msg, sh);
 
     scoped_ptr<NaClDescWrapper> desc_wrapper(new NaClDescWrapper(
-        NaClDescIoDescFromHandleAllocCtor(
+        NaClDescIoMakeFromHandle(
 #if defined(OS_WIN)
             sh.descriptor(),
 #else

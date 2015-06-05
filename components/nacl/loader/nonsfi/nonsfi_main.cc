@@ -17,8 +17,7 @@
 #include "components/nacl/loader/nonsfi/elf_loader.h"
 #include "components/nacl/loader/nonsfi/irt_interfaces.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/public/nacl_desc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #endif
 
@@ -83,7 +82,7 @@ void MainStart(int nexe_file) {
       reinterpret_cast<EntryPointType>(NaClLoadElfFile(nexe_file));
 #else
   ::scoped_ptr<struct NaClDesc, NaClDescUnrefer> desc(
-       NaClDescIoDescFromDescAllocCtor(nexe_file, NACL_ABI_O_RDONLY));
+       NaClDescIoMakeFromHandle(nexe_file, NACL_ABI_O_RDONLY));
   ElfImage image;
   if (image.Read(desc.get()) != LOAD_OK) {
     LOG(ERROR) << "LoadModuleRpc: Failed to read binary.";

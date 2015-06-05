@@ -14,7 +14,8 @@ include_rules = [
 
   "+native_client/src/include",
   "+native_client/src/public",
-  "+native_client/src/trusted/desc",
+  "+native_client/src/trusted/desc/nacl_desc_quota.h",
+  "+native_client/src/trusted/desc/nacl_desc_quota_interface.h",
   "+native_client/src/trusted/service_runtime/include",
   "+native_client/src/trusted/service_runtime/nacl_error_code.h",
   "+native_client/src/untrusted/irt/irt.h",
