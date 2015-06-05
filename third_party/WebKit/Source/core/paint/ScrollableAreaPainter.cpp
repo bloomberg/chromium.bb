@@ -23,14 +23,19 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext* context, const IntPoin
         return;
 
     IntRect absRect = m_scrollableArea.resizerCornerRect(m_scrollableArea.box().pixelSnappedBorderBoxRect(), ResizerForPointer);
-    absRect.moveBy(paintOffset);
-    if (!absRect.intersects(damageRect))
+    if (absRect.isEmpty())
         return;
+    absRect.moveBy(paintOffset);
 
     if (m_scrollableArea.resizer()) {
+        if (!absRect.intersects(damageRect))
+            return;
         ScrollbarPainter::paintIntoRect(m_scrollableArea.resizer(), context, paintOffset, LayoutRect(absRect));
         return;
     }
+
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled() && !absRect.intersects(damageRect))
+        return;
 
     DrawingRecorder recorder(*context, m_scrollableArea.box(), DisplayItem::Resizer, absRect);
     if (recorder.canUseCachedDrawing())
@@ -167,6 +172,8 @@ bool ScrollableAreaPainter::overflowControlsIntersectRect(const IntRect& localRe
 void ScrollableAreaPainter::paintScrollCorner(GraphicsContext* context, const IntPoint& paintOffset, const IntRect& damageRect)
 {
     IntRect absRect = m_scrollableArea.scrollCornerRect();
+    if (absRect.isEmpty())
+        return;
     absRect.moveBy(paintOffset);
 
     if (m_scrollableArea.scrollCorner()) {

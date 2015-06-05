@@ -50,6 +50,11 @@ namespace blink {
 
 bool ScrollbarTheme::gMockScrollbarsEnabled = false;
 
+static inline bool shouldPaintScrollbarPart(const IntRect& partRect, const IntRect& damageRect)
+{
+    return (RuntimeEnabledFeatures::slimmingPaintEnabled() && !partRect.isEmpty()) || damageRect.intersects(partRect);
+}
+
 bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const IntRect& damageRect)
 {
     // Create the ScrollbarControlPartMask based on the damageRect
@@ -61,16 +66,16 @@ bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* gra
     IntRect forwardButtonEndPaintRect;
     if (hasButtons(scrollbar)) {
         backButtonStartPaintRect = backButtonRect(scrollbar, BackButtonStartPart, true);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(backButtonStartPaintRect))
+        if (shouldPaintScrollbarPart(backButtonStartPaintRect, damageRect))
             scrollMask |= BackButtonStartPart;
         backButtonEndPaintRect = backButtonRect(scrollbar, BackButtonEndPart, true);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(backButtonEndPaintRect))
+        if (shouldPaintScrollbarPart(backButtonEndPaintRect, damageRect))
             scrollMask |= BackButtonEndPart;
         forwardButtonStartPaintRect = forwardButtonRect(scrollbar, ForwardButtonStartPart, true);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(forwardButtonStartPaintRect))
+        if (shouldPaintScrollbarPart(forwardButtonStartPaintRect, damageRect))
             scrollMask |= ForwardButtonStartPart;
         forwardButtonEndPaintRect = forwardButtonRect(scrollbar, ForwardButtonEndPart, true);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(forwardButtonEndPaintRect))
+        if (shouldPaintScrollbarPart(forwardButtonEndPaintRect, damageRect))
             scrollMask |= ForwardButtonEndPart;
     }
 
@@ -84,11 +89,11 @@ bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* gra
     if (thumbPresent) {
         IntRect track = trackRect(scrollbar);
         splitTrack(scrollbar, track, startTrackRect, thumbRect, endTrackRect);
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(thumbRect))
+        if (shouldPaintScrollbarPart(thumbRect, damageRect))
             scrollMask |= ThumbPart;
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(startTrackRect))
+        if (shouldPaintScrollbarPart(startTrackRect, damageRect))
             scrollMask |= BackTrackPart;
-        if (RuntimeEnabledFeatures::slimmingPaintEnabled() || damageRect.intersects(endTrackRect))
+        if (shouldPaintScrollbarPart(endTrackRect, damageRect))
             scrollMask |= ForwardTrackPart;
     }
 
