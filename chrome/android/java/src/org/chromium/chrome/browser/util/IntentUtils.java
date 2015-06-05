@@ -11,6 +11,8 @@ import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Parcelable;
 
+import org.chromium.base.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +20,7 @@ import java.util.List;
  * Utilities dealing with extracting information from intents.
  */
 public class IntentUtils {
+    private static final String TAG = "IntentUtils";
 
     /**
      * Retrieves a list of components that would handle the given intent.
@@ -40,8 +43,9 @@ public class IntentUtils {
     public static boolean safeGetBooleanExtra(Intent intent, String name, boolean defaultValue) {
         try {
             return intent.getBooleanExtra(name, defaultValue);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // Catches un-parceling exceptions.
+            Log.e(TAG, "getBooleanExtra failed on intent " + intent);
             return defaultValue;
         }
     }
@@ -52,8 +56,9 @@ public class IntentUtils {
     public static int safeGetIntExtra(Intent intent, String name, int defaultValue) {
         try {
             return intent.getIntExtra(name, defaultValue);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // Catches un-parceling exceptions.
+            Log.e(TAG, "getIntExtra failed on intent " + intent);
             return defaultValue;
         }
     }
@@ -64,8 +69,9 @@ public class IntentUtils {
     public static long safeGetLongExtra(Intent intent, String name, long defaultValue) {
         try {
             return intent.getLongExtra(name, defaultValue);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // Catches un-parceling exceptions.
+            Log.e(TAG, "getLongExtra failed on intent " + intent);
             return defaultValue;
         }
     }
@@ -76,8 +82,9 @@ public class IntentUtils {
     public static String safeGetStringExtra(Intent intent, String name) {
         try {
             return intent.getStringExtra(name);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // Catches un-parceling exceptions.
+            Log.e(TAG, "getStringExtra failed on intent " + intent);
             return null;
         }
     }
@@ -88,8 +95,9 @@ public class IntentUtils {
     public static String safeGetString(Bundle bundle, String name) {
         try {
             return bundle.getString(name);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // Catches un-parceling exceptions.
+            Log.e(TAG, "getString failed on bundle " + bundle);
             return null;
         }
     }
@@ -100,8 +108,9 @@ public class IntentUtils {
     public static Bundle safeGetBundleExtra(Intent intent, String name) {
         try {
             return intent.getBundleExtra(name);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // Catches un-parceling exceptions.
+            Log.e(TAG, "getBundleExtra failed on intent " + intent);
             return null;
         }
     }
@@ -112,8 +121,9 @@ public class IntentUtils {
     public static <T extends Parcelable> T safeGetParcelable(Bundle bundle, String name) {
         try {
             return bundle.getParcelable(name);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // Catches un-parceling exceptions.
+            Log.e(TAG, "getParcelable failed on bundle " + bundle);
             return null;
         }
     }
@@ -124,8 +134,9 @@ public class IntentUtils {
     public static <T extends Parcelable> T safeGetParcelableExtra(Intent intent, String name) {
         try {
             return intent.getParcelableExtra(name);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // Catches un-parceling exceptions.
+            Log.e(TAG, "getParcelableExtra failed on intent " + intent);
             return null;
         }
     }
@@ -137,8 +148,9 @@ public class IntentUtils {
             Intent intent, String name) {
         try {
             return intent.getParcelableArrayListExtra(name);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // Catches un-parceling exceptions.
+            Log.e(TAG, "getParcelableArrayListExtra failed on intent " + intent);
             return null;
         }
     }
@@ -149,8 +161,9 @@ public class IntentUtils {
     public static ArrayList<String> safeGetStringArrayListExtra(Intent intent, String name) {
         try {
             return intent.getStringArrayListExtra(name);
-        } catch (Exception e) {
+        } catch (Throwable t) {
             // Catches un-parceling exceptions.
+            Log.e(TAG, "getStringArrayListExtra failed on intent " + intent);
             return null;
         }
     }
