@@ -474,7 +474,7 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
     // It should be valid for this to happen in the server push case.
     // We'll return received data when delegate gets attached to the stream.
     if (buffer) {
-      pending_recv_data_.push_back(buffer.release());
+      pending_recv_data_.push_back(buffer.Pass());
     } else {
       pending_recv_data_.push_back(NULL);
       // Note: we leave the stream open in the session until the stream
