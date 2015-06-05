@@ -134,6 +134,13 @@ Examples:
   def Run(self):
     """Perfrom the cros flash command."""
     self.options.Freeze()
+
+    # For brillo flash, enter the chroot to ensure a consistent environment. We
+    # only do this for brillo because some cros workflows do not want to use the
+    # chroot.
+    if command.GetToolset() == 'brillo':
+      commandline.RunInsideChroot(self)
+
     try:
       flash.Flash(
           self.options.device,
