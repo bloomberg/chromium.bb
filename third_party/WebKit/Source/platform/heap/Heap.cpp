@@ -1672,7 +1672,6 @@ void Heap::init()
     s_globalWeakCallbackStack = new CallbackStack();
     s_ephemeronStack = new CallbackStack();
     s_heapDoesNotContainCache = new HeapDoesNotContainCache();
-    s_markingVisitor = new MarkingVisitor<Visitor::GlobalMarking>();
     s_freePagePool = new FreePagePool();
     s_orphanedPagePool = new OrphanedPagePool();
     s_allocatedObjectSize = 0;
@@ -1692,12 +1691,10 @@ void Heap::shutdown()
 void Heap::doShutdown()
 {
     // We don't want to call doShutdown() twice.
-    if (!s_markingVisitor)
+    if (!s_markingStack)
         return;
 
     ASSERT(!ThreadState::attachedThreads().size());
-    delete s_markingVisitor;
-    s_markingVisitor = nullptr;
     delete s_heapDoesNotContainCache;
     s_heapDoesNotContainCache = nullptr;
     delete s_freePagePool;
@@ -1770,7 +1767,8 @@ const GCInfo* Heap::findGCInfo(Address address)
 #if ENABLE(GC_PROFILING)
 void Heap::dumpPathToObjectOnNextGC(void* p)
 {
-    static_cast<MarkingVisitor<Visitor::GlobalMarking>*>(s_markingVisitor)->dumpPathToObjectOnNextGC(p);
+    MarkingVisitor<Visitor::GlobalMarking> visitor;
+    visitor->dumpPathToObjectOnNextGC(p);
 }
 
 String Heap::createBacktraceString()
@@ -1942,6 +1940,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     // the GC.
     if (!gcScope.allThreadsParked())
         return;
+    MarkingVisitor<Visitor::GlobalMarking> visitor;
 
     if (state->isMainThread())
         ScriptForbiddenScope::enter();
@@ -1954,7 +1953,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
 #if ENABLE(GC_PROFILING)
-    static_cast<MarkingVisitor<Visitor::GlobalMarking>*>(s_markingVisitor)->objectGraph().clear();
+    visitor.objectGraph().clear();
 #endif
 
     // Disallow allocation during garbage collection (but not during the
@@ -1969,24 +1968,24 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     Heap::resetHeapCounters();
 
     // 1. Trace persistent roots.
-    ThreadState::visitPersistentRoots(s_markingVisitor);
+    ThreadState::visitPersistentRoots(&visitor);
 
     // 2. Trace objects reachable from the persistent roots including
     // ephemerons.
-    processMarkingStack(s_markingVisitor);
+    processMarkingStack(&visitor);
 
     // 3. Trace objects reachable from the stack.  We do this independent of the
     // given stackState since other threads might have a different stack state.
-    ThreadState::visitStackRoots(s_markingVisitor);
+    ThreadState::visitStackRoots(&visitor);
 
     // 4. Trace objects reachable from the stack "roots" including ephemerons.
     // Only do the processing if we found a pointer to an object on one of the
     // thread stacks.
     if (lastGCWasConservative())
-        processMarkingStack(s_markingVisitor);
+        processMarkingStack(&visitor);
 
-    postMarkingProcessing(s_markingVisitor);
-    globalWeakProcessing(s_markingVisitor);
+    postMarkingProcessing(&visitor);
+    globalWeakProcessing(&visitor);
 
     // Now we can delete all orphaned pages because there are no dangling
     // pointers to the orphaned pages.  (If we have such dangling pointers,
@@ -1996,7 +1995,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     postGC(gcType);
 
 #if ENABLE(GC_PROFILING)
-    static_cast<MarkingVisitor<Visitor::GlobalMarking>*>(s_markingVisitor)->reportStats();
+    visitor.reportStats();
 #endif
 
     double markingTimeInMilliseconds = WTF::currentTimeMS() - timeStamp;
@@ -2022,7 +2021,7 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         // ThreadTerminationGC.
         GCScope gcScope(state, ThreadState::NoHeapPointersOnStack, ThreadState::ThreadTerminationGC);
 
-        MarkingVisitor<Visitor::ThreadLocalMarking> markingVisitor;
+        MarkingVisitor<Visitor::ThreadLocalMarking> visitor;
         ThreadState::NoAllocationScope noAllocationScope(state);
 
         state->preGC();
@@ -2038,21 +2037,21 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         // global GC finds a "pointer" on the stack or due to a programming
         // error where an object has a dangling cross-thread pointer to an
         // object on this heap.
-        state->visitPersistents(&markingVisitor);
+        state->visitPersistents(&visitor);
 
         // 2. Trace objects reachable from the thread's persistent roots
         // including ephemerons.
-        processMarkingStack(&markingVisitor);
+        processMarkingStack(&visitor);
 
-        postMarkingProcessing(&markingVisitor);
-        globalWeakProcessing(&markingVisitor);
+        postMarkingProcessing(&visitor);
+        globalWeakProcessing(&visitor);
 
         state->postGC(ThreadState::GCWithSweep);
     }
     state->preSweep();
 }
 
-void Heap::processMarkingStack(Visitor* markingVisitor)
+void Heap::processMarkingStack(Visitor* visitor)
 {
     // Ephemeron fixed point loop.
     do {
@@ -2060,21 +2059,21 @@ void Heap::processMarkingStack(Visitor* markingVisitor)
             // Iteratively mark all objects that are reachable from the objects
             // currently pushed onto the marking stack.
             TRACE_EVENT0("blink_gc", "Heap::processMarkingStackSingleThreaded");
-            while (popAndInvokeTraceCallback(markingVisitor)) { }
+            while (popAndInvokeTraceCallback(visitor)) { }
         }
 
         {
             // Mark any strong pointers that have now become reachable in
             // ephemeron maps.
             TRACE_EVENT0("blink_gc", "Heap::processEphemeronStack");
-            s_ephemeronStack->invokeEphemeronCallbacks(markingVisitor);
+            s_ephemeronStack->invokeEphemeronCallbacks(visitor);
         }
 
         // Rerun loop if ephemeron processing queued more objects for tracing.
     } while (!s_markingStack->isEmpty());
 }
 
-void Heap::postMarkingProcessing(Visitor* markingVisitor)
+void Heap::postMarkingProcessing(Visitor* visitor)
 {
     TRACE_EVENT0("blink_gc", "Heap::postMarkingProcessing");
     // Call post-marking callbacks including:
@@ -2082,7 +2081,7 @@ void Heap::postMarkingProcessing(Visitor* markingVisitor)
     //    (specifically to clear the queued bits for weak hash tables), and
     // 2. the markNoTracing callbacks on collection backings to mark them
     //    if they are only reachable from their front objects.
-    while (popAndInvokePostMarkingCallback(markingVisitor)) { }
+    while (popAndInvokePostMarkingCallback(visitor)) { }
 
     s_ephemeronStack->clear();
 
@@ -2092,11 +2091,11 @@ void Heap::postMarkingProcessing(Visitor* markingVisitor)
     ASSERT(s_markingStack->isEmpty());
 }
 
-void Heap::globalWeakProcessing(Visitor* markingVisitor)
+void Heap::globalWeakProcessing(Visitor* visitor)
 {
     TRACE_EVENT0("blink_gc", "Heap::globalWeakProcessing");
     // Call weak callbacks on objects that may now be pointing to dead objects.
-    while (popAndInvokeGlobalWeakCallback(markingVisitor)) { }
+    while (popAndInvokeGlobalWeakCallback(visitor)) { }
 
     // It is not permitted to trace pointers of live objects in the weak
     // callback phase, so the marking stack should still be empty here.
@@ -2269,7 +2268,6 @@ void Heap::resetHeapCounters()
     s_externalObjectSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
 }
 
-Visitor* Heap::s_markingVisitor;
 CallbackStack* Heap::s_markingStack;
 CallbackStack* Heap::s_postMarkingCallbackStack;
 CallbackStack* Heap::s_globalWeakCallbackStack;
