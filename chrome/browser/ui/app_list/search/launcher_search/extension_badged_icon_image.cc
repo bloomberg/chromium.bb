@@ -24,26 +24,28 @@ class BadgedIconSource : public gfx::CanvasImageSource {
   BadgedIconSource(const gfx::ImageSkia& custom_icon,
                    const gfx::ImageSkia& extension_icon,
                    const gfx::Size& icon_size)
-      : CanvasImageSource(icon_size, false), custom_icon_(custom_icon) {
-    // Badged icon size is 2/3 of custom icon.
-    int badge_dimension = size().width() * 2 / 3;
-    gfx::Size badge_size = gfx::Size(badge_dimension, badge_dimension);
-    resized_extension_icon_ = gfx::ImageSkiaOperations::CreateResizedImage(
-        extension_icon, skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
-        badge_size);
-  }
+      : CanvasImageSource(icon_size, false),
+        custom_icon_(custom_icon),
+        extension_icon_(extension_icon) {}
 
   void Draw(gfx::Canvas* canvas) override {
-    canvas->DrawImageInt(custom_icon_, 0, 0);
-    canvas->DrawImageInt(
-        resized_extension_icon_,
-        size().width() - resized_extension_icon_.size().width(),
-        size().height() - resized_extension_icon_.size().height());
+    canvas->DrawImageInt(custom_icon_, 0, 0, custom_icon_.size().width(),
+                         custom_icon_.height(), 0, 0, size().width(),
+                         size().height(), true);
+
+    // Badged icon size is 2/3 of custom icon.
+    const int badge_dimension = size().width() * 2 / 3;
+    const gfx::Size badge_size = gfx::Size(badge_dimension, badge_dimension);
+    canvas->DrawImageInt(extension_icon_, 0, 0, extension_icon_.size().width(),
+                         extension_icon_.size().height(),
+                         size().width() - badge_size.width(),
+                         size().height() - badge_size.height(),
+                         badge_size.width(), badge_size.height(), true);
   }
 
  private:
-  gfx::ImageSkia custom_icon_;
-  gfx::ImageSkia resized_extension_icon_;
+  const gfx::ImageSkia custom_icon_;
+  const gfx::ImageSkia extension_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(BadgedIconSource);
 };

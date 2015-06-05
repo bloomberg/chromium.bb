@@ -43,11 +43,14 @@ void ExtensionBadgedIconImageImpl::LoadIconResourceFromExtension() {
   const extensions::ExtensionResource& resource =
       extension_->GetResource(file_path);
 
-  // Load image with ImageLoader. ImageLoader resizes image to |icon_size_|.
+  // Load image as scale factor 2.0. Resizing image to proper size depending on
+  // DPI is done in BadgedIconSource.
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   info_list.push_back(extensions::ImageLoader::ImageRepresentation(
-      resource, extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
-      icon_size_, ui::SCALE_FACTOR_100P));
+      resource,
+      extensions::ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER,
+      gfx::Size(icon_size_.width() * 2, icon_size_.height() * 2),
+      ui::SCALE_FACTOR_200P));
   extensions::ImageLoader::Get(profile_)->LoadImagesAsync(
       extension_, info_list,
       base::Bind(&ExtensionBadgedIconImageImpl::OnCustomIconImageLoaded,
