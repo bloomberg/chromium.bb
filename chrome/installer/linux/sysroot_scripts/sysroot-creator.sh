@@ -255,7 +255,7 @@ HacksAndPatchesAmd64() {
   lscripts="${INSTALL_ROOT}/usr/lib/x86_64-linux-gnu/libpthread.so \
             ${INSTALL_ROOT}/usr/lib/x86_64-linux-gnu/libc.so"
 
-  #SubBanner "Rewriting Linker Scripts"
+  # Rewrite linker scripts
   sed -i -e 's|/usr/lib/x86_64-linux-gnu/||g'  ${lscripts}
   sed -i -e 's|/lib/x86_64-linux-gnu/||g' ${lscripts}
 
@@ -279,7 +279,7 @@ HacksAndPatchesI386() {
   lscripts="${INSTALL_ROOT}/usr/lib/i386-linux-gnu/libpthread.so \
             ${INSTALL_ROOT}/usr/lib/i386-linux-gnu/libc.so"
 
-  #SubBanner "Rewriting Linker Scripts"
+  # Rewrite linker scripts
   sed -i -e 's|/usr/lib/i386-linux-gnu/||g'  ${lscripts}
   sed -i -e 's|/lib/i386-linux-gnu/||g' ${lscripts}
 
@@ -303,7 +303,7 @@ HacksAndPatchesARM() {
   lscripts="${INSTALL_ROOT}/usr/lib/arm-linux-gnueabihf/libpthread.so \
             ${INSTALL_ROOT}/usr/lib/arm-linux-gnueabihf/libc.so"
 
-  #SubBanner "Rewriting Linker Scripts"
+  # Rewrite linker scripts
   sed -i -e 's|/usr/lib/arm-linux-gnueabihf/||g' ${lscripts}
   sed -i -e 's|/lib/arm-linux-gnueabihf/||g' ${lscripts}
 
@@ -312,6 +312,25 @@ HacksAndPatchesARM() {
   SubBanner "Package Configs Symlink"
   mkdir -p ${INSTALL_ROOT}/usr/share
   ln -s ../lib/arm-linux-gnueabihf/pkgconfig ${INSTALL_ROOT}/usr/share/pkgconfig
+}
+
+
+HacksAndPatchesMips() {
+  Banner "Misc Hacks & Patches"
+  # these are linker scripts with absolute pathnames in them
+  # which we rewrite here
+  lscripts="${INSTALL_ROOT}/usr/lib/mipsel-linux-gnu/libpthread.so \
+            ${INSTALL_ROOT}/usr/lib/mipsel-linux-gnu/libc.so"
+
+  # Rewrite linker scripts
+  sed -i -e 's|/usr/lib/mipsel-linux-gnu/||g' ${lscripts}
+  sed -i -e 's|/lib/mipsel-linux-gnu/||g' ${lscripts}
+
+  # This is for chrome's ./build/linux/pkg-config-wrapper
+  # which overwrites PKG_CONFIG_PATH internally
+  SubBanner "Package Configs Symlink"
+  mkdir -p ${INSTALL_ROOT}/usr/share
+  ln -s ../lib/mipsel-linux-gnu/pkgconfig ${INSTALL_ROOT}/usr/share/pkgconfig
 }
 
 
@@ -363,7 +382,7 @@ CleanupJailSymlinks() {
     case "${link}" in
       usr/lib/gcc/x86_64-linux-gnu/4.*/* | usr/lib/gcc/i486-linux-gnu/4.*/* | \
       usr/lib/gcc/arm-linux-gnueabihf/4.*/* | \
-      usr/lib/gcc/misel-linux-gnu/4.*/*)
+      usr/lib/gcc/mipsel-linux-gnu/4.*/*)
         # Relativize the symlink.
         ln -snfv "../../../../..${target}" "${link}"
         ;;

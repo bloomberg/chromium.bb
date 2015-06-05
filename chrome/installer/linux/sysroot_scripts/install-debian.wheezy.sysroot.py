@@ -29,19 +29,23 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 URL_PREFIX = 'http://storage.googleapis.com'
 URL_PATH = 'chrome-linux-sysroot/toolchain'
 REVISION_AMD64 = 'a2d45701cb21244b9514e420950ba6ba687fb655'
-REVISION_I386 = 'a2d45701cb21244b9514e420950ba6ba687fb655'
 REVISION_ARM = 'a2d45701cb21244b9514e420950ba6ba687fb655'
+REVISION_I386 = 'a2d45701cb21244b9514e420950ba6ba687fb655'
+REVISION_MIPS = '7749d2957387abf225b6d45154c3ddad142148dc'
 TARBALL_AMD64 = 'debian_wheezy_amd64_sysroot.tgz'
-TARBALL_I386 = 'debian_wheezy_i386_sysroot.tgz'
 TARBALL_ARM = 'debian_wheezy_arm_sysroot.tgz'
+TARBALL_I386 = 'debian_wheezy_i386_sysroot.tgz'
+TARBALL_MIPS = 'debian_wheezy_mips_sysroot.tgz'
 TARBALL_AMD64_SHA1SUM = '601216c0f980e798e7131635f3dd8171b3dcbcde'
-TARBALL_I386_SHA1SUM = '0090e5a4b56ab9ffb5d557da6a520195ab59b446'
 TARBALL_ARM_SHA1SUM = '6289593b36616526562a4d85ae9c92b694b8ce7e'
+TARBALL_I386_SHA1SUM = '0090e5a4b56ab9ffb5d557da6a520195ab59b446'
+TARBALL_MIPS_SHA1SUM = '3b4d782a237db4aac185a638572a7747c1a21825'
 SYSROOT_DIR_AMD64 = 'debian_wheezy_amd64-sysroot'
-SYSROOT_DIR_I386 = 'debian_wheezy_i386-sysroot'
 SYSROOT_DIR_ARM = 'debian_wheezy_arm-sysroot'
+SYSROOT_DIR_I386 = 'debian_wheezy_i386-sysroot'
+SYSROOT_DIR_MIPS = 'debian_wheezy_mips-sysroot'
 
-valid_archs = ('arm', 'i386', 'amd64')
+valid_archs = ('arm', 'i386', 'amd64', 'mips')
 
 
 def GetSha1(filename):
@@ -66,6 +70,8 @@ def DetectArch(gyp_defines):
     return 'i386'
   elif 'target_arch=arm' in gyp_defines:
     return 'arm'
+  elif 'target_arch=mipsel' in gyp_defines:
+    return 'mips'
 
   # Figure out host arch using build/detect_host_arch.py and
   # set target_arch to host arch
@@ -81,6 +87,8 @@ def DetectArch(gyp_defines):
     return 'i386'
   elif detected_host_arch == 'arm':
     return 'arm'
+  elif detected_host_arch == 'mips':
+    return 'mips'
   else:
     print "Unknown host arch: %s" % detected_host_arch
 
@@ -101,7 +109,7 @@ def main():
       print 'Unable to detect host architecture'
       return 1
 
-  if options.running_as_hook and target_arch != 'arm':
+  if options.running_as_hook and target_arch != 'arm' and target_arch != 'mips':
     # When run from runhooks, only install the sysroot for an Official Chrome
     # Linux build, except on ARM where we always use a sysroot.
     skip_if_defined = ['branding=Chrome', 'buildtype=Official']
@@ -132,6 +140,11 @@ def main():
     tarball_filename = TARBALL_I386
     tarball_sha1sum = TARBALL_I386_SHA1SUM
     revision = REVISION_I386
+  elif target_arch == 'mips':
+    sysroot = os.path.join(linux_dir, SYSROOT_DIR_MIPS)
+    tarball_filename = TARBALL_MIPS
+    tarball_sha1sum = TARBALL_MIPS_SHA1SUM
+    revision = REVISION_MIPS
   else:
     print 'Unknown architecture: %s' % target_arch
     assert(False)
