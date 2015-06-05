@@ -315,6 +315,11 @@ class BackgroundSyncManagerTest : public testing::Test {
     background_sync_manager_.reset(test_background_sync_manager_);
   }
 
+  void DeleteBackgroundSyncManager() {
+    background_sync_manager_.reset();
+    test_background_sync_manager_ = nullptr;
+  }
+
   bool Register(const BackgroundSyncManager::BackgroundSyncRegistration&
                     sync_registration) {
     return RegisterWithServiceWorkerId(sw_registration_id_1_,
@@ -729,11 +734,12 @@ TEST_F(BackgroundSyncManagerTest, RebootRecoveryTwoServiceWorkers) {
 }
 
 TEST_F(BackgroundSyncManagerTest, InitWithBadBackend) {
-  TestBackgroundSyncManager* manager =
+  DeleteBackgroundSyncManager();
+  test_background_sync_manager_ =
       new TestBackgroundSyncManager(helper_->context_wrapper());
-  background_sync_manager_.reset(manager);
-  manager->set_corrupt_backend(true);
-  manager->DoInit();
+  background_sync_manager_.reset(test_background_sync_manager_);
+  test_background_sync_manager_->set_corrupt_backend(true);
+  test_background_sync_manager_->DoInit();
 
   EXPECT_FALSE(Register(sync_reg_1_));
   EXPECT_FALSE(GetRegistration(sync_reg_1_));
@@ -742,11 +748,14 @@ TEST_F(BackgroundSyncManagerTest, InitWithBadBackend) {
 TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   // Schedule Init and all of the operations on a delayed backend. Verify that
   // the operations complete sequentially.
-  TestBackgroundSyncManager* manager =
+  DeleteBackgroundSyncManager();
+
+  test_background_sync_manager_ =
       new TestBackgroundSyncManager(helper_->context_wrapper());
-  background_sync_manager_.reset(manager);
-  manager->set_delay_backend(true);
-  manager->DoInit();
+  background_sync_manager_.reset(test_background_sync_manager_);
+
+  test_background_sync_manager_->set_delay_backend(true);
+  test_background_sync_manager_->DoInit();
 
   const int64 kExpectedInitialId =
       BackgroundSyncManager::BackgroundSyncRegistration::kInitialId;
@@ -754,15 +763,16 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   bool register_called = false;
   bool unregister_called = false;
   bool get_registration_called = false;
-  manager->Register(
+  test_background_sync_manager_->Register(
       sw_registration_id_1_, sync_reg_1_,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &register_called));
-  manager->Unregister(sw_registration_id_1_, sync_reg_1_.tag,
-                      sync_reg_1_.periodicity, kExpectedInitialId,
-                      base::Bind(&BackgroundSyncManagerTest::StatusCallback,
-                                 base::Unretained(this), &unregister_called));
-  manager->GetRegistration(
+  test_background_sync_manager_->Unregister(
+      sw_registration_id_1_, sync_reg_1_.tag, sync_reg_1_.periodicity,
+      kExpectedInitialId,
+      base::Bind(&BackgroundSyncManagerTest::StatusCallback,
+                 base::Unretained(this), &unregister_called));
+  test_background_sync_manager_->GetRegistration(
       sw_registration_id_1_, sync_reg_1_.tag, sync_reg_1_.periodicity,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &get_registration_called));
@@ -773,14 +783,14 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   EXPECT_FALSE(unregister_called);
   EXPECT_FALSE(get_registration_called);
 
-  manager->Continue();
+  test_background_sync_manager_->Continue();
   base::RunLoop().RunUntilIdle();
   // Register should be blocked while storing to the backend.
   EXPECT_FALSE(register_called);
   EXPECT_FALSE(unregister_called);
   EXPECT_FALSE(get_registration_called);
 
-  manager->Continue();
+  test_background_sync_manager_->Continue();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(register_called);
   EXPECT_EQ(kExpectedInitialId, callback_registration_.id);
@@ -789,7 +799,7 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   EXPECT_FALSE(unregister_called);
   EXPECT_FALSE(get_registration_called);
 
-  manager->Continue();
+  test_background_sync_manager_->Continue();
   base::RunLoop().RunUntilIdle();
   // Unregister should be done and since GetRegistration doesn't require the
   // backend it should be done too.
@@ -806,16 +816,13 @@ TEST_F(BackgroundSyncManagerTest, UnregisterServiceWorker) {
 
 TEST_F(BackgroundSyncManagerTest,
        UnregisterServiceWorkerDuringSyncRegistration) {
-  TestBackgroundSyncManager* manager =
-      new TestBackgroundSyncManager(helper_->context_wrapper());
-  background_sync_manager_.reset(manager);
-  manager->DoInit();
+  UseTestBackgroundSyncManager();
 
   EXPECT_TRUE(Register(sync_reg_1_));
 
-  manager->set_delay_backend(true);
+  test_background_sync_manager_->set_delay_backend(true);
   bool callback_called = false;
-  manager->Register(
+  test_background_sync_manager_->Register(
       sw_registration_id_1_, sync_reg_2_,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &callback_called));
@@ -824,12 +831,12 @@ TEST_F(BackgroundSyncManagerTest,
   EXPECT_FALSE(callback_called);
   UnregisterServiceWorker(sw_registration_id_1_);
 
-  manager->Continue();
+  test_background_sync_manager_->Continue();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_called);
   EXPECT_EQ(BackgroundSyncManager::ERROR_TYPE_STORAGE, callback_error_);
 
-  manager->set_delay_backend(false);
+  test_background_sync_manager_->set_delay_backend(false);
   EXPECT_FALSE(GetRegistration(sync_reg_1_));
 }
 
@@ -841,39 +848,32 @@ TEST_F(BackgroundSyncManagerTest, DeleteAndStartOverServiceWorkerContext) {
 }
 
 TEST_F(BackgroundSyncManagerTest, DisabledManagerWorksAfterBrowserRestart) {
-  TestBackgroundSyncManager* manager =
-      new TestBackgroundSyncManager(helper_->context_wrapper());
-  background_sync_manager_.reset(manager);
-  manager->DoInit();
+  UseTestBackgroundSyncManager();
   EXPECT_TRUE(Register(sync_reg_1_));
-  manager->set_corrupt_backend(true);
+  test_background_sync_manager_->set_corrupt_backend(true);
   EXPECT_FALSE(Register(sync_reg_2_));
 
   // The manager is now disabled and not accepting new requests until browser
   // restart or notification that the storage has been wiped.
-  manager->set_corrupt_backend(false);
+  test_background_sync_manager_->set_corrupt_backend(false);
   EXPECT_FALSE(GetRegistration(sync_reg_1_));
   EXPECT_FALSE(Register(sync_reg_2_));
 
   // Simulate restarting the browser by creating a new BackgroundSyncManager.
-  background_sync_manager_.reset(
-      new TestBackgroundSyncManager(helper_->context_wrapper()));
-  EXPECT_FALSE(GetRegistration(sync_reg_1_));
-  EXPECT_TRUE(Register(sync_reg_1_));
+  UseTestBackgroundSyncManager();
+  EXPECT_TRUE(GetRegistration(sync_reg_1_));
+  EXPECT_TRUE(Register(sync_reg_2_));
 }
 
 TEST_F(BackgroundSyncManagerTest, DisabledManagerWorksAfterDeleteAndStartOver) {
-  TestBackgroundSyncManager* manager =
-      new TestBackgroundSyncManager(helper_->context_wrapper());
-  background_sync_manager_.reset(manager);
-  manager->DoInit();
+  UseTestBackgroundSyncManager();
   EXPECT_TRUE(Register(sync_reg_1_));
-  manager->set_corrupt_backend(true);
+  test_background_sync_manager_->set_corrupt_backend(true);
   EXPECT_FALSE(Register(sync_reg_2_));
 
   // The manager is now disabled and not accepting new requests until browser
   // restart or notification that the storage has been wiped.
-  manager->set_corrupt_backend(false);
+  test_background_sync_manager_->set_corrupt_backend(false);
   helper_->context()->ScheduleDeleteAndStartOver();
   base::RunLoop().RunUntilIdle();
 
@@ -1063,7 +1063,7 @@ TEST_F(BackgroundSyncManagerTest, MultipleOneShotsFireOnNetworkChange) {
   EXPECT_TRUE(GetRegistration(sync_reg_2_));
 
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
-  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(2, sync_events_called_);
   EXPECT_FALSE(GetRegistration(sync_reg_1_));
   EXPECT_FALSE(GetRegistration(sync_reg_2_));
@@ -1079,7 +1079,7 @@ TEST_F(BackgroundSyncManagerTest, OneShotFiresOnManagerRestart) {
   EXPECT_TRUE(GetRegistration(sync_reg_1_));
 
   // Simulate closing the browser.
-  background_sync_manager_.reset();
+  DeleteBackgroundSyncManager();
 
   // The next time the manager is started, the network is good.
   SetNetwork(net::NetworkChangeNotifier::CONNECTION_WIFI);
