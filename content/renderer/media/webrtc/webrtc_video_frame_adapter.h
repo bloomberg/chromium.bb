@@ -30,9 +30,7 @@ class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
 
   void* native_handle() const override;
 
-  // TODO(pbos): Replace virtual with override as soon as this change lands in
-  // third_party/webrtc.
-  virtual rtc::scoped_refptr<VideoFrameBuffer> NativeToI420Buffer();
+  rtc::scoped_refptr<VideoFrameBuffer> NativeToI420Buffer() override;
 
   friend class rtc::RefCountedObject<WebRtcVideoFrameAdapter>;
 
