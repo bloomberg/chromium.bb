@@ -1080,12 +1080,18 @@ public class ToolbarPhone extends ToolbarLayout
         // called.  The alpha is being used prior to getting to draw(...), so updating the value
         // after this point was having no affect.
         if (mTextureCaptureMode) assert getAlpha() == 1f;
-        if (!mTextureCaptureMode && mClipRect != null) {
+
+        // mClipRect can change in the draw call, so cache this value to ensure the canvas is
+        // restored correctly.
+        boolean shouldClip = !mTextureCaptureMode && mClipRect != null;
+        if (shouldClip) {
             canvas.save();
             canvas.clipRect(mClipRect);
         }
         super.draw(canvas);
-        if (!mTextureCaptureMode && mClipRect != null) canvas.restore();
+        if (shouldClip) {
+            canvas.restore();
+        }
     }
 
     @Override
