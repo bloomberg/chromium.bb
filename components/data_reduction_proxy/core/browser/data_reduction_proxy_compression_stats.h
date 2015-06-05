@@ -132,6 +132,11 @@ class DataReductionProxyCompressionStats {
                                 DataReductionProxyRequestType request_type,
                                 base::Time now);
 
+  // Record UMA with data savings bytes and percent over the past
+  // |DataReductionProxy::kNumDaysInHistorySummary| days. These numbers
+  // are displayed to users as their data savings.
+  void RecordUserVisibleDataSavings();
+
   PrefService* pref_service_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const base::TimeDelta delay_;

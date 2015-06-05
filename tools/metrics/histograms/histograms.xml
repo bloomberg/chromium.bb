@@ -19577,6 +19577,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.DailyUserVisibleSavingsPercent_DataRedictionProxyEnabled"
+    units="Percent">
+  <owner>kundaji@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The percentage of data savings in past
+    |DataReductionProxy::kNumDaysInHistorySummary| days. This number is
+    displayed to users as their data savings.
+  </summary>
+</histogram>
+
+<histogram name="Net.DailyUserVisibleSavingsSize_DataRedictionProxyEnabled"
+    units="KB">
+  <owner>kundaji@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The total data saved in KB in past
+    |DataReductionProxy::kNumDaysInHistorySummary| days. This number is used to
+    compute the data savings displayed to the user.
+  </summary>
+</histogram>
+
 <histogram name="Net.DhcpWpadCancelTime" units="milliseconds">
   <obsolete>
     Removed in Chrome 39.

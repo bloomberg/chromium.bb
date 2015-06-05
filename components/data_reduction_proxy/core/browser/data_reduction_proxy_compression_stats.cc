@@ -704,6 +704,7 @@ void DataReductionProxyCompressionStats::RecordContentLengthPrefs(
     // Here, we prefer collecting less data but the collected data is
     // associated with an accurate date.
     if (days_since_last_update == 1) {
+      RecordUserVisibleDataSavings();
       // The previous day's data point is the second one from the tail.
       // Therefore (kNumDaysInHistory - 2) below.
       RecordDailyContentLengthHistograms(
@@ -719,6 +720,28 @@ void DataReductionProxyCompressionStats::RecordContentLengthPrefs(
           unknown.GetListPrefValue(kNumDaysInHistory - 2));
     }
   }
+}
+
+void DataReductionProxyCompressionStats::RecordUserVisibleDataSavings() {
+  int64 original_content_length;
+  int64 received_content_length;
+  int64 last_update_internal;
+  GetContentLengths(kNumDaysInHistorySummary, &original_content_length,
+                    &received_content_length, &last_update_internal);
+
+  if (original_content_length == 0)
+    return;
+
+  int64 user_visible_savings_bytes =
+      original_content_length - received_content_length;
+  int user_visible_savings_percent =
+      user_visible_savings_bytes * 100 / original_content_length;
+  UMA_HISTOGRAM_PERCENTAGE(
+      "Net.DailyUserVisibleSavingsPercent_DataRedictionProxyEnabled",
+      user_visible_savings_percent);
+  UMA_HISTOGRAM_COUNTS(
+      "Net.DailyUserVisibleSavingsSize_DataRedictionProxyEnabled",
+      user_visible_savings_bytes >> 10);
 }
 
 }  // namespace data_reduction_proxy
