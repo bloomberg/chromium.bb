@@ -261,6 +261,7 @@ void CmaRenderer::InitializeAudioPipeline() {
   if (config.codec() == ::media::kCodecAAC)
     stream->EnableBitstreamConverter();
 
+  has_audio_ = true;
   media_pipeline_->InitializeAudio(
       config, frame_provider.Pass(), audio_initialization_done_cb);
 }
@@ -276,10 +277,10 @@ void CmaRenderer::OnAudioPipelineInitializeDone(
   DCHECK_EQ(state_, kUninitialized) << state_;
   DCHECK(!init_cb_.is_null());
   if (status != ::media::PIPELINE_OK) {
+    has_audio_ = false;
     base::ResetAndReturn(&init_cb_).Run(status);
     return;
   }
-  has_audio_ = true;
 
   InitializeVideoPipeline();
 }
@@ -321,6 +322,7 @@ void CmaRenderer::InitializeVideoPipeline() {
 
   initial_natural_size_ = config.natural_size();
 
+  has_video_ = true;
   media_pipeline_->InitializeVideo(
       config,
       frame_provider.Pass(),
@@ -338,10 +340,10 @@ void CmaRenderer::OnVideoPipelineInitializeDone(
   DCHECK_EQ(state_, kUninitialized) << state_;
   DCHECK(!init_cb_.is_null());
   if (status != ::media::PIPELINE_OK) {
+    has_video_ = false;
     base::ResetAndReturn(&init_cb_).Run(status);
     return;
   }
-  has_video_ = true;
 
   CompleteStateTransition(kFlushed);
   base::ResetAndReturn(&init_cb_).Run(::media::PIPELINE_OK);
