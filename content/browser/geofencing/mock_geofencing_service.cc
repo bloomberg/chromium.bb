@@ -10,7 +10,9 @@
 #include <cmath>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/geofencing/geofencing_registration_delegate.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
 
@@ -21,7 +23,7 @@ namespace {
 void RegisterRegionResult(GeofencingRegistrationDelegate* delegate,
                           int64 geofencing_registration_id,
                           GeofencingStatus status) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&GeofencingRegistrationDelegate::RegistrationFinished,
                  base::Unretained(delegate), geofencing_registration_id,
@@ -109,7 +111,7 @@ int64 MockGeofencingService::RegisterRegion(
       PositionInRegion(last_latitude_, last_longitude_, region);
   RegisterRegionResult(delegate, id, GEOFENCING_STATUS_OK);
   if (registration.is_inside) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&GeofencingRegistrationDelegate::RegionEntered,
                               base::Unretained(delegate), id));
   }

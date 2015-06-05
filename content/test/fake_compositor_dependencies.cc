@@ -4,7 +4,8 @@
 
 #include "content/test/fake_compositor_dependencies.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -58,7 +59,7 @@ uint32 FakeCompositorDependencies::GetImageTextureTarget() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 FakeCompositorDependencies::GetCompositorMainThreadTaskRunner() {
-  return base::MessageLoopProxy::current();
+  return base::ThreadTaskRunnerHandle::Get();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

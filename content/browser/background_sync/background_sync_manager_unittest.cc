@@ -5,10 +5,12 @@
 #include "content/browser/background_sync/background_sync_manager.h"
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -145,7 +147,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
       const ServiceWorkerStorage::StatusCallback& callback) override {
     EXPECT_TRUE(continuation_.is_null());
     if (corrupt_backend_) {
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
       return;
     }
@@ -165,7 +167,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
           callback) override {
     EXPECT_TRUE(continuation_.is_null());
     if (corrupt_backend_) {
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(callback, std::vector<std::pair<int64, std::string>>(),
                      SERVICE_WORKER_ERROR_FAILED));

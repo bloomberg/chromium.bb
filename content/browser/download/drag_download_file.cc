@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -94,7 +95,8 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!item) {
       DCHECK_NE(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
-      on_completed_loop_->PostTask(FROM_HERE, base::Bind(on_completed_, false));
+      on_completed_loop_->task_runner()->PostTask(
+          FROM_HERE, base::Bind(on_completed_, false));
       return;
     }
     DCHECK_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
@@ -111,8 +113,9 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
         state == DownloadItem::CANCELLED ||
         state == DownloadItem::INTERRUPTED) {
       if (!on_completed_.is_null()) {
-        on_completed_loop_->PostTask(FROM_HERE, base::Bind(
-            on_completed_, state == DownloadItem::COMPLETE));
+        on_completed_loop_->task_runner()->PostTask(
+            FROM_HERE,
+            base::Bind(on_completed_, state == DownloadItem::COMPLETE));
         on_completed_.Reset();
       }
       download_item_->RemoveObserver(this);
@@ -127,8 +130,8 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     if (!on_completed_.is_null()) {
       const bool is_complete =
           download_item_->GetState() == DownloadItem::COMPLETE;
-      on_completed_loop_->PostTask(FROM_HERE, base::Bind(
-          on_completed_, is_complete));
+      on_completed_loop_->task_runner()->PostTask(
+          FROM_HERE, base::Bind(on_completed_, is_complete));
       on_completed_.Reset();
     }
     download_item_->RemoveObserver(this);

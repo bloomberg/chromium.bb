@@ -9,7 +9,6 @@
 #include "base/barrier_closure.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
@@ -1180,7 +1179,7 @@ void CacheStorageCache::CreateBackend(const ErrorCallback& callback) {
                  weak_ptr_factory_.GetWeakPtr(), callback,
                  base::Passed(backend_ptr.Pass()));
 
-  // TODO(jkarlin): Use the cache MessageLoopProxy that ServiceWorkerCacheCore
+  // TODO(jkarlin): Use the cache task runner that ServiceWorkerCacheCore
   // has for disk caches.
   int rv = disk_cache::CreateCacheBackend(
       cache_type, net::CACHE_BACKEND_SIMPLE, path_, kMaxCacheBytes,

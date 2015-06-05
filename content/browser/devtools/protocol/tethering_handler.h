@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_TETHERING_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 
 namespace net {

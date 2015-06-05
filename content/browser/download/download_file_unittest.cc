@@ -4,10 +4,12 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_file_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
@@ -650,16 +652,16 @@ TEST_P(DownloadFileTestWithRename, RenameWithErrorRetry) {
     // Rename() will be in front of the QuitClosure(). Running the message loop
     // now causes the just the first retry task to be run. The rename still
     // fails, so another retry task would get queued behind the QuitClosure().
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           first_failing_run.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, first_failing_run.QuitClosure());
     first_failing_run.Run();
     EXPECT_FALSE(did_run_callback);
 
     // Running another loop should have the same effect as the above as long as
     // kMaxRenameRetries is greater than 2.
     base::RunLoop second_failing_run;
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           second_failing_run.QuitClosure());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, second_failing_run.QuitClosure());
     second_failing_run.Run();
     EXPECT_FALSE(did_run_callback);
   }
@@ -775,9 +777,9 @@ TEST_F(DownloadFileTest, ConfirmUpdate) {
   AppendDataToFile(chunks1, 2);
 
   // Run the message loops for 750ms and check for results.
-  loop_.PostDelayedTask(FROM_HERE,
-                        base::MessageLoop::QuitClosure(),
-                        base::TimeDelta::FromMilliseconds(750));
+  loop_.task_runner()->PostDelayedTask(FROM_HERE,
+                                       base::MessageLoop::QuitClosure(),
+                                       base::TimeDelta::FromMilliseconds(750));
   loop_.Run();
 
   EXPECT_EQ(static_cast<int64>(strlen(kTestData1) + strlen(kTestData2)),

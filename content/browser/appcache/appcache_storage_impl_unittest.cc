@@ -9,9 +9,11 @@
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
@@ -269,8 +271,8 @@ class AppCacheStorageImplTest : public testing::Test {
     MockQuotaManager()
         : QuotaManager(true /* is_incognito */,
                        base::FilePath(),
-                       io_thread->message_loop_proxy().get(),
-                       db_thread->message_loop_proxy().get(),
+                       io_thread->task_runner().get(),
+                       db_thread->task_runner().get(),
                        NULL),
           async_(false) {}
 
@@ -279,11 +281,9 @@ class AppCacheStorageImplTest : public testing::Test {
                           const GetUsageAndQuotaCallback& callback) override {
       EXPECT_EQ(storage::kStorageTypeTemporary, type);
       if (async_) {
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&MockQuotaManager::CallCallback,
-                       base::Unretained(this),
-                       callback));
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE, base::Bind(&MockQuotaManager::CallCallback,
+                                  base::Unretained(this), callback));
         return;
       }
       CallCallback(callback);
@@ -370,11 +370,9 @@ class AppCacheStorageImplTest : public testing::Test {
     // We also have to wait for InitTask completion call to be performed
     // on the IO thread prior to running the test. Its guaranteed to be
     // queued by this time.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AppCacheStorageImplTest::RunMethod<Method>,
-                   base::Unretained(this),
-                   method));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AppCacheStorageImplTest::RunMethod<Method>,
+                              base::Unretained(this), method));
   }
 
   static void SetUpTestCase() {
@@ -400,7 +398,7 @@ class AppCacheStorageImplTest : public testing::Test {
   template <class Method>
   void RunTestOnIOThread(Method method) {
     test_finished_event_ .reset(new base::WaitableEvent(false, false));
-    io_thread->message_loop()->PostTask(
+    io_thread->task_runner()->PostTask(
         FROM_HERE, base::Bind(&AppCacheStorageImplTest::MethodWrapper<Method>,
                               base::Unretained(this), method));
     test_finished_event_->Wait();
@@ -431,10 +429,9 @@ class AppCacheStorageImplTest : public testing::Test {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
     DCHECK(base::MessageLoop::current() == io_thread->message_loop());
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AppCacheStorageImplTest::TestFinishedUnwound,
-                   base::Unretained(this)));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AppCacheStorageImplTest::TestFinishedUnwound,
+                              base::Unretained(this)));
   }
 
   void TestFinishedUnwound() {
@@ -451,7 +448,7 @@ class AppCacheStorageImplTest : public testing::Test {
     if (task_stack_.empty()) {
       return;
     }
-    base::MessageLoop::current()->PostTask(FROM_HERE, task_stack_.top());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task_stack_.top());
     task_stack_.pop();
   }
 
@@ -463,7 +460,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // We pump a task thru the db thread to ensure any tasks previously
     // scheduled on that thread have been performed prior to return.
     base::WaitableEvent event(false, false);
-    db_thread->message_loop()->PostTask(
+    db_thread->task_runner()->PostTask(
         FROM_HERE, base::Bind(&AppCacheStorageImplTest::SignalEvent, &event));
     event.Wait();
   }
@@ -1732,11 +1729,9 @@ class AppCacheStorageImplTest : public testing::Test {
     // We continue after the init task is complete including the callback
     // on the current thread.
     FlushDbThreadTasks();
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&AppCacheStorageImplTest::Continue_Reinitialize,
-                   base::Unretained(this),
-                   test_case));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AppCacheStorageImplTest::Continue_Reinitialize,
+                              base::Unretained(this), test_case));
   }
 
   void Continue_Reinitialize(ReinitTestCase test_case) {

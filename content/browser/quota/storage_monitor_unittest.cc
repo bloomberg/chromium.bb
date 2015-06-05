@@ -5,9 +5,8 @@
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/mock_storage_client.h"
 #include "net/base/net_util.h"
@@ -63,17 +62,15 @@ class MockObserver : public StorageObserver {
 class UsageMockQuotaManager : public QuotaManager {
  public:
   UsageMockQuotaManager(SpecialStoragePolicy* special_storage_policy)
-      : QuotaManager(
-            false,
-            base::FilePath(),
-            base::MessageLoopProxy::current().get(),
-            base::MessageLoopProxy::current().get(),
-            special_storage_policy),
+      : QuotaManager(false,
+                     base::FilePath(),
+                     base::ThreadTaskRunnerHandle::Get().get(),
+                     base::ThreadTaskRunnerHandle::Get().get(),
+                     special_storage_policy),
         callback_usage_(0),
         callback_quota_(0),
         callback_status_(kQuotaStatusOk),
-        initialized_(false) {
-  }
+        initialized_(false) {}
 
   void SetCallbackParams(int64 usage, int64 quota, QuotaStatusCode status) {
     initialized_ = true;
@@ -649,11 +646,8 @@ class StorageMonitorIntegrationTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     storage_policy_ = new MockSpecialStoragePolicy();
     quota_manager_ = new QuotaManager(
-        false,
-        data_dir_.path(),
-        base::MessageLoopProxy::current().get(),
-        base::MessageLoopProxy::current().get(),
-        storage_policy_.get());
+        false, data_dir_.path(), base::ThreadTaskRunnerHandle::Get().get(),
+        base::ThreadTaskRunnerHandle::Get().get(), storage_policy_.get());
 
     client_ = new MockStorageClient(quota_manager_->proxy(),
                                     NULL,

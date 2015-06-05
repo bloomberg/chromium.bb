@@ -4,9 +4,11 @@
 
 #include "base/barrier_closure.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
@@ -129,15 +131,16 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
   }
 
   // Callback when using frame subscriber API.
-  void FrameDelivered(const scoped_refptr<base::MessageLoopProxy>& loop,
-                      base::Closure quit_closure,
-                      base::TimeTicks timestamp,
-                      bool frame_captured) {
+  void FrameDelivered(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      base::Closure quit_closure,
+      base::TimeTicks timestamp,
+      bool frame_captured) {
     ++callback_invoke_count_;
     if (frame_captured)
       ++frames_captured_;
     if (!quit_closure.is_null())
-      loop->PostTask(FROM_HERE, quit_closure);
+      task_runner->PostTask(FROM_HERE, quit_closure);
   }
 
   // Copy one frame using the CopyFromBackingStore API.
@@ -182,9 +185,8 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
   // call stack.
   static void GiveItSomeTime() {
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        run_loop.QuitClosure(),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
         base::TimeDelta::FromMilliseconds(10));
     run_loop.Run();
   }
@@ -339,11 +341,10 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 
   base::RunLoop run_loop;
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
-      new FakeFrameSubscriber(
-          base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
-                     base::Unretained(this),
-                     base::MessageLoopProxy::current(),
-                     run_loop.QuitClosure())));
+      new FakeFrameSubscriber(base::Bind(
+          &RenderWidgetHostViewBrowserTest::FrameDelivered,
+          base::Unretained(this), base::ThreadTaskRunnerHandle::Get(),
+          run_loop.QuitClosure())));
   view->BeginFrameSubscription(subscriber.Pass());
   run_loop.Run();
   view->EndFrameSubscription();
@@ -373,12 +374,12 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
   view->CopyFromCompositingSurfaceToVideoFrame(
       gfx::Rect(view->GetViewBounds().size()), first_output,
       base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
-                 base::Unretained(this), base::MessageLoopProxy::current(),
+                 base::Unretained(this), base::ThreadTaskRunnerHandle::Get(),
                  closure, base::TimeTicks::Now()));
   view->CopyFromCompositingSurfaceToVideoFrame(
       gfx::Rect(view->GetViewBounds().size()), second_output,
       base::Bind(&RenderWidgetHostViewBrowserTest::FrameDelivered,
-                 base::Unretained(this), base::MessageLoopProxy::current(),
+                 base::Unretained(this), base::ThreadTaskRunnerHandle::Get(),
                  closure, base::TimeTicks::Now()));
   run_loop.Run();
 

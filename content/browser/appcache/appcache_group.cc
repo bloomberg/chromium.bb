@@ -7,8 +7,10 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_service_impl.h"
@@ -230,9 +232,8 @@ void AppCacheGroup::ScheduleUpdateRestart(int delay_ms) {
   DCHECK(restart_update_task_.IsCancelled());
   restart_update_task_.Reset(
       base::Bind(&AppCacheGroup::RunQueuedUpdates, this));
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      restart_update_task_.callback(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, restart_update_task_.callback(),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 

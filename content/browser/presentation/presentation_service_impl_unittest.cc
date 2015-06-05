@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/presentation/presentation_service_impl.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/browser/presentation_session.h"
@@ -174,7 +176,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
 
   void RunLoopFor(base::TimeDelta duration) {
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), duration);
     run_loop.Run();
   }

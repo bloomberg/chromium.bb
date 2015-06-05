@@ -4,10 +4,11 @@
 
 #include "content/browser/quota/mock_quota_manager.h"
 
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "url/gurl.h"
 
 using storage::kQuotaStatusOk;
@@ -93,13 +94,10 @@ void MockQuotaManager::GetOriginsModifiedSince(
       origins_to_return->insert(current->origin);
   }
 
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MockQuotaManager::DidGetModifiedSince,
-                 weak_factory_.GetWeakPtr(),
-                 callback,
-                 base::Owned(origins_to_return),
-                 type));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&MockQuotaManager::DidGetModifiedSince,
+                            weak_factory_.GetWeakPtr(), callback,
+                            base::Owned(origins_to_return), type));
 }
 
 void MockQuotaManager::DeleteOriginData(
@@ -119,12 +117,10 @@ void MockQuotaManager::DeleteOriginData(
     }
   }
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&MockQuotaManager::DidDeleteOriginData,
-                 weak_factory_.GetWeakPtr(),
-                 callback,
-                 kQuotaStatusOk));
+                 weak_factory_.GetWeakPtr(), callback, kQuotaStatusOk));
 }
 
 MockQuotaManager::~MockQuotaManager() {}

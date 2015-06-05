@@ -4,10 +4,12 @@
 
 #include "content/utility/webthread_impl_for_utility_thread.h"
 
+#include "base/thread_task_runner_handle.h"
+
 namespace content {
 
 WebThreadImplForUtilityThread::WebThreadImplForUtilityThread()
-    : task_runner_(base::MessageLoopProxy::current()),
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       thread_id_(base::PlatformThread::CurrentId()) {
 }
 

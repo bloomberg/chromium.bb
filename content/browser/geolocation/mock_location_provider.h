@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/browser/geolocation/location_provider_base.h"
 #include "content/public/common/geoposition.h"
@@ -36,7 +37,7 @@ class MockLocationProvider : public LocationProviderBase {
   bool is_permission_granted_;
   MockLocationProvider** self_ref_;
 
-  scoped_refptr<base::MessageLoopProxy> provider_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> provider_task_runner_;
 
   // Set when an instance of the mock is created via a factory function.
   static MockLocationProvider* instance_;

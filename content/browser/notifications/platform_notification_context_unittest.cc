@@ -6,6 +6,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -99,7 +100,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
   // Overrides the task runner in |context| with the current message loop
   // proxy, to reduce the number of threads involved in the tests.
   void OverrideTaskRunnerForTesting(PlatformNotificationContextImpl* context) {
-    context->SetTaskRunnerForTesting(base::MessageLoopProxy::current());
+    context->SetTaskRunnerForTesting(base::ThreadTaskRunnerHandle::Get());
   }
 
   // Returns the testing browsing context that can be used for this test.

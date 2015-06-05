@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_FAKE_ACCESS_TOKEN_STORE_H_
 #define CONTENT_BROWSER_GEOLOCATION_FAKE_ACCESS_TOKEN_STORE_H_
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "content/public/browser/access_token_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,7 +42,7 @@ class FakeAccessTokenStore : public AccessTokenStore {
   // In some tests, NotifyDelegateTokensLoaded() is called on a thread
   // other than the originating thread, in which case we must post
   // back to it.
-  base::MessageLoopProxy* originating_message_loop_;
+  base::SingleThreadTaskRunner* originating_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAccessTokenStore);
 };

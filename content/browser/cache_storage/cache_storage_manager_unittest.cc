@@ -7,9 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/quota/mock_quota_manager_proxy.h"
@@ -39,18 +39,18 @@ class CacheStorageManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     quota_manager_proxy_ = new MockQuotaManagerProxy(
-        nullptr, base::MessageLoopProxy::current().get());
+        nullptr, base::ThreadTaskRunnerHandle::Get().get());
 
     net::URLRequestContext* url_request_context =
         browser_context_.GetRequestContext()->GetURLRequestContext();
     if (MemoryOnly()) {
       cache_manager_ = CacheStorageManager::Create(
-          base::FilePath(), base::MessageLoopProxy::current(),
+          base::FilePath(), base::ThreadTaskRunnerHandle::Get(),
           quota_manager_proxy_);
     } else {
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
       cache_manager_ = CacheStorageManager::Create(
-          temp_dir_.path(), base::MessageLoopProxy::current(),
+          temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
           quota_manager_proxy_);
     }
 

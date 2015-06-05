@@ -8,8 +8,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -446,7 +448,7 @@ int ServiceWorkerContextCore::GetNewRegistrationHandleId() {
 
 void ServiceWorkerContextCore::ScheduleDeleteAndStartOver() const {
   storage_->Disable();
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ServiceWorkerContextWrapper::DeleteAndStartOver, wrapper_));
 }

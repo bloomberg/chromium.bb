@@ -16,10 +16,6 @@
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_sender.h"
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace content {
 class UtilityProcessHost;
 

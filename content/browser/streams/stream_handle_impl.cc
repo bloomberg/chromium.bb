@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/streams/stream.h"
 
 namespace content {
@@ -23,11 +23,12 @@ void RunCloseListeners(const std::vector<base::Closure>& close_listeners) {
 StreamHandleImpl::StreamHandleImpl(const base::WeakPtr<Stream>& stream)
     : stream_(stream),
       url_(stream->url()),
-      stream_message_loop_(base::MessageLoopProxy::current().get()) {}
+      stream_task_runner_(base::ThreadTaskRunnerHandle::Get().get()) {
+}
 
 StreamHandleImpl::~StreamHandleImpl() {
-  stream_message_loop_->PostTaskAndReply(FROM_HERE,
-      base::Bind(&Stream::CloseHandle, stream_),
+  stream_task_runner_->PostTaskAndReply(
+      FROM_HERE, base::Bind(&Stream::CloseHandle, stream_),
       base::Bind(&RunCloseListeners, close_listeners_));
 }
 

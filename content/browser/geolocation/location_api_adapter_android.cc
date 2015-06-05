@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/geolocation/location_provider_android.h"
 #include "jni/LocationProviderAdapter_jni.h"
 
@@ -41,7 +42,7 @@ AndroidLocationApiAdapter::AndroidLocationApiAdapter()
 
 AndroidLocationApiAdapter::~AndroidLocationApiAdapter() {
   CHECK(!location_provider_);
-  CHECK(!message_loop_.get());
+  CHECK(!task_runner_.get());
   CHECK(java_location_provider_android_object_.is_null());
 }
 
@@ -54,14 +55,14 @@ bool AndroidLocationApiAdapter::Start(
     CreateJavaObject(env);
     {
       base::AutoLock lock(lock_);
-      CHECK(!message_loop_.get());
-      message_loop_ = base::MessageLoopProxy::current();
+      CHECK(!task_runner_.get());
+      task_runner_ = base::ThreadTaskRunnerHandle::Get();
     }
   }
   // At this point we should have all our pre-conditions ready, and they'd only
   // change in Stop() which must be called on the same thread as here.
   CHECK(location_provider_);
-  CHECK(message_loop_.get());
+  CHECK(task_runner_.get());
   CHECK(!java_location_provider_android_object_.is_null());
   // We'll start receiving notifications from java in the main thread looper
   // until Stop() is called.
@@ -71,14 +72,14 @@ bool AndroidLocationApiAdapter::Start(
 
 void AndroidLocationApiAdapter::Stop() {
   if (!location_provider_) {
-    CHECK(!message_loop_.get());
+    CHECK(!task_runner_.get());
     CHECK(java_location_provider_android_object_.is_null());
     return;
   }
 
   {
     base::AutoLock lock(lock_);
-    message_loop_ = NULL;
+    task_runner_ = NULL;
   }
 
   location_provider_ = NULL;
@@ -94,7 +95,7 @@ void AndroidLocationApiAdapter::NotifyProviderNewGeoposition(
     const Geoposition& geoposition) {
   // Called on the geolocation thread, safe to access location_provider_ here.
   if (GetInstance()->location_provider_) {
-    CHECK(GetInstance()->message_loop_->BelongsToCurrentThread());
+    CHECK(GetInstance()->task_runner_->BelongsToCurrentThread());
     GetInstance()->location_provider_->NotifyNewGeoposition(geoposition);
   }
 }
@@ -152,13 +153,12 @@ void AndroidLocationApiAdapter::CreateJavaObject(JNIEnv* env) {
 void AndroidLocationApiAdapter::OnNewGeopositionInternal(
     const Geoposition& geoposition) {
   base::AutoLock lock(lock_);
-  if (!message_loop_.get())
+  if (!task_runner_.get())
     return;
-  message_loop_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
-          &AndroidLocationApiAdapter::NotifyProviderNewGeoposition,
-          geoposition));
+      base::Bind(&AndroidLocationApiAdapter::NotifyProviderNewGeoposition,
+                 geoposition));
 }
 
 }  // namespace content

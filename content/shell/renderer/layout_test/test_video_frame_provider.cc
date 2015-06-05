@@ -6,7 +6,8 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "media/base/video_frame.h"
 
 namespace content {
@@ -16,7 +17,7 @@ TestVideoFrameProvider::TestVideoFrameProvider(
     const base::TimeDelta& frame_duration,
     const base::Closure& error_cb,
     const VideoFrameProvider::RepaintCB& repaint_cb)
-    : message_loop_proxy_(base::MessageLoopProxy::current()),
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       size_(size),
       state_(kStopped),
       frame_duration_(frame_duration),
@@ -28,36 +29,35 @@ TestVideoFrameProvider::~TestVideoFrameProvider() {}
 
 void TestVideoFrameProvider::Start() {
   DVLOG(1) << "TestVideoFrameProvider::Start";
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   state_ = kStarted;
-  message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&TestVideoFrameProvider::GenerateFrame, this));
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&TestVideoFrameProvider::GenerateFrame, this));
 }
 
 void TestVideoFrameProvider::Stop() {
   DVLOG(1) << "TestVideoFrameProvider::Stop";
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   state_ = kStopped;
 }
 
 void TestVideoFrameProvider::Play() {
   DVLOG(1) << "TestVideoFrameProvider::Play";
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ == kPaused)
     state_ = kStarted;
 }
 
 void TestVideoFrameProvider::Pause() {
   DVLOG(1) << "TestVideoFrameProvider::Pause";
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ == kStarted)
     state_ = kPaused;
 }
 
 void TestVideoFrameProvider::GenerateFrame() {
   DVLOG(1) << "TestVideoFrameProvider::GenerateFrame";
-  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ == kStopped)
     return;
 
@@ -74,9 +74,8 @@ void TestVideoFrameProvider::GenerateFrame() {
   }
 
   current_time_ += frame_duration_;
-  message_loop_proxy_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&TestVideoFrameProvider::GenerateFrame, this),
+  task_runner_->PostDelayedTask(
+      FROM_HERE, base::Bind(&TestVideoFrameProvider::GenerateFrame, this),
       frame_duration_);
 }
 

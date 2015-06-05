@@ -8,9 +8,9 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -125,10 +125,10 @@ void NotifyPluginDirChanged(const base::FilePath& path, bool error) {
 }
 #endif
 
-void ForwardCallback(base::MessageLoopProxy* target_loop,
+void ForwardCallback(base::SingleThreadTaskRunner* target_task_runner,
                      const PluginService::GetPluginsCallback& callback,
                      const std::vector<WebPluginInfo>& plugins) {
-  target_loop->PostTask(FROM_HERE, base::Bind(callback, plugins));
+  target_task_runner->PostTask(FROM_HERE, base::Bind(callback, plugins));
 }
 
 }  // namespace
@@ -589,45 +589,43 @@ base::string16 PluginServiceImpl::GetPluginDisplayNameByPath(
 }
 
 void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
-  scoped_refptr<base::MessageLoopProxy> target_loop(
-      base::MessageLoop::current()->message_loop_proxy());
+  scoped_refptr<base::SingleThreadTaskRunner> target_task_runner(
+      base::ThreadTaskRunnerHandle::Get());
 
   if (LoadPluginListInProcess()) {
-    BrowserThread::GetBlockingPool()->
-        PostSequencedWorkerTaskWithShutdownBehavior(
-            plugin_list_token_,
-            FROM_HERE,
+    BrowserThread::GetBlockingPool()
+        ->PostSequencedWorkerTaskWithShutdownBehavior(
+            plugin_list_token_, FROM_HERE,
             base::Bind(&PluginServiceImpl::GetPluginsInternal,
-                       base::Unretained(this),
-                       target_loop, callback),
-        base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+                       base::Unretained(this), target_task_runner, callback),
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
     return;
   }
 #if defined(OS_POSIX)
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&PluginServiceImpl::GetPluginsOnIOThread,
-                 base::Unretained(this), target_loop, callback));
+                 base::Unretained(this), target_task_runner, callback));
 #else
   NOTREACHED();
 #endif
 }
 
 void PluginServiceImpl::GetPluginsInternal(
-     base::MessageLoopProxy* target_loop,
-     const PluginService::GetPluginsCallback& callback) {
+    base::SingleThreadTaskRunner* target_task_runner,
+    const PluginService::GetPluginsCallback& callback) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       plugin_list_token_));
 
   std::vector<WebPluginInfo> plugins;
   PluginList::Singleton()->GetPlugins(&plugins, NPAPIPluginsSupported());
 
-  target_loop->PostTask(FROM_HERE,
-      base::Bind(callback, plugins));
+  target_task_runner->PostTask(FROM_HERE, base::Bind(callback, plugins));
 }
 
 #if defined(OS_POSIX)
 void PluginServiceImpl::GetPluginsOnIOThread(
-    base::MessageLoopProxy* target_loop,
+    base::SingleThreadTaskRunner* target_task_runner,
     const GetPluginsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -637,8 +635,8 @@ void PluginServiceImpl::GetPluginsOnIOThread(
   if (!plugin_loader_.get())
     plugin_loader_ = new PluginLoaderPosix;
 
-  plugin_loader_->GetPlugins(
-      base::Bind(&ForwardCallback, make_scoped_refptr(target_loop), callback));
+  plugin_loader_->GetPlugins(base::Bind(
+      &ForwardCallback, make_scoped_refptr(target_task_runner), callback));
 }
 #endif
 

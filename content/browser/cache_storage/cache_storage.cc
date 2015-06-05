@@ -9,12 +9,15 @@
 #include "base/barrier_closure.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
@@ -225,15 +228,15 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     cache_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SimpleCacheLoader::CleanUpDeleteCacheDirInPool, cache_path,
-                   callback, base::MessageLoopProxy::current()));
+                   callback, base::ThreadTaskRunnerHandle::Get()));
   }
 
   static void CleanUpDeleteCacheDirInPool(
       const base::FilePath& cache_path,
       const BoolCallback& callback,
-      const scoped_refptr<base::MessageLoopProxy>& original_loop) {
+      const scoped_refptr<base::SingleThreadTaskRunner>& original_task_runner) {
     bool rv = base::DeleteFile(cache_path, true);
-    original_loop->PostTask(FROM_HERE, base::Bind(callback, rv));
+    original_task_runner->PostTask(FROM_HERE, base::Bind(callback, rv));
   }
 
   void WriteIndex(const StringVector& cache_names,
@@ -262,7 +265,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     cache_task_runner_->PostTask(
         FROM_HERE, base::Bind(&SimpleCacheLoader::WriteIndexWriteToFileInPool,
                               tmp_path, index_path, serialized, callback,
-                              base::MessageLoopProxy::current()));
+                              base::ThreadTaskRunnerHandle::Get()));
   }
 
   static void WriteIndexWriteToFileInPool(
@@ -270,16 +273,16 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
       const base::FilePath& index_path,
       const std::string& data,
       const BoolCallback& callback,
-      const scoped_refptr<base::MessageLoopProxy>& original_loop) {
+      const scoped_refptr<base::SingleThreadTaskRunner>& original_task_runner) {
     int bytes_written = base::WriteFile(tmp_path, data.c_str(), data.size());
     if (bytes_written != implicit_cast<int>(data.size())) {
       base::DeleteFile(tmp_path, /* recursive */ false);
-      original_loop->PostTask(FROM_HERE, base::Bind(callback, false));
+      original_task_runner->PostTask(FROM_HERE, base::Bind(callback, false));
     }
 
     // Atomically rename the temporary index file to become the real one.
     bool rv = base::ReplaceFile(tmp_path, index_path, NULL);
-    original_loop->PostTask(FROM_HERE, base::Bind(callback, rv));
+    original_task_runner->PostTask(FROM_HERE, base::Bind(callback, rv));
   }
 
   void LoadIndex(scoped_ptr<std::vector<std::string>> names,
@@ -295,18 +298,18 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     cache_task_runner_->PostTask(
         FROM_HERE, base::Bind(&SimpleCacheLoader::LoadIndexReadFileInPool,
                               index_path, base::Passed(names.Pass()), callback,
-                              base::MessageLoopProxy::current()));
+                              base::ThreadTaskRunnerHandle::Get()));
   }
 
   static void LoadIndexReadFileInPool(
       const base::FilePath& index_path,
       scoped_ptr<std::vector<std::string>> names,
       const StringVectorCallback& callback,
-      const scoped_refptr<base::MessageLoopProxy>& original_loop) {
+      const scoped_refptr<base::SingleThreadTaskRunner>& original_task_runner) {
     std::string body;
     base::ReadFileToString(index_path, &body);
 
-    original_loop->PostTask(
+    original_task_runner->PostTask(
         FROM_HERE, base::Bind(&SimpleCacheLoader::LoadIndexDidReadFile,
                               base::Passed(names.Pass()), callback, body));
   }

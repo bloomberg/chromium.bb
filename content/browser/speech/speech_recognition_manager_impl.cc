@@ -5,6 +5,9 @@
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
@@ -210,21 +213,17 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
   }
 
   if (is_allowed) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                   weak_factory_.GetWeakPtr(),
-                   session_id,
-                   EVENT_START));
+                   weak_factory_.GetWeakPtr(), session_id, EVENT_START));
   } else {
     OnRecognitionError(session_id, SpeechRecognitionError(
         SPEECH_RECOGNITION_ERROR_NOT_ALLOWED));
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                   weak_factory_.GetWeakPtr(),
-                   session_id,
-                   EVENT_ABORT));
+                   weak_factory_.GetWeakPtr(), session_id, EVENT_ABORT));
   }
 }
 
@@ -267,12 +266,10 @@ void SpeechRecognitionManagerImpl::AbortSession(int session_id) {
 
   iter->second->abort_requested = true;
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                 weak_factory_.GetWeakPtr(),
-                 session_id,
-                 EVENT_ABORT));
+                 weak_factory_.GetWeakPtr(), session_id, EVENT_ABORT));
 }
 
 void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
@@ -283,12 +280,10 @@ void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
   SessionsTable::iterator iter = sessions_.find(session_id);
   iter->second->ui.reset();
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                 weak_factory_.GetWeakPtr(),
-                 session_id,
-                 EVENT_STOP_CAPTURE));
+                 weak_factory_.GetWeakPtr(), session_id, EVENT_STOP_CAPTURE));
 }
 
 // Here begins the SpeechRecognitionEventListener interface implementation,
@@ -372,12 +367,10 @@ void SpeechRecognitionManagerImpl::OnAudioEnd(int session_id) {
     delegate_listener->OnAudioEnd(session_id);
   if (SpeechRecognitionEventListener* listener = GetListener(session_id))
     listener->OnAudioEnd(session_id);
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                 weak_factory_.GetWeakPtr(),
-                 session_id,
-                 EVENT_AUDIO_ENDED));
+                 weak_factory_.GetWeakPtr(), session_id, EVENT_AUDIO_ENDED));
 }
 
 void SpeechRecognitionManagerImpl::OnRecognitionResults(
@@ -425,12 +418,10 @@ void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
     delegate_listener->OnRecognitionEnd(session_id);
   if (SpeechRecognitionEventListener* listener = GetListener(session_id))
     listener->OnRecognitionEnd(session_id);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                 weak_factory_.GetWeakPtr(),
-                 session_id,
-                 EVENT_RECOGNITION_ENDED));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
+                            weak_factory_.GetWeakPtr(), session_id,
+                            EVENT_RECOGNITION_ENDED));
 }
 
 int SpeechRecognitionManagerImpl::GetSession(

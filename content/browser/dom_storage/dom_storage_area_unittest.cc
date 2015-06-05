@@ -5,7 +5,9 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -45,11 +47,10 @@ class DOMStorageAreaTest : public testing::Test {
     // At this point the StartCommitTimer task has run and
     // the OnCommitTimer task is queued. We want to inject after
     // that.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&DOMStorageAreaTest::InjectedCommitSequencingTask2,
-                   base::Unretained(this),
-                   area));
+                   base::Unretained(this), area));
   }
 
   void InjectedCommitSequencingTask2(
@@ -173,10 +174,10 @@ TEST_F(DOMStorageAreaTest, BackingDatabaseOpened) {
 
   // This should set up a DOMStorageArea that is correctly backed to disk.
   {
-    scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-        kOrigin,
-        temp_dir.path(),
-        new MockDOMStorageTaskRunner(base::MessageLoopProxy::current().get())));
+    scoped_refptr<DOMStorageArea> area(
+        new DOMStorageArea(kOrigin, temp_dir.path(),
+                           new MockDOMStorageTaskRunner(
+                               base::ThreadTaskRunnerHandle::Get().get())));
 
     EXPECT_TRUE(area->backing_.get());
     DOMStorageDatabase* database = static_cast<LocalStorageDatabaseAdapter*>(
@@ -221,9 +222,8 @@ TEST_F(DOMStorageAreaTest, CommitTasks) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin,
-      temp_dir.path(),
-      new MockDOMStorageTaskRunner(base::MessageLoopProxy::current().get())));
+      kOrigin, temp_dir.path(),
+      new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
   // Inject an in-memory db to speed up the test.
   area->backing_.reset(new LocalStorageDatabaseAdapter());
 
@@ -300,9 +300,8 @@ TEST_F(DOMStorageAreaTest, CommitChangesAtShutdown) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin,
-      temp_dir.path(),
-      new MockDOMStorageTaskRunner(base::MessageLoopProxy::current().get())));
+      kOrigin, temp_dir.path(),
+      new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
 
   // Inject an in-memory db to speed up the test and also to verify
   // the final changes are commited in it's dtor.
@@ -327,9 +326,8 @@ TEST_F(DOMStorageAreaTest, DeleteOrigin) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin,
-      temp_dir.path(),
-      new MockDOMStorageTaskRunner(base::MessageLoopProxy::current().get())));
+      kOrigin, temp_dir.path(),
+      new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
 
   // This test puts files on disk.
   base::FilePath db_file_path = static_cast<LocalStorageDatabaseAdapter*>(
@@ -388,9 +386,8 @@ TEST_F(DOMStorageAreaTest, PurgeMemory) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin,
-      temp_dir.path(),
-      new MockDOMStorageTaskRunner(base::MessageLoopProxy::current().get())));
+      kOrigin, temp_dir.path(),
+      new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
 
   // Inject an in-memory db to speed up the test.
   area->backing_.reset(new LocalStorageDatabaseAdapter());
