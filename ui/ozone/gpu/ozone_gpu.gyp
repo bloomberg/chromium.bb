@@ -15,7 +15,7 @@
         '../../gfx/gfx.gyp:gfx',
         '../../gfx/gfx.gyp:gfx_geometry',
         '../../gl/gl.gyp:gl',
-        '../ozone.gyp:ozone_base',
+        '../ozone.gyp:ozone',
       ],
       'defines': [
         'OZONE_GPU_IMPLEMENTATION',

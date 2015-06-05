@@ -7,6 +7,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
@@ -28,8 +29,9 @@ SoftwareRenderer::~SoftwareRenderer() {
 }
 
 bool SoftwareRenderer::Initialize() {
-  software_surface_ =
-      ui::SurfaceFactoryOzone::GetInstance()->CreateCanvasForWidget(widget_);
+  software_surface_ = ui::OzonePlatform::GetInstance()
+                          ->GetSurfaceFactoryOzone()
+                          ->CreateCanvasForWidget(widget_);
   if (!software_surface_) {
     LOG(ERROR) << "Failed to create software surface";
     return false;
