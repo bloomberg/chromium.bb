@@ -28,7 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/2006/webapi/FileAPI/#dfn-Blob
+// https://w3c.github.io/FileAPI/#blob
+
 [
     GarbageCollected,
     Constructor,
@@ -42,6 +43,7 @@
     // readonly attribute boolean isClosed;
 
     // TODO(jsbell): start and end arguments should be [Clamp]
+    // TODO(philipj): contentType should not be optional or nullable.
     [RaisesException] Blob slice(optional long long start, optional long long end, [TreatUndefinedAs=NullString] optional DOMString? contentType);
     [RaisesException, CallWith=ExecutionContext, RuntimeEnabled=FileAPIBlobClose] void close();
 };

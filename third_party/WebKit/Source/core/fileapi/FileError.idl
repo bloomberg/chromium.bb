@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-] interface FileError : DOMError {
+// TODO(philipj): Remove the FileError interface. crbug.com/496901
+interface FileError : DOMError {
     const unsigned short NOT_FOUND_ERR = 1;
     const unsigned short SECURITY_ERR = 2;
     const unsigned short ABORT_ERR = 3;

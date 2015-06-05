@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://dev.w3.org/2006/webapi/FileAPI/#dfn-file
+// https://w3c.github.io/FileAPI/#file
+
 dictionary FilePropertyBag {
     DOMString type = "";
     long long lastModified;

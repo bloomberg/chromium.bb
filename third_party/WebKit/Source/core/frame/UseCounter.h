@@ -717,6 +717,8 @@ public:
         V8HTMLLinkElement_Disabled_AttributeSetter = 811,
         V8HTMLStyleElement_Disabled_AttributeGetter = 812,
         V8HTMLStyleElement_Disabled_AttributeSetter = 813,
+        V8FileReader_ReadAsBinaryString_Method = 814,
+        V8FileReaderSync_ReadAsBinaryString_Method = 815,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

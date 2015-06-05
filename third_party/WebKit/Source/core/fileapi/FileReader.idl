@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/FileAPI/#APIASynch
+
 [
     GarbageCollected,
     ActiveDOMObject,
@@ -37,25 +39,30 @@
     Exposed=(Window,Worker),
     TypeChecking=Interface
 ] interface FileReader : EventTarget {
-    // ready states
-    const unsigned short EMPTY = 0;
-    const unsigned short LOADING = 1;
-    const unsigned short DONE = 2;
-    readonly attribute unsigned short readyState;
-
     // async read methods
     [RaisesException] void readAsArrayBuffer(Blob blob);
-    [RaisesException] void readAsBinaryString(Blob blob);
-    [RaisesException] void readAsText(Blob blob, optional DOMString encoding);
+    // TODO(philipj): readAsBinaryString() was removed from the spec in 2012:
+    // https://github.com/w3c/FileAPI/commit/8cce54559dc27bf8b8244f3f0ca9fb3e4d96efdb
+    [RaisesException, Measure] void readAsBinaryString(Blob blob);
+    [RaisesException] void readAsText(Blob blob, optional DOMString label);
     [RaisesException] void readAsDataURL(Blob blob);
 
     void abort();
 
-    // file data
+    // states
+    const unsigned short EMPTY = 0;
+    const unsigned short LOADING = 1;
+    const unsigned short DONE = 2;
+
+    readonly attribute unsigned short readyState;
+
+    // File or Blob data
     readonly attribute (DOMString or ArrayBuffer)? result;
 
-    readonly attribute FileError error;
+    // TODO(philipj): error should be DOMError. crbug.com/496901
+    readonly attribute FileError? error;
 
+    // event handler attributes
     attribute EventHandler onloadstart;
     attribute EventHandler onprogress;
     attribute EventHandler onload;
