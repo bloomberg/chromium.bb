@@ -6,11 +6,14 @@
 
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_controller.h"
+#include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/test/mirror_window_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/test/event_generator.h"
@@ -26,6 +29,11 @@ class PartialScreenshotControllerTest : public test::AshTestBase {
  protected:
   PartialScreenshotController* partial_screenshot_controller() {
     return Shell::GetInstance()->partial_screenshot_controller();
+  }
+
+  bool TestIfMouseWarpsAt(const gfx::Point& point_in_screen) {
+    return test::DisplayManagerTestApi::TestIfMouseWarpsAt(GetEventGenerator(),
+                                                           point_in_screen);
   }
 
   void StartPartialScreenshotSession() {
@@ -142,7 +150,30 @@ TEST_F(PartialScreenshotControllerTest, MultipleDisplays) {
   EXPECT_FALSE(IsActive());
 }
 
+// Make sure PartialScreenshotController doesn't allow taking screenshot
+// across multiple monitors
+// cursor. See http://crbug.com/462229
 #if defined(OS_CHROMEOS)
+TEST_F(PartialScreenshotControllerTest, MouseWarpTest) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  // Create two displays.
+  Shell* shell = Shell::GetInstance();
+  UpdateDisplay("500x500,500x500");
+  EXPECT_EQ(2U, shell->display_manager()->GetNumDisplays());
+
+  StartPartialScreenshotSession();
+  EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(499, 11)));
+  EXPECT_EQ("499,11",
+            aura::Env::GetInstance()->last_mouse_location().ToString());
+
+  Cancel();
+  EXPECT_TRUE(TestIfMouseWarpsAt(gfx::Point(499, 11)));
+  EXPECT_EQ("501,11",
+            aura::Env::GetInstance()->last_mouse_location().ToString());
+}
+
 TEST_F(PartialScreenshotControllerTest, VisibilityTest) {
   aura::client::CursorClient* client = Shell::GetInstance()->cursor_manager();
 

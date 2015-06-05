@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -23,6 +24,13 @@ namespace {
 // should be slightly bigger than the actual region because the region indicator
 // rectangles are drawn outside of the selected region.
 const int kInvalidateRegionAdditionalSize = 3;
+
+// This will prevent the user from taking a screenshot across multiple
+// monitors. it will stop the mouse at the any edge of the screen. must
+// swtich back on when the screenshot is complete.
+void EnableMouseWarp(bool enable) {
+  Shell::GetInstance()->mouse_cursor_filter()->set_mouse_warp_enabled(enable);
+}
 
 }  // namespace
 
@@ -143,6 +151,8 @@ void PartialScreenshotController::StartPartialScreenshotSession(
 
   cursor_setter_.reset(new ScopedCursorSetter(
       Shell::GetInstance()->cursor_manager(), ui::kCursorCross));
+
+  EnableMouseWarp(false);
 }
 
 void PartialScreenshotController::MaybeStart(const ui::LocatedEvent& event) {
@@ -177,6 +187,7 @@ void PartialScreenshotController::Cancel() {
   Shell::GetScreen()->RemoveObserver(this);
   STLDeleteValues(&layers_);
   cursor_setter_.reset();
+  EnableMouseWarp(true);
 }
 
 void PartialScreenshotController::Update(const ui::LocatedEvent& event) {
