@@ -5,18 +5,18 @@
 #ifndef V8JavaScriptCallFrame_h
 #define V8JavaScriptCallFrame_h
 
-#include "wtf/Forward.h"
-#include <v8.h>
+#include "core/inspector/JavaScriptCallFrame.h"
 
 namespace blink {
-
-class JavaScriptCallFrame;
 
 class V8JavaScriptCallFrame {
 public:
     static v8::Local<v8::FunctionTemplate> createWrapperTemplate(v8::Isolate*);
     static v8::Local<v8::Object> wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context>, PassRefPtr<JavaScriptCallFrame>);
     static JavaScriptCallFrame* unwrap(v8::Local<v8::Object>);
+
+private:
+    static v8::Local<v8::String> hiddenPropertyName(v8::Isolate*);
 };
 
 } // namespace blink
