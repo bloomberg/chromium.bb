@@ -91,6 +91,9 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   virtual void enterRunLoop();
   virtual void exitRunLoop();
 
+  virtual void getPluginList(bool refresh,
+                             blink::WebPluginListBuilder* builder);
+
  private:
   MockWebBlobRegistryImpl blob_registry_;
   SimpleWebMimeRegistryImpl mime_registry_;

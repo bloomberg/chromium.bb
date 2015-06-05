@@ -25,6 +25,7 @@
 #include "storage/browser/database/vfs_backend.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
+#include "third_party/WebKit/public/platform/WebPluginListBuilder.h"
 #include "third_party/WebKit/public/platform/WebStorageArea.h"
 #include "third_party/WebKit/public/platform/WebStorageNamespace.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -378,6 +379,12 @@ void TestBlinkWebUnitTestSupport::enterRunLoop() {
 
 void TestBlinkWebUnitTestSupport::exitRunLoop() {
   base::MessageLoop::current()->Quit();
+}
+
+void TestBlinkWebUnitTestSupport::getPluginList(
+    bool refresh, blink::WebPluginListBuilder* builder) {
+  builder->addPlugin("pdf", "pdf", "pdf-files");
+  builder->addMediaTypeToLastPlugin("application/pdf", "pdf");
 }
 
 }  // namespace content
