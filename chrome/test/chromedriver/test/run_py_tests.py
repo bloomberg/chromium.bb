@@ -1045,9 +1045,7 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     if _ANDROID_PACKAGE_KEY:
       packages = ['chrome_stable', 'chrome_beta', 'chromedriver_webview_shell']
       if _ANDROID_PACKAGE_KEY in packages:
-        self.assertRaisesRegexp(RuntimeError,
-                                'Server returned error: Not Implemented',
-                                self._driver.TouchPinch, 1, 2, 3.0)
+        self.assertFalse(self._driver.capabilities['hasTouchScreen'])
 
   def testHasTouchScreen(self):
     self.assertIn('hasTouchScreen', self._driver.capabilities)
