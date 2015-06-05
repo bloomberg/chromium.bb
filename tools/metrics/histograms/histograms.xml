@@ -58436,6 +58436,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-610411643" label="enable-printer-app-search"/>
   <int value="-604814313" label="enable-pinch"/>
   <int value="-601384286" label="disable-contextual-search"/>
+  <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-567920515" label="disable-experimental-hotwording"/>
   <int value="-563980787" label="disable-webrtc"/>

@@ -1432,6 +1432,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     MULTI_VALUE_TYPE(kGestureEditingChoices)
   },
+  {
+    "enable-fullscreen-app-list",
+    IDS_FLAGS_FULLSCREEN_APP_LIST_NAME,
+    IDS_FLAGS_FULLSCREEN_APP_LIST_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableFullscreenAppList)
+  },
 #endif
   {
     "enable-simple-cache-backend",

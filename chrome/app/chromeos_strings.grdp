@@ -1244,6 +1244,12 @@ Press any key to continue exploring.
   <message name="IDS_FLAGS_WAKE_ON_PACKETS_DESCRIPTION" desc="Description for the flag to enable wake on packets.">
     Enables waking the device based on the receipt of some network packets.
   </message>
+  <message name="IDS_FLAGS_FULLSCREEN_APP_LIST_NAME" desc="Description for the flag to enable experimental fullscreen app list.">
+    Enables the fullscreen app-list in touch-view mode.
+  </message>
+  <message name="IDS_FLAGS_FULLSCREEN_APP_LIST_DESCRIPTION" desc="Description for the flag to enable experimental fullscreen app list.">
+    The app-list will appear as fullscreen mode when it's in touch view mode. This flag does nothing outside of the mode.
+  </message>
   <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL_LEARN_MORE" desc="Text of the Learn More link in the echo dialog.">
     Learn More
   </message>
