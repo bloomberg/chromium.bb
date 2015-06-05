@@ -226,6 +226,11 @@ remoting.ClientSession.Capability = {
   // <1000 users on M-29 or below. Remove this and the capability on the host.
   RATE_LIMIT_RESIZE_REQUESTS: 'rateLimitResizeRequests',
 
+  // Indicates native touch input support. If the host does not support
+  // touch then the client will let Chrome synthesize mouse events from touch
+  // input, for compatibility with non-touch-aware systems.
+  TOUCH_EVENTS: 'touchEvents',
+
   // Indicates that host/client supports Google Drive integration, and that the
   // client should send to the host the OAuth tokens to be used by Google Drive
   // on the host.
@@ -529,6 +534,10 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
 
   this.notifyStateChanges_(oldState, this.state_);
   this.logToServer_.logClientSessionStateChange(this.state_, this.error_);
+  if (this.plugin_.hasCapability(
+          remoting.ClientSession.Capability.TOUCH_EVENTS)) {
+    this.plugin_.enableTouchEvents(true);
+  }
 };
 
 /**

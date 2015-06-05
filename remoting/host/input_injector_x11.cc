@@ -644,6 +644,7 @@ void InputInjectorX11::Core::Stop() {
 
 }  // namespace
 
+// static
 scoped_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
@@ -652,6 +653,11 @@ scoped_ptr<InputInjector> InputInjector::Create(
   if (!injector->Init())
     return nullptr;
   return injector.Pass();
+}
+
+// static
+bool InputInjector::SupportsTouchEvents() {
+  return false;
 }
 
 }  // namespace remoting

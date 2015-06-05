@@ -116,6 +116,13 @@ remoting.ClientPlugin.prototype.sendClipboardItem =
     function(mimeType, item) {};
 
 /**
+ * Notifies the plugin whether to send touch events to the host.
+ *
+ * @param {boolean} enable True if touch events should be sent.
+ */
+remoting.ClientPlugin.prototype.enableTouchEvents = function(enable) {};
+
+/**
  * Request that this client be paired with the current host.
  *
  * @param {string} clientName The human-readable name of the client.

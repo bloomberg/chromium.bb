@@ -75,7 +75,8 @@ class DesktopSessionProxy
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control,
       base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-      bool virtual_terminal);
+      bool virtual_terminal,
+      bool supports_touch_events);
 
   // Mirrors DesktopEnvironment.
   scoped_ptr<AudioCapturer> CreateAudioCapturer();
@@ -226,6 +227,9 @@ class DesktopSessionProxy
   bool is_desktop_session_connected_;
 
   bool virtual_terminal_;
+
+  // True if touch events are supported by the desktop session.
+  bool supports_touch_events_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionProxy);
 };

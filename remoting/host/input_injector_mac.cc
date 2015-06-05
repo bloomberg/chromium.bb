@@ -340,10 +340,16 @@ InputInjectorMac::Core::~Core() {}
 
 }  // namespace
 
+// static
 scoped_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   return make_scoped_ptr(new InputInjectorMac(main_task_runner));
+}
+
+// static
+bool InputInjector::SupportsTouchEvents() {
+  return false;
 }
 
 }  // namespace remoting

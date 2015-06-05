@@ -46,7 +46,8 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   BasicDesktopEnvironment(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      bool supports_touch_events);
 
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() const {
     return caller_task_runner_;
@@ -82,6 +83,9 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   // find build errors.
   scoped_ptr<webrtc::DesktopCaptureOptions> desktop_capture_options_;
 
+  // True if the touch events capability should be offered.
+  const bool supports_touch_events_;
+
   DISALLOW_COPY_AND_ASSIGN(BasicDesktopEnvironment);
 };
 
@@ -97,6 +101,10 @@ class BasicDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   // DesktopEnvironmentFactory implementation.
   bool SupportsAudioCapture() const override;
 
+  void set_supports_touch_events(bool enable) {
+    supports_touch_events_ = enable;
+  }
+
  protected:
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() const {
     return caller_task_runner_;
@@ -110,6 +118,8 @@ class BasicDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
     return ui_task_runner_;
   }
 
+  bool supports_touch_events() const { return supports_touch_events_; }
+
  private:
   // Task runner on which methods of DesktopEnvironmentFactory interface should
   // be called.
@@ -120,6 +130,10 @@ class BasicDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
 
   // Used to run UI code.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+
+  // True if the touch events capability should be offered by the
+  // DesktopEnvironment instances.
+  bool supports_touch_events_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicDesktopEnvironmentFactory);
 };

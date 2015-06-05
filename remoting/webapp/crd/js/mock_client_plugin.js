@@ -109,6 +109,9 @@ remoting.MockClientPlugin.prototype.hasCapability = function(capability) {
 remoting.MockClientPlugin.prototype.sendClipboardItem =
     function(mimeType, item) {};
 
+remoting.MockClientPlugin.prototype.enableTouchEvents =
+    function(enable) {};
+
 remoting.MockClientPlugin.prototype.requestPairing =
     function(clientName, onDone) {};
 

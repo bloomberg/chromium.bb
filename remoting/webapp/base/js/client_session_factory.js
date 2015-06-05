@@ -23,7 +23,8 @@ remoting.ClientSessionFactory = function(container, capabilities) {
   this.requiredCapabilities_ = [
     remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
     remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS,
-    remoting.ClientSession.Capability.VIDEO_RECORDER
+    remoting.ClientSession.Capability.VIDEO_RECORDER,
+    remoting.ClientSession.Capability.TOUCH_EVENTS
   ];
 
   // Append the app-specific capabilities.

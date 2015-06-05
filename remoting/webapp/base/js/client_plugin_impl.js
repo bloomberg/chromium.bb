@@ -661,6 +661,16 @@ remoting.ClientPluginImpl.prototype.sendClipboardItem =
 };
 
 /**
+ * Notifies the plugin whether to send touch events to the host.
+ *
+ * @param {boolean} enable True if touch events should be sent.
+ */
+remoting.ClientPluginImpl.prototype.enableTouchEvents = function(enable) {
+  this.plugin_.postMessage(
+      JSON.stringify({method: 'enableTouchEvents', data: {'enable': enable}}));
+};
+
+/**
  * Notifies the host that the client has the specified size and pixel density.
  *
  * @param {number} width The available client width in DIPs.

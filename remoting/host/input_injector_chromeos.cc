@@ -229,4 +229,9 @@ scoped_ptr<InputInjector> InputInjector::Create(
   return make_scoped_ptr(new InputInjectorChromeos(ui_task_runner));
 }
 
+// static
+bool InputInjector::SupportsTouchEvents() {
+  return false;
+}
+
 }  // namespace remoting

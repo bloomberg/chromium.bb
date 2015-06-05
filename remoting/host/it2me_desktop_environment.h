@@ -26,7 +26,8 @@ class It2MeDesktopEnvironment : public BasicDesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      base::WeakPtr<ClientSessionControl> client_session_control,
+      bool supports_touch_events);
 
  private:
   // Presents the continue window to the local user.

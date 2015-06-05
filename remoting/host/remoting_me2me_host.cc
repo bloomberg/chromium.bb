@@ -52,6 +52,7 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_main.h"
 #include "remoting/host/host_status_logger.h"
+#include "remoting/host/input_injector.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/ipc_desktop_environment.h"
 #include "remoting/host/ipc_host_event_logger.h"
@@ -804,7 +805,7 @@ void HostProcess::StartOnUiThread() {
           daemon_channel_.get());
   desktop_session_connector_ = desktop_environment_factory;
 #else  // !defined(OS_WIN)
-  DesktopEnvironmentFactory* desktop_environment_factory;
+  BasicDesktopEnvironmentFactory* desktop_environment_factory;
   if (enable_window_capture_) {
     desktop_environment_factory =
       new SingleWindowDesktopEnvironmentFactory(
@@ -820,6 +821,8 @@ void HostProcess::StartOnUiThread() {
           context_->ui_task_runner());
   }
 #endif  // !defined(OS_WIN)
+  desktop_environment_factory->set_supports_touch_events(
+      InputInjector::SupportsTouchEvents());
 
   desktop_environment_factory_.reset(desktop_environment_factory);
   desktop_environment_factory_->SetEnableGnubbyAuth(enable_gnubby_auth_);

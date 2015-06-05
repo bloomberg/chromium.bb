@@ -31,7 +31,8 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
     base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-    bool virtual_terminal) {
+    bool virtual_terminal,
+    bool supports_touch_events) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   desktop_session_proxy_ = new DesktopSessionProxy(audio_task_runner,
@@ -40,7 +41,8 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
                                                    capture_task_runner,
                                                    client_session_control,
                                                    desktop_session_connector,
-                                                   virtual_terminal);
+                                                   virtual_terminal,
+                                                   supports_touch_events);
 }
 
 IpcDesktopEnvironment::~IpcDesktopEnvironment() {
@@ -94,7 +96,8 @@ IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
       curtain_enabled_(false),
       daemon_channel_(daemon_channel),
       next_id_(0),
-      connector_factory_(this) {
+      connector_factory_(this),
+      supports_touch_events_(false) {
 }
 
 IpcDesktopEnvironmentFactory::~IpcDesktopEnvironmentFactory() {
@@ -111,7 +114,8 @@ scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
                                 io_task_runner_,
                                 client_session_control,
                                 connector_factory_.GetWeakPtr(),
-                                curtain_enabled_));
+                                curtain_enabled_,
+                                supports_touch_events_));
 }
 
 void IpcDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {

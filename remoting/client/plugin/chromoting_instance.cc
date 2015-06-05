@@ -353,7 +353,7 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
   } else if (method == "enableDebugRegion") {
     HandleEnableDebugRegion(*data);
   } else if (method == "enableTouchEvents") {
-    HandleEnableTouchEvents();
+    HandleEnableTouchEvents(*data);
   }
 }
 
@@ -985,8 +985,19 @@ void ChromotingInstance::HandleEnableDebugRegion(
   video_renderer_->EnableDebugDirtyRegion(enable);
 }
 
-void ChromotingInstance::HandleEnableTouchEvents() {
-  RequestInputEvents(PP_INPUTEVENT_CLASS_TOUCH);
+void ChromotingInstance::HandleEnableTouchEvents(
+    const base::DictionaryValue& data) {
+  bool enable = false;
+  if (!data.GetBoolean("enable", &enable)) {
+    LOG(ERROR) << "Invalid handleTouchEvents.";
+    return;
+  }
+
+  if (enable) {
+    RequestInputEvents(PP_INPUTEVENT_CLASS_TOUCH);
+  } else {
+    ClearInputEventRequest(PP_INPUTEVENT_CLASS_TOUCH);
+  }
 }
 
 void ChromotingInstance::Disconnect() {

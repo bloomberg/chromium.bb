@@ -348,11 +348,17 @@ void InputInjectorWin::Core::HandleTouch(const TouchEvent& event) {
 
 }  // namespace
 
+// static
 scoped_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   return make_scoped_ptr(
       new InputInjectorWin(main_task_runner, ui_task_runner));
+}
+
+// static
+bool InputInjector::SupportsTouchEvents() {
+  return TouchInjectorWinDelegate::Create();
 }
 
 }  // namespace remoting

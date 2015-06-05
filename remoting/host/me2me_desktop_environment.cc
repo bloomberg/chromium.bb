@@ -17,6 +17,7 @@
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/resizing_host_observer.h"
 #include "remoting/host/screen_controls.h"
+#include "remoting/protocol/capability_names.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
@@ -24,8 +25,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #endif  // defined(OS_POSIX)
-
-const char kRateLimitResizeRequests[] = "rateLimitResizeRequests";
 
 namespace remoting {
 
@@ -40,16 +39,23 @@ scoped_ptr<ScreenControls> Me2MeDesktopEnvironment::CreateScreenControls() {
 }
 
 std::string Me2MeDesktopEnvironment::GetCapabilities() const {
-  return kRateLimitResizeRequests;
+  std::string capabilities = BasicDesktopEnvironment::GetCapabilities();
+  if (!capabilities.empty())
+    capabilities.append(" ");
+  capabilities.append(protocol::kRateLimitResizeRequests);
+
+  return capabilities;
 }
 
 Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    bool supports_touch_events)
     : BasicDesktopEnvironment(caller_task_runner,
                               input_task_runner,
-                              ui_task_runner),
+                              ui_task_runner,
+                              supports_touch_events),
       gnubby_auth_enabled_(false) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
   desktop_capture_options()->set_use_update_notifications(true);
@@ -143,7 +149,8 @@ scoped_ptr<DesktopEnvironment> Me2MeDesktopEnvironmentFactory::Create(
   scoped_ptr<Me2MeDesktopEnvironment> desktop_environment(
       new Me2MeDesktopEnvironment(caller_task_runner(),
                                   input_task_runner(),
-                                  ui_task_runner()));
+                                  ui_task_runner(),
+                                  supports_touch_events()));
   if (!desktop_environment->InitializeSecurity(client_session_control,
                                                curtain_enabled_)) {
     return nullptr;

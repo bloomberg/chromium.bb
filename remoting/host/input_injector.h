@@ -28,6 +28,10 @@ class InputInjector : public protocol::ClipboardStub,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
+  // Returns true if the InputInjector returned by Create() supports
+  // InjectTouchEvent() on this platform.
+  static bool SupportsTouchEvents();
+
   // Initialises any objects needed to execute events.
   virtual void Start(
       scoped_ptr<protocol::ClipboardStub> client_clipboard) = 0;

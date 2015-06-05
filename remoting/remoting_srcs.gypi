@@ -84,6 +84,7 @@
       'protocol/authentication_method.h',
       'protocol/authenticator.cc',
       'protocol/authenticator.h',
+      'protocol/capability_names.h',
       'protocol/channel_authenticator.h',
       'protocol/channel_dispatcher_base.cc',
       'protocol/channel_dispatcher_base.h',

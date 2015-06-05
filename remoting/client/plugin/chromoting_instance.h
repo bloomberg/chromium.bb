@@ -196,7 +196,7 @@ class ChromotingInstance : public ClientUserInterface,
   void HandleSendMouseInputWhenUnfocused();
   void HandleDelegateLargeCursors();
   void HandleEnableDebugRegion(const base::DictionaryValue& data);
-  void HandleEnableTouchEvents();
+  void HandleEnableTouchEvents(const base::DictionaryValue& data);
 
   void Disconnect();
 

@@ -33,10 +33,12 @@ SessionDesktopEnvironment::SessionDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    const base::Closure& inject_sas)
+    const base::Closure& inject_sas,
+    bool supports_touch_events)
     : Me2MeDesktopEnvironment(caller_task_runner,
                               input_task_runner,
-                              ui_task_runner),
+                              ui_task_runner,
+                              supports_touch_events),
       inject_sas_(inject_sas) {
 }
 
@@ -63,7 +65,8 @@ scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
       new SessionDesktopEnvironment(caller_task_runner(),
                                     input_task_runner(),
                                     ui_task_runner(),
-                                    inject_sas_));
+                                    inject_sas_,
+                                    supports_touch_events()));
   if (!desktop_environment->InitializeSecurity(client_session_control,
                                                curtain_enabled())) {
     return nullptr;
