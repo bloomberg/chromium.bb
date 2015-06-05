@@ -1,23 +1,22 @@
+" Copyright 2015 The Chromium Authors. All rights reserved.
+" Use of this source code is governed by a BSD-style license that can be
+" found in the LICENSE file.
+
 " Vim syntax file " Language: Mojom
 " To get syntax highlighting for .mojom files, add the following to your .vimrc
 " file:
-"     source /path/to/src/tools/vim/mojom.vim
+"     set runtimepath^=/path/to/src/tools/vim/mojom
 
-if !exists("g:main_syntax")
-  if version < 600
-    syntax clear
-  elseif exists("b:current_syntax")
-    finish
-  endif
-  let g:main_syntax = 'mojom'
-  syntax region mojomFold start="{" end="}" transparent fold
-endif
+syn case match
+
+syntax region mojomFold start="{" end="}" transparent fold
 
 " keyword definitions
-syntax keyword mojomType        bool int8 int16 int32 int64 uint8 uint16 uint32 uint64 float double
+syntax keyword mojomType        bool int8 int16 int32 int64 uint8 uint16 uint32 uint64 float double array
 syntax match mojomImport        "^\(import\)\s"
-syntax keyword mojomModule      module
-syntax keyword mojomKeyword     interface enum struct union
+syntax keyword mojomKeyword     const module interface enum struct union
+syntax match mojomOperator      /=>/
+syntax match mojomOperator      /?/
 
 " Comments
 syntax keyword mojomTodo           contained TODO FIXME XXX
@@ -25,6 +24,10 @@ syntax region  mojomComment        start="/\*"  end="\*/" contains=mojomTodo,moj
 syntax match   mojomLineComment    "//.*" contains=mojomTodo,@Spell
 syntax match   mojomLineDocComment "///.*" contains=mojomTodo,mojomDocLink,@Spell
 syntax region  mojomDocLink        contained start=+\[+ end=+\]+
+
+" Strings
+syn region mojomString start=+L\="+ skip=+\\\\\|\\"+ end=+"+ contains=@Spell
+hi def link mojomString            String
 
 " The default highlighting.
 highlight default link mojomTodo            Todo
@@ -35,10 +38,11 @@ highlight default link mojomDocLink         SpecialComment
 highlight default link mojomType            Type
 highlight default link mojomImport          Include
 highlight default link mojomKeyword         Keyword
+highlight default link mojomOperator        Operator
 
 let b:current_syntax = "mojom"
 let b:spell_options = "contained"
 
-if g:main_syntax is# 'mojom'
-  unlet g:main_syntax
-endif
+syn sync minlines=500
+
+let b:current_syntax = "mojom"
