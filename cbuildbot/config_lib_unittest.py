@@ -26,140 +26,29 @@ def MockSiteConfig():
 
   Shared amoung a number of unittest files, so be careful if changing it.
   """
-  return config_lib.CreateConfigFromString(
-      '''
-      {
-        "_default": {
-          "active_waterfall": null,
-          "afdo_generate": false,
-          "afdo_generate_min": false,
-          "afdo_update_ebuild": false,
-          "afdo_use": false,
-          "archive": true,
-          "archive_build_debug": false,
-          "binhost_base_url": null,
-          "binhost_bucket": null,
-          "binhost_key": null,
-          "binhost_test": false,
-          "board_replace": false,
-          "boards": null,
-          "branch": false,
-          "build_before_patching": false,
-          "build_packages_in_background": false,
-          "build_tests": true,
-          "build_type": "pfq",
-          "buildbot_waterfall_name": null,
-          "builder_class_name": null,
-          "child_configs": [],
-          "chrome_binhost_only": false,
-          "chrome_rev": null,
-          "chrome_sdk": false,
-          "chrome_sdk_build_chrome": true,
-          "chrome_sdk_goma": false,
-          "chromeos_official": false,
-          "chroot_replace": false,
-          "compilecheck": false,
-          "cpe_export": true,
-          "create_delta_sysroot": false,
-          "critical_for_chrome": false,
-          "debug_symbols": true,
-          "description": null,
-          "dev_installer_prebuilts": false,
-          "dev_manifest": "default.xml",
-          "disk_layout": null,
-          "do_not_apply_cq_patches": false,
-          "doc": null,
-          "factory": true,
-          "factory_install_netboot": true,
-          "factory_toolkit": true,
-          "gcc_githash": null,
-          "git_sync": false,
-          "grouped": false,
-          "gs_path": "default",
-          "health_alert_recipients": [],
-          "health_threshold": 0,
-          "hw_tests": [],
-          "hwqual": false,
-          "image_test": false,
-          "images": [
-              "test"
-          ],
-          "important": false,
-          "internal": false,
-          "latest_toolchain": false,
-          "lkgm_manifest": "LKGM/lkgm.xml",
-          "manifest": "default.xml",
-          "manifest_repo_url": "mock_manifest_repo_url",
-          "manifest_version": false,
-          "master": false,
-          "name": null,
-          "overlays": "public",
-          "packages": [],
-          "paygen": false,
-          "paygen_skip_delta_payloads": false,
-          "paygen_skip_testing": false,
-          "payload_image": null,
-          "postsync_patch": true,
-          "postsync_reexec": true,
-          "pre_cq": false,
-          "prebuilts": false,
-          "profile": null,
-          "push_image": false,
-          "push_overlays": null,
-          "quick_unit": false,
-          "rootfs_verification": true,
-          "sanity_check_slaves": null,
-          "separate_debug_symbols": true,
-          "shared_user_password": null,
-          "signer_tests": false,
-          "sync_chrome": null,
-          "tests_supported": true,
-          "trybot_list": false,
-          "unittest_blacklist": [],
-          "unittests": true,
-          "upload_hw_test_artifacts": true,
-          "upload_standalone_images": true,
-          "upload_symbols": false,
-          "uprev": true,
-          "use_chrome_lkgm": false,
-          "use_lkgm": false,
-          "use_sdk": true,
-          "useflags": [],
-          "usepkg_build_packages": true,
-          "usepkg_toolchain": true,
-          "vm_test_runs": 1,
-          "vm_tests": [
-              "smoke_suite",
-              "pfq_suite"
-          ]
-        },
-        "x86-generic-paladin": {
-            "active_waterfall": "chromiumos",
-            "boards": [
-                "x86-generic"
-            ],
-            "build_type": "paladin",
-            "chrome_sdk": true,
-            "chrome_sdk_build_chrome": false,
-            "description": "Commit Queue",
-            "doc": "http://mock_url/",
-            "image_test": true,
-            "images": [
-                "base",
-                "test"
-            ],
-            "important": true,
-            "manifest_version": true,
-            "name": "x86-generic-paladin",
-            "prebuilts": "public",
-            "trybot_list": true,
-            "upload_standalone_images": false,
-            "vm_tests": [
-                "smoke_suite"
-            ]
-        }
-      }
-      ''')
+  result = config_lib.SiteConfig()
+
+  # Add a single, simple build config.
+  result.Add(
+      'x86-generic-paladin',
+      active_waterfall='chromiumos',
+      boards=['x86-generic'],
+      build_type='paladin',
+      chrome_sdk=True,
+      chrome_sdk_build_chrome=False,
+      description='Commit Queue',
+      doc='http://mock_url/',
+      image_test=True,
+      images=['base', 'test'],
+      important=True,
+      manifest_version=True,
+      prebuilts='public',
+      trybot_list=True,
+      upload_standalone_images=False,
+      vm_tests=['smoke_suite'],
+  )
+
+  return result
 
 
 class _CustomObject(object):
@@ -413,7 +302,7 @@ class ConfigClassTest(cros_test_lib.TestCase):
       site_config.Add('bar', fake_template)
 
   def testSaveLoadEmpty(self):
-    config = config_lib.SiteConfig()
+    config = config_lib.SiteConfig(defaults={})
 
     config_str = config.SaveConfigToString()
     self.assertEqual(config_str, """{
