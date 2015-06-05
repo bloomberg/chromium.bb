@@ -371,11 +371,8 @@ union drm_amdgpu_cs {
 /* This IB should be submitted to CE */
 #define AMDGPU_IB_FLAG_CE	(1<<0)
 
-/* GDS is used by this IB */
-#define AMDGPU_IB_FLAG_GDS	(1<<1)
-
 /* CE Preamble */
-#define AMDGPU_IB_FLAG_PREAMBLE (1<<2)
+#define AMDGPU_IB_FLAG_PREAMBLE (1<<1)
 
 struct drm_amdgpu_cs_chunk_ib {
 	uint32_t _pad;
@@ -558,7 +555,7 @@ struct drm_amdgpu_info_device {
 	uint32_t num_shader_arrays_per_engine;
 	uint32_t gpu_counter_freq; /* in KHz */
 	uint64_t max_engine_clock; /* in KHz */
-	uint64_t max_memory_clock;   /* in KHz */
+	uint64_t max_memory_clock; /* in KHz */
 	/* cu information */
 	uint32_t cu_active_number;
 	uint32_t cu_ao_mask;
@@ -578,12 +575,12 @@ struct drm_amdgpu_info_device {
 	/** Page table entry - fragment size */
 	uint32_t pte_fragment_size;
 	uint32_t gart_page_size;
-	/** video memory type information*/
+	/** constant engine ram size*/
+	uint32_t ce_ram_size;
+	/** video memory type info*/
 	uint32_t vram_type;
 	/** video memory bit width*/
 	uint32_t vram_bit_width;
-	/** constant engine ram size*/
-	uint32_t ce_ram_size;
 };
 
 struct drm_amdgpu_info_hw_ip {
@@ -593,9 +590,9 @@ struct drm_amdgpu_info_hw_ip {
 	/** Capabilities */
 	uint64_t  capabilities_flags;
 	/** command buffer address start alignment*/
-	uint32_t ib_start_alignment;
+	uint32_t  ib_start_alignment;
 	/** command buffer size alignment*/
-	uint32_t ib_size_alignment;
+	uint32_t  ib_size_alignment;
 	/** Bitmask of available rings. Bit 0 means ring 0, etc. */
 	uint32_t  available_rings;
 	uint32_t  _pad;
