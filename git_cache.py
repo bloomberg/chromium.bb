@@ -185,24 +185,6 @@ class Mirror(object):
     netpath = re.sub(r'\b-\b', '/', os.path.basename(path)).replace('--', '-')
     return 'https://%s' % netpath
 
-  @staticmethod
-  def FindExecutable(executable):
-    """This mimics the "which" utility."""
-    path_folders = os.environ.get('PATH').split(os.pathsep)
-
-    for path_folder in path_folders:
-      target = os.path.join(path_folder, executable)
-      # Just incase we have some ~/blah paths.
-      target = os.path.abspath(os.path.expanduser(target))
-      if os.path.isfile(target) and os.access(target, os.X_OK):
-        return target
-      if sys.platform.startswith('win'):
-        for suffix in ('.bat', '.cmd', '.exe'):
-          alt_target = target + suffix
-          if os.path.isfile(alt_target) and os.access(alt_target, os.X_OK):
-            return alt_target
-    return None
-
   @classmethod
   def SetCachePath(cls, cachepath):
     with cls.cachepath_lock:
@@ -273,12 +255,13 @@ class Mirror(object):
     """
 
     python_fallback = False
-    if sys.platform.startswith('win') and not self.FindExecutable('7z'):
+    if (sys.platform.startswith('win') and
+        not gclient_utils.FindExecutable('7z')):
       python_fallback = True
     elif sys.platform.startswith('darwin'):
       # The OSX version of unzip doesn't support zip64.
       python_fallback = True
-    elif not self.FindExecutable('unzip'):
+    elif not gclient_utils.FindExecutable('unzip'):
       python_fallback = True
 
     gs_folder = 'gs://%s/%s' % (self.bootstrap_bucket, self.basedir)

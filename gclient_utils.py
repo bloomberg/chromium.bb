@@ -698,6 +698,8 @@ def GetBuildtoolsPath():
     return override
 
   primary_solution = GetPrimarySolutionPath()
+  if not primary_solution:
+    return None
   buildtools_path = os.path.join(primary_solution, 'buildtools')
   if not os.path.exists(buildtools_path):
     # Buildtools may be in the gclient root.
@@ -1171,6 +1173,7 @@ def NumLocalCpus():
   logging.debug('Failed to get CPU count. Defaulting to 1.')
   return 1
 
+
 def DefaultDeltaBaseCacheLimit():
   """Return a reasonable default for the git config core.deltaBaseCacheLimit.
 
@@ -1183,6 +1186,7 @@ def DefaultDeltaBaseCacheLimit():
   else:
     return '512m'
 
+
 def DefaultIndexPackConfig(url=''):
   """Return reasonable default values for configuring git-index-pack.
 
@@ -1193,3 +1197,21 @@ def DefaultIndexPackConfig(url=''):
   if url in THREADED_INDEX_PACK_BLACKLIST:
     result.extend(['-c', 'pack.threads=1'])
   return result
+
+
+def FindExecutable(executable):
+  """This mimics the "which" utility."""
+  path_folders = os.environ.get('PATH').split(os.pathsep)
+
+  for path_folder in path_folders:
+    target = os.path.join(path_folder, executable)
+    # Just incase we have some ~/blah paths.
+    target = os.path.abspath(os.path.expanduser(target))
+    if os.path.isfile(target) and os.access(target, os.X_OK):
+      return target
+    if sys.platform.startswith('win'):
+      for suffix in ('.bat', '.cmd', '.exe'):
+        alt_target = target + suffix
+        if os.path.isfile(alt_target) and os.access(alt_target, os.X_OK):
+          return alt_target
+  return None
