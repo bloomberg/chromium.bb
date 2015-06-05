@@ -34,14 +34,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 
-#if OS(ANDROID)
-#include "GrContext.h"
-#include "GrTypes.h"
-#include "SkCanvas.h"
-#include "SkGrPixelRef.h"
-#endif
-
-
 #include "wtf/Assertions.h"
 #include "wtf/text/CString.h"
 
