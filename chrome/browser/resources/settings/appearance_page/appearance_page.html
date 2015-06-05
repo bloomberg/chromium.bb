@@ -21,7 +21,8 @@
           pref="{{prefs.browser.show_home_button}}"
           i18n-values="label:appearanceShowHomeButtonLabel">
       </cr-settings-checkbox>
-      <div id="change-home-page-section" hidden$="{{!prefs.browser.show_home_button.value}}">
+      <div id="change-home-page-section"
+          hidden$="[[!prefs.browser.show_home_button.value]]">
         <div id="change-home-page-section-container">
           <span id="home-page-ntp" i18n-content="homePageNtp"></span>
           <span id="home-page-url"></span>
