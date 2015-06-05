@@ -5,7 +5,7 @@ if HAVE_MAKEINFO_5
 SUBDIRS += doc
 endif
 
-ACLOCAL_AMFLAGS = -I m4 -I gnulib/m4
+ACLOCAL_AMFLAGS = -I m4 -I gnulib/m4 -I tools/gnulib/m4
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = liblouis.pc

@@ -12,22 +12,13 @@ AM_INIT_AUTOMAKE
 # Checks for programs.
 AC_PROG_CC
 
-# gnulib
+# gnulib for the library
 gl_EARLY
+# gnulib for the tools
+gl_tools_EARLY
+
 gl_INIT
-
-# make sure we have a decent malloc and realloc
-gl_FUNC_MALLOC_GNU
-if test $REPLACE_MALLOC = 1; then
-AC_LIBOBJ([malloc])
-fi
-gl_MODULE_INDICATOR([malloc-gnu])
-
-gl_FUNC_REALLOC_GNU
-if test $REPLACE_REALLOC = 1; then
-AC_LIBOBJ([realloc])
-fi
-gl_MODULE_INDICATOR([realloc-gnu])
+gl_tools_INIT
 
 # Checks for more programs.
 AC_PROG_INSTALL
@@ -165,6 +156,7 @@ AC_CONFIG_FILES([
 	python/Makefile
 	python/louis/Makefile
         tools/Makefile
+        tools/gnulib/Makefile
 	gnulib/Makefile
 	m4/Makefile])
 AC_OUTPUT
