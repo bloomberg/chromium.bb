@@ -50,7 +50,22 @@ _MAX_UNIT_LENGTH = 32
 _VERSION_REGEXP = r'^(\d+)\.(\d+)\.(\d+)\.(\d+)$'
 
 class PerfUploadingError(Exception):
-  """A dummy class to wrap errors in this module."""
+  """A class to wrap errors in this module.
+
+  This exception class has two attributes: value and orig_exc. "value" is what
+  was used to create this exception while "orig_exc" is the optional original
+  exception that is wrapped by this exception.
+  """
+
+  def __init__(self, value, orig_exc=None):
+    super(PerfUploadingError, self).__init__(value)
+    self.orig_exc = orig_exc
+
+  def __str__(self):
+    r = super(PerfUploadingError, self).__str__()
+    if self.orig_exc:
+      r += '\ncaused by: %s' % str(self.orig_exc)
+    return r
 
 
 PerformanceValue = collections.namedtuple(
@@ -323,12 +338,13 @@ def _SendToDashboard(data_obj, dashboard=DASHBOARD_URL):
     urllib2.urlopen(req)
   except urllib2.HTTPError as e:
     raise PerfUploadingError('HTTPError: %d %s for JSON %s\n' %
-                             (e.code, e.msg, data_obj['data']))
+                             (e.code, e.msg, data_obj['data']), e)
   except urllib2.URLError as e:
     raise PerfUploadingError('URLError: %s for JSON %s\n' %
-                             (str(e.reason), data_obj['data']))
-  except httplib.HTTPException:
-    raise PerfUploadingError('HTTPException for JSON %s\n' % data_obj['data'])
+                             (str(e.reason), data_obj['data']), e)
+  except httplib.HTTPException as e:
+    raise PerfUploadingError(
+        'HTTPException for JSON %s\n' % data_obj['data'], e)
 
 
 def _ComputeRevisionFromVersions(chrome_version, cros_version):
@@ -395,6 +411,19 @@ def _ComputeRevisionFromVersions(chrome_version, cros_version):
   return int(result_digits)
 
 
+def _RetryIfServerError(perf_exc):
+  """Exception handler to retry an upload if error code is 5xx.
+
+  Args:
+    perf_exc: The exception from _SendToDashboard.
+
+  Returns:
+    True if the cause of |perf_exc| is HTTP 5xx error.
+  """
+  return (isinstance(perf_exc.orig_exc, urllib2.HTTPError) and
+          perf_exc.orig_exc.code >= 500)
+
+
 def UploadPerfValues(perf_values, platform_name, test_name, revision=None,
                      cros_version=None, chrome_version=None,
                      dashboard=DASHBOARD_URL, master_name=None,
@@ -455,8 +484,8 @@ def UploadPerfValues(perf_values, platform_name, test_name, revision=None,
     if dry_run:
       logging.debug('UploadPerfValues: skipping upload due to dry-run')
     else:
-      retry_util.RetryException(PerfUploadingError, 3, _SendToDashboard,
-                                formatted_data, dashboard=dashboard)
+      retry_util.GenericRetry(_RetryIfServerError, 3, _SendToDashboard,
+                              formatted_data, dashboard=dashboard)
   except PerfUploadingError:
     logging.exception('Error when uploading perf data to the perf '
                       'dashboard for test %s.', test_name)

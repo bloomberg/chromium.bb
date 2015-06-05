@@ -312,7 +312,6 @@ class ASyncHWTestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
 
 
 class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
-                     generic_stages.ForgivingBuilderStage,
                      generic_stages.ArchivingStageMixin):
   """Stage that launches tests on the produced disk image."""
 
@@ -367,9 +366,12 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
     cros_ver = self._run.GetVersionInfo().VersionString()
     chrome_ver = self._run.DetermineChromeVersion()
     for test_name, perf_values in perf_entries.iteritems():
-      perf_uploader.UploadPerfValues(perf_values, platform_name, test_name,
-                                     cros_version=cros_ver,
-                                     chrome_version=chrome_ver)
+      try:
+        perf_uploader.UploadPerfValues(perf_values, platform_name, test_name,
+                                       cros_version=cros_ver,
+                                       chrome_version=chrome_ver)
+      except Exception:
+        logging.exception('Fail to upload perf result for test %s.', test_name)
 
 
 class BinhostTestStage(generic_stages.BuilderStage):
