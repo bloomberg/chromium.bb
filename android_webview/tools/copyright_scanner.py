@@ -376,8 +376,11 @@ def ScanAtPresubmit(input_api, output_api):
     results.append(output_api.PresubmitError(
         'The following files contain a third-party license but are not in ' \
         'a listed third-party directory and are not whitelisted. You must ' \
-        'add the following files to the whitelist file ' \
-        '%s:' % _GetWhitelistFileName(input_api),
+        'add the following files to the whitelist file %s\n' \
+        '(Note that if the code you are adding does not actually contain ' \
+        'any third-party code, it may contain the word "copyright", which ' \
+        'should be masked out, e.g. by writing it as "copy-right"):' \
+        '' % _GetWhitelistFileName(input_api),
         sorted(unknown_files)))
   if missing_files:
     results.append(output_api.PresubmitPromptWarning(

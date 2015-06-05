@@ -97,11 +97,14 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   if unknown:
     print 'The following files contain a third-party license but are not in ' \
           'a listed third-party directory and are not whitelisted. You must ' \
-          'add the following files to the whitelist.\n%s' % \
+          'add the following files to the whitelist.\n' \
+          '(Note that if the code you are adding does not actually contain ' \
+          'any third-party code, it may contain the word "copyright", which ' \
+          'should be masked out, e.g. by writing it as "copy-right")\n%s' % \
           '\n'.join(sorted(unknown))
   if missing:
     print 'The following files are whitelisted, but do not exist.\n%s' % \
-        '\n'.join(sorted(missing))
+          '\n'.join(sorted(missing))
   if stale:
     print 'The following files are whitelisted unnecessarily. You must ' \
           'remove the following files from the whitelist.\n%s' % \
