@@ -6,7 +6,11 @@
   </foreignObject>
   <script>
     if (window.eventSender) {
-      document.execCommand("SelectAll");
+      var range = document.createRange();
+      range.selectNode(window.document.documentElement);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
       eventSender.mouseMoveTo(200, 200);
       eventSender.mouseDown();
       eventSender.mouseUp();
