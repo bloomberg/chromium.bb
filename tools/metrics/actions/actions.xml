@@ -2501,6 +2501,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Desktop_SwitchTask">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <description>
+    Recorded when the user activates an existing task window by clicking or
+    tapping on it. Recorded on ChromeOS only.
+  </description>
+</action>
+
 <action name="Destination_Application_Edit">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

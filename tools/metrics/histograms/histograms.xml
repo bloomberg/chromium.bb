@@ -623,6 +623,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.Desktop.TimeBetweenNavigateToTaskSwitches" units="seconds">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tdanderson@chromium.org</owner>
+  <summary>
+    The number of seconds between task window activations triggered by users
+    clicking or tapping on a window, as recorded by the Desktop_SwitchTask user
+    action. Recorded on ChromeOS only. Task switches from other sources are
+    ignored and do not affect this metric. In other words, if a user performs
+    the following steps (1) click on task window 'A' (2) Alt+Tab to task 'Z'(3)
+    click on task window 'B', then this will result in a sample recorded for the
+    time delta between activating task window 'A'and 'B'.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Dock.Action" enum="DockedAction">
   <owner>kuscher@google.com</owner>
   <owner>varkha@chromium.org</owner>

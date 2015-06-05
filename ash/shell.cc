@@ -660,6 +660,8 @@ Shell::Shell(ShellDelegate* delegate)
 Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
 
+  user_metrics_recorder_->OnShellShuttingDown();
+
   delegate_->PreShutdown();
 
   views::FocusManagerFactory::Install(NULL);
@@ -1085,6 +1087,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   // order to create mirror window. Run it after the main message loop
   // is started.
   display_manager_->CreateMirrorWindowAsyncIfAny();
+
+  user_metrics_recorder_->OnShellInitialized();
 }
 
 void Shell::InitKeyboard() {
