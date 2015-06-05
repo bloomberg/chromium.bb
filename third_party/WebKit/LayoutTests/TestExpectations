@@ -626,7 +626,6 @@ crbug.com/455879 [ Win ] webaudio/waveshaper-oversample-4x.html [ Crash Pass ]
 
 crbug.com/489548 fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
 crbug.com/489548 virtual/pointerevent/fast/events/stop-load-in-unload-handler-using-window-stop.html [ Pass Failure ]
-crbug.com/489549 http/tests/security/suborigins/suborigin-change-document-domain.html [ Pass Failure ]
 crbug.com/489556 virtual/pointerevent/fast/events/domactivate-sets-underlying-click-event-as-handled.html [ Pass Failure ]
 
 crbug.com/467649 webaudio/audionode-disconnect-audioparam.html [ Pass Failure ]
@@ -921,8 +920,6 @@ crbug.com/443566 http/tests/misc/image-error.html [ Failure Pass ]
 
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/327698 [ Debug Linux Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
-
-crbug.com/484190 http/tests/security/suborigins/suborigin-invalid-names.html [ Pass Failure ]
 
 # Flaky on several platforms.
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Failure Pass ]
