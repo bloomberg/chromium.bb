@@ -73,13 +73,17 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
       extra_load_flags = net::LOAD_BYPASS_CACHE;
     }
 
-    return new ServiceWorkerWriteToCacheJob(request,
-                                            network_delegate,
-                                            resource_type_,
-                                            context_,
-                                            version_.get(),
-                                            extra_load_flags,
-                                            response_id);
+    ServiceWorkerVersion* stored_version = registration->waiting_version()
+                                               ? registration->waiting_version()
+                                               : registration->active_version();
+    int64 incumbent_response_id = kInvalidServiceWorkerResourceId;
+    if (stored_version && stored_version->script_url() == request->url()) {
+      incumbent_response_id =
+          stored_version->script_cache_map()->LookupResourceId(request->url());
+    }
+    return new ServiceWorkerWriteToCacheJob(
+        request, network_delegate, resource_type_, context_, version_.get(),
+        extra_load_flags, response_id, incumbent_response_id);
   }
 
   int64 response_id = kInvalidServiceWorkerResponseId;

@@ -228,6 +228,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
  private:
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerWriteToCacheJobTest;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest, Update_SameScript);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
+                           Update_SameSizeScript);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
+                           Update_TruncatedScript);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
+                           Update_ElongatedScript);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
+                           Update_EmptyScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateBefore24Hours);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
