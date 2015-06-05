@@ -332,4 +332,84 @@ public class LoadUrlTest extends AwTestBase {
             webServer.shutdown();
         }
     }
+
+    private static class OnReceivedTitleClient extends TestAwContentsClient {
+        void setOnReceivedTitleCallback(Runnable onReceivedTitleCallback) {
+            mOnReceivedTitleCallback = onReceivedTitleCallback;
+        }
+        @Override
+        public void onReceivedTitle(String title) {
+            super.onReceivedTitle(title);
+            mOnReceivedTitleCallback.run();
+        }
+        private Runnable mOnReceivedTitleCallback;
+    }
+
+    // See crbug.com/494929. Need to make sure that loading a javascript: URL
+    // from inside onReceivedTitle works.
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testLoadUrlFromOnReceivedTitle() throws Throwable {
+        final OnReceivedTitleClient contentsClient = new OnReceivedTitleClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        final AwSettings settings = getAwSettingsOnUiThread(awContents);
+        settings.setJavaScriptEnabled(true);
+
+        contentsClient.setOnReceivedTitleCallback(new Runnable() {
+            @Override
+            public void run() {
+                awContents.loadUrl("javascript:testProperty=42;void(0);");
+            }
+        });
+
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            // We need to have a navigation entry, but with an empty title. Note that
+            // trying to load a page with no title makes the received title to be
+            // the URL of the page so instead we use a "204 No Content" response.
+            final String url = webServer.setResponseWithNoContentStatus("/page.html");
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), url);
+            TestAwContentsClient.OnReceivedTitleHelper onReceivedTitleHelper =
+                    contentsClient.getOnReceivedTitleHelper();
+            final String pageTitle = "Hello, World!";
+            int onReceivedTitleCallCount = onReceivedTitleHelper.getCallCount();
+            loadUrlAsync(awContents, "javascript:document.title=\"" + pageTitle + "\";void(0);");
+            onReceivedTitleHelper.waitForCallback(onReceivedTitleCallCount);
+            assertEquals(pageTitle, onReceivedTitleHelper.getTitle());
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    public void testOnReceivedTitleForUnchangingTitle() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            final String title = "Title";
+            final String url1 = webServer.setResponse("/page1.html",
+                    "<html><head><title>" + title + "</title></head>Page 1</html>", null);
+            final String url2 = webServer.setResponse("/page2.html",
+                    "<html><head><title>" + title + "</title></head>Page 2</html>", null);
+            TestAwContentsClient.OnReceivedTitleHelper onReceivedTitleHelper =
+                    contentsClient.getOnReceivedTitleHelper();
+            int onReceivedTitleCallCount = onReceivedTitleHelper.getCallCount();
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), url1);
+            onReceivedTitleHelper.waitForCallback(onReceivedTitleCallCount);
+            assertEquals(title, onReceivedTitleHelper.getTitle());
+            // Verify that even if we load another page with the same title,
+            // onReceivedTitle is still being called.
+            onReceivedTitleCallCount = onReceivedTitleHelper.getCallCount();
+            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), url2);
+            onReceivedTitleHelper.waitForCallback(onReceivedTitleCallCount);
+            assertEquals(title, onReceivedTitleHelper.getTitle());
+        } finally {
+            webServer.shutdown();
+        }
+    }
 }

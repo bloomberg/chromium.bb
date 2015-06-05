@@ -320,4 +320,34 @@ public class NavigationHistoryTest extends AwTestBase {
             }
         });
     }
+
+    // See http://crbug.com/481570
+    @SmallTest
+    public void testTitleUpdatedWhenGoingBack() throws Throwable {
+        final TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                mContentsClient.getOnPageFinishedHelper();
+        NavigationHistory list = getNavigationHistory(mAwContents);
+        assertEquals(0, list.getEntryCount());
+
+        final String page1Url = addPage1ToServer(mWebServer);
+        final String page2Url = addPage2ToServer(mWebServer);
+
+        TestAwContentsClient.OnReceivedTitleHelper onReceivedTitleHelper =
+                mContentsClient.getOnReceivedTitleHelper();
+        // It would be unreliable to retrieve the call count after the first loadUrlSync,
+        // as it is not synchronous with respect to updating the title. Instead, we capture
+        // the initial call count (zero?) here, and keep waiting until we receive the update
+        // from the second page load.
+        int onReceivedTitleCallCount = onReceivedTitleHelper.getCallCount();
+        loadUrlSync(mAwContents, onPageFinishedHelper, page1Url);
+        loadUrlSync(mAwContents, onPageFinishedHelper, page2Url);
+        do {
+            onReceivedTitleHelper.waitForCallback(onReceivedTitleCallCount);
+            onReceivedTitleCallCount = onReceivedTitleHelper.getCallCount();
+        } while(!PAGE_2_TITLE.equals(onReceivedTitleHelper.getTitle()));
+        HistoryUtils.goBackSync(getInstrumentation(), mAwContents.getWebContents(),
+                onPageFinishedHelper);
+        onReceivedTitleHelper.waitForCallback(onReceivedTitleCallCount);
+        assertEquals(PAGE_1_TITLE, onReceivedTitleHelper.getTitle());
+    }
 }

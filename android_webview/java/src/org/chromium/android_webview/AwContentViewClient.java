@@ -89,7 +89,7 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
 
     @Override
     public void onUpdateTitle(String title) {
-        mAwContentsClient.onReceivedTitle(title);
+        mAwContentsClient.updateTitle(title, true);
     }
 
     @Override

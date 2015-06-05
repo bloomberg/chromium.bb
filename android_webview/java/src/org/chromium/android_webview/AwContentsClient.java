@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Looper;
 import android.os.Message;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
@@ -44,6 +45,12 @@ public abstract class AwContentsClient {
     // Last background color reported from the renderer. Holds the sentinal value INVALID_COLOR
     // if not valid.
     private int mCachedRendererBackgroundColor = INVALID_COLOR;
+    // Holds the last known page title. {@link ContentViewClient#onUpdateTitle} is unreliable,
+    // particularly for navigating backwards and forwards in the history stack. Instead, the last
+    // known document title is kept here, and the clients gets updated whenever the value has
+    // actually changed. Blink also only sends updates when the document title have changed,
+    // so behaviours are consistent.
+    private String mTitle = "";
 
     private static final int INVALID_COLOR = 0;
 
@@ -324,4 +331,10 @@ public abstract class AwContentsClient {
             View view, ActionHandler actionHandler, boolean floating);
 
     public abstract boolean supportsFloatingActionMode();
+
+    public void updateTitle(String title, boolean forceNotification) {
+        if (!forceNotification && TextUtils.equals(mTitle, title)) return;
+        mTitle = title;
+        mCallbackHelper.postOnReceivedTitle(mTitle);
+    }
 }

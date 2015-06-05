@@ -630,7 +630,7 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onReceivedTitle");
             if (mWebChromeClient != null) {
-                if (TRACE) Log.d(TAG, "onReceivedTitle");
+                if (TRACE) Log.d(TAG, "onReceivedTitle=\"" + title + "\"");
                 mWebChromeClient.onReceivedTitle(mWebView, title);
             }
         } finally {

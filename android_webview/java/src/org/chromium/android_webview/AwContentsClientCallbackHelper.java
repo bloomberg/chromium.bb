@@ -89,6 +89,7 @@ public class AwContentsClientCallbackHelper {
     private static final int MSG_ON_SCALE_CHANGED_SCALED = 7;
     private static final int MSG_ON_RECEIVED_HTTP_ERROR = 8;
     private static final int MSG_ON_PAGE_FINISHED = 9;
+    private static final int MSG_ON_RECEIVED_TITLE = 10;
 
     // Minimum period allowed between consecutive onNewPicture calls, to rate-limit the callbacks.
     private static final long ON_NEW_PICTURE_MIN_PERIOD_MILLIS = 500;
@@ -163,6 +164,11 @@ public class AwContentsClientCallbackHelper {
                     mContentsClient.onPageFinished(url);
                     break;
                 }
+                case MSG_ON_RECEIVED_TITLE: {
+                    final String title = (String) msg.obj;
+                    mContentsClient.onReceivedTitle(title);
+                    break;
+                }
                 default:
                     throw new IllegalStateException(
                             "AwContentsClientCallbackHelper: unhandled message " + msg.what);
@@ -228,5 +234,9 @@ public class AwContentsClientCallbackHelper {
 
     public void postOnPageFinished(String url) {
         mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_PAGE_FINISHED, url));
+    }
+
+    public void postOnReceivedTitle(String title) {
+        mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_RECEIVED_TITLE, title));
     }
 }
