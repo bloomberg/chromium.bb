@@ -8,26 +8,24 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.JsonReader;
 
 import org.chromium.base.Log;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Activity for managing the Mojo Shell.
  */
 public class MojoShellActivity extends Activity {
     private static final String TAG = "MojoShellActivity";
+    private static final String EXTRAS = "org.chromium.mojo.shell.extras";
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        String[] parameters = getParametersFromIntent(getIntent());
+        String[] parameters = getIntent().getStringArrayExtra(EXTRAS);
+        for (String s : parameters) {
+            s = s.replace("\\,", ",");
+        }
         if (Intent.ACTION_VIEW.equals(getIntent().getAction())) {
             Uri uri = getIntent().getData();
             if (uri != null) {
@@ -54,32 +52,5 @@ public class MojoShellActivity extends Activity {
 
         // TODO(eseidel): ShellMain can fail, but we're ignoring the return.
         ShellMain.start();
-    }
-
-    private static String[] getParametersFromIntent(Intent intent) {
-        if (intent == null) {
-            return null;
-        }
-        String[] parameters = intent.getStringArrayExtra("parameters");
-        if (parameters != null) {
-            return parameters;
-        }
-        String encodedParameters = intent.getStringExtra("encodedParameters");
-        if (encodedParameters != null) {
-            JsonReader reader = new JsonReader(new StringReader(encodedParameters));
-            List<String> parametersList = new ArrayList<String>();
-            try {
-                reader.beginArray();
-                while (reader.hasNext()) {
-                    parametersList.add(reader.nextString());
-                }
-                reader.endArray();
-                reader.close();
-                return parametersList.toArray(new String[parametersList.size()]);
-            } catch (IOException e) {
-                Log.w(TAG, e.getMessage(), e);
-            }
-        }
-        return null;
     }
 }

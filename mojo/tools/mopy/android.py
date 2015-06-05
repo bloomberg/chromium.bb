@@ -4,7 +4,6 @@
 
 import atexit
 import itertools
-import json
 import logging
 import os
 import shutil
@@ -256,13 +255,13 @@ class AndroidShell(object):
     max_attempts = 200 if '--wait-for-debugger' in arguments else 5
     self._ReadFifo(fifo_path, stdout, on_application_stop, max_attempts)
 
-    # Extract map-origin arguments.
+    # Extract map-origin args and add the extras array with commas escaped.
     parameters = [a for a in arguments if not a.startswith(MAPPING_PREFIX)]
     map_parameters = [a for a in arguments if a.startswith(MAPPING_PREFIX)]
     parameters += self._StartHttpServerForOriginMappings(map_parameters)
-
+    parameters = [p.replace(',', '\,') for p in parameters]
     if parameters:
-      cmd += ['--es', 'encodedParameters', json.dumps(parameters)]
+      cmd += ['--esa', 'org.chromium.mojo.shell.extras', ','.join(parameters)]
 
     atexit.register(self.StopShell)
     with open(os.devnull, 'w') as devnull:
