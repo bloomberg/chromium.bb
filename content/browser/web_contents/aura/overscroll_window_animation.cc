@@ -86,6 +86,7 @@ void OverscrollWindowAnimation::OnImplicitAnimationsCompleted() {
 void OverscrollWindowAnimation::OnOverscrollModeChange(
     OverscrollMode old_mode,
     OverscrollMode new_mode) {
+  DCHECK_NE(old_mode, new_mode);
   Direction new_direction = GetDirectionForMode(new_mode);
   if (new_direction == SLIDE_NONE) {
     // The user cancelled the in progress animation.

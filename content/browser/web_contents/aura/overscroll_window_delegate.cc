@@ -43,6 +43,8 @@ void OverscrollWindowDelegate::StartOverscroll() {
 }
 
 void OverscrollWindowDelegate::ResetOverscroll() {
+  if (overscroll_mode_ == OVERSCROLL_NONE)
+    return;
   delegate_->OnOverscrollModeChange(overscroll_mode_, OVERSCROLL_NONE);
   overscroll_mode_ = OVERSCROLL_NONE;
   delta_x_ = 0;

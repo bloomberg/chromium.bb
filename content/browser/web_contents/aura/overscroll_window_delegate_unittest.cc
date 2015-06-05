@@ -25,6 +25,7 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
       : window_(nullptr),
         overscroll_complete_(false),
         overscroll_started_(false),
+        mode_changed_(false),
         current_mode_(OVERSCROLL_NONE),
         touch_start_threshold_(content::GetOverscrollConfig(
             content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN)),
@@ -37,6 +38,7 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
   void Reset() {
     overscroll_complete_ = false;
     overscroll_started_ = false;
+    mode_changed_ = false;
     current_mode_ = OVERSCROLL_NONE;
     window_.reset(CreateNormalWindow(
         0, root_window(), new OverscrollWindowDelegate(this, gfx::Image())));
@@ -48,6 +50,7 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
 
   bool overscroll_complete() { return overscroll_complete_; }
   bool overscroll_started() { return overscroll_started_; }
+  bool mode_changed() { return mode_changed_; }
 
   OverscrollMode current_mode() { return current_mode_; }
 
@@ -89,6 +92,7 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
 
   void OnOverscrollModeChange(OverscrollMode old_mode,
                               OverscrollMode new_mode) override {
+    mode_changed_ = true;
     current_mode_ = new_mode;
     if (current_mode_ != OVERSCROLL_NONE)
       overscroll_started_ = true;
@@ -100,7 +104,7 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
   // State flags.
   bool overscroll_complete_;
   bool overscroll_started_;
-
+  bool mode_changed_;
   OverscrollMode current_mode_;
 
   // Config defined constants.
@@ -167,6 +171,13 @@ TEST_F(OverscrollWindowDelegateTest, BasicOverscrollModes) {
   generator.ReleaseTouch();
   EXPECT_EQ(delegate->overscroll_mode_, OVERSCROLL_NONE);
   EXPECT_TRUE(overscroll_complete());
+
+  // Generate a mouse events which normally cancel the overscroll. Confirm
+  // that superfluous mode changed events are not dispatched.
+  Reset();
+  generator.PressLeftButton();
+  generator.MoveMouseTo(gfx::Point(10, 10));
+  EXPECT_FALSE(mode_changed());
 }
 
 // Tests that the overscroll does not start until the gesture gets past a
