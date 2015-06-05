@@ -34,19 +34,33 @@ protected:
     static v8::Local<v8::String> v8InternalizedString(v8::Isolate*, const char* name);
 };
 
+template<typename T, bool = IsGarbageCollectedType<T>::value>
+class InspectorWrapperTypeTrait {
+public:
+    using PassType = PassRefPtr<T>;
+    using Type = RefPtr<T>;
+};
+
+template<typename T>
+class InspectorWrapperTypeTrait<T, true> {
+public:
+    using PassType = PassRefPtrWillBeRawPtr<T>;
+    using Type = RefPtrWillBeRawPtr<T>;
+};
+
 template<class T, char* const hiddenPropertyName, char* const className>
 class InspectorWrapper final : public InspectorWrapperBase {
 public:
     class WeakCallbackData final {
     public:
-        WeakCallbackData(v8::Isolate* isolate, PassRefPtr<T> impl, v8::Local<v8::Object> wrapper)
+        WeakCallbackData(v8::Isolate* isolate, typename InspectorWrapperTypeTrait<T>::PassType impl, v8::Local<v8::Object> wrapper)
             : m_impl(impl)
             , m_persistent(isolate, wrapper)
         {
             m_persistent.SetWeak(this, &WeakCallbackData::weakCallback, v8::WeakCallbackType::kParameter);
         }
 
-        RefPtr<T> m_impl;
+        typename InspectorWrapperTypeTrait<T>::Type m_impl;
 
     private:
         static void weakCallback(const v8::WeakCallbackInfo<WeakCallbackData>& info)
@@ -62,13 +76,13 @@ public:
         return InspectorWrapperBase::createWrapperTemplate(isolate, className, methods, attributes);
     }
 
-    static v8::Local<v8::Object> wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassRefPtr<T> object)
+    static v8::Local<v8::Object> wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, typename blink::InspectorWrapperTypeTrait<T>::PassType object)
     {
         v8::Context::Scope contextScope(context);
         v8::Local<v8::Object> result = InspectorWrapperBase::createWrapper(constructorTemplate, context);
         if (result.IsEmpty())
             return v8::Local<v8::Object>();
-        RefPtrWillBeRawPtr<T> impl(object);
+        typename blink::InspectorWrapperTypeTrait<T>::Type impl(object);
         v8::Isolate* isolate = context->GetIsolate();
         v8::Local<v8::External> objectReference = v8::External::New(isolate, new WeakCallbackData(isolate, impl, result));
         result->SetHiddenValue(v8InternalizedString(isolate, hiddenPropertyName), objectReference);
