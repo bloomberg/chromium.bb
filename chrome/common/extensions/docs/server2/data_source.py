@@ -19,17 +19,11 @@ class DataSource(object):
   def __init__(self, server_instance, request):
     pass
 
-  def GetRefreshPaths(self):
-    '''Returns a list of paths to query
-    (relative to _refresh/<data_source_name>/) with the task queue in order
-    to refresh this DataSource's data set. Any paths listed here will be
-    routed to the DataSource Refresh method in a taskqueue task request.
+  def Refresh(self):
+    '''Refreshes the cache of data this source provides. Should return a Future
+    which resolves to a boolean indicating the success or failure of the
+    refresh.
     '''
-    return ['']
-
-  def Refresh(self, path=None):
-    '''Handles _refresh requests to this DataSource. Should return a Future
-    indicating the success or failure of the refresh.'''
     raise NotImplementedError(self.__class__)
 
   def get(self, key):

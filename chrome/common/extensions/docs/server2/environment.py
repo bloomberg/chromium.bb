@@ -31,6 +31,10 @@ def _IsServerSoftware(name):
   return os.environ.get('SERVER_SOFTWARE', '').find(name) == 0
 
 
+def IsComputeEngine():
+  return _IsServerSoftware('Compute Engine')
+
+
 def IsDevServer():
   return _IsServerSoftware('Development')
 
@@ -41,3 +45,16 @@ def IsReleaseServer():
 
 def IsPreviewServer():
   return sys.argv and os.path.basename(sys.argv[0]) == 'preview.py'
+
+
+def IsAppEngine():
+  return IsDevServer() or IsReleaseServer()
+
+
+def IsTest():
+  return sys.argv and os.path.basename(sys.argv[0]).endswith('_test.py')
+
+
+class UnknownEnvironmentError(Exception):
+  pass
+

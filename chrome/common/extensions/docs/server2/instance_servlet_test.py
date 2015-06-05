@@ -5,7 +5,6 @@
 
 import unittest
 
-from github_file_system_provider import GithubFileSystemProvider
 from instance_servlet import InstanceServlet
 from servlet import Request
 from fail_on_access_file_system import FailOnAccessFileSystem

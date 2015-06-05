@@ -16,31 +16,19 @@ class CachingFileSystem(FileSystem):
   '''FileSystem which implements a caching layer on top of |file_system|. If
   |fail_on_miss| is True then cache misses throw a FileNotFoundError rather than
   falling back onto the underlying FileSystem.
-
-  If the underlying FileSystem is versioned (i.e., it implements GetVersion to
-  return something other than None), this will create a persistent stat cache
-  (keyed on the FileSystem instance's version) as an additional optimization.
   '''
   def __init__(self, file_system, object_store_creator, fail_on_miss=False):
     self._file_system = file_system
     self._fail_on_miss = fail_on_miss
-    def create_object_store(category, try_versioning=False, **optargs):
-      version = file_system.GetVersion()
-      versioned = try_versioning and version is not None
-      if versioned:
-        identity = '%s/%s' % (file_system.GetIdentity(), version)
-      else:
-        identity = file_system.GetIdentity()
-      optargs['start_empty'] = optargs.get('start_empty', not versioned)
+    def create_object_store(category, start_empty=True):
       return object_store_creator.Create(
           CachingFileSystem,
-          category='%s/%s' % (identity, category),
-          **optargs)
-    self._stat_cache = create_object_store('stat', try_versioning=True)
-    # The read caches can start populated (start_empty=False) because file
-    # updates are picked up by the stat, so it doesn't need the force-refresh
-    # which starting empty is designed for. Without this optimisation, cron
-    # runs are extra slow.
+          category='%s/%s' % (file_system.GetIdentity(), category),
+          start_empty=start_empty)
+    # We only start the stat cache empty if |fail_on_miss| is False, i.e. if
+    # we're NOT running on a live instance and we can afford to fall back onto
+    # the underlying FileSystem impl.
+    self._stat_cache = create_object_store('stat', start_empty=not fail_on_miss)
     self._read_cache = create_object_store('read', start_empty=False)
     self._walk_cache = create_object_store('walk', start_empty=False)
 
@@ -77,7 +65,8 @@ class CachingFileSystem(FileSystem):
       return Future(callback=lambda: make_stat_info(dir_stat))
 
     if self._fail_on_miss:
-      logging.warning('Bailing on stat cache miss for %s' % dir_path)
+      logging.warning('Bailing on stat cache miss for %s on %s' %
+                      (dir_path, self.GetIdentity()))
       return Future(callback=lambda: raise_cache_miss(dir_path))
 
     def next(dir_stat):
@@ -141,9 +130,19 @@ class CachingFileSystem(FileSystem):
       paths = [path for path in paths
                if cached_read_values.get(path, (None, True))[1]]
 
-    if len(up_to_date_data) == len(paths):
+    remaining_paths = set(paths) - set(up_to_date_data.iterkeys())
+    if len(remaining_paths) == 0:
       # Everything was cached and up-to-date.
       return Future(value=up_to_date_data)
+
+    def raise_cache_miss(paths):
+      raise FileNotFoundError('Got cache miss when trying to stat %s' % paths)
+
+    if self._fail_on_miss:
+      # Ignore missing values and return anyway.
+      logging.warn('Read cache miss for %s on %s' %
+                   (remaining_paths, self.GetIdentity()))
+      return Future(callback=lambda: raise_cache_miss(remaining_paths))
 
     def next(new_results):
       # Update the cache. This is a path -> (data, version) mapping.
@@ -157,8 +156,9 @@ class CachingFileSystem(FileSystem):
                if stat_futures[path].Get() is None))
       new_results.update(up_to_date_data)
       return new_results
+
     # Read in the values that were uncached or old.
-    return self._file_system.Read(set(paths) - set(up_to_date_data.iterkeys()),
+    return self._file_system.Read(remaining_paths,
                                   skip_not_found=skip_not_found).Then(next)
 
   def GetCommitID(self):

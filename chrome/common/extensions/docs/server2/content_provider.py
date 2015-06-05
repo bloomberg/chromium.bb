@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
 import mimetypes
 import posixpath
 import traceback
@@ -80,31 +81,35 @@ class ContentProvider(object):
   @SingleFile
   def _CompileContent(self, path, text):
     assert text is not None, path
-    _, ext = posixpath.splitext(path)
-    mimetype = _MIMETYPE_OVERRIDES.get(ext, mimetypes.guess_type(path)[0])
-    if ext == '.md':
-      # See http://pythonhosted.org/Markdown/extensions
-      # for details on "extensions=".
-      content = markdown(ToUnicode(text),
-                         extensions=('extra', 'headerid', 'sane_lists'))
-      if self._supports_templates:
-        content = Motemplate(content, name=path)
-      mimetype = 'text/html'
-    elif mimetype is None:
-      content = text
-      mimetype = 'text/plain'
-    elif mimetype == 'text/html':
-      content = ToUnicode(text)
-      if self._supports_templates:
-        content = Motemplate(content, name=path)
-    elif (mimetype.startswith('text/') or
-          mimetype in ('application/javascript', 'application/json')):
-      content = ToUnicode(text)
-    else:
-      content = text
-    return ContentAndType(content,
-                          mimetype,
-                          self.file_system.Stat(path).version)
+    try:
+      _, ext = posixpath.splitext(path)
+      mimetype = _MIMETYPE_OVERRIDES.get(ext, mimetypes.guess_type(path)[0])
+      if ext == '.md':
+        # See http://pythonhosted.org/Markdown/extensions
+        # for details on "extensions=".
+        content = markdown(ToUnicode(text),
+                           extensions=('extra', 'headerid', 'sane_lists'))
+        mimetype = 'text/html'
+        if self._supports_templates:
+          content = Motemplate(content, name=path)
+      elif mimetype is None:
+        content = text
+        mimetype = 'text/plain'
+      elif mimetype == 'text/html':
+        content = ToUnicode(text)
+        if self._supports_templates:
+          content = Motemplate(content, name=path)
+      elif (mimetype.startswith('text/') or
+            mimetype in ('application/javascript', 'application/json')):
+        content = ToUnicode(text)
+      else:
+        content = text
+      return ContentAndType(content,
+                            mimetype,
+                            self.file_system.Stat(path).version)
+    except Exception as e:
+      logging.warn('In file %s: %s' % (path, e.message))
+      return ContentAndType('', mimetype, self.file_system.Stat(path).version)
 
   def GetCanonicalPath(self, path):
     '''Gets the canonical location of |path|. This class is tolerant of

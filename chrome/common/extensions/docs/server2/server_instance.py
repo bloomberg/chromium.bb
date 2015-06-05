@@ -10,7 +10,6 @@ from document_renderer import DocumentRenderer
 from empty_dir_file_system import EmptyDirFileSystem
 from environment import IsDevServer
 from gcs_file_system_provider import CloudStorageFileSystemProvider
-from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_iterator import HostFileSystemIterator
 from host_file_system_provider import HostFileSystemProvider
 from object_store_creator import ObjectStoreCreator
@@ -29,7 +28,6 @@ class ServerInstance(object):
                compiled_fs_factory,
                branch_utility,
                host_file_system_provider,
-               github_file_system_provider,
                gcs_file_system_provider,
                base_path='/'):
     '''
@@ -45,8 +43,6 @@ class ServerInstance(object):
     |host_file_system_provider|
         Creates FileSystem instances which host the server at alternative
         revisions.
-    |github_file_system_provider|
-        Creates FileSystem instances backed by GitHub.
     |base_path|
         The path which all HTML is generated relative to. Usually this is /
         but some servlets need to override this.
@@ -58,7 +54,6 @@ class ServerInstance(object):
     self.host_file_system_provider = host_file_system_provider
     host_fs_at_master = host_file_system_provider.GetMaster()
 
-    self.github_file_system_provider = github_file_system_provider
     self.gcs_file_system_provider = gcs_file_system_provider
 
     assert base_path.startswith('/') and base_path.endswith('/')
@@ -80,7 +75,6 @@ class ServerInstance(object):
         object_store_creator,
         self.compiled_fs_factory,
         host_fs_at_master,
-        self.github_file_system_provider,
         self.gcs_file_system_provider)
 
     # TODO(kalman): Move all the remaining DataSources into DataSourceRegistry,
@@ -114,7 +108,6 @@ class ServerInstance(object):
                           CompiledFileSystem.Factory(object_store_creator),
                           TestBranchUtility.CreateWithCannedData(),
                           file_system_provider,
-                          GithubFileSystemProvider.ForEmpty(),
                           CloudStorageFileSystemProvider(object_store_creator),
                           base_path=base_path)
 
@@ -129,5 +122,4 @@ class ServerInstance(object):
         CompiledFileSystem.Factory(object_store_creator),
         TestBranchUtility.CreateWithCannedData(),
         host_file_system_provider,
-        GithubFileSystemProvider.ForEmpty(),
         CloudStorageFileSystemProvider(object_store_creator))

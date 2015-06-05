@@ -7,7 +7,7 @@ import os
 import posixpath
 import sys
 import unittest
-from appengine_url_fetcher import AppEngineUrlFetcher
+from environment_wrappers import CreateUrlFetcher
 from extensions_paths import (
     ARTICLES_TEMPLATES, CHROME_EXTENSIONS, DOCS, JSON_TEMPLATES,
     PUBLIC_TEMPLATES)
@@ -27,7 +27,7 @@ class RietveldPatcherTest(unittest.TestCase):
     ConfigureFakeFetchers()
     self._patcher = RietveldPatcher(
         '14096030',
-        AppEngineUrlFetcher(url_constants.CODEREVIEW_SERVER))
+        CreateUrlFetcher(url_constants.CODEREVIEW_SERVER))
 
   def _ReadLocalFile(self, filename):
     with open(Server2Path('test_data',

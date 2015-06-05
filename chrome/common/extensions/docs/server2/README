@@ -20,11 +20,40 @@ be sufficient. If for some reason you want to test against the app engine SDK:
 
   3. View docs at http://localhost:8080/(apps|extensions)/<doc_name>
 
+NOTE: The dev server will not work right way: you need to populate its
+Datastore. You will need a local datastore cache in the working directory where
+you started the dev server, and you will need to manually instruct the dev
+server to pull data from that file:
 
---------------------------------------------
-Using Google Cloud Storage content providers
+  1. Run './update_cache.py --no-push --save-file=FOOCACHE'. This will take
+     a very long time (30-40 minutes). It is advisable that you keep a copy
+     of this file around if you plan use the dev server often. It can be
+     updated much faster (< 3 minutes) in that case by also including
+     --load-file=FOOCACHE on subsequent update_cache.py runs.
 
-With preview.py:
+     You MUST have branch heads fetched in your local repo in order for your
+     local data set to be populated correctly. You can accomplish this by
+     running:
+
+       gclient sync --with_branch_heads
+       git fetch origin
+
+     You may also specify --commit=<commitish> when running update_cache.py in
+     order to update the cache from a specific commit. This may be a commit ID,
+     or a partial commit ID, or a local branch ref, etc. To test local changes,
+     you MUST commit them locally and use the local commit to update your cache.
+
+  2. Once you have a cache (e.g. FOOCACHE) in the working directory of your
+     dev server, visit the URL:
+
+       http://localhost:8080/_update_cache/FOOCACHE
+
+     The server should take about a minute to fully populate its Datastore
+     from the data in your FOOCACHE file. Now you have a working dev server!
+
+
+------------------------------------------------------------
+Using Google Cloud Storage content providers with preview.py
 
   1. create a directory "[...]/server2/local_debug/gcs/<bucketname>" for every
      gcs bucket referenced in content_providers.json
@@ -32,28 +61,12 @@ With preview.py:
   2. copy files to the respective local bucket directories. Preview.py has
      no access to the real Google Cloud Storage.
 
-With start_dev_server.py:
-
-    1. Install gsutils from https://developers.google.com/storage/docs/gsutil
-
-    2. Set gsutil accordingly to the official instructions.
-
-    3. Make sure you have permission to the GCS buckets specified in
-       content_providers.json by running "gsutil ls gs://bucketname"
-
-    4. Get an oauth token (see instructions at the comment of
-       gcs_file_system_provider.py) and save it to the file
-       "[...]/server2/local_debug/gcs_debug.conf"
-
-Remember that the step 4 needs to be repeated every 10 minutes or so,
-because the oauth access token expires quickly.
 
 --------------------
 Deploying the Server
 
 You will need to have access to the http://chrome-apps-doc.appspot.com app.
-Contact aa@chromium.org, erikkay@chromium.org, miket@chromium.org,
-kalman@chromium.org, or ernestd@chromium.org to obtain access.
+Contact kalman@chromium.org or rockot@chromium.org to obtain access.
 
 Once you have access:
 
@@ -75,3 +88,39 @@ Once you have access:
    If you get an error about too many versions when deploying, go into this
    view and delete the version which was deployed the longest time ago.  Then
    try to deploy again.
+
+
+----------------------
+Updating the Datastore
+
+Even when the server code hasn't changed, new data is constantly flowing into
+the chromium repo and some of that data includes changes to new or existing
+content hosted by the server. In order for the front-end to reflect these
+changes, new data must be pushed into the project's Datastore.
+
+This is done periodically by a Compute Engine instance running the
+update_cache.py tool. While it is possible to push from other hosts if you
+get all the right credentials in all the right places, it is strongly
+discouraged and also therefore not documented.
+
+To force a push safely from the VM, navigate to the developer console under
+Compute -> Compute Engine -> VM instances and open SSH for the "git-processor"
+instance. From within the SSH session, first switch to user "git-processor":
+
+  sudo su - git-processor
+
+You can run './update-docs.sh' from the home directory there. This will
+automatically fetch any new objects from the upstream repository and then
+perform a full update if there are pending changes.
+
+It's almost never necessary to use this tool. For one interesting example,
+consider the case where no new commits are landing in the chrome repository
+but a change was just pushed to one of the GCS providers (like say, the
+chromedocs-multidevice bucker). In this case, you may want to force an update
+of only the content_providers data.
+
+  ./update_docs.sh --data-source=content_providers --force
+
+This will safely do the push for you, ensuring that the automated job
+does not collide with your own.
+

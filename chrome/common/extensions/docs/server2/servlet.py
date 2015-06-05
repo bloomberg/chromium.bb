@@ -103,6 +103,21 @@ class Response(object):
     return Response(content=content, headers=headers, status=400)
 
   @staticmethod
+  def Unauthorized(content, method, realm, headers={}):
+    '''Returns an unauthorized (401) response.
+    '''
+    new_headers = headers.copy()
+    new_headers.update({
+      'WWW-Authentication': '%s realm="%s"' % (method, realm)})
+    return Response(content=content, headers=headers, status=401)
+
+  @staticmethod
+  def Forbidden(content, headers=None):
+    '''Returns an forbidden (403) response.
+    '''
+    return Response(content=content, headers=headers, status=403)
+
+  @staticmethod
   def NotFound(content, headers=None):
     '''Returns a not found (404) response.
     '''

@@ -102,5 +102,5 @@ class OwnersDataSource(DataSource):
       'apis': self._CollectOwnersData()
     }.get(key).Get()
 
-  def Refresh(self, path):
+  def Refresh(self):
     return self._CollectOwnersData()

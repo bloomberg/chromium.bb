@@ -112,7 +112,6 @@ class ContentProvidersTest(unittest.TestCase):
         object_store_creator,
         CompiledFileSystem.Factory(object_store_creator),
         test_file_system,
-        self._github_fs_provider,
         self._gcs_fs_provider)
 
   def testSimpleRootPath(self):
@@ -183,29 +182,31 @@ class ContentProvidersTest(unittest.TestCase):
   def testProviderNotFound(self):
     self.assertEqual(None, self._content_providers.GetByName('cabbages'))
 
-  def testGithubContentProvider(self):
-    provider, serve_from, path = self._content_providers.GetByServeFrom(
-        'gh/apples/green/granny smith.txt')
-    self.assertEqual('github-provider', provider.name)
-    self.assertEqual('gh', serve_from)
-    self.assertEqual('apples/green/granny smith.txt', path)
-    self.assertEqual([('GoogleChrome', 'hello-world')],
-                     self._github_fs_provider.GetAndReset())
-    self.assertEqual(
-        'granny smith apples',
-        provider.GetContentAndType(path).Get().content)
+  # TODO: Re-enable these Github tests if we ever decide to restore our support
+  # for Github content providers.
+  # def testGithubContentProvider(self):
+  #   provider, serve_from, path = self._content_providers.GetByServeFrom(
+  #       'gh/apples/green/granny smith.txt')
+  #   self.assertEqual('github-provider', provider.name)
+  #   self.assertEqual('gh', serve_from)
+  #   self.assertEqual('apples/green/granny smith.txt', path)
+  #   self.assertEqual([('GoogleChrome', 'hello-world')],
+  #                    self._github_fs_provider.GetAndReset())
+  #   self.assertEqual(
+  #       'granny smith apples',
+  #       provider.GetContentAndType(path).Get().content)
 
-  def testGithubContentProviderWithDir(self):
-    provider, serve_from, path = self._content_providers.GetByServeFrom(
-        'gh2/fruit/cherry.txt')
-    self.assertEqual('github-provider-with-dir', provider.name)
-    self.assertEqual('gh2', serve_from)
-    self.assertEqual('fruit/cherry.txt', path)
-    self.assertEqual([('SomeOwner', 'some-repo')],
-                     self._github_fs_provider.GetAndReset())
-    self.assertEqual(
-        'cherry tomatoes',
-        provider.GetContentAndType(path).Get().content)
+  # def testGithubContentProviderWithDir(self):
+  #   provider, serve_from, path = self._content_providers.GetByServeFrom(
+  #       'gh2/fruit/cherry.txt')
+  #   self.assertEqual('github-provider-with-dir', provider.name)
+  #   self.assertEqual('gh2', serve_from)
+  #   self.assertEqual('fruit/cherry.txt', path)
+  #   self.assertEqual([('SomeOwner', 'some-repo')],
+  #                    self._github_fs_provider.GetAndReset())
+  #   self.assertEqual(
+  #       'cherry tomatoes',
+  #       provider.GetContentAndType(path).Get().content)
 
 if __name__ == '__main__':
   unittest.main()

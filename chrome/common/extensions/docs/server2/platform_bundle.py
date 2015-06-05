@@ -126,11 +126,9 @@ class PlatformBundle(object):
           platform)
     return self._platform_data[platform].api_categorizer
 
-  def GetRefreshPaths(self):
-    return [platform for platform in self._platform_data.keys()]
-
-  def Refresh(self, platform):
-    return self.GetAPIModels(platform).Refresh()
+  def Refresh(self):
+    return All(self.GetAPIModels(platform).Refresh()
+               for platform in self._platform_data.keys())
 
   def GetIdentity(self):
     return self._host_fs_at_master.GetIdentity()

@@ -6,7 +6,7 @@ import json
 import logging
 import operator
 
-from appengine_url_fetcher import AppEngineUrlFetcher
+from environment_wrappers import CreateUrlFetcher
 import url_constants
 
 
@@ -60,7 +60,7 @@ class BranchUtility(object):
   def Create(object_store_creator):
     return BranchUtility(url_constants.OMAHA_PROXY_URL,
                          url_constants.OMAHA_DEV_HISTORY,
-                         AppEngineUrlFetcher(),
+                         CreateUrlFetcher(),
                          object_store_creator)
 
   @staticmethod

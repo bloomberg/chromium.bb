@@ -7,7 +7,6 @@ from HTMLParser import HTMLParser
 import unittest
 
 from fake_fetchers import ConfigureFakeFetchers
-from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from patch_servlet import PatchServlet
 from render_servlet import RenderServlet

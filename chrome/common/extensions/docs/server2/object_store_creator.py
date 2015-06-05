@@ -4,9 +4,9 @@
 
 from cache_chain_object_store import CacheChainObjectStore
 from environment import GetAppVersion
+from environment_wrappers import CreatePersistentObjectStore
 from memcache_object_store import MemcacheObjectStore
 from test_object_store import TestObjectStore
-from persistent_object_store import PersistentObjectStore
 
 _unspecified = object()
 
@@ -76,5 +76,6 @@ class ObjectStoreCreator(object):
     if self._store_type is not None:
       chain = (self._store_type(namespace),)
     else:
-      chain = (MemcacheObjectStore(namespace), PersistentObjectStore(namespace))
+      chain = (MemcacheObjectStore(namespace),
+               CreatePersistentObjectStore(namespace))
     return CacheChainObjectStore(chain, start_empty=start_empty)

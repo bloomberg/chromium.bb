@@ -42,7 +42,8 @@ class ContentScriptAPI(object):
     return not (self == o)
 
   def __repr__(self):
-    return '<ContentScriptAPI name=%s, restrictedTo=%s>' % (name, restrictedTo)
+    return ('<ContentScriptAPI name=%s, restrictedTo=%s>' %
+            (self.name, self.restrictedTo))
 
   def __str__(self):
     return repr(self)

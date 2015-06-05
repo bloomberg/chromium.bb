@@ -10,8 +10,7 @@ from chroot_file_system import ChrootFileSystem
 from content_provider import ContentProvider
 import environment
 from extensions_paths import CONTENT_PROVIDERS, LOCAL_DEBUG_DIR
-from future import Future
-from gitiles_file_system import GitilesFileSystem
+from future import All, Future
 from local_file_system import LocalFileSystem
 from third_party.json_schema_compiler.memoize import memoize
 
@@ -44,12 +43,10 @@ class ContentProviders(object):
                object_store_creator,
                compiled_fs_factory,
                host_file_system,
-               github_file_system_provider,
                gcs_file_system_provider):
     self._object_store_creator = object_store_creator
     self._compiled_fs_factory = compiled_fs_factory
     self._host_file_system = host_file_system
-    self._github_file_system_provider = github_file_system_provider
     self._gcs_file_system_provider = gcs_file_system_provider
     self._cache = None
 
@@ -148,16 +145,6 @@ class ContentProviders(object):
       if 'dir' in gcs_config:
         file_system = ChrootFileSystem(file_system, gcs_config['dir'])
 
-    elif 'github' in config:
-      github_config = config['github']
-      if 'owner' not in github_config or 'repo' not in github_config:
-        logging.error('%s: "github" must provide an "owner" and "repo"' % name)
-        return None
-      file_system = self._github_file_system_provider.Create(
-          github_config['owner'], github_config['repo'])
-      if 'dir' in github_config:
-        file_system = ChrootFileSystem(file_system, github_config['dir'])
-
     else:
       logging.error('%s: content provider type not supported' % name)
       return None
@@ -170,10 +157,7 @@ class ContentProviders(object):
                            supports_templates=supports_templates,
                            supports_zip=supports_zip)
 
-  def GetRefreshPaths(self):
-    return self._GetConfig().keys()
-
-  def Refresh(self, path):
+  def Refresh(self):
     def safe(name, action, callback):
       '''Safely runs |callback| for a ContentProvider called |name| by
       swallowing exceptions and turning them into a None return value. It's
@@ -187,11 +171,14 @@ class ContentProviders(object):
                         (action, name, traceback.format_exc()))
         return None
 
-    config = self._GetConfig()[path]
-    provider = self._CreateContentProvider(path, config)
-    future = safe(path,
-                  'initializing',
-                  self._CreateContentProvider(path, config).Refresh)
-    if future is None:
-      return Future(callback=lambda: True)
-    return Future(callback=lambda: safe(path, 'resolving', future.Get))
+    def refresh_provider(path, config):
+      provider = self._CreateContentProvider(path, config)
+      future = safe(path,
+                    'initializing',
+                    self._CreateContentProvider(path, config).Refresh)
+      if future is None:
+        return Future(callback=lambda: True)
+      return Future(callback=lambda: safe(path, 'resolving', future.Get))
+
+    return All(refresh_provider(path, config)
+               for path, config in self._GetConfig().iteritems())

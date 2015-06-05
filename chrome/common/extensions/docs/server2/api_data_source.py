@@ -8,7 +8,7 @@ from data_source import DataSource
 from docs_server_utils import StringIdentity
 from environment import IsPreviewServer
 from file_system import FileNotFoundError
-from future import Future, All
+from future import All, Future
 from jsc_view import CreateJSCView, GetEventByNameFromEvents
 from platform_util import GetPlatforms
 from third_party.json_schema_compiler.model import UnixName
@@ -85,16 +85,14 @@ class APIDataSource(DataSource):
     getter.get = lambda api_name: self._GetSchemaView(platform, api_name).Get()
     return getter
 
-  def GetRefreshPaths(self):
-    tasks = []
-    for platform in GetPlatforms():
-      tasks += ['%s/%s' % (platform, UnixName(api))
-                for api in
-                    self._platform_bundle.GetAPIModels(platform).GetNames()]
-    return tasks
+  def Refresh(self):
+    def get_api_schema(platform, api):
+      return self._GetSchemaView(platform, api)
 
-  def Refresh(self, path):
-    platform, api = path.split('/')
-    logging.info('Refreshing %s/%s' % (platform, api))
-    future = self._GetSchemaView(platform, api)
-    return All([future], except_pass=FileNotFoundError)
+    def get_platform_schemas(platform):
+      return All([get_api_schema(platform, api)
+                 for api in self._platform_bundle.GetAPIModels(platform)
+                    .GetNames()],
+                 except_pass=FileNotFoundError)
+
+    return All([get_platform_schemas(platform) for platform in GetPlatforms()])

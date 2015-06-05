@@ -5,10 +5,10 @@
 from fnmatch import fnmatch
 import logging
 
-from appengine_url_fetcher import AppEngineUrlFetcher
 from caching_rietveld_patcher import CachingRietveldPatcher
 from chained_compiled_file_system import ChainedCompiledFileSystem
 from environment import IsDevServer
+from environment_wrappers import CreateUrlFetcher
 from extensions_paths import CONTENT_PROVIDERS
 from instance_servlet import InstanceServlet
 from render_servlet import RenderServlet
@@ -37,7 +37,7 @@ class _PatchServletDelegate(RenderServlet.Delegate):
 
     rietveld_patcher = CachingRietveldPatcher(
         RietveldPatcher(self._issue,
-                        AppEngineUrlFetcher(url_constants.CODEREVIEW_SERVER)),
+                        CreateUrlFetcher(url_constants.CODEREVIEW_SERVER)),
         object_store_creator)
 
     patched_file_system = PatchedFileSystem(unpatched_file_system,
@@ -62,7 +62,6 @@ class _PatchServletDelegate(RenderServlet.Delegate):
         combined_compiled_fs_factory,
         branch_utility,
         patched_host_file_system_provider,
-        self._delegate.CreateGithubFileSystemProvider(object_store_creator),
         CloudStorageFileSystemProvider(object_store_creator),
         base_path='/_patch/%s/' % self._issue)
 

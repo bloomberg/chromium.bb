@@ -15,8 +15,8 @@ import posixpath
 import sys
 import time
 import unittest
+import update_cache
 
-from appengine_wrappers import SetTaskRunnerForTest
 from branch_utility import BranchUtility
 from chroot_file_system import ChrootFileSystem
 from extensions_paths import (
@@ -86,29 +86,17 @@ class IntegrationTest(unittest.TestCase):
     ConfigureFakeFetchers()
 
   @EnableLogging('info')
-  def testCronAndPublicFiles(self):
-    '''Runs cron then requests every public file. Cron needs to be run first
+  def testUpdateAndPublicFiles(self):
+    '''Runs update then requests every public file. Update needs to be run first
     because the public file requests are offline.
     '''
     if _EXPLICIT_TEST_FILES is not None:
       return
 
-
-    def task_runner(url, commit=None):
-      arguments = { 'commit': commit } if commit else {}
-      Handler(Request.ForTest(url, arguments=arguments)).Get()
-
-    SetTaskRunnerForTest(task_runner)
-
-    print('Running cron...')
+    print('Running update...')
     start_time = time.time()
     try:
-      response = Handler(Request.ForTest('/_cron')).Get()
-      if response:
-        self.assertEqual(200, response.status)
-        self.assertEqual('Success', response.content.ToString())
-      else:
-        self.fail('No response for _cron')
+      update_cache.UpdateCache()
     finally:
       print('Took %s seconds' % (time.time() - start_time))
 

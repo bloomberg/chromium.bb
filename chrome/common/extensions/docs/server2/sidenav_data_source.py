@@ -92,7 +92,7 @@ class SidenavDataSource(DataSource):
           href = href.lstrip('/')
         item['href'] = self._server_instance.base_path + href
 
-  def Refresh(self, path=None):
+  def Refresh(self):
     return self._cache.GetFromFile(
         posixpath.join(JSON_TEMPLATES, 'chrome_sidenav.json'))
 

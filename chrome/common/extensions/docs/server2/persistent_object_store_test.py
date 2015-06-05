@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from persistent_object_store import PersistentObjectStore
+from environment_wrappers import CreatePersistentObjectStore
 import unittest
 
 class PersistentObjectStoreTest(unittest.TestCase):
@@ -13,11 +13,11 @@ class PersistentObjectStoreTest(unittest.TestCase):
   '''
   def testPersistence(self):
     # First object store.
-    object_store = PersistentObjectStore('test')
+    object_store = CreatePersistentObjectStore('test')
     object_store.Set('key', 'value')
     self.assertEqual('value', object_store.Get('key').Get())
     # Other object store should have it too.
-    another_object_store = PersistentObjectStore('test')
+    another_object_store = CreatePersistentObjectStore('test')
     self.assertEqual('value', another_object_store.Get('key').Get())
     # Setting in the other store should set in both.
     mapping = {'key2': 'value2', 'key3': 'value3'}
@@ -31,8 +31,8 @@ class PersistentObjectStoreTest(unittest.TestCase):
     self.assertEqual({}, another_object_store.GetMulti(mapping.keys()).Get())
 
   def testNamespaceIsolation(self):
-    object_store = PersistentObjectStore('test')
-    another_object_store = PersistentObjectStore('another')
+    object_store = CreatePersistentObjectStore('test')
+    another_object_store = CreatePersistentObjectStore('another')
     object_store.Set('key', 'value')
     self.assertEqual(None, another_object_store.Get('key').Get())
 

@@ -4,12 +4,10 @@
 
 import time
 
-from admin_servlets import (DumpRefreshServlet, EnqueueServlet,
-    QueryCommitServlet, ResetCommitServlet)
-from cron_servlet import CronServlet
+from admin_servlets import (QueryCommitServlet, FlushMemcacheServlet,
+                            UpdateCacheServlet)
 from instance_servlet import InstanceServlet
 from patch_servlet import PatchServlet
-from refresh_servlet import RefreshServlet
 from servlet import Servlet, Request, Response
 from test_servlet import TestServlet
 
@@ -18,14 +16,11 @@ _DEFAULT_SERVLET = InstanceServlet.GetConstructor()
 
 
 _SERVLETS = {
-  'cron': CronServlet,
-  'enqueue': EnqueueServlet,
   'patch': PatchServlet,
   'query_commit': QueryCommitServlet,
-  'refresh': RefreshServlet,
-  'reset_commit': ResetCommitServlet,
+  'flush_memcache': FlushMemcacheServlet,
+  'update_cache': UpdateCacheServlet,
   'test': TestServlet,
-  'dump_refresh': DumpRefreshServlet,
 }
 
 

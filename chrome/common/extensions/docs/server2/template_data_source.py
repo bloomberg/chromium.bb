@@ -34,7 +34,7 @@ class TemplateDataSource(DataSource):
       logging.warning(traceback.format_exc())
       return None
 
-  def Refresh(self, path):
+  def Refresh(self):
     futures = []
     for root, _, files in self._file_system.Walk(self._dir):
       futures += [self._template_cache.GetFromFile(

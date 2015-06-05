@@ -93,5 +93,5 @@ class PermissionsDataSource(DataSource):
   def get(self, key):
     return self._GetCachedPermissionsData().get(key)
 
-  def Refresh(self, path):
+  def Refresh(self):
     return self._CreatePermissionsData()

@@ -8,7 +8,7 @@ import posixpath
 from custom_logger import CustomLogger
 from extensions_paths import EXAMPLES
 from file_system_util import CreateURLsFromPaths
-from future import Future
+from future import All, Future
 from render_servlet import RenderServlet
 from special_paths import SITE_VERIFICATION_FILE
 from timer import Timer
@@ -69,10 +69,7 @@ class RenderRefresher(object):
     self._server_instance = server_instance
     self._request = request
 
-  def GetRefreshPaths(self):
-    return _SUPPORTED_TARGETS.keys()
-
-  def Refresh(self, path):
+  def Refresh(self):
     def render(path):
       request = Request(path, self._request.host, self._request.headers)
       delegate = _SingletonRenderServletDelegate(self._server_instance)
@@ -92,10 +89,6 @@ class RenderRefresher(object):
                for name, _ in CreateURLsFromPaths(master_fs, path, prefix)]
       return _RequestEachItem(path, files, render)
 
-    # Only support examples for now.
-    if path not in _SUPPORTED_TARGETS:
-      return Future(callback=lambda: False)
+    return All(request_files_in_dir(dir, prefix=prefix)
+               for dir, prefix in _SUPPORTED_TARGETS.itervalues())
 
-    dir = _SUPPORTED_TARGETS[path][0]
-    prefix = _SUPPORTED_TARGETS[path][1]
-    return request_files_in_dir(dir, prefix=prefix)

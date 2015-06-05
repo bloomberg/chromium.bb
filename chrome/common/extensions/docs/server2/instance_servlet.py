@@ -6,7 +6,6 @@ from branch_utility import BranchUtility
 from commit_tracker import CommitTracker
 from compiled_file_system import CompiledFileSystem
 from environment import IsDevServer, IsReleaseServer
-from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from third_party.json_schema_compiler.memoize import memoize
 from render_servlet import RenderServlet
@@ -47,13 +46,10 @@ class InstanceServletRenderServletDelegate(RenderServlet.Delegate):
         offline=not (IsDevServer() or IsReleaseServer()),
         pinned_commit=commit_tracker.Get('master').Get(),
         cache_only=True)
-    github_file_system_provider = self._delegate.CreateGithubFileSystemProvider(
-        object_store_creator)
     return ServerInstance(object_store_creator,
                           CompiledFileSystem.Factory(object_store_creator),
                           branch_utility,
                           host_file_system_provider,
-                          github_file_system_provider,
                           CloudStorageFileSystemProvider(object_store_creator))
 
 class InstanceServlet(object):

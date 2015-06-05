@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 from caching_file_system import CachingFileSystem
-from gitiles_file_system import GitilesFileSystem
 from local_file_system import LocalFileSystem
+from local_git_file_system import LocalGitFileSystem
 from offline_file_system import OfflineFileSystem
 from third_party.json_schema_compiler.memoize import memoize
 
@@ -35,7 +35,7 @@ class HostFileSystemProvider(object):
     |offline|
       If True all provided file systems will be wrapped in an OfflineFileSystem.
     |constructor_for_test|
-      Provides a custom constructor rather than creating GitilesFileSystems.
+      Provides a custom constructor rather than creating LocalGitFileSystems.
     |cache_only|
       If True, all provided file systems will be cache-only, meaning that cache
       misses will result in errors rather than cache updates.
@@ -81,7 +81,7 @@ class HostFileSystemProvider(object):
     return self._Create(branch)
 
   def _Create(self, branch, commit=None):
-    '''Creates Gitiles file systems (or if in a test, potentially whatever
+    '''Creates local git file systems (or if in a test, potentially whatever
     |self._constructor_for_test specifies). Wraps the resulting file system in
     an Offline file system if the offline flag is set, and finally wraps it in
     a Caching file system.
@@ -89,7 +89,7 @@ class HostFileSystemProvider(object):
     if self._constructor_for_test is not None:
       file_system = self._constructor_for_test(branch=branch, commit=commit)
     else:
-      file_system = GitilesFileSystem.Create(branch=branch, commit=commit)
+      file_system = LocalGitFileSystem.Create(branch=branch, commit=commit)
     if self._offline:
       file_system = OfflineFileSystem(file_system)
     return CachingFileSystem(file_system, self._object_store_creator,

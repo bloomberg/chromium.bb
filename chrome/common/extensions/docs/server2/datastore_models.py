@@ -3,9 +3,13 @@
 # found in the LICENSE file.
 
 import cPickle
+import google.appengine.ext.db as db
+import logging
 import traceback
 
-from appengine_wrappers import db
+
+_MAX_ENTITY_SIZE = 1024*1024
+
 
 # A collection of the data store models used throughout the server.
 # These values are global within datastore.
@@ -28,8 +32,13 @@ class PersistentObjectStoreItem(db.Model):
 
   @classmethod
   def CreateItem(cls, namespace, key, value):
+    pickled_value = cPickle.dumps(value)
+    if len(pickled_value) > _MAX_ENTITY_SIZE:
+      logging.warn('Refusing to create entity greater than 1 MB in size: %s/%s'
+                   % (namespace, key))
+      return None
     return PersistentObjectStoreItem(key=cls.CreateKey(namespace, key),
-                                     pickled_value=cPickle.dumps(value))
+                                     pickled_value=pickled_value)
 
   def GetValue(self):
     return cPickle.loads(self.pickled_value)

@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import logging
+import webapp2
 
-from appengine_wrappers import webapp2
 from handler import Handler
 from servlet import Request
 

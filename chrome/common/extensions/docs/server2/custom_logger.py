@@ -4,7 +4,7 @@
 
 import logging
 
-from appengine_wrappers import logservice
+from environment import IsAppEngine
 
 
 class CustomLogger(object):
@@ -23,4 +23,12 @@ class CustomLogger(object):
     try:
       logfn('%s: %s' % (self._prefix, msg), *args)
     finally:
+      self.flush()
+
+  if IsAppEngine():
+    from google.appengine.api.logservice import logservice
+    def flush(self):
       logservice.flush()
+  else:
+    def flush(self):
+      pass

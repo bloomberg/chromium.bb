@@ -2,11 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-GITILES_BASE = 'https://chromium.googlesource.com'
-GITILES_SRC_ROOT = 'chromium/src/+'
-GITILES_BRANCHES_PATH = 'refs/branch-heads'
-GITILES_OAUTH2_SCOPE = 'https://www.googleapis.com/auth/gerritcodereview'
-
 GITHUB_REPOS = 'https://api.github.com/repos'
 GITHUB_BASE = 'https://github.com/GoogleChrome/chrome-app-samples/tree/master/samples'
 RAW_GITHUB_BASE = ('https://github.com/GoogleChrome/chrome-app-samples/raw/'
