@@ -84,7 +84,7 @@ class GmailMouseScrollPage(KeyDesktopMoveCasesPage):
 
 class GoogleMapsPage(KeyDesktopMoveCasesPage):
 
-  """ Why: productivity, top google properties; Supports drag gesturee """
+  """ Why: productivity, top google properties; Supports drag gestures """
 
   def __init__(self, page_set):
     super(GoogleMapsPage, self).__init__(
