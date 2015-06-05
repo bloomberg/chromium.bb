@@ -44,6 +44,30 @@ public class CustomTab extends ChromeTab {
         }
     }
 
+    private static class CallbackTabObserver extends EmptyTabObserver {
+        private final ChromeBrowserConnection mChromeBrowserConnection;
+        private final long mSessionId;
+
+        public CallbackTabObserver(
+                ChromeBrowserConnection chromeBrowserConnection, long sessionId) {
+            mChromeBrowserConnection = chromeBrowserConnection;
+            mSessionId = sessionId;
+        }
+
+        @Override
+        public void onPageLoadStarted(Tab tab) {
+            // TODO(lizeb): This call gives the *previous* URL for navigations
+            // that don't go through Tab#lodUrl(). Fix TabObserver to deliver
+            // the destination here as well.
+            mChromeBrowserConnection.notifyPageLoadStarted(mSessionId, tab.getUrl());
+        }
+
+        @Override
+        public void onPageLoadFinished(Tab tab) {
+            mChromeBrowserConnection.notifyPageLoadFinished(mSessionId, tab.getUrl());
+        }
+    }
+
     private TabChromeContextMenuItemDelegate
             mContextMenuDelegate = new TabChromeContextMenuItemDelegate() {
                 @Override
@@ -70,6 +94,7 @@ public class CustomTab extends ChromeTab {
         initialize(webContents, activity.getTabContentManager(), false);
         getView().requestFocus();
         addObserver(new LoadUrlTabObserver(browserConnection, sessionId));
+        addObserver(new CallbackTabObserver(browserConnection, sessionId));
     }
 
     @Override

@@ -11,11 +11,20 @@ import android.os.Bundle;
  */
 interface IBrowserConnectionCallback {
     /**
-     * To be called when the user triggers an external navigation.
+     * To be called when a page navigation starts.
      *
      * @param sessionId As returned by {@link IBrowserConnectionService#newSession}.
      * @param url URL the user has navigated to.
      * @param extras Reserved for future use.
      */
-    void onUserNavigation(long sessionId, String url, in Bundle extras);
+    oneway void onUserNavigationStarted(long sessionId, String url, in Bundle extras);
+
+    /**
+     * To be called when a page navigation finishes.
+     *
+     * @param sessionId As returned by {@link IBrowserConnectionService#newSession}.
+     * @param url URL the user has navigated to.
+     * @param extras Reserved for future use.
+     */
+    oneway void onUserNavigationFinished(long sessionId, String url, in Bundle extras);
 }

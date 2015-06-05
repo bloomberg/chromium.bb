@@ -266,24 +266,51 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         return null;
     }
 
+    private IBrowserConnectionCallback getCallbackForSessionIdAlreadyLocked(long sessionId) {
+        SessionParams sessionParams = mSessionParams.get(sessionId);
+        if (sessionParams == null) return null;
+        return mUidToCallback.get(sessionParams.mUid);
+    }
+
     /**
-     * Calls the onUserNavigation callback for a given sessionId.
+     * Notifies the application that a page load has started.
      *
-     * This is non-blocking.
+     * Delivers the {@link IBrowserConnectionCallback#onUserNavigationStarted}
+     * callback to the aplication.
      *
-     * @param sessionId Session ID associated with the callback
-     * @param url URL the user has navigated to.
-     * @param bundle Reserved for future use.
-     * @return false if there is no client to deliver the callback to.
+     * @param sessionId The session ID.
+     * @param url The URL the tab is navigating to.
+     * @return true for success.
      */
-    boolean deliverOnUserNavigationCallback(long sessionId, String url, Bundle extras) {
+    boolean notifyPageLoadStarted(long sessionId, String url) {
         synchronized (mLock) {
-            SessionParams sessionParams = mSessionParams.get(sessionId);
-            if (sessionParams == null) return false;
-            IBrowserConnectionCallback cb = mUidToCallback.get(sessionParams.mUid);
+            IBrowserConnectionCallback cb = getCallbackForSessionIdAlreadyLocked(sessionId);
             if (cb == null) return false;
             try {
-                cb.onUserNavigation(sessionId, url, extras);
+                cb.onUserNavigationStarted(sessionId, url, null);
+            } catch (RemoteException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Notifies the application that a page load has finished.
+     *
+     * Delivers the {@link IBrowserConnectionCallback#onUserNavigationFinished}
+     * callback to the aplication.
+     *
+     * @param sessionId The session ID.
+     * @param url The URL the tab has navigated to.
+     * @return true for success.
+     */
+    boolean notifyPageLoadFinished(long sessionId, String url) {
+        synchronized (mLock) {
+            IBrowserConnectionCallback cb = getCallbackForSessionIdAlreadyLocked(sessionId);
+            if (cb == null) return false;
+            try {
+                cb.onUserNavigationFinished(sessionId, url, null);
             } catch (RemoteException e) {
                 return false;
             }
