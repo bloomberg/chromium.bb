@@ -44,8 +44,9 @@ setup_gitgit
        --data-urlencode xsrf_token="$(print_xsrf_token)" \
        $URL/edit
 
+  API=$(echo $URL | sed -e 's/\([0-9]\+\)$/api\/\1/')
   test_expect_success "Base URL contains branch name" \
-      "curl -s $($GIT_CL_STATUS --field=url) | grep 'URL:[[:space:]]*[^<]' | grep -q '@master'"
+      "curl -s $API | python -mjson.tool | grep base_url | grep -q '@master'"
 
   test_expect_success "git-cl land ok" \
     "$GIT_CL land -f --no-oauth2"
