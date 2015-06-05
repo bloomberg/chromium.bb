@@ -36,7 +36,6 @@ class MEDIA_EXPORT DecoderStream {
   typedef DecoderStreamTraits<StreamType> StreamTraits;
   typedef typename StreamTraits::DecoderType Decoder;
   typedef typename StreamTraits::OutputType Output;
-  typedef typename StreamTraits::StreamInitCB InitCB;
   typedef typename Decoder::Status DecoderStatus;
 
   enum Status {
@@ -45,6 +44,9 @@ class MEDIA_EXPORT DecoderStream {
     DEMUXER_READ_ABORTED,  // Demuxer returned aborted read.
     DECODE_ERROR,  // Decoder returned decode error.
   };
+
+  // Indicates completion of a DecoderStream initialization.
+  typedef base::Callback<void(bool success)> InitCB;
 
   // Indicates completion of a DecoderStream read.
   typedef base::Callback<void(Status, const scoped_refptr<Output>&)> ReadCB;
@@ -155,7 +157,7 @@ class MEDIA_EXPORT DecoderStream {
   void ReinitializeDecoder();
 
   // Callback for Decoder reinitialization.
-  void OnDecoderReinitialized(PipelineStatus status);
+  void OnDecoderReinitialized(bool success);
 
   void CompleteDecoderReinitialization(bool success);
 

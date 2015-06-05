@@ -161,14 +161,13 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
   }
 
   void InitializeDecoder(const AudioDecoderConfig& config) {
-    InitializeDecoderWithStatus(config, PIPELINE_OK);
+    InitializeDecoderWithResult(config, true);
   }
 
-  void InitializeDecoderWithStatus(const AudioDecoderConfig& config,
-                                   PipelineStatus status) {
+  void InitializeDecoderWithResult(const AudioDecoderConfig& config,
+                                   bool success) {
     decoder_->Initialize(
-        config,
-        NewExpectedStatusCB(status),
+        config, NewExpectedBoolCB(success),
         base::Bind(&AudioDecoderTest::OnDecoderOutput, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
@@ -403,7 +402,7 @@ TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithBadCodecDelay) {
       base::TimeDelta::FromMilliseconds(80),
       // Use a different codec delay than in the extradata.
       100);
-  InitializeDecoderWithStatus(decoder_config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeDecoderWithResult(decoder_config, false);
 }
 
 TEST_P(FFmpegAudioDecoderBehavioralTest, InitializeWithBadConfig) {
@@ -415,7 +414,7 @@ TEST_P(FFmpegAudioDecoderBehavioralTest, InitializeWithBadConfig) {
                                           NULL,
                                           0,
                                           false);
-  InitializeDecoderWithStatus(decoder_config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeDecoderWithResult(decoder_config, false);
 }
 
 const DecodedBufferExpectations kSfxOpusExpectations[] = {

@@ -119,12 +119,11 @@ void DecoderSelector<StreamType>::SelectDecoder(
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderSelector<StreamType>::DecryptingDecoderInitDone(
-    PipelineStatus status) {
+void DecoderSelector<StreamType>::DecryptingDecoderInitDone(bool success) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (status == PIPELINE_OK) {
+  if (success) {
     base::ResetAndReturn(&select_decoder_cb_)
         .Run(decoder_.Pass(), scoped_ptr<DecryptingDemuxerStream>());
     return;
@@ -179,11 +178,11 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderSelector<StreamType>::DecoderInitDone(PipelineStatus status) {
+void DecoderSelector<StreamType>::DecoderInitDone(bool success) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (status != PIPELINE_OK) {
+  if (!success) {
     decoder_.reset();
     InitializeDecoder();
     return;

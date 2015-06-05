@@ -48,7 +48,7 @@ std::string DecryptingAudioDecoder::GetDisplayName() const {
 }
 
 void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
-                                        const PipelineStatusCB& status_cb,
+                                        const InitCB& init_cb,
                                         const OutputCB& output_cb) {
   DVLOG(2) << "Initialize()";
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -56,18 +56,18 @@ void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
   DCHECK(reset_cb_.is_null());
 
   weak_this_ = weak_factory_.GetWeakPtr();
-  init_cb_ = BindToCurrentLoop(status_cb);
+  init_cb_ = BindToCurrentLoop(init_cb);
   output_cb_ = BindToCurrentLoop(output_cb);
 
   if (!config.IsValidConfig()) {
     DLOG(ERROR) << "Invalid audio stream config.";
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_DECODE);
+    base::ResetAndReturn(&init_cb_).Run(false);
     return;
   }
 
   // DecryptingAudioDecoder only accepts potentially encrypted stream.
   if (!config.is_encrypted()) {
-    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+    base::ResetAndReturn(&init_cb_).Run(false);
     return;
   }
 
@@ -162,7 +162,7 @@ DecryptingAudioDecoder::~DecryptingAudioDecoder() {
     base::ResetAndReturn(&set_decryptor_ready_cb_).Run(DecryptorReadyCB());
   pending_buffer_to_decode_ = NULL;
   if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+    base::ResetAndReturn(&init_cb_).Run(false);
   if (!decode_cb_.is_null())
     base::ResetAndReturn(&decode_cb_).Run(kAborted);
   if (!reset_cb_.is_null())
@@ -181,7 +181,7 @@ void DecryptingAudioDecoder::SetDecryptor(
   set_decryptor_ready_cb_.Reset();
 
   if (!decryptor) {
-    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+    base::ResetAndReturn(&init_cb_).Run(false);
     state_ = kError;
     decryptor_attached_cb.Run(false);
     return;
@@ -210,7 +210,7 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
   DCHECK(decode_cb_.is_null());  // No Decode() before initialization finished.
 
   if (!success) {
-    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+    base::ResetAndReturn(&init_cb_).Run(false);
     decryptor_ = NULL;
     state_ = kError;
     return;
@@ -226,7 +226,7 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
           base::Bind(&DecryptingAudioDecoder::OnKeyAdded, weak_this_)));
 
   state_ = kIdle;
-  base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
+  base::ResetAndReturn(&init_cb_).Run(true);
 }
 
 void DecryptingAudioDecoder::DecodePendingBuffer() {

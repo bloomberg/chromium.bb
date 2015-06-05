@@ -209,15 +209,17 @@ std::string VpxVideoDecoder::GetDisplayName() const {
 
 void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                  bool low_delay,
-                                 const PipelineStatusCB& status_cb,
+                                 const InitCB& init_cb,
                                  const OutputCB& output_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(config.IsValidConfig());
   DCHECK(!config.is_encrypted());
   DCHECK(decode_cb_.is_null());
 
+  InitCB bound_init_cb = BindToCurrentLoop(init_cb);
+
   if (!ConfigureDecoder(config)) {
-    status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
+    bound_init_cb.Run(false);
     return;
   }
 
@@ -225,7 +227,7 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
   config_ = config;
   state_ = kNormal;
   output_cb_ = BindToCurrentLoop(output_cb);
-  status_cb.Run(PIPELINE_OK);
+  bound_init_cb.Run(true);
 }
 
 static vpx_codec_ctx* InitializeVpxContext(vpx_codec_ctx* context,

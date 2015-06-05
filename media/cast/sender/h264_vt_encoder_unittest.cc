@@ -65,8 +65,8 @@ namespace cast {
 // See comment in end2end_unittest.cc for details on this value.
 const double kVideoAcceptedPSNR = 38.0;
 
-void SavePipelineStatus(PipelineStatus* out_status, PipelineStatus in_status) {
-  *out_status = in_status;
+void SaveDecoderInitResult(bool* out_result, bool in_result) {
+  *out_result = in_result;
 }
 
 void SaveOperationalStatus(OperationalStatus* out_status,
@@ -132,13 +132,13 @@ class EndToEndFrameChecker
   explicit EndToEndFrameChecker(const VideoDecoderConfig& config)
       : decoder_(base::MessageLoop::current()->task_runner()),
         count_frames_checked_(0) {
-    PipelineStatus pipeline_status;
+    bool decoder_init_result;
     decoder_.Initialize(
-        config, false, base::Bind(&SavePipelineStatus, &pipeline_status),
+        config, false, base::Bind(&SaveDecoderInitResult, &decoder_init_result),
         base::Bind(&EndToEndFrameChecker::CompareFrameWithExpected,
                    base::Unretained(this)));
     base::MessageLoop::current()->RunUntilIdle();
-    EXPECT_EQ(PIPELINE_OK, pipeline_status);
+    EXPECT_TRUE(decoder_init_result);
   }
 
   void PushExpectation(const scoped_refptr<VideoFrame>& frame) {
