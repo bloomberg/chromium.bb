@@ -392,6 +392,8 @@ base::string16 PlatformNotificationServiceImpl::DisplayNameForOrigin(
 }
 
 // static
+// TODO(palmer): It might be good to replace this with a call to
+// |FormatUrlForSecurityDisplay|. crbug.com/496965
 base::string16 PlatformNotificationServiceImpl::WebOriginDisplayName(
     const GURL& origin,
     const std::string& languages) {

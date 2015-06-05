@@ -653,8 +653,9 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
     return;
 
   // WKWebView will not load unauthenticated content.
-  item->GetSSL().security_style = item->GetURL().SchemeIs(url::kHttpsScheme) ?
-      web::SECURITY_STYLE_AUTHENTICATED : web::SECURITY_STYLE_UNAUTHENTICATED;
+  item->GetSSL().security_style = item->GetURL().SchemeIsCryptographic()
+                                      ? web::SECURITY_STYLE_AUTHENTICATED
+                                      : web::SECURITY_STYLE_UNAUTHENTICATED;
   int contentStatus = [_wkWebView hasOnlySecureContent] ?
       web::SSLStatus::NORMAL_CONTENT :
       web::SSLStatus::DISPLAYED_INSECURE_CONTENT;

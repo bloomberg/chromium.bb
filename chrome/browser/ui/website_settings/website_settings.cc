@@ -200,6 +200,14 @@ void WebsiteSettings::RecordWebsiteSettingsAction(
 
   // Use a separate histogram to record actions if they are done on a page with
   // an HTTPS URL. Note that this *disregards* security status.
+  //
+
+  // TODO(palmer): Consider adding a new histogram for
+  // GURL::SchemeIsCryptographic. (We don't want to replace this call with a
+  // call to that function because we don't want to change the meanings of
+  // existing metrics.) This would inform the decision to mark non-secure
+  // origins as Dubious or Non-Secure; the overall bug for that is
+  // crbug.com/454579.
   if (site_url_.SchemeIs(url::kHttpsScheme)) {
     UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action.HttpsUrl",
                               action,

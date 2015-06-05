@@ -342,7 +342,7 @@ void URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread(
                                 net::URLRequestStatus::FAILED,
                                 net::ERR_CONNECTION_TIMED_OUT));
     } else if (end_job_operation == FAIL_JOBS_WITH_CERT_ERROR) {
-      ASSERT_TRUE(job->request()->url().SchemeIs(url::kHttpsScheme));
+      DCHECK(job->request()->url().SchemeIsCryptographic());
       net::SSLInfo info;
       info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
       info.cert = new net::X509Certificate(

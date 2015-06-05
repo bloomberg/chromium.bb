@@ -324,8 +324,7 @@ bool DataReductionProxyConfig::AreDataReductionProxiesBypassed(
     return AreProxiesBypassed(
         request.context()->proxy_service()->proxy_retry_info(),
         data_reduction_proxy_config.proxy_rules(),
-        request.url().SchemeIs(url::kHttpsScheme),
-        min_retry_delay);
+        request.url().SchemeIsCryptographic(), min_retry_delay);
   }
 
   return false;

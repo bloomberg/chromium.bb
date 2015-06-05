@@ -286,9 +286,10 @@ bool BaseSearchProvider::ZeroSuggestEnabled(
   if (!OmniboxFieldTrial::InZeroSuggestFieldTrial())
     return false;
 
-  // Make sure we are sending the suggest request through HTTPS to prevent
-  // exposing the current page URL or personalized results without encryption.
-  if (!suggest_url.SchemeIs(url::kHttpsScheme))
+  // Make sure we are sending the suggest request through a cryptographically
+  // secure channel to prevent exposing the current page URL or personalized
+  // results without encryption.
+  if (!suggest_url.SchemeIsCryptographic())
     return false;
 
   // Don't show zero suggest on the NTP.
