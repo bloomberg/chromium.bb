@@ -1852,7 +1852,8 @@ crbug.com/470549 inspector/tracing/worker-events.html [ Pass Crash Timeout ]
 
 crbug.com/471093 inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ Pass Timeout ]
 
-crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Timeout ]
+#crbug.com/471381 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Timeout ]
+crbug.com/497252 inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Pass Crash Timeout ]
 
 crbug.com/472904 virtual/deferred/inspector/tracing/worker-events.html [ Pass Crash ]
 
