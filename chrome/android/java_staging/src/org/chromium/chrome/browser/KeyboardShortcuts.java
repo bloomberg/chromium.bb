@@ -9,7 +9,7 @@ import android.view.KeyEvent;
 import com.google.android.apps.chrome.R;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -138,7 +138,7 @@ public class KeyboardShortcuts {
                 if (currentTab != null && isCurrentTabVisible) {
                     currentTab.loadUrl(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
                 } else {
-                    ChromeTabCreator tabCreator = activity.getCurrentTabCreator();
+                    TabCreator tabCreator = activity.getCurrentTabCreator();
                     if (tabCreator != null) {
                         tabCreator.launchUrl(url, TabLaunchType.FROM_KEYBOARD);
                     }

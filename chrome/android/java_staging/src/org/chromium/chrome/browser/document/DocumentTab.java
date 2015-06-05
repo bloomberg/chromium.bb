@@ -244,6 +244,8 @@ public class DocumentTab extends ChromeTab {
         @Override
         public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
                 String frameName, String targetUrl, WebContents newWebContents) {
+            // TODO(dfalcantara): Replace with TabObserver, combine with FullScreenActivityTab's
+            //                    WebContentsDelegateAndroidImpl.
             super.webContentsCreated(sourceWebContents, openerRenderFrameId, frameName,
                     targetUrl, newWebContents);
             long nativeNewWebContents =
@@ -255,6 +257,7 @@ public class DocumentTab extends ChromeTab {
         @Override
         public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
                 int disposition, Rect initialPosition, boolean userGesture) {
+            // TODO(dfalcantara): Set TabCreators on DocumentActivity, replace with super method.
             if (isClosing()) return false;
             long nativeWebContents =
                     ContentViewUtil.getNativeWebContentsFromWebContents(webContents);

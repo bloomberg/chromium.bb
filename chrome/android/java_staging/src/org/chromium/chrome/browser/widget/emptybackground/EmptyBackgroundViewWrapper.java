@@ -14,9 +14,9 @@ import com.google.android.apps.chrome.R;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -31,7 +31,7 @@ import java.util.List;
 public class EmptyBackgroundViewWrapper {
     private final Activity mActivity;
     private final TabModelSelector mTabModelSelector;
-    private final ChromeTabCreator mTabCreator;
+    private final TabCreator mTabCreator;
     private final TabModelObserver mTabModelObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final OverviewModeBehavior mOverviewModeBehavior;
@@ -43,15 +43,14 @@ public class EmptyBackgroundViewWrapper {
      * Creates a {@link EmptyBackgroundViewWrapper} instance that will lazily inflate.
      * @param selector             A {@link TabModelSelector} that will be used to query system
      *                             state.
-     * @param tabCreator           A {@link ChromeTabCreator} that will be used to open the New Tab
-     *                             Page.
+     * @param tabCreator           A {@link TabCreator} that will be used to open the New Tab Page.
      * @param activity             An {@link Activity} that represents a parent of the
      *                             {@link android.view.ViewStub}.
      * @param menuHandler          A {@link AppMenuHandler} to handle menu touch events.
      * @param overviewModeBehavior A {@link OverviewModeBehavior} instance to detect when the app
      *                             is in overview mode.
      */
-    public EmptyBackgroundViewWrapper(TabModelSelector selector, ChromeTabCreator tabCreator,
+    public EmptyBackgroundViewWrapper(TabModelSelector selector, TabCreator tabCreator,
             Activity activity, AppMenuHandler menuHandler,
             OverviewModeBehavior overviewModeBehavior) {
         mActivity = activity;

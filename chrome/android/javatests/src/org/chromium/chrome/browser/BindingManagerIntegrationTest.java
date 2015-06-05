@@ -12,7 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -117,7 +117,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
             @Override
             public void run() {
                 // Foreground tab.
-                ChromeTabCreator tabCreator = getActivity().getCurrentTabCreator();
+                TabCreator tabCreator = getActivity().getCurrentTabCreator();
                 tabs[0] = tabCreator.createNewTab(
                         new LoadUrlParams(TestHttpServerClient.getUrl(FILE_PATH)),
                                 TabLaunchType.FROM_KEYBOARD, null);
@@ -189,7 +189,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
             @Override
             public void run() {
                 // Foreground tab.
-                ChromeTabCreator tabCreator = getActivity().getCurrentTabCreator();
+                TabCreator tabCreator = getActivity().getCurrentTabCreator();
                 tabs[0] = tabCreator.createNewTab(
                         new LoadUrlParams(TestHttpServerClient.getUrl(FILE_PATH)),
                                 TabLaunchType.FROM_KEYBOARD, null);
@@ -301,7 +301,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                 new Callable<Tab>() {
                     @Override
                     public Tab call() throws Exception {
-                        ChromeTabCreator tabCreator = getActivity().getCurrentTabCreator();
+                        TabCreator tabCreator = getActivity().getCurrentTabCreator();
                         return tabCreator.createNewTab(
                                 new LoadUrlParams(TestHttpServerClient.getUrl(FILE_PATH)),
                                         TabLaunchType.FROM_KEYBOARD, null);
@@ -373,7 +373,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                 new Callable<Tab>() {
                     @Override
                     public Tab call() {
-                        ChromeTabCreator tabCreator = getActivity().getCurrentTabCreator();
+                        TabCreator tabCreator = getActivity().getCurrentTabCreator();
                         return tabCreator.createNewTab(
                                 new LoadUrlParams(TestHttpServerClient.getUrl(FILE_PATH)),
                                         TabLaunchType.FROM_KEYBOARD, null);
@@ -406,7 +406,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                 new Callable<Tab>() {
                     @Override
                     public Tab call() {
-                        ChromeTabCreator tabCreator = getActivity().getCurrentTabCreator();
+                        TabCreator tabCreator = getActivity().getCurrentTabCreator();
                         Tab tab = tabCreator.createNewTab(
                                 new LoadUrlParams(TestHttpServerClient.getUrl(FILE_PATH)),
                                         TabLaunchType.FROM_LONGPRESS_BACKGROUND, null);

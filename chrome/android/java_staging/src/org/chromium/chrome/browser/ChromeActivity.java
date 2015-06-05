@@ -96,8 +96,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
 
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
-    private ChromeTabCreator mRegularTabCreator;
-    private ChromeTabCreator mIncognitoTabCreator;
+    private TabCreatorManager.TabCreator mRegularTabCreator;
+    private TabCreatorManager.TabCreator mIncognitoTabCreator;
     private TabContentManager mTabContentManager;
     private UmaSessionStats mUmaSessionStats;
     private ContextReporter mContextReporter;
@@ -176,7 +176,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
     }
 
     @Override
-    public ChromeTabCreator getTabCreator(boolean incognito) {
+    public TabCreatorManager.TabCreator getTabCreator(boolean incognito) {
         return incognito ? mIncognitoTabCreator : mRegularTabCreator;
     }
 
@@ -184,8 +184,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
      * Sets the {@link ChromeTabCreator}s owned by this {@link ChromeActivity}.
      * @param regularTabCreator A {@link ChromeTabCreator} instance.
      */
-    public void setTabCreators(ChromeTabCreator regularTabCreator,
-            ChromeTabCreator incognitoTabCreator) {
+    public void setTabCreators(TabCreatorManager.TabCreator regularTabCreator,
+            TabCreatorManager.TabCreator incognitoTabCreator) {
         mRegularTabCreator = regularTabCreator;
         mIncognitoTabCreator = incognitoTabCreator;
     }
@@ -194,7 +194,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity impleme
      * Convenience method that returns a tab creator for the currently selected {@link TabModel}.
      * @return A tab creator for the currently selected {@link TabModel}.
      */
-    public ChromeTabCreator getCurrentTabCreator() {
+    public TabCreatorManager.TabCreator getCurrentTabCreator() {
         return getTabCreator(getTabModelSelector().isIncognitoSelected());
     }
 

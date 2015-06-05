@@ -55,7 +55,7 @@ import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.snackbar.LoFiBarPopupController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
-import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
@@ -559,7 +559,7 @@ public abstract class CompositorChromeActivity extends ChromeActivity
         Tab currentTab = getActivityTab();
         if (currentTab == null) return false;
 
-        ChromeTabCreator tabCreator = getTabCreator(currentTab.isIncognito());
+        TabCreator tabCreator = getTabCreator(currentTab.isIncognito());
         if (tabCreator == null) return false;
 
         tabCreator.createTabWithWebContents(searchContentViewCore.getWebContents(),

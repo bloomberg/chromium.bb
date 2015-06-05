@@ -146,13 +146,7 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
         }
     }
 
-    /**
-     * Creates a tab around the native web contents pointer.
-     * @param webContents The web contents to create a tab around.
-     * @param parentId    The id of the parent tab.
-     * @param type        The TabLaunchType describing how this tab was created.
-     * @return            The created tab.
-     */
+    @Override
     public ChromeTab createTabWithWebContents(WebContents webContents, int parentId,
             TabLaunchType type) {
         TabModel model = mTabModel;
@@ -178,24 +172,14 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
     public Tab launchNTP() {
         try {
             TraceEvent.begin("ChromeTabCreator.launchNTP");
-            ChromeTab tab = launchUrl(UrlConstants.NTP_URL,
-                    TabModel.TabLaunchType.FROM_MENU_OR_OVERVIEW);
-            return tab;
+            return launchUrl(UrlConstants.NTP_URL, TabModel.TabLaunchType.FROM_MENU_OR_OVERVIEW);
         } finally {
             TraceEvent.end("ChromeTabCreator.launchNTP");
         }
     }
 
-    /**
-     * Creates a new tab and loads the specified URL in it. This is a convenience method for
-     * {@link #createNewTab} with the default {@link LoadUrlParams} and no parent tab.
-     *
-     * @param url the URL to open.
-     * @param type the type of action that triggered that launch. Determines how the tab is opened
-     *             (for example, in the foreground or background).
-     * @return the created tab.
-     */
-    public ChromeTab launchUrl(String url, TabModel.TabLaunchType type) {
+    @Override
+    public Tab launchUrl(String url, TabModel.TabLaunchType type) {
         return launchUrl(url, type, null, 0);
     }
 
@@ -210,7 +194,7 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
      * @param intentTimestamp the time the intent was received.
      * @return the created tab.
      */
-    public ChromeTab launchUrl(String url, TabModel.TabLaunchType type, Intent intent,
+    public Tab launchUrl(String url, TabModel.TabLaunchType type, Intent intent,
             long intentTimestamp) {
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setIntentReceivedTimestamp(intentTimestamp);
@@ -231,7 +215,7 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
      * @param intentTimestamp the time the intent was received.
      * @return the tab the URL was opened in, could be a new tab or a reused one.
      */
-    public ChromeTab launchUrlFromExternalApp(String url, String referer, String headers,
+    public Tab launchUrlFromExternalApp(String url, String referer, String headers,
             String appId, boolean forceNewTab, Intent intent, long intentTimestamp) {
         assert !mIncognito;
         boolean isLaunchedFromChrome = TextUtils.equals(appId, mActivity.getPackageName());
@@ -271,7 +255,7 @@ public class ChromeTabCreator implements TabCreatorManager.TabCreator {
         }
 
         // No tab for that app, we'll have to create a new one.
-        ChromeTab tab = launchUrl(url, TabLaunchType.FROM_EXTERNAL_APP, intent, intentTimestamp);
+        Tab tab = launchUrl(url, TabLaunchType.FROM_EXTERNAL_APP, intent, intentTimestamp);
         tab.setAppAssociatedWith(appId);
         return tab;
     }

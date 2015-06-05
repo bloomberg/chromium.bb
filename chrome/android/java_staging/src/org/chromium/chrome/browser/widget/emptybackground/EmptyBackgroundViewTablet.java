@@ -19,7 +19,7 @@ import com.google.android.apps.chrome.R;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
-import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.incognitotoggle.IncognitoToggleButtonTablet;
 import org.chromium.ui.UiUtils;
@@ -32,7 +32,7 @@ public class EmptyBackgroundViewTablet extends FrameLayout {
     private static final int ANIMATE_DURATION_MS = 200;
 
     private TabModelSelector mTabModelSelector;
-    private ChromeTabCreator mTabCreator;
+    private TabCreator mTabCreator;
 
     private Animator mCurrentTransitionAnimation;
 
@@ -80,10 +80,10 @@ public class EmptyBackgroundViewTablet extends FrameLayout {
     }
 
     /**
-     * Sets the {@link ChromeTabCreator} that will be used to open the New Tab Page.
-     * @param tabCreator A {@link ChromeTabCreator} to open the New Tab Page.
+     * Sets the {@link TabCreator} that will be used to open the New Tab Page.
+     * @param tabCreator A {@link TabCreator} to open the New Tab Page.
      */
-    public void setTabCreator(ChromeTabCreator tabCreator) {
+    public void setTabCreator(TabCreator tabCreator) {
         mTabCreator = tabCreator;
     }
 

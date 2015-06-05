@@ -74,7 +74,9 @@ import org.chromium.chrome.browser.signin.SigninPromoScreen;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarPopupController;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.ChromeTab;
+import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -341,6 +343,20 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
         } finally {
             TraceEvent.end("ChromeTabbedActivity.onNewIntentWithNative");
         }
+    }
+
+    @Override
+    public ChromeTabCreator getTabCreator(boolean incognito) {
+        TabCreator tabCreator = super.getTabCreator(incognito);
+        assert tabCreator instanceof ChromeTabCreator;
+        return (ChromeTabCreator) tabCreator;
+    }
+
+    @Override
+    public ChromeTabCreator getCurrentTabCreator() {
+        TabCreator tabCreator = super.getCurrentTabCreator();
+        assert tabCreator instanceof ChromeTabCreator;
+        return (ChromeTabCreator) tabCreator;
     }
 
     private void handleDebugIntent(Intent intent) {

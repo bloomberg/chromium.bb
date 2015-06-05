@@ -8,7 +8,10 @@ import org.chromium.components.web_contents_delegate_android.WebContentsDelegate
 import org.chromium.content_public.browser.WebContents;
 
 /**
- * Stubs out calls to the WebContentsDelegateAndroid.
+ * Stubs out calls to the WebContentsDelegateAndroid.  Attaching a WebContentsDelegateAndroid to a
+ * newly created WebContents signals to Chrome that it was created properly, which is needed in
+ * situations where Chrome on Android needs to create the Activity for the WebContents
+ * asynchronously.
  */
 public class DocumentWebContentsDelegate extends WebContentsDelegateAndroid {
     /**

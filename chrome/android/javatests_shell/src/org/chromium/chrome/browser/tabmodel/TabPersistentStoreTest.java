@@ -12,10 +12,13 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 
@@ -46,6 +49,12 @@ public class TabPersistentStoreTest extends ChromeShellTestBase {
         public int idOfFirstCreatedTab = Tab.INVALID_TAB_ID;
 
         @Override
+        public Tab createNewTab(
+                LoadUrlParams loadUrlParams, TabModel.TabLaunchType type, Tab parent) {
+            return null;
+        }
+
+        @Override
         public void createFrozenTab(TabState state, int id, int index) {
             if (created.size() == 0) idOfFirstCreatedTab = id;
             created.put(id, state);
@@ -53,7 +62,18 @@ public class TabPersistentStoreTest extends ChromeShellTestBase {
         }
 
         @Override
+        public Tab createTabWithWebContents(
+                WebContents webContents, int parentId, TabLaunchType type) {
+            return null;
+        }
+
+        @Override
         public Tab launchNTP() {
+            return null;
+        }
+
+        @Override
+        public Tab launchUrl(String url, TabModel.TabLaunchType type) {
             return null;
         }
     }

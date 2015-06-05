@@ -14,6 +14,7 @@ import org.chromium.content_public.browser.WebContents;
 
 /**
  * Provides Tabs to a DocumentTabModel.
+ * TODO(dfalcantara): Make this a TabCreatorManager.TabCreator subclass.
  */
 public interface TabDelegate {
     /**

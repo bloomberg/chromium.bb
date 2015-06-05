@@ -52,6 +52,9 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
     private CloseAllTabsDelegate mCloseAllTabsDelegate;
 
+    private ChromeTabCreator mRegularTabCreator;
+    private ChromeTabCreator mIncognitoTabCreator;
+
     private static class TabModelImplCreator implements OffTheRecordTabModelDelegate {
         private final ChromeActivity mActivity;
         private final TabModelSelectorUma mUma;
@@ -124,11 +127,11 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         mTabSaver = new TabPersistentStore(this, selectorIndex, mActivity, mActivity,
                 persistentStoreObserver);
         mOrderController = new TabModelOrderController(this);
-        ChromeTabCreator regularTabCreator = new ChromeTabCreator(mActivity, windowAndroid,
-                mOrderController, mTabSaver, false);
-        ChromeTabCreator incognitoTabCreator = new ChromeTabCreator(mActivity, windowAndroid,
-                mOrderController, mTabSaver, true);
-        mActivity.setTabCreators(regularTabCreator, incognitoTabCreator);
+        mRegularTabCreator = new ChromeTabCreator(
+                mActivity, windowAndroid, mOrderController, mTabSaver, false);
+        mIncognitoTabCreator = new ChromeTabCreator(
+                mActivity, windowAndroid, mOrderController, mTabSaver, true);
+        mActivity.setTabCreators(mRegularTabCreator, mIncognitoTabCreator);
     }
 
     @Override
@@ -182,8 +185,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         TabModel incognitoModel = new OffTheRecordTabModel(new TabModelImplCreator(
                 mActivity, mUma, mOrderController, mTabContentManager, mTabSaver, this));
         initialize(isIncognitoSelected(), normalModel, incognitoModel);
-        mActivity.getTabCreator(false).setTabModel(normalModel, mTabContentManager);
-        mActivity.getTabCreator(true).setTabModel(incognitoModel, mTabContentManager);
+        mRegularTabCreator.setTabModel(normalModel, mTabContentManager);
+        mIncognitoTabCreator.setTabModel(incognitoModel, mTabContentManager);
 
         mTabSaver.setTabContentManager(tabContentProvider);
 
