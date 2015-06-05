@@ -83,6 +83,16 @@ public class CronetUrlRequestContext extends UrlRequestContext  {
     }
 
     @Override
+    public UrlRequest createRequest(String url, UrlRequestListener listener,
+                                    Executor executor, int priority) {
+        synchronized (mLock) {
+            checkHaveAdapter();
+            return new CronetUrlRequest(this, mUrlRequestContextAdapter, url,
+                    priority, listener, executor);
+        }
+    }
+
+    @Override
     public boolean isEnabled() {
         return Build.VERSION.SDK_INT >= 14;
     }

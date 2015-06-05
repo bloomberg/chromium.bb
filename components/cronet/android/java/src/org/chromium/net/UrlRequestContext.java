@@ -20,12 +20,10 @@ public abstract class UrlRequestContext {
             "org.chromium.net.CronetUrlRequestContext";
 
     /**
-     * Creates an UrlRequest object. All UrlRequest functions must
-     * be called on the Executor's thread, and all callbacks will be called
-     * on the Executor's thread as well. Executor must not run tasks on the
+     * Creates a {@link UrlRequest} object. All callbacks will
+     * be called on the Executor's thread. Executor must not run tasks on the
      * current thread to prevent network jank and exception during shutdown.
      *
-     * createRequest itself may be called on any thread.
      * @param url URL for the request.
      * @param listener Callback interface that gets called on different events.
      * @param executor Executor on which all callbacks will be called.
@@ -33,6 +31,21 @@ public abstract class UrlRequestContext {
      */
     public abstract UrlRequest createRequest(String url,
             UrlRequestListener listener, Executor executor);
+
+    /**
+     * Creates a {@link UrlRequest} object. All callbacks will
+     * be called on the Executor's thread. Executor must not run tasks on the
+     * current thread to prevent network jank and exception during shutdown.
+     *
+     * @param url URL for the request.
+     * @param listener Callback interface that gets called on different events.
+     * @param executor Executor on which all callbacks will be called.
+     * @param priority Priority of the request which should be one of the
+                  REQUEST_PRIORITY_* values in {@link UrlRequest}.
+     * @return new request.
+     */
+    public abstract UrlRequest createRequest(String url,
+            UrlRequestListener listener, Executor executor, int priority);
 
     /**
      * @return true if the context is enabled.
