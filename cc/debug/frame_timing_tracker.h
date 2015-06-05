@@ -13,8 +13,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/delayed_unique_notifier.h"
 
 namespace cc {
+
+class LayerTreeHostImpl;
 
 // This class maintains a history of timestamps and rect IDs to communicate
 // frame events back to Blink
@@ -30,7 +33,7 @@ class CC_EXPORT FrameTimingTracker {
   };
 
   using CompositeTimingSet =
-      base::hash_map<int, std::vector<CompositeTimingEvent>>;
+      base::hash_map<int64_t, std::vector<CompositeTimingEvent>>;
 
   struct CC_EXPORT MainFrameTimingEvent {
     MainFrameTimingEvent(int frame_id,
@@ -44,9 +47,10 @@ class CC_EXPORT FrameTimingTracker {
   };
 
   using MainFrameTimingSet =
-      base::hash_map<int, std::vector<MainFrameTimingEvent>>;
+      base::hash_map<int64_t, std::vector<MainFrameTimingEvent>>;
 
-  static scoped_ptr<FrameTimingTracker> Create();
+  static scoped_ptr<FrameTimingTracker> Create(
+      LayerTreeHostImpl* layer_tree_host_impl);
 
   ~FrameTimingTracker();
 
@@ -74,10 +78,15 @@ class CC_EXPORT FrameTimingTracker {
                                int source_frame_number);
 
  private:
-  FrameTimingTracker();
+  explicit FrameTimingTracker(LayerTreeHostImpl* layer_tree_host_impl);
+
+  void PostEvents();
 
   scoped_ptr<CompositeTimingSet> composite_events_;
   scoped_ptr<MainFrameTimingSet> main_frame_events_;
+
+  LayerTreeHostImpl* layer_tree_host_impl_;
+  DelayedUniqueNotifier post_events_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTimingTracker);
 };

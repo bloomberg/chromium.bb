@@ -217,6 +217,11 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void DidPrepareTiles() override;
   void DidCompletePageScaleAnimationOnImplThread() override;
   void OnDrawForOutputSurface() override;
+  // This should only be called by LayerTreeHostImpl::PostFrameTimingEvents.
+  void PostFrameTimingEventsOnImplThread(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override;
 
   // SchedulerClient implementation
   void WillBeginImplFrame(const BeginFrameArgs& args) override;
@@ -292,6 +297,9 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);
   void SetDebugStateOnImplThread(const LayerTreeDebugState& debug_state);
   void SetDeferCommitsOnImplThread(bool defer_commits) const;
+  void PostFrameTimingEvents(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events);
 
   LayerTreeHost* layer_tree_host();
   const LayerTreeHost* layer_tree_host() const;

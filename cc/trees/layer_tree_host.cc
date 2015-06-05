@@ -1302,4 +1302,11 @@ void LayerTreeHost::SetAuthoritativeVSyncInterval(
   proxy_->SetAuthoritativeVSyncInterval(interval);
 }
 
+void LayerTreeHost::RecordFrameTimingEvents(
+    scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+  client_->RecordFrameTimingEvents(composite_events.Pass(),
+                                   main_frame_events.Pass());
+}
+
 }  // namespace cc

@@ -21,6 +21,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/debug/frame_timing_tracker.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/input/input_handler.h"
@@ -328,6 +329,10 @@ class CC_EXPORT LayerTreeHost {
   bool using_only_property_trees() const {
     return settings().impl_side_painting;
   }
+
+  void RecordFrameTimingEvents(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events);
 
  protected:
   explicit LayerTreeHost(InitParams* params);

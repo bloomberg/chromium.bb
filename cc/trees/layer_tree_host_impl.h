@@ -127,6 +127,10 @@ class LayerTreeHostImplClient {
   // Called when output surface asks for a draw.
   virtual void OnDrawForOutputSurface() = 0;
 
+  virtual void PostFrameTimingEventsOnImplThread(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) = 0;
+
  protected:
   virtual ~LayerTreeHostImplClient() {}
 };
@@ -538,6 +542,11 @@ class CC_EXPORT LayerTreeHostImpl
   void RecordMainFrameTiming(
       const BeginFrameArgs& start_of_main_frame_args,
       const BeginFrameArgs& expected_next_main_frame_args);
+
+  // Post the given frame timing events to the requester.
+  void PostFrameTimingEvents(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events);
 
  protected:
   LayerTreeHostImpl(

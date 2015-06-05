@@ -8,9 +8,13 @@
 #include <limits>
 
 #include "base/metrics/histogram.h"
+#include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
 
 namespace cc {
+namespace {
+int kSendTimingIntervalMS = 200;
+}
 
 FrameTimingTracker::CompositeTimingEvent::CompositeTimingEvent(
     int _frame_id,
@@ -32,11 +36,19 @@ FrameTimingTracker::MainFrameTimingEvent::~MainFrameTimingEvent() {
 }
 
 // static
-scoped_ptr<FrameTimingTracker> FrameTimingTracker::Create() {
-  return make_scoped_ptr(new FrameTimingTracker);
+scoped_ptr<FrameTimingTracker> FrameTimingTracker::Create(
+    LayerTreeHostImpl* layer_tree_host_impl) {
+  return make_scoped_ptr(new FrameTimingTracker(layer_tree_host_impl));
 }
 
-FrameTimingTracker::FrameTimingTracker() {
+FrameTimingTracker::FrameTimingTracker(LayerTreeHostImpl* layer_tree_host_impl)
+    : layer_tree_host_impl_(layer_tree_host_impl),
+      post_events_notifier_(
+          layer_tree_host_impl_->proxy()->HasImplThread()
+              ? layer_tree_host_impl_->proxy()->ImplThreadTaskRunner()
+              : layer_tree_host_impl_->proxy()->MainThreadTaskRunner(),
+          base::Bind(&FrameTimingTracker::PostEvents, base::Unretained(this)),
+          base::TimeDelta::FromMilliseconds(kSendTimingIntervalMS)) {
 }
 
 FrameTimingTracker::~FrameTimingTracker() {
@@ -51,6 +63,8 @@ void FrameTimingTracker::SaveTimeStamps(
     (*composite_events_)[pair.second].push_back(
         CompositeTimingEvent(pair.first, timestamp));
   }
+  if (!post_events_notifier_.HasPendingNotification())
+    post_events_notifier_.Schedule();
 }
 
 void FrameTimingTracker::SaveMainFrameTimeStamps(
@@ -65,6 +79,8 @@ void FrameTimingTracker::SaveMainFrameTimeStamps(
     events.push_back(
         MainFrameTimingEvent(source_frame_number, main_frame_time, end_time));
   }
+  if (!post_events_notifier_.HasPendingNotification())
+    post_events_notifier_.Schedule();
 }
 
 scoped_ptr<FrameTimingTracker::CompositeTimingSet>
@@ -93,6 +109,11 @@ FrameTimingTracker::GroupMainFrameCountsByRectId() {
         });
   }
   return main_frame_events_.Pass();
+}
+
+void FrameTimingTracker::PostEvents() {
+  layer_tree_host_impl_->PostFrameTimingEvents(GroupCompositeCountsByRectId(),
+                                               GroupMainFrameCountsByRectId());
 }
 
 }  // namespace cc

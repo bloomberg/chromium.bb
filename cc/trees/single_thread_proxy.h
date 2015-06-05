@@ -113,6 +113,10 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DidPrepareTiles() override;
   void DidCompletePageScaleAnimationOnImplThread() override;
   void OnDrawForOutputSurface() override;
+  void PostFrameTimingEventsOnImplThread(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override;
 
   void SetDebugState(const LayerTreeDebugState& debug_state) override {}
 

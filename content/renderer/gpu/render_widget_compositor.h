@@ -154,6 +154,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidCompleteSwapBuffers() override;
   void DidCompletePageScaleAnimation() override;
   void RateLimitSharedMainThreadContext() override;
+  void RecordFrameTimingEvents(
+      scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void ScheduleAnimation() override;
@@ -161,8 +165,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidAbortSwapBuffers() override;
 
   enum {
-   OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK = 4,
-   MAX_OUTPUT_SURFACE_RETRIES = 5,
+    OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK = 4,
+    MAX_OUTPUT_SURFACE_RETRIES = 5,
   };
 
  protected:

@@ -76,6 +76,10 @@ class LayerTreeHostNoMessageLoopTest
   void DidCommitAndDrawFrame() override { did_commit_and_draw_frame_ = true; }
   void DidCompleteSwapBuffers() override {}
   void DidCompletePageScaleAnimation() override {}
+  void RecordFrameTimingEvents(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override {}
 
   // LayerTreeHostSingleThreadClient overrides.
   void DidPostSwapBuffers() override {}

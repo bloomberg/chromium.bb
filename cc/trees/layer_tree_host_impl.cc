@@ -230,7 +230,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       id_(id),
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
-      frame_timing_tracker_(FrameTimingTracker::Create()) {
+      frame_timing_tracker_(FrameTimingTracker::Create(this)) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
   animation_registrar_->set_supports_scroll_animations(
@@ -2172,6 +2172,13 @@ void LayerTreeHostImpl::RecordMainFrameTiming(
   base::TimeTicks end_time = expected_next_main_frame_args.frame_time;
   frame_timing_tracker_->SaveMainFrameTimeStamps(
       request_ids, start_time, end_time, active_tree_->source_frame_number());
+}
+
+void LayerTreeHostImpl::PostFrameTimingEvents(
+    scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+  client_->PostFrameTimingEventsOnImplThread(composite_events.Pass(),
+                                             main_frame_events.Pass());
 }
 
 void LayerTreeHostImpl::DestroyTileManager() {

@@ -48,6 +48,10 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient,
   void DidCommitAndDrawFrame() override {}
   void DidCompleteSwapBuffers() override {}
   void DidCompletePageScaleAnimation() override {}
+  void RecordFrameTimingEvents(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override {}
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidPostSwapBuffers() override {}

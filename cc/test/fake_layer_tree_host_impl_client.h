@@ -5,6 +5,7 @@
 #ifndef CC_TEST_FAKE_LAYER_TREE_HOST_IMPL_CLIENT_H_
 #define CC_TEST_FAKE_LAYER_TREE_HOST_IMPL_CLIENT_H_
 
+#include "cc/debug/frame_timing_tracker.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/trees/layer_tree_host_impl.h"
 
@@ -42,6 +43,10 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void DidPrepareTiles() override {}
   void DidCompletePageScaleAnimationOnImplThread() override {}
   void OnDrawForOutputSurface() override {}
+  void PostFrameTimingEventsOnImplThread(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override {}
 };
 
 }  // namespace cc

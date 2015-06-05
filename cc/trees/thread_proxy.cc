@@ -1412,4 +1412,23 @@ void ThreadProxy::OnDrawForOutputSurface() {
   impl().scheduler->OnDrawForOutputSurface();
 }
 
+void ThreadProxy::PostFrameTimingEventsOnImplThread(
+    scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+  DCHECK(IsImplThread());
+  Proxy::MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ThreadProxy::PostFrameTimingEvents, main_thread_weak_ptr_,
+                 base::Passed(composite_events.Pass()),
+                 base::Passed(main_frame_events.Pass())));
+}
+
+void ThreadProxy::PostFrameTimingEvents(
+    scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+    scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+  DCHECK(IsMainThread());
+  layer_tree_host()->RecordFrameTimingEvents(composite_events.Pass(),
+                                             main_frame_events.Pass());
+}
+
 }  // namespace cc

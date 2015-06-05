@@ -298,6 +298,10 @@ class COMPOSITOR_EXPORT Compositor
   void DidCompleteSwapBuffers() override;
   void DidCompletePageScaleAnimation() override {}
   void SendBeginFramesToChildren(const cc::BeginFrameArgs& args) override;
+  void RecordFrameTimingEvents(
+      scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidPostSwapBuffers() override;

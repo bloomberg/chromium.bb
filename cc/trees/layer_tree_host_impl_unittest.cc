@@ -166,6 +166,10 @@ class LayerTreeHostImplTest : public testing::Test,
     did_complete_page_scale_animation_ = true;
   }
   void OnDrawForOutputSurface() override {}
+  void PostFrameTimingEventsOnImplThread(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;

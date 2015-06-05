@@ -442,6 +442,11 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   void DidCompletePageScaleAnimation() override {}
   void BeginMainFrameNotExpectedSoon() override {}
 
+  void RecordFrameTimingEvents(
+      scoped_ptr<FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override {}
+
  private:
   explicit LayerTreeHostClientForTesting(TestHooks* test_hooks)
       : test_hooks_(test_hooks) {}

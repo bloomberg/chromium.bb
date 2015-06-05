@@ -67,6 +67,10 @@ class WebLayerTreeViewImpl : public blink::WebLayerTreeView,
   void DidCompleteSwapBuffers() override;
   void DidCompletePageScaleAnimation() override {}
   void RateLimitSharedMainThreadContext() override {}
+  void RecordFrameTimingEvents(
+      scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override {}
 
   // blink::WebLayerTreeView implementation.
   virtual void setRootLayer(const blink::WebLayer& layer);
