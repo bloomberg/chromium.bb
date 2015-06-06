@@ -8,6 +8,7 @@
 import argparse
 import json
 import logging
+import os
 import sys
 import time
 
@@ -39,11 +40,12 @@ def main():
   logger.debug("Test list: %s" % test_list)
 
   shell = None
-  extra_args = []
   if config.target_os == Config.OS_ANDROID:
     from mopy.android import AndroidShell
     shell = AndroidShell(config)
-    extra_args.extend(shell.PrepareShellRun('localhost'))
+    result = shell.InitShell()
+    if result != 0:
+      return result
 
   tests = []
   passed = []
@@ -52,7 +54,7 @@ def main():
     test = test_dict["test"]
     test_name = test_dict.get("name", test)
     test_type = test_dict.get("type", "gtest")
-    test_args = test_dict.get("args", []) + extra_args
+    test_args = test_dict.get("args", [])
 
     print "Running %s...%s" % (test_name, ("\n" if args.verbose else "")),
     sys.stdout.flush()

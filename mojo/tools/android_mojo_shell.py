@@ -40,9 +40,7 @@ def main():
                   is_debug=runner_args.debug,
                   apk_name="MojoRunner.apk")
   shell = AndroidShell(config)
-  args.extend(shell.PrepareShellRun(runner_args.origin, runner_args.device))
-
-  shell.CleanLogs()
+  shell.InitShell(runner_args.origin, runner_args.device)
   p = shell.ShowLogs()
   shell.StartShell(args, sys.stdout, p.terminate)
   return 0

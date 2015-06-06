@@ -23,6 +23,7 @@ from pylib import constants
 from pylib.base import base_test_runner
 from pylib.device import device_errors
 from pylib.device import device_utils
+from pylib.utils import base_error
 from pylib.utils import apk_helper
 
 
@@ -54,6 +55,7 @@ class AndroidShell(object):
     self.adb_path = constants.GetAdbPath()
     self.paths = Paths(config)
     self.device = None
+    self.shell_args = []
     self.target_package = apk_helper.GetPackageName(self.paths.apk_path)
     # This is used by decive_utils.Install to check if the apk needs updating.
     constants.SetOutputDirectory(self.paths.build_dir)
@@ -131,45 +133,42 @@ class AndroidShell(object):
       result.append(self._StartHttpServerForOriginMapping(value))
     return [MAPPING_PREFIX + ','.join(result)]
 
-  def PrepareShellRun(self, origin=None, device=None, gdb=False):
+  def InitShell(self, origin='localhost', device=None):
     """
-    Prepares for StartShell: runs adb as root and installs the apk as needed.
-    If the origin specified is 'localhost', a local http server will be set up
-    to serve files from the build directory along with port forwarding.
-    |device| is the device to run on, if multiple devices are connected.
-    Returns arguments that should be appended to shell argument list.
+    Runs adb as root, starts an origin server, and installs the apk as needed.
+    |origin| is the origin for mojo: URLs; if its value is 'localhost', a local
+    http server will be set up to serve files from the build directory.
+    |device| is the target device to run on, if multiple devices are connected.
+    Returns 0 on success or a non-zero exit code on a terminal failure.
     """
-    devices = device_utils.DeviceUtils.HealthyDevices()
-    if device:
-      self.device = next((d for d in devices if d == device), None)
-      if not self.device:
-        raise device_errors.DeviceUnreachableError(device)
-    elif devices:
-      self.device = devices[0]
-    else:
-      raise device_errors.NoDevicesError()
-
-    logging.getLogger().debug("Using device: %s", self.device)
-    self.device.EnableRoot()
-
-    # TODO(msw): Install fails often, retry as needed; http://crbug.com/493900
     try:
-      self.device.Install(self.paths.apk_path)
-    except device_errors.CommandFailedError as e:
-      logging.getLogger().error("APK install failed:\n%s", str(e))
-      self.device.Install(self.paths.apk_path)
+      devices = device_utils.DeviceUtils.HealthyDevices()
+      if device:
+        self.device = next((d for d in devices if d == device), None)
+        if not self.device:
+          raise device_errors.DeviceUnreachableError(device)
+      elif devices:
+        self.device = devices[0]
+      else:
+        raise device_errors.NoDevicesError()
 
-    extra_args = []
+      logging.getLogger().debug("Using device: %s", self.device)
+      # Clean the logs on the device to avoid displaying prior activity.
+      subprocess.check_call(self._CreateADBCommand(['logcat', '-c']))
+      self.device.EnableRoot()
+      self.device.Install(self.paths.apk_path)
+    except base_error.BaseError as e:
+      # Report "device not found" as infra failures. See http://crbug.com/493900
+      print "Exception in AndroidShell.InitShell:\n%s" % str(e)
+      if e.is_infra_error or "error: device not found" in str(e):
+        return constants.INFRA_EXIT_CODE
+      return constants.ERROR_EXIT_CODE
+
     if origin is 'localhost':
       origin = self._StartHttpServerForDirectory(self.paths.build_dir)
     if origin:
-      extra_args.append("--origin=" + origin)
-
-    if gdb:
-      # Remote debugging needs a port forwarded.
-      self.device.adb.Forward('tcp:5039', 'tcp:5039')
-
-    return extra_args
+      self.shell_args.append("--origin=" + origin)
+    return 0
 
   def _GetProcessId(self, process):
     """Returns the process id of the process on the remote device."""
@@ -229,11 +228,15 @@ class AndroidShell(object):
     local_gdb_process.wait()
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-  def StartShell(self, arguments, stdout, on_application_stop, gdb=False):
+  def StartShell(self, arguments, stdout, on_fifo_closed, gdb=False):
     """
-    Starts the shell with the given arguments, directing output to |stdout|.
-    The |arguments| list must contain the "--origin=" arg from PrepareShellRun.
+    Starts the shell with the given |arguments|, directing output to |stdout|.
+    |on_fifo_closed| will be run if the FIFO can't be found or when it's closed.
+    |gdb| is a flag that attaches gdb to the device's remote process on startup.
     """
+    assert self.device
+    arguments += self.shell_args
+
     cmd = self._CreateADBCommand([
            'shell',
            'am',
@@ -245,7 +248,9 @@ class AndroidShell(object):
 
     logcat_process = None
     if gdb:
-      arguments += ['--wait-for-debugger']
+      arguments.append('--wait-for-debugger')
+      # Remote debugging needs a port forwarded.
+      self.device.adb.Forward('tcp:5039', 'tcp:5039')
       logcat_process = self.ShowLogs(stdout=subprocess.PIPE)
 
     fifo_path = "/data/data/%s/stdout.fifo" % self.target_package
@@ -253,15 +258,14 @@ class AndroidShell(object):
         ['shell', 'rm', '-f', fifo_path]))
     arguments.append('--fifo-path=%s' % fifo_path)
     max_attempts = 200 if '--wait-for-debugger' in arguments else 5
-    self._ReadFifo(fifo_path, stdout, on_application_stop, max_attempts)
+    self._ReadFifo(fifo_path, stdout, on_fifo_closed, max_attempts)
 
     # Extract map-origin args and add the extras array with commas escaped.
     parameters = [a for a in arguments if not a.startswith(MAPPING_PREFIX)]
     map_parameters = [a for a in arguments if a.startswith(MAPPING_PREFIX)]
     parameters += self._StartHttpServerForOriginMappings(map_parameters)
     parameters = [p.replace(',', '\,') for p in parameters]
-    if parameters:
-      cmd += ['--esa', 'org.chromium.mojo.shell.extras', ','.join(parameters)]
+    cmd += ['--esa', 'org.chromium.mojo.shell.extras', ','.join(parameters)]
 
     atexit.register(self.StopShell)
     with open(os.devnull, 'w') as devnull:
@@ -273,10 +277,6 @@ class AndroidShell(object):
   def StopShell(self):
     """Stops the mojo shell."""
     self.device.ForceStop(self.target_package)
-
-  def CleanLogs(self):
-    """Cleans the logs on the device."""
-    subprocess.check_call(self._CreateADBCommand(['logcat', '-c']))
 
   def ShowLogs(self, stdout=sys.stdout):
     """Displays the mojo shell logs and returns the process reading the logs."""

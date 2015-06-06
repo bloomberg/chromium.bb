@@ -9,7 +9,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                '../../mojo/tools'))
+                                os.pardir, os.pardir, 'mojo', 'tools'))
 
 from mopy.android import AndroidShell
 from mopy.config import Config
@@ -38,9 +38,7 @@ def main():
                   is_debug=runner_args.debug,
                   apk_name="Mandoline.apk")
   shell = AndroidShell(config)
-  args.extend(shell.PrepareShellRun(None, runner_args.device, runner_args.gdb))
-
-  shell.CleanLogs()
+  shell.InitShell(None, runner_args.device)
   p = shell.ShowLogs()
   shell.StartShell(args, sys.stdout, p.terminate, runner_args.gdb)
   return 0
