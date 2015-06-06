@@ -192,13 +192,6 @@ crbug.com/490511 imported/web-platform-tests/html/semantics/forms/attributes-com
 crbug.com/490511 imported/web-platform-tests/html/semantics/forms/attributes-common-to-form-controls/formaction.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/scripting-1/the-script-element/script-for-event.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/scripting-1/the-script-element/script-text.html [ Failure ]
-crbug.com/482822 imported/web-platform-tests/html/semantics/document-metadata/styling/LinkStyle.html [ NeedsRebaseline ]
-crbug.com/482822 imported/web-platform-tests/html/semantics/forms/the-input-element/type-change-state.html [ NeedsRebaseline ]
-crbug.com/482822 imported/web-platform-tests/html/semantics/forms/constraints/form-validation-reportValidity.html [ NeedsRebaseline ]
-crbug.com/482822 imported/web-platform-tests/html/semantics/selectors/pseudo-classes/focus.html [ NeedsRebaseline ]
-crbug.com/482822 imported/web-platform-tests/html/semantics/forms/textfieldselection/textfieldselection-setSelectionRange.html [ NeedsRebaseline ]
-crbug.com/482822 imported/web-platform-tests/html/semantics/forms/the-input-element/radio-groupname-case.html [ NeedsRebaseline ]
-crbug.com/482822 imported/web-platform-tests/html/semantics/selectors/pseudo-classes/dir.html [ NeedsRebaseline ]
 
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
