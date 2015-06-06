@@ -110,7 +110,7 @@ void AudioSender::OnAck(uint32 frame_id) {
 
 void AudioSender::OnEncodedAudioFrame(
     int encoder_bitrate,
-    scoped_ptr<EncodedFrame> encoded_frame,
+    scoped_ptr<SenderEncodedFrame> encoded_frame,
     int samples_skipped) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 

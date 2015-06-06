@@ -23,7 +23,6 @@ class VideoFrame;
 namespace cast {
 
 class CastTransportSender;
-struct SenderEncodedFrame;
 class VideoEncoder;
 class VideoFrameFactory;
 

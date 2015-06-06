@@ -28,16 +28,32 @@ void LoggingImpl::InsertFrameEvent(const base::TimeTicks& time_of_event,
       rtp_timestamp, frame_id);
 }
 
-void LoggingImpl::InsertEncodedFrameEvent(const base::TimeTicks& time_of_event,
-                                          CastLoggingEvent event,
-                                          EventMediaType event_media_type,
-                                          uint32 rtp_timestamp,
-                                          uint32 frame_id, int frame_size,
-                                          bool key_frame,
-                                          int target_bitrate) {
+void LoggingImpl::InsertCapturedVideoFrameEvent(
+    const base::TimeTicks& time_of_event,
+    uint32 rtp_timestamp,
+    int width,
+    int height) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  raw_.InsertCapturedVideoFrameEvent(
+      time_of_event, rtp_timestamp, width, height);
+}
+
+
+void LoggingImpl::InsertEncodedFrameEvent(
+    const base::TimeTicks& time_of_event,
+    CastLoggingEvent event,
+    EventMediaType event_media_type,
+    uint32 rtp_timestamp,
+    uint32 frame_id,
+    int encoded_size,
+    bool key_frame,
+    int target_bitrate,
+    double encoder_cpu_utilization,
+    double idealized_bitrate_utilization) {
   DCHECK(thread_checker_.CalledOnValidThread());
   raw_.InsertEncodedFrameEvent(time_of_event, event, event_media_type,
-      rtp_timestamp, frame_id, frame_size, key_frame, target_bitrate);
+      rtp_timestamp, frame_id, encoded_size, key_frame, target_bitrate,
+      encoder_cpu_utilization, idealized_bitrate_utilization);
 }
 
 void LoggingImpl::InsertFrameEventWithDelay(

@@ -10,6 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/sender/sender_encoded_frame.h"
 
 namespace base {
 class TimeTicks;
@@ -20,10 +21,10 @@ namespace cast {
 
 class AudioEncoder {
  public:
-  // Callback to deliver each EncodedFrame, plus the number of audio samples
-  // skipped since the last frame.
-  typedef base::Callback<void(scoped_ptr<EncodedFrame>, int)>
-      FrameEncodedCallback;
+  // Callback to deliver each SenderEncodedFrame, plus the number of audio
+  // samples skipped since the last frame.
+  using FrameEncodedCallback =
+      base::Callback<void(scoped_ptr<SenderEncodedFrame>, int)>;
 
   AudioEncoder(const scoped_refptr<CastEnvironment>& cast_environment,
                int num_channels,

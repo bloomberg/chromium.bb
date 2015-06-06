@@ -28,8 +28,12 @@ const media::cast::CastLoggingEvent kVideoPacketEvents[] = {
     media::cast::PACKET_SENT_TO_NETWORK, media::cast::PACKET_RECEIVED};
 
 // The frame event fields cycle through these numbers.
+const int kWidth[] = {1280, 1280, 1280, 1280, 1920, 1920, 1920, 1920};
+const int kHeight[] = {720, 720, 720, 720, 1080, 1080, 1080, 1080};
 const int kEncodedFrameSize[] = {512, 425, 399, 400, 237};
 const int64 kDelayMillis[] = {15, 4, 8, 42, 23, 16};
+const int kEncoderCPUPercentUtilized[] = {10, 9, 42, 3, 11, 12, 15, 7};
+const int kIdealizedBitratePercentUtilized[] = {9, 9, 9, 15, 36, 38, 35, 40};
 
 const int kMaxSerializedBytes = 10000;
 
@@ -63,9 +67,16 @@ class SerializeDeserializeTest : public ::testing::Test {
         frame_event->add_event_timestamp_ms(event_time_ms);
         event_time_ms += 1024;
       }
+      frame_event->set_width(kWidth[i % arraysize(kWidth)]);
+      frame_event->set_height(kHeight[i % arraysize(kHeight)]);
       frame_event->set_encoded_frame_size(
           kEncodedFrameSize[i % arraysize(kEncodedFrameSize)]);
       frame_event->set_delay_millis(kDelayMillis[i % arraysize(kDelayMillis)]);
+      frame_event->set_encoder_cpu_percent_utilized(kEncoderCPUPercentUtilized[
+              i % arraysize(kEncoderCPUPercentUtilized)]);
+      frame_event->set_idealized_bitrate_percent_utilized(
+          kIdealizedBitratePercentUtilized[
+              i % arraysize(kIdealizedBitratePercentUtilized)]);
 
       frame_event_list_.push_back(frame_event);
     }

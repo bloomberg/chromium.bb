@@ -56,8 +56,11 @@ TEST_F(LoggingRawTest, EncodedFrameEvent) {
   int size = 1024;
   bool key_frame = true;
   int target_bitrate = 4096;
+  double encoder_cpu_utilization = 0.11;
+  double idealized_bitrate_utilization = 0.98;
   raw_.InsertEncodedFrameEvent(timestamp, event_type, media_type,
-      rtp_timestamp, frame_id, size, key_frame, target_bitrate);
+      rtp_timestamp, frame_id, size, key_frame, target_bitrate,
+      encoder_cpu_utilization, idealized_bitrate_utilization);
 
   event_subscriber_.GetPacketEventsAndReset(&packet_events_);
   EXPECT_TRUE(packet_events_.empty());
@@ -73,6 +76,9 @@ TEST_F(LoggingRawTest, EncodedFrameEvent) {
   EXPECT_EQ(base::TimeDelta(), frame_events_[0].delay_delta);
   EXPECT_EQ(key_frame, frame_events_[0].key_frame);
   EXPECT_EQ(target_bitrate, frame_events_[0].target_bitrate);
+  EXPECT_EQ(encoder_cpu_utilization, frame_events_[0].encoder_cpu_utilization);
+  EXPECT_EQ(idealized_bitrate_utilization,
+            frame_events_[0].idealized_bitrate_utilization);
 }
 
 TEST_F(LoggingRawTest, FrameEventWithDelay) {

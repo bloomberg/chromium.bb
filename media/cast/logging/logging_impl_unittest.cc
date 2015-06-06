@@ -85,7 +85,8 @@ TEST_F(LoggingImplTest, FrameLoggingWithSize) {
     sum_size += static_cast<size_t>(size);
     logging_.InsertEncodedFrameEvent(testing_clock_.NowTicks(),
                                      FRAME_ENCODED, VIDEO_EVENT, rtp_timestamp,
-                                     frame_id, size, true, target_bitrate);
+                                     frame_id, size, true, target_bitrate,
+                                     0.1, 2.3);
     testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
     rtp_timestamp += kFrameIntervalMs * 90;
     ++frame_id;
@@ -146,7 +147,7 @@ TEST_F(LoggingImplTest, MultipleEventFrameLogging) {
       logging_.InsertEncodedFrameEvent(testing_clock_.NowTicks(),
                                        FRAME_ENCODED, AUDIO_EVENT,
                                        rtp_timestamp,
-                                       frame_id, 1500, true, 0);
+                                       frame_id, 1500, true, 0, 4.5, 6.7);
     } else if (frame_id % 3) {
       logging_.InsertFrameEvent(testing_clock_.NowTicks(), FRAME_DECODED,
                                 VIDEO_EVENT, rtp_timestamp, frame_id);

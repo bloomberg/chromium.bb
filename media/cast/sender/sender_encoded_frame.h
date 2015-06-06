@@ -25,6 +25,8 @@ struct SenderEncodedFrame : public EncodedFrame {
   // utilization, 1.0 representing 100% utilization, and values greater than 1.0
   // indicating the encode time took longer than the media duration of the
   // frame.  Negative values indicate the field was not computed.
+  //
+  // TODO(miu): Rename to encoder_cpu_utilization.
   double deadline_utilization;
 
   // The amount of "lossiness" needed to encode the frame within the targeted
@@ -37,6 +39,8 @@ struct SenderEncodedFrame : public EncodedFrame {
   // very small, and values greater than 1.0 indicating the encoder cannot
   // encode the frame within the target bitrate (even at its lowest quality
   // setting).  Negative values indicate the field was not computed.
+  //
+  // TODO(miu): Rename to idealized_bitrate_utilization.
   double lossy_utilization;
 };
 

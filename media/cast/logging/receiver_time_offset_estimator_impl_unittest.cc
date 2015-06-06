@@ -70,7 +70,9 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
       frame_id,
       1234,
       true,
-      5678);
+      5678,
+      9.10,
+      11.12);
 
   cast_environment_->Logging()->InsertPacketEvent(
       sender_clock_->NowTicks(),
@@ -133,7 +135,9 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
       frame_id,
       1234,
       true,
-      5678);
+      5678,
+      9.10,
+      11.12);
 
   cast_environment_->Logging()->InsertPacketEvent(
       sender_clock_->NowTicks(),
@@ -201,7 +205,9 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
       frame_id_a,
       1234,
       true,
-      5678);
+      5678,
+      9.10,
+      11.12);
 
   cast_environment_->Logging()->InsertPacketEvent(
       sender_clock_->NowTicks(),
@@ -218,7 +224,9 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
       frame_id_b,
       1234,
       true,
-      5678);
+      5678,
+      9.10,
+      11.12);
 
   cast_environment_->Logging()->InsertPacketEvent(
       sender_clock_->NowTicks(),
@@ -266,7 +274,9 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
       frame_id_c,
       1234,
       true,
-      5678);
+      5678,
+      9.10,
+      11.12);
 
   cast_environment_->Logging()->InsertPacketEvent(
       sender_clock_->NowTicks(),

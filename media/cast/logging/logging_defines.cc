@@ -33,8 +33,10 @@ const char* CastLoggingToString(CastLoggingEvent event) {
 }
 
 FrameEvent::FrameEvent()
-    : rtp_timestamp(0u), frame_id(kFrameIdUnknown), size(0u), type(UNKNOWN),
-      media_type(UNKNOWN_EVENT), key_frame(false), target_bitrate(0) {}
+    : rtp_timestamp(0u), frame_id(kFrameIdUnknown), width(0), height(0),
+      size(0u), type(UNKNOWN), media_type(UNKNOWN_EVENT), key_frame(false),
+      target_bitrate(0), encoder_cpu_utilization(-1.0),
+      idealized_bitrate_utilization(-1.0) {}
 FrameEvent::~FrameEvent() {}
 
 PacketEvent::PacketEvent()

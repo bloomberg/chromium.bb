@@ -55,7 +55,11 @@ struct FrameEvent {
   RtpTimestamp rtp_timestamp;
   uint32 frame_id;
 
-  // Size of encoded frame. Only set for FRAME_ENCODED event.
+  // Resolution of the frame. Only set for video FRAME_CAPTURE_END events.
+  int width;
+  int height;
+
+  // Size of encoded frame in bytes. Only set for FRAME_ENCODED event.
   size_t size;
 
   // Time of event logged.
@@ -77,6 +81,11 @@ struct FrameEvent {
   // The requested target bitrate of the encoder at the time the frame is
   // encoded. Only set for video FRAME_ENCODED event.
   int target_bitrate;
+
+  // Encoding performance metrics. See media/cast/sender/sender_encoded_frame.h
+  // for a description of these values.
+  double encoder_cpu_utilization;
+  double idealized_bitrate_utilization;
 };
 
 struct PacketEvent {

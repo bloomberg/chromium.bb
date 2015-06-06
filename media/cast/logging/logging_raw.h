@@ -30,18 +30,28 @@ class LoggingRaw : public base::NonThreadSafe {
                         CastLoggingEvent event, EventMediaType event_media_type,
                         uint32 rtp_timestamp, uint32 frame_id);
 
+  // Inserts a FRAME_CAPTURE_END event with the VIDEO_EVENT media type.
+  void InsertCapturedVideoFrameEvent(const base::TimeTicks& time_of_event,
+                                     uint32 rtp_timestamp,
+                                     int width,
+                                     int height);
+
   // This function is only applicable for FRAME_ENCODED event.
-  // |size| - Size of encoded frame.
+  // |encoded_size| - Size of encoded frame in bytes.
   // |key_frame| - Whether the frame is a key frame. This field is only
   //               applicable for video event.
   // |target_bitrate| - The target bitrate of the encoder the time the frame
   // was encoded. Only applicable for video event.
   void InsertEncodedFrameEvent(const base::TimeTicks& time_of_event,
-                                CastLoggingEvent event,
-                                EventMediaType event_media_type,
-                                uint32 rtp_timestamp, uint32 frame_id,
-                                int size, bool key_frame,
-                                int target_bitrate);
+                               CastLoggingEvent event,
+                               EventMediaType event_media_type,
+                               uint32 rtp_timestamp,
+                               uint32 frame_id,
+                               int encoded_size,
+                               bool key_frame,
+                               int target_bitrate,
+                               double encoder_cpu_utilization,
+                               double idealized_bitrate_utilization);
 
   // Render/playout delay
   // This function is only applicable for FRAME_PLAYOUT event.
@@ -73,9 +83,16 @@ class LoggingRaw : public base::NonThreadSafe {
   void InsertBaseFrameEvent(const base::TimeTicks& time_of_event,
                             CastLoggingEvent event,
                             EventMediaType event_media_type,
-                            uint32 frame_id, uint32 rtp_timestamp,
-                            base::TimeDelta delay, int size, bool key_frame,
-                            int target_bitrate);
+                            uint32 frame_id,
+                            uint32 rtp_timestamp,
+                            base::TimeDelta delay,
+                            int width,
+                            int height,
+                            int encoded_size,
+                            bool key_frame,
+                            int target_bitrate,
+                            double encoder_cpu_utilization,
+                            double idealized_bitrate_utilization);
 
   // List of subscriber pointers. This class does not own the subscribers.
   std::vector<RawEventSubscriber*> subscribers_;

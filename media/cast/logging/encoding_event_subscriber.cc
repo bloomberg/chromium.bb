@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/cast/logging/proto/proto_utils.h"
 
 using google::protobuf::RepeatedPtrField;
@@ -93,10 +94,24 @@ void EncodingEventSubscriber::OnReceiveFrameEvent(
   event_proto->add_event_timestamp_ms(
       (frame_event.timestamp - base::TimeTicks()).InMilliseconds());
 
-  if (frame_event.type == FRAME_ENCODED) {
+  if (frame_event.type == FRAME_CAPTURE_END) {
+    if (frame_event.media_type == VIDEO_EVENT &&
+        frame_event.width > 0 && frame_event.height > 0) {
+      event_proto->set_width(frame_event.width);
+      event_proto->set_height(frame_event.height);
+    }
+  } else if (frame_event.type == FRAME_ENCODED) {
     event_proto->set_encoded_frame_size(frame_event.size);
+    if (frame_event.encoder_cpu_utilization >= 0.0) {
+      event_proto->set_encoder_cpu_percent_utilized(base::saturated_cast<int32>(
+              frame_event.encoder_cpu_utilization * 100.0 + 0.5));
+    }
+    if (frame_event.idealized_bitrate_utilization >= 0.0) {
+      event_proto->set_idealized_bitrate_percent_utilized(
+          base::saturated_cast<int32>(
+              frame_event.idealized_bitrate_utilization * 100.0 + 0.5));
+    }
     if (frame_event.media_type == VIDEO_EVENT) {
-      event_proto->set_encoded_frame_size(frame_event.size);
       event_proto->set_key_frame(frame_event.key_frame);
       event_proto->set_target_bitrate(frame_event.target_bitrate);
     }

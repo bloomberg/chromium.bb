@@ -43,7 +43,7 @@ TEST_F(SimpleEventSubscriberTest, GetAndResetEvents) {
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       testing_clock_->NowTicks(), FRAME_ENCODED, AUDIO_EVENT,
       /*rtp_timestamp*/ 100u, /*frame_id*/ 0u, /*frame_size*/ 123,
-      /*key_frame*/ false, 0);
+      /*key_frame*/ false, 0, 0.01, 0.02);
   cast_environment_->Logging()->InsertFrameEventWithDelay(
       testing_clock_->NowTicks(), FRAME_PLAYOUT, AUDIO_EVENT,
       /*rtp_timestamp*/ 100u,

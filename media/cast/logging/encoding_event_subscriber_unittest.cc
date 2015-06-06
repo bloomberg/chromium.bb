@@ -76,17 +76,25 @@ TEST_F(EncodingEventSubscriberTest, FrameEventTruncating) {
   base::TimeTicks now(testing_clock_->NowTicks());
 
   // Entry with RTP timestamp 0 should get dropped.
+  int width = 320;
+  int height = 180;
   for (int i = 0; i < 11; i++) {
     cast_environment_->Logging()->InsertFrameEvent(now,
                                                    FRAME_CAPTURE_BEGIN,
                                                    VIDEO_EVENT,
                                                    i * 100,
                                                    /*frame_id*/ 0);
+    cast_environment_->Logging()->InsertCapturedVideoFrameEvent(now,
+                                                                i * 100,
+                                                                width,
+                                                                height);
     cast_environment_->Logging()->InsertFrameEvent(now,
                                                    FRAME_DECODED,
                                                    VIDEO_EVENT,
                                                    i * 100,
                                                    /*frame_id*/ 0);
+    width += 160;
+    height += 90;
   }
 
   GetEventsAndReset();
@@ -94,6 +102,14 @@ TEST_F(EncodingEventSubscriberTest, FrameEventTruncating) {
   ASSERT_EQ(10u, frame_events_.size());
   EXPECT_EQ(100u, frame_events_.front()->relative_rtp_timestamp());
   EXPECT_EQ(1000u, frame_events_.back()->relative_rtp_timestamp());
+  width = 320;
+  height = 180;
+  for (const auto& event : frame_events_) {
+    width += 160;
+    height += 90;
+    EXPECT_EQ(width, event->width());
+    EXPECT_EQ(height, event->height());
+  }
 }
 
 TEST_F(EncodingEventSubscriberTest, PacketEventTruncating) {
@@ -223,9 +239,12 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
   int size = 123;
   bool key_frame = true;
   int target_bitrate = 1024;
+  double encoder_cpu_utilization = 0.90;
+  double idealized_bitrate_utilization = 0.42;
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       now, FRAME_ENCODED, VIDEO_EVENT, rtp_timestamp,
-      /*frame_id*/ 0, size, key_frame, target_bitrate);
+      /*frame_id*/ 0, size, key_frame, target_bitrate,
+      encoder_cpu_utilization, idealized_bitrate_utilization);
 
   GetEventsAndReset();
 
@@ -248,6 +267,8 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
   EXPECT_TRUE(event->has_key_frame());
   EXPECT_EQ(key_frame, event->key_frame());
   EXPECT_EQ(target_bitrate, event->target_bitrate());
+  EXPECT_EQ(90, event->encoder_cpu_percent_utilized());
+  EXPECT_EQ(42, event->idealized_bitrate_percent_utilized());
 }
 
 TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
@@ -264,7 +285,8 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       now2, FRAME_ENCODED, AUDIO_EVENT, rtp_timestamp2,
       /*frame_id*/ 0, /*size*/ 123, /* key_frame - unused */ false,
-      /*target_bitrate - unused*/ 0);
+      /*target_bitrate - unused*/ 0,
+      0.44, 0.55);
 
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now3(testing_clock_->NowTicks());
@@ -306,6 +328,8 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   EXPECT_EQ(InMilliseconds(now2), event->event_timestamp_ms(0));
 
   EXPECT_FALSE(event->has_key_frame());
+  EXPECT_EQ(44, event->encoder_cpu_percent_utilized());
+  EXPECT_EQ(55, event->idealized_bitrate_percent_utilized());
 }
 
 TEST_F(EncodingEventSubscriberTest, PacketEvent) {
@@ -526,11 +550,10 @@ TEST_F(EncodingEventSubscriberTest, FirstRtpTimestamp) {
                                                  rtp_timestamp,
                                                  /*frame_id*/ 0);
 
-  cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 FRAME_CAPTURE_END,
-                                                 VIDEO_EVENT,
-                                                 rtp_timestamp + 30,
-                                                 /*frame_id*/ 1);
+  cast_environment_->Logging()->InsertCapturedVideoFrameEvent(
+      now,
+      rtp_timestamp + 30,
+      1280, 720);
 
   GetEventsAndReset();
 
@@ -542,6 +565,8 @@ TEST_F(EncodingEventSubscriberTest, FirstRtpTimestamp) {
   ++it;
   ASSERT_NE(frame_events_.end(), it);
   EXPECT_EQ(30u, (*it)->relative_rtp_timestamp());
+  EXPECT_EQ(1280, (*it)->width());
+  EXPECT_EQ(720, (*it)->height());
 
   rtp_timestamp = 67890;
 
@@ -567,11 +592,10 @@ TEST_F(EncodingEventSubscriberTest, RelativeRtpTimestampWrapAround) {
                                                  /*frame_id*/ 0);
 
   // RtpTimestamp has now wrapped around.
-  cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 FRAME_CAPTURE_END,
-                                                 VIDEO_EVENT,
-                                                 rtp_timestamp + 30,
-                                                 /*frame_id*/ 1);
+  cast_environment_->Logging()->InsertCapturedVideoFrameEvent(
+      now,
+      rtp_timestamp + 30,
+      1280, 720);
 
   GetEventsAndReset();
 
@@ -582,6 +606,8 @@ TEST_F(EncodingEventSubscriberTest, RelativeRtpTimestampWrapAround) {
   ++it;
   ASSERT_NE(frame_events_.end(), it);
   EXPECT_EQ(30u, (*it)->relative_rtp_timestamp());
+  EXPECT_EQ(1280, (*it)->width());
+  EXPECT_EQ(720, (*it)->height());
 }
 
 TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {

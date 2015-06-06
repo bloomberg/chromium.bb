@@ -52,7 +52,7 @@ class AudioSender : public FrameSender,
  private:
   // Called by the |audio_encoder_| with the next EncodedFrame to send.
   void OnEncodedAudioFrame(int encoder_bitrate,
-                           scoped_ptr<EncodedFrame> encoded_frame,
+                           scoped_ptr<SenderEncodedFrame> encoded_frame,
                            int samples_skipped);
 
   // Encodes AudioBuses into EncodedFrames.

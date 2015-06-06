@@ -5,6 +5,7 @@
 #include "media/cast/sender/frame_sender.h"
 
 #include "base/trace_event/trace_event.h"
+#include "media/cast/sender/sender_encoded_frame.h"
 
 namespace media {
 namespace cast {
@@ -192,7 +193,7 @@ base::TimeDelta FrameSender::GetAllowedInFlightMediaDuration() const {
 
 void FrameSender::SendEncodedFrame(
     int requested_bitrate_before_encode,
-    scoped_ptr<EncodedFrame> encoded_frame) {
+    scoped_ptr<SenderEncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   VLOG(2) << SENDER_SSRC << "About to send another frame: last_sent="
@@ -220,7 +221,9 @@ void FrameSender::SendEncodedFrame(
       encoded_frame->rtp_timestamp,
       frame_id, static_cast<int>(encoded_frame->data.size()),
       encoded_frame->dependency == EncodedFrame::KEY,
-      requested_bitrate_before_encode);
+      requested_bitrate_before_encode,
+      encoded_frame->deadline_utilization,
+      encoded_frame->lossy_utilization);
 
   RecordLatestFrameTimestamps(frame_id,
                               encoded_frame->reference_time,

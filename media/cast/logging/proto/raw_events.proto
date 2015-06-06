@@ -127,6 +127,14 @@ message AggregatedFrameEvent {
   
   // Only set if there is a video frame encoded event.
   optional int32 target_bitrate = 7;
+
+  // Only set if there is a frame capture event.
+  optional int32 width = 8;
+  optional int32 height = 9;
+
+  // Only set if there is a frame encoded event.
+  optional int32 encoder_cpu_percent_utilized = 10;
+  optional int32 idealized_bitrate_percent_utilized = 11;
 };
 
 message BasePacketEvent {

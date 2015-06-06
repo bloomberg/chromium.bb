@@ -50,9 +50,9 @@ void LogVideoCaptureTimestamps(const CastEnvironment& cast_environment,
   cast_environment.Logging()->InsertFrameEvent(
       capture_begin_time, FRAME_CAPTURE_BEGIN, VIDEO_EVENT, rtp_timestamp,
       kFrameIdUnknown);
-  cast_environment.Logging()->InsertFrameEvent(
-      capture_end_time, FRAME_CAPTURE_END, VIDEO_EVENT, rtp_timestamp,
-      kFrameIdUnknown);
+  cast_environment.Logging()->InsertCapturedVideoFrameEvent(
+      capture_end_time, rtp_timestamp, video_frame.visible_rect().width(),
+      video_frame.visible_rect().height());
 }
 
 }  // namespace

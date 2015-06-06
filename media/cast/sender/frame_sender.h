@@ -20,6 +20,8 @@
 namespace media {
 namespace cast {
 
+struct SenderEncodedFrame;
+
 class FrameSender {
  public:
   FrameSender(scoped_refptr<CastEnvironment> cast_environment,
@@ -45,7 +47,7 @@ class FrameSender {
 
   // Called by the encoder with the next EncodeFrame to send.
   void SendEncodedFrame(int requested_bitrate_before_encode,
-                        scoped_ptr<EncodedFrame> encoded_frame);
+                        scoped_ptr<SenderEncodedFrame> encoded_frame);
 
  protected:
   // Returns the number of frames in the encoder's backlog.

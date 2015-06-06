@@ -36,7 +36,7 @@ const int kDefaultFramesPerSecond = 100;
 
 // Base class that handles the common problem of feeding one or more AudioBus'
 // data into a buffer and then, once the buffer is full, encoding the signal and
-// emitting an EncodedFrame via the FrameEncodedCallback.
+// emitting a SenderEncodedFrame via the FrameEncodedCallback.
 //
 // Subclasses complete the implementation by handling the actual encoding
 // details.
@@ -114,6 +114,11 @@ class AudioEncoder::ImplBase
     // Encode all audio in |audio_bus| into zero or more frames.
     int src_pos = 0;
     while (src_pos < audio_bus->frames()) {
+      // Note: This is used to compute the deadline utilization and so it uses
+      // the real-world clock instead of the CastEnvironment clock, the latter
+      // of which might be simulated.
+      const base::TimeTicks start_time = base::TimeTicks::Now();
+
       const int num_samples_to_xfer = std::min(
           samples_per_frame_ - buffer_fill_end_, audio_bus->frames() - src_pos);
       DCHECK_EQ(audio_bus->channels(), num_channels_);
@@ -125,8 +130,8 @@ class AudioEncoder::ImplBase
       if (buffer_fill_end_ < samples_per_frame_)
         break;
 
-      scoped_ptr<EncodedFrame> audio_frame(
-          new EncodedFrame());
+      scoped_ptr<SenderEncodedFrame> audio_frame(
+          new SenderEncodedFrame());
       audio_frame->dependency = EncodedFrame::KEY;
       audio_frame->frame_id = frame_id_;
       audio_frame->referenced_frame_id = frame_id_;
@@ -134,6 +139,12 @@ class AudioEncoder::ImplBase
       audio_frame->reference_time = frame_capture_time_;
 
       if (EncodeFromFilledBuffer(&audio_frame->data)) {
+        // Compute deadline utilization as the real-world time elapsed divided
+        // by the signal duration.
+        audio_frame->deadline_utilization =
+            (base::TimeTicks::Now() - start_time).InSecondsF() /
+                frame_duration_.InSecondsF();
+
         cast_environment_->PostTask(
             CastEnvironment::MAIN,
             FROM_HERE,

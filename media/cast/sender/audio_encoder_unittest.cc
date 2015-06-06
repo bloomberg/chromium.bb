@@ -42,7 +42,7 @@ class TestEncodedAudioFrameReceiver {
     samples_per_frame_ = samples_per_frame;
   }
 
-  void FrameEncoded(scoped_ptr<EncodedFrame> encoded_frame,
+  void FrameEncoded(scoped_ptr<SenderEncodedFrame> encoded_frame,
                     int samples_skipped) {
     EXPECT_EQ(encoded_frame->dependency, EncodedFrame::KEY);
     EXPECT_EQ(static_cast<uint8>(frames_received_ & 0xff),
@@ -58,6 +58,9 @@ class TestEncodedAudioFrameReceiver {
     EXPECT_LE(lower_bound_, encoded_frame->reference_time);
     lower_bound_ = encoded_frame->reference_time;
     EXPECT_GT(upper_bound_, encoded_frame->reference_time);
+
+    EXPECT_LE(0.0, encoded_frame->deadline_utilization);
+    EXPECT_EQ(-1.0, encoded_frame->lossy_utilization);
 
     ++frames_received_;
   }
