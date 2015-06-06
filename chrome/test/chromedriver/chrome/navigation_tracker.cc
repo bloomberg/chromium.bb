@@ -181,7 +181,8 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
 
 Status NavigationTracker::OnCommandSuccess(DevToolsClient* client,
                                            const std::string& method) {
-  if (method == "Page.navigate" && loading_state_ != kLoading) {
+  if ((method == "Page.navigate" || method == "Page.navigateToHistoryEntry") &&
+      loading_state_ != kLoading) {
     // At this point the browser has initiated the navigation, but besides that,
     // it is unknown what will happen.
     //
