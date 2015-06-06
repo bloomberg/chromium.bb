@@ -5,6 +5,7 @@
 #include "components/devtools_service/devtools_service_delegate.h"
 
 #include "base/logging.h"
+#include "components/devtools_service/devtools_registry_impl.h"
 #include "components/devtools_service/devtools_service.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -51,7 +52,8 @@ void DevToolsServiceDelegate::Quit() {
 void DevToolsServiceDelegate::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<DevToolsRegistry> request) {
-  service_->BindToRegistryRequest(request.Pass());
+  if (service_->IsInitialized())
+    service_->registry()->BindToRegistryRequest(request.Pass());
 }
 
 void DevToolsServiceDelegate::Create(

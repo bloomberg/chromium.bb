@@ -6,6 +6,10 @@ import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
 source_set("lib") {
   sources = [
+    "devtools_http_server.cc",
+    "devtools_http_server.h",
+    "devtools_registry_impl.cc",
+    "devtools_registry_impl.h",
     "devtools_service.cc",
     "devtools_service.h",
     "devtools_service_delegate.cc",
