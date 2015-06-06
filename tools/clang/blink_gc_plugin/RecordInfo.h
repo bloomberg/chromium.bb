@@ -96,6 +96,8 @@ class RecordInfo {
   bool IsGCMixinInstance();
   bool IsEagerlyFinalized();
 
+  bool HasDefinition();
+
   clang::CXXMethodDecl* DeclaresNewOperator();
 
   bool RequiresTraceMethod();

@@ -71,6 +71,9 @@ const char kRefPtrToGCManagedClassNote[] =
 const char kOwnPtrToGCManagedClassNote[] =
     "[blink-gc] OwnPtr field %0 to a GC managed class declared here:";
 
+const char kMemberToGCUnmanagedClassNote[] =
+    "[blink-gc] Member field %0 to non-GC managed class declared here:";
+
 const char kStackAllocatedFieldNote[] =
     "[blink-gc] Stack-allocated field %0 declared here:";
 
@@ -851,6 +854,7 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     kRawPtrToGCManagedWarning,
     kRefPtrToGCManaged,
     kOwnPtrToGCManaged,
+    kMemberToGCUnmanaged,
     kMemberInUnmanaged,
     kPtrFromHeapToStack,
     kGCDerivedPartObject
@@ -906,6 +910,23 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
         edge->value()->IsGCDerived() &&
         !edge->value()->IsGCMixin()) {
       invalid_fields_.push_back(std::make_pair(current_, kGCDerivedPartObject));
+      return;
+    }
+
+    // If in a stack allocated context, be fairly insistent that T in Member<T>
+    // is GC allocated, as stack allocated objects do not have a trace()
+    // that separately verifies the validity of Member<T>.
+    //
+    // Notice that an error is only reported if T's definition is in scope;
+    // we do not require that it must be brought into scope as that would
+    // prevent declarations of mutually dependent class types.
+    //
+    // (Note: Member<>'s constructor will at run-time verify that the
+    // pointer it wraps is indeed heap allocated.)
+    if (stack_allocated_host_ && Parent() && Parent()->IsMember() &&
+        edge->value()->HasDefinition() && !edge->value()->IsGCAllocated()) {
+      invalid_fields_.push_back(std::make_pair(current_,
+                                               kMemberToGCUnmanaged));
       return;
     }
 
@@ -1059,6 +1080,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         DiagnosticsEngine::Note, kRefPtrToGCManagedClassNote);
     diag_own_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kOwnPtrToGCManagedClassNote);
+    diag_member_to_gc_unmanaged_class_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kMemberToGCUnmanagedClassNote);
     diag_stack_allocated_field_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kStackAllocatedFieldNote);
     diag_member_in_unmanaged_class_note_ = diagnostic_.getCustomDiagID(
@@ -1832,6 +1855,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         error = diag_ref_ptr_to_gc_managed_class_note_;
       } else if (it->second == CheckFieldsVisitor::kOwnPtrToGCManaged) {
         error = diag_own_ptr_to_gc_managed_class_note_;
+      } else if (it->second == CheckFieldsVisitor::kMemberToGCUnmanaged) {
+        error = diag_member_to_gc_unmanaged_class_note_;
       } else if (it->second == CheckFieldsVisitor::kMemberInUnmanaged) {
         error = diag_member_in_unmanaged_class_note_;
       } else if (it->second == CheckFieldsVisitor::kPtrFromHeapToStack) {
@@ -2108,10 +2133,10 @@ class BlinkGCPluginConsumer : public ASTConsumer {
 
   unsigned diag_base_requires_tracing_note_;
   unsigned diag_field_requires_tracing_note_;
-  unsigned diag_field_illegally_traced_note_;
   unsigned diag_raw_ptr_to_gc_managed_class_note_;
   unsigned diag_ref_ptr_to_gc_managed_class_note_;
   unsigned diag_own_ptr_to_gc_managed_class_note_;
+  unsigned diag_member_to_gc_unmanaged_class_note_;
   unsigned diag_stack_allocated_field_note_;
   unsigned diag_member_in_unmanaged_class_note_;
   unsigned diag_part_object_to_gc_derived_class_note_;

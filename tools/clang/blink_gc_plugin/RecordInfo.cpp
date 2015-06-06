@@ -186,6 +186,10 @@ bool RecordInfo::IsEagerlyFinalized() {
   return is_eagerly_finalized_;
 }
 
+bool RecordInfo::HasDefinition() {
+  return record_->hasDefinition();
+}
+
 RecordInfo* RecordCache::Lookup(CXXRecordDecl* record) {
   // Ignore classes annotated with the GC_PLUGIN_IGNORE macro.
   if (!record || Config::IsIgnoreAnnotated(record))
