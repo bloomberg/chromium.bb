@@ -193,7 +193,7 @@ class SYNC_EXPORT SyncDataRemote : public SyncData {
 };
 
 // gmock printer helper.
-void PrintTo(const SyncData& sync_data, std::ostream* os);
+void SYNC_EXPORT PrintTo(const SyncData& sync_data, std::ostream* os);
 
 typedef std::vector<SyncData> SyncDataList;
 

@@ -58,6 +58,7 @@
       'autofill/core/browser/ui/card_unmask_prompt_controller_impl_unittest.cc',
       'autofill/core/browser/validation_unittest.cc',
       'autofill/core/browser/webdata/autofill_profile_syncable_service_unittest.cc',
+      'autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service_unittest.cc',
       'autofill/core/browser/webdata/autofill_table_unittest.cc',
       'autofill/core/browser/webdata/web_data_service_unittest.cc',
       'autofill/core/common/autofill_regexes_unittest.cc',

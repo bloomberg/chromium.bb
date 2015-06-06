@@ -18,6 +18,14 @@ class AutofillWebDataServiceObserverOnDBThread {
   // in the WebDatabase.
   virtual void AutofillProfileChanged(const AutofillProfileChange& change) {}
 
+  // Called on DB thread when a CreditCard has been added/removed/updated in the
+  // WebDatabase.
+  virtual void CreditCardChanged(const CreditCardChange& change) {}
+
+  // Called on DB thread when multiple Autofill entries have been modified by
+  // Sync.
+  virtual void AutofillMultipleChanged() {}
+
  protected:
   virtual ~AutofillWebDataServiceObserverOnDBThread() {}
 };
