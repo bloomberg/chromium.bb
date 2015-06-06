@@ -18,7 +18,6 @@ import time
 from xml.etree import ElementTree
 from xml.dom import minidom
 
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
@@ -1199,7 +1198,7 @@ class PreCQLauncherStage(SyncStage):
         configs_to_test.update(constants.PRE_CQ_DEFAULT_CONFIGS)
 
       # Verify that all of the configs are valid.
-      if all(c in cbuildbot_config.GetConfig() for c in configs_to_test):
+      if all(c in self._run.site_config for c in configs_to_test):
         return configs_to_test
 
     return None
