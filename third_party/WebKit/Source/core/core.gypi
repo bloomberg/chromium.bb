@@ -2068,6 +2068,7 @@
             'workers/WorkerScriptLoaderClient.cpp',
             'workers/WorkerScriptLoaderClient.h',
             'workers/WorkerThread.cpp',
+            'workers/WorkerThread.h',
             'workers/WorkerThreadStartupData.cpp',
             'workers/WorkerThreadStartupData.h',
             'xml/DOMParser.cpp',

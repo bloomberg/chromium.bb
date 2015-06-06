@@ -13,6 +13,7 @@
 #include "modules/EventTargetModulesNames.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/compositorworker/CompositorWorkerManager.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/webdatabase/DatabaseManager.h"
 
@@ -33,11 +34,16 @@ void ModulesInitializer::init()
 
     CoreInitializer::init();
 
+    if (RuntimeEnabledFeatures::compositorWorkerEnabled())
+        CompositorWorkerManager::initialize();
+
     ASSERT(isInitialized());
 }
 
 void ModulesInitializer::terminateThreads()
 {
+    if (RuntimeEnabledFeatures::compositorWorkerEnabled())
+        CompositorWorkerManager::shutdown();
     DatabaseManager::terminateDatabaseThread();
 }
 
