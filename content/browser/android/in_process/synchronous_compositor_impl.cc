@@ -274,7 +274,9 @@ void SynchronousCompositorImpl::OnNeedsBeginFramesChange(
 }
 
 void SynchronousCompositorImpl::BeginFrame(const cc::BeginFrameArgs& args) {
-  if (!registered_with_client_) {
+  if (!registered_with_client_ && is_active_ && renderer_needs_begin_frames_) {
+    // Make sure this is a BeginFrame that renderer side explicitly requested.
+    // Otherwise it is possible renderer objects not initialized.
     RegisterWithClient();
     DCHECK(registered_with_client_);
   }
