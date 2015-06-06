@@ -429,22 +429,6 @@ public class ContextualSearchUma {
     }
 
     /**
-     * Logs the state of the Contextual Search preference. This function should be called if the
-     * Contextual Search feature is active, and will track the different preference settings
-     * (disabled, enabled or uninitialized). Calling more than once is fine.
-     * @param promoTapsRemaining The number of taps remaining, or -1 if not applicable.
-     */
-    @Deprecated
-    public static void logPreferenceState(int promoTapsRemaining) {
-        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchPreferenceState",
-                getPreferenceValue(), PREFERENCE_HISTOGRAM_BOUNDARY);
-        if (promoTapsRemaining != PROMO_TAPS_REMAINING_INVALID) {
-            RecordHistogram.recordCountHistogram("Search.ContextualSearchPromoTapsRemaining",
-                    promoTapsRemaining);
-        }
-    }
-
-    /**
      * Logs the given number of promo taps remaining.  Should be called only for users that
      * are still undecided.
      * @param promoTapsRemaining The number of taps remaining (should not be negative).
