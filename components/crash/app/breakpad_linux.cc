@@ -166,35 +166,6 @@ void my_uint64tos(char* output, uint64_t i, unsigned i_len) {
     output[index - 1] = '0' + (i % 10);
 }
 
-#if defined(OS_ANDROID)
-char* my_strncpy(char* dst, const char* src, size_t len) {
-  int i = len;
-  char* p = dst;
-  if (!dst || !src)
-    return dst;
-  while (i != 0 && *src != '\0') {
-    *p++ = *src++;
-    i--;
-  }
-  while (i != 0) {
-    *p++ = '\0';
-    i--;
-  }
-  return dst;
-}
-
-char* my_strncat(char *dest, const char* src, size_t len) {
-  char* ret = dest;
-  while (*dest)
-      dest++;
-  while (len--)
-    if (!(*dest++ = *src++))
-      return ret;
-  *dest = 0;
-  return ret;
-}
-#endif
-
 #if !defined(OS_CHROMEOS)
 bool my_isxdigit(char c) {
   return (c >= '0' && c <= '9') || ((c | 0x20) >= 'a' && (c | 0x20) <= 'f');
@@ -1592,36 +1563,33 @@ void HandleCrashDump(const BreakpadInfo& info) {
 
 #if defined(OS_ANDROID)
   if (info.filename) {
-    int filename_length = my_strlen(info.filename);
+    size_t filename_length = my_strlen(info.filename);
 
     // If this was a file, we need to copy it to the right place and use the
     // right file name so it gets uploaded by the browser.
     const char msg[] = "Output crash dump file:";
     WriteLog(msg, sizeof(msg) - 1);
-    WriteLog(info.filename, filename_length - 1);
+    WriteLog(info.filename, filename_length);
 
     char pid_buf[kUint64StringSize];
-    uint64_t pid_str_length = my_uint64_len(info.pid);
+    size_t pid_str_length = my_uint64_len(info.pid);
     my_uint64tos(pid_buf, info.pid, pid_str_length);
+    pid_buf[pid_str_length] = 0;  // my_uint64tos() doesn't null-terminate.
 
-    // -1 because we won't need the null terminator on the original filename.
-    unsigned done_filename_len = filename_length - 1 + pid_str_length;
+    size_t done_filename_len = filename_length + pid_str_length + 1;
     char* done_filename = reinterpret_cast<char*>(
         allocator.Alloc(done_filename_len));
     // Rename the file such that the pid is the suffix in order signal to other
     // processes that the minidump is complete. The advantage of using the pid
     // as the suffix is that it is trivial to associate the minidump with the
     // crashed process.
-    // Finally, note strncpy prevents null terminators from
-    // being copied. Pad the rest with 0's.
-    my_strncpy(done_filename, info.filename, done_filename_len);
-    // Append the suffix a null terminator should be added.
-    my_strncat(done_filename, pid_buf, pid_str_length);
+    my_strlcpy(done_filename, info.filename, done_filename_len);
+    my_strlcat(done_filename, pid_buf, done_filename_len);
     // Rename the minidump file to signal that it is complete.
     if (rename(info.filename, done_filename)) {
       const char failed_msg[] = "Failed to rename:";
       WriteLog(failed_msg, sizeof(failed_msg) - 1);
-      WriteLog(info.filename, filename_length - 1);
+      WriteLog(info.filename, filename_length);
       const char to_msg[] = "to";
       WriteLog(to_msg, sizeof(to_msg) - 1);
       WriteLog(done_filename, done_filename_len - 1);
