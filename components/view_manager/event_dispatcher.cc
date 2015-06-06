@@ -30,15 +30,11 @@ void EventDispatcher::RemoveAccelerator(mojo::KeyboardCode keyboard_code,
   accelerators_.erase(Accelerator(keyboard_code, flags));
 }
 
-void EventDispatcher::OnEvent(mojo::EventPtr event,
-                              const OnEventCallback& callback) {
-  callback.Run();
-
+void EventDispatcher::OnEvent(mojo::EventPtr event) {
   if (event->pointer_data) {
     const gfx::Point root_point(static_cast<int>(event->pointer_data->x),
                                 static_cast<int>(event->pointer_data->y));
     ServerView* target = connection_manager_->GetFocusedView();
-    ;
     if (event->action == mojo::EVENT_TYPE_POINTER_DOWN || !target) {
       target = FindDeepestVisibleView(connection_manager_->root(), root_point);
       CHECK(target);

@@ -184,7 +184,7 @@ class TestDisplayManager : public DisplayManager {
 
   // DisplayManager:
   void Init(ConnectionManager* connection_manager,
-            mojo::NativeViewportEventDispatcherPtr event_dispatcher) override {}
+            EventDispatcher* event_dispatcher) override {}
   void SchedulePaint(const ServerView* view, const gfx::Rect& bounds) override {
   }
   void SetViewportSize(const gfx::Size& size) override {}

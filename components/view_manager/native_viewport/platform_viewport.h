@@ -6,7 +6,6 @@
 #define COMPONENTS_VIEW_MANAGER_NATIVE_VIEWPORT_PLATFORM_VIEWPORT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/view_manager/public/interfaces/native_viewport.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/mojo/events/input_events.mojom.h"
@@ -24,12 +23,13 @@ class PlatformViewport {
    public:
     virtual ~Delegate() {}
 
-    virtual void OnMetricsChanged(mojo::ViewportMetricsPtr metrics) = 0;
     virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
                                               float device_pixel_ratio) = 0;
     virtual void OnAcceleratedWidgetDestroyed() = 0;
-    virtual bool OnEvent(mojo::EventPtr event) = 0;
     virtual void OnDestroyed() = 0;
+    virtual void OnEvent(mojo::EventPtr event) = 0;
+    virtual void OnMetricsChanged(const gfx::Size& size,
+                                  float device_scale_factor) = 0;
   };
 
   virtual ~PlatformViewport() {}
@@ -41,7 +41,7 @@ class PlatformViewport {
   virtual gfx::Size GetSize() = 0;
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
 
-  static scoped_ptr<PlatformViewport> Create(Delegate* delegate);
+  static scoped_ptr<PlatformViewport> Create(Delegate* delegate, bool headless);
 };
 
 }  // namespace native_viewport
