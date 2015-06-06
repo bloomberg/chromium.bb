@@ -69,12 +69,6 @@ class AutofillProfile : public AutofillDataModel {
   RecordType record_type() const { return record_type_; }
   void set_record_type(RecordType type) { record_type_ = type; }
 
-  // Multi-value equivalents to |GetInfo| and |SetInfo|.
-  void SetRawMultiInfo(ServerFieldType type,
-                       const std::vector<base::string16>& values);
-  void GetRawMultiInfo(ServerFieldType type,
-                       std::vector<base::string16>* values) const;
-
   // Returns true if there are no values (field types) set.
   bool IsEmpty(const std::string& app_locale) const;
 
@@ -193,13 +187,6 @@ class AutofillProfile : public AutofillDataModel {
 
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
-
-  // Shared implementation for GetRawMultiInfo() and GetMultiInfo().  Pass an
-  // empty |app_locale| to get the raw info; otherwise, the returned info is
-  // canonicalized according to the given |app_locale|, if appropriate.
-  void GetMultiInfoImpl(const AutofillType& type,
-                        const std::string& app_locale,
-                        std::vector<base::string16>* values) const;
 
   // Builds inferred label from the first |num_fields_to_include| non-empty
   // fields in |label_fields|. Uses as many fields as possible if there are not

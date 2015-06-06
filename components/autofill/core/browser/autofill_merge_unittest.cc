@@ -64,14 +64,11 @@ std::string SerializeProfiles(const std::vector<AutofillProfile*>& profiles) {
     result += "\n";
     for (size_t j = 0; j < arraysize(kProfileFieldTypes); ++j) {
       ServerFieldType type = kProfileFieldTypes[j];
-      std::vector<base::string16> values;
-      profiles[i]->GetRawMultiInfo(type, &values);
-      for (size_t k = 0; k < values.size(); ++k) {
-        result += AutofillType(type).ToString();
-        result += kFieldSeparator;
-        result += base::UTF16ToUTF8(values[k]);
-        result += "\n";
-      }
+      base::string16 value = profiles[i]->GetRawInfo(type);
+      result += AutofillType(type).ToString();
+      result += kFieldSeparator;
+      result += base::UTF16ToUTF8(value);
+      result += "\n";
     }
   }
 

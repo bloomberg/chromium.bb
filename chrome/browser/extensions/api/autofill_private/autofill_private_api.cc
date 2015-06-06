@@ -28,18 +28,6 @@ namespace {
 static const char kSettingsOrigin[] = "Chrome settings";
 static const char kErrorDataUnavailable[] = "Autofill data unavailable.";
 
-// Converts the UTF-8 strings in |input| to UTF-16 strings and adds them to
-// |output|.
-void UTF8VectorToUTF16Vector(
-    const std::vector<std::string>& input,
-    std::vector<base::string16>* output) {
-  // Ensure output is clear.
-  output->clear();
-
-  for (const std::string& s : input)
-    output->push_back(base::UTF8ToUTF16(s));
-}
-
 // Fills |components| with the address UI components that should be used to
 // input an address for |country_code| when UI BCP 47 language code is
 // |ui_language_code|.
@@ -261,14 +249,18 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
   }
 
   if (address->phone_numbers) {
-    UTF8VectorToUTF16Vector(*address->phone_numbers, &string16Container);
-    profile.SetRawMultiInfo(
-        autofill::PHONE_HOME_WHOLE_NUMBER, string16Container);
+    std::string phone;
+    if (!address->phone_numbers->empty())
+      phone = address->phone_numbers->at(0);
+    profile.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+                       base::UTF8ToUTF16(phone));
   }
 
   if (address->email_addresses) {
-    UTF8VectorToUTF16Vector(*address->email_addresses, &string16Container);
-    profile.SetRawMultiInfo(autofill::EMAIL_ADDRESS, string16Container);
+    std::string email;
+    if (!address->email_addresses->empty())
+      email = address->email_addresses->at(0);
+    profile.SetRawInfo(autofill::EMAIL_ADDRESS, base::UTF8ToUTF16(email));
   }
 
   if (address->language_code)

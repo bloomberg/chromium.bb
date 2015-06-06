@@ -186,29 +186,6 @@ void GetFieldsForDistinguishingProfiles(
   }
 }
 
-// A helper function for string streaming.  Concatenates multi-valued entries
-// stored for a given |type| into a single string.  This string is returned.
-const base::string16 MultiString(const AutofillProfile& p,
-                                 ServerFieldType type) {
-  std::vector<base::string16> values;
-  p.GetRawMultiInfo(type, &values);
-  base::string16 accumulate;
-  for (size_t i = 0; i < values.size(); ++i) {
-    if (i > 0)
-      accumulate += ASCIIToUTF16(" ");
-    accumulate += values[i];
-  }
-  return accumulate;
-}
-
-base::string16 GetFormGroupInfo(const FormGroup& form_group,
-                                const AutofillType& type,
-                                const std::string& app_locale) {
-  return app_locale.empty() ?
-      form_group.GetRawInfo(type.GetStorableType()) :
-      form_group.GetInfo(type, app_locale);
-}
-
 // Collapse compound field types to their "full" type.  I.e. First name
 // collapses to full name, area code collapses to full phone, etc.
 void CollapseCompoundFieldTypes(ServerFieldTypeSet* type_set) {
@@ -283,8 +260,7 @@ AutofillProfile::AutofillProfile()
 }
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
-    : AutofillDataModel(std::string(), std::string()),
-      phone_number_(this) {
+    : AutofillDataModel(std::string(), std::string()), phone_number_(this) {
   operator=(profile);
 }
 
@@ -372,37 +348,6 @@ bool AutofillProfile::SetInfo(const AutofillType& type,
   base::string16 trimmed_value;
   base::TrimWhitespace(value, base::TRIM_ALL, &trimmed_value);
   return form_group->SetInfo(type, trimmed_value, app_locale);
-}
-
-// TODO(estade): remove this function.
-void AutofillProfile::SetRawMultiInfo(
-    ServerFieldType type,
-    const std::vector<base::string16>& values) {
-  switch (AutofillType(type).group()) {
-    case NAME:
-    case NAME_BILLING:
-    case EMAIL:
-    case PHONE_HOME:
-    case PHONE_BILLING:
-      SetRawInfo(type, values.empty() ? base::string16() : values[0]);
-      break;
-
-    default:
-      if (values.size() == 1U) {
-        SetRawInfo(type, values[0]);
-      } else if (values.empty()) {
-        SetRawInfo(type, base::string16());
-      } else {
-        NOTREACHED();
-      }
-      break;
-  }
-}
-
-void AutofillProfile::GetRawMultiInfo(
-    ServerFieldType type,
-    std::vector<base::string16>* values) const {
-  GetMultiInfoImpl(AutofillType(type), std::string(), values);
 }
 
 bool AutofillProfile::IsEmpty(const std::string& app_locale) const {
@@ -706,10 +651,10 @@ void AutofillProfile::CreateInferredLabels(
 
 void AutofillProfile::GenerateServerProfileIdentifier() {
   DCHECK_EQ(SERVER_PROFILE, record_type());
-  base::string16 contents = MultiString(*this, NAME_FIRST);
-  contents.append(MultiString(*this, NAME_MIDDLE));
-  contents.append(MultiString(*this, NAME_LAST));
-  contents.append(MultiString(*this, EMAIL_ADDRESS));
+  base::string16 contents = GetRawInfo(NAME_FIRST);
+  contents.append(GetRawInfo(NAME_MIDDLE));
+  contents.append(GetRawInfo(NAME_LAST));
+  contents.append(GetRawInfo(EMAIL_ADDRESS));
   contents.append(GetRawInfo(COMPANY_NAME));
   contents.append(GetRawInfo(ADDRESS_HOME_STREET_ADDRESS));
   contents.append(GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY));
@@ -718,7 +663,7 @@ void AutofillProfile::GenerateServerProfileIdentifier() {
   contents.append(GetRawInfo(ADDRESS_HOME_ZIP));
   contents.append(GetRawInfo(ADDRESS_HOME_SORTING_CODE));
   contents.append(GetRawInfo(ADDRESS_HOME_COUNTRY));
-  contents.append(MultiString(*this, PHONE_HOME_WHOLE_NUMBER));
+  contents.append(GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
   std::string contents_utf8 = UTF16ToUTF8(contents);
   contents_utf8.append(language_code());
   server_id_ = base::SHA1HashString(contents_utf8);
@@ -795,15 +740,6 @@ void AutofillProfile::GetSupportedTypes(
   FormGroupList info = FormGroups();
   for (FormGroupList::const_iterator it = info.begin(); it != info.end(); ++it)
     (*it)->GetSupportedTypes(supported_types);
-}
-
-// TODO(estade): remove this function.
-void AutofillProfile::GetMultiInfoImpl(
-    const AutofillType& type,
-    const std::string& app_locale,
-    std::vector<base::string16>* values) const {
-  values->resize(1);
-  (*values)[0] = GetFormGroupInfo(*this, type, app_locale);
 }
 
 base::string16 AutofillProfile::ConstructInferredLabel(
@@ -1012,40 +948,22 @@ bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
 
 // So we can compare AutofillProfiles with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
-  return os
-      << profile.guid()
-      << " "
-      << profile.origin()
-      << " "
-      << UTF16ToUTF8(MultiString(profile, NAME_FIRST))
-      << " "
-      << UTF16ToUTF8(MultiString(profile, NAME_MIDDLE))
-      << " "
-      << UTF16ToUTF8(MultiString(profile, NAME_LAST))
-      << " "
-      << UTF16ToUTF8(MultiString(profile, EMAIL_ADDRESS))
-      << " "
-      << UTF16ToUTF8(profile.GetRawInfo(COMPANY_NAME))
-      << " "
-      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE1))
-      << " "
-      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE2))
-      << " "
-      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY))
-      << " "
-      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_CITY))
-      << " "
-      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STATE))
-      << " "
-      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_ZIP))
-      << " "
-      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE))
-      << " "
-      << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))
-      << " "
-      << profile.language_code()
-      << " "
-      << UTF16ToUTF8(MultiString(profile, PHONE_HOME_WHOLE_NUMBER));
+  return os << profile.guid() << " " << profile.origin() << " "
+            << UTF16ToUTF8(profile.GetRawInfo(NAME_FIRST)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(NAME_MIDDLE)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(NAME_LAST)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(EMAIL_ADDRESS)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(COMPANY_NAME)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE1)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE2)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY))
+            << " " << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_CITY)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STATE)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_ZIP)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY)) << " "
+            << profile.language_code() << " "
+            << UTF16ToUTF8(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
 }
 
 }  // namespace autofill

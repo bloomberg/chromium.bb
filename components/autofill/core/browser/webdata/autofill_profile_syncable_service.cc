@@ -453,19 +453,17 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
           UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY))));
   specifics->set_address_home_language_code(LimitData(profile.language_code()));
 
+  // TODO(estade): this should be set_email_address.
+  specifics->add_email_address(
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(EMAIL_ADDRESS))));
   std::vector<base::string16> values;
-  profile.GetRawMultiInfo(EMAIL_ADDRESS, &values);
-  for (size_t i = 0; i < values.size(); ++i) {
-    specifics->add_email_address(LimitData(UTF16ToUTF8(values[i])));
-  }
 
   specifics->set_company_name(
       LimitData(UTF16ToUTF8(profile.GetRawInfo(COMPANY_NAME))));
 
-  profile.GetRawMultiInfo(PHONE_HOME_WHOLE_NUMBER, &values);
-  for (size_t i = 0; i < values.size(); ++i) {
-    specifics->add_phone_home_whole_number(LimitData(UTF16ToUTF8(values[i])));
-  }
+  // TODO(estade): this should be set_phone_home_whole_number.
+  specifics->add_phone_home_whole_number(
+      LimitData(UTF16ToUTF8(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER))));
 }
 
 void AutofillProfileSyncableService::CreateGUIDToProfileMap(
@@ -619,29 +617,14 @@ bool AutofillProfileSyncableService::UpdateField(
   return true;
 }
 
+// TODO(estade): remove this function.
 bool AutofillProfileSyncableService::UpdateMultivaluedField(
     ServerFieldType field_type,
     const ::google::protobuf::RepeatedPtrField<std::string>& new_values,
     AutofillProfile* autofill_profile) {
-  std::vector<base::string16> values;
-  autofill_profile->GetRawMultiInfo(field_type, &values);
-  bool changed = false;
-  if (static_cast<size_t>(new_values.size()) != values.size()) {
-    values.clear();
-    values.resize(static_cast<size_t>(new_values.size()));
-    changed = true;
-  }
-  for (size_t i = 0; i < values.size(); ++i) {
-    base::string16 synced_value(
-        UTF8ToUTF16(new_values.Get(static_cast<int>(i))));
-    if (values[i] != synced_value) {
-      values[i] = synced_value;
-      changed = true;
-    }
-  }
-  if (changed)
-    autofill_profile->SetRawMultiInfo(field_type, values);
-  return changed;
+  return UpdateField(field_type,
+                     new_values.size() < 1 ? std::string() : new_values.Get(0),
+                     autofill_profile);
 }
 
 bool AutofillProfileSyncableService::MergeProfile(
