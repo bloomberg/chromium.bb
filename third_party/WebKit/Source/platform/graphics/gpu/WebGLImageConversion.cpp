@@ -20,13 +20,37 @@ WebGLImageConversion::DataFormat getDataFormat(GLenum destinationFormat, GLenum 
 {
     WebGLImageConversion::DataFormat dstFormat = WebGLImageConversion::DataFormatRGBA8;
     switch (destinationType) {
+    case GL_BYTE:
+        switch (destinationFormat) {
+        case GL_RED:
+        case GL_RED_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatR8_S;
+            break;
+        case GL_RG:
+        case GL_RG_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRG8_S;
+            break;
+        case GL_RGB:
+        case GL_RGB_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRGB8_S;
+            break;
+        case GL_RGBA:
+        case GL_RGBA_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRGBA8_S;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        break;
     case GL_UNSIGNED_BYTE:
         switch (destinationFormat) {
         case GL_RGB:
+        case GL_RGB_INTEGER:
         case GL_SRGB_EXT:
             dstFormat = WebGLImageConversion::DataFormatRGB8;
             break;
         case GL_RGBA:
+        case GL_RGBA_INTEGER:
         case GL_SRGB_ALPHA_EXT:
             dstFormat = WebGLImageConversion::DataFormatRGBA8;
             break;
@@ -34,10 +58,146 @@ WebGLImageConversion::DataFormat getDataFormat(GLenum destinationFormat, GLenum 
             dstFormat = WebGLImageConversion::DataFormatA8;
             break;
         case GL_LUMINANCE:
+        case GL_RED:
+        case GL_RED_INTEGER:
             dstFormat = WebGLImageConversion::DataFormatR8;
+            break;
+        case GL_RG:
+        case GL_RG_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRG8;
             break;
         case GL_LUMINANCE_ALPHA:
             dstFormat = WebGLImageConversion::DataFormatRA8;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        break;
+    case GL_SHORT:
+        switch (destinationFormat) {
+        case GL_RED_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatR16_S;
+            break;
+        case GL_RG_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRG16_S;
+            break;
+        case GL_RGB_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRGB16_S;
+        case GL_RGBA_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRGBA16_S;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        break;
+    case GL_UNSIGNED_SHORT:
+        switch (destinationFormat) {
+        case GL_RED_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatR16;
+            break;
+        case GL_DEPTH_COMPONENT:
+            dstFormat = WebGLImageConversion::DataFormatD16;
+            break;
+        case GL_RG_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRG16;
+            break;
+        case GL_RGB_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRGB16;
+            break;
+        case GL_RGBA_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRGBA16;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        break;
+    case GL_INT:
+        switch (destinationFormat) {
+        case GL_RED_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatR32_S;
+            break;
+        case GL_RG_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRG32_S;
+            break;
+        case GL_RGB_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRGB32_S;
+            break;
+        case GL_RGBA_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRGBA32_S;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        break;
+    case GL_UNSIGNED_INT:
+        switch (destinationFormat) {
+        case GL_RED_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatR32;
+            break;
+        case GL_DEPTH_COMPONENT:
+            dstFormat = WebGLImageConversion::DataFormatD32;
+            break;
+        case GL_RG_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRG32;
+            break;
+        case GL_RGB_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRGB32;
+            break;
+        case GL_RGBA_INTEGER:
+            dstFormat = WebGLImageConversion::DataFormatRGBA32;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        break;
+    case GL_HALF_FLOAT_OES: // OES_texture_half_float
+    case GL_HALF_FLOAT:
+        switch (destinationFormat) {
+        case GL_RGBA:
+            dstFormat = WebGLImageConversion::DataFormatRGBA16F;
+            break;
+        case GL_RGB:
+            dstFormat = WebGLImageConversion::DataFormatRGB16F;
+            break;
+        case GL_RG:
+            dstFormat = WebGLImageConversion::DataFormatRG16F;
+            break;
+        case GL_ALPHA:
+            dstFormat = WebGLImageConversion::DataFormatA16F;
+            break;
+        case GL_LUMINANCE:
+        case GL_RED:
+            dstFormat = WebGLImageConversion::DataFormatR16F;
+            break;
+        case GL_LUMINANCE_ALPHA:
+            dstFormat = WebGLImageConversion::DataFormatRA16F;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        break;
+    case GL_FLOAT: // OES_texture_float
+        switch (destinationFormat) {
+        case GL_RGBA:
+            dstFormat = WebGLImageConversion::DataFormatRGBA32F;
+            break;
+        case GL_RGB:
+            dstFormat = WebGLImageConversion::DataFormatRGB32F;
+            break;
+        case GL_RG:
+            dstFormat = WebGLImageConversion::DataFormatRG32F;
+            break;
+        case GL_ALPHA:
+            dstFormat = WebGLImageConversion::DataFormatA32F;
+            break;
+        case GL_LUMINANCE:
+        case GL_RED:
+            dstFormat = WebGLImageConversion::DataFormatR32F;
+            break;
+        case GL_DEPTH_COMPONENT:
+            dstFormat = WebGLImageConversion::DataFormatD32F;
+            break;
+        case GL_LUMINANCE_ALPHA:
+            dstFormat = WebGLImageConversion::DataFormatRA32F;
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -52,47 +212,14 @@ WebGLImageConversion::DataFormat getDataFormat(GLenum destinationFormat, GLenum 
     case GL_UNSIGNED_SHORT_5_6_5:
         dstFormat = WebGLImageConversion::DataFormatRGB565;
         break;
-    case GL_HALF_FLOAT_OES: // OES_texture_half_float
-        switch (destinationFormat) {
-        case GL_RGB:
-            dstFormat = WebGLImageConversion::DataFormatRGB16F;
-            break;
-        case GL_RGBA:
-            dstFormat = WebGLImageConversion::DataFormatRGBA16F;
-            break;
-        case GL_ALPHA:
-            dstFormat = WebGLImageConversion::DataFormatA16F;
-            break;
-        case GL_LUMINANCE:
-            dstFormat = WebGLImageConversion::DataFormatR16F;
-            break;
-        case GL_LUMINANCE_ALPHA:
-            dstFormat = WebGLImageConversion::DataFormatRA16F;
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
+    case GL_UNSIGNED_INT_24_8:
+        dstFormat = WebGLImageConversion::DataFormatDS24_8;
         break;
-    case GL_FLOAT: // OES_texture_float
-        switch (destinationFormat) {
-        case GL_RGB:
-            dstFormat = WebGLImageConversion::DataFormatRGB32F;
-            break;
-        case GL_RGBA:
-            dstFormat = WebGLImageConversion::DataFormatRGBA32F;
-            break;
-        case GL_ALPHA:
-            dstFormat = WebGLImageConversion::DataFormatA32F;
-            break;
-        case GL_LUMINANCE:
-            dstFormat = WebGLImageConversion::DataFormatR32F;
-            break;
-        case GL_LUMINANCE_ALPHA:
-            dstFormat = WebGLImageConversion::DataFormatRA32F;
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+        dstFormat = WebGLImageConversion::DataFormatRGB10F11F11F;
+        break;
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+        dstFormat = WebGLImageConversion::DataFormatRGBA2_10_10_10;
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -1223,34 +1350,63 @@ unsigned TexelBytesForFormat(WebGLImageConversion::DataFormat format)
 {
     switch (format) {
     case WebGLImageConversion::DataFormatR8:
+    case WebGLImageConversion::DataFormatR8_S:
     case WebGLImageConversion::DataFormatA8:
         return 1;
+    case WebGLImageConversion::DataFormatRG8:
+    case WebGLImageConversion::DataFormatRG8_S:
     case WebGLImageConversion::DataFormatRA8:
     case WebGLImageConversion::DataFormatAR8:
     case WebGLImageConversion::DataFormatRGBA5551:
     case WebGLImageConversion::DataFormatRGBA4444:
     case WebGLImageConversion::DataFormatRGB565:
     case WebGLImageConversion::DataFormatA16F:
+    case WebGLImageConversion::DataFormatR16:
+    case WebGLImageConversion::DataFormatR16_S:
     case WebGLImageConversion::DataFormatR16F:
+    case WebGLImageConversion::DataFormatD16:
         return 2;
     case WebGLImageConversion::DataFormatRGB8:
+    case WebGLImageConversion::DataFormatRGB8_S:
     case WebGLImageConversion::DataFormatBGR8:
         return 3;
     case WebGLImageConversion::DataFormatRGBA8:
+    case WebGLImageConversion::DataFormatRGBA8_S:
     case WebGLImageConversion::DataFormatARGB8:
     case WebGLImageConversion::DataFormatABGR8:
     case WebGLImageConversion::DataFormatBGRA8:
+    case WebGLImageConversion::DataFormatR32:
+    case WebGLImageConversion::DataFormatR32_S:
     case WebGLImageConversion::DataFormatR32F:
     case WebGLImageConversion::DataFormatA32F:
     case WebGLImageConversion::DataFormatRA16F:
+    case WebGLImageConversion::DataFormatRGBA2_10_10_10:
+    case WebGLImageConversion::DataFormatRGB10F11F11F:
+    case WebGLImageConversion::DataFormatRG16:
+    case WebGLImageConversion::DataFormatRG16_S:
+    case WebGLImageConversion::DataFormatRG16F:
+    case WebGLImageConversion::DataFormatD32:
+    case WebGLImageConversion::DataFormatD32F:
+    case WebGLImageConversion::DataFormatDS24_8:
         return 4;
+    case WebGLImageConversion::DataFormatRGB16:
+    case WebGLImageConversion::DataFormatRGB16_S:
     case WebGLImageConversion::DataFormatRGB16F:
         return 6;
+    case WebGLImageConversion::DataFormatRGBA16:
+    case WebGLImageConversion::DataFormatRGBA16_S:
     case WebGLImageConversion::DataFormatRA32F:
     case WebGLImageConversion::DataFormatRGBA16F:
+    case WebGLImageConversion::DataFormatRG32:
+    case WebGLImageConversion::DataFormatRG32_S:
+    case WebGLImageConversion::DataFormatRG32F:
         return 8;
+    case WebGLImageConversion::DataFormatRGB32:
+    case WebGLImageConversion::DataFormatRGB32_S:
     case WebGLImageConversion::DataFormatRGB32F:
         return 12;
+    case WebGLImageConversion::DataFormatRGBA32:
+    case WebGLImageConversion::DataFormatRGBA32_S:
     case WebGLImageConversion::DataFormatRGBA32F:
         return 16;
     default:
@@ -1447,18 +1603,24 @@ bool WebGLImageConversion::computeFormatAndTypeParameters(GLenum format, GLenum 
     switch (format) {
     case GL_ALPHA:
     case GL_LUMINANCE:
+    case GL_RED:
+    case GL_RED_INTEGER:
     case GL_DEPTH_COMPONENT:
-    case GL_DEPTH_STENCIL_OES:
+    case GL_DEPTH_STENCIL: // Treat it as one component.
         *componentsPerPixel = 1;
         break;
     case GL_LUMINANCE_ALPHA:
+    case GL_RG:
+    case GL_RG_INTEGER:
         *componentsPerPixel = 2;
         break;
     case GL_RGB:
+    case GL_RGB_INTEGER:
     case GL_SRGB_EXT: // GL_EXT_sRGB
         *componentsPerPixel = 3;
         break;
     case GL_RGBA:
+    case GL_RGBA_INTEGER:
     case GL_BGRA_EXT: // GL_EXT_texture_format_BGRA8888
     case GL_SRGB_ALPHA_EXT: // GL_EXT_sRGB
         *componentsPerPixel = 4;
@@ -1467,8 +1629,14 @@ bool WebGLImageConversion::computeFormatAndTypeParameters(GLenum format, GLenum 
         return false;
     }
     switch (type) {
+    case GL_BYTE:
+        *bytesPerComponent = sizeof(GLbyte);
+        break;
     case GL_UNSIGNED_BYTE:
         *bytesPerComponent = sizeof(GLubyte);
+        break;
+    case GL_SHORT:
+        *bytesPerComponent = sizeof(GLshort);
         break;
     case GL_UNSIGNED_SHORT:
         *bytesPerComponent = sizeof(GLushort);
@@ -1479,13 +1647,23 @@ bool WebGLImageConversion::computeFormatAndTypeParameters(GLenum format, GLenum 
         *componentsPerPixel = 1;
         *bytesPerComponent = sizeof(GLushort);
         break;
-    case GL_UNSIGNED_INT_24_8_OES:
+    case GL_INT:
+        *bytesPerComponent = sizeof(GLint);
+        break;
     case GL_UNSIGNED_INT:
+        *bytesPerComponent = sizeof(GLuint);
+        break;
+    case GL_UNSIGNED_INT_24_8_OES:
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+    case GL_UNSIGNED_INT_5_9_9_9_REV:
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+        *componentsPerPixel = 1;
         *bytesPerComponent = sizeof(GLuint);
         break;
     case GL_FLOAT: // OES_texture_float
         *bytesPerComponent = sizeof(GLfloat);
         break;
+    case GL_HALF_FLOAT:
     case GL_HALF_FLOAT_OES: // OES_texture_half_float
         *bytesPerComponent = sizeof(GLushort);
         break;
@@ -1603,57 +1781,90 @@ bool WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
     return true;
 }
 
-unsigned WebGLImageConversion::getClearBitsByFormat(GLenum format)
-{
-    switch (format) {
-    case GL_ALPHA:
-    case GL_LUMINANCE:
-    case GL_LUMINANCE_ALPHA:
-    case GL_RGB:
-    case GL_RGB565:
-    case GL_RGBA:
-    case GL_RGBA4:
-    case GL_RGB5_A1:
-    case GL_SRGB_EXT:
-    case GL_SRGB_ALPHA_EXT:
-        return GL_COLOR_BUFFER_BIT;
-    case GL_DEPTH_COMPONENT16:
-    case GL_DEPTH_COMPONENT:
-        return GL_DEPTH_BUFFER_BIT;
-    case GL_STENCIL_INDEX8:
-        return GL_STENCIL_BUFFER_BIT;
-    case GL_DEPTH_STENCIL_OES:
-        return GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
-    default:
-        return 0;
-    }
-}
-
 unsigned WebGLImageConversion::getChannelBitsByFormat(GLenum format)
 {
     switch (format) {
     case GL_ALPHA:
         return ChannelAlpha;
+    case GL_RED:
+    case GL_RED_INTEGER:
+    case GL_R8:
+    case GL_R8_SNORM:
+    case GL_R8UI:
+    case GL_R8I:
+    case GL_R16UI:
+    case GL_R16I:
+    case GL_R32UI:
+    case GL_R32I:
+    case GL_R16F:
+    case GL_R32F:
+        return ChannelRed;
+    case GL_RG:
+    case GL_RG_INTEGER:
+    case GL_RG8:
+    case GL_RG8_SNORM:
+    case GL_RG8UI:
+    case GL_RG8I:
+    case GL_RG16UI:
+    case GL_RG16I:
+    case GL_RG32UI:
+    case GL_RG32I:
+    case GL_RG16F:
+    case GL_RG32F:
+        return ChannelRG;
     case GL_LUMINANCE:
         return ChannelRGB;
     case GL_LUMINANCE_ALPHA:
         return ChannelRGBA;
     case GL_RGB:
+    case GL_RGB_INTEGER:
+    case GL_RGB8:
+    case GL_RGB8_SNORM:
+    case GL_RGB8UI:
+    case GL_RGB8I:
+    case GL_RGB16UI:
+    case GL_RGB16I:
+    case GL_RGB32UI:
+    case GL_RGB32I:
+    case GL_RGB16F:
+    case GL_RGB32F:
     case GL_RGB565:
+    case GL_R11F_G11F_B10F:
+    case GL_RGB9_E5:
     case GL_SRGB_EXT:
+    case GL_SRGB8:
         return ChannelRGB;
     case GL_RGBA:
+    case GL_RGBA_INTEGER:
+    case GL_RGBA8:
+    case GL_RGBA8_SNORM:
+    case GL_RGBA8UI:
+    case GL_RGBA8I:
+    case GL_RGBA16UI:
+    case GL_RGBA16I:
+    case GL_RGBA32UI:
+    case GL_RGBA32I:
+    case GL_RGBA16F:
+    case GL_RGBA32F:
     case GL_RGBA4:
     case GL_RGB5_A1:
+    case GL_RGB10_A2:
+    case GL_RGB10_A2UI:
     case GL_SRGB_ALPHA_EXT:
+    case GL_SRGB8_ALPHA8:
         return ChannelRGBA;
-    case GL_DEPTH_COMPONENT16:
     case GL_DEPTH_COMPONENT:
+    case GL_DEPTH_COMPONENT16:
+    case GL_DEPTH_COMPONENT24:
+    case GL_DEPTH_COMPONENT32F:
         return ChannelDepth;
+    case GL_STENCIL:
     case GL_STENCIL_INDEX8:
         return ChannelStencil;
-    case GL_DEPTH_STENCIL_OES:
-        return ChannelDepth | ChannelStencil;
+    case GL_DEPTH_STENCIL:
+    case GL_DEPTH24_STENCIL8:
+    case GL_DEPTH32F_STENCIL8:
+        return ChannelDepthStencil;
     default:
         return 0;
     }

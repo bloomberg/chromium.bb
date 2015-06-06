@@ -1532,7 +1532,7 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(GLenum target, GLint lev
 
 bool WebGLRenderingContextBase::validateSettableTexFormat(const char* functionName, GLenum format)
 {
-    if (WebGLImageConversion::getClearBitsByFormat(format) & (GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)) {
+    if (WebGLImageConversion::getChannelBitsByFormat(format) & WebGLImageConversion::ChannelDepthStencil) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "format can not be set, only rendered to");
         return false;
     }
