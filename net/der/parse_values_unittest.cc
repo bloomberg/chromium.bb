@@ -12,6 +12,17 @@ namespace net {
 namespace der {
 namespace test {
 
+namespace {
+
+template <size_t N>
+Input FromStringLiteral(const char(&data)[N]) {
+  // Strings are null-terminated. The null terminating byte shouldn't be
+  // included in the Input, so the size is N - 1 instead of N.
+  return Input(reinterpret_cast<const uint8_t*>(data), N - 1);
+}
+
+}  // namespace
+
 TEST(ParseValuesTest, ParseBool) {
   uint8_t buf[] = {0xFF, 0x00};
   Input value(buf, 1);
@@ -38,117 +49,103 @@ TEST(ParseValuesTest, ParseBool) {
 TEST(ParseValuesTest, ParseTimes) {
   GeneralizedTime out;
 
-  EXPECT_TRUE(ParseUTCTime(Input("140218161200Z"), &out));
+  EXPECT_TRUE(ParseUTCTime(FromStringLiteral("140218161200Z"), &out));
 
   // DER-encoded UTCTime must end with 'Z'.
-  EXPECT_FALSE(ParseUTCTime(Input("140218161200X"), &out));
+  EXPECT_FALSE(ParseUTCTime(FromStringLiteral("140218161200X"), &out));
 
   // Check that a negative number (-4 in this case) doesn't get parsed as
   // a 2-digit number.
-  EXPECT_FALSE(ParseUTCTime(Input("-40218161200Z"), &out));
+  EXPECT_FALSE(ParseUTCTime(FromStringLiteral("-40218161200Z"), &out));
 
   // Check that numbers with a leading 0 don't get parsed in octal by making
   // the second digit an invalid octal digit (e.g. 09).
-  EXPECT_TRUE(ParseUTCTime(Input("090218161200Z"), &out));
+  EXPECT_TRUE(ParseUTCTime(FromStringLiteral("090218161200Z"), &out));
 
   // Check that the length is validated.
-  EXPECT_FALSE(ParseUTCTime(Input("140218161200"), &out));
-  EXPECT_FALSE(ParseUTCTime(Input("140218161200Z0"), &out));
-  EXPECT_FALSE(ParseUTCTimeRelaxed(Input("140218161200"), &out));
-  EXPECT_FALSE(ParseUTCTimeRelaxed(Input("140218161200Z0"), &out));
+  EXPECT_FALSE(ParseUTCTime(FromStringLiteral("140218161200"), &out));
+  EXPECT_FALSE(ParseUTCTime(FromStringLiteral("140218161200Z0"), &out));
+  EXPECT_FALSE(ParseUTCTimeRelaxed(FromStringLiteral("140218161200"), &out));
+  EXPECT_FALSE(ParseUTCTimeRelaxed(FromStringLiteral("140218161200Z0"), &out));
 
   // Check strictness of UTCTime parsers.
-  EXPECT_FALSE(ParseUTCTime(Input("1402181612Z"), &out));
-  EXPECT_TRUE(ParseUTCTimeRelaxed(Input("1402181612Z"), &out));
+  EXPECT_FALSE(ParseUTCTime(FromStringLiteral("1402181612Z"), &out));
+  EXPECT_TRUE(ParseUTCTimeRelaxed(FromStringLiteral("1402181612Z"), &out));
 
   // Check that the time ends in Z.
-  EXPECT_FALSE(ParseUTCTimeRelaxed(Input("1402181612Z0"), &out));
+  EXPECT_FALSE(ParseUTCTimeRelaxed(FromStringLiteral("1402181612Z0"), &out));
 
   // Check format of GeneralizedTime.
 
   // Leap seconds are allowed.
-  EXPECT_TRUE(ParseGeneralizedTime(Input("20140218161260Z"), &out));
+  EXPECT_TRUE(ParseGeneralizedTime(FromStringLiteral("20140218161260Z"), &out));
 
   // But nothing larger than a leap second.
-  EXPECT_FALSE(ParseGeneralizedTime(Input("20140218161261Z"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("20140218161261Z"), &out));
 
   // Minutes only go up to 59.
-  EXPECT_FALSE(ParseGeneralizedTime(Input("20140218166000Z"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("20140218166000Z"), &out));
 
   // Hours only go up to 23.
-  EXPECT_FALSE(ParseGeneralizedTime(Input("20140218240000Z"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("20140218240000Z"), &out));
   // The 0th day of a month is invalid.
-  EXPECT_FALSE(ParseGeneralizedTime(Input("20140200161200Z"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("20140200161200Z"), &out));
   // The 0th month is invalid.
-  EXPECT_FALSE(ParseGeneralizedTime(Input("20140018161200Z"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("20140018161200Z"), &out));
   // Months greater than 12 are invalid.
-  EXPECT_FALSE(ParseGeneralizedTime(Input("20141318161200Z"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("20141318161200Z"), &out));
 
   // Some months have 31 days.
-  EXPECT_TRUE(ParseGeneralizedTime(Input("20140131000000Z"), &out));
+  EXPECT_TRUE(ParseGeneralizedTime(FromStringLiteral("20140131000000Z"), &out));
 
   // September has only 30 days.
-  EXPECT_FALSE(ParseGeneralizedTime(Input("20140931000000Z"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("20140931000000Z"), &out));
 
   // February has only 28 days...
-  EXPECT_FALSE(ParseGeneralizedTime(Input("20140229000000Z"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("20140229000000Z"), &out));
 
   // ... unless it's a leap year.
-  EXPECT_TRUE(ParseGeneralizedTime(Input("20160229000000Z"), &out));
+  EXPECT_TRUE(ParseGeneralizedTime(FromStringLiteral("20160229000000Z"), &out));
 
   // There aren't any leap days in years divisible by 100...
-  EXPECT_FALSE(ParseGeneralizedTime(Input("21000229000000Z"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("21000229000000Z"), &out));
 
   // ...unless it's also divisible by 400.
-  EXPECT_TRUE(ParseGeneralizedTime(Input("20000229000000Z"), &out));
+  EXPECT_TRUE(ParseGeneralizedTime(FromStringLiteral("20000229000000Z"), &out));
 
   // Check more perverse invalid inputs.
 
-  const uint8_t trailing_null_bytes[] = {'2',
-                                         '0',
-                                         '0',
-                                         '0',
-                                         '1',
-                                         '2',
-                                         '3',
-                                         '1',
-                                         '0',
-                                         '1',
-                                         '0',
-                                         '2',
-                                         '0',
-                                         '3',
-                                         'Z',
-                                         '\0'};
-  Input trailing_null(trailing_null_bytes, sizeof(trailing_null_bytes));
-  EXPECT_FALSE(ParseGeneralizedTime(trailing_null, &out));
-  const uint8_t embedded_null_bytes[] = {'2',
-                                         '0',
-                                         '0',
-                                         '\0',
-                                         '1',
-                                         '2',
-                                         '3',
-                                         '1',
-                                         '0',
-                                         '1',
-                                         '0',
-                                         '2',
-                                         '0',
-                                         '3',
-                                         'Z'};
-  Input embedded_null(embedded_null_bytes, sizeof(embedded_null_bytes));
-  EXPECT_FALSE(ParseGeneralizedTime(embedded_null, &out));
+  // Check that trailing null bytes are not ignored.
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("20001231010203Z\0"), &out));
+
+  // Check what happens when a null byte is in the middle of the input.
+  EXPECT_FALSE(ParseGeneralizedTime(FromStringLiteral(
+                                        "200\0"
+                                        "1231010203Z"),
+                                    &out));
 
   // The year can't be in hex.
-  EXPECT_FALSE(ParseGeneralizedTime(Input("0x201231000000Z"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("0x201231000000Z"), &out));
 
   // The last byte must be 'Z'.
-  EXPECT_FALSE(ParseGeneralizedTime(Input("20001231000000X"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("20001231000000X"), &out));
 
   // Check that the length is validated.
-  EXPECT_FALSE(ParseGeneralizedTime(Input("20140218161200"), &out));
-  EXPECT_FALSE(ParseGeneralizedTime(Input("20140218161200Z0"), &out));
+  EXPECT_FALSE(ParseGeneralizedTime(FromStringLiteral("20140218161200"), &out));
+  EXPECT_FALSE(
+      ParseGeneralizedTime(FromStringLiteral("20140218161200Z0"), &out));
 }
 
 TEST(ParseValuesTest, TimesCompare) {
@@ -156,9 +153,11 @@ TEST(ParseValuesTest, TimesCompare) {
   GeneralizedTime time2;
   GeneralizedTime time3;
 
-  ASSERT_TRUE(ParseGeneralizedTime(Input("20140218161200Z"), &time1));
-  ASSERT_TRUE(ParseUTCTime(Input("150218161200Z"), &time2));
-  ASSERT_TRUE(ParseGeneralizedTime(Input("20160218161200Z"), &time3));
+  ASSERT_TRUE(
+      ParseGeneralizedTime(FromStringLiteral("20140218161200Z"), &time1));
+  ASSERT_TRUE(ParseUTCTime(FromStringLiteral("150218161200Z"), &time2));
+  ASSERT_TRUE(
+      ParseGeneralizedTime(FromStringLiteral("20160218161200Z"), &time3));
   EXPECT_TRUE(time1 < time2);
   EXPECT_TRUE(time2 < time3);
   EXPECT_TRUE(time1 < time3);

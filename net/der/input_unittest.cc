@@ -17,8 +17,8 @@ TEST(InputTest, Equals) {
   Input test2(kInput, arraysize(kInput));
   EXPECT_TRUE(test.Equals(test2));
 
-  std::string input_copy(reinterpret_cast<const char*>(kInput),
-                         arraysize(kInput));
+  uint8_t input_copy[arraysize(kInput)] = {0};
+  memcpy(input_copy, kInput, arraysize(kInput));
   Input test_copy(input_copy);
   EXPECT_TRUE(test.Equals(test_copy));
 
@@ -85,7 +85,9 @@ TEST(ByteReaderTest, ReadToMark) {
 TEST(ByteReaderTest, CantReadToWrongMark) {
   Input out;
   Input in1(kInput, arraysize(kInput));
-  Input in2("test");
+
+  const uint8_t in2_bytes[] = {'t', 'e', 's', 't'};
+  Input in2(in2_bytes);
   ByteReader reader1(in1);
   ByteReader reader2(in2);
   ASSERT_TRUE(reader1.ReadBytes(2, &out));

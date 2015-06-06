@@ -11,10 +11,13 @@ namespace net {
 
 TEST(VerifyNameMatchTest, Simple) {
   // TODO(mattm): Use valid Names.
-  EXPECT_TRUE(VerifyNameMatch(der::Input("hello"), der::Input("hello")));
-  EXPECT_FALSE(VerifyNameMatch(der::Input("aello"), der::Input("hello")));
-  EXPECT_FALSE(VerifyNameMatch(der::Input("hello"), der::Input("hello1")));
-  EXPECT_FALSE(VerifyNameMatch(der::Input("hello1"), der::Input("hello")));
+  const uint8_t hello[] = {'h', 'e', 'l', 'l', 'o'};
+  const uint8_t aello[] = {'a', 'e', 'l', 'l', 'o'};
+  const uint8_t hello1[] = {'h', 'e', 'l', 'l', 'o', '1'};
+  EXPECT_TRUE(VerifyNameMatch(der::Input(hello), der::Input(hello)));
+  EXPECT_FALSE(VerifyNameMatch(der::Input(aello), der::Input(hello)));
+  EXPECT_FALSE(VerifyNameMatch(der::Input(hello), der::Input(hello1)));
+  EXPECT_FALSE(VerifyNameMatch(der::Input(hello1), der::Input(hello)));
 }
 
 }  // namespace net

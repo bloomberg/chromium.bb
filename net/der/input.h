@@ -49,9 +49,6 @@ class NET_EXPORT_PRIVATE Input {
   // Creates an Input from the given |data| and |len|.
   Input(const uint8_t* data, size_t len);
 
-  // Creates an Input from the given string |s|.
-  explicit Input(const std::string& s);
-
   // Returns the length in bytes of an Input's data.
   size_t Length() const { return len_; }
 

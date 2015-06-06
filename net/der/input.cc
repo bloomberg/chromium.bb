@@ -17,10 +17,6 @@ Input::Input() : data_(nullptr), len_(0) {
 Input::Input(const uint8_t* data, size_t len) : data_(data), len_(len) {
 }
 
-Input::Input(const std::string& s)
-    : data_(reinterpret_cast<const uint8_t*>(s.data())), len_(s.size()) {
-}
-
 bool Input::Equals(const Input& other) const {
   if (len_ != other.len_)
     return false;
