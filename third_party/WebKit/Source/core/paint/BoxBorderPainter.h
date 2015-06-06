@@ -27,14 +27,16 @@ public:
     void paintBorder(const PaintInfo&, const LayoutRect& borderRect) const;
 
 private:
+    struct ComplexBorderInfo;
+
+    BorderEdgeFlags paintOpacityGroup(GraphicsContext*, const ComplexBorderInfo&, unsigned index,
+        float accumulatedOpacity) const;
+    void paintSide(GraphicsContext*, const ComplexBorderInfo&, BoxSide, unsigned alpha, BorderEdgeFlags) const;
+    void paintOneBorderSide(GraphicsContext*, const FloatRect& sideRect, BoxSide, BoxSide adjacentSide1,
+        BoxSide adjacentSide2, const Path*, bool antialias, Color, BorderEdgeFlags) const;
     bool paintBorderFastPath(GraphicsContext*, const LayoutRect& borderRect) const;
     void drawDoubleBorder(GraphicsContext*, const LayoutRect& borderRect) const;
 
-    void paintTranslucentBorderSides(GraphicsContext*, bool antialias) const;
-    void paintOneBorderSide(GraphicsContext*, const FloatRect& sideRect, BoxSide, BoxSide adjacentSide1,
-        BoxSide adjacentSide2, const Path*, bool antialias, const Color* overrideColor) const;
-    void paintBorderSides(GraphicsContext*, BorderEdgeFlags edgeSet, bool antialias,
-        const Color* overrideColor = 0) const;
     void drawBoxSideFromPath(GraphicsContext*, const LayoutRect&, const Path&, float thickness,
         float drawThickness, BoxSide, Color, EBorderStyle) const;
     void clipBorderSidePolygon(GraphicsContext*, BoxSide, bool firstEdgeMatches,
@@ -65,6 +67,7 @@ private:
     bool m_isUniformStyle;
     bool m_isUniformWidth;
     bool m_isUniformColor;
+    bool m_isRounded;
     bool m_hasAlpha;
 };
 
