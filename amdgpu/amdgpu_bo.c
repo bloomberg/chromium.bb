@@ -337,12 +337,6 @@ int amdgpu_bo_export(amdgpu_bo_handle bo,
 		return 0;
 
 	case amdgpu_bo_handle_type_kms:
-		/* don't check the return value, because exporting KMS
-		 * handles should work with render nodes too, which don't
-		 * support flink exports
-		 */
-		amdgpu_bo_export_flink(bo);
-
 		amdgpu_add_handle_to_table(bo);
 		*shared_handle = bo->handle;
 		return 0;
