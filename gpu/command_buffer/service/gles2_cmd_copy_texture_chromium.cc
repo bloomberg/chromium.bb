@@ -429,11 +429,10 @@ void CopyTextureCHROMIUMResourceManager::DoCopySubTexture(
     return;
   }
 
-  DoCopyTextureInternal(decoder, source_target, source_id, dest_id, xoffset - x,
-                        yoffset - y, dest_width, dest_height, source_width,
-                        source_height, flip_y, premultiply_alpha,
-                        unpremultiply_alpha, kIdentityMatrix, xoffset, yoffset,
-                        width, height);
+  DoCopyTextureInternal(decoder, source_target, source_id, dest_id, xoffset,
+                        yoffset, x, y, width, height, dest_width, dest_height,
+                        source_width, source_height, flip_y, premultiply_alpha,
+                        unpremultiply_alpha, kIdentityMatrix);
 }
 
 void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
@@ -449,10 +448,10 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
     const GLfloat transform_matrix[16]) {
   GLsizei dest_width = width;
   GLsizei dest_height = height;
-  DoCopyTextureInternal(decoder, source_target, source_id, dest_id, 0, 0,
-                        dest_width, dest_height, width, height, flip_y,
-                        premultiply_alpha, unpremultiply_alpha,
-                        transform_matrix, 0, 0, dest_width, dest_height);
+  DoCopyTextureInternal(decoder, source_target, source_id, dest_id, 0, 0, 0, 0,
+                        width, height, dest_width, dest_height, width, height,
+                        flip_y, premultiply_alpha, unpremultiply_alpha,
+                        transform_matrix);
 }
 
 void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
@@ -462,6 +461,10 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     GLuint dest_id,
     GLint xoffset,
     GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
     GLsizei dest_width,
     GLsizei dest_height,
     GLsizei source_width,
@@ -469,11 +472,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     bool flip_y,
     bool premultiply_alpha,
     bool unpremultiply_alpha,
-    const GLfloat transform_matrix[16],
-    GLint scissor_x,
-    GLint scissor_y,
-    GLsizei scissor_width,
-    GLsizei scissor_height) {
+    const GLfloat transform_matrix[16]) {
   DCHECK(source_target == GL_TEXTURE_2D ||
          source_target == GL_TEXTURE_RECTANGLE_ARB ||
          source_target == GL_TEXTURE_EXTERNAL_OES);
@@ -522,18 +521,21 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
   }
   glUseProgram(info->program);
 
-  if (!xoffset && !yoffset) {
+  GLint x_translate = xoffset - x;
+  GLint y_translate = yoffset - y;
+  if (!x_translate && !y_translate) {
     glUniformMatrix4fv(info->matrix_handle, 1, GL_FALSE, transform_matrix);
   } else {
     // transform offsets from ([0, dest_width], [0, dest_height]) coord.
     // to ([-1, 1], [-1, 1]) coord.
-    GLfloat xoffset_on_vertex = ((2.f * xoffset) / dest_width);
-    GLfloat yoffset_on_vertex = ((2.f * yoffset) / dest_height);
+    GLfloat x_translate_on_vertex = ((2.f * x_translate) / dest_width);
+    GLfloat y_translate_on_vertex = ((2.f * y_translate) / dest_height);
 
     // Pass view_matrix * offset_matrix to the program.
     GLfloat view_transform[16];
     memcpy(view_transform, transform_matrix, 16 * sizeof(GLfloat));
-    PreTranslate(view_transform, xoffset_on_vertex, yoffset_on_vertex, 0);
+    PreTranslate(view_transform, x_translate_on_vertex, y_translate_on_vertex,
+                 0);
     glUniformMatrix4fv(info->matrix_handle, 1, GL_FALSE, view_transform);
   }
   if (source_target == GL_TEXTURE_RECTANGLE_ARB)
@@ -575,8 +577,12 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     glDepthMask(GL_FALSE);
     glDisable(GL_BLEND);
 
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(scissor_x, scissor_y, scissor_width, scissor_height);
+    bool need_scissor =
+        xoffset || yoffset || width != dest_width || height != dest_height;
+    if (need_scissor) {
+      glEnable(GL_SCISSOR_TEST);
+      glScissor(xoffset, yoffset, width, height);
+    }
     glViewport(0, 0, dest_width, dest_height);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   }
