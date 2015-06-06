@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/time/time.h"
-#include "cc/test/fake_content_layer.h"
+#include "cc/layers/solid_color_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
@@ -28,8 +28,8 @@ class LayerTreeHostDamageTestSetNeedsRedraw
     : public LayerTreeHostDamageTest {
   void SetupTree() override {
     // Viewport is 10x10.
-    scoped_refptr<FakeContentLayer> root =
-        FakeContentLayer::Create(layer_settings(), &client_);
+    scoped_refptr<FakePictureLayer> root =
+        FakePictureLayer::Create(layer_settings(), &client_);
     root->SetBounds(gfx::Size(10, 10));
 
     layer_tree_host()->SetRootLayer(root);
@@ -90,8 +90,8 @@ class LayerTreeHostDamageTestSetViewportSize
     : public LayerTreeHostDamageTest {
   void SetupTree() override {
     // Viewport is 10x10.
-    scoped_refptr<FakeContentLayer> root =
-        FakeContentLayer::Create(layer_settings(), &client_);
+    scoped_refptr<FakePictureLayer> root =
+        FakePictureLayer::Create(layer_settings(), &client_);
     root->SetBounds(gfx::Size(10, 10));
 
     layer_tree_host()->SetRootLayer(root);
@@ -157,12 +157,12 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
   }
 
   void SetupTree() override {
-    scoped_refptr<FakeContentLayer> root =
-        FakeContentLayer::Create(layer_settings(), &client_);
+    scoped_refptr<FakePictureLayer> root =
+        FakePictureLayer::Create(layer_settings(), &client_);
     root->SetBounds(gfx::Size(10, 10));
 
     // Most of the layer isn't visible.
-    content_ = FakeContentLayer::Create(layer_settings(), &client_);
+    content_ = FakePictureLayer::Create(layer_settings(), &client_);
     content_->SetBounds(gfx::Size(2000, 100));
     root->AddChild(content_);
 
@@ -230,21 +230,20 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
   }
 
   FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> content_;
+  scoped_refptr<FakePictureLayer> content_;
   int expect_swap_and_succeed_;
   int did_swaps_;
   int did_swap_and_succeed_;
 };
 
-SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(
-    LayerTreeHostDamageTestNoDamageDoesNotSwap);
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostDamageTestNoDamageDoesNotSwap);
 
 class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void SetupTree() override {
-    root_ = FakeContentLayer::Create(layer_settings(), &client_);
-    child_ = FakeContentLayer::Create(layer_settings(), &client_);
+    root_ = FakePictureLayer::Create(layer_settings(), &client_);
+    child_ = FakePictureLayer::Create(layer_settings(), &client_);
 
     root_->SetBounds(gfx::Size(500, 500));
     child_->SetPosition(gfx::Point(100, 100));
@@ -296,21 +295,6 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
         // should match the invalidation.
         EXPECT_EQ(gfx::RectF(100+10, 100+11, 12, 13).ToString(),
                   root_damage.ToString());
-
-        // TODO(danakj): Remove this when impl side painting is always on.
-        if (delegating_renderer() ||
-            host_impl->settings().impl_side_painting) {
-          // When using a delegating renderer, or using impl side painting, the
-          // entire child is considered damaged as we need to replace its
-          // resources with newly created ones. The damaged area is kept as it
-          // is, but entire child is painted.
-
-          // The paint rect should match the layer bounds.
-          gfx::RectF paint_rect = child_->LastPaintRect();
-          paint_rect.set_origin(child_->position());
-          EXPECT_EQ(gfx::RectF(100, 100, 30, 30).ToString(),
-                    paint_rect.ToString());
-        }
         EXPECT_FALSE(frame_data->has_no_damage);
 
         // If we damage part of the frame, but also damage the full
@@ -343,12 +327,12 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
   void AfterTest() override {}
 
   FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> root_;
-  scoped_refptr<FakeContentLayer> child_;
+  scoped_refptr<FakePictureLayer> root_;
+  scoped_refptr<FakePictureLayer> child_;
   gfx::Rect child_damage_rect_;
 };
 
-SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(LayerTreeHostDamageTestForcedFullDamage);
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostDamageTestForcedFullDamage);
 
 class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
   void SetupTree() override {
@@ -359,10 +343,11 @@ class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
 
     scoped_refptr<Layer> scroll_clip_layer = Layer::Create(layer_settings());
     scoped_refptr<Layer> content_layer =
-        FakeContentLayer::Create(layer_settings(), &client_);
+        FakePictureLayer::Create(layer_settings(), &client_);
     content_layer->SetScrollClipLayerId(scroll_clip_layer->id());
     content_layer->SetScrollOffset(gfx::ScrollOffset(10, 20));
     content_layer->SetBounds(gfx::Size(100, 200));
+    content_layer->SetIsDrawable(true);
     scroll_clip_layer->SetBounds(
         gfx::Size(content_layer->bounds().width() - 30,
                   content_layer->bounds().height() - 50));
@@ -447,11 +432,23 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
         host_impl->SetNeedsRedraw();
         break;
       case 3:
-        scroll_layer->SetBounds(gfx::Size(root->bounds().width() + 60,
-                                          root->bounds().height() + 100));
-        host_impl->SetNeedsRedraw();
+        // We will resize the content layer, on the main thread.
+        MainThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::Bind(
+                &LayerTreeHostDamageTestScrollbarDoesDamage::ResizeScrollLayer,
+                base::Unretained(this)));
         break;
     }
+  }
+
+  void ResizeScrollLayer() {
+    EXPECT_EQ(3, did_swaps_);
+    Layer* root = layer_tree_host()->root_layer();
+    Layer* scroll_clip_layer = root->child_at(0);
+    Layer* scroll_layer = scroll_clip_layer->child_at(0);
+    scroll_layer->SetBounds(
+        gfx::Size(root->bounds().width() + 60, root->bounds().height() + 100));
   }
 
   void AfterTest() override { EXPECT_EQ(4, did_swaps_); }
