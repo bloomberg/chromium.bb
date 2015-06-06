@@ -121,10 +121,6 @@ protected:
 
     virtual void postInitialize() { }
 
-    // Both of these methods are called in the worker thread.
-    virtual void initializeBackingThread();
-    virtual void shutdownBackingThread();
-
     virtual v8::Isolate* initializeIsolate();
     virtual void willDestroyIsolate();
     virtual void destroyIsolate();
