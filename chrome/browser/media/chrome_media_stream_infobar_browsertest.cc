@@ -114,29 +114,32 @@ class MediaStreamPermissionTest : public WebRtcTestBase,
 
 // Actual tests ---------------------------------------------------------------
 
-IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestAllowingUserMedia) {
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
+                       DISABLED_TestAllowingUserMedia) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   EXPECT_TRUE(GetUserMediaAndAccept(tab_contents));
 }
 
-IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestDenyingUserMedia) {
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
+                       DISABLED_TestDenyingUserMedia) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   GetUserMediaAndDeny(tab_contents);
 }
 
-IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestDismissingInfobar) {
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
+                       DISABLED_TestDismissingInfobar) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   GetUserMediaAndDismiss(tab_contents);
 }
 
 IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
-                       TestDenyingUserMediaIncognito) {
+                       DISABLED_TestDenyingUserMediaIncognito) {
   content::WebContents* tab_contents = LoadTestPageInIncognitoTab();
   GetUserMediaAndDeny(tab_contents);
 }
 
 IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
-                       TestAcceptThenDenyWhichShouldBeSticky) {
+                       DISABLED_TestAcceptThenDenyWhichShouldBeSticky) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -159,7 +162,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
   EXPECT_EQ(0u, infobar_service->infobar_count());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestAcceptIsNotSticky) {
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
+                       DISABLED_TestAcceptIsNotSticky) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If accept were sticky the second call would hang because it hangs if an
@@ -168,7 +172,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestAcceptIsNotSticky) {
   EXPECT_TRUE(GetUserMediaAndAccept(tab_contents));
 }
 
-IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestDismissIsNotSticky) {
+IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
+                       DISABLED_TestDismissIsNotSticky) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If dismiss were sticky the second call would hang because it hangs if an
@@ -178,7 +183,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest, TestDismissIsNotSticky) {
 }
 
 IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
-                       TestDenyingThenClearingStickyException) {
+                       DISABLED_TestDenyingThenClearingStickyException) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   GetUserMediaAndDeny(tab_contents);
@@ -214,7 +219,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
 }
 
 IN_PROC_BROWSER_TEST_P(MediaStreamPermissionTest,
-                       DenyingCameraDoesNotCauseStickyDenyForMics) {
+                       DISABLED_DenyingCameraDoesNotCauseStickyDenyForMics) {
   content::WebContents* tab_contents = LoadTestPageInTab();
 
   // If camera blocking also blocked mics, the second call here would hang.
