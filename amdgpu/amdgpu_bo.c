@@ -52,30 +52,6 @@ static void amdgpu_close_kms_handle(amdgpu_device_handle dev,
 	drmIoctl(dev->fd, DRM_IOCTL_GEM_CLOSE, &args);
 }
 
-void amdgpu_bo_free_internal(amdgpu_bo_handle bo)
-{
-	/* Remove the buffer from the hash tables. */
-	pthread_mutex_lock(&bo->dev->bo_table_mutex);
-	util_hash_table_remove(bo->dev->bo_handles,
-			       (void*)(uintptr_t)bo->handle);
-	if (bo->flink_name) {
-		util_hash_table_remove(bo->dev->bo_flink_names,
-				       (void*)(uintptr_t)bo->flink_name);
-	}
-	pthread_mutex_unlock(&bo->dev->bo_table_mutex);
-
-	/* Release CPU access. */
-	if (bo->cpu_map_count > 0) {
-		bo->cpu_map_count = 1;
-		amdgpu_bo_cpu_unmap(bo);
-	}
-
-	amdgpu_close_kms_handle(bo->dev, bo->handle);
-	pthread_mutex_destroy(&bo->cpu_access_mutex);
-	amdgpu_vamgr_free_va(bo->dev->vamgr, bo->virtual_mc_base_address, bo->alloc_size);
-	free(bo);
-}
-
 /* map the buffer to the GPU virtual address space */
 static int amdgpu_bo_map(amdgpu_bo_handle bo, uint32_t alignment)
 {
@@ -107,6 +83,63 @@ static int amdgpu_bo_map(amdgpu_bo_handle bo, uint32_t alignment)
 	}
 
 	return 0;
+}
+
+/* unmap the buffer from the GPU virtual address space */
+static void amdgpu_bo_unmap(amdgpu_bo_handle bo)
+{
+	amdgpu_device_handle dev = bo->dev;
+	union drm_amdgpu_gem_va va;
+	int r;
+
+	if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS)
+		return;
+
+	memset(&va, 0, sizeof(va));
+
+	va.in.handle = bo->handle;
+	va.in.operation = AMDGPU_VA_OP_UNMAP;
+	va.in.flags = 	AMDGPU_VM_PAGE_READABLE |
+			AMDGPU_VM_PAGE_WRITEABLE |
+			AMDGPU_VM_PAGE_EXECUTABLE;
+	va.in.va_address = bo->virtual_mc_base_address;
+	va.in.offset_in_bo = 0;
+	va.in.map_size = ALIGN(bo->alloc_size, getpagesize());
+
+	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_VA, &va, sizeof(va));
+	if (r || va.out.result == AMDGPU_VA_RESULT_ERROR) {
+		fprintf(stderr, "amdgpu: VA_OP_UNMAP failed with %d\n", r);
+		return;
+	}
+
+	amdgpu_vamgr_free_va(bo->dev->vamgr, bo->virtual_mc_base_address,
+			     bo->alloc_size);
+
+	bo->virtual_mc_base_address = AMDGPU_INVALID_VA_ADDRESS;
+}
+
+void amdgpu_bo_free_internal(amdgpu_bo_handle bo)
+{
+	/* Remove the buffer from the hash tables. */
+	pthread_mutex_lock(&bo->dev->bo_table_mutex);
+	util_hash_table_remove(bo->dev->bo_handles,
+			       (void*)(uintptr_t)bo->handle);
+	if (bo->flink_name) {
+		util_hash_table_remove(bo->dev->bo_flink_names,
+				       (void*)(uintptr_t)bo->flink_name);
+	}
+	pthread_mutex_unlock(&bo->dev->bo_table_mutex);
+
+	/* Release CPU access. */
+	if (bo->cpu_map_count > 0) {
+		bo->cpu_map_count = 1;
+		amdgpu_bo_cpu_unmap(bo);
+	}
+
+	amdgpu_bo_unmap(bo);
+	amdgpu_close_kms_handle(bo->dev, bo->handle);
+	pthread_mutex_destroy(&bo->cpu_access_mutex);
+	free(bo);
 }
 
 int amdgpu_bo_alloc(amdgpu_device_handle dev,
