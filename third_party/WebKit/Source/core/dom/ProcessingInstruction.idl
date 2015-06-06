@@ -23,7 +23,7 @@
 interface ProcessingInstruction : CharacterData {
     readonly attribute DOMString target;
 
-    // FIXME: CharacterData.sheet is not part of any modern spec.
-    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28068
+    // ProcessingInstruction implements LinkStyle
+    // http://dev.w3.org/csswg/cssom/#requirements-on-user-agents-implementing-the-xml-stylesheet-processing-instruction
     readonly attribute StyleSheet sheet;
 };

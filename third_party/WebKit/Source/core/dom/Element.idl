@@ -105,13 +105,13 @@
 
     // CSS Object Model (CSSOM)
     // http://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
-    // FIXME: style should be on HTMLElement and SVGElement.
+    // FIXME: style should be on HTMLElement and SVGElement. crbug.com/497376
     // FIXME: style should have [PutForwards=cssText].
     [SameObject, PerWorldBindings] readonly attribute CSSStyleDeclaration style;
 
     // HTML
     // https://html.spec.whatwg.org/#htmlelement
-    // FIXME: dataset, focus() and blur() should be on HTMLElement.
+    // FIXME: dataset, focus() and blur() should be on HTMLElement. crbug.com/497274
     [SameObject, PerWorldBindings] readonly attribute DOMStringMap dataset;
     void focus();
     void blur();
