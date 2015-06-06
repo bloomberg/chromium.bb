@@ -1,0 +1,10 @@
+ 
+This is a testharness.js-based test.
+FAIL select() on textarea queues select event assert_true: event is trusted expected true got undefined
+FAIL select() on input type text queues select event assert_true: event is trusted expected true got undefined
+FAIL select() on input type search queues select event assert_true: event is trusted expected true got undefined
+FAIL select() on input type tel queues select event assert_true: event is trusted expected true got undefined
+FAIL select() on input type url queues select event assert_true: event is trusted expected true got undefined
+FAIL select() on input type password queues select event assert_true: event is trusted expected true got undefined
+Harness: the test ran to completion.
+

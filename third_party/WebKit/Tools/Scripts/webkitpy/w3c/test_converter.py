@@ -48,7 +48,7 @@ def convert_for_webkit(new_path, filename, reference_support_info, host=Host()):
     if filename.endswith('.css'):
         return converter.add_webkit_prefix_to_unprefixed_properties(contents)
     else:
-        converter.feed(contents)
+        converter.feed(contents.decode('utf-8'))
         converter.close()
         return converter.output()
 

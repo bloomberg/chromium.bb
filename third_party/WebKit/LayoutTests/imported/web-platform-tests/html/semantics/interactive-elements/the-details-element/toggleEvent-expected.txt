@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL Adding open to 'details' should fire a toggle event at the 'details' element assert_true: event is trusted expected true got undefined
+FAIL Removing open from 'details' should fire a toggle event at the 'details' element assert_true: event is trusted expected true got undefined
+FAIL Adding open to 'details' (display:none) should fire a toggle event at the 'details' element assert_true: event is trusted expected true got undefined
+FAIL Adding open from 'details' (no children) should fire a toggle event at the 'details' element assert_true: event is trusted expected true got undefined
+PASS Calling open twice on 'details' fires only one toggle event 
+FAIL Adding open to 'details' (not in the document) should fire a toggle event at the 'details' element assert_true: event is trusted expected true got undefined
+Harness: the test ran to completion.
+

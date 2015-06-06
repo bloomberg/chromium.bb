@@ -381,7 +381,7 @@ class TestImporter(object):
                         prefixed_properties.extend(set(converted_file[0]) - set(prefixed_properties))
                         if not self.options.dry_run:
                             outfile = open(new_filepath, 'wb')
-                            outfile.write(converted_file[1])
+                            outfile.write(converted_file[1].encode('utf-8'))
                             outfile.close()
                 else:
                     if not self.import_in_place and not self.options.dry_run:
