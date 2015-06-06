@@ -550,7 +550,7 @@ remoting.ClientPluginImpl.prototype.setRemapKeys =
   // Cancel any existing remappings and apply the new ones.
   this.applyRemapKeys_(this.keyRemappings_, false);
   this.applyRemapKeys_(remappings, true);
-  this.keyRemappings_ = remappings;
+  this.keyRemappings_ = /** @type {!Object} */ (base.deepCopy(remappings));
 };
 
 /**

@@ -99,7 +99,7 @@ remoting.Host.Options.prototype.load = function() {
       } else if (typeof(remappings) !== 'object') {
         remappings = {};
       }
-      that.remapKeys = remappings;
+      that.remapKeys = /** @type {!Object} */ (base.deepCopy(remappings));
     });
 };
 

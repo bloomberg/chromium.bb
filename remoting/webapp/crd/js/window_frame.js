@@ -83,6 +83,7 @@ remoting.WindowFrame.prototype.createOptionsMenu = function() {
   return new remoting.OptionsMenu(
       this.titleBar_.querySelector('.menu-send-ctrl-alt-del'),
       this.titleBar_.querySelector('.menu-send-print-screen'),
+      this.titleBar_.querySelector('.menu-map-right-ctrl-to-meta'),
       this.titleBar_.querySelector('.menu-resize-to-client'),
       this.titleBar_.querySelector('.menu-shrink-to-fit'),
       this.titleBar_.querySelector('.menu-new-connection'),

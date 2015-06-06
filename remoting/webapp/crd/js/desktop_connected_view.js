@@ -106,6 +106,14 @@ remoting.DesktopConnectedView.prototype.getResizeToClient = function() {
   return false;
 };
 
+/**
+ * @return {boolean} True if the right-hand Ctrl key is mapped to the Meta
+ *     (Windows, Command) key.
+ */
+remoting.DesktopConnectedView.prototype.getMapRightCtrl = function() {
+  return this.host_.options.remapKeys[0x0700e4] === 0x0700e7;
+};
+
 remoting.DesktopConnectedView.prototype.toggleStats = function() {
   this.stats_.toggle();
 };
@@ -235,6 +243,25 @@ remoting.DesktopConnectedView.prototype.onFullScreenChanged_ = function (
 };
 
 /**
+ * Set whether or not the right-hand Ctrl key should send the Meta (Windows,
+ * Command) key-code.
+ *
+ * @param {boolean} enable True to enable the mapping; false to disable.
+ */
+remoting.DesktopConnectedView.prototype.setMapRightCtrl = function(enable) {
+  if (enable === this.getMapRightCtrl()) {
+    return;  // In case right Ctrl is mapped, but not to right Meta.
+  }
+
+  if (enable) {
+    this.host_.options.remapKeys[0x0700e4] = 0x0700e7;
+  } else {
+    delete this.host_.options.remapKeys[0x0700e4]
+  }
+  this.setRemapKeys(this.host_.options.remapKeys);
+};
+
+/**
  * Sends a Ctrl-Alt-Del sequence to the remoting client.
  *
  * @return {void} Nothing.
@@ -263,7 +290,8 @@ remoting.DesktopConnectedView.prototype.sendPrintScreen = function() {
 remoting.DesktopConnectedView.prototype.setRemapKeys = function(remappings) {
   this.plugin_.setRemapKeys(remappings);
   // Save the new remapping setting.
-  this.host_.options.remapKeys = remappings;
+  this.host_.options.remapKeys =
+      /** @type {!Object} */ (base.deepCopy(remappings));
   this.host_.options.save();
 };
 

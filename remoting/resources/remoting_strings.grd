@@ -999,6 +999,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Label for the client-side menu button that sends a PrtScn key press to the host. The 'PrtScn' abbreviation (as typically printed on the keycap on English keyboards) is preferred over 'Print Screen', to make it clearer that this refers to the physical PrtScn key, and not the OS-specific keyboard shortcut for the screen capture functionality." name="IDS_SEND_PRINT_SCREEN">
         Send PrtScn
       </message>
+      <message desc="Label for the client-side menu button that toggles whether or not the right-hand Ctrl key is used to send the Windows/Command key." name="IDS_MAP_RIGHT_CTRL_TO_META">
+        Use right Ctrl for Win key (⌘ on Mac)
+      </message>
       <message desc="Menu option for enabling shrink-to-fit. When clicked, the remote desktop will be scaled down so that it fits in the browser window." name="IDS_SHRINK_TO_FIT">
         Shrink to fit
       </message>
