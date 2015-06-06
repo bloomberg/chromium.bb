@@ -31,6 +31,11 @@ namespace {
 // must be visible when the window is added to the workspace.
 const float kMinimumPercentOnScreenArea = 0.3f;
 
+// When a window that has restore bounds at least as large as a work area is
+// unmaximized, inset the bounds slightly so that they are not exactly the same.
+// This makes it easier to resize the window.
+const int kMaximizedWindowInset = 10;  // Pixels.
+
 bool IsMinimizedWindowState(const WindowStateType state_type) {
   return state_type == WINDOW_STATE_TYPE_MINIMIZED ||
          state_type == WINDOW_STATE_TYPE_DOCKED_MINIMIZED;
@@ -643,10 +648,9 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
         if (previous_state_type == WINDOW_STATE_TYPE_MAXIMIZED &&
             bounds_in_parent.width() >= work_area_in_parent.width() &&
             bounds_in_parent.height() >= work_area_in_parent.height()) {
-          // Inset the bounds slightly so that they are not exactly same as
-          // the work area bounds and it is easier to resize the window.
           bounds_in_parent = work_area_in_parent;
-          bounds_in_parent.Inset(10, 10, 10, 10);
+          bounds_in_parent.Inset(kMaximizedWindowInset, kMaximizedWindowInset,
+                                 kMaximizedWindowInset, kMaximizedWindowInset);
         }
       } else {
         bounds_in_parent = window->bounds();
