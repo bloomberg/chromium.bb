@@ -42,8 +42,8 @@
 #include "platform/Logging.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DisplayItemListContextRecorder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/transforms/AffineTransform.h"
 #include "public/web/WebInputEvent.h"
 #include "web/PageOverlayList.h"
@@ -72,10 +72,10 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
     if (rect.isEmpty())
         return;
 
-    OwnPtr<GraphicsContext> context = GraphicsContext::deprecatedCreateWithCanvas(canvas);
+    IntRect intRect(rect);
+    SkPictureBuilder pictureBuilder(intRect);
     {
-        DisplayItemListContextRecorder contextRecorder(*context);
-        GraphicsContext& paintContext = contextRecorder.context();
+        GraphicsContext& paintContext = pictureBuilder.context();
 
         // FIXME: device scale factor settings are layering violations and should not
         // be used within Blink paint code.
@@ -100,6 +100,7 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
                 paintContext.fillRect(dirtyRect, Color::white);
         }
     }
+    pictureBuilder.endRecording()->playback(canvas);
 }
 
 bool PageWidgetDelegate::handleInputEvent(PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* root)
