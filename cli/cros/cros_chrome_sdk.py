@@ -23,6 +23,7 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import stats
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 
 
@@ -90,10 +91,7 @@ class SDKFetcher(object):
         force usage of the external configuration if both external and internal
         are available.
     """
-    # Delay this import because it is super slow.  http://crbug.com/404575
-    from chromite.cbuildbot import chromeos_config
-    all_configs = chromeos_config.GetConfig()
-
+    site_config = config_lib.LoadConfigFromFile()
 
     self.cache_base = os.path.join(cache_dir, COMMAND_NAME)
     if clear_cache:
@@ -104,7 +102,7 @@ class SDKFetcher(object):
     self.misc_cache = cache.DiskCache(
         os.path.join(self.cache_base, self.MISC_CACHE))
     self.board = board
-    self.config = all_configs.FindCanonicalConfigForBoard(
+    self.config = site_config.FindCanonicalConfigForBoard(
         board, allow_internal=not use_external_config)
     self.gs_base = '%s/%s' % (constants.DEFAULT_ARCHIVE_BUCKET,
                               self.config['name'])

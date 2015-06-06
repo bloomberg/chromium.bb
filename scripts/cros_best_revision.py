@@ -13,7 +13,7 @@ import distutils.version
 import os
 
 from chromite.cbuildbot import archive_lib
-from chromite.cbuildbot import chromeos_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
@@ -49,7 +49,8 @@ class ChromeCommitter(object):
     self._dryrun = dryrun
     self._lkgm = None
     self._old_lkgm = None
-    self.build_configs = chromeos_config.GetConfig()
+    self.site_config = config_lib.LoadConfigFromFile()
+
 
   def CheckoutChromeLKGM(self):
     """Checkout chromeos LKGM file for chrome into tmp checkout dir."""
@@ -93,7 +94,7 @@ class ChromeCommitter(object):
   def GetCanariesForChromeLKGM(self):
     """Grabs a list of builders that are important for the Chrome LKGM."""
     builders = []
-    for build_name, conf in self.build_configs.iteritems():
+    for build_name, conf in self.site_config.iteritems():
       if (conf['build_type'] == constants.CANARY_TYPE and
           conf['critical_for_chrome'] and not conf['child_configs']):
         builders.append(build_name)
@@ -203,7 +204,7 @@ class ChromeCommitter(object):
 
   def UpdateLatestFiles(self):
     """Update the LATEST files since LKGM, in Google Storage."""
-    ext_cfgs, int_cfgs = self.build_configs.FindFullConfigsForBoard(board=None)
+    ext_cfgs, int_cfgs = self.site_config.FindFullConfigsForBoard(board=None)
     versions = self._GetLatestCanaryVersions() + [self._old_lkgm]
     tasks = [[cfg, versions] for cfg in ext_cfgs + int_cfgs]
     parallel.RunTasksInProcessPool(self.UpdateLatestFilesForBot, tasks,

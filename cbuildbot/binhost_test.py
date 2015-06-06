@@ -13,7 +13,6 @@ import unittest
 import warnings
 
 from chromite.cbuildbot import binhost
-from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
@@ -37,11 +36,13 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
   # A dict mapping BoardKeys to their associated compat ids.
   COMPAT_IDS = None
 
+  site_config = config_lib.LoadConfigFromFile()
+
   @classmethod
   def setUpClass(cls):
     assert cros_build_lib.IsInsideChroot()
     logging.info('Generating board configs. This takes about 10m...')
-    board_keys = binhost.GetAllImportantBoardKeys()
+    board_keys = binhost.GetAllImportantBoardKeys(cls.site_config)
     boards = set(key.board for key in board_keys)
     for board in sorted(boards):
       binhost.GenConfigsForBoard(board, regen=not cls.CACHING,
@@ -151,7 +152,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     if filename is not None:
       pfq_configs = binhost.PrebuiltMapping.Load(filename)
     else:
-      keys = binhost.GetChromePrebuiltConfigs().keys()
+      keys = binhost.GetChromePrebuiltConfigs(self.site_config).keys()
       pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
 
     for compat_id, pfqs in pfq_configs.by_compat_id.items():
@@ -160,7 +161,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         self.Complain(msg % (', '.join(str(x) for x in pfqs), compat_id),
                       fatal=False)
 
-    for _name, config in sorted(chromeos_config.GetConfig().items()):
+    for _name, config in sorted(self.site_config.items()):
       # Skip over configs that don't have Chrome or have >1 board.
       if config.sync_chrome is False or len(config.boards) != 1:
         continue
@@ -188,7 +189,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     This means that all of the subconfigs in the release group have matching
     use flags, cflags, and architecture.
     """
-    for config in chromeos_config.GetConfig().values():
+    for config in self.site_config.values():
       # Only test release groups.
       if not config.name.endswith('-release-group'):
         continue
@@ -227,7 +228,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     Chrome PFQ run from disk and verifies that it is sufficient.
     """
     with osutils.TempDir() as tempdir:
-      keys = binhost.GetChromePrebuiltConfigs().keys()
+      keys = binhost.GetChromePrebuiltConfigs(self.site_config).keys()
       pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
       filename = os.path.join(tempdir, 'foo.json')
       pfq_configs.Dump(filename)

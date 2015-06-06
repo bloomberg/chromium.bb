@@ -9,7 +9,7 @@ from __future__ import print_function
 import json
 import sys
 
-from chromite.cbuildbot import chromeos_config
+from chromite.cbuildbot import config_lib
 from chromite.lib import commandline
 
 
@@ -61,8 +61,10 @@ def _ParseArguments(argv):
 def main(argv):
   opts = _ParseArguments(argv)
 
+  site_config = config_lib.LoadConfigFromFile()
+
   layout = {}
-  for config_name, config in chromeos_config.GetConfig().iteritems():
+  for config_name, config in site_config.iteritems():
     active_waterfall = config['active_waterfall']
     if not active_waterfall:
       continue

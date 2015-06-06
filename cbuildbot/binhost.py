@@ -11,7 +11,6 @@ import json
 import os
 import tempfile
 
-from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -48,27 +47,32 @@ def GetBoardKey(config, board=None):
   return BoardKey(board, config.useflags)
 
 
-def GetAllImportantBoardKeys():
-  """Get a list of all board keys used in a top-level config."""
+def GetAllImportantBoardKeys(site_config):
+  """Get a list of all board keys used in a top-level config.
+
+  Args:
+    site_config: A config_lib.SiteConfig instance.
+  """
   boards = set()
-  for config in chromeos_config.GetConfig().values():
+  for config in site_config.values():
     if config.important:
       for board in config.boards:
         boards.add(GetBoardKey(config, board))
   return boards
 
 
-def GetChromePrebuiltConfigs():
+def GetChromePrebuiltConfigs(site_config):
   """Get a mapping of the boards used in the Chrome PFQ.
+
+  Args:
+    site_config: A config_lib.SiteConfig instance.
 
   Returns:
     A dict mapping BoardKey objects to configs.
   """
-  all_configs = chromeos_config.GetConfig()
-
   boards = {}
-  master_chromium_pfq = all_configs['master-chromium-pfq']
-  for config in all_configs.GetSlavesForMaster(master_chromium_pfq):
+  master_chromium_pfq = site_config['master-chromium-pfq']
+  for config in site_config.GetSlavesForMaster(master_chromium_pfq):
     if config.prebuilts:
       for board in config.boards:
         boards[GetBoardKey(config, board)] = config

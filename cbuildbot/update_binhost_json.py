@@ -9,6 +9,7 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import binhost
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -33,13 +34,15 @@ def main(argv):
   cros_build_lib.AssertInsideChroot()
   opts = _ParseArguments(argv)
 
+  site_config = config_lib.LoadConfigFromFile()
+
   logging.info('Generating board configs. This takes about 2m...')
-  for key in sorted(binhost.GetChromePrebuiltConfigs()):
+  for key in sorted(binhost.GetChromePrebuiltConfigs(site_config)):
     binhost.GenConfigsForBoard(key.board, regen=opts.regen, error_code_ok=True)
 
   # Fetch all compat IDs.
   fetcher = binhost.CompatIdFetcher()
-  keys = binhost.GetChromePrebuiltConfigs().keys()
+  keys = binhost.GetChromePrebuiltConfigs(site_config).keys()
   compat_ids = fetcher.FetchCompatIds(keys)
 
   # Save the PFQ configs.
