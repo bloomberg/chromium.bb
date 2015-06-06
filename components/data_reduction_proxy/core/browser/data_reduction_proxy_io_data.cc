@@ -278,6 +278,15 @@ void DataReductionProxyIOData::UpdateContentLengths(
                  data_reduction_proxy_enabled, request_type));
 }
 
+void DataReductionProxyIOData::SetLoFiModeActiveOnMainFrame(
+    bool lo_fi_mode_active) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DataReductionProxyService::SetLoFiModeActiveOnMainFrame,
+                 service_, lo_fi_mode_active));
+}
+
 void DataReductionProxyIOData::AddEvent(scoped_ptr<base::Value> event) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(

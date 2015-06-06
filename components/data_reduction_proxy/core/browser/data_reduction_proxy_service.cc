@@ -119,6 +119,12 @@ void DataReductionProxyService::SetUnreachable(bool unreachable) {
   settings_->SetUnreachable(unreachable);
 }
 
+void DataReductionProxyService::SetLoFiModeActiveOnMainFrame(
+    bool lo_fi_mode_active) {
+  DCHECK(CalledOnValidThread());
+  settings_->SetLoFiModeActiveOnMainFrame(lo_fi_mode_active);
+}
+
 void DataReductionProxyService::SetInt64Pref(const std::string& pref_path,
                                              int64 value) {
   if (prefs_)

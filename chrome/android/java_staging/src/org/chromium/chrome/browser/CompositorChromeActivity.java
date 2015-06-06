@@ -219,7 +219,9 @@ public abstract class CompositorChromeActivity extends ChromeActivity
                     boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
                     int statusCode) {
                 if (!tab.isNativePage()
-                        && DataReductionProxySettings.getInstance().isLoFiEnabled()) {
+                        && DataReductionProxySettings.getInstance().wasLoFiModeActiveOnMainFrame()
+                        && DataReductionProxySettings.getInstance().canUseDataReductionProxy(
+                                url)) {
                     mLoFiBarPopupController.showLoFiBar(tab);
                 }
             }

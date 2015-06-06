@@ -137,14 +137,26 @@ public class DataReductionProxySettings {
         nativeSetDataReductionProxyEnabled(mNativeDataReductionProxySettings, enabled);
     }
 
-    /** Returns true if the SPDY proxy is enabled. */
+    /** Returns true if the Data Reduction Proxy proxy is enabled. */
     public boolean isDataReductionProxyEnabled() {
         return nativeIsDataReductionProxyEnabled(mNativeDataReductionProxySettings);
     }
 
-    /** Returns true if Data Reduction Proxy LoFi is enabled. */
-    public boolean isLoFiEnabled() {
-        return nativeIsLoFiEnabled(mNativeDataReductionProxySettings);
+    /**
+     * Returns true if the Data Reduction Proxy proxy can be used for the given url. This method
+     * does not take into account the proxy config or proxy retry list, so it can return true even
+     * when the proxy will not be used.
+     */
+    public boolean canUseDataReductionProxy(String url) {
+        return nativeCanUseDataReductionProxy(mNativeDataReductionProxySettings, url);
+    }
+
+    /**
+     * Returns true if the Data Reduction Proxy's Lo-Fi mode was enabled on the last main frame
+     * request.
+     */
+    public boolean wasLoFiModeActiveOnMainFrame() {
+        return nativeWasLoFiModeActiveOnMainFrame(mNativeDataReductionProxySettings);
     }
 
     /** Returns true if the SPDY proxy is managed by an administrator's policy. */
@@ -217,7 +229,9 @@ public class DataReductionProxySettings {
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyEnabled(
             long nativeDataReductionProxySettingsAndroid);
-    private native boolean nativeIsLoFiEnabled(
+    private native boolean nativeCanUseDataReductionProxy(
+            long nativeDataReductionProxySettingsAndroid, String url);
+    private native boolean nativeWasLoFiModeActiveOnMainFrame(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyManaged(
             long nativeDataReductionProxySettingsAndroid);

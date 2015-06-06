@@ -16,6 +16,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "jni/DataReductionProxySettings_jni.h"
 #include "net/proxy/proxy_server.h"
+#include "url/gurl.h"
 
 
 using base::android::ConvertUTF8ToJavaString;
@@ -49,9 +50,15 @@ jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyEnabled(
   return Settings()->IsDataReductionProxyEnabled();
 }
 
-jboolean DataReductionProxySettingsAndroid::IsLoFiEnabled(
+jboolean DataReductionProxySettingsAndroid::CanUseDataReductionProxy(
+    JNIEnv* env, jobject obj, jstring url) {
+  return Settings()->CanUseDataReductionProxy(
+      GURL(base::android::ConvertJavaStringToUTF16(env, url)));
+}
+
+jboolean DataReductionProxySettingsAndroid::WasLoFiModeActiveOnMainFrame(
     JNIEnv* env, jobject obj) {
-  return Settings()->IsLoFiEnabled();
+  return Settings()->WasLoFiModeActiveOnMainFrame();
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyManaged(

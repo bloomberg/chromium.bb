@@ -301,8 +301,7 @@ TEST_F(DataReductionProxySettingsTest, TestSetDataReductionProxyEnabled) {
   EXPECT_CALL(*settings, RecordStartupState(PROXY_ENABLED));
   test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
                                             true);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDataReductionProxyLoFi);
+  settings->SetLoFiModeActiveOnMainFrame(true);
   InitDataReductionProxy(true);
 
   ExpectSetProxyPrefs(false, false, false);
@@ -317,25 +316,23 @@ TEST_F(DataReductionProxySettingsTest, TestSetDataReductionProxyEnabled) {
   CheckDataReductionProxyLoFiSyntheticTrial(true);
 }
 
-TEST_F(DataReductionProxySettingsTest, TestEnableLoFiFromCommandLineProxyOn) {
+TEST_F(DataReductionProxySettingsTest, TestEnableLoFiSyntheticTrial) {
   MockSettings* settings = static_cast<MockSettings*>(settings_.get());
   EXPECT_CALL(*settings, RecordStartupState(PROXY_ENABLED));
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDataReductionProxyLoFi);
   test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
                                             true);
   InitDataReductionProxy(true);
-  CheckDataReductionProxyLoFiSyntheticTrial(true);
-}
 
-TEST_F(DataReductionProxySettingsTest, TestEnableLoFiFromCommandLineProxyOff) {
-  MockSettings* settings = static_cast<MockSettings*>(settings_.get());
-  EXPECT_CALL(*settings, RecordStartupState(PROXY_DISABLED));
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDataReductionProxyLoFi);
-  test_context_->pref_service()->SetBoolean(prefs::kDataReductionProxyEnabled,
-                                            false);
-  InitDataReductionProxy(false);
+  // The Lo-Fi field trial will be set to "Disabled" until the first main frame
+  // request with Lo-Fi active.
+  CheckDataReductionProxyLoFiSyntheticTrial(false);
+
+  // Turn Lo-Fi on.
+  settings->SetLoFiModeActiveOnMainFrame(true);
+  CheckDataReductionProxyLoFiSyntheticTrial(true);
+
+  // Now turn it off.
+  settings->SetLoFiModeActiveOnMainFrame(false);
   CheckDataReductionProxyLoFiSyntheticTrial(false);
 }
 

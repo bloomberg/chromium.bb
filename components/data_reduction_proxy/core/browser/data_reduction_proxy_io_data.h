@@ -93,6 +93,7 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
                             int64 original_content_length,
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type);
+  void SetLoFiModeActiveOnMainFrame(bool lo_fi_mode_active);
 
   // Overrides of DataReductionProxyEventStorageDelegate. Bridges to the UI
   // thread objects.

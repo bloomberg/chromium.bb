@@ -91,6 +91,10 @@ class DataReductionProxyService
   // Records whether the Data Reduction Proxy is unreachable or not.
   void SetUnreachable(bool unreachable);
 
+  // Sets if Lo-Fi was active on the last main frame load in
+  // DataReductionProxySettings.
+  void SetLoFiModeActiveOnMainFrame(bool lo_fi_mode_active);
+
   // Stores an int64 value in |prefs_|.
   void SetInt64Pref(const std::string& pref_path, int64 value);
 

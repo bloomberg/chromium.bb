@@ -99,8 +99,13 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // Enables or disables the alternative data reduction proxy configuration.
   void SetDataReductionProxyAlternativeEnabled(bool enabled);
 
-  // Returns true if both LoFi and the proxy are enabled.
-  bool IsLoFiEnabled() const;
+  // Sets |lo_fi_mode_active_| to true if Lo-Fi is currently active, meaning
+  // requests are being sent with "q=low" headers. Set from the IO thread only
+  // on main frame requests.
+  void SetLoFiModeActiveOnMainFrame(bool lo_fi_mode_active);
+
+  // Returns true if Lo-Fi was active on the main frame request.
+  bool WasLoFiModeActiveOnMainFrame() const;
 
   // Returns the time in microseconds that the last update was made to the
   // daily original and received content lengths.
@@ -244,6 +249,9 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   bool allowed_;
   bool alternative_allowed_;
   bool promo_allowed_;
+
+  // True if Lo-Fi is active.
+  bool lo_fi_mode_active_;
 
   BooleanPrefMember spdy_proxy_auth_enabled_;
   BooleanPrefMember data_reduction_proxy_alternative_enabled_;

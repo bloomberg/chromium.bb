@@ -115,6 +115,12 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
               header_value.find("q=low") != std::string::npos);
   }
 
+  void VerifyWasLoFiModeActiveOnMainFrame(bool expected_value) {
+    test_context_->RunUntilIdle();
+    EXPECT_EQ(expected_value,
+              test_context_->settings()->WasLoFiModeActiveOnMainFrame());
+  }
+
  protected:
   scoped_ptr<net::URLRequest> FetchURLRequest(
       const GURL& url,
@@ -241,6 +247,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(true, headers);
+      VerifyWasLoFiModeActiveOnMainFrame(true);
     }
 
     {
@@ -252,6 +259,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(false, headers);
+      // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
+      // true.
+      VerifyWasLoFiModeActiveOnMainFrame(true);
     }
 
     {
@@ -263,6 +273,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(true, headers);
+      // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
+      // true.
+      VerifyWasLoFiModeActiveOnMainFrame(true);
     }
 
     {
@@ -274,6 +287,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(false, headers);
+      // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
+      // true.
+      VerifyWasLoFiModeActiveOnMainFrame(true);
     }
 
     {
@@ -286,6 +302,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(false, headers);
+      VerifyWasLoFiModeActiveOnMainFrame(false);
     }
 
     {
@@ -296,6 +313,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(false, headers);
+      // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
+      // false.
+      VerifyWasLoFiModeActiveOnMainFrame(false);
     }
 
     {
@@ -307,6 +327,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
       VerifyLoFiHeader(true, headers);
+      VerifyWasLoFiModeActiveOnMainFrame(true);
     }
   }
 }

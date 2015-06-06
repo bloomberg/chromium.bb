@@ -187,6 +187,10 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendProxyHeadersInternal(
     data_reduction_proxy_config_->UpdateLoFiStatusOnMainFrameRequest(
         ((request->load_flags() & net::LOAD_BYPASS_CACHE) != 0),
         network_quality_estimator);
+    if (data_reduction_proxy_io_data_) {
+      data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(
+          data_reduction_proxy_config_->ShouldUseLoFiHeaderForRequests());
+    }
   }
 
   if (data_reduction_proxy_request_options_) {

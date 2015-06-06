@@ -36,6 +36,7 @@ DataReductionProxySettings::DataReductionProxySettings()
       allowed_(false),
       alternative_allowed_(false),
       promo_allowed_(false),
+      lo_fi_mode_active_(false),
       prefs_(NULL),
       config_(nullptr) {
 }
@@ -168,10 +169,16 @@ PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
   return prefs_;
 }
 
-bool DataReductionProxySettings::IsLoFiEnabled() const {
-  // TODO(megjablon): Remove this function.
-  return IsDataReductionProxyEnabled() &&
-         DataReductionProxyParams::IsLoFiEnabledThroughSwitch();
+void DataReductionProxySettings::SetLoFiModeActiveOnMainFrame(
+    bool lo_fi_mode_active) {
+  lo_fi_mode_active_ = lo_fi_mode_active;
+  if (!register_synthetic_field_trial_.is_null()) {
+    RegisterLoFiFieldTrial();
+  }
+}
+
+bool DataReductionProxySettings::WasLoFiModeActiveOnMainFrame() const {
+  return lo_fi_mode_active_;
 }
 
 void DataReductionProxySettings::RegisterDataReductionProxyFieldTrial() {
@@ -181,8 +188,11 @@ void DataReductionProxySettings::RegisterDataReductionProxyFieldTrial() {
 }
 
 void DataReductionProxySettings::RegisterLoFiFieldTrial() {
-  register_synthetic_field_trial_.Run("SyntheticDataReductionProxyLoFiSetting",
-                                      IsLoFiEnabled() ? "Enabled" : "Disabled");
+  register_synthetic_field_trial_.Run(
+      "SyntheticDataReductionProxyLoFiSetting",
+      IsDataReductionProxyEnabled() && WasLoFiModeActiveOnMainFrame()
+          ? "Enabled"
+          : "Disabled");
 }
 
 void DataReductionProxySettings::OnProxyEnabledPrefChange() {

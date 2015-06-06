@@ -38,7 +38,8 @@ class DataReductionProxySettingsAndroid {
   jboolean IsDataReductionProxyPromoAllowed(JNIEnv* env, jobject obj);
   jboolean IsIncludedInAltFieldTrial(JNIEnv* env, jobject obj);
   jboolean IsDataReductionProxyEnabled(JNIEnv* env, jobject obj);
-  jboolean IsLoFiEnabled(JNIEnv* env, jobject obj);
+  jboolean CanUseDataReductionProxy(JNIEnv* env, jobject obj, jstring url);
+  jboolean WasLoFiModeActiveOnMainFrame(JNIEnv* env, jobject obj);
   jboolean IsDataReductionProxyManaged(JNIEnv* env, jobject obj);
   void SetDataReductionProxyEnabled(JNIEnv* env, jobject obj, jboolean enabled);
 
