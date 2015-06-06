@@ -327,6 +327,15 @@ void PresentationFrameManager::SetMediaRouterForTest(MediaRouter* router) {
   router_ = router;
 }
 
+PresentationServiceDelegateImpl*
+PresentationServiceDelegateImpl::GetOrCreateForWebContents(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  // CreateForWebContents does nothing if the delegate instance already exists.
+  PresentationServiceDelegateImpl::CreateForWebContents(web_contents);
+  return PresentationServiceDelegateImpl::FromWebContents(web_contents);
+}
+
 PresentationServiceDelegateImpl::PresentationServiceDelegateImpl(
     content::WebContents* web_contents)
     : web_contents_(web_contents),

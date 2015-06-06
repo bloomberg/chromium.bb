@@ -256,6 +256,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                const content::OpenURLParams& params,
                const base::Callback<void(content::WebContents*)>& callback)
       override;
+  content::PresentationServiceDelegate* GetPresentationServiceDelegate(
+      content::WebContents* web_contents) override;
 
   void RecordURLMetric(const std::string& metric, const GURL& url) override;
 

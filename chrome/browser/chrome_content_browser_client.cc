@@ -240,6 +240,10 @@
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #endif
 
+#if defined(ENABLE_MEDIA_ROUTER)
+#include "chrome/browser/media/router/presentation_service_delegate_impl.h"
+#endif
+
 using base::FileDescriptor;
 using blink::WebWindowFeatures;
 using content::AccessTokenStore;
@@ -2359,6 +2363,18 @@ void ChromeContentBrowserClient::OpenURL(
 #else
   NOTIMPLEMENTED();
 #endif
+}
+
+content::PresentationServiceDelegate*
+ChromeContentBrowserClient::GetPresentationServiceDelegate(
+      content::WebContents* web_contents) {
+#if defined(ENABLE_MEDIA_ROUTER)
+  if (switches::MediaRouterEnabled()) {
+    return media_router::PresentationServiceDelegateImpl::
+        GetOrCreateForWebContents(web_contents);
+  }
+#endif
+  return nullptr;
 }
 
 void ChromeContentBrowserClient::RecordURLMetric(const std::string& metric,

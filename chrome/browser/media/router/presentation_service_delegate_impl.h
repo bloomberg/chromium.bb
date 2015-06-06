@@ -46,6 +46,12 @@ class PresentationServiceDelegateImpl
     : public content::WebContentsUserData<PresentationServiceDelegateImpl>,
       public content::PresentationServiceDelegate {
  public:
+  // Retrieves the instance of PresentationServiceDelegateImpl that was attached
+  // to the specified WebContents.  If no instance was attached, creates one,
+  // and attaches it to the specified WebContents.
+  static PresentationServiceDelegateImpl* GetOrCreateForWebContents(
+      content::WebContents* web_contents);
+
   ~PresentationServiceDelegateImpl() override;
 
   // content::PresentationServiceDelegate implementation.
