@@ -34,7 +34,7 @@ void OnUploadComplete(TraceCrashServiceUploader* uploader,
   done_callback.Run();
 }
 
-void UploadCallback(const base::RefCountedString* file_contents,
+void UploadCallback(const scoped_refptr<base::RefCountedString>& file_contents,
                     base::Closure callback) {
   TraceCrashServiceUploader* uploader = new TraceCrashServiceUploader(
       g_browser_process->system_request_context());
@@ -66,7 +66,8 @@ void SetupBackgroundTracingFieldTrial() {
     return;
 
   content::BackgroundTracingManager::GetInstance()->SetActiveScenario(
-      config.Pass(), base::Bind(&UploadCallback), true);
+      config.Pass(), base::Bind(&UploadCallback),
+      content::BackgroundTracingManager::ANONYMIZE_DATA);
 }
 
 }  // namespace tracing

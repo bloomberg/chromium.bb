@@ -39,8 +39,8 @@ class BackgroundTracingManager {
   //     );
   // }
   //
-  typedef base::Callback<void(const base::RefCountedString*, base::Closure)>
-      ReceiveCallback;
+  typedef base::Callback<void(const scoped_refptr<base::RefCountedString>&,
+                              base::Closure)> ReceiveCallback;
 
   // Set the triggering rules for when to start recording.
   //
@@ -57,9 +57,13 @@ class BackgroundTracingManager {
   // Calls to SetActiveScenario() with a config will fail if tracing is
   // currently on. Use WhenIdle to register a callback to get notified when
   // the manager is idle and a config can be set again.
+  enum DataFiltering {
+    NO_DATA_FILTERING,
+    ANONYMIZE_DATA,
+  };
   virtual bool SetActiveScenario(scoped_ptr<BackgroundTracingConfig> config,
                                  const ReceiveCallback& receive_callback,
-                                 bool requires_anonymized_data) = 0;
+                                 DataFiltering data_filtering) = 0;
 
   // Notifies the caller when the manager is idle (not recording or uploading),
   // so that a call to SetActiveScenario() is likely to succeed.
@@ -84,7 +88,8 @@ class BackgroundTracingManager {
   virtual void GetTriggerNameList(std::vector<std::string>* trigger_names) = 0;
 
   virtual void InvalidateTriggerHandlesForTesting() = 0;
-
+  virtual void SetTracingEnabledCallbackForTesting(
+      const base::Closure& callback) = 0;
   virtual void FireTimerForTesting() = 0;
 
  protected:

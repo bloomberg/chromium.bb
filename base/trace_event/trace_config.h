@@ -122,6 +122,7 @@ class BASE_EXPORT TraceConfig {
   void SetTraceRecordMode(TraceRecordMode mode) { record_mode_ = mode; }
   void EnableSampling() { enable_sampling_ = true; }
   void EnableSystrace() { enable_systrace_ = true; }
+  void EnableArgumentFilter() { enable_argument_filter_ = true; }
 
   // Writes the string representation of the TraceConfig. The string is JSON
   // formatted.

@@ -130,7 +130,7 @@ bool BackgroundTracingManagerImpl::IsSupportedConfig(
 bool BackgroundTracingManagerImpl::SetActiveScenario(
     scoped_ptr<BackgroundTracingConfig> config,
     const BackgroundTracingManager::ReceiveCallback& receive_callback,
-    bool requires_anonymized_data) {
+    DataFiltering data_filtering) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (is_tracing_)
     return false;
@@ -144,7 +144,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
 
   config_ = config.Pass();
   receive_callback_ = receive_callback;
-  requires_anonymized_data_ = requires_anonymized_data;
+  requires_anonymized_data_ = (data_filtering == ANONYMIZE_DATA);
 
   EnableRecordingIfConfigNeedsIt();
 
@@ -296,6 +296,11 @@ void BackgroundTracingManagerImpl::InvalidateTriggerHandlesForTesting() {
   trigger_handles_.clear();
 }
 
+void BackgroundTracingManagerImpl::SetTracingEnabledCallbackForTesting(
+    const base::Closure& callback) {
+  tracing_enabled_callback_for_testing_ = callback;
+};
+
 void BackgroundTracingManagerImpl::FireTimerForTesting() {
   tracing_timer_->FireTimerForTesting();
 }
@@ -303,9 +308,12 @@ void BackgroundTracingManagerImpl::FireTimerForTesting() {
 void BackgroundTracingManagerImpl::EnableRecording(
     std::string category_filter_str,
     base::trace_event::TraceRecordMode record_mode) {
+  base::trace_event::TraceConfig trace_config(category_filter_str, record_mode);
+  if (requires_anonymized_data_)
+    trace_config.EnableArgumentFilter();
+
   is_tracing_ = TracingController::GetInstance()->EnableRecording(
-      base::trace_event::TraceConfig(category_filter_str, record_mode),
-      TracingController::EnableRecordingDoneCallback());
+      trace_config, tracing_enabled_callback_for_testing_);
 }
 
 void BackgroundTracingManagerImpl::OnFinalizeStarted(
@@ -314,7 +322,7 @@ void BackgroundTracingManagerImpl::OnFinalizeStarted(
 
   if (!receive_callback_.is_null())
     receive_callback_.Run(
-        file_contents.get(),
+        file_contents,
         base::Bind(&BackgroundTracingManagerImpl::OnFinalizeComplete,
                    base::Unretained(this)));
 }

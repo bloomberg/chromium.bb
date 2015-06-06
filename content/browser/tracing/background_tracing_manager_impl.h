@@ -21,7 +21,7 @@ class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
 
   bool SetActiveScenario(scoped_ptr<BackgroundTracingConfig>,
                          const ReceiveCallback&,
-                         bool) override;
+                         DataFiltering data_filtering) override;
   void WhenIdle(IdleCallback idle_callback) override;
 
   void TriggerNamedEvent(TriggerHandle, StartedFinalizingCallback) override;
@@ -29,7 +29,8 @@ class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
   void GetTriggerNameList(std::vector<std::string>* trigger_names) override;
 
   void InvalidateTriggerHandlesForTesting() override;
-
+  void SetTracingEnabledCallbackForTesting(
+      const base::Closure& callback) override;
   void FireTimerForTesting() override;
 
  private:
@@ -94,6 +95,7 @@ class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
   int trigger_handle_ids_;
 
   IdleCallback idle_callback_;
+  base::Closure tracing_enabled_callback_for_testing_;
 
   friend struct base::DefaultLazyInstanceTraits<BackgroundTracingManagerImpl>;
 
