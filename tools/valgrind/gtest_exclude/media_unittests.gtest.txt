@@ -5,6 +5,10 @@ FakeAudioInputTest.BasicCallbacks
 # Flaky under all Valgrind-based tools, see http://crbug.com/298771
 PipelineIntegrationTest.MediaSource_Opus_Seeking_WebM
 
+# Flaky under valgrind, http://crbug.com/492882
+PipelineIntegrationTest.BasicPlaybackHashed
+PipelineIntegrationTest.BasicPlaybackLive
+
 # crbug.com/409485, cannot revert due to git migration,
 # exclude the test now
 AudioInputTest.Record
