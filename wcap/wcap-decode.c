@@ -131,7 +131,7 @@ wcap_decoder_create(const char *filename)
 		free(decoder);
 		return NULL;
 	}
-		
+
 	header = decoder->map;
 	decoder->format = header->format;
 	decoder->count = 0;

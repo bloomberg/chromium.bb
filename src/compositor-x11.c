@@ -511,7 +511,7 @@ x11_output_set_wm_protocols(struct x11_compositor *c,
 	xcb_atom_t list[1];
 
 	list[0] = c->atom.wm_delete_window;
-	xcb_change_property (c->conn, 
+	xcb_change_property (c->conn,
 			     XCB_PROP_MODE_REPLACE,
 			     output->window,
 			     c->atom.wm_protocols,

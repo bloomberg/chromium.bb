@@ -595,7 +595,7 @@ weston_wm_window_send_configure_notify(struct weston_wm_window *window)
 	configure_notify.override_redirect = 0;
 	configure_notify.pad1 = 0;
 
-	xcb_send_event(wm->conn, 0, window->id, 
+	xcb_send_event(wm->conn, 0, window->id,
 		       XCB_EVENT_MASK_STRUCTURE_NOTIFY,
 		       (char *) &configure_notify);
 }
@@ -603,7 +603,7 @@ weston_wm_window_send_configure_notify(struct weston_wm_window *window)
 static void
 weston_wm_handle_configure_request(struct weston_wm *wm, xcb_generic_event_t *event)
 {
-	xcb_configure_request_event_t *configure_request = 
+	xcb_configure_request_event_t *configure_request =
 		(xcb_configure_request_event_t *) event;
 	struct weston_wm_window *window;
 	uint32_t mask, values[16];
@@ -672,7 +672,7 @@ our_resource(struct weston_wm *wm, uint32_t id)
 static void
 weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 {
-	xcb_configure_notify_event_t *configure_notify = 
+	xcb_configure_notify_event_t *configure_notify =
 		(xcb_configure_notify_event_t *) event;
 	struct weston_wm_window *window;
 
@@ -726,7 +726,7 @@ weston_wm_create_surface(struct wl_listener *listener, void *data)
 			window->surface_id = 0;
 			wl_list_remove(&window->link);
 			break;
-		}	
+		}
 }
 
 static void
@@ -755,7 +755,7 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 		client_message.data.data32[0] = wm->atom.wm_take_focus;
 		client_message.data.data32[1] = XCB_TIME_CURRENT_TIME;
 
-		xcb_send_event(wm->conn, 0, window->id, 
+		xcb_send_event(wm->conn, 0, window->id,
 			       XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT,
 			       (char *) &client_message);
 
@@ -1081,7 +1081,7 @@ weston_wm_window_draw_decoration(void *data)
 			/* We leave an extra pixel around the X window area to
 			 * make sure we don't sample from the undefined alpha
 			 * channel when filtering. */
-			pixman_region32_init_rect(&window->surface->pending.opaque, 
+			pixman_region32_init_rect(&window->surface->pending.opaque,
 						  x - 1, y - 1,
 						  window->width + 2,
 						  window->height + 2);
@@ -2476,7 +2476,7 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 		return;
 	}
 
-	window->shsurf = 
+	window->shsurf =
 		shell_interface->create_shell_surface(shell_interface->shell,
 						      window->surface,
 						      &shell_client);

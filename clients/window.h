@@ -262,9 +262,9 @@ typedef void (*widget_touch_motion_handler_t)(struct widget *widget,
 					      float x,
 					      float y,
 					      void *data);
-typedef void (*widget_touch_frame_handler_t)(struct widget *widget, 
+typedef void (*widget_touch_frame_handler_t)(struct widget *widget,
 					     struct input *input, void *data);
-typedef void (*widget_touch_cancel_handler_t)(struct widget *widget, 
+typedef void (*widget_touch_cancel_handler_t)(struct widget *widget,
 					      struct input *input, void *data);
 typedef void (*widget_axis_handler_t)(struct widget *widget,
 				      struct input *input, uint32_t time,

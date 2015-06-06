@@ -259,7 +259,7 @@ struct backlight *backlight_init(struct udev_device *drm_device,
 
 		parent = basename(buffer);
 
-		/* Perform matching for raw and firmware backlights - 
+		/* Perform matching for raw and firmware backlights -
 		   platform backlights have to be assumed to match */
 		if (entry_type == BACKLIGHT_RAW ||
 		    entry_type == BACKLIGHT_FIRMWARE) {

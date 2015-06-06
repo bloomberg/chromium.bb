@@ -151,7 +151,7 @@ convert_to_yuv444(struct wcap_decoder *decoder, unsigned char *out)
 		up = yp + (psize * 2);
 		vp = yp + (psize * 1);
 		rp = decoder->frame + decoder->width * i;
-		end = rp + decoder->width;	
+		end = rp + decoder->width;
 		while (rp < end) {
 			u = 0;
 			v = 0;

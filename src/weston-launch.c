@@ -114,7 +114,7 @@ read_groups(void)
 {
 	int n;
 	gid_t *groups;
-	
+
 	n = getgroups(0, NULL);
 
 	if (n < 0) {
@@ -174,7 +174,7 @@ weston_launch_allowed(struct weston_launch *wl)
 		free(session);
 	}
 #endif
-	
+
 	return false;
 }
 
@@ -224,7 +224,7 @@ setup_launcher_socket(struct weston_launch *wl)
 {
 	if (socketpair(AF_LOCAL, SOCK_SEQPACKET, 0, wl->sock) < 0)
 		error(1, errno, "socketpair failed");
-	
+
 	if (fcntl(wl->sock[0], F_SETFD, FD_CLOEXEC) < 0)
 		error(1, errno, "fcntl failed");
 
@@ -531,7 +531,7 @@ setup_tty(struct weston_launch *wl, const char *tty)
 			error(1, errno, "could not open tty0");
 
 		if (ioctl(tty0, VT_OPENQRY, &wl->ttynr) < 0 || wl->ttynr == -1)
-			error(1, errno, "failed to find non-opened console"); 
+			error(1, errno, "failed to find non-opened console");
 
 		snprintf(filename, sizeof filename, "/dev/tty%d", wl->ttynr);
 		wl->tty = open(filename, O_RDWR | O_NOCTTY);
@@ -680,7 +680,7 @@ main(int argc, char *argv[])
 		{ "verbose", no_argument,       NULL, 'v' },
 		{ "help",    no_argument,       NULL, 'h' },
 		{ 0,         0,                 NULL,  0  }
-	};	
+	};
 
 	memset(&wl, 0, sizeof wl);
 
