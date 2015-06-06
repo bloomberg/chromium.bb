@@ -62,20 +62,6 @@ void TaskSwitchMetricsRecorderTest::TearDown() {
 
 }  // namespace
 
-// Verifies that the TaskSwitchMetricsRecorder::kDesktop source adds data to the
-// Ash.Desktop.TimeBetweenNavigateToTaskSwitches histogram.
-TEST_F(TaskSwitchMetricsRecorderTest, VerifyTaskSwitchesForDesktopAreRecorded) {
-  const std::string kHistogramName =
-      "Ash.Desktop.TimeBetweenNavigateToTaskSwitches";
-
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kDesktop);
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kDesktop);
-  histogram_tester_->ExpectTotalCount(kHistogramName, 1);
-
-  OnTaskSwitch(TaskSwitchMetricsRecorder::kDesktop);
-  histogram_tester_->ExpectTotalCount(kHistogramName, 2);
-}
-
 // Verifies that the TaskSwitchMetricsRecorder::kWindowCycleController source
 // adds data to the Ash.WindowCycleController.TimeBetweenTaskSwitches histogram.
 TEST_F(TaskSwitchMetricsRecorderTest,

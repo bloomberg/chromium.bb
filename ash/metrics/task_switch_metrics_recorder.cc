@@ -10,9 +10,6 @@ namespace ash {
 
 namespace {
 
-const char kDesktopHistogramName[] =
-    "Ash.Desktop.TimeBetweenNavigateToTaskSwitches";
-
 const char kShelfHistogramName[] =
     "Ash.Shelf.TimeBetweenNavigateToTaskSwitches";
 
@@ -33,8 +30,6 @@ const char* GetHistogramName(
   switch (task_switch_source) {
     case TaskSwitchMetricsRecorder::kAppList:
       return kAppListHistogramName;
-    case TaskSwitchMetricsRecorder::kDesktop:
-      return kDesktopHistogramName;
     case TaskSwitchMetricsRecorder::kOverviewMode:
       return kOverviewModeHistogramName;
     case TaskSwitchMetricsRecorder::kShelf:

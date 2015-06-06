@@ -7,12 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/metrics/task_switch_metrics_recorder.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 
 namespace ash {
-
-class DesktopTaskSwitchMetricRecorder;
 
 namespace test {
 class UserMetricsRecorderTestAPI;
@@ -30,7 +27,6 @@ enum UserMetricsAction {
   UMA_ACCEL_RESTART_POWER_BUTTON,
   UMA_ACCEL_SHUT_DOWN_POWER_BUTTON,
   UMA_CLOSE_THROUGH_CONTEXT_MENU,
-  UMA_DESKTOP_SWITCH_TASK,
   UMA_DRAG_MAXIMIZE_LEFT,
   UMA_DRAG_MAXIMIZE_RIGHT,
   UMA_GESTURE_OVERVIEW,
@@ -157,12 +153,6 @@ class ASH_EXPORT UserMetricsRecorder {
     return task_switch_metrics_recorder_;
   }
 
-  // Informs |this| that the Shell has been initialized.
-  void OnShellInitialized();
-
-  // Informs |this| that the Shell is going to be shut down.
-  void OnShellShuttingDown();
-
  private:
   friend class test::UserMetricsRecorderTestAPI;
 
@@ -188,11 +178,6 @@ class ASH_EXPORT UserMetricsRecorder {
   base::RepeatingTimer<UserMetricsRecorder> timer_;
 
   TaskSwitchMetricsRecorder task_switch_metrics_recorder_;
-
-  // Metric recorder to track how often task windows are activated by mouse
-  // clicks or touchscreen taps.
-  scoped_ptr<DesktopTaskSwitchMetricRecorder>
-      desktop_task_switch_metric_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(UserMetricsRecorder);
 };

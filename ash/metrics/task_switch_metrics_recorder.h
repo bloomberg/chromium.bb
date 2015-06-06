@@ -10,10 +10,6 @@
 #include "ash/ash_export.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 
-namespace aura {
-class Window;
-}  // namespace aura
-
 namespace ash {
 
 class TaskSwitchTimeTracker;
@@ -25,13 +21,9 @@ class ASH_EXPORT TaskSwitchMetricsRecorder {
  public:
   // Enumeration of the different user interfaces that could be the source of
   // a task switch. Note this is not necessarily comprehensive of all sources.
-  // TODO(bruthig): Convert enum format from kValue to VALUE.
   enum TaskSwitchSource {
     // Task switches from selecting items in the app list.
     kAppList,
-    // Task switches caused by the user activating a task window by clicking or
-    // tapping on it.
-    kDesktop,
     // Task switches caused by selecting a window from overview mode which is
     // different from the previously-active window.
     kOverviewMode,
