@@ -7,28 +7,33 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+/** @enum {string} */
+remoting.Os = {
+  WINDOWS: 'Windows',
+  LINUX: 'Linux',
+  MAC: 'Mac',
+  CHROMEOS: 'ChromeOS',
+  UNKNOWN: 'Unknown'
+};
+
+/**
+ * @typedef {{
+ *  osName: remoting.Os,
+ *  osVersion: string,
+ *  cpu: string,
+ *  chromeVersion: string
+ * }}
+ */
+remoting.SystemInfo;
+
+(function() {
+
 /**
  * Returns full Chrome version.
  * @return {string?}
  */
 remoting.getChromeVersion = function() {
-  var match = new RegExp('Chrome/([0-9.]*)').exec(navigator.userAgent);
-  if (match && (match.length >= 2)) {
-    return match[1];
-  }
-  return null;
-};
-
-/**
- * Returns Chrome major version.
- * @return {number}
- */
-remoting.getChromeMajorVersion = function() {
-  var match = new RegExp('Chrome/([0-9]+)\.').exec(navigator.userAgent);
-  if (match && (match.length >= 2)) {
-    return parseInt(match[1], 10);
-  }
-  return 0;
+  return remoting.getSystemInfo().chromeVersion;
 };
 
 /**
@@ -37,8 +42,8 @@ remoting.getChromeMajorVersion = function() {
  * @return {boolean} True if the platform is Mac.
  */
 remoting.platformIsMac = function() {
-  return navigator.platform.indexOf('Mac') != -1;
-}
+  return remoting.getSystemInfo().osName === remoting.Os.MAC;
+};
 
 /**
  * Tests whether we are running on Windows.
@@ -46,9 +51,8 @@ remoting.platformIsMac = function() {
  * @return {boolean} True if the platform is Windows.
  */
 remoting.platformIsWindows = function() {
-  return (navigator.platform.indexOf('Win32') != -1) ||
-         (navigator.platform.indexOf('Win64') != -1);
-}
+  return remoting.getSystemInfo().osName === remoting.Os.WINDOWS;
+};
 
 /**
  * Tests whether we are running on Linux.
@@ -56,9 +60,8 @@ remoting.platformIsWindows = function() {
  * @return {boolean} True if the platform is Linux.
  */
 remoting.platformIsLinux = function() {
-  return (navigator.platform.indexOf('Linux') != -1) &&
-         !remoting.platformIsChromeOS();
-}
+  return remoting.getSystemInfo().osName === remoting.Os.LINUX;
+};
 
 /**
  * Tests whether we are running on ChromeOS.
@@ -66,5 +69,70 @@ remoting.platformIsLinux = function() {
  * @return {boolean} True if the platform is ChromeOS.
  */
 remoting.platformIsChromeOS = function() {
-  return navigator.userAgent.match(/\bCrOS\b/) != null;
-}
+  return remoting.getSystemInfo().osName === remoting.Os.CHROMEOS;
+};
+
+/**
+ * @return {?remoting.SystemInfo}
+ */
+remoting.getSystemInfo = function() {
+  var userAgent = remoting.getUserAgent();
+
+  /** @type {remoting.SystemInfo} */
+  var result = {
+    chromeVersion: '',
+    osName: remoting.Os.UNKNOWN,
+    osVersion: '',
+    cpu: ''
+  };
+
+  // See platform_unittest.js for sample user agent strings.
+  var chromeVersion = new RegExp('Chrome/([0-9.]*)').exec(userAgent);
+  if (chromeVersion && chromeVersion.length >= 2) {
+    result.chromeVersion = chromeVersion[1];
+  }
+
+  var match = new RegExp('Windows NT ([0-9\\.]*)').exec(userAgent);
+  if (match && (match.length >= 2)) {
+    result.osName = remoting.Os.WINDOWS;
+    result.osVersion = match[1];
+    return result;
+  }
+
+  match = new RegExp('Linux ([a-zA-Z0-9_]*)').exec(userAgent);
+  if (match && (match.length >= 2)) {
+    result.osName = remoting.Os.LINUX;
+    result.osVersion = '';
+    result.cpu = match[1];
+    return result;
+  }
+
+  match = new RegExp('([a-zA-Z]*) Mac OS X ([0-9_]*)').exec(userAgent);
+  if (match && (match.length >= 3)) {
+    result.osName = remoting.Os.MAC;
+    result.osVersion = match[2].replace(/_/g, '.');
+    result.cpu = match[1];
+    return result;
+  }
+
+  match = new RegExp('CrOS ([a-zA-Z0-9_]*) ([0-9.]*)').exec(userAgent);
+  if (match && (match.length >= 3)) {
+    result.osName = remoting.Os.CHROMEOS;
+    result.osVersion = match[2];
+    result.cpu = match[1];
+    return result;
+  }
+  return null;
+};
+
+/**
+ * To be overwritten by unit test.
+ *
+ * @return {!string}
+ */
+remoting.getUserAgent = function() {
+  return navigator.userAgent;
+};
+
+})();
+

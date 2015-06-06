@@ -139,14 +139,6 @@ remoting.ServerLogEntry.KEY_ROUNDTRIP_LATENCY_ = "roundtrip-latency";
 
 /** @private */
 remoting.ServerLogEntry.KEY_OS_NAME_ = 'os-name';
-/** @private */
-remoting.ServerLogEntry.VALUE_OS_NAME_WINDOWS_ = 'Windows';
-/** @private */
-remoting.ServerLogEntry.VALUE_OS_NAME_LINUX_ = 'Linux';
-/** @private */
-remoting.ServerLogEntry.VALUE_OS_NAME_MAC_ = 'Mac';
-/** @private */
-remoting.ServerLogEntry.VALUE_OS_NAME_CHROMEOS_ = 'ChromeOS';
 
 /** @private */
 remoting.ServerLogEntry.KEY_OS_VERSION_ = 'os-version';
@@ -377,80 +369,18 @@ remoting.ServerLogEntry.prototype.addSessionIdField = function(sessionId) {
  * Adds fields describing the host to this log entry.
  */
 remoting.ServerLogEntry.prototype.addClientOSFields = function() {
-  var host = remoting.ServerLogEntry.getHostData_();
-  if (host) {
-    if (host.os_name.length > 0) {
-      this.set_(remoting.ServerLogEntry.KEY_OS_NAME_, host.os_name);
+  var systemInfo = remoting.getSystemInfo();
+  if (systemInfo) {
+    if (systemInfo.osName.length > 0) {
+      this.set_(remoting.ServerLogEntry.KEY_OS_NAME_, systemInfo.osName);
     }
-    if (host.os_version.length > 0) {
-      this.set_(remoting.ServerLogEntry.KEY_OS_VERSION_, host.os_version);
+    if (systemInfo.osVersion.length > 0) {
+      this.set_(remoting.ServerLogEntry.KEY_OS_VERSION_, systemInfo.osVersion);
     }
-    if (host.cpu.length > 0) {
-      this.set_(remoting.ServerLogEntry.KEY_CPU_, host.cpu);
+    if (systemInfo.cpu.length > 0) {
+      this.set_(remoting.ServerLogEntry.KEY_CPU_, systemInfo.cpu);
     }
   }
-};
-
-/**
- * Extracts host data from the userAgent string.
- *
- * @private
- * @return {{os_name:string, os_version:string, cpu:string} | null}
- */
-remoting.ServerLogEntry.getHostData_ = function() {
-  return remoting.ServerLogEntry.extractHostDataFrom_(navigator.userAgent);
-};
-
-/**
- * Extracts host data from the given userAgent string.
- *
- * @private
- * @param {string} s
- * @return {{os_name:string, os_version:string, cpu:string} | null}
- */
-remoting.ServerLogEntry.extractHostDataFrom_ = function(s) {
-  // Sample userAgent strings:
-  // 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 ' +
-  //   '(KHTML, like Gecko) Chrome/15.0.874.106 Safari/535.2'
-  // 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.8 ' +
-  //   '(KHTML, like Gecko) Chrome/17.0.933.0 Safari/535.8'
-  // 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/535.1 ' +
-  //   '(KHTML, like Gecko) Chrome/14.0.835.202 Safari/535.1'
-  // 'Mozilla/5.0 (X11; CrOS i686 14.811.154) AppleWebKit/535.1 ' +
-  //   '(KHTML, like Gecko) Chrome/14.0.835.204 Safari/535.1'
-  var match = new RegExp('Windows NT ([0-9\\.]*)').exec(s);
-  if (match && (match.length >= 2)) {
-    return {
-        'os_name': remoting.ServerLogEntry.VALUE_OS_NAME_WINDOWS_,
-        'os_version': match[1],
-        'cpu': ''
-    };
-  }
-  match = new RegExp('Linux ([a-zA-Z0-9_]*)').exec(s);
-  if (match && (match.length >= 2)) {
-    return {
-        'os_name': remoting.ServerLogEntry.VALUE_OS_NAME_LINUX_,
-        'os_version' : '',
-        'cpu': match[1]
-    };
-  }
-  match = new RegExp('([a-zA-Z]*) Mac OS X ([0-9_]*)').exec(s);
-  if (match && (match.length >= 3)) {
-    return {
-        'os_name': remoting.ServerLogEntry.VALUE_OS_NAME_MAC_,
-        'os_version': match[2].replace(/_/g, '.'),
-        'cpu': match[1]
-    };
-  }
-  match = new RegExp('CrOS ([a-zA-Z0-9]*) ([0-9.]*)').exec(s);
-  if (match && (match.length >= 3)) {
-    return {
-        'os_name': remoting.ServerLogEntry.VALUE_OS_NAME_CHROMEOS_,
-        'os_version': match[2],
-        'cpu': match[1]
-    };
-  }
-  return null;
 };
 
 /**

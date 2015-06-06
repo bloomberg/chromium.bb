@@ -89,6 +89,7 @@
       'webapp/base/js/identity_unittest.js',
       'webapp/base/js/ipc_unittest.js',
       'webapp/base/js/l10n_unittest.js',
+      'webapp/base/js/platform_unittest.js',
       'webapp/base/js/protocol_extension_manager_unittest.js',
       'webapp/base/js/typecheck_unittest.js',
       'webapp/base/js/viewport_unittest.js',

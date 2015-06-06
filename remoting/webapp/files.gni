@@ -85,6 +85,7 @@ remoting_webapp_unittests_js_files = [
   "base/js/identity_unittest.js",
   "base/js/ipc_unittest.js",
   "base/js/l10n_unittest.js",
+  "base/js/platform_unittest.js",
   "base/js/protocol_extension_manager_unittest.js",
   "base/js/typecheck_unittest.js",
   "base/js/viewport_unittest.js",
