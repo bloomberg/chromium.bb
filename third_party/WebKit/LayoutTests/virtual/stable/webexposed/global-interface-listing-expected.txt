@@ -1528,7 +1528,6 @@ interface HTMLDocument
     getter alinkColor
     getter all
     getter bgColor
-    getter compatMode
     getter fgColor
     getter linkColor
     getter vlinkColor

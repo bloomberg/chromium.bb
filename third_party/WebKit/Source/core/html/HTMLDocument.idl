@@ -24,9 +24,6 @@
 // https://html.spec.whatwg.org/#the-window-object
 
 interface HTMLDocument : Document {
-    // FIXME: This shadows the compatMode on the Document interface.
-    readonly attribute DOMString compatMode;
-
     // https://html.spec.whatwg.org/#the-document-object
     // TODO(philipj): The below should be moved to Document. crbug.com/496376
 
