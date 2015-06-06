@@ -8,6 +8,7 @@
       "repaintRects": [
         [300, 301, 80, 160],
         [300, 300, 80, 162],
+        [147, 85, 1, 1],
         [139, 359, 151, 181],
         [139, 359, 151, 180],
         [100, 100, 100, 162],
@@ -34,7 +35,8 @@
         "InlineTextBox 'P Q R'",
         "InlineTextBox 'S T U'",
         "InlineTextBox 'V W X'",
-        "InlineTextBox 'Y Z'"
+        "InlineTextBox 'Y Z'",
+        "LayoutText #text"
       ]
     }
   ]

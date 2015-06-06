@@ -14,11 +14,13 @@
           "backgroundColor": "#008000",
           "repaintRects": [
             [0, 0, 70, 70],
-            [-30, -30, 50, 100]
+            [-30, -30, 50, 100],
+            [-30, -30, 50, 50]
           ],
           "paintInvalidationClients": [
             "##ALL##",
-            "LayoutBlockFlow (positioned) DIV id='composited-box'"
+            "LayoutBlockFlow (positioned) DIV id='composited-box'",
+            "LayoutBlockFlow DIV class='child'"
           ],
           "children": [
             {
