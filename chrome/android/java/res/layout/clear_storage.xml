@@ -3,8 +3,11 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+<org.chromium.chrome.browser.widget.TintedImageView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:contentDescription="@string/webstorage_clear_data_dialog_title"
-    android:src="@drawable/btn_trash"/>
+    android:src="@drawable/btn_trash"
+    chrome:tint="@color/blue_mode_tint"/>
