@@ -628,16 +628,70 @@ class MountImageTests(cros_test_lib.MockTempDirTestCase):
 class MountOverlayTest(cros_test_lib.MockTempDirTestCase):
   """Tests MountOverlayContext."""
 
+  def setUp(self):
+    self.upperdir = os.path.join(self.tempdir, 'first_level', 'upperdir')
+    self.lowerdir = os.path.join(self.tempdir, 'lowerdir')
+    self.mergeddir = os.path.join(self.tempdir, 'mergeddir')
+
+    for path in [self.upperdir, self.lowerdir, self.mergeddir]:
+      osutils.Touch(path, makedirs=True)
+
   def testMountWriteUnmountRead(self):
     mount_call = self.PatchObject(osutils, 'MountDir')
     umount_call = self.PatchObject(osutils, 'UmountDir')
     for cleanup in (True, False):
-      with osutils.MountOverlayContext('lower', 'upper', 'merged',
-                                       cleanup=cleanup):
+      with osutils.MountOverlayContext(self.lowerdir, self.upperdir,
+                                       self.mergeddir, cleanup=cleanup):
         mount_call.assert_any_call(
-            'overlayfs', 'merged', fs_type='overlayfs', makedirs=False,
-            mount_opts=('lowerdir=lower', 'upperdir=upper'))
-      umount_call.assert_any_call('merged', cleanup=cleanup)
+            'overlay', self.mergeddir, fs_type='overlay', makedirs=False,
+            mount_opts=('lowerdir=%s' % self.lowerdir,
+                        'upperdir=%s' % self.upperdir,
+                        mock.ANY))
+      umount_call.assert_any_call(self.mergeddir, cleanup=cleanup)
+
+  def testMountFailFallback(self):
+    """Test that mount failure with overlay fs_type fallsback to overlayfs."""
+    def _FailOverlay(*_args, **kwargs):
+      if kwargs['fs_type'] == 'overlay':
+        raise cros_build_lib.RunCommandError(
+            'Phony failure',
+            cros_build_lib.CommandResult(cmd='MounDir', returncode=32))
+
+    mount_call = self.PatchObject(osutils, 'MountDir')
+    mount_call.side_effect = _FailOverlay
+    umount_call = self.PatchObject(osutils, 'UmountDir')
+    for cleanup in (True, False):
+      with osutils.MountOverlayContext(self.lowerdir, self.upperdir,
+                                       self.mergeddir, cleanup=cleanup):
+        mount_call.assert_any_call(
+            'overlay', self.mergeddir, fs_type='overlay', makedirs=False,
+            mount_opts=('lowerdir=%s' % self.lowerdir,
+                        'upperdir=%s' % self.upperdir,
+                        mock.ANY))
+        mount_call.assert_any_call(
+            'overlayfs', self.mergeddir, fs_type='overlayfs', makedirs=False,
+            mount_opts=('lowerdir=%s' % self.lowerdir,
+                        'upperdir=%s' % self.upperdir))
+      umount_call.assert_any_call(self.mergeddir, cleanup=cleanup)
+
+  def testNoValidWorkdirFallback(self):
+    """Test that we fallback to overlayfs when no valid workdir is found.."""
+    def _FailFileSystemCheck(_path1, _path2):
+      return False
+
+    check_filesystem = self.PatchObject(osutils, '_SameFileSystem')
+    check_filesystem.side_effect = _FailFileSystemCheck
+    mount_call = self.PatchObject(osutils, 'MountDir')
+    umount_call = self.PatchObject(osutils, 'UmountDir')
+
+    for cleanup in (True, False):
+      with osutils.MountOverlayContext(self.lowerdir, self.upperdir,
+                                       self.mergeddir, cleanup=cleanup):
+        mount_call.assert_any_call(
+            'overlayfs', self.mergeddir, fs_type='overlayfs', makedirs=False,
+            mount_opts=('lowerdir=%s' % self.lowerdir,
+                        'upperdir=%s' % self.upperdir))
+      umount_call.assert_any_call(self.mergeddir, cleanup=cleanup)
 
 
 class IterateMountPointsTests(cros_test_lib.TempDirTestCase):

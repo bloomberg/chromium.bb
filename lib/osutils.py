@@ -1089,6 +1089,17 @@ class MountImageContext(object):
     self._CleanUp()
 
 
+def _SameFileSystem(path1, path2):
+  """Determine whether two paths are on the same filesystem.
+
+  Be resilient to nonsense paths. Return False instead of blowing up.
+  """
+  try:
+    return os.stat(path1).st_dev == os.stat(path2).st_dev
+  except OSError:
+    return False
+
+
 class MountOverlayContext(object):
   """A context manager for mounting an OverlayFS directory.
 
@@ -1105,20 +1116,62 @@ class MountOverlayContext(object):
         removing it independently.
   """
 
+  OVERLAY_FS_MOUNT_ERRORS = (32,)
   def __init__(self, lower_dir, upper_dir, mount_dir, cleanup=False):
     self._lower_dir = lower_dir
     self._upper_dir = upper_dir
     self._mount_dir = mount_dir
     self._cleanup = cleanup
+    self.tempdir = None
 
   def __enter__(self):
-    MountDir('overlayfs', self._mount_dir, fs_type='overlayfs', makedirs=False,
-             mount_opts=('lowerdir=%s' % self._lower_dir,
-                         'upperdir=%s' % self._upper_dir))
+    # Upstream Kernel 3.18 and the ubuntu backport of overlayfs have different
+    # APIs. We must support both.
+    try_legacy = False
+    stashed_e_overlay_str = None
+
+    # We must ensure that upperdir and workdir are on the same filesystem.
+    if _SameFileSystem(self._upper_dir, GetGlobalTempDir()):
+      _TempDirSetup(self)
+    elif _SameFileSystem(self._upper_dir, os.path.dirname(self._upper_dir)):
+      _TempDirSetup(self, base_dir=os.path.dirname(self._upper_dir))
+    else:
+      logging.debug('Could create find a workdir on the same filesystem as %s. '
+                    'Trying legacy API instead.',
+                    self._upper_dir)
+      try_legacy = True
+
+    if not try_legacy:
+      try:
+        MountDir('overlay', self._mount_dir, fs_type='overlay', makedirs=False,
+                 mount_opts=('lowerdir=%s' % self._lower_dir,
+                             'upperdir=%s' % self._upper_dir,
+                             'workdir=%s' % self.tempdir))
+      except cros_build_lib.RunCommandError as e_overlay:
+        if e_overlay.result.returncode not in self.OVERLAY_FS_MOUNT_ERRORS:
+          raise
+        logging.debug('Failed to mount overlay filesystem. Trying legacy API.')
+        stashed_e_overlay_str = str(e_overlay)
+        try_legacy = True
+
+    if try_legacy:
+      try:
+        MountDir('overlayfs', self._mount_dir, fs_type='overlayfs',
+                 makedirs=False,
+                 mount_opts=('lowerdir=%s' % self._lower_dir,
+                             'upperdir=%s' % self._upper_dir))
+      except cros_build_lib.RunCommandError as e_overlayfs:
+        logging.error('All attempts at mounting overlay filesystem failed.')
+        if stashed_e_overlay_str is not None:
+          logging.error('overlay: %s', stashed_e_overlay_str)
+        logging.error('overlayfs: %s', str(e_overlayfs))
+        raise
+
     return self
 
   def __exit__(self, exc_type, exc_value, traceback):
     UmountDir(self._mount_dir, cleanup=self._cleanup)
+    _TempDirTearDown(self, force_sudo=True)
 
 
 MountInfo = collections.namedtuple(
