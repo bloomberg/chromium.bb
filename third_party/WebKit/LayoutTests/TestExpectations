@@ -164,8 +164,6 @@ crbug.com/449242 [ Mac Release ] fast/css/word-spacing-characters-complex-text.h
 crbug.com/449242 [ Mac Debug ] fast/css/word-spacing-characters-complex-text.html [ Pass ImageOnlyFailure Crash ]
 crbug.com/449242 virtual/slimmingpaint/fast/css/word-spacing-characters-complex-text.html [ Skip ]
 
-crbug.com/321237 [ Win ] svg/W3C-SVG-1.1/animate-elem-46-t.svg [ NeedsRebaseline ]
-
 crbug.com/438589 fast/repaint/obscured-background-no-repaint.html [ Failure Pass ]
 crbug.com/438589 virtual/slimmingpaint/fast/repaint/obscured-background-no-repaint.html [ Skip ]
 
