@@ -7,7 +7,9 @@
       "drawsContent": true,
       "paintInvalidationClients": [
         "InlineTextBox ''",
-        "RootInlineBox"
+        "RootInlineBox",
+        "LayoutText #text",
+        "InlineTextBox 'is invisible'"
       ]
     }
   ]

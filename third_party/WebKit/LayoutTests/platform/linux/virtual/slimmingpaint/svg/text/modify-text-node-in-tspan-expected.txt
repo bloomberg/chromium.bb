@@ -6,6 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [10, 63, 318, 377],
         [10, 63, 318, 377]
       ],
       "paintInvalidationClients": [
@@ -18,7 +19,9 @@
         "InlineTextBox ''",
         "InlineFlowBox",
         "InlineTextBox 'PASS'",
-        "LayoutSVGText text"
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'PASS'"
       ]
     }
   ]

@@ -6,8 +6,9 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [44, 150, 3, 18],
-        [8, 150, 784, 18]
+        [8, 150, 784, 18],
+        [8, 150, 39, 18],
+        [8, 150, 36, 18]
       ],
       "paintInvalidationClients": [
         "InlineTextBox ''",
