@@ -72,7 +72,7 @@
               this.parentNode.host.outerHTML;
 
           throw new Error('Pref not found. Parent control:' +
-              (parentControlHTML || 'Unknown');
+              (parentControlHTML || 'Unknown'));
         }
       });
     },
