@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
@@ -25,7 +26,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/common/permission_request_id.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/rappor/rappor_utils.h"
@@ -349,9 +349,10 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
   // TODO(miguelg) need to send this over IPC when bubble support is
   // implemented.
-  int bridge_id = -1;
+  int request_id = -1;
 
-  const PermissionRequestID id(renderer_id, render_frame_id, bridge_id, GURL());
+  const PermissionRequestID id(
+      renderer_id, render_frame_id, request_id, GURL());
 
   PushMessagingPermissionContext* permission_context =
       PushMessagingPermissionContextFactory::GetForProfile(profile_);

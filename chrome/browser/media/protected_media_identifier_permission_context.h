@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_CONTEXT_H_
 
 #include "chrome/browser/content_settings/permission_context_base.h"
-#include "components/content_settings/core/common/permission_request_id.h"
+#include "chrome/browser/permissions/permission_request_id.h"
 
 #if defined(OS_CHROMEOS)
 #include <map>

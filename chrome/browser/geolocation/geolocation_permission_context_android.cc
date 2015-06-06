@@ -6,7 +6,7 @@
 
 #include "chrome/browser/android/location_settings.h"
 #include "chrome/browser/android/location_settings_impl.h"
-#include "components/content_settings/core/common/permission_request_id.h"
+#include "chrome/browser/permissions/permission_request_id.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 

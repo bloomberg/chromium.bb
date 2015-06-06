@@ -20,6 +20,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
@@ -27,7 +28,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/common/permission_request_id.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
@@ -116,8 +116,8 @@ class GeolocationPermissionContextTests
   void SetUp() override;
   void TearDown() override;
 
-  PermissionRequestID RequestID(int bridge_id);
-  PermissionRequestID RequestIDForTab(int tab, int bridge_id);
+  PermissionRequestID RequestID(int request_id);
+  PermissionRequestID RequestIDForTab(int tab, int request_id);
   InfoBarService* infobar_service() {
     return InfoBarService::FromWebContents(web_contents());
   }
@@ -132,10 +132,10 @@ class GeolocationPermissionContextTests
 
   void PermissionResponse(const PermissionRequestID& id,
                           ContentSetting content_setting);
-  void CheckPermissionMessageSent(int bridge_id, bool allowed);
-  void CheckPermissionMessageSentForTab(int tab, int bridge_id, bool allowed);
+  void CheckPermissionMessageSent(int request_id, bool allowed);
+  void CheckPermissionMessageSentForTab(int tab, int request_id, bool allowed);
   void CheckPermissionMessageSentInternal(MockRenderProcessHost* process,
-                                          int bridge_id,
+                                          int request_id,
                                           bool allowed);
   void AddNewTab(const GURL& url);
   void CheckTabContentsState(const GURL& requesting_frame,
@@ -160,21 +160,21 @@ class GeolocationPermissionContextTests
 };
 
 PermissionRequestID GeolocationPermissionContextTests::RequestID(
-    int bridge_id) {
+    int request_id) {
   return PermissionRequestID(
       web_contents()->GetRenderProcessHost()->GetID(),
       web_contents()->GetMainFrame()->GetRoutingID(),
-      bridge_id,
+      request_id,
       GURL());
 }
 
 PermissionRequestID GeolocationPermissionContextTests::RequestIDForTab(
     int tab,
-    int bridge_id) {
+    int request_id) {
   return PermissionRequestID(
       extra_tabs_[tab]->GetRenderProcessHost()->GetID(),
       extra_tabs_[tab]->GetMainFrame()->GetRoutingID(),
-      bridge_id,
+      request_id,
       GURL());
 }
 
@@ -194,30 +194,30 @@ void GeolocationPermissionContextTests::PermissionResponse(
     const PermissionRequestID& id,
     ContentSetting content_setting) {
   responses_[id.render_process_id()] =
-      std::make_pair(id.bridge_id(), content_setting == CONTENT_SETTING_ALLOW);
+      std::make_pair(id.request_id(), content_setting == CONTENT_SETTING_ALLOW);
 }
 
 void GeolocationPermissionContextTests::CheckPermissionMessageSent(
-    int bridge_id,
+    int request_id,
     bool allowed) {
-  CheckPermissionMessageSentInternal(process(), bridge_id, allowed);
+  CheckPermissionMessageSentInternal(process(), request_id, allowed);
 }
 
 void GeolocationPermissionContextTests::CheckPermissionMessageSentForTab(
     int tab,
-    int bridge_id,
+    int request_id,
     bool allowed) {
   CheckPermissionMessageSentInternal(static_cast<MockRenderProcessHost*>(
       extra_tabs_[tab]->GetRenderProcessHost()),
-      bridge_id, allowed);
+      request_id, allowed);
 }
 
 void GeolocationPermissionContextTests::CheckPermissionMessageSentInternal(
     MockRenderProcessHost* process,
-    int bridge_id,
+    int request_id,
     bool allowed) {
   ASSERT_EQ(responses_.count(process->GetID()), 1U);
-  EXPECT_EQ(bridge_id, responses_[process->GetID()].first);
+  EXPECT_EQ(request_id, responses_[process->GetID()].first);
   EXPECT_EQ(allowed, responses_[process->GetID()].second);
   responses_.erase(process->GetID());
 }

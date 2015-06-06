@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/push_messaging/push_messaging_permission_context.h"
+
+#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

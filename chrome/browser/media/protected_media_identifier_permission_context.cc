@@ -9,7 +9,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/content_settings/core/common/permission_request_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -139,7 +138,7 @@ void ProtectedMediaIdentifierPermissionContext::CancelPermissionRequest(
 
 #if defined(OS_CHROMEOS)
   PendingRequestMap::iterator request = pending_requests_.find(web_contents);
-  if (request == pending_requests_.end() || !request->second.second.Equals(id))
+  if (request == pending_requests_.end() || (request->second.second != id))
     return;
 
   views::Widget* widget = request->second.first;
@@ -227,7 +226,7 @@ void ProtectedMediaIdentifierPermissionContext::
   if (request == pending_requests_.end())
     return;
 
-  DCHECK(request->second.second.Equals(id));
+  DCHECK(request->second.second == id);
   pending_requests_.erase(request);
 
   ContentSetting content_setting = CONTENT_SETTING_ASK;

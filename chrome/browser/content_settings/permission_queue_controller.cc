@@ -181,7 +181,7 @@ void PermissionQueueController::CancelInfoBarRequest(
 
   for (PendingInfobarRequests::iterator i(pending_infobar_requests_.begin());
        i != pending_infobar_requests_.end(); ++i) {
-    if (!i->id().Equals(id))
+    if (id != i->id())
       continue;
 
     InfoBarService* infobar_service = GetInfoBarService(id);
@@ -229,7 +229,7 @@ void PermissionQueueController::OnPermissionSet(
       pending_requests_to_remove.push_back(i);
       continue;
     }
-    if (i->id().Equals(id)) {
+    if (id == i->id()) {
       // The infobar that called us is i->infobar(), and its delegate is
       // currently in either Accept() or Cancel(). This means that
       // RemoveInfoBar() will be called later on, and that will trigger a

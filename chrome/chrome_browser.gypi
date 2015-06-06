@@ -2036,6 +2036,8 @@
       'browser/permissions/permission_manager.h',
       'browser/permissions/permission_manager_factory.cc',
       'browser/permissions/permission_manager_factory.h',
+      'browser/permissions/permission_request_id.cc',
+      'browser/permissions/permission_request_id.h',
     ],
     # See also the plugin_installation_sources list below.
     'chrome_browser_plugins_sources': [

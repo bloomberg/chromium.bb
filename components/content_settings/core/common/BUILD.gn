@@ -11,8 +11,6 @@ static_library("common") {
     "content_settings_pattern_parser.cc",
     "content_settings_pattern_parser.h",
     "content_settings_types.h",
-    "permission_request_id.cc",
-    "permission_request_id.h",
     "pref_names.cc",
     "pref_names.h",
   ]

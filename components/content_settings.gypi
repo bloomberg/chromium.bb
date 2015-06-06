@@ -81,8 +81,6 @@
         'content_settings/core/common/content_settings_pattern_parser.cc',
         'content_settings/core/common/content_settings_pattern_parser.h',
         'content_settings/core/common/content_settings_types.h',
-        'content_settings/core/common/permission_request_id.cc',
-        'content_settings/core/common/permission_request_id.h',
         'content_settings/core/common/pref_names.cc',
         'content_settings/core/common/pref_names.h',
       ],
