@@ -22,6 +22,9 @@ callback CustomElementConstructor = Element ();
 
 typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 
+// https://html.spec.whatwg.org/#the-document-object
+enum DocumentReadyState { "loading", "interactive", "complete" };
+
 // http://www.w3.org/TR/page-visibility/#VisibilityState
 enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
 
@@ -88,9 +91,7 @@ interface Document : Node {
     // FIXME: cookie should not have [TreatNullAs=NullString].
     [TreatNullAs=NullString, RaisesException] attribute DOMString cookie;
     readonly attribute DOMString lastModified;
-    // FIXME: readyState should use the enum DocumentReadyState.
-    // FIXME: readyState should not have [TreatReturnedNullStringAs=Undefined].
-    [TreatReturnedNullStringAs=Undefined] readonly attribute DOMString readyState;
+    readonly attribute DocumentReadyState readyState;
 
     // DOM tree accessors
     // FIXME: title and dir should not have [TreatNullAs=NullString].
