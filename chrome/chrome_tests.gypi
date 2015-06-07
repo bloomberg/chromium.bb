@@ -411,6 +411,7 @@
       'browser/task_manager/task_manager_browsertest_util.cc',
       'browser/task_manager/task_manager_browsertest_util.h',
       'browser/themes/theme_service_browsertest.cc',
+      'browser/tracing/chrome_tracing_delegate_browsertest.cc',
       'browser/translate/cld_data_harness.cc',
       'browser/translate/cld_data_harness.h',
       'browser/translate/cld_data_harness_factory.cc',

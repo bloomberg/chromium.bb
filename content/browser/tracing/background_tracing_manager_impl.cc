@@ -9,6 +9,9 @@
 #include "content/public/browser/background_tracing_preemptive_config.h"
 #include "content/public/browser/background_tracing_reactive_config.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/tracing_delegate.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 
@@ -74,7 +77,8 @@ BackgroundTracingManagerImpl* BackgroundTracingManagerImpl::GetInstance() {
 }
 
 BackgroundTracingManagerImpl::BackgroundTracingManagerImpl()
-    : is_gathering_(false),
+    : delegate_(GetContentClient()->browser()->GetTracingDelegate()),
+      is_gathering_(false),
       is_tracing_(false),
       requires_anonymized_data_(true),
       trigger_handle_ids_(0) {
@@ -135,6 +139,15 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   if (is_tracing_)
     return false;
 
+  bool requires_anonymized_data = (data_filtering == ANONYMIZE_DATA);
+
+  // TODO(oysteine): Retry when time_until_allowed has elapsed.
+  if (config && delegate_ &&
+      !delegate_->IsAllowedToBeginBackgroundScenario(
+          *config.get(), requires_anonymized_data)) {
+    return false;
+  }
+
   if (!IsSupportedConfig(config.get()))
     return false;
 
@@ -144,7 +157,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
 
   config_ = config.Pass();
   receive_callback_ = receive_callback;
-  requires_anonymized_data_ = (data_filtering == ANONYMIZE_DATA);
+  requires_anonymized_data_ = requires_anonymized_data;
 
   EnableRecordingIfConfigNeedsIt();
 
@@ -154,6 +167,13 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
 void BackgroundTracingManagerImpl::EnableRecordingIfConfigNeedsIt() {
   if (!config_)
     return;
+
+  // TODO(oysteine): Retry later.
+  if (delegate_ &&
+      !delegate_->IsAllowedToBeginBackgroundScenario(
+          *config_.get(), requires_anonymized_data_)) {
+    return;
+  }
 
   if (config_->mode == BackgroundTracingConfig::PREEMPTIVE_TRACING_MODE) {
     EnableRecording(GetCategoryFilterStringForCategoryPreset(
@@ -352,12 +372,21 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
   is_gathering_ = true;
   is_tracing_ = false;
 
-  content::TracingController::GetInstance()->DisableRecording(
-      content::TracingController::CreateCompressedStringSink(
-          data_endpoint_wrapper_));
+  bool is_allowed_finalization =
+      !delegate_ || (config_ &&
+                     delegate_->IsAllowedToEndBackgroundScenario(
+                         *config_.get(), requires_anonymized_data_));
+
+  scoped_refptr<TracingControllerImpl::TraceDataSink> trace_data_sink;
+  if (is_allowed_finalization) {
+    trace_data_sink = content::TracingController::CreateCompressedStringSink(
+        data_endpoint_wrapper_);
+  }
+
+  content::TracingController::GetInstance()->DisableRecording(trace_data_sink);
 
   if (!callback.is_null())
-    callback.Run(true);
+    callback.Run(is_allowed_finalization);
 }
 
 std::string

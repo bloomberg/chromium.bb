@@ -832,6 +832,8 @@ extern const char kRegisteredSupervisedUserWhitelists[];
 extern const char kAnimationPolicy[];
 #endif
 
+extern const char kBackgroundTracingLastUpload[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

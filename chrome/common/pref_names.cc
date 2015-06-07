@@ -2279,4 +2279,6 @@ const char kRegisteredSupervisedUserWhitelists[] =
 const char kAnimationPolicy[] = "settings.a11y.animation_policy";
 #endif
 
+const char kBackgroundTracingLastUpload[] = "background_tracing.last_upload";
+
 }  // namespace prefs

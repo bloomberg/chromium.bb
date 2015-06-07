@@ -259,6 +259,7 @@
       'public/browser/stream_info.h',
       'public/browser/trace_uploader.h',
       'public/browser/tracing_controller.h',
+      'public/browser/tracing_delegate.cc',
       'public/browser/tracing_delegate.h',
       'public/browser/url_data_source.cc',
       'public/browser/url_data_source.h',

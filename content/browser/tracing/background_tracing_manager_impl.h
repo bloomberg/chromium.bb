@@ -15,6 +15,8 @@
 
 namespace content {
 
+class TracingDelegate;
+
 class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
  public:
   static BackgroundTracingManagerImpl* GetInstance();
@@ -83,6 +85,7 @@ class BackgroundTracingManagerImpl : public content::BackgroundTracingManager {
     StartedFinalizingCallback callback_;
   };
 
+  scoped_ptr<TracingDelegate> delegate_;
   scoped_ptr<content::BackgroundTracingConfig> config_;
   scoped_refptr<TraceDataEndpointWrapper> data_endpoint_wrapper_;
   std::map<TriggerHandle, std::string> trigger_handles_;
