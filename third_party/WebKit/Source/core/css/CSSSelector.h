@@ -306,9 +306,9 @@ namespace blink {
         void setRelationIsAffectedByPseudoContent() { m_relationIsAffectedByPseudoContent = true; }
 
     private:
-        unsigned m_relation           : 3; // enum Relation
-        mutable unsigned m_match      : 4; // enum Match
-        mutable unsigned m_pseudoType : 8; // PseudoType
+        unsigned m_relation               : 3; // enum Relation
+        unsigned m_match                  : 4; // enum Match
+        unsigned m_pseudoType             : 8; // enum PseudoType
         unsigned m_isLastInSelectorList   : 1;
         unsigned m_isLastInTagHistory     : 1;
         unsigned m_hasRareData            : 1;
