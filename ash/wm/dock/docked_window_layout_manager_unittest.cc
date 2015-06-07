@@ -237,6 +237,23 @@ TEST_P(DockedWindowLayoutManagerTest, AddOneWindow) {
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 }
 
+// Tests that a docked window's bounds cannot be changed programmatically.
+TEST_P(DockedWindowLayoutManagerTest, DockedWindowBoundsDontChange) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  gfx::Rect bounds(0, 0, 201, 201);
+  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
+  DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
+
+  // The window should be attached and docked at the right edge.
+  EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
+
+  bounds = window->GetBoundsInScreen();
+  window->SetBounds(gfx::Rect(210, 210, 210, 210));
+  EXPECT_EQ(bounds.ToString(), window->GetBoundsInScreen().ToString());
+}
+
 // Tests that with a window docked on the left the auto-placing logic in
 // RearrangeVisibleWindowOnShow places windows flush with work area edges.
 TEST_P(DockedWindowLayoutManagerTest, AutoPlacingLeft) {
