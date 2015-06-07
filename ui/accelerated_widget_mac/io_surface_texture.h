@@ -40,7 +40,6 @@ class RenderWidgetHostViewMac;
 class IOSurfaceTexture
     : public base::RefCounted<IOSurfaceTexture> {
  public:
-  // Returns NULL if IOSurfaceTexture or GL API calls fail.
   static scoped_refptr<IOSurfaceTexture> Create(
       bool needs_gl_finish_workaround);
 
@@ -54,6 +53,7 @@ class IOSurfaceTexture
   // larger than the IOSurface, the remaining right and bottom edges will be
   // white. |window_scale_factor| is 1 in normal views, 2 in HiDPI views.
   bool DrawIOSurface() WARN_UNUSED_RESULT;
+  bool DrawIOSurfaceWithDamageRect(gfx::Rect damage_rect) WARN_UNUSED_RESULT;
 
   // Returns true if the offscreen context used by this surface has been
   // poisoned.
@@ -66,6 +66,10 @@ class IOSurfaceTexture
       const scoped_refptr<IOSurfaceContext>& context,
       bool needs_gl_finish_workaround);
   ~IOSurfaceTexture();
+
+  // Draw the sepecified rect of the IOSurface. If |draw_boundary| is true,
+  // clear any overflow regions with white.
+  bool DrawIOSurfaceInternal(gfx::Rect damage_rect, bool draw_boundary);
 
   // Unref the IOSurfaceTexture and delete the associated GL texture. If the GPU
   // process is no longer referencing it, this will delete the IOSurface.

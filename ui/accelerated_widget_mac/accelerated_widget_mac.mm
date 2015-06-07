@@ -131,7 +131,9 @@ void AcceleratedWidgetMac::EndPumpingFrames() {
 void AcceleratedWidgetMac::GotAcceleratedFrame(
     uint64 surface_handle,
     const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::Size pixel_size, float scale_factor,
+    const gfx::Size& pixel_size,
+    float scale_factor,
+    const gfx::Rect& pixel_damage_rect,
     const base::Closure& drawn_callback) {
   static bool use_ns_gl_surfaces =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -158,7 +160,7 @@ void AcceleratedWidgetMac::GotAcceleratedFrame(
       IOSurfaceID io_surface_id = IOSurfaceIDFromSurfaceHandle(surface_handle);
       if (use_ns_gl_surfaces) {
         GotAcceleratedIOSurfaceFrameNSGL(
-            io_surface_id, pixel_size, scale_factor);
+            io_surface_id, pixel_size, scale_factor, pixel_damage_rect);
       } else {
         GotAcceleratedIOSurfaceFrame(io_surface_id, pixel_size, scale_factor);
       }
@@ -177,7 +179,7 @@ void AcceleratedWidgetMac::GotAcceleratedFrame(
 
 void AcceleratedWidgetMac::GotAcceleratedCAContextFrame(
     CAContextID ca_context_id,
-    gfx::Size pixel_size,
+    const gfx::Size& pixel_size,
     float scale_factor) {
   // In the layer is replaced, keep the old one around until after the new one
   // is installed to avoid flashes.
@@ -209,7 +211,10 @@ void AcceleratedWidgetMac::GotAcceleratedCAContextFrame(
 }
 
 void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrameNSGL(
-    IOSurfaceID io_surface_id, gfx::Size pixel_size, float scale_factor) {
+    IOSurfaceID io_surface_id,
+    const gfx::Size& pixel_size,
+    float scale_factor,
+    const gfx::Rect& pixel_damage_rect) {
   if (!io_surface_ns_gl_surface_) {
     io_surface_ns_gl_surface_.reset(
         IOSurfaceNSGLSurface::Create(view_->AcceleratedWidgetGetNSView()));
@@ -221,13 +226,14 @@ void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrameNSGL(
     return;
   }
 
-  io_surface_ns_gl_surface_->GotFrame(io_surface_id, pixel_size, scale_factor);
+  io_surface_ns_gl_surface_->GotFrame(
+      io_surface_id, pixel_size, scale_factor, pixel_damage_rect);
   AcknowledgeAcceleratedFrame();
 }
 
 void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrame(
     IOSurfaceID io_surface_id,
-    gfx::Size pixel_size,
+    const gfx::Size& pixel_size,
     float scale_factor) {
   // In the layer is replaced, keep the old one around until after the new one
   // is installed to avoid flashes.
@@ -389,14 +395,17 @@ void AcceleratedWidgetMac::IOSurfaceLayerHitError() {
 void AcceleratedWidgetMacGotAcceleratedFrame(
     gfx::AcceleratedWidget widget, uint64 surface_handle,
     const std::vector<ui::LatencyInfo>& latency_info,
-    gfx::Size pixel_size, float scale_factor,
+    const gfx::Size& pixel_size,
+    float scale_factor,
+    const gfx::Rect& pixel_damage_rect,
     const base::Closure& drawn_callback,
     bool* disable_throttling, int* renderer_id) {
   AcceleratedWidgetMac* accelerated_widget_mac =
       GetHelperFromAcceleratedWidget(widget);
   if (accelerated_widget_mac) {
     accelerated_widget_mac->GotAcceleratedFrame(
-        surface_handle, latency_info, pixel_size, scale_factor, drawn_callback);
+        surface_handle, latency_info, pixel_size, scale_factor,
+        pixel_damage_rect, drawn_callback);
     *disable_throttling =
         accelerated_widget_mac->IsRendererThrottlingDisabled();
     *renderer_id = accelerated_widget_mac->GetRendererID();

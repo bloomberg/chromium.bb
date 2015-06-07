@@ -133,6 +133,7 @@ class ImageTransportSurfaceFBO
   // Whether a SwapBuffers IPC needs to be sent to the browser.
   bool is_swap_buffers_send_pending_;
   std::vector<ui::LatencyInfo> latency_info_;
+  gfx::Rect pending_swap_pixel_damage_rect_;
 
   scoped_ptr<ImageTransportHelper> helper_;
 

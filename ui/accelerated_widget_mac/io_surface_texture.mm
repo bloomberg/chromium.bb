@@ -63,7 +63,16 @@ IOSurfaceTexture::~IOSurfaceTexture() {
 }
 
 bool IOSurfaceTexture::DrawIOSurface() {
-  TRACE_EVENT0("browser", "IOSurfaceTexture::DrawIOSurface");
+  return DrawIOSurfaceInternal(gfx::Rect(pixel_size_), true);
+}
+
+bool IOSurfaceTexture::DrawIOSurfaceWithDamageRect(gfx::Rect damage_rect) {
+  return DrawIOSurfaceInternal(damage_rect, false);
+}
+
+bool IOSurfaceTexture::DrawIOSurfaceInternal(
+    gfx::Rect damage_rect, bool draw_boundary) {
+  TRACE_EVENT0("browser", "IOSurfaceTexture::DrawIOSurfaceInternal");
   DCHECK(CGLGetCurrentContext());
 
   // If we have release the IOSurface, clear the screen to light grey and
@@ -94,14 +103,14 @@ bool IOSurfaceTexture::DrawIOSurface() {
   glEnable(GL_TEXTURE_RECTANGLE_ARB);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
   glBegin(GL_QUADS);
-  glTexCoord2f(0, 0);
-  glVertex2f(0, 0);
-  glTexCoord2f(pixel_size_.width(), 0);
-  glVertex2f(pixel_size_.width(), 0);
-  glTexCoord2f(pixel_size_.width(), pixel_size_.height());
-  glVertex2f(pixel_size_.width(), pixel_size_.height());
-  glTexCoord2f(0, pixel_size_.height());
-  glVertex2f(0, pixel_size_.height());
+  glTexCoord2f(damage_rect.x(), damage_rect.y());
+  glVertex2f(damage_rect.x(), damage_rect.y());
+  glTexCoord2f(damage_rect.right(), damage_rect.y());
+  glVertex2f(damage_rect.right(), damage_rect.y());
+  glTexCoord2f(damage_rect.right(), damage_rect.bottom());
+  glVertex2f(damage_rect.right(), damage_rect.bottom());
+  glTexCoord2f(damage_rect.x(), damage_rect.bottom());
+  glVertex2f(damage_rect.x(), damage_rect.bottom());
   glEnd();
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
   glDisable(GL_TEXTURE_RECTANGLE_ARB);
@@ -111,6 +120,28 @@ bool IOSurfaceTexture::DrawIOSurface() {
   // of the driver.
   glBegin(GL_TRIANGLES);
   glEnd();
+
+  // If the viewport is larger than the texture, clear out the overflow to
+  // white.
+  if (draw_boundary) {
+    if (pixel_size_.width() < viewport_rect.width()) {
+      glBegin(GL_QUADS);
+      glVertex2f(pixel_size_.width(), 0);
+      glVertex2f(pixel_size_.width(), viewport_rect.height());
+      glVertex2f(viewport_rect.width(), viewport_rect.height());
+      glVertex2f(viewport_rect.width(), 0);
+      glEnd();
+    }
+    if (pixel_size_.height() < viewport_rect.height()) {
+      int non_surface_height = viewport_rect.height() - pixel_size_.height();
+      glBegin(GL_QUADS);
+      glVertex2f(0, 0);
+      glVertex2f(0, non_surface_height);
+      glVertex2f(pixel_size_.width(), non_surface_height);
+      glVertex2f(pixel_size_.width(), 0);
+      glEnd();
+    }
+  }
 
   if (needs_gl_finish_workaround_) {
     TRACE_EVENT0("gpu", "glFinish");

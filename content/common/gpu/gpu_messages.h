@@ -89,16 +89,17 @@ IPC_STRUCT_BEGIN(GpuMsg_CreateGpuMemoryBuffer_Params)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, surface_handle)
 IPC_STRUCT_END()
 
+#if defined(OS_MACOSX)
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int32, surface_id)
   IPC_STRUCT_MEMBER(uint64, surface_handle)
   IPC_STRUCT_MEMBER(int32, route_id)
   IPC_STRUCT_MEMBER(gfx::Size, size)
+  IPC_STRUCT_MEMBER(gfx::Rect, damage_rect)
   IPC_STRUCT_MEMBER(float, scale_factor)
   IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
 IPC_STRUCT_END()
 
-#if defined(OS_MACOSX)
 IPC_STRUCT_BEGIN(AcceleratedSurfaceMsg_BufferPresented_Params)
   // If the browser needs framerate throttling based on GPU back-pressure to be
   // disabled (e.g, because the NSView isn't visible but tab capture is active),
@@ -393,9 +394,12 @@ IPC_MESSAGE_CONTROL2(GpuHostMsg_AcceleratedSurfaceInitialized,
                      int32 /* surface_id */,
                      int32 /* route_id */)
 
-// Same as above with a rect of the part of the surface that changed.
+
+#if defined(OS_MACOSX)
+// Tells the browser that an accelerated surface has swapped.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                      GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
+#endif
 
 IPC_MESSAGE_CONTROL1(GpuHostMsg_DidCreateOffscreenContext,
                      GURL /* url */)

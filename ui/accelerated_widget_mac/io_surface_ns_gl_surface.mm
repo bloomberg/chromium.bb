@@ -65,7 +65,8 @@ IOSurfaceNSGLSurface::~IOSurfaceNSGLSurface() {
 
 bool IOSurfaceNSGLSurface::GotFrame(IOSurfaceID io_surface_id,
                                     gfx::Size frame_pixel_size,
-                                    float frame_scale_factor) {
+                                    float frame_scale_factor,
+                                    gfx::Rect pixel_damage_rect) {
   // The OpenGL framebuffer's scale factor and pixel size are updated to match
   // the CALayer's contentsScale and bounds at setView. The pixel size is the
   // stored in the GL_VIEWPORT state of the context.
@@ -82,18 +83,26 @@ bool IOSurfaceNSGLSurface::GotFrame(IOSurfaceID io_surface_id,
   // If the OpenGL framebuffer does not match the frame in scale factor or
   // pixel size, then re-latch them. Note that they will latch to the layer's
   // bounds, which will not necessarily match the frame's pixel size.
+  bool full_damage = false;
   if (frame_pixel_size != contents_pixel_size ||
       frame_scale_factor != contents_scale_factor) {
     ScopedCAActionDisabler disabler;
     [ns_gl_context_ clearDrawable];
     [[view_ layer] setContentsScale:frame_scale_factor];
     [ns_gl_context_ setView:view_];
+
+    // The front buffer may have been destroyed at re-creation, so re-draw
+    // everything.
+    full_damage = true;
   }
 
   bool result = true;
   [ns_gl_context_ makeCurrentContext];
   result &= iosurface_->SetIOSurface(io_surface_id, frame_pixel_size);
-  result &= iosurface_->DrawIOSurface();
+  if (full_damage)
+    result &= iosurface_->DrawIOSurface();
+  else
+    result &= iosurface_->DrawIOSurfaceWithDamageRect(pixel_damage_rect);
   glFlush();
   [NSOpenGLContext clearCurrentContext];
   return result;

@@ -96,6 +96,7 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+#if defined(OS_MACOSX)
 void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
     GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params) {
   // TRACE_EVENT for gpu tests:
@@ -107,6 +108,7 @@ void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
   params.route_id = route_id_;
   manager_->Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
 }
+#endif
 
 void ImageTransportHelper::SetPreemptByFlag(
     scoped_refptr<gpu::PreemptionFlag> preemption_flag) {

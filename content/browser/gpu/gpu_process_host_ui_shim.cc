@@ -225,8 +225,10 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
                         OnLogMessage)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceInitialized,
                         OnAcceleratedSurfaceInitialized)
+#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
+#endif
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
     IPC_MESSAGE_HANDLER(GpuHostMsg_VideoMemoryUsageStats,
@@ -268,9 +270,9 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceInitialized(int32 surface_id,
   view->AcceleratedSurfaceInitialized(route_id);
 }
 
+#if defined(OS_MACOSX)
 void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
-#if defined(OS_MACOSX)
   TRACE_EVENT0("renderer",
       "GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped");
   if (!ui::LatencyInfo::Verify(params.latency_info,
@@ -298,14 +300,13 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     ui::AcceleratedWidgetMacGotAcceleratedFrame(
         native_widget, params.surface_handle, params.latency_info, params.size,
         params.scale_factor,
+        params.damage_rect,
         base::Bind(&OnSurfaceDisplayedCallback, params.surface_id),
         &ack_params.disable_throttling, &ack_params.renderer_id);
   }
   Send(new AcceleratedSurfaceMsg_BufferPresented(params.route_id, ack_params));
-#else
-  NOTREACHED();
-#endif
 }
+#endif
 
 void GpuProcessHostUIShim::OnVideoMemoryUsageStatsReceived(
     const GPUVideoMemoryUsageStats& video_memory_usage_stats) {

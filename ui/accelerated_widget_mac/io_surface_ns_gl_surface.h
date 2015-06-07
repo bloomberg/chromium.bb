@@ -22,7 +22,8 @@ class IOSurfaceNSGLSurface {
   // Called on the UI thread.
   bool GotFrame(IOSurfaceID io_surface_id,
                 gfx::Size pixel_size,
-                float scale_factor);
+                float scale_factor,
+                gfx::Rect pixel_damage_rect);
 
  private:
   explicit IOSurfaceNSGLSurface(
