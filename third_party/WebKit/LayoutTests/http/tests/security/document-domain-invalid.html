@@ -1,10 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Invalid `document.domain` doesn't crash.</title>
+    <title>Setting `document.domain` to invalid values fails.</title>
     <script src="/resources/testharness.js"></script>
     <script src="/resources/testharnessreport.js"></script>
     <script>
+        test(function () {
+            assert_equals(document.domain, '127.0.0.1');
+            assert_throws('SecurityError',
+                          function () {
+                            document.domain = null;
+                          });
+            assert_equals(document.domain, '127.0.0.1');
+        }, 'Setting `document.domain` to null fails.');
+
+        test(function () {
+            assert_equals(document.domain, '127.0.0.1');
+            assert_throws('SecurityError',
+                          function () {
+                            document.domain = '';
+                          });
+            assert_equals(document.domain, '127.0.0.1');
+        }, 'Setting `document.domain` to the empty string fails.');
+
         test(function () {
             assert_equals(document.domain, '127.0.0.1');
             assert_throws('SecurityError',

@@ -85,8 +85,7 @@ interface Document : Node {
 
     // resource metadata management
     [PutForwards=href, Unforgeable] readonly attribute Location? location;
-    // FIXME: domain should not have [TreatNullAs=NullString].
-    [TreatNullAs=NullString, RaisesException=Setter] attribute DOMString domain;
+    [RaisesException=Setter] attribute DOMString domain;
     readonly attribute DOMString referrer;
     // FIXME: cookie should not have [TreatNullAs=NullString].
     [TreatNullAs=NullString, RaisesException] attribute DOMString cookie;
