@@ -71,7 +71,7 @@ const int kMoveAttachedInitialDelay = 600;
 // Delay for moving tabs after the initial delay has passed.
 const int kMoveAttachedSubsequentDelay = 300;
 
-const int kHorizontalMoveThreshold = 16;  // Pixels.
+const int kHorizontalMoveThreshold = 16;  // DIPs.
 
 // Distance from the next/previous stacked before before we consider the tab
 // close enough to trigger moving.
@@ -81,7 +81,7 @@ const int kStackedDistance = 36;
 // drag. This prevents the dragged browser widget from getting maximized at
 // creation and makes it easier to drag tabs out of a restored window that had
 // maximized size.
-const int kMaximizedWindowInset = 10;  // Pixels.
+const int kMaximizedWindowInset = 10;  // DIPs.
 
 #if defined(USE_ASH)
 void SetWindowPositionManaged(gfx::NativeWindow window, bool value) {

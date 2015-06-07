@@ -34,7 +34,7 @@ const float kMinimumPercentOnScreenArea = 0.3f;
 // When a window that has restore bounds at least as large as a work area is
 // unmaximized, inset the bounds slightly so that they are not exactly the same.
 // This makes it easier to resize the window.
-const int kMaximizedWindowInset = 10;  // Pixels.
+const int kMaximizedWindowInset = 10;  // DIPs.
 
 bool IsMinimizedWindowState(const WindowStateType state_type) {
   return state_type == WINDOW_STATE_TYPE_MINIMIZED ||
