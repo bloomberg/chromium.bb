@@ -118,13 +118,13 @@ void MediaPipelineHost::AudioInitialize(
 void MediaPipelineHost::VideoInitialize(
     TrackId track_id,
     const VideoPipelineClient& client,
-    const ::media::VideoDecoderConfig& config,
+    const std::vector<::media::VideoDecoderConfig>& configs,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(track_id == kVideoTrackId);
   media_pipeline_->GetVideoPipeline()->SetClient(client);
   media_pipeline_->InitializeVideo(
-      config, scoped_ptr<CodedFrameProvider>(), status_cb);
+      configs, scoped_ptr<CodedFrameProvider>(), status_cb);
 }
 
 void MediaPipelineHost::StartPlayingFrom(base::TimeDelta time) {

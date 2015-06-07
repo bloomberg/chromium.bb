@@ -74,9 +74,10 @@ class CmaMessageFilterHost
   void AudioInitialize(int media_id,
                        TrackId track_id,
                        const ::media::AudioDecoderConfig& config);
-  void VideoInitialize(int media_id,
-                       TrackId track_id,
-                       const ::media::VideoDecoderConfig& config);
+  void VideoInitialize(
+      int media_id,
+      TrackId track_id,
+      const std::vector<::media::VideoDecoderConfig>& configs);
   void StartPlayingFrom(int media_id, base::TimeDelta time);
   void Flush(int media_id);
   void Stop(int media_id);

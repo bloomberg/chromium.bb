@@ -114,7 +114,7 @@ void BufferingFrameProvider::RequestBufferIfNeeded() {
     return;
 
   is_pending_request_ = true;
-  coded_frame_provider_->Read(BindToCurrentLoop(
+  coded_frame_provider_->Read(::media::BindToCurrentLoop(
       base::Bind(&BufferingFrameProvider::OnNewBuffer, weak_this_)));
 }
 

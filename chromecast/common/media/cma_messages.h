@@ -50,11 +50,12 @@ IPC_MESSAGE_CONTROL3(CmaHostMsg_CreateAvPipe,
 IPC_MESSAGE_CONTROL3(CmaHostMsg_AudioInitialize,
                      int /* Media pipeline ID */,
                      chromecast::media::TrackId /* Track ID */,
-                     media::AudioDecoderConfig /* Audio config */)
+                     ::media::AudioDecoderConfig /* Audio config */)
 IPC_MESSAGE_CONTROL3(CmaHostMsg_VideoInitialize,
                      int /* Media pipeline ID */,
                      chromecast::media::TrackId /* Track ID */,
-                     media::VideoDecoderConfig /* Video config */)
+                     /* Video Config */
+                     std::vector<::media::VideoDecoderConfig>)
 IPC_MESSAGE_CONTROL3(CmaHostMsg_SetVolume,
                      int /* Media pipeline ID */,
                      chromecast::media::TrackId /* Track ID */,

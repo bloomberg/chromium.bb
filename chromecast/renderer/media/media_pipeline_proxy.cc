@@ -214,12 +214,12 @@ void MediaPipelineProxy::InitializeAudio(
 }
 
 void MediaPipelineProxy::InitializeVideo(
-    const ::media::VideoDecoderConfig& config,
+    const std::vector<::media::VideoDecoderConfig>& configs,
     scoped_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   has_video_ = true;
-  video_pipeline_->Initialize(config, frame_provider.Pass(), status_cb);
+  video_pipeline_->Initialize(configs, frame_provider.Pass(), status_cb);
 }
 
 void MediaPipelineProxy::StartPlayingFrom(base::TimeDelta time) {

@@ -56,7 +56,7 @@ class VideoPipelineProxyInternal {
   void SetClient(const base::Closure& pipe_read_cb,
                  const VideoPipelineClient& client);
   void CreateAvPipe(const SharedMemCB& shared_mem_cb);
-  void Initialize(const ::media::VideoDecoderConfig& config,
+  void Initialize(const std::vector<::media::VideoDecoderConfig>& configs,
                   const ::media::PipelineStatusCB& status_cb);
 
  private:
@@ -166,12 +166,12 @@ void VideoPipelineProxyInternal::OnAvPipeCreated(
 }
 
 void VideoPipelineProxyInternal::Initialize(
-    const ::media::VideoDecoderConfig& arg1,
+    const std::vector<::media::VideoDecoderConfig>& configs,
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool success = media_channel_proxy_->Send(scoped_ptr<IPC::Message>(
       new CmaHostMsg_VideoInitialize(media_channel_proxy_->GetId(),
-                                     kVideoTrackId, arg1)));
+                                     kVideoTrackId, configs)));
   if (!success) {
     status_cb.Run( ::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
@@ -223,7 +223,7 @@ void VideoPipelineProxy::SetClient(
 }
 
 void VideoPipelineProxy::Initialize(
-    const ::media::VideoDecoderConfig& config,
+    const std::vector<::media::VideoDecoderConfig>& configs,
     scoped_ptr<CodedFrameProvider> frame_provider,
     const ::media::PipelineStatusCB& status_cb) {
   CMALOG(kLogControl) << "VideoPipelineProxy::Initialize";
@@ -233,12 +233,12 @@ void VideoPipelineProxy::Initialize(
   VideoPipelineProxyInternal::SharedMemCB shared_mem_cb =
       ::media::BindToCurrentLoop(base::Bind(
           &VideoPipelineProxy::OnAvPipeCreated, weak_this_,
-          config, status_cb));
+          configs, status_cb));
   FORWARD_ON_IO_THREAD(CreateAvPipe, shared_mem_cb);
 }
 
 void VideoPipelineProxy::OnAvPipeCreated(
-    const ::media::VideoDecoderConfig& config,
+    const std::vector<::media::VideoDecoderConfig>& configs,
     const ::media::PipelineStatusCB& status_cb,
     scoped_ptr<base::SharedMemory> shared_memory) {
   CMALOG(kLogControl) << "VideoPipelineProxy::OnAvPipeCreated";
@@ -260,7 +260,7 @@ void VideoPipelineProxy::OnAvPipeCreated(
   video_streamer_->SetMediaMessageFifo(video_pipe.Pass());
 
   // Now proceed to the decoder/renderer initialization.
-  FORWARD_ON_IO_THREAD(Initialize, config, status_cb);
+  FORWARD_ON_IO_THREAD(Initialize, configs, status_cb);
 }
 
 void VideoPipelineProxy::StartFeeding() {

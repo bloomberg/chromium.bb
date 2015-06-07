@@ -45,7 +45,7 @@ class MediaPipelineImpl : public MediaPipeline {
       scoped_ptr<CodedFrameProvider> frame_provider,
       const ::media::PipelineStatusCB& status_cb) override;
   void InitializeVideo(
-      const ::media::VideoDecoderConfig& config,
+      const std::vector<::media::VideoDecoderConfig>& configs,
       scoped_ptr<CodedFrameProvider> frame_provider,
       const ::media::PipelineStatusCB& status_cb) override;
   void StartPlayingFrom(base::TimeDelta time) override;
@@ -83,7 +83,7 @@ class MediaPipelineImpl : public MediaPipeline {
   bool has_video_;
   scoped_ptr<AudioPipelineImpl> audio_pipeline_;
   scoped_ptr<VideoPipelineImpl> video_pipeline_;
-  scoped_ptr< ::media::SerialRunner> pending_callbacks_;
+  scoped_ptr<::media::SerialRunner> pending_callbacks_;
 
   // Playback rate set by the upper layer.
   float target_playback_rate_;

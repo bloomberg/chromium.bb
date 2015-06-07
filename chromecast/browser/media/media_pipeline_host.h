@@ -56,7 +56,7 @@ class MediaPipelineHost {
                        const ::media::PipelineStatusCB& status_cb);
   void VideoInitialize(TrackId track_id,
                        const VideoPipelineClient& client,
-                       const ::media::VideoDecoderConfig& config,
+                       const std::vector<::media::VideoDecoderConfig>& configs,
                        const ::media::PipelineStatusCB& status_cb);
   void StartPlayingFrom(base::TimeDelta time);
   void Flush(const ::media::PipelineStatusCB& status_cb);

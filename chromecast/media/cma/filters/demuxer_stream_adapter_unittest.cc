@@ -93,7 +93,7 @@ void DummyDemuxerStream::Read(const ReadCB& read_cb) {
     config_idx_.pop_front();
     has_pending_read_ = false;
     read_cb.Run(kConfigChanged,
-                scoped_refptr< ::media::DecoderBuffer>());
+                scoped_refptr<::media::DecoderBuffer>());
     return;
   }
 
@@ -141,7 +141,7 @@ bool DummyDemuxerStream::SupportsConfigChanges() {
 
 void DummyDemuxerStream::DoRead(const ReadCB& read_cb) {
   has_pending_read_ = false;
-  scoped_refptr< ::media::DecoderBuffer> buffer(
+  scoped_refptr<::media::DecoderBuffer> buffer(
       new ::media::DecoderBuffer(16));
   buffer->set_timestamp(frame_count_ * base::TimeDelta::FromMilliseconds(40));
   frame_count_++;

@@ -114,7 +114,7 @@ void DemuxerStreamAdapter::RequestBuffer(const ReadCB& read_cb) {
 void DemuxerStreamAdapter::OnNewBuffer(
     const ReadCB& read_cb,
     ::media::DemuxerStream::Status status,
-    const scoped_refptr< ::media::DecoderBuffer>& input) {
+    const scoped_refptr<::media::DecoderBuffer>& input) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   is_pending_demuxer_read_ = false;

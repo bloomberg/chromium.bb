@@ -536,7 +536,8 @@ void CmaMessageFilterHost::AudioInitialize(
 }
 
 void CmaMessageFilterHost::VideoInitialize(
-    int media_id, TrackId track_id, const ::media::VideoDecoderConfig& config) {
+    int media_id, TrackId track_id,
+    const std::vector<::media::VideoDecoderConfig>& configs) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   MediaPipelineHost* media_pipeline = LookupById(media_id);
   if (!media_pipeline) {
@@ -566,7 +567,7 @@ void CmaMessageFilterHost::VideoInitialize(
       FROM_HERE,
       base::Bind(&MediaPipelineHost::VideoInitialize,
                  base::Unretained(media_pipeline),
-                 track_id, client, config, pipeline_status_cb));
+                 track_id, client, configs, pipeline_status_cb));
 }
 
 void CmaMessageFilterHost::StartPlayingFrom(

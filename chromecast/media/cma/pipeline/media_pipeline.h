@@ -47,7 +47,7 @@ class MediaPipeline {
       scoped_ptr<CodedFrameProvider> frame_provider,
       const ::media::PipelineStatusCB& status_cb) = 0;
   virtual void InitializeVideo(
-      const ::media::VideoDecoderConfig& config,
+      const std::vector<::media::VideoDecoderConfig>& configs,
       scoped_ptr<CodedFrameProvider> frame_provider,
       const ::media::PipelineStatusCB& status_cb) = 0;
 

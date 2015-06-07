@@ -44,7 +44,7 @@ class VideoPipelineImpl : public VideoPipeline {
 
   // Functions to control the state of the audio pipeline.
   void Initialize(
-      const ::media::VideoDecoderConfig& config,
+      const std::vector<::media::VideoDecoderConfig>& configs,
       scoped_ptr<CodedFrameProvider> frame_provider,
       const ::media::PipelineStatusCB& status_cb);
   bool StartPlayingFrom(base::TimeDelta time,

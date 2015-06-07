@@ -91,14 +91,15 @@ void AudioVideoPipelineImplTest::Initialize(
       ::media::CHANNEL_LAYOUT_STEREO,
       44100,
       NULL, 0, false);
-  ::media::VideoDecoderConfig video_config(
+  std::vector<::media::VideoDecoderConfig> video_configs;
+  video_configs.push_back(::media::VideoDecoderConfig(
       ::media::kCodecH264,
       ::media::H264PROFILE_MAIN,
       ::media::VideoFrame::I420,
       gfx::Size(640, 480),
       gfx::Rect(0, 0, 640, 480),
       gfx::Size(640, 480),
-      NULL, 0, false);
+      NULL, 0, false));
 
   // Frame generation on the producer side.
   std::vector<FrameGeneratorForTest::FrameSpec> frame_specs;
@@ -135,7 +136,7 @@ void AudioVideoPipelineImplTest::Initialize(
                  next_task) :
       base::Bind(&MediaPipeline::InitializeVideo,
                  base::Unretained(media_pipeline_.get()),
-                 video_config,
+                 video_configs,
                  base::Passed(&frame_provider_base),
                  next_task);
 

@@ -109,6 +109,7 @@ void AudioPipelineImpl::Initialize(
   if (frame_provider)
     SetCodedFrameProvider(frame_provider.Pass());
 
+  DCHECK(audio_config.IsValidConfig());
   if (!audio_device_->SetConfig(
          DecoderConfigAdapter::ToCastAudioConfig(kPrimary, audio_config)) ||
       !av_pipeline_impl_->Initialize()) {

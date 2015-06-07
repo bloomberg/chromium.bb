@@ -36,7 +36,7 @@ class VideoPipelineProxy : public VideoPipeline {
                      scoped_refptr<MediaChannelProxy> media_channel_proxy);
   ~VideoPipelineProxy() override;
 
-  void Initialize(const ::media::VideoDecoderConfig& config,
+  void Initialize(const std::vector<::media::VideoDecoderConfig>& configs,
                   scoped_ptr<CodedFrameProvider> frame_provider,
                   const ::media::PipelineStatusCB& status_cb);
   void StartFeeding();
@@ -50,7 +50,7 @@ class VideoPipelineProxy : public VideoPipeline {
   base::ThreadChecker thread_checker_;
 
   void OnAvPipeCreated(
-      const ::media::VideoDecoderConfig& config,
+      const std::vector<::media::VideoDecoderConfig>& configs,
       const ::media::PipelineStatusCB& status_cb,
       scoped_ptr<base::SharedMemory> shared_memory);
   void OnPipeWrite();

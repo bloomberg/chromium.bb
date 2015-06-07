@@ -323,8 +323,10 @@ void CmaRenderer::InitializeVideoPipeline() {
   initial_natural_size_ = config.natural_size();
 
   has_video_ = true;
+  std::vector<::media::VideoDecoderConfig> configs;
+  configs.push_back(config);
   media_pipeline_->InitializeVideo(
-      config,
+      configs,
       frame_provider.Pass(),
       video_initialization_done_cb);
 }
