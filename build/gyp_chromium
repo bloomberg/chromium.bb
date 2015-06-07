@@ -32,6 +32,7 @@ sys.path.insert(1, os.path.join(chrome_src, 'android_webview', 'tools'))
 sys.path.insert(1, os.path.join(chrome_src, 'build', 'android', 'gyp'))
 sys.path.insert(1, os.path.join(chrome_src, 'chrome', 'tools', 'build'))
 sys.path.insert(1, os.path.join(chrome_src, 'chromecast', 'tools', 'build'))
+sys.path.insert(1, os.path.join(chrome_src, 'ios', 'chrome', 'tools', 'build'))
 sys.path.insert(1, os.path.join(chrome_src, 'native_client', 'build'))
 sys.path.insert(1, os.path.join(chrome_src, 'native_client_sdk', 'src',
     'build_tools'))

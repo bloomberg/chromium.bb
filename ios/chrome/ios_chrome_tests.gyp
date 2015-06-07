@@ -45,6 +45,7 @@
         'browser/ui/uikit_ui_util_unittest.mm',
         'common/string_util_unittest.mm',
       ],
+      'includes': ['ios_chrome_resources_bundle.gypi'],
     },
     {
       'target_name': 'ios_chrome_test_support',
