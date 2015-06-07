@@ -902,7 +902,7 @@ class SiteConfig(dict):
       name: The name to label this configuration; this is what cbuildbot
             would see.
       args: BuildConfigs to patch into this config. First one (if present) is
-            considered the template.
+            considered the template. See AddTemplate for help on templates.
       kwargs: BuildConfig values to explicitly set on this config.
 
     Returns:
@@ -1017,6 +1017,10 @@ class SiteConfig(dict):
 
   def AddTemplate(self, name, *args, **kwargs):
     """Create a template named |name|.
+
+    Templates are used to define common settings that are shared across types
+    of builders. They help reduce duplication in config_dump.json, because we
+    only define the template and its settings once.
 
     Args:
       name: The name of the template.
