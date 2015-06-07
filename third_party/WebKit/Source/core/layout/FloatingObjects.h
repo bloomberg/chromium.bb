@@ -87,6 +87,8 @@ public:
     void setShouldPaint(bool shouldPaint) { m_shouldPaint = shouldPaint; }
     bool isDescendant() const { return m_isDescendant; }
     void setIsDescendant(bool isDescendant) { m_isDescendant = isDescendant; }
+    bool isLowestNonOverhangingFloatInChild() const { return m_isLowestNonOverhangingFloatInChild; }
+    void setIsLowestNonOverhangingFloatInChild(bool isLowestNonOverhangingFloatInChild) { m_isLowestNonOverhangingFloatInChild = isLowestNonOverhangingFloatInChild; }
 
     // FIXME: Callers of these methods are dangerous and should be whitelisted explicitly or removed.
     RootInlineBox* originatingLine() const { return m_originatingLine; }
@@ -94,7 +96,7 @@ public:
 
 private:
     explicit FloatingObject(LayoutBox*);
-    FloatingObject(LayoutBox*, Type, const LayoutRect&, bool shouldPaint, bool isDescendant);
+    FloatingObject(LayoutBox*, Type, const LayoutRect&, bool shouldPaint, bool isDescendant, bool isLowestNonOverhangingFloatInChild);
 
     LayoutBox* m_layoutObject;
     RootInlineBox* m_originatingLine;
@@ -105,6 +107,7 @@ private:
     unsigned m_shouldPaint : 1;
     unsigned m_isDescendant : 1;
     unsigned m_isPlaced : 1;
+    unsigned m_isLowestNonOverhangingFloatInChild : 1;
 #if ENABLE(ASSERT)
     unsigned m_isInPlacedTree : 1;
 #endif
@@ -158,11 +161,12 @@ public:
     LayoutUnit logicalRightOffsetForPositioningFloat(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit* heightRemaining);
 
     LayoutUnit lowestFloatLogicalBottom(FloatingObject::Type);
+    FloatingObject* lowestFloatingObject() const;
 
 private:
     bool hasLowestFloatLogicalBottomCached(bool isHorizontal, FloatingObject::Type floatType) const;
     LayoutUnit getCachedlowestFloatLogicalBottom(FloatingObject::Type floatType) const;
-    void setCachedLowestFloatLogicalBottom(bool isHorizontal, FloatingObject::Type floatType, LayoutUnit value);
+    void setCachedLowestFloatLogicalBottom(bool isHorizontal, FloatingObject::Type floatType, FloatingObject*);
     void markLowestFloatLogicalBottomCacheAsDirty();
 
     void computePlacedFloatsTree();
@@ -185,7 +189,7 @@ private:
 
     struct FloatBottomCachedValue {
         FloatBottomCachedValue();
-        LayoutUnit value;
+        FloatingObject* floatingObject;
         bool dirty;
     };
     FloatBottomCachedValue m_lowestFloatBottomCache[2];

@@ -391,16 +391,23 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
 
     updateLogicalHeight();
     LayoutUnit newHeight = logicalHeight();
-    if (oldHeight > newHeight && !childrenInline()) {
+    if (!childrenInline()) {
+        LayoutBlockFlow* lowestBlock = nullptr;
+        bool addedOverhangingFloats = false;
         // One of our children's floats may have become an overhanging float for us.
         for (LayoutObject* child = lastChild(); child; child = child->previousSibling()) {
+            // TODO(robhogan): We should exclude blocks that create formatting contexts, not just out of flow or floating blocks.
             if (child->isLayoutBlockFlow() && !child->isFloatingOrOutOfFlowPositioned()) {
                 LayoutBlockFlow* block = toLayoutBlockFlow(child);
-                if (block->lowestFloatLogicalBottom() + block->logicalTop() <= newHeight)
+                lowestBlock = block;
+                if (oldHeight <= newHeight || block->lowestFloatLogicalBottom() + block->logicalTop() <= newHeight)
                     break;
                 addOverhangingFloats(block, false);
+                addedOverhangingFloats = true;
             }
         }
+        if (!addedOverhangingFloats)
+            addLowestFloatFromChildren(lowestBlock);
     }
 
     bool heightChanged = (previousHeight != newHeight);
@@ -414,6 +421,26 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
 
     m_descendantsWithFloatsMarkedForLayout = false;
     return true;
+}
+
+void LayoutBlockFlow::addLowestFloatFromChildren(LayoutBlockFlow* block)
+{
+    // TODO(robhogan): Make createsNewFormattingContext an ASSERT.
+    if (!block || !block->containsFloats() || block->createsNewFormattingContext())
+        return;
+
+    FloatingObject* floatingObject = block->m_floatingObjects->lowestFloatingObject();
+    if (!floatingObject || containsFloat(floatingObject->layoutObject()))
+        return;
+
+    LayoutSize offset(-block->logicalLeft(), -block->logicalTop());
+    if (!isHorizontalWritingMode())
+        offset = offset.transposedSize();
+
+    if (!m_floatingObjects)
+        createFloatingObjects();
+    FloatingObject* newFloatingObject = m_floatingObjects->add(floatingObject->copyToNewContainer(offset, false, true));
+    newFloatingObject->setIsLowestNonOverhangingFloatInChild(true);
 }
 
 void LayoutBlockFlow::determineLogicalLeftPositionForChild(LayoutBox& child)
@@ -2489,7 +2516,7 @@ void LayoutBlockFlow::addOverhangingFloats(LayoutBlockFlow* child, bool makeChil
                 // behaves properly). We always want to propagate the desire to paint the float as
                 // far out as we can, to the outermost block that overlaps the float, stopping only
                 // if we hit a self-painting layer boundary.
-                if (floatingObject->layoutObject()->enclosingFloatPaintingLayer() == enclosingFloatPaintingLayer()) {
+                if (floatingObject->layoutObject()->enclosingFloatPaintingLayer() == enclosingFloatPaintingLayer() && !floatingObject->isLowestNonOverhangingFloatInChild()) {
                     floatingObject->setShouldPaint(false);
                     shouldPaint = true;
                 }
@@ -2500,7 +2527,7 @@ void LayoutBlockFlow::addOverhangingFloats(LayoutBlockFlow* child, bool makeChil
                 m_floatingObjects->add(floatingObject->copyToNewContainer(offset, shouldPaint, true));
             }
         } else {
-            if (makeChildPaintOtherFloats && !floatingObject->shouldPaint() && !floatingObject->layoutObject()->hasSelfPaintingLayer()
+            if (makeChildPaintOtherFloats && !floatingObject->shouldPaint() && !floatingObject->layoutObject()->hasSelfPaintingLayer() && !floatingObject->isLowestNonOverhangingFloatInChild()
                 && floatingObject->layoutObject()->isDescendantOf(child) && floatingObject->layoutObject()->enclosingFloatPaintingLayer() == child->enclosingFloatPaintingLayer()) {
                 // The float is not overhanging from this block, so if it is a descendant of the child, the child should
                 // paint it (the other case is that it is intruding into the child), unless it has its own layer or enclosing

@@ -242,6 +242,7 @@ public:
 protected:
     void rebuildFloatsFromIntruding();
     void layoutInlineChildren(bool relayoutChildren, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutUnit afterEdge);
+    void addLowestFloatFromChildren(LayoutBlockFlow*);
 
     void createFloatingObjects();
 

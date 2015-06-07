@@ -48,6 +48,7 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject)
     , m_shouldPaint(true)
     , m_isDescendant(false)
     , m_isPlaced(false)
+    , m_isLowestNonOverhangingFloatInChild(false)
 #if ENABLE(ASSERT)
     , m_isInPlacedTree(false)
 #endif
@@ -60,7 +61,7 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject)
         m_type = FloatRight;
 }
 
-FloatingObject::FloatingObject(LayoutBox* layoutObject, Type type, const LayoutRect& frameRect, bool shouldPaint, bool isDescendant)
+FloatingObject::FloatingObject(LayoutBox* layoutObject, Type type, const LayoutRect& frameRect, bool shouldPaint, bool isDescendant, bool isLowestNonOverhangingFloatInChild)
     : m_layoutObject(layoutObject)
     , m_originatingLine(0)
     , m_frameRect(frameRect)
@@ -69,6 +70,7 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject, Type type, const LayoutR
     , m_shouldPaint(shouldPaint)
     , m_isDescendant(isDescendant)
     , m_isPlaced(true)
+    , m_isLowestNonOverhangingFloatInChild(isLowestNonOverhangingFloatInChild)
 #if ENABLE(ASSERT)
     , m_isInPlacedTree(false)
 #endif
@@ -86,12 +88,12 @@ PassOwnPtr<FloatingObject> FloatingObject::create(LayoutBox* layoutObject)
 
 PassOwnPtr<FloatingObject> FloatingObject::copyToNewContainer(LayoutSize offset, bool shouldPaint, bool isDescendant) const
 {
-    return adoptPtr(new FloatingObject(layoutObject(), type(), LayoutRect(frameRect().location() - offset, frameRect().size()), shouldPaint, isDescendant));
+    return adoptPtr(new FloatingObject(layoutObject(), type(), LayoutRect(frameRect().location() - offset, frameRect().size()), shouldPaint, isDescendant, isLowestNonOverhangingFloatInChild()));
 }
 
 PassOwnPtr<FloatingObject> FloatingObject::unsafeClone() const
 {
-    OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(layoutObject(), type(), m_frameRect, m_shouldPaint, m_isDescendant));
+    OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(layoutObject(), type(), m_frameRect, m_shouldPaint, m_isDescendant, false));
     cloneObject->m_paginationStrut = m_paginationStrut;
     cloneObject->m_isPlaced = m_isPlaced;
     return cloneObject.release();
@@ -209,6 +211,8 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
     const FloatingObjectSet& floatingObjectSet = set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
     if (floatType == FloatingObject::FloatLeftRight) {
+        FloatingObject* lowestFloatingObjectLeft = nullptr;
+        FloatingObject* lowestFloatingObjectRight = nullptr;
         LayoutUnit lowestFloatBottomLeft = 0;
         LayoutUnit lowestFloatBottomRight = 0;
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
@@ -216,22 +220,31 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
             if (floatingObject->isPlaced()) {
                 FloatingObject::Type curType = floatingObject->type();
                 LayoutUnit curFloatLogicalBottom = m_layoutObject->logicalBottomForFloat(floatingObject);
-                if (curType & FloatingObject::FloatLeft)
-                    lowestFloatBottomLeft = std::max(lowestFloatBottomLeft, curFloatLogicalBottom);
-                if (curType & FloatingObject::FloatRight)
-                    lowestFloatBottomRight = std::max(lowestFloatBottomRight, curFloatLogicalBottom);
+                if (curType & FloatingObject::FloatLeft && curFloatLogicalBottom > lowestFloatBottomLeft) {
+                    lowestFloatBottomLeft = curFloatLogicalBottom;
+                    lowestFloatingObjectLeft = floatingObject;
+                }
+                if (curType & FloatingObject::FloatRight && curFloatLogicalBottom > lowestFloatBottomRight) {
+                    lowestFloatBottomRight = curFloatLogicalBottom;
+                    lowestFloatingObjectRight = floatingObject;
+                }
             }
         }
         lowestFloatBottom = std::max(lowestFloatBottomLeft, lowestFloatBottomRight);
-        setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, FloatingObject::FloatLeft, lowestFloatBottomLeft);
-        setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, FloatingObject::FloatRight, lowestFloatBottomRight);
+        setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, FloatingObject::FloatLeft, lowestFloatingObjectLeft);
+        setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, FloatingObject::FloatRight, lowestFloatingObjectRight);
     } else {
+        FloatingObject* lowestFloatingObject = nullptr;
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
             FloatingObject* floatingObject = it->get();
-            if (floatingObject->isPlaced() && floatingObject->type() == floatType)
-                lowestFloatBottom = std::max(lowestFloatBottom, m_layoutObject->logicalBottomForFloat(floatingObject));
+            if (floatingObject->isPlaced() && floatingObject->type() == floatType) {
+                if (m_layoutObject->logicalBottomForFloat(floatingObject) > lowestFloatBottom) {
+                    lowestFloatingObject = floatingObject;
+                    lowestFloatBottom = m_layoutObject->logicalBottomForFloat(floatingObject);
+                }
+            }
         }
-        setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, floatType, lowestFloatBottom);
+        setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, floatType, lowestFloatingObject);
     }
 
     return lowestFloatBottom;
@@ -250,17 +263,34 @@ LayoutUnit FloatingObjects::getCachedlowestFloatLogicalBottom(FloatingObject::Ty
     int floatIndex = static_cast<int>(type) - 1;
     ASSERT(floatIndex < static_cast<int>(sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue)));
     ASSERT(floatIndex >= 0);
-    return m_lowestFloatBottomCache[floatIndex].value;
+    if (!m_lowestFloatBottomCache[floatIndex].floatingObject)
+        return LayoutUnit();
+    return m_layoutObject->logicalBottomForFloat(m_lowestFloatBottomCache[floatIndex].floatingObject);
 }
 
-void FloatingObjects::setCachedLowestFloatLogicalBottom(bool isHorizontal, FloatingObject::Type type, LayoutUnit value)
+void FloatingObjects::setCachedLowestFloatLogicalBottom(bool isHorizontal, FloatingObject::Type type, FloatingObject* floatingObject)
 {
     int floatIndex = static_cast<int>(type) - 1;
     ASSERT(floatIndex < static_cast<int>(sizeof(m_lowestFloatBottomCache) / sizeof(FloatBottomCachedValue)));
     ASSERT(floatIndex >= 0);
     m_cachedHorizontalWritingMode = isHorizontal;
-    m_lowestFloatBottomCache[floatIndex].value = value;
+    m_lowestFloatBottomCache[floatIndex].floatingObject = floatingObject;
     m_lowestFloatBottomCache[floatIndex].dirty = false;
+}
+
+FloatingObject* FloatingObjects::lowestFloatingObject() const
+{
+    bool isInHorizontalWritingMode = m_horizontalWritingMode;
+    if (!hasLowestFloatLogicalBottomCached(isInHorizontalWritingMode, FloatingObject::FloatLeft) && !hasLowestFloatLogicalBottomCached(isInHorizontalWritingMode, FloatingObject::FloatRight))
+        return nullptr;
+    FloatingObject* lowestLeftObject = m_lowestFloatBottomCache[0].floatingObject;
+    FloatingObject* lowestRightObject = m_lowestFloatBottomCache[1].floatingObject;
+    LayoutUnit lowestFloatBottomLeft = lowestLeftObject ? m_layoutObject->logicalBottomForFloat(lowestLeftObject) : LayoutUnit();
+    LayoutUnit lowestFloatBottomRight = lowestRightObject ? m_layoutObject->logicalBottomForFloat(lowestRightObject) : LayoutUnit();
+
+    if (lowestFloatBottomLeft > lowestFloatBottomRight)
+        return lowestLeftObject;
+    return lowestRightObject;
 }
 
 void FloatingObjects::markLowestFloatLogicalBottomCacheAsDirty()
@@ -410,7 +440,7 @@ LayoutUnit FloatingObjects::logicalRightOffset(LayoutUnit fixedOffset, LayoutUni
 }
 
 FloatingObjects::FloatBottomCachedValue::FloatBottomCachedValue()
-    : value(0)
+    : floatingObject(nullptr)
     , dirty(true)
 {
 }
