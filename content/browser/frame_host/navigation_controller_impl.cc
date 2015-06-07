@@ -914,6 +914,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
   NavigationEntryImpl* active_entry = GetLastCommittedEntry();
   active_entry->SetTimestamp(timestamp);
   active_entry->SetHttpStatusCode(params.http_status_code);
+  // TODO(creis): Do this on the frame entry instead, once we have them for
+  // manual subframe navigations in --site-per-process.
   active_entry->SetPageState(params.page_state);
   active_entry->SetRedirectChain(params.redirects);
 
@@ -1484,7 +1486,7 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     NavigationEntryImpl* last_committed = GetLastCommittedEntry();
     last_committed->AddOrUpdateFrameEntry(rfh->frame_tree_node(),
                                           rfh->GetSiteInstance(), params.url,
-                                          params.referrer);
+                                          params.referrer, params.page_state);
 
     // Cross-process subframe navigations may leave a pending entry around.
     // Clear it if it's actually for the subframe.

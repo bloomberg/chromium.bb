@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
 
 namespace content {
@@ -41,7 +42,8 @@ class CONTENT_EXPORT FrameNavigationEntry
   // Updates all the members of this entry.
   void UpdateEntry(SiteInstanceImpl* site_instance,
                    const GURL& url,
-                   const Referrer& referrer);
+                   const Referrer& referrer,
+                   const PageState& page_state);
 
   // The ID of the FrameTreeNode this entry is for.  -1 for the main frame,
   // since we don't always know the FrameTreeNode ID when creating the overall
@@ -67,6 +69,9 @@ class CONTENT_EXPORT FrameNavigationEntry
   void set_referrer(const Referrer& referrer) { referrer_ = referrer; }
   const Referrer& referrer() const { return referrer_; }
 
+  void set_page_state(const PageState& page_state) { page_state_ = page_state; }
+  const PageState& page_state() const { return page_state_; }
+
  private:
   friend class base::RefCounted<FrameNavigationEntry>;
   virtual ~FrameNavigationEntry();
@@ -82,6 +87,8 @@ class CONTENT_EXPORT FrameNavigationEntry
   scoped_refptr<SiteInstanceImpl> site_instance_;
   GURL url_;
   Referrer referrer_;
+  // TODO(creis): Change this to FrameState.
+  PageState page_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNavigationEntry);
 };

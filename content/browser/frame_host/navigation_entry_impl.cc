@@ -155,11 +155,11 @@ const base::string16& NavigationEntryImpl::GetTitle() const {
 }
 
 void NavigationEntryImpl::SetPageState(const PageState& state) {
-  page_state_ = state;
+  frame_tree_->frame_entry->set_page_state(state);
 }
 
 const PageState& NavigationEntryImpl::GetPageState() const {
-  return page_state_;
+  return frame_tree_->frame_entry->page_state();
 }
 
 void NavigationEntryImpl::SetPageID(int page_id) {
@@ -365,7 +365,6 @@ NavigationEntryImpl* NavigationEntryImpl::Clone() const {
   copy->update_virtual_url_with_url_ = update_virtual_url_with_url_;
   copy->title_ = title_;
   copy->favicon_ = favicon_;
-  copy->page_state_ = page_state_;
   copy->page_id_ = page_id_;
   copy->ssl_ = ssl_;
   copy->transition_type_ = transition_type_;
@@ -485,7 +484,8 @@ void NavigationEntryImpl::ResetForCommit() {
 void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
                                                 SiteInstanceImpl* site_instance,
                                                 const GURL& url,
-                                                const Referrer& referrer) {
+                                                const Referrer& referrer,
+                                                const PageState& page_state) {
   // We should already have a TreeNode for the parent node by the time this node
   // commits.  Find it first.
   DCHECK(frame_tree_node->parent());
@@ -504,7 +504,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
   for (TreeNode* child : parent_node->children) {
     if (child->frame_entry->frame_tree_node_id() == frame_tree_node_id) {
       // Update the existing FrameNavigationEntry.
-      child->frame_entry->UpdateEntry(site_instance, url, referrer);
+      child->frame_entry->UpdateEntry(site_instance, url, referrer, page_state);
       return;
     }
   }
@@ -516,6 +516,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
     return;
   FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
       frame_tree_node_id, site_instance, url, referrer);
+  frame_entry->set_page_state(page_state);
   parent_node->children.push_back(
       new NavigationEntryImpl::TreeNode(frame_entry));
 }

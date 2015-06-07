@@ -25,16 +25,18 @@ FrameNavigationEntry::~FrameNavigationEntry() {
 
 FrameNavigationEntry* FrameNavigationEntry::Clone() const {
   FrameNavigationEntry* copy = new FrameNavigationEntry(frame_tree_node_id_);
-  copy->UpdateEntry(site_instance_.get(), url_, referrer_);
+  copy->UpdateEntry(site_instance_.get(), url_, referrer_, page_state_);
   return copy;
 }
 
 void FrameNavigationEntry::UpdateEntry(SiteInstanceImpl* site_instance,
                                        const GURL& url,
-                                       const Referrer& referrer) {
+                                       const Referrer& referrer,
+                                       const PageState& page_state) {
   site_instance_ = site_instance;
   url_ = url;
   referrer_ = referrer;
+  page_state_ = page_state;
 }
 
 }  // namespace content

@@ -165,7 +165,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   void AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
                              SiteInstanceImpl* site_instance,
                              const GURL& url,
-                             const Referrer& referrer);
+                             const Referrer& referrer,
+                             const PageState& page_state);
 
   // Returns whether this entry has a FrameNavigationEntry for the given
   // |frame_tree_node|.
@@ -344,7 +345,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   bool update_virtual_url_with_url_;
   base::string16 title_;
   FaviconStatus favicon_;
-  PageState page_state_;
   int32 page_id_;
   SSLStatus ssl_;
   ui::PageTransition transition_type_;
