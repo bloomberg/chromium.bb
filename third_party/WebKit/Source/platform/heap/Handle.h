@@ -50,9 +50,8 @@ template<typename T> class HeapTerminatedArray;
 
 class PersistentNode {
 public:
-    PersistentNode(void* raw, TraceCallback trace)
-        : m_raw(raw)
-        , m_trace(trace)
+    explicit PersistentNode(TraceCallback trace)
+        : m_trace(trace)
     {
     }
 
@@ -78,7 +77,6 @@ public:
     }
 
 protected:
-    void* m_raw;
     TraceCallback m_trace;
 
 private:
@@ -142,8 +140,8 @@ public:
     }
 
 protected:
-    inline PersistentBase(void* raw)
-        : PersistentNode(raw, TraceMethodDelegate<Owner, &Owner::trace>::trampoline)
+    inline PersistentBase()
+        : PersistentNode(TraceMethodDelegate<Owner, &Owner::trace>::trampoline)
 #if ENABLE(ASSERT)
         , m_roots(RootsAccessor::roots())
 #endif
@@ -192,7 +190,7 @@ public:
     }
 
 private:
-    PersistentAnchor() : PersistentNode(nullptr, TraceMethodDelegate<PersistentAnchor, &PersistentAnchor::trace>::trampoline)
+    PersistentAnchor() : PersistentNode(TraceMethodDelegate<PersistentAnchor, &PersistentAnchor::trace>::trampoline)
     {
         m_next = this;
         m_prev = this;
@@ -220,59 +218,54 @@ class CrossThreadPersistent;
 template<typename T>
 class Persistent : public PersistentBase<ThreadLocalPersistents<ThreadingTrait<T>::Affinity>, Persistent<T>> {
 public:
-    typedef PersistentBase<ThreadLocalPersistents<ThreadingTrait<T>::Affinity>, Persistent<T>> ThreadLocalPersistentBase;
+    Persistent() : m_raw(nullptr) { }
 
-    Persistent() : ThreadLocalPersistentBase(nullptr) { }
+    Persistent(std::nullptr_t) : m_raw(nullptr) { }
 
-    Persistent(std::nullptr_t) : ThreadLocalPersistentBase(nullptr) { }
-
-    Persistent(T* raw) : ThreadLocalPersistentBase(raw)
+    Persistent(T* raw) : m_raw(raw)
     {
         checkPointer();
         recordBacktrace();
     }
 
-    Persistent(T& raw) : ThreadLocalPersistentBase(&raw)
+    explicit Persistent(T& raw) : m_raw(&raw)
     {
         checkPointer();
         recordBacktrace();
     }
 
-    Persistent(const Persistent& other) : ThreadLocalPersistentBase(static_cast<T*>(other.get()))
-    {
-        checkPointer();
-        recordBacktrace();
-    }
-
-    template<typename U>
-    Persistent(const Persistent<U>& other) : ThreadLocalPersistentBase(static_cast<T*>(other.get()))
+    Persistent(const Persistent& other) : m_raw(other)
     {
         checkPointer();
         recordBacktrace();
     }
 
     template<typename U>
-    Persistent(const Member<U>& other) : ThreadLocalPersistentBase(static_cast<T*>(other.get()))
+    Persistent(const Persistent<U>& other) : m_raw(other)
     {
         checkPointer();
         recordBacktrace();
     }
 
     template<typename U>
-    Persistent(const RawPtr<U>& other) : ThreadLocalPersistentBase(static_cast<T*>(other.get()))
+    Persistent(const Member<U>& other) : m_raw(other)
     {
         checkPointer();
         recordBacktrace();
     }
 
-    void clear()
+    template<typename U>
+    Persistent(const RawPtr<U>& other) : m_raw(other.get())
     {
-        this->m_raw = nullptr;
+        checkPointer();
+        recordBacktrace();
     }
+
+    void clear() { m_raw = nullptr; }
 
     virtual ~Persistent()
     {
-        this->m_raw = nullptr;
+        m_raw = nullptr;
     }
 
     template<typename VisitorDispatcher>
@@ -283,29 +276,29 @@ public:
 #if ENABLE(GC_PROFILING)
         visitor->setHostInfo(this, m_tracingName.isEmpty() ? "Persistent" : m_tracingName);
 #endif
-        visitor->mark(get());
+        visitor->mark(m_raw);
     }
 
     RawPtr<T> release()
     {
-        RawPtr<T> result = get();
-        this->m_raw = nullptr;
+        RawPtr<T> result = m_raw;
+        m_raw = nullptr;
         return result;
     }
 
-    T& operator*() const { return *get(); }
+    T& operator*() const { return *m_raw; }
 
-    bool operator!() const { return !get(); }
+    bool operator!() const { return !m_raw; }
 
-    operator T*() const { return get(); }
-    operator RawPtr<T>() const { return get(); }
+    operator T*() const { return m_raw; }
+    operator RawPtr<T>() const { return m_raw; }
 
     T* operator->() const { return *this; }
 
     template<typename U>
     Persistent& operator=(U* other)
     {
-        this->m_raw = static_cast<T*>(other);
+        m_raw = other;
         checkPointer();
         recordBacktrace();
         return *this;
@@ -313,13 +306,13 @@ public:
 
     Persistent& operator=(std::nullptr_t)
     {
-        this->m_raw = nullptr;
+        m_raw = nullptr;
         return *this;
     }
 
     Persistent& operator=(const Persistent& other)
     {
-        this->m_raw = static_cast<T*>(other.get());
+        m_raw = other;
         checkPointer();
         recordBacktrace();
         return *this;
@@ -328,7 +321,7 @@ public:
     template<typename U>
     Persistent& operator=(const Persistent<U>& other)
     {
-        this->m_raw = static_cast<T*>(other.get());
+        m_raw = other;
         checkPointer();
         recordBacktrace();
         return *this;
@@ -337,7 +330,7 @@ public:
     template<typename U>
     Persistent& operator=(const Member<U>& other)
     {
-        this->m_raw = static_cast<T*>(other.get());
+        m_raw = other;
         checkPointer();
         recordBacktrace();
         return *this;
@@ -346,22 +339,22 @@ public:
     template<typename U>
     Persistent& operator=(const RawPtr<U>& other)
     {
-        this->m_raw = static_cast<T*>(other.get());
+        m_raw = other;
         checkPointer();
         recordBacktrace();
         return *this;
     }
 
-    T* get() const { return reinterpret_cast<T*>(this->m_raw); }
+    T* get() const { return m_raw; }
 
 private:
     void checkPointer()
     {
 #if ENABLE(ASSERT)
-        if (!get())
+        if (!m_raw)
             return;
 
-        // Heap::isHeapObjectAlive() checks that the pointer is a traceable
+        // Heap::isHeapObjectAlive(m_raw) checks that m_raw is a traceable
         // object. In other words, it checks that the pointer is either of:
         //
         //   (a) a pointer to the head of an on-heap object.
@@ -369,14 +362,14 @@ private:
         //
         // Otherwise, Heap::isHeapObjectAlive will crash when it calls
         // header->checkHeader().
-        Heap::isHeapObjectAlive(get());
+        Heap::isHeapObjectAlive(m_raw);
 #endif
     }
 
 #if ENABLE(GC_PROFILING)
     void recordBacktrace()
     {
-        if (get())
+        if (m_raw)
             m_tracingName = Heap::createBacktraceString();
     }
 
@@ -384,6 +377,7 @@ private:
 #else
     inline void recordBacktrace() const { }
 #endif
+    T* m_raw;
 };
 
 // Unlike Persistent, we can destruct a CrossThreadPersistent in a thread
@@ -391,59 +385,54 @@ private:
 template<typename T>
 class CrossThreadPersistent : public PersistentBase<GlobalPersistents, CrossThreadPersistent<T>> {
 public:
-    typedef PersistentBase<GlobalPersistents, CrossThreadPersistent<T>> GlobalPersistentBase;
+    CrossThreadPersistent() : m_raw(nullptr) { }
 
-    CrossThreadPersistent() : GlobalPersistentBase(nullptr) { }
+    CrossThreadPersistent(std::nullptr_t) : m_raw(nullptr) { }
 
-    CrossThreadPersistent(std::nullptr_t) : GlobalPersistentBase(nullptr) { }
-
-    CrossThreadPersistent(T* raw) : GlobalPersistentBase(raw)
+    CrossThreadPersistent(T* raw) : m_raw(raw)
     {
         checkPointer();
         recordBacktrace();
     }
 
-    CrossThreadPersistent(T& raw) : GlobalPersistentBase(&raw)
+    explicit CrossThreadPersistent(T& raw) : m_raw(&raw)
     {
         checkPointer();
         recordBacktrace();
     }
 
-    CrossThreadPersistent(const CrossThreadPersistent& other) : GlobalPersistentBase(static_cast<T*>(other.get()))
-    {
-        checkPointer();
-        recordBacktrace();
-    }
-
-    template<typename U>
-    CrossThreadPersistent(const CrossThreadPersistent<U>& other) : GlobalPersistentBase(static_cast<T*>(other.get()))
+    CrossThreadPersistent(const CrossThreadPersistent& other) : m_raw(other)
     {
         checkPointer();
         recordBacktrace();
     }
 
     template<typename U>
-    CrossThreadPersistent(const Member<U>& other) : GlobalPersistentBase(static_cast<T*>(other.get()))
+    CrossThreadPersistent(const CrossThreadPersistent<U>& other) : m_raw(other)
     {
         checkPointer();
         recordBacktrace();
     }
 
     template<typename U>
-    CrossThreadPersistent(const RawPtr<U>& other) : GlobalPersistentBase(static_cast<T*>(other.get()))
+    CrossThreadPersistent(const Member<U>& other) : m_raw(other)
     {
         checkPointer();
         recordBacktrace();
     }
 
-    void clear()
+    template<typename U>
+    CrossThreadPersistent(const RawPtr<U>& other) : m_raw(other.get())
     {
-        this->m_raw = nullptr;
+        checkPointer();
+        recordBacktrace();
     }
+
+    void clear() { m_raw = nullptr; }
 
     virtual ~CrossThreadPersistent()
     {
-        this->m_raw = nullptr;
+        m_raw = nullptr;
     }
 
     template<typename VisitorDispatcher>
@@ -454,29 +443,29 @@ public:
 #if ENABLE(GC_PROFILING)
         visitor->setHostInfo(this, m_tracingName.isEmpty() ? "CrossThreadPersistent" : m_tracingName);
 #endif
-        visitor->mark(get());
+        visitor->mark(m_raw);
     }
 
     RawPtr<T> release()
     {
-        RawPtr<T> result = get();
-        this->m_raw = nullptr;
+        RawPtr<T> result = m_raw;
+        m_raw = nullptr;
         return result;
     }
 
-    T& operator*() const { return *get(); }
+    T& operator*() const { return *m_raw; }
 
-    bool operator!() const { return !get(); }
+    bool operator!() const { return !m_raw; }
 
-    operator T*() const { return get(); }
-    operator RawPtr<T>() const { return get(); }
+    operator T*() const { return m_raw; }
+    operator RawPtr<T>() const { return m_raw; }
 
     T* operator->() const { return *this; }
 
     template<typename U>
     CrossThreadPersistent& operator=(U* other)
     {
-        this->m_raw = static_cast<T*>(other);
+        m_raw = other;
         checkPointer();
         recordBacktrace();
         return *this;
@@ -484,13 +473,13 @@ public:
 
     CrossThreadPersistent& operator=(std::nullptr_t)
     {
-        this->m_raw = nullptr;
+        m_raw = nullptr;
         return *this;
     }
 
     CrossThreadPersistent& operator=(const CrossThreadPersistent& other)
     {
-        this->m_raw = static_cast<T*>(other.get());
+        m_raw = other;
         checkPointer();
         recordBacktrace();
         return *this;
@@ -499,7 +488,7 @@ public:
     template<typename U>
     CrossThreadPersistent& operator=(const CrossThreadPersistent<U>& other)
     {
-        this->m_raw = static_cast<T*>(other.get());
+        m_raw = other;
         checkPointer();
         recordBacktrace();
         return *this;
@@ -508,7 +497,7 @@ public:
     template<typename U>
     CrossThreadPersistent& operator=(const Member<U>& other)
     {
-        this->m_raw = static_cast<T*>(other.get());
+        m_raw = other;
         checkPointer();
         recordBacktrace();
         return *this;
@@ -517,21 +506,21 @@ public:
     template<typename U>
     CrossThreadPersistent& operator=(const RawPtr<U>& other)
     {
-        this->m_raw = static_cast<T*>(other.get());
+        m_raw = other;
         checkPointer();
         recordBacktrace();
         return *this;
     }
 
-    T* get() const { return reinterpret_cast<T*>(this->m_raw); }
+    T* get() const { return m_raw; }
 
 private:
     void checkPointer()
     {
 #if ENABLE(ASSERT)
-        if (!get())
+        if (!m_raw)
             return;
-        // Heap::isHeapObjectAlive() checks that the pointer is a traceable
+        // Heap::isHeapObjectAlive(m_raw) checks that m_raw is a traceable
         // object. In other words, it checks that the pointer is either of:
         //
         //   (a) a pointer to the head of an on-heap object.
@@ -539,14 +528,14 @@ private:
         //
         // Otherwise, Heap::isHeapObjectAlive will crash when it calls
         // header->checkHeader().
-        Heap::isHeapObjectAlive(get());
+        Heap::isHeapObjectAlive(m_raw);
 #endif
     }
 
 #if ENABLE(GC_PROFILING)
     void recordBacktrace()
     {
-        if (get())
+        if (m_raw)
             m_tracingName = Heap::createBacktraceString();
     }
 
@@ -554,6 +543,7 @@ private:
 #else
     inline void recordBacktrace() const { }
 #endif
+    T* m_raw;
 };
 
 // FIXME: derive affinity based on the collection.
@@ -566,14 +556,12 @@ class PersistentHeapCollectionBase
     // DEFINE_STATIC_LOCAL et. al.
     WTF_USE_ALLOCATOR(PersistentHeapCollectionBase, WTF::DefaultAllocator);
 public:
-    typedef PersistentBase<ThreadLocalPersistents<Affinity>, PersistentHeapCollectionBase<Collection, Affinity>> CollectionPersistentBase;
+    PersistentHeapCollectionBase() { }
 
-    PersistentHeapCollectionBase() : CollectionPersistentBase(this) { }
-
-    PersistentHeapCollectionBase(const PersistentHeapCollectionBase& other) : Collection(other), CollectionPersistentBase(this) { }
+    PersistentHeapCollectionBase(const PersistentHeapCollectionBase& other) : Collection(other) { }
 
     template<typename OtherCollection>
-    PersistentHeapCollectionBase(const OtherCollection& other) : Collection(other), CollectionPersistentBase(this) { }
+    PersistentHeapCollectionBase(const OtherCollection& other) : Collection(other) { }
 
     template<typename VisitorDispatcher>
     void trace(VisitorDispatcher visitor)
@@ -660,7 +648,7 @@ public:
         checkPointer();
     }
 
-    Member(T& raw) : m_raw(&raw)
+    explicit Member(T& raw) : m_raw(&raw)
     {
         checkPointer();
     }
