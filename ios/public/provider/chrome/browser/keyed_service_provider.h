@@ -12,6 +12,7 @@ enum class ServiceAccessType;
 
 class KeyedServiceBaseFactory;
 class ProfileOAuth2TokenService;
+class ProfileOAuth2TokenServiceIOS;
 class SigninManager;
 
 namespace autofill {
@@ -44,6 +45,15 @@ class KeyedServiceProvider {
   // Returns an instance of ProfileOAuth2TokenService tied to |browser_state|.
   virtual ProfileOAuth2TokenService*
   GetProfileOAuth2TokenServiceForBrowserState(
+      ChromeBrowserState* browser_state);
+
+  // Returns the ProfileOAuth2TokenServiceIOS factory for dependencies.
+  virtual KeyedServiceBaseFactory* GetProfileOAuth2TokenServiceIOSFactory();
+
+  // Returns an instance of ProfileOAuth2TokenServiceIOS tied to
+  // |browser_state|.
+  virtual ProfileOAuth2TokenServiceIOS*
+  GetProfileOAuth2TokenServiceIOSForBrowserState(
       ChromeBrowserState* browser_state);
 
   // Returns the SigninManager factory for dependencies.

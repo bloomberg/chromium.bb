@@ -25,6 +25,17 @@ KeyedServiceProvider::GetProfileOAuth2TokenServiceForBrowserState(
   return nullptr;
 }
 
+KeyedServiceBaseFactory*
+KeyedServiceProvider::GetProfileOAuth2TokenServiceIOSFactory() {
+  return nullptr;
+}
+
+ProfileOAuth2TokenServiceIOS*
+KeyedServiceProvider::GetProfileOAuth2TokenServiceIOSForBrowserState(
+    ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
 KeyedServiceBaseFactory* KeyedServiceProvider::GetSigninManagerFactory() {
   return nullptr;
 }
