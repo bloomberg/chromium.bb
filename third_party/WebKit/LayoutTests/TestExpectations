@@ -172,6 +172,7 @@ crbug.com/398306 fast/events/before-unload-return-bad-value.html [ Crash Timeout
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
+crbug.com/490511 imported/web-platform-tests/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
 crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/023.html [ Crash Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/026.html [ Crash Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/047.html [ Timeout ]
