@@ -70,6 +70,9 @@ protected:
     inline void registerWeakMembers(const void* closure, const void* objectPointer, WeakCallback callback)
     {
         ASSERT(toDerived()->markingMode() != Visitor::WeakProcessing);
+        // We don't want to run weak processings when taking a snapshot.
+        if (toDerived()->markingMode() == Visitor::SnapshotMarking)
+            return;
         Heap::pushThreadLocalWeakCallback(const_cast<void*>(closure), const_cast<void*>(objectPointer), callback);
     }
 
@@ -117,6 +120,9 @@ protected:
     inline void registerWeakCellWithCallback(void** cell, WeakCallback callback)
     {
         ASSERT(toDerived()->markingMode() != Visitor::WeakProcessing);
+        // We don't want to run weak processings when taking a snapshot.
+        if (toDerived()->markingMode() == Visitor::SnapshotMarking)
+            return;
         Heap::pushGlobalWeakCallback(cell, callback);
     }
 

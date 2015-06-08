@@ -328,8 +328,17 @@ public:
     friend class InlinedGlobalMarkingVisitor;
 
     enum MarkingMode {
+        // This is a default visitor. This is used for GCType=GCWithSweep
+        // and GCType=GCWithoutSweep.
         GlobalMarking,
+        // This visitor does not trace objects outside the heap of the
+        // GCing thread. This is used for GCType=ThreadTerminationGC.
         ThreadLocalMarking,
+        // This visitor just marks objects and ignores weak processing.
+        // This is used for GCType=TakeSnapshot.
+        SnapshotMarking,
+        // This visitor is used to trace objects during weak processing.
+        // This visitor is allowed to trace only already marked objects.
         WeakProcessing,
     };
 

@@ -151,11 +151,27 @@ public:
         if (LIKELY(gcType != ThreadState::ThreadTerminationGC && ThreadState::stopThreads()))
             m_parkedAllThreads = true;
 
+        switch (gcType) {
+        case ThreadState::GCWithSweep:
+        case ThreadState::GCWithoutSweep:
+            m_visitor = adoptPtr(new MarkingVisitor<Visitor::GlobalMarking>());
+            break;
+        case ThreadState::TakeSnapshot:
+            m_visitor = adoptPtr(new MarkingVisitor<Visitor::SnapshotMarking>());
+            break;
+        case ThreadState::ThreadTerminationGC:
+            m_visitor = adoptPtr(new MarkingVisitor<Visitor::ThreadLocalMarking>());
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+
         if (m_state->isMainThread())
             TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(samplingState);
     }
 
-    bool allThreadsParked() { return m_parkedAllThreads; }
+    bool allThreadsParked() const { return m_parkedAllThreads; }
+    Visitor* visitor() const { return m_visitor.get(); }
 
     ~GCScope()
     {
@@ -174,6 +190,7 @@ private:
     GCForbiddenScope m_gcForbiddenScope;
     SafePointScope m_safePointScope;
     ThreadState::GCType m_gcType;
+    OwnPtr<Visitor> m_visitor;
     bool m_parkedAllThreads; // False if we fail to park all threads
 };
 
@@ -326,6 +343,28 @@ void BaseHeap::makeConsistentForGC()
     ASSERT(!m_firstUnsweptPage);
 }
 
+void BaseHeap::makeConsistentForMutator()
+{
+    clearFreeLists();
+    ASSERT(isConsistentForGC());
+    ASSERT(!m_firstPage);
+
+    // Drop marks from marked objects and rebuild free lists in preparation for
+    // resuming the executions of mutators.
+    BasePage* previousPage = nullptr;
+    for (BasePage* page = m_firstUnsweptPage; page; previousPage = page, page = page->next()) {
+        page->makeConsistentForMutator();
+        page->markAsSwept();
+    }
+    if (previousPage) {
+        ASSERT(m_firstUnsweptPage);
+        previousPage->m_next = m_firstPage;
+        m_firstPage = m_firstUnsweptPage;
+        m_firstUnsweptPage = nullptr;
+    }
+    ASSERT(!m_firstUnsweptPage);
+}
+
 size_t BaseHeap::objectPayloadSizeForTesting()
 {
     ASSERT(isConsistentForGC());
@@ -347,7 +386,7 @@ void BaseHeap::prepareHeapForTermination()
 
 void BaseHeap::prepareForSweep()
 {
-    ASSERT(!threadState()->isInGC());
+    ASSERT(threadState()->isInGC());
     ASSERT(!m_firstUnsweptPage);
 
     // Move all pages to a list of unswept pages.
@@ -1223,6 +1262,37 @@ void NormalPage::makeConsistentForGC()
         Heap::increaseMarkedObjectSize(markedObjectSize);
 }
 
+void NormalPage::makeConsistentForMutator()
+{
+    size_t markedObjectSize = 0;
+    Address startOfGap = payload();
+    for (Address headerAddress = payload(); headerAddress < payloadEnd();) {
+        HeapObjectHeader* header = reinterpret_cast<HeapObjectHeader*>(headerAddress);
+        ASSERT(header->size() < blinkPagePayloadSize());
+        // Check if a free list entry first since we cannot call
+        // isMarked on a free list entry.
+        if (header->isFree()) {
+            headerAddress += header->size();
+            continue;
+        }
+        header->checkHeader();
+
+        if (startOfGap != headerAddress)
+            heapForNormalPage()->addToFreeList(startOfGap, headerAddress - startOfGap);
+        if (header->isMarked()) {
+            header->unmark();
+            markedObjectSize += header->size();
+        }
+        headerAddress += header->size();
+        startOfGap = headerAddress;
+    }
+    if (startOfGap != payloadEnd())
+        heapForNormalPage()->addToFreeList(startOfGap, payloadEnd() - startOfGap);
+
+    if (markedObjectSize)
+        Heap::increaseMarkedObjectSize(markedObjectSize);
+}
+
 #if defined(ADDRESS_SANITIZER)
 void NormalPage::poisonObjects(ObjectsToPoison objectsToPoison, Poisoning poisoning)
 {
@@ -1512,6 +1582,15 @@ void LargeObjectPage::makeConsistentForGC()
         Heap::increaseMarkedObjectSize(size());
     } else {
         header->markDead();
+    }
+}
+
+void LargeObjectPage::makeConsistentForMutator()
+{
+    HeapObjectHeader* header = heapObjectHeader();
+    if (header->isMarked()) {
+        header->unmark();
+        Heap::increaseMarkedObjectSize(size());
     }
 }
 
@@ -1940,7 +2019,6 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     // the GC.
     if (!gcScope.allThreadsParked())
         return;
-    MarkingVisitor<Visitor::GlobalMarking> visitor;
 
     if (state->isMainThread())
         ScriptForbiddenScope::enter();
@@ -1953,7 +2031,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink_gc", "BlinkGC");
     double timeStamp = WTF::currentTimeMS();
 #if ENABLE(GC_PROFILING)
-    visitor.objectGraph().clear();
+    gcScope.visitor()->objectGraph().clear();
 #endif
 
     // Disallow allocation during garbage collection (but not during the
@@ -1968,24 +2046,24 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     Heap::resetHeapCounters();
 
     // 1. Trace persistent roots.
-    ThreadState::visitPersistentRoots(&visitor);
+    ThreadState::visitPersistentRoots(gcScope.visitor());
 
     // 2. Trace objects reachable from the persistent roots including
     // ephemerons.
-    processMarkingStack(&visitor);
+    processMarkingStack(gcScope.visitor());
 
     // 3. Trace objects reachable from the stack.  We do this independent of the
     // given stackState since other threads might have a different stack state.
-    ThreadState::visitStackRoots(&visitor);
+    ThreadState::visitStackRoots(gcScope.visitor());
 
     // 4. Trace objects reachable from the stack "roots" including ephemerons.
     // Only do the processing if we found a pointer to an object on one of the
     // thread stacks.
     if (lastGCWasConservative())
-        processMarkingStack(&visitor);
+        processMarkingStack(gcScope.visitor());
 
-    postMarkingProcessing(&visitor);
-    globalWeakProcessing(&visitor);
+    postMarkingProcessing(gcScope.visitor());
+    globalWeakProcessing(gcScope.visitor());
 
     // Now we can delete all orphaned pages because there are no dangling
     // pointers to the orphaned pages.  (If we have such dangling pointers,
@@ -1995,7 +2073,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     postGC(gcType);
 
 #if ENABLE(GC_PROFILING)
-    visitor.reportStats();
+    gcScope.visitor()->reportStats();
 #endif
 
     double markingTimeInMilliseconds = WTF::currentTimeMS() - timeStamp;
@@ -2021,7 +2099,6 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         // ThreadTerminationGC.
         GCScope gcScope(state, ThreadState::NoHeapPointersOnStack, ThreadState::ThreadTerminationGC);
 
-        MarkingVisitor<Visitor::ThreadLocalMarking> visitor;
         ThreadState::NoAllocationScope noAllocationScope(state);
 
         state->preGC();
@@ -2037,14 +2114,14 @@ void Heap::collectGarbageForTerminatingThread(ThreadState* state)
         // global GC finds a "pointer" on the stack or due to a programming
         // error where an object has a dangling cross-thread pointer to an
         // object on this heap.
-        state->visitPersistents(&visitor);
+        state->visitPersistents(gcScope.visitor());
 
         // 2. Trace objects reachable from the thread's persistent roots
         // including ephemerons.
-        processMarkingStack(&visitor);
+        processMarkingStack(gcScope.visitor());
 
-        postMarkingProcessing(&visitor);
-        globalWeakProcessing(&visitor);
+        postMarkingProcessing(gcScope.visitor());
+        globalWeakProcessing(gcScope.visitor());
 
         state->postGC(ThreadState::GCWithSweep);
     }
