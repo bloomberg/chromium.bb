@@ -183,7 +183,10 @@ class Target(object):
   added_to_compile_targets: used when determining if the target was added to the
     set of targets that needs to be built.
   in_roots: true if this target is a descendant of one of the root nodes.
-  is_executable: true if the type of target is executable."""
+  is_executable: true if the type of target is executable.
+  is_static_library: true if the type of target is static_library.
+  is_or_has_linked_ancestor: true if the target does a link (eg executable), or
+    if there is a target in back_deps that does a link."""
   def __init__(self, name):
     self.deps = set()
     self.match_status = MATCH_STATUS_TBD
@@ -196,6 +199,8 @@ class Target(object):
     self.added_to_compile_targets = False
     self.in_roots = False
     self.is_executable = False
+    self.is_static_library = False
+    self.is_or_has_linked_ancestor = False
 
 
 class Config(object):
@@ -309,7 +314,11 @@ def _GenerateTargets(data, target_list, target_dicts, toplevel_dir, files,
     target.visited = True
     target.requires_build = _DoesTargetTypeRequireBuild(
         target_dicts[target_name])
-    target.is_executable = target_dicts[target_name]['type'] == 'executable'
+    target_type = target_dicts[target_name]['type']
+    target.is_executable = target_type == 'executable'
+    target.is_static_library = target_type == 'static_library'
+    target.is_or_has_linked_ancestor = (target_type == 'executable' or
+                                        target_type == 'shared_library')
 
     build_file = gyp.common.ParseQualifiedTarget(target_name)[0]
     if not build_file in build_file_in_files:
@@ -411,14 +420,21 @@ def _AddBuildTargets(target, roots, add_if_no_ancestor, result):
     _AddBuildTargets(back_dep_target, roots, False, result)
     target.added_to_compile_targets |= back_dep_target.added_to_compile_targets
     target.in_roots |= back_dep_target.in_roots
+    target.is_or_has_linked_ancestor |= (
+      back_dep_target.is_or_has_linked_ancestor)
 
   # Always add 'executable' targets. Even though they may be built by other
   # targets that depend upon them it makes detection of what is going to be
   # built easier.
+  # And always add static_libraries that have no dependencies on them from
+  # linkables. This is necessary as the other dependencies on them may be
+  # static libraries themselves, which are not compile time dependencies.
   if target.in_roots and \
         (target.is_executable or
          (not target.added_to_compile_targets and
-          (add_if_no_ancestor or target.requires_build))):
+          (add_if_no_ancestor or target.requires_build)) or
+         (target.is_static_library and add_if_no_ancestor and
+          not target.is_or_has_linked_ancestor)):
     result.add(target)
     target.added_to_compile_targets = True
 
