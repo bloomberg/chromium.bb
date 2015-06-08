@@ -2884,10 +2884,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return;
   }
 
+  // TODO(ios): Audit comments and behavior below regarding error origin. The
+  // error has been translated and may appear to have originated in the Chrome
+  // network stack when that is not true (crbug.com/496972)
   // Ignore cancelled errors.
   if ([error code] == NSURLErrorCancelled) {
     NSError* underlyingError = [userInfo objectForKey:NSUnderlyingErrorKey];
-    if (underlyingError) {
+    if (underlyingError && [self shouldAbortLoadForCancelledURL:errorGURL]) {
       DCHECK([underlyingError isKindOfClass:[NSError class]]);
 
       // The Error contains an NSUnderlyingErrorKey so it's being generated
@@ -2917,6 +2920,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   [self loadCompleteWithSuccess:NO];
   [self loadErrorInNativeView:error];
+}
+
+- (BOOL)shouldAbortLoadForCancelledURL:(const GURL &)cancelledURL {
+  // Subclasses must implement this method.
+  NOTREACHED();
+  return YES;
 }
 
 #pragma mark -

@@ -421,6 +421,12 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
   self.webScrollView.zoomScale = zoomScale;
 }
 
+- (BOOL)shouldAbortLoadForCancelledURL:(const GURL&)cancelledURL {
+  // Do not abort the load if it is for an app specific URL, as such errors
+  // are produced during the app specific URL load process.
+  return !web::GetWebClient()->IsAppSpecificURL(cancelledURL);
+}
+
 #pragma mark Private methods
 
 - (NSString*)documentMIMEType {
@@ -975,17 +981,19 @@ NSString* const kScriptImmediateName = @"crwebinvokeimmediate";
 - (void)webView:(WKWebView *)webView
     didStartProvisionalNavigation:(WKNavigation *)navigation {
   GURL webViewURL = net::GURLWithNSURL(webView.URL);
-  // If this navigation has not yet been registered, do so. loadPhase check is
-  // necessary because lastRegisteredRequestURL may be the same as the
-  // webViewURL on a new tab created by window.open (default is about::blank).
-  // TODO(jyquinn): Audit [CRWWebController loadCurrentURL] for other tasks that
+  // Intercept renderer-initiated navigations. If this navigation has not yet
+  // been registered, do so. loadPhase check is necessary because
+  // lastRegisteredRequestURL may be the same as the webViewURL on a new tab
+  // created by window.open (default is about::blank).
+  // TODO(jyquinn): Audit [CRWWebController loadWithParams] for other tasks that
   // should be performed here.
   if (self.lastRegisteredRequestURL != webViewURL ||
       self.loadPhase != web::LOAD_REQUESTED) {
     // Reset current WebUI if one exists.
     [self clearWebUI];
-    // If webViewURL is a chrome URL, abort the current load and initialize the
-    // load from the web controller.
+    // Restart app specific URL loads to properly capture state.
+    // TODO(jyquinn): Extract necessary tasks for app specific URL navigation
+    // rather than restarting the load.
     if (web::GetWebClient()->IsAppSpecificURL(webViewURL)) {
       [self abortWebLoad];
       web::WebLoadParams params(webViewURL);

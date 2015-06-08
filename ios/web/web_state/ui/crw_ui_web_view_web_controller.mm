@@ -815,6 +815,10 @@ const size_t kMaxMessageQueueSize = 262144;
   self.webScrollView.zoomScale = zoomScale;
 }
 
+-(BOOL)shouldAbortLoadForCancelledURL:(const GURL&)cancelledURL {
+  return YES;
+}
+
 #pragma mark - JS to ObjC messaging
 
 - (void)respondToJSInvoke {

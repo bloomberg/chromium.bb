@@ -167,6 +167,10 @@ struct NewWindowInfo {
 - (void)applyWebViewScrollZoomScaleFromScrollState:
     (const web::PageScrollState&)scrollState;
 
+// Returns YES if load should be aborted when NSURLCancelledError is
+// encountered for |cancelledURL|.
+- (BOOL)shouldAbortLoadForCancelledURL:(const GURL&)cancelledURL;
+
 #pragma mark - Optional methods for subclasses
 // Subclasses may overwrite methods in this section.
 
