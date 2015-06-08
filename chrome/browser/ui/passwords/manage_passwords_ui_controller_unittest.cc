@@ -30,7 +30,7 @@ using ::testing::Pointee;
 
 namespace {
 
-const int64 kSlowNavigationDelayInMS = 2000;
+const int64 kSlowNavigationDelayInMS = 6000;
 const int64 kQuickNavigationDelayInMS = 500;
 
 // This sublass is used to disable some code paths which are not essential for

@@ -36,6 +36,9 @@ using password_manager::PasswordFormManager;
 
 namespace {
 
+// Minimal time span the bubble should survive implicit navigations.
+const int kBubbleMinTime = 5;
+
 password_manager::PasswordStore* GetPasswordStore(
     content::WebContents* web_contents) {
   return PasswordStoreFactory::GetForProfile(
@@ -298,7 +301,7 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
 
   // Don't do anything if a navigation occurs before a user could reasonably
   // interact with the password bubble.
-  if (Elapsed() < base::TimeDelta::FromSeconds(1))
+  if (Elapsed() < base::TimeDelta::FromSeconds(kBubbleMinTime))
     return;
 
   // Otherwise, reset the password manager and the timer.
