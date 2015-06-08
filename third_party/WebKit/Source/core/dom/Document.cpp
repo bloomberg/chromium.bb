@@ -4245,8 +4245,13 @@ static Editor::Command command(Document* document, const String& commandName)
     return frame->editor().command(commandName, CommandFromDOM);
 }
 
-bool Document::execCommand(const String& commandName, bool, const String& value)
+bool Document::execCommand(const String& commandName, bool, const String& value, ExceptionState& exceptionState)
 {
+    if (!isHTMLDocument() && !isXHTMLDocument()) {
+        exceptionState.throwDOMException(InvalidStateError, "execCommand is only supported on HTML documents.");
+        return false;
+    }
+
     // We don't allow recursive |execCommand()| to protect against attack code.
     // Recursive call of |execCommand()| could be happened by moving iframe
     // with script triggered by insertion, e.g. <iframe src="javascript:...">
@@ -4268,28 +4273,53 @@ bool Document::execCommand(const String& commandName, bool, const String& value)
     return editorCommand.execute(value);
 }
 
-bool Document::queryCommandEnabled(const String& commandName)
+bool Document::queryCommandEnabled(const String& commandName, ExceptionState& exceptionState)
 {
+    if (!isHTMLDocument() && !isXHTMLDocument()) {
+        exceptionState.throwDOMException(InvalidStateError, "queryCommandEnabled is only supported on HTML documents.");
+        return false;
+    }
+
     return command(this, commandName).isEnabled();
 }
 
-bool Document::queryCommandIndeterm(const String& commandName)
+bool Document::queryCommandIndeterm(const String& commandName, ExceptionState& exceptionState)
 {
+    if (!isHTMLDocument() && !isXHTMLDocument()) {
+        exceptionState.throwDOMException(InvalidStateError, "queryCommandIndeterm is only supported on HTML documents.");
+        return false;
+    }
+
     return command(this, commandName).state() == MixedTriState;
 }
 
-bool Document::queryCommandState(const String& commandName)
+bool Document::queryCommandState(const String& commandName, ExceptionState& exceptionState)
 {
+    if (!isHTMLDocument() && !isXHTMLDocument()) {
+        exceptionState.throwDOMException(InvalidStateError, "queryCommandState is only supported on HTML documents.");
+        return false;
+    }
+
     return command(this, commandName).state() == TrueTriState;
 }
 
-bool Document::queryCommandSupported(const String& commandName)
+bool Document::queryCommandSupported(const String& commandName, ExceptionState& exceptionState)
 {
+    if (!isHTMLDocument() && !isXHTMLDocument()) {
+        exceptionState.throwDOMException(InvalidStateError, "queryCommandSupported is only supported on HTML documents.");
+        return false;
+    }
+
     return command(this, commandName).isSupported();
 }
 
-String Document::queryCommandValue(const String& commandName)
+String Document::queryCommandValue(const String& commandName, ExceptionState& exceptionState)
 {
+    if (!isHTMLDocument() && !isXHTMLDocument()) {
+        exceptionState.throwDOMException(InvalidStateError, "queryCommandValue is only supported on HTML documents.");
+        return "";
+    }
+
     return command(this, commandName).value();
 }
 

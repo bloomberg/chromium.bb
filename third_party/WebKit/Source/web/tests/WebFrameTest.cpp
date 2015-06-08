@@ -4977,7 +4977,9 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange)
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
     element->focus();
-    document->execCommand("InsertText", false, "_wellcome_.");
+    NonThrowableExceptionState exceptionState;
+    document->execCommand("InsertText", false, "_wellcome_.", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
 
     const int allTextBeginOffset = 0;
     const int allTextLength = 11;
@@ -5008,7 +5010,9 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers)
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
     element->focus();
-    document->execCommand("InsertText", false, "_wellcome_.");
+    NonThrowableExceptionState exceptionState;
+    document->execCommand("InsertText", false, "_wellcome_.", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
 
     frame->removeSpellingMarkers();
 
@@ -5037,7 +5041,9 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords)
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
     element->focus();
-    document->execCommand("InsertText", false, " wellcome ");
+    NonThrowableExceptionState exceptionState;
+    document->execCommand("InsertText", false, " wellcome ", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
 
     WebVector<uint32_t> documentMarkers1;
     webViewHelper.webView()->spellingMarkers(&documentMarkers1);
@@ -5071,7 +5077,9 @@ TEST_P(ParameterizedWebFrameTest, MarkerHashIdentifiers)
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
     element->focus();
-    document->execCommand("InsertText", false, "wellcome.");
+    NonThrowableExceptionState exceptionState;
+    document->execCommand("InsertText", false, "wellcome.", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
 
     WebVector<uint32_t> documentMarkers;
     webViewHelper.webView()->spellingMarkers(&documentMarkers);
@@ -5147,9 +5155,12 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition)
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
     element->focus();
-    document->execCommand("InsertText", false, "wellcome ");
+    NonThrowableExceptionState exceptionState;
+    document->execCommand("InsertText", false, "wellcome ", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
     webInputElement.setSelectionRange(0, 0);
-    document->execCommand("InsertText", false, "he");
+    document->execCommand("InsertText", false, "he", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
 
     spellcheck.kick();
 
@@ -5199,7 +5210,9 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers)
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
     element->focus();
-    document->execCommand("InsertText", false, "welcome ");
+    NonThrowableExceptionState exceptionState;
+    document->execCommand("InsertText", false, "welcome ", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
     document->markers().addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Spelling);
     document->markers().addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Grammar);
     document->markers().addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::InvisibleSpellcheck);
@@ -5228,21 +5241,25 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument)
     webViewHelper.webView()->settings()->setEditingBehavior(WebSettings::EditingBehaviorWin);
 
     element->focus();
-    document->execCommand("InsertText", false, "wellcome ");
+    NonThrowableExceptionState exceptionState;
+    document->execCommand("InsertText", false, "wellcome ", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
 
     spellcheck.kick();
     ASSERT_EQ(1U, document->markers().markers().size());
     ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
     EXPECT_EQ(DocumentMarker::Spelling, document->markers().markers()[0]->type());
 
-    document->execCommand("InsertText", false, "wellcome ");
+    document->execCommand("InsertText", false, "wellcome ", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
 
     spellcheck.kickGrammar();
     ASSERT_EQ(1U, document->markers().markers().size());
     ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
     EXPECT_EQ(DocumentMarker::Grammar, document->markers().markers()[0]->type());
 
-    document->execCommand("InsertText", false, "wellcome ");
+    document->execCommand("InsertText", false, "wellcome ", exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
 
     spellcheck.kickInvisibleSpellcheck();
     ASSERT_EQ(1U, document->markers().markers().size());

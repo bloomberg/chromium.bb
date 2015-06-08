@@ -116,12 +116,12 @@ interface Document : Node {
     boolean hasFocus();
     // FIXME: designMode should not have [TreatNullAs=NullString].
     [TreatNullAs=NullString, CustomElementCallbacks, MeasureAs=DocumentDesignMode] attribute DOMString designMode;
-    [CustomElementCallbacks] boolean execCommand(DOMString commandId, optional boolean showUI = false, optional DOMString value = "");
-    boolean queryCommandEnabled(DOMString commandId);
-    boolean queryCommandIndeterm(DOMString commandId);
-    boolean queryCommandState(DOMString commandId);
-    boolean queryCommandSupported(DOMString commandId);
-    DOMString queryCommandValue(DOMString commandId);
+    [CustomElementCallbacks, RaisesException] boolean execCommand(DOMString commandId, optional boolean showUI = false, optional DOMString value = "");
+    [RaisesException] boolean queryCommandEnabled(DOMString commandId);
+    [RaisesException] boolean queryCommandIndeterm(DOMString commandId);
+    [RaisesException] boolean queryCommandState(DOMString commandId);
+    [RaisesException] boolean queryCommandSupported(DOMString commandId);
+    [RaisesException] DOMString queryCommandValue(DOMString commandId);
 
     [LenientThis] attribute EventHandler onreadystatechange;
 

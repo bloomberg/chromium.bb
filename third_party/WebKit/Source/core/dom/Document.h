@@ -779,12 +779,12 @@ public:
 
     DocumentMarkerController& markers() const { return *m_markers; }
 
-    bool execCommand(const String& command, bool showUI, const String& value);
-    bool queryCommandEnabled(const String& command);
-    bool queryCommandIndeterm(const String& command);
-    bool queryCommandState(const String& command);
-    bool queryCommandSupported(const String& command);
-    String queryCommandValue(const String& command);
+    bool execCommand(const String& command, bool showUI, const String& value, ExceptionState&);
+    bool queryCommandEnabled(const String& command, ExceptionState&);
+    bool queryCommandIndeterm(const String& command, ExceptionState&);
+    bool queryCommandState(const String& command, ExceptionState&);
+    bool queryCommandSupported(const String& command, ExceptionState&);
+    String queryCommandValue(const String& command, ExceptionState&);
 
     KURL openSearchDescriptionURL();
 
