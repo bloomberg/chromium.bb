@@ -102,6 +102,11 @@ RenderViewHostImpl* RenderFrameProxyHost::GetRenderViewHost() {
       site_instance_.get());
 }
 
+RenderWidgetHostView* RenderFrameProxyHost::GetRenderWidgetHostView() {
+  return frame_tree_node_->parent()->render_manager()
+      ->GetRenderWidgetHostView();
+}
+
 void RenderFrameProxyHost::TakeFrameHostOwnership(
     scoped_ptr<RenderFrameHostImpl> render_frame_host) {
   CHECK(render_frame_host_ == nullptr);

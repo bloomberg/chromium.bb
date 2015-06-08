@@ -210,6 +210,7 @@
       'browser/frame_host/navigation_controller_impl_browsertest.cc',
       'browser/frame_host/render_frame_host_impl_browsertest.cc',
       'browser/frame_host/render_frame_host_manager_browsertest.cc',
+      'browser/frame_host/render_widget_host_view_child_frame_browsertest.cc',
       'browser/gpu/gpu_ipc_browsertests.cc',
       'browser/host_zoom_map_impl_browsertest.cc',
       'browser/indexed_db/indexed_db_browsertest.cc',

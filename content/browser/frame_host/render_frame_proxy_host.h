@@ -90,6 +90,7 @@ class RenderFrameProxyHost
     return render_frame_host_.get();
   }
   RenderViewHostImpl* GetRenderViewHost();
+  RenderWidgetHostView* GetRenderWidgetHostView();
 
   void TakeFrameHostOwnership(
       scoped_ptr<RenderFrameHostImpl> render_frame_host);

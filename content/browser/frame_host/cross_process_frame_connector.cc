@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -140,6 +141,13 @@ void CrossProcessFrameConnector::OnInitializeChildFrame(gfx::Rect frame_rect,
 
 gfx::Rect CrossProcessFrameConnector::ChildFrameRect() {
   return child_frame_rect_;
+}
+
+void CrossProcessFrameConnector::GetScreenInfo(blink::WebScreenInfo* results) {
+  RenderWidgetHostView* rwhv =
+      frame_proxy_in_parent_renderer_->GetRenderWidgetHostView();
+  if (rwhv)
+    static_cast<RenderWidgetHostViewBase*>(rwhv)->GetScreenInfo(results);
 }
 
 void CrossProcessFrameConnector::OnForwardInputEvent(

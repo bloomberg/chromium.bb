@@ -27,7 +27,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       last_output_surface_id_(0),
       current_surface_scale_factor_(1.f),
       ack_pending_count_(0),
-      frame_connector_(NULL),
+      frame_connector_(nullptr),
       weak_factory_(this) {
   if (use_surfaces_)
     id_allocator_ = CreateSurfaceIdAllocator();
@@ -288,6 +288,9 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
 
 void RenderWidgetHostViewChildFrame::GetScreenInfo(
     blink::WebScreenInfo* results) {
+  if (!frame_connector_)
+    return;
+  frame_connector_->GetScreenInfo(results);
 }
 
 gfx::Rect RenderWidgetHostViewChildFrame::GetBoundsInRootWindow() {

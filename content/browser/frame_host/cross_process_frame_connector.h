@@ -11,6 +11,7 @@
 
 namespace blink {
 class WebInputEvent;
+struct WebScreenInfo;
 }
 
 namespace cc {
@@ -93,6 +94,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
                                     const cc::SurfaceSequence& sequence);
 
   gfx::Rect ChildFrameRect();
+  void GetScreenInfo(blink::WebScreenInfo* results);
 
  private:
   // Handlers for messages received from the parent frame.
