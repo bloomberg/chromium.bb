@@ -254,7 +254,11 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Set every Render() and used to provide an interpolated time value to
   // CurrentMediaTimeForSyncingVideo().
-  base::TimeTicks last_render_ticks_;
+  base::TimeTicks last_render_time_;
+
+  // Set to the value of |last_render_time_| when StopRendering_Locked() is
+  // called for any reason.  Cleared by the next successful Render() call.
+  base::TimeTicks stop_rendering_time_;
 
   // Set upon receipt of the first decoded buffer after a StartPlayingFrom().
   // Used to determine how long to delay playback.
