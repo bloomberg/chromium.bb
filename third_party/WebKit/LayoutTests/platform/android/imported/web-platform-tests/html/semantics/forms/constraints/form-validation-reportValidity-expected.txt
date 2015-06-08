@@ -14,10 +14,10 @@ ValidationMessageClient: main-message=Please shorten this text to 20 characters 
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
 ValidationMessageClient: main-message=Please enter a URL. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
-CONSOLE WARNING: The specified value "a" is not a valid email address.
-CONSOLE WARNING: The specified value "a" is not a valid email address.
+CONSOLE WARNING: The specified value 'a' is not a valid email address.
+CONSOLE WARNING: The specified value 'a' is not a valid email address.
 ValidationMessageClient: main-message=Please match the requested format. sub-message=
-CONSOLE WARNING: The specified value "abc" is not a valid email address.
+CONSOLE WARNING: The specified value 'abc' is not a valid email address.
 ValidationMessageClient: main-message=Please include an '@' in the email address. 'abc' is missing an '@'. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
 ValidationMessageClient: main-message=Value must be 01/01/2000 or earlier. sub-message=
