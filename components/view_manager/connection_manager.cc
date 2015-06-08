@@ -115,17 +115,20 @@ ConnectionManager::ConnectionManager(ConnectionManagerDelegate* delegate,
     : delegate_(delegate),
       window_manager_client_connection_(nullptr),
       next_connection_id_(1),
-      event_dispatcher_(this),
       display_manager_(display_manager.Pass()),
       root_(CreateServerView(RootViewId())),
       current_change_(nullptr),
       in_destructor_(false),
       animation_runner_(base::TimeTicks::Now()),
+      event_dispatcher_(this),
+      event_dispatcher_binding_(&event_dispatcher_),
       focus_controller_(new FocusController(this, root_.get())) {
   root_->SetBounds(gfx::Rect(800, 600));
   root_->SetVisible(true);
 
-  display_manager_->Init(this, &event_dispatcher_);
+  mojo::NativeViewportEventDispatcherPtr event_dispatcher_ptr;
+  event_dispatcher_binding_.Bind(GetProxy(&event_dispatcher_ptr));
+  display_manager_->Init(this, event_dispatcher_ptr.Pass());
 }
 
 ConnectionManager::~ConnectionManager() {
@@ -309,7 +312,7 @@ bool ConnectionManager::CloneAndAnimate(const ViewId& view_id) {
 }
 
 void ConnectionManager::ProcessEvent(mojo::EventPtr event) {
-  event_dispatcher_.OnEvent(event.Pass());
+  event_dispatcher_.OnEvent(event.Pass(), EventDispatcher::OnEventCallback());
 }
 
 void ConnectionManager::DispatchInputEventToView(const ServerView* view,

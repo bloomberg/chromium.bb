@@ -1,0 +1,42 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo;
+
+import "components/view_manager/public/interfaces/context_provider.mojom";
+import "ui/mojo/geometry/geometry.mojom";
+import "ui/mojo/events/input_events.mojom";
+
+struct ViewportMetrics {
+  Size size;
+  // A value of 0 indicates the real value is not yet available.
+  float device_pixel_ratio = 0.0;
+};
+
+interface NativeViewport {
+  // TODO(sky): having a create function is awkward. Should there be a factory
+  // to create the NativeViewport that takes the size?
+  Create(Size size) => (ViewportMetrics metrics);
+
+  Show();
+  Hide();
+  Close();
+  SetSize(Size size);
+  SetEventDispatcher(NativeViewportEventDispatcher dispatcher);
+
+  // Requests a ContextProvider capable of producing contexts that draw to
+  // this native viewport.
+  GetContextProvider(ContextProvider& provider);
+
+  // The initial viewport metrics will be sent in the reply to the Create
+  // method. Call RequestMetrics() to receive updates when the viewport metrics
+  // change. The reply will be sent when the viewport metrics are different from
+  // the values last sent, so to receive continuous updates call this method
+  // again after receiving the callback.
+  RequestMetrics() => (ViewportMetrics metrics);
+};
+
+interface NativeViewportEventDispatcher {
+  OnEvent(Event event) => ();
+};

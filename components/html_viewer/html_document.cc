@@ -26,7 +26,6 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
@@ -248,9 +247,9 @@ void HTMLDocument::InitSetupAndLoadIfNecessary() {
     return;
 
   if (!web_view_) {
-    setup_->InitIfNecessary(
-        root_->viewport_metrics().size_in_pixels.To<gfx::Size>(),
-        root_->viewport_metrics().device_pixel_ratio);
+    setup_->InitIfNecessary(gfx::Size(root_->viewport_metrics().size->width,
+                                      root_->viewport_metrics().size->height),
+                            root_->viewport_metrics().device_pixel_ratio);
     Load(response_.Pass());
   }
 

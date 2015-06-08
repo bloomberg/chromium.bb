@@ -18,7 +18,7 @@ PlatformViewportHeadless::~PlatformViewportHeadless() {
 void PlatformViewportHeadless::Init(const gfx::Rect& bounds) {
   metrics_ = mojo::ViewportMetrics::New();
   metrics_->device_pixel_ratio = 1.f;
-  metrics_->size_in_pixels = mojo::Size::From(bounds.size());
+  metrics_->size = mojo::Size::From(bounds.size());
 }
 
 void PlatformViewportHeadless::Show() {
@@ -32,11 +32,12 @@ void PlatformViewportHeadless::Close() {
 }
 
 gfx::Size PlatformViewportHeadless::GetSize() {
-  return metrics_->size_in_pixels.To<gfx::Size>();
+  return metrics_->size.To<gfx::Size>();
 }
 
 void PlatformViewportHeadless::SetBounds(const gfx::Rect& bounds) {
-  delegate_->OnMetricsChanged(bounds.size(), 1.f /* device_scale_factor */);
+  metrics_->size = mojo::Size::From(bounds.size());
+  delegate_->OnMetricsChanged(metrics_->Clone());
 }
 
 // static

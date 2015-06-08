@@ -5,17 +5,12 @@
 module mojo;
 
 import "components/view_manager/public/interfaces/surface_id.mojom";
+import "components/view_manager/public/interfaces/native_viewport.mojom";
 import "components/view_manager/public/interfaces/view_manager_constants.mojom";
 import "mojo/application/public/interfaces/service_provider.mojom";
 import "network/public/interfaces/url_loader.mojom";
 import "ui/mojo/events/input_events.mojom";
 import "ui/mojo/geometry/geometry.mojom";
-
-struct ViewportMetrics {
-  Size size_in_pixels;
-  // A value of 0 indicates the real value is not yet available.
-  float device_pixel_ratio = 0.0;
-};
 
 struct ViewData {
   uint32 parent_id;

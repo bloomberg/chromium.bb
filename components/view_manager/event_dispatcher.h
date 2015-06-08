@@ -8,25 +8,24 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "ui/mojo/events/input_event_constants.mojom.h"
-#include "ui/mojo/events/input_events.mojom.h"
-#include "ui/mojo/events/input_key_codes.mojom.h"
+#include "components/view_manager/public/interfaces/native_viewport.mojom.h"
 
 namespace view_manager {
 
 class ConnectionManager;
 
 // Handles dispatching events to the right location as well as updating focus.
-class EventDispatcher {
+class EventDispatcher : public mojo::NativeViewportEventDispatcher {
  public:
   explicit EventDispatcher(ConnectionManager* connection_manager);
-  ~EventDispatcher();
+  ~EventDispatcher() override;
 
   void AddAccelerator(mojo::KeyboardCode keyboard_code, mojo::EventFlags flags);
   void RemoveAccelerator(mojo::KeyboardCode keyboard_code,
                          mojo::EventFlags flags);
 
-  void OnEvent(mojo::EventPtr event);
+  // NativeViewportEventDispatcher:
+  void OnEvent(mojo::EventPtr event, const OnEventCallback& callback) override;
 
  private:
   struct Accelerator {

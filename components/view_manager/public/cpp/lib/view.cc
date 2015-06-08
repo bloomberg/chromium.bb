@@ -399,7 +399,7 @@ namespace {
 
 ViewportMetricsPtr CreateEmptyViewportMetrics() {
   ViewportMetricsPtr metrics = ViewportMetrics::New();
-  metrics->size_in_pixels = Size::New();
+  metrics->size = Size::New();
   // TODO(vtl): The |.Pass()| below is only needed due to an MSVS bug; remove it
   // once that's fixed.
   return metrics.Pass();

@@ -13,6 +13,7 @@ mojom("interfaces") {
     "display.mojom",
     "gpu.mojom",
     "gpu_capabilities.mojom",
+    "native_viewport.mojom",
     "quads.mojom",
     "surface_id.mojom",
     "surfaces.mojom",

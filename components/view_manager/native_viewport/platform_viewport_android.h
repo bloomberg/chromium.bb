@@ -73,9 +73,8 @@ class PlatformViewportAndroid : public PlatformViewport {
   Delegate* const delegate_;
   JavaObjectWeakGlobalRef java_platform_viewport_android_;
   ANativeWindow* window_;
+  mojo::ViewportMetricsPtr metrics_;
   ui::SequentialIDGenerator id_generator_;
-
-  gfx::Size size_;
 
   base::WeakPtrFactory<PlatformViewportAndroid> weak_factory_;
 

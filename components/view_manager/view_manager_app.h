@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/view_manager/connection_manager_delegate.h"
 #include "components/view_manager/gles2/gpu_impl.h"
+#include "components/view_manager/public/interfaces/native_viewport.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
@@ -32,6 +33,7 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
                        public mojo::ErrorHandler,
                        public mojo::InterfaceFactory<mojo::ViewManagerRoot>,
                        public mojo::InterfaceFactory<mojo::ViewManagerService>,
+                       public mojo::InterfaceFactory<mojo::NativeViewport>,
                        public mojo::InterfaceFactory<mojo::Gpu> {
  public:
   ViewManagerApp();
@@ -68,6 +70,10 @@ class ViewManagerApp : public mojo::ApplicationDelegate,
   // mojo::InterfaceFactory<mojo::ViewManagerRoot>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::ViewManagerRoot> request) override;
+
+  // mojo::InterfaceFactory<mojo::NativeViewport> implementation.
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<mojo::NativeViewport> request) override;
 
   // mojo::InterfaceFactory<mojo::Gpu> implementation.
   void Create(mojo::ApplicationConnection* connection,

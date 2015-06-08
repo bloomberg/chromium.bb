@@ -15,6 +15,7 @@
 #include "components/view_manager/event_dispatcher.h"
 #include "components/view_manager/focus_controller_delegate.h"
 #include "components/view_manager/ids.h"
+#include "components/view_manager/public/interfaces/native_viewport.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "components/view_manager/server_view_delegate.h"
@@ -252,10 +253,6 @@ class ConnectionManager : public ServerViewDelegate,
   // Set of ViewManagerServiceImpls.
   ConnectionMap connection_map_;
 
-  // DisplayManager holds a raw pointer to EventDispatcher and so it must be
-  // destroyed after DisplayManager (and thus created before).
-  EventDispatcher event_dispatcher_;
-
   scoped_ptr<DisplayManager> display_manager_;
 
   scoped_ptr<ServerView> root_;
@@ -270,6 +267,10 @@ class ConnectionManager : public ServerViewDelegate,
   base::RepeatingTimer<ConnectionManager> animation_timer_;
 
   AnimationRunner animation_runner_;
+
+  EventDispatcher event_dispatcher_;
+
+  mojo::Binding<mojo::NativeViewportEventDispatcher> event_dispatcher_binding_;
 
   scoped_ptr<FocusController> focus_controller_;
 
