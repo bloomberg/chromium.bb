@@ -39,6 +39,11 @@ class PageScrollState {
   // can only be applied to CRWUIWebViewWebControllers.
   bool IsZoomScaleLegacyFormat() const;
 
+  // Returns the allowed zoom scale range for this scroll state.
+  double GetMinMaxZoomDifference() const {
+    return maximum_zoom_scale_ - minimum_zoom_scale_;
+  }
+
   // Accessors for scroll offsets and zoom scale.
   double scroll_offset_x() const { return scroll_offset_x_; }
   void set_scroll_offset_x(double scroll_offset_x) {

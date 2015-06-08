@@ -298,6 +298,11 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 - (NSString*)javascriptToReplaceWebViewURL:(const GURL&)url
                            stateObjectJSON:(NSString*)stateObject;
 - (BOOL)isLoaded;
+// Called by NSNotificationCenter upon orientation changes.
+- (void)orientationDidChange;
+// Queries the web view for the user-scalable meta tag and calls
+// |-applyPageScrollState:userScalable:| with the result.
+- (void)applyPageScrollState:(const web::PageScrollState&)scrollState;
 // Restores state of the web view's scroll view from |scrollState|.
 // |isUserScalable| represents the value of user-scalable meta tag.
 - (void)applyPageScrollState:(const web::PageScrollState&)scrollState
@@ -580,6 +585,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _gestureRecognizers.reset([[NSMutableArray alloc] init]);
     _webViewToolbars.reset([[NSMutableArray alloc] init]);
     _pendingLoadCompleteActions.reset([[NSMutableArray alloc] init]);
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(orientationDidChange)
+               name:UIApplicationDidChangeStatusBarOrientationNotification
+             object:nil];
   }
   return self;
 }
@@ -678,6 +688,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK(_isBeingDestroyed);  // 'close' must have been called already.
   DCHECK(!self.webView);
   _touchTrackingRecognizer.get().touchTrackingDelegate = nil;
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
@@ -3301,14 +3312,48 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
             _scrollStateOnStartLoading.scroll_offset_y() &&
         [self absoluteZoomScaleForScrollState:currentScrollState] ==
             [self absoluteZoomScaleForScrollState:_scrollStateOnStartLoading]) {
-      base::WeakNSObject<CRWWebController> weakSelf(self);
-      [self queryUserScalableProperty:^(BOOL isUserScalable) {
-        base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
-        [strongSelf applyPageScrollState:pageScrollState
-                            userScalable:isUserScalable];
-      }];
+      [self applyPageScrollState:pageScrollState];
     }
   }
+}
+
+- (void)orientationDidChange {
+  // When rotating, the available zoom scale range may change, zoomScale's
+  // percentage into this range should remain constant.  However, there are
+  // two known bugs with respect to adjusting the zoomScale on rotation:
+  // - WKWebView sometimes erroneously resets the scroll view's zoom scale to
+  // an incorrect value ( rdar://20100815 ).
+  // - After zooming occurs in a UIWebView that's displaying a page with a hard-
+  // coded viewport width, the zoom will not be updated upon rotation
+  // ( crbug.com/485055 ).
+  if (!self.webView)
+    return;
+  web::NavigationItem* currentItem = self.currentNavItem;
+  if (!currentItem)
+    return;
+  web::PageScrollState scrollState = currentItem->GetPageScrollState();
+  if (!scrollState.IsValid())
+    return;
+  CGFloat zoomPercentage =
+      (scrollState.zoom_scale() - scrollState.minimum_zoom_scale()) /
+      scrollState.GetMinMaxZoomDifference();
+  scrollState.set_minimum_zoom_scale(self.webScrollView.minimumZoomScale);
+  scrollState.set_maximum_zoom_scale(self.webScrollView.maximumZoomScale);
+  scrollState.set_zoom_scale(scrollState.minimum_zoom_scale() +
+                             zoomPercentage *
+                                 scrollState.GetMinMaxZoomDifference());
+  currentItem->SetPageScrollState(scrollState);
+  [self applyPageScrollState:currentItem->GetPageScrollState()];
+}
+
+- (void)applyPageScrollState:(const web::PageScrollState&)scrollState {
+  if (!scrollState.IsValid())
+    return;
+  base::WeakNSObject<CRWWebController> weakSelf(self);
+  [self queryUserScalableProperty:^(BOOL isUserScalable) {
+    base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
+    [strongSelf applyPageScrollState:scrollState userScalable:isUserScalable];
+  }];
 }
 
 - (void)applyPageScrollState:(const web::PageScrollState&)scrollState
