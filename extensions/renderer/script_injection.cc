@@ -12,20 +12,16 @@
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/host_id.h"
-#include "extensions/common/manifest_handlers/csp_info.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/extension_groups.h"
-#include "extensions/renderer/extension_injection_host.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/script_injection_callback.h"
 #include "extensions/renderer/scripts_run_info.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "url/gurl.h"
@@ -182,14 +178,11 @@ void ScriptInjection::OnHostRemoved() {
 }
 
 void ScriptInjection::SendInjectionMessage(bool request_permission) {
-  // TODO(devlin): This should just use the RenderFrame.
-  content::RenderView* render_view = render_frame_->GetRenderView();
-
   // If we are just notifying the browser of the injection, then send an
   // invalid request (which is treated like a notification).
   request_id_ = request_permission ? g_next_pending_id++ : kInvalidRequestId;
-  render_view->Send(new ExtensionHostMsg_RequestScriptInjectionPermission(
-      render_view->GetRoutingID(),
+  render_frame_->Send(new ExtensionHostMsg_RequestScriptInjectionPermission(
+      render_frame_->GetRoutingID(),
       host_id().id(),
       injector_->script_type(),
       request_id_));

@@ -15,7 +15,6 @@ struct ExtensionMsg_ExecuteCode_Params;
 
 namespace content {
 class RenderFrame;
-class RenderView;
 }
 
 namespace extensions {
@@ -67,8 +66,8 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   // security decisions, to avoid race conditions (e.g. due to navigation).
   GURL effective_url_;
 
-  // The RenderView to which we send the response upon completion.
-  content::RenderView* render_view_;
+  // The RenderFrame to which we send the response upon completion.
+  content::RenderFrame* render_frame_;
 
   // The results of the script execution.
   base::ListValue results_;

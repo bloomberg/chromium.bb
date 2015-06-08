@@ -35,25 +35,20 @@ class Handler : public content::WebContentsObserver {
  public:
   Handler(base::ObserverList<ScriptExecutionObserver>* script_observers,
           content::WebContents* web_contents,
-          ExtensionMsg_ExecuteCode_Params* params,
+          const ExtensionMsg_ExecuteCode_Params& params,
           ScriptExecutor::FrameScope scope,
-          int* request_id_counter,
           const ScriptExecutor::ExecuteScriptCallback& callback)
       : content::WebContentsObserver(web_contents),
         script_observers_(AsWeakPtr(script_observers)),
-        host_id_(params->host_id),
-        main_request_id_((*request_id_counter)++),
-        sub_request_id_(scope == ScriptExecutor::ALL_FRAMES ?
-                            (*request_id_counter)++ : -1),
+        host_id_(params.host_id),
+        request_id_(params.request_id),
         num_pending_(0),
         callback_(callback) {
-    content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
     if (scope == ScriptExecutor::ALL_FRAMES) {
       web_contents->ForEachFrame(base::Bind(&Handler::SendExecuteCode,
-                                            base::Unretained(this), params,
-                                            main_frame));
+                                            base::Unretained(this), params));
     } else {
-      SendExecuteCode(params, main_frame, main_frame);
+      SendExecuteCode(params, web_contents->GetMainFrame());
     }
   }
 
@@ -66,7 +61,8 @@ class Handler : public content::WebContentsObserver {
     Finish(kRendererDestroyed, GURL(), base::ListValue());
   }
 
-  bool OnMessageReceived(const IPC::Message& message) override {
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override {
     // Unpack by hand to check the request_id, since there may be multiple
     // requests in flight but only one is for this.
     if (message.type() != ExtensionHostMsg_ExecuteCodeFinished::ID)
@@ -76,12 +72,10 @@ class Handler : public content::WebContentsObserver {
     base::PickleIterator iter(message);
     CHECK(iter.ReadInt(&message_request_id));
 
-    if (message_request_id != main_request_id_ &&
-        message_request_id != sub_request_id_) {
+    if (message_request_id != request_id_)
       return false;
-    }
 
-    IPC_BEGIN_MESSAGE_MAP(Handler, message)
+    IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(Handler, message, render_frame_host)
       IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExecuteCodeFinished,
                           OnExecuteCodeFinished)
     IPC_END_MESSAGE_MAP()
@@ -90,22 +84,21 @@ class Handler : public content::WebContentsObserver {
 
   // Sends an ExecuteCode message to the given frame host, and increments
   // the number of pending messages.
-  void SendExecuteCode(ExtensionMsg_ExecuteCode_Params* params,
-                       content::RenderFrameHost* main_frame,
+  void SendExecuteCode(const ExtensionMsg_ExecuteCode_Params& params,
                        content::RenderFrameHost* frame) {
     ++num_pending_;
-    params->request_id =
-        main_frame == frame ? main_request_id_ : sub_request_id_;
-    frame->Send(new ExtensionMsg_ExecuteCode(frame->GetRoutingID(), *params));
+    frame->Send(new ExtensionMsg_ExecuteCode(frame->GetRoutingID(), params));
   }
 
   // Handles the ExecuteCodeFinished message.
-  void OnExecuteCodeFinished(int request_id,
+  void OnExecuteCodeFinished(content::RenderFrameHost* render_frame_host,
+                             int request_id,
                              const std::string& error,
                              const GURL& on_url,
                              const base::ListValue& result_list) {
-    DCHECK_NE(-1, request_id);
-    bool is_main_frame = request_id == main_request_id_;
+    DCHECK_EQ(request_id_, request_id);
+    DCHECK_GT(num_pending_, 0);
+    bool is_main_frame = web_contents()->GetMainFrame() == render_frame_host;
 
     // Set the result, if there is one.
     const base::Value* script_value = nullptr;
@@ -152,13 +145,8 @@ class Handler : public content::WebContentsObserver {
   // The id of the host (the extension or the webui) doing the injection.
   HostID host_id_;
 
-  // The request id of the injection into the main frame.
-  int main_request_id_;
-
-  // The request id of the injection into any sub frames. We need a separate id
-  // for these so that we know which frame to use as the first result, and which
-  // error (if any) to use.
-  int sub_request_id_;
+  // The request id of the injection.
+  int request_id_;
 
   // The number of still-running injections.
   int num_pending_;
@@ -220,6 +208,7 @@ void ScriptExecutor::ExecuteScript(const HostID& host_id,
   }
 
   ExtensionMsg_ExecuteCode_Params params;
+  params.request_id = next_request_id_++;
   params.host_id = host_id;
   params.is_javascript = (script_type == JAVASCRIPT);
   params.code = code;
@@ -233,8 +222,7 @@ void ScriptExecutor::ExecuteScript(const HostID& host_id,
   params.user_gesture = user_gesture;
 
   // Handler handles IPCs and deletes itself on completion.
-  new Handler(script_observers_, web_contents_, &params, frame_scope,
-              &next_request_id_, callback);
+  new Handler(script_observers_, web_contents_, params, frame_scope, callback);
 }
 
 }  // namespace extensions

@@ -301,7 +301,9 @@ void ActiveScriptController::LogUMA() const {
   }
 }
 
-bool ActiveScriptController::OnMessageReceived(const IPC::Message& message) {
+bool ActiveScriptController::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ActiveScriptController, message)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestScriptInjectionPermission,

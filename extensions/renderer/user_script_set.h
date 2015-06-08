@@ -77,7 +77,7 @@ class UserScriptSet {
   // Returns a new ScriptInjection for the given |script| to execute in the
   // |render_frame|, or NULL if the script should not execute.
   scoped_ptr<ScriptInjection> GetInjectionForScript(
-      UserScript* script,
+      const UserScript* script,
       content::RenderFrame* render_frame,
       int tab_id,
       UserScript::RunLocation run_location,

@@ -20,7 +20,6 @@
 #include "extensions/renderer/user_script_injector.h"
 #include "extensions/renderer/web_ui_injection_host.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
@@ -57,13 +56,11 @@ void UserScriptSet::RemoveObserver(Observer* observer) {
 
 void UserScriptSet::GetActiveExtensionIds(
     std::set<std::string>* ids) const {
-  for (ScopedVector<UserScript>::const_iterator iter = scripts_.begin();
-       iter != scripts_.end();
-       ++iter) {
-    if ((*iter)->host_id().type() != HostID::EXTENSIONS)
+  for (const UserScript* script : scripts_) {
+    if (script->host_id().type() != HostID::EXTENSIONS)
       continue;
-    DCHECK(!(*iter)->extension_id().empty());
-    ids->insert((*iter)->extension_id());
+    DCHECK(!script->extension_id().empty());
+    ids->insert(script->extension_id());
   }
 }
 
@@ -73,11 +70,9 @@ void UserScriptSet::GetInjections(
     int tab_id,
     UserScript::RunLocation run_location) {
   GURL document_url = GetDocumentUrlForFrame(render_frame->GetWebFrame());
-  for (ScopedVector<UserScript>::const_iterator iter = scripts_.begin();
-       iter != scripts_.end();
-       ++iter) {
+  for (const UserScript* script : scripts_) {
     scoped_ptr<ScriptInjection> injection = GetInjectionForScript(
-        *iter,
+        script,
         render_frame,
         tab_id,
         run_location,
@@ -167,11 +162,9 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
     int tab_id,
     UserScript::RunLocation run_location,
     const GURL& document_url) {
-  for (ScopedVector<UserScript>::const_iterator it = scripts_.begin();
-       it != scripts_.end();
-       ++it) {
-    if ((*it)->id() == script_id) {
-      return GetInjectionForScript(*it,
+  for (const UserScript* script : scripts_) {
+    if (script->id() == script_id) {
+      return GetInjectionForScript(script,
                                    render_frame,
                                    tab_id,
                                    run_location,
@@ -183,7 +176,7 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetDeclarativeScriptInjection(
 }
 
 scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
-    UserScript* script,
+    const UserScript* script,
     content::RenderFrame* render_frame,
     int tab_id,
     UserScript::RunLocation run_location,
@@ -215,14 +208,6 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   scoped_ptr<ScriptInjector> injector(new UserScriptInjector(script,
                                                              this,
                                                              is_declarative));
-
-  blink::WebFrame* top_frame = web_frame->top();
-  // It doesn't make sense to do script injection for remote frames, since they
-  // cannot host any documents or content.
-  // TODO(kalman): Fix this properly by moving all security checks into the
-  // browser. See http://crbug.com/466373 for ongoing work here.
-  if (top_frame->isWebRemoteFrame())
-    return injection.Pass();
 
   if (injector->CanExecuteOnFrame(
           injection_host.get(),

@@ -11,7 +11,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
@@ -186,10 +185,10 @@ void ScriptInjectionManager::RFOHelper::OnExecuteDeclarativeScript(
     const ExtensionId& extension_id,
     int script_id,
     const GURL& url) {
-  // TODO(markdittmer): This would be cleaner if we compared page_ids instead.
+  // TODO(markdittmer): URL-checking isn't the best security measure.
   // Begin script injection workflow only if the current URL is identical to
   // the one that matched declarative conditions in the browser.
-  if (render_frame()->GetWebFrame()->top()->document().url() == url) {
+  if (render_frame()->GetWebFrame()->document().url() == url) {
     manager_->HandleExecuteDeclarativeScript(render_frame(),
                                              tab_id,
                                              extension_id,

@@ -15,7 +15,7 @@
 #include "extensions/common/user_script.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace extensions {
@@ -40,7 +40,7 @@ struct ScriptsRunInfo {
   base::ElapsedTimer timer;
 
   // Log information about a given script run.
-  void LogRun(blink::WebFrame* web_frame, UserScript::RunLocation location);
+  void LogRun(blink::WebLocalFrame* frame, UserScript::RunLocation location);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScriptsRunInfo);

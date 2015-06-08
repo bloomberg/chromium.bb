@@ -5,10 +5,10 @@
 #include "extensions/renderer/scripts_run_info.h"
 
 #include "base/metrics/histogram.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/script_context.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace extensions {
 
@@ -19,14 +19,14 @@ ScriptsRunInfo::ScriptsRunInfo()
 ScriptsRunInfo::~ScriptsRunInfo() {
 }
 
-void ScriptsRunInfo::LogRun(blink::WebFrame* frame,
+void ScriptsRunInfo::LogRun(blink::WebLocalFrame* frame,
                             UserScript::RunLocation location) {
   // Notify the browser if any extensions are now executing scripts.
   if (!executing_scripts.empty()) {
-    content::RenderView* render_view =
-        content::RenderView::FromWebView(frame->view());
-    render_view->Send(new ExtensionHostMsg_ContentScriptsExecuting(
-        render_view->GetRoutingID(),
+    content::RenderFrame* render_frame =
+        content::RenderFrame::FromWebFrame(frame);
+    render_frame->Send(new ExtensionHostMsg_ContentScriptsExecuting(
+        render_frame->GetRoutingID(),
         executing_scripts,
         ScriptContext::GetDataSourceURLForFrame(frame)));
   }

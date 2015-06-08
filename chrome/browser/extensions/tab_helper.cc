@@ -262,8 +262,6 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
                         OnGetAppInstallState);
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
-                        OnContentScriptsExecuting)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OnWatchedPageChange,
                         OnWatchedPageChange)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -277,6 +275,8 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message,
   IPC_BEGIN_MESSAGE_MAP(TabHelper, message)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_DetailedConsoleMessageAdded,
                         OnDetailedConsoleMessageAdded)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
+                        OnContentScriptsExecuting)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

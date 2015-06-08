@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_view.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
@@ -29,7 +28,7 @@ ProgrammaticScriptInjector::ProgrammaticScriptInjector(
     : params_(new ExtensionMsg_ExecuteCode_Params(params)),
       url_(ScriptContext::GetDataSourceURLForFrame(
           render_frame->GetWebFrame())),
-      render_view_(render_frame->GetRenderView()),
+      render_frame_(render_frame),
       finished_(false) {
   effective_url_ = ScriptContext::GetEffectiveDocumentURL(
       render_frame->GetWebFrame(), url_, params.match_about_blank);
@@ -151,8 +150,8 @@ void ProgrammaticScriptInjector::Finish(const std::string& error) {
   DCHECK(!finished_);
   finished_ = true;
 
-  render_view_->Send(new ExtensionHostMsg_ExecuteCodeFinished(
-      render_view_->GetRoutingID(),
+  render_frame_->Send(new ExtensionHostMsg_ExecuteCodeFinished(
+      render_frame_->GetRoutingID(),
       params_->request_id,
       error,
       url_,
