@@ -58,11 +58,14 @@ public:
     // Called when the frame wants to join an existing presentation.
     void joinSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks*);
 
-    // Called when the frame wants to send String message to an existing presentation.
+    // Called when the frame wants to send String message to an existing presentation session.
     void send(const String& presentationUrl, const String& presentationId, const String& message);
 
-    // Called when the frame wants to send ArrayBuffer/View data to an existing presentation.
+    // Called when the frame wants to send ArrayBuffer/View data to an existing presentation session.
     void send(const String& presentationUrl, const String& presentationId, const uint8_t* data, size_t length);
+
+    // Called when the frame want to send Blob data to an existing presentation session.
+    void sendBlobData(const String& presentationUrl, const String& presentationId, const uint8_t* data, size_t length);
 
     // Called when the frame wants to close an existing presentation.
     void closeSession(const String& url, const String& presentationId);

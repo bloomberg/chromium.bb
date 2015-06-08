@@ -6,7 +6,10 @@
 #define PresentationSession_h
 
 #include "core/events/EventTarget.h"
+#include "core/fileapi/Blob.h"
+#include "core/fileapi/FileError.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/modules/presentation/WebPresentationSessionClient.h"
 #include "wtf/text/WTFString.h"
 
@@ -42,8 +45,9 @@ public:
     const WTF::AtomicString& state() const;
 
     void send(const String& message, ExceptionState&);
-    void send(PassRefPtr<DOMArrayBuffer> data, ExceptionState&);
-    void send(PassRefPtr<DOMArrayBufferView> data, ExceptionState&);
+    void send(PassRefPtr<DOMArrayBuffer>, ExceptionState&);
+    void send(PassRefPtr<DOMArrayBufferView>, ExceptionState&);
+    void send(Blob*, ExceptionState&);
     void close();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
@@ -59,6 +63,33 @@ public:
     void didReceiveTextMessage(const String& message);
 
 private:
+    class BlobLoader;
+
+    enum MessageType {
+        MessageTypeText,
+        MessageTypeArrayBuffer,
+        MessageTypeBlob,
+    };
+
+    struct Message {
+        Message(const String& text)
+            : type(MessageTypeText)
+            , text(text) { }
+
+        Message(PassRefPtr<DOMArrayBuffer> arrayBuffer)
+            : type(MessageTypeArrayBuffer)
+            , arrayBuffer(arrayBuffer) { }
+
+        Message(PassRefPtr<BlobDataHandle> blobDataHandle)
+            : type(MessageTypeBlob)
+            , blobDataHandle(blobDataHandle) { }
+
+        MessageType type;
+        String text;
+        RefPtr<DOMArrayBuffer> arrayBuffer;
+        RefPtr<BlobDataHandle> blobDataHandle;
+    };
+
     PresentationSession(LocalFrame*, const String& id, const String& url);
 
     // Returns the |PresentationController| object associated with the frame
@@ -66,12 +97,20 @@ private:
     // detached from the document.
     PresentationController* presentationController();
 
-    // Common send method for both ArrayBufferView and ArrayBuffer.
-    void sendInternal(const uint8_t* data, size_t, ExceptionState&);
+    bool canSendMessage(ExceptionState&);
+    void handleMessageQueue();
+
+    // Callbacks invoked from BlobLoader.
+    void didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer>);
+    void didFailLoadingBlob(FileError::ErrorCode);
 
     String m_id;
     String m_url;
     WebPresentationSessionState m_state;
+
+    // For Blob data handling.
+    Member<BlobLoader> m_blobLoader;
+    Deque<OwnPtr<Message>> m_messages;
 };
 
 } // namespace blink

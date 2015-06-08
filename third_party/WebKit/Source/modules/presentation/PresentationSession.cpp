@@ -11,6 +11,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
 #include "core/events/MessageEvent.h"
+#include "core/fileapi/FileReaderLoader.h"
+#include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/Presentation.h"
@@ -47,6 +49,43 @@ void throwPresentationDisconnectedError(ExceptionState& exceptionState)
 
 } // namespace
 
+class PresentationSession::BlobLoader final : public GarbageCollectedFinalized<PresentationSession::BlobLoader>, public FileReaderLoaderClient {
+public:
+    BlobLoader(PassRefPtr<BlobDataHandle> blobDataHandle, PresentationSession* presentationSession)
+        : m_presentationSession(presentationSession)
+        , m_loader(FileReaderLoader::ReadAsArrayBuffer, this)
+    {
+        m_loader.start(m_presentationSession->executionContext(), blobDataHandle);
+    }
+    ~BlobLoader() override { }
+
+    // FileReaderLoaderClient functions.
+    void didStartLoading() override { }
+    void didReceiveData() override { }
+    void didFinishLoading() override
+    {
+        m_presentationSession->didFinishLoadingBlob(m_loader.arrayBufferResult());
+    }
+    void didFail(FileError::ErrorCode errorCode) override
+    {
+        m_presentationSession->didFailLoadingBlob(errorCode);
+    }
+
+    void cancel()
+    {
+        m_loader.cancel();
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_presentationSession);
+    }
+
+private:
+    Member<PresentationSession> m_presentationSession;
+    FileReaderLoader m_loader;
+};
+
 PresentationSession::PresentationSession(LocalFrame* frame, const String& id, const String& url)
     : DOMWindowProperty(frame)
     , m_id(id)
@@ -57,6 +96,7 @@ PresentationSession::PresentationSession(LocalFrame* frame, const String& id, co
 
 PresentationSession::~PresentationSession()
 {
+    ASSERT(!m_blobLoader);
 }
 
 // static
@@ -90,6 +130,7 @@ ExecutionContext* PresentationSession::executionContext() const
 
 DEFINE_TRACE(PresentationSession)
 {
+    visitor->trace(m_blobLoader);
     RefCountedGarbageCollectedEventTargetWithInlineData<PresentationSession>::trace(visitor);
     DOMWindowProperty::trace(visitor);
 }
@@ -101,39 +142,81 @@ const AtomicString& PresentationSession::state() const
 
 void PresentationSession::send(const String& message, ExceptionState& exceptionState)
 {
+    if (!canSendMessage(exceptionState))
+        return;
+
+    m_messages.append(adoptPtr(new Message(message)));
+    handleMessageQueue();
+}
+
+void PresentationSession::send(PassRefPtr<DOMArrayBuffer> arrayBuffer, ExceptionState& exceptionState)
+{
+    ASSERT(arrayBuffer && arrayBuffer->buffer());
+    if (!canSendMessage(exceptionState))
+        return;
+
+    m_messages.append(adoptPtr(new Message(arrayBuffer)));
+    handleMessageQueue();
+}
+
+void PresentationSession::send(PassRefPtr<DOMArrayBufferView> arrayBufferView, ExceptionState& exceptionState)
+{
+    ASSERT(arrayBufferView);
+    if (!canSendMessage(exceptionState))
+        return;
+
+    m_messages.append(adoptPtr(new Message(arrayBufferView->buffer())));
+    handleMessageQueue();
+}
+
+void PresentationSession::send(Blob* data, ExceptionState& exceptionState)
+{
+    ASSERT(data);
+    if (!canSendMessage(exceptionState))
+        return;
+
+    m_messages.append(adoptPtr(new Message(data->blobDataHandle())));
+    handleMessageQueue();
+}
+
+bool PresentationSession::canSendMessage(ExceptionState& exceptionState)
+{
     if (m_state == WebPresentationSessionState::Disconnected) {
         throwPresentationDisconnectedError(exceptionState);
-        return;
+        return false;
     }
 
     PresentationController* controller = presentationController();
-    if (controller)
-        controller->send(m_url, m_id, message);
+    if (!controller)
+        return false;
+
+    return true;
 }
 
-void PresentationSession::send(PassRefPtr<DOMArrayBuffer> data, ExceptionState& exceptionState)
+void PresentationSession::handleMessageQueue()
 {
-    ASSERT(data && data->buffer());
-    sendInternal(static_cast<const uint8_t*>(data->data()), data->byteLength(), exceptionState);
-}
-
-void PresentationSession::send(PassRefPtr<DOMArrayBufferView> data, ExceptionState& exceptionState)
-{
-    ASSERT(data);
-    sendInternal(static_cast<const uint8_t*>(data->baseAddress()), data->byteLength(), exceptionState);
-}
-
-void PresentationSession::sendInternal(const uint8_t* data, size_t size, ExceptionState& exceptionState)
-{
-    ASSERT(data);
-    if (m_state == WebPresentationSessionState::Disconnected) {
-        throwPresentationDisconnectedError(exceptionState);
-        return;
-    }
-
     PresentationController* controller = presentationController();
-    if (controller)
-        controller->send(m_url, m_id, data, size);
+    // Extra check just in case.
+    if (!controller)
+        return;
+
+    while (!m_messages.isEmpty() && !m_blobLoader) {
+        Message* message = m_messages.first().get();
+        switch (message->type) {
+        case MessageTypeText:
+            controller->send(m_url, m_id, message->text);
+            m_messages.removeFirst();
+            break;
+        case MessageTypeArrayBuffer:
+            controller->send(m_url, m_id, static_cast<const uint8_t*>(message->arrayBuffer->data()), message->arrayBuffer->byteLength());
+            m_messages.removeFirst();
+            break;
+        case MessageTypeBlob:
+            ASSERT(!m_blobLoader);
+            m_blobLoader = new BlobLoader(message->blobDataHandle, this);
+            break;
+        }
+    }
 }
 
 void PresentationSession::didReceiveTextMessage(const String& message)
@@ -148,6 +231,16 @@ void PresentationSession::close()
     PresentationController* controller = presentationController();
     if (controller)
         controller->closeSession(m_url, m_id);
+
+    // Cancel current Blob loading if any.
+    if (m_blobLoader) {
+        m_blobLoader->cancel();
+        m_blobLoader.clear();
+    }
+
+    // Clear message queue.
+    Deque<OwnPtr<Message>> empty;
+    m_messages.swap(empty);
 }
 
 bool PresentationSession::matches(WebPresentationSessionClient* client) const
@@ -169,6 +262,30 @@ PresentationController* PresentationSession::presentationController()
     if (!frame())
         return nullptr;
     return PresentationController::from(*frame());
+}
+
+void PresentationSession::didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer> buffer)
+{
+    ASSERT(!m_messages.isEmpty() && m_messages.first()->type == MessageTypeBlob);
+    ASSERT(buffer && buffer->buffer());
+    // Send the loaded blob immediately here and continue processing the queue.
+    PresentationController* controller = presentationController();
+    if (controller)
+        controller->sendBlobData(m_url, m_id, static_cast<const uint8_t*>(buffer->data()), buffer->byteLength());
+
+    m_messages.removeFirst();
+    m_blobLoader.clear();
+    handleMessageQueue();
+}
+
+void PresentationSession::didFailLoadingBlob(FileError::ErrorCode errorCode)
+{
+    ASSERT(!m_messages.isEmpty() && m_messages.first()->type == MessageTypeBlob);
+    // FIXME: generate error message?
+    // Ignore the current failed blob item and continue with next items.
+    m_messages.removeFirst();
+    m_blobLoader.clear();
+    handleMessageQueue();
 }
 
 } // namespace blink

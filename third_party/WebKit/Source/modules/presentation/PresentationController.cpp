@@ -134,6 +134,13 @@ void PresentationController::send(const String& presentationUrl, const String& p
     m_client->sendArrayBuffer(presentationUrl, presentationId, data, length);
 }
 
+void PresentationController::sendBlobData(const String& presentationUrl, const String& presentationId, const uint8_t* data, size_t length)
+{
+    if (!m_client)
+        return;
+    m_client->sendBlobData(presentationUrl, presentationId, data, length);
+}
+
 void PresentationController::closeSession(const String& url, const String& presentationId)
 {
     if (!m_client)
