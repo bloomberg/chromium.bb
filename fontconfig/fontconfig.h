@@ -518,6 +518,9 @@ FcPublic void
 FcPatternPrint (const FcPattern *p);
 
 FcPublic void
+FcPatternPrint2 (FcPattern *p1, FcPattern *p2, const FcObjectSet *os);
+
+FcPublic void
 FcFontSetPrint (const FcFontSet *s);
 
 /* fcdefault.c */
@@ -827,6 +830,9 @@ FcPatternEqualSubset (const FcPattern *pa, const FcPattern *pb, const FcObjectSe
 
 FcPublic FcChar32
 FcPatternHash (const FcPattern *p);
+
+FcPublic int
+FcPatternPosition (const FcPattern *p, const char *object);
 
 FcPublic FcBool
 FcPatternAdd (FcPattern *p, const char *object, FcValue value, FcBool append);

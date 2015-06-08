@@ -87,6 +87,7 @@ extern pfnSHGetFolderPathA pSHGetFolderPathA;
 #define FC_DBG_SCANV	256
 #define FC_DBG_CONFIG	1024
 #define FC_DBG_LANGSET	2048
+#define FC_DBG_MATCH2	4096
 
 #define _FC_ASSERT_STATIC1(_line, _cond) typedef int _static_assert_on_line_##_line##_failed[(_cond)?1:-1] FC_UNUSED
 #define _FC_ASSERT_STATIC0(_line, _cond) _FC_ASSERT_STATIC1 (_line, (_cond))
