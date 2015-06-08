@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -183,6 +184,7 @@ public class CustomTabActivity extends CompositorChromeActivity {
 
     @Override
     public void onStopWithNative() {
+        if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         super.onStopWithNative();
         setActiveContentHandler(null);
     }
@@ -196,6 +198,12 @@ public class CustomTabActivity extends CompositorChromeActivity {
     @Override
     public boolean hasDoneFirstDraw() {
         return mToolbarHelper.hasDoneFirstDraw();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
+        super.onConfigurationChanged(newConfig);
     }
 
     /**
