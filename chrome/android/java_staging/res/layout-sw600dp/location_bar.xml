@@ -16,7 +16,7 @@
             android:layout_gravity="center_vertical"
             android:src="@drawable/ic_omnibox_page"
             android:scaleType="center"
-            android:contentDescription="@null"/>
+            android:contentDescription="@string/accessibility_toolbar_btn_security_lock"/>
         <ImageButton android:id="@+id/security_button"
             style="@style/LocationBarButton"
             android:layout_height="match_parent"
