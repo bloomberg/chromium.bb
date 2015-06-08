@@ -11,7 +11,8 @@ namespace content {
 // A subclass of PluginPlaceholder for use in Blink layout tests.
 class TestPluginPlaceholder : public plugins::PluginPlaceholder {
  public:
-  TestPluginPlaceholder(blink::WebLocalFrame* frame,
+  TestPluginPlaceholder(RenderFrame* render_frame,
+                        blink::WebLocalFrame* frame,
                         const blink::WebPluginParams& params);
 
   void BindWebFrame(blink::WebFrame* frame) override;

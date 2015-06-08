@@ -10,9 +10,10 @@
 namespace content {
 
 TestPluginPlaceholder::TestPluginPlaceholder(
+    RenderFrame* render_frame,
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params)
-    : PluginPlaceholder(nullptr,
+    : PluginPlaceholder(render_frame,
                         frame,
                         params,
                         "<div>Test content</div>",

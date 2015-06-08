@@ -689,7 +689,8 @@ void BlinkTestRunner::ResolveBeforeInstallPromptPromise(
 blink::WebPlugin* BlinkTestRunner::CreatePluginPlaceholder(
     blink::WebLocalFrame* frame, const blink::WebPluginParams& params) {
   if (params.mimeType == "application/x-plugin-placeholder-test")
-    return (new TestPluginPlaceholder(frame, params))->plugin();
+    return (new TestPluginPlaceholder(render_view()->GetMainRenderFrame(),
+                                      frame, params))->plugin();
   return 0;
 }
 
