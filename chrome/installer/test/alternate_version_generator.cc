@@ -245,8 +245,10 @@ bool GetFileVersion(const base::FilePath& pe_file, ChromeVersion* version) {
   std::pair<const uint8*, DWORD> version_info_data;
 
   if (pe_file_loader.Initialize(pe_file) &&
-      pe_file_loader.Load(VS_VERSION_INFO, reinterpret_cast<WORD>(RT_VERSION),
-                          &version_info_data)) {
+      pe_file_loader.Load(
+          VS_VERSION_INFO,
+          static_cast<WORD>(reinterpret_cast<uintptr_t>(RT_VERSION)),
+          &version_info_data)) {
     const VS_FIXEDFILEINFO* fixed_file_info;
     UINT ver_info_len;
     if (VerQueryValue(version_info_data.first, L"\\",
