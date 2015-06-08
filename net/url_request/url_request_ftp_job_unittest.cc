@@ -234,16 +234,14 @@ class URLRequestFtpJobTest : public testing::Test {
 
   ~URLRequestFtpJobTest() override {
     // Clean up any remaining tasks that mess up unrelated tests.
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void AddSocket(MockRead* reads, size_t reads_size,
                  MockWrite* writes, size_t writes_size) {
-    DeterministicSocketData* socket_data = new DeterministicSocketData(
-        reads, reads_size, writes, writes_size);
+    SequencedSocketData* socket_data =
+        new SequencedSocketData(reads, reads_size, writes, writes_size);
     socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-    socket_data->StopAfter(reads_size + writes_size - 1);
     socket_factory_.AddSocketDataProvider(socket_data);
 
     socket_data_.push_back(socket_data);
@@ -251,13 +249,10 @@ class URLRequestFtpJobTest : public testing::Test {
 
   FtpTestURLRequestContext* request_context() { return &request_context_; }
   TestNetworkDelegate* network_delegate() { return &network_delegate_; }
-  DeterministicSocketData* socket_data(size_t index) {
-    return socket_data_[index];
-  }
 
  private:
-  ScopedVector<DeterministicSocketData> socket_data_;
-  DeterministicMockClientSocketFactory socket_factory_;
+  ScopedVector<SequencedSocketData> socket_data_;
+  MockClientSocketFactory socket_factory_;
   TestNetworkDelegate network_delegate_;
   MockFtpTransactionFactory ftp_transaction_factory_;
 
@@ -283,7 +278,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequest) {
       GURL("ftp://ftp.example.com/"), DEFAULT_PRIORITY, &request_delegate));
   url_request->Start();
   ASSERT_TRUE(url_request->is_pending());
-  socket_data(0)->RunFor(4);
+
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_TRUE(url_request->status().is_success());
   EXPECT_TRUE(url_request->proxy_server().Equals(
@@ -333,7 +330,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAuthNoCredentials) {
       GURL("ftp://ftp.example.com/"), DEFAULT_PRIORITY, &request_delegate));
   url_request->Start();
   ASSERT_TRUE(url_request->is_pending());
-  socket_data(0)->RunFor(5);
+
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_TRUE(url_request->status().is_success());
   EXPECT_TRUE(url_request->proxy_server().Equals(
@@ -377,7 +376,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAuthWithCredentials) {
       GURL("ftp://ftp.example.com/"), DEFAULT_PRIORITY, &request_delegate));
   url_request->Start();
   ASSERT_TRUE(url_request->is_pending());
-  socket_data(0)->RunFor(9);
+
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_TRUE(url_request->status().is_success());
   EXPECT_EQ(1, network_delegate()->completed_requests());
@@ -408,7 +409,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedServerAuthNoCredentials) {
       GURL("ftp://ftp.example.com/"), DEFAULT_PRIORITY, &request_delegate));
   url_request->Start();
   ASSERT_TRUE(url_request->is_pending());
-  socket_data(0)->RunFor(5);
+
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_TRUE(url_request->status().is_success());
   EXPECT_EQ(1, network_delegate()->completed_requests());
@@ -450,7 +453,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedServerAuthWithCredentials) {
       GURL("ftp://ftp.example.com/"), DEFAULT_PRIORITY, &request_delegate));
   url_request->Start();
   ASSERT_TRUE(url_request->is_pending());
-  socket_data(0)->RunFor(9);
+
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_TRUE(url_request->status().is_success());
   EXPECT_EQ(1, network_delegate()->completed_requests());
@@ -508,17 +513,32 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAndServerAuth) {
                       ASCIIToUTF16("passworddonotuse")));
 
   TestDelegate request_delegate;
-  request_delegate.set_credentials(
-      AuthCredentials(ASCIIToUTF16("proxyuser"), ASCIIToUTF16("proxypass")));
+  request_delegate.set_quit_on_auth_required(true);
   scoped_ptr<URLRequest> url_request(request_context()->CreateRequest(
       url, DEFAULT_PRIORITY, &request_delegate));
   url_request->Start();
   ASSERT_TRUE(url_request->is_pending());
-  socket_data(0)->RunFor(5);
 
-  request_delegate.set_credentials(
+  // Run until proxy auth is requested.
+  base::RunLoop().Run();
+
+  ASSERT_TRUE(request_delegate.auth_required_called());
+  EXPECT_EQ(0, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  url_request->SetAuth(
+      AuthCredentials(ASCIIToUTF16("proxyuser"), ASCIIToUTF16("proxypass")));
+
+  // Run until server auth is requested.
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(url_request->status().is_success());
+  EXPECT_EQ(0, network_delegate()->completed_requests());
+  EXPECT_EQ(0, network_delegate()->error_count());
+  url_request->SetAuth(
       AuthCredentials(ASCIIToUTF16("myuser"), ASCIIToUTF16("mypass")));
-  socket_data(0)->RunFor(9);
+
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_TRUE(url_request->status().is_success());
   EXPECT_EQ(1, network_delegate()->completed_requests());
@@ -548,7 +568,8 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotSaveCookies) {
   url_request->Start();
   ASSERT_TRUE(url_request->is_pending());
 
-  socket_data(0)->RunFor(5);
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_TRUE(url_request->status().is_success());
   EXPECT_EQ(1, network_delegate()->completed_requests());
@@ -580,14 +601,8 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotFollowRedirects) {
   url_request->Start();
   EXPECT_TRUE(url_request->is_pending());
 
-  base::MessageLoop::current()->RunUntilIdle();
-
-  EXPECT_TRUE(url_request->is_pending());
-  EXPECT_EQ(0, request_delegate.response_started_count());
-  EXPECT_EQ(0, network_delegate()->error_count());
-  ASSERT_TRUE(url_request->status().is_success());
-
-  socket_data(0)->RunFor(1);
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_EQ(1, network_delegate()->completed_requests());
   EXPECT_EQ(1, network_delegate()->error_count());
@@ -623,7 +638,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestReuseSocket) {
                                        DEFAULT_PRIORITY, &request_delegate1));
   url_request1->Start();
   ASSERT_TRUE(url_request1->is_pending());
-  socket_data(0)->RunFor(4);
+
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_TRUE(url_request1->status().is_success());
   EXPECT_TRUE(url_request1->proxy_server().Equals(
@@ -639,7 +656,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestReuseSocket) {
                                        DEFAULT_PRIORITY, &request_delegate2));
   url_request2->Start();
   ASSERT_TRUE(url_request2->is_pending());
-  socket_data(0)->RunFor(4);
+
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_TRUE(url_request2->status().is_success());
   EXPECT_EQ(2, network_delegate()->completed_requests());
@@ -684,7 +703,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotReuseSocket) {
                                        DEFAULT_PRIORITY, &request_delegate1));
   url_request1->Start();
   ASSERT_TRUE(url_request1->is_pending());
-  socket_data(0)->RunFor(4);
+
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_TRUE(url_request1->status().is_success());
   EXPECT_EQ(1, network_delegate()->completed_requests());
@@ -698,7 +719,9 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestDoNotReuseSocket) {
                                        DEFAULT_PRIORITY, &request_delegate2));
   url_request2->Start();
   ASSERT_TRUE(url_request2->is_pending());
-  socket_data(1)->RunFor(4);
+
+  // The TestDelegate will by default quit the message loop on completion.
+  base::RunLoop().Run();
 
   EXPECT_TRUE(url_request2->status().is_success());
   EXPECT_EQ(2, network_delegate()->completed_requests());

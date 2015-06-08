@@ -162,6 +162,7 @@ TestDelegate::TestDelegate()
       cancel_in_rd_pending_(false),
       quit_on_complete_(true),
       quit_on_redirect_(false),
+      quit_on_auth_required_(false),
       quit_on_before_network_start_(false),
       allow_certificate_errors_(false),
       response_started_count_(0),
@@ -214,6 +215,11 @@ void TestDelegate::OnBeforeNetworkStart(URLRequest* request, bool* defer) {
 void TestDelegate::OnAuthRequired(URLRequest* request,
                                   AuthChallengeInfo* auth_info) {
   auth_required_ = true;
+  if (quit_on_auth_required_) {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+    return;
+  }
   if (!credentials_.Empty()) {
     request->SetAuth(credentials_);
   } else {

@@ -134,11 +134,16 @@ class TestDelegate : public URLRequest::Delegate {
   void set_cancel_in_received_data_pending(bool val) {
     cancel_in_rd_pending_ = val;
   }
+
   void set_quit_on_complete(bool val) { quit_on_complete_ = val; }
   void set_quit_on_redirect(bool val) { quit_on_redirect_ = val; }
+  // Enables quitting the message loop in response to auth requests, as opposed
+  // to returning credentials or cancelling the request.
+  void set_quit_on_auth_required(bool val) { quit_on_auth_required_ = val; }
   void set_quit_on_network_start(bool val) {
     quit_on_before_network_start_ = val;
   }
+
   void set_allow_certificate_errors(bool val) {
     allow_certificate_errors_ = val;
   }
@@ -197,6 +202,7 @@ class TestDelegate : public URLRequest::Delegate {
   bool cancel_in_rd_pending_;
   bool quit_on_complete_;
   bool quit_on_redirect_;
+  bool quit_on_auth_required_;
   bool quit_on_before_network_start_;
   bool allow_certificate_errors_;
   AuthCredentials credentials_;
