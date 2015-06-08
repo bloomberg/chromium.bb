@@ -11,11 +11,13 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/html_viewer/ax_provider_impl.h"
+#include "components/html_viewer/frame_tree_manager.h"
 #include "components/html_viewer/touch_handler.h"
 #include "components/view_manager/public/cpp/view_manager_client_factory.h"
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
+#include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/application/public/cpp/lazy_interface_ptr.h"
@@ -48,7 +50,8 @@ class HTMLDocument : public blink::WebViewClient,
                      public blink::WebFrameClient,
                      public mojo::ViewManagerDelegate,
                      public mojo::ViewObserver,
-                     public mojo::InterfaceFactory<mojo::AxProvider> {
+                     public mojo::InterfaceFactory<mojo::AxProvider>,
+                     public mojo::InterfaceFactory<mandoline::FrameTreeClient> {
  public:
   // Load a new HTMLDocument with |response|.
   // |html_document_app| is the application this app was created in, and
@@ -129,6 +132,11 @@ class HTMLDocument : public blink::WebViewClient,
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::AxProvider> request) override;
 
+  // mojo::InterfaceFactory<mandoline::FrameTreeClient>
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mandoline::FrameTreeClient> request) override;
+
   void Load(mojo::URLResponsePtr response);
 
   // Converts a WebLocalFrame to a WebRemoteFrame. Used once we know the
@@ -139,6 +147,7 @@ class HTMLDocument : public blink::WebViewClient,
   mojo::ApplicationImpl* html_document_app_;
   mojo::URLResponsePtr response_;
   mojo::ServiceProviderPtr embedder_service_provider_;
+  mojo::ServiceProviderImpl embedder_exported_services_;
   mojo::LazyInterfacePtr<mojo::NavigatorHost> navigator_host_;
   blink::WebView* web_view_;
   mojo::View* root_;
@@ -158,6 +167,9 @@ class HTMLDocument : public blink::WebViewClient,
   scoped_ptr<TouchHandler> touch_handler_;
 
   FrameToViewMap frame_to_view_;
+
+  FrameTreeManager frame_tree_manager_;
+  mojo::Binding<mandoline::FrameTreeClient> frame_tree_manager_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocument);
 };

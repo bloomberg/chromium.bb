@@ -1,0 +1,50 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mandoline;
+
+// This files defines the interfaces and structures used for frames.
+//
+// When a client in the frame tree is connected to by way of the ViewManager a
+// FrameTreeClient is obtained (from the ServiceProvider interface request
+// passed in ViewManager::OnEmbed()). The FrameTreeClient is told the frame
+// tree (by way of OnConnection()), which allows the client to use other
+// frames in the tree (assuming the client has the appropriate permissions).
+//
+// frame_ids are the same as views ids. This means that when a client creates
+// a new view to be part of the frame tree it immediately knows the id to use
+// for FrameTreeServer calls.
+// TODO(sky): there are likely timing issues here, figure out how to resolve
+// that.
+
+// Provides information about a frame.
+struct FrameData {
+  // 0 if the frame has no parent (its the root).
+  uint32 parent_id;
+  uint32 frame_id;
+};
+
+struct MessageEvent {
+  // TODO(sky): add details.
+};
+
+interface FrameTreeServer {
+  // TODO(sky): make these real.
+  PostMessageEventToFrame(uint32 frame_id, MessageEvent event);
+  NavigateFrame(uint32 frame_id);
+  ReloadFrame(uint32 frame_id);
+};
+
+interface FrameTreeClient {
+  // Called once per client. |frames| gives the contents of the tree.
+  OnConnect(FrameTreeServer server, array<FrameData> frames);
+
+  // Called when a new frame is added to the tree. This is not called on the
+  // originator of the change.
+  OnFrameAdded(FrameData frame);
+
+  // Called when a frame is removed from the tree. This is not called on the
+  // originator of the change.
+  OnFrameRemoved(uint32 frame_id);
+};

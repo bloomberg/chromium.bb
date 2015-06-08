@@ -53,4 +53,9 @@ if config.target_os != config.OS_ANDROID:
       "test": "mojo:resource_provider_apptests",
       "type": "gtest_isolated",
     },
+    {
+      "test": "mojo:mandoline_frame_apptests",
+      "type": "gtest_isolated",
+      "args": ["--use-headless-config"]
+    },
   ]

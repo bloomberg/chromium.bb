@@ -154,9 +154,15 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
       web_view_(nullptr),
       root_(nullptr),
       view_manager_client_factory_(html_document_app->shell(), this),
-      setup_(setup) {
-  connection->AddService(this);
+      setup_(setup),
+      frame_tree_manager_binding_(&frame_tree_manager_) {
+  embedder_exported_services_.AddService(
+      static_cast<mojo::InterfaceFactory<mandoline::FrameTreeClient>*>(this));
+
+  connection->AddService(
+      static_cast<InterfaceFactory<mojo::AxProvider>*>(this));
   connection->AddService(&view_manager_client_factory_);
+
   if (setup_->did_init())
     Load(response_.Pass());
 }
@@ -181,6 +187,8 @@ void HTMLDocument::OnEmbed(
   embedder_service_provider_ = exposed_services.Pass();
   navigator_host_.set_service_provider(embedder_service_provider_.get());
 
+  embedder_exported_services_.Bind(services.Pass());
+
   InitSetupAndLoadIfNecessary();
 }
 
@@ -199,6 +207,12 @@ void HTMLDocument::Create(mojo::ApplicationConnection* connection,
     ax_providers_.insert(
         new AxProviderImpl(web_view_, request.Pass()));
   }
+}
+
+void HTMLDocument::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mandoline::FrameTreeClient> request) {
+  frame_tree_manager_binding_.Bind(request.Pass());
 }
 
 void HTMLDocument::Load(URLResponsePtr response) {

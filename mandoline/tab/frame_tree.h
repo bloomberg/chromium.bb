@@ -9,6 +9,10 @@
 
 namespace mandoline {
 
+class FrameTreeClient;
+class FrameTreeDelegate;
+class FrameUserData;
+
 // FrameTree manages the set of Frames that comprise a single url. FrameTree
 // owns the root Frame and each Frames owns its children. Frames are
 // automatically deleted and removed from the tree if the corresponding view is
@@ -18,13 +22,25 @@ class FrameTree {
  public:
   // |view| is the view to do the initial embedding in. It is assumed |view|
   // outlives FrameTree.
-  explicit FrameTree(mojo::View* view);
+  FrameTree(mojo::View* view,
+            FrameTreeDelegate* delegate,
+            FrameTreeClient* root_client,
+            scoped_ptr<FrameUserData> user_data);
   ~FrameTree();
 
   Frame* root() { return &root_; }
 
+  Frame* CreateAndAddFrame(mojo::View* view,
+                           Frame* parent,
+                           FrameTreeClient* client,
+                           scoped_ptr<FrameUserData> user_data);
+
  private:
+  friend class Frame;
+
   mojo::View* view_;
+
+  FrameTreeDelegate* delegate_;
 
   Frame root_;
 

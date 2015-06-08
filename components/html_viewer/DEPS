@@ -12,6 +12,7 @@ include_rules = [
   "+components/webcrypto",
   "+gin",
   "+mandoline/services",
+  "+mandoline/tab/public/interfaces",
   "+media",
   "+mojo/application",
   "+mojo/cc",

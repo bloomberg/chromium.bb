@@ -8,12 +8,16 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/view_manager/public/cpp/view_observer.h"
-#include "mojo/application/public/cpp/service_provider_impl.h"
+#include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace mandoline {
 
 class FrameTree;
+class FrameTreeClient;
+class FrameUserData;
 
 enum class ViewOwnership {
   OWNS_VIEW,
@@ -23,14 +27,16 @@ enum class ViewOwnership {
 // Frame represents an embedding in a frame. Frames own their children.
 // Frames automatically delete themself if the View the frame is associated
 // with is deleted.
-class Frame : public mojo::ViewObserver {
+class Frame : public mojo::ViewObserver, public FrameTreeServer {
  public:
   Frame(FrameTree* tree,
         mojo::View* view,
         ViewOwnership view_ownership,
-        mojo::InterfaceRequest<mojo::ServiceProvider>* services,
-        mojo::ServiceProviderPtr* exposed_services);
+        FrameTreeClient* frame_tree_client,
+        scoped_ptr<FrameUserData> user_data);
   ~Frame() override;
+
+  void Init(Frame* parent);
 
   // Walks the View tree starting at |view| going up returning the first
   // Frame that is associated with a view. For example, if |view|
@@ -41,23 +47,52 @@ class Frame : public mojo::ViewObserver {
   FrameTree* tree() { return tree_; }
 
   Frame* parent() { return parent_; }
+  const Frame* parent() const { return parent_; }
 
   mojo::View* view() { return view_; }
+  const mojo::View* view() const { return view_; }
+
+  // Finds the descendant with the specified id.
+  Frame* FindFrame(uint32_t id) {
+    return const_cast<Frame*>(const_cast<const Frame*>(this))->FindFrame(id);
+  }
+  const Frame* FindFrame(uint32_t id) const;
+
+  FrameUserData* user_data();
+
+ private:
+  friend class FrameTree;
+
+  // Adds this to |frames| and recurses through the children calling the
+  // same function.
+  void BuildFrameTree(std::vector<const Frame*>* frames) const;
 
   void Add(Frame* node);
   void Remove(Frame* node);
 
- private:
+  // Notifies the client and all descendants as appropriate.
+  void NotifyAdded(const Frame* source, const Frame* added_node);
+  void NotifyRemoved(const Frame* source, const Frame* removed_node);
+
   // mojo::ViewObserver:
   void OnViewDestroying(mojo::View* view) override;
+
+  // FrameTreeServer:
+  void PostMessageEventToFrame(uint32_t frame_id,
+                               MessageEventPtr event) override;
+  void NavigateFrame(uint32_t frame_id) override;
+  void ReloadFrame(uint32_t frame_id) override;
 
   FrameTree* const tree_;
   mojo::View* view_;
   Frame* parent_;
   ViewOwnership view_ownership_;
-  mojo::ServiceProviderImpl exposed_services_;
-  mojo::ServiceProviderPtr services_;
   std::vector<Frame*> children_;
+  scoped_ptr<FrameUserData> frame_user_data_;
+
+  FrameTreeClient* frame_tree_client_;
+
+  mojo::Binding<FrameTreeServer> frame_tree_server_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(Frame);
 };

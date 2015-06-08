@@ -9,6 +9,7 @@
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "mandoline/tab/frame.h"
+#include "mandoline/tab/frame_services.h"
 #include "mandoline/tab/frame_tree.h"
 #include "mandoline/ui/browser/browser_ui.h"
 #include "mandoline/ui/browser/merged_service_provider.h"
@@ -140,9 +141,11 @@ bool Browser::OnWillEmbed(
     frame = nullptr;
   }
 
-  Frame* child_frame = new Frame(frame->tree(), view, ViewOwnership::OWNS_VIEW,
-                                 services, exposed_services);
-  parent->Add(child_frame);
+  scoped_ptr<FrameServices> frame_services(new FrameServices);
+  frame_services->Init(services, exposed_services);
+  FrameTreeClient* frame_tree_client = frame_services->frame_tree_client();
+  frame_tree_->CreateAndAddFrame(view, parent, frame_tree_client,
+                                 frame_services.Pass());
   return true;
 }
 
@@ -188,10 +191,15 @@ void Browser::Embed(mojo::URLRequestPtr request,
   if (changed)
     ui_->OnURLChanged();
 
-  // TODO(sky): move serviceproviders to frame tree.
-  frame_tree_.reset(new FrameTree(content_));
   merged_service_provider_.reset(
       new MergedServiceProvider(exposed_services.Pass(), this));
+  scoped_ptr<FrameServices> frame_services(new FrameServices);
+  // TODO(sky): FrameServices and MergedServiceProvider need to be combined.
+  // TODO(sky): FrameServices needs to man in the middle services.
+  frame_services->Init(&services, nullptr);
+  FrameTreeClient* frame_tree_client = frame_services->frame_tree_client();
+  frame_tree_.reset(new FrameTree(content_, nullptr, frame_tree_client,
+                                  frame_services.Pass()));
   content_->Embed(request.Pass(), services.Pass(),
                   merged_service_provider_->GetServiceProviderPtr().Pass());
 

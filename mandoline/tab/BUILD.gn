@@ -2,18 +2,50 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+
 source_set("tab") {
   sources = [
     "frame.cc",
     "frame.h",
+    "frame_services.cc",
+    "frame_services.h",
     "frame_tree.cc",
     "frame_tree.h",
+    "frame_tree_delegate.h",
+    "frame_user_data.h",
   ]
 
   deps = [
     "//base",
     "//components/view_manager/public/cpp",
+    "//mandoline/tab/public/interfaces",
+    "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
+}
+
+mojo_native_application("mandoline_frame_apptests") {
+  testonly = true
+
+  sources = [
+    "frame_apptest.cc",
+  ]
+
+  deps = [
+    ":tab",
+    "//base",
+    "//base/test:test_config",
+    "//components/view_manager/public/cpp",
+    "//components/view_manager/public/interfaces",
+    "//mandoline/tab/public/interfaces",
+    "//mojo/application/public/cpp:test_support",
+    "//ui/mojo/geometry:interfaces",
+    "//ui/mojo/geometry:util",
+  ]
+
+  data_deps = [ "//components/view_manager" ]
 }
