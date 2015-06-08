@@ -27225,6 +27225,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.EmptyUsernames.PasswordFieldCount">
+  <owner>msramek@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    The number of password fields for password forms that do not have a username
+    field. This is recorded every time such a password form is successfully
+    parsed. Note that the parsing is attempted when the form is encountered (i.e
+    when the document is loaded) and also when it is submitted.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.EmptyUsernames.TextAndPasswordFieldCount">
   <owner>msramek@chromium.org</owner>
   <owner>vasilii@chromium.org</owner>

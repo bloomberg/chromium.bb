@@ -427,6 +427,10 @@ void GetPasswordForm(
     UMA_HISTOGRAM_COUNTS_100(
         "PasswordManager.EmptyUsernames.TextAndPasswordFieldCount",
         layout_sequence.size());
+    // For comparison, also report the number of password fields.
+    UMA_HISTOGRAM_COUNTS_100(
+        "PasswordManager.EmptyUsernames.PasswordFieldCount",
+        std::count(layout_sequence.begin(), layout_sequence.end(), 'P'));
   }
 
   password_form->scheme = PasswordForm::SCHEME_HTML;
