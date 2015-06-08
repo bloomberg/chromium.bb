@@ -1091,7 +1091,6 @@ static void partitionDumpBucketStats(PartitionBucketMemoryStats* statsOut, const
     uint16_t bucketNumSlots = partitionBucketSlots(bucket);
     size_t bucketUsefulStorage = statsOut->bucketSlotSize * bucketNumSlots;
     statsOut->allocatedPageSize = partitionBucketBytes(bucket);
-    statsOut->pageWasteSize = statsOut->allocatedPageSize - bucketUsefulStorage;
     statsOut->activeBytes = bucket->numFullPages * bucketUsefulStorage;
     statsOut->residentBytes = bucket->numFullPages * statsOut->allocatedPageSize;
 

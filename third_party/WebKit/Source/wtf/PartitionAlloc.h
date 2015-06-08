@@ -349,13 +349,12 @@ struct PartitionBucketMemoryStats {
     bool isDirectMap; // True if this is a direct mapping; size will not be unique.
     uint32_t bucketSlotSize; // The size of the slot in bytes.
     uint32_t allocatedPageSize; // Total size the partition page allocated from the system.
-    uint32_t pageWasteSize; // The bytes allocated from the system but can't be used in any slot in a partition page.
     uint32_t activeBytes; // Total active bytes used in the bucket.
     uint32_t residentBytes; // Total bytes provisioned in the bucket.
     uint32_t freeableBytes; // Total bytes that could be decommitted.
     uint32_t numFullPages; // Number of pages with all slots allocated.
     uint32_t numActivePages; // Number of pages that have at least one provisioned slot.
-    uint32_t numEmptyPages; // Number of pages that areempty but not decommitted.
+    uint32_t numEmptyPages; // Number of pages that are empty but not decommitted.
     uint32_t numDecommittedPages; // Number of pages that are empty and decommitted.
 };
 

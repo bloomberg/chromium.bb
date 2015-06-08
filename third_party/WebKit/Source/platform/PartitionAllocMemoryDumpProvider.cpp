@@ -42,13 +42,15 @@ void PartitionStatsDumperImpl::partitionsDumpBucketStats(const char* partitionNa
 
     WebMemoryAllocatorDump* allocatorDump = m_memoryDump->createMemoryAllocatorDump(dumpName);
     allocatorDump->AddScalar("size", "bytes", memoryStats->residentBytes);
-    allocatorDump->AddScalar("waste_size", "bytes", memoryStats->pageWasteSize);
-    allocatorDump->AddScalar("partition_page_size", "bytes", memoryStats->allocatedPageSize);
+    allocatorDump->AddScalar("slot_size", "bytes", memoryStats->bucketSlotSize);
+    allocatorDump->AddScalar("active_size", "bytes", memoryStats->activeBytes);
+    allocatorDump->AddScalar("resident_size", "bytes", memoryStats->residentBytes);
     allocatorDump->AddScalar("freeable_size", "bytes", memoryStats->freeableBytes);
-    allocatorDump->AddScalar("full_partition_pages", "objects", memoryStats->numFullPages);
-    allocatorDump->AddScalar("active_partition_pages", "objects", memoryStats->numActivePages);
-    allocatorDump->AddScalar("empty_partition_pages", "objects", memoryStats->numEmptyPages);
-    allocatorDump->AddScalar("decommitted_partition_pages", "objects", memoryStats->numDecommittedPages);
+    allocatorDump->AddScalar("num_active", "objects", memoryStats->numActivePages);
+    allocatorDump->AddScalar("num_full", "objects", memoryStats->numFullPages);
+    allocatorDump->AddScalar("num_empty", "objects", memoryStats->numEmptyPages);
+    allocatorDump->AddScalar("num_decommitted", "objects", memoryStats->numDecommittedPages);
+    allocatorDump->AddScalar("page_size", "bytes", memoryStats->allocatedPageSize);
 
     dumpName = dumpName + "/allocated_objects";
     WebMemoryAllocatorDump* objectsDump = m_memoryDump->createMemoryAllocatorDump(dumpName);
