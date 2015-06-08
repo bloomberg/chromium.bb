@@ -1569,15 +1569,6 @@ crbug.com/442512 virtual/slimmingpaint/svg/dom/viewspec-viewtargetparams.html [ 
 crbug.com/442512 virtual/slimmingpaint/svg/dom/viewspec-zoomandpanparams.html [ Skip ]
 crbug.com/442512 virtual/slimmingpaint/svg/dom/complex-svgView-specification.html [ Skip ]
 
-crbug.com/477076 fast/block/margin-collapse/004.html [ NeedsRebaseline ]
-crbug.com/477076 fast/block/margin-collapse/block-inside-inline/004.html [ NeedsRebaseline ]
-crbug.com/477076 virtual/slimmingpaint/fast/block/margin-collapse/004.html [ NeedsRebaseline ]
-crbug.com/477076 virtual/slimmingpaint/fast/block/margin-collapse/block-inside-inline/004.html [ NeedsRebaseline ]
-crbug.com/477076 fast/repaint/float-overflow-right.html [ NeedsRebaseline ]
-crbug.com/477076 fast/repaint/float-overflow.html [ NeedsRebaseline ]
-crbug.com/477076 virtual/slimmingpaint/fast/repaint/float-overflow-right.html [ NeedsRebaseline ]
-crbug.com/477076 virtual/slimmingpaint/fast/repaint/float-overflow.html [ NeedsRebaseline ]
-
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-maximum-quality.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-state-persistence-no-dirty.html [ Pass ImageOnlyFailure ]
 crbug.com/410929 virtual/gpu/fast/canvas/canvas-text-space-characters.html [ Pass ImageOnlyFailure ]
