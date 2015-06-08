@@ -12,7 +12,7 @@ Prefix: while(1);
 Data: {"name":"value"}
 Suffix: 
 
-Input: [,"foo", -4.2, true, false, null]
+Input: [, "foo", -4.2, true, false, null]
 Prefix: 
 Data: [null,"foo",-4.2,true,false,null]
 Suffix: 
@@ -22,16 +22,22 @@ Prefix:
 Data: [{"foo":{},"bar":[]},[[],{}]]
 Suffix: 
 
-Input: /* vanilla */ run([1, 2, 3]);
-Prefix: /* vanilla */ run(
+Input: /* vanilla */ run ( [1, 2, 3] ) ;
+Prefix: /* vanilla */ run ( 
 Data: [1,2,3]
-Suffix: );
+Suffix:  ) ;
 
 Input: ["A\"B\u0020C\nD\\E\u04ABF"]
 Prefix: 
 Data: ["A\"B C\nD\\EҫF"]
 Suffix: 
 
-Input: <html>404 Page not found</html>
+Input: Text with with {}) inside
+Can't parse
+
+Input: <html>404 Page not found with foo({}) inside</html>
+Can't parse
+
+Input: /* vanilla prefix too large to be considered prefix Ok? */ run([1, 2, 3]); // since it is unlikely JSONP
 Can't parse
 

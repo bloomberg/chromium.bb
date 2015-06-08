@@ -21,12 +21,13 @@ function test()
 
     check("{\"name\": \"value\"}");
     check("while(1); {\"name\": \"value\"}");
-    check("[,\"foo\", -4.2, true, false, null]");
+    check("[, \"foo\", -4.2, true, false, null]");
     check("[{\"foo\": {}, \"bar\": []},[[],{}]]");
-    check("/* vanilla */ run([1, 2, 3]);");
+    check("/* vanilla */ run ( [1, 2, 3] ) ;");
     check("[\"A\\\"B\\u0020C\\nD\\\\E\\u04ABF\"]");
-
-    check("<html>404 Page not found</html>");
+    check("Text with with {}) inside");
+    check("<html>404 Page not found with foo({}) inside</html>");
+    check("/* vanilla prefix too large to be considered prefix Ok? */ run([1, 2, 3]); // since it is unlikely JSONP");
 
     InspectorTest.completeTest();
 }
