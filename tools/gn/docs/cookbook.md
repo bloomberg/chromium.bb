@@ -484,8 +484,8 @@ compiler/BUILD.gn:      "/wd4018",  # Comparing signed and unsigned values.
 ```
 
 tells us that warning 4018 is already disabled globally from the
-`//build/config/compiler:default_warnings` config, and the same for
-4244. So ignore these.
+`default_warning_flags` variable in `//build/config/compiler`, and the same
+for 4244. So ignore these.
 
 Always comment what the warning is. Use your favorite search engine and
 type "vc warning 4267" to look it up. You'll end up with:

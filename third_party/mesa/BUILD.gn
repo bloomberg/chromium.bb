@@ -78,10 +78,6 @@ config("mesa_internal_config") {
     "$generated_src_dir/mesa/glapi",
   ]
 
-  if (is_clang) {
-    cflags += [ "-Wno-tautological-constant-out-of-range-compare" ]
-  }
-
   if (is_android) {
     defines += [
       "__GLIBC__",
@@ -108,7 +104,20 @@ config("mesa_internal_config") {
       cflags += [ "-fPIC" ]
     }
   }
+}
 
+# mesa_internal_config is prepended to the config lists.  Flags that
+# disable warnings need to be appended instead so that they show up
+# after flags like -Wall. (gn orders flags on a target before flags from
+# configs.)
+config("mesa_internal_warnings") {
+  cflags = []
+  if (is_clang) {
+    cflags += [
+      "-Wno-tautological-constant-out-of-range-compare",
+      "-Wno-mismatched-tags",  # Fixed upstream.
+    ]
+  }
   if (is_win) {
     # TODO(scottmg): http://crbug.com/143877 These should be removed if
     # Mesa is ever rolled and the warnings are fixed.
@@ -117,7 +126,6 @@ config("mesa_internal_config") {
       "/wd4065",  # Switch statement contains 'default' but no 'case' labels.
       "/wd4090",  # 'Operation' : different 'modifier' qualifiers
       "/wd4099",  # Type name struct-vs-class doesn't match.
-      "/wd4267",  # size_t to type.
       "/wd4273",  # Inconsistent DLL linkage.
       "/wd4291",  # No matching operator delete found for placement new.
       "/wd4305",  # Truncation from int to float.
@@ -235,7 +243,8 @@ static_library("mesa_libglslcommon") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
   previous_configs = configs
   configs = []
-  configs = [ ":mesa_internal_config" ] + previous_configs
+  configs = [ ":mesa_internal_config" ] + previous_configs +
+            [ ":mesa_internal_warnings" ]
 
   if (is_clang) {
     # Mesa triggers some of these Clang warnings.
@@ -617,7 +626,8 @@ static_library("mesa") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
   previous_configs = configs
   configs = []
-  configs = [ ":mesa_internal_config" ] + previous_configs
+  configs = [ ":mesa_internal_config" ] + previous_configs +
+            [ ":mesa_internal_warnings" ]
 
   if (is_clang) {
     # Mesa triggers some of these Clang warnings.
@@ -665,7 +675,8 @@ if (!is_android) {  # TODO(GYP) enable for Android.
     ]
     previous_configs = configs
     configs = []
-    configs = [ ":mesa_internal_config" ] + previous_configs
+    configs = [ ":mesa_internal_config" ] + previous_configs +
+              [ ":mesa_internal_warnings" ]
 
     include_dirs = [ "src/src/mesa/drivers" ]
 
