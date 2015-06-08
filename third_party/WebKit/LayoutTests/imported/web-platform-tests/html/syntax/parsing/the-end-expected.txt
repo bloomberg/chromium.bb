@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL DOMContentLoaded assert_true: isTrusted should be true expected true got undefined
+FAIL load assert_true: isTrusted should be true expected true got undefined
+PASS order 
+Harness: the test ran to completion.
+
