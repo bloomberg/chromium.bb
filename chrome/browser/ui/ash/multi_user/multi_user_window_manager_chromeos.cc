@@ -237,7 +237,7 @@ MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
   while (app_observer_iterator != user_id_to_app_observer_.end()) {
     Profile* profile = multi_user_util::GetProfileFromUserID(
         app_observer_iterator->first);
-    DCHECK(profile);
+    CHECK(profile) << "profile not found for:" << app_observer_iterator->first;
     extensions::AppWindowRegistry::Get(profile)
         ->RemoveObserver(app_observer_iterator->second);
     delete app_observer_iterator->second;
