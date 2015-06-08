@@ -309,7 +309,7 @@
             "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
             "binhost_bucket": "gs://chromeos-dev-installer",
             "binhost_key": "RELEASE_BINHOST",
-            "build_tests": false,
+            "build_tests": true,
             "build_type": "canary",
             "chrome_sdk": false,
             "chromeos_official": true,
@@ -334,7 +334,8 @@
             "manifest_version": true,
             "overlays": "both",
             "packages": [
-                "virtual/chromeos-firmware"
+                "virtual/chromeos-firmware",
+                "chromeos-base/autotest-all"
             ],
             "paygen": false,
             "push_image": true,
@@ -342,11 +343,10 @@
             "sync_chrome": false,
             "trybot_list": false,
             "unittests": false,
-            "upload_hw_test_artifacts": false,
+            "upload_hw_test_artifacts": true,
             "upload_symbols": false,
             "useflags": [
-                "-cros-debug",
-                "chrome_internal",
+                "chromeless_tty",
                 "depthcharge"
             ],
             "usepkg_build_packages": true,
@@ -356,7 +356,7 @@
         "depthcharge-full-firmware": {
             "_template": "depthcharge-full-firmware",
             "archive_build_debug": true,
-            "build_tests": false,
+            "build_tests": true,
             "build_type": "full",
             "chrome_sdk": false,
             "description": "Firmware Informational",
@@ -377,16 +377,18 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "overlays": "both",
             "packages": [
-                "virtual/chromeos-firmware"
+                "virtual/chromeos-firmware",
+                "chromeos-base/autotest-all"
             ],
             "paygen": false,
             "signer_tests": false,
             "sync_chrome": false,
             "trybot_list": false,
             "unittests": false,
-            "upload_hw_test_artifacts": false,
+            "upload_hw_test_artifacts": true,
             "upload_symbols": false,
             "useflags": [
+                "chromeless_tty",
                 "depthcharge"
             ],
             "usepkg_build_packages": true,
@@ -452,7 +454,7 @@
             "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
             "binhost_bucket": "gs://chromeos-dev-installer",
             "binhost_key": "RELEASE_BINHOST",
-            "build_tests": false,
+            "build_tests": true,
             "build_type": "canary",
             "chrome_sdk": false,
             "chromeos_official": true,
@@ -477,7 +479,8 @@
             "manifest_version": true,
             "overlays": "both",
             "packages": [
-                "virtual/chromeos-firmware"
+                "virtual/chromeos-firmware",
+                "chromeos-base/autotest-all"
             ],
             "paygen": false,
             "push_image": true,
@@ -485,11 +488,10 @@
             "sync_chrome": false,
             "trybot_list": false,
             "unittests": false,
-            "upload_hw_test_artifacts": false,
+            "upload_hw_test_artifacts": true,
             "upload_symbols": false,
             "useflags": [
-                "-cros-debug",
-                "chrome_internal"
+                "chromeless_tty"
             ],
             "usepkg_build_packages": true,
             "vm_tests": [],
@@ -1682,7 +1684,12 @@
             "auron"
         ],
         "manifest": "official.xml",
-        "name": "auron-depthcharge-firmware"
+        "name": "auron-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "auron-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -1693,6 +1700,7 @@
         "name": "auron-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -1702,7 +1710,11 @@
             "auron"
         ],
         "manifest": "official.xml",
-        "name": "auron-firmware"
+        "name": "auron-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "auron-full": {
         "_template": "full",
@@ -2313,7 +2325,12 @@
             "banjo"
         ],
         "manifest": "official.xml",
-        "name": "banjo-depthcharge-firmware"
+        "name": "banjo-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "banjo-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -2324,6 +2341,7 @@
         "name": "banjo-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -2333,7 +2351,11 @@
             "banjo"
         ],
         "manifest": "official.xml",
-        "name": "banjo-firmware"
+        "name": "banjo-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "banjo-full": {
         "_template": "full",
@@ -2508,7 +2530,12 @@
             "bayleybay"
         ],
         "manifest": "official.xml",
-        "name": "bayleybay-depthcharge-firmware"
+        "name": "bayleybay-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "bayleybay-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -2519,6 +2546,7 @@
         "name": "bayleybay-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -2528,7 +2556,11 @@
             "bayleybay"
         ],
         "manifest": "official.xml",
-        "name": "bayleybay-firmware"
+        "name": "bayleybay-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "bayleybay-full": {
         "_template": "full",
@@ -3346,7 +3378,11 @@
             "beltino"
         ],
         "manifest": "official.xml",
-        "name": "beltino-firmware"
+        "name": "beltino-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "beltino-full": {
         "_template": "full",
@@ -3745,7 +3781,11 @@
             "butterfly"
         ],
         "manifest": "official.xml",
-        "name": "butterfly-firmware"
+        "name": "butterfly-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "butterfly-full": {
         "_template": "full",
@@ -4088,7 +4128,12 @@
             "candy"
         ],
         "manifest": "official.xml",
-        "name": "candy-depthcharge-firmware"
+        "name": "candy-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "candy-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -4099,6 +4144,7 @@
         "name": "candy-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -4108,7 +4154,11 @@
             "candy"
         ],
         "manifest": "official.xml",
-        "name": "candy-firmware"
+        "name": "candy-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "candy-full": {
         "_template": "full",
@@ -4479,7 +4529,12 @@
             "clapper"
         ],
         "manifest": "official.xml",
-        "name": "clapper-depthcharge-firmware"
+        "name": "clapper-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "clapper-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -4490,6 +4545,7 @@
         "name": "clapper-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -4499,7 +4555,11 @@
             "clapper"
         ],
         "manifest": "official.xml",
-        "name": "clapper-firmware"
+        "name": "clapper-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "clapper-full": {
         "_template": "full",
@@ -4998,7 +5058,12 @@
             "cyan"
         ],
         "manifest": "official.xml",
-        "name": "cyan-depthcharge-firmware"
+        "name": "cyan-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "cyan-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -5009,6 +5074,7 @@
         "name": "cyan-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -5018,7 +5084,11 @@
             "cyan"
         ],
         "manifest": "official.xml",
-        "name": "cyan-firmware"
+        "name": "cyan-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "cyan-full": {
         "_template": "full",
@@ -5204,7 +5274,11 @@
             "daisy"
         ],
         "manifest": "official.xml",
-        "name": "daisy-firmware"
+        "name": "daisy-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "daisy-full": {
         "_template": "full",
@@ -5519,7 +5593,11 @@
             "daisy_skate"
         ],
         "manifest": "official.xml",
-        "name": "daisy_skate-firmware"
+        "name": "daisy_skate-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "daisy_skate-full": {
         "_template": "full",
@@ -5710,7 +5788,11 @@
             "daisy_spring"
         ],
         "manifest": "official.xml",
-        "name": "daisy_spring-firmware"
+        "name": "daisy_spring-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "daisy_spring-full": {
         "_template": "full",
@@ -6133,7 +6215,12 @@
             "enguarde"
         ],
         "manifest": "official.xml",
-        "name": "enguarde-depthcharge-firmware"
+        "name": "enguarde-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "enguarde-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -6144,6 +6231,7 @@
         "name": "enguarde-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -6153,7 +6241,11 @@
             "enguarde"
         ],
         "manifest": "official.xml",
-        "name": "enguarde-firmware"
+        "name": "enguarde-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "enguarde-full": {
         "_template": "full",
@@ -6328,7 +6420,12 @@
             "expresso"
         ],
         "manifest": "official.xml",
-        "name": "expresso-depthcharge-firmware"
+        "name": "expresso-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "expresso-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -6339,6 +6436,7 @@
         "name": "expresso-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -6348,7 +6446,11 @@
             "expresso"
         ],
         "manifest": "official.xml",
-        "name": "expresso-firmware"
+        "name": "expresso-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "expresso-full": {
         "_template": "full",
@@ -6553,7 +6655,11 @@
             "falco"
         ],
         "manifest": "official.xml",
-        "name": "falco-firmware"
+        "name": "falco-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "falco-full": {
         "_template": "full",
@@ -7185,7 +7291,12 @@
             "glados"
         ],
         "manifest": "official.xml",
-        "name": "glados-depthcharge-firmware"
+        "name": "glados-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "glados-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -7196,6 +7307,7 @@
         "name": "glados-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -7417,7 +7529,12 @@
             "glimmer"
         ],
         "manifest": "official.xml",
-        "name": "glimmer-depthcharge-firmware"
+        "name": "glimmer-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "glimmer-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -7428,6 +7545,7 @@
         "name": "glimmer-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -7437,7 +7555,11 @@
             "glimmer"
         ],
         "manifest": "official.xml",
-        "name": "glimmer-firmware"
+        "name": "glimmer-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "glimmer-full": {
         "_template": "full",
@@ -7612,7 +7734,12 @@
             "gnawty"
         ],
         "manifest": "official.xml",
-        "name": "gnawty-depthcharge-firmware"
+        "name": "gnawty-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "gnawty-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -7623,6 +7750,7 @@
         "name": "gnawty-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -7632,7 +7760,11 @@
             "gnawty"
         ],
         "manifest": "official.xml",
-        "name": "gnawty-firmware"
+        "name": "gnawty-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "gnawty-full": {
         "_template": "full",
@@ -8178,7 +8310,12 @@
             "heli"
         ],
         "manifest": "official.xml",
-        "name": "heli-depthcharge-firmware"
+        "name": "heli-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "heli-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -8189,6 +8326,7 @@
         "name": "heli-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -8541,7 +8679,12 @@
             "jecht"
         ],
         "manifest": "official.xml",
-        "name": "jecht-depthcharge-firmware"
+        "name": "jecht-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "jecht-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -8552,6 +8695,7 @@
         "name": "jecht-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -8561,7 +8705,11 @@
             "jecht"
         ],
         "manifest": "official.xml",
-        "name": "jecht-firmware"
+        "name": "jecht-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "jecht-full": {
         "_template": "full",
@@ -9182,7 +9330,12 @@
             "kip"
         ],
         "manifest": "official.xml",
-        "name": "kip-depthcharge-firmware"
+        "name": "kip-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "kip-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -9193,6 +9346,7 @@
         "name": "kip-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -9202,7 +9356,11 @@
             "kip"
         ],
         "manifest": "official.xml",
-        "name": "kip-firmware"
+        "name": "kip-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "kip-full": {
         "_template": "full",
@@ -9584,7 +9742,12 @@
             "leon"
         ],
         "manifest": "official.xml",
-        "name": "leon-depthcharge-firmware"
+        "name": "leon-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "leon-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -9595,6 +9758,7 @@
         "name": "leon-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -9604,7 +9768,11 @@
             "leon"
         ],
         "manifest": "official.xml",
-        "name": "leon-firmware"
+        "name": "leon-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "leon-full": {
         "_template": "full",
@@ -9779,7 +9947,12 @@
             "link"
         ],
         "manifest": "official.xml",
-        "name": "link-depthcharge-firmware"
+        "name": "link-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "link-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -9791,6 +9964,7 @@
         "name": "link-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -9800,7 +9974,11 @@
             "link"
         ],
         "manifest": "official.xml",
-        "name": "link-firmware"
+        "name": "link-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "link-full": {
         "_template": "full",
@@ -10162,7 +10340,11 @@
             "lumpy"
         ],
         "manifest": "official.xml",
-        "name": "lumpy-firmware"
+        "name": "lumpy-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "lumpy-full": {
         "_template": "full",
@@ -11400,7 +11582,11 @@
             "monroe"
         ],
         "manifest": "official.xml",
-        "name": "monroe-firmware"
+        "name": "monroe-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "monroe-full": {
         "_template": "full",
@@ -11575,7 +11761,12 @@
             "ninja"
         ],
         "manifest": "official.xml",
-        "name": "ninja-depthcharge-firmware"
+        "name": "ninja-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "ninja-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -11586,6 +11777,7 @@
         "name": "ninja-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -11595,7 +11787,11 @@
             "ninja"
         ],
         "manifest": "official.xml",
-        "name": "ninja-firmware"
+        "name": "ninja-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "ninja-full": {
         "_template": "full",
@@ -13061,7 +13257,12 @@
             "orco"
         ],
         "manifest": "official.xml",
-        "name": "orco-depthcharge-firmware"
+        "name": "orco-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "orco-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -13072,6 +13273,7 @@
         "name": "orco-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -13081,7 +13283,11 @@
             "orco"
         ],
         "manifest": "official.xml",
-        "name": "orco-firmware"
+        "name": "orco-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "orco-full": {
         "_template": "full",
@@ -13256,7 +13462,11 @@
             "panther"
         ],
         "manifest": "official.xml",
-        "name": "panther-firmware"
+        "name": "panther-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "panther-full": {
         "_template": "full",
@@ -13835,7 +14045,11 @@
             "parrot"
         ],
         "manifest": "official.xml",
-        "name": "parrot-firmware"
+        "name": "parrot-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "parrot-full": {
         "_template": "full",
@@ -14353,7 +14567,12 @@
             "parry"
         ],
         "manifest": "official.xml",
-        "name": "parry-depthcharge-firmware"
+        "name": "parry-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "parry-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -14364,6 +14583,7 @@
         "name": "parry-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -14373,7 +14593,11 @@
             "parry"
         ],
         "manifest": "official.xml",
-        "name": "parry-firmware"
+        "name": "parry-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "parry-full": {
         "_template": "full",
@@ -14628,7 +14852,11 @@
             "peach_pi"
         ],
         "manifest": "official.xml",
-        "name": "peach_pi-firmware"
+        "name": "peach_pi-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "peach_pi-full": {
         "_template": "full",
@@ -14821,7 +15049,11 @@
             "peach_pit"
         ],
         "manifest": "official.xml",
-        "name": "peach_pit-firmware"
+        "name": "peach_pit-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "peach_pit-full": {
         "_template": "full",
@@ -15010,7 +15242,11 @@
             "peppy"
         ],
         "manifest": "official.xml",
-        "name": "peppy-firmware"
+        "name": "peppy-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "peppy-full": {
         "_template": "full",
@@ -15704,7 +15940,12 @@
             "quawks"
         ],
         "manifest": "official.xml",
-        "name": "quawks-depthcharge-firmware"
+        "name": "quawks-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "quawks-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -15715,6 +15956,7 @@
         "name": "quawks-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -15724,7 +15966,11 @@
             "quawks"
         ],
         "manifest": "official.xml",
-        "name": "quawks-firmware"
+        "name": "quawks-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "quawks-full": {
         "_template": "full",
@@ -16418,7 +16664,12 @@
             "rambi"
         ],
         "manifest": "official.xml",
-        "name": "rambi-depthcharge-firmware"
+        "name": "rambi-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "rambi-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -16429,6 +16680,7 @@
         "name": "rambi-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -16511,7 +16763,11 @@
             "rambi"
         ],
         "manifest": "official.xml",
-        "name": "rambi-firmware"
+        "name": "rambi-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "rambi-full": {
         "_template": "full",
@@ -16700,7 +16956,12 @@
             "rikku"
         ],
         "manifest": "official.xml",
-        "name": "rikku-depthcharge-firmware"
+        "name": "rikku-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "rikku-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -16711,6 +16972,7 @@
         "name": "rikku-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -16720,7 +16982,11 @@
             "rikku"
         ],
         "manifest": "official.xml",
-        "name": "rikku-firmware"
+        "name": "rikku-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "rikku-full": {
         "_template": "full",
@@ -17255,7 +17521,12 @@
             "samus"
         ],
         "manifest": "official.xml",
-        "name": "samus-depthcharge-firmware"
+        "name": "samus-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "samus-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -17266,6 +17537,7 @@
         "name": "samus-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -17275,7 +17547,11 @@
             "samus"
         ],
         "manifest": "official.xml",
-        "name": "samus-firmware"
+        "name": "samus-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "samus-full": {
         "_template": "full",
@@ -17715,7 +17991,11 @@
             "slippy"
         ],
         "manifest": "official.xml",
-        "name": "slippy-firmware"
+        "name": "slippy-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "slippy-full": {
         "_template": "full",
@@ -18063,7 +18343,11 @@
         "factory": false,
         "factory_install_netboot": false,
         "manifest": "official.xml",
-        "name": "smaug-firmware"
+        "name": "smaug-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "smaug-full": {
         "_template": "full",
@@ -18296,7 +18580,12 @@
             "squawks"
         ],
         "manifest": "official.xml",
-        "name": "squawks-depthcharge-firmware"
+        "name": "squawks-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "squawks-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -18307,6 +18596,7 @@
         "name": "squawks-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -18316,7 +18606,11 @@
             "squawks"
         ],
         "manifest": "official.xml",
-        "name": "squawks-firmware"
+        "name": "squawks-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "squawks-full": {
         "_template": "full",
@@ -18498,7 +18792,11 @@
             "storm"
         ],
         "manifest": "official.xml",
-        "name": "storm-firmware"
+        "name": "storm-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "storm-full": {
         "_template": "full",
@@ -18791,7 +19089,11 @@
             "stout"
         ],
         "manifest": "official.xml",
-        "name": "stout-firmware"
+        "name": "stout-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "stout-full": {
         "_template": "full",
@@ -18968,7 +19270,12 @@
             "strago"
         ],
         "manifest": "official.xml",
-        "name": "strago-depthcharge-firmware"
+        "name": "strago-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "strago-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -18979,6 +19286,7 @@
         "name": "strago-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -18988,7 +19296,11 @@
             "strago"
         ],
         "manifest": "official.xml",
-        "name": "strago-firmware"
+        "name": "strago-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "strago-full": {
         "_template": "full",
@@ -19236,7 +19548,11 @@
             "stumpy"
         ],
         "manifest": "official.xml",
-        "name": "stumpy-firmware"
+        "name": "stumpy-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "stumpy-full": {
         "_template": "full",
@@ -19797,7 +20113,12 @@
             "sumo"
         ],
         "manifest": "official.xml",
-        "name": "sumo-depthcharge-firmware"
+        "name": "sumo-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "sumo-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -19808,6 +20129,7 @@
         "name": "sumo-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -19817,7 +20139,11 @@
             "sumo"
         ],
         "manifest": "official.xml",
-        "name": "sumo-firmware"
+        "name": "sumo-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "sumo-full": {
         "_template": "full",
@@ -19992,7 +20318,12 @@
             "swanky"
         ],
         "manifest": "official.xml",
-        "name": "swanky-depthcharge-firmware"
+        "name": "swanky-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "swanky-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -20003,6 +20334,7 @@
         "name": "swanky-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -20012,7 +20344,11 @@
             "swanky"
         ],
         "manifest": "official.xml",
-        "name": "swanky-firmware"
+        "name": "swanky-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "swanky-full": {
         "_template": "full",
@@ -23786,7 +24122,12 @@
             "winky"
         ],
         "manifest": "official.xml",
-        "name": "winky-depthcharge-firmware"
+        "name": "winky-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "winky-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -23797,6 +24138,7 @@
         "name": "winky-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -23806,7 +24148,11 @@
             "winky"
         ],
         "manifest": "official.xml",
-        "name": "winky-firmware"
+        "name": "winky-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "winky-full": {
         "_template": "full",
@@ -23981,7 +24327,11 @@
             "wolf"
         ],
         "manifest": "official.xml",
-        "name": "wolf-firmware"
+        "name": "wolf-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "wolf-full": {
         "_template": "full",
@@ -25129,7 +25479,11 @@
             "x86-mario"
         ],
         "manifest": "official.xml",
-        "name": "x86-mario-firmware"
+        "name": "x86-mario-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "x86-mario-full": {
         "_template": "full",
@@ -26204,7 +26558,12 @@
             "zako"
         ],
         "manifest": "official.xml",
-        "name": "zako-depthcharge-firmware"
+        "name": "zako-depthcharge-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty",
+            "depthcharge"
+        ]
     },
     "zako-depthcharge-full-firmware": {
         "_template": "depthcharge-full-firmware",
@@ -26215,6 +26574,7 @@
         "name": "zako-depthcharge-full-firmware",
         "useflags": [
             "chrome_internal",
+            "chromeless_tty",
             "depthcharge"
         ]
     },
@@ -26224,7 +26584,11 @@
             "zako"
         ],
         "manifest": "official.xml",
-        "name": "zako-firmware"
+        "name": "zako-firmware",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
     },
     "zako-full": {
         "_template": "full",

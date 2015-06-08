@@ -542,7 +542,8 @@ class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase,
 
     with parallel_unittest.ParallelMock():
       with self.RunStageWithConfig(mock_configurator=_HookRunCommand) as rc:
-        if self._run.config.upload_hw_test_artifacts:
+        if (self._run.config.upload_hw_test_artifacts and
+            self._run.config.images):
           self.assertNotEqual(rc.call_count, 0)
         else:
           self.assertEqual(rc.call_count, 0)

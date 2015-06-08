@@ -805,7 +805,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
         self._run.config.upload_hw_test_artifacts):
       steps.append(self.BuildAutotestTarballs)
 
-    if self._run.config.upload_hw_test_artifacts:
+    if self._run.config.upload_hw_test_artifacts and self._run.config.images:
       steps.append(self.BuildUpdatePayloads)
 
     parallel.RunParallelSteps(steps)
