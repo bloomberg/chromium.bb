@@ -1,4 +1,0 @@
-CONSOLE ERROR: Error parsing 'integrity' attribute ('sha256;yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8='). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
-CONSOLE ERROR: Error parsing 'integrity' attribute ('sha256:yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8='). The hash algorithm must be one of 'sha256', 'sha384', or 'sha512', followed by a '-' character.
-CONSOLE ERROR: Error parsing 'integrity' attribute ('sha256-(yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8=)'). The digest must be a valid, base64-encoded value.
-This test passes if no 'FAIL' alert appears.

@@ -114,14 +114,16 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
         return true;
 
     if (!resource.isEligibleForIntegrityCheck(document.securityOrigin())) {
-        logErrorToConsole("Subresource Integrity: The resource '" + resourceUrl.elidedString() + "' has an integrity attribute, but the resource requires CORS to be enabled to check the integrity, and it is not. The resource has been blocked.", document);
-        return false;
+        logErrorToConsole("Subresource Integrity: The resource '" + resourceUrl.elidedString() + "' has an integrity attribute, but the resource requires the request to be CORS enabled to check the integrity, and it is not. The resource has not been blocked, but no integrity check occurred.", document);
+        return true;
     }
 
     WTF::Vector<IntegrityMetadata> metadataList;
     IntegrityParseResult integrityParseResult = parseIntegrityAttribute(attribute, metadataList, document);
+    // On failed parsing, there's no need to log an error here, as
+    // parseIntegrityAttribute() will output an appropriate console message.
     if (integrityParseResult != IntegrityParseValidResult)
-        return false;
+        return true;
 
     StringUTF8Adaptor normalizedSource(source, StringUTF8Adaptor::Normalize, WTF::EntitiesForUnencodables);
 
