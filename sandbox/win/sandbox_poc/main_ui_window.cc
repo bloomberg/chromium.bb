@@ -624,7 +624,11 @@ void MainUIWindow::AddDebugMessage(const wchar_t* format, ...) {
   const int kMaxDebugBuffSize = 1024;
 
   va_list arg_list;
+#if _MSC_VER >= 1900
+  __crt_va_start(arg_list, format);
+#else
   _crt_va_start(arg_list, format);
+#endif
 
   wchar_t text[kMaxDebugBuffSize + 1];
   vswprintf_s(text, kMaxDebugBuffSize, format, arg_list);
