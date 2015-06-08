@@ -70,9 +70,11 @@ class CmaRenderer : public ::media::Renderer {
   // the order below, with a successful initialization making it to
   // OnVideoPipelineInitializeDone, regardless of which streams are present.
   void InitializeAudioPipeline();
-  void OnAudioPipelineInitializeDone(::media::PipelineStatus status);
+  void OnAudioPipelineInitializeDone(bool audio_stream_present,
+                                     ::media::PipelineStatus status);
   void InitializeVideoPipeline();
-  void OnVideoPipelineInitializeDone(::media::PipelineStatus status);
+  void OnVideoPipelineInitializeDone(bool video_stream_present,
+                                     ::media::PipelineStatus status);
 
   // Callbacks for AvPipelineClient.
   void OnEosReached(bool is_audio);
