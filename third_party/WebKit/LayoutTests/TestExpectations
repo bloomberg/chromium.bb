@@ -42,6 +42,14 @@ crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/transformed-body-backgro
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/transformed-body-html-background.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/backgrounds/transformed-html-body-background.html [ ImageOnlyFailure ]
 
+crbug.com/497874 virtual/slimmingpaint/fast/multicol/span/positioned-child-not-removed-crash.html [ Crash ]
+
+Bug(wangxianzhu) virtual/slimmingpaint/fast/css/background-clip-radius-values.html [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/fast/frames/frame-set-scaling-rotate.html [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/fast/frames/frame-set-scaling-skew.html [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/svg/repaint/focus-element.html [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/svg/repaint/outline-offset-text.html [ NeedsRebaseline ]
+
 crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass ImageOnlyFailure NeedsManualRebaseline ]
 
 crbug.com/452967 [ Mac ] svg/batik/text/xmlSpace.svg [ Pass Failure ImageOnlyFailure ]
