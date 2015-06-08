@@ -2394,7 +2394,9 @@ def SendUpstream(parser, args, cmd):
 
   commit_desc = ChangeDescription(change_desc.description)
   if cl.GetIssue():
-    commit_desc.append_footer('Review URL: %s' % cl.GetIssueURL())
+    # Xcode won't linkify this URL unless there is a non-whitespace character
+    # after it. Add a period on a new line to circumvent this.
+    commit_desc.append_footer('Review URL: %s.' % cl.GetIssueURL())
   if options.contributor:
     commit_desc.append_footer('Patch from %s.' % options.contributor)
 
