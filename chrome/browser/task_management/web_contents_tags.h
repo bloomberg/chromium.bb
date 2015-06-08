@@ -16,15 +16,19 @@ class WebContents;
 namespace task_management {
 
 // Defines a factory class for creating the TaskManager-specific Tags for the
-// web_contents that are owned by various types of services.
+// WebContents that are owned by various types of services.
 //
-// Any service that creates WebContents instances (via WebContents::Create)
-// needs to make sure that they are tagged using this mechanism, otherwise the
-// associated render processes will not show up in the task manager.
+// Any service or feature that creates WebContents instances (via
+// WebContents::Create) needs to make sure that they are tagged using this
+// mechanism, otherwise the associated render processes will not show up in the
+// task manager.
 class WebContentsTags {
  public:
-  // Creates a BackgroundContentsTag, and attaches it to the specified
-  // WebContents. If an instance is already attached, it does nothing.
+  // Tag a BackgroundContents so that it shows up in the task manager. Calling
+  // this function creates a BackgroundContentsTag, and attaches it to
+  // |web_contents|. If an instance is already attached, this does nothing. The
+  // resulting tag does not have to be cleaned up by the caller, as it is owned
+  // by |web_contents|.
   static void CreateForBackgroundContents(
       content::WebContents* web_contents,
       BackgroundContents* background_contents);
