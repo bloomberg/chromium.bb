@@ -13,8 +13,6 @@ if (!('securityPolicy' in document))
 if (!('allowsEval' in document.securityPolicy))
   document.securityPolicy['allowsEval'] = false;
 
-<include src="../../../../third_party/polymer/components/polymer/polymer.js">
-
 (function() {
 
 // 'strict mode' is invoked for this scope.
@@ -41,11 +39,6 @@ if (!('allowsEval' in document.securityPolicy))
 
 <include src="audio_player.js"/>
 <include src="audio_player_model.js"/>
-
-<include src="../elements/track_list.js"/>
-<include src="../elements/control_panel.js"/>
-<include src="../elements/volume_controller.js"/>
-<include src="../elements/audio_player.js"/>
 
 window.reload = reload;
 window.unload = unload;

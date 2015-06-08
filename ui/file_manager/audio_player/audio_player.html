@@ -13,6 +13,13 @@
   <title>&#xFEFF;</title>
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <link rel="stylesheet" type="text/css" href="css/audio_player.css">
+  <link rel="import" href="elements/audio_player.html">
+</head>
+<body>
+  <div class="audio-player">
+    <!-- Place the audio player. -->
+    <audio-player></audio-player>
+  </div>
 
   <!-- Don't load mediaplayer_scripts.js when flattening is disabled -->
   <if expr="False"><!-- </if>
@@ -49,169 +56,6 @@
 
     <script src="js/audio_player.js"></script>
     <script src="js/audio_player_model.js"></script>
-
-    <script src="elements/track_list.js"></script>
-    <script src="elements/control_panel.js"></script>
-    <script src="elements/volume_controller.js"></script>
-    <script src="elements/audio_player.js"></script>
-   </if>
- </head>
-<body>
-  <!-- Definition of <track-list> tag. -->
-  <polymer-element name="track-list" attributes="tracks">
-    <template>
-      <link rel="stylesheet" href="elements/track_list.css">
-      <template id="tracks" repeat="{{track, index in tracks}}">
-        <div class="track" active?="{{track.active}}" index="{{index}}" on-click="{{trackClicked}}">
-          <div class="data">
-            <div class="data-title">{{track.title}}</div>
-            <div class="data-artist">{{track.artist}}</div>
-          </div>
-        </div>
-      </template>
-    </template>
-  </polymer-element>
-
-  <!-- Definition of <control-panel> tag. -->
-  <polymer-element name="control-panel">
-    <template>
-      <link rel="stylesheet" href="elements/control_panel.css">
-
-      <div class="controls">
-        <div class="upper-controls time-controls">
-          <div class="time media-control">
-            <div class="current">{{timeString_}}</div>
-          </div>
-          <div class="progress media-control custom-slider">
-            <input name="timeInput" type="range" touch-action="manipulation"
-                   min="0" max="{{duration}}" value="{{time}}">
-            <div class="bar">
-              <div class="filled" style="width: {{time/duration*100}}%;"></div>
-              <div class="cap left"></div>
-              <div class="cap right"></div>
-            </div>
-          </div>
-          <div class="time media-control">
-            <div class="duration">{{durationString_}}</div>
-          </div>
-        </div>
-        <div class="lower-controls audio-controls">
-          <!-- Shuffle toggle button in the bottom line. -->
-          <button class="shuffle-mode media-button toggle" state="default">
-            <label>
-              <input id="shuffleCheckbox"
-                     type="checkbox"
-                     checked="{{model.shuffle}}">
-              <span class="icon"></span>
-            </label>
-          </button>
-
-          <!-- Repeat toggle button in the bottom line. -->
-          <button class="repeat media-button toggle" state="default">
-            <label>
-              <input id="repeatCheckbox"
-                     type="checkbox"
-                     checked="{{model.repeat}}">
-              <span class="icon"></span>
-            </label>
-          </button>
-
-          <!-- Prev button in the bottom line. -->
-          <button class="previous media-button"
-                 state="default"
-                 on-click="{{previousClick}}">
-            <div class="normal default"></div>
-            <div class="disabled"></div>
-          </button>
-
-          <!-- Play button in the bottom line. -->
-          <button class="play media-control media-button"
-                  state='{{playing ? "playing" : "ended"}}'
-                  on-click="{{playClick}}">
-            <div class="normal playing"></div>
-            <div class="normal ended"></div>
-            <div class="disabled"></div>
-          </button>
-
-          <!-- Next button in the bottom line. -->
-          <button class="next media-button"
-                  state="default"
-                  on-click="{{nextClick}}">
-            <div class="normal default"></div>
-            <div class="disabled"></div>
-          </button>
-
-          <div id="volumeContainer"
-               class="default-hidden"
-               anchor-point="bottom center">
-            <volume-controller id="volumeSlider"
-                               width="32" height="85" value="50">
-            </volume-controller>
-
-            <polymer-anchor-point id="anchorHelper"></polymer-anchor-point>
-          </div>
-
-          <!-- Volume button in the bottom line. -->
-          <button id="volumeButton"
-                  class="volume media-button toggle"
-                  state="default"
-                  on-click="{{volumeButtonClick}}"
-                  anchor-point="bottom center">
-            <label>
-              <input type="checkbox" checked="{{volumeSliderShown}}">
-              <span class="icon"></span>
-            </label>
-          </button>
-
-          <!-- Playlist button in the bottom line. -->
-          <button id="playlistButton"
-                  class="playlist media-button toggle"
-                  state="default">
-            <label>
-              <input type="checkbox" checked="{{model.expanded}}">
-              <span class="icon"></span>
-            </label>
-          </button>
-        </div>
-      </div>
-    </template>
-  </polymer-element>
-
-  <!-- Definition of <volume-controller> tag. -->
-  <polymer-element name="volume-controller" attributes="width height value">
-    <template>
-      <link rel="stylesheet" href="elements/volume_controller.css">
-
-      <div id="background"></div>
-      <input name="rawValueInput" id="rawValueInput" touch-action="manipulation"
-             type="range" min="0" max="100" value="{{rawValue}}">
-      <div id="bar">
-        <div class="filled" style="height: {{rawValue}}%;"></div>
-        <div class="cap left"></div>
-        <div class="cap right"></div>
-      </div>
-    </template>
-  </polymer-element>
-
-  <!-- Definition of <audio-player> tag. -->
-  <polymer-element name="audio-player"
-                   attributes="playing currenttrackurl playcount">
-    <template>
-      <link rel="stylesheet" href="elements/audio_player.css">
-
-      <track-list id="trackList" expanded?="{{model.expanded}}"
-                  on-replay="{{onReplayCurrentTrack}}"></track-list>
-      <control-panel id="audioController"
-                     on-next-clicked="{{onControllerNextClicked}}"
-                     on-previous-clicked="{{onControllerPreviousClicked}}">
-      </control-panel>
-      <audio id="audio"></audio>
-    </template>
-  </polymer-element>
-
-  <div class="audio-player">
-    <!-- Place the audio player. -->
-    <audio-player></audio-player>
-  </div>
+  </if>
 </body>
 </html>
