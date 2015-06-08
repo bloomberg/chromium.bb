@@ -167,8 +167,6 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   client_->setWebLayer(NULL);
 
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  media_log_->AddEvent(
-      media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 
   if (delegate_)
     delegate_->PlayerGone(this);
@@ -191,6 +189,9 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   waiter.Wait();
 
   compositor_task_runner_->DeleteSoon(FROM_HERE, compositor_);
+
+  media_log_->AddEvent(
+      media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
 }
 
 void WebMediaPlayerImpl::load(LoadType load_type, const blink::WebURL& url,

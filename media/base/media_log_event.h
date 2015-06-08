@@ -32,11 +32,6 @@ struct MediaLogEvent {
     WEBMEDIAPLAYER_CREATED,
     WEBMEDIAPLAYER_DESTROYED,
 
-    // A Pipeline is being created or destroyed.
-    // params: none.
-    PIPELINE_CREATED,
-    PIPELINE_DESTROYED,
-
     // A media player is loading a resource.
     // params: "url": <URL of the resource>.
     LOAD,

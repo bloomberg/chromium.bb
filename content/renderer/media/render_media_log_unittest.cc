@@ -27,6 +27,8 @@ class RenderMediaLogTest : public testing::Test {
 
   void AddEvent(media::MediaLogEvent::Type type) {
     log_->AddEvent(log_->CreateEvent(type));
+    // AddEvent() could post. Run the task runner to make sure it's executed.
+    task_runner_->RunUntilIdle();
   }
 
   void Advance(base::TimeDelta delta) {

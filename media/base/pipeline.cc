@@ -46,8 +46,6 @@ Pipeline::Pipeline(
       pending_cdm_context_(nullptr),
       weak_factory_(this) {
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
-  media_log_->AddEvent(
-      media_log_->CreateEvent(MediaLogEvent::PIPELINE_CREATED));
 }
 
 Pipeline::~Pipeline() {
@@ -56,9 +54,6 @@ Pipeline::~Pipeline() {
   DCHECK(!running_) << "Stop() must complete before destroying object";
   DCHECK(stop_cb_.is_null());
   DCHECK(seek_cb_.is_null());
-
-  media_log_->AddEvent(
-      media_log_->CreateEvent(MediaLogEvent::PIPELINE_DESTROYED));
 }
 
 void Pipeline::Start(Demuxer* demuxer,

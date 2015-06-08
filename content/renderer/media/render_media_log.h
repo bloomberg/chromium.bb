@@ -35,6 +35,9 @@ class CONTENT_EXPORT RenderMediaLog : public media::MediaLog {
  private:
   ~RenderMediaLog() override;
 
+  // Add event on the |task_runner_|.
+  void AddEventInternal(scoped_ptr<media::MediaLogEvent> event);
+
   // Posted as a delayed task to throttle ipc message frequency.
   void SendQueuedMediaEvents();
 

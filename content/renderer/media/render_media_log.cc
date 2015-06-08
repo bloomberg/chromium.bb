@@ -40,11 +40,16 @@ RenderMediaLog::RenderMediaLog()
 }
 
 void RenderMediaLog::AddEvent(scoped_ptr<media::MediaLogEvent> event) {
-  if (!task_runner_->BelongsToCurrentThread()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(&RenderMediaLog::AddEvent,
-                                                 this, base::Passed(&event)));
-    return;
-  }
+  // Always post to preserve the correct order of events.
+  // TODO(xhwang): Consider using sorted containers to keep the order and
+  // avoid extra posting.
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&RenderMediaLog::AddEventInternal, this,
+                                    base::Passed(&event)));
+}
+
+void RenderMediaLog::AddEventInternal(scoped_ptr<media::MediaLogEvent> event) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   Log(event.get());
 
