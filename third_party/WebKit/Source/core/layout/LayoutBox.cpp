@@ -254,7 +254,7 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
     updateGridPositionAfterStyleChange(oldStyle);
 
     if (LayoutMultiColumnSpannerPlaceholder* placeholder = this->spannerPlaceholder())
-        placeholder->updateMarginProperties();
+        placeholder->layoutObjectInFlowThreadStyleDidChange(oldStyle);
 }
 
 void LayoutBox::updateShapeOutsideInfoAfterStyleChange(const ComputedStyle& style, const ComputedStyle* oldStyle)

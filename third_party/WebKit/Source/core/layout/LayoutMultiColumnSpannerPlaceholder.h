@@ -19,7 +19,7 @@ public:
 
     static LayoutMultiColumnSpannerPlaceholder* createAnonymous(const ComputedStyle& parentStyle, LayoutBox&);
 
-    LayoutFlowThread* flowThread() const { return toLayoutBlockFlow(parent())->multiColumnFlowThread(); }
+    LayoutMultiColumnFlowThread* flowThread() const { return toLayoutBlockFlow(parent())->multiColumnFlowThread(); }
 
     LayoutBox* layoutObjectInFlowThread() const { return m_layoutObjectInFlowThread; }
     void markForLayoutIfObjectInFlowThreadNeedsLayout()
@@ -30,6 +30,8 @@ public:
         // spanner is laid out via its spanner set (us), so we need to make sure that we enter it.
         setChildNeedsLayout(MarkOnlyThis);
     }
+
+    void layoutObjectInFlowThreadStyleDidChange(const ComputedStyle* oldStyle);
     void updateMarginProperties();
 
     virtual const char* name() const override { return "LayoutMultiColumnSpannerPlaceholder"; }

@@ -361,6 +361,25 @@ void LayoutMultiColumnFlowThread::columnRuleStyleDidChange()
         columnSet->setShouldDoFullPaintInvalidation(PaintInvalidationStyleChange);
 }
 
+bool LayoutMultiColumnFlowThread::removeSpannerPlaceholderIfNoLongerValid(LayoutBox* spannerObjectInFlowThread)
+{
+    ASSERT(spannerObjectInFlowThread->spannerPlaceholder());
+    if (descendantIsValidColumnSpanner(spannerObjectInFlowThread))
+        return false; // Still a valid spanner.
+
+    // No longer a valid spanner. Get rid of the placeholder.
+    destroySpannerPlaceholder(spannerObjectInFlowThread->spannerPlaceholder());
+    ASSERT(!spannerObjectInFlowThread->spannerPlaceholder());
+
+    // We may have a new containing block, since we're no longer a spanner. Mark it for relayout.
+    spannerObjectInFlowThread->containingBlock()->setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReason::ColumnsChanged);
+
+    // Now generate a column set for this ex-spanner, if needed and none is there for us already.
+    flowThreadDescendantWasInserted(spannerObjectInFlowThread);
+
+    return true;
+}
+
 void LayoutMultiColumnFlowThread::calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const
 {
     LayoutBlock* columnBlock = multiColumnBlockFlow();
@@ -458,12 +477,14 @@ void LayoutMultiColumnFlowThread::destroySpannerPlaceholder(LayoutMultiColumnSpa
 
 bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(LayoutObject* descendant) const
 {
+    // This method needs to behave correctly in the following situations:
+    // - When the descendant doesn't have a spanner placeholder but should have one (return true)
+    // - When the descendant doesn't have a spanner placeholder and still should not have one (return false)
+    // - When the descendant has a spanner placeholder but should no longer have one (return false)
+    // - When the descendant has a spanner placeholder and should still have one (return true)
+
     // We assume that we're inside the flow thread. This function is not to be called otherwise.
     ASSERT(descendant->isDescendantOf(this));
-
-    // We're evaluating if the descendant should be turned into a proper spanner. It shouldn't
-    // already be one.
-    ASSERT(!descendant->spannerPlaceholder());
 
     // The spec says that column-span only applies to in-flow block-level elements.
     if (descendant->style()->columnSpan() != ColumnSpanAll || !descendant->isBox() || descendant->isInline() || descendant->isFloatingOrOutOfFlowPositioned())
@@ -475,7 +496,7 @@ bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(LayoutObject* d
     }
 
     // This looks like a spanner, but if we're inside something unbreakable, it's not to be treated as one.
-    for (LayoutBlock* ancestor = descendant->containingBlock(); ancestor; ancestor = ancestor->containingBlock()) {
+    for (LayoutBox* ancestor = toLayoutBox(descendant)->parentBox(); ancestor; ancestor = ancestor->containingBlock()) {
         if (ancestor->isLayoutFlowThread()) {
             ASSERT(ancestor == this);
             return true;
@@ -712,8 +733,27 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantStyleDidChange(LayoutObjec
         // of the multicol is bad.
         return;
     }
-    if (oldStyle.hasOutOfFlowPosition() && !styleRef().hasOutOfFlowPosition())
+    if (styleRef().hasOutOfFlowPosition())
+        return;
+
+    // We're not out of flow.
+    if (oldStyle.hasOutOfFlowPosition()) {
+        // ... but we used to be out of flow. So we might need to insert a column set (or
+        // spanner placeholder, in case this descendant is now a valid column spanner).
         flowThreadDescendantWasInserted(descendant);
+        return;
+    }
+    if (descendantIsValidColumnSpanner(descendant)) {
+        // We went from being regular column content to becoming a spanner.
+        ASSERT(!toLayoutBox(descendant)->spannerPlaceholder());
+
+        // First remove this as regular column content. Note that this will walk the entire subtree
+        // of |descendant|. There might be spanners there (which won't be spanners anymore, since
+        // we're not allowed to nest spanners), whose placeholders must die.
+        flowThreadDescendantWillBeRemoved(descendant);
+
+        createAndInsertSpannerPlaceholder(toLayoutBox(descendant), nextInPreOrderAfterChildrenSkippingOutOfFlow(this, descendant));
+    }
 }
 
 void LayoutMultiColumnFlowThread::computePreferredLogicalWidths()

@@ -178,6 +178,9 @@ public:
 
     void columnRuleStyleDidChange();
 
+    // Remove the spanner placeholder and return true if the specified object is no longer a valid spanner.
+    bool removeSpannerPlaceholderIfNoLongerValid(LayoutBox* spannerObjectInFlowThread);
+
     virtual const char* name() const override { return "LayoutMultiColumnFlowThread"; }
 
 protected:
@@ -196,8 +199,8 @@ private:
     virtual void addColumnSetToThread(LayoutMultiColumnSet*) override;
     virtual void willBeRemovedFromTree() override;
     virtual LayoutUnit skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread) override;
-    virtual void flowThreadDescendantWasInserted(LayoutObject*) override;
-    virtual void flowThreadDescendantWillBeRemoved(LayoutObject*) override;
+    virtual void flowThreadDescendantWasInserted(LayoutObject*) final;
+    virtual void flowThreadDescendantWillBeRemoved(LayoutObject*) final;
     virtual void flowThreadDescendantStyleWillChange(LayoutObject*, StyleDifference, const ComputedStyle& newStyle) override;
     virtual void flowThreadDescendantStyleDidChange(LayoutObject*, StyleDifference, const ComputedStyle& oldStyle) override;
     virtual void computePreferredLogicalWidths() override;
