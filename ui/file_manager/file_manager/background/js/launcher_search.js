@@ -118,14 +118,19 @@ LauncherSearch.prototype.onQueryStarted_ = function(queryId, query, limit) {
         chrome.launcherSearchProvider.setSearchResults(
             queryId,
             results.map(function(result) {
-              // Use high-dpi icons since preferred icon size is 24px in the
-              // current implementation.
-              //
               // TODO(yawano): Use filetype_folder_shared.png for a shared
               //     folder.
+              // TODO(yawano): Add archive launcher filetype icon.
+              var fileType = FileType.getIcon(result.entry);
+              if (fileType === 'UNKNOWN' || fileType === 'archive')
+                fileType = 'generic';
+
+              var useHighDpiIcon = window.devicePixelRatio > 1.0;
               var iconUrl = chrome.runtime.getURL(
-                  'foreground/images/filetype/2x/filetype_' +
-                  FileType.getIcon(result.entry) + '.png');
+                  'foreground/images/launcher_filetypes/' +
+                  (useHighDpiIcon ? '2x/' : '') + 'launcher_filetype_' +
+                  fileType + '.png');
+
               return {
                 itemId: result.entry.toURL(),
                 title: result.entry.name,

@@ -219,37 +219,37 @@
     "includes": [28110],
   },
   "components/chrome_apps/chrome_apps_resources.grd": {
-    "includes": [28270],
+    "includes": [28290],
   },
   "ui/login/login_resources.grd": {
-    "includes": [28300],
-  },
-  "ui/oobe/oobe_resources.grd": {
     "includes": [28310],
   },
+  "ui/oobe/oobe_resources.grd": {
+    "includes": [28320],
+  },
   "chrome/browser/resources/translate_internals_resources.grd": {
-    "includes": [28500],
+    "includes": [28510],
   },
   "chrome/browser/resources/sync_file_system_internals_resources.grd": {
-    "includes": [29000],
+    "includes": [29010],
   },
   "chrome/app/address_input_strings.grd": {
-    "messages": [29100],
+    "messages": [29110],
   },
   "remoting/resources/remoting_strings.grd": {
-    "messages": [29550],
+    "messages": [29560],
   },
   "components/components_strings.grd": {
-    "messages": [30000],
+    "messages": [30010],
   },
   "components/resources/components_resources.grd": {
-    "includes": [30250],
+    "includes": [30260],
   },
   "components/resources/components_scaled_resources.grd": {
-    "structures": [30300],
+    "structures": [30310],
   },
   "components/resources/enhanced_bookmarks/enhanced_bookmarks_resources.grd": {
-    "includes": [30330],
+    "includes": [30340],
   },
   "third_party/WebKit/public/blink_resources.grd": {
     "includes": [30350],
