@@ -1306,9 +1306,18 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
     // If the state becomes connected, send the time needed for PC to become
     // connected from checking to UMA. UMA data will help to know how much
     // time needed for PC to connect with remote peer.
+    if (ice_connection_checking_start_.is_null()) {
+      // From UMA, we have observed a large number of calls falling into the
+      // overflow buckets. One possibility is that the Checking is not signaled
+      // before Connected. This is to guard against that situation to make the
+      // metric more robust.
+      UMA_HISTOGRAM_MEDIUM_TIMES("WebRTC.PeerConnection.TimeToConnect",
+                                 base::TimeDelta());
+    } else {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "WebRTC.PeerConnection.TimeToConnect",
         base::TimeTicks::Now() - ice_connection_checking_start_);
+    }
   }
 
   track_metrics_.IceConnectionChange(new_state);
