@@ -39,6 +39,7 @@ public final class WarmupManager {
     private final Set<String> mDnsRequestsInFlight;
     private final Map<String, Profile> mPendingPreconnectWithProfile;
 
+    private boolean mPrerenderIsAllowed;
     private WebContents mPrerenderedWebContents;
     private boolean mPrerendered;
     private ViewGroup mMainView;
@@ -54,8 +55,19 @@ public final class WarmupManager {
     }
 
     private WarmupManager() {
+        mPrerenderIsAllowed = true;
         mDnsRequestsInFlight = new HashSet<String>();
         mPendingPreconnectWithProfile = new HashMap<String, Profile>();
+    }
+
+    /**
+     * Disallow prerendering from now until the browser process death.
+     */
+    public void disallowPrerendering() {
+        ThreadUtils.assertOnUiThread();
+        mPrerenderIsAllowed = false;
+        cancelCurrentPrerender();
+        mExternalPrerenderHandler = null;
     }
 
     /**
@@ -69,6 +81,7 @@ public final class WarmupManager {
      */
     public boolean hasPrerenderedUrl(String url) {
         ThreadUtils.assertOnUiThread();
+        if (!mPrerenderIsAllowed) return false;
         return hasAnyPrerenderedUrl() && ExternalPrerenderHandler.hasPrerenderedUrl(
                 Profile.getLastUsedProfile(), url, mPrerenderedWebContents);
     }
@@ -78,6 +91,7 @@ public final class WarmupManager {
      */
     public boolean hasAnyPrerenderedUrl() {
         ThreadUtils.assertOnUiThread();
+        if (!mPrerenderIsAllowed) return false;
         return mPrerendered;
     }
 
@@ -86,6 +100,7 @@ public final class WarmupManager {
      */
     public WebContents takePrerenderedWebContents() {
         ThreadUtils.assertOnUiThread();
+        if (!mPrerenderIsAllowed) return null;
         WebContents prerenderedWebContents = mPrerenderedWebContents;
         assert (mPrerenderedWebContents != null);
         mPrerenderedWebContents = null;
@@ -105,6 +120,7 @@ public final class WarmupManager {
     public void prerenderUrl(final String url, final String referrer,
             final int widthPix, final int heightPix) {
         ThreadUtils.assertOnUiThread();
+        if (!mPrerenderIsAllowed) return;
         clearWebContentsIfNecessary();
         if (mExternalPrerenderHandler == null) {
             mExternalPrerenderHandler = new ExternalPrerenderHandler();

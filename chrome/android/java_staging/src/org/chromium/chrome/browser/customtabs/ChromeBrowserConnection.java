@@ -12,6 +12,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.Point;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
@@ -19,8 +22,12 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.LongSparseArray;
 import android.util.SparseArray;
+import android.view.WindowManager;
+
+import com.google.android.apps.chrome.R;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -29,6 +36,8 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromiumApplication;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content_public.browser.WebContents;
 
@@ -46,6 +55,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     private static final String TAG = Log.makeTag("ChromeConnection");
     private static final long RESULT_OK = 0;
     private static final long RESULT_ERROR = -1;
+    private static final String KEY_CUSTOM_TABS_REFERRER = "android.support.CUSTOM_TABS:referrer";
 
     // Values for the "CustomTabs.PredictionStatus" UMA histogram. Append-only.
     private static final int NO_PREDICTION = 0;
@@ -56,8 +66,24 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     private static final Object sConstructionLock = new Object();
     private static ChromeBrowserConnection sInstance;
 
+    private static final class PrerenderedUrlParams {
+        public final long mSessionId;
+        public final WebContents mWebContents;
+        public final String mUrl;
+        public final Bundle mExtras;
+
+        PrerenderedUrlParams(long sessionId, WebContents webContents, String url, Bundle extras) {
+            mSessionId = sessionId;
+            mWebContents = webContents;
+            mUrl = url;
+            mExtras = extras;
+        }
+    }
+
     private final Application mApplication;
     private final AtomicBoolean mWarmupHasBeenCalled;
+    private ExternalPrerenderHandler mExternalPrerenderHandler;
+    private PrerenderedUrlParams mPrerender;
 
     /** Per-sessionId values. */
     private static class SessionParams {
@@ -195,8 +221,8 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     }
 
     @Override
-    public long mayLaunchUrl(
-            long sessionId, final String url, Bundle extras, List<Bundle> otherLikelyBundles) {
+    public long mayLaunchUrl(final long sessionId, final String url, final Bundle extras,
+            List<Bundle> otherLikelyBundles) {
         int uid = Binder.getCallingUid();
         // Don't do anything for unknown schemes. Not having a scheme is
         // allowed, as we allow "www.example.com".
@@ -213,11 +239,14 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                WarmupManager.getInstance().maybePrefetchDnsForUrlInBackground(
-                        mApplication.getApplicationContext(), url);
+                if (!TextUtils.isEmpty(url)) {
+                    WarmupManager.getInstance().maybePrefetchDnsForUrlInBackground(
+                            mApplication.getApplicationContext(), url);
+                }
+                // Calling with a null or empty url cancels a current prerender.
+                prerenderUrl(sessionId, url, extras);
             }
         });
-        // TODO(lizeb): Prerendering.
         return sessionId;
     }
 
@@ -254,7 +283,22 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
      * Transfers a prerendered WebContents if one exists.
      *
      * This resets the internal WebContents; a subsequent call to this method
-     * returns null.
+     * returns null. Must be called from the UI thread.
+     * If a prerender exists for a different URL with the same sessionId, then
+     * this is treated as a mispredict from the client application, and cancels
+     * the previous prerender. This is done to avoid keeping resources laying
+     * around for too long, but is subject to a race condition, as the following
+     * scenario is possible:
+     * The application calls:
+     * 1. mayLaunchUrl(url1) <- IPC
+     * 2. loadUrl(url2) <- Intent
+     * 3. mayLaunchUrl(url3) <- IPC
+     * If the IPC for url3 arrives before the intent for url2, then this methods
+     * cancels the prerender for url3, which is unexpected. On the other
+     * hand, not cancelling the previous prerender leads to wasted resources, as
+     * a WebContents is lingering. This can be solved by requiring applications
+     * to call mayLaunchUrl(null) to cancel a current prerender before 2, that
+     * is for a mispredict.
      *
      * @param sessionId The session ID, returned by {@link newSession}.
      * @param url The URL the WebContents is for.
@@ -262,7 +306,15 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
      * @return The prerendered WebContents, or null.
      */
     WebContents takePrerenderedUrl(long sessionId, String url, Bundle extras) {
-        // TODO(lizeb): Pre-rendering.
+        ThreadUtils.assertOnUiThread();
+        if (mPrerender == null || mPrerender.mSessionId != sessionId) return null;
+        WebContents webContents = mPrerender.mWebContents;
+        String prerenderedUrl = mPrerender.mUrl;
+        mPrerender = null;
+        // TODO(lizeb): Referrer
+        if (TextUtils.equals(prerenderedUrl, url)) return webContents;
+        mExternalPrerenderHandler.cancelCurrentPrerender();
+        webContents.destroy();
         return null;
     }
 
@@ -414,5 +466,67 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
             mSessionParams.remove(sessionId);
         }
         mUidToCallback.remove(uid);
+    }
+
+    private boolean mayPrerender() {
+        ConnectivityManager cm =
+                (ConnectivityManager) mApplication.getApplicationContext().getSystemService(
+                        Context.CONNECTIVITY_SERVICE);
+        return !cm.isActiveNetworkMetered();
+    }
+
+    private void prerenderUrl(long sessionId, String url, Bundle extras) {
+        ThreadUtils.assertOnUiThread();
+        // TODO(lizeb): Prerendering through ChromePrerenderService is
+        // incompatible with prerendering through this service. Remove this
+        // limitation, or remove ChromePrerenderService.
+        WarmupManager.getInstance().disallowPrerendering();
+
+        if (!mayPrerender()) return;
+        if (!mWarmupHasBeenCalled.get()) return;
+        // Last one wins and cancels the previous prerender.
+        if (mPrerender != null) {
+            mExternalPrerenderHandler.cancelCurrentPrerender();
+            mPrerender.mWebContents.destroy();
+            mPrerender = null;
+        }
+        if (TextUtils.isEmpty(url)) return;
+        if (mExternalPrerenderHandler == null) {
+            mExternalPrerenderHandler = new ExternalPrerenderHandler();
+        }
+        Point contentSize = estimateContentSize();
+        String referrer = "";
+        if (extras != null) referrer = extras.getString(KEY_CUSTOM_TABS_REFERRER, "");
+        WebContents webContents = mExternalPrerenderHandler.addPrerender(
+                Profile.getLastUsedProfile(), url, referrer, contentSize.x, contentSize.y);
+        mPrerender = new PrerenderedUrlParams(sessionId, webContents, url, extras);
+    }
+
+    /**
+     * Provides an estimate of the contents size.
+     *
+     * The estimate is likely to be incorrect. This is not a problem, as the aim
+     * is to avoid getting a different layout and resources than needed at
+     * render time.
+     */
+    private Point estimateContentSize() {
+        // The size is estimated as:
+        // X = screenSizeX
+        // Y = screenSizeY - top bar - bottom bar - custom tabs bar
+        Point screenSize = new Point();
+        WindowManager wm = (WindowManager) mApplication.getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getSize(screenSize);
+        Resources resources = mApplication.getResources();
+        int statusBarId = resources.getIdentifier("status_bar_height", "dimen", "android");
+        int navigationBarId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+        try {
+            screenSize.y -=
+                    resources.getDimensionPixelSize(R.dimen.custom_tabs_control_container_height);
+            screenSize.y -= resources.getDimensionPixelSize(statusBarId);
+            screenSize.y -= resources.getDimensionPixelSize(navigationBarId);
+        } catch (Resources.NotFoundException e) {
+            // Nothing, this is just a best effort estimate.
+        }
+        return screenSize;
     }
 }
