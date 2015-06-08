@@ -638,4 +638,12 @@ const AtomicString& HTMLTextAreaElement::defaultAutocapitalize() const
     return sentences;
 }
 
+void HTMLTextAreaElement::copyNonAttributePropertiesFromElement(const Element& source)
+{
+    const HTMLTextAreaElement& sourceElement = static_cast<const HTMLTextAreaElement&>(source);
+    setValueCommon(sourceElement.value(), DispatchNoEvent, SetSeletion);
+    m_isDirty = sourceElement.m_isDirty;
+    HTMLTextFormControlElement::copyNonAttributePropertiesFromElement(source);
+}
+
 } // namespace blink
