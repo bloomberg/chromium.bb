@@ -53,6 +53,9 @@
                 '<(version_path)',
                 '<@(template_files)',
                 '<(zip_script)',
+                '<!@pymod_do_main(grit_info <@(grit_defines) '
+                    '--inputs "<(grit_grd_file)" '
+                    '-f "<(DEPTH)/tools/gritsettings/resource_ids")',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/policy_templates.zip',
