@@ -1019,7 +1019,7 @@ bool ResourceFetcher::scheduleArchiveLoad(Resource* resource, const ResourceRequ
     ArchiveResource* archiveResource = m_archiveResourceCollection->archiveResourceForURL(request.url());
     if (!archiveResource) {
         resource->error(Resource::LoadError);
-        return true;
+        return false;
     }
 
     resource->setLoading(true);
