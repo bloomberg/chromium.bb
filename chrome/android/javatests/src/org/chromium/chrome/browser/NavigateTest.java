@@ -135,9 +135,11 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
 
     /**
      * Test Opening a link and verify that TabObserver#onPageLoadStarted gives the old and new URL.
-    */
-    @MediumTest
-    @Feature({"Navigation"})
+     * Bug: crbug.com/171037
+     * @MediumTest
+     * @Feature({"Navigation"})
+     */
+    @FlakyTest
     public void testTabObserverOnPageLoadStarted() throws InterruptedException, TimeoutException {
         final String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
         final String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
