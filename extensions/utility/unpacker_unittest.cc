@@ -16,6 +16,7 @@
 #include "extensions/utility/unpacker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/zlib/google/zip.h"
 
 using base::ASCIIToUTF16;
 
@@ -32,22 +33,22 @@ class UnpackerTest : public testing::Test {
   }
 
   void SetupUnpacker(const std::string& crx_name) {
-    base::FilePath original_path;
-    ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &original_path));
-    original_path = original_path.AppendASCII("unpacker").AppendASCII(crx_name);
-    ASSERT_TRUE(base::PathExists(original_path)) << original_path.value();
+    base::FilePath crx_path;
+    ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &crx_path));
+    crx_path = crx_path.AppendASCII("unpacker").AppendASCII(crx_name);
+    ASSERT_TRUE(base::PathExists(crx_path)) << crx_path.value();
 
     // Try bots won't let us write into DIR_TEST_DATA, so we have to create
     // a temp folder to play in.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    base::FilePath crx_path = temp_dir_.path().AppendASCII(crx_name);
-    ASSERT_TRUE(base::CopyFile(original_path, crx_path))
-        << "Original path " << original_path.value() << ", Crx path "
-        << crx_path.value();
+    base::FilePath unzipped_dir = temp_dir_.path().AppendASCII("unzipped");
+    ASSERT_TRUE(zip::Unzip(crx_path, unzipped_dir))
+        << "Failed to unzip " << crx_path.value() << " to "
+        << unzipped_dir.value();
 
-    unpacker_.reset(new Unpacker(crx_path, std::string(), Manifest::INTERNAL,
-                                 Extension::NO_FLAGS));
+    unpacker_.reset(new Unpacker(temp_dir_.path(), unzipped_dir, std::string(),
+                                 Manifest::INTERNAL, Extension::NO_FLAGS));
   }
 
  protected:
@@ -128,25 +129,6 @@ TEST_F(UnpackerTest, NoL10n) {
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());
   EXPECT_EQ(0U, unpacker_->parsed_catalogs()->size());
-}
-
-TEST_F(UnpackerTest, UnzipDirectoryError) {
-  const char kExpected[] = "Could not create directory for unzipping: ";
-  SetupUnpacker("good_package.crx");
-  base::FilePath path = temp_dir_.path().AppendASCII(kTempExtensionName);
-  ASSERT_TRUE(base::WriteFile(path, "foo", 3));
-  EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(
-      StartsWith(unpacker_->error_message(), ASCIIToUTF16(kExpected), false))
-      << "Expected prefix: \"" << kExpected << "\", actual error: \""
-      << unpacker_->error_message() << "\"";
-}
-
-TEST_F(UnpackerTest, UnzipError) {
-  const char kExpected[] = "Could not unzip extension";
-  SetupUnpacker("bad_zip.crx");
-  EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(ASCIIToUTF16(kExpected), unpacker_->error_message());
 }
 
 namespace {

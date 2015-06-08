@@ -21,21 +21,29 @@ class DictionaryValue;
 namespace extensions {
 
 // This class unpacks an extension.  It is designed to be used in a sandboxed
-// child process.  We unpack and parse various bits of the extension, then
-// report back to the browser process, who then transcodes the pre-parsed bits
-// and writes them back out to disk for later use.
+// child process.  We parse various bits of the extension, then report back to
+// the browser process, who then transcodes the pre-parsed bits and writes them
+// back out to disk for later use.
 class Unpacker {
  public:
-  Unpacker(const base::FilePath& extension_path,
+  Unpacker(const base::FilePath& working_dir,
+           const base::FilePath& extension_dir,
            const std::string& extension_id,
            Manifest::Location location,
            int creation_flags);
   ~Unpacker();
 
-  // Install the extension file at |extension_path|.  Returns true on success.
-  // Otherwise, error_message will contain a string explaining what went wrong.
+  // Runs the processing steps for the extension. On success, this returns true
+  // and the decoded images will be in a file at
+  // |working_dir|/kDecodedImagesFilename and the decoded messages will be in a
+  // file at |working_dir|/kDecodedMessageCatalogsFilename.
   bool Run();
 
+  const base::string16& error_message() { return error_message_; }
+  base::DictionaryValue* parsed_manifest() { return parsed_manifest_.get(); }
+  base::DictionaryValue* parsed_catalogs() { return parsed_catalogs_.get(); }
+
+ private:
   // Write the decoded images to kDecodedImagesFilename.  We do this instead
   // of sending them over IPC, since they are so large.  Returns true on
   // success.
@@ -46,11 +54,6 @@ class Unpacker {
   // success.
   bool DumpMessageCatalogsToFile();
 
-  const base::string16& error_message() { return error_message_; }
-  base::DictionaryValue* parsed_manifest() { return parsed_manifest_.get(); }
-  base::DictionaryValue* parsed_catalogs() { return parsed_catalogs_.get(); }
-
- private:
   // Parse the manifest.json file inside the extension (not in the header).
   // Caller takes ownership of return value.
   base::DictionaryValue* ReadManifest();
@@ -70,8 +73,11 @@ class Unpacker {
   void SetError(const std::string& error);
   void SetUTF16Error(const base::string16& error);
 
-  // The extension to unpack.
-  base::FilePath extension_path_;
+  // The directory to do work in.
+  base::FilePath working_dir_;
+
+  // The directory where the extension source lives.
+  base::FilePath extension_dir_;
 
   // The extension ID if known.
   std::string extension_id_;
@@ -81,9 +87,6 @@ class Unpacker {
 
   // The creation flags to use with the created extension.
   int creation_flags_;
-
-  // The place we unpacked the extension to.
-  base::FilePath temp_install_dir_;
 
   // The parsed version of the manifest JSON contained in the extension.
   scoped_ptr<base::DictionaryValue> parsed_manifest_;

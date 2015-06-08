@@ -6,17 +6,22 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/i18n/rtl.h"
 #include "content/public/utility/utility_thread.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_utility_messages.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/update_manifest.h"
+#include "extensions/strings/grit/extensions_strings.h"
 #include "extensions/utility/unpacker.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/zlib/google/zip.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 
 namespace extensions {
@@ -94,19 +99,30 @@ void UtilityHandler::OnUnpackExtension(
   CHECK_GT(location, Manifest::INVALID_LOCATION);
   CHECK_LT(location, Manifest::NUM_LOCATIONS);
   DCHECK(ExtensionsClient::Get());
-  Unpacker unpacker(extension_path,
-                    extension_id,
-                    static_cast<Manifest::Location>(location),
-                    creation_flags);
-  if (unpacker.Run() && unpacker.DumpImagesToFile() &&
-      unpacker.DumpMessageCatalogsToFile()) {
-    Send(new ExtensionUtilityHostMsg_UnpackExtension_Succeeded(
-        *unpacker.parsed_manifest()));
-  } else {
+  base::FilePath working_dir = extension_path.DirName();
+  base::FilePath unzipped_dir = working_dir.AppendASCII(kTempExtensionName);
+  base::string16 error;
+  if (!base::CreateDirectory(unzipped_dir)) {
     Send(new ExtensionUtilityHostMsg_UnpackExtension_Failed(
-        unpacker.error_message()));
+        l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR,
+            base::i18n::GetDisplayStringInLTRDirectionality(
+                unzipped_dir.LossyDisplayName()))));
+  } else if (!zip::Unzip(extension_path, unzipped_dir)) {
+    Send(new ExtensionUtilityHostMsg_UnpackExtension_Failed(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PACKAGE_UNZIP_ERROR)));
+  } else {
+    Unpacker unpacker(working_dir, unzipped_dir, extension_id,
+                      static_cast<Manifest::Location>(location),
+                        creation_flags);
+    if (unpacker.Run()) {
+      Send(new ExtensionUtilityHostMsg_UnpackExtension_Succeeded(
+          *unpacker.parsed_manifest()));
+    } else {
+      Send(new ExtensionUtilityHostMsg_UnpackExtension_Failed(
+          unpacker.error_message()));
+    }
   }
-
   ReleaseProcessIfNeeded();
 }
 

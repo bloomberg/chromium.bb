@@ -31,7 +31,6 @@
 #include "ipc/ipc_message_utils.h"
 #include "net/base/file_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/zlib/google/zip.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -97,11 +96,13 @@ struct Unpacker::InternalData {
   DecodedImages decoded_images;
 };
 
-Unpacker::Unpacker(const base::FilePath& extension_path,
+Unpacker::Unpacker(const base::FilePath& working_dir,
+                   const base::FilePath& extension_dir,
                    const std::string& extension_id,
                    Manifest::Location location,
                    int creation_flags)
-    : extension_path_(extension_path),
+    : working_dir_(working_dir),
+      extension_dir_(extension_dir),
       extension_id_(extension_id),
       location_(location),
       creation_flags_(creation_flags) {
@@ -112,7 +113,7 @@ Unpacker::~Unpacker() {
 }
 
 base::DictionaryValue* Unpacker::ReadManifest() {
-  base::FilePath manifest_path = temp_install_dir_.Append(kManifestFilename);
+  base::FilePath manifest_path = extension_dir_.Append(kManifestFilename);
   if (!base::PathExists(manifest_path)) {
     SetError(errors::kInvalidManifest);
     return NULL;
@@ -135,7 +136,7 @@ base::DictionaryValue* Unpacker::ReadManifest() {
 }
 
 bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
-  base::FilePath locales_path = temp_install_dir_.Append(kLocaleFolder);
+  base::FilePath locales_path = extension_dir_.Append(kLocaleFolder);
 
   // Not all folders under _locales have to be valid locales.
   base::FileEnumerator locales(locales_path, false,
@@ -159,24 +160,6 @@ bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
 }
 
 bool Unpacker::Run() {
-  DVLOG(1) << "Installing extension " << extension_path_.value();
-
-  // <profile>/Extensions/CRX_INSTALL
-  temp_install_dir_ = extension_path_.DirName().AppendASCII(kTempExtensionName);
-
-  if (!base::CreateDirectory(temp_install_dir_)) {
-    SetUTF16Error(l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR,
-        base::i18n::GetDisplayStringInLTRDirectionality(
-            temp_install_dir_.LossyDisplayName())));
-    return false;
-  }
-
-  if (!zip::Unzip(extension_path_, temp_install_dir_)) {
-    SetUTF16Error(l10n_util::GetStringUTF16(IDS_EXTENSION_PACKAGE_UNZIP_ERROR));
-    return false;
-  }
-
   // Parse the manifest.
   parsed_manifest_.reset(ReadManifest());
   if (!parsed_manifest_.get())
@@ -184,7 +167,7 @@ bool Unpacker::Run() {
 
   std::string error;
   scoped_refptr<Extension> extension(
-      Extension::Create(temp_install_dir_, location_, *parsed_manifest_,
+      Extension::Create(extension_dir_, location_, *parsed_manifest_,
                         creation_flags_, extension_id_, &error));
   if (!extension.get()) {
     SetError(error);
@@ -214,15 +197,14 @@ bool Unpacker::Run() {
       return false;  // Error was already reported.
   }
 
-  return true;
+  return DumpImagesToFile() && DumpMessageCatalogsToFile();
 }
 
 bool Unpacker::DumpImagesToFile() {
   IPC::Message pickle;  // We use a Message so we can use WriteParam.
   IPC::WriteParam(&pickle, internal_data_->decoded_images);
 
-  base::FilePath path =
-      extension_path_.DirName().AppendASCII(kDecodedImagesFilename);
+  base::FilePath path = working_dir_.AppendASCII(kDecodedImagesFilename);
   if (!WritePickle(pickle, path)) {
     SetError("Could not write image data to disk.");
     return false;
@@ -236,7 +218,7 @@ bool Unpacker::DumpMessageCatalogsToFile() {
   IPC::WriteParam(&pickle, *parsed_catalogs_.get());
 
   base::FilePath path =
-      extension_path_.DirName().AppendASCII(kDecodedMessageCatalogsFilename);
+      working_dir_.AppendASCII(kDecodedMessageCatalogsFilename);
   if (!WritePickle(pickle, path)) {
     SetError("Could not write message catalogs to disk.");
     return false;
@@ -255,7 +237,7 @@ bool Unpacker::AddDecodedImage(const base::FilePath& path) {
     return false;
   }
 
-  SkBitmap image_bitmap = DecodeImage(temp_install_dir_.Append(path));
+  SkBitmap image_bitmap = DecodeImage(extension_dir_.Append(path));
   if (image_bitmap.isNull()) {
     SetUTF16Error(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_PACKAGE_IMAGE_ERROR,
@@ -288,7 +270,7 @@ bool Unpacker::ReadMessageCatalog(const base::FilePath& message_path) {
 
   base::FilePath relative_path;
   // message_path was created from temp_install_dir. This should never fail.
-  if (!temp_install_dir_.AppendRelativePath(message_path, &relative_path)) {
+  if (!extension_dir_.AppendRelativePath(message_path, &relative_path)) {
     NOTREACHED();
     return false;
   }
