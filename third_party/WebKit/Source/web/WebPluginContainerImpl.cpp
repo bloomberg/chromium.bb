@@ -528,9 +528,13 @@ bool WebPluginContainerImpl::isRectTopmost(const WebRect& rect)
     if (!frame)
         return false;
 
+    IntRect documentRect(x() + rect.x, y() + rect.y, rect.width, rect.height);
+    // Clip to the frame's visible area.
+    documentRect.intersect(frame->view()->frameRect());
+    if (documentRect.isEmpty())
+        return false;
     // hitTestResultAtPoint() takes a padding rectangle.
     // FIXME: We'll be off by 1 when the width or height is even.
-    IntRect documentRect(x() + rect.x, y() + rect.y, rect.width, rect.height);
     LayoutPoint center = documentRect.center();
     // Make the rect we're checking (the point surrounded by padding rects) contained inside the requested rect. (Note that -1/2 is 0.)
     LayoutSize padding((documentRect.width() - 1) / 2, (documentRect.height() - 1) / 2);
