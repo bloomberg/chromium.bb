@@ -330,11 +330,6 @@ cr-menu-item.providers-menu-item .menu-icon {
   -webkit-filter: contrast(0) brightness(0.7143);
 }
 
-cr-menu-item.providers-menu-item[selected] .menu-icon {
-  /* Apply the rgb(255, 255, 255) mask. */
-  -webkit-filter: contrast(0) brightness(2);
-}
-
 cr-menu-item.providers-menu-item[command='#install-new-extension'] .menu-icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/store.png) 1x,

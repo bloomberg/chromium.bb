@@ -1797,7 +1797,7 @@ list.autocomplete-suggestions {
   flex: none;
   margin-top: 10px;
   overflow: hidden;
-  padding: 0;
+  padding: 8px 0;
   position: fixed;
   width: 260px !important; /* This overrides the value specified by script. */
   z-index: 550;
@@ -1806,17 +1806,17 @@ list.autocomplete-suggestions {
 list.autocomplete-suggestions > li {
   align-items: center;
   display: flex;
-  height: 40px;
+  height: 32px;
 }
 
 list.autocomplete-suggestions > li > div.detail-icon {
-  margin: 0 3px;
+  height: 32px;
+  width: 32px;
   flex: none;
 }
 
 list.autocomplete-suggestions > li > div.detail-text {
   flex: auto;
-  margin: 0 4px;
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
@@ -1834,7 +1834,7 @@ list.autocomplete-suggestions > li > div[search-icon] {
 
 list.autocomplete-suggestions > [selected],
 list.autocomplete-suggestions > [lead] {
-  background-color: rgb(222, 243, 254);
+  background-color: rgba(0, 0, 0, 0.08);
 }
 
 #gear-menu {

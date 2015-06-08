@@ -125,7 +125,7 @@ cr-menu.chrome-menu {
   color: rgb(51, 51, 51);
   outline: none;
   overflow: hidden;
-  padding: 4px 0;
+  padding: 8px 0;
   transition: opacity 200ms ease-in;
   z-index: 600;  /* Must be below the overlay pane (1000). */
 }
@@ -147,7 +147,7 @@ cr-menu.chrome-menu > :not(hr) {
   background-repeat: no-repeat;
   line-height: 32px;
   outline: none;
-  padding: 0 12px;
+  padding: 0 8px;
 }
 
 html[dir='rtl'] cr-menu.chrome-menu > :not(hr) {
@@ -189,13 +189,12 @@ html[dir='rtl'] cr-menu.chrome-menu > .menuitem-button.right {
 }
 
 cr-menu.chrome-menu > cr-menu-item[disabled] {
-  color: rgb(219, 219, 219);
+  color: rgba(51, 51, 51, 0.20);
 }
 
 cr-menu.chrome-menu > cr-menu-item:not([disabled])[selected],
 cr-menu.chrome-menu > cr-menu-item:not([disabled]):active {
-  background-color: rgb(33, 150, 243);
-  color: white;
+  background-color: rgba(0, 0, 0, 0.08);
 }
 
 cr-menu.chrome-menu > hr {
@@ -216,11 +215,6 @@ cr-menu.chrome-menu > cr-menu-item[checked] {
 
 cr-menu.chrome-menu > [checked]::before {
   display: none;
-}
-
-cr-menu[showShortcuts] >
-cr-menu-item[shortcutText][selected]:not([disabled])::after {
-  color: white;
 }
 
 /**
