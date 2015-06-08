@@ -2556,6 +2556,12 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_BLOCKED_COOKIES_NO_ACTION" desc="Radio button choice to continue blocking a site from setting cookies, displayed in bubble when a page tries to set cookies.">
         Continue blocking cookies
       </message>
+      <message name="IDS_ALLOWED_COOKIES_NO_ACTION" desc="Radio button choice to keep allowing a site to set the cookies, displayed in bubble when a page tries to set cookies.">
+        Continue allowing cookies
+      </message>
+      <message name="IDS_ALLOWED_COOKIES_BLOCK" desc="Radio button choice to block a site to set the cookies, displayed in bubble when a page tries to set cookies.">
+        Always block cookies on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
+      </message>
       <message name="IDS_BLOCKED_IMAGES_NO_ACTION" desc="Radio button choice to continue blocking a site from showing images, displayed in bubble when a page tries to display images.">
         Continue blocking images
       </message>
@@ -7248,7 +7254,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Continue allowing unsandboxed plugins
       </message>
       <message name="IDS_ALLOWED_PPAPI_BROKER_BLOCK" desc="Radio button to block the Pepper broker">
-        Never allow unsandboxed plugins on <ph name="HOST">$1<ex>example.com</ex></ph>
+        Always block unsandboxed plugins on <ph name="HOST">$1<ex>example.com</ex></ph>
       </message>
       <message name="IDS_PPAPI_BROKER_BUBBLE_MANAGE_LINK" desc="Link title to manage Pepper broker settings">
         Manage unsandboxed plugin blocking...

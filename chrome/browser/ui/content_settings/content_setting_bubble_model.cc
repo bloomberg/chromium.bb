@@ -300,8 +300,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   };
   // Fields as for kBlockedAllowIDs, above.
   static const ContentSettingsTypeIdEntry kAllowedAllowIDs[] = {
-    // TODO(bauerb): The string shouldn't be "unblock" (they weren't blocked).
-    {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_UNBLOCK},
+    {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ALLOWED_COOKIES_NO_ACTION},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_NO_ACTION},
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_ALLOWED_DOWNLOAD_NO_ACTION},
   };
@@ -311,9 +310,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     int resource_id = GetIdForContentType(kAllowedAllowIDs,
                                           arraysize(kAllowedAllowIDs),
                                           content_type());
-    radio_allow_label = (content_type() == CONTENT_SETTINGS_TYPE_COOKIES) ?
-        l10n_util::GetStringFUTF8(resource_id, display_host) :
-        l10n_util::GetStringUTF8(resource_id);
+    radio_allow_label = l10n_util::GetStringUTF8(resource_id);
   } else {
     radio_allow_label = l10n_util::GetStringFUTF8(
         GetIdForContentType(kBlockedAllowIDs, arraysize(kBlockedAllowIDs),
@@ -331,8 +328,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOAD_NO_ACTION},
   };
   static const ContentSettingsTypeIdEntry kAllowedBlockIDs[] = {
-    // TODO(bauerb): The string should say "block".
-    {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_NO_ACTION},
+    {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ALLOWED_COOKIES_BLOCK},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_BLOCK},
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_ALLOWED_DOWNLOAD_BLOCK},
   };
@@ -342,9 +338,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
     int resource_id = GetIdForContentType(kAllowedBlockIDs,
                                           arraysize(kAllowedBlockIDs),
                                           content_type());
-    radio_block_label = (content_type() == CONTENT_SETTINGS_TYPE_COOKIES) ?
-        l10n_util::GetStringUTF8(resource_id) :
-        l10n_util::GetStringFUTF8(resource_id, display_host);
+    radio_block_label = l10n_util::GetStringFUTF8(resource_id, display_host);
   } else {
     radio_block_label = l10n_util::GetStringUTF8(
         GetIdForContentType(kBlockedBlockIDs, arraysize(kBlockedBlockIDs),

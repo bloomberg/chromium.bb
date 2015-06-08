@@ -98,8 +98,6 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
   std::string title = bubble_content.title;
   EXPECT_FALSE(title.empty());
   ASSERT_EQ(2U, bubble_content.radio_group.radio_items.size());
-  std::string radio1 = bubble_content.radio_group.radio_items[0];
-  std::string radio2 = bubble_content.radio_group.radio_items[1];
   EXPECT_FALSE(bubble_content.custom_link.empty());
   EXPECT_TRUE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_link.empty());
@@ -115,9 +113,14 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
   EXPECT_FALSE(bubble_content_2.title.empty());
   EXPECT_NE(title, bubble_content_2.title);
   ASSERT_EQ(2U, bubble_content_2.radio_group.radio_items.size());
-  // TODO(bauerb): Update this once the strings have been updated.
-  EXPECT_EQ(radio1, bubble_content_2.radio_group.radio_items[0]);
-  EXPECT_EQ(radio2, bubble_content_2.radio_group.radio_items[1]);
+  EXPECT_EQ(bubble_content_2.radio_group.radio_items[0],
+            l10n_util::GetStringUTF8(IDS_ALLOWED_COOKIES_NO_ACTION));
+  EXPECT_EQ(bubble_content_2.radio_group.radio_items[1],
+            l10n_util::GetStringFUTF8(
+                IDS_ALLOWED_COOKIES_BLOCK,
+                FormatUrlForSecurityDisplay(web_contents()->GetURL(),
+                                            profile()->GetPrefs()->GetString(
+                                                prefs::kAcceptLanguages))));
   EXPECT_FALSE(bubble_content_2.custom_link.empty());
   EXPECT_TRUE(bubble_content_2.custom_link_enabled);
   EXPECT_FALSE(bubble_content_2.manage_link.empty());
