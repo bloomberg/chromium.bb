@@ -8,10 +8,10 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/test_runner/test_runner_export.h"
-#include "third_party/WebKit/public/platform/WebLockOrientationCallback.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationClient.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationClient.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
 namespace blink {
 class WebLocalFrame;

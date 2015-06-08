@@ -11,7 +11,7 @@
 #include "media/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebCompositorAnimation.h"
 #include "third_party/WebKit/public/platform/WebMimeRegistry.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
 namespace content {
 

@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "cc/layers/texture_layer.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
 class GURL;
 

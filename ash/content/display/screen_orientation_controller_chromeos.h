@@ -15,7 +15,7 @@
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "content/public/browser/screen_orientation_delegate.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/display.h"
 #include "ui/wm/public/activation_change_observer.h"

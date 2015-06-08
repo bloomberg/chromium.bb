@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 #include "ui/gfx/display.h"
 
 namespace content {

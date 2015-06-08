@@ -9,10 +9,10 @@
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/WebKit/public/platform/WebLockOrientationCallback.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationClient.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationClient.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
 namespace content {
 

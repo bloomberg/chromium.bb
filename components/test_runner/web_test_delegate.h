@@ -10,10 +10,10 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
 #define WEBTESTRUNNER_NEW_HISTORY_CAPTURE
 

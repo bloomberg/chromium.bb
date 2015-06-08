@@ -9,7 +9,7 @@
 
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 

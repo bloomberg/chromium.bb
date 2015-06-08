@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
 namespace content {
 

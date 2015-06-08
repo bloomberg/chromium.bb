@@ -5,7 +5,7 @@ include_rules = [
   "+content/public/browser/browser_thread.h",
   "+content/public/browser/web_contents.h",
   "+third_party/qcms/src/qcms.h",
-  "+third_party/WebKit/public/platform/WebScreenOrientationLockType.h",
+  "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
 ]
 
 specific_include_rules = {

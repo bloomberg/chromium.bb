@@ -7,8 +7,8 @@
 
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/platform/WebLockOrientationError.h"
-#include "third_party/WebKit/public/platform/WebScreenOrientationLockType.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationError.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
