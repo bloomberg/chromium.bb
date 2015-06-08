@@ -21,17 +21,20 @@ BrowserInfo::BrowserInfo()
     : browser_name(std::string()),
       browser_version(std::string()),
       build_no(kToTBuildNo),
-      blink_revision(kToTBlinkRevision) {
+      blink_revision(kToTBlinkRevision),
+      is_android(false) {
 }
 
 BrowserInfo::BrowserInfo(std::string browser_name,
                          std::string browser_version,
                          int build_no,
-                         int blink_revision)
+                         int blink_revision,
+                         bool is_android)
     : browser_name(browser_name),
       browser_version(browser_version),
       build_no(build_no),
-      blink_revision(blink_revision) {
+      blink_revision(blink_revision),
+      is_android(is_android) {
 }
 
 Status ParseBrowserInfo(const std::string& data, BrowserInfo* browser_info) {
@@ -43,13 +46,13 @@ Status ParseBrowserInfo(const std::string& data, BrowserInfo* browser_info) {
   if (!value->GetAsDictionary(&dict))
     return Status(kUnknownError, "version info not a dictionary");
 
-  browser_info->is_android = dict->HasKey("Android-Package");
-
+  bool has_android_package = dict->HasKey("Android-Package");
   std::string browser_string;
   if (!dict->GetString("Browser", &browser_string))
     return Status(kUnknownError, "version doesn't include 'Browser'");
 
-  Status status = ParseBrowserString(browser_string, browser_info);
+  Status status =
+      ParseBrowserString(has_android_package, browser_string, browser_info);
   if (status.IsError())
     return status;
 
@@ -60,8 +63,12 @@ Status ParseBrowserInfo(const std::string& data, BrowserInfo* browser_info) {
   return ParseBlinkVersionString(blink_version, &browser_info->blink_revision);
 }
 
-Status ParseBrowserString(const std::string& browser_string,
+Status ParseBrowserString(bool has_android_package,
+                          const std::string& browser_string,
                           BrowserInfo* browser_info) {
+  if (has_android_package)
+    browser_info->is_android = true;
+
   if (browser_string.empty()) {
     browser_info->browser_name = "content shell";
     return Status(kOk);
@@ -87,13 +94,14 @@ Status ParseBrowserString(const std::string& browser_string,
     }
   }
 
-  if (browser_string.find("Version/") == 0u ||        // KitKat
-      (browser_info->is_android && build_no == 0)) {  // Lollipop
+  if (browser_string.find("Version/") == 0u ||   // KitKat
+      (has_android_package && build_no == 0)) {  // Lollipop
     size_t pos = browser_string.find(kVersionPrefix);
     if (pos != std::string::npos) {
       browser_info->browser_name = "webview";
       browser_info->browser_version =
           browser_string.substr(pos + kVersionPrefix.length());
+      browser_info->is_android = true;
     }
     return Status(kOk);
   }
