@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_ENHANCED_BOOKMARKS_BOOKMARK_SERVER_CLUSTER_SERVICE_FACTORY_H_
-#define IOS_CHROME_BROWSER_ENHANCED_BOOKMARKS_BOOKMARK_SERVER_CLUSTER_SERVICE_FACTORY_H_
+#ifndef IOS_CHROME_BROWSER_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARK_MODEL_FACTORY_H_
+#define IOS_CHROME_BROWSER_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARK_MODEL_FACTORY_H_
 
 #include "base/macros.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
@@ -17,22 +17,21 @@ class ChromeBrowserState;
 
 namespace enhanced_bookmarks {
 
-class BookmarkServerClusterService;
+class EnhancedBookmarkModel;
 
 // A factory to create BookmarkServerClusterService and associate them to
 // ios::ChromeBrowserState.
-class BookmarkServerClusterServiceFactory
-    : public BrowserStateKeyedServiceFactory {
+class EnhancedBookmarkModelFactory : public BrowserStateKeyedServiceFactory {
  public:
-  static BookmarkServerClusterServiceFactory* GetInstance();
-  static BookmarkServerClusterService* GetForBrowserState(
+  static EnhancedBookmarkModelFactory* GetInstance();
+  static EnhancedBookmarkModel* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
  private:
-  friend struct DefaultSingletonTraits<BookmarkServerClusterServiceFactory>;
+  friend struct DefaultSingletonTraits<EnhancedBookmarkModelFactory>;
 
-  BookmarkServerClusterServiceFactory();
-  ~BookmarkServerClusterServiceFactory() override;
+  EnhancedBookmarkModelFactory();
+  ~EnhancedBookmarkModelFactory() override;
 
   // BrowserStateKeyedServiceFactory implementation.
   KeyedService* BuildServiceInstanceFor(
@@ -40,9 +39,9 @@ class BookmarkServerClusterServiceFactory
   web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkServerClusterServiceFactory);
+  DISALLOW_COPY_AND_ASSIGN(EnhancedBookmarkModelFactory);
 };
 
 }  // namespace enhanced_bookmarks
 
-#endif  // IOS_CHROME_BROWSER_ENHANCED_BOOKMARKS_BOOKMARK_SERVER_CLUSTER_SERVICE_FACTORY_H_
+#endif  // IOS_CHROME_BROWSER_ENHANCED_BOOKMARKS_ENHANCED_BOOKMARK_MODEL_FACTORY_H_

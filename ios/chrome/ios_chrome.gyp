@@ -137,6 +137,8 @@
         'browser/dom_distiller/dom_distiller_service_factory.h',
         'browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.cc',
         'browser/enhanced_bookmarks/bookmark_server_cluster_service_factory.h',
+        'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.cc',
+        'browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h',
         'browser/experimental_flags.h',
         'browser/experimental_flags.mm',
         'browser/file_metadata_util.h',

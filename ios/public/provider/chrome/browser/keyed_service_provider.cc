@@ -14,6 +14,15 @@ KeyedServiceProvider::KeyedServiceProvider() {
 KeyedServiceProvider::~KeyedServiceProvider() {
 }
 
+KeyedServiceBaseFactory* KeyedServiceProvider::GetBookmarkModelFactory() {
+  return nullptr;
+}
+
+bookmarks::BookmarkModel* KeyedServiceProvider::GetBookmarkModelForBrowserState(
+    ios::ChromeBrowserState* browser_state) {
+  return nullptr;
+}
+
 KeyedServiceBaseFactory*
 KeyedServiceProvider::GetProfileOAuth2TokenServiceFactory() {
   return nullptr;
@@ -62,17 +71,6 @@ KeyedServiceBaseFactory* KeyedServiceProvider::GetPersonalDataManagerFactory() {
 
 autofill::PersonalDataManager*
 KeyedServiceProvider::GetPersonalDataManagerForBrowserState(
-    ChromeBrowserState* browser_state) {
-  return nullptr;
-}
-
-KeyedServiceBaseFactory*
-KeyedServiceProvider::GetEnhancedBookmarkModelFactory() {
-  return nullptr;
-}
-
-enhanced_bookmarks::EnhancedBookmarkModel*
-KeyedServiceProvider::GetEnhancedBookmarkModelForBrowserState(
     ChromeBrowserState* browser_state) {
   return nullptr;
 }

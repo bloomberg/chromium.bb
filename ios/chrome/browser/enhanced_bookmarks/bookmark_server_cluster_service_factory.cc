@@ -11,6 +11,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
+#include "ios/chrome/browser/enhanced_bookmarks/enhanced_bookmark_model_factory.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/keyed_service_provider.h"
@@ -39,7 +40,7 @@ BookmarkServerClusterServiceFactory::BookmarkServerClusterServiceFactory()
       ios::GetChromeBrowserProvider()->GetKeyedServiceProvider();
   DependsOn(provider->GetProfileOAuth2TokenServiceFactory());
   DependsOn(provider->GetSigninManagerFactory());
-  DependsOn(provider->GetEnhancedBookmarkModelFactory());
+  DependsOn(EnhancedBookmarkModelFactory::GetInstance());
   DependsOn(provider->GetSyncServiceFactory());
 }
 
@@ -58,7 +59,7 @@ KeyedService* BookmarkServerClusterServiceFactory::BuildServiceInstanceFor(
       browser_state->GetRequestContext(),
       provider->GetProfileOAuth2TokenServiceForBrowserState(browser_state),
       provider->GetSigninManagerForBrowserState(browser_state),
-      provider->GetEnhancedBookmarkModelForBrowserState(browser_state),
+      EnhancedBookmarkModelFactory::GetForBrowserState(browser_state),
       provider->GetSyncServiceForBrowserState(browser_state),
       browser_state->GetPrefs());
 }

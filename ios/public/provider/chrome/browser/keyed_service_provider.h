@@ -20,8 +20,8 @@ class AutofillWebDataService;
 class PersonalDataManager;
 }
 
-namespace enhanced_bookmarks {
-class EnhancedBookmarkModel;
+namespace bookmarks {
+class BookmarkModel;
 }
 
 namespace sync_driver {
@@ -38,6 +38,13 @@ class KeyedServiceProvider {
  public:
   KeyedServiceProvider();
   virtual ~KeyedServiceProvider();
+
+  // Returns the bookmarks::BookmarkModel factory for dependencies.
+  virtual KeyedServiceBaseFactory* GetBookmarkModelFactory();
+
+  // Returns an instance of bookmarks::BookmarkModel tied to |browser_state|.
+  virtual bookmarks::BookmarkModel* GetBookmarkModelForBrowserState(
+      ios::ChromeBrowserState* browser_state);
 
   // Returns the ProfileOAuth2TokenService factory for dependencies.
   virtual KeyedServiceBaseFactory* GetProfileOAuth2TokenServiceFactory();
@@ -79,15 +86,6 @@ class KeyedServiceProvider {
   // |browser_state|.
   virtual autofill::PersonalDataManager* GetPersonalDataManagerForBrowserState(
       ChromeBrowserState* browser_state);
-
-  // Returns the enhanced_bookmarks::EnhancedBookmarkModel factory for
-  // dependencies.
-  virtual KeyedServiceBaseFactory* GetEnhancedBookmarkModelFactory();
-
-  // Returns an instance of enhanced_bookmarks::EnhancedBookmarkModel tied to
-  // |browser_state|.
-  virtual enhanced_bookmarks::EnhancedBookmarkModel*
-  GetEnhancedBookmarkModelForBrowserState(ChromeBrowserState* browser_state);
 
   // Returns the sync_driver::SyncService factory for dependencies.
   virtual KeyedServiceBaseFactory* GetSyncServiceFactory();
