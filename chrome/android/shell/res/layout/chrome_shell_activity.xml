@@ -63,7 +63,7 @@
         <org.chromium.chrome.browser.widget.ToolbarProgressBar
             android:id="@+id/progress"
             style="@android:style/Widget.Holo.Light.ProgressBar.Horizontal"
-            android:progressDrawable="@drawable/progress_bar"
+            android:progressDrawable="@drawable/shell_progress_bar"
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:progress="0" />
