@@ -220,11 +220,9 @@ cr-menu.chrome-menu > [checked]::before {
 /**
  * Ok/Cancel style buttons
  * Height: 31px (content:21px + border:5px * 2)
+ * TODO(fukino): Remove these styles once our dialogs get material design.
  **/
-button,
-input[type='button'],
-input[type='submit'],
-select {
+.cr-dialog-buttons > button {
   background-color: rgb(250, 250, 250);
   background-image: none;
   background-position: center;
@@ -252,10 +250,7 @@ select {
   -webkit-margin-start: 12px;
 }
 
-button:hover,
-input[type='button']:hover,
-input[type='submit']:hover,
-select:hover {
+.cr-dialog-buttons > button:hover {
   border-image: -webkit-image-set(
     url(chrome://resources/images/apps/button_hover.png) 1x,
     url(chrome://resources/images/2x/apps/button_hover.png)
@@ -263,9 +258,7 @@ select:hover {
   color: #222;
 }
 
-button:active,
-input[type='button']:active,
-input[type='submit']:active {
+.cr-dialog-buttons > button:active {
   border-image: -webkit-image-set(
     url(chrome://resources/images/apps/button_pressed.png) 1x,
     url(chrome://resources/images/2x/apps/button_pressed.png)
@@ -273,12 +266,8 @@ input[type='submit']:active {
   color: #333;
 }
 
-button[disabled],
-input[type='button'][disabled],
-input[type='submit'][disabled],
-button[disabled]:hover,
-input[type='button'][disabled]:hover,
-input[type='submit'][disabled]:hover {
+.cr-dialog-buttons > button[disabled],
+.cr-dialog-buttons > button[disabled]:hover {
   background-color: rgb(250, 250, 250);
   background-image: none;
   border-image: -webkit-image-set(
@@ -286,13 +275,6 @@ input[type='submit'][disabled]:hover {
     url(chrome://resources/images/2x/apps/button.png)
         2x) 5 fill / 5px / 2px repeat;
   color: rgb(150, 150, 150);
-}
-
-select:not([size]):hover,
-select[size='0']:hover,
-select[size='1']:hover {
-  /* Original value is '5 fill', which hides the dropdown triangle. */
-  border-image-slice: 5;
 }
 
 /* Style for <button>s to have similar style with Polymer's <paper-button>. */

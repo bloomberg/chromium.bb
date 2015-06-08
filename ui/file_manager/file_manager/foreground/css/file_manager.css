@@ -268,7 +268,9 @@ body.check-select .dialog-header {
 
 .dialog-header button {
   cursor: pointer;
+  position: relative;
   text-transform: uppercase;
+  z-index: 1;
 }
 
 .dialog-header button,
