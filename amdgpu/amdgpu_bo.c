@@ -56,7 +56,7 @@ static void amdgpu_close_kms_handle(amdgpu_device_handle dev,
 static int amdgpu_bo_map(amdgpu_bo_handle bo, uint32_t alignment)
 {
 	amdgpu_device_handle dev = bo->dev;
-	union drm_amdgpu_gem_va va;
+	struct drm_amdgpu_gem_va va;
 	int r;
 
 	memset(&va, 0, sizeof(va));
@@ -67,17 +67,17 @@ static int amdgpu_bo_map(amdgpu_bo_handle bo, uint32_t alignment)
 	if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS)
 		return -ENOSPC;
 
-	va.in.handle = bo->handle;
-	va.in.operation = AMDGPU_VA_OP_MAP;
-	va.in.flags = 	AMDGPU_VM_PAGE_READABLE |
+	va.handle = bo->handle;
+	va.operation = AMDGPU_VA_OP_MAP;
+	va.flags = 	AMDGPU_VM_PAGE_READABLE |
 			AMDGPU_VM_PAGE_WRITEABLE |
 			AMDGPU_VM_PAGE_EXECUTABLE;
-	va.in.va_address = bo->virtual_mc_base_address;
-	va.in.offset_in_bo = 0;
-	va.in.map_size = ALIGN(bo->alloc_size, getpagesize());
+	va.va_address = bo->virtual_mc_base_address;
+	va.offset_in_bo = 0;
+	va.map_size = ALIGN(bo->alloc_size, getpagesize());
 
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_VA, &va, sizeof(va));
-	if (r || va.out.result == AMDGPU_VA_RESULT_ERROR) {
+	if (r) {
 		amdgpu_bo_free_internal(bo);
 		return r;
 	}
@@ -89,7 +89,7 @@ static int amdgpu_bo_map(amdgpu_bo_handle bo, uint32_t alignment)
 static void amdgpu_bo_unmap(amdgpu_bo_handle bo)
 {
 	amdgpu_device_handle dev = bo->dev;
-	union drm_amdgpu_gem_va va;
+	struct drm_amdgpu_gem_va va;
 	int r;
 
 	if (bo->virtual_mc_base_address == AMDGPU_INVALID_VA_ADDRESS)
@@ -97,17 +97,17 @@ static void amdgpu_bo_unmap(amdgpu_bo_handle bo)
 
 	memset(&va, 0, sizeof(va));
 
-	va.in.handle = bo->handle;
-	va.in.operation = AMDGPU_VA_OP_UNMAP;
-	va.in.flags = 	AMDGPU_VM_PAGE_READABLE |
+	va.handle = bo->handle;
+	va.operation = AMDGPU_VA_OP_UNMAP;
+	va.flags = 	AMDGPU_VM_PAGE_READABLE |
 			AMDGPU_VM_PAGE_WRITEABLE |
 			AMDGPU_VM_PAGE_EXECUTABLE;
-	va.in.va_address = bo->virtual_mc_base_address;
-	va.in.offset_in_bo = 0;
-	va.in.map_size = ALIGN(bo->alloc_size, getpagesize());
+	va.va_address = bo->virtual_mc_base_address;
+	va.offset_in_bo = 0;
+	va.map_size = ALIGN(bo->alloc_size, getpagesize());
 
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_GEM_VA, &va, sizeof(va));
-	if (r || va.out.result == AMDGPU_VA_RESULT_ERROR) {
+	if (r) {
 		fprintf(stderr, "amdgpu: VA_OP_UNMAP failed with %d\n", r);
 		return;
 	}
