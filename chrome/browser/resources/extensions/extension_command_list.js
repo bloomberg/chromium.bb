@@ -418,7 +418,12 @@ cr.define('options', function() {
     handleKeyDown_: function(event) {
       event = /** @type {KeyboardEvent} */(event);
       if (event.keyCode == keyEscape) {
-        // Escape cancels capturing.
+        if (!this.capturingElement_) {
+          // If we're not currently capturing, allow escape to propagate (so it
+          // can close the overflow).
+          return;
+        }
+        // Otherwise, escape cancels capturing.
         this.endCapture_(event);
         var parsed = this.parseElementId_('clear',
             event.target.parentElement.querySelector('.command-clear').id);
@@ -449,8 +454,9 @@ cr.define('options', function() {
      */
     handleKeyUp_: function(event) {
       event = /** @type {KeyboardEvent} */(event);
-      if (event.keyCode == keyTab) {
-        // Allow tab propagation for keyboard navigation.
+      if (event.keyCode == keyTab || event.keyCode == keyEscape) {
+        // We need to allow tab propagation for keyboard navigation, and escapes
+        // are fully handled in handleKeyDown.
         return;
       }
 
