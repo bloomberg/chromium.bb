@@ -41,9 +41,14 @@ class CONTENT_EXPORT MediaInternals
   void OnMediaEvents(int render_process_id,
                      const std::vector<media::MediaLogEvent>& events);
 
-  // Add/remove update callbacks (see above).  Must be called on the IO thread.
+  // Add/remove update callbacks (see above). Must be called on the UI thread.
+  // The callbacks must also be fired on UI thread.
   void AddUpdateCallback(const UpdateCallback& callback);
   void RemoveUpdateCallback(const UpdateCallback& callback);
+
+  // Whether there are any update callbacks available. Can be called on any
+  // thread.
+  bool CanUpdate();
 
   // Sends all audio cached data to each registered UpdateCallback.
   void SendAudioStreamData();
@@ -95,12 +100,15 @@ class CONTENT_EXPORT MediaInternals
                           const std::string& function,
                           const base::DictionaryValue* value);
 
-  // Must only be accessed on the IO thread.
+  // Must only be accessed on the UI thread.
   std::vector<UpdateCallback> update_callbacks_;
+
+  // Must only be accessed on the IO thread.
   base::ListValue video_capture_capabilities_cached_data_;
 
   // All variables below must be accessed under |lock_|.
   base::Lock lock_;
+  bool can_update_;
   base::DictionaryValue audio_streams_cached_data_;
   int owner_ids_[AUDIO_COMPONENT_MAX];
   scoped_ptr<MediaInternalsUMAHandler> uma_handler_;

@@ -48,9 +48,6 @@ class MediaInternalsProxy
   // Have MediaInternals send all the data it has.
   void GetEverything();
 
-  // MediaInternals callback. Called on the IO thread.
-  void OnUpdate(const base::string16& update);
-
   // net::NetLog::ThreadSafeObserver implementation. Callable from any thread:
   void OnAddEntry(const net::NetLog::Entry& entry) override;
 
@@ -65,6 +62,8 @@ class MediaInternalsProxy
   void ObserveMediaInternalsOnIOThread();
   void StopObservingMediaInternalsOnIOThread();
   void GetEverythingOnIOThread();
+
+  // Callback for MediaInternals to update. Must be called on UI thread.
   void UpdateUIOnUIThread(const base::string16& update);
 
   // Put |entry| on a list of events to be sent to the page.

@@ -44,7 +44,11 @@ void MediaInternalsProxy::Observe(int type,
 
 void MediaInternalsProxy::Attach(MediaInternalsMessageHandler* handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   handler_ = handler;
+  update_callback_ = base::Bind(&MediaInternalsProxy::UpdateUIOnUIThread, this);
+  MediaInternals::GetInstance()->AddUpdateCallback(update_callback_);
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&MediaInternalsProxy::ObserveMediaInternalsOnIOThread, this));
@@ -52,7 +56,10 @@ void MediaInternalsProxy::Attach(MediaInternalsMessageHandler* handler) {
 
 void MediaInternalsProxy::Detach() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   handler_ = NULL;
+  MediaInternals::GetInstance()->RemoveUpdateCallback(update_callback_);
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
@@ -69,13 +76,6 @@ void MediaInternalsProxy::GetEverything() {
 
   // Send the page names for constants.
   CallJavaScriptFunctionOnUIThread("media.onReceiveConstants", GetConstants());
-}
-
-void MediaInternalsProxy::OnUpdate(const base::string16& update) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&MediaInternalsProxy::UpdateUIOnUIThread, this, update));
 }
 
 void MediaInternalsProxy::OnAddEntry(const net::NetLog::Entry& entry) {
@@ -119,9 +119,6 @@ base::Value* MediaInternalsProxy::GetConstants() {
 
 void MediaInternalsProxy::ObserveMediaInternalsOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  update_callback_ = base::Bind(&MediaInternalsProxy::OnUpdate,
-                                base::Unretained(this));
-  MediaInternals::GetInstance()->AddUpdateCallback(update_callback_);
   if (GetContentClient()->browser()->GetNetLog()) {
     net::NetLog* net_log = GetContentClient()->browser()->GetNetLog();
     net_log->DeprecatedAddObserver(
@@ -131,7 +128,6 @@ void MediaInternalsProxy::ObserveMediaInternalsOnIOThread() {
 
 void MediaInternalsProxy::StopObservingMediaInternalsOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  MediaInternals::GetInstance()->RemoveUpdateCallback(update_callback_);
   if (GetContentClient()->browser()->GetNetLog()) {
     net::NetLog* net_log = GetContentClient()->browser()->GetNetLog();
     net_log->DeprecatedRemoveObserver(this);

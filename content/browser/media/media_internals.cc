@@ -457,7 +457,9 @@ MediaInternals* MediaInternals::GetInstance() {
 }
 
 MediaInternals::MediaInternals()
-    : owner_ids_(), uma_handler_(new MediaInternalsUMAHandler()) {
+    : can_update_(false),
+      owner_ids_(),
+      uma_handler_(new MediaInternalsUMAHandler()) {
 }
 
 MediaInternals::~MediaInternals() {}
@@ -493,25 +495,36 @@ void MediaInternals::OnMediaEvents(
       dict.Set("params", event->params.DeepCopy());
     }
 
-    SendUpdate(SerializeUpdate("media.onMediaEvent", &dict));
+    if (CanUpdate())
+      SendUpdate(SerializeUpdate("media.onMediaEvent", &dict));
     uma_handler_->SavePlayerState(*event, render_process_id);
   }
 }
 
 void MediaInternals::AddUpdateCallback(const UpdateCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   update_callbacks_.push_back(callback);
+
+  base::AutoLock auto_lock(lock_);
+  can_update_ = true;
 }
 
 void MediaInternals::RemoveUpdateCallback(const UpdateCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (size_t i = 0; i < update_callbacks_.size(); ++i) {
     if (update_callbacks_[i].Equals(callback)) {
       update_callbacks_.erase(update_callbacks_.begin() + i);
-      return;
+      break;
     }
   }
-  NOTREACHED();
+
+  base::AutoLock auto_lock(lock_);
+  can_update_ = !update_callbacks_.empty();
+}
+
+bool MediaInternals::CanUpdate() {
+  base::AutoLock auto_lock(lock_);
+  return can_update_;
 }
 
 void MediaInternals::SendAudioStreamData() {
@@ -526,6 +539,10 @@ void MediaInternals::SendAudioStreamData() {
 
 void MediaInternals::SendVideoCaptureDeviceCapabilities() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!CanUpdate())
+    return;
+
   SendUpdate(SerializeUpdate("media.onReceiveVideoCaptureCapabilities",
                              &video_capture_capabilities_cached_data_));
 }
@@ -553,8 +570,7 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
     video_capture_capabilities_cached_data_.Append(device_dict);
   }
 
-  if (update_callbacks_.size() > 0)
-    SendVideoCaptureDeviceCapabilities();
+  SendVideoCaptureDeviceCapabilities();
 }
 
 scoped_ptr<media::AudioLog> MediaInternals::CreateAudioLog(
@@ -574,11 +590,9 @@ void MediaInternals::SetWebContentsTitleForAudioLogEntry(
 }
 
 void MediaInternals::SendUpdate(const base::string16& update) {
-  // SendUpdate() may be called from any thread, but must run on the IO thread.
-  // TODO(dalecurtis): This is pretty silly since the update callbacks simply
-  // forward the calls to the UI thread.  We should avoid the extra hop.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+  // SendUpdate() may be called from any thread, but must run on the UI thread.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
         &MediaInternals::SendUpdate, base::Unretained(this), update));
     return;
   }
@@ -591,6 +605,9 @@ void MediaInternals::SendAudioLogUpdate(AudioLogUpdateType type,
                                         const std::string& cache_key,
                                         const std::string& function,
                                         const base::DictionaryValue* value) {
+  if (!CanUpdate())
+    return;
+
   {
     base::AutoLock auto_lock(lock_);
     const bool has_entry = audio_streams_cached_data_.HasKey(cache_key);
