@@ -552,8 +552,7 @@ TEST_P(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
 // Verify that preconnects to unsafe ports are cancelled before they reach
 // the SocketPool.
 TEST_P(HttpStreamFactoryTest, PreconnectUnsafePort) {
-  ASSERT_FALSE(IsPortAllowedByDefault(7));
-  ASSERT_FALSE(IsPortAllowedByOverride(7));
+  ASSERT_FALSE(IsPortAllowedForScheme(7, "http", PORT_OVERRIDES_ALLOWED));
 
   SpdySessionDependencies session_deps(
       GetParam(), ProxyService::CreateDirect());
@@ -570,7 +569,6 @@ TEST_P(HttpStreamFactoryTest, PreconnectUnsafePort) {
   peer.SetClientSocketPoolManager(mock_pool_manager.Pass());
 
   PreconnectHelperForURL(1, GURL("http://www.google.com:7"), session.get());
-
   EXPECT_EQ(-1, transport_conn_pool->last_num_streams());
 }
 

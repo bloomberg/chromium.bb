@@ -213,8 +213,10 @@ int32_t PepperWebSocketHost::OnHostMsgConnect(
     return PP_ERROR_BADARGUMENT;
   if (gurl.has_ref())
     return PP_ERROR_BADARGUMENT;
-  if (!net::IsPortAllowedByDefault(gurl.EffectiveIntPort()))
+  if (!net::IsPortAllowedForScheme(gurl.EffectiveIntPort(), gurl.scheme(),
+                                   net::PORT_OVERRIDES_IGNORED)) {
     return PP_ERROR_BADARGUMENT;
+  }
   WebURL web_url(gurl);
 
   // Validate protocols.

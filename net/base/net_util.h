@@ -222,17 +222,19 @@ NET_EXPORT base::string16 StripWWWFromHost(const GURL& url);
 // reserved).  Should be used before casting a port to a uint16_t.
 NET_EXPORT bool IsPortValid(int port);
 
-// Checks |port| against a list of ports which are restricted by default.
-// Returns true if |port| is allowed, false if it is restricted.
-NET_EXPORT bool IsPortAllowedByDefault(int port);
+// Returns true if the port is in the range [0, 1023]. These ports are
+// registered by IANA and typically need root access to listen on.
+bool IsWellKnownPort(int port);
 
-// Checks |port| against a list of ports which are restricted by the FTP
-// protocol.  Returns true if |port| is allowed, false if it is restricted.
-NET_EXPORT_PRIVATE bool IsPortAllowedByFtp(int port);
+enum PortOverrideMode { PORT_OVERRIDES_IGNORED, PORT_OVERRIDES_ALLOWED };
 
-// Check if banned |port| has been overriden by an entry in
-// |explicitly_allowed_ports_|.
-NET_EXPORT_PRIVATE bool IsPortAllowedByOverride(int port);
+// Checks if the port is allowed for the specified scheme.  If PortOverrideMode
+// is PORT_OVERIDES_ALLOWED, then ports set as allowed with
+// SetExplicitlyAllowedPorts() or by using ScopedPortException() will be
+// considered allowed for any scheme.
+NET_EXPORT bool IsPortAllowedForScheme(int port,
+                                       const std::string& url_scheme,
+                                       PortOverrideMode port_override_mode);
 
 // Set socket to non-blocking mode
 NET_EXPORT int SetNonBlocking(int fd);

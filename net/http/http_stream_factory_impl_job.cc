@@ -199,6 +199,10 @@ void HttpStreamFactoryImpl::Job::WaitFor(Job* job) {
   DCHECK_EQ(STATE_NONE, job->next_state_);
   DCHECK(!blocking_job_);
   DCHECK(!job->waiting_job_);
+
+  // Never share connection with other jobs for FTP requests.
+  DCHECK(!request_info_.url.SchemeIs("ftp"));
+
   blocking_job_ = job;
   job->waiting_job_ = this;
 }
@@ -668,14 +672,8 @@ int HttpStreamFactoryImpl::Job::DoStart() {
                  &alternative_service_, priority_));
 
   // Don't connect to restricted ports.
-  bool is_port_allowed = IsPortAllowedByDefault(server_.port());
-  if (request_info_.url.SchemeIs("ftp")) {
-    // Never share connection with other jobs for FTP requests.
-    DCHECK(!waiting_job_);
-
-    is_port_allowed = IsPortAllowedByFtp(server_.port());
-  }
-  if (!is_port_allowed && !IsPortAllowedByOverride(server_.port())) {
+  if (!IsPortAllowedForScheme(server_.port(), request_info_.url.scheme(),
+                              PORT_OVERRIDES_ALLOWED)) {
     if (waiting_job_) {
       waiting_job_->Resume(this);
       waiting_job_ = NULL;

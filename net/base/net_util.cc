@@ -55,6 +55,7 @@
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 #include "url/url_canon_ip.h"
+#include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
 #include "net/android/network_library.h"
@@ -271,32 +272,39 @@ bool IsPortValid(int port) {
   return port >= 0 && port <= std::numeric_limits<uint16_t>::max();
 }
 
-bool IsPortAllowedByDefault(int port) {
-  int array_size = arraysize(kRestrictedPorts);
-  for (int i = 0; i < array_size; i++) {
-    if (kRestrictedPorts[i] == port) {
-      return false;
-    }
-  }
-  return IsPortValid(port);
+bool IsWellKnownPort(int port) {
+  return port >= 0 && port < 1024;
 }
 
-bool IsPortAllowedByFtp(int port) {
-  int array_size = arraysize(kAllowedFtpPorts);
-  for (int i = 0; i < array_size; i++) {
-    if (kAllowedFtpPorts[i] == port) {
+NET_EXPORT bool IsPortAllowedForScheme(int port,
+                                       const std::string& url_scheme,
+                                       PortOverrideMode port_override_mode) {
+  // Reject invalid ports.
+  if (!IsPortValid(port))
+    return false;
+
+  // Allow explitly allowed ports for any scheme.
+  if (port_override_mode == PORT_OVERRIDES_ALLOWED &&
+      g_explicitly_allowed_ports.Get().count(port) > 0) {
+    return true;
+  }
+
+  // FTP requests have an extra set of whitelisted schemes.
+  if (LowerCaseEqualsASCII(url_scheme, url::kFtpScheme)) {
+    for (int allowed_ftp_port : kAllowedFtpPorts) {
+      if (allowed_ftp_port == port)
         return true;
     }
   }
-  // Port not explicitly allowed by FTP, so return the default restrictions.
-  return IsPortAllowedByDefault(port);
-}
 
-bool IsPortAllowedByOverride(int port) {
-  if (g_explicitly_allowed_ports.Get().empty())
-    return false;
+  // Finally check against the generic list of restricted ports for all
+  // schemes.
+  for (int restricted_port : kRestrictedPorts) {
+    if (restricted_port == port)
+      return false;
+  }
 
-  return g_explicitly_allowed_ports.Get().count(port) > 0;
+  return true;
 }
 
 int SetNonBlocking(int fd) {

@@ -24,6 +24,7 @@
 #include "net/log/net_log.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/stream_socket.h"
+#include "url/url_constants.h"
 
 namespace net {
 
@@ -956,8 +957,11 @@ int FtpNetworkTransaction::ProcessResponseEPSV(
       int port;
       if (!ExtractPortFromEPSVResponse(response, &port))
         return Stop(ERR_INVALID_RESPONSE);
-      if (port < 1024 || !IsPortAllowedByFtp(port))
+      if (IsWellKnownPort(port) ||
+          !IsPortAllowedForScheme(port, url::kFtpScheme,
+                                  PORT_OVERRIDES_IGNORED)) {
         return Stop(ERR_UNSAFE_PORT);
+      }
       data_connection_port_ = static_cast<uint16>(port);
       next_state_ = STATE_DATA_CONNECT;
       break;
@@ -992,8 +996,11 @@ int FtpNetworkTransaction::ProcessResponsePASV(
       int port;
       if (!ExtractPortFromPASVResponse(response, &port))
         return Stop(ERR_INVALID_RESPONSE);
-      if (port < 1024 || !IsPortAllowedByFtp(port))
+      if (IsWellKnownPort(port) ||
+          !IsPortAllowedForScheme(port, url::kFtpScheme,
+                                  PORT_OVERRIDES_IGNORED)) {
         return Stop(ERR_UNSAFE_PORT);
+      }
       data_connection_port_ = static_cast<uint16>(port);
       next_state_ = STATE_DATA_CONNECT;
       break;

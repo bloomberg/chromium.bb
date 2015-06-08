@@ -527,14 +527,12 @@ bool BlinkPlatformImpl::isReservedIPAddress(
 
 bool BlinkPlatformImpl::portAllowed(const blink::WebURL& url) const {
   GURL gurl = GURL(url);
+  // Return true for URLs without a port specified.  This is needed to let
+  // through non-network schemes that don't go over the network.
   if (!gurl.has_port())
     return true;
-  int port = gurl.IntPort();
-  if (net::IsPortAllowedByOverride(port))
-    return true;
-  if (gurl.SchemeIs("ftp"))
-    return net::IsPortAllowedByFtp(port);
-  return net::IsPortAllowedByDefault(port);
+  return net::IsPortAllowedForScheme(gurl.EffectiveIntPort(), gurl.scheme(),
+                                     net::PORT_OVERRIDES_ALLOWED);
 }
 
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
