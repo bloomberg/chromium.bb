@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 27: Uncaught ReferenceError: undefined_variable is not defined
+This is a testharness.js-based test.
+FAIL <body onerror> - runtime error in <script> assert_equals: first arg expected "string" but got "object"
+FAIL <body onerror> - runtime error in <script> (column) assert_equals: fourth arg expected "number" but got "undefined"
+Harness: the test ran to completion.
+

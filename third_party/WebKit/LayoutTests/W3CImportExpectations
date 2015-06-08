@@ -101,9 +101,6 @@ imported/web-platform-tests/hr-time [ Skip ]
 ## Owners: tkent@chromium.org
 # imported/web-platform-tests/html [ Pass ]
 imported/web-platform-tests/html/syntax [ Skip ]
-imported/web-platform-tests/html/the-xhtml-syntax [ Skip ]
-imported/web-platform-tests/html/tools [ Skip ]
-imported/web-platform-tests/html/webappapis [ Skip ]
 ## Owners: TBD
 # imported/web-platform-tests/html-imports [ Pass ]
 imported/web-platform-tests/html-longdesc [ Skip ]
@@ -247,6 +244,7 @@ imported/web-platform-tests/html/semantics/embedded-content/the-video-element/vi
 imported/web-platform-tests/html/semantics/embedded-content/the-video-element/video_dynamic_poster_relative.htm [ Skip ]
 imported/web-platform-tests/html/semantics/embedded-content/the-video-element/video_initially_paused.html [ Skip ]
 imported/web-platform-tests/html/semantics/forms/the-input-element/image01.html [ Skip ]
+imported/web-platform-tests/html/webappapis/system-state-and-capabilities/the-navigator-object/NavigatorID.html [ Skip ]
 
 # crbug.com/490940: Needs to load extra HTML resources.
 imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/001.html [ Skip ]

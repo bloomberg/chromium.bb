@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token )
+This is a testharness.js-based test.
+FAIL window.onerror - compile error in <script src=//www1...> assert_equals: first arg expected "Script error." but got "Uncaught SyntaxError: Unexpected token )"
+FAIL window.onerror - compile error in <script src=//www1...> (column) assert_equals: fourth arg expected 0 but got 7
+Harness: the test ran to completion.
+

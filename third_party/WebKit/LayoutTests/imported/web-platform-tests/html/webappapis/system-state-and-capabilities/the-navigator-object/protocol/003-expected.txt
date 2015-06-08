@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Protocol case insensitivity in isProtocolHandlerRegistered Failed to execute 'isProtocolHandlerRegistered' on 'Navigator': The scheme 'WEB+CUSTOMPROTOCOLTREE' doesn't belong to the scheme whitelist. Please prefix non-whitelisted schemes with the string 'web+'.
+Harness: the test ran to completion.
+

@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 1: Uncaught ReferenceError: undefined_variable is not defined
+This is a testharness.js-based test.
+PASS window.onerror - runtime error in <script src=data:...> 
+FAIL window.onerror - runtime error in <script src=data:...> (column) number is not defined
+Harness: the test ran to completion.
+
