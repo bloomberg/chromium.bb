@@ -1653,8 +1653,6 @@ crbug.com/487880 [ Win ] fast/scroll-behavior/overflow-scroll-animates.html [ Pa
 crbug.com/487880 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 crbug.com/487880 [ Win ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 
-crbug.com/497909 plugins/webview-plugin-lifecycle.html [ NeedsRebaseline ]
-
 crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 
 crbug.com/445889 virtual/slimmingpaint/fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Skip ]
