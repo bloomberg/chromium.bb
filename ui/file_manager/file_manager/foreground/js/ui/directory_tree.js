@@ -437,7 +437,9 @@ function VolumeItem(modelItem, tree) {
   item.setupIcon_(item.querySelector('.icon'), item.volumeInfo_);
 
   // Attach the "eject" icon if the volume is ejectable.
-  if (modelItem.volumeInfo_.source === VolumeManagerCommon.Source.DEVICE ||
+  if ((modelItem.volumeInfo_.source === VolumeManagerCommon.Source.DEVICE &&
+       modelItem.volumeInfo_.volumeType !==
+           VolumeManagerCommon.VolumeType.MTP) ||
       modelItem.volumeInfo_.source === VolumeManagerCommon.Source.FILE) {
     item.setupEjectButton_(item.rowElement);
   }
