@@ -80,7 +80,7 @@
 
     # Stub generator script and signatures of all functions used by Chrome.
     'generate_stubs_script': '../../tools/generate_stubs/generate_stubs.py',
-    'sig_files': ['chromium/ffmpegsumo.sigs'],
+    'sig_files': ['chromium/ffmpeg.sigs'],
   },
   'conditions': [
     ['(target_arch == "ia32" or target_arch == "x64") and os_config != "linux-noasm"', {
@@ -427,7 +427,7 @@
                     },
                   },
                   'sources': [
-                    '<(shared_generated_dir)/ffmpegsumo.def',
+                    '<(shared_generated_dir)/ffmpeg.def',
                   ],
                   'actions': [
                     {
@@ -437,14 +437,14 @@
                         '<@(sig_files)',
                       ],
                       'outputs': [
-                        '<(shared_generated_dir)/ffmpegsumo.def',
+                        '<(shared_generated_dir)/ffmpeg.def',
                       ],
                       'action': ['python',
                                  '<(generate_stubs_script)',
                                  '-i', '<(INTERMEDIATE_DIR)',
                                  '-o', '<(shared_generated_dir)',
                                  '-t', 'windows_def',
-                                 '-m', 'ffmpegsumo.dll',
+                                 '-m', 'ffmpeg.dll',
                                  '<@(_inputs)',
                       ],
                       'message': 'Generating FFmpeg export definitions',
