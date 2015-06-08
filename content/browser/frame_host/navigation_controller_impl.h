@@ -151,11 +151,10 @@ class CONTENT_EXPORT NavigationControllerImpl
   // so that we know to load URLs that were pending as "lazy" loads.
   void SetActive(bool is_active);
 
-  // Returns true if the given URL would be an in-page navigation (i.e. only
-  // the reference fragment is different) from the "last committed entry". We do
-  // not compare it against the "active entry" since the active entry can be
-  // pending and in page navigations only happen on committed pages. If there
-  // is no last committed entry, then nothing will be in-page.
+  // Returns true if the given URL would be an in-page navigation (i.e. only the
+  // reference fragment is different) from the last committed URL in the
+  // specified frame. If there is no last committed entry, then nothing will be
+  // in-page.
   //
   // Special note: if the URLs are the same, it does NOT automatically count as
   // an in-page navigation. Neither does an input URL that has no ref, even if

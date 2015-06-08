@@ -106,43 +106,6 @@ void ConfigureEntriesForRestore(
   }
 }
 
-// There are two general cases where a navigation is in page:
-// 1. A fragment navigation, in which the url is kept the same except for the
-//    reference fragment.
-// 2. A history API navigation (pushState and replaceState). This case is
-//    always in-page, but the urls are not guaranteed to match excluding the
-//    fragment. The relevant spec allows pushState/replaceState to any URL on
-//    the same origin.
-// However, due to reloads, even identical urls are *not* guaranteed to be
-// in-page navigations, we have to trust the renderer almost entirely.
-// The one thing we do know is that cross-origin navigations will *never* be
-// in-page. Therefore, trust the renderer if the URLs are on the same origin,
-// and assume the renderer is malicious if a cross-origin navigation claims to
-// be in-page.
-bool AreURLsInPageNavigation(const GURL& existing_url,
-                             const GURL& new_url,
-                             bool renderer_says_in_page,
-                             RenderFrameHost* rfh) {
-  WebPreferences prefs = rfh->GetRenderViewHost()->GetWebkitPreferences();
-  bool is_same_origin = existing_url.is_empty() ||
-                        // TODO(japhet): We should only permit navigations
-                        // originating from about:blank to be in-page if the
-                        // about:blank is the first document that frame loaded.
-                        // We don't have sufficient information to identify
-                        // that case at the moment, so always allow about:blank
-                        // for now.
-                        existing_url == GURL(url::kAboutBlankURL) ||
-                        existing_url.GetOrigin() == new_url.GetOrigin() ||
-                        !prefs.web_security_enabled ||
-                        (prefs.allow_universal_access_from_file_urls &&
-                         existing_url.SchemeIs(url::kFileScheme));
-  if (!is_same_origin && renderer_says_in_page) {
-    bad_message::ReceivedBadMessage(rfh->GetProcess(),
-                                    bad_message::NC_IN_PAGE_NAVIGATION);
-  }
-  return is_same_origin && renderer_says_in_page;
-}
-
 // Determines whether or not we should be carrying over a user agent override
 // between two NavigationEntries.
 bool ShouldKeepOverride(const NavigationEntry* last_entry) {
@@ -857,7 +820,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   }
 
   // is_in_page must be computed before the entry gets committed.
-  details->is_in_page = AreURLsInPageNavigation(rfh->GetLastCommittedURL(),
+  details->is_in_page = IsURLInPageNavigation(
       params.url, params.was_within_same_page, rfh);
 
   switch (details->type) {
@@ -1090,10 +1053,8 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
   // the time this doesn't matter since WebKit doesn't tell us about subframe
   // navigations that don't actually navigate, but it can happen when there is
   // an encoding override (it always sends a navigation request).
-  if (AreURLsInPageNavigation(existing_entry->GetURL(), params.url,
-                              params.was_within_same_page, rfh)) {
+  if (IsURLInPageNavigation(params.url, params.was_within_same_page, rfh))
     return NAVIGATION_TYPE_IN_PAGE;
-  }
 
   // Since we weeded out "new" navigations above, we know this is an existing
   // (back/forward) navigation.
@@ -1148,8 +1109,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
     if (!last_committed)
       return NAVIGATION_TYPE_NAV_IGNORE;
 
-    if (AreURLsInPageNavigation(last_committed->GetURL(), params.url,
-                                params.was_within_same_page, rfh)) {
+    if (IsURLInPageNavigation(params.url, params.was_within_same_page, rfh)) {
       // This is history.replaceState(), which is renderer-initiated yet within
       // the same page.
       return NAVIGATION_TYPE_IN_PAGE;
@@ -1203,11 +1163,8 @@ NavigationType NavigationControllerImpl::ClassifyNavigationWithoutPageID(
   // of the time this doesn't matter since Blink doesn't tell us about subframe
   // navigations that don't actually navigate, but it can happen when there is
   // an encoding override (it always sends a navigation request).
-  NavigationEntryImpl* existing_entry = entries_[existing_entry_index].get();
-  if (AreURLsInPageNavigation(existing_entry->GetURL(), params.url,
-                              params.was_within_same_page, rfh)) {
+  if (IsURLInPageNavigation(params.url, params.was_within_same_page, rfh))
     return NAVIGATION_TYPE_IN_PAGE;
-  }
 
   // Since we weeded out "new" navigations above, we know this is an existing
   // (back/forward) navigation.
@@ -1513,13 +1470,54 @@ int NavigationControllerImpl::GetIndexOfEntry(
   return (i == entries_.end()) ? -1 : static_cast<int>(i - entries_.begin());
 }
 
+// There are two general cases where a navigation is "in page":
+// 1. A fragment navigation, in which the url is kept the same except for the
+//    reference fragment.
+// 2. A history API navigation (pushState and replaceState). This case is
+//    always in-page, but the urls are not guaranteed to match excluding the
+//    fragment. The relevant spec allows pushState/replaceState to any URL on
+//    the same origin.
+// However, due to reloads, even identical urls are *not* guaranteed to be
+// in-page navigations, we have to trust the renderer almost entirely.
+// The one thing we do know is that cross-origin navigations will *never* be
+// in-page. Therefore, trust the renderer if the URLs are on the same origin,
+// and assume the renderer is malicious if a cross-origin navigation claims to
+// be in-page.
 bool NavigationControllerImpl::IsURLInPageNavigation(
     const GURL& url,
     bool renderer_says_in_page,
     RenderFrameHost* rfh) const {
-  NavigationEntry* last_committed = GetLastCommittedEntry();
-  return last_committed && AreURLsInPageNavigation(
-      last_committed->GetURL(), url, renderer_says_in_page, rfh);
+  GURL last_committed_url;
+  if (rfh->GetParent()) {
+    last_committed_url = rfh->GetLastCommittedURL();
+  } else {
+    NavigationEntry* last_committed = GetLastCommittedEntry();
+    // There must be a last-committed entry to compare URLs to. TODO(avi): When
+    // might Blink say that a navigation is in-page yet there be no last-
+    // committed entry?
+    if (!last_committed)
+      return false;
+    last_committed_url = last_committed->GetURL();
+  }
+
+  WebPreferences prefs = rfh->GetRenderViewHost()->GetWebkitPreferences();
+  bool is_same_origin = last_committed_url.is_empty() ||
+                        // TODO(japhet): We should only permit navigations
+                        // originating from about:blank to be in-page if the
+                        // about:blank is the first document that frame loaded.
+                        // We don't have sufficient information to identify
+                        // that case at the moment, so always allow about:blank
+                        // for now.
+                        last_committed_url == GURL(url::kAboutBlankURL) ||
+                        last_committed_url.GetOrigin() == url.GetOrigin() ||
+                        !prefs.web_security_enabled ||
+                        (prefs.allow_universal_access_from_file_urls &&
+                         last_committed_url.SchemeIs(url::kFileScheme));
+  if (!is_same_origin && renderer_says_in_page) {
+    bad_message::ReceivedBadMessage(rfh->GetProcess(),
+                                    bad_message::NC_IN_PAGE_NAVIGATION);
+  }
+  return is_same_origin && renderer_says_in_page;
 }
 
 void NavigationControllerImpl::CopyStateFrom(

@@ -744,6 +744,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     capturer.Wait();
     EXPECT_EQ(ui::PAGE_TRANSITION_LINK, capturer.params().transition);
     EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, capturer.details().type);
+    EXPECT_TRUE(capturer.details().is_in_page);
   }
 
   // Back and forward across a fragment navigation.
@@ -765,6 +766,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
               | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
               capturer.params().transition);
     EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, capturer.details().type);
+    EXPECT_TRUE(capturer.details().is_in_page);
   }
 
   {
@@ -775,6 +777,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FORWARD_BACK,
               capturer.params().transition);
     EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, capturer.details().type);
+    EXPECT_TRUE(capturer.details().is_in_page);
   }
 
   // Back and forward across a pushState-created navigation.
@@ -794,6 +797,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
               | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
               capturer.params().transition);
     EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, capturer.details().type);
+    EXPECT_TRUE(capturer.details().is_in_page);
   }
 
   {
@@ -804,6 +808,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FORWARD_BACK,
               capturer.params().transition);
     EXPECT_EQ(NAVIGATION_TYPE_IN_PAGE, capturer.details().type);
+    EXPECT_TRUE(capturer.details().is_in_page);
   }
 }
 
@@ -979,6 +984,84 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ(ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT,
               params[1].transition);
     EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, details[1].type);
+  }
+}
+
+// Verify that the LoadCommittedDetails::is_in_page value is properly set for
+// non-IN_PAGE navigations. (It's tested for IN_PAGE navigations with the
+// NavigationTypeClassification_InPage test.)
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       LoadCommittedDetails_IsInPage) {
+  GURL links_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_links.html"));
+  NavigateToURL(shell(), links_url);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  {
+    // Do a fragment link click.
+    FrameNavigateParamsCapturer capturer(root);
+    std::string script = "document.getElementById('fraglink').click()";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK, capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+    EXPECT_TRUE(capturer.details().is_in_page);
+  }
+
+  {
+    // Do a non-fragment link click.
+    FrameNavigateParamsCapturer capturer(root);
+    std::string script = "document.getElementById('thelink').click()";
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK, capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+    EXPECT_FALSE(capturer.details().is_in_page);
+  }
+
+  // Second verse, same as the first. (But in a subframe.)
+
+  GURL iframe_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe.html"));
+  NavigateToURL(shell(), iframe_url);
+
+  root = static_cast<WebContentsImpl*>(shell()->web_contents())->
+      GetFrameTree()->root();
+
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_NE(nullptr, root->child_at(0));
+
+  NavigateFrameToURL(root->child_at(0), links_url);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  {
+    // Do a fragment link click.
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    std::string script = "document.getElementById('fraglink').click()";
+    EXPECT_TRUE(content::ExecuteScript(root->child_at(0)->current_frame_host(),
+                script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_MANUAL_SUBFRAME,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.details().type);
+    EXPECT_TRUE(capturer.details().is_in_page);
+  }
+
+  {
+    // Do a non-fragment link click.
+    FrameNavigateParamsCapturer capturer(root->child_at(0));
+    std::string script = "document.getElementById('thelink').click()";
+    EXPECT_TRUE(content::ExecuteScript(root->child_at(0)->current_frame_host(),
+                script));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_MANUAL_SUBFRAME,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_SUBFRAME, capturer.details().type);
+    EXPECT_FALSE(capturer.details().is_in_page);
   }
 }
 
