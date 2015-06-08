@@ -60,7 +60,8 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
 
     if (m_layoutSVGContainer.style()->outlineWidth() && m_layoutSVGContainer.style()->visibility() == VISIBLE) {
         LayoutRect layoutBoundingBox(boundingBox);
-        ObjectPainter(m_layoutSVGContainer).paintOutline(paintInfoBeforeFiltering, layoutBoundingBox, layoutBoundingBox);
+        LayoutRect visualOverflowRect = ObjectPainter::outlineBounds(layoutBoundingBox, m_layoutSVGContainer.styleRef());
+        ObjectPainter(m_layoutSVGContainer).paintOutline(paintInfoBeforeFiltering, layoutBoundingBox, visualOverflowRect);
     }
 
     if (paintInfoBeforeFiltering.context->printing())

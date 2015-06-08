@@ -27,6 +27,9 @@ public:
     void addPDFURLRectIfNeeded(const PaintInfo&, const LayoutPoint& paintOffset);
 
     static void drawLineForBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2, BoxSide, Color, EBorderStyle, int adjbw1, int adjbw2, bool antialias = false);
+
+    static LayoutRect outlineBounds(const LayoutRect& objectBounds, const ComputedStyle&);
+
 private:
     static void drawDashedOrDottedBoxSide(GraphicsContext*, int x1, int y1, int x2, int y2,
         BoxSide, Color, int thickness, EBorderStyle, bool antialias);

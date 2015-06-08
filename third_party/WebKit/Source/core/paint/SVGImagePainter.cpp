@@ -61,7 +61,8 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
         PaintInfo outlinePaintInfo(paintInfoBeforeFiltering);
         outlinePaintInfo.phase = PaintPhaseSelfOutline;
         LayoutRect layoutBoundingBox(boundingBox);
-        ObjectPainter(m_layoutSVGImage).paintOutline(outlinePaintInfo, layoutBoundingBox, layoutBoundingBox);
+        LayoutRect visualOverflowRect = ObjectPainter::outlineBounds(layoutBoundingBox, m_layoutSVGImage.styleRef());
+        ObjectPainter(m_layoutSVGImage).paintOutline(outlinePaintInfo, layoutBoundingBox, visualOverflowRect);
     }
 }
 

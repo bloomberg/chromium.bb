@@ -116,7 +116,8 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
         PaintInfo outlinePaintInfo(paintInfoBeforeFiltering);
         outlinePaintInfo.phase = PaintPhaseSelfOutline;
         LayoutRect layoutObjectBounds(boundingBox);
-        ObjectPainter(m_layoutSVGShape).paintOutline(outlinePaintInfo, layoutObjectBounds, layoutObjectBounds);
+        LayoutRect visualOverflowRect = ObjectPainter::outlineBounds(layoutObjectBounds, m_layoutSVGShape.styleRef());
+        ObjectPainter(m_layoutSVGShape).paintOutline(outlinePaintInfo, layoutObjectBounds, visualOverflowRect);
     }
 }
 

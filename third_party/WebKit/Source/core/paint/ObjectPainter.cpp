@@ -15,6 +15,18 @@
 
 namespace blink {
 
+LayoutRect ObjectPainter::outlineBounds(const LayoutRect& objectBounds, const ComputedStyle& style)
+{
+    int outlineOutset;
+    if (style.outlineStyleIsAuto())
+        outlineOutset = GraphicsContext::focusRingOutsetExtent(style.outlineOffset(), style.outlineWidth());
+    else
+        outlineOutset = style.outlineSize();
+    LayoutRect outlineBounds(objectBounds);
+    outlineBounds.inflate(outlineOutset);
+    return outlineBounds;
+}
+
 void ObjectPainter::paintFocusRing(const PaintInfo& paintInfo, const ComputedStyle& style, const Vector<LayoutRect>& focusRingRects)
 {
     ASSERT(style.outlineStyleIsAuto());
