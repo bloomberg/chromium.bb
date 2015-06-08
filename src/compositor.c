@@ -4680,16 +4680,21 @@ weston_version(int *major, int *minor, int *micro)
 WL_EXPORT void *
 weston_load_module(const char *name, const char *entrypoint)
 {
+	const char *builddir = getenv("WESTON_BUILD_DIR");
 	char path[PATH_MAX];
 	void *module, *init;
 
 	if (name == NULL)
 		return NULL;
 
-	if (name[0] != '/')
-		snprintf(path, sizeof path, "%s/%s", MODULEDIR, name);
-	else
+	if (name[0] != '/') {
+		if (builddir)
+			snprintf(path, sizeof path, "%s/.libs/%s", builddir, name);
+		else
+			snprintf(path, sizeof path, "%s/%s", MODULEDIR, name);
+	} else {
 		snprintf(path, sizeof path, "%s", name);
+	}
 
 	module = dlopen(path, RTLD_NOW | RTLD_NOLOAD);
 	if (module) {
