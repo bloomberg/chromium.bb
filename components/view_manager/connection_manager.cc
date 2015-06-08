@@ -314,6 +314,11 @@ void ConnectionManager::ProcessEvent(mojo::EventPtr event) {
 
 void ConnectionManager::DispatchInputEventToView(const ServerView* view,
                                                  mojo::EventPtr event) {
+  // It's possible for events to flow through here from the platform_window
+  // before any connections are established with the view_manager.
+  if (!has_window_manager_client_connection())
+    return;
+
   // If the view is an embed root, forward to the embedded view, not the owner.
   ViewManagerServiceImpl* connection = GetConnectionWithRoot(view->id());
   if (!connection)
