@@ -134,6 +134,32 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
     }
 
     /**
+     * Test Opening a link and verify that TabObserver#onPageLoadStarted gives the old and new URL.
+    */
+    @MediumTest
+    @Feature({"Navigation"})
+    public void testTabObserverOnPageLoadStarted() throws InterruptedException, TimeoutException {
+        final String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
+        final String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
+
+        typeInOmniboxAndNavigate(url1);
+        assertEquals(url1, getActivity().getActivityTab().getUrl());
+        TabObserver onPageLoadStartedObserver = new EmptyTabObserver() {
+            @Override
+            public void onPageLoadStarted(Tab tab, String url) {
+                tab.removeObserver(this);
+                assertEquals(tab.getUrl(), url1);
+                assertEquals(url, url2);
+            }
+        };
+        Tab tab = getActivity().getActivityTab();
+        tab.addObserver(onPageLoadStartedObserver);
+        DOMUtils.clickNode(this, tab.getContentViewCore(), "aboutLink");
+        ChromeTabUtils.waitForTabPageLoaded(tab, url2);
+        assertEquals("Desired Link not open", url2, getActivity().getActivityTab().getUrl());
+    }
+
+    /**
      * Test re-direct functionality for a web-page.
      * @throws Exception
      */

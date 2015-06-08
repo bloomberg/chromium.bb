@@ -55,11 +55,8 @@ public class CustomTab extends ChromeTab {
         }
 
         @Override
-        public void onPageLoadStarted(Tab tab) {
-            // TODO(lizeb): This call gives the *previous* URL for navigations
-            // that don't go through Tab#lodUrl(). Fix TabObserver to deliver
-            // the destination here as well.
-            mChromeBrowserConnection.notifyPageLoadStarted(mSessionId, tab.getUrl());
+        public void onPageLoadStarted(Tab tab, String url) {
+            mChromeBrowserConnection.notifyPageLoadStarted(mSessionId, url);
         }
 
         @Override

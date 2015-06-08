@@ -1518,7 +1518,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         clearHungRendererState();
 
-        for (TabObserver observer : mObservers) observer.onPageLoadStarted(this);
+        for (TabObserver observer : mObservers) observer.onPageLoadStarted(this, validatedUrl);
     }
 
     /**

@@ -225,7 +225,7 @@ class ToolbarManager implements ToolbarTabController, UrlFocusChangeListener {
             }
 
             @Override
-            public void onPageLoadStarted(Tab tab) {
+            public void onPageLoadStarted(Tab tab, String url) {
                 updateButtonStatus();
                 updateTabLoadingState(true, true);
             }

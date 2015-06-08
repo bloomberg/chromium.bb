@@ -111,7 +111,7 @@ public class ThumbnailTabHelper {
         }
 
         @Override
-        public void onPageLoadStarted(Tab tab) {
+        public void onPageLoadStarted(Tab tab, String url) {
             cancelThumbnailCapture();
             mThumbnailCapturedForLoad = false;
         }

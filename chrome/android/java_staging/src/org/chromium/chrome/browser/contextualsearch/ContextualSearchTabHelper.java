@@ -55,7 +55,7 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
     }
 
     @Override
-    public void onPageLoadStarted(Tab tab) {
+    public void onPageLoadStarted(Tab tab, String url) {
         if (tab.getContentViewCore() == null) {
             // Nothing to do yet.
             return;

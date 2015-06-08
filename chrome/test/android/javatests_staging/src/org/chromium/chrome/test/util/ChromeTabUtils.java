@@ -148,7 +148,7 @@ public class ChromeTabUtils {
             public void run() {
                 tab.addObserver(new EmptyTabObserver() {
                     @Override
-                    public void onPageLoadStarted(Tab tab) {
+                    public void onPageLoadStarted(Tab tab, String url) {
                         startedCallback.notifyCalled();
                         tab.removeObserver(this);
                     }

@@ -627,7 +627,7 @@ public class DocumentActivity extends CompositorChromeActivity {
 
         mDocumentTab.addObserver(new DocumentTabObserver() {
             @Override
-            public void onPageLoadStarted(Tab tab) {
+            public void onPageLoadStarted(Tab tab, String url) {
                 // Discard startup navigation measurements when the user interfered and started the
                 // 2nd navigation (in activity lifetime) in parallel.
                 if (!sIsFirstPageLoadStart) {

@@ -129,7 +129,7 @@ public class FindToolbar extends LinearLayout
 
         mTabObserver = new EmptyTabObserver() {
             @Override
-            public void onPageLoadStarted(Tab tab) {
+            public void onPageLoadStarted(Tab tab, String url) {
                 deactivate();
             }
 

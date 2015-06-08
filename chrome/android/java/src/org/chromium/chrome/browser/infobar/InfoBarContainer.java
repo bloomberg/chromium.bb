@@ -268,7 +268,7 @@ public class InfoBarContainer extends SwipableOverlayView {
     protected TabObserver createTabObserver() {
         return new SwipableOverlayViewTabObserver() {
             @Override
-            public void onPageLoadStarted(Tab tab) {
+            public void onPageLoadStarted(Tab tab, String url) {
                 onPageStarted();
             }
         };
