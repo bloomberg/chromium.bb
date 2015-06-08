@@ -28,6 +28,11 @@ public:
 
 private:
     struct ComplexBorderInfo;
+    enum MitreType {
+        NoMitre,
+        SoftMitre, // Anti-aliased
+        HardMitre, // Not anti-aliased
+    };
 
     BorderEdgeFlags paintOpacityGroup(GraphicsContext*, const ComplexBorderInfo&, unsigned index,
         float accumulatedOpacity) const;
@@ -39,9 +44,11 @@ private:
 
     void drawBoxSideFromPath(GraphicsContext*, const LayoutRect&, const Path&, float thickness,
         float drawThickness, BoxSide, Color, EBorderStyle) const;
-    void clipBorderSidePolygon(GraphicsContext*, BoxSide, bool firstEdgeMatches,
-        bool secondEdgeMatches) const;
+    void clipBorderSidePolygon(GraphicsContext*, BoxSide, MitreType mitre1, MitreType mitre2) const;
     void clipBorderSideForComplexInnerPath(GraphicsContext*, BoxSide) const;
+
+    MitreType computeMitre(BoxSide, BoxSide adjacentSide, BorderEdgeFlags, bool antialias) const;
+    static bool mitresRequireClipping(MitreType mitre1, MitreType mitre2, EBorderStyle, bool antialias);
 
     const BorderEdge& firstEdge() const
     {
