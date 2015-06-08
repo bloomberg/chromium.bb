@@ -50,17 +50,16 @@ public:
     String createMarkup();
 
 private:
-    enum class NodeTraversalMode { EmitString, DoNotEmitString };
+    Node* serializeNodes(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
 
-    Node* serializeNodes(Node* startNode, Node* pastEnd);
+    Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
 
-    Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode);
-
-    StyledMarkupAccumulator m_markupAccumulator;
     const PositionType m_start;
     const PositionType m_end;
+    const EAbsoluteURLs m_shouldResolveURLs;
     const EAnnotateForInterchange m_shouldAnnotate;
     const RefPtrWillBeMember<Node> m_highestNodeToBeSerialized;
+    const ConvertBlocksToInlines m_convertBlocksToInlines;
 };
 
 extern template class StyledMarkupSerializer<EditingStrategy>;
