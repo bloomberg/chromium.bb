@@ -118,6 +118,8 @@ public class AccountManagementFragment extends PreferenceFragment
     private ArrayList<Preference> mAccountsListPreferences = new ArrayList<Preference>();
     private Preference mPrimaryAccountPreference;
 
+    private boolean mSaveInstanceStateWasCalled;
+
     private AccountManagementFragmentDelegate getDelegate() {
         return AccountManagementScreenHelper.getDelegate();
     }
@@ -155,6 +157,12 @@ public class AccountManagementFragment extends PreferenceFragment
         SigninManager.get(getActivity()).removeSignInStateObserver(this);
         ProfileDownloader.removeObserver(this);
         ProfileSyncService.get(getActivity()).removeSyncStateChangedListener(this);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mSaveInstanceStateWasCalled = true;
     }
 
     /**
@@ -219,6 +227,7 @@ public class AccountManagementFragment extends PreferenceFragment
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     if ((boolean) newValue) return true;
+                    if (mSaveInstanceStateWasCalled) return false;
 
                     if (ChromeSigninController.get(getActivity()).isSignedIn()
                             && getSignOutAllowedPreferenceValue(getActivity())) {
@@ -252,6 +261,8 @@ public class AccountManagementFragment extends PreferenceFragment
             addAccount.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
+                    if (mSaveInstanceStateWasCalled) return false;
+
                     AccountManagementScreenHelper.logEvent(
                             ProfileAccountManagementMetrics.ADD_ACCOUNT,
                             mGaiaServiceType);
@@ -284,6 +295,7 @@ public class AccountManagementFragment extends PreferenceFragment
             goIncognito.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
+                    if (mSaveInstanceStateWasCalled) return false;
                     if (!PrefServiceBridge.getInstance().isIncognitoModeEnabled()) return false;
 
                     AccountManagementFragmentDelegate delegate = getDelegate();
@@ -389,6 +401,8 @@ public class AccountManagementFragment extends PreferenceFragment
                 pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                     @Override
                     public boolean onPreferenceClick(Preference preference) {
+                        if (mSaveInstanceStateWasCalled) return false;
+
                         AccountManagementScreenHelper.logEvent(
                                 ProfileAccountManagementMetrics.CLICK_PRIMARY_ACCOUNT,
                                 mGaiaServiceType);
