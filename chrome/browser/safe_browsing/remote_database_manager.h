@@ -14,7 +14,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/safe_browsing/android_safe_browsing_api_handler.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "url/gurl.h"
 
@@ -61,7 +60,6 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // Requests currently outstanding.  This owns the ptrs.
   std::vector<ClientRequest*> current_requests_;
-  AndroidSafeBrowsingAPIHandler api_handler_;
   bool enabled_;
 
   friend class base::RefCountedThreadSafe<RemoteSafeBrowsingDatabaseManager>;

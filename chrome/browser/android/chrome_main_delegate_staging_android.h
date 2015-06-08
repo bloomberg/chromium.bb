@@ -11,6 +11,7 @@
 #include "chrome/browser/android/spdy_proxy_resource_throttle.h"
 #endif
 
+class SafeBrowsingApiHandler;
 class SpdyProxyResourceThrottleFactory;
 
 class ChromeMainDelegateStagingAndroid : public ChromeMainDelegateAndroid {
@@ -22,12 +23,19 @@ class ChromeMainDelegateStagingAndroid : public ChromeMainDelegateAndroid {
   int RunProcess(
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;
+#if defined(SAFE_BROWSING_DB_REMOTE)
+  virtual SafeBrowsingApiHandler* CreateSafeBrowsingApiHandler();
+#endif
 
  private:
   bool BasicStartupComplete(int* exit_code) override;
   void ProcessExiting(const std::string& process_type) override;
 #if defined(SAFE_BROWSING_SERVICE)
   scoped_ptr<SpdyProxyResourceThrottleFactory> spdy_proxy_throttle_factory_;
+#endif
+
+#if defined(SAFE_BROWSING_DB_REMOTE)
+  scoped_ptr<SafeBrowsingApiHandler> safe_browsing_api_handler_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegateStagingAndroid);

@@ -10,6 +10,10 @@
 #include "base/path_service.h"
 #include "components/policy/core/common/policy_provider_android.h"
 
+#if defined(SAFE_BROWSING_DB_REMOTE)
+#include "chrome/browser/safe_browsing/safe_browsing_api_handler.h"
+#endif
+
 
 ChromeMainDelegateStagingAndroid::ChromeMainDelegateStagingAndroid() {
 }
@@ -18,6 +22,11 @@ ChromeMainDelegateStagingAndroid::~ChromeMainDelegateStagingAndroid() {
 }
 
 bool ChromeMainDelegateStagingAndroid::BasicStartupComplete(int* exit_code) {
+#if defined(SAFE_BROWSING_DB_REMOTE)
+  safe_browsing_api_handler_.reset(CreateSafeBrowsingApiHandler());
+  SafeBrowsingApiHandler::SetInstance(safe_browsing_api_handler_.get());
+#endif
+
 #if defined(SAFE_BROWSING_SERVICE)
   spdy_proxy_throttle_factory_ .reset(new SpdyProxyResourceThrottleFactory());
   SafeBrowsingResourceThrottleFactory::RegisterFactory(
@@ -63,4 +72,14 @@ void ChromeMainDelegateStagingAndroid::ProcessExiting(
 #if defined(SAFE_BROWSING_SERVICE)
   SafeBrowsingResourceThrottleFactory::RegisterFactory(NULL);
 #endif
+#if defined(SAFE_BROWSING_DB_REMOTE)
+  SafeBrowsingApiHandler::SetInstance(NULL);
+#endif
 }
+
+#if defined(SAFE_BROWSING_DB_REMOTE)
+SafeBrowsingApiHandler*
+ChromeMainDelegateStagingAndroid::CreateSafeBrowsingApiHandler() {
+  return NULL;
+}
+#endif
