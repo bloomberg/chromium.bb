@@ -863,7 +863,7 @@ static ALWAYS_INLINE void partitionRegisterEmptyPage(PartitionPage* page)
     root->globalEmptyPageRingIndex = currentIndex;
 }
 
-void partitionPurgeMemory(PartitionRootBase* root)
+static void partitionDecommitFreePages(PartitionRootBase* root)
 {
     for (size_t i = 0; i < kMaxFreeableSpans; ++i) {
         PartitionPage* page = root->globalEmptyPageRing[i];
@@ -871,6 +871,18 @@ void partitionPurgeMemory(PartitionRootBase* root)
             partitionDecommitPageIfPossible(root, page);
         root->globalEmptyPageRing[i] = nullptr;
     }
+}
+
+void partitionPurgeMemory(PartitionRoot* root)
+{
+    partitionDecommitFreePages(root);
+}
+
+void partitionPurgeMemoryGeneric(PartitionRootGeneric* root)
+{
+    spinLockLock(&root->lock);
+    partitionDecommitFreePages(root);
+    spinLockUnlock(&root->lock);
 }
 
 void partitionFreeSlowPath(PartitionPage* page)

@@ -1494,7 +1494,7 @@ TEST(PartitionAllocTest, Purge)
         EXPECT_EQ(WTF::kSystemPageSize, stats->freeableBytes);
         EXPECT_EQ(WTF::kSystemPageSize, stats->residentBytes);
     }
-    partitionPurgeMemory(genericAllocator.root());
+    partitionPurgeMemoryGeneric(genericAllocator.root());
     {
         MockPartitionStatsDumper mockStatsDumperGeneric;
         partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
@@ -1508,7 +1508,7 @@ TEST(PartitionAllocTest, Purge)
     }
     // Calling purge again here is a good way of testing we didn't mess up the
     // state of the free cache ring.
-    partitionPurgeMemory(genericAllocator.root());
+    partitionPurgeMemoryGeneric(genericAllocator.root());
     TestShutdown();
 }
 

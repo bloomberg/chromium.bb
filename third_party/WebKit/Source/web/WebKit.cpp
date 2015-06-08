@@ -59,6 +59,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
+#include "wtf/Partitions.h"
 #include "wtf/WTF.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/TextEncoding.h"
@@ -287,6 +288,11 @@ void resetPluginCache(bool reloadPages)
 {
     ASSERT(!reloadPages);
     Page::refreshPlugins();
+}
+
+void decommitFreeableMemory()
+{
+    WTF::Partitions::decommitFreeableMemory();
 }
 
 } // namespace blink

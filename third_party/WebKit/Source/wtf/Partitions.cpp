@@ -72,6 +72,16 @@ void Partitions::shutdown()
     (void) m_fastMallocAllocator.shutdown();
 }
 
+void Partitions::decommitFreeableMemory()
+{
+    ASSERT(isMainThread());
+
+    partitionPurgeMemoryGeneric(getBufferPartition());
+    partitionPurgeMemoryGeneric(getFastMallocPartition());
+    partitionPurgeMemory(getObjectModelPartition());
+    partitionPurgeMemory(getRenderingPartition());
+}
+
 void Partitions::reportMemoryUsageHistogram()
 {
     static size_t supportedMaxSizeInMB = 4 * 1024;

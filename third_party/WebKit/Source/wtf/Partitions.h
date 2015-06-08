@@ -88,6 +88,8 @@ public:
         return totalSize;
     }
 
+    static void decommitFreeableMemory();
+
     static void reportMemoryUsageHistogram();
 
     static void dumpMemoryStats(PartitionStatsDumper*);
