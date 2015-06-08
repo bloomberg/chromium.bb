@@ -31,25 +31,31 @@ class GIN_EXPORT V8Initializer {
 
   // Load V8 snapshot from user provided platform file descriptors.
   // The offset and size arguments, if non-zero, specify the portions
-  // of the files to be loaded. This methods returns true on success
-  // (or if snapshot is already loaded), false otherwise.
-  static bool LoadV8SnapshotFromFD(base::PlatformFile natives_fd,
-                                   int64 natives_offset,
-                                   int64 natives_size,
-                                   base::PlatformFile snapshot_fd,
+  // of the files to be loaded. Since the VM can boot with or without
+  // the snapshot, this function does not return a status.
+  static void LoadV8SnapshotFromFD(base::PlatformFile snapshot_fd,
                                    int64 snapshot_offset,
                                    int64 snapshot_size);
+  // Similar to LoadV8SnapshotFromFD, but for the source of the natives.
+  // Without the natives we cannot continue, so this function contains
+  // release mode asserts and won't return if it fails.
+  static void LoadV8NativesFromFD(base::PlatformFile natives_fd,
+                                  int64 natives_offset,
+                                  int64 natives_size);
 
-  // Load V8 snapshot from default resources. Returns true on success or
-  // snapshot is already loaded, false otherwise.
-  static bool LoadV8Snapshot();
+  // Load V8 snapshot from default resources, if they are available.
+  static void LoadV8Snapshot();
+
+  // Load V8 natives source from default resources. Contains asserts
+  // so that it will not return if natives cannot be loaded.
+  static void LoadV8Natives();
 
   // Opens the V8 snapshot data files and returns open file descriptors to these
   // files in |natives_fd_out| and |snapshot_fd_out|, which can be passed to
   // child processes.
   static bool OpenV8FilesForChildProcesses(base::PlatformFile* natives_fd_out,
-                                           base::PlatformFile* snapshot_fd_out);
-
+                                           base::PlatformFile* snapshot_fd_out)
+      WARN_UNUSED_RESULT;
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 };
 

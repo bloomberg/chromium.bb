@@ -114,11 +114,12 @@ void Setup::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   renderer_scheduler_ = scheduler::RendererScheduler::Create();
   blink_platform_.reset(new BlinkPlatformImpl(app_, renderer_scheduler_.get()));
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  CHECK(gin::V8Initializer::LoadV8SnapshotFromFD(
-      resource_loader_.ReleaseFile(kResourceNativesBlob).TakePlatformFile(), 0u,
-      0u,
+  gin::V8Initializer::LoadV8SnapshotFromFD(
       resource_loader_.ReleaseFile(kResourceSnapshotBlob).TakePlatformFile(),
-      0u, 0u));
+      0u, 0u);
+  gin::V8Initializer::LoadV8NativesFromFD(
+      resource_loader_.ReleaseFile(kResourceNativesBlob).TakePlatformFile(), 0u,
+      0u);
 #endif
   blink::initialize(blink_platform_.get());
   base::i18n::InitializeICUWithFileDescriptor(

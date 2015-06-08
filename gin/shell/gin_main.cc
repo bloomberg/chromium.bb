@@ -62,6 +62,7 @@ int main(int argc, char** argv) {
   base::i18n::InitializeICU();
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::V8Initializer::LoadV8Snapshot();
+  gin::V8Initializer::LoadV8Natives();
 #endif
 
   base::MessageLoop message_loop;

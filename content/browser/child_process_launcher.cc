@@ -149,6 +149,8 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
   GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
       *cmd_line, child_process_id, files_to_register.get());
 
+  GetContentClient()->browser()->AppendMappedFileCommandLineSwitches(cmd_line);
+
   StartChildProcess(
       cmd_line->argv(), child_process_id, files_to_register.Pass(), regions,
       base::Bind(&OnChildProcessStartedAndroid, callback, client_thread_id,
@@ -161,6 +163,9 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
 #if !defined(OS_MACOSX)
   GetContentClient()->browser()->GetAdditionalMappedFilesForChildProcess(
       *cmd_line, child_process_id, files_to_register.get());
+
+  GetContentClient()->browser()->AppendMappedFileCommandLineSwitches(cmd_line);
+
   if (use_zygote) {
     base::ProcessHandle handle = ZygoteHostImpl::GetInstance()->ForkRequest(
         cmd_line->argv(), files_to_register.Pass(), process_type);

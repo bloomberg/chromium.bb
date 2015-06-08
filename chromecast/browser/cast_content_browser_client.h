@@ -75,6 +75,8 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
   bool IsHandledURL(const GURL& url) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
+  void AppendMappedFileCommandLineSwitches(
+      base::CommandLine* command_line) override;
   content::AccessTokenStore* CreateAccessTokenStore() override;
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
@@ -149,6 +151,8 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
 
   base::ScopedFD v8_natives_fd_;
   base::ScopedFD v8_snapshot_fd_;
+  bool natives_fd_exists() { return v8_natives_fd_ != -1; }
+  bool snapshot_fd_exists() { return v8_snapshot_fd_ != -1; }
 
   scoped_ptr<URLRequestContextFactory> url_request_context_factory_;
 

@@ -151,21 +151,28 @@ bool CastContentBrowserClient::IsHandledURL(const GURL& url) {
   return false;
 }
 
+void CastContentBrowserClient::AppendMappedFileCommandLineSwitches(
+    base::CommandLine* command_line) {
+  std::string process_type =
+      command_line->GetSwitchValueNative(switches::kProcessType);
+
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  if (process_type != switches::kZygoteProcess) {
+    DCHECK(natives_fd_exists());
+    command_line->AppendSwitch(::switches::kV8NativesPassedByFD);
+    if (snapshot_fd_exists())
+      command_line->AppendSwitch(::switches::kV8SnapshotPassedByFD);
+  }
+}
+
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
 void CastContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
-
   std::string process_type =
       command_line->GetSwitchValueNative(switches::kProcessType);
   base::CommandLine* browser_command_line =
       base::CommandLine::ForCurrentProcess();
-
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  if (process_type != switches::kZygoteProcess) {
-    command_line->AppendSwitch(::switches::kV8NativesPassedByFD);
-    command_line->AppendSwitch(::switches::kV8SnapshotPassedByFD);
-  }
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
   // IsCrashReporterEnabled() is set when InitCrashReporter() is called, and
   // controlled by GetBreakpadClient()->EnableBreakpadForProcess(), therefore
@@ -321,7 +328,7 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     int child_process_id,
     content::FileDescriptorInfo* mappings) {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  if (v8_natives_fd_.get() == -1 || v8_snapshot_fd_.get() == -1) {
+  if (!natives_fd_exists()) {
     int v8_natives_fd = -1;
     int v8_snapshot_fd = -1;
     if (gin::V8Initializer::OpenV8FilesForChildProcesses(&v8_natives_fd,
@@ -330,7 +337,9 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       v8_snapshot_fd_.reset(v8_snapshot_fd);
     }
   }
-  DCHECK(v8_natives_fd_.get() != -1 && v8_snapshot_fd_.get() != -1);
+  // V8 can't start up without the source of the natives, but it can
+  // start up (slower) without the snapshot.
+  DCHECK(natives_fd_exists());
   mappings->Share(kV8NativesDataDescriptor, v8_natives_fd_.get());
   mappings->Share(kV8SnapshotDataDescriptor, v8_snapshot_fd_.get());
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA

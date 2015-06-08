@@ -58,6 +58,7 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
     gin::V8Initializer::LoadV8Snapshot();
+    gin::V8Initializer::LoadV8Natives();
 #endif
 
     // This needs to be done before base::TestSuite::Initialize() is called,

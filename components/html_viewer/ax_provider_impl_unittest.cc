@@ -51,6 +51,7 @@ class AxProviderImplTest : public testing::Test {
         renderer_scheduler_(scheduler::RendererScheduler::Create()) {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     gin::V8Initializer::LoadV8Snapshot();
+    gin::V8Initializer::LoadV8Natives();
 #endif
     blink::initialize(
         new html_viewer::BlinkPlatformImpl(nullptr, renderer_scheduler_.get()));

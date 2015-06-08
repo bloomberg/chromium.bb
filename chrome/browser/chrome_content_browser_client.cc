@@ -1172,6 +1172,32 @@ bool IsAutoReloadVisibleOnlyEnabled() {
 
 }  // namespace
 
+// When Chrome is updated on non-Windows platforms, the new files (like
+// V8 natives and snapshot) can have the same names as the previous
+// versions. Since the renderers for an existing Chrome browser process
+// are likely not compatible with the new files, the browser keeps hold
+// of the old files using an open fd. This fd is passed to subprocesses
+// like renderers.  Here we add the flag to tell the subprocesses where
+// to find these file descriptors.
+void ChromeContentBrowserClient::AppendMappedFileCommandLineSwitches(
+    base::CommandLine* command_line) {
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+  std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+  if (process_type != switches::kZygoteProcess) {
+    // We want to pass the natives by fd because after an update the file may
+    // be updated, but we want the newly launched renderers to get the old one,
+    // opened by the browser when it started.
+    DCHECK(natives_fd_exists());
+    command_line->AppendSwitch(::switches::kV8NativesPassedByFD);
+    if (snapshot_fd_exists())
+      command_line->AppendSwitch(::switches::kV8SnapshotPassedByFD);
+  }
+#endif  // V8_USE_EXTERNAL_STARTUP_DATA
+#endif  // OS_POSIX && !OS_MACOSX
+}
+
 void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
@@ -1229,15 +1255,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   command_line->AppendSwitchASCII(chromeos::switches::kHomedir,
                                   homedir.value().c_str());
 #endif
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  if (process_type != switches::kZygoteProcess) {
-    command_line->AppendSwitch(::switches::kV8NativesPassedByFD);
-    command_line->AppendSwitch(::switches::kV8SnapshotPassedByFD);
-  }
-#endif  // V8_USE_EXTERNAL_STARTUP_DATA
-#endif  // OS_POSIX && !OS_MACOSX
 
   if (process_type == switches::kRendererProcess) {
     content::RenderProcessHost* process =
@@ -2225,7 +2242,7 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     int child_process_id,
     FileDescriptorInfo* mappings) {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  if (v8_natives_fd_.get() == -1 || v8_snapshot_fd_.get() == -1) {
+  if (!natives_fd_exists()) {
     int v8_natives_fd = -1;
     int v8_snapshot_fd = -1;
     if (gin::V8Initializer::OpenV8FilesForChildProcesses(&v8_natives_fd,
@@ -2234,9 +2251,12 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       v8_snapshot_fd_.reset(v8_snapshot_fd);
     }
   }
-  DCHECK(v8_natives_fd_.get() != -1 && v8_snapshot_fd_.get() != -1);
+  // V8 can't start up without the source of the natives, but it can
+  // start up (slower) without the snapshot.
+  DCHECK(natives_fd_exists());
   mappings->Share(kV8NativesDataDescriptor, v8_natives_fd_.get());
-  mappings->Share(kV8SnapshotDataDescriptor, v8_snapshot_fd_.get());
+  if (snapshot_fd_exists())
+    mappings->Share(kV8SnapshotDataDescriptor, v8_snapshot_fd_.get());
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
 #if defined(OS_ANDROID)

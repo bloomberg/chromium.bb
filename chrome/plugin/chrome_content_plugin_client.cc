@@ -26,6 +26,7 @@ namespace chrome {
 void ChromeContentPluginClient::PreSandboxInitialization() {
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   gin::V8Initializer::LoadV8Snapshot();
+  gin::V8Initializer::LoadV8Natives();
 #endif
 
 #if defined(ENABLE_REMOTING)
