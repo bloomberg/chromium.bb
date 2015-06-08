@@ -284,6 +284,8 @@ crbug.com/330083 imported/web-platform-tests/webrtc/simplecall.html [ Failure ]
 crbug.com/377950 svg/repaint/image-animation-with-zoom.html [ Failure Pass ]
 crbug.com/377950 virtual/slimmingpaint/svg/repaint/image-animation-with-zoom.html [ Skip ]
 
+crbug.com/498012 [ Win ] plugins/netscape-plugin-setwindow-size-2.html [ Pass Failure ]
+
 crbug.com/377960 fast/css/font-load-while-styleresolver-missing.html  [ Pass ImageOnlyFailure ]
 crbug.com/377960 virtual/slimmingpaint/fast/css/font-load-while-styleresolver-missing.html [ Skip ]
 
