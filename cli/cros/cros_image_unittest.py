@@ -136,6 +136,16 @@ class ImageCommandTest(cros_test_lib.WorkspaceTestCase,
     self.assertEqual(1, op.call_count)
     self.assertTrue('--progress_bar' in op.call_args[0][1])
 
+  def testToolsetBrillo(self):
+    """Test RunCommand called with --toolset=brillo when using brillo."""
+    self.PatchObject(command, 'GetToolset', return_value='brillo')
+    self.SetupCommandMock([])
+    self.cmd_mock.inst.Run()
+
+    # Test that build_image is called with the correct arguments.
+    cmds = '\n'.join(repr(x) for x in self.rc_mock.call_args_list)
+    self.assertIn('--toolset=brillo', cmds)
+
 
 class ImageCommandParserTest(cros_test_lib.TestCase):
   """Test class for our ImageCommand's parser."""

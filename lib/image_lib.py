@@ -341,6 +341,9 @@ def BuildImage(board, adjust_part=None, app_id=None, boot_args=None,
   if image_types:
     cmd.extend(image_types)
 
+  if command.GetToolset() == 'brillo':
+    cmd.append('--toolset=brillo')
+
   if command.UseProgressBar():
     cmd.append('--progress_bar')
     op = BrilloImageOperation()
