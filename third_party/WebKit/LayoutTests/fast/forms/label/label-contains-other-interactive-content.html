@@ -40,9 +40,9 @@ interactiveElements2.forEach(function(entry) {
     element.style.width = '100px';
     element.style.height = '100px';
     label.appendChild(element);
-    clickElement(element);
     // Audio elements without controls attribute is always invisible.
     if (entry[0] != 'audio') {
+        clickElement(element);
         debug(entry[0]);
         shouldBeEqualToString('document.activeElement.id', 'control');
     }

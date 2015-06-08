@@ -27,6 +27,10 @@
 
 /* WARNING: This css file can only style <audio> and <video> elements */
 
+audio:not([controls]) {
+    display: none !important;
+}
+
 audio {
     width: 300px;
     height: 30px;
