@@ -240,23 +240,23 @@ void SVGShapePainter::strokeZeroLengthLineCaps(GraphicsContext* context, const S
     fillPaint.setStyle(SkPaint::kFill_Style);
 
     AffineTransform nonScalingTransform;
-    if (m_layoutSVGShape.hasNonScalingStroke())
+    bool hasNonScalingStroke = m_layoutSVGShape.hasNonScalingStroke();
+    if (hasNonScalingStroke)
         nonScalingTransform = m_layoutSVGShape.nonScalingStrokeTransform();
 
-    Path tempPath;
-    for (size_t i = 0; i < zeroLengthLineCaps->size(); ++i) {
-        FloatRect subpathRect = LayoutSVGPath::zeroLengthSubpathRect((*zeroLengthLineCaps)[i], m_layoutSVGShape.strokeWidth());
-        tempPath.clear();
+    for (const FloatPoint& capPosition : *zeroLengthLineCaps) {
+        FloatPoint position = capPosition;
+        // If non-scaling-stroke is in effect, apply the transform to the
+        // position (being the non-stroke geometry), and then paint the
+        // requested shape. The CTM should've been adjusted in
+        // SVGShapePainter::paint.
+        if (hasNonScalingStroke)
+            position = nonScalingTransform.mapPoint(position);
+        FloatRect subpathRect = LayoutSVGPath::zeroLengthSubpathRect(position, m_layoutSVGShape.strokeWidth());
         if (m_layoutSVGShape.style()->svgStyle().capStyle() == SquareCap)
-            tempPath.addRect(subpathRect);
+            context->drawRect(subpathRect, fillPaint);
         else
-            tempPath.addEllipse(subpathRect);
-        // This open-codes LayoutSVGShape::nonScalingStrokePath, because the
-        // requirements here differ (we have a temporary path that we can
-        // mutate.)
-        if (m_layoutSVGShape.hasNonScalingStroke())
-            tempPath.transform(nonScalingTransform);
-        context->drawPath(tempPath.skPath(), fillPaint);
+            context->drawOval(subpathRect, fillPaint);
     }
 }
 
