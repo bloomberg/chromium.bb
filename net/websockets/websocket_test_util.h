@@ -25,11 +25,11 @@ class Origin;
 namespace net {
 
 class BoundNetLog;
-class DeterministicMockClientSocketFactory;
-class DeterministicSocketData;
+class MockClientSocketFactory;
 class ProxyService;
-class URLRequestContext;
+class SequencedSocketData;
 struct SSLSocketDataProvider;
+class URLRequestContext;
 
 class LinearCongruentialGenerator {
  public:
@@ -62,12 +62,12 @@ std::string WebSocketStandardRequestWithCookies(
 // key. Each header in |extra_headers| must be terminated with "\r\n".
 std::string WebSocketStandardResponse(const std::string& extra_headers);
 
-// This class provides a convenient way to construct a
-// DeterministicMockClientSocketFactory for WebSocket tests.
-class WebSocketDeterministicMockClientSocketFactoryMaker {
+// This class provides a convenient way to construct a MockClientSocketFactory
+// for WebSocket tests.
+class WebSocketMockClientSocketFactoryMaker {
  public:
-  WebSocketDeterministicMockClientSocketFactoryMaker();
-  ~WebSocketDeterministicMockClientSocketFactoryMaker();
+  WebSocketMockClientSocketFactoryMaker();
+  ~WebSocketMockClientSocketFactoryMaker();
 
   // Tell the factory to create a socket which expects |expect_written| to be
   // written, and responds with |return_to_read|. The test will fail if the
@@ -80,7 +80,7 @@ class WebSocketDeterministicMockClientSocketFactoryMaker {
 
   // A low-level interface to permit arbitrary expectations to be added. The
   // mock sockets will be created in the same order that they were added.
-  void AddRawExpectations(scoped_ptr<DeterministicSocketData> socket_data);
+  void AddRawExpectations(scoped_ptr<SequencedSocketData> socket_data);
 
   // Allow an SSL socket data provider to be added. You must also supply a mock
   // transport socket for it to use. If the mock SSL handshake fails then the
@@ -91,13 +91,13 @@ class WebSocketDeterministicMockClientSocketFactoryMaker {
       scoped_ptr<SSLSocketDataProvider> ssl_socket_data);
 
   // Call to get a pointer to the factory, which remains owned by this object.
-  DeterministicMockClientSocketFactory* factory();
+  MockClientSocketFactory* factory();
 
  private:
   struct Detail;
   scoped_ptr<Detail> detail_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebSocketDeterministicMockClientSocketFactoryMaker);
+  DISALLOW_COPY_AND_ASSIGN(WebSocketMockClientSocketFactoryMaker);
 };
 
 // This class encapsulates the details of creating a
@@ -113,7 +113,7 @@ struct WebSocketTestURLRequestContextHost {
     maker_.SetExpectations(expect_written, return_to_read);
   }
 
-  void AddRawExpectations(scoped_ptr<DeterministicSocketData> socket_data);
+  void AddRawExpectations(scoped_ptr<SequencedSocketData> socket_data);
 
   // Allow an SSL socket data provider to be added.
   void AddSSLSocketDataProvider(
@@ -130,7 +130,7 @@ struct WebSocketTestURLRequestContextHost {
   TestURLRequestContext* GetURLRequestContext();
 
  private:
-  WebSocketDeterministicMockClientSocketFactoryMaker maker_;
+  WebSocketMockClientSocketFactoryMaker maker_;
   TestURLRequestContext url_request_context_;
   TestNetworkDelegate network_delegate_;
   scoped_ptr<ProxyService> proxy_service_;

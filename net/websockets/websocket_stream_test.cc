@@ -38,27 +38,26 @@
 namespace net {
 namespace {
 
-// Simple builder for a DeterministicSocketData object to save repetitive code.
+// Simple builder for a SequencedSocketData object to save repetitive code.
 // It always sets the connect data to MockConnect(SYNCHRONOUS, OK), so it cannot
 // be used in tests where the connect fails. In practice, those tests never have
 // any read/write data and so can't benefit from it anyway.  The arrays are not
 // copied. It is up to the caller to ensure they stay in scope until the test
 // ends.
 template <size_t reads_count, size_t writes_count>
-scoped_ptr<DeterministicSocketData> BuildSocketData(
-    MockRead (&reads)[reads_count],
-    MockWrite (&writes)[writes_count]) {
-  scoped_ptr<DeterministicSocketData> socket_data(
-      new DeterministicSocketData(reads, reads_count, writes, writes_count));
+scoped_ptr<SequencedSocketData> BuildSocketData(
+    MockRead(&reads)[reads_count],
+    MockWrite(&writes)[writes_count]) {
+  scoped_ptr<SequencedSocketData> socket_data(
+      new SequencedSocketData(reads, reads_count, writes, writes_count));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  socket_data->SetStop(reads_count + writes_count);
   return socket_data.Pass();
 }
 
-// Builder for a DeterministicSocketData that expects nothing. This does not
+// Builder for a SequencedSocketData that expects nothing. This does not
 // set the connect data, so the calling code must do that explicitly.
-scoped_ptr<DeterministicSocketData> BuildNullSocketData() {
-  return make_scoped_ptr(new DeterministicSocketData(NULL, 0, NULL, 0));
+scoped_ptr<SequencedSocketData> BuildNullSocketData() {
+  return make_scoped_ptr(new SequencedSocketData(NULL, 0, NULL, 0));
 }
 
 class MockWeakTimer : public base::MockTimer,
@@ -115,14 +114,14 @@ class WebSocketStreamCreateTest : public ::testing::Test,
       const std::string& socket_url,
       const std::vector<std::string>& sub_protocols,
       const std::string& origin,
-      scoped_ptr<DeterministicSocketData> socket_data,
+      scoped_ptr<SequencedSocketData> socket_data,
       scoped_ptr<base::Timer> timer = scoped_ptr<base::Timer>()) {
     AddRawExpectations(socket_data.Pass());
     CreateAndConnectStream(socket_url, sub_protocols, origin, timer.Pass());
   }
 
   // Add additional raw expectations for sockets created before the final one.
-  void AddRawExpectations(scoped_ptr<DeterministicSocketData> socket_data) {
+  void AddRawExpectations(scoped_ptr<SequencedSocketData> socket_data) {
     url_request_context_host_.AddRawExpectations(socket_data.Pass());
   }
 };
@@ -151,7 +150,7 @@ class CommonAuthTestHelper {
  public:
   CommonAuthTestHelper() : reads1_(), writes1_(), reads2_(), writes2_() {}
 
-  scoped_ptr<DeterministicSocketData> BuildSocketData1(
+  scoped_ptr<SequencedSocketData> BuildSocketData1(
       const std::string& response) {
     request1_ =
         WebSocketStandardRequest("/", "localhost", "http://localhost", "");
@@ -163,7 +162,7 @@ class CommonAuthTestHelper {
     return BuildSocketData(reads1_, writes1_);
   }
 
-  scoped_ptr<DeterministicSocketData> BuildSocketData2(
+  scoped_ptr<SequencedSocketData> BuildSocketData2(
       const std::string& request,
       const std::string& response) {
     request2_ = request;
@@ -903,7 +902,7 @@ TEST_F(WebSocketStreamCreateTest, Cancellation) {
 
 // Connect failure must look just like negotiation failure.
 TEST_F(WebSocketStreamCreateTest, ConnectionFailure) {
-  scoped_ptr<DeterministicSocketData> socket_data(BuildNullSocketData());
+  scoped_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(
       MockConnect(SYNCHRONOUS, ERR_CONNECTION_REFUSED));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
@@ -918,7 +917,7 @@ TEST_F(WebSocketStreamCreateTest, ConnectionFailure) {
 
 // Connect timeout must look just like any other failure.
 TEST_F(WebSocketStreamCreateTest, ConnectionTimeout) {
-  scoped_ptr<DeterministicSocketData> socket_data(BuildNullSocketData());
+  scoped_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(
       MockConnect(ASYNC, ERR_CONNECTION_TIMED_OUT));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
@@ -931,7 +930,7 @@ TEST_F(WebSocketStreamCreateTest, ConnectionTimeout) {
 
 // The server doesn't respond to the opening handshake.
 TEST_F(WebSocketStreamCreateTest, HandshakeTimeout) {
-  scoped_ptr<DeterministicSocketData> socket_data(BuildNullSocketData());
+  scoped_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
   scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
   base::WeakPtr<MockWeakTimer> weak_timer = timer->AsWeakPtr();
@@ -973,7 +972,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnSuccess) {
 
 // When the connection fails the timer should be stopped.
 TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnFailure) {
-  scoped_ptr<DeterministicSocketData> socket_data(BuildNullSocketData());
+  scoped_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(
       MockConnect(SYNCHRONOUS, ERR_CONNECTION_REFUSED));
   scoped_ptr<MockWeakTimer> timer(new MockWeakTimer(false, false));
@@ -996,7 +995,7 @@ TEST_F(WebSocketStreamCreateTest, HandshakeTimerOnFailure) {
 
 // Cancellation during connect works.
 TEST_F(WebSocketStreamCreateTest, CancellationDuringConnect) {
-  scoped_ptr<DeterministicSocketData> socket_data(BuildNullSocketData());
+  scoped_ptr<SequencedSocketData> socket_data(BuildNullSocketData());
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
   CreateAndConnectRawExpectations("ws://localhost/",
                                   NoSubProtocols(),
@@ -1011,19 +1010,17 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringConnect) {
 
 // Cancellation during write of the request headers works.
 TEST_F(WebSocketStreamCreateTest, CancellationDuringWrite) {
-  // We seem to need at least two operations in order to use SetStop().
-  MockWrite writes[] = {MockWrite(ASYNC, 0, "GET / HTTP/"),
-                        MockWrite(ASYNC, 1, "1.1\r\n")};
-  // We keep a copy of the pointer so that we can call RunFor() on it later.
-  DeterministicSocketData* socket_data(
-      new DeterministicSocketData(NULL, 0, writes, arraysize(writes)));
+  // First write never completes.
+  MockWrite writes[] = {MockWrite(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData* socket_data(
+      new SequencedSocketData(NULL, 0, writes, arraysize(writes)));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
-  socket_data->SetStop(1);
   CreateAndConnectRawExpectations("ws://localhost/",
                                   NoSubProtocols(),
                                   "http://localhost",
                                   make_scoped_ptr(socket_data));
-  socket_data->Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(socket_data->AllWriteDataConsumed());
   stream_request_.reset();
   // WaitUntilConnectDone doesn't work in this case.
   base::RunLoop().RunUntilIdle();
@@ -1039,17 +1036,16 @@ TEST_F(WebSocketStreamCreateTest, CancellationDuringRead) {
       WebSocketStandardRequest("/", "localhost", "http://localhost", "");
   MockWrite writes[] = {MockWrite(ASYNC, 0, request.c_str())};
   MockRead reads[] = {
-    MockRead(ASYNC, 1, "HTTP/1.1 101 Switching Protocols\r\nUpgr"),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 1),
   };
-  scoped_ptr<DeterministicSocketData> socket_data(
-      BuildSocketData(reads, writes));
-  socket_data->SetStop(1);
-  DeterministicSocketData* socket_data_raw_ptr = socket_data.get();
+  scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
+  SequencedSocketData* socket_data_raw_ptr = socket_data.get();
   CreateAndConnectRawExpectations("ws://localhost/",
                                   NoSubProtocols(),
                                   "http://localhost",
                                   socket_data.Pass());
-  socket_data_raw_ptr->Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(socket_data_raw_ptr->AllReadDataConsumed());
   stream_request_.reset();
   // WaitUntilConnectDone doesn't work in this case.
   base::RunLoop().RunUntilIdle();
@@ -1085,14 +1081,14 @@ TEST_F(WebSocketStreamCreateTest, NoResponse) {
       WebSocketStandardRequest("/", "localhost", "http://localhost", "");
   MockWrite writes[] = {MockWrite(ASYNC, request.data(), request.size(), 0)};
   MockRead reads[] = {MockRead(ASYNC, 0, 1)};
-  scoped_ptr<DeterministicSocketData> socket_data(
-      BuildSocketData(reads, writes));
-  DeterministicSocketData* socket_data_raw_ptr = socket_data.get();
+  scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
+  SequencedSocketData* socket_data_raw_ptr = socket_data.get();
   CreateAndConnectRawExpectations("ws://localhost/",
                                   NoSubProtocols(),
                                   "http://localhost",
                                   socket_data.Pass());
-  socket_data_raw_ptr->RunFor(2);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(socket_data_raw_ptr->AllReadDataConsumed());
   EXPECT_TRUE(has_failed());
   EXPECT_FALSE(stream_);
   EXPECT_FALSE(response_info_);
@@ -1106,7 +1102,7 @@ TEST_F(WebSocketStreamCreateTest, SelfSignedCertificateFailure) {
   ssl_data_[0]->cert =
       ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
   ASSERT_TRUE(ssl_data_[0]->cert.get());
-  scoped_ptr<DeterministicSocketData> raw_socket_data(BuildNullSocketData());
+  scoped_ptr<SequencedSocketData> raw_socket_data(BuildNullSocketData());
   CreateAndConnectRawExpectations("wss://localhost/",
                                   NoSubProtocols(),
                                   "http://localhost",
@@ -1279,8 +1275,7 @@ TEST_F(WebSocketStreamCreateTest, HandleErrConnectionClosed) {
       MockRead(SYNCHRONOUS, ERR_CONNECTION_CLOSED, 2),
   };
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, 0, request.c_str())};
-  scoped_ptr<DeterministicSocketData> socket_data(
-      BuildSocketData(reads, writes));
+  scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
   socket_data->set_connect_data(MockConnect(SYNCHRONOUS, OK));
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   "http://localhost", socket_data.Pass());
@@ -1305,8 +1300,7 @@ TEST_F(WebSocketStreamCreateTest, HandleErrTunnelConnectionFailed) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, 1, kProxyResponse)};
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, 0, kConnectRequest)};
-  scoped_ptr<DeterministicSocketData> socket_data(
-      BuildSocketData(reads, writes));
+  scoped_ptr<SequencedSocketData> socket_data(BuildSocketData(reads, writes));
   url_request_context_host_.SetProxyConfig("https=proxy:8000");
   CreateAndConnectRawExpectations("ws://localhost/", NoSubProtocols(),
                                   "http://localhost", socket_data.Pass());

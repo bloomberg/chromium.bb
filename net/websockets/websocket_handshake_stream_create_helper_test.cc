@@ -49,7 +49,7 @@ class MockClientSocketHandleFactory {
   }
 
  private:
-  WebSocketDeterministicMockClientSocketFactoryMaker socket_factory_maker_;
+  WebSocketMockClientSocketFactoryMaker socket_factory_maker_;
   MockTransportClientSocketPool pool_;
 
   DISALLOW_COPY_AND_ASSIGN(MockClientSocketHandleFactory);
