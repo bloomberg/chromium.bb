@@ -452,6 +452,11 @@ class GitWrapper(SCMWrapper):
         self._CheckClean(rev_str)
       # Switch over to the new upstream
       self._Run(['remote', 'set-url', self.remote, url], options)
+      if mirror:
+        with open(os.path.join(
+            self.checkout_path, '.git', 'objects', 'info', 'alternates'),
+            'w') as fh:
+          fh.write(os.path.join(url, 'objects'))
       self._FetchAndReset(revision, file_list, options)
       return_early = True
 
