@@ -143,9 +143,11 @@ public class BrandColorTest extends DocumentActivityTestBase {
 
     /**
      * Test for interstitial page loads resetting brand color.
+     * http://crbug.com/497866
+     * @SmallTest
+     * @Feature({"Omnibox"})
      */
-    @SmallTest
-    @Feature({"Omnibox"})
+    @FlakyTest
     public void testBrandColorInterstitial() throws InterruptedException {
         final String brandColorUrl = getUrlWithBrandColor(BRAND_COLOR_1);
         startMainActivityWithURL(brandColorUrl);
