@@ -6,6 +6,9 @@ package org.chromium.mojo.shell;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.util.Log;
 
 import org.chromium.base.CalledByNative;
@@ -30,9 +33,8 @@ public class ShellMain {
     // Directory where applications cached with the shell will be extracted.
     // TODO(sky): rename this to CACHED_APP_DIRECTORY.
     private static final String LOCAL_APP_DIRECTORY = "local_apps";
-    // The mojo_shell library is also an executable run in forked processes when running
-    // multi-process.
-    private static final String MOJO_SHELL_EXECUTABLE = "libmojo_runner.so";
+    // The key to the library to run in forked processes when running multi-process.
+    private static final String MOJO_LIB_KEY = "mojo_lib";
 
     // Name of the file containing the assets to extract. File format is a file per line.
     private static final String ASSETS_LIST_NAME = "assets_list";
@@ -79,9 +81,14 @@ public class ShellMain {
                 FileHelper.extractFromAssets(
                         applicationContext, assetPath, localAppsDir, FileHelper.FileType.PERMANENT);
             }
+            ApplicationInfo ai = applicationContext.getPackageManager().getApplicationInfo(
+                    applicationContext.getPackageName(), PackageManager.GET_META_DATA);
+            Bundle bundle = ai.metaData;
+            String mojo_lib = bundle.getString(MOJO_LIB_KEY);
+
             FileHelper.createTimestampIfNecessary(timestamp);
-            File mojoShell = new File(applicationContext.getApplicationInfo().nativeLibraryDir,
-                    MOJO_SHELL_EXECUTABLE);
+            File mojoShell =
+                    new File(applicationContext.getApplicationInfo().nativeLibraryDir, mojo_lib);
 
             List<String> parametersList = new ArrayList<String>();
             // Program name.
