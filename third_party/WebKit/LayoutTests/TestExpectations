@@ -200,6 +200,8 @@ crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processin
 crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-in-setInterval.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-in-setTimeout.html [ Failure ]
+crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests19.html [ Failure Pass Slow ]
+crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests2.html [ Failure Pass Slow ]
 
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/330083 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/non-element-nodes-001.html [ Failure ]
