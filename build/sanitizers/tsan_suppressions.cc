@@ -285,9 +285,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/490856
 "deadlock:content::TracingControllerImpl::SetEnabledOnFileThread\n"
 
-// http://crbug.com/425057
-"deadlock:webrtc::ViEChannelManagerScoped::ViEChannelManagerScoped\n"
-
 // http://crbug.com/417193
 // Suppressing both AudioContext.{cpp,h}.
 "race:modules/webaudio/AudioContext\n"
