@@ -306,8 +306,8 @@ bool ExtensionDownloader::AddExtensionData(
   GURL update_url(extension_update_url);
   // Skip extensions with non-empty invalid update URLs.
   if (!update_url.is_empty() && !update_url.is_valid()) {
-    LOG(WARNING) << "Extension " << id << " has invalid update url "
-                 << update_url;
+    DLOG(WARNING) << "Extension " << id << " has invalid update url "
+                  << update_url;
     return false;
   }
 
@@ -318,7 +318,7 @@ bool ExtensionDownloader::AddExtensionData(
 
   // Skip extensions with empty IDs.
   if (id.empty()) {
-    LOG(WARNING) << "Found extension with empty ID";
+    DLOG(WARNING) << "Found extension with empty ID";
     return false;
   }
 
@@ -676,9 +676,9 @@ void ExtensionDownloader::DetermineUpdates(
             update->browser_min_version)) {
       // TODO(asargent) - We may want this to show up in the extensions UI
       // eventually. (http://crbug.com/12547).
-      LOG(WARNING) << "Updated version of extension " << id
-                   << " available, but requires chrome version "
-                   << update->browser_min_version;
+      DLOG(WARNING) << "Updated version of extension " << id
+                    << " available, but requires chrome version "
+                    << update->browser_min_version;
       continue;
     }
     VLOG(2) << "will try to update " << id;
@@ -691,8 +691,8 @@ void ExtensionDownloader::FetchUpdatedExtension(
     scoped_ptr<ExtensionFetch> fetch_data) {
   if (!fetch_data->url.is_valid()) {
     // TODO(asargent): This can sometimes be invalid. See crbug.com/130881.
-    LOG(ERROR) << "Invalid URL: '" << fetch_data->url.possibly_invalid_spec()
-               << "' for extension " << fetch_data->id;
+    DLOG(WARNING) << "Invalid URL: '" << fetch_data->url.possibly_invalid_spec()
+                  << "' for extension " << fetch_data->id;
     return;
   }
 
