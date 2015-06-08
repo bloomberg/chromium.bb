@@ -8,7 +8,11 @@
 # Parameters:
 #
 #   source (required)
-#      declaration file.
+#      Declaration file.
+#
+#   deps (optional)
+#   visibility (optional)
+#      Normal meanings.
 #
 # Example:
 # wug("some_type_wug_generated") {
@@ -36,6 +40,7 @@ template("wug") {
   helper_path = "$generator_dir/build_helper.py"
   target_name = "${target_name}"
   action_name = target_name + "_gen"
+  group_name = target_name
   out_dir = "$root_gen_dir/wug"
 
   helper_args = [
@@ -55,6 +60,8 @@ template("wug") {
              "', got '" + target_name + "'.")
 
   action(action_name) {
+    visibility = [ ":$group_name" ]
+
     script = generator_path
     sources = [
       "$generator_dir/declaration.py",
@@ -87,14 +94,26 @@ template("wug") {
       "--destination",
       rebase_path(out_dir, root_build_dir),
     ]
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+    if (defined(invoker.public_deps)) {
+      public_deps = invoker.public_deps
+    }
   }
 
-  component(target_name) {
+  source_set(target_name) {
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
+
     sources = get_target_outputs(":$action_name")
     defines = [ exec_script(helper_path,
                             helper_args + [ "impl_macro" ],
                             "trim string") ]
     deps = [
+      ":$action_name",
       "//base",
       "//components/login",
       "//components/strings",
