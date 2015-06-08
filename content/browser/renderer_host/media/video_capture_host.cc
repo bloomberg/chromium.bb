@@ -159,7 +159,8 @@ bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Pause, OnPauseCapture)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Resume, OnResumeCapture)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Stop, OnStopCapture)
-    IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_BufferReady, OnReceiveEmptyBuffer)
+    IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_BufferReady,
+                        OnRendererFinishedWithBuffer)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceSupportedFormats,
                         OnGetDeviceSupportedFormats)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceFormatsInUse,
@@ -272,17 +273,24 @@ void VideoCaptureHost::OnResumeCapture(
   }
 }
 
-void VideoCaptureHost::OnReceiveEmptyBuffer(int device_id,
-                                            int buffer_id,
-                                            uint32 sync_point) {
+void VideoCaptureHost::OnRendererFinishedWithBuffer(
+    int device_id,
+    int buffer_id,
+    uint32 sync_point,
+    double consumer_resource_utilization) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   VideoCaptureControllerID controller_id(device_id);
   EntryMap::iterator it = entries_.find(controller_id);
   if (it != entries_.end()) {
     const base::WeakPtr<VideoCaptureController>& controller = it->second;
-    if (controller)
-      controller->ReturnBuffer(controller_id, this, buffer_id, sync_point);
+    if (controller) {
+      controller->ReturnBuffer(controller_id,
+                               this,
+                               buffer_id,
+                               sync_point,
+                               consumer_resource_utilization);
+    }
   }
 }
 

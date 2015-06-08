@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
@@ -188,8 +187,32 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
         media::VideoFrameMetadata::CAPTURE_END_TIME, base::TimeTicks::Now());
     frame->metadata()->SetTimeDelta(media::VideoFrameMetadata::FRAME_DURATION,
                                     estimated_frame_duration);
+
+    frame->AddDestructionObserver(base::Bind(
+        &ThreadSafeCaptureOracle::DidConsumeFrame,
+        this,
+        frame_number,
+        frame->metadata()));
+
     client_->OnIncomingCapturedVideoFrame(buffer.Pass(), frame, timestamp);
   }
+}
+
+void ThreadSafeCaptureOracle::DidConsumeFrame(
+    int frame_number,
+    const media::VideoFrameMetadata* metadata) {
+  // Note: This function may be called on any thread by the VideoFrame
+  // destructor.  |metadata| is still valid for read-access at this point.
+  double utilization = -1.0;
+  if (metadata->GetDouble(media::VideoFrameMetadata::RESOURCE_UTILIZATION,
+                          &utilization) &&
+      utilization >= 0.0) {
+    VLOG(2) << "Consumer resource utilization for frame " << frame_number
+            << ": " << utilization;
+  }
+
+  // TODO(miu): Use |utilization| to drive automatic video resolution changes.
+  // http://crbug.com/156767.
 }
 
 void ContentVideoCaptureDeviceCore::AllocateAndStart(

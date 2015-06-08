@@ -80,7 +80,8 @@ class VideoCaptureImplTest : public ::testing::Test {
 
     void DeviceReceiveEmptyBuffer(int device_id,
                                   int buffer_id,
-                                  uint32 sync_point) {}
+                                  uint32 sync_point,
+                                  double consumer_resource_utilization) {}
 
     void DeviceGetSupportedFormats(int device_id,
                                    media::VideoCaptureSessionId session_id) {

@@ -22,6 +22,20 @@
 
 namespace content {
 
+namespace {
+
+// This is called on an unknown thread when the VideoFrame destructor executes.
+// As of this writing, this callback mechanism is the only interface in
+// VideoFrame to provide the final value for |release_sync_point|.
+// VideoCaptureImpl::DidFinishConsumingFrame() will read the value saved here,
+// and pass it back to the IO thread to pass back to the host via the
+// BufferReady IPC.
+void SaveReleaseSyncPoint(uint32* storage, uint32 release_sync_point) {
+  *storage = release_sync_point;
+}
+
+}  // namespace
+
 class VideoCaptureImpl::ClientBuffer
     : public base::RefCountedThreadSafe<ClientBuffer> {
  public:
@@ -220,7 +234,7 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
-    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0));
+    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0, -1.0));
     return;
   }
 
@@ -249,12 +263,14 @@ void VideoCaptureImpl::OnBufferReceived(int buffer_id,
           0,
           timestamp - first_frame_timestamp_);
   frame->AddDestructionObserver(
-      media::BindToCurrentLoop(
-          base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
-                     weak_factory_.GetWeakPtr(),
-                     buffer_id,
-                     buffer,
-                     0)));
+      base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame,
+                 frame->metadata(),
+                 nullptr,
+                 media::BindToCurrentLoop(
+                     base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
+                                weak_factory_.GetWeakPtr(),
+                                buffer_id,
+                                buffer))));
   frame->metadata()->MergeInternalValuesFrom(metadata);
 
   for (const auto& client : clients_)
@@ -270,21 +286,31 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
-    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0));
+    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0, -1.0));
     return;
   }
 
   if (first_frame_timestamp_.is_null())
     first_frame_timestamp_ = timestamp;
 
+  uint32* const release_sync_point_storage =
+      new uint32(0);  // Deleted in DidFinishConsumingFrame().
   scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapNativeTexture(
       mailbox_holder,
-      media::BindToCurrentLoop(base::Bind(
-          &VideoCaptureImpl::OnClientBufferFinished, weak_factory_.GetWeakPtr(),
-          buffer_id, scoped_refptr<ClientBuffer>())),
+      base::Bind(&SaveReleaseSyncPoint, release_sync_point_storage),
       packed_frame_size, gfx::Rect(packed_frame_size), packed_frame_size,
       timestamp - first_frame_timestamp_, false /* allow_overlay */,
       true /* has_alpha */);
+  frame->AddDestructionObserver(
+      base::Bind(&VideoCaptureImpl::DidFinishConsumingFrame,
+                 frame->metadata(),
+                 release_sync_point_storage,
+                 media::BindToCurrentLoop(base::Bind(
+                     &VideoCaptureImpl::OnClientBufferFinished,
+                     weak_factory_.GetWeakPtr(),
+                     buffer_id,
+                     scoped_refptr<ClientBuffer>()))));
+
   frame->metadata()->MergeInternalValuesFrom(metadata);
 
   for (const auto& client : clients_)
@@ -294,10 +320,13 @@ void VideoCaptureImpl::OnMailboxBufferReceived(
 void VideoCaptureImpl::OnClientBufferFinished(
     int buffer_id,
     const scoped_refptr<ClientBuffer>& /* ignored_buffer */,
-    uint32 release_sync_point) {
+    uint32 release_sync_point,
+    double consumer_resource_utilization) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  Send(new VideoCaptureHostMsg_BufferReady(
-      device_id_, buffer_id, release_sync_point));
+  Send(new VideoCaptureHostMsg_BufferReady(device_id_,
+                                           buffer_id,
+                                           release_sync_point,
+                                           consumer_resource_utilization));
 }
 
 void VideoCaptureImpl::OnStateChanged(VideoCaptureState state) {
@@ -427,6 +456,29 @@ bool VideoCaptureImpl::RemoveClient(int client_id, ClientInfoMap* clients) {
     found = true;
   }
   return found;
+}
+
+// static
+void VideoCaptureImpl::DidFinishConsumingFrame(
+    const media::VideoFrameMetadata* metadata,
+    uint32* release_sync_point_storage,
+    const base::Callback<void(uint32, double)>& callback_to_io_thread) {
+  // Note: This function may be called on any thread by the VideoFrame
+  // destructor.  |metadata| is still valid for read-access at this point.
+
+  uint32 release_sync_point = 0u;
+  if (release_sync_point_storage) {
+    release_sync_point = *release_sync_point_storage;
+    delete release_sync_point_storage;
+  }
+
+  double consumer_resource_utilization = -1.0;
+  if (!metadata->GetDouble(media::VideoFrameMetadata::RESOURCE_UTILIZATION,
+                           &consumer_resource_utilization)) {
+    consumer_resource_utilization = -1.0;
+  }
+
+  callback_to_io_thread.Run(release_sync_point, consumer_resource_utilization);
 }
 
 }  // namespace content

@@ -28,6 +28,7 @@
 
 using media::VideoCaptureFormat;
 using media::VideoFrame;
+using media::VideoFrameMetadata;
 
 namespace content {
 
@@ -234,7 +235,8 @@ void VideoCaptureController::ReturnBuffer(
     VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* event_handler,
     int buffer_id,
-    uint32 sync_point) {
+    uint32 sync_point,
+    double consumer_resource_utilization) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
@@ -247,7 +249,27 @@ void VideoCaptureController::ReturnBuffer(
     NOTREACHED();
     return;
   }
+
+  // Set the RESOURCE_UTILIZATION to the maximum of those provided by each
+  // consumer (via separate calls to this method that refer to the same
+  // VideoFrame).  The producer of this VideoFrame may check this value, after
+  // all consumer holds are relinquished, to make quality versus performance
+  // trade-off decisions.
   scoped_refptr<VideoFrame> frame = iter->second;
+  if (std::isfinite(consumer_resource_utilization) &&
+      consumer_resource_utilization >= 0.0) {
+    double resource_utilization = -1.0;
+    if (frame->metadata()->GetDouble(VideoFrameMetadata::RESOURCE_UTILIZATION,
+                                     &resource_utilization)) {
+      frame->metadata()->SetDouble(VideoFrameMetadata::RESOURCE_UTILIZATION,
+                                   std::max(consumer_resource_utilization,
+                                            resource_utilization));
+    } else {
+      frame->metadata()->SetDouble(VideoFrameMetadata::RESOURCE_UTILIZATION,
+                                   consumer_resource_utilization);
+    }
+  }
+
   client->active_buffers.erase(iter);
   buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
 

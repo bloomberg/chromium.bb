@@ -85,6 +85,11 @@ class ThreadSafeCaptureOracle
       base::TimeTicks timestamp,
       bool success);
 
+  // Callback invoked once all consumers have finished with a delivered video
+  // frame.  Consumer feedback signals are scanned from the frame's |metadata|.
+  void DidConsumeFrame(int frame_number,
+                       const media::VideoFrameMetadata* metadata);
+
   // Protects everything below it.
   mutable base::Lock lock_;
 

@@ -26,10 +26,17 @@ namespace {
 //
 // This is how many round trips we think we need on the network.
 const int kRoundTripsNeeded = 4;
+
 // This is an estimate of all the the constant time needed independent of
 // network quality (e.g., additional time that accounts for encode and decode
 // time).
 const int kConstantTimeMs = 75;
+
+// The target maximum utilization of the encoder and network resources.  This is
+// used to attenuate the actual measured utilization values in order to provide
+// "breathing room" (i.e., to ensure there will be sufficient CPU and bandwidth
+// available to handle the occasional more-complex frames).
+const int kTargetUtilizationPercentage = 75;
 
 // Extract capture begin/end timestamps from |video_frame|'s metadata and log
 // it.
@@ -208,6 +215,7 @@ void VideoSender::InsertRawVideoFrame(
           reference_time,
           base::Bind(&VideoSender::OnEncodedVideoFrame,
                      weak_factory_.GetWeakPtr(),
+                     video_frame,
                      bitrate))) {
     frames_in_encoder_++;
     duration_in_encoder_ += duration_added_by_next_frame;
@@ -241,6 +249,7 @@ void VideoSender::OnAck(uint32 frame_id) {
 }
 
 void VideoSender::OnEncodedVideoFrame(
+    const scoped_refptr<media::VideoFrame>& video_frame,
     int encoder_bitrate,
     scoped_ptr<SenderEncodedFrame> encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
@@ -253,8 +262,23 @@ void VideoSender::OnEncodedVideoFrame(
 
   last_reported_deadline_utilization_ = encoded_frame->deadline_utilization;
   last_reported_lossy_utilization_ = encoded_frame->lossy_utilization;
-  // TODO(miu): Plumb-in a utilization feedback signal back to the producer of
-  // the video frames.  http://crbug.com/156767
+
+  // Report the resource utilization for processing this frame.  Take the
+  // greater of the two utilization values and attenuate them such that the
+  // target utilization is reported as the maximum sustainable amount.
+  const double attenuated_utilization =
+      std::max(last_reported_deadline_utilization_,
+               last_reported_lossy_utilization_) /
+          (kTargetUtilizationPercentage / 100.0);
+  if (attenuated_utilization >= 0.0) {
+    // Key frames are artificially capped to 1.0 because their actual
+    // utilization is atypical compared to the other frames in the stream, and
+    // this can misguide the producer of the input video frames.
+    video_frame->metadata()->SetDouble(
+        media::VideoFrameMetadata::RESOURCE_UTILIZATION,
+        encoded_frame->dependency == EncodedFrame::KEY ?
+            std::min(1.0, attenuated_utilization) : attenuated_utilization);
+  }
 
   SendEncodedFrame(encoder_bitrate, encoded_frame.Pass());
 }

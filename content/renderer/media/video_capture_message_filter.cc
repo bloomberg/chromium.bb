@@ -113,7 +113,7 @@ void VideoCaptureMessageFilter::OnBufferCreated(
     // Send the buffer back to Host in case it's waiting for all buffers
     // to be returned.
     base::SharedMemory::CloseHandle(handle);
-    Send(new VideoCaptureHostMsg_BufferReady(device_id, buffer_id, 0));
+    Send(new VideoCaptureHostMsg_BufferReady(device_id, buffer_id, 0, -1.0));
     return;
   }
 
@@ -130,7 +130,7 @@ void VideoCaptureMessageFilter::OnBufferReceived(
     // Send the buffer back to Host in case it's waiting for all buffers
     // to be returned.
     Send(new VideoCaptureHostMsg_BufferReady(
-        params.device_id, params.buffer_id, 0));
+        params.device_id, params.buffer_id, 0, -1.0));
     return;
   }
 
@@ -152,7 +152,7 @@ void VideoCaptureMessageFilter::OnMailboxBufferReceived(
     // Send the buffer back to Host in case it's waiting for all buffers
     // to be returned.
     Send(new VideoCaptureHostMsg_BufferReady(
-        params.device_id, params.buffer_id, 0));
+        params.device_id, params.buffer_id, 0, -1.0));
     return;
   }
 

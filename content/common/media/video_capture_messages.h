@@ -110,10 +110,11 @@ IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Stop,
 
 // Tell the browser process that the renderer has finished reading from
 // a buffer previously delivered by VideoCaptureMsg_BufferReady.
-IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_BufferReady,
+IPC_MESSAGE_CONTROL4(VideoCaptureHostMsg_BufferReady,
                      int /* device_id */,
                      int /* buffer_id */,
-                     uint32 /* syncpoint */)
+                     uint32 /* syncpoint */,
+                     double /* consumer_resource_utilization */)
 
 // Get the formats supported by a device referenced by |capture_session_id|.
 IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_GetDeviceSupportedFormats,

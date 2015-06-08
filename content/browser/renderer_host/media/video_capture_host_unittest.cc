@@ -165,7 +165,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   void ReturnReceivedDibs(int device_id)  {
     int handle = GetReceivedDib();
     while (handle) {
-      this->OnReceiveEmptyBuffer(device_id, handle, 0);
+      this->OnRendererFinishedWithBuffer(device_id, handle, 0, -1.0);
       handle = GetReceivedDib();
     }
   }
@@ -247,8 +247,8 @@ class MockVideoCaptureHost : public VideoCaptureHost {
     OnBufferFilled(params.device_id, params.buffer_id, params.coded_size,
                    params.visible_rect, params.timestamp, params.metadata);
     if (return_buffers_) {
-      VideoCaptureHost::OnReceiveEmptyBuffer(
-          params.device_id, params.buffer_id, 0);
+      VideoCaptureHost::OnRendererFinishedWithBuffer(
+          params.device_id, params.buffer_id, 0, -1.0);
     }
   }
 
@@ -258,8 +258,8 @@ class MockVideoCaptureHost : public VideoCaptureHost {
                           params.mailbox_holder, params.packed_frame_size,
                           params.timestamp, params.metadata);
     if (return_buffers_) {
-      VideoCaptureHost::OnReceiveEmptyBuffer(
-          params.device_id, params.buffer_id, 0);
+      VideoCaptureHost::OnRendererFinishedWithBuffer(
+          params.device_id, params.buffer_id, 0, -1.0);
     }
   }
 
