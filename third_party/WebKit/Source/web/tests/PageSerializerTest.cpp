@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
+#include "core/page/PageSerializer.h"
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/page/Page.h"
-#include "core/page/PageSerializer.h"
 #include "platform/SerializedResource.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -218,6 +218,20 @@ TEST_F(PageSerializerTest, Font)
     serialize("font.html");
 
     EXPECT_TRUE(isSerialized("font.ttf", "application/octet-stream"));
+}
+
+TEST_F(PageSerializerTest, DontIncludeErrorImage)
+{
+    setBaseFolder("pageserializer/image/");
+
+    registerURL("page_with_img_error.html", "text/html");
+    registerURL("error_image.png", "image/png");
+
+    serialize("page_with_img_error.html");
+
+    EXPECT_EQ(1U, getResources().size());
+    EXPECT_TRUE(isSerialized("page_with_img_error.html", "text/html"));
+    EXPECT_FALSE(isSerialized("error_image.png", "image/png"));
 }
 
 }

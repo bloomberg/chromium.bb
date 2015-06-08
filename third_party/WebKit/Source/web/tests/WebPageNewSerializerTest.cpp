@@ -380,29 +380,6 @@ TEST_F(WebPageNewSerializeTest, SVGImageDontCrash)
 }
 
 
-TEST_F(WebPageNewSerializeTest, DontIncludeErrorImage)
-{
-    WebURL pageUrl = toKURL(m_baseURL);
-    WebURL imageUrl = toTestURL("error_image.png");
-
-    registerMockedURLLoad(pageUrl, WebString::fromUTF8("page_with_img_error.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
-    registerMockedURLLoad(imageUrl, WebString::fromUTF8("error_image.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
-
-    loadURLInTopFrame(pageUrl);
-
-    WebCString mhtmlData = WebPageSerializer::serializeToMHTML(webView());
-    ASSERT_FALSE(mhtmlData.isEmpty());
-
-    // Sniff the MHTML data to make sure image content is excluded.
-    LineReader lineReader(std::string(mhtmlData.data()));
-    std::string line;
-    while (lineReader.getNextLine(&line)) {
-        if (line.find("image/") != std::string::npos)
-            FAIL() << "Error Image was not excluded " << line;
-    }
-}
-
-
 TEST_F(WebPageNewSerializeTest, NamespaceElementsDontCrash)
 {
     WebURL pageUrl = toKURL(m_baseURL);
