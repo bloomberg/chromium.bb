@@ -12,6 +12,8 @@ import android.view.MenuInflater;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlUtilities;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.preferences.bandwidth.DataReductionProxyUma;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 /**
@@ -85,6 +87,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
             if (!params.imageWasFetchedLoFi()) {
                 menu.findItem(R.id.contextmenu_show_original_image).setVisible(false);
+            } else {
+                DataReductionProxyUma.dataReductionProxyLoFiUIAction(
+                        DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_SHOWN);
             }
 
             // Avoid showing open image option for same image which is already opened.
@@ -121,6 +126,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 || itemId == R.id.contextmenu_open_original_image_in_new_tab) {
             mDelegate.onOpenImageInNewTab(params.getSrcUrl(), params.getReferrer());
         } else if (itemId == R.id.contextmenu_show_original_image) {
+            DataReductionProxyUma.dataReductionProxyLoFiUIAction(
+                    DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED);
+            if (!DataReductionProxySettings.getInstance().wasLoFiShowImageRequestedBefore()) {
+                DataReductionProxyUma.dataReductionProxyLoFiUIAction(
+                        DataReductionProxyUma.ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED_ON_PAGE);
+                DataReductionProxySettings.getInstance().setLoFiShowImageRequested();
+            }
             mDelegate.onShowOriginalImage();
         } else if (itemId == R.id.contextmenu_copy_link_address_text) {
             mDelegate.onSaveToClipboard(params.getUnfilteredLinkUrl(), true);

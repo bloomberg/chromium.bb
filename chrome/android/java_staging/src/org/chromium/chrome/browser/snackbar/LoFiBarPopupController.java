@@ -9,6 +9,7 @@ import android.content.Context;
 import com.google.android.apps.chrome.R;
 
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.preferences.bandwidth.DataReductionProxyUma;
 
 /**
  * Each time a tab loads with Lo-Fi this controller saves that tab id and title to the stack of
@@ -41,6 +42,8 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
                 null, mContext.getString(R.string.data_reduction_lo_fi_snackbar_message),
                 mContext.getString(R.string.data_reduction_lo_fi_snackbar_action),
                 tab.getId(), this);
+        DataReductionProxyUma.dataReductionProxyLoFiUIAction(
+                DataReductionProxyUma.ACTION_LOAD_IMAGES_SNACKBAR_SHOWN);
     }
 
     /**
@@ -58,6 +61,8 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
         mSnackbarManager.dismissSnackbar(false);
         mTab.stopLoading();
         mTab.reloadIgnoringCache();
+        DataReductionProxyUma.dataReductionProxyLoFiUIAction(
+                DataReductionProxyUma.ACTION_LOAD_IMAGES_SNACKBAR_CLICKED);
     }
 
     @Override

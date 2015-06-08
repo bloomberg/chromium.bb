@@ -23,6 +23,15 @@ public class DataReductionProxyUma {
     public static final int ACTION_ON_TO_ON = 8;
     public static final int ACTION_INDEX_BOUNDARY = 9;
 
+    // Represent the possible Lo-Fi user actions. This must remain in sync with
+    // DataReductionProxy.UIAction.LoFi in tools/metrics/histograms/histograms.xml.
+    public static final int ACTION_LOAD_IMAGES_SNACKBAR_SHOWN = 0;
+    public static final int ACTION_LOAD_IMAGES_SNACKBAR_CLICKED = 1;
+    public static final int ACTION_LOAD_IMAGE_CONTEXT_MENU_SHOWN = 2;
+    public static final int ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED = 3;
+    public static final int ACTION_LOAD_IMAGE_CONTEXT_MENU_CLICKED_ON_PAGE = 4;
+    public static final int LOFI_ACTION_INDEX_BOUNDARY = 5;
+
     /**
      * Record the DataReductionProxy.UIAction histogram.
      * @param action User action at the promo or settings screen
@@ -32,5 +41,16 @@ public class DataReductionProxyUma {
         RecordHistogram.recordEnumeratedHistogram(
                 "DataReductionProxy.UIAction", action,
                 DataReductionProxyUma.ACTION_INDEX_BOUNDARY);
+    }
+
+    /**
+     * Record the DataReductionProxy.UIAction.LoFi histogram.
+     * @param action LoFi user action on the snackbar or context menu
+     */
+    public static void dataReductionProxyLoFiUIAction(int action) {
+        assert action >= 0 && action < LOFI_ACTION_INDEX_BOUNDARY;
+        RecordHistogram.recordEnumeratedHistogram(
+                "DataReductionProxy.LoFi.UIAction", action,
+                DataReductionProxyUma.LOFI_ACTION_INDEX_BOUNDARY);
     }
 }

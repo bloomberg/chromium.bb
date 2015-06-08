@@ -4695,6 +4695,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.LoFi.UIAction"
+    enum="DataReductionProxyLoFiUIAction">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Samples of user interactions with the Lo-Fi snackbar and context menu
+    option. These samples include:
+
+    Displays and clicks on the &quot;Load images&quot; snackbar. Displays and
+    clicks on the &quot;Load image&quot; context menu option. Count of pages
+    where the user has clicked &quot;Load image&quot; at least once
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.MissingViaHeader.Bytes" units="bytes">
   <owner>bengr@chromium.org</owner>
   <owner>sclittle@chromium.org</owner>
@@ -51161,6 +51175,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="Bypass because the request URI was too long"/>
   <int value="9" label="Bypass due to a 503 response"/>
   <int value="10" label="Bypass due to any network error"/>
+</enum>
+
+<enum name="DataReductionProxyLoFiUIAction" type="int">
+  <int value="0" label="'Load images' snackbar shown"/>
+  <int value="1" label="'Load images' snackbar clicked"/>
+  <int value="2" label="'Load image' context menu item shown"/>
+  <int value="3" label="'Load image' context menu item clicked"/>
+  <int value="4"
+      label="Pages where the user has clicked 'Load image' at least once"/>
 </enum>
 
 <enum name="DataReductionProxyNetworkChangeEvent" type="int">

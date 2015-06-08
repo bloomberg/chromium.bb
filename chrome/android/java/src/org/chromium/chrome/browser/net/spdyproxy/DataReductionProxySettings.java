@@ -159,6 +159,21 @@ public class DataReductionProxySettings {
         return nativeWasLoFiModeActiveOnMainFrame(mNativeDataReductionProxySettings);
     }
 
+    /**
+     * Returns true if a "Show image" context menu request has not been made since the last main
+     * frame request.
+     */
+    public boolean wasLoFiShowImageRequestedBefore() {
+        return nativeWasLoFiShowImageRequestedBefore(mNativeDataReductionProxySettings);
+    }
+
+    /**
+     * Sets that a "Show image" context menu request has been made.
+     */
+    public void setLoFiShowImageRequested() {
+        nativeSetLoFiShowImageRequested(mNativeDataReductionProxySettings);
+    }
+
     /** Returns true if the SPDY proxy is managed by an administrator's policy. */
     public boolean isDataReductionProxyManaged() {
         return nativeIsDataReductionProxyManaged(mNativeDataReductionProxySettings);
@@ -232,6 +247,10 @@ public class DataReductionProxySettings {
     private native boolean nativeCanUseDataReductionProxy(
             long nativeDataReductionProxySettingsAndroid, String url);
     private native boolean nativeWasLoFiModeActiveOnMainFrame(
+            long nativeDataReductionProxySettingsAndroid);
+    private native boolean nativeWasLoFiShowImageRequestedBefore(
+            long nativeDataReductionProxySettingsAndroid);
+    private native void nativeSetLoFiShowImageRequested(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyManaged(
             long nativeDataReductionProxySettingsAndroid);

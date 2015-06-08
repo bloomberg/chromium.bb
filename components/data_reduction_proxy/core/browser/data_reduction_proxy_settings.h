@@ -107,6 +107,14 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // Returns true if Lo-Fi was active on the main frame request.
   bool WasLoFiModeActiveOnMainFrame() const;
 
+  // Returns true if a "Show image" context menu request has not been made since
+  // the last main frame request.
+  bool WasLoFiShowImageRequestedBefore();
+
+  // Sets |lo_fi_show_image_requested_| to true, which means a "Show image"
+  // context menu request has been made since the last main frame request.
+  void SetLoFiShowImageRequested();
+
   // Returns the time in microseconds that the last update was made to the
   // daily original and received content lengths.
   int64 GetDataReductionLastUpdateTime();
@@ -252,6 +260,10 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
 
   // True if Lo-Fi is active.
   bool lo_fi_mode_active_;
+
+  // True if a "Show image" context menu request has not been made since the
+  // last main frame request.
+  bool lo_fi_show_image_requested_;
 
   BooleanPrefMember spdy_proxy_auth_enabled_;
   BooleanPrefMember data_reduction_proxy_alternative_enabled_;
