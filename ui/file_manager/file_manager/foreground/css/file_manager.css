@@ -749,6 +749,10 @@ html[dir='rtl'] #search-box .clear {
   margin: 3px 0 !important;
 }
 
+.dialog-footer select {
+  min-height: 21px;
+}
+
 .dialog-footer paper-input-container {
   color: rgb(51, 51, 51);
   padding: 4px 0;
@@ -761,6 +765,10 @@ html[dir='rtl'] #search-box .clear {
 
 .dialog-footer paper-input-container /deep/ .focused-line {
   background-color: rgb(33, 150, 243);
+}
+
+.dialog-footer paper-input-container /deep/ .input-content ::content input {
+  font: inherit;
 }
 
 .dialog-footer select {
