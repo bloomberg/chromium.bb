@@ -11,6 +11,5 @@
     <item name="tabswitcher_single_drawable" type="id"/>
     <item name="tabswitcher_multiple_drawable" type="id"/>
 
-    <item name="fre_pager" type="id"/>
     <item name="eb_page" type="id"/>
 </resources>

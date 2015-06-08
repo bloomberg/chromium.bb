@@ -4,8 +4,6 @@
      found in the LICENSE file. -->
 
 <resources>
-    <color name="text_highlight_color">#C6DAFC</color>
-
     <!-- Theme colors. Also used for toolbar background -->
     <color name="incognito_primary_color">#505050</color>
 
@@ -27,7 +25,6 @@
     <color name="find_in_page_failed_results_status_color">#db4437</color>
 
     <!-- Tab Switcher Colors -->
-    <color name="tab_switcher_background">#14181C</color>
     <color name="tab_back">#F1F1F1</color>
     <color name="tab_back_incognito">#4F4F4F</color>
 
@@ -35,7 +32,6 @@
     <color name="light_background_color">#FFFFFF</color>
 
     <!-- NTP Colors. Used on the bookmarks and recent tabs pages. -->
-    <color name="ntp_bg">#fff</color>
     <color name="ntp_bg_incognito">#222</color>
     <color name="ntp_most_visited_text">#333</color>
     <color name="ntp_most_visited_bg">#f2f2f2</color>
