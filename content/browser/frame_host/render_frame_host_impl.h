@@ -54,6 +54,7 @@ namespace content {
 
 class CrossProcessFrameConnector;
 class CrossSiteTransferringRequest;
+class FrameMojoShell;
 class FrameTree;
 class FrameTreeNode;
 class PermissionServiceContext;
@@ -723,6 +724,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Context shared for each PermissionService instance created for this RFH.
   scoped_ptr<PermissionServiceContext> permission_service_context_;
+
+  // The frame's Mojo Shell service.
+  scoped_ptr<FrameMojoShell> frame_mojo_shell_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

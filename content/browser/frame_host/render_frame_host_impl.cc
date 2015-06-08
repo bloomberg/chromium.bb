@@ -19,6 +19,7 @@
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/frame_accessibility.h"
+#include "content/browser/frame_host/frame_mojo_shell.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -1548,6 +1549,12 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   GetServiceRegistry()->AddService<mojo::MediaRenderer>(
       base::Bind(&CreateMediaRendererService));
 #endif
+
+  if (!frame_mojo_shell_)
+    frame_mojo_shell_.reset(new FrameMojoShell(this));
+
+  GetServiceRegistry()->AddService<mojo::Shell>(base::Bind(
+      &FrameMojoShell::BindRequest, base::Unretained(frame_mojo_shell_.get())));
 
   GetContentClient()->browser()->OverrideRenderFrameMojoServices(
       GetServiceRegistry(), this);

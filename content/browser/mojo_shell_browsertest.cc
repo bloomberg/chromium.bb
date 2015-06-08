@@ -35,7 +35,8 @@ class MojoShellTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MojoShellTest, TestBrowserConnection) {
-  auto test_app = MojoAppConnection::Create(GURL(kInProcessTestMojoAppUrl));
+  auto test_app = MojoAppConnection::Create(GURL(kInProcessTestMojoAppUrl),
+                                            GURL(kBrowserMojoAppUrl));
   TestMojoServicePtr test_service;
   test_app->ConnectToService(&test_service);
 
@@ -48,7 +49,8 @@ IN_PROC_BROWSER_TEST_F(MojoShellTest, TestUtilityConnection) {
   // With no loader registered at this URL, the shell should spawn a utility
   // process and connect us to it. content_shell's utility process always hosts
   // a TestMojoApp at |kTestMojoAppUrl|.
-  auto test_app = MojoAppConnection::Create(GURL(kTestMojoAppUrl));
+  auto test_app = MojoAppConnection::Create(GURL(kTestMojoAppUrl),
+                                            GURL(kBrowserMojoAppUrl));
   TestMojoServicePtr test_service;
   test_app->ConnectToService(&test_service);
 

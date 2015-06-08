@@ -10,6 +10,7 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -36,11 +37,15 @@ class TestMojoApp : public mojo::ApplicationDelegate,
 
   // TestMojoService:
   void DoSomething(const DoSomethingCallback& callback) override;
+  void GetRequestorURL(const GetRequestorURLCallback& callback) override;
 
   mojo::Binding<TestMojoService> service_binding_;
 
   // Not owned.
   mojo::ApplicationImpl* app_;
+
+  // The URL of the app connecting to us.
+  GURL requestor_url_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMojoApp);
 };
