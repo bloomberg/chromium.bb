@@ -117,6 +117,8 @@ public:
     virtual void writeJSON(StringBuilder* output) const;
     virtual void prettyWriteJSON(StringBuilder* output) const;
 
+    static String quoteString(const String&);
+
 protected:
     explicit JSONValue(Type type) : m_type(type) { }
     virtual void prettyWriteJSONInternal(StringBuilder* output, int depth) const;

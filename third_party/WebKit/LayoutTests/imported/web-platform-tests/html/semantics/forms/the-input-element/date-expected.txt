@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 20: The specified value 'invalid-date' does not conform to the required format, 'yyyy-MM-dd'.
+CONSOLE WARNING: line 20: The specified value "invalid-date" does not conform to the required format, "yyyy-MM-dd".
 This is a testharness.js-based test.
 PASS date type support on input element 
 FAIL The value attribute, if specified and not empty, must have a value that is a valid date string. assert_equals: expected "2011-01-01" but got "1999-01-31"

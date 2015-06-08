@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 13: The specified value 'abc' is not a valid email address.
+CONSOLE WARNING: line 13: The specified value "abc" is not a valid email address.
 CONSOLE ERROR: An invalid form control with name='' is not focusable.
 CONSOLE ERROR: An invalid form control with name='' is not focusable.
 CONSOLE ERROR: An invalid form control with name='' is not focusable.

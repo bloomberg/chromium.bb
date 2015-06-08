@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 44: The specified value 'something' is not a valid email address.
+CONSOLE WARNING: line 44: The specified value "something" is not a valid email address.
 This test checks validity.patternMismatch.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

@@ -170,6 +170,8 @@ crbug.com/438589 virtual/slimmingpaint/fast/repaint/obscured-background-no-repai
 # Crashing after V8 roll to 3.28.43.1.
 crbug.com/398306 fast/events/before-unload-return-bad-value.html [ Crash Timeout Pass ]
 
+crbug.com/397952 imported/web-platform-tests/html/semantics/forms/the-input-element/type-change-state.html [ NeedsRebaseline ]
+crbug.com/397952 imported/web-platform-tests/html/semantics/forms/constraints/form-validation-reportValidity.html [ NeedsRebaseline ]
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
 crbug.com/490511 imported/web-platform-tests/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
