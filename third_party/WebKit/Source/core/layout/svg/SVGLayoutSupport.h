@@ -74,7 +74,7 @@ public:
     // Important functions used by nearly all SVG layoutObjects centralizing coordinate transformations / paint invalidation rect calculations
     static LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutObject&, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState*);
     static const LayoutSVGRoot& mapRectToSVGRootForPaintInvalidation(const LayoutObject&, const FloatRect& localPaintInvalidationRect, LayoutRect&);
-    static void mapLocalToContainer(const LayoutObject*, const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, bool* wasFixed = 0, const PaintInvalidationState* = 0);
+    static void mapLocalToContainer(const LayoutObject*, const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr);
     static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&);
 
     // Shared between SVG layoutObjects and resources.

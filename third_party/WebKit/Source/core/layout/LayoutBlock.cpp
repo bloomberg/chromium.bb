@@ -86,15 +86,15 @@ struct SameSizeAsLayoutBlock : public LayoutBox {
 
 static_assert(sizeof(LayoutBlock) == sizeof(SameSizeAsLayoutBlock), "LayoutBlock should stay small");
 
-static TrackedDescendantsMap* gPositionedDescendantsMap = 0;
-static TrackedDescendantsMap* gPercentHeightDescendantsMap = 0;
+static TrackedDescendantsMap* gPositionedDescendantsMap = nullptr;
+static TrackedDescendantsMap* gPercentHeightDescendantsMap = nullptr;
 
-static TrackedContainerMap* gPositionedContainerMap = 0;
-static TrackedContainerMap* gPercentHeightContainerMap = 0;
+static TrackedContainerMap* gPositionedContainerMap = nullptr;
+static TrackedContainerMap* gPercentHeightContainerMap = nullptr;
 
 typedef WTF::HashSet<LayoutBlock*> DelayedUpdateScrollInfoSet;
 static int gDelayUpdateScrollInfo = 0;
-static DelayedUpdateScrollInfoSet* gDelayedUpdateScrollInfoSet = 0;
+static DelayedUpdateScrollInfoSet* gDelayedUpdateScrollInfoSet = nullptr;
 
 // This class helps dispatching the 'overflow' event on layout change. overflow can be set on LayoutBoxes, yet the existing code
 // only works on LayoutBlocks. If this changes, this class should be shared with other LayoutBoxes.
@@ -230,7 +230,7 @@ void LayoutBlock::willBeDestroyed()
     LayoutBoxModelObject* continuation = this->continuation();
     if (continuation) {
         continuation->destroy();
-        setContinuation(0);
+        setContinuation(nullptr);
     }
 
     if (!documentBeingDestroyed()) {
@@ -712,9 +712,9 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
             // inlineChildrenBlock got reparented to blockChildrenBlock, so it is no longer a child
             // of "this". we null out prev or next so that is not used later in the function.
             if (inlineChildrenBlock == prevBlock)
-                prev = 0;
+                prev = nullptr;
             else
-                next = 0;
+                next = nullptr;
         } else {
             // Take all the children out of the |next| block and put them in
             // the |prev| block.
@@ -723,7 +723,7 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
             // Delete the now-empty block's lines and nuke it.
             nextBlock->deleteLineBoxTree();
             nextBlock->destroy();
-            next = 0;
+            next = nullptr;
         }
     }
 
@@ -774,7 +774,7 @@ void LayoutBlock::removeChild(LayoutObject* oldChild)
 
                 break;
             }
-            setContinuation(0);
+            setContinuation(nullptr);
             destroy();
         }
     }
@@ -860,7 +860,7 @@ void LayoutBlock::finishDelayUpdateScrollInfo()
         ASSERT(gDelayedUpdateScrollInfoSet);
 
         OwnPtr<DelayedUpdateScrollInfoSet> infoSet(adoptPtr(gDelayedUpdateScrollInfoSet));
-        gDelayedUpdateScrollInfoSet = 0;
+        gDelayedUpdateScrollInfoSet = nullptr;
 
         for (auto* block : *infoSet) {
             if (block->hasOverflowClip()) {
@@ -1389,7 +1389,7 @@ LayoutUnit LayoutBlock::logicalRightSelectionOffset(const LayoutBlock* rootBlock
 LayoutBlock* LayoutBlock::blockBeforeWithinSelectionRoot(LayoutSize& offset) const
 {
     if (isSelectionRoot())
-        return 0;
+        return nullptr;
 
     const LayoutObject* object = this;
     LayoutObject* sibling;
@@ -1403,7 +1403,7 @@ LayoutBlock* LayoutBlock::blockBeforeWithinSelectionRoot(LayoutSize& offset) con
     } while (!sibling && object && object->isLayoutBlock() && !toLayoutBlock(object)->isSelectionRoot());
 
     if (!sibling)
-        return 0;
+        return nullptr;
 
     LayoutBlock* beforeBlock = toLayoutBlock(sibling);
 
@@ -1485,7 +1485,7 @@ TrackedLayoutBoxListHashSet* LayoutBlock::positionedObjects() const
 {
     if (gPositionedDescendantsMap)
         return gPositionedDescendantsMap->get(this);
-    return 0;
+    return nullptr;
 }
 
 void LayoutBlock::insertPositionedObject(LayoutBox* o)
@@ -1833,9 +1833,9 @@ PositionWithAffinity LayoutBlock::positionForPointWithInlineChildren(const Layou
     bool blocksAreFlipped = style()->isFlippedBlocksWritingMode();
 
     // look for the closest line box in the root box which is at the passed-in y coordinate
-    InlineBox* closestBox = 0;
-    RootInlineBox* firstRootBoxWithChildren = 0;
-    RootInlineBox* lastRootBoxWithChildren = 0;
+    InlineBox* closestBox = nullptr;
+    RootInlineBox* firstRootBoxWithChildren = nullptr;
+    RootInlineBox* lastRootBoxWithChildren = nullptr;
     for (RootInlineBox* root = firstRootBox(); root; root = root->nextRootBox()) {
         if (!root->firstLeafChild())
             continue;
@@ -2333,7 +2333,7 @@ LayoutBlock* LayoutBlock::firstLineBlock() const
     }
 
     if (!hasPseudo)
-        return 0;
+        return nullptr;
 
     return firstLineBlock;
 }
@@ -2356,7 +2356,7 @@ static int getHeightForLineCount(LayoutBlock* block, int l, bool includeBottom, 
                     return box->lineBottom() + (includeBottom ? (block->borderBottom() + block->paddingBottom()) : LayoutUnit());
             }
         } else {
-            LayoutBox* normalFlowChildWithoutLines = 0;
+            LayoutBox* normalFlowChildWithoutLines = nullptr;
             for (LayoutBox* obj = block->firstChildBox(); obj; obj = obj->nextSiblingBox()) {
                 if (shouldCheckLines(obj)) {
                     int result = getHeightForLineCount(toLayoutBlock(obj), l, false, count);
@@ -2379,7 +2379,7 @@ RootInlineBox* LayoutBlock::lineAtIndex(int i) const
     ASSERT(i >= 0);
 
     if (style()->visibility() != VISIBLE)
-        return 0;
+        return nullptr;
 
     if (childrenInline()) {
         for (RootInlineBox* box = firstRootBox(); box; box = box->nextRootBox()) {
@@ -2395,7 +2395,7 @@ RootInlineBox* LayoutBlock::lineAtIndex(int i) const
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 int LayoutBlock::lineCount(const RootInlineBox* stopRootInlineBox, bool* found) const
@@ -2741,7 +2741,7 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentAndDisplay(const LayoutObject
 {
     // FIXME: Do we need to convert all our inline displays to block-type in the anonymous logic ?
     EDisplay newDisplay;
-    LayoutBlock* newBox = 0;
+    LayoutBlock* newBox = nullptr;
     if (display == FLEX || display == INLINE_FLEX) {
         newBox = LayoutFlexibleBox::createAnonymous(&parent->document());
         newDisplay = FLEX;

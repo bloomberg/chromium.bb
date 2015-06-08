@@ -32,7 +32,7 @@
 namespace blink {
 
 LayoutQuote::LayoutQuote(Document* node, QuoteType quote)
-    : LayoutInline(0)
+    : LayoutInline(nullptr)
     , m_type(quote)
     , m_depth(0)
     , m_next(nullptr)
@@ -232,7 +232,7 @@ Language languages[] = {
 const QuotesData* quotesDataForLanguage(const AtomicString& lang)
 {
     if (lang.isNull())
-        return 0;
+        return nullptr;
 
     // This could be just a hash table, but doing that adds 200k to LayoutQuote.o
     Language* languagesEnd = languages + WTF_ARRAY_LENGTH(languages);
@@ -240,7 +240,7 @@ const QuotesData* quotesDataForLanguage(const AtomicString& lang)
     Language key = { lowercaseLang.data(), 0, 0, 0, 0, 0 };
     Language* match = std::lower_bound(languages, languagesEnd, key);
     if (match == languagesEnd || strcmp(match->lang, key.lang))
-        return 0;
+        return nullptr;
 
     if (!match->data)
         match->data = QuotesData::create(match->open1, match->close1, match->open2, match->close2).leakRef();

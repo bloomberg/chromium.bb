@@ -32,8 +32,8 @@ class LayoutText;
 
 struct LayoutTextInfo {
     LayoutTextInfo()
-        : m_text(0)
-        , m_font(0)
+        : m_text(nullptr)
+        , m_font(nullptr)
     {
     }
 

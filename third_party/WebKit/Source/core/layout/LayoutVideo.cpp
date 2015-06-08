@@ -126,7 +126,7 @@ void LayoutVideo::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
 
 IntRect LayoutVideo::videoBox() const
 {
-    const LayoutSize* overriddenIntrinsicSize = 0;
+    const LayoutSize* overriddenIntrinsicSize = nullptr;
     if (videoElement()->shouldDisplayPosterImage())
         overriddenIntrinsicSize = &m_cachedImageSize;
 
@@ -204,11 +204,11 @@ static const LayoutBlock* layoutObjectPlaceholder(const LayoutObject* layoutObje
 {
     LayoutObject* parent = layoutObject->parent();
     if (!parent)
-        return 0;
+        return nullptr;
 
     LayoutFullScreen* fullScreen = parent->isLayoutFullScreen() ? toLayoutFullScreen(parent) : 0;
     if (!fullScreen)
-        return 0;
+        return nullptr;
 
     return fullScreen->placeholder();
 }

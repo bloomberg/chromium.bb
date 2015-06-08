@@ -70,12 +70,12 @@ public:
     AffineTransform nonScalingStrokeTransform() const;
     virtual AffineTransform localTransform() const override final { return m_localTransform ? *m_localTransform : LayoutSVGModelObject::localTransform(); }
 
-    virtual const Vector<MarkerPosition>* markerPositions() const { return 0; }
+    virtual const Vector<MarkerPosition>* markerPositions() const { return nullptr; }
 
     float strokeWidth() const;
 
     virtual ShapeGeometryCodePath geometryCodePath() const { return PathGeometry; }
-    virtual const Vector<FloatPoint>* zeroLengthLineCaps() const { return 0; }
+    virtual const Vector<FloatPoint>* zeroLengthLineCaps() const { return nullptr; }
 
     virtual FloatRect objectBoundingBox() const override final { return m_fillBoundingBox; }
 

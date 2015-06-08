@@ -144,7 +144,7 @@ static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject), "LayoutObj
 bool LayoutObject::s_affectsParentBlock = false;
 
 typedef HashMap<const LayoutObject*, LayoutRect> SelectionPaintInvalidationMap;
-static SelectionPaintInvalidationMap* selectionPaintInvalidationMap = 0;
+static SelectionPaintInvalidationMap* selectionPaintInvalidationMap = nullptr;
 
 void* LayoutObject::operator new(size_t sz)
 {
@@ -184,7 +184,7 @@ LayoutObject* LayoutObject::createObject(Element* element, const ComputedStyle& 
 
     switch (style.display()) {
     case NONE:
-        return 0;
+        return nullptr;
     case INLINE:
         return new LayoutInline(element);
     case BLOCK:
@@ -219,7 +219,7 @@ LayoutObject* LayoutObject::createObject(Element* element, const ComputedStyle& 
         return new LayoutGrid(element);
     }
 
-    return 0;
+    return nullptr;
 }
 
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, layoutObjectCounter, ("LayoutObject"));
@@ -450,14 +450,14 @@ LayoutObject* LayoutObject::nextInPreOrder(const LayoutObject* stayWithin) const
 LayoutObject* LayoutObject::nextInPreOrderAfterChildren(const LayoutObject* stayWithin) const
 {
     if (this == stayWithin)
-        return 0;
+        return nullptr;
 
     const LayoutObject* current = this;
     LayoutObject* next = current->nextSibling();
     for (; !next; next = current->nextSibling()) {
         current = current->parent();
         if (!current || current == stayWithin)
-            return 0;
+            return nullptr;
     }
     return next;
 }
@@ -476,7 +476,7 @@ LayoutObject* LayoutObject::previousInPreOrder() const
 LayoutObject* LayoutObject::previousInPreOrder(const LayoutObject* stayWithin) const
 {
     if (this == stayWithin)
-        return 0;
+        return nullptr;
 
     return previousInPreOrder();
 }
@@ -493,7 +493,7 @@ LayoutObject* LayoutObject::lastLeafChild() const
 {
     LayoutObject* r = slowLastChild();
     while (r) {
-        LayoutObject* n = 0;
+        LayoutObject* n = nullptr;
         n = r->slowLastChild();
         if (!n)
             break;
@@ -511,7 +511,7 @@ static void addLayers(LayoutObject* obj, DeprecatedPaintLayer* parentLayer, Layo
             // this the first time we find a child layer, and then we update the
             // pointer values for newObject and beforeChild used by everyone else.
             beforeChild = newObject->parent()->findNextLayer(parentLayer, newObject);
-            newObject = 0;
+            newObject = nullptr;
         }
         parentLayer->addChild(toLayoutBoxModelObject(obj)->layer(), beforeChild);
         return;
@@ -527,7 +527,7 @@ void LayoutObject::addLayers(DeprecatedPaintLayer* parentLayer)
         return;
 
     LayoutObject* object = this;
-    DeprecatedPaintLayer* beforeChild = 0;
+    DeprecatedPaintLayer* beforeChild = nullptr;
     blink::addLayers(this, parentLayer, object, beforeChild);
 }
 
@@ -570,7 +570,7 @@ DeprecatedPaintLayer* LayoutObject::findNextLayer(DeprecatedPaintLayer* parentLa
         return 0;
 
     // Step 1: If our layer is a child of the desired parent, then return our layer.
-    DeprecatedPaintLayer* ourLayer = hasLayer() ? toLayoutBoxModelObject(this)->layer() : 0;
+    DeprecatedPaintLayer* ourLayer = hasLayer() ? toLayoutBoxModelObject(this)->layer() : nullptr;
     if (ourLayer && ourLayer->parent() == parentLayer)
         return ourLayer;
 
@@ -579,7 +579,7 @@ DeprecatedPaintLayer* LayoutObject::findNextLayer(DeprecatedPaintLayer* parentLa
     if (!ourLayer || ourLayer == parentLayer) {
         for (LayoutObject* curr = startPoint ? startPoint->nextSibling() : slowFirstChild();
             curr; curr = curr->nextSibling()) {
-            DeprecatedPaintLayer* nextLayer = curr->findNextLayer(parentLayer, 0, false);
+            DeprecatedPaintLayer* nextLayer = curr->findNextLayer(parentLayer, nullptr, false);
             if (nextLayer)
                 return nextLayer;
         }
@@ -588,14 +588,14 @@ DeprecatedPaintLayer* LayoutObject::findNextLayer(DeprecatedPaintLayer* parentLa
     // Step 3: If our layer is the desired parent layer, then we're finished. We didn't
     // find anything.
     if (parentLayer == ourLayer)
-        return 0;
+        return nullptr;
 
     // Step 4: If |checkParent| is set, climb up to our parent and check its siblings that
     // follow us to see if we can locate a layer.
     if (checkParent && parent())
         return parent()->findNextLayer(parentLayer, this, true);
 
-    return 0;
+    return nullptr;
 }
 
 DeprecatedPaintLayer* LayoutObject::enclosingLayer() const
@@ -606,7 +606,7 @@ DeprecatedPaintLayer* LayoutObject::enclosingLayer() const
     }
     // FIXME: we should get rid of detached layout subtrees, at which point this code should
     // not be reached. crbug.com/411429
-    return 0;
+    return nullptr;
 }
 
 bool LayoutObject::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
@@ -629,7 +629,7 @@ LayoutBox* LayoutObject::enclosingBox() const
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 LayoutBoxModelObject* LayoutObject::enclosingBoxModelObject() const
@@ -642,7 +642,7 @@ LayoutBoxModelObject* LayoutObject::enclosingBoxModelObject() const
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 LayoutBox* LayoutObject::enclosingScrollableBox() const
@@ -656,7 +656,7 @@ LayoutBox* LayoutObject::enclosingScrollableBox() const
             return ancestorBox;
     }
 
-    return 0;
+    return nullptr;
 }
 
 LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
@@ -721,7 +721,7 @@ bool LayoutObject::skipInvalidationWhenLaidOutChildren() const
 
 LayoutBlock* LayoutObject::firstLineBlock() const
 {
-    return 0;
+    return nullptr;
 }
 
 static inline bool objectIsRelayoutBoundary(const LayoutObject* object)
@@ -910,7 +910,7 @@ LayoutBlock* LayoutObject::containingBlock() const
     }
 
     if (!o || !o->isLayoutBlock())
-        return 0; // This can still happen in case of an orphaned tree
+        return nullptr; // This can still happen in case of an orphaned tree
 
     return toLayoutBlock(o);
 }
@@ -1063,7 +1063,7 @@ const LayoutBoxModelObject& LayoutObject::containerForPaintInvalidationOnRootedT
 
 const LayoutBoxModelObject* LayoutObject::enclosingCompositedContainer() const
 {
-    LayoutBoxModelObject* container = 0;
+    LayoutBoxModelObject* container = nullptr;
     // FIXME: CompositingState is not necessarily up to date for many callers of this function.
     DisableCompositingQueryAsserts disabler;
 
@@ -2077,7 +2077,7 @@ const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutBoxModelObj
 
     LayoutObject* container = parent();
     if (!container)
-        return 0;
+        return nullptr;
 
     // FIXME: this should call offsetFromContainer to share code, but I'm not sure it's ever called.
     LayoutSize offset;
@@ -2217,7 +2217,7 @@ void LayoutObject::computeLayerHitTestRects(LayerHitTestRects& layerRects) const
     // Figure out what layer our container is in. Any offset (or new layer) for this
     // layoutObject within it's container will be applied in addLayerHitTestRects.
     LayoutPoint layerOffset;
-    const DeprecatedPaintLayer* currentLayer = 0;
+    const DeprecatedPaintLayer* currentLayer = nullptr;
 
     if (!hasLayer()) {
         LayoutObject* container = this->container();
@@ -2453,7 +2453,7 @@ void LayoutObject::insertedIntoTree()
 
     // Keep our layer hierarchy updated. Optimize for the common case where we don't have any children
     // and don't have a layer attached to ourselves.
-    DeprecatedPaintLayer* layer = 0;
+    DeprecatedPaintLayer* layer = nullptr;
     if (slowFirstChild() || hasLayer()) {
         layer = parent()->enclosingLayer();
         addLayers(layer);
@@ -2480,7 +2480,7 @@ void LayoutObject::willBeRemovedFromTree()
     // FIXME: We should ASSERT(isRooted()) but we have some out-of-order removals which would need to be fixed first.
 
     // If we remove a visible child from an invisible parent, we don't know the layer visibility any more.
-    DeprecatedPaintLayer* layer = 0;
+    DeprecatedPaintLayer* layer = nullptr;
     if (parent()->style()->visibility() != VISIBLE && style()->visibility() == VISIBLE && !hasLayer()) {
         layer = parent()->enclosingLayer();
         if (layer)
@@ -2764,7 +2764,7 @@ ComputedStyle* LayoutObject::cachedFirstLineStyle() const
 ComputedStyle* LayoutObject::getCachedPseudoStyle(PseudoId pseudo, const ComputedStyle* parentStyle) const
 {
     if (pseudo < FIRST_INTERNAL_PSEUDOID && !style()->hasPseudoStyle(pseudo))
-        return 0;
+        return nullptr;
 
     ComputedStyle* cachedStyle = style()->getCachedPseudoStyle(pseudo);
     if (cachedStyle)
@@ -2773,7 +2773,7 @@ ComputedStyle* LayoutObject::getCachedPseudoStyle(PseudoId pseudo, const Compute
     RefPtr<ComputedStyle> result = getUncachedPseudoStyle(PseudoStyleRequest(pseudo), parentStyle);
     if (result)
         return mutableStyleRef().addCachedPseudoStyle(result.release());
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyle(const PseudoStyleRequest& pseudoStyleRequest, const ComputedStyle* parentStyle, const ComputedStyle* ownStyle) const
@@ -2821,7 +2821,7 @@ PassRefPtr<ComputedStyle> LayoutObject::getUncachedPseudoStyleFromParentOrShadow
 void LayoutObject::getTextDecorations(unsigned decorations, AppliedTextDecoration& underline, AppliedTextDecoration& overline, AppliedTextDecoration& linethrough, bool quirksMode, bool firstlineStyle)
 {
     LayoutObject* curr = this;
-    const ComputedStyle* styleToUse = 0;
+    const ComputedStyle* styleToUse = nullptr;
     unsigned currDecs = TextDecorationNone;
     Color resultColor;
     TextDecorationStyle resultStyle;
@@ -2962,13 +2962,13 @@ void LayoutObject::imageChanged(ImageResource* image, const IntRect* rect)
 Element* LayoutObject::offsetParent() const
 {
     if (isDocumentElement() || isBody())
-        return 0;
+        return nullptr;
 
     if (isOutOfFlowPositioned() && style()->position() == FixedPosition)
-        return 0;
+        return nullptr;
 
     float effectiveZoom = style()->effectiveZoom();
-    Node* node = 0;
+    Node* node = nullptr;
     for (LayoutObject* ancestor = parent(); ancestor; ancestor = ancestor->parent()) {
         // Spec: http://www.w3.org/TR/cssom-view/#offset-attributes
 
@@ -2991,7 +2991,7 @@ Element* LayoutObject::offsetParent() const
             break;
     }
 
-    return node && node->isElementNode() ? toElement(node) : 0;
+    return node && node->isElementNode() ? toElement(node) : nullptr;
 }
 
 PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset, EAffinity affinity)

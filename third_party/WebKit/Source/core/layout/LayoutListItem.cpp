@@ -129,10 +129,10 @@ static Node* enclosingList(const LayoutListItem* listItem)
 }
 
 // Returns the next list item with respect to the DOM order.
-static LayoutListItem* nextListItem(const Node* listNode, const LayoutListItem* item = 0)
+static LayoutListItem* nextListItem(const Node* listNode, const LayoutListItem* item = nullptr)
 {
     if (!listNode)
-        return 0;
+        return nullptr;
 
     const Node* current = item ? item->node() : listNode;
     ASSERT(current);
@@ -154,7 +154,7 @@ static LayoutListItem* nextListItem(const Node* listNode, const LayoutListItem* 
         current = LayoutTreeBuilderTraversal::next(*current, listNode);
     }
 
-    return 0;
+    return nullptr;
 }
 
 // Returns the previous list item with respect to the DOM order.
@@ -178,7 +178,7 @@ static LayoutListItem* previousListItem(const Node* listNode, const LayoutListIt
         if (otherList)
             current = LayoutTreeBuilderTraversal::next(*otherList, listNode);
     }
-    return 0;
+    return nullptr;
 }
 
 void LayoutListItem::updateItemValuesForOrderedList(const HTMLOListElement* listNode)
@@ -237,7 +237,7 @@ static LayoutObject* getParentOfFirstLineBox(LayoutBlockFlow* curr, LayoutObject
 {
     LayoutObject* firstChild = curr->firstChild();
     if (!firstChild)
-        return 0;
+        return nullptr;
 
     bool inQuirksMode = curr->document().inQuirksMode();
     for (LayoutObject* currChild = firstChild; currChild; currChild = currChild->nextSibling()) {
@@ -262,7 +262,7 @@ static LayoutObject* getParentOfFirstLineBox(LayoutBlockFlow* curr, LayoutObject
             return lineBox;
     }
 
-    return 0;
+    return nullptr;
 }
 
 void LayoutListItem::updateValue()

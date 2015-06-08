@@ -91,7 +91,7 @@ public:
         }
 
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 
 private:

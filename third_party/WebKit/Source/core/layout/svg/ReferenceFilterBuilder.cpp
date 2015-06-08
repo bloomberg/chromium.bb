@@ -42,12 +42,12 @@
 
 namespace blink {
 
-HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference>>* ReferenceFilterBuilder::documentResourceReferences = 0;
+HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference>>* ReferenceFilterBuilder::documentResourceReferences = nullptr;
 
 DocumentResourceReference* ReferenceFilterBuilder::documentResourceReference(const FilterOperation* filterOperation)
 {
     if (!documentResourceReferences)
-        return 0;
+        return nullptr;
 
     return documentResourceReferences->get(filterOperation);
 }

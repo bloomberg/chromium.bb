@@ -94,7 +94,7 @@ public:
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
     virtual void deleteLineBoxTree();
 
-    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
     virtual void removeChild(LayoutObject*) override;
 
     virtual void layoutBlock(bool relayoutChildren);
@@ -158,7 +158,7 @@ public:
 
     // Helper methods for computing line counts and heights for line counts.
     RootInlineBox* lineAtIndex(int) const;
-    int lineCount(const RootInlineBox* = 0, bool* = 0) const;
+    int lineCount(const RootInlineBox* = nullptr, bool* = nullptr) const;
     int heightForLineCount(int);
     void clearTruncation();
 
@@ -212,7 +212,7 @@ public:
     bool paintsContinuationOutline(LayoutInline* flow);
 #endif
 #ifndef NDEBUG
-    void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const LayoutObject* = 0) const;
+    void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr) const;
 #endif
 
     bool recalcChildOverflowAfterStyleChange();
@@ -302,7 +302,7 @@ private:
 
     virtual bool isLayoutBlock() const override final { return true; }
 
-    void makeChildrenNonInline(LayoutObject* insertionPoint = 0);
+    void makeChildrenNonInline(LayoutObject* insertionPoint = nullptr);
 
     // Promote all children and make them siblings that come right after this block.
     void promoteAllChildrenAndInsertAfter();
@@ -340,7 +340,7 @@ private:
     // children.
     virtual LayoutBlock* firstLineBlock() const override;
 
-    virtual LayoutRect rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = 0) const override final;
+    virtual LayoutRect rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = nullptr) const override final;
 
     virtual LayoutObject* hoverAncestor() const override final;
     virtual void updateDragState(bool dragOn) override final;
@@ -352,10 +352,10 @@ private:
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
 private:
-    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) override final;
+    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr) override final;
     bool isInlineBoxWrapperActuallyChild() const;
 
-    void markLinesDirtyInBlockRange(LayoutUnit logicalTop, LayoutUnit logicalBottom, RootInlineBox* highest = 0);
+    void markLinesDirtyInBlockRange(LayoutUnit logicalTop, LayoutUnit logicalBottom, RootInlineBox* highest = nullptr);
 
     Position positionForBox(InlineBox*, bool start = true) const;
     PositionWithAffinity positionForPointWithInlineChildren(const LayoutPoint&);

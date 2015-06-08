@@ -62,7 +62,7 @@ LayoutImage::LayoutImage(Element* element)
 
 LayoutImage* LayoutImage::createAnonymous(Document* document)
 {
-    LayoutImage* image = new LayoutImage(0);
+    LayoutImage* image = new LayoutImage(nullptr);
     image->setDocumentForAnonymous(document);
     return image;
 }
@@ -350,13 +350,13 @@ bool LayoutImage::needsPreferredWidthsRecalculation() const
 LayoutBox* LayoutImage::embeddedContentBox() const
 {
     if (!m_imageResource)
-        return 0;
+        return nullptr;
 
     ImageResource* cachedImage = m_imageResource->cachedImage();
     if (cachedImage && cachedImage->image() && cachedImage->image()->isSVGImage())
         return toSVGImage(cachedImage->image())->embeddedContentBox();
 
-    return 0;
+    return nullptr;
 }
 
 } // namespace blink

@@ -121,17 +121,17 @@ static const LayoutObject* parentElementLayoutObject(const LayoutObject* layoutO
     // so we need to obtain this from the DOM tree.
     const Node* node = layoutObject->node();
     if (!node)
-        return 0;
+        return nullptr;
 
     // FIXME: This should be using LayoutTreeBuilderTraversal::parent().
     if (Element* parent = node->parentElement())
         return parent->layoutObject();
-    return 0;
+    return nullptr;
 }
 
 static bool isNonTextAreaFormControl(const LayoutObject* layoutObject)
 {
-    const Node* node = layoutObject ? layoutObject->node() : 0;
+    const Node* node = layoutObject ? layoutObject->node() : nullptr;
     if (!node || !node->isElementNode())
         return false;
     const Element* element = toElement(node);
@@ -278,7 +278,7 @@ static bool hasExplicitWidth(const LayoutBlock* block)
 
 TextAutosizer::TextAutosizer(const Document* document)
     : m_document(document)
-    , m_firstBlockToBeginLayout(0)
+    , m_firstBlockToBeginLayout(nullptr)
 #if ENABLE(ASSERT)
     , m_blocksThatHaveBegunLayout()
 #endif
@@ -423,7 +423,7 @@ float TextAutosizer::inflate(LayoutObject* parent, InflateBehavior behavior, flo
     Cluster* cluster = currentCluster();
     bool hasTextChild = false;
 
-    LayoutObject* child = 0;
+    LayoutObject* child = nullptr;
     if (parent->isLayoutBlock() && (parent->childrenInline() || behavior == DescendToInnerBlocks))
         child = toLayoutBlock(parent)->firstChild();
     else if (parent->isLayoutInline())
@@ -611,7 +611,7 @@ TextAutosizer::BlockFlags TextAutosizer::classifyBlock(const LayoutObject* layou
 
 bool TextAutosizer::clusterWouldHaveEnoughTextToAutosize(const LayoutBlock* root, const LayoutBlock* widthProvider)
 {
-    Cluster hypotheticalCluster(root, classifyBlock(root), 0);
+    Cluster hypotheticalCluster(root, classifyBlock(root), nullptr);
     return clusterHasEnoughTextToAutosize(&hypotheticalCluster, widthProvider);
 }
 
@@ -714,15 +714,15 @@ TextAutosizer::Cluster* TextAutosizer::maybeCreateCluster(const LayoutBlock* blo
 {
     BlockFlags flags = classifyBlock(block);
     if (!(flags & POTENTIAL_ROOT))
-        return 0;
+        return nullptr;
 
-    Cluster* parentCluster = m_clusterStack.isEmpty() ? 0 : currentCluster();
+    Cluster* parentCluster = m_clusterStack.isEmpty() ? nullptr : currentCluster();
     ASSERT(parentCluster || block->isLayoutView());
 
     // If a non-independent block would not alter the SUPPRESSING flag, it doesn't need to be a cluster.
     bool parentSuppresses = parentCluster && (parentCluster->m_flags & SUPPRESSING);
     if (!(flags & INDEPENDENT) && !(flags & EXPLICIT_WIDTH) && !!(flags & SUPPRESSING) == parentSuppresses)
-        return 0;
+        return nullptr;
 
     Cluster* cluster = new Cluster(block, flags, parentCluster, getSupercluster(block));
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
@@ -737,11 +737,11 @@ TextAutosizer::Supercluster* TextAutosizer::getSupercluster(const LayoutBlock* b
 {
     Fingerprint fingerprint = m_fingerprintMapper.get(block);
     if (!fingerprint)
-        return 0;
+        return nullptr;
 
     BlockSet* roots = m_fingerprintMapper.getTentativeClusterRoots(fingerprint);
     if (!roots || roots->size() < 2 || !roots->contains(block))
-        return 0;
+        return nullptr;
 
     SuperclusterMap::AddResult addResult = m_superclusters.add(fingerprint, PassOwnPtr<Supercluster>());
     if (!addResult.isNewEntry)
@@ -957,7 +957,7 @@ const LayoutObject* TextAutosizer::findTextLeaf(const LayoutObject* parent, size
     }
     --depth;
 
-    return 0;
+    return nullptr;
 }
 
 void TextAutosizer::applyMultiplier(LayoutObject* layoutObject, float multiplier, RelayoutBehavior relayoutBehavior)

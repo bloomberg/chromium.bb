@@ -40,8 +40,8 @@ public:
 
     struct AncestorInfo {
         AncestorInfo()
-            : enclosingCompositedLayer(0)
-            , childLayersOfEnclosingCompositedLayer(0)
+            : enclosingCompositedLayer(nullptr)
+            , childLayersOfEnclosingCompositedLayer(nullptr)
         {
         }
 

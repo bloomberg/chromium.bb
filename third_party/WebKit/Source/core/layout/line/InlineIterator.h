@@ -43,8 +43,8 @@ public:
     };
 
     InlineIterator()
-        : m_root(0)
-        , m_obj(0)
+        : m_root(nullptr)
+        , m_obj(nullptr)
         , m_nextBreakablePosition(-1)
         , m_pos(0)
     {
@@ -83,7 +83,7 @@ public:
     LayoutObject* root() const { return m_root; }
 
     void fastIncrementInTextNode();
-    void increment(InlineBidiResolver* = 0, IncrementRule = FastIncrementInTextNode);
+    void increment(InlineBidiResolver* = nullptr, IncrementRule = FastIncrementInTextNode);
     bool atEnd() const;
 
     inline bool atTextParagraphSeparator() const
@@ -207,9 +207,9 @@ static bool isEmptyInline(LayoutObject* object)
 // This function will iterate over inlines within a block, optionally notifying
 // a bidi resolver as it enters/exits inlines (so it can push/pop embedding levels).
 template <class Observer>
-static inline LayoutObject* bidiNextShared(LayoutObject* root, LayoutObject* current, Observer* observer = 0, EmptyInlineBehavior emptyInlineBehavior = SkipEmptyInlines, bool* endOfInlinePtr = 0)
+static inline LayoutObject* bidiNextShared(LayoutObject* root, LayoutObject* current, Observer* observer = 0, EmptyInlineBehavior emptyInlineBehavior = SkipEmptyInlines, bool* endOfInlinePtr = nullptr)
 {
-    LayoutObject* next = 0;
+    LayoutObject* next = nullptr;
     // oldEndOfInline denotes if when we last stopped iterating if we were at the end of an inline.
     bool oldEndOfInline = endOfInlinePtr ? *endOfInlinePtr : false;
     bool endOfInline = false;
@@ -274,21 +274,21 @@ static inline LayoutObject* bidiNextSkippingEmptyInlines(LayoutObject* root, Lay
 // This makes callers cleaner as they don't have to specify a type for the observer when not providing one.
 static inline LayoutObject* bidiNextSkippingEmptyInlines(LayoutObject* root, LayoutObject* current)
 {
-    InlineBidiResolver* observer = 0;
+    InlineBidiResolver* observer = nullptr;
     return bidiNextSkippingEmptyInlines(root, current, observer);
 }
 
-static inline LayoutObject* bidiNextIncludingEmptyInlines(LayoutObject* root, LayoutObject* current, bool* endOfInlinePtr = 0)
+static inline LayoutObject* bidiNextIncludingEmptyInlines(LayoutObject* root, LayoutObject* current, bool* endOfInlinePtr = nullptr)
 {
-    InlineBidiResolver* observer = 0; // Callers who include empty inlines, never use an observer.
+    InlineBidiResolver* observer = nullptr; // Callers who include empty inlines, never use an observer.
     return bidiNextShared(root, current, observer, IncludeEmptyInlines, endOfInlinePtr);
 }
 
-static inline LayoutObject* bidiFirstSkippingEmptyInlines(LayoutBlockFlow* root, BidiRunList<BidiRun>& runs, InlineBidiResolver* resolver = 0)
+static inline LayoutObject* bidiFirstSkippingEmptyInlines(LayoutBlockFlow* root, BidiRunList<BidiRun>& runs, InlineBidiResolver* resolver = nullptr)
 {
     LayoutObject* o = root->firstChild();
     if (!o)
-        return 0;
+        return nullptr;
 
     if (o->isLayoutInline()) {
         notifyObserverEnteredObject(resolver, o);
@@ -338,7 +338,7 @@ class InlineWalker {
 public:
     InlineWalker(LayoutBlock* root)
         : m_root(root)
-        , m_current(0)
+        , m_current(nullptr)
         , m_atEndOfInline(false)
     {
         // FIXME: This class should be taught how to do the SkipEmptyInlines codepath as well.

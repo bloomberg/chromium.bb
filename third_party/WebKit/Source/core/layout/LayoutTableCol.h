@@ -58,14 +58,14 @@ public:
     LayoutTableCol* enclosingColumnGroupIfAdjacentBefore() const
     {
         if (previousSibling())
-            return 0;
+            return nullptr;
         return enclosingColumnGroup();
     }
 
     LayoutTableCol* enclosingColumnGroupIfAdjacentAfter() const
     {
         if (nextSibling())
-            return 0;
+            return nullptr;
         return enclosingColumnGroup();
     }
 
@@ -95,8 +95,8 @@ private:
     virtual bool canHaveChildren() const override;
     virtual DeprecatedPaintLayerType layerTypeRequired() const override { return NoDeprecatedPaintLayer; }
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 

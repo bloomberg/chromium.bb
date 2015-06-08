@@ -90,7 +90,7 @@ LayoutObject* LayoutTextControlMultiLine::layoutSpecialExcludedChild(bool relayo
 {
     LayoutObject* placeholderLayoutObject = LayoutTextControl::layoutSpecialExcludedChild(relayoutChildren, layoutScope);
     if (!placeholderLayoutObject)
-        return 0;
+        return nullptr;
     if (!placeholderLayoutObject->isBox())
         return placeholderLayoutObject;
     LayoutBox* placeholderBox = toLayoutBox(placeholderLayoutObject);

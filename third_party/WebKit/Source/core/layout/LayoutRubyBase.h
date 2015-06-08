@@ -55,9 +55,9 @@ private:
     virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const override;
     virtual void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, LayoutUnit& logicalLeft, LayoutUnit& logicalWidth) const override;
 
-    void moveChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild = 0);
-    void moveInlineChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild = 0);
-    void moveBlockChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild = 0);
+    void moveChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild = nullptr);
+    void moveInlineChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild = nullptr);
+    void moveBlockChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild = nullptr);
 
     // Allow LayoutRubyRun to manipulate the children within ruby bases.
     friend class LayoutRubyRun;

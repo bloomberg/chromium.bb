@@ -35,7 +35,7 @@
 namespace blink {
 
 LayoutMultiColumnSet::LayoutMultiColumnSet(LayoutFlowThread* flowThread)
-    : LayoutBlockFlow(0)
+    : LayoutBlockFlow(nullptr)
     , m_fragmentainerGroups(*this)
     , m_flowThread(flowThread)
 {
@@ -81,7 +81,7 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::nextSiblingMultiColumnSet() const
         if (sibling->isLayoutMultiColumnSet())
             return toLayoutMultiColumnSet(sibling);
     }
-    return 0;
+    return nullptr;
 }
 
 LayoutMultiColumnSet* LayoutMultiColumnSet::previousSiblingMultiColumnSet() const
@@ -90,7 +90,7 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::previousSiblingMultiColumnSet() cons
         if (sibling->isLayoutMultiColumnSet())
             return toLayoutMultiColumnSet(sibling);
     }
-    return 0;
+    return nullptr;
 }
 
 LayoutUnit LayoutMultiColumnSet::logicalTopInFlowThread() const

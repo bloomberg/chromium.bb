@@ -134,7 +134,7 @@ LayoutBox* LayoutFieldset::findLegend(FindLegendOption option) const
         if (isHTMLLegendElement(legend->node()))
             return toLayoutBox(legend);
     }
-    return 0;
+    return nullptr;
 }
 
 void LayoutFieldset::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

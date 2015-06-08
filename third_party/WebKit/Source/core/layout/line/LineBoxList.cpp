@@ -71,7 +71,7 @@ void LineBoxList::deleteLineBoxTree()
         line->deleteLine();
         line = nextLine;
     }
-    m_firstLineBox = m_lastLineBox = 0;
+    m_firstLineBox = m_lastLineBox = nullptr;
 }
 
 void LineBoxList::extractLineBox(InlineFlowBox* box)
@@ -80,10 +80,10 @@ void LineBoxList::extractLineBox(InlineFlowBox* box)
 
     m_lastLineBox = box->prevLineBox();
     if (box == m_firstLineBox)
-        m_firstLineBox = 0;
+        m_firstLineBox = nullptr;
     if (box->prevLineBox())
-        box->prevLineBox()->setNextLineBox(0);
-    box->setPreviousLineBox(0);
+        box->prevLineBox()->setNextLineBox(nullptr);
+    box->setPreviousLineBox(nullptr);
     for (InlineFlowBox* curr = box; curr; curr = curr->nextLineBox())
         curr->setExtracted();
 
@@ -134,8 +134,8 @@ void LineBoxList::deleteLineBoxes()
             next = curr->nextLineBox();
             curr->destroy();
         }
-        m_firstLineBox = 0;
-        m_lastLineBox = 0;
+        m_firstLineBox = nullptr;
+        m_lastLineBox = nullptr;
     }
 }
 
@@ -251,8 +251,8 @@ void LineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObje
     // Try to figure out which line box we belong in.  First try to find a previous
     // line box by examining our siblings.  If we didn't find a line box, then use our
     // parent's first line box.
-    RootInlineBox* box = 0;
-    LayoutObject* curr = 0;
+    RootInlineBox* box = nullptr;
+    LayoutObject* curr = nullptr;
     for (curr = child->previousSibling(); curr; curr = curr->previousSibling()) {
         if (curr->isFloatingOrOutOfFlowPositioned())
             continue;
@@ -315,8 +315,8 @@ void LineBoxList::dirtyLinesFromChangedChild(LayoutObject* container, LayoutObje
 void LineBoxList::checkConsistency() const
 {
 #ifdef CHECK_CONSISTENCY
-    const InlineFlowBox* prev = 0;
-    for (const InlineFlowBox* child = m_firstLineBox; child != 0; child = child->nextLineBox()) {
+    const InlineFlowBox* prev = nullptr;
+    for (const InlineFlowBox* child = m_firstLineBox; child; child = child->nextLineBox()) {
         ASSERT(child->prevLineBox() == prev);
         prev = child;
     }

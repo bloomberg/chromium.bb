@@ -102,7 +102,7 @@ Widget* LayoutPart::widget() const
     if (element && element->isFrameOwnerElement())
         return toHTMLFrameOwnerElement(element)->ownedWidget();
 
-    return 0;
+    return nullptr;
 }
 
 DeprecatedPaintLayerType LayoutPart::layerTypeRequired() const

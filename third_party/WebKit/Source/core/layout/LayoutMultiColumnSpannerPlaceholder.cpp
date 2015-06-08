@@ -29,7 +29,7 @@ LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnSpannerPlaceholder::create
 }
 
 LayoutMultiColumnSpannerPlaceholder::LayoutMultiColumnSpannerPlaceholder(LayoutBox* layoutObjectInFlowThread)
-    : LayoutBox(0)
+    : LayoutBox(nullptr)
     , m_layoutObjectInFlowThread(layoutObjectInFlowThread)
 {
 }

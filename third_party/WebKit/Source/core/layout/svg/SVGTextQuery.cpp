@@ -38,8 +38,8 @@ struct QueryData {
     QueryData()
         : isVerticalText(false)
         , currentOffset(0)
-        , textLayoutObject(0)
-        , textBox(0)
+        , textLayoutObject(nullptr)
+        , textBox(nullptr)
     {
     }
 
@@ -52,7 +52,7 @@ struct QueryData {
 static inline InlineFlowBox* flowBoxForLayoutObject(LayoutObject* layoutObject)
 {
     if (!layoutObject)
-        return 0;
+        return nullptr;
 
     if (layoutObject->isLayoutBlock()) {
         // If we're given a block element, it has to be a LayoutSVGText.
@@ -76,7 +76,7 @@ static inline InlineFlowBox* flowBoxForLayoutObject(LayoutObject* layoutObject)
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 static void collectTextBoxesInFlowBox(InlineFlowBox* flowBox, Vector<SVGInlineTextBox*>& textBoxes)

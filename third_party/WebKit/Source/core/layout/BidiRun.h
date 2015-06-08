@@ -37,7 +37,7 @@ struct BidiRun : BidiCharacterRun {
     BidiRun(int start, int stop, LayoutObject* object, BidiContext* context, WTF::Unicode::Direction dir)
         : BidiCharacterRun(start, stop, context, dir)
         , m_object(object)
-        , m_box(0)
+        , m_box(nullptr)
     {
         // Stored in base class to save space.
         m_hasHyphen = false;

@@ -175,7 +175,7 @@ LayoutBlockFlow::~LayoutBlockFlow()
 
 LayoutBlockFlow* LayoutBlockFlow::createAnonymous(Document* document)
 {
-    LayoutBlockFlow* layoutBlockFlow = new LayoutBlockFlow(0);
+    LayoutBlockFlow* layoutBlockFlow = new LayoutBlockFlow(nullptr);
     layoutBlockFlow->setDocumentForAnonymous(document);
     return layoutBlockFlow;
 }
@@ -184,7 +184,7 @@ LayoutObject* LayoutBlockFlow::layoutSpecialExcludedChild(bool relayoutChildren,
 {
     LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
     if (!flowThread)
-        return 0;
+        return nullptr;
     setLogicalTopForChild(*flowThread, borderBefore() + paddingBefore());
     flowThread->layoutColumns(relayoutChildren, layoutScope);
     determineLogicalLeftPositionForChild(*flowThread);
@@ -981,7 +981,7 @@ void LayoutBlockFlow::layoutBlockChildren(bool relayoutChildren, SubtreeLayoutSc
     LayoutUnit previousFloatLogicalBottom = 0;
 
     LayoutBox* next = firstChildBox();
-    LayoutBox* lastNormalFlowChild = 0;
+    LayoutBox* lastNormalFlowChild = nullptr;
 
     while (next) {
         LayoutBox* child = next;
@@ -2298,7 +2298,7 @@ void LayoutBlockFlow::removeFloatingObject(LayoutBox* floatBox)
                         floatingObject->originatingLine()->markDirty();
                     }
 #if ENABLE(ASSERT)
-                    floatingObject->setOriginatingLine(0);
+                    floatingObject->setOriginatingLine(nullptr);
 #endif
                 }
                 markLinesDirtyInBlockRange(0, logicalBottom);
@@ -2342,7 +2342,7 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width)
     FloatingObjectSetIterator it = floatingObjectSet.end();
     --it; // Go to last item.
     FloatingObjectSetIterator begin = floatingObjectSet.begin();
-    FloatingObject* lastPlacedFloatingObject = 0;
+    FloatingObject* lastPlacedFloatingObject = nullptr;
     while (it != begin) {
         --it;
         if ((*it)->isPlaced()) {
@@ -2720,7 +2720,7 @@ GapRects LayoutBlockFlow::inlineSelectionGaps(const LayoutBlock* rootBlock, cons
         return result;
     }
 
-    RootInlineBox* lastSelectedLine = 0;
+    RootInlineBox* lastSelectedLine = nullptr;
     RootInlineBox* curr;
     for (curr = firstRootBox(); curr && !curr->hasSelectedChildren(); curr = curr->nextRootBox()) { }
 

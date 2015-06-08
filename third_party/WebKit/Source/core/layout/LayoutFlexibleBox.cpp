@@ -84,7 +84,7 @@ LayoutFlexibleBox::~LayoutFlexibleBox()
 
 LayoutFlexibleBox* LayoutFlexibleBox::createAnonymous(Document* document)
 {
-    LayoutFlexibleBox* layoutObject = new LayoutFlexibleBox(0);
+    LayoutFlexibleBox* layoutObject = new LayoutFlexibleBox(nullptr);
     layoutObject->setDocumentForAnonymous(document);
     return layoutObject;
 }
@@ -156,7 +156,7 @@ int LayoutFlexibleBox::firstLineBoxBaseline() const
 {
     if (isWritingModeRoot() || m_numberOfInFlowChildrenOnFirstLine <= 0)
         return -1;
-    LayoutBox* baselineChild = 0;
+    LayoutBox* baselineChild = nullptr;
     int childNumber = 0;
     for (LayoutBox* child = m_orderIterator.first(); child; child = m_orderIterator.next()) {
         if (child->isOutOfFlowPositioned())

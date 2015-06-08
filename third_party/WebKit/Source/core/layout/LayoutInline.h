@@ -44,7 +44,7 @@ public:
     void slowFirstChild() const = delete;
     void slowLastChild() const = delete;
 
-    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
 
     Element* node() const { return toElement(LayoutBoxModelObject::node()); }
 
@@ -53,15 +53,15 @@ public:
     virtual LayoutUnit marginRight() const override final;
     virtual LayoutUnit marginTop() const override final;
     virtual LayoutUnit marginBottom() const override final;
-    virtual LayoutUnit marginBefore(const ComputedStyle* otherStyle = 0) const override final;
-    virtual LayoutUnit marginAfter(const ComputedStyle* otherStyle = 0) const override final;
-    virtual LayoutUnit marginStart(const ComputedStyle* otherStyle = 0) const override final;
-    virtual LayoutUnit marginEnd(const ComputedStyle* otherStyle = 0) const override final;
+    virtual LayoutUnit marginBefore(const ComputedStyle* otherStyle = nullptr) const override final;
+    virtual LayoutUnit marginAfter(const ComputedStyle* otherStyle = nullptr) const override final;
+    virtual LayoutUnit marginStart(const ComputedStyle* otherStyle = nullptr) const override final;
+    virtual LayoutUnit marginEnd(const ComputedStyle* otherStyle = nullptr) const override final;
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override final;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
-    virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const override final;
+    virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = nullptr) const override final;
 
     IntRect linesBoundingBox() const;
     LayoutRect linesVisualOverflowBoundingBox() const;
@@ -127,7 +127,7 @@ private:
     void generateCulledLineBoxRects(GeneratorContext& yield, const LayoutInline* container) const;
 
     void addChildToContinuation(LayoutObject* newChild, LayoutObject* beforeChild);
-    virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = 0) override final;
+    virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override final;
 
     void moveChildrenToIgnoringContinuation(LayoutInline* to, LayoutObject* startChild);
 
@@ -150,15 +150,15 @@ private:
     virtual LayoutUnit offsetHeight() const override final { return linesBoundingBox().height(); }
 
     virtual LayoutRect absoluteClippedOverflowRect() const override;
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
-    virtual LayoutRect rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = 0) const override final;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
+    virtual LayoutRect rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = nullptr) const override final;
     virtual void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override final;
 
     // This method differs from clippedOverflowRectForPaintInvalidation in that it includes
     // the rects for culled inline boxes, which aren't necessary for paint invalidation.
-    LayoutRect clippedOverflowRect(const LayoutBoxModelObject*, const PaintInvalidationState* = 0) const;
+    LayoutRect clippedOverflowRect(const LayoutBoxModelObject*, const PaintInvalidationState* = nullptr) const;
 
-    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;
+    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = nullptr) const override;
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override final;
 
@@ -179,7 +179,7 @@ private:
 
     virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&) override final;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override final;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override final;
 
     virtual void addAnnotatedRegions(Vector<AnnotatedRegionValue>&) override final;
 

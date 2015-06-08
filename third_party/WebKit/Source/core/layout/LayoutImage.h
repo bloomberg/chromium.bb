@@ -74,7 +74,7 @@ protected:
     virtual LayoutBox* embeddedContentBox() const override final;
     virtual void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio) const override final;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override final;
 

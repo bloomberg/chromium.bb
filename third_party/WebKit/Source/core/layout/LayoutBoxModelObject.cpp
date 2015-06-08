@@ -425,7 +425,7 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
     // containing block. If the height of the containing block is not specified explicitly (i.e., it depends
     // on content height), and this element is not absolutely positioned, the value computes to 'auto'.
     if (!logicalHeight.hasPercent() || isOutOfFlowPositioned())
-        return 0;
+        return nullptr;
 
     // Anonymous block boxes are ignored when resolving percentage values that would refer to it:
     // the closest non-anonymous ancestor box is used instead.
@@ -438,15 +438,15 @@ LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length 
     // what the CSS spec says to do with heights. Basically we
     // don't care if the cell specified a height or not.
     if (cb->isTableCell())
-        return 0;
+        return nullptr;
 
     // Match LayoutBox::availableLogicalHeightUsing by special casing
     // the layout view. The available height is taken from the frame.
     if (cb->isLayoutView())
-        return 0;
+        return nullptr;
 
     if (cb->isOutOfFlowPositioned() && !cb->style()->logicalTop().isAuto() && !cb->style()->logicalBottom().isAuto())
-        return 0;
+        return nullptr;
 
     return cb;
 }
@@ -737,9 +737,7 @@ LayoutUnit LayoutBoxModelObject::containingBlockLogicalWidthForContent() const
 
 LayoutBoxModelObject* LayoutBoxModelObject::continuation() const
 {
-    if (!continuationMap)
-        return 0;
-    return continuationMap->get(this);
+    return (!continuationMap) ? nullptr : continuationMap->get(this);
 }
 
 void LayoutBoxModelObject::setContinuation(LayoutBoxModelObject* continuation)
@@ -871,7 +869,7 @@ const LayoutObject* LayoutBoxModelObject::pushMappingToContainer(const LayoutBox
     bool ancestorSkipped;
     LayoutObject* container = this->container(ancestorToStopAt, &ancestorSkipped);
     if (!container)
-        return 0;
+        return nullptr;
 
     bool isInline = isLayoutInline();
     bool isFixedPos = !isInline && style()->position() == FixedPosition;
@@ -925,7 +923,7 @@ void LayoutBoxModelObject::moveChildrenTo(LayoutBoxModelObject* toBoxModelObject
     // or when fullRemoveInsert is false.
     if (fullRemoveInsert && isLayoutBlock()) {
         LayoutBlock* block = toLayoutBlock(this);
-        block->removePositionedObjects(0);
+        block->removePositionedObjects(nullptr);
         if (block->isLayoutBlockFlow())
             toLayoutBlockFlow(block)->removeFloatingObjects();
     }

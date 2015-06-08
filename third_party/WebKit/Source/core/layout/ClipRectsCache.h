@@ -35,7 +35,7 @@ class ClipRectsCache {
 public:
     struct Entry {
         Entry()
-            : root(0)
+            : root(nullptr)
 #if ENABLE(ASSERT)
             , scrollbarRelevancy(IgnoreOverlayScrollbarSize)
 #endif

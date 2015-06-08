@@ -40,8 +40,8 @@ class InlineTextBox : public InlineBox {
 public:
     InlineTextBox(LayoutObject& obj, int start, unsigned short length)
         : InlineBox(obj)
-        , m_prevTextBox(0)
-        , m_nextTextBox(0)
+        , m_prevTextBox(nullptr)
+        , m_nextTextBox(nullptr)
         , m_start(start)
         , m_len(length)
         , m_truncation(cNoTruncation)
@@ -87,8 +87,8 @@ public:
     LayoutUnit logicalBottomVisualOverflow() const { return logicalOverflowRect().maxY(); }
 
     // charactersWithHyphen, if provided, must not be destroyed before the TextRun.
-    TextRun constructTextRun(const ComputedStyle&, const Font&, StringBuilder* charactersWithHyphen = 0) const;
-    TextRun constructTextRun(const ComputedStyle&, const Font&, StringView, int maximumLength, StringBuilder* charactersWithHyphen = 0) const;
+    TextRun constructTextRun(const ComputedStyle&, const Font&, StringBuilder* charactersWithHyphen = nullptr) const;
+    TextRun constructTextRun(const ComputedStyle&, const Font&, StringView, int maximumLength, StringBuilder* charactersWithHyphen = nullptr) const;
 
 #ifndef NDEBUG
     virtual void showBox(int = 0) const override;

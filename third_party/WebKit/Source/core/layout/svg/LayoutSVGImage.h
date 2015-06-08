@@ -60,7 +60,7 @@ private:
 
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
     virtual void layout() override;
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;

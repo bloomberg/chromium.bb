@@ -34,7 +34,7 @@
 namespace blink {
 
 LayoutReplica::LayoutReplica()
-    : LayoutBox(0)
+    : LayoutBox(nullptr)
 {
     // This is a hack. Replicas are synthetic, and don't pick up the attributes of the
     // layoutObjects being replicated, so they always report that they are inline, non-replaced.

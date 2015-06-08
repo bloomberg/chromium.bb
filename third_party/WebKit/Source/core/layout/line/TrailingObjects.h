@@ -55,7 +55,7 @@ typedef MidpointState<InlineIterator> LineMidpointState;
 class TrailingObjects {
 public:
     TrailingObjects()
-        : m_whitespace(0)
+        : m_whitespace(nullptr)
     {
     }
 
@@ -67,7 +67,7 @@ public:
 
     void clear()
     {
-        m_whitespace = 0;
+        m_whitespace = nullptr;
         // Using resize(0) rather than clear() here saves 2% on
         // PerformanceTests/Layout/line-layout.html because we avoid freeing and
         // re-allocating the underlying buffer repeatedly.

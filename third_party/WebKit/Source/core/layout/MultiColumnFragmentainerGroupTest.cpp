@@ -18,7 +18,7 @@ namespace {
 
 class MultiColumnFragmentainerGroupTest : public RenderingTest {
 public:
-    MultiColumnFragmentainerGroupTest() : m_flowThread(0), m_columnSet(0) { }
+    MultiColumnFragmentainerGroupTest() : m_flowThread(nullptr), m_columnSet(nullptr) { }
 
 protected:
     virtual void SetUp() override;

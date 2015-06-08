@@ -734,7 +734,7 @@ int LayoutTableSection::calcRowLogicalHeight()
 
         Row& row = m_grid[r].row;
         unsigned totalCols = row.size();
-        LayoutTableCell* lastRowSpanCell = 0;
+        LayoutTableCell* lastRowSpanCell = nullptr;
 
         for (unsigned c = 0; c < totalCols; c++) {
             CellStruct& current = cellAt(r, c);
@@ -1614,7 +1614,7 @@ const CollapsedBorderValue& LayoutTableSection::cachedCollapsedBorder(const Layo
 LayoutTableSection* LayoutTableSection::createAnonymousWithParent(const LayoutObject* parent)
 {
     RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_ROW_GROUP);
-    LayoutTableSection* newSection = new LayoutTableSection(0);
+    LayoutTableSection* newSection = new LayoutTableSection(nullptr);
     newSection->setDocumentForAnonymous(&parent->document());
     newSection->setStyle(newStyle.release());
     return newSection;

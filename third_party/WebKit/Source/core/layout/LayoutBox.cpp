@@ -78,10 +78,10 @@ typedef WTF::HashMap<const LayoutBox*, LayoutUnit> OverrideSizeMap;
 
 // Used by grid elements to properly size their grid items.
 // FIXME: Move these into LayoutBoxRareData.
-static OverrideSizeMap* gOverrideContainingBlockLogicalHeightMap = 0;
-static OverrideSizeMap* gOverrideContainingBlockLogicalWidthMap = 0;
-static OverrideSizeMap* gExtraInlineOffsetMap = 0;
-static OverrideSizeMap* gExtraBlockOffsetMap = 0;
+static OverrideSizeMap* gOverrideContainingBlockLogicalHeightMap = nullptr;
+static OverrideSizeMap* gOverrideContainingBlockLogicalWidthMap = nullptr;
+static OverrideSizeMap* gExtraInlineOffsetMap = nullptr;
+static OverrideSizeMap* gExtraBlockOffsetMap = nullptr;
 
 
 // Size of border belt for autoscroll. When mouse pointer in border belt,
@@ -154,7 +154,7 @@ void LayoutBox::removeFloatingOrPositionedChildFromBlockLists()
         return;
 
     if (isFloating()) {
-        LayoutBlockFlow* parentBlockFlow = 0;
+        LayoutBlockFlow* parentBlockFlow = nullptr;
         for (LayoutObject* curr = parent(); curr && !curr->isLayoutView(); curr = curr->parent()) {
             if (curr->isLayoutBlockFlow()) {
                 LayoutBlockFlow* currBlockFlow = toLayoutBlockFlow(curr);
@@ -478,7 +478,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
     // Presumably the same issue as in setScrollTop. See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
 
-    LayoutBox* parentBox = 0;
+    LayoutBox* parentBox = nullptr;
     LayoutRect newRect = rect;
 
     bool restrictedByLineClamp = false;
@@ -505,7 +505,7 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
                         newRect.setX(rect.x() - frameView->scrollX() + frameView->x());
                         newRect.setY(rect.y() - frameView->scrollY() + frameView->y());
                     } else {
-                        parentBox = 0;
+                        parentBox = nullptr;
                     }
                 }
             }
@@ -1697,7 +1697,7 @@ void LayoutBox::dirtyLineBoxes(bool fullLayout)
         if (fullLayout) {
             inlineBoxWrapper()->destroy();
             ASSERT(m_rareData);
-            m_rareData->m_inlineBoxWrapper = 0;
+            m_rareData->m_inlineBoxWrapper = nullptr;
         } else {
             inlineBoxWrapper()->dirtyLineBoxes();
         }
@@ -1755,7 +1755,7 @@ void LayoutBox::deleteLineBoxWrapper()
             inlineBoxWrapper()->remove();
         inlineBoxWrapper()->destroy();
         ASSERT(m_rareData);
-        m_rareData->m_inlineBoxWrapper = 0;
+        m_rareData->m_inlineBoxWrapper = nullptr;
     }
 }
 
@@ -1769,7 +1769,7 @@ void LayoutBox::clearSpannerPlaceholder()
 {
     if (!m_rareData)
         return;
-    m_rareData->m_spannerPlaceholder = 0;
+    m_rareData->m_spannerPlaceholder = nullptr;
 }
 
 LayoutRect LayoutBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
@@ -3841,7 +3841,7 @@ PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point)
 
     // Pass off to the closest child.
     LayoutUnit minDist = LayoutUnit::max();
-    LayoutBox* closestLayoutObject = 0;
+    LayoutBox* closestLayoutObject = nullptr;
     LayoutPoint adjustedPoint = point;
     if (isTableRow())
         adjustedPoint.moveBy(location());
@@ -4399,7 +4399,7 @@ DeprecatedPaintLayer* LayoutBox::enclosingFloatPaintingLayer() const
             return layer;
         curr = curr->parent();
     }
-    return 0;
+    return nullptr;
 }
 
 LayoutRect LayoutBox::logicalVisualOverflowRectForPropagation(const ComputedStyle& parentStyle) const

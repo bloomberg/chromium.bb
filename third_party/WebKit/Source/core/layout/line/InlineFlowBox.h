@@ -43,10 +43,10 @@ class InlineFlowBox : public InlineBox {
 public:
     InlineFlowBox(LayoutObject& obj)
         : InlineBox(obj)
-        , m_firstChild(0)
-        , m_lastChild(0)
-        , m_prevLineBox(0)
-        , m_nextLineBox(0)
+        , m_firstChild(nullptr)
+        , m_lastChild(nullptr)
+        , m_prevLineBox(nullptr)
+        , m_nextLineBox(nullptr)
         , m_includeLogicalLeftEdge(false)
         , m_includeLogicalRightEdge(false)
         , m_descendantsHaveSameLineHeightAndBaseline(true)
@@ -75,7 +75,7 @@ public:
 #endif
 
 #ifndef NDEBUG
-    virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const LayoutObject* = 0, int = 0) const override;
+    virtual void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr, int = 0) const override;
 #endif
     virtual const char* boxName() const override;
 
@@ -93,7 +93,7 @@ public:
     InlineBox* lastLeafChild() const;
 
     typedef void (*CustomInlineBoxRangeReverse)(void* userData, Vector<InlineBox*>::iterator first, Vector<InlineBox*>::iterator last);
-    void collectLeafBoxesInLogicalOrder(Vector<InlineBox*>&, CustomInlineBoxRangeReverse customReverseImplementation = 0, void* userData = 0) const;
+    void collectLeafBoxesInLogicalOrder(Vector<InlineBox*>&, CustomInlineBoxRangeReverse customReverseImplementation = 0, void* userData = nullptr) const;
 
     virtual void setConstructed() override final
     {

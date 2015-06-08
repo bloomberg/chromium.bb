@@ -55,8 +55,8 @@ public:
         , m_lineBreak(resolver.position())
         , m_block(block)
         , m_lastObject(m_current.object())
-        , m_nextObject(0)
-        , m_currentStyle(0)
+        , m_nextObject(nullptr)
+        , m_currentStyle(nullptr)
         , m_blockStyle(block->style())
         , m_lineInfo(inLineInfo)
         , m_layoutTextInfo(inLayoutTextInfo)
@@ -509,7 +509,7 @@ ALWAYS_INLINE TextDirection textDirectionFromUnicode(WTF::Unicode::Direction dir
         || direction == WTF::Unicode::RightToLeftArabic ? RTL : LTR;
 }
 
-ALWAYS_INLINE float textWidth(LayoutText* text, unsigned from, unsigned len, const Font& font, float xPos, bool collapseWhiteSpace, HashSet<const SimpleFontData*>* fallbackFonts = 0)
+ALWAYS_INLINE float textWidth(LayoutText* text, unsigned from, unsigned len, const Font& font, float xPos, bool collapseWhiteSpace, HashSet<const SimpleFontData*>* fallbackFonts = nullptr)
 {
     GlyphOverflow glyphOverflow;
     if ((!from && len == text->textLength()) || text->style()->hasTextCombine())

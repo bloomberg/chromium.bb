@@ -161,10 +161,10 @@ public:
     virtual LayoutUnit marginBottom() const = 0;
     virtual LayoutUnit marginLeft() const = 0;
     virtual LayoutUnit marginRight() const = 0;
-    virtual LayoutUnit marginBefore(const ComputedStyle* otherStyle = 0) const = 0;
-    virtual LayoutUnit marginAfter(const ComputedStyle* otherStyle = 0) const = 0;
-    virtual LayoutUnit marginStart(const ComputedStyle* otherStyle = 0) const = 0;
-    virtual LayoutUnit marginEnd(const ComputedStyle* otherStyle = 0) const = 0;
+    virtual LayoutUnit marginBefore(const ComputedStyle* otherStyle = nullptr) const = 0;
+    virtual LayoutUnit marginAfter(const ComputedStyle* otherStyle = nullptr) const = 0;
+    virtual LayoutUnit marginStart(const ComputedStyle* otherStyle = nullptr) const = 0;
+    virtual LayoutUnit marginEnd(const ComputedStyle* otherStyle = nullptr) const = 0;
     LayoutUnit marginHeight() const { return marginTop() + marginBottom(); }
     LayoutUnit marginWidth() const { return marginLeft() + marginRight(); }
     LayoutUnit marginLogicalHeight() const { return marginBefore() + marginAfter(); }
@@ -177,7 +177,7 @@ public:
 
     virtual void childBecameNonInline(LayoutObject* /*child*/) { }
 
-    virtual bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox* = 0) const;
+    virtual bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox* = nullptr) const;
 
     // Overridden by subclasses to determine line height and baseline position.
     virtual LayoutUnit lineHeight(bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const = 0;

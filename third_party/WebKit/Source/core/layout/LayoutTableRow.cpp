@@ -227,7 +227,7 @@ void LayoutTableRow::imageChanged(WrappedImagePtr, const IntRect*)
 
 LayoutTableRow* LayoutTableRow::createAnonymous(Document* document)
 {
-    LayoutTableRow* layoutObject = new LayoutTableRow(0);
+    LayoutTableRow* layoutObject = new LayoutTableRow(nullptr);
     layoutObject->setDocumentForAnonymous(document);
     return layoutObject;
 }

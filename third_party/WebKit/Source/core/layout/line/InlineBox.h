@@ -40,9 +40,9 @@ class InlineBox {
     WTF_MAKE_NONCOPYABLE(InlineBox);
 public:
     InlineBox(LayoutObject& obj)
-        : m_next(0)
-        , m_prev(0)
-        , m_parent(0)
+        : m_next(nullptr)
+        , m_prev(nullptr)
+        , m_parent(nullptr)
         , m_layoutObject(obj)
         , m_logicalWidth()
 #if ENABLE(ASSERT)
@@ -111,7 +111,7 @@ public:
     void showLineTreeForThis() const;
 
     virtual void showBox(int = 0) const;
-    virtual void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const LayoutObject* = 0, int = 0) const;
+    virtual void showLineTreeAndMark(const InlineBox* = nullptr, const char* = nullptr, const InlineBox* = nullptr, const char* = nullptr, const LayoutObject* = nullptr, int = 0) const;
 #endif
 
     virtual const char* boxName() const;

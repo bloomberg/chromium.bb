@@ -103,8 +103,8 @@ InlineFlowBox* LayoutBlockFlow::createLineBoxes(LayoutObject* obj, const LineInf
     // See if we have an unconstructed line box for this object that is also
     // the last item on the line.
     unsigned lineDepth = 1;
-    InlineFlowBox* parentBox = 0;
-    InlineFlowBox* result = 0;
+    InlineFlowBox* parentBox = nullptr;
+    InlineFlowBox* result = nullptr;
     bool hasDefaultLineBoxContain = style()->lineBoxContain() == ComputedStyle::initialLineBoxContain();
     do {
         ASSERT_WITH_SECURITY_IMPLICATION(obj->isLayoutInline() || obj == this);
@@ -195,7 +195,7 @@ RootInlineBox* LayoutBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, co
     ASSERT(bidiRuns.firstRun());
 
     bool rootHasSelectedChildren = false;
-    InlineFlowBox* parentBox = 0;
+    InlineFlowBox* parentBox = nullptr;
     int runCount = bidiRuns.runCount() - lineInfo.runsFromLeadingWhitespace();
     for (BidiRun* r = bidiRuns.firstRun(); r; r = r->next()) {
         // Create a box for our object.
@@ -352,7 +352,7 @@ void LayoutBlockFlow::setMarginsForRubyRun(BidiRun* run, LayoutRubyRun* layoutRu
 {
     int startOverhang;
     int endOverhang;
-    LayoutObject* nextObject = 0;
+    LayoutObject* nextObject = nullptr;
     for (BidiRun* runWithNextObject = run->next(); runWithNextObject; runWithNextObject = runWithNextObject->next()) {
         if (!runWithNextObject->m_object->isOutOfFlowPositioned() && !runWithNextObject->m_box->isLineBreak()) {
             nextObject = runWithNextObject->m_object;
@@ -587,7 +587,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(RootInlineBo
     unsigned expansionOpportunityCount = 0;
     bool isAfterExpansion = true;
     Vector<unsigned, 16> expansionOpportunities;
-    LayoutObject* previousObject = 0;
+    LayoutObject* previousObject = nullptr;
     TextJustify textJustify = style()->textJustify();
 
     BidiRun* r = firstRun;
@@ -682,14 +682,14 @@ void LayoutBlockFlow::appendFloatingObjectToLastLine(FloatingObject* floatingObj
 RootInlineBox* LayoutBlockFlow::createLineBoxesFromBidiRuns(unsigned bidiLevel, BidiRunList<BidiRun>& bidiRuns, const InlineIterator& end, LineInfo& lineInfo, VerticalPositionCache& verticalPositionCache, BidiRun* trailingSpaceRun, WordMeasurements& wordMeasurements)
 {
     if (!bidiRuns.runCount())
-        return 0;
+        return nullptr;
 
     // FIXME: Why is this only done when we had runs?
     lineInfo.setLastLine(!end.object());
 
     RootInlineBox* lineBox = constructLine(bidiRuns, lineInfo);
     if (!lineBox)
-        return 0;
+        return nullptr;
 
     lineBox->setBidiLevel(bidiLevel);
     lineBox->setEndsWithBreak(lineInfo.previousLineBrokeCleanly());
@@ -1081,7 +1081,7 @@ struct InlineMinMaxIterator {
 
 LayoutObject* InlineMinMaxIterator::next()
 {
-    LayoutObject* result = 0;
+    LayoutObject* result = nullptr;
     bool oldEndOfInline = endOfInline;
     endOfInline = false;
     while (current || current == parent) {
@@ -1116,7 +1116,7 @@ LayoutObject* InlineMinMaxIterator::next()
             break;
 
         current = result;
-        result = 0;
+        result = nullptr;
     }
 
     // Update our position.
@@ -1198,7 +1198,7 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     // If we are at the start of a line, we want to ignore all white-space.
     // Also strip spaces if we previously had text that ended in a trailing space.
     bool stripFrontSpaces = true;
-    LayoutObject* trailingSpaceChild = 0;
+    LayoutObject* trailingSpaceChild = nullptr;
 
     // Firefox and Opera will allow a table cell to grow to fit an image inside it under
     // very specific cirucumstances (in order to match common WinIE layouts).
@@ -1216,7 +1216,7 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
     bool hasRemainingNegativeTextIndent = false;
 
     LayoutUnit textIndent = minimumValueForLength(styleToUse.textIndent(), cw);
-    LayoutObject* prevFloat = 0;
+    LayoutObject* prevFloat = nullptr;
     bool isPrevChildInlineFlow = false;
     bool shouldBreakLineAfterText = false;
     while (LayoutObject* child = childIterator.next()) {
@@ -1365,7 +1365,7 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 // a line.
                 if (!child->isFloating()) {
                     stripFrontSpaces = false;
-                    trailingSpaceChild = 0;
+                    trailingSpaceChild = nullptr;
                 }
             } else if (child->isText()) {
                 // Case (3). Text.
@@ -1403,7 +1403,7 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 if (stripFrontSpaces)
                     trailingSpaceChild = child;
                 else
-                    trailingSpaceChild = 0;
+                    trailingSpaceChild = nullptr;
 
                 // Add in text-indent. This is added in only once.
                 LayoutUnit ti;
@@ -1473,7 +1473,7 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
             maxLogicalWidth = std::max(maxLogicalWidth, inlineMax);
             inlineMin = inlineMax = LayoutUnit();
             stripFrontSpaces = true;
-            trailingSpaceChild = 0;
+            trailingSpaceChild = nullptr;
             addedTextIndent = true;
         }
 
@@ -1630,8 +1630,8 @@ void LayoutBlockFlow::checkFloatsInCleanLine(RootInlineBox* line, Vector<FloatWi
 
 RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutState, InlineBidiResolver& resolver)
 {
-    RootInlineBox* curr = 0;
-    RootInlineBox* last = 0;
+    RootInlineBox* curr = nullptr;
+    RootInlineBox* last = nullptr;
 
     // FIXME: This entire float-checking block needs to be broken into a new function.
     bool dirtiedByFloat = false;
@@ -1678,7 +1678,7 @@ RootInlineBox* LayoutBlockFlow::determineStartPosition(LineLayoutState& layoutSt
         }
 
         deleteLineBoxTree();
-        curr = 0;
+        curr = nullptr;
         ASSERT(!firstLineBox() && !lastLineBox());
     } else {
         if (curr) {
@@ -1748,7 +1748,7 @@ void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState, RootInl
 {
     ASSERT(!layoutState.endLine());
     size_t floatIndex = layoutState.floatIndex();
-    RootInlineBox* last = 0;
+    RootInlineBox* last = nullptr;
     for (RootInlineBox* curr = startLine->nextRootBox(); curr; curr = curr->nextRootBox()) {
         if (!curr->isDirty()) {
             bool encounteredNewFloat = false;
@@ -1758,7 +1758,7 @@ void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState, RootInl
                 return;
         }
         if (curr->isDirty())
-            last = 0;
+            last = nullptr;
         else if (!last)
             last = curr;
     }

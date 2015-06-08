@@ -37,7 +37,7 @@ public:
     virtual LayoutUnit computeReplacedLogicalHeight() const override;
 
     bool hasReplacedLogicalHeight() const;
-    LayoutRect replacedContentRect(const LayoutSize* overriddenIntrinsicSize = 0) const;
+    LayoutRect replacedContentRect(const LayoutSize* overriddenIntrinsicSize = nullptr) const;
 
     virtual bool needsPreferredWidthsRecalculation() const override;
 
@@ -75,12 +75,12 @@ protected:
     void setIntrinsicSize(const LayoutSize& intrinsicSize) { m_intrinsicSize = intrinsicSize; }
     virtual void intrinsicSizeChanged();
 
-    virtual LayoutBox* embeddedContentBox() const { return 0; }
+    virtual LayoutBox* embeddedContentBox() const { return nullptr; }
 
 private:
     virtual void computePreferredLogicalWidths() override final;
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override final;
 

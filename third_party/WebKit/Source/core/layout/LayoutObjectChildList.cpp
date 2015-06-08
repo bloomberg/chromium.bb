@@ -103,9 +103,9 @@ LayoutObject* LayoutObjectChildList::removeChildNode(LayoutObject* owner, Layout
     if (lastChild() == oldChild)
         setLastChild(oldChild->previousSibling());
 
-    oldChild->setPreviousSibling(0);
-    oldChild->setNextSibling(0);
-    oldChild->setParent(0);
+    oldChild->setPreviousSibling(nullptr);
+    oldChild->setNextSibling(nullptr);
+    oldChild->setParent(nullptr);
 
     oldChild->registerSubtreeChangeListenerOnDescendants(oldChild->consumesSubtreeChangeNotification());
 

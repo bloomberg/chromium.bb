@@ -52,8 +52,8 @@ struct LayoutBoxRareData {
     WTF_MAKE_NONCOPYABLE(LayoutBoxRareData); WTF_MAKE_FAST_ALLOCATED(LayoutBoxRareData);
 public:
     LayoutBoxRareData()
-        : m_inlineBoxWrapper(0)
-        , m_spannerPlaceholder(0)
+        : m_inlineBoxWrapper(nullptr)
+        , m_spannerPlaceholder(nullptr)
         , m_overrideLogicalContentHeight(-1)
         , m_overrideLogicalContentWidth(-1)
         , m_previousBorderBoxSize(-1, -1)
@@ -348,26 +348,26 @@ public:
     LayoutUnit marginLogicalLeft() const { return m_marginBoxOutsets.logicalLeft(style()->writingMode()); }
     LayoutUnit marginLogicalRight() const { return m_marginBoxOutsets.logicalRight(style()->writingMode()); }
 
-    virtual LayoutUnit marginBefore(const ComputedStyle* overrideStyle = 0) const override final { return m_marginBoxOutsets.before((overrideStyle ? overrideStyle : style())->writingMode()); }
-    virtual LayoutUnit marginAfter(const ComputedStyle* overrideStyle = 0) const override final { return m_marginBoxOutsets.after((overrideStyle ? overrideStyle : style())->writingMode()); }
-    virtual LayoutUnit marginStart(const ComputedStyle* overrideStyle = 0) const override final
+    virtual LayoutUnit marginBefore(const ComputedStyle* overrideStyle = nullptr) const override final { return m_marginBoxOutsets.before((overrideStyle ? overrideStyle : style())->writingMode()); }
+    virtual LayoutUnit marginAfter(const ComputedStyle* overrideStyle = nullptr) const override final { return m_marginBoxOutsets.after((overrideStyle ? overrideStyle : style())->writingMode()); }
+    virtual LayoutUnit marginStart(const ComputedStyle* overrideStyle = nullptr) const override final
     {
         const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
         return m_marginBoxOutsets.start(styleToUse->writingMode(), styleToUse->direction());
     }
-    virtual LayoutUnit marginEnd(const ComputedStyle* overrideStyle = 0) const override final
+    virtual LayoutUnit marginEnd(const ComputedStyle* overrideStyle = nullptr) const override final
     {
         const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
         return m_marginBoxOutsets.end(styleToUse->writingMode(), styleToUse->direction());
     }
-    void setMarginBefore(LayoutUnit value, const ComputedStyle* overrideStyle = 0) { m_marginBoxOutsets.setBefore((overrideStyle ? overrideStyle : style())->writingMode(), value); }
-    void setMarginAfter(LayoutUnit value, const ComputedStyle* overrideStyle = 0) { m_marginBoxOutsets.setAfter((overrideStyle ? overrideStyle : style())->writingMode(), value); }
-    void setMarginStart(LayoutUnit value, const ComputedStyle* overrideStyle = 0)
+    void setMarginBefore(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr) { m_marginBoxOutsets.setBefore((overrideStyle ? overrideStyle : style())->writingMode(), value); }
+    void setMarginAfter(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr) { m_marginBoxOutsets.setAfter((overrideStyle ? overrideStyle : style())->writingMode(), value); }
+    void setMarginStart(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr)
     {
         const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
         m_marginBoxOutsets.setStart(styleToUse->writingMode(), styleToUse->direction(), value);
     }
-    void setMarginEnd(LayoutUnit value, const ComputedStyle* overrideStyle = 0)
+    void setMarginEnd(LayoutUnit value, const ComputedStyle* overrideStyle = nullptr)
     {
         const ComputedStyle* styleToUse = overrideStyle ? overrideStyle : style();
         m_marginBoxOutsets.setEnd(styleToUse->writingMode(), styleToUse->direction(), value);
@@ -427,7 +427,7 @@ public:
     void setExtraBlockOffset(LayoutUnit blockOffest);
     void clearExtraInlineAndBlockOffests();
 
-    virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const override;
+    virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = nullptr) const override;
 
     LayoutUnit adjustBorderBoxLogicalWidthForBoxSizing(LayoutUnit width) const;
     LayoutUnit adjustBorderBoxLogicalHeightForBoxSizing(LayoutUnit height) const;
@@ -480,7 +480,7 @@ public:
     void clearSpannerPlaceholder();
     virtual LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const final { return m_rareData ? m_rareData->m_spannerPlaceholder : 0; }
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
     virtual void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
     virtual void invalidatePaintForOverhangingFloats(bool paintAllDescendants);
 
@@ -578,7 +578,7 @@ public:
     bool hasUnsplittableScrollingOverflow() const;
     bool isUnsplittableForPagination() const;
 
-    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) override;
+    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr) override;
 
     virtual LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize);
     LayoutRect clipRect(const LayoutPoint& location);
@@ -588,7 +588,7 @@ public:
     virtual void paintObject(const PaintInfo&, const LayoutPoint&) { ASSERT_NOT_REACHED(); }
     virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
     virtual void paintMask(const PaintInfo&, const LayoutPoint&);
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
     void logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& logicalTop, LogicalExtentComputedValues&);
 
@@ -708,14 +708,14 @@ public:
     virtual LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject*) const
     {
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 
     bool hasSameDirectionAs(const LayoutBox* object) const { return style()->direction() == object->style()->direction(); }
 
     ShapeOutsideInfo* shapeOutsideInfo() const
     {
-        return ShapeOutsideInfo::isEnabledFor(*this) ? ShapeOutsideInfo::info(*this) : 0;
+        return ShapeOutsideInfo::isEnabledFor(*this) ? ShapeOutsideInfo::info(*this) : nullptr;
     }
 
     void markShapeOutsideDependentsForLayout()
@@ -750,7 +750,7 @@ protected:
 
     virtual bool shouldComputeSizeAsReplaced() const { return isReplaced() && !isInlineBlockOrInlineTable(); }
 
-    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;
+    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const override;
 
     LayoutObject* splitAnonymousBoxesAroundChild(LayoutObject* beforeChild);
@@ -916,7 +916,7 @@ inline LayoutBox* LayoutBox::previousSiblingMultiColumnBox() const
     ASSERT(isLayoutMultiColumnSpannerPlaceholder() || isLayoutMultiColumnSet());
     LayoutBox* previousBox = previousSiblingBox();
     if (previousBox->isLayoutFlowThread())
-        return 0;
+        return nullptr;
     return previousBox;
 }
 
@@ -934,7 +934,7 @@ inline void LayoutBox::setInlineBoxWrapper(InlineBox* boxWrapper)
         // Otherwise, there will two line box wrappers keeping the reference to this layoutObject, and
         // only one will be notified when the layoutObject is getting destroyed. The second line box wrapper
         // will keep a stale reference.
-        if (UNLIKELY(inlineBoxWrapper() != 0))
+        if (UNLIKELY(inlineBoxWrapper() != nullptr))
             deleteLineBoxWrapper();
     }
 

@@ -45,7 +45,7 @@ SVGTextLayoutEngine::SVGTextLayoutEngine(Vector<SVGTextLayoutAttributes*>& layou
     , m_isVerticalText(false)
     , m_inPathLayout(false)
     , m_textLengthSpacingInEffect(false)
-    , m_textPathCalculator(0)
+    , m_textPathCalculator(nullptr)
     , m_textPathLength(0)
     , m_textPathCurrentOffset(0)
     , m_textPathSpacing(0)
@@ -360,7 +360,7 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(SVGInlineTextBox* textBox, cons
             continue;
         }
 
-        SVGTextLayoutAttributes* logicalAttributes = 0;
+        SVGTextLayoutAttributes* logicalAttributes = nullptr;
         if (!currentLogicalCharacterAttributes(logicalAttributes))
             break;
 

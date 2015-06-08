@@ -76,7 +76,7 @@ public:
     void push(const LayoutObject*, const TransformationMatrix&, bool accumulatingTransform = false, bool isNonUniform = false, bool isFixedPosition = false, bool hasTransform = false, LayoutSize offsetForFixedPosition = LayoutSize());
 
 private:
-    void mapToContainer(TransformState&, const LayoutBoxModelObject* container = 0) const;
+    void mapToContainer(TransformState&, const LayoutBoxModelObject* container = nullptr) const;
 
     void stepInserted(const LayoutGeometryMapStep&);
     void stepRemoved(const LayoutGeometryMapStep&);

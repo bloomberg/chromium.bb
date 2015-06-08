@@ -62,8 +62,8 @@ public:
     CounterNode* lastChild() const { return m_lastChild; }
     CounterNode* lastDescendant() const;
     CounterNode* previousInPreOrder() const;
-    CounterNode* nextInPreOrder(const CounterNode* stayWithin = 0) const;
-    CounterNode* nextInPreOrderAfterChildren(const CounterNode* stayWithin = 0) const;
+    CounterNode* nextInPreOrder(const CounterNode* stayWithin = nullptr) const;
+    CounterNode* nextInPreOrderAfterChildren(const CounterNode* stayWithin = nullptr) const;
 
     void insertAfter(CounterNode* newChild, CounterNode* beforeChild, const AtomicString& identifier);
 

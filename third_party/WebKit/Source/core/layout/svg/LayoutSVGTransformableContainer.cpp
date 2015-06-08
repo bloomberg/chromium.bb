@@ -77,7 +77,7 @@ bool LayoutSVGTransformableContainer::calculateLocalTransform()
     // If we're either the layoutObject for a <use> element, or for any <g> element inside the shadow
     // tree, that was created during the use/symbol/svg expansion in SVGUseElement. These containers
     // need to respect the translations induced by their corresponding use elements x/y attributes.
-    SVGUseElement* useElement = 0;
+    SVGUseElement* useElement = nullptr;
     if (isSVGUseElement(*element)) {
         useElement = toSVGUseElement(element);
     } else if (isSVGGElement(*element) && toSVGGElement(element)->inUseShadowTree()) {

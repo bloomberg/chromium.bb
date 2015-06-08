@@ -59,7 +59,7 @@ static const DeprecatedPaintLayer* findParentLayerOnClippingContainerChain(const
         ASSERT(!current->hasClipOrOverflowClip());
     }
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 static const DeprecatedPaintLayer* findParentLayerOnContainingBlockChain(const LayoutObject* object)
@@ -69,7 +69,7 @@ static const DeprecatedPaintLayer* findParentLayerOnContainingBlockChain(const L
             return static_cast<const LayoutBoxModelObject*>(current)->layer();
     }
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 static bool hasClippedStackingAncestor(const DeprecatedPaintLayer* layer, const DeprecatedPaintLayer* clippingLayer)

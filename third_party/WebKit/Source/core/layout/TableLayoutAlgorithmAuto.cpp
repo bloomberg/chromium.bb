@@ -45,8 +45,8 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol)
 {
     Layout& columnLayout = m_layoutStruct[effCol];
 
-    LayoutTableCell* fixedContributor = 0;
-    LayoutTableCell* maxContributor = 0;
+    LayoutTableCell* fixedContributor = nullptr;
+    LayoutTableCell* maxContributor = nullptr;
 
     for (LayoutObject* child = m_table->children()->firstChild(); child; child = child->nextSibling()) {
         if (child->isLayoutTableCol()) {
@@ -131,7 +131,7 @@ void TableLayoutAlgorithmAuto::recalcColumn(unsigned effCol)
     if (columnLayout.logicalWidth.isFixed()) {
         if (m_table->document().inQuirksMode() && columnLayout.maxLogicalWidth > columnLayout.logicalWidth.value() && fixedContributor != maxContributor) {
             columnLayout.logicalWidth = Length();
-            fixedContributor = 0;
+            fixedContributor = nullptr;
         }
     }
 

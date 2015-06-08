@@ -64,7 +64,7 @@ private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectMenuList || LayoutFlexibleBox::isOfType(type); }
     virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
-    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
     virtual void removeChild(LayoutObject*) override;
     virtual bool createsAnonymousWrapper() const override { return true; }
 

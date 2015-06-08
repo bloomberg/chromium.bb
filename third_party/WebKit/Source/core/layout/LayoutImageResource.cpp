@@ -33,8 +33,8 @@
 namespace blink {
 
 LayoutImageResource::LayoutImageResource()
-    : m_layoutObject(0)
-    , m_cachedImage(0)
+    : m_layoutObject(nullptr)
+    , m_cachedImage(nullptr)
 {
 }
 

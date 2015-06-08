@@ -39,8 +39,8 @@ namespace blink {
 class GraphicsLayerUpdater::UpdateContext {
 public:
     UpdateContext()
-        : m_compositingStackingContext(0)
-        , m_compositingAncestor(0)
+        : m_compositingStackingContext(nullptr)
+        , m_compositingAncestor(nullptr)
     {
     }
 

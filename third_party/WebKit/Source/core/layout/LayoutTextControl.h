@@ -80,7 +80,7 @@ private:
     virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override final { }
     virtual bool avoidsFloats() const override final { return true; }
 
-    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override final;
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override final;
 
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
 

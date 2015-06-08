@@ -44,8 +44,8 @@ public:
     virtual FloatRect strokeBoundingBox() const override final;
     virtual FloatRect paintInvalidationRectInLocalCoordinates() const override final;
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override final;
-    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override final;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override final;
+    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override final;
     virtual const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override final;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override final;
 
@@ -55,7 +55,7 @@ private:
     virtual void willBeDestroyed() override final;
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override final;
 
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override final;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override final;
     virtual void removeChild(LayoutObject*) override final;
 };
 

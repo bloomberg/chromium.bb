@@ -104,7 +104,7 @@ void LayoutProgress::updateAnimationState()
 HTMLProgressElement* LayoutProgress::progressElement() const
 {
     if (!node())
-        return 0;
+        return nullptr;
 
     if (isHTMLProgressElement(*node()))
         return toHTMLProgressElement(node());

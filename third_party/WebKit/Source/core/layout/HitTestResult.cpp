@@ -206,7 +206,7 @@ LocalFrame* HitTestResult::innerNodeFrame() const
 {
     if (m_innerNode)
         return m_innerNode->document().frame();
-    return 0;
+    return nullptr;
 }
 
 bool HitTestResult::isSelected() const
@@ -332,14 +332,14 @@ KURL HitTestResult::absoluteMediaURL() const
 HTMLMediaElement* HitTestResult::mediaElement() const
 {
     if (!m_innerNode)
-        return 0;
+        return nullptr;
 
     if (!(m_innerNode->layoutObject() && m_innerNode->layoutObject()->isMedia()))
-        return 0;
+        return nullptr;
 
     if (isHTMLMediaElement(*m_innerNode))
         return toHTMLMediaElement(m_innerNode);
-    return 0;
+    return nullptr;
 }
 
 KURL HitTestResult::absoluteLinkURL() const
@@ -497,7 +497,7 @@ Element* HitTestResult::innerElement() const
             return toElement(node);
     }
 
-    return 0;
+    return nullptr;
 }
 
 Node* HitTestResult::innerNodeOrImageMapImage() const

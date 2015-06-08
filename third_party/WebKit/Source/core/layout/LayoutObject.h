@@ -159,17 +159,17 @@ public:
     {
         if (const LayoutObjectChildList* children = virtualChildren())
             return children->firstChild();
-        return 0;
+        return nullptr;
     }
     LayoutObject* slowLastChild() const
     {
         if (const LayoutObjectChildList* children = virtualChildren())
             return children->lastChild();
-        return 0;
+        return nullptr;
     }
 
-    virtual LayoutObjectChildList* virtualChildren() { return 0; }
-    virtual const LayoutObjectChildList* virtualChildren() const { return 0; }
+    virtual LayoutObjectChildList* virtualChildren() { return nullptr; }
+    virtual const LayoutObjectChildList* virtualChildren() const { return nullptr; }
 
     LayoutObject* nextInPreOrder() const;
     LayoutObject* nextInPreOrder(const LayoutObject* stayWithin) const;
@@ -204,7 +204,7 @@ public:
     LayoutFlowThread* flowThreadContainingBlock() const
     {
         if (!isInsideFlowThread())
-            return 0;
+            return nullptr;
         return locateFlowThreadContainingBlock();
     }
 
@@ -269,8 +269,8 @@ public:
     //////////////////////////////////////////
     virtual bool canHaveChildren() const { return virtualChildren(); }
     virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const { return true; }
-    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0);
-    virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = 0) { return addChild(newChild, beforeChild); }
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr);
+    virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) { return addChild(newChild, beforeChild); }
     virtual void removeChild(LayoutObject*);
     virtual bool createsAnonymousWrapper() const { return false; }
     //////////////////////////////////////////
@@ -318,7 +318,7 @@ public:
     // We don't make printedCharacters an optional parameter so that
     // showLayoutObject can be called from gdb easily.
     void showLayoutObject(int printedCharacters) const;
-    void showLayoutTreeAndMark(const LayoutObject* markedObject1 = 0, const char* markedLabel1 = 0, const LayoutObject* markedObject2 = 0, const char* markedLabel2 = 0, int depth = 0) const;
+    void showLayoutTreeAndMark(const LayoutObject* markedObject1 = nullptr, const char* markedLabel1 = nullptr, const LayoutObject* markedObject2 = nullptr, const char* markedLabel2 = nullptr, int depth = 0) const;
 #endif
 
     static LayoutObject* createObject(Element*, const ComputedStyle&);
@@ -505,7 +505,7 @@ public:
     }
     bool isElementContinuation() const { return node() && node()->layoutObject() != this; }
     bool isInlineElementContinuation() const { return isElementContinuation() && isInline(); }
-    virtual LayoutBoxModelObject* virtualContinuation() const { return 0; }
+    virtual LayoutBoxModelObject* virtualContinuation() const { return nullptr; }
 
     bool isFloating() const { return m_bitfields.floating(); }
 
@@ -585,8 +585,8 @@ public:
 
     // The pseudo element style can be cached or uncached.  Use the cached method if the pseudo element doesn't respect
     // any pseudo classes (and therefore has no concept of changing state).
-    ComputedStyle* getCachedPseudoStyle(PseudoId, const ComputedStyle* parentStyle = 0) const;
-    PassRefPtr<ComputedStyle> getUncachedPseudoStyle(const PseudoStyleRequest&, const ComputedStyle* parentStyle = 0, const ComputedStyle* ownStyle = 0) const;
+    ComputedStyle* getCachedPseudoStyle(PseudoId, const ComputedStyle* parentStyle = nullptr) const;
+    PassRefPtr<ComputedStyle> getUncachedPseudoStyle(const PseudoStyleRequest&, const ComputedStyle* parentStyle = nullptr, const ComputedStyle* ownStyle = nullptr) const;
 
     virtual void updateDragState(bool dragOn);
 
@@ -615,24 +615,24 @@ public:
     Document& document() const { return m_node->document(); }
     LocalFrame* frame() const { return document().frame(); }
 
-    virtual LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const { return 0; }
+    virtual LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const { return nullptr; }
     bool isColumnSpanAll() const { return style()->columnSpan() == ColumnSpanAll && spannerPlaceholder(); }
 
     // Returns the object containing this one. Can be different from parent for positioned elements.
     // If paintInvalidationContainer and paintInvalidationContainerSkipped are not null, on return *paintInvalidationContainerSkipped
     // is true if the layoutObject returned is an ancestor of paintInvalidationContainer.
-    LayoutObject* container(const LayoutBoxModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
-    LayoutBlock* containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer = 0, bool* paintInvalidationContainerSkipped = 0) const;
+    LayoutObject* container(const LayoutBoxModelObject* paintInvalidationContainer = nullptr, bool* paintInvalidationContainerSkipped = nullptr) const;
+    LayoutBlock* containerForFixedPosition(const LayoutBoxModelObject* paintInvalidationContainer = nullptr, bool* paintInvalidationContainerSkipped = nullptr) const;
 
     virtual LayoutObject* hoverAncestor() const { return parent(); }
 
     Element* offsetParent() const;
 
-    void markContainerChainForLayout(bool scheduleRelayout = true, LayoutObject* newRoot = 0, SubtreeLayoutScope* = 0);
-    void setNeedsLayout(LayoutInvalidationReasonForTracing, MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = 0);
-    void setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReasonForTracing, MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = 0);
+    void markContainerChainForLayout(bool scheduleRelayout = true, LayoutObject* newRoot = nullptr, SubtreeLayoutScope* = nullptr);
+    void setNeedsLayout(LayoutInvalidationReasonForTracing, MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = nullptr);
+    void setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReasonForTracing, MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = nullptr);
     void clearNeedsLayout();
-    void setChildNeedsLayout(MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = 0);
+    void setChildNeedsLayout(MarkingBehavior = MarkContainerChain, SubtreeLayoutScope* = nullptr);
     void setNeedsPositionedMovementLayout();
     void setPreferredLogicalWidthsDirty(MarkingBehavior = MarkContainerChain);
     void clearPreferredLogicalWidthsDirty();
@@ -751,7 +751,7 @@ public:
     FloatPoint absoluteToLocal(const FloatPoint&, MapCoordinatesFlags = 0) const;
 
     // Convert a local quad to absolute coordinates, taking transforms into account.
-    FloatQuad localToAbsoluteQuad(const FloatQuad& quad, MapCoordinatesFlags mode = 0, bool* wasFixed = 0) const
+    FloatQuad localToAbsoluteQuad(const FloatQuad& quad, MapCoordinatesFlags mode = 0, bool* wasFixed = nullptr) const
     {
         return localToContainerQuad(quad, 0, mode, wasFixed);
     }
@@ -759,15 +759,15 @@ public:
     FloatQuad absoluteToLocalQuad(const FloatQuad&, MapCoordinatesFlags mode = 0) const;
 
     // Convert a local quad into the coordinate system of container, taking transforms into account.
-    FloatQuad localToContainerQuad(const FloatQuad&, const LayoutBoxModelObject* paintInvalidatinoContainer, MapCoordinatesFlags = 0, bool* wasFixed = 0) const;
-    FloatPoint localToContainerPoint(const FloatPoint&, const LayoutBoxModelObject* paintInvalidationContainer, MapCoordinatesFlags = 0, bool* wasFixed = 0, const PaintInvalidationState* = 0) const;
+    FloatQuad localToContainerQuad(const FloatQuad&, const LayoutBoxModelObject* paintInvalidationContainer, MapCoordinatesFlags = 0, bool* wasFixed = nullptr) const;
+    FloatPoint localToContainerPoint(const FloatPoint&, const LayoutBoxModelObject* paintInvalidationContainer, MapCoordinatesFlags = 0, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const;
 
     // Convert a local point into the coordinate system of backing coordinates. Also returns the backing layer if needed.
     FloatPoint localToInvalidationBackingPoint(const LayoutPoint&, DeprecatedPaintLayer** backingLayer = nullptr);
 
     // Return the offset from the container() layoutObject (excluding transforms). In multi-column layout,
     // different offsets apply at different points, so return the offset that applies to the given point.
-    virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = 0) const;
+    virtual LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = nullptr) const;
     // Return the offset from an object up the container() chain. Asserts that none of the intermediate objects have transforms.
     LayoutSize offsetFromAncestorContainer(const LayoutObject*) const;
 
@@ -782,7 +782,7 @@ public:
     IntRect absoluteBoundingBoxRectIgnoringTransforms() const;
 
     // Build an array of quads in absolute coords for line boxes
-    virtual void absoluteQuads(Vector<FloatQuad>&, bool* /*wasFixed*/ = 0) const { }
+    virtual void absoluteQuads(Vector<FloatQuad>&, bool* /* wasFixed */ = nullptr) const { }
 
     virtual IntRect absoluteFocusRingBoundingBoxRect() const;
 
@@ -850,10 +850,10 @@ public:
     }
 
     // Returns the paint invalidation rect for this LayoutObject in the coordinate space of the paint backing (typically a GraphicsLayer) for |paintInvalidationContainer|.
-    LayoutRect computePaintInvalidationRect(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const;
+    LayoutRect computePaintInvalidationRect(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
 
     // Returns the rect bounds needed to invalidate the paint of this object, in the coordinate space of the layoutObject backing of |paintInvalidationContainer|
-    LayoutRect boundsRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const;
+    LayoutRect boundsRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
 
     // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
     // of the GraphicsLayer backing of |paintInvalidationContainer|. Note that this coordinaten space is not the same
@@ -876,8 +876,8 @@ public:
     // Returns the rect that should have paint invalidated whenever this object changes. The rect is in the view's
     // coordinate space. This method deals with outlines and overflow.
     virtual LayoutRect absoluteClippedOverflowRect() const;
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const;
-    virtual LayoutRect rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = 0) const;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
+    virtual LayoutRect rectWithOutlineForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, LayoutUnit outlineWidth, const PaintInvalidationState* = nullptr) const;
 
     // Given a rect in the object's coordinate space, compute a rect suitable for invalidating paints of
     // that rect in the coordinate space of paintInvalidationContainer.
@@ -936,7 +936,7 @@ public:
      * @param extraWidthToEndOfLine optional out arg to give extra width to end of line -
      * useful for character range rect computations
      */
-    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0);
+    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr);
 
     // When performing a global document tear-down, the layoutObject of the document is cleared. We use this
     // as a hook to detect the case of document destruction and don't waste time doing unnecessary work.
@@ -969,8 +969,8 @@ public:
     virtual int previousOffsetForBackwardDeletion(int current) const;
     virtual int nextOffset(int current) const;
 
-    virtual void imageChanged(ImageResource*, const IntRect* = 0) override final;
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) { }
+    virtual void imageChanged(ImageResource*, const IntRect* = nullptr) override final;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) { }
     virtual bool willRenderImage(ImageResource*) override final;
     virtual bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) override final;
 
@@ -988,7 +988,7 @@ public:
 
     // Map points and quads through elements, potentially via 3d transforms. You should never need to call these directly; use
     // localToAbsolute/absoluteToLocal methods instead.
-    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const;
+    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const;
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const;
 
     // Pushes state onto LayoutGeometryMap about how to map coordinates from this layoutObject to its container, or ancestorToStopAt (whichever is encountered first).

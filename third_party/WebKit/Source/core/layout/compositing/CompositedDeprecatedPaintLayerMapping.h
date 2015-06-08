@@ -50,7 +50,7 @@ struct GraphicsLayerPaintInfo {
     IntSize offsetFromLayoutObject;
     bool offsetFromLayoutObjectSet;
 
-    GraphicsLayerPaintInfo() : paintLayer(0), offsetFromLayoutObjectSet(false) { }
+    GraphicsLayerPaintInfo() : paintLayer(nullptr), offsetFromLayoutObjectSet(false) { }
 };
 
 enum GraphicsLayerUpdateScope {
@@ -189,7 +189,7 @@ public:
         return m_squashingLayerOffsetFromTransformedAncestor;
     }
 
-    // If there is a squashed layer painting into this CLM that is an ancestor of the given LayoutObject, return it. Otherwise return 0.
+    // If there is a squashed layer painting into this CLM that is an ancestor of the given LayoutObject, return it. Otherwise return nullptr.
     const GraphicsLayerPaintInfo* containingSquashedLayer(const LayoutObject*, unsigned maxSquashedLayerIndex);
 
     void updateScrollingBlockSelection();

@@ -71,7 +71,7 @@ private:
 
     virtual void layout() override;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
     virtual InlineBox* createInlineBox() override;
 

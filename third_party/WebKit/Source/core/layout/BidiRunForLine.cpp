@@ -34,14 +34,14 @@ namespace blink {
 using namespace WTF::Unicode;
 
 static LayoutObject* firstLayoutObjectForDirectionalityDetermination(
-    LayoutObject* root, LayoutObject* current = 0)
+    LayoutObject* root, LayoutObject* current = nullptr)
 {
     LayoutObject* next = current;
     while (current) {
         if (isIsolated(current->style()->unicodeBidi())
             && (current->isLayoutInline() || current->isLayoutBlock())) {
             if (current != root)
-                current = 0;
+                current = nullptr;
             else
                 current = next;
             break;
@@ -53,7 +53,7 @@ static LayoutObject* firstLayoutObjectForDirectionalityDetermination(
         current = root->slowFirstChild();
 
     while (current) {
-        next = 0;
+        next = nullptr;
         if (isIteratorTarget(current) && !(current->isText()
             && toLayoutText(current)->isAllCollapsibleWhitespace()))
             break;

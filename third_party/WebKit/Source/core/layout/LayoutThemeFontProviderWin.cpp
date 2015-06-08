@@ -36,7 +36,7 @@
 
 #define SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(structName, member) \
     offsetof(structName, member) + \
-    (sizeof static_cast<structName*>(0)->member)
+    (sizeof static_cast<structName*>(nullptr)->member)
 #define NONCLIENTMETRICS_SIZE_PRE_VISTA \
     SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(NONCLIENTMETRICS, lfMessageFont)
 

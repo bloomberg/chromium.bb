@@ -66,7 +66,7 @@ static_assert(sizeof(LayoutText) == sizeof(SameSizeAsLayoutText), "LayoutText sh
 
 class SecureTextTimer;
 typedef HashMap<LayoutText*, SecureTextTimer*> SecureTextTimerMap;
-static SecureTextTimerMap* gSecureTextTimers = 0;
+static SecureTextTimerMap* gSecureTextTimers = nullptr;
 
 class SecureTextTimer final : public TimerBase {
 public:
@@ -147,8 +147,8 @@ LayoutText::LayoutText(Node* node, PassRefPtr<StringImpl> str)
     , m_firstLineMinWidth(0)
     , m_lastLineLineMinWidth(0)
     , m_text(str)
-    , m_firstTextBox(0)
-    , m_lastTextBox(0)
+    , m_firstTextBox(nullptr)
+    , m_lastTextBox(nullptr)
 {
     ASSERT(m_text);
     // FIXME: Some clients of LayoutText (and subclasses) pass Document as node to create anonymous layoutObject.
@@ -239,10 +239,10 @@ void LayoutText::extractTextBox(InlineTextBox* box)
 
     m_lastTextBox = box->prevTextBox();
     if (box == m_firstTextBox)
-        m_firstTextBox = 0;
+        m_firstTextBox = nullptr;
     if (box->prevTextBox())
-        box->prevTextBox()->setNextTextBox(0);
-    box->setPreviousTextBox(0);
+        box->prevTextBox()->setNextTextBox(nullptr);
+    box->setPreviousTextBox(nullptr);
     for (InlineTextBox* curr = box; curr; curr = curr->nextTextBox())
         curr->setExtracted();
 
@@ -293,7 +293,7 @@ void LayoutText::deleteTextBoxes()
             next = curr->nextTextBox();
             curr->destroy();
         }
-        m_firstTextBox = m_lastTextBox = 0;
+        m_firstTextBox = m_lastTextBox = nullptr;
     }
 }
 
@@ -601,7 +601,7 @@ PositionWithAffinity LayoutText::positionForPoint(const LayoutPoint& point)
     LayoutUnit pointBlockDirection = firstTextBox()->isHorizontal() ? point.y() : point.x();
     bool blocksAreFlipped = style()->isFlippedBlocksWritingMode();
 
-    InlineTextBox* lastBox = 0;
+    InlineTextBox* lastBox = nullptr;
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
         if (box->isLineBreak() && !box->prevLeafChild() && box->nextLeafChild() && !box->nextLeafChild()->isLineBreak())
             box = box->nextTextBox();
@@ -1208,8 +1208,8 @@ void LayoutText::setTextWithOffset(PassRefPtr<StringImpl> text, unsigned offset,
     int delta = newLen - oldLen;
     unsigned end = len ? offset + len - 1 : offset;
 
-    RootInlineBox* firstRootBox = 0;
-    RootInlineBox* lastRootBox = 0;
+    RootInlineBox* firstRootBox = nullptr;
+    RootInlineBox* lastRootBox = nullptr;
 
     bool dirtiedLines = false;
 
@@ -1827,8 +1827,8 @@ bool LayoutText::computeCanUseSimpleFontCodePath() const
 void LayoutText::checkConsistency() const
 {
 #ifdef CHECK_CONSISTENCY
-    const InlineTextBox* prev = 0;
-    for (const InlineTextBox* child = m_firstTextBox; child != 0; child = child->nextTextBox()) {
+    const InlineTextBox* prev = nullptr;
+    for (const InlineTextBox* child = m_firstTextBox; child; child = child->nextTextBox()) {
         ASSERT(child->layoutObject() == this);
         ASSERT(child->prevTextBox() == prev);
         prev = child;

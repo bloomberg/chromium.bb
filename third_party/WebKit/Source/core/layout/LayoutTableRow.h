@@ -105,7 +105,7 @@ private:
 
     virtual void willBeRemovedFromTree() override;
 
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
     virtual void layout() override;
 
     virtual DeprecatedPaintLayerType layerTypeRequired() const override
@@ -121,7 +121,7 @@ private:
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 

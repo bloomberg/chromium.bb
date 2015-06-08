@@ -35,7 +35,7 @@ class LayoutScrollbar;
 
 class LayoutScrollbarPart final : public LayoutBlock {
 public:
-    static LayoutScrollbarPart* createAnonymous(Document*, LayoutScrollbar* = 0, ScrollbarPart = NoPart);
+    static LayoutScrollbarPart* createAnonymous(Document*, LayoutScrollbar* = nullptr, ScrollbarPart = NoPart);
 
     virtual ~LayoutScrollbarPart();
 
@@ -78,7 +78,7 @@ public:
 protected:
     virtual void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
 private:
     LayoutScrollbarPart(LayoutScrollbar*, ScrollbarPart);

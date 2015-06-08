@@ -188,8 +188,8 @@ protected:
 
 private:
     void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
-    void createAndInsertMultiColumnSet(LayoutBox* insertBefore = 0);
-    void createAndInsertSpannerPlaceholder(LayoutBox* spanner, LayoutBox* insertBefore = 0);
+    void createAndInsertMultiColumnSet(LayoutBox* insertBefore = nullptr);
+    void createAndInsertSpannerPlaceholder(LayoutBox* spanner, LayoutBox* insertBefore = nullptr);
     virtual bool descendantIsValidColumnSpanner(LayoutObject* descendant) const;
 
     virtual void addColumnSetToThread(LayoutMultiColumnSet*) override;
@@ -204,7 +204,7 @@ private:
     virtual void updateLogicalWidth() override;
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) override;
     virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) override;
-    virtual bool addForcedColumnBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) override;
+    virtual bool addForcedColumnBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = nullptr) override;
     virtual bool isPageLogicalHeightKnown() const override;
 
     // The last set we worked on. It's not to be used as the "current set". The concept of a

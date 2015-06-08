@@ -32,7 +32,7 @@
 namespace blink {
 
 LayoutMultiColumnFlowThread::LayoutMultiColumnFlowThread()
-    : m_lastSetWorkedOn(0)
+    : m_lastSetWorkedOn(nullptr)
     , m_columnCount(1)
     , m_columnHeightAvailable(0)
     , m_inBalancingPass(false)
@@ -61,7 +61,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::firstMultiColumnSet() const
         if (sibling->isLayoutMultiColumnSet())
             return toLayoutMultiColumnSet(sibling);
     }
-    return 0;
+    return nullptr;
 }
 
 LayoutMultiColumnSet* LayoutMultiColumnFlowThread::lastMultiColumnSet() const
@@ -70,7 +70,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::lastMultiColumnSet() const
         if (sibling->isLayoutMultiColumnSet())
             return toLayoutMultiColumnSet(sibling);
     }
-    return 0;
+    return nullptr;
 }
 
 static LayoutObject* nextInPreOrderAfterChildrenSkippingOutOfFlow(LayoutMultiColumnFlowThread* flowThread, LayoutObject* descendant)
@@ -127,7 +127,7 @@ static LayoutObject* lastLayoutObjectInSet(LayoutMultiColumnSet* multicolSet)
 {
     LayoutBox* sibling = multicolSet->nextSiblingMultiColumnBox();
     if (!sibling)
-        return 0; // By right we should return lastLeafChild() here, but the caller doesn't care, so just return 0.
+        return nullptr; // By right we should return lastLeafChild() here, but the caller doesn't care, so just return 0.
     // Adjacent column content sets should not occur. We would have no way of figuring out what each
     // of them contains then.
     ASSERT(sibling->isLayoutMultiColumnSpannerPlaceholder());
@@ -143,7 +143,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::mapDescendantToColumnSet(Layo
     ASSERT(layoutObject->containingBlock()->isDescendantOf(this)); // Out-of-flow objects don't belong in column sets.
     LayoutMultiColumnSet* multicolSet = firstMultiColumnSet();
     if (!multicolSet)
-        return 0;
+        return nullptr;
     if (!multicolSet->nextSiblingMultiColumnSet())
         return multicolSet;
 
@@ -162,7 +162,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::mapDescendantToColumnSet(Layo
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnFlowThread::containingColumnSpannerPlaceholder(const LayoutObject* descendant) const
@@ -173,14 +173,14 @@ LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnFlowThread::containingColu
     // whether there might be any spanners at all.
     LayoutBox* firstBox = firstMultiColumnBox();
     if (!firstBox || (firstBox == lastMultiColumnBox() && firstBox->isLayoutMultiColumnSet()))
-        return 0;
+        return nullptr;
 
     // We have spanners. See if the layoutObject in question is one or inside of one then.
     for (const LayoutObject* ancestor = descendant; ancestor && ancestor != this; ancestor = ancestor->parent()) {
         if (LayoutMultiColumnSpannerPlaceholder* placeholder = ancestor->spannerPlaceholder())
             return placeholder;
     }
-    return 0;
+    return nullptr;
 }
 
 void LayoutMultiColumnFlowThread::populate()
@@ -274,7 +274,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::columnSetAtBlockOffset(Layout
 
     ASSERT(!m_columnSetsInvalidated);
     if (m_multiColumnSetList.isEmpty())
-        return 0;
+        return nullptr;
     if (offset <= 0)
         return m_multiColumnSetList.first();
 
@@ -546,8 +546,8 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(LayoutObject* 
             continue; // Inside a column spanner. Nothing to do, then.
         if (descendantIsValidColumnSpanner(layoutObject)) {
             // This layoutObject is a spanner, so it needs to establish a spanner placeholder.
-            LayoutBox* insertBefore = 0;
-            LayoutMultiColumnSet* setToSplit = 0;
+            LayoutBox* insertBefore = nullptr;
+            LayoutMultiColumnSet* setToSplit = nullptr;
             if (objectAfterSubtree) {
                 // The spanner is inserted before something. Figure out what this entails. If the
                 // next layoutObject is a spanner too, it means that we can simply insert a new spanner
@@ -646,14 +646,14 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(LayoutObject
         return; // No column content will be removed, so we can stop here.
 
     // Column content will be removed. Does this mean that we should destroy a column set?
-    LayoutMultiColumnSpannerPlaceholder* adjacentPreviousSpannerPlaceholder = 0;
+    LayoutMultiColumnSpannerPlaceholder* adjacentPreviousSpannerPlaceholder = nullptr;
     LayoutObject* previousLayoutObject = previousInPreOrderSkippingOutOfFlow(this, descendant);
     if (previousLayoutObject && previousLayoutObject != this) {
         adjacentPreviousSpannerPlaceholder = containingColumnSpannerPlaceholder(previousLayoutObject);
         if (!adjacentPreviousSpannerPlaceholder)
             return; // Preceded by column content. Set still needed.
     }
-    LayoutMultiColumnSpannerPlaceholder* adjacentNextSpannerPlaceholder = 0;
+    LayoutMultiColumnSpannerPlaceholder* adjacentNextSpannerPlaceholder = nullptr;
     LayoutObject* nextLayoutObject = nextInPreOrderAfterChildrenSkippingOutOfFlow(this, descendant);
     if (nextLayoutObject) {
         adjacentNextSpannerPlaceholder = containingColumnSpannerPlaceholder(nextLayoutObject);
@@ -763,7 +763,7 @@ void LayoutMultiColumnFlowThread::layout()
             lastSet->expandToEncompassFlowThreadContentsIfNeeded();
         }
     }
-    m_lastSetWorkedOn = 0;
+    m_lastSetWorkedOn = nullptr;
 }
 
 void LayoutMultiColumnFlowThread::setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage)

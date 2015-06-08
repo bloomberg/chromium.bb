@@ -37,7 +37,7 @@
 namespace blink {
 
 LayoutFlowThread::LayoutFlowThread()
-    : LayoutBlockFlow(0)
+    : LayoutBlockFlow(nullptr)
     , m_columnSetsInvalidated(false)
     , m_columnSetsHaveUniformLogicalHeight(true)
     , m_pageLogicalSizeChanged(false)

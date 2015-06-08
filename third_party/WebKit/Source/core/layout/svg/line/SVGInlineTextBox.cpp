@@ -175,7 +175,7 @@ TextRun SVGInlineTextBox::constructTextRun(const ComputedStyle& style, const SVG
     //                          layout during layout. Remove this when 264211 is fixed.
     RELEASE_ASSERT(!text->needsLayout());
 
-    TextRun run(static_cast<const LChar*>(0) // characters, will be set below if non-zero.
+    TextRun run(static_cast<const LChar*>(nullptr) // characters, will be set below if non-zero.
         , 0 // length, will be set below if non-zero.
         , 0 // xPos, only relevant with allowTabs=true
         , 0 // padding, only relevant for justified text, not relevant for SVG

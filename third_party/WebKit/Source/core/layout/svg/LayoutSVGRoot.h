@@ -87,7 +87,7 @@ private:
     virtual void willBeDestroyed() override;
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
     virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const override;
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
     virtual void removeChild(LayoutObject*) override;
 
     virtual void insertedIntoTree() override;
@@ -101,9 +101,9 @@ private:
 
     virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0) const override;
+    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
 
-    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0, const PaintInvalidationState* = 0) const override;
+    virtual void mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
     virtual const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
 
     virtual bool canBeSelectionLeaf() const override { return false; }

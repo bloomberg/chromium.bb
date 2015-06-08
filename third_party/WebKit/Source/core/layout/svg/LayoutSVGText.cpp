@@ -79,7 +79,7 @@ LayoutSVGText* LayoutSVGText::locateLayoutSVGTextAncestor(LayoutObject* start)
     while (start && !start->isSVGText())
         start = start->parent();
     if (!start || !start->isSVGText())
-        return 0;
+        return nullptr;
     return toLayoutSVGText(start);
 }
 
@@ -89,7 +89,7 @@ const LayoutSVGText* LayoutSVGText::locateLayoutSVGTextAncestor(const LayoutObje
     while (start && !start->isSVGText())
         start = start->parent();
     if (!start || !start->isSVGText())
-        return 0;
+        return nullptr;
     return toLayoutSVGText(start);
 }
 
@@ -169,13 +169,13 @@ void LayoutSVGText::subtreeChildWasAdded(LayoutObject* child)
 
     // Compare m_layoutAttributes with newLayoutAttributes to figure out which attribute got added.
     size_t size = newLayoutAttributes.size();
-    SVGTextLayoutAttributes* attributes = 0;
+    SVGTextLayoutAttributes* attributes = nullptr;
     for (size_t i = 0; i < size; ++i) {
         attributes = newLayoutAttributes[i];
         if (m_layoutAttributes.find(attributes) == kNotFound) {
             // Every time this is invoked, there's only a single new entry in the newLayoutAttributes list, compared to the old in m_layoutAttributes.
-            SVGTextLayoutAttributes* previous = 0;
-            SVGTextLayoutAttributes* next = 0;
+            SVGTextLayoutAttributes* previous = nullptr;
+            SVGTextLayoutAttributes* next = nullptr;
             ASSERT_UNUSED(child, attributes->context() == child);
             findPreviousAndNextAttributes(this, attributes->context(), previous, next);
 
@@ -230,8 +230,8 @@ void LayoutSVGText::subtreeChildWillBeRemoved(LayoutObject* child, Vector<SVGTex
 
     // This logic requires that the 'text' child is still inserted in the tree.
     LayoutSVGInlineText* text = toLayoutSVGInlineText(child);
-    SVGTextLayoutAttributes* previous = 0;
-    SVGTextLayoutAttributes* next = 0;
+    SVGTextLayoutAttributes* previous = nullptr;
+    SVGTextLayoutAttributes* next = nullptr;
     if (!documentBeingDestroyed())
         findPreviousAndNextAttributes(this, text, previous, next);
 
@@ -298,7 +298,7 @@ void LayoutSVGText::subtreeTextDidChange(LayoutSVGInlineText* text)
     }
 }
 
-static inline void updateFontInAllDescendants(LayoutObject* start, SVGTextLayoutAttributesBuilder* builder = 0)
+static inline void updateFontInAllDescendants(LayoutObject* start, SVGTextLayoutAttributesBuilder* builder = nullptr)
 {
     for (LayoutObject* descendant = start; descendant; descendant = descendant->nextInPreOrder(start)) {
         if (!descendant->isSVGInlineText())

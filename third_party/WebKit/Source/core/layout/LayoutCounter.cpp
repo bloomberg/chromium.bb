@@ -304,7 +304,7 @@ static CounterNode* makeCounterNode(LayoutObject& object, const AtomicString& id
     bool isReset = false;
     int value = 0;
     if (!planCounter(object, identifier, isReset, value) && !alwaysCreateCounter)
-        return 0;
+        return nullptr;
 
     RefPtr<CounterNode> newParent = nullptr;
     RefPtr<CounterNode> newPreviousSibling = nullptr;
@@ -347,8 +347,8 @@ static CounterNode* makeCounterNode(LayoutObject& object, const AtomicString& id
 LayoutCounter::LayoutCounter(Document* node, const CounterContent& counter)
     : LayoutText(node, StringImpl::empty())
     , m_counter(counter)
-    , m_counterNode(0)
-    , m_nextForSameCounter(0)
+    , m_counterNode(nullptr)
+    , m_nextForSameCounter(nullptr)
 {
     view()->addLayoutCounter();
 }

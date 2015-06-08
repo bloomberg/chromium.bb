@@ -1049,7 +1049,7 @@ String listMarkerText(EListStyleType type, int value)
 }
 
 LayoutListMarker::LayoutListMarker(LayoutListItem* item)
-    : LayoutBox(0)
+    : LayoutBox(nullptr)
     , m_listItem(item)
 {
     // init LayoutObject attributes

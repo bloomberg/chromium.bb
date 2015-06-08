@@ -57,7 +57,7 @@ LayoutView::LayoutView(Document* document)
     , m_selectionEndPos(-1)
     , m_pageLogicalHeight(0)
     , m_pageLogicalHeightChanged(false)
-    , m_layoutState(0)
+    , m_layoutState(nullptr)
     , m_layoutQuoteHead(nullptr)
     , m_layoutCounterCount(0)
     , m_hitTestCount(0)
@@ -306,7 +306,7 @@ const LayoutObject* LayoutView::pushMappingToContainer(const LayoutBoxModelObjec
 {
     LayoutSize offsetForFixedPosition;
     LayoutSize offset;
-    LayoutObject* container = 0;
+    LayoutObject* container = nullptr;
 
     if (m_frameView) {
         offsetForFixedPosition = LayoutSize(toIntSize(m_frameView->scrollPosition()));
@@ -492,7 +492,7 @@ void LayoutView::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
 static LayoutObject* layoutObjectAfterPosition(LayoutObject* object, unsigned offset)
 {
     if (!object)
-        return 0;
+        return nullptr;
 
     LayoutObject* child = object->childAt(offset);
     return child ? child : object->nextInPreOrderAfterChildren();
@@ -855,7 +855,7 @@ LayoutObject* LayoutView::backgroundLayoutObject() const
         if (LayoutObject* rootObject = documentElement->layoutObject())
             return rootObject->layoutObjectForRootBackground();
     }
-    return 0;
+    return nullptr;
 }
 
 LayoutRect LayoutView::backgroundRect(LayoutBox* backgroundLayoutObject) const

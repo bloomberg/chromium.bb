@@ -73,7 +73,7 @@ private:
 
 SVGTextMetricsCalculator::SVGTextMetricsCalculator(LayoutSVGInlineText* text)
     : m_text(text)
-    , m_bidiRun(0)
+    , m_bidiRun(nullptr)
     , m_run(SVGTextMetrics::constructTextRun(text, 0, text->textLength(), text->styleRef().direction()))
     , m_isComplexText(false)
     , m_totalWidth(0)

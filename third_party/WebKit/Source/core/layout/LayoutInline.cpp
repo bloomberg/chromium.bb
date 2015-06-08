@@ -60,7 +60,7 @@ LayoutInline::LayoutInline(Element* element)
 
 LayoutInline* LayoutInline::createAnonymous(Document* document)
 {
-    LayoutInline* layoutObject = new LayoutInline(0);
+    LayoutInline* layoutObject = new LayoutInline(nullptr);
     layoutObject->setDocumentForAnonymous(document);
     return layoutObject;
 }
@@ -90,7 +90,7 @@ void LayoutInline::willBeDestroyed()
     LayoutBoxModelObject* continuation = this->continuation();
     if (continuation) {
         continuation->destroy();
-        setContinuation(0);
+        setContinuation(nullptr);
     }
 
     if (!documentBeingDestroyed()) {
@@ -148,7 +148,7 @@ static LayoutObject* inFlowPositionedInlineAncestor(LayoutObject* p)
             return p;
         p = p->parent();
     }
-    return 0;
+    return nullptr;
 }
 
 static void updateStyleOfAnonymousBlockContinuations(LayoutObject* block, const ComputedStyle& newStyle, const ComputedStyle& oldStyle)
@@ -194,7 +194,7 @@ void LayoutInline::styleDidChange(StyleDifference diff, const ComputedStyle* old
     LayoutInline* continuation = inlineElementContinuation();
     for (LayoutInline* currCont = continuation; currCont; currCont = currCont->inlineElementContinuation()) {
         LayoutBoxModelObject* nextCont = currCont->continuation();
-        currCont->setContinuation(0);
+        currCont->setContinuation(nullptr);
         currCont->setStyle(mutableStyle());
         currCont->setContinuation(nextCont);
     }
@@ -457,7 +457,7 @@ void LayoutInline::splitInlines(LayoutBlock* fromBlock, LayoutBlock* toBlock,
 void LayoutInline::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox,
     LayoutObject* newChild, LayoutBoxModelObject* oldCont)
 {
-    LayoutBlock* pre = 0;
+    LayoutBlock* pre = nullptr;
     LayoutBlock* block = containingBlock();
 
     // Delete our line boxes before we do the inline split into continuations.
@@ -467,7 +467,7 @@ void LayoutInline::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox
     if (block->isAnonymousBlock() && (!block->parent() || !block->parent()->createsAnonymousWrapper())) {
         // We can reuse this block and make it the preBlock of the next continuation.
         pre = block;
-        pre->removePositionedObjects(0);
+        pre->removePositionedObjects(nullptr);
         if (pre->isLayoutBlockFlow())
             toLayoutBlockFlow(pre)->removeFloatingObjects();
         block = block->containingBlock();
@@ -516,7 +516,7 @@ void LayoutInline::addChildToContinuation(LayoutObject* newChild, LayoutObject* 
 {
     LayoutBoxModelObject* flow = continuationBefore(beforeChild);
     ASSERT(!beforeChild || beforeChild->parent()->isLayoutBlock() || beforeChild->parent()->isLayoutInline());
-    LayoutBoxModelObject* beforeChildParent = 0;
+    LayoutBoxModelObject* beforeChildParent = nullptr;
     if (beforeChild) {
         beforeChildParent = toLayoutBoxModelObject(beforeChild->parent());
     } else {
@@ -916,7 +916,7 @@ InlineBox* LayoutInline::culledInlineFirstLineBox() const
                 return currText->firstTextBox();
         }
     }
-    return 0;
+    return nullptr;
 }
 
 InlineBox* LayoutInline::culledInlineLastLineBox() const
@@ -940,7 +940,7 @@ InlineBox* LayoutInline::culledInlineLastLineBox() const
                 return currText->lastTextBox();
         }
     }
-    return 0;
+    return nullptr;
 }
 
 LayoutRect LayoutInline::culledInlineVisualOverflowBoundingBox() const

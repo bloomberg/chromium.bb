@@ -169,16 +169,16 @@ static LayoutVideo* findFullscreenVideoLayoutObject(Document& document)
     while (fullscreenElement && fullscreenElement->isFrameOwnerElement()) {
         contentDocument = toHTMLFrameOwnerElement(fullscreenElement)->contentDocument();
         if (!contentDocument)
-            return 0;
+            return nullptr;
         fullscreenElement = Fullscreen::fullscreenElementFrom(*contentDocument);
     }
     // Get the current fullscreen element from the document.
     fullscreenElement = Fullscreen::currentFullScreenElementFrom(*contentDocument);
     if (!isHTMLVideoElement(fullscreenElement))
-        return 0;
+        return nullptr;
     LayoutObject* layoutObject = fullscreenElement->layoutObject();
     if (!layoutObject)
-        return 0;
+        return nullptr;
     return toLayoutVideo(layoutObject);
 }
 
@@ -452,7 +452,7 @@ bool DeprecatedPaintLayerCompositor::allocateOrClearCompositedDeprecatedPaintLay
         // Need to create a test where a squashed layer pops into compositing. And also to cover all other
         // sorts of compositingState transitions.
         layer->setLostGroupedMapping(false);
-        layer->setGroupedMapping(0);
+        layer->setGroupedMapping(nullptr);
 
         layer->ensureCompositedDeprecatedPaintLayerMapping();
         compositedDeprecatedPaintLayerMappingChanged = true;
@@ -474,7 +474,7 @@ bool DeprecatedPaintLayerCompositor::allocateOrClearCompositedDeprecatedPaintLay
                 DeprecatedPaintLayer* sourceLayer = toLayoutBoxModelObject(layer->layoutObject()->parent())->layer();
                 if (sourceLayer->hasCompositedDeprecatedPaintLayerMapping()) {
                     ASSERT(sourceLayer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->replicaLayer() == layer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer());
-                    sourceLayer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->setReplicatedByLayer(0);
+                    sourceLayer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->setReplicatedByLayer(nullptr);
                 }
             }
 
@@ -638,14 +638,14 @@ String DeprecatedPaintLayerCompositor::layerTreeAsText(LayerTreeFlags flags)
 DeprecatedPaintLayerCompositor* DeprecatedPaintLayerCompositor::frameContentsCompositor(LayoutPart* layoutObject)
 {
     if (!layoutObject->node()->isFrameOwnerElement())
-        return 0;
+        return nullptr;
 
     HTMLFrameOwnerElement* element = toHTMLFrameOwnerElement(layoutObject->node());
     if (Document* contentDocument = element->contentDocument()) {
         if (LayoutView* view = contentDocument->layoutView())
             return view->compositor();
     }
-    return 0;
+    return nullptr;
 }
 
 // FIXME: What does this function do? It needs a clearer name.
@@ -847,12 +847,12 @@ GraphicsLayer* DeprecatedPaintLayerCompositor::fixedRootBackgroundLayer() const
     // Get the fixed root background from the LayoutView layer's compositedDeprecatedPaintLayerMapping.
     DeprecatedPaintLayer* viewLayer = m_layoutView.layer();
     if (!viewLayer)
-        return 0;
+        return nullptr;
 
     if (viewLayer->compositingState() == PaintsIntoOwnBacking && viewLayer->compositedDeprecatedPaintLayerMapping()->backgroundLayerPaintsFixedRootBackground())
         return viewLayer->compositedDeprecatedPaintLayerMapping()->backgroundLayer();
 
-    return 0;
+    return nullptr;
 }
 
 static void resetTrackedPaintInvalidationRectsRecursive(GraphicsLayer* graphicsLayer)
@@ -1166,14 +1166,14 @@ ScrollingCoordinator* DeprecatedPaintLayerCompositor::scrollingCoordinator() con
     if (Page* page = this->page())
         return page->scrollingCoordinator();
 
-    return 0;
+    return nullptr;
 }
 
 GraphicsLayerFactory* DeprecatedPaintLayerCompositor::graphicsLayerFactory() const
 {
     if (Page* page = this->page())
         return page->chromeClient().graphicsLayerFactory();
-    return 0;
+    return nullptr;
 }
 
 Page* DeprecatedPaintLayerCompositor::page() const

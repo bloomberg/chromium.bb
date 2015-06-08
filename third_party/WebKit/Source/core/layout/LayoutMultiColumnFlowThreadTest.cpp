@@ -33,10 +33,10 @@ LayoutMultiColumnFlowThread* MultiColumnRenderingTest::findFlowThread(const char
 {
     Node* multicol = document().getElementById(id);
     if (!multicol)
-        return 0;
+        return nullptr;
     LayoutBlockFlow* multicolContainer = toLayoutBlockFlow(multicol->layoutObject());
     if (!multicolContainer)
-        return 0;
+        return nullptr;
     return multicolContainer->multiColumnFlowThread();
 }
 
@@ -344,7 +344,7 @@ TEST_F(MultiColumnRenderingTest, columnSetAtBlockOffsetVerticalLr)
 class MultiColumnTreeModifyingTest : public MultiColumnRenderingTest {
 public:
     void setMulticolHTML(const char*);
-    void reparentLayoutObject(const char* newParentId, const char* childId, const char* insertBeforeId = 0);
+    void reparentLayoutObject(const char* newParentId, const char* childId, const char* insertBeforeId = nullptr);
     void destroyLayoutObject(LayoutObject* child);
     void destroyLayoutObject(const char* childId);
 };
@@ -360,7 +360,7 @@ void MultiColumnTreeModifyingTest::reparentLayoutObject(const char* newParentId,
 {
     LayoutObject* newParent = document().getElementById(newParentId)->layoutObject();
     LayoutObject* child = document().getElementById(childId)->layoutObject();
-    LayoutObject* insertBefore = insertBeforeId ? document().getElementById(insertBeforeId)->layoutObject() : 0;
+    LayoutObject* insertBefore = insertBeforeId ? document().getElementById(insertBeforeId)->layoutObject() : nullptr;
     child->remove();
     newParent->addChild(child, insertBefore);
 }

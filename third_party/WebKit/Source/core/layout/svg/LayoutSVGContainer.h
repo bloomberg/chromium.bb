@@ -62,7 +62,7 @@ protected:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGContainer || LayoutSVGModelObject::isOfType(type); }
     virtual void layout() override;
 
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override final;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override final;
     virtual void removeChild(LayoutObject*) override final;
     virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
 

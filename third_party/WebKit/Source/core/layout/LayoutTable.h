@@ -123,8 +123,8 @@ public:
     int calcBorderEnd() const;
     void recalcBordersInRowDirection();
 
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
-    virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
+    virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
 
     struct ColumnStruct {
         explicit ColumnStruct(unsigned initialSpan = 1)
@@ -213,11 +213,11 @@ public:
     // Return the first column or column-group.
     LayoutTableCol* firstColumn() const;
 
-    LayoutTableCol* colElement(unsigned col, bool* startEdge = 0, bool* endEdge = 0) const
+    LayoutTableCol* colElement(unsigned col, bool* startEdge = nullptr, bool* endEdge = nullptr) const
     {
         // The common case is to not have columns, make that case fast.
         if (!m_hasColElements)
-            return 0;
+            return nullptr;
         return slowColElement(col, startEdge, endEdge);
     }
 

@@ -60,7 +60,7 @@ public:
     {
         if (m_clipperFilterMaskerData)
             return m_clipperFilterMaskerData->filter;
-        return 0;
+        return nullptr;
     }
 
     // Paint servers
@@ -115,9 +115,9 @@ private:
         WTF_MAKE_FAST_ALLOCATED(ClipperFilterMaskerData);
     public:
         ClipperFilterMaskerData()
-            : clipper(0)
-            , filter(0)
-            , masker(0)
+            : clipper(nullptr)
+            , filter(nullptr)
+            , masker(nullptr)
         {
         }
 
@@ -137,9 +137,9 @@ private:
         WTF_MAKE_FAST_ALLOCATED(MarkerData);
     public:
         MarkerData()
-            : markerStart(0)
-            , markerMid(0)
-            , markerEnd(0)
+            : markerStart(nullptr)
+            , markerMid(nullptr)
+            , markerEnd(nullptr)
         {
         }
 
@@ -161,8 +161,8 @@ private:
         WTF_MAKE_FAST_ALLOCATED(FillStrokeData);
     public:
         FillStrokeData()
-            : fill(0)
-            , stroke(0)
+            : fill(nullptr)
+            , stroke(nullptr)
         {
         }
 

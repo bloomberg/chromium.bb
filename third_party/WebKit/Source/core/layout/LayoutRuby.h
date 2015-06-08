@@ -56,7 +56,7 @@ public:
     LayoutRubyAsInline(Element*);
     virtual ~LayoutRubyAsInline();
 
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
     virtual void removeChild(LayoutObject* child) override;
 
     virtual const char* name() const override { return "LayoutRuby (inline)"; }
@@ -75,7 +75,7 @@ public:
     LayoutRubyAsBlock(Element*);
     virtual ~LayoutRubyAsBlock();
 
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
     virtual void removeChild(LayoutObject* child) override;
 
     virtual const char* name() const override { return "LayoutRuby (block)"; }

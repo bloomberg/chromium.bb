@@ -43,7 +43,7 @@ static_assert(sizeof(FloatingObject) == sizeof(SameSizeAsFloatingObject), "Float
 
 FloatingObject::FloatingObject(LayoutBox* layoutObject)
     : m_layoutObject(layoutObject)
-    , m_originatingLine(0)
+    , m_originatingLine(nullptr)
     , m_paginationStrut(0)
     , m_shouldPaint(true)
     , m_isDescendant(false)
@@ -63,7 +63,7 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject)
 
 FloatingObject::FloatingObject(LayoutBox* layoutObject, Type type, const LayoutRect& frameRect, bool shouldPaint, bool isDescendant, bool isLowestNonOverhangingFloatInChild)
     : m_layoutObject(layoutObject)
-    , m_originatingLine(0)
+    , m_originatingLine(nullptr)
     , m_frameRect(frameRect)
     , m_paginationStrut(0)
     , m_type(type)
@@ -109,7 +109,7 @@ public:
         , m_lineTop(lineTop)
         , m_lineBottom(lineBottom)
         , m_offset(offset)
-        , m_outermostFloat(0)
+        , m_outermostFloat(nullptr)
     {
     }
 
@@ -171,7 +171,7 @@ void FloatingObjects::clearLineBoxTreePointers()
     FloatingObjectSetIterator end = m_set.end();
     for (FloatingObjectSetIterator it = m_set.begin(); it != end; ++it) {
         ASSERT(!((*it)->originatingLine()) || (*it)->originatingLine()->layoutObject() == m_layoutObject);
-        (*it)->setOriginatingLine(0);
+        (*it)->setOriginatingLine(nullptr);
     }
 }
 

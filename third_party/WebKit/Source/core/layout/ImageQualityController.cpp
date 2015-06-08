@@ -39,7 +39,7 @@ namespace blink {
 
 static const double cLowQualityTimeThreshold = 0.500; // 500 ms
 
-static ImageQualityController* gImageQualityController = 0;
+static ImageQualityController* gImageQualityController = nullptr;
 
 ImageQualityController* ImageQualityController::imageQualityController()
 {
@@ -55,7 +55,7 @@ void ImageQualityController::remove(LayoutObject* layoutObject)
         gImageQualityController->objectDestroyed(layoutObject);
         if (gImageQualityController->isEmpty()) {
             delete gImageQualityController;
-            gImageQualityController = 0;
+            gImageQualityController = nullptr;
         }
     }
 }

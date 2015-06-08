@@ -105,15 +105,15 @@ public:
 
     RootInlineBox* createAndAppendRootInlineBox();
 
-    void markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRemove = 0, bool inLayout = true);
-    void markSiblingsWithFloatsForLayout(LayoutBox* floatToRemove = 0);
+    void markAllDescendantsWithFloatsForLayout(LayoutBox* floatToRemove = nullptr, bool inLayout = true);
+    void markSiblingsWithFloatsForLayout(LayoutBox* floatToRemove = nullptr);
 
     bool containsFloats() const { return m_floatingObjects && !m_floatingObjects->set().isEmpty(); }
     bool containsFloat(LayoutBox*) const;
 
     void removeFloatingObjects();
 
-    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
 
     void moveAllChildrenIncludingFloatsTo(LayoutBlock* toBlock, bool fullRemoveInsert);
 
@@ -190,7 +190,7 @@ public:
     GapRects selectionGapRectsForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const;
     GapRects selectionGaps(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight,
-        const PaintInfo* = 0, ClipScope* = 0) const;
+        const PaintInfo* = nullptr, ClipScope* = nullptr) const;
     GapRects inlineSelectionGaps(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*) const;
     GapRects blockSelectionGaps(const LayoutBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
@@ -285,7 +285,7 @@ private:
 
     // Called from lineWidth, to position the floats added in the last line.
     // Returns true if and only if it has positioned any floats.
-    bool positionNewFloats(LineWidth* = 0);
+    bool positionNewFloats(LineWidth* = nullptr);
 
     LayoutUnit getClearDelta(LayoutBox* child, LayoutUnit yPos);
 

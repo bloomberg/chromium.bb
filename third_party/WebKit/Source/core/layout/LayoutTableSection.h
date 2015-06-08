@@ -75,7 +75,7 @@ public:
     const LayoutObjectChildList* children() const { return &m_children; }
     LayoutObjectChildList* children() { return &m_children; }
 
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
 
     virtual int firstLineBoxBaseline() const override;
 
@@ -249,7 +249,7 @@ private:
 
     virtual void paintObject(const PaintInfo&, const LayoutPoint&) override;
 
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
     int borderSpacingForRow(unsigned row) const { return m_grid[row].rowLayoutObject ? table()->vBorderSpacing() : 0; }
 

@@ -35,7 +35,7 @@
 namespace blink {
 
 LayoutScrollbarPart::LayoutScrollbarPart(LayoutScrollbar* scrollbar, ScrollbarPart part)
-    : LayoutBlock(0)
+    : LayoutBlock(nullptr)
     , m_scrollbar(scrollbar)
     , m_part(part)
 {
@@ -200,9 +200,7 @@ void LayoutScrollbarPart::imageChanged(WrappedImagePtr image, const IntRect* rec
 
 LayoutObject* LayoutScrollbarPart::layoutObjectOwningScrollbar() const
 {
-    if (!m_scrollbar)
-        return 0;
-    return m_scrollbar->owningLayoutObject();
+    return (!m_scrollbar) ? nullptr : m_scrollbar->owningLayoutObject();
 }
 
 }

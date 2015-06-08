@@ -178,7 +178,7 @@ void InlineBox::dirtyLineBoxes()
 void InlineBox::deleteLine()
 {
     if (!m_bitfields.extracted() && layoutObject().isBox())
-        toLayoutBox(layoutObject()).setInlineBoxWrapper(0);
+        toLayoutBox(layoutObject()).setInlineBoxWrapper(nullptr);
     destroy();
 }
 
@@ -186,7 +186,7 @@ void InlineBox::extractLine()
 {
     m_bitfields.setExtracted(true);
     if (layoutObject().isBox())
-        toLayoutBox(layoutObject()).setInlineBoxWrapper(0);
+        toLayoutBox(layoutObject()).setInlineBoxWrapper(nullptr);
 }
 
 void InlineBox::attachLine()
@@ -264,7 +264,7 @@ bool InlineBox::nextOnLineExists() const
 
 InlineBox* InlineBox::nextLeafChild() const
 {
-    InlineBox* leaf = 0;
+    InlineBox* leaf = nullptr;
     for (InlineBox* box = nextOnLine(); box && !leaf; box = box->nextOnLine())
         leaf = box->isLeaf() ? box : toInlineFlowBox(box)->firstLeafChild();
     if (!leaf && parent())
@@ -274,7 +274,7 @@ InlineBox* InlineBox::nextLeafChild() const
 
 InlineBox* InlineBox::prevLeafChild() const
 {
-    InlineBox* leaf = 0;
+    InlineBox* leaf = nullptr;
     for (InlineBox* box = prevOnLine(); box && !leaf; box = box->prevOnLine())
         leaf = box->isLeaf() ? box : toInlineFlowBox(box)->lastLeafChild();
     if (!leaf && parent())
@@ -285,17 +285,13 @@ InlineBox* InlineBox::prevLeafChild() const
 InlineBox* InlineBox::nextLeafChildIgnoringLineBreak() const
 {
     InlineBox* leaf = nextLeafChild();
-    if (leaf && leaf->isLineBreak())
-        return 0;
-    return leaf;
+    return (leaf && leaf->isLineBreak()) ? nullptr : leaf;
 }
 
 InlineBox* InlineBox::prevLeafChildIgnoringLineBreak() const
 {
     InlineBox* leaf = prevLeafChild();
-    if (leaf && leaf->isLineBreak())
-        return 0;
-    return leaf;
+    return (leaf && leaf->isLineBreak()) ? nullptr : leaf;
 }
 
 LayoutObject::SelectionState InlineBox::selectionState() const

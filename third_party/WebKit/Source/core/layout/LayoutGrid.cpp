@@ -170,7 +170,7 @@ public:
 
             m_childIndex = 0;
         }
-        return 0;
+        return nullptr;
     }
 
     bool checkEmptyCells(size_t rowSpan, size_t columnSpan) const

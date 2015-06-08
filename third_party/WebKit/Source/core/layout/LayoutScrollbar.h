@@ -41,7 +41,7 @@ class ComputedStyle;
 
 class LayoutScrollbar final : public Scrollbar {
 public:
-    static PassRefPtrWillBeRawPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = 0);
+    static PassRefPtrWillBeRawPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = nullptr);
     virtual ~LayoutScrollbar();
 
     LayoutBox* owningLayoutObject() const;

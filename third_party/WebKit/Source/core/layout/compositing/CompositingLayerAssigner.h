@@ -52,7 +52,7 @@ public:
 private:
     struct SquashingState {
         SquashingState()
-            : mostRecentMapping(0)
+            : mostRecentMapping(nullptr)
             , hasMostRecentMapping(false)
             , haveAssignedBackingsToEntireSquashingLayerSubtree(false)
             , nextSquashedLayerIndex(0)

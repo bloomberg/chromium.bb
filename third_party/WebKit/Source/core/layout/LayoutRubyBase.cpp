@@ -37,7 +37,7 @@
 namespace blink {
 
 LayoutRubyBase::LayoutRubyBase()
-    : LayoutBlockFlow(0)
+    : LayoutBlockFlow(nullptr)
 {
     setInline(false);
 }

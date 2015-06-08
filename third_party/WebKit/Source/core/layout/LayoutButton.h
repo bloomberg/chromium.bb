@@ -40,7 +40,7 @@ public:
     virtual bool canBeSelectionLeaf() const override { return node() && node()->hasEditableStyle(); }
     virtual bool canCollapseAnonymousBlockChild() const override { return true; }
 
-    virtual void addChild(LayoutObject* newChild, LayoutObject *beforeChild = 0) override;
+    virtual void addChild(LayoutObject* newChild, LayoutObject *beforeChild = nullptr) override;
     virtual void removeChild(LayoutObject*) override;
     virtual void removeLeftoverAnonymousBlock(LayoutBlock*) override { }
     virtual bool createsAnonymousWrapper() const override { return true; }

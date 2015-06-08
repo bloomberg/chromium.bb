@@ -95,7 +95,7 @@ TextRun constructTextRun(LayoutObject* context, const Font& font, const String& 
 {
     unsigned length = string.length();
     if (!length)
-        return constructTextRunInternal(context, font, static_cast<const LChar*>(0), length, style, direction, flags);
+        return constructTextRunInternal(context, font, static_cast<const LChar*>(nullptr), length, style, direction, flags);
     if (string.is8Bit())
         return constructTextRunInternal(context, font, string.characters8(), length, style, direction, flags);
     return constructTextRunInternal(context, font, string.characters16(), length, style, direction, flags);

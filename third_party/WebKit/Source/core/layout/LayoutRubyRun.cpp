@@ -39,7 +39,7 @@
 namespace blink {
 
 LayoutRubyRun::LayoutRubyRun()
-    : LayoutBlockFlow(0)
+    : LayoutBlockFlow(nullptr)
 {
     setReplaced(true);
     setInline(true);
@@ -206,7 +206,7 @@ LayoutObject* LayoutRubyRun::layoutSpecialExcludedChild(bool relayoutChildren, S
     // Don't bother positioning the LayoutRubyRun yet.
     LayoutRubyText* rt = rubyText();
     if (!rt)
-        return 0;
+        return nullptr;
     if (relayoutChildren)
         layoutScope.setChildNeedsLayout(rt);
     rt->layoutIfNeeded();

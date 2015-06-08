@@ -56,7 +56,7 @@ private:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInlineText || LayoutText::isOfType(type); }
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override;
-    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = 0) override;
+    virtual LayoutRect localCaretRect(InlineBox*, int caretOffset, LayoutUnit* extraWidthToEndOfLine = nullptr) override;
     virtual IntRect linesBoundingBox() const override;
     virtual InlineTextBox* createTextBox(int start, unsigned short length) override;
 

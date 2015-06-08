@@ -97,7 +97,7 @@ public:
 
     bool columnSetsHaveUniformLogicalHeight() const { return m_columnSetsHaveUniformLogicalHeight; }
 
-    virtual bool addForcedColumnBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) { return false; }
+    virtual bool addForcedColumnBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = nullptr) { return false; }
 
     virtual bool isPageLogicalHeightKnown() const { return true; }
     bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }
@@ -134,7 +134,7 @@ protected:
     public:
         MultiColumnSetSearchAdapter(LayoutUnit offset)
             : m_offset(offset)
-            , m_result(0)
+            , m_result(nullptr)
         {
         }
 

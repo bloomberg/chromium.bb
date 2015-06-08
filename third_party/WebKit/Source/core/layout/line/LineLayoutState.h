@@ -34,8 +34,8 @@ namespace blink {
 class LineLayoutState {
 public:
     LineLayoutState(bool fullLayout, LayoutUnit& paintInvalidationLogicalTop, LayoutUnit& paintInvalidationLogicalBottom, LayoutFlowThread* flowThread)
-        : m_lastFloat(0)
-        , m_endLine(0)
+        : m_lastFloat(nullptr)
+        , m_endLine(nullptr)
         , m_floatIndex(0)
         , m_endLineLogicalTop(0)
         , m_endLineMatched(false)

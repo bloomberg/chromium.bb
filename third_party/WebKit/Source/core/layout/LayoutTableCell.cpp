@@ -701,7 +701,7 @@ CollapsedBorderValue LayoutTableCell::computeCollapsedBeforeBorder(IncludeBorder
 
     // (4) The previous row's after border.
     if (prevCell) {
-        LayoutObject* prevRow = 0;
+        LayoutObject* prevRow = nullptr;
         if (prevCell->section() == section())
             prevRow = parent()->previousSibling();
         else
@@ -1028,7 +1028,7 @@ void LayoutTableCell::scrollbarsChanged(bool horizontalScrollbarChanged, bool ve
 
 LayoutTableCell* LayoutTableCell::createAnonymous(Document* document)
 {
-    LayoutTableCell* layoutObject = new LayoutTableCell(0);
+    LayoutTableCell* layoutObject = new LayoutTableCell(nullptr);
     layoutObject->setDocumentForAnonymous(document);
     return layoutObject;
 }

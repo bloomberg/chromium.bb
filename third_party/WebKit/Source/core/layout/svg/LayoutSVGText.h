@@ -71,7 +71,7 @@ private:
 
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
 
-    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
+    virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
     virtual void removeChild(LayoutObject*) override;
     virtual void willBeDestroyed() override;
 

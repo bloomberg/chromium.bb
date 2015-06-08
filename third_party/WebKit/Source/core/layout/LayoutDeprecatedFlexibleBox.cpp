@@ -81,7 +81,7 @@ public:
                     m_currentOrdinal = m_forward ? 1 : m_largestOrdinal;
                 } else {
                     if (static_cast<size_t>(m_ordinalIteration) >= m_ordinalValues.size() + 1)
-                        return 0;
+                        return nullptr;
 
                     // Only copy+sort the values once per layout even if the iterator is reset.
                     if (m_ordinalValues.size() != m_sortedOrdinalValues.size()) {

@@ -67,7 +67,7 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutCounter, isCounter());
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showCounterLayoutTree(const blink::LayoutObject*, const char* counterName = 0);
+void showCounterLayoutTree(const blink::LayoutObject*, const char* counterName = nullptr);
 #endif
 
 #endif // LayoutCounter_h

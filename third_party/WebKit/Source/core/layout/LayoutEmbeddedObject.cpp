@@ -167,7 +167,7 @@ CompositingReasons LayoutEmbeddedObject::additionalCompositingReasons() const
 LayoutBox* LayoutEmbeddedObject::embeddedContentBox() const
 {
     if (!node() || !widget() || !widget()->isFrameView())
-        return 0;
+        return nullptr;
     return toFrameView(widget())->embeddedContentBox();
 }
 

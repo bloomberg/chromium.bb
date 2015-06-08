@@ -119,7 +119,7 @@ static SVGPaintDescription requestPaint(const LayoutObject& object, const Comput
         return SVGPaintDescription(color);
     }
 
-    LayoutSVGResourcePaintServer* uriResource = 0;
+    LayoutSVGResourcePaintServer* uriResource = nullptr;
     if (SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(&object))
         uriResource = applyToFill ? resources->fill() : resources->stroke();
 

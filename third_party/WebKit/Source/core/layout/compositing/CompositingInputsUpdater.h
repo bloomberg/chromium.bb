@@ -30,9 +30,9 @@ private:
 
     struct AncestorInfo {
         AncestorInfo()
-            : ancestorStackingContext(0)
-            , enclosingCompositedLayer(0)
-            , lastScrollingAncestor(0)
+            : ancestorStackingContext(nullptr)
+            , enclosingCompositedLayer(nullptr)
+            , lastScrollingAncestor(nullptr)
             , hasAncestorWithClipOrOverflowClip(false)
             , hasAncestorWithClipPath(false)
         {

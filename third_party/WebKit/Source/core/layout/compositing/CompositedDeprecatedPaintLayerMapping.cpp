@@ -138,10 +138,10 @@ static bool contentLayerSupportsDirectBackgroundComposition(const LayoutObject* 
 static WebLayer* platformLayerForPlugin(LayoutObject* layoutObject)
 {
     if (!layoutObject->isEmbeddedObject())
-        return 0;
+        return nullptr;
     Widget* widget = toLayoutEmbeddedObject(layoutObject)->widget();
     if (!widget || !widget->isPluginView())
-        return 0;
+        return nullptr;
     return toPluginView(widget)->platformLayer();
 
 }
@@ -157,10 +157,7 @@ static inline bool isAcceleratedContents(LayoutObject* layoutObject)
 static ScrollingCoordinator* scrollingCoordinatorFromLayer(DeprecatedPaintLayer& layer)
 {
     Page* page = layer.layoutObject()->frame()->page();
-    if (!page)
-        return 0;
-
-    return page->scrollingCoordinator();
+    return (!page) ? nullptr : page->scrollingCoordinator();
 }
 
 CompositedDeprecatedPaintLayerMapping::CompositedDeprecatedPaintLayerMapping(DeprecatedPaintLayer& layer)
@@ -205,7 +202,7 @@ CompositedDeprecatedPaintLayerMapping::~CompositedDeprecatedPaintLayerMapping()
 
 PassOwnPtr<GraphicsLayer> CompositedDeprecatedPaintLayerMapping::createGraphicsLayer(CompositingReasons reasons)
 {
-    GraphicsLayerFactory* graphicsLayerFactory = 0;
+    GraphicsLayerFactory* graphicsLayerFactory = nullptr;
     if (Page* page = layoutObject()->frame()->page())
         graphicsLayerFactory = page->chromeClient().graphicsLayerFactory();
 
@@ -506,7 +503,7 @@ bool CompositedDeprecatedPaintLayerMapping::updateGraphicsLayerConfiguration()
             m_graphicsLayer->setReplicatedByLayer(reflectionLayer);
         }
     } else {
-        m_graphicsLayer->setReplicatedByLayer(0);
+        m_graphicsLayer->setReplicatedByLayer(nullptr);
     }
 
     updateBackgroundColor();
@@ -515,7 +512,7 @@ bool CompositedDeprecatedPaintLayerMapping::updateGraphicsLayerConfiguration()
         if (isDirectlyCompositedImage()) {
             updateImageContents();
         } else if (m_graphicsLayer->hasContentsLayer()) {
-            m_graphicsLayer->setContentsToImage(0);
+            m_graphicsLayer->setContentsToImage(nullptr);
         }
     }
 
@@ -2054,7 +2051,7 @@ const GraphicsLayerPaintInfo* CompositedDeprecatedPaintLayerMapping::containingS
         if (layoutObject->isDescendantOf(layers[i].paintLayer->layoutObject()))
             return &layers[i];
     }
-    return 0;
+    return nullptr;
 }
 
 const GraphicsLayerPaintInfo* CompositedDeprecatedPaintLayerMapping::containingSquashedLayer(const LayoutObject* layoutObject, unsigned maxSquashedLayerIndex)

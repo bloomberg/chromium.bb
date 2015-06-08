@@ -196,7 +196,7 @@ void InlineFlowBox::removeChild(InlineBox* child, MarkLineBoxes markDirty)
     if (child->prevOnLine())
         child->prevOnLine()->setNextOnLine(child->nextOnLine());
 
-    child->setParent(0);
+    child->setParent(nullptr);
 
     checkConsistency();
 }
@@ -204,19 +204,19 @@ void InlineFlowBox::removeChild(InlineBox* child, MarkLineBoxes markDirty)
 void InlineFlowBox::deleteLine()
 {
     InlineBox* child = firstChild();
-    InlineBox* next = 0;
+    InlineBox* next = nullptr;
     while (child) {
         ASSERT(this == child->parent());
         next = child->nextOnLine();
 #if ENABLE(ASSERT)
-        child->setParent(0);
+        child->setParent(nullptr);
 #endif
         child->deleteLine();
         child = next;
     }
 #if ENABLE(ASSERT)
-    m_firstChild = 0;
-    m_lastChild = 0;
+    m_firstChild = nullptr;
+    m_lastChild = nullptr;
 #endif
 
     removeLineBoxFromLayoutObject();
@@ -528,7 +528,7 @@ void InlineFlowBox::computeLogicalBoxHeights(RootInlineBox* rootBox, LayoutUnit&
         if (curr->layoutObject().isOutOfFlowPositioned())
             continue; // Positioned placeholders don't affect calculations.
 
-        InlineFlowBox* inlineFlowBox = curr->isInlineFlowBox() ? toInlineFlowBox(curr) : 0;
+        InlineFlowBox* inlineFlowBox = curr->isInlineFlowBox() ? toInlineFlowBox(curr) : nullptr;
 
         bool affectsAscent = false;
         bool affectsDescent = false;
@@ -600,7 +600,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
             continue;
         }
 
-        InlineFlowBox* inlineFlowBox = curr->isInlineFlowBox() ? toInlineFlowBox(curr) : 0;
+        InlineFlowBox* inlineFlowBox = curr->isInlineFlowBox() ? toInlineFlowBox(curr) : nullptr;
         bool childAffectsTopBottomPos = true;
         if (curr->verticalAlign() == TOP) {
             curr->setLogicalTop(top.toFloat());
@@ -808,7 +808,7 @@ inline void InlineFlowBox::addTextBoxVisualOverflow(InlineTextBox* textBox, Glyp
     const ComputedStyle& style = textBox->layoutObject().styleRef(isFirstLineStyle());
 
     GlyphOverflowAndFallbackFontsMap::iterator it = textBoxDataMap.find(textBox);
-    GlyphOverflow* glyphOverflow = it == textBoxDataMap.end() ? 0 : &it->value.second;
+    GlyphOverflow* glyphOverflow = it == textBoxDataMap.end() ? nullptr : &it->value.second;
     bool isFlippedLine = style.isFlippedLinesWritingMode();
 
     int topGlyphEdge = glyphOverflow ? (isFlippedLine ? glyphOverflow->bottom : glyphOverflow->top) : 0;
@@ -1071,7 +1071,7 @@ bool InlineFlowBox::boxShadowCanBeAppliedToBackground(const FillLayer& lastBackg
 
 InlineBox* InlineFlowBox::firstLeafChild() const
 {
-    InlineBox* leaf = 0;
+    InlineBox* leaf = nullptr;
     for (InlineBox* child = firstChild(); child && !leaf; child = child->nextOnLine())
         leaf = child->isLeaf() ? child : toInlineFlowBox(child)->firstLeafChild();
     return leaf;
@@ -1079,7 +1079,7 @@ InlineBox* InlineFlowBox::firstLeafChild() const
 
 InlineBox* InlineFlowBox::lastLeafChild() const
 {
-    InlineBox* leaf = 0;
+    InlineBox* leaf = nullptr;
     for (InlineBox* child = lastChild(); child && !leaf; child = child->prevOnLine())
         leaf = child->isLeaf() ? child : toInlineFlowBox(child)->lastLeafChild();
     return leaf;
@@ -1304,7 +1304,7 @@ void InlineFlowBox::checkConsistency() const
 {
 #ifdef CHECK_CONSISTENCY
     ASSERT(!m_hasBadChildList);
-    const InlineBox* prev = 0;
+    const InlineBox* prev = nullptr;
     for (const InlineBox* child = m_firstChild; child; child = child->nextOnLine()) {
         ASSERT(child->parent() == this);
         ASSERT(child->prevOnLine() == prev);

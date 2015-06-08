@@ -60,7 +60,7 @@ TextRun SVGTextMetrics::constructTextRun(LayoutSVGInlineText* text, unsigned pos
 {
     const ComputedStyle& style = text->styleRef();
 
-    TextRun run(static_cast<const LChar*>(0) // characters, will be set below if non-zero.
+    TextRun run(static_cast<const LChar*>(nullptr) // characters, will be set below if non-zero.
         , 0 // length, will be set below if non-zero.
         , 0 // xPos, only relevant with allowTabs=true
         , 0 // padding, only relevant for justified text, not relevant for SVG

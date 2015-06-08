@@ -51,7 +51,7 @@ public:
 
     void setFirstLine(bool firstLine) { m_isFirstLine = firstLine; }
     void setLastLine(bool lastLine) { m_isLastLine = lastLine; }
-    void setEmpty(bool empty, LayoutBlock* block = 0, LineWidth* lineWidth = 0)
+    void setEmpty(bool empty, LayoutBlock* block = nullptr, LineWidth* lineWidth = nullptr)
     {
         if (m_isEmpty == empty)
             return;

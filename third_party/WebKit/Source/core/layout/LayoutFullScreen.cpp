@@ -38,7 +38,7 @@ using namespace blink;
 class LayoutFullScreenPlaceholder final : public LayoutBlockFlow {
 public:
     LayoutFullScreenPlaceholder(LayoutFullScreen* owner)
-        : LayoutBlockFlow(0)
+        : LayoutBlockFlow(nullptr)
         , m_owner(owner)
     {
         setDocumentForAnonymous(&owner->document());
@@ -51,12 +51,12 @@ private:
 
 void LayoutFullScreenPlaceholder::willBeDestroyed()
 {
-    m_owner->setPlaceholder(0);
+    m_owner->setPlaceholder(nullptr);
     LayoutBlockFlow::willBeDestroyed();
 }
 
 LayoutFullScreen::LayoutFullScreen()
-    : LayoutFlexibleBox(0)
+    : LayoutFlexibleBox(nullptr)
     , m_placeholder(nullptr)
 {
     setReplaced(false);
@@ -124,7 +124,7 @@ LayoutObject* LayoutFullScreen::wrapLayoutObject(LayoutObject* object, LayoutObj
     fullscreenLayoutObject->updateStyle();
     if (parent && !parent->isChildAllowed(fullscreenLayoutObject, fullscreenLayoutObject->styleRef())) {
         fullscreenLayoutObject->destroy();
-        return 0;
+        return nullptr;
     }
     if (object) {
         // |object->parent()| can be null if the object is not yet attached
