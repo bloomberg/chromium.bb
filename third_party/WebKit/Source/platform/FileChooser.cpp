@@ -65,13 +65,6 @@ FileChooser::~FileChooser()
 {
 }
 
-void FileChooser::chooseFile(const String& filename)
-{
-    Vector<String> filenames;
-    filenames.append(filename);
-    chooseFiles(filenames);
-}
-
 void FileChooser::chooseFiles(const Vector<String>& filenames)
 {
     // FIXME: This is inelegant. We should not be looking at settings here.

@@ -94,7 +94,6 @@ public:
 
     void disconnectClient() { m_client = 0; }
 
-    void chooseFile(const String& path);
     void chooseFiles(const Vector<String>& paths);
 
     // FIXME: We should probably just pass file paths that could be virtual paths with proper display names rather than passing structs.
