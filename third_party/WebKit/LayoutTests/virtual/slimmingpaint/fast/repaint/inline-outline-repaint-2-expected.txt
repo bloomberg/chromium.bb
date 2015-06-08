@@ -1,0 +1,21 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [215, 0, 40, 10],
+        [210, -5, 50, 20]
+      ],
+      "paintInvalidationClients": [
+        "LayoutInline SPAN",
+        "InlineFlowBox",
+        "LayoutText #text",
+        "InlineTextBox 'Test'"
+      ]
+    }
+  ]
+}
+
