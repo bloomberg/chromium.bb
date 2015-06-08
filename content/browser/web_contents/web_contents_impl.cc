@@ -3517,7 +3517,8 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
     delegate_->WillRunBeforeUnloadConfirm();
 
   bool suppress_this_message =
-      rfhi->rfh_state() != RenderFrameHostImpl::STATE_DEFAULT || !delegate_ ||
+      rfhi->rfh_state() != RenderFrameHostImpl::STATE_DEFAULT ||
+      ShowingInterstitialPage() || !delegate_ ||
       delegate_->ShouldSuppressDialogs(this) ||
       !delegate_->GetJavaScriptDialogManager(this);
   if (suppress_this_message) {
