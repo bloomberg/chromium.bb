@@ -452,7 +452,8 @@ void GestureInterpreterLibevdevCros::DispatchChangedKeys(
 
       // Dispatch key press or release to keyboard.
       dispatcher_->DispatchKeyEvent(
-          KeyEventParams(id_, key, value, StimeToTimedelta(timestamp)));
+          KeyEventParams(id_, key, value, true /* enable_repeat */,
+                         StimeToTimedelta(timestamp)));
     }
   }
 

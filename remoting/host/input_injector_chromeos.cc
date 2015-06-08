@@ -42,17 +42,6 @@ ui::EventFlags MouseButtonToUIFlags(MouseEvent::MouseButton button) {
   }
 }
 
-bool IsModifierKey(ui::DomCode dom_code) {
-  return dom_code == ui::DomCode::CONTROL_RIGHT ||
-         dom_code == ui::DomCode::CONTROL_LEFT ||
-         dom_code == ui::DomCode::SHIFT_RIGHT ||
-         dom_code == ui::DomCode::SHIFT_LEFT ||
-         dom_code == ui::DomCode::ALT_RIGHT ||
-         dom_code == ui::DomCode::ALT_LEFT ||
-         dom_code == ui::DomCode::OS_RIGHT ||
-         dom_code == ui::DomCode::OS_LEFT;
-}
-
 }  // namespace
 
 // This class is run exclusively on the UI thread of the browser process.
@@ -68,24 +57,17 @@ class InputInjectorChromeos::Core {
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard);
 
  private:
-  void HandleAutoRepeat(ui::DomCode dom_code, bool pressed);
-
   scoped_ptr<ui::SystemInputInjector> delegate_;
-  ui::InputController* input_controller_;
   scoped_ptr<Clipboard> clipboard_;
 
   // Used to rotate the input coordinates appropriately based on the current
   // display rotation settings.
   scoped_ptr<PointTransformer> point_transformer_;
 
-  // Used by HandleAutoRepeat().
-  std::set<ui::DomCode> pressed_keys_;
-  bool saved_auto_repeat_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-InputInjectorChromeos::Core::Core() : saved_auto_repeat_enabled_(false) {
+InputInjectorChromeos::Core::Core() {
 }
 
 void InputInjectorChromeos::Core::InjectClipboardEvent(
@@ -102,43 +84,8 @@ void InputInjectorChromeos::Core::InjectKeyEvent(const KeyEvent& event) {
 
   // Ignore events which can't be mapped.
   if (dom_code != ui::DomCode::NONE) {
-    HandleAutoRepeat(dom_code, event.pressed());
-    delegate_->InjectKeyPress(dom_code, event.pressed());
-  }
-}
-
-// Disables auto-repeat as long as keys are pressed to avoid duplicated
-// key-presses if network congestion delays the key-up event from the client.
-void InputInjectorChromeos::Core::HandleAutoRepeat(ui::DomCode dom_code,
-                                                   bool pressed) {
-  if (pressed) {
-    // Key is already held down, so lift the key up to ensure this repeated
-    // press takes effect.
-    // TODO(jamiewalch): Fix SystemInputInjector::InjectKeyPress so that this
-    // work-around is not needed (crbug.com/496420).
-    if (pressed_keys_.find(dom_code) != pressed_keys_.end()) {
-      // Ignore repeats for modifier keys.
-      if (IsModifierKey(dom_code))
-        return;
-      delegate_->InjectKeyPress(dom_code, false);
-    }
-
-    if (pressed_keys_.empty()) {
-      // Disable auto-repeat, if necessary, when any key is pressed.
-      saved_auto_repeat_enabled_ = input_controller_->IsAutoRepeatEnabled();
-      if (saved_auto_repeat_enabled_) {
-        input_controller_->SetAutoRepeatEnabled(false);
-      }
-    }
-    pressed_keys_.insert(dom_code);
-  } else {
-    pressed_keys_.erase(dom_code);
-    if (pressed_keys_.empty()) {
-      // Re-enable auto-repeat, if necessary, when all keys are released.
-      if (saved_auto_repeat_enabled_) {
-        input_controller_->SetAutoRepeatEnabled(true);
-      }
-    }
+    delegate_->InjectKeyPress(dom_code, event.pressed(),
+                              false /* enable_repeat */);
   }
 }
 
@@ -166,8 +113,6 @@ void InputInjectorChromeos::Core::Start(
   ui::OzonePlatform* ozone_platform = ui::OzonePlatform::GetInstance();
   delegate_ = ozone_platform->CreateSystemInputInjector();
   DCHECK(delegate_);
-  input_controller_ = ozone_platform->GetInputController();
-  DCHECK(input_controller_);
 
   // Implemented by remoting::ClipboardAura.
   clipboard_ = Clipboard::Create();

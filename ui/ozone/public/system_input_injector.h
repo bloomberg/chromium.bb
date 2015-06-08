@@ -41,7 +41,9 @@ class OZONE_EXPORT SystemInputInjector {
 
   // Simulates a key press.  SystemInputInjector maps |physical_key| to the
   // correct logical key based on the current keyboard layout.
-  virtual void InjectKeyPress(DomCode physical_key, bool down) = 0;
+  virtual void InjectKeyPress(DomCode physical_key,
+                              bool down,
+                              bool enable_repeat) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemInputInjector);

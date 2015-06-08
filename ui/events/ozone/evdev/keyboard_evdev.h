@@ -36,6 +36,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   // Handlers for raw key presses & releases.
   void OnKeyChange(unsigned int code,
                    bool down,
+                   bool enable_repeat,
                    base::TimeDelta timestamp,
                    int device_id);
 
@@ -53,7 +54,10 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
  private:
   void UpdateModifier(int modifier_flag, bool down);
   void UpdateCapsLockLed();
-  void UpdateKeyRepeat(unsigned int key, bool down, int device_id);
+  void UpdateKeyRepeat(unsigned int key,
+                       bool down,
+                       bool enable_repeat,
+                       int device_id);
   void StartKeyRepeat(unsigned int key, int device_id);
   void StopKeyRepeat();
   void ScheduleKeyRepeat(const base::TimeDelta& delay);

@@ -74,22 +74,20 @@ KeyboardEvdev::~KeyboardEvdev() {
 
 void KeyboardEvdev::OnKeyChange(unsigned int key,
                                 bool down,
+                                bool enable_repeat,
                                 base::TimeDelta timestamp,
                                 int device_id) {
   if (key > KEY_MAX)
     return;
 
-  if (down == key_state_.test(key))
-    return;
+  bool was_down = key_state_.test(key);
+  bool repeat = down && was_down;
+  if (!down && !was_down)
+    return;  // Key already released.
 
-  // State transition: !(down) -> (down)
-  if (down)
-    key_state_.set(key);
-  else
-    key_state_.reset(key);
-
-  UpdateKeyRepeat(key, down, device_id);
-  DispatchKey(key, down, false /* repeat */, timestamp, device_id);
+  key_state_.set(key, down);
+  UpdateKeyRepeat(key, down, enable_repeat, device_id);
+  DispatchKey(key, down, repeat, timestamp, device_id);
 }
 
 void KeyboardEvdev::SetCapsLockEnabled(bool enabled) {
@@ -143,8 +141,9 @@ void KeyboardEvdev::UpdateModifier(int modifier_flag, bool down) {
 
 void KeyboardEvdev::UpdateKeyRepeat(unsigned int key,
                                     bool down,
+                                    bool enable_repeat,
                                     int device_id) {
-  if (!repeat_enabled_)
+  if (!repeat_enabled_ || !enable_repeat)
     StopKeyRepeat();
   else if (key != repeat_key_ && down)
     StartKeyRepeat(key, device_id);

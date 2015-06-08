@@ -9,8 +9,13 @@ namespace ui {
 KeyEventParams::KeyEventParams(int device_id,
                                unsigned int code,
                                bool down,
+                               bool enable_repeat,
                                base::TimeDelta timestamp)
-    : device_id(device_id), code(code), down(down), timestamp(timestamp) {
+    : device_id(device_id),
+      code(code),
+      down(down),
+      enable_repeat(enable_repeat),
+      timestamp(timestamp) {
 }
 
 KeyEventParams::KeyEventParams(const KeyEventParams& other) = default;
