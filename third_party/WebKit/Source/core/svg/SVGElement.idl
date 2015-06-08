@@ -29,7 +29,8 @@ interface SVGElement : Element {
     readonly attribute SVGSVGElement? ownerSVGElement;
     readonly attribute SVGElement? viewportElement;
     [CustomElementCallbacks] attribute long tabIndex;
-    // TODO(philipj): focus() and blur() are on Element. crbug.com/497274
+    void focus();
+    void blur();
 };
 
 SVGElement implements GlobalEventHandlers;

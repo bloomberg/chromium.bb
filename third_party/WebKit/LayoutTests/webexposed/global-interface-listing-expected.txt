@@ -1308,11 +1308,9 @@ interface Element
     getter tabStop
     getter tagName
     method animate
-    method blur
     method closest
     method constructor
     method createShadowRoot
-    method focus
     method getAnimations
     method getAttribute
     method getAttributeNS
@@ -1920,8 +1918,10 @@ interface HTMLElement
     getter title
     getter translate
     getter webkitdropzone
+    method blur
     method click
     method constructor
+    method focus
     setter accessKey
     setter contentEditable
     setter contextMenu
@@ -4102,7 +4102,9 @@ interface SVGElement
     getter style
     getter tabIndex
     getter viewportElement
+    method blur
     method constructor
+    method focus
     setter onabort
     setter onautocomplete
     setter onautocompleteerror

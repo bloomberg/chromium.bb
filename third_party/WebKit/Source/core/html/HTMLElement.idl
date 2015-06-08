@@ -32,7 +32,8 @@ interface HTMLElement : Element {
     [Reflect] attribute boolean hidden;
     void click();
     [CustomElementCallbacks] attribute long tabIndex;
-    // FIXME: focus() and blur() are on Element. crbug.com/497274
+    void focus();
+    void blur();
     [Reflect] attribute DOMString accessKey;
     [CustomElementCallbacks] attribute boolean draggable;
     [RuntimeEnabled=ContextMenu] attribute HTMLMenuElement? contextMenu;
