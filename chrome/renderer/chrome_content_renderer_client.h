@@ -109,7 +109,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                       const base::Closure& closure) override;
   bool RunIdleHandlerWhenWidgetsHidden() override;
   bool AllowPopup() override;
-  bool ShouldFork(blink::WebFrame* frame,
+  bool ShouldFork(blink::WebLocalFrame* frame,
                   const GURL& url,
                   const std::string& http_method,
                   bool is_initial_navigation,

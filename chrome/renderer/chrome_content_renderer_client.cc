@@ -1234,7 +1234,7 @@ bool ChromeContentRendererClient::AllowPopup() {
   return false;
 }
 
-bool ChromeContentRendererClient::ShouldFork(blink::WebFrame* frame,
+bool ChromeContentRendererClient::ShouldFork(blink::WebLocalFrame* frame,
                                              const GURL& url,
                                              const std::string& http_method,
                                              bool is_initial_navigation,
@@ -1305,8 +1305,11 @@ bool ChromeContentRendererClient::ShouldFork(blink::WebFrame* frame,
   // If this is a reload, check whether it has the wrong process type.  We
   // should send it to the browser if it's an extension URL (e.g., hosted app)
   // in a normal process, or if it's a process for an extension that has been
-  // uninstalled.
-  if (frame->top()->document().url() == url) {
+  // uninstalled.  Without --site-per-process mode, we never fork processes for
+  // subframes, so this check only makes sense for top-level frames.
+  // TODO(alexmos,nasko): Figure out how this check should work when reloading
+  // subframes in --site-per-process mode.
+  if (!frame->parent() && frame->document().url() == url) {
     if (is_extension_url != IsStandaloneExtensionProcess())
       return true;
   }

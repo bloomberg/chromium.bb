@@ -218,7 +218,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // If |send_referrer| is set to false (which is the default), no referrer
   // header will be send for the navigation. Otherwise, the referrer header is
   // set according to the frame's referrer policy.
-  virtual bool ShouldFork(blink::WebFrame* frame,
+  virtual bool ShouldFork(blink::WebLocalFrame* frame,
                           const GURL& url,
                           const std::string& http_method,
                           bool is_initial_navigation,
