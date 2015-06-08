@@ -2432,17 +2432,14 @@ bool LayoutBox::skipContainingBlockForPercentHeightCalculation(const LayoutBox* 
     if (isHorizontalWritingMode() != containingBlock->isHorizontalWritingMode())
         return false;
 
-    // Flow threads for multicol or paged overflow should be skipped. They are invisible to the DOM,
-    // and percent heights of children should be resolved against the multicol or paged container.
-    if (containingBlock->isLayoutFlowThread())
+    // Anonymous layout objects are invisible to the DOM, so whatever they're doing there, they
+    // should not impede percentage resolution on a child. Examples of such anonymous layout objects
+    // are multicol flow threads and ruby runs.
+    if (containingBlock->isAnonymous())
         return true;
 
-    // For quirks mode and anonymous blocks, we skip auto-height containingBlocks when computing percentages.
-    // For standards mode, we treat the percentage as auto if it has an auto-height containing block.
-    if (!document().inQuirksMode() && !containingBlock->isAnonymousBlock())
-        return false;
-
-    return !containingBlock->isTableCell() && !containingBlock->isOutOfFlowPositioned() && containingBlock->style()->logicalHeight().isAuto();
+    // For quirks mode, we skip most auto-height containing blocks when computing percentages.
+    return document().inQuirksMode() && !containingBlock->isTableCell() && !containingBlock->isOutOfFlowPositioned() && containingBlock->style()->logicalHeight().isAuto();
 }
 
 LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
