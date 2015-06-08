@@ -1891,7 +1891,7 @@ crbug.com/488037 [ Win Debug ] tables/mozilla_expected_failures/marvin/table_ove
 
 crbug.com/488101 fast/loader/unload-form-post-about-blank.html [ Pass Failure ]
 
-crbug.com/481896 http/tests/inspector/compiler-source-mapping-debug.html [ NeedsManualRebaseline ]
+crbug.com/481896 http/tests/inspector/compiler-source-mapping-debug.html [ NeedsRebaseline ]
 
 crbug.com/488445 [ Win7 Debug ] http/tests/fetch/window/request.html [ Pass Failure ]
 crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Timeout ]
