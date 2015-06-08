@@ -410,7 +410,7 @@ public class ToolbarPhone extends ToolbarLayout
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
             boolean changed = layoutLocationBar(MeasureSpec.getSize(widthMeasureSpec));
-            setUrlFocusChangePercent(mUrlFocusChangePercent);
+            if (!mInTabSwitcherMode) setUrlFocusChangePercent(mUrlFocusChangePercent);
             if (!changed) return;
         } else {
             updateUnfocusedLocationBarLayoutParams();
@@ -673,6 +673,8 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void updateUrlExpansionAnimation() {
+        if (mInTabSwitcherMode) return;
+
         mLocationBarBackgroundOffset.setEmpty();
 
         FrameLayout.LayoutParams locationBarLayoutParams =
@@ -882,7 +884,8 @@ public class ToolbarPhone extends ToolbarLayout
         translateCanvasToView(this, mToolbarButtonsContainer, canvas);
 
         if (mTabSwitcherAnimationTabStackDrawable != null
-                && mToggleTabStackButton.getVisibility() != View.GONE) {
+                && mToggleTabStackButton.getVisibility() != View.GONE
+                && mUrlExpansionPercent != 1f) {
             // Draw the tab stack button image.
             canvas.save();
             translateCanvasToView(mToolbarButtonsContainer, mToggleTabStackButton, canvas);
@@ -905,7 +908,8 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         // Draw the menu button if necessary.
-        if (mTabSwitcherAnimationMenuDrawable != null) {
+        if (mTabSwitcherAnimationMenuDrawable != null
+                && mUrlExpansionPercent != 1f) {
             mTabSwitcherAnimationMenuDrawable.setBounds(
                     mMenuButton.getPaddingLeft(), mMenuButton.getPaddingTop(),
                     mMenuButton.getWidth() - mMenuButton.getPaddingRight(),
@@ -1690,7 +1694,7 @@ public class ToolbarPhone extends ToolbarLayout
             // Convert the previous NTP scroll percentage to URL focus percentage because that
             // will give a nicer transition animation from the expanded NTP omnibox to the
             // collapsed normal omnibox on other non-NTP pages.
-            if (previousNtpScrollPercent > 0f) {
+            if (!mInTabSwitcherMode && previousNtpScrollPercent > 0f) {
                 mUrlFocusChangePercent =
                         Math.max(previousNtpScrollPercent, mUrlFocusChangePercent);
                 triggerUrlFocusAnimation(false);
