@@ -52,7 +52,7 @@ struct IDBObjectStoreMetadata;
 class MODULES_EXPORT IDBTransaction final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<IDBTransaction>
     , public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<IDBTransaction>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(IDBTransaction);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
     DEFINE_WRAPPERTYPEINFO();
 public:

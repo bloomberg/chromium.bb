@@ -59,7 +59,7 @@ class ExecutionContext;
 class StringOrStringSequence;
 
 class MODULES_EXPORT DOMWebSocket : public RefCountedGarbageCollectedEventTargetWithInlineData<DOMWebSocket>, public ActiveDOMObject, public WebSocketChannelClient {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<DOMWebSocket>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(DOMWebSocket);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(DOMWebSocket);
 public:

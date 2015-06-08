@@ -41,7 +41,7 @@ class ExceptionState;
 class PlatformSpeechSynthesizerClient;
 
 class MODULES_EXPORT SpeechSynthesis final : public RefCountedGarbageCollectedEventTargetWithInlineData<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ContextLifecycleObserver {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SpeechSynthesis>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(SpeechSynthesis);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
 public:

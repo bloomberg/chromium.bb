@@ -58,7 +58,7 @@ class UnsignedLongOrUnsignedLongSequence;
 struct WebNotificationData;
 
 class MODULES_EXPORT Notification final : public RefCountedGarbageCollectedEventTargetWithInlineData<Notification>, public ActiveDOMObject, public WebNotificationDelegate {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<Notification>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Notification);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Notification);
     DEFINE_WRAPPERTYPEINFO();
 public:

@@ -51,7 +51,7 @@ class MediaSource final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaSource>
     , public HTMLMediaSource
     , public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MediaSource>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaSource);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
 public:

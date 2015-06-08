@@ -40,7 +40,7 @@ class SourceBuffer;
 class GenericEventQueue;
 
 class SourceBufferList final : public RefCountedGarbageCollectedEventTargetWithInlineData<SourceBufferList> {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SourceBufferList>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(SourceBufferList);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SourceBufferList* create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)

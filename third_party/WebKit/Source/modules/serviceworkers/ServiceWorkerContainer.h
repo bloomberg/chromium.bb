@@ -58,7 +58,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
     , public ContextLifecycleObserver
     , public WebServiceWorkerProviderClient {
     DEFINE_WRAPPERTYPEINFO();
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<ServiceWorkerContainer>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ServiceWorkerContainer);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainer);
 public:
     static ServiceWorkerContainer* create(ExecutionContext*);

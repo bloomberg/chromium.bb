@@ -55,7 +55,7 @@ using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
 class CORE_EXPORT Performance final : public RefCountedGarbageCollectedEventTargetWithInlineData<Performance>, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<Performance>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Performance);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Performance);
 public:
     static Performance* create(LocalFrame* frame)

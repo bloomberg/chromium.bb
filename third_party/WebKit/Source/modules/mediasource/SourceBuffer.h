@@ -58,7 +58,7 @@ class SourceBuffer final
     , public ActiveDOMObject
     , public FileReaderLoaderClient
     , public WebSourceBufferClient {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<SourceBuffer>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(SourceBuffer);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);
     DEFINE_WRAPPERTYPEINFO();
 public:

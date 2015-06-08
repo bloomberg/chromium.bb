@@ -18,7 +18,7 @@ class NetworkInformation final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<NetworkInformation>
     , public ActiveDOMObject
     , public NetworkStateNotifier::NetworkStateObserver {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<NetworkInformation>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(NetworkInformation);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(NetworkInformation);
     DEFINE_WRAPPERTYPEINFO();
 public:

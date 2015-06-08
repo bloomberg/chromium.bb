@@ -42,7 +42,7 @@ class MediaQuerySet;
 // will be called whenever the value of the query changes.
 
 class CORE_EXPORT MediaQueryList final : public EventTargetWithInlineData, public RefCountedWillBeNoBase<MediaQueryList>, public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCounted<MediaQueryList>);
+    REFCOUNTED_EVENT_TARGET(MediaQueryList);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
 public:

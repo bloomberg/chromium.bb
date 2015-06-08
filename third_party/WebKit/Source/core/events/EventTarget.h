@@ -85,7 +85,7 @@ public:
 // - Figure out if you now need to inherit from ActiveDOMObject as well.
 // - In your class declaration, you will typically use
 //   REFCOUNTED_EVENT_TARGET(YourClass) if YourClass is a RefCounted<>,
-//   or DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(OtherRefCounted<YourClass>)
+//   or REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(OtherRefCounted<YourClass>)
 //   if YourClass uses a different kind of reference counting template such as
 //   RefCountedGarbageCollected<YourClass>.
 // - Make sure to include this header file in your .h file, or you will get
@@ -280,13 +280,15 @@ inline bool EventTarget::hasCapturingEventListeners(const AtomicString& eventTyp
 
 } // namespace blink
 
+// If the EventTarget class is RefCounted on non-oilpan builds,
+// use REFCOUNTED_EVENT_TARGET.
+// If the EventTarget class is RefCountedGarbageCollected on non-oilpan builds,
+// use REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET.
 #if ENABLE(OILPAN)
-
 #define DEFINE_EVENT_TARGET_REFCOUNTING(baseClass)
-#define DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(baseClass)
-
+#define REFCOUNTED_EVENT_TARGET(baseClass)
+#define REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(baseClass)
 #else // !ENABLE(OILPAN)
-
 #define DEFINE_EVENT_TARGET_REFCOUNTING(baseClass) \
 public: \
     using baseClass::ref; \
@@ -295,13 +297,8 @@ private: \
     virtual void refEventTarget() override final { ref(); } \
     virtual void derefEventTarget() override final { deref(); } \
     typedef int thisIsHereToForceASemiColonAfterThisEventTargetMacro
-#define DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(baseClass) DEFINE_EVENT_TARGET_REFCOUNTING(baseClass)
-
+#define REFCOUNTED_EVENT_TARGET(baseClass) DEFINE_EVENT_TARGET_REFCOUNTING(RefCounted<baseClass>)
+#define REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(baseClass) DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedGarbageCollected<baseClass>)
 #endif // ENABLE(OILPAN)
-
-// Use this macro if your EventTarget subclass is also a subclass of WTF::RefCounted.
-// A ref-counted class that uses a different method of refcounting should use DEFINE_EVENT_TARGET_REFCOUNTING directly.
-// Both of these macros are meant to be placed just before the "public:" section of the class declaration.
-#define REFCOUNTED_EVENT_TARGET(className) DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCounted<className>)
 
 #endif // EventTarget_h

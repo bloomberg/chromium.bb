@@ -24,7 +24,7 @@ class PresentationController;
 class PresentationSession final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PresentationSession>
     , public DOMWindowProperty {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<PresentationSession>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PresentationSession);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PresentationSession);
     DEFINE_WRAPPERTYPEINFO();
 public:

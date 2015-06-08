@@ -55,7 +55,7 @@ class ExecutionContext;
 class MODULES_EXPORT IDBDatabase final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<IDBDatabase>
     , public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<IDBDatabase>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(IDBDatabase);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
     DEFINE_WRAPPERTYPEINFO();
 public:

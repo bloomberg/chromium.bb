@@ -29,7 +29,7 @@ enum class WebPresentationSessionState;
 class Presentation final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<Presentation>
     , public DOMWindowProperty {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<Presentation>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Presentation);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Presentation);
     DEFINE_WRAPPERTYPEINFO();
 public:

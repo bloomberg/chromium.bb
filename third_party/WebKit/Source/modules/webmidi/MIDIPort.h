@@ -43,7 +43,7 @@ namespace blink {
 class MIDIAccess;
 
 class MIDIPort : public RefCountedGarbageCollectedEventTargetWithInlineData<MIDIPort>, public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<MIDIPort>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MIDIPort);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MIDIPort);
 public:

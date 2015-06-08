@@ -25,7 +25,7 @@ class PermissionStatus final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<PermissionStatus>
     , public ActiveDOMObject
     , public WebPermissionObserver {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<PermissionStatus>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PermissionStatus);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
     DEFINE_WRAPPERTYPEINFO();
 public:

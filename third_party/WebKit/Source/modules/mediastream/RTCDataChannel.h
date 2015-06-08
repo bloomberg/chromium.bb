@@ -45,7 +45,7 @@ struct WebRTCDataChannelInit;
 class RTCDataChannel final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<RTCDataChannel>
     , public WebRTCDataChannelHandlerClient {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCDataChannel>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDataChannel);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static RTCDataChannel* create(ExecutionContext*, RTCPeerConnection*, PassOwnPtr<WebRTCDataChannelHandler>);

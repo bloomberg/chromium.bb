@@ -42,7 +42,7 @@ class RTCDTMFSender final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<RTCDTMFSender>
     , public WebRTCDTMFSenderHandlerClient
     , public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<RTCDTMFSender>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RTCDTMFSender);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
     DEFINE_WRAPPERTYPEINFO();
 public:

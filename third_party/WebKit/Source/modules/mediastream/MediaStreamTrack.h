@@ -45,7 +45,7 @@ class MODULES_EXPORT MediaStreamTrack final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<MediaStreamTrack>
     , public ActiveDOMObject
     , public MediaStreamSource::Observer {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStreamTrack>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaStreamTrack);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
     DEFINE_WRAPPERTYPEINFO();
 public:

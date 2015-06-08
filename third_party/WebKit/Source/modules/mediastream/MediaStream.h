@@ -43,7 +43,7 @@ class MODULES_EXPORT MediaStream final
     , public URLRegistrable
     , public MediaStreamDescriptorClient
     , public ContextLifecycleObserver {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<MediaStream>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(MediaStream);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
     DEFINE_WRAPPERTYPEINFO();
 public:

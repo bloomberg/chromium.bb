@@ -56,7 +56,7 @@ class FileWriter final
 #endif
     , public ActiveDOMObject
     , public WebFileWriterClient {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<FileWriterBase>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(FileWriterBase);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
 public:

@@ -29,7 +29,7 @@ class ServiceWorkerRegistration final
     , public WebServiceWorkerRegistrationProxy
     , public HeapSupplementable<ServiceWorkerRegistration> {
     DEFINE_WRAPPERTYPEINFO();
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollected<ServiceWorkerRegistration>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ServiceWorkerRegistration);
     USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistration);
 public:
     // EventTarget overrides.

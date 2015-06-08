@@ -126,7 +126,9 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(Node);
 #endif
 
 class CORE_EXPORT Node : NODE_BASE_CLASSES {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(TreeShared<Node>);
+#if !ENABLE(OILPAN)
+    DEFINE_EVENT_TARGET_REFCOUNTING(TreeShared<Node>);
+#endif
     DEFINE_WRAPPERTYPEINFO();
     friend class TreeScope;
     friend class TreeScopeAdopter;

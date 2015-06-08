@@ -24,7 +24,7 @@ class ScreenOrientationController;
 class ScreenOrientation final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<ScreenOrientation>
     , public DOMWindowProperty {
-    DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(RefCountedGarbageCollectedWillBeGarbageCollectedFinalized<ScreenOrientation>);
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ScreenOrientation);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
 public:

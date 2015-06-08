@@ -63,7 +63,7 @@ class FontFaceSet final : public EventTargetWithInlineData, public HeapSupplemen
     typedef HeapSupplement<Document> SupplementType;
 #else
 class FontFaceSet final : public EventTargetWithInlineData, public RefCountedSupplement<Document, FontFaceSet>, public ActiveDOMObject {
-    DEFINE_EVENT_TARGET_REFCOUNTING(RefCounted<FontFaceSet>);
+    REFCOUNTED_EVENT_TARGET(FontFaceSet);
     typedef RefCountedSupplement<Document, FontFaceSet> SupplementType;
 #endif
     DEFINE_WRAPPERTYPEINFO();
