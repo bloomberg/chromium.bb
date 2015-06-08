@@ -2872,7 +2872,7 @@ void Document::didLoadAllScriptBlockingResources()
         frame()->loader().client()->didRemoveAllPendingStylesheet();
 
     if (m_gotoAnchorNeededAfterStylesheetsLoad && view())
-        view()->scrollToFragment(m_url);
+        view()->processUrlFragment(m_url);
 }
 
 void Document::executeScriptsWaitingForResourcesTimerFired(Timer<Document>*)

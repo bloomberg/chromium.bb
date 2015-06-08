@@ -292,9 +292,9 @@ void SVGImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& dst
     FrameView* view = frameView();
     view->resize(containerSize());
 
-    // Always call scrollToFragment, even if the url is empty, because
+    // Always call processUrlFragment, even if the url is empty, because
     // there may have been a previous url/fragment that needs to be reset.
-    view->scrollToFragment(m_url);
+    view->processUrlFragment(m_url);
 
     SkPictureBuilder imagePicture(dstRect);
     {

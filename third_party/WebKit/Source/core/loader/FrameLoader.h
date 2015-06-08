@@ -187,7 +187,7 @@ private:
     SubstituteData defaultSubstituteDataForURL(const KURL&);
 
     bool shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType, const KURL&);
-    void scrollToFragmentWithParentBoundary(const KURL&);
+    void processFragment(const KURL&, LoadStartType);
 
     void startLoad(FrameLoadRequest&, FrameLoadType, NavigationPolicy);
 

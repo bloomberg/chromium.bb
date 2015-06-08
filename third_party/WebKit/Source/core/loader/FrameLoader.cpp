@@ -424,8 +424,7 @@ void FrameLoader::finishedParsing()
     // Check if the scrollbars are really needed for the content.
     // If not, remove them, relayout, and repaint.
     m_frame->view()->restoreScrollbar();
-    if (!documentLoader()->initialScrollState().didRestoreFromHistory)
-        scrollToFragmentWithParentBoundary(m_frame->document()->url());
+    processFragment(m_frame->document()->url(), NavigationToDifferentDocument);
 }
 
 static bool allDescendantsAreComplete(Frame* frame)
@@ -625,7 +624,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
 
     // We need to scroll to the fragment whether or not a hash change occurred, since
     // the user might have scrolled since the previous navigation.
-    scrollToFragmentWithParentBoundary(url);
+    processFragment(url, NavigationWithinSameDocument);
     checkCompleted();
 
     m_frame->localDOMWindow()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
@@ -1146,7 +1145,7 @@ bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const S
         && !m_frame->document()->isFrameSet();
 }
 
-void FrameLoader::scrollToFragmentWithParentBoundary(const KURL& url)
+void FrameLoader::processFragment(const KURL& url, LoadStartType loadStartType)
 {
     FrameView* view = m_frame->view();
     if (!view)
@@ -1159,7 +1158,9 @@ void FrameLoader::scrollToFragmentWithParentBoundary(const KURL& url)
     if (boundaryFrame && boundaryFrame->isLocalFrame())
         toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(false);
 
-    view->scrollToFragment(url);
+    view->processUrlFragment(url,
+        loadStartType == NavigationToDifferentDocument && documentLoader()->initialScrollState().didRestoreFromHistory ?
+            FrameView::UrlFragmentDontScroll : FrameView::UrlFragmentScroll);
 
     if (boundaryFrame && boundaryFrame->isLocalFrame())
         toLocalFrame(boundaryFrame.get())->view()->setSafeToPropagateScrollToParent(true);

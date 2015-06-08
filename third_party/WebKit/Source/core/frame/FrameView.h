@@ -239,9 +239,11 @@ public:
 
     void forceLayoutForPagination(const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkFactor);
 
-    bool scrollToFragment(const KURL&);
-    bool scrollToAnchor(const String&);
-    void maintainScrollPositionAtAnchor(Node*);
+    enum UrlFragmentBehavior {
+        UrlFragmentScroll,
+        UrlFragmentDontScroll
+    };
+    bool processUrlFragment(const KURL&, UrlFragmentBehavior = UrlFragmentScroll);
 
     // Methods to convert points and rects between the coordinate space of the layoutObject, and this view.
     IntRect convertFromLayoutObject(const LayoutObject&, const IntRect&) const;
@@ -666,6 +668,8 @@ private:
     void updateWidgetsTimerFired(Timer<FrameView>*);
     bool updateWidgets();
 
+    bool processUrlFragmentHelper(const String&, UrlFragmentBehavior);
+    void maintainScrollPositionAtAnchor(Node*);
     void scrollToAnchor();
     void scrollPositionChanged();
     void didScrollTimerFired(Timer<FrameView>*);

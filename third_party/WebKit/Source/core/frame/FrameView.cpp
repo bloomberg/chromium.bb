@@ -1408,7 +1408,7 @@ void FrameView::restoreScrollbar()
     setScrollbarsSuppressed(false);
 }
 
-bool FrameView::scrollToFragment(const KURL& url)
+bool FrameView::processUrlFragment(const KURL& url, UrlFragmentBehavior behavior)
 {
     // If our URL has no ref, then we have no place we need to jump to.
     // OTOH If CSS target was set previously, we want to set it to 0, recalc
@@ -1420,21 +1420,21 @@ bool FrameView::scrollToFragment(const KURL& url)
         return false;
 
     String fragmentIdentifier = url.fragmentIdentifier();
-    if (scrollToAnchor(fragmentIdentifier))
+    if (processUrlFragmentHelper(fragmentIdentifier, behavior))
         return true;
 
     // Try again after decoding the ref, based on the document's encoding.
     if (m_frame->document()->encoding().isValid())
-        return scrollToAnchor(decodeURLEscapeSequences(fragmentIdentifier, m_frame->document()->encoding()));
+        return processUrlFragmentHelper(decodeURLEscapeSequences(fragmentIdentifier, m_frame->document()->encoding()), behavior);
 
     return false;
 }
 
-bool FrameView::scrollToAnchor(const String& name)
+bool FrameView::processUrlFragmentHelper(const String& name, UrlFragmentBehavior behavior)
 {
     ASSERT(m_frame->document());
 
-    if (!m_frame->document()->isRenderingReady()) {
+    if (behavior == UrlFragmentScroll && !m_frame->document()->isRenderingReady()) {
         m_frame->document()->setGotoAnchorNeededAfterStylesheetsLoad(true);
         return false;
     }
@@ -1458,7 +1458,8 @@ bool FrameView::scrollToAnchor(const String& name)
     if (!anchorNode && !(name.isEmpty() || equalIgnoringCase(name, "top")))
         return false;
 
-    maintainScrollPositionAtAnchor(anchorNode ? static_cast<Node*>(anchorNode) : m_frame->document());
+    if (behavior == UrlFragmentScroll)
+        maintainScrollPositionAtAnchor(anchorNode ? static_cast<Node*>(anchorNode) : m_frame->document());
 
     // If the anchor accepts keyboard focus, move focus there to aid users relying on keyboard navigation.
     // If anchorNode is not focusable, setFocusedElement() will still clear focus, which matches the behavior of other browsers.
