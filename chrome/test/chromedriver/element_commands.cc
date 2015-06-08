@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
-#include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/js.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -192,7 +191,7 @@ Status ExecuteTouchSingleTap(
       session, web_view, element_id, &location);
   if (status.IsError())
     return status;
-  if (session->chrome->GetBrowserInfo()->build_no < 2388) {
+  if (!session->chrome->HasTouchScreen()) {
     // TODO(samuong): remove this once we stop supporting M44.
     std::list<TouchEvent> events;
     events.push_back(
@@ -210,7 +209,7 @@ Status ExecuteTouchDoubleTap(
     const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  if (session->chrome->GetBrowserInfo()->build_no < 2388) {
+  if (!session->chrome->HasTouchScreen()) {
     // TODO(samuong): remove this once we stop supporting M44.
     return Status(kUnknownCommand, "Double tap command requires Chrome 44+");
   }
@@ -228,7 +227,7 @@ Status ExecuteTouchLongPress(
     const std::string& element_id,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  if (session->chrome->GetBrowserInfo()->build_no < 2388) {
+  if (!session->chrome->HasTouchScreen()) {
     // TODO(samuong): remove this once we stop supporting M44.
     return Status(kUnknownCommand, "Long press command requires Chrome 44+");
   }
