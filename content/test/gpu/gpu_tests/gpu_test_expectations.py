@@ -17,8 +17,8 @@ from telemetry.page import test_expectations
 # Browser types:
 #     android-webview-shell
 #
-# Direct3D status:
-#     d3d9, d3d11
+# ANGLE renderer:
+#     d3d9, d3d11, opengl
 #
 # Specific GPUs can be listed as a tuple with vendor name and device ID.
 # Examples: ('nvidia', 0x1234), ('arm', 'Mali-T604')
@@ -28,14 +28,14 @@ from telemetry.page import test_expectations
 #   self.Fail('gl-enable-vertex-attrib.html',
 #       ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
-D3D_MODIFIERS = ['d3d9', 'd3d11']
+ANGLE_MODIFIERS = ['d3d9', 'd3d11', 'opengl']
 
 BROWSER_TYPE_MODIFIERS = ['android-webview-shell']
 
 class GpuTestExpectations(test_expectations.TestExpectations):
   def IsValidUserDefinedCondition(self, condition):
-    # Add support for d3d9 and d3d11-specific expectations.
-    if condition in D3D_MODIFIERS:
+    # Add support for d3d9, d3d11 and opengl-specific expectations.
+    if condition in ANGLE_MODIFIERS:
       return True
     # Add support for browser-type-specific expectations.
     if condition in BROWSER_TYPE_MODIFIERS:
@@ -63,7 +63,7 @@ class GpuTestExpectations(test_expectations.TestExpectations):
                        browser.browser_type in browser_expectations)
     if not browser_matches:
       return False
-    d3d_version = ''
+    angle_renderer = ''
     gpu_info = None
     if browser.supports_system_info:
       gpu_info = browser.GetSystemInfo().gpu
@@ -71,11 +71,13 @@ class GpuTestExpectations(test_expectations.TestExpectations):
       gl_renderer = gpu_info.aux_attributes.get('gl_renderer')
       if gl_renderer:
         if 'Direct3D11' in gl_renderer:
-          d3d_version = 'd3d11'
+          angle_renderer = 'd3d11'
         elif 'Direct3D9' in gl_renderer:
-          d3d_version = 'd3d9'
-    d3d_expectations = [x for x in expectation.user_defined_conditions
-                        if x in D3D_MODIFIERS]
-    d3d_matches = ((not d3d_expectations) or
-                   d3d_version in d3d_expectations)
-    return d3d_matches
+          angle_renderer = 'd3d9'
+        elif 'OpenGL' in gl_renderer:
+          angle_renderer = 'opengl'
+    angle_expectations = [x for x in expectation.user_defined_conditions
+                        if x in ANGLE_MODIFIERS]
+    angle_matches = ((not angle_expectations) or
+                   angle_renderer in angle_expectations)
+    return angle_matches

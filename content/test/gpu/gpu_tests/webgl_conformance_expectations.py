@@ -105,6 +105,49 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/extensions/oes-texture-half-float-with-canvas.html',
         ['win', 'd3d9'], bug=896) # angle bug ID
 
+    # Win / OpenGL failures
+    self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/canvas/canvas-test.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/canvas/draw-webgl-to-canvas-test.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/canvas/' +
+        'draw-static-webgl-to-multiple-canvas-test.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/canvas/to-data-url-test.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/context/' +
+        'context-attribute-preserve-drawing-buffer.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/context/'+
+        'context-attributes-alpha-depth-stencil-antialias.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/context/premultiplyalpha-test.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/extensions/ext-sRGB.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-float.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-half-float.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/extensions/oes-texture-half-float-with-canvas.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/glsl/variables/gl-pointcoord.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/reading/read-pixels-pack-alignment.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/textures/gl-pixelstorei.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('conformance/textures/tex-image-canvas-corruption.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+
     # Mac failures
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['mac'], bug=421710)
