@@ -14,6 +14,19 @@ public:
     bool foo() { return true; }
 };
 
+class HeapObject;
+
+class PartOther {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    void trace(Visitor*);
+
+    HeapObject* obj() { return m_obj; }
+
+private:
+    Member<HeapObject> m_obj;
+};
+
 class HeapObject : public GarbageCollectedFinalized<HeapObject> {
 public:
     ~HeapObject();
@@ -24,6 +37,7 @@ private:
     RefPtr<Other> m_ref;
     Member<HeapObject> m_obj;
     Vector<Member<HeapObject> > m_objs;
+    PartOther m_part;
 };
 
 }

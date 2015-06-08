@@ -9,8 +9,10 @@ namespace blink {
 HeapObject::~HeapObject()
 {
     // Valid access to fields.
-    if (m_ref->foo() && !m_obj)
+    if (m_ref->foo() && !m_obj) {
         m_objs.size();
+        m_part.obj();
+    }
 
     // Invalid access to fields.
     bar(m_obj);
@@ -22,6 +24,12 @@ void HeapObject::trace(Visitor* visitor)
 {
     visitor->trace(m_obj);
     visitor->trace(m_objs);
+    visitor->trace(m_part);
+}
+
+void PartOther::trace(Visitor* visitor)
+{
+    visitor->trace(m_obj);
 }
 
 }
