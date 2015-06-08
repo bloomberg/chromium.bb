@@ -74,7 +74,11 @@ endpython
 fun! s:MakeWithCustomCommand(build_cmd)
   let l:oldmakepgr = &makeprg
   let &makeprg=a:build_cmd
-  silent make | cwindow
+  if exists(':Make') == 2
+    Make
+  else
+    silent make | cwindow
+  endif
   if !has('gui_running')
     redraw!
   endif
