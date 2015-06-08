@@ -646,11 +646,13 @@ void WebMediaPlayerImpl::setContentDecryptionModule(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
+  // Once the CDM is set it can't be cleared as there may be frames being
+  // decrypted on other threads. So fail this request.
+  // http://crbug.com/462365#c7.
   if (!cdm) {
     result.completeWithError(
-        blink::WebContentDecryptionModuleExceptionNotSupportedError, 0,
-        "Null MediaKeys object is not supported.");
+        blink::WebContentDecryptionModuleExceptionInvalidStateError, 0,
+        "The existing MediaKeys object cannot be removed at this time.");
     return;
   }
 
