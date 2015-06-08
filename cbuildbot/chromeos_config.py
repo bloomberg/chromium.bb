@@ -1354,6 +1354,10 @@ def GetConfig():
       vm_tests=[],
   )
 
+  # falco is the only board that has the -clang-clean CFLAG right now,
+  # so it's important that falco stays as a full-compile builder.
+  # TODO(yunlian): Add -clang-clean to more boards.
+  # See https://chromium-review.googlesource.com/#/c/275862/
   _CreateConfigsForBoards(
       full_compile_paladin,
       ['falco', 'nyan'],
