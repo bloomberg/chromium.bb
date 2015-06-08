@@ -108,6 +108,17 @@ NewWindowInfo::NewWindowInfo(GURL target_url,
 NewWindowInfo::~NewWindowInfo() {
 }
 
+// Struct to capture data about a user interaction. Records the time of the
+// interaction and the main document URL at that time.
+struct UserInteractionEvent {
+  UserInteractionEvent(GURL url)
+      : main_document_url(url), time(CFAbsoluteTimeGetCurrent()) {}
+  // Main document URL at the time the interaction occurred.
+  GURL main_document_url;
+  // Time that the interaction occured, measured in seconds since Jan 1 2001.
+  CFAbsoluteTime time;
+};
+
 }  // namespace web
 
 namespace {
@@ -204,8 +215,8 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
   scoped_ptr<base::DictionaryValue> _DOMElementForLastTouch;
   // Whether a click is in progress.
   BOOL _clickInProgress;
-  // The time of the last click, measured in seconds since Jan 1 2001.
-  CFAbsoluteTime _lastClickTimeInSeconds;
+  // Data on the recorded last user interaction.
+  scoped_ptr<web::UserInteractionEvent> _lastUserInteraction;
   // The time of the last page transfer start, measured in seconds since Jan 1
   // 2001.
   CFAbsoluteTime _lastTransferTimeInSeconds;
@@ -382,8 +393,9 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 // Returns YES if the url was succesfully opened in the native app.
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)url
                          sourceURL:(const GURL&)sourceURL;
-// Returns whether external |url| should be opened.
-- (BOOL)shouldOpenExternalURL:(const GURL&)url;
+// Returns whether external URL request should be opened.
+- (BOOL)shouldOpenExternalURLRequest:(NSURLRequest*)request
+                         targetFrame:(const web::FrameInfo*)targetFrame;
 // Called when a page updates its history stack using pushState or replaceState.
 - (void)didUpdateHistoryStateWithPageURL:(const GURL&)url;
 
@@ -2571,9 +2583,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)resetDocumentSpecificState {
-  _lastClickTimeInSeconds = -DBL_MAX;
+  _lastUserInteraction.reset();
   _clickInProgress = NO;
-
   _lastSeenWindowID.reset([[_windowIDJSManager windowId] copy]);
 }
 
@@ -2736,7 +2747,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // TODO(droger):  Check transition type before opening an external
   // application? For example, only allow it for TYPED and LINK transitions.
   if (![CRWWebController webControllerCanShow:requestURL]) {
-    if (![self shouldOpenExternalURL:requestURL]) {
+    if (![self shouldOpenExternalURLRequest:request targetFrame:targetFrame]) {
       return NO;
     }
 
@@ -2802,20 +2813,20 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   NSTimeInterval requestCreationDate =
       [[userInfo objectForKey:@"CreationDate"] timeIntervalSinceReferenceDate];
   bool userInteracted = false;
-  if (requestCreationDate != 0.0) {
+  if (requestCreationDate != 0.0 && _lastUserInteraction) {
     NSTimeInterval timeSinceInteraction =
-        requestCreationDate - _lastClickTimeInSeconds;
+        requestCreationDate - _lastUserInteraction->time;
     // The error is considered to be the result of a user interaction if any
     // interaction happened just before the request was made.
     // TODO(droger): If the user interacted with the page after the request was
     // made (i.e. creationTimeSinceLastInteraction < 0), then
-    // |_lastClickTimeInSeconds| has been overridden. The current behavior is to
+    // |_lastUserInteraction| has been overridden. The current behavior is to
     // discard the interstitial in that case. A better decision could be made if
     // we had a history of all the user interactions instead of just the last
     // one.
     userInteracted =
         timeSinceInteraction < kMaximumDelayForUserInteractionInSeconds &&
-        _lastClickTimeInSeconds > _lastTransferTimeInSeconds &&
+        _lastUserInteraction->time > _lastTransferTimeInSeconds &&
         timeSinceInteraction >= 0.0;
   } else {
     // If the error does not have timing information, check if the user
@@ -3081,7 +3092,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   _clickInProgress = touched;
   if (touched) {
     _userInteractionRegistered = YES;
-    _lastClickTimeInSeconds = CFAbsoluteTimeGetCurrent();
+    if (_isBeingDestroyed)
+      return;
+    const web::NavigationManagerImpl& navigationManager =
+        self.webStateImpl->GetNavigationManagerImpl();
+    GURL mainDocumentURL =
+        navigationManager.GetEntryCount()
+            ? navigationManager.GetLastCommittedItem()->GetURL()
+            : [self currentURL];
+    _lastUserInteraction.reset(new web::UserInteractionEvent(mainDocumentURL));
   }
 }
 
@@ -3096,14 +3115,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)userIsInteracting {
   // If page transfer started after last click, user is deemed to be no longer
   // interacting.
-  if (_lastTransferTimeInSeconds > _lastClickTimeInSeconds)
+  if (!_lastUserInteraction ||
+      _lastTransferTimeInSeconds > _lastUserInteraction->time) {
     return NO;
+  }
   return [self userClickedRecently];
 }
 
 - (BOOL)userClickedRecently {
+  if (!_lastUserInteraction)
+    return NO;
   return _clickInProgress ||
-         ((CFAbsoluteTimeGetCurrent() - _lastClickTimeInSeconds) <
+         ((CFAbsoluteTimeGetCurrent() - _lastUserInteraction->time) <
           kMaximumDelayForUserInteractionInSeconds);
 }
 
@@ -3563,10 +3586,27 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                       linkClicked:linkClicked];
 }
 
-- (BOOL)shouldOpenExternalURL:(const GURL&)url {
+- (BOOL)shouldOpenExternalURLRequest:(NSURLRequest*)request
+                         targetFrame:(const web::FrameInfo*)targetFrame {
+  // Prevent subrequests from opening an external URL if the main document URL
+  // has changed since the last user interaction.
+  BOOL isMainFrame = targetFrame
+                         ? targetFrame->is_main_frame
+                         : [request.URL isEqual:request.mainDocumentURL];
+  BOOL documentChangedAfterUserInteraction =
+      _lastUserInteraction &&
+      net::GURLWithNSURL(request.mainDocumentURL) !=
+          _lastUserInteraction->main_document_url;
+  if (!isMainFrame && documentChangedAfterUserInteraction)
+    return NO;
+
+  GURL requestURL = net::GURLWithNSURL(request.URL);
   return [_delegate respondsToSelector:@selector(webController:
-                                           shouldOpenExternalURL:)] &&
-         [_delegate webController:self shouldOpenExternalURL:url];
+                                           shouldOpenExternalURL:
+                                               userIsInteracting:)] &&
+         [_delegate webController:self
+             shouldOpenExternalURL:requestURL
+                 userIsInteracting:[self userIsInteracting]];
 }
 
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)url
