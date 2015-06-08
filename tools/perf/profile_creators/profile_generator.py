@@ -13,6 +13,7 @@ import sys
 import tempfile
 
 from profile_creators import profile_extender
+from telemetry.core import browser_finder
 from telemetry.core import browser_options
 from telemetry.core import discover
 from telemetry.core import util
@@ -64,33 +65,86 @@ def _IsPseudoFile(directory, paths):
   return ignore_list
 
 
-def GenerateProfiles(profile_extender_class, profile_creator_name, options):
-  """Generate a profile"""
+class ProfileGenerator(object):
+  """Generate profile.
 
-  temp_output_directory = tempfile.mkdtemp()
-  options.output_profile_path = temp_output_directory
+  On desktop the generated profile is copied to the specified location so later
+  runs can reuse it.
+  On CrOS profile resides on cryptohome and there is no easy way to
+  override it before user login. So for CrOS we just generate the profile
+  every time when the benchmark starts to run.
+  """
+  def __init__(self, profile_extender_class, profile_name):
+    self._profile_extender_class = profile_extender_class
+    self._profile_name = profile_name
 
-  profile_creator_instance = profile_extender_class(options)
-  try:
-    profile_creator_instance.Run()
-  except Exception as e:
-    logging.exception('Profile creation failed.')
-    shutil.rmtree(temp_output_directory)
-    raise e
+  def Run(self, options):
+    """Kick off the process.
 
-  # Everything is a-ok, move results to final destination.
-  generated_profiles_dir = os.path.abspath(options.output_dir)
-  if not os.path.exists(generated_profiles_dir):
-    os.makedirs(generated_profiles_dir)
-  out_path = os.path.join(generated_profiles_dir, profile_creator_name)
-  if os.path.exists(out_path):
-    shutil.rmtree(out_path)
+    Args:
+      options: Instance of BrowserFinderOptions to search for proper browser.
 
-  shutil.copytree(temp_output_directory, out_path, ignore=_IsPseudoFile)
-  shutil.rmtree(temp_output_directory)
-  sys.stderr.write("SUCCESS: Generated profile copied to: '%s'.\n" % out_path)
+    Returns:
+      The path of generated profile or existing profile if --profile-dir
+      is given. Could be None if it's generated on default location
+      (e.g., crytohome on CrOS).
+    """
+    possible_browser = browser_finder.FindBrowser(options)
+    is_cros = possible_browser.browser_type.startswith('cros')
 
-  return 0
+    out_dir = None
+    if is_cros:
+      self.Create(options, None)
+    else:
+      # Decide profile output path.
+      out_dir = (options.browser_options.profile_dir or
+          os.path.abspath(os.path.join(
+              tempfile.gettempdir(), self._profile_name, self._profile_name)))
+      if not os.path.exists(out_dir):
+        self.Create(options, out_dir)
+
+    return out_dir
+
+  def Create(self, options, out_dir):
+    """Generate profile.
+
+    If out_dir is given, copy the generated profile to out_dir.
+    Otherwise the profile is generated to its default position
+    (e.g., cryptohome on CrOS).
+    """
+
+    # Leave the global options intact.
+    creator_options = options.Copy()
+
+    if out_dir:
+      sys.stderr.write('Generating profile to: %s \n' % out_dir)
+      # The genrated profile is copied to out_dir only if the generation is
+      # successful. In the generation process a temp directory is used so
+      # the default profile is not polluted on failure.
+      tmp_profile_path = tempfile.mkdtemp()
+      creator_options.output_profile_path = tmp_profile_path
+
+    creator = self._profile_extender_class(creator_options)
+
+    try:
+      creator.Run()
+    except Exception as e:
+      logging.exception('Profile creation failed.')
+      raise e
+    else:
+      sys.stderr.write('SUCCESS: Profile generated.\n')
+
+      # Copy generated profile to final destination if out_dir is given.
+      if out_dir:
+        if os.path.exists(out_dir):
+          shutil.rmtree(out_dir)
+        shutil.copytree(tmp_profile_path,
+                        out_dir, ignore=_IsPseudoFile)
+        sys.stderr.write(
+            "SUCCESS: Generated profile copied to: '%s'.\n" % out_dir)
+    finally:
+      if out_dir:
+        shutil.rmtree(tmp_profile_path)
 
 
 def AddCommandLineArgs(parser):
@@ -140,5 +194,8 @@ def Main():
   # Generate profile.
   profile_extenders = _DiscoverProfileExtenderClasses()
   profile_extender_class = profile_extenders[options.profile_type_to_generate]
-  return GenerateProfiles(profile_extender_class,
-      options.profile_type_to_generate, options)
+
+  generator = ProfileGenerator(profile_extender_class,
+      options.profile_type_to_generate)
+  generator.Create(options, options.output_dir)
+  return 0

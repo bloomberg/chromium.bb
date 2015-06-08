@@ -2,9 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-import tempfile
-
 from core import perf_benchmark
 
 from measurements import session_restore
@@ -27,6 +24,8 @@ class _SessionRestoreTypical25(perf_benchmark.PerfBenchmark):
   page_set = page_sets.Typical25PageSet
   tag = None  # override with 'warm' or 'cold'
 
+  PROFILE_TYPE = 'small_profile'
+
   @classmethod
   def Name(cls):
     return 'session_restore'
@@ -34,23 +33,13 @@ class _SessionRestoreTypical25(perf_benchmark.PerfBenchmark):
   @classmethod
   def ProcessCommandLineArgs(cls, parser, args):
     super(_SessionRestoreTypical25, cls).ProcessCommandLineArgs(parser, args)
-    profile_type = 'small_profile'
-    if not args.browser_options.profile_dir:
-      output_dir = os.path.join(tempfile.gettempdir(), profile_type)
-      profile_dir = os.path.join(output_dir, profile_type)
-      if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-      # Generate new profiles if profile_dir does not exist. It only exists if
-      # all profiles had been correctly generated in a previous run.
-      if not os.path.exists(profile_dir):
-        new_args = args.Copy()
-        new_args.pageset_repeat = 1
-        new_args.output_dir = output_dir
-        profile_generator.GenerateProfiles(
-            small_profile_extender.SmallProfileExtender,
-            profile_type, new_args)
-      args.browser_options.profile_dir = profile_dir
+    generator = profile_generator.ProfileGenerator(
+        small_profile_extender.SmallProfileExtender, cls.PROFILE_TYPE)
+    out_dir = generator.Run(args)
+    if out_dir:
+      args.browser_options.profile_dir = out_dir
+    else:
+      args.browser_options.dont_override_profile = True
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, _, is_first_result):
