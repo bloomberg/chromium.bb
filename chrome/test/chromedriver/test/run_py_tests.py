@@ -1079,6 +1079,15 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     p = self._driver.FindElement('tag name', 'p')
     self.assertEquals('Two', p.GetText())
 
+  def testCanSwitchToPrintPreviewDialog(self):
+    old_handles = self._driver.GetWindowHandles()
+    self.assertEquals(1, len(old_handles))
+    self._driver.ExecuteScript('setTimeout(function(){window.print();}, 0);')
+    new_window_handle = self._WaitForNewWindow(old_handles)
+    self.assertNotEqual(None, new_window_handle)
+    self._driver.SwitchToWindow(new_window_handle)
+    self.assertEquals('chrome://print/', self._driver.GetCurrentUrl())
+
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
   """End to end tests for Android-specific tests."""

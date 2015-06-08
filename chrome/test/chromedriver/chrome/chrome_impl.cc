@@ -55,7 +55,8 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
     if (view.type == WebViewInfo::kPage ||
         view.type == WebViewInfo::kApp ||
         (view.type == WebViewInfo::kOther &&
-         view.url.find("chrome-extension://") == 0)) {
+         (view.url.find("chrome-extension://") == 0 ||
+          view.url == "chrome://print/"))) {
       bool found = false;
       for (WebViewList::const_iterator web_view_iter = web_views_.begin();
            web_view_iter != web_views_.end(); ++web_view_iter) {
