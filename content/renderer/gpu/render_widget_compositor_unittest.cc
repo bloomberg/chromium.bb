@@ -142,11 +142,12 @@ class RenderWidgetCompositorOutputSurface : public RenderWidgetCompositor {
           cc::TestWebGraphicsContext3D::Create();
       // Image support required for synchronous compositing.
       context->set_support_image(true);
-      return cc::FakeOutputSurface::Create3d(context.Pass());
+      // Create delegating surface so that max_pending_frames = 1.
+      return cc::FakeOutputSurface::CreateDelegating3d(context.Pass());
     }
     return use_null_output_surface_
                ? nullptr
-               : make_scoped_ptr(new cc::FailureOutputSurface(false));
+               : make_scoped_ptr(new cc::FailureOutputSurface(true));
   }
 
   // Force a new output surface to be created.

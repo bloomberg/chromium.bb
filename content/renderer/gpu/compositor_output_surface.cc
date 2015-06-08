@@ -60,10 +60,9 @@ CompositorOutputSurface::CompositorOutputSurface(
   DCHECK(output_surface_filter_.get());
   DCHECK(frame_swap_message_queue_.get());
   DetachFromThread();
+  capabilities_.max_frames_pending = 1;
   message_sender_ = RenderThreadImpl::current()->sync_message_filter();
   DCHECK(message_sender_.get());
-  if (OutputSurface::software_device())
-    capabilities_.max_frames_pending = 1;
 }
 
 CompositorOutputSurface::~CompositorOutputSurface() {
