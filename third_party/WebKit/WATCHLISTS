@@ -308,6 +308,10 @@
                   '|Source/core/page/FrameView' \
                   '|Source/core/page/scrolling'
     },
+    'w3ctests': {
+      'filepath': 'LayoutTests/imported/' \
+                  '|Tools/Scripts/webkitpy/w3c/'
+    },
     'web': {
       'filepath': 'Source/web/'
     },
@@ -505,6 +509,7 @@
              'kouhei+svg@chromium.org' ],
     'test_runner': [ 'jochen+watch@chromium.org',
                      'mlamouri+watch-blink@chromium.org' ],
+    'w3ctests' : [ 'blink-reviews-w3ctests@chromium.org' ],
     'webp': [ 'urvang@chromium.org',
               'jzern@chromium.org',
               'skal@google.com',
