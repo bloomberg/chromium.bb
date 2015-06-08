@@ -201,6 +201,12 @@ void DevToolsTargetImpl::Reload() const {
 // static
 scoped_ptr<DevToolsTargetImpl> DevToolsTargetImpl::CreateForTab(
     content::WebContents* web_contents) {
+  // TODO(dgozman): these checks should not be necessary. See
+  // http://crbug.com/489664.
+  if (!web_contents)
+    return nullptr;
+  if (!DevToolsAgentHost::GetOrCreateFor(web_contents))
+    return nullptr;
   return scoped_ptr<DevToolsTargetImpl>(
       new WebContentsTarget(web_contents, true));
 }
