@@ -790,10 +790,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mContextualMenuBar.setCustomSelectionActionModeCallback(
                 new CustomSelectionActionModeCallback() {
                     @Override
-                    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                        super.onPrepareActionMode(mode, menu);
+                    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                        boolean retVal = super.onCreateActionMode(mode, menu);
                         mode.getMenuInflater().inflate(R.menu.textselectionmenu, menu);
-                        return true;
+                        return retVal;
                     }
 
                     @Override
