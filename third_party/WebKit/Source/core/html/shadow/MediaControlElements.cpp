@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/DOMTokenList.h"
-#include "core/dom/Fullscreen.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
@@ -519,11 +518,10 @@ PassRefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> MediaControlFullscre
 void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
-        Fullscreen& fullscreen = Fullscreen::from(document());
         if (mediaElement().isFullscreen())
-            fullscreen.exitFullscreen();
+            mediaElement().exitFullscreen();
         else
-            fullscreen.requestFullscreen(mediaElement(), Fullscreen::InternalVideoRequest);
+            mediaElement().enterFullscreen();
         event->setDefaultHandled();
     }
     HTMLInputElement::defaultEventHandler(event);

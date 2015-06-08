@@ -1,4 +1,6 @@
-<p>HTMLVideoElement.webkitEnterFullScreen() in an iframe requires the allowfullscreen attribute</p>
+<p>Test for <a href="https://bugs.webkit.org/show_bug.cgi?id=61461">bug 61461</a>: 
+Handle entering full screen security restrictions</p>
+<p>To test manually, click the video "full screen" button - the page should enter full screen mode.</p>
 <script src="full-screen-test.js"></script>
 <script src="../media/media-file.js"></script>
 <script>
@@ -15,7 +17,8 @@ function canplaythrough() {
 function runTest() {
     var frame = document.getElementById('frame');
 
-    waitForEvent(frame.contentDocument, 'webkitfullscreenerror', function() {
+    waitForEvent(frame.contentDocument, 'webkitfullscreenchange', function() {
+            test("document.getElementById('frame').contentDocument.width==document.width")
             endTest();
     });
 

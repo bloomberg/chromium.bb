@@ -77,7 +77,7 @@ static bool fullscreenElementReady(const Element& element, Fullscreen::RequestTy
 
     // |element|'s node document's fullscreen enabled flag is set.
     if (!fullscreenIsAllowedForAllOwners(element.document())) {
-        if (requestType == Fullscreen::InternalVideoRequest)
+        if (requestType == Fullscreen::PrefixedVideoRequest)
             UseCounter::count(element.document(), UseCounter::VideoFullscreenAllowedExemption);
         else
             return false;

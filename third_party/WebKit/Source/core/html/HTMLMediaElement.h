@@ -221,6 +221,8 @@ public:
     bool hasSingleSecurityOrigin() const { return !m_player || (webMediaPlayer() && webMediaPlayer()->hasSingleSecurityOrigin()); }
 
     bool isFullscreen() const;
+    void enterFullscreen();
+    void exitFullscreen();
 
     bool hasClosedCaptions() const;
     bool closedCaptionsVisible() const;
