@@ -1192,11 +1192,6 @@ void SimpleEntryImpl::ReadOperationComplete(
       // entry has a single reader, the normal pattern is to read from start
       // to finish.
 
-      // Other cases are possible. In the case of two readers on the same
-      // entry, one reader can be behind the other. In this case we compute
-      // the crc as the most advanced reader progresses, and check it for
-      // both readers as they read the last byte.
-
       net_log_.AddEvent(net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_CHECKSUM_BEGIN);
 
       scoped_ptr<int> new_result(new int());

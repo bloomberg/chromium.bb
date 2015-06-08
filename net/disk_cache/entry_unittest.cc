@@ -3528,38 +3528,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheOpenCreateRaceWithNoIndex) {
   entry2->Close();
 }
 
-// Checks that reading two entries simultaneously does not discard a CRC check.
-// TODO(pasko): make it work with Simple Cache.
-TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheMultipleReadersCheckCRC) {
-  SetSimpleCacheMode();
-  InitCache();
-
-  const char key[] = "key";
-
-  int size;
-  ASSERT_TRUE(SimpleCacheMakeBadChecksumEntry(key, &size));
-
-  scoped_refptr<net::IOBuffer> read_buffer1(new net::IOBuffer(size));
-  scoped_refptr<net::IOBuffer> read_buffer2(new net::IOBuffer(size));
-
-  // Advance the first reader a little.
-  disk_cache::Entry* entry = NULL;
-  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
-  EXPECT_EQ(1, ReadData(entry, 0, 0, read_buffer1.get(), 1));
-
-  // Make the second reader pass the point where the first one is, and close.
-  disk_cache::Entry* entry2 = NULL;
-  EXPECT_EQ(net::OK, OpenEntry(key, &entry2));
-  EXPECT_EQ(1, ReadData(entry2, 0, 0, read_buffer2.get(), 1));
-  EXPECT_EQ(1, ReadData(entry2, 0, 1, read_buffer2.get(), 1));
-  entry2->Close();
-
-  // Read the data till the end should produce an error.
-  EXPECT_GT(0, ReadData(entry, 0, 1, read_buffer1.get(), size));
-  entry->Close();
-  DisableIntegrityCheck();
-}
-
 // Checking one more scenario of overlapped reading of a bad entry.
 // Differs from the |SimpleCacheMultipleReadersCheckCRC| only by the order of
 // last two reads.

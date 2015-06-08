@@ -337,6 +337,10 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // write. For each stream, |crc32s_[index]| is the crc32 of that stream from
   // [0 .. |crc32s_end_offset_|). If |crc32s_end_offset_[index] == 0| then the
   // value of |crc32s_[index]| is undefined.
+  // Note at this can only be done in the current implementation in the case of
+  // a single entry reader that reads serially through the entire file.
+  // Extending this to multiple readers is possible, but isn't currently worth
+  // it; see http://crbug.com/488076#c3 for details.
   int32 crc32s_end_offset_[kSimpleEntryStreamCount];
   uint32 crc32s_[kSimpleEntryStreamCount];
 
