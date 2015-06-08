@@ -56,8 +56,10 @@ public:
 
     // Eager finalization needed to promptly release owned WebServiceWorker.
     EAGERLY_FINALIZE();
+#if ENABLE(OILPAN)
     // Override 'operator new' to enforce allocation of eagerly finalized object.
     DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
+#endif
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
     void terminate(ExceptionState&);
