@@ -223,11 +223,13 @@ class SDKPackageToolchainOverlaysStageTest(
     self.RunStage()
 
     # Check that a tarball was created correctly for all toolchain sets.
+    sdk_toolchains = set(toolchain.GetToolchainsForBoard('sdk'))
     all_toolchain_combos = set()
     for board in self._run.site_config.GetBoards():
       try:
-        all_toolchain_combos.add(
-            '-'.join(sorted(toolchain.GetToolchainsForBoard(board).iterkeys())))
+        toolchains = set(toolchain.GetToolchainsForBoard(board).iterkeys())
+        if toolchains.issubset(sdk_toolchains):
+          all_toolchain_combos.add('-'.join(sorted(toolchains)))
       except portage_util.MissingOverlayException:
         pass
 

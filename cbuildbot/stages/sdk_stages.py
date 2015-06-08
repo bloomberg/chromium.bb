@@ -215,20 +215,23 @@ class SDKPackageToolchainOverlaysStage(generic_stages.BuilderStage):
     overlay_tarball_template = os.path.join(
         overlay_output_dir, TOOLCHAINS_OVERLAY_TARBALL_TEMPLATE)
 
-    # Generate an overlay tarball for each unique toolchain combination.
-    toolchains_generated = set()
+    # Generate an overlay tarball for each unique toolchain combination. We
+    # restrict ourselves to (a) board configs that are available to the builder
+    # (naturally), and (b) toolchains that are part of the 'sdk' set.
+    sdk_toolchains = set(toolchain.GetToolchainsForBoard('sdk'))
+    generated = set()
     for board in self._run.site_config.GetBoards():
       try:
-        toolchains = '-'.join(sorted(
-            toolchain.GetToolchainsForBoard(board).iterkeys()))
+        toolchains = set(toolchain.GetToolchainsForBoard(board).iterkeys())
       except portage_util.MissingOverlayException:
         # The board overlay may not exist, e.g. on external builders.
         continue
 
-      if toolchains in toolchains_generated:
+      toolchains_str = '-'.join(sorted(toolchains))
+      if not toolchains.issubset(sdk_toolchains) or toolchains_str in generated:
         continue
 
-      with osutils.TempDir(prefix='toolchains-overlay-%s.' % toolchains,
+      with osutils.TempDir(prefix='toolchains-overlay-%s.' % toolchains_str,
                            base_dir=tmp_dir, sudo_rm=True) as overlay_dir:
         # NOTE: We let MountOverlayContext remove the mount point created by
         # the TempDir context below, because it has built-in retries for rmdir
@@ -246,9 +249,9 @@ class SDKPackageToolchainOverlaysStage(generic_stages.BuilderStage):
                                     extra_env=self._portage_extra_env)
 
         CreateTarball(overlay_dir,
-                      overlay_tarball_template % {'toolchains': toolchains})
+                      overlay_tarball_template % {'toolchains': toolchains_str})
 
-      toolchains_generated.add(toolchains)
+      generated.add(toolchains_str)
 
 
 class SDKTestStage(generic_stages.BuilderStage):
