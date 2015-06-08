@@ -10,7 +10,6 @@ import itertools
 import mock
 import sys
 
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
@@ -103,6 +102,105 @@ class ManifestVersionedSyncCompletionStageTest(
     self.assertEqual(expected_map, builder_success_map)
 
 
+class MasterSlaveSyncCompletionStageMockConfigTest(
+    generic_stages_unittest.AbstractStageTestCase):
+  """Tests MasterSlaveSyncCompletionStage with ManifestVersionedSyncStage."""
+  BOT_ID = 'master'
+
+  def setUp(self):
+    self.source_repo = 'ssh://source/repo'
+    self.manifest_version_url = 'fake manifest url'
+    self.branch = 'master'
+    self.build_type = constants.PFQ_TYPE
+
+    # Use our mocked out SiteConfig for all tests.
+    self.test_config = self._GetTestConfig()
+    self._Prepare(site_config=self.test_config)
+
+  def ConstructStage(self):
+    sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
+    return completion_stages.MasterSlaveSyncCompletionStage(
+        self._run, sync_stage, success=True)
+
+  def _GetTestConfig(self):
+    test_config = config_lib.SiteConfig()
+    test_config.AddConfigWithoutTemplate(
+        'master',
+        boards=[],
+        build_type=self.build_type,
+        master=True,
+        manifest_version=True,
+    )
+    test_config.AddConfigWithoutTemplate(
+        'test1',
+        boards=['x86-generic'],
+        manifest_version=True,
+        build_type=constants.PFQ_TYPE,
+        overlays='public',
+        important=False,
+        chrome_rev=None,
+        branch=False,
+        internal=False,
+        master=False,
+    )
+    test_config.AddConfigWithoutTemplate(
+        'test2',
+        boards=['x86-generic'],
+        manifest_version=False,
+        build_type=constants.PFQ_TYPE,
+        overlays='public',
+        important=True,
+        chrome_rev=None,
+        branch=False,
+        internal=False,
+        master=False,
+    )
+    test_config.AddConfigWithoutTemplate(
+        'test3',
+        boards=['x86-generic'],
+        manifest_version=True,
+        build_type=constants.PFQ_TYPE,
+        overlays='both',
+        important=True,
+        chrome_rev=None,
+        branch=False,
+        internal=True,
+        master=False,
+    )
+    test_config.AddConfigWithoutTemplate(
+        'test4',
+        boards=['x86-generic'],
+        manifest_version=True,
+        build_type=constants.PFQ_TYPE,
+        overlays='both',
+        important=True,
+        chrome_rev=None,
+        branch=True,
+        internal=True,
+        master=False,
+    )
+    test_config.AddConfigWithoutTemplate(
+        'test5',
+        boards=['x86-generic'],
+        manifest_version=True,
+        build_type=constants.PFQ_TYPE,
+        overlays='public',
+        important=True,
+        chrome_rev=None,
+        branch=False,
+        internal=False,
+        master=False,
+    )
+    return test_config
+
+  def testGetSlavesForMaster(self):
+    """Tests that we get the slaves for a fake unified master configuration."""
+    self.maxDiff = None
+    stage = self.ConstructStage()
+    p = stage._GetSlaveConfigs()
+    self.assertEqual([self.test_config['test3'], self.test_config['test5']], p)
+
+
 class MasterSlaveSyncCompletionStageTest(
     generic_stages_unittest.AbstractStageTestCase):
   """Tests MasterSlaveSyncCompletionStage with ManifestVersionedSyncStage."""
@@ -127,75 +225,6 @@ class MasterSlaveSyncCompletionStageTest(
     sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
     return completion_stages.MasterSlaveSyncCompletionStage(
         self._run, sync_stage, success=True)
-
-  def _GetTestConfig(self):
-    test_config = config_lib.SiteConfig(defaults={})
-    test_config.AddConfigWithoutTemplate(
-        'test1',
-        manifest_version=True,
-        build_type=constants.PFQ_TYPE,
-        overlays='public',
-        important=False,
-        chrome_rev=None,
-        branch=False,
-        internal=False,
-        master=False,
-    )
-    test_config.AddConfigWithoutTemplate(
-        'test2',
-        manifest_version=False,
-        build_type=constants.PFQ_TYPE,
-        overlays='public',
-        important=True,
-        chrome_rev=None,
-        branch=False,
-        internal=False,
-        master=False,
-    )
-    test_config.AddConfigWithoutTemplate(
-        'test3',
-        manifest_version=True,
-        build_type=constants.PFQ_TYPE,
-        overlays='both',
-        important=True,
-        chrome_rev=None,
-        branch=False,
-        internal=True,
-        master=False,
-    )
-    test_config.AddConfigWithoutTemplate(
-        'test4',
-        manifest_version=True,
-        build_type=constants.PFQ_TYPE,
-        overlays='both',
-        important=True,
-        chrome_rev=None,
-        branch=True,
-        internal=True,
-        master=False,
-    )
-    test_config.AddConfigWithoutTemplate(
-        'test5',
-        manifest_version=True,
-        build_type=constants.PFQ_TYPE,
-        overlays='public',
-        important=True,
-        chrome_rev=None,
-        branch=False,
-        internal=False,
-        master=False,
-    )
-    return test_config
-
-  def testGetSlavesForMaster(self):
-    """Tests that we get the slaves for a fake unified master configuration."""
-    test_config = self._GetTestConfig()
-    # Temp solution until we can load test configs.
-    self.PatchObject(cbuildbot_config, 'GetConfig', return_value=test_config)
-
-    stage = self.ConstructStage()
-    p = stage._GetSlaveConfigs()
-    self.assertEqual([test_config['test3'], test_config['test5']], p)
 
   def testIsFailureFatal(self):
     """Tests the correctness of the _IsFailureFatal method"""

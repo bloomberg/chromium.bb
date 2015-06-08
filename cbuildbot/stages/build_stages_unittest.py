@@ -9,8 +9,8 @@ from __future__ import print_function
 import contextlib
 import os
 
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import cbuildbot_unittest
+from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
@@ -220,16 +220,19 @@ class AllConfigsTestCase(generic_stages_unittest.AbstractStageTestCase,
       msg = '%s failed the following test:\n%s' % (self._bot_id, ex)
       raise AssertionError(msg)
 
-  def RunAllConfigs(self, task, skip_missing=False):
+  def RunAllConfigs(self, task, skip_missing=False, site_config=None):
     """Run |task| against all major configurations"""
+    if site_config is None:
+      site_config = chromeos_config.GetConfig()
+
     with parallel.BackgroundTaskRunner(task) as queue:
       # Loop through all major configuration types and pick one from each.
       for bot_type in config_lib.CONFIG_TYPE_DUMP_ORDER:
-        for bot_id in cbuildbot_config.GetConfig():
+        for bot_id in site_config:
           if bot_id.endswith(bot_type):
             # Skip any config without a board, since those configs do not
             # build packages.
-            cfg = cbuildbot_config.GetConfig()[bot_id]
+            cfg = site_config[bot_id]
             if cfg.boards:
               # Skip boards w/out a local overlay.  Like when running a
               # public manifest and testing private-only boards.

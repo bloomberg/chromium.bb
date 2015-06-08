@@ -15,7 +15,6 @@ import unittest
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import results_lib
@@ -74,7 +73,8 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
                extra_cmd_args=None, build_id=DEFAULT_BUILD_ID,
                waterfall=constants.WATERFALL_INTERNAL,
-               master_build_id=None):
+               master_build_id=None,
+               site_config=None):
     """Prepare a BuilderRun at self._run for this test.
 
     This method must allow being called more than once.  Subclasses can
@@ -85,7 +85,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
 
     This will populate the following attributes on self:
       run: A BuilderRun object.
-      bot_id: The bot id (name) that was used from cbuildbot_config.GetConfig().
+      bot_id: The bot id (name) that was used from the site_config.
       self._boards: Same as self._run.config.boards.  TODO(mtennant): remove.
       self._current_board: First board in list, if there is one.
 
@@ -101,6 +101,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
       build_id: mock build id
       waterfall: One of constants.CIDB_KNOWN_WATERFALLS.
       master_build_id: mock build id of master build.
+      site_config: SiteConfig to use (or MockSiteConfig)
     """
     # Use cbuildbot parser to create options object and populate default values.
     parser = cbuildbot._CreateParser()
@@ -128,7 +129,8 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
       args = [self._bot_id]
     cbuildbot._FinishParsing(options, args)
 
-    site_config = cbuildbot_config.GetConfig()
+    if site_config is None:
+      site_config = chromeos_config.GetConfig()
 
     # Populate build_config corresponding to self._bot_id.
     build_config = copy.deepcopy(site_config[self._bot_id])
