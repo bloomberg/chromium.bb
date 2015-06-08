@@ -249,6 +249,10 @@ void FileVideoCaptureDevice::OnCaptureTask() {
     next_frame_time_ = current_time + frame_interval;
   } else {
     next_frame_time_ += frame_interval;
+    // Don't accumulate any debt if we are lagging behind - just post next frame
+    // immediately and continue as normal.
+    if (next_frame_time_ < current_time)
+      next_frame_time_ = current_time;
   }
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
