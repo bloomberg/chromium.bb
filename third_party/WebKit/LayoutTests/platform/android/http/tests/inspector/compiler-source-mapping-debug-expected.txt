@@ -7,7 +7,7 @@ Running: testSetBreakpoint
 Script source was shown.
 Script execution paused.
 Call stack:
-    0) handleClick (source1.js:17)
+    0) handleClick (source1.js:16)
     1) clickButton (compiler-source-mapping-debug.html:13)
 Script execution resumed.
 
