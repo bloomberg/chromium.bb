@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/prefs/pref_service.h"
@@ -59,6 +60,17 @@ bool ContainsDataReductionProxyDefaultHostSuffix(
              proxy_rules.proxies_for_https);
 }
 
+// Extract the embedded PAC script from the given |pac_url|, and store the
+// extracted script in |pac_script|. Returns true if extraction was successful,
+// otherwise returns false. |pac_script| must not be NULL.
+bool GetEmbeddedPacScript(const std::string& pac_url, std::string* pac_script) {
+  DCHECK(pac_script);
+  const std::string kPacURLPrefix =
+      "data:application/x-ns-proxy-autoconfig;base64,";
+  return StartsWithASCII(pac_url, kPacURLPrefix, true) &&
+         base::Base64Decode(pac_url.substr(kPacURLPrefix.size()), pac_script);
+}
+
 }  // namespace
 
 // The Data Reduction Proxy has been turned into a "best effort" proxy,
@@ -98,27 +110,54 @@ DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
     prefs->ClearPref(prefs::kProxy);
     return PROXY_PREF_CLEARED_MODE_SYSTEM;
   }
-  if (ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS) != mode)
-    return PROXY_PREF_NOT_CLEARED;
-  std::string proxy_server;
-  if (!dict->GetString("server", &proxy_server))
-    return PROXY_PREF_NOT_CLEARED;
-  net::ProxyConfig::ProxyRules proxy_rules;
-  proxy_rules.ParseFromString(proxy_server);
-  // Clear the proxy pref if it matches a currently configured Data Reduction
-  // Proxy, or if the proxy host ends with ".googlezip.net", in order to ensure
-  // that any DRP in the pref is cleared even if the DRP configuration was
-  // changed. See http://crbug.com/476610.
-  ProxyPrefMigrationResult rv;
-  if (Config()->ContainsDataReductionProxy(proxy_rules))
-    rv = PROXY_PREF_CLEARED_DRP;
-  else if (ContainsDataReductionProxyDefaultHostSuffix(proxy_rules))
-    rv = PROXY_PREF_CLEARED_GOOGLEZIP;
-  else
-    return PROXY_PREF_NOT_CLEARED;
 
-  prefs->ClearPref(prefs::kProxy);
-  return rv;
+  // From M36 to M40, the DRP was configured using MODE_FIXED_SERVERS in the
+  // proxy pref.
+  if (ProxyModeToString(ProxyPrefs::MODE_FIXED_SERVERS) == mode) {
+    std::string proxy_server;
+    if (!dict->GetString("server", &proxy_server))
+      return PROXY_PREF_NOT_CLEARED;
+    net::ProxyConfig::ProxyRules proxy_rules;
+    proxy_rules.ParseFromString(proxy_server);
+    // Clear the proxy pref if it matches a currently configured Data Reduction
+    // Proxy, or if the proxy host ends with ".googlezip.net", in order to
+    // ensure that any DRP in the pref is cleared even if the DRP configuration
+    // was changed. See http://crbug.com/476610.
+    ProxyPrefMigrationResult rv;
+    if (Config()->ContainsDataReductionProxy(proxy_rules))
+      rv = PROXY_PREF_CLEARED_DRP;
+    else if (ContainsDataReductionProxyDefaultHostSuffix(proxy_rules))
+      rv = PROXY_PREF_CLEARED_GOOGLEZIP;
+    else
+      return PROXY_PREF_NOT_CLEARED;
+
+    prefs->ClearPref(prefs::kProxy);
+    return rv;
+  }
+
+  // Before M35, the DRP was configured using a PAC script base64 encoded into a
+  // PAC url.
+  if (ProxyModeToString(ProxyPrefs::MODE_PAC_SCRIPT) == mode) {
+    std::string pac_url;
+    std::string pac_script;
+    if (!dict->GetString("pac_url", &pac_url) ||
+        !GetEmbeddedPacScript(pac_url, &pac_script)) {
+      return PROXY_PREF_NOT_CLEARED;
+    }
+
+    // In M35 and earlier, the way of specifying the DRP in a PAC script would
+    // always include the port number after the host even if the port number
+    // could be implied, so searching for ".googlezip.net:" in the PAC script
+    // indicates whether there's a proxy in that PAC script with a host of the
+    // form "*.googlezip.net".
+    if (pac_script.find(".googlezip.net:") == std::string::npos)
+      return PROXY_PREF_NOT_CLEARED;
+
+    prefs->ClearPref(prefs::kProxy);
+    return PROXY_PREF_CLEARED_PAC_GOOGLEZIP;
+  }
+
+  return PROXY_PREF_NOT_CLEARED;
 }
 
 DataReductionProxyChromeSettings::DataReductionProxyChromeSettings()
