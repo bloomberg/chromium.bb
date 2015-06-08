@@ -97,14 +97,7 @@
       'sources/': [ ['exclude', '_ashwin\\.(h|cc)$'] ]
     }],
     ['<(use_ozone)==0 or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_ozone(_browsertest|_unittest)?\\.(h|cc)$'],
-                    ['exclude', '(^|/)ozone/'],
-      ]
-    }],
-    ['<(use_ozone_evdev)==0 or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_evdev(_browsertest|_unittest)?\\.(h|cc)$'],
-                    ['exclude', '(^|/)evdev/'],
-      ]
+      'sources/': [ ['exclude', '_ozone(_browsertest|_unittest)?\\.(h|cc)$'] ]
     }],
     ['<(use_pango)==0', {
       'sources/': [ ['exclude', '(^|_)pango(_util|_browsertest|_unittest)?\\.(h|cc)$'], ],
