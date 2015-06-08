@@ -1639,6 +1639,8 @@ crbug.com/487880 [ Win ] fast/scroll-behavior/overflow-scroll-animates.html [ Pa
 crbug.com/487880 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 crbug.com/487880 [ Win ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 
+crbug.com/497909 plugins/webview-plugin-lifecycle.html [ NeedsRebaseline ]
+
 crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 
 crbug.com/445889 virtual/slimmingpaint/fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Skip ]
@@ -1938,5 +1940,3 @@ crbug.com/495523 fast/text/international/text-spliced-font.html [ Pass Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/animate-elem-52-t.svg [ Failure ]
 crbug.com/495523 [ XP ] svg/W3C-SVG-1.1/extend-namespace-01-f.svg [ Failure ]
 crbug.com/495523 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ]
-
-crbug.com/495542 [ XP ] plugins/webview-plugin-lifecycle.html [ Failure ]
