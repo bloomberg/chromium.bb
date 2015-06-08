@@ -16,6 +16,7 @@ import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
@@ -273,16 +274,24 @@ public class DocumentMigrationHelper {
      */
     public static boolean migrateTabsToDocumentForUpgrade(Activity activity,
             int finalizeMode) {
-        ChromePreferenceManager.getInstance(activity).setAttemptedMigrationOnUpgrade();
-        File[] fileList = TabPersistentStore.getStateDirectory(activity, 0).listFiles();
-        if (fileList == null || fileList.length == 0
-                || (fileList.length == 1
-                && fileList[0].getName().equals(TabPersistentStore.SAVED_STATE_FILE))) {
-            return false;
-        }
+        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/493157
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
+        try {
+            ChromePreferenceManager.getInstance(activity).setAttemptedMigrationOnUpgrade();
 
-        migrateTabsFromClassicToDocument(activity, finalizeMode);
-        return true;
+            File[] fileList = TabPersistentStore.getStateDirectory(activity, 0).listFiles();
+            if (fileList == null || fileList.length == 0
+                    || (fileList.length == 1
+                    && fileList[0].getName().equals(TabPersistentStore.SAVED_STATE_FILE))) {
+                return false;
+            }
+
+            migrateTabsFromClassicToDocument(activity, finalizeMode);
+            return true;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     private static void finalizeMigration(Activity activity, final int mode) {
@@ -449,11 +458,19 @@ public class DocumentMigrationHelper {
      */
     public static void migrateTabs(boolean toDocumentMode, final Activity activity,
             boolean terminate) {
-        int terminateMode = terminate ? FINALIZE_MODE_RESTART_APP : FINALIZE_MODE_FINISH_ACTIVITY;
-        if (toDocumentMode) {
-            migrateTabsFromClassicToDocument(activity, terminateMode);
-        } else {
-            migrateTabsFromDocumentToClassic(activity, terminateMode);
+        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/493157
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
+        try {
+            int terminateMode =
+                    terminate ? FINALIZE_MODE_RESTART_APP : FINALIZE_MODE_FINISH_ACTIVITY;
+            if (toDocumentMode) {
+                migrateTabsFromClassicToDocument(activity, terminateMode);
+            } else {
+                migrateTabsFromDocumentToClassic(activity, terminateMode);
+            }
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
     }
 }

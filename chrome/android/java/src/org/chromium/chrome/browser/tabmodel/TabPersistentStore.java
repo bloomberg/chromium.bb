@@ -221,62 +221,67 @@ public class TabPersistentStore extends TabPersister {
     public void saveState() {
         // Temporarily allowing disk access. TODO: Fix. See http://b/5518024
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        // Add current tabs to save because they did not get a save signal yet.
-        Tab currentStandardTab = TabModelUtils.getCurrentTab(mTabModelSelector.getModel(false));
-        if (currentStandardTab != null && !mTabsToSave.contains(currentStandardTab)
-                && currentStandardTab.isTabStateDirty()
-                // For content URI, the read permission granted to an activity is not persistent.
-                && !isTabUrlContentScheme(currentStandardTab)) {
-            mTabsToSave.addLast(currentStandardTab);
-        }
-        Tab currentIncognitoTab = TabModelUtils.getCurrentTab(mTabModelSelector.getModel(true));
-        if (currentIncognitoTab != null && !mTabsToSave.contains(currentIncognitoTab)
-                && currentIncognitoTab.isTabStateDirty()
-                && !isTabUrlContentScheme(currentIncognitoTab)) {
-            mTabsToSave.addLast(currentIncognitoTab);
-        }
-        // Wait for the current tab to save.
-        if (mSaveTabTask != null) {
-            // Cancel calls get() to wait for this to finish internally if it has to.
-            // The issue is it may assume it cancelled the task, but the task still actually wrote
-            // the state to disk.  That's why we have to check mStateSaved here.
-            if (mSaveTabTask.cancel(false) && !mSaveTabTask.mStateSaved) {
-                // The task was successfully cancelled.  We should try to save this state again.
-                Tab cancelledTab = mSaveTabTask.mTab;
-                if (!mTabsToSave.contains(cancelledTab)
-                        && cancelledTab.isTabStateDirty()
-                        && !isTabUrlContentScheme(cancelledTab)) {
-                    mTabsToSave.addLast(cancelledTab);
+        try {
+            // Add current tabs to save because they did not get a save signal yet.
+            Tab currentStandardTab = TabModelUtils.getCurrentTab(mTabModelSelector.getModel(false));
+            if (currentStandardTab != null && !mTabsToSave.contains(currentStandardTab)
+                    && currentStandardTab.isTabStateDirty()
+                    // For content URI, the read permission granted to an activity is not
+                    // persistent.
+                    && !isTabUrlContentScheme(currentStandardTab)) {
+                mTabsToSave.addLast(currentStandardTab);
+            }
+            Tab currentIncognitoTab = TabModelUtils.getCurrentTab(mTabModelSelector.getModel(true));
+            if (currentIncognitoTab != null && !mTabsToSave.contains(currentIncognitoTab)
+                    && currentIncognitoTab.isTabStateDirty()
+                    && !isTabUrlContentScheme(currentIncognitoTab)) {
+                mTabsToSave.addLast(currentIncognitoTab);
+            }
+            // Wait for the current tab to save.
+            if (mSaveTabTask != null) {
+                // Cancel calls get() to wait for this to finish internally if it has to.
+                // The issue is it may assume it cancelled the task, but the task still actually
+                // wrote the state to disk.  That's why we have to check mStateSaved here.
+                if (mSaveTabTask.cancel(false) && !mSaveTabTask.mStateSaved) {
+                    // The task was successfully cancelled.  We should try to save this state again.
+                    Tab cancelledTab = mSaveTabTask.mTab;
+                    if (!mTabsToSave.contains(cancelledTab)
+                            && cancelledTab.isTabStateDirty()
+                            && !isTabUrlContentScheme(cancelledTab)) {
+                        mTabsToSave.addLast(cancelledTab);
+                    }
+                }
+
+                mSaveTabTask = null;
+            }
+
+            // Synchronously save any remaining unsaved tabs (hopefully very few).
+            for (Tab tab : mTabsToSave) {
+                int id = tab.getId();
+                boolean incognito = tab.isIncognito();
+                try {
+                    TabState.saveState(openTabStateOutputStream(id, incognito), tab.getState(),
+                            incognito);
+                } catch (IOException e) {
+                    logSaveException(e);
+                } catch (OutOfMemoryError e) {
+                    Log.w(TAG, "Out of memory error while attempting to save tab state.  Erasing.");
+                    deleteTabState(id, incognito);
                 }
             }
+            mTabsToSave.clear();
 
-            mSaveTabTask = null;
-        }
-
-        // Synchronously save any remaining unsaved tabs (hopefully very few).
-        for (Tab tab : mTabsToSave) {
-            int id = tab.getId();
-            boolean incognito = tab.isIncognito();
-            try {
-                TabState.saveState(openTabStateOutputStream(id, incognito), tab.getState(),
-                        incognito);
-            } catch (IOException e) {
-                logSaveException(e);
-            } catch (OutOfMemoryError e) {
-                Log.w(TAG, "Out of memory error while attempting to save tab state.  Erasing.");
-                deleteTabState(id, incognito);
+            if (mSaveListTask == null
+                    || (mSaveListTask.cancel(false) && !mSaveListTask.mStateSaved)) {
+                try {
+                    saveListToFile(serializeTabMetadata());
+                } catch (IOException e) {
+                    logSaveException(e);
+                }
             }
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
-        mTabsToSave.clear();
-
-        if (mSaveListTask == null || (mSaveListTask.cancel(false) && !mSaveListTask.mStateSaved)) {
-            try {
-                saveListToFile(serializeTabMetadata());
-            } catch (IOException e) {
-                logSaveException(e);
-            }
-        }
-        StrictMode.setThreadPolicy(oldPolicy);
     }
 
     /**
@@ -621,50 +626,55 @@ public class TabPersistentStore extends TabPersister {
      */
     @VisibleForTesting
     public int loadStateInternal() throws IOException {
-        assert  mTabModelSelector.getModel(true).getCount() == 0;
-        assert  mTabModelSelector.getModel(false).getCount() == 0;
-        int maxId = 0;
-        File[] folders = getBaseStateDirectory(mContext).listFiles();
-        File stateFolder = getStateDirectory();
-        for (File folder : folders) {
-            assert folder.isDirectory();
-            if (!folder.isDirectory()) continue;
-            boolean readDir = folder.equals(stateFolder);
-            final Deque<TabRestoreDetails> restoreList = readDir ? mTabsToRestore : null;
-            final boolean isIncognitoSelected = mTabModelSelector.isIncognitoSelected();
+        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/473357
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            assert  mTabModelSelector.getModel(true).getCount() == 0;
+            assert  mTabModelSelector.getModel(false).getCount() == 0;
+            int maxId = 0;
+            File[] folders = getBaseStateDirectory(mContext).listFiles();
+            File stateFolder = getStateDirectory();
+            for (File folder : folders) {
+                assert folder.isDirectory();
+                if (!folder.isDirectory()) continue;
+                boolean readDir = folder.equals(stateFolder);
+                final Deque<TabRestoreDetails> restoreList = readDir ? mTabsToRestore : null;
+                final boolean isIncognitoSelected = mTabModelSelector.isIncognitoSelected();
 
-            // TODO(dfalcantara): Store the max tab ID in a shared preference so that it can be
-            //                    shared with all of the other modes that Chrome runs in and to
-            //                    avoid reading in all of the possible app_tabs subdirectories.
-            int curId = readSavedStateFile(folder, new OnTabStateReadCallback() {
-                @Override
-                public void onDetailsRead(int index, int id, String url,
-                        boolean isStandardActiveIndex, boolean isIncognitoActiveIndex) {
-                    // If we're not trying to build the restore list skip the build part.
-                    // We've already read all the state for this entry from the input stream.
-                    if (restoreList == null) return;
+                // TODO(dfalcantara): Store the max tab ID in a shared preference so that it can be
+                //                    shared with all of the other modes that Chrome runs in and to
+                //                    avoid reading in all of the possible app_tabs subdirectories.
+                int curId = readSavedStateFile(folder, new OnTabStateReadCallback() {
+                    @Override
+                    public void onDetailsRead(int index, int id, String url,
+                            boolean isStandardActiveIndex, boolean isIncognitoActiveIndex) {
+                        // If we're not trying to build the restore list skip the build part.
+                        // We've already read all the state for this entry from the input stream.
+                        if (restoreList == null) return;
 
-                    // Note that incognito tab may not load properly so we may need to use
-                    // the current tab from the standard model.
-                    // This logic only works because we store the incognito indices first.
-                    if ((isIncognitoActiveIndex && isIncognitoSelected)
-                            || (isStandardActiveIndex && !isIncognitoSelected)) {
-                        // Active tab gets loaded first
-                        restoreList.addFirst(new TabRestoreDetails(id, index, url));
-                    } else {
-                        restoreList.addLast(new TabRestoreDetails(id, index, url));
+                        // Note that incognito tab may not load properly so we may need to use
+                        // the current tab from the standard model.
+                        // This logic only works because we store the incognito indices first.
+                        if ((isIncognitoActiveIndex && isIncognitoSelected)
+                                || (isStandardActiveIndex && !isIncognitoSelected)) {
+                            // Active tab gets loaded first
+                            restoreList.addFirst(new TabRestoreDetails(id, index, url));
+                        } else {
+                            restoreList.addLast(new TabRestoreDetails(id, index, url));
+                        }
+
+                        if (mObserver != null) {
+                            mObserver.onDetailsRead(
+                                    index, id, url, isStandardActiveIndex, isIncognitoActiveIndex);
+                        }
                     }
-
-                    if (mObserver != null) {
-                        mObserver.onDetailsRead(
-                                index, id, url, isStandardActiveIndex, isIncognitoActiveIndex);
-                    }
-                }
-            });
-            maxId = Math.max(maxId, curId);
+                });
+                maxId = Math.max(maxId, curId);
+            }
+            return maxId;
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
-
-        return maxId;
     }
 
     public static int readSavedStateFile(File folder, OnTabStateReadCallback callback)
