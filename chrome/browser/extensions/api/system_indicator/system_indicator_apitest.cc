@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SystemIndicator) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, SystemIndicator) {
+IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, FLAKY_SystemIndicator) {
   // Only run this test on supported platforms.  SystemIndicatorManagerFactory
   // returns NULL on unsupported platforms.
   extensions::SystemIndicatorManager* manager =
