@@ -158,7 +158,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        DisplayPersistentNotificationWithoutPermission) {
   std::string script_result;
 
-  InfoBarResponder cancelling_responder(GetInfoBarService(), false);
+  InfoBarResponder cancelling_responder(GetInfoBarService(),
+                                        InfoBarResponder::DENY);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   EXPECT_EQ("denied", script_result);
 
@@ -174,7 +175,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        DisplayPersistentNotificationWithPermission) {
   std::string script_result;
 
-  InfoBarResponder accepting_responder(GetInfoBarService(), true);
+  InfoBarResponder accepting_responder(GetInfoBarService(),
+                                       InfoBarResponder::ACCEPT);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   EXPECT_EQ("granted", script_result);
 
@@ -199,7 +201,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   // TODO(peter): It doesn't add much value if we use the InfoBarResponder for
   // each test. Rather, we should just toggle the content setting.
-  InfoBarResponder accepting_responder(GetInfoBarService(), true);
+  InfoBarResponder accepting_responder(GetInfoBarService(),
+                                       InfoBarResponder::ACCEPT);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   EXPECT_EQ("granted", script_result);
 
@@ -225,7 +228,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        WebNotificationOptionsVibrationPattern) {
   std::string script_result;
 
-  InfoBarResponder accepting_responder(GetInfoBarService(), true);
+  InfoBarResponder accepting_responder(GetInfoBarService(),
+                                       InfoBarResponder::ACCEPT);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   EXPECT_EQ("granted", script_result);
 
@@ -247,7 +251,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        CloseDisplayedPersistentNotification) {
   std::string script_result;
 
-  InfoBarResponder accepting_responder(GetInfoBarService(), true);
+  InfoBarResponder accepting_responder(GetInfoBarService(),
+                                       InfoBarResponder::ACCEPT);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   EXPECT_EQ("granted", script_result);
 
@@ -271,7 +276,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   std::string script_result;
 
   // Creates a simple notification.
-  InfoBarResponder accepting_responder(GetInfoBarService(), true);
+  InfoBarResponder accepting_responder(GetInfoBarService(),
+                                       InfoBarResponder::ACCEPT);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   ASSERT_EQ("granted", script_result);
   ASSERT_TRUE(RunScript("DisplayPersistentNotification()", &script_result));
@@ -293,7 +299,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   // See crbug.com/402191.
   std::string script_result;
 
-  InfoBarResponder accepting_responder_web(GetInfoBarService(), true);
+  InfoBarResponder accepting_responder_web(GetInfoBarService(),
+                                           InfoBarResponder::ACCEPT);
 
   DesktopNotificationService* notification_service =
       DesktopNotificationServiceFactory::GetForProfile(browser()->profile());
@@ -315,7 +322,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   message_center::NotifierId file_notifier(file_url);
   EXPECT_FALSE(notification_service->IsNotifierEnabled(file_notifier));
 
-  InfoBarResponder accepting_responder_file(GetInfoBarService(), true);
+  InfoBarResponder accepting_responder_file(GetInfoBarService(),
+                                            InfoBarResponder::ACCEPT);
   ASSERT_TRUE(RunScript("RequestPermission()", &script_result));
   EXPECT_EQ("granted", script_result);
 

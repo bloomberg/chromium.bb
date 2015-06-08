@@ -11,8 +11,8 @@
 #include "components/infobars/core/infobar.h"
 
 InfoBarResponder::InfoBarResponder(InfoBarService* infobar_service,
-                                   bool should_accept)
-    : infobar_service_(infobar_service), should_accept_(should_accept) {
+                                   AutoResponseType response)
+    : infobar_service_(infobar_service), response_(response) {
   infobar_service_->AddObserver(this);
 }
 
@@ -33,9 +33,21 @@ void InfoBarResponder::OnInfoBarAdded(infobars::InfoBar* infobar) {
       base::Bind(&InfoBarResponder::Respond, base::Unretained(this), delegate));
 }
 
+void InfoBarResponder::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
+                                         infobars::InfoBar* new_infobar) {
+  OnInfoBarAdded(new_infobar);
+}
+
 void InfoBarResponder::Respond(ConfirmInfoBarDelegate* delegate) {
-  if (should_accept_)
-    delegate->Accept();
-  else
-    delegate->Cancel();
+  switch (response_) {
+    case ACCEPT:
+      delegate->Accept();
+      break;
+    case DENY:
+      delegate->Cancel();
+      break;
+    case DISMISS:
+      delegate->InfoBarDismissed();
+      break;
+  }
 }

@@ -39,11 +39,11 @@ $ = function(id) {
 };
 
 /**
- * This function asks permission to use the webcam and mic from the browser. It
- * will return ok-requested to the test. This does not mean the request was
- * approved though. The test will then have to click past the dialog that
- * appears in Chrome, which will run either the OK or failed callback as a
- * a result. To see which callback was called, use obtainGetUserMediaResult().
+ * This function asks permission to use the webcam and mic from the browser.
+ * Its callbacks will return either request-callback-granted or
+ * request-callback-denied depending on the outcome. If the caller does not
+ * successfully resolve the request by granting or denying, the test will hang.
+ * To verify which callback was called, use obtainGetUserMediaResult().
  *
  * @param {!object} constraints Defines what to be requested, with mandatory
  *     and optional constraints defined. The contents of this parameter depends
@@ -62,7 +62,6 @@ function doGetUserMedia(constraints) {
                  getUserMediaOkCallback_(stream);
                },
                getUserMediaFailedCallback_);
-  returnToTest('ok-requested');
 }
 
 /**
@@ -156,6 +155,8 @@ function getUserMediaOkCallback_(stream) {
   gRequestWebcamAndMicrophoneResult = 'ok-got-stream';
 
   attachMediaStream($('local-view'), stream);
+
+  returnToTest('request-callback-granted');
 }
 
 /**
@@ -169,4 +170,6 @@ function getUserMediaFailedCallback_(error) {
   debug('GetUserMedia FAILED: Maybe the camera is in use by another process?');
   gRequestWebcamAndMicrophoneResult = 'failed-with-error-' + errorName;
   debug(gRequestWebcamAndMicrophoneResult);
+
+  returnToTest('request-callback-denied');
 }
