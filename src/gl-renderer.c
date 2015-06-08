@@ -90,6 +90,14 @@ enum buffer_type {
 	BUFFER_TYPE_EGL
 };
 
+struct gl_renderer;
+
+struct egl_image {
+	struct gl_renderer *renderer;
+	EGLImageKHR image;
+	int refcount;
+};
+
 struct gl_surface_state {
 	GLfloat color[4];
 	struct gl_shader *shader;
@@ -105,7 +113,7 @@ struct gl_surface_state {
 	GLenum gl_format;
 	GLenum gl_pixel_type;
 
-	EGLImageKHR images[3];
+	struct egl_image* images[3];
 	GLenum target;
 	int num_images;
 
@@ -195,6 +203,51 @@ static inline struct gl_renderer *
 get_renderer(struct weston_compositor *ec)
 {
 	return (struct gl_renderer *)ec->renderer;
+}
+
+static struct egl_image*
+egl_image_create(struct gl_renderer *gr, EGLenum target,
+		 EGLClientBuffer buffer, const EGLint *attribs)
+{
+	struct egl_image *img;
+
+	img = zalloc(sizeof *img);
+	img->renderer = gr;
+	img->refcount = 1;
+	img->image = gr->create_image(gr->egl_display, EGL_NO_CONTEXT,
+				      target, buffer, attribs);
+
+	if (img->image == EGL_NO_IMAGE_KHR) {
+		free(img);
+		return NULL;
+	}
+
+	return img;
+}
+
+static struct egl_image*
+egl_image_ref(struct egl_image *image)
+{
+	image->refcount++;
+
+	return image;
+}
+
+static int
+egl_image_unref(struct egl_image *image)
+{
+	struct gl_renderer *gr = image->renderer;
+
+	assert(image->refcount > 0);
+
+	image->refcount--;
+	if (image->refcount > 0)
+		return image->refcount;
+
+	gr->destroy_image(gr->egl_display, image->image);
+	free(image);
+
+	return 0;
 }
 
 static const char *
@@ -1290,8 +1343,10 @@ gl_renderer_attach_egl(struct weston_surface *es, struct weston_buffer *buffer,
 	gr->query_buffer(gr->egl_display, buffer->legacy_buffer,
 			 EGL_WAYLAND_Y_INVERTED_WL, &buffer->y_inverted);
 
-	for (i = 0; i < gs->num_images; i++)
-		gr->destroy_image(gr->egl_display, gs->images[i]);
+	for (i = 0; i < gs->num_images; i++) {
+		egl_image_unref(gs->images[i]);
+		gs->images[i] = NULL;
+	}
 	gs->num_images = 0;
 	gs->target = GL_TEXTURE_2D;
 	switch (format) {
@@ -1325,8 +1380,7 @@ gl_renderer_attach_egl(struct weston_surface *es, struct weston_buffer *buffer,
 		attribs[0] = EGL_WAYLAND_PLANE_WL;
 		attribs[1] = i;
 		attribs[2] = EGL_NONE;
-		gs->images[i] = gr->create_image(gr->egl_display,
-						 NULL,
+		gs->images[i] = egl_image_create(gr,
 						 EGL_WAYLAND_BUFFER_WL,
 						 buffer->legacy_buffer,
 						 attribs);
@@ -1339,7 +1393,7 @@ gl_renderer_attach_egl(struct weston_surface *es, struct weston_buffer *buffer,
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(gs->target, gs->textures[i]);
 		gr->image_target_texture_2d(gs->target,
-					    gs->images[i]);
+					    gs->images[i]->image);
 	}
 
 	gs->pitch = buffer->width;
@@ -1362,7 +1416,7 @@ gl_renderer_attach(struct weston_surface *es, struct weston_buffer *buffer)
 
 	if (!buffer) {
 		for (i = 0; i < gs->num_images; i++) {
-			gr->destroy_image(gr->egl_display, gs->images[i]);
+			egl_image_unref(gs->images[i]);
 			gs->images[i] = NULL;
 		}
 		gs->num_images = 0;
@@ -1564,7 +1618,7 @@ surface_state_destroy(struct gl_surface_state *gs, struct gl_renderer *gr)
 	glDeleteTextures(gs->num_textures, gs->textures);
 
 	for (i = 0; i < gs->num_images; i++)
-		gr->destroy_image(gr->egl_display, gs->images[i]);
+		egl_image_unref(gs->images[i]);
 
 	weston_buffer_reference(&gs->buffer_ref, NULL);
 	pixman_region32_fini(&gs->texture_damage);
