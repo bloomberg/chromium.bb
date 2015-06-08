@@ -1109,29 +1109,26 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
     document().incDOMTreeVersion();
 
     StyleResolver* styleResolver = document().styleResolver();
-    bool testShouldInvalidateStyle = inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange;
-
-    if (isStyledElement()) {
-        if (name == styleAttr) {
-            styleAttributeChanged(newValue, reason);
-        } else if (isPresentationAttribute(name)) {
-            elementData()->m_presentationAttributeStyleIsDirty = true;
-            setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
-        }
-    }
 
     if (name == HTMLNames::idAttr) {
         AtomicString oldId = elementData()->idForStyleResolution();
         AtomicString newId = makeIdForStyleResolution(newValue, document().inQuirksMode());
         if (newId != oldId) {
             elementData()->setIdForStyleResolution(newId);
-            if (testShouldInvalidateStyle)
+            if (inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange)
                 document().styleEngine().idChangedForElement(oldId, newId, *this);
         }
     } else if (name == classAttr) {
         classAttributeChanged(newValue);
     } else if (name == HTMLNames::nameAttr) {
         setHasName(!newValue.isNull());
+    } else if (isStyledElement()) {
+        if (name == styleAttr) {
+            styleAttributeChanged(newValue, reason);
+        } else if (isPresentationAttribute(name)) {
+            elementData()->m_presentationAttributeStyleIsDirty = true;
+            setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
+        }
     }
 
     invalidateNodeListCachesInAncestors(&name, this);
