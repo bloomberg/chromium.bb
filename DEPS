@@ -159,7 +159,7 @@ deps = {
     Var('chromium_git') + '/external/grit-i18n.git' + '@' + 'c1b1591a05209c1ad467e845ba8543c22f9072af', # from svn revision 189
 
   'src/tools/gyp':
-    Var('chromium_git') + '/external/gyp.git' + '@' + '29e94a3285ee899d14d5e56a6001682620d3778f',
+    Var('chromium_git') + '/external/gyp.git' + '@' + 'fdc7b812f99e48c00e9a487bd56751bbeae07043',
 
   'src/tools/swarming_client':
    Var('chromium_git') + '/external/swarming.client.git' + '@' +  Var('swarming_revision'),
