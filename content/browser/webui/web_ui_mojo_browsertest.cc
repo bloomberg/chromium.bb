@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -140,7 +141,7 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
                                                const GURL& url) const override {
     if (url.query() == "ping")
       return new PingTestWebUIController(web_ui, run_loop_);
-    return NULL;
+    return new TestWebUIController(web_ui, run_loop_);
   }
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
                              const GURL& url) const override {
@@ -179,9 +180,7 @@ class WebUIMojoTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebUIMojoTest);
 };
 
-// Loads a webui page that contains mojo bindings and verifies a message makes
-// it from the browser to the page and back.
-IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
+bool RunningWithIsolates() {
   // Currently there is no way to have a generated file included in the isolate
   // files. If the bindings file doesn't exist assume we're on such a bot and
   // pass.
@@ -189,10 +188,17 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
   const base::FilePath test_file_path(
       mojo::test::GetFilePathForJSResource(
           "content/test/data/web_ui_test_mojo_bindings.mojom"));
-  if (!base::PathExists(test_file_path)) {
-    LOG(WARNING) << " mojom binding file doesn't exist, assuming on isolate";
+  if (base::PathExists(test_file_path))
+    return false;
+  LOG(WARNING) << " mojom binding file doesn't exist, assuming on isolate";
+  return true;
+}
+
+// Loads a webui page that contains mojo bindings and verifies a message makes
+// it from the browser to the page and back.
+IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
+  if (RunningWithIsolates())
     return;
-  }
 
   got_message = false;
   ASSERT_TRUE(test_server()->Start());
@@ -216,6 +222,22 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
   EXPECT_TRUE(got_message);
   EXPECT_EQ(shell()->web_contents()->GetRenderProcessHost(),
             other_shell->web_contents()->GetRenderProcessHost());
+}
+
+// Loads a webui page that connects to a test Mojo application via the browser's
+// Mojo shell interface.
+IN_PROC_BROWSER_TEST_F(WebUIMojoTest, ConnectToApplication) {
+  if (RunningWithIsolates())
+    return;
+
+  ASSERT_TRUE(test_server()->Start());
+  NavigateToURL(shell(),
+                test_server()->GetURL("files/web_ui_mojo_shell_test.html"));
+
+  DOMMessageQueue message_queue;
+  std::string message;
+  ASSERT_TRUE(message_queue.WaitForMessage(&message));
+  EXPECT_EQ("true", message);
 }
 
 }  // namespace

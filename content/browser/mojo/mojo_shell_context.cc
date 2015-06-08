@@ -28,10 +28,6 @@ namespace content {
 
 namespace {
 
-// Virtual app URL to use as the requestor identity when connecting from browser
-// code to a Mojo app via the shell proxy.
-const char kBrowserAppUrl[] = "system:content_browser";
-
 // An extra set of apps to register on initialization, if set by a test.
 const MojoShellContext::StaticApplicationMap* g_applications_for_test;
 
@@ -88,17 +84,19 @@ class MojoShellContext::Proxy {
 
   void ConnectToApplication(
       const GURL& url,
+      const GURL& requestor_url,
       mojo::InterfaceRequest<mojo::ServiceProvider> request) {
     if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
       if (shell_context_)
-        shell_context_->ConnectToApplicationOnOwnThread(url, request.Pass());
+        shell_context_->ConnectToApplicationOnOwnThread(url, requestor_url,
+                                                        request.Pass());
     } else {
       // |shell_context_| outlives the main MessageLoop, so it's safe for it to
       // be unretained here.
       task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&MojoShellContext::ConnectToApplicationOnOwnThread,
-                     base::Unretained(shell_context_), url,
+                     base::Unretained(shell_context_), url, requestor_url,
                      base::Passed(&request)));
     }
   }
@@ -147,17 +145,19 @@ MojoShellContext::~MojoShellContext() {
 // static
 void MojoShellContext::ConnectToApplication(
     const GURL& url,
+    const GURL& requestor_url,
     mojo::InterfaceRequest<mojo::ServiceProvider> request) {
-  proxy_.Get()->ConnectToApplication(url, request.Pass());
+  proxy_.Get()->ConnectToApplication(url, requestor_url, request.Pass());
 }
 
 void MojoShellContext::ConnectToApplicationOnOwnThread(
     const GURL& url,
+    const GURL& requestor_url,
     mojo::InterfaceRequest<mojo::ServiceProvider> request) {
   mojo::URLRequestPtr url_request = mojo::URLRequest::New();
   url_request->url = mojo::String::From(url);
   application_manager_->ConnectToApplication(
-      url_request.Pass(), GURL(kBrowserAppUrl), request.Pass(),
+      url_request.Pass(), requestor_url, request.Pass(),
       mojo::ServiceProviderPtr(), base::Bind(&base::DoNothing));
 }
 
