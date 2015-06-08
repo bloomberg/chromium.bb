@@ -45,10 +45,7 @@ class ExecutionContext;
 class KURL;
 class WebSocketChannelClient;
 
-// FIXME: WebSocketChannel needs to be RefCountedGarbageCollected to support manual ref/deref
-// in MainThreadWebSocketChannelImpl. We should change it to GarbageCollectedFinalized once
-// we remove MainThreadWebSocketChannelImpl.
-class MODULES_EXPORT WebSocketChannel : public RefCountedGarbageCollected<WebSocketChannel> {
+class MODULES_EXPORT WebSocketChannel : public GarbageCollectedFinalized<WebSocketChannel> {
     WTF_MAKE_NONCOPYABLE(WebSocketChannel);
 public:
     WebSocketChannel() { }
