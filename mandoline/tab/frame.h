@@ -54,7 +54,7 @@ class Frame : public mojo::ViewObserver, public FrameTreeServer {
 
   // Finds the descendant with the specified id.
   Frame* FindFrame(uint32_t id) {
-    return const_cast<Frame*>(const_cast<const Frame*>(this))->FindFrame(id);
+    return const_cast<Frame*>(const_cast<const Frame*>(this)->FindFrame(id));
   }
   const Frame* FindFrame(uint32_t id) const;
 
