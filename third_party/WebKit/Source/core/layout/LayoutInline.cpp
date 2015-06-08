@@ -1051,12 +1051,9 @@ LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintIn
         return LayoutRect();
 
     LayoutRect overflowRect(linesVisualOverflowBoundingBox());
-
-    LayoutUnit outlineSize = style()->outlineSize();
-    overflowRect.inflate(outlineSize);
-
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, overflowRect, paintInvalidationState);
 
+    LayoutUnit outlineSize = style()->outlineSize();
     if (outlineSize) {
         for (LayoutObject* curr = firstChild(); curr; curr = curr->nextSibling()) {
             if (!curr->isText())

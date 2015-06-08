@@ -86,6 +86,13 @@ crbug.com/432129 virtual/slimmingpaint/fast/html/marquee-scroll.html [ Skip ]
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 crbug.com/421283 virtual/slimmingpaint/fast/html/marquee-scrollamount.html [ Skip ]
 
+crbug.com/495368 fast/repaint/inline-focus.html [ NeedsRebaseline ]
+crbug.com/495368 virtual/slimmingpaint/fast/repaint/inline-focus.html [ NeedsRebaseline ]
+crbug.com/495368 fast/repaint/inline-outline-repaint.html [ NeedsRebaseline ]
+crbug.com/495368 virtual/slimmingpaint/fast/repaint/inline-outline-repaint.html [ NeedsRebaseline ]
+crbug.com/495368 virtual/slimmingpaint/fast/repaint/inline-outline-repaint-2.html [ NeedsRebaseline ]
+crbug.com/495368 svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html [ NeedsRebaseline ]
+
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 crbug.com/470482 virtual/slimmingpaint/fast/cookies/local-file-can-set-cookies.html [ Skip ]
