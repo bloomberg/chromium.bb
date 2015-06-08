@@ -97,6 +97,10 @@ public:
     void setLayerListMutationAllowed(bool flag) { m_layerListMutationAllowed = flag; }
 #endif
 
+    // The hitTest() method looks for mouse events by walking layers that intersect the point from front to back.
+    bool hitTest(HitTestResult&);
+    bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
+
 private:
     friend class DeprecatedPaintLayerStackingNodeIterator;
     friend class DeprecatedPaintLayerStackingNodeReverseIterator;

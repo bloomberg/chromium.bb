@@ -127,7 +127,7 @@ bool LayoutView::hitTest(const HitTestRequest& request, const HitTestLocation& l
     frameView()->updateLayoutAndStyleForPainting();
     commitPendingSelection();
 
-    bool hitLayer = layer()->hitTest(request, location, result);
+    bool hitLayer = layer()->stackingNode()->hitTest(request, location, result);
 
     // FrameView scrollbars are not the same as Layer scrollbars tested by Layer::hitTestOverflowControls,
     // so we need to test FrameView scrollbars separately here. Note that it's important we do this after

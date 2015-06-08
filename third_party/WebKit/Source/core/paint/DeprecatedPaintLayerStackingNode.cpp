@@ -44,6 +44,9 @@
 #include "config.h"
 #include "core/paint/DeprecatedPaintLayerStackingNode.h"
 
+#include "core/layout/HitTestLocation.h"
+#include "core/layout/HitTestRequest.h"
+#include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/paint/DeprecatedPaintLayer.h"
@@ -321,9 +324,60 @@ DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNode::ancestorStac
     return 0;
 }
 
+static inline LayoutRect frameVisibleRect(LayoutObject* layoutObject)
+{
+    FrameView* frameView = layoutObject->document().view();
+    if (!frameView)
+        return LayoutRect();
+
+    return LayoutRect(frameView->visibleContentRect());
+}
+
 LayoutBoxModelObject* DeprecatedPaintLayerStackingNode::layoutObject() const
 {
     return m_layer->layoutObject();
+}
+
+bool DeprecatedPaintLayerStackingNode::hitTest(HitTestResult& result)
+{
+    return hitTest(result.hitTestRequest(), result.hitTestLocation(), result);
+}
+
+bool DeprecatedPaintLayerStackingNode::hitTest(const HitTestRequest& request, const HitTestLocation& hitTestLocation, HitTestResult& result)
+{
+    ASSERT(layer()->isSelfPaintingLayer() || layer()->hasSelfPaintingLayerDescendant());
+
+    // LayoutView should make sure to update layout before entering hit testing
+    ASSERT(!layoutObject()->frame()->view()->layoutPending());
+    ASSERT(!layoutObject()->document().layoutView()->needsLayout());
+
+    // Start with frameVisibleRect to ensure we include the scrollbars.
+    LayoutRect hitTestArea = frameVisibleRect(layoutObject());
+    if (request.ignoreClipping())
+        hitTestArea.unite(LayoutRect(layoutObject()->view()->documentRect()));
+
+    DeprecatedPaintLayer* insideLayer = layer()->hitTestLayer(layer(), 0, result, hitTestArea, hitTestLocation, false);
+    if (!insideLayer) {
+        // We didn't hit any layer. If we are the root layer and the mouse is -- or just was -- down,
+        // return ourselves. We do this so mouse events continue getting delivered after a drag has
+        // exited the WebView, and so hit testing over a scrollbar hits the content document.
+        // In addtion, it is possible for the mouse to stay in the document but there is no element.
+        // At that time, the events of the mouse should be fired.
+        LayoutPoint hitPoint = hitTestLocation.point();
+        if (!request.isChildFrameHitTest() && ((request.active() || request.release()) || (request.move() && hitTestArea.contains(hitPoint.x(), hitPoint.y()))) && layer()->isRootLayer()) {
+            layoutObject()->updateHitTestResult(result, toLayoutView(layoutObject())->flipForWritingMode(hitTestLocation.point()));
+            insideLayer = layer();
+        }
+    }
+
+    // Now determine if the result is inside an anchor - if the urlElement isn't already set.
+    Node* node = result.innerNode();
+    if (node && !result.URLElement())
+        result.setURLElement(node->enclosingLinkEventParentOrSelf());
+
+    // Now return whether we were inside this layer (this will always be true for the root
+    // layer).
+    return insideLayer;
 }
 
 } // namespace blink

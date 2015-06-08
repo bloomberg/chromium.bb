@@ -1505,7 +1505,7 @@ AXObject* AXLayoutObject::accessibilityHitTest(const IntPoint& point) const
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult hitTestResult = HitTestResult(request, point);
-    layer->hitTest(hitTestResult);
+    layer->stackingNode()->hitTest(hitTestResult);
     if (!hitTestResult.innerNode())
         return 0;
 
