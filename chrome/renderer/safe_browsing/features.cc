@@ -63,6 +63,7 @@ const char kUrlPathToken[] = "UrlPathToken=";
 // DOM HTML form features
 const char kPageHasForms[] = "PageHasForms";
 const char kPageActionOtherDomainFreq[] = "PageActionOtherDomainFreq";
+const char kPageActionURL[] = "PageActionURL=";
 const char kPageHasTextInputs[] = "PageHasTextInputs";
 const char kPageHasPswdInputs[] = "PageHasPswdInputs";
 const char kPageHasRadioInputs[] = "PageHasRadioInputs";

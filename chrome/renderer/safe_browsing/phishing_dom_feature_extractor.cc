@@ -54,6 +54,7 @@ struct PhishingDOMFeatureExtractor::PageFeatureState {
   int num_check_inputs;
   int action_other_domain;
   int total_actions;
+  base::hash_set<std::string> page_action_urls;
 
   // Image related features
   int img_other_domain;
@@ -279,6 +280,8 @@ void PhishingDOMFeatureExtractor::HandleForm(
   blink::WebURL full_url = element.document().completeURL(
       element.getAttribute("action"));
 
+  page_feature_state_->page_action_urls.insert(full_url.string().utf8());
+
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
   if (domain.empty()) {
@@ -440,10 +443,8 @@ void PhishingDOMFeatureExtractor::InsertFeatures() {
     features_->AddRealFeature(features::kPageExternalLinksFreq, link_freq);
 
     // Add a feature for each unique domain that we're linking to
-    for (base::hash_set<std::string>::iterator it =
-             page_feature_state_->external_domains.begin();
-         it != page_feature_state_->external_domains.end(); ++it) {
-      features_->AddBooleanFeature(features::kPageLinkDomain + *it);
+    for (const auto& domain : page_feature_state_->external_domains) {
+      features_->AddBooleanFeature(features::kPageLinkDomain + domain);
     }
 
     // Fraction of links that use https.
@@ -476,6 +477,11 @@ void PhishingDOMFeatureExtractor::InsertFeatures() {
         page_feature_state_->total_actions;
     features_->AddRealFeature(features::kPageActionOtherDomainFreq,
                               action_freq);
+  }
+
+  // Add a feature for each unique external action url.
+  for (const auto& url : page_feature_state_->page_action_urls) {
+    features_->AddBooleanFeature(features::kPageActionURL + url);
   }
 
   // Record how many image src attributes point to a different domain.

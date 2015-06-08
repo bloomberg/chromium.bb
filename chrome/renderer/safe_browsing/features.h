@@ -121,7 +121,9 @@ extern const char kPageHasForms[];
 // The fraction of form elements whose |action| attribute points to a
 // URL on a different domain from the document URL.
 extern const char kPageActionOtherDomainFreq[];
-
+// Token feature containing each URL that an |action| attribute
+// points to.
+extern const char kPageActionURL[];
 // Set if the page has any <input type="text"> elements
 // (includes inputs with missing or unknown types).
 extern const char kPageHasTextInputs[];
@@ -172,6 +174,6 @@ extern const char kPageImgOtherDomainFreq[];
 extern const char kPageTerm[];
 
 }  // namespace features
-}  // namepsace safe_browsing
+}  // namespace safe_browsing
 
 #endif  // CHROME_RENDERER_SAFE_BROWSING_FEATURES_H_

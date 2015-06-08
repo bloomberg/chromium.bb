@@ -195,6 +195,14 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
   expected_features.AddRealFeature(features::kPageActionOtherDomainFreq, 0.25);
   expected_features.AddBooleanFeature(features::kPageHasTextInputs);
   expected_features.AddBooleanFeature(features::kPageHasCheckInputs);
+  expected_features.AddBooleanFeature(features::kPageActionURL +
+      std::string("http://cgi.host.com/submit"));
+  expected_features.AddBooleanFeature(features::kPageActionURL +
+      std::string("http://other.com/"));
+  expected_features.AddBooleanFeature(features::kPageActionURL +
+      std::string("http://host.com:") +
+      base::IntToString(embedded_test_server_->port()) +
+      std::string("/query"));
 
   FeatureMap features;
   LoadHtml(
@@ -383,6 +391,10 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
   expected_features.AddRealFeature(features::kPageSecureLinksFreq, 0.25);
   expected_features.AddBooleanFeature(features::kPageNumScriptTagsGTOne);
   expected_features.AddRealFeature(features::kPageImgOtherDomainFreq, 1.0);
+  expected_features.AddBooleanFeature(features::kPageActionURL +
+      std::string("http://host2.com/submit"));
+  expected_features.AddBooleanFeature(features::kPageActionURL +
+      std::string("http://host4.com/"));
 
   FeatureMap features;
   std::string html(
@@ -456,6 +468,12 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, MAYBE_Continuation) {
   FeatureMap expected_features;
   expected_features.AddBooleanFeature(features::kPageHasForms);
   expected_features.AddRealFeature(features::kPageActionOtherDomainFreq, 0.5);
+  expected_features.AddBooleanFeature(features::kPageActionURL +
+      std::string("http://host.com:") +
+      base::IntToString(embedded_test_server_->port()) +
+      std::string("/ondomain"));
+  expected_features.AddBooleanFeature(features::kPageActionURL +
+      std::string("http://host2.com/"));
 
   FeatureMap features;
   LoadHtml("host.com", response);
