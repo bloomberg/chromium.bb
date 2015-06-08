@@ -99,16 +99,22 @@ pa_sample_format_t BitsToPASampleFormat(int bits_per_sample) {
 
 pa_channel_map ChannelLayoutToPAChannelMap(ChannelLayout channel_layout) {
   pa_channel_map channel_map;
-  pa_channel_map_init(&channel_map);
+  if (channel_layout == CHANNEL_LAYOUT_MONO) {
+    // CHANNEL_LAYOUT_MONO only specifies audio on the C channel, but we
+    // want PulseAudio to play single-channel audio on more than just that.
+    pa_channel_map_init_mono(&channel_map);
+  } else {
+    pa_channel_map_init(&channel_map);
 
-  channel_map.channels = ChannelLayoutToChannelCount(channel_layout);
-  for (Channels ch = LEFT; ch <= CHANNELS_MAX;
-       ch = static_cast<Channels>(ch + 1)) {
-    int channel_index = ChannelOrder(channel_layout, ch);
-    if (channel_index < 0)
-      continue;
+    channel_map.channels = ChannelLayoutToChannelCount(channel_layout);
+    for (Channels ch = LEFT; ch <= CHANNELS_MAX;
+         ch = static_cast<Channels>(ch + 1)) {
+      int channel_index = ChannelOrder(channel_layout, ch);
+      if (channel_index < 0)
+        continue;
 
-    channel_map.map[channel_index] = ChromiumToPAChannelPosition(ch);
+      channel_map.map[channel_index] = ChromiumToPAChannelPosition(ch);
+    }
   }
 
   return channel_map;

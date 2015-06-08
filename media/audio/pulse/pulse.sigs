@@ -16,6 +16,7 @@ void pa_threaded_mainloop_stop(pa_threaded_mainloop* m);
 void pa_threaded_mainloop_unlock(pa_threaded_mainloop* m);
 void pa_threaded_mainloop_wait(pa_threaded_mainloop* m);
 pa_channel_map* pa_channel_map_init(pa_channel_map* m);
+pa_channel_map* pa_channel_map_init_mono(pa_channel_map* m);
 int pa_context_connect(pa_context* c, const char* server, pa_context_flags_t flags, const pa_spawn_api* api);
 void pa_context_disconnect(pa_context* c);
 pa_operation* pa_context_get_server_info(pa_context* c, pa_server_info_cb_t cb, void* userdata);
