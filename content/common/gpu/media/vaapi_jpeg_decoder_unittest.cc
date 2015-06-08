@@ -132,5 +132,6 @@ TEST_F(VaapiJpegDecoderTest, DecodeFail) {
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   base::AtExitManager exit_manager;
+  content::VaapiWrapper::PreSandboxInitialization();
   return RUN_ALL_TESTS();
 }
