@@ -61,7 +61,7 @@ public:
     void setWrappingStyle(PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyle) { m_wrappingStyle = wrappingStyle; }
 
     void wrapWithNode(ContainerNode&, RangeFullySelectsNode = DoesFullySelectNode);
-    void wrapWithStyleNode(StylePropertySet*, bool isBlock = false);
+    void wrapWithStyleNode(StylePropertySet*);
     String takeResults();
 
 private:
@@ -78,7 +78,6 @@ private:
     void appendElement(StringBuilder&, Element&, bool, RangeFullySelectsNode);
     void appendStartMarkup(StringBuilder&, Node&);
     void appendEndMarkup(StringBuilder&, const Element&);
-    void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, bool isBlock = false);
 
     MarkupFormatter m_formatter;
     const TextOffset m_start;

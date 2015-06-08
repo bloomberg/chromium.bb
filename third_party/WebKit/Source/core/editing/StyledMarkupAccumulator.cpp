@@ -37,17 +37,6 @@
 
 namespace blink {
 
-namespace {
-
-const String& styleNodeCloseTag(bool isBlock)
-{
-    DEFINE_STATIC_LOCAL(const String, divClose, ("</div>"));
-    DEFINE_STATIC_LOCAL(const String, styleSpanClose, ("</span>"));
-    return isBlock ? divClose : styleSpanClose;
-}
-
-} // namespace
-
 using namespace HTMLNames;
 
 StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized, ConvertBlocksToInlines convertBlocksToInlines)
@@ -108,7 +97,13 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
         // FIXME: Should this be included in forceInline?
         wrappingStyle->style()->setProperty(CSSPropertyFloat, CSSValueNone);
 
-        appendStyleNodeOpenTag(out, wrappingStyle->style());
+        // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
+        ASSERT(propertyMissingOrEqualToNone(wrappingStyle->style(), CSSPropertyWebkitTextDecorationsInEffect));
+        ASSERT(m_document);
+
+        out.appendLiteral("<span style=\"");
+        MarkupFormatter::appendAttributeValue(out, wrappingStyle->style()->asText(), m_document->isHTMLDocument());
+        out.appendLiteral("\">");
     }
 
     if (!shouldAnnotate() || parentIsTextarea) {
@@ -135,7 +130,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
     }
 
     if (wrappingSpan)
-        out.append(styleNodeCloseTag(false));
+        out.append("</span>");
 }
 
 void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element)
@@ -196,19 +191,6 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
     m_formatter.appendCloseTag(out, element);
 }
 
-void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePropertySet* style, bool isBlock)
-{
-    // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
-    ASSERT(propertyMissingOrEqualToNone(style, CSSPropertyWebkitTextDecorationsInEffect));
-    if (isBlock)
-        out.appendLiteral("<div style=\"");
-    else
-        out.appendLiteral("<span style=\"");
-    ASSERT(m_document);
-    MarkupFormatter::appendAttributeValue(out, style->asText(), m_document->isHTMLDocument());
-    out.appendLiteral("\">");
-}
-
 void StyledMarkupAccumulator::wrapWithNode(ContainerNode& node, RangeFullySelectsNode rangeFullySelectsNode)
 {
     StringBuilder markup;
@@ -221,12 +203,19 @@ void StyledMarkupAccumulator::wrapWithNode(ContainerNode& node, RangeFullySelect
         appendEndTag(toElement(node));
 }
 
-void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style, bool isBlock)
+void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style)
 {
+    // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
+    ASSERT(propertyMissingOrEqualToNone(style, CSSPropertyWebkitTextDecorationsInEffect));
+    ASSERT(m_document);
+
     StringBuilder openTag;
-    appendStyleNodeOpenTag(openTag, style, isBlock);
+    openTag.appendLiteral("<div style=\"");
+    MarkupFormatter::appendAttributeValue(openTag, style->asText(), m_document->isHTMLDocument());
+    openTag.appendLiteral("\">");
     m_reversedPrecedingMarkup.append(openTag.toString());
-    appendString(styleNodeCloseTag(isBlock));
+
+    appendString("</div>");
 }
 
 String StyledMarkupAccumulator::takeResults()

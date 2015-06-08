@@ -171,7 +171,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
                         fullySelectedRootStyle->style()->setProperty(CSSPropertyTextDecoration, CSSValueNone);
                     if (!propertyMissingOrEqualToNone(fullySelectedRootStyle->style(), CSSPropertyWebkitTextDecorationsInEffect))
                         fullySelectedRootStyle->style()->setProperty(CSSPropertyWebkitTextDecorationsInEffect, CSSValueNone);
-                    markupAccumulator.wrapWithStyleNode(fullySelectedRootStyle->style(), true);
+                    markupAccumulator.wrapWithStyleNode(fullySelectedRootStyle->style());
                 }
             } else {
                 // Since this node and all the other ancestors are not in the selection we want to set RangeFullySelectsNode to DoesNotFullySelectNode
