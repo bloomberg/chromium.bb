@@ -62,7 +62,6 @@ public:
 
     double nextFireInterval() const;
     double nextUnalignedFireInterval() const;
-    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     double repeatInterval() const { return m_repeatInterval; }
 
     void augmentRepeatInterval(double delta) {
@@ -73,10 +72,17 @@ public:
 
     void didChangeAlignmentInterval(double now);
 
+#if defined(ADDRESS_SANITIZER)
+protected:
+    CancellableTaskFactory& cancellableTaskFactory() { return m_cancellableTaskFactory; }
+#endif
+
 private:
     virtual void fired() = 0;
 
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
+    virtual bool canFire() const { return true; }
+
     virtual double alignedFireTime(double fireTime) const { return fireTime; }
 
     void setNextFireTime(double now, double delay);
@@ -110,9 +116,6 @@ class TimerIsObjectAliveTrait<T, true> {
 public:
     static bool isHeapObjectAlive(T* objectPointer)
     {
-        // Oilpan: if a timer fires while Oilpan heaps are being lazily
-        // swept, it is not safe to proceed if the object is about to
-        // be swept (and this timer will be stopped while doing so.)
         return !Heap::willObjectBeLazilySwept(objectPointer);
     }
 };
@@ -123,19 +126,31 @@ public:
     typedef void (TimerFiredClass::*TimerFiredFunction)(Timer*);
 
     Timer(TimerFiredClass* o, TimerFiredFunction f)
-        : m_object(o), m_function(f) { }
+        : m_object(o), m_function(f)
+    {
+#if ENABLE(LAZY_SWEEPING) && defined(ADDRESS_SANITIZER)
+        if (IsGarbageCollectedType<TimerFiredClass>::value)
+            cancellableTaskFactory().setUnpoisonBeforeUpdate();
+#endif
+    }
 
 protected:
-    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     virtual void fired() override
     {
-        if (!TimerIsObjectAliveTrait<TimerFiredClass>::isHeapObjectAlive(m_object))
-            return;
         (m_object->*m_function)(this);
     }
 
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
+    virtual bool canFire() const override
+    {
+        // Oilpan: if a timer fires while Oilpan heaps are being lazily
+        // swept, it is not safe to proceed if the object is about to
+        // be swept (and this timer will be stopped while doing so.)
+        return TimerIsObjectAliveTrait<TimerFiredClass>::isHeapObjectAlive(m_object);
+    }
+
 private:
-    // FIXME: oilpan: TimerBase should be moved to the heap and m_object should be traced.
+    // FIXME: Oilpan: TimerBase should be moved to the heap and m_object should be traced.
     // This raw pointer is safe as long as Timer<X> is held by the X itself (That's the case
     // in the current code base).
     GC_PLUGIN_IGNORE("363031")
@@ -150,6 +165,6 @@ inline bool TimerBase::isActive() const
     return m_cancellableTaskFactory.isPending();
 }
 
-}
+} // namespace blink
 
-#endif
+#endif // Timer_h

@@ -50,6 +50,9 @@ ScriptRunner::ScriptRunner(Document* document)
     , m_executeScriptsTaskFactory(WTF::bind(&ScriptRunner::executeScripts, this))
 {
     ASSERT(document);
+#if ENABLE(LAZY_SWEEPING) && defined(ADDRESS_SANITIZER)
+    m_executeScriptsTaskFactory.setUnpoisonBeforeUpdate();
+#endif
 }
 
 ScriptRunner::~ScriptRunner()

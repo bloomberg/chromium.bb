@@ -84,7 +84,6 @@ double TimerBase::nextFireInterval() const
     return m_nextFireTime - current;
 }
 
-NO_LAZY_SWEEP_SANITIZE_ADDRESS
 void TimerBase::setNextFireTime(double now, double delay)
 {
     ASSERT(m_thread == currentThread());
@@ -103,8 +102,12 @@ void TimerBase::setNextFireTime(double now, double delay)
     }
 }
 
+NO_LAZY_SWEEP_SANITIZE_ADDRESS
 void TimerBase::run()
 {
+    if (!canFire())
+        return;
+
     TRACE_EVENT0("blink", "TimerBase::run");
     ASSERT_WITH_MESSAGE(m_thread == currentThread(), "Timer posted by %s %s was run on a different thread", m_location.functionName(), m_location.fileName());
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "BlinkInternal");
