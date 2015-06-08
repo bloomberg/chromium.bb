@@ -1202,20 +1202,16 @@ class PreCQLauncherStage(SyncStage):
       A set of configs to test.
     """
     configs_to_test = None
-    try:
-      # If a pre-cq config is specified in the commit message, use that.
-      # Otherwise, look in appropriate COMMIT-QUEUE.ini. Otherwise, default to
-      # constants.PRE_CQ_DEFAULT_CONFIGS
-      lines = cros_patch.GetOptionLinesFromCommitMessage(
-          change.commit_message, constants.PRE_CQ_CONFIGS_OPTION_REGEX)
-      if lines is not None:
-        configs_to_test = self._ParsePreCQOption(' '.join(lines))
-      configs_to_test = configs_to_test or self._ParsePreCQOption(
-          triage_lib.GetOptionForChange(
-              self._build_root, change, 'GENERAL',
-              constants.PRE_CQ_CONFIGS_OPTION))
-    except ConfigParser.Error:
-      logging.error('%s has malformed config file', change, exc_info=True)
+    # If a pre-cq config is specified in the commit message, use that.
+    # Otherwise, look in appropriate COMMIT-QUEUE.ini. Otherwise, default to
+    # constants.PRE_CQ_DEFAULT_CONFIGS
+    lines = cros_patch.GetOptionLinesFromCommitMessage(
+        change.commit_message, constants.PRE_CQ_CONFIGS_OPTION_REGEX)
+    if lines is not None:
+      configs_to_test = self._ParsePreCQOption(' '.join(lines))
+    configs_to_test = configs_to_test or self._ParsePreCQOption(
+        triage_lib.GetOptionForChange(self._build_root, change, 'GENERAL',
+                                      constants.PRE_CQ_CONFIGS_OPTION))
 
     return set(configs_to_test or constants.PRE_CQ_DEFAULT_CONFIGS)
 

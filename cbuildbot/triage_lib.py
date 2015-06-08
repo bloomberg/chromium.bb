@@ -203,7 +203,12 @@ def GetOptionForChange(build_root, change, section, option):
   if checkout:
     dirname = checkout.GetPath(absolute=True)
     config_path = _GetConfigFileForChange(change, dirname)
-    return _GetOptionFromConfigFile(config_path, section, option)
+    result = None
+    try:
+      result = _GetOptionFromConfigFile(config_path, section, option)
+    except ConfigParser.Error:
+      logging.error('%s has malformed config file', change, exc_info=True)
+    return result
 
 
 def GetStagesToIgnoreForChange(build_root, change):
@@ -227,14 +232,32 @@ def GetStagesToIgnoreForChange(build_root, change):
   Returns:
     A list of stages to ignore for the given |change|.
   """
-  result = None
-  try:
-    result = GetOptionForChange(build_root, change, 'GENERAL',
-                                'ignored-stages')
-  except ConfigParser.Error:
-    logging.error('%s has malformed config file', change, exc_info=True)
+  result = GetOptionForChange(build_root, change, 'GENERAL', 'ignored-stages')
   return result.split() if result else []
 
+
+def GetTestSubsystemForChange(build_root, change):
+  """Get a list of subsystem that a given |change| affects.
+
+  The list of the subsystem that a change affacts is specified in a config file
+  inside the project, named COMMIT-QUEUE.ini. The file would look like this:
+
+  [GENERAL]
+    subsystem: power graphics
+
+  Based on the subsystems a given |change| affects, the CQ could tell whether a
+  failure is potentially caused by this |change|. The CQ could then submit some
+  changes in the face of unrelated failures.
+
+  Args:
+    build_root: The root of the checkout.
+    change: Change to examine, as a PatchQuery object.
+
+  Returns:
+    A list of subsystem for the given |change|.
+  """
+  result = GetOptionForChange(build_root, change, 'GENERAL', 'subsystem')
+  return result.split() if result else []
 
 class CategorizeChanges(object):
   """A collection of methods to help categorize GerritPatch changes.

@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import ConfigParser
 import cPickle
 import datetime
 import itertools
@@ -505,13 +504,6 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
                      return_value=return_string)
     self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
                           configs_to_test)
-
-  def testVerificationsForChangeMalformedConfigFile(self):
-    change = MockPatch()
-    self.PatchObject(triage_lib, 'GetOptionForChange',
-                     side_effect=ConfigParser.Error)
-    self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
-                          constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testVerificationsForChangeNoSuchConfig(self):
     change = MockPatch()
