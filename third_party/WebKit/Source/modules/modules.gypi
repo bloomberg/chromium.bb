@@ -636,8 +636,6 @@
       'compositorworker/CompositorWorker.h',
       'compositorworker/CompositorWorkerGlobalScope.cpp',
       'compositorworker/CompositorWorkerGlobalScope.h',
-      'compositorworker/CompositorWorkerManager.cpp',
-      'compositorworker/CompositorWorkerManager.h',
       'compositorworker/CompositorWorkerMessagingProxy.cpp',
       'compositorworker/CompositorWorkerMessagingProxy.h',
       'compositorworker/CompositorWorkerThread.cpp',
@@ -1443,7 +1441,6 @@
     'modules_unittest_files': [
       'accessibility/AXObjectTest.cpp',
       'cachestorage/CacheTest.cpp',
-      'compositorworker/CompositorWorkerManagerTest.cpp',
       'fetch/BodyStreamBufferTest.cpp',
       'fetch/FetchResponseDataTest.cpp',
       'fetch/RequestTest.cpp',
