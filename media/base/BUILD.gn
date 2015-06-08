@@ -272,11 +272,13 @@ source_set("base") {
   }
 
   if (current_cpu == "x86" || current_cpu == "x64") {
-    sources += [ "simd/convert_yuv_to_rgb_x86.cc" ]
-    deps += [
-      ":media_yasm",
-      ":media_sse2",
+    sources += [
+      "simd/convert_rgb_to_yuv_sse2.cc",
+      "simd/convert_rgb_to_yuv_ssse3.cc",
+      "simd/convert_yuv_to_rgb_x86.cc",
+      "simd/filter_yuv_sse2.cc",
     ]
+    deps += [ ":media_yasm" ]
   }
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
@@ -464,21 +466,6 @@ source_set("perftests") {
 }
 
 if (current_cpu == "x86" || current_cpu == "x64") {
-  source_set("media_sse2") {
-    sources = [
-      "simd/convert_rgb_to_yuv_sse2.cc",
-      "simd/convert_rgb_to_yuv_ssse3.cc",
-      "simd/filter_yuv_sse2.cc",
-    ]
-    configs += [
-      "//media:media_config",
-      "//media:media_implementation",
-    ]
-    if (!is_win) {
-      cflags = [ "-msse2" ]
-    }
-  }
-
   import("//third_party/yasm/yasm_assemble.gni")
   yasm_assemble("media_yasm") {
     sources = [

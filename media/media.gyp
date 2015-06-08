@@ -1041,10 +1041,12 @@
         ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
             'media_asm',
-            'media_sse2',
           ],
           'sources': [
+            'base/simd/convert_rgb_to_yuv_sse2.cc',
+            'base/simd/convert_rgb_to_yuv_ssse3.cc',
             'base/simd/convert_yuv_to_rgb_x86.cc',
+            'base/simd/filter_yuv_sse2.cc',
           ],
         }],
         ['OS!="linux" and OS!="win"', {
@@ -1638,25 +1640,6 @@
           'msvs_2010_disable_uldi_when_referenced': 1,
           'includes': [
             '../third_party/yasm/yasm_compile.gypi',
-          ],
-        },
-        {
-          # GN version: //media/base:media_sse2
-          'target_name': 'media_sse2',
-          'type': 'static_library',
-          'cflags': [
-            '-msse2',
-          ],
-          'defines': [
-            'MEDIA_IMPLEMENTATION',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'base/simd/convert_rgb_to_yuv_sse2.cc',
-            'base/simd/convert_rgb_to_yuv_ssse3.cc',
-            'base/simd/filter_yuv_sse2.cc',
           ],
         },
       ], # targets

@@ -531,6 +531,13 @@ component("cc") {
     "trees/tree_synchronizer.h",
   ]
 
+  if (target_cpu == "x86" || target_cpu == "x64") {
+    sources += [
+      "raster/texture_compressor_etc1_sse.cc",
+      "raster/texture_compressor_etc1_sse.h",
+    ]
+  }
+
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
@@ -541,7 +548,6 @@ component("cc") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//cc:cc_opts",
     "//cc/surfaces:surface_id",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
@@ -556,36 +562,6 @@ component("cc") {
   if (!is_debug && (is_win || is_android)) {
     configs -= [ "//build/config/compiler:optimize" ]
     configs += [ "//build/config/compiler:optimize_max" ]
-  }
-}
-
-source_set("cc_opts") {
-  public_deps = [
-    "//cc:cc_opts_sse",
-  ]
-}
-
-source_set("cc_opts_sse") {
-  if (target_cpu == "x86" || target_cpu == "x64") {
-    deps = [
-      "//base",
-    ]
-
-    defines = [ "CC_IMPLEMENTATION=1" ]
-
-    if (!is_debug && (is_win || is_android)) {
-      configs -= [ "//build/config/compiler:optimize" ]
-      configs += [ "//build/config/compiler:optimize_max" ]
-    }
-
-    sources = [
-      "raster/texture_compressor.h",
-      "raster/texture_compressor_etc1.h",
-      "raster/texture_compressor_etc1_sse.cc",
-      "raster/texture_compressor_etc1_sse.h",
-    ]
-
-    cflags = [ "-msse2" ]
   }
 }
 
