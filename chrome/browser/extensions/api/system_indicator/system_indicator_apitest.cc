@@ -44,7 +44,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SystemIndicator) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, FLAKY_SystemIndicator) {
+// Failing on 10.6, flaky elsewhere http://crbug.com/497643
+IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, DISABLED_SystemIndicator) {
   // Only run this test on supported platforms.  SystemIndicatorManagerFactory
   // returns NULL on unsupported platforms.
   extensions::SystemIndicatorManager* manager =
