@@ -17,6 +17,9 @@ ProjectingObserver::ProjectingObserver(
       casting_session_count_(0),
       power_manager_client_(power_manager_client) {
   DCHECK(power_manager_client);
+#if defined(USE_OZONE)
+  is_initial_configuration_ = true;
+#endif
 }
 
 ProjectingObserver::~ProjectingObserver() {}
@@ -32,6 +35,13 @@ void ProjectingObserver::OnDisplayModeChanged(
       break;
     }
   }
+
+#if defined(USE_OZONE)
+  if (is_initial_configuration_) {
+    is_initial_configuration_ = false;
+    return;
+  }
+#endif
 
   SetIsProjecting();
 }
