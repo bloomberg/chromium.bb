@@ -235,13 +235,13 @@ void SafeBrowsingService::Initialize() {
           make_scoped_refptr(g_browser_process->system_request_context())));
 
 #if defined(FULL_SAFE_BROWSING)
-#if !defined(SAFE_BROWSING_CSD)
+#if defined(SAFE_BROWSING_CSD)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableClientSidePhishingDetection)) {
     csd_service_.reset(safe_browsing::ClientSideDetectionService::Create(
         url_request_context_getter_.get()));
   }
-#endif  // !defined(SAFE_BROWSING_CSD)
+#endif  // defined(SAFE_BROWSING_CSD)
 
 // TODO(nparker): Adding SAFE_BROWSING_SERVICE_DOWNLOAD to control this might
 // allow removing FULL_SAFE_BROWSING above.
