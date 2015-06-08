@@ -32,9 +32,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Fails on all platforms
     self.Fail('deqp/data/gles2/shaders/constant_expressions.html',
         bug=478572)
+    self.Fail('deqp/data/gles2/shaders/constants.html',
+        bug=478572)
     self.Fail('deqp/data/gles2/shaders/fragdata.html',
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/functions.html',
+        bug=478572)
+    self.Fail('deqp/data/gles2/shaders/linkage.html',
         bug=478572)
     self.Fail('deqp/data/gles2/shaders/preprocessor.html',
         bug=478572)
@@ -415,26 +419,40 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance2/attribs/gl-vertexattribipointer.html', bug=483282)
     self.Fail('conformance2/attribs/gl-vertexattribipointer-offsets.html',
         bug=483282)
-
-    self.Fail('conformance2/context/constants-and-properties-2.html',
-        bug=483282)
-
-    self.Fail('conformance2/core/draw-buffers.html', bug=483282)
-    self.Fail('conformance2/core/frag-depth.html', bug=483282)
-    self.Fail('conformance2/core/tex-mipmap-levels.html', bug=483282)
-
-    self.Fail('conformance2/core/tex-new-formats.html', bug=483282)
-    self.Fail('conformance2/core/tex-storage-2d.html', bug=483282)
-    self.Fail('conformance2/core/tex-storage-and-subimage-3d.html', bug=483282)
-    self.Fail('conformance2/core/texture-npot.html', bug=483282)
-
-    self.Fail('conformance2/glsl3/misplaced-version-directive.html', bug=483282)
-
-    self.Fail('conformance2/state/gl-get-calls.html', bug=483282)
-    self.Fail('conformance2/state/gl-object-get-calls.html', bug=483282)
-
     self.Fail('conformance2/buffers/buffer-copying-contents.html', bug=483282)
     self.Fail('conformance2/buffers/buffer-copying-restrictions.html',
         bug=483282)
     self.Fail('conformance2/buffers/buffer-type-restrictions.html', bug=483282)
     self.Fail('conformance2/buffers/getBufferSubData.html', bug=483282)
+    self.Fail('conformance2/context/constants-and-properties-2.html',
+        bug=483282)
+
+    self.Fail('conformance2/glsl3/array-complex-indexing.html', bug=483282)
+    self.Fail('conformance2/glsl3/frag-depth.html', bug=483282)
+    self.Fail('conformance2/glsl3/invalid-default-precision.html', bug=483282)
+    self.Fail('conformance2/glsl3/sequence-operator-returns-non-constant.html',
+        bug=483282)
+    self.Fail('conformance2/glsl3/ternary-operator-on-arrays-glsl3.html',
+        bug=483282)
+    self.Fail('conformance2/misc/instanceof-test.html', bug=483282)
+    self.Fail('conformance2/renderbuffers/framebuffer-test.html', bug=483282)
+    self.Fail('conformance2/rendering/draw-buffers.html', bug=483282)
+    self.Fail('conformance2/state/gl-get-calls.html', bug=483282)
+    self.Fail('conformance2/state/gl-object-get-calls.html', bug=483282)
+    self.Fail('conformance2/textures/gl-get-tex-parameter.html', bug=483282)
+    self.Fail('conformance2/textures/tex-input-validation.html', bug=483282)
+    self.Fail('conformance2/textures/tex-mipmap-levels.html', bug=483282)
+    self.Fail('conformance2/textures/tex-new-formats.html', bug=483282)
+    self.Fail('conformance2/textures/tex-storage-2d.html', bug=483282)
+    self.Fail('conformance2/textures/texture-npot.html', bug=483282)
+    self.Fail('conformance2/transform_feedback/transform_feedback.html',
+        bug=483282)
+
+    # Mac only.
+    self.Fail('conformance2/renderbuffers/' +
+        'multisampled-renderbuffer-initialization.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/rendering/instanced-arrays.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/textures/tex-storage-and-subimage-3d.html',
+        ['mac'], bug=483282)
