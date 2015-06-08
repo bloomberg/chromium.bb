@@ -24,6 +24,13 @@ cvox.ChromeMathJax = function() {
   goog.base(this);
 
   /**
+   * Set to when the bridge is initialized.
+   * @type {boolean}
+   * @private
+   */
+  this.initialized_ = false;
+
+  /**
    * The port to communicate with the content script.
    * @type {Port}
    */
@@ -95,7 +102,7 @@ cvox.ChromeMathJax.prototype.init = function() {
       'chromevox/injected/mathjax_external_util.js'));
   scripts.push(cvox.ChromeVox.host.getFileSrc('chromevox/injected/mathjax.js'));
   scripts.push(cvox.ApiImplementation.siteSpecificScriptLoader);
-  cvox.ScriptInstaller.installScript(
+  this.initialized_ = cvox.ScriptInstaller.installScript(
       scripts, 'mathjax', undefined,
       cvox.ApiImplementation.siteSpecificScriptBase);
 };
@@ -181,6 +188,11 @@ cvox.ChromeMathJax.prototype.applyBoolean = function(
  * @override
  */
 cvox.ChromeMathJax.prototype.isMathjaxActive = function(callback) {
+  if (!this.initialized_) {
+    callback(false);
+    return;
+  }
+
   var retries = 0;
 
   var fetch = goog.bind(function() {
