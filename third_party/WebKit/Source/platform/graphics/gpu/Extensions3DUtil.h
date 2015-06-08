@@ -26,7 +26,7 @@ public:
     bool ensureExtensionEnabled(const String& name);
     bool isExtensionEnabled(const String& name);
 
-    static bool canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level);
+    static bool canUseCopyTextureCHROMIUM(GLenum destTarget, GLenum destFormat, GLenum destType, GLint level);
 
 private:
     Extensions3DUtil(WebGraphicsContext3D*);

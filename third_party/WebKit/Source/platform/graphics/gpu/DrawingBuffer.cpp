@@ -482,7 +482,7 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platfor
         m_context->flush();
     }
 
-    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, destType, level))
+    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(GL_TEXTURE_2D, internalFormat, destType, level))
         return false;
 
     // Contexts may be in a different share group. We must transfer the texture through a mailbox first

@@ -189,7 +189,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     if (!m_surface->isAccelerated() || !getBackingTexture() || !isSurfaceValid())
         return false;
 
-    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, destType, level))
+    if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(GL_TEXTURE_2D, internalFormat, destType, level))
         return false;
 
     OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());

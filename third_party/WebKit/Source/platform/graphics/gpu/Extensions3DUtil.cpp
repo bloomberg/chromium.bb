@@ -81,11 +81,11 @@ bool Extensions3DUtil::isExtensionEnabled(const String& name)
     return m_enabledExtensions.contains(name);
 }
 
-bool Extensions3DUtil::canUseCopyTextureCHROMIUM(GLenum destFormat, GLenum destType, GLint level)
+bool Extensions3DUtil::canUseCopyTextureCHROMIUM(GLenum destTarget, GLenum destFormat, GLenum destType, GLint level)
 {
     // FIXME: restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be lifted when
     // WebGraphicsContext3D::copyTextureCHROMIUM(...) are fully functional.
-    if ((destFormat == GL_RGB || destFormat == GL_RGBA)
+    if (destTarget == GL_TEXTURE_2D && (destFormat == GL_RGB || destFormat == GL_RGBA)
         && destType == GL_UNSIGNED_BYTE
         && !level)
         return true;

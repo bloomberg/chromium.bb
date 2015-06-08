@@ -67,7 +67,7 @@ public:
     void paintCurrentFrame(SkCanvas*, const IntRect&, const SkPaint*) const;
 
     // Used by WebGL to do GPU-GPU textures copy if possible.
-    bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GC3Dint level, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY);
+    bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY);
 
     bool shouldDisplayPosterImage() const { return displayMode() == Poster; }
 

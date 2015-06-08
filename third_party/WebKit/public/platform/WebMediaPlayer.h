@@ -149,6 +149,8 @@ public:
 
     virtual void paint(WebCanvas*, const WebRect&, unsigned char alpha, SkXfermode::Mode) = 0;
     // Do a GPU-GPU textures copy if possible.
+    virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, unsigned texture, unsigned internalFormat, unsigned type, bool premultiplyAlpha, bool flipY) { return false; }
+    // TODO(dshwang): Remove it after cleaning up in chromium side. crbug.com/443151
     virtual bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, unsigned texture, unsigned level, unsigned internalFormat, unsigned type, bool premultiplyAlpha, bool flipY) { return false; }
 
     virtual WebAudioSourceProvider* audioSourceProvider() { return nullptr; }
