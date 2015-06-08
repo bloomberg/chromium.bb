@@ -117,6 +117,11 @@ remoting.FullscreenAppsV2.prototype.onFullscreened_ = function() {
  */
 remoting.FullscreenAppsV2.prototype.onRestored_ = function() {
   if (!this.isMinimized_) {
+    // ChromeOS fires a spurious onRestored event going maximized->fullscreen.
+    // TODO(jamiewalch): Remove this work-around when crbug.com/394819 is fixed.
+    if (remoting.platformIsChromeOS() && this.isActive()) {
+      return;
+    }
     document.body.classList.remove('fullscreen');
     this.raiseEvent_(false);
   }
