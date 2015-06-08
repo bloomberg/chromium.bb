@@ -22,7 +22,7 @@ var allTests = [
     assertEq(RoleType.rootWebArea, rootNode.role);
     assertEq(1, children.length);
     var body = children[0];
-    assertEq('body', body.attributes.htmlTag);
+    assertEq('body', body.htmlTag);
 
     RemoveUntestedStates(body.state);
     assertEq({enabled: true, readOnly: true},

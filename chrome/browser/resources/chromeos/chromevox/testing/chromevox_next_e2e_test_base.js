@@ -31,8 +31,8 @@ ChromeVoxNextE2ETest.prototype = {
     callback = this.newCallback(callback);
     chrome.automation.getDesktop(function(r) {
       var listener = function(evt) {
-        if (!evt.target.attributes.url ||
-            evt.target.attributes.url.indexOf('test') == -1)
+        if (!evt.target.docUrl ||
+            evt.target.docUrl.indexOf('test') == -1)
           return;
 
         r.removeEventListener(listener);

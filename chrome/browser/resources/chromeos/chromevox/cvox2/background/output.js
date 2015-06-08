@@ -32,9 +32,7 @@ var Dir = AutomationUtil.Dir;
  * The format of these rules is as follows.
  *
  * $ prefix: used to substitute either an attribute or a specialized value from
- *     an AutomationNode. Specialized values include role and state. Attributes
- *     available for substitution are AutomationNode.prototype.attributes and
- *     AutomationNode.prototype.state.
+ *     an AutomationNode. Specialized values include role and state.
  *     For example, $value $role $enabled
  * @ prefix: used to substitute a message. Note the ability to specify params to
  *     the message.  For example, '@tag_html' '@selected_index($text_sel_start,
@@ -764,12 +762,12 @@ Output.prototype = {
       // All possible tokens based on prefix.
       if (prefix == '$') {
         if (token == 'value') {
-          var text = node.attributes.value;
+          var text = node.value;
           if (text !== undefined) {
-            if (node.attributes.textSelStart !== undefined) {
+            if (node.textSelStart !== undefined) {
               options.annotation.push(new Output.SelectionSpan(
-                  node.attributes.textSelStart,
-                  node.attributes.textSelEnd));
+                  node.textSelStart,
+                  node.textSelEnd));
             }
           }
           // Annotate this as a name so we don't duplicate names from ancestors.
@@ -789,7 +787,7 @@ Output.prototype = {
             }
             earconFinder = earconFinder.parent;
           }
-          this.append_(buff, node.attributes.name, options);
+          this.append_(buff, node.name, options);
         } else if (token == 'nameOrDescendants') {
           options.annotation.push(token);
           if (node.name)
@@ -852,15 +850,15 @@ Output.prototype = {
           this.append_(buff, msg, options);
         } else if (token == 'tableRowIndex' ||
             token == 'tableCellColumnIndex') {
-          var value = node.attributes[token];
+          var value = node[token];
           if (!value)
             return;
           value = String(value + 1);
           options.annotation.push(token);
           this.append_(buff, value, options);
-        } else if (node.attributes[token] !== undefined) {
+        } else if (node[token] !== undefined) {
           options.annotation.push(token);
-          var value = node.attributes[token];
+          var value = node[token];
           if (typeof value == 'number')
             value = String(value);
           this.append_(buff, value, options);
@@ -888,7 +886,7 @@ Output.prototype = {
           if (token == 'if') {
             var cond = tree.firstChild;
             var attrib = cond.value.slice(1);
-            if (node.attributes[attrib] || node.state[attrib])
+            if (node[attrib] || node.state[attrib])
               this.format_(node, cond.nextSibling, buff);
             else
               this.format_(node, cond.nextSibling.nextSibling, buff);
@@ -914,7 +912,7 @@ Output.prototype = {
         token = pieces.reduce(function(prev, cur) {
           var lookup = cur;
           if (cur[0] == '$')
-            lookup = node.attributes[cur.slice(1)];
+            lookup = node[cur.slice(1)];
           return prev + lookup;
         }.bind(this), '');
         var msgId = token;

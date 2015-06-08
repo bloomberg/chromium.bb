@@ -34,7 +34,8 @@ function runWithDocument(docString, callback) {
   chrome.tabs.create(createParams, function(tab) {
     chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
       if (tabId == tab.id && changeInfo.status == 'complete') {
-        callback();
+        if (callback)
+          callback();
       }
     });
   });
@@ -57,7 +58,7 @@ function setupAndRunTests(allTests, opt_docString) {
             return;
 
           if (subroot.role == 'rootWebArea' &&
-              subroot.attributes.docUrl.indexOf(opt_docString) != -1)
+              subroot.docUrl.indexOf(opt_docString) != -1)
             runTestInternal();
         },
         true);

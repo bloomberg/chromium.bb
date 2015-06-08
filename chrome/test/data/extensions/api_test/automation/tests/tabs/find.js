@@ -19,7 +19,7 @@ function initializeNodes(rootNode) {
 
   h1 = group.firstChild;
   assertEq(RoleType.heading, h1.role);
-  assertEq(1, h1.attributes.hierarchicalLevel);
+  assertEq(1, h1.hierarchicalLevel);
 
   p1 = group.lastChild;
   assertEq(RoleType.paragraph, p1.role);

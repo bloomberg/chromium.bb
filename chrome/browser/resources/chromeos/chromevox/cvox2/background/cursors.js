@@ -119,7 +119,7 @@ cursors.Cursor.prototype = {
    */
   getText: function(opt_node) {
     var node = opt_node || this.node_;
-    return node.attributes.name || node.attributes.value || '';
+    return node.name || node.value || '';
   },
 
   /**
@@ -158,11 +158,11 @@ cursors.Cursor.prototype = {
           case Movement.BOUND:
             if (newNode.role == Role.inlineTextBox) {
               var start, end;
-              for (var i = 0; i < newNode.attributes.wordStarts.length; i++) {
-                if (newIndex >= newNode.attributes.wordStarts[i] &&
-                    newIndex <= newNode.attributes.wordEnds[i]) {
-                  start = newNode.attributes.wordStarts[i];
-                  end = newNode.attributes.wordEnds[i];
+              for (var i = 0; i < newNode.wordStarts.length; i++) {
+                if (newIndex >= newNode.wordStarts[i] &&
+                    newIndex <= newNode.wordEnds[i]) {
+                  start = newNode.wordStarts[i];
+                  end = newNode.wordEnds[i];
                   break;
                 }
               }
@@ -175,12 +175,12 @@ cursors.Cursor.prototype = {
           case Movement.DIRECTIONAL:
             if (newNode.role == Role.inlineTextBox) {
               var start, end;
-              for (var i = 0; i < newNode.attributes.wordStarts.length; i++) {
-                if (newIndex >= newNode.attributes.wordStarts[i] &&
-                    newIndex <= newNode.attributes.wordEnds[i]) {
+              for (var i = 0; i < newNode.wordStarts.length; i++) {
+                if (newIndex >= newNode.wordStarts[i] &&
+                    newIndex <= newNode.wordEnds[i]) {
                   var nextIndex = dir == Dir.FORWARD ? i + 1 : i - 1;
-                  start = newNode.attributes.wordStarts[nextIndex];
-                  end = newNode.attributes.wordEnds[nextIndex];
+                  start = newNode.wordStarts[nextIndex];
+                  end = newNode.wordEnds[nextIndex];
                   break;
                 }
               }
@@ -197,7 +197,7 @@ cursors.Cursor.prototype = {
                     newIndex = 0;
                     if (dir == Dir.BACKWARD &&
                         newNode.role == Role.inlineTextBox) {
-                      var starts = newNode.attributes.wordStarts;
+                      var starts = newNode.wordStarts;
                       newIndex = starts[starts.length - 1] || 0;
                     } else {
                       // TODO(dtseng): Figure out what to do for general nodes.

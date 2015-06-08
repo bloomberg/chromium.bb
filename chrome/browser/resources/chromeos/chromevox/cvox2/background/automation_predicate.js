@@ -143,7 +143,7 @@ AutomationPredicate.leaf = function(node) {
  */
 AutomationPredicate.leafWithText = function(node) {
   return AutomationPredicate.leaf(node) &&
-      !!(node.attributes.name || node.attributes.value);
+      !!(node.name || node.value);
 };
 
 /**

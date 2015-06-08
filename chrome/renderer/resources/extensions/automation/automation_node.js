@@ -379,8 +379,7 @@ var ATTRIBUTE_BLACKLIST = {'activedescendantId': true,
 };
 
 function defaultStringAttribute(opt_defaultVal) {
-  var defaultVal = (opt_defaultVal !== undefined) ? opt_defaultVal : '';
-  return { default: defaultVal, reflectFrom: 'stringAttributes' };
+  return { default: undefined, reflectFrom: 'stringAttributes' };
 }
 
 function defaultIntAttribute(opt_defaultVal) {
@@ -431,11 +430,15 @@ var DefaultMixinAttributes = {
   help: defaultStringAttribute(),
   name: defaultStringAttribute(),
   value: defaultStringAttribute(),
+  htmlTag: defaultStringAttribute(),
+  hierarchicalLevel: defaultIntAttribute(),
   controls: defaultNodeRefListAttribute('controlsIds'),
   describedby: defaultNodeRefListAttribute('describedbyIds'),
   flowto: defaultNodeRefListAttribute('flowtoIds'),
   labelledby: defaultNodeRefListAttribute('labelledbyIds'),
-  owns: defaultNodeRefListAttribute('ownsIds')
+  owns: defaultNodeRefListAttribute('ownsIds'),
+  wordStarts: defaultIntListAttribute(),
+  wordEnds: defaultIntListAttribute()
 };
 
 var ActiveDescendantMixinAttribute = {
@@ -464,7 +467,8 @@ var ScrollableMixinAttributes = {
 
 var EditableTextMixinAttributes = {
   textSelStart: defaultIntAttribute(-1),
-  textSelEnd: defaultIntAttribute(-1)
+  textSelEnd: defaultIntAttribute(-1),
+  textInputType: defaultStringAttribute()
 };
 
 var RangeMixinAttributes = {
@@ -826,7 +830,8 @@ AutomationRootNodeImpl.prototype = {
     }
 
     // If this is an editable text area, set editable text attributes.
-    if (nodeData.role == schema.RoleType.textField) {
+    if (nodeData.role == schema.RoleType.textField ||
+        nodeData.role == schema.RoleType.spinButton) {
       this.mixinAttributes_(nodeImpl, EditableTextMixinAttributes, nodeData);
     }
 

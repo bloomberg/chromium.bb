@@ -347,7 +347,7 @@ Background.prototype = {
     if (!prevRange ||
         (prevRange.getStart().getNode().root != node.root &&
          node.root.focused))
-      this.setupChromeVoxVariants_(node.root.attributes.url || '');
+      this.setupChromeVoxVariants_(node.root.docUrl || '');
 
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
     if (node.root.role != chrome.automation.RoleType.desktop &&
@@ -366,7 +366,7 @@ Background.prototype = {
    * @param {Object} evt
    */
   onLoadComplete: function(evt) {
-    this.setupChromeVoxVariants_(evt.target.attributes.url);
+    this.setupChromeVoxVariants_(evt.target.docUrl);
 
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
     if (evt.target.root.role != chrome.automation.RoleType.desktop &&
@@ -416,9 +416,9 @@ Background.prototype = {
     }
 
     var textChangeEvent = new cvox.TextChangeEvent(
-        evt.target.attributes.value,
-        evt.target.attributes.textSelStart,
-        evt.target.attributes.textSelEnd,
+        evt.target.value,
+        evt.target.textSelStart,
+        evt.target.textSelEnd,
         true);  // triggered by user
     if (!this.editableTextHandler ||
         evt.target != this.currentRange_.getStart().getNode()) {

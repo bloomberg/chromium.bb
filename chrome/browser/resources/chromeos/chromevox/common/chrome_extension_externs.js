@@ -404,17 +404,45 @@ chrome.automation.AutomationNode.prototype.indexInParent;
 
 
 /**
- * @type {{
- *     name: string,
- *     url: string,
- *     value: string,
- *     textSelStart: number,
- *     textSelEnd: number,
- *     wordStarts: Array<number>,
- *     wordEnds: Array<number>
- * }}
+ * @type {string}
  */
-chrome.automation.AutomationNode.prototype.attributes;
+chrome.automation.AutomationNode.prototype.name;
+
+
+/**
+ * @type {string}
+ */
+chrome.automation.AutomationNode.prototype.url;
+
+
+/**
+ * @type {string}
+ */
+chrome.automation.AutomationNode.prototype.value;
+
+
+/**
+ * @type {number}
+ */
+chrome.automation.AutomationNode.prototype.textSelStart;
+
+
+/**
+ * @type {number}
+ */
+chrome.automation.AutomationNode.prototype.textSelEnd;
+
+
+/**
+ * @type {Array<number>}
+ */
+chrome.automation.AutomationNode.prototype.wordStarts;
+
+
+/**
+ * @type {Array<number>}
+ */
+chrome.automation.AutomationNode.prototype.wordEnds;
 
 
 /**

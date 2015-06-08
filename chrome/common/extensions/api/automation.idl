@@ -340,6 +340,16 @@
     // an <code>&lt;input&gt; element.
     DOMString value;
 
+    // The HTML tag for this element, if this node is an HTML element.
+    DOMString htmlTag;
+
+    // The level of a heading or tree item.
+    long hierarchicalLevel;
+
+    // The start and end index of each word in an inline text box.
+    long[] wordStarts;
+    long[] wordEnds;
+
     // The nodes, if any, which this node is specified to control via
     // <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-controls">
     // <code>aria-controls</code></a>.
@@ -481,6 +491,9 @@
     // The character index of the end of the selection within this editable
     // text element; -1 if no selection.
     long textSelEnd;
+
+    // The input type, like email or number.
+    DOMString textInputType;
   };
 
   // Attributes which are mixed in to an AutomationNode if it is a range.
