@@ -83,6 +83,12 @@ class AutocompleteTextFieldObserver {
   virtual void OnDidChange() = 0;
   virtual void OnDidEndEditing() = 0;
 
+  // Called when -insertText: is invoked on the editor.
+  virtual void OnInsertText() = 0;
+
+  // Called after the completion of a -drawRect: operation.
+  virtual void OnDidDrawRect() = 0;
+
   // NSResponder translates certain keyboard actions into selectors
   // passed to -doCommandBySelector:.  The selector is forwarded here,
   // return true if |cmd| is handled, false if the caller should

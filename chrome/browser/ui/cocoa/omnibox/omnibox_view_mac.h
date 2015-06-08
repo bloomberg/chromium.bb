@@ -88,6 +88,8 @@ class OmniboxViewMac : public OmniboxView,
   void OnBeforeChange() override;
   void OnDidChange() override;
   void OnDidEndEditing() override;
+  void OnInsertText() override;
+  void OnDidDrawRect() override;
   bool OnDoCommandBySelector(SEL cmd) override;
   void OnSetFocus(bool control_down) override;
   void OnKillFocus() override;
@@ -200,6 +202,10 @@ class OmniboxViewMac : public OmniboxView,
   base::string16 coalesced_text_update_;
   bool do_coalesced_range_update_;
   NSRange coalesced_range_update_;
+
+  // The time of the first character insert operation that has not yet been
+  // painted. Used to measure omnibox responsiveness with a histogram.
+  base::TimeTicks insert_char_time_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewMac);
 };

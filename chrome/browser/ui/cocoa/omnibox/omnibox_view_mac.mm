@@ -721,6 +721,21 @@ void OmniboxViewMac::OnDidEndEditing() {
   ClosePopup();
 }
 
+void OmniboxViewMac::OnInsertText() {
+  // If |insert_char_time_| is not null, there's a pending insert char operation
+  // that hasn't been painted yet. Keep the earlier time.
+  if (insert_char_time_.is_null())
+    insert_char_time_ = base::TimeTicks::Now();
+}
+
+void OmniboxViewMac::OnDidDrawRect() {
+  if (!insert_char_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("Omnibox.CharTypedToRepaintLatency",
+                        base::TimeTicks::Now() - insert_char_time_);
+    insert_char_time_ = base::TimeTicks();
+  }
+}
+
 bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
   if (cmd == @selector(deleteForward:))
     delete_was_pressed_ = true;

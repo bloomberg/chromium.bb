@@ -828,6 +828,7 @@ TEST_F(AutocompleteTextFieldObserverTest,
   EXPECT_CALL(field_observer_, OnSetFocus(false)).Times(testing::AnyNumber());
   EXPECT_CALL(field_observer_, OnKillFocus()).Times(testing::AnyNumber());
   EXPECT_CALL(field_observer_, OnDidEndEditing()).Times(testing::AnyNumber());
+  EXPECT_CALL(field_observer_, OnDidDrawRect()).Times(testing::AnyNumber());
 
   // Ensure the field is currently not first responder.
   [test_window() makePretendKeyWindowAndSetFirstResponder:nil];
