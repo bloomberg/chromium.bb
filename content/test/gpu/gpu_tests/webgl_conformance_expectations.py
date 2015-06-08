@@ -50,9 +50,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=485634)
 
     # Win failures
-    self.Fail('conformance/glsl/misc/' +
-              'ternary-operators-in-global-initializers.html',
-        ['win'], bug=415694)
     self.Fail('conformance/glsl/bugs/' +
               'pow-of-small-constant-in-user-defined-function.html',
         ['win'], bug=485641)
@@ -68,8 +65,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win7', 'intel'])
     self.Fail('conformance/rendering/gl-viewport-test.html',
         ['win7', 'intel'], bug=372511)
-    self.Fail('conformance/glsl/misc/shader-with-array-of-structs-uniform.html',
-        ['win7', 'intel', 'nvidia'], bug=373972)
 
     # Win / AMD flakiness seen on new tryservers (affecting most tests
     # randomly, must investigate ASAP)
@@ -401,9 +396,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     self.Fail('deqp/data/gles3/shaders/arrays.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/constants.html', bug=483282)
-    self.Fail('deqp/data/gles3/shaders/constant_expressions.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/conversions.html', bug=483282)
-    self.Fail('deqp/data/gles3/shaders/fragdata.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/functions.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/linkage.html', bug=483282)
     self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
