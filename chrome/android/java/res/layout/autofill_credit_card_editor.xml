@@ -99,7 +99,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <View style="@style/ButtonBarTopSpacer" />
+        <Space style="@style/ButtonBarTopSpacer" />
         <View style="@style/ButtonBarTopDivider" />
 
         <LinearLayout style="@style/ButtonBar" >

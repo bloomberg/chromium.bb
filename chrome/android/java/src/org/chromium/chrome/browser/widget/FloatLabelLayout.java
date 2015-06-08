@@ -123,6 +123,17 @@ public class FloatLabelLayout extends LinearLayout {
         super.addView(child, index, params);
     }
 
+    /**
+     * Focuses the EditText and makes the label visible without the normal
+     * animation that occurs on focus. This is particularly useful when
+     * auto-focusing the first field on a form.
+     */
+    public void focusWithoutAnimation() {
+        mEditText.setHint(null);
+        mLabel.setVisibility(View.VISIBLE);
+        mEditText.requestFocus();
+    }
+
     private void setEditText(EditText editText) {
         // If we already have an EditText, throw an exception
         if (mEditText != null) {

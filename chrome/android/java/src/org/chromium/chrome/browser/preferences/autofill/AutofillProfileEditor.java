@@ -92,7 +92,7 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
 
         populateCountriesSpinner();
         createAndPopulateEditFields();
-        hookupSaveCancelDeleteButtons(v);
+        initializeSaveCancelDeleteButtons(v);
 
         return v;
     }
@@ -248,12 +248,7 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
             mWidgetRoot.addView(fieldFloatLabel);
 
             if (firstField && autoFocusFirstField) {
-                // FloatLabelLayout animates showing the field label when the EditText is focused;
-                // to avoid this animation, manually set the label to be visible and the EditText
-                // hint to null and request focus on the EditText field.
-                fieldFloatLabel.getLabel().setVisibility(View.VISIBLE);
-                fieldEditText.setHint(null);
-                fieldEditText.requestFocus();
+                fieldFloatLabel.focusWithoutAnimation();
                 firstField = false;
             }
         }
@@ -300,7 +295,7 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
         }
     }
 
-    private void hookupSaveCancelDeleteButtons(View v) {
+    private void initializeSaveCancelDeleteButtons(View v) {
         Button button = (Button) v.findViewById(R.id.autofill_profile_delete);
         if ((mGUID == null) || (mGUID.compareTo("") == 0)) {
             // If this is a create, disable the delete button.

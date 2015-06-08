@@ -86,7 +86,7 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
 
         addSpinnerAdapters();
         addCardDataToEditFields();
-        hookupSaveCancelDeleteButtons(v);
+        initializeSaveCancelDeleteButtons(v);
         return v;
     }
 
@@ -139,12 +139,7 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
     private void addCardDataToEditFields() {
         CreditCard card = PersonalDataManager.getInstance().getCreditCard(mGUID);
         if (card == null) {
-            // FloatLabelLayout animates showing the field label when its EditText is focused;
-            // to avoid this animation, manually set the name label to be visible, its EditText
-            // hint to null and request focus on its EditText field.
-            mNameLabel.getLabel().setVisibility(View.VISIBLE);
-            mNameText.setHint(null);
-            mNameText.requestFocus();
+            mNameLabel.focusWithoutAnimation();
             return;
         }
 
@@ -205,7 +200,7 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
         }
     }
 
-    private void hookupSaveCancelDeleteButtons(View v) {
+    private void initializeSaveCancelDeleteButtons(View v) {
         Button button = (Button) v.findViewById(R.id.autofill_credit_card_delete);
         if ((mGUID == null) || (mGUID.compareTo("") == 0)) {
             // If this is a create, disable the delete button.

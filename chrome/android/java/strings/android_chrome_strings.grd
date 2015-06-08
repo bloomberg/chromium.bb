@@ -137,6 +137,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_DELETE" desc="Label for a delete button. Used in multiple contexts. [CHAR-LIMIT=20]">
         Delete
       </message>
+      <message name="IDS_RESET" desc="Label for a button to reset information you are editing to a default.">
+        Reset
+      </message>
       <message name="IDS_TITLE" desc="Text indicating the title of a button or a textfield. Ued in multiple contexts. [CHAR-LIMIT=32]">
         Title
       </message>
@@ -300,6 +303,12 @@ CHAR-LIMIT guidelines:
       <!-- Homepage preferences -->
       <message name="IDS_HOMEPAGE_DEFAULT_TITLE" desc="Label for checkbox to use the default homepage">
         Default
+      </message>
+      <message name="IDS_OPTIONS_HOMEPAGE_EDIT_TITLE" desc="The title of the screen that allows users to change the URL that opens when they tap on the home page button in the omnibox.">
+        Edit home page
+      </message>
+      <message name="IDS_OPTIONS_HOMEPAGE_EDIT_LABEL" desc="The label for the edit text field that allows the user to change the URL that is opened when they tap on the home page button in the omnibox.">
+        Open this page
       </message>
 
       <!-- Privacy preferences -->

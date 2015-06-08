@@ -9,7 +9,7 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
-import android.widget.CheckBox;
+import android.widget.Button;
 import android.widget.Checkable;
 import android.widget.EditText;
 
@@ -21,6 +21,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.preferences.HomepageEditor;
 import org.chromium.chrome.browser.preferences.HomepagePreferences;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -108,7 +109,7 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
         Preferences homepagePreferenceActivity =
                 startPreferences(HomepagePreferences.class.getName());
         ChromeSwitchCompat homepageSwitch =
-                (ChromeSwitchCompat) homepagePreferenceActivity.findViewById(R.id.homepage_switch);
+                (ChromeSwitchCompat) homepagePreferenceActivity.findViewById(R.id.switch_widget);
         assertNotNull(homepageSwitch);
         TouchCommon.singleClickView(homepageSwitch);
         waitForCheckedState(homepageSwitch, false);
@@ -127,7 +128,7 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
         // Enable homepage.
         homepagePreferenceActivity = startPreferences(HomepagePreferences.class.getName());
         homepageSwitch =
-                (ChromeSwitchCompat) homepagePreferenceActivity.findViewById(R.id.homepage_switch);
+                (ChromeSwitchCompat) homepagePreferenceActivity.findViewById(R.id.switch_widget);
         assertNotNull(homepageSwitch);
         TouchCommon.singleClickView(homepageSwitch);
         waitForCheckedState(homepageSwitch, true);
@@ -156,29 +157,32 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
 
     /**
      * Custom homepage URI should be fixed (e.g., "chrome.com" -> "http://chrome.com/")
-     * on exiting Homepage settings page.
+     * when the URI is saved from the home page edit screen.
      */
     @MediumTest
     @Feature({"Homepage"})
     public void testPreferenceCustomUriFixup() throws InterruptedException {
-        // Change homepage custom URI on homepage settings.
-        final Preferences homepagePreferenceActivity =
-                startPreferences(HomepagePreferences.class.getName());
-        CheckBox checkBox =
-                (CheckBox) homepagePreferenceActivity.findViewById(R.id.default_checkbox);
-        assertTrue(checkBox.isChecked());
-        TouchCommon.singleClickView(checkBox);
-        TouchCommon.singleClickView(homepagePreferenceActivity.findViewById(R.id.custom_uri));
+        // Change home page custom URI on hompage edit screen.
+        final Preferences editHomepagePreferenceActivity =
+                startPreferences(HomepageEditor.class.getName());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ((EditText) homepagePreferenceActivity.findViewById(R.id.custom_uri))
+                ((EditText) editHomepagePreferenceActivity.findViewById(R.id.homepage_url_edit))
                         .setText("chrome.com");
             }
         });
-        homepagePreferenceActivity.finish();
+        Button saveButton =
+                (Button) editHomepagePreferenceActivity.findViewById(R.id.homepage_save);
+        TouchCommon.singleClickView(saveButton);
 
-        UiUtils.settleDownUI(getInstrumentation());
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return editHomepagePreferenceActivity.isDestroyed();
+            }
+        });
+
         assertEquals("http://chrome.com/", HomepageManager.getHomepageUri(getActivity()));
     }
 

@@ -10908,7 +10908,7 @@ Dead Jim feedback.
       <message name="IDS_OPTIONS_HOMEPAGE_TITLE" desc="The title of the home page overlay" formatter_data="android_java">
         Home page
       </message>
-      <message name="IDS_OPTIONS_STARTUP_PAGES_PLACEHOLDER" desc="The placeholder text in the custom startup urls dialog" formatter_data="android_java">
+      <message name="IDS_OPTIONS_STARTUP_PAGES_PLACEHOLDER" desc="The placeholder text in the custom startup urls dialog">
         Enter URL...
       </message>
 

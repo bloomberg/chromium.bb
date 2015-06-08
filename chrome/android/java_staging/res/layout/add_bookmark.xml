@@ -54,7 +54,7 @@
                 style="?android:attr/dropDownSpinnerStyle"
                 android:text="@string/loading_bookmark" />
         </LinearLayout>
-        <View style="@style/ButtonBarTopSpacer" />
+        <Space style="@style/ButtonBarTopSpacer" />
         <View style="@style/ButtonBarTopDivider" />
         <LinearLayout style="@style/ButtonBar" >
             <Button
