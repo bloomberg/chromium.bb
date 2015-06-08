@@ -520,7 +520,13 @@ TEST_F(ViewManagerServiceAppTest, TwoClientsGetDifferentConnectionIds) {
 }
 
 // Verifies when Embed() is invoked any child views are removed.
-TEST_F(ViewManagerServiceAppTest, ViewsRemovedWhenEmbedding) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_ViewsRemovedWhenEmbedding DISABLED_ViewsRemovedWhenEmbedding
+#else
+#define MAYBE_ViewsRemovedWhenEmbedding ViewsRemovedWhenEmbedding
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_ViewsRemovedWhenEmbedding) {
   // Two views 1 and 2. 2 is parented to 1.
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 2)));
@@ -577,7 +583,14 @@ TEST_F(ViewManagerServiceAppTest, ViewsRemovedWhenEmbedding) {
 
 // Verifies once Embed() has been invoked the parent connection can't see any
 // children.
-TEST_F(ViewManagerServiceAppTest, CantAccessChildrenOfEmbeddedView) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_CantAccessChildrenOfEmbeddedView \
+    DISABLED_CantAccessChildrenOfEmbeddedView
+#else
+#define MAYBE_CantAccessChildrenOfEmbeddedView CantAccessChildrenOfEmbeddedView
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_CantAccessChildrenOfEmbeddedView) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 2)));
@@ -615,7 +628,14 @@ TEST_F(ViewManagerServiceAppTest, CantAccessChildrenOfEmbeddedView) {
 }
 
 // Verifies once Embed() has been invoked the parent can't mutate the children.
-TEST_F(ViewManagerServiceAppTest, CantModifyChildrenOfEmbeddedView) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_CantModifyChildrenOfEmbeddedView \
+    DISABLED_CantModifyChildrenOfEmbeddedView
+#else
+#define MAYBE_CantModifyChildrenOfEmbeddedView CantModifyChildrenOfEmbeddedView
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_CantModifyChildrenOfEmbeddedView) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
 
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 2)));
@@ -636,7 +656,13 @@ TEST_F(ViewManagerServiceAppTest, CantModifyChildrenOfEmbeddedView) {
 }
 
 // Verifies client gets a valid id.
-TEST_F(ViewManagerServiceAppTest, CreateView) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_CreateView DISABLED_CreateView
+#else
+#define MAYBE_CreateView CreateView
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_CreateView) {
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
   EXPECT_TRUE(changes1()->empty());
 
@@ -666,7 +692,13 @@ TEST_F(ViewManagerServiceAppTest, AddViewWithNoChange) {
 }
 
 // Verifies AddView fails when view is already in position.
-TEST_F(ViewManagerServiceAppTest, AddAncestorFails) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_AddAncestorFails DISABLED_AddAncestorFails
+#else
+#define MAYBE_AddAncestorFails AddAncestorFails
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_AddAncestorFails) {
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 2)));
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 3)));
 
@@ -680,7 +712,13 @@ TEST_F(ViewManagerServiceAppTest, AddAncestorFails) {
 }
 
 // Verifies adding to root sends right notifications.
-TEST_F(ViewManagerServiceAppTest, AddToRoot) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_AddToRoot DISABLED_AddToRoot
+#else
+#define MAYBE_AddToRoot AddToRoot
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_AddToRoot) {
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 21)));
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 3)));
 
@@ -701,7 +739,13 @@ TEST_F(ViewManagerServiceAppTest, AddToRoot) {
 }
 
 // Verifies HierarchyChanged is correctly sent for various adds/removes.
-TEST_F(ViewManagerServiceAppTest, ViewHierarchyChangedViews) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_ViewHierarchyChangedViews DISABLED_ViewHierarchyChangedViews
+#else
+#define MAYBE_ViewHierarchyChangedViews ViewHierarchyChangedViews
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_ViewHierarchyChangedViews) {
   // 1,2->1,11.
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 2)));
   ASSERT_TRUE(SetViewVisibility(vm1(), BuildViewId(1, 2), true));
@@ -764,7 +808,16 @@ TEST_F(ViewManagerServiceAppTest, ViewHierarchyChangedViews) {
   }
 }
 
-TEST_F(ViewManagerServiceAppTest, ViewHierarchyChangedAddingKnownToUnknown) {
+// TODO(msw|sky): Times out on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_ViewHierarchyChangedAddingKnownToUnknown \
+    DISABLED_ViewHierarchyChangedAddingKnownToUnknown
+#else
+#define MAYBE_ViewHierarchyChangedAddingKnownToUnknown \
+    ViewHierarchyChangedAddingKnownToUnknown
+#endif
+TEST_F(ViewManagerServiceAppTest,
+       MAYBE_ViewHierarchyChangedAddingKnownToUnknown) {
   // Create the following structure: root -> 1 -> 11 and 2->21 (2 has no
   // parent).
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
@@ -865,7 +918,13 @@ TEST_F(ViewManagerServiceAppTest, ReorderView) {
 }
 
 // Verifies DeleteView works.
-TEST_F(ViewManagerServiceAppTest, DeleteView) {
+// TODO(msw|sky): Times out on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_DeleteView DISABLED_DeleteView
+#else
+#define MAYBE_DeleteView DeleteView
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_DeleteView) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 2)));
 
@@ -898,7 +957,13 @@ TEST_F(ViewManagerServiceAppTest, DeleteViewFromAnotherConnectionDisallowed) {
 
 // Verifies if a view was deleted and then reused that other clients are
 // properly notified.
-TEST_F(ViewManagerServiceAppTest, ReuseDeletedViewId) {
+// TODO(msw|sky): Times out on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_ReuseDeletedViewId DISABLED_ReuseDeletedViewId
+#else
+#define MAYBE_ReuseDeletedViewId ReuseDeletedViewId
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_ReuseDeletedViewId) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 2)));
 
@@ -981,7 +1046,13 @@ TEST_F(ViewManagerServiceAppTest, GetViewTree) {
   }
 }
 
-TEST_F(ViewManagerServiceAppTest, SetViewBounds) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_SetViewBounds DISABLED_SetViewBounds
+#else
+#define MAYBE_SetViewBounds SetViewBounds
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_SetViewBounds) {
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
   ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
 
@@ -1100,7 +1171,13 @@ TEST_F(ViewManagerServiceAppTest, EmbedWithSameViewId) {
   }
 }
 
-TEST_F(ViewManagerServiceAppTest, EmbedWithSameViewId2) {
+// TODO(msw|sky): Times out on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_EmbedWithSameViewId2 DISABLED_EmbedWithSameViewId2
+#else
+#define MAYBE_EmbedWithSameViewId2 EmbedWithSameViewId2
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_EmbedWithSameViewId2) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   changes2()->clear();
 
@@ -1228,7 +1305,14 @@ TEST_F(ViewManagerServiceAppTest, SetViewVisibility) {
 }
 
 // Assertions for SetViewVisibility sending notifications.
-TEST_F(ViewManagerServiceAppTest, SetViewVisibilityNotifications) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_SetViewVisibilityNotifications \
+    DISABLED_SetViewVisibilityNotifications
+#else
+#define MAYBE_SetViewVisibilityNotifications SetViewVisibilityNotifications
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_SetViewVisibilityNotifications) {
   // Create 1,1 and 1,2. 1,2 is made a child of 1,1 and 1,1 a child of the root.
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
   ASSERT_TRUE(SetViewVisibility(vm1(), BuildViewId(1, 1), true));
@@ -1310,7 +1394,13 @@ TEST_F(ViewManagerServiceAppTest, SetViewVisibilityNotifications) {
   }
 }
 
-TEST_F(ViewManagerServiceAppTest, SetViewProperty) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_SetViewProperty DISABLED_SetViewProperty
+#else
+#define MAYBE_SetViewProperty SetViewProperty
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_SetViewProperty) {
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
 
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(false));
@@ -1355,7 +1445,13 @@ TEST_F(ViewManagerServiceAppTest, SetViewProperty) {
   }
 }
 
-TEST_F(ViewManagerServiceAppTest, OnEmbeddedAppDisconnected) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_OnEmbeddedAppDisconnected DISABLED_OnEmbeddedAppDisconnected
+#else
+#define MAYBE_OnEmbeddedAppDisconnected OnEmbeddedAppDisconnected
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_OnEmbeddedAppDisconnected) {
   // Create connection 2 and 3.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 2)));
@@ -1373,7 +1469,13 @@ TEST_F(ViewManagerServiceAppTest, OnEmbeddedAppDisconnected) {
 
 // Verifies when the parent of an Embed() is destroyed the embedded app gets
 // a ViewDeleted (and doesn't trigger a DCHECK).
-TEST_F(ViewManagerServiceAppTest, OnParentOfEmbedDisconnects) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_OnParentOfEmbedDisconnects DISABLED_OnParentOfEmbedDisconnects
+#else
+#define MAYBE_OnParentOfEmbedDisconnects OnParentOfEmbedDisconnects
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_OnParentOfEmbedDisconnects) {
   // Create connection 2 and 3.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
@@ -1393,7 +1495,13 @@ TEST_F(ViewManagerServiceAppTest, OnParentOfEmbedDisconnects) {
 
 // Verifies ViewManagerServiceImpl doesn't incorrectly erase from its internal
 // map when a view from another connection with the same view_id is removed.
-TEST_F(ViewManagerServiceAppTest, DontCleanMapOnDestroy) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_DontCleanMapOnDestroy DISABLED_DontCleanMapOnDestroy
+#else
+#define MAYBE_DontCleanMapOnDestroy DontCleanMapOnDestroy
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_DontCleanMapOnDestroy) {
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   ASSERT_TRUE(CreateView(vm2(), BuildViewId(2, 1)));
   changes1()->clear();
@@ -1406,7 +1514,13 @@ TEST_F(ViewManagerServiceAppTest, DontCleanMapOnDestroy) {
   EXPECT_FALSE(views.empty());
 }
 
-TEST_F(ViewManagerServiceAppTest, CloneAndAnimate) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_CloneAndAnimate DISABLED_CloneAndAnimate
+#else
+#define MAYBE_CloneAndAnimate CloneAndAnimate
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_CloneAndAnimate) {
   // Create connection 2 and 3.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
@@ -1452,7 +1566,13 @@ TEST_F(ViewManagerServiceAppTest, EmbedSupplyingViewManagerClient) {
             SingleChangeToDescription(*client2.tracker()->changes()));
 }
 
-TEST_F(ViewManagerServiceAppTest, OnWillEmbed) {
+// TODO(msw|sky): Fails on Android; see http://crbug.com/497920
+#if defined(OS_ANDROID)
+#define MAYBE_OnWillEmbed DISABLED_OnWillEmbed
+#else
+#define MAYBE_OnWillEmbed OnWillEmbed
+#endif
+TEST_F(ViewManagerServiceAppTest, MAYBE_OnWillEmbed) {
   // Create connections 2 and 3, marking 2 as an embed root.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
   ASSERT_TRUE(AddView(vm1(), BuildViewId(0, 1), BuildViewId(1, 1)));
