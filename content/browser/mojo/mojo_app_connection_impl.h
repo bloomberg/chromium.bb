@@ -16,7 +16,7 @@ namespace content {
 // Implementation of the app connection mechanism provided to browser code.
 class MojoAppConnectionImpl : public MojoAppConnection {
  public:
-  MojoAppConnectionImpl(const GURL& url, const GURL& requestor_url);
+  explicit MojoAppConnectionImpl(const GURL& url);
   ~MojoAppConnectionImpl() override;
 
  private:

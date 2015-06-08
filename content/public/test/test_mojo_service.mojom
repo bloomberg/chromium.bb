@@ -5,9 +5,5 @@
 module content;
 
 interface TestMojoService {
-  // Doesn't actually do anything, just responds.
   DoSomething() => ();
-
-  // Retrieve the requestor URL as seen by the test app providing this service.
-  GetRequestorURL() => (string url);
 };

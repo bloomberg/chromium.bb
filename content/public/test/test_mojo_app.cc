@@ -24,7 +24,6 @@ void TestMojoApp::Initialize(mojo::ApplicationImpl* app) {
 
 bool TestMojoApp::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
-  requestor_url_ = GURL(connection->GetRemoteApplicationURL());
   connection->AddService<TestMojoService>(this);
   return true;
 }
@@ -39,10 +38,6 @@ void TestMojoApp::DoSomething(const DoSomethingCallback& callback) {
   callback.Run();
   DCHECK(app_);
   app_->Terminate();
-}
-
-void TestMojoApp::GetRequestorURL(const GetRequestorURLCallback& callback) {
-  callback.Run(requestor_url_.spec());
 }
 
 }  // namespace content

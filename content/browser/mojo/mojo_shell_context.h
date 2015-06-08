@@ -36,11 +36,9 @@ class CONTENT_EXPORT MojoShellContext
 
   // Connects an application at |url| and gets a handle to its exposed services.
   // This is only intended for use in browser code that's not part of some Mojo
-  // application. May be called from any thread. |requestor_url| is given to
-  // the target application as the requestor's URL upon connection.
+  // application. May be called from any thread.
   static void ConnectToApplication(
       const GURL& url,
-      const GURL& requestor_url,
       mojo::InterfaceRequest<mojo::ServiceProvider> request);
 
   static void SetApplicationsForTest(const StaticApplicationMap* apps);
@@ -51,7 +49,6 @@ class CONTENT_EXPORT MojoShellContext
 
   void ConnectToApplicationOnOwnThread(
       const GURL& url,
-      const GURL& requestor_url,
       mojo::InterfaceRequest<mojo::ServiceProvider> request);
 
   // mojo::shell::ApplicationManager::Delegate:

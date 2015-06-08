@@ -17,11 +17,6 @@ class GURL;
 
 namespace content {
 
-// A virtual app URL identifying the browser itself. This should be used for
-// a connection's |requestor_url| when connecting from browser code to apps that
-// don't require a more specific request context.
-CONTENT_EXPORT extern const char kBrowserMojoAppUrl[];
-
 // This provides a way for arbitrary browser code to connect to Mojo apps. These
 // objects are not thread-safe but may be constructed and used on any single
 // thread.
@@ -29,11 +24,9 @@ class CONTENT_EXPORT MojoAppConnection {
  public:
   virtual ~MojoAppConnection() {}
 
-  // Creates a new connection to the application at |url| using |requestor_url|
-  // to identify the requestor upon connection. This may be called from any
-  // thread.
-  static scoped_ptr<MojoAppConnection> Create(const GURL& url,
-                                              const GURL& requestor_url);
+  // Creates a new connection to the application at |url|. This may be called
+  // from any thread.
+  static scoped_ptr<MojoAppConnection> Create(const GURL& url);
 
   // Connects to a service within the application.
   template <typename Interface>

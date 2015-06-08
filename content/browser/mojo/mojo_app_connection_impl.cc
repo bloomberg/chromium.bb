@@ -8,20 +8,12 @@
 
 namespace content {
 
-const char kBrowserMojoAppUrl[] = "system:content_browser";
-
-// static
-scoped_ptr<MojoAppConnection> MojoAppConnection::Create(
-    const GURL& url,
-    const GURL& requestor_url) {
-  return scoped_ptr<MojoAppConnection>(
-      new MojoAppConnectionImpl(url, requestor_url));
+scoped_ptr<MojoAppConnection> MojoAppConnection::Create(const GURL& url) {
+  return scoped_ptr<MojoAppConnection>(new MojoAppConnectionImpl(url));
 }
 
-MojoAppConnectionImpl::MojoAppConnectionImpl(const GURL& url,
-                                             const GURL& requestor_url) {
-  MojoShellContext::ConnectToApplication(url, requestor_url,
-                                         mojo::GetProxy(&services_));
+MojoAppConnectionImpl::MojoAppConnectionImpl(const GURL& url) {
+  MojoShellContext::ConnectToApplication(url, mojo::GetProxy(&services_));
 }
 
 MojoAppConnectionImpl::~MojoAppConnectionImpl() {
