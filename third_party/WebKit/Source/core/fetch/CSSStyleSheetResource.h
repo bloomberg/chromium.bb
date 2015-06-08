@@ -38,11 +38,13 @@ class StyleSheetContents;
 
 class CSSStyleSheetResource final : public StyleSheetResource {
 public:
+    enum class MIMETypeCheck { Strict, Lax };
+
     CSSStyleSheetResource(const ResourceRequest&, const String& charset);
     virtual ~CSSStyleSheetResource();
     DECLARE_VIRTUAL_TRACE();
 
-    const String sheetText(bool* hasValidMIMEType = 0) const;
+    const String sheetText(MIMETypeCheck = MIMETypeCheck::Strict) const;
 
     const AtomicString mimeType() const;
 
@@ -56,7 +58,7 @@ protected:
     virtual void destroyDecodedDataIfPossible() override;
 
 private:
-    bool canUseSheet(bool* hasValidMIMEType) const;
+    bool canUseSheet(MIMETypeCheck) const;
     virtual void dispose() override;
     virtual void checkNotify() override;
 
