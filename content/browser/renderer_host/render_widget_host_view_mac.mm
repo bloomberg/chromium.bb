@@ -40,6 +40,7 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
+#include "content/browser/renderer_host/render_widget_resize_helper.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/edit_command.h"
@@ -827,7 +828,8 @@ void RenderWidgetHostViewMac::UpdateDisplayLink() {
   NSNumber* screen_number = [screen_description objectForKey:@"NSScreenNumber"];
   CGDirectDisplayID display_id = [screen_number unsignedIntValue];
 
-  display_link_ = DisplayLinkMac::GetForDisplay(display_id);
+  display_link_ = ui::DisplayLinkMac::GetForDisplay(
+      RenderWidgetResizeHelper::Get()->task_runner(), display_id);
   if (!display_link_.get()) {
     // Note that on some headless systems, the display link will fail to be
     // created, so this should not be a fatal error.

@@ -20,7 +20,6 @@
 #include "base/time/time.h"
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/compositor/delegated_frame_host.h"
-#include "content/browser/renderer_host/display_link_mac.h"
 #include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
@@ -30,6 +29,7 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
+#include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/accelerated_widget_mac/io_surface_layer.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
@@ -566,7 +566,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   RenderWidgetHostViewMac* fullscreen_parent_host_view_;
 
   // Display link for getting vsync info.
-  scoped_refptr<DisplayLinkMac> display_link_;
+  scoped_refptr<ui::DisplayLinkMac> display_link_;
 
   // The current VSync timebase and interval. This is zero until the first call
   // to SendVSyncParametersToRenderer(), and refreshed regularly thereafter.

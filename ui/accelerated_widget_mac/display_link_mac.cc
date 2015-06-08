@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/display_link_mac.h"
+#include "ui/accelerated_widget_mac/display_link_mac.h"
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/renderer_host/render_widget_resize_helper.h"
 
 namespace base {
 
@@ -22,10 +21,11 @@ struct ScopedTypeRefTraits<CVDisplayLinkRef> {
 
 }  // namespace base
 
-namespace content {
+namespace ui {
 
 // static
 scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     CGDirectDisplayID display_id) {
   // Return the existing display link for this display, if it exists.
   DisplayMap::iterator found = display_map_.Get().find(display_id);
@@ -45,8 +45,8 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
   }
 
   scoped_refptr<DisplayLinkMac> display_link_mac;
-  display_link_mac = new DisplayLinkMac(display_id, display_link);
-
+  display_link_mac = new DisplayLinkMac(
+      main_thread_task_runner, display_id, display_link);
   ret = CVDisplayLinkSetOutputCallback(
       display_link_mac->display_link_,
       &DisplayLinkCallback,
@@ -60,9 +60,11 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
 }
 
 DisplayLinkMac::DisplayLinkMac(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     CGDirectDisplayID display_id,
     base::ScopedTypeRef<CVDisplayLinkRef> display_link)
-      : display_id_(display_id),
+      : main_thread_task_runner_(main_thread_task_runner),
+        display_id_(display_id),
         display_link_(display_link),
         timebase_and_interval_valid_(false) {
   DCHECK(display_map_.Get().find(display_id) == display_map_.Get().end());
@@ -105,7 +107,7 @@ bool DisplayLinkMac::GetVSyncParameters(
 }
 
 void DisplayLinkMac::Tick(const CVTimeStamp& cv_time) {
-  TRACE_EVENT0("browser", "DisplayLinkMac::Tick");
+  TRACE_EVENT0("ui", "DisplayLinkMac::Tick");
 
   // Verify that videoRefreshPeriod is 32 bits.
   DCHECK((cv_time.videoRefreshPeriod & ~0xffffFFFFull) == 0ull);
@@ -155,9 +157,9 @@ CVReturn DisplayLinkMac::DisplayLinkCallback(
     CVOptionFlags flags_in,
     CVOptionFlags* flags_out,
     void* context) {
-  TRACE_EVENT0("browser", "DisplayLinkMac::DisplayLinkCallback");
+  TRACE_EVENT0("ui", "DisplayLinkMac::DisplayLinkCallback");
   DisplayLinkMac* display_link_mac = static_cast<DisplayLinkMac*>(context);
-  RenderWidgetResizeHelper::Get()->task_runner()->PostTask(
+  display_link_mac->main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DisplayLinkMac::Tick, display_link_mac, *output_time));
   return kCVReturnSuccess;
@@ -179,5 +181,5 @@ void DisplayLinkMac::DisplayReconfigurationCallBack(
 base::LazyInstance<DisplayLinkMac::DisplayMap>
     DisplayLinkMac::display_map_ = LAZY_INSTANCE_INITIALIZER;
 
-}  // content
+}  // ui
 

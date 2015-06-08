@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_DISPLAY_LINK_MAC_H_
-#define CONTENT_BROWSER_RENDERER_HOST_DISPLAY_LINK_MAC_H_
+#ifndef UI_ACCELERATED_WIDGET_MAC_DISPLAY_LINK_MAC_H_
+#define UI_ACCELERATED_WIDGET_MAC_DISPLAY_LINK_MAC_H_
 
 #include <QuartzCore/CVDisplayLink.h>
 #include <map>
@@ -14,12 +14,15 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 
-namespace content {
+namespace ui {
 
-class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
+class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac :
+    public base::RefCounted<DisplayLinkMac> {
  public:
   static scoped_refptr<DisplayLinkMac> GetForDisplay(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       CGDirectDisplayID display_id);
 
   // Get vsync scheduling parameters.
@@ -31,6 +34,7 @@ class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
   friend class base::RefCounted<DisplayLinkMac>;
 
   DisplayLinkMac(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       CGDirectDisplayID display_id,
       base::ScopedTypeRef<CVDisplayLinkRef> display_link);
   virtual ~DisplayLinkMac();
@@ -56,6 +60,9 @@ class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
       CGDisplayChangeSummaryFlags flags,
       void* user_info);
 
+  // The task runner from which to post tasks to run on the main thread.
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
   // The display that this display link is attached to.
   CGDirectDisplayID display_id_;
 
@@ -73,6 +80,6 @@ class DisplayLinkMac : public base::RefCounted<DisplayLinkMac> {
   static base::LazyInstance<DisplayMap> display_map_;
 };
 
-}  // content
+}  // ui
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_DISPLAY_LINK_MAC_H_
+#endif  // UI_ACCELERATED_WIDGET_MAC_DISPLAY_LINK_MAC_H_

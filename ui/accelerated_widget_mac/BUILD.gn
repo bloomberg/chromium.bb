@@ -8,6 +8,8 @@ component("accelerated_widget_mac") {
     "accelerated_widget_mac.h",
     "accelerated_widget_mac.mm",
     "accelerated_widget_mac_export.h",
+    "display_link_mac.cc",
+    "display_link_mac.h",
     "io_surface_context.h",
     "io_surface_context.mm",
     "io_surface_layer.h",
