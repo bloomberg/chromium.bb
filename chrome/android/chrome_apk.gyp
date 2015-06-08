@@ -392,6 +392,8 @@
       'dependencies': [
         'chrome_shared_test_java',
         'chrome_public_apk_java',
+        '<(DEPTH)/testing/android/on_device_instrumentation.gyp:broker_java',
+        '<(DEPTH)/testing/android/on_device_instrumentation.gyp:require_driver_apk',
       ],
       'variables': {
         'android_manifest_path': '<(chrome_public_test_apk_manifest)',
