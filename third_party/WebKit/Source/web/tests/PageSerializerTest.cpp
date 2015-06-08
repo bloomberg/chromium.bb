@@ -220,6 +220,30 @@ TEST_F(PageSerializerTest, Font)
     EXPECT_TRUE(isSerialized("font.ttf", "application/octet-stream"));
 }
 
+TEST_F(PageSerializerTest, DataURI)
+{
+    setBaseFolder("pageserializer/datauri/");
+
+    registerURL("page_with_data.html", "text/html");
+
+    serialize("page_with_data.html");
+
+    EXPECT_EQ(1U, getResources().size());
+    EXPECT_TRUE(isSerialized("page_with_data.html", "text/html"));
+}
+
+TEST_F(PageSerializerTest, DataURIMorphing)
+{
+    setBaseFolder("pageserializer/datauri/");
+
+    registerURL("page_with_morphing_data.html", "text/html");
+
+    serialize("page_with_morphing_data.html");
+
+    EXPECT_EQ(2U, getResources().size());
+    EXPECT_TRUE(isSerialized("page_with_morphing_data.html", "text/html"));
+}
+
 TEST_F(PageSerializerTest, DontIncludeErrorImage)
 {
     setBaseFolder("pageserializer/image/");
