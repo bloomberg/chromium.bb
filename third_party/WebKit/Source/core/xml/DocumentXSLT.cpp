@@ -129,7 +129,7 @@ ProcessingInstruction* DocumentXSLT::findXSLStyleSheet(Document& document)
         if (pi->isXSL())
             return pi;
     }
-    return 0;
+    return nullptr;
 }
 
 bool DocumentXSLT::processingInstructionInsertedIntoDocument(Document& document, ProcessingInstruction* pi)

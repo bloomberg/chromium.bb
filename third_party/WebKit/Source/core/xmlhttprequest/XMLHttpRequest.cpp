@@ -436,11 +436,11 @@ Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
 {
     if (m_responseTypeCode != ResponseTypeDefault && m_responseTypeCode != ResponseTypeDocument) {
         exceptionState.throwDOMException(InvalidStateError, "The value is only accessible if the object's 'responseType' is '' or 'document' (was '" + responseType() + "').");
-        return 0;
+        return nullptr;
     }
 
     if (m_error || m_state != DONE)
-        return 0;
+        return nullptr;
 
     if (!m_parsedResponse) {
         initResponseDocument();
@@ -463,7 +463,7 @@ Blob* XMLHttpRequest::responseBlob()
 
     // We always return null before DONE.
     if (m_error || m_state != DONE)
-        return 0;
+        return nullptr;
 
     if (!m_responseBlob) {
         if (m_downloadingToFile) {
@@ -487,7 +487,7 @@ Blob* XMLHttpRequest::responseBlob()
         }
     }
 
-    return m_responseBlob.get();
+    return m_responseBlob;
 }
 
 DOMArrayBuffer* XMLHttpRequest::responseArrayBuffer()
@@ -495,7 +495,7 @@ DOMArrayBuffer* XMLHttpRequest::responseArrayBuffer()
     ASSERT(m_responseTypeCode == ResponseTypeArrayBuffer);
 
     if (m_error || m_state != DONE)
-        return 0;
+        return nullptr;
 
     if (!m_responseArrayBuffer) {
         if (m_binaryResponseBuilder && m_binaryResponseBuilder->size()) {
@@ -521,16 +521,16 @@ Stream* XMLHttpRequest::responseLegacyStream()
     ASSERT(m_responseTypeCode == ResponseTypeLegacyStream);
 
     if (m_error || (m_state != LOADING && m_state != DONE))
-        return 0;
+        return nullptr;
 
-    return m_responseLegacyStream.get();
+    return m_responseLegacyStream;
 }
 
 ReadableStream* XMLHttpRequest::responseStream()
 {
     ASSERT(m_responseTypeCode == ResponseTypeStream);
     if (m_error || (m_state != LOADING && m_state != DONE))
-        return 0;
+        return nullptr;
 
     return m_responseStream;
 }

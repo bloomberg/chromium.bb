@@ -72,7 +72,7 @@ bool XSLImportRule::isLoading()
 
 void XSLImportRule::loadSheet()
 {
-    Document* ownerDocument = 0;
+    Document* ownerDocument = nullptr;
     XSLStyleSheet* rootSheet = parentStyleSheet();
 
     if (rootSheet) {

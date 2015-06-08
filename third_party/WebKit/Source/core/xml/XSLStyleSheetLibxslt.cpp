@@ -139,7 +139,7 @@ bool XSLStyleSheet::parseString(const String& source)
         xmlFreeDoc(m_stylesheetDoc);
     m_stylesheetDocTaken = false;
 
-    FrameConsole* console = 0;
+    FrameConsole* console = nullptr;
     if (LocalFrame* frame = ownerDocument()->frame())
         console = &frame->console();
 
@@ -269,7 +269,7 @@ Document* XSLStyleSheet::ownerDocument()
         if (node)
             return &node->document();
     }
-    return 0;
+    return nullptr;
 }
 
 xmlDocPtr XSLStyleSheet::locateStylesheetSubResource(xmlDocPtr parentDoc, const xmlChar* uri)

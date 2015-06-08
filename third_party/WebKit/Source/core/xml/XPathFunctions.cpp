@@ -596,7 +596,7 @@ Value FunLang::evaluate(EvaluationContext& context) const
 {
     String lang = arg(0)->evaluate(context).toString();
 
-    const Attribute* languageAttribute = 0;
+    const Attribute* languageAttribute = nullptr;
     Node* node = context.node.get();
     while (node) {
         if (node->isElementNode()) {
@@ -736,10 +736,10 @@ Function* createFunction(const String& name, HeapVector<Member<Expression>>& arg
         createFunctionMap();
 
     HashMap<String, FunctionRec>::iterator functionMapIter = functionMap->find(name);
-    FunctionRec* functionRec = 0;
+    FunctionRec* functionRec = nullptr;
 
     if (functionMapIter == functionMap->end() || !(functionRec = &functionMapIter->value)->args.contains(args.size()))
-        return 0;
+        return nullptr;
 
     Function* function = functionRec->factoryFn();
     function->setArguments(args);

@@ -42,7 +42,7 @@ using namespace WTF;
 using namespace Unicode;
 using namespace XPath;
 
-Parser* Parser::currentParser = 0;
+Parser* Parser::currentParser = nullptr;
 
 enum XMLCat { NameStart, NameCont, NotPartOfName };
 

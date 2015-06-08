@@ -263,7 +263,7 @@ void NodeSet::reverse()
 Node* NodeSet::firstNode() const
 {
     if (isEmpty())
-        return 0;
+        return nullptr;
 
     // FIXME: fully sorting the node-set just to find its first node is
     // wasteful.
@@ -274,7 +274,7 @@ Node* NodeSet::firstNode() const
 Node* NodeSet::anyNode() const
 {
     if (isEmpty())
-        return 0;
+        return nullptr;
 
     return m_nodes.at(0).get();
 }
