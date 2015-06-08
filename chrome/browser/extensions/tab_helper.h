@@ -7,6 +7,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -170,6 +171,7 @@ class TabHelper : public content::WebContentsObserver,
   void OnContentScriptsExecuting(
       const ScriptExecutionObserver::ExecutingScriptsMap& extension_ids,
       const GURL& on_url);
+  void OnWatchedPageChange(const std::vector<std::string>& css_selectors);
   void OnDetailedConsoleMessageAdded(const base::string16& message,
                                      const base::string16& source,
                                      const StackTrace& stack_trace,

@@ -264,6 +264,8 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ContentScriptsExecuting,
                         OnContentScriptsExecuting)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_OnWatchedPageChange,
+                        OnWatchedPageChange)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -429,6 +431,15 @@ void TabHelper::OnContentScriptsExecuting(
       ScriptExecutionObserver,
       script_execution_observers_,
       OnScriptsExecuted(web_contents(), executing_scripts_map, on_url));
+}
+
+void TabHelper::OnWatchedPageChange(
+    const std::vector<std::string>& css_selectors) {
+  if (ExtensionSystem::Get(profile_)->extension_service() &&
+      RulesRegistryService::Get(profile_)) {
+    RulesRegistryService::Get(profile_)->content_rules_registry()->Apply(
+        web_contents(), css_selectors);
+  }
 }
 
 void TabHelper::OnDetailedConsoleMessageAdded(

@@ -36,6 +36,12 @@ class ContentRulesRegistry : public RulesRegistry {
                       cache_delegate,
                       rules_registry_id) {}
 
+  // Applies all content rules given an update (CSS match change or
+  // page navigation, for now) from the renderer.
+  virtual void Apply(
+      content::WebContents* contents,
+      const std::vector<std::string>& matching_css_selectors) = 0;
+
   // Applies all content rules given that a tab was just navigated.
   virtual void DidNavigateMainFrame(
       content::WebContents* tab,

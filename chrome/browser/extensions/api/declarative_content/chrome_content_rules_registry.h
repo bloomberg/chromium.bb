@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
-#include "chrome/browser/extensions/api/declarative_content/declarative_content_css_condition_tracker.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -67,17 +66,20 @@ typedef DeclarativeRule<ContentCondition, ContentAction> ContentRule;
 // side of split-mode extensions to incognito tabs. The non-incognito instance
 // handles incognito tabs for spanning-mode extensions, plus all non-incognito
 // tabs.
-class ChromeContentRulesRegistry
-    : public ContentRulesRegistry,
-      public content::NotificationObserver,
-      public DeclarativeContentCssConditionTrackerDelegate {
+class ChromeContentRulesRegistry : public ContentRulesRegistry,
+                                   public content::NotificationObserver {
  public:
   // For testing, |ui_part| can be NULL. In that case it constructs the
   // registry with storage functionality suspended.
   ChromeContentRulesRegistry(content::BrowserContext* browser_context,
                              RulesCacheDelegate* cache_delegate);
 
-  // ContentRulesRegistry:
+  // ChromeContentRulesRegistry implementation:
+  // Applies all content rules given an update (CSS match change or
+  // page navigation, for now) from the renderer.
+  void Apply(content::WebContents* contents,
+             const std::vector<std::string>& matching_css_selectors) override;
+
   // Applies all content rules given that a tab was just navigated.
   void DidNavigateMainFrame(
       content::WebContents* tab,
@@ -92,7 +94,7 @@ class ChromeContentRulesRegistry
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 
-  // RulesRegistry:
+  // Implementation of RulesRegistry:
   std::string AddRulesImpl(
       const std::string& extension_id,
       const std::vector<linked_ptr<RulesRegistry::Rule>>& rules) override;
@@ -101,30 +103,13 @@ class ChromeContentRulesRegistry
       const std::vector<std::string>& rule_identifiers) override;
   std::string RemoveAllRulesImpl(const std::string& extension_id) override;
 
-  // content::NotificationObserver:
+  // content::NotificationObserver implementation.
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // DeclarativeContentCssConditionTrackerDelegate:
-  void RequestEvaluation(content::WebContents* contents) override;
-  bool ShouldManageConditionsForBrowserContext(
-      content::BrowserContext* context) override;
-
   // Returns true if this object retains no allocated data. Only for debugging.
   bool IsEmpty() const;
-
-  // TODO(wittman): Remove once DeclarativeChromeContentRulesRegistry no longer
-  // depends on concrete condition implementations. At that point
-  // DeclarativeChromeContentRulesRegistryTest.ActiveRulesDoesntGrow will be
-  // able to use a test condition object and not need to depend on force setting
-  // matching CSS seleectors.
-  void UpdateMatchingCssSelectorsForTesting(
-      content::WebContents* contents,
-      const std::vector<std::string>& matching_css_selectors);
-
-  // Returns the number of active rules.
-  size_t GetActiveRulesCountForTesting();
 
  protected:
   ~ChromeContentRulesRegistry() override;
@@ -134,22 +119,27 @@ class ChromeContentRulesRegistry
       const std::string& extension_id) const;
 
  private:
-  // Utility function for iterating a lambda over the relevant WebContents.
-  template <class Func>
-  void ForEachWebContents(const Func& func);
-
-  // Set up the state to track rules for |contents|.
-  void TrackRulesForWebContents(content::WebContents* contents);
+  friend class DeclarativeChromeContentRulesRegistryTest;
 
   // True if this object is managing the rules for |context|.
   bool ManagingRulesForBrowserContext(content::BrowserContext* context);
+
+  // Applies all content rules given that a tab was just navigated.
+  void OnTabNavigation(content::WebContents* tab, bool is_in_page_navigation);
 
   std::set<const ContentRule*> GetMatches(
       const RendererContentMatchData& renderer_data,
       bool is_incognito_renderer) const;
 
-  // Updates the condition evaluator with the current watched CSS selectors.
-  void UpdateCssSelectorsFromRules();
+  // Scans the rules for the set of conditions they're watching.  If the set has
+  // changed, calls InstructRenderProcess() for each RenderProcessHost in the
+  // current browser_context.
+  void UpdateConditionCache();
+
+  // If the renderer process is associated with our browser context, tells it
+  // what page attributes to watch for using an ExtensionMsg_WatchPages.
+  void InstructRenderProcessIfSameBrowserContext(
+      content::RenderProcessHost* process);
 
   // Evaluates the conditions for |tab| based on the tab state and matching CSS
   // selectors.
@@ -162,6 +152,8 @@ class ChromeContentRulesRegistry
       URLMatcherIdToRule;
   typedef std::map<ContentRule::GlobalRuleId, linked_ptr<const ContentRule>>
       RulesMap;
+  typedef std::map<content::WebContents*, std::vector<std::string>>
+      CssSelectors;
 
   // Map that tells us which ContentRules may match under the condition that
   // the URLMatcherConditionSet::ID was returned by the |url_matcher_|.
@@ -170,21 +162,22 @@ class ChromeContentRulesRegistry
   RulesMap content_rules_;
 
   // Maps a WebContents to the set of rules that match on that WebContents.
-  // This lets us call Revert as appropriate. Note that this is expected to have
-  // a key-value pair for every WebContents the registry is tracking, even if
-  // the value is the empty set.
+  // This lets us call Revert as appropriate.
   std::map<content::WebContents*, std::set<const ContentRule*>> active_rules_;
 
   // Matches URLs for the page_url condition.
   url_matcher::URLMatcher url_matcher_;
 
-  // Responsible for evaluating the declarative content conditions.
-  DeclarativeContentCssConditionTracker css_condition_tracker_;
+  // All CSS selectors any rule's conditions watch for.
+  std::vector<std::string> watched_css_selectors_;
 
   // Manages our notification registrations.
   content::NotificationRegistrar registrar_;
 
   scoped_refptr<InfoMap> extension_info_map_;
+
+  // Maps tab_id to the matching CSS selectors for the tab.
+  CssSelectors matching_css_selectors_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentRulesRegistry);
 };

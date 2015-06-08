@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_CONDITION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DECLARATIVE_CONTENT_CONTENT_CONDITION_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -12,16 +13,11 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "components/url_matcher/url_matcher.h"
 #include "extensions/browser/api/declarative/declarative_rule.h"
 
-namespace base {
-class Value;
-}
-
 namespace extensions {
-
-class Extension;
 
 struct RendererContentMatchData {
   RendererContentMatchData();
