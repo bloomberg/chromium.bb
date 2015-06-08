@@ -1841,6 +1841,16 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
         return accumulatedText.toString();
     }
 
+    // Step 2C from: http://www.w3.org/TR/accname-aam-1.1
+    if (hasAttribute(aria_labelAttr)) {
+        const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
+        if (!ariaLabel.isEmpty()) {
+            if (nameFrom)
+                *nameFrom = AXNameFromAttribute;
+            return ariaLabel;
+        }
+    }
+
     // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1
     if (recursive || nameFromContents()) {
         if (nameFrom)
