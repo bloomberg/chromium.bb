@@ -21,33 +21,39 @@ namespace {
 
 // This is an empty transaction, needed to register the URL and the test mode.
 const MockTransaction kHostInfoTransaction1 = {
-  "quicserverinfo:https://www.google.com:443",
-  "",
-  base::Time(),
-  "",
-  LOAD_NORMAL,
-  "",
-  "",
-  base::Time(),
-  "",
-  TEST_MODE_NORMAL,
-  NULL,
-  0
+    "quicserverinfo:https://www.google.com:443",
+    "",
+    base::Time(),
+    "",
+    LOAD_NORMAL,
+    "",
+    "",
+    base::Time(),
+    "",
+    TEST_MODE_NORMAL,
+    nullptr,
+    nullptr,
+    0,
+    0,
+    OK,
 };
 
 const MockTransaction kHostInfoTransaction2 = {
-  "quicserverinfo:http://www.google.com:80",
-  "",
-  base::Time(),
-  "",
-  LOAD_NORMAL,
-  "",
-  "",
-  base::Time(),
-  "",
-  TEST_MODE_NORMAL,
-  NULL,
-  0
+    "quicserverinfo:http://www.google.com:80",
+    "",
+    base::Time(),
+    "",
+    LOAD_NORMAL,
+    "",
+    "",
+    base::Time(),
+    "",
+    TEST_MODE_NORMAL,
+    nullptr,
+    nullptr,
+    0,
+    0,
+    OK,
 };
 
 class DeleteCacheCompletionCallback : public TestCompletionCallbackBase {

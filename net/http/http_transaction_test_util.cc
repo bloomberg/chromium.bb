@@ -14,6 +14,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
+#include "net/cert/x509_certificate.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_request_info.h"
@@ -42,7 +43,9 @@ const MockTransaction kSimpleGET_Transaction = {
     base::Time(),
     "<html><body>Google Blah Blah</body></html>",
     TEST_MODE_NORMAL,
-    NULL,
+    nullptr,
+    nullptr,
+    0,
     0,
     OK};
 
@@ -57,7 +60,9 @@ const MockTransaction kSimplePOST_Transaction = {
     base::Time(),
     "<html><body>Google Blah Blah</body></html>",
     TEST_MODE_NORMAL,
-    NULL,
+    nullptr,
+    nullptr,
+    0,
     0,
     OK};
 
@@ -73,7 +78,9 @@ const MockTransaction kTypicalGET_Transaction = {
     base::Time(),
     "<html><body>Google Blah Blah</body></html>",
     TEST_MODE_NORMAL,
-    NULL,
+    nullptr,
+    nullptr,
+    0,
     0,
     OK};
 
@@ -89,7 +96,9 @@ const MockTransaction kETagGET_Transaction = {
     base::Time(),
     "<html><body>Google Blah Blah</body></html>",
     TEST_MODE_NORMAL,
-    NULL,
+    nullptr,
+    nullptr,
+    0,
     0,
     OK};
 
@@ -104,7 +113,9 @@ const MockTransaction kRangeGET_Transaction = {
     base::Time(),
     "<html><body>Google Blah Blah</body></html>",
     TEST_MODE_NORMAL,
-    NULL,
+    nullptr,
+    nullptr,
+    0,
     0,
     OK};
 
@@ -410,7 +421,9 @@ int MockNetworkTransaction::StartInternal(const HttpRequestInfo* request,
 
   response_.headers = new HttpResponseHeaders(header_data);
   response_.vary_data.Init(*request, *response_.headers.get());
+  response_.ssl_info.cert = t->cert;
   response_.ssl_info.cert_status = t->cert_status;
+  response_.ssl_info.connection_status = t->ssl_connection_status;
   data_ = resp_data;
 
   if (net_log.net_log())

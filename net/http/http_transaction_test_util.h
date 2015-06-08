@@ -30,6 +30,7 @@ namespace net {
 
 class HttpRequestHeaders;
 class IOBuffer;
+class X509Certificate;
 struct HttpRequestInfo;
 
 //-----------------------------------------------------------------------------
@@ -68,7 +69,9 @@ struct MockTransaction {
   const char* data;
   int test_mode;
   MockTransactionHandler handler;
+  scoped_refptr<X509Certificate> cert;
   CertStatus cert_status;
+  int ssl_connection_status;
   // Value returned by MockNetworkTransaction::Start (potentially
   // asynchronously if |!(test_mode & TEST_MODE_SYNC_NET_START)|.)
   Error return_code;

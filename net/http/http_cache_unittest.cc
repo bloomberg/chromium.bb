@@ -21,8 +21,10 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/test_data_directory.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/x509_certificate.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_cache_transaction.h"
@@ -39,6 +41,8 @@
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_connection_status_flags.h"
+#include "net/test/cert_test_util.h"
 #include "net/websockets/websocket_handshake_stream_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -270,6 +274,8 @@ const MockTransaction kFastNoStoreGET_Transaction = {
     "<html><body>Google Blah Blah</body></html>",
     TEST_MODE_SYNC_NET_START,
     &FastTransactionServer::FastNoStoreHandler,
+    nullptr,
+    0,
     0,
     OK};
 
@@ -441,6 +447,8 @@ const MockTransaction kRangeGET_TransactionOK = {
     "rg: 40-49 ",
     TEST_MODE_NORMAL,
     &RangeTransactionServer::RangeHandler,
+    nullptr,
+    0,
     0,
     OK};
 
@@ -7848,4 +7856,113 @@ TEST(HttpCache, NoStoreResponseShouldNotBlockFollowingRequests) {
       "Cache-Control", "no-store"));
   ReadAndVerifyTransaction(second->trans.get(), kSimpleGET_Transaction);
 }
+
+// Tests that serving a response entirely from cache replays the previous
+// SSLInfo.
+TEST(HttpCache, CachePreservesSSLInfo) {
+  static const uint16_t kTLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 = 0xc02f;
+  int status = 0;
+  SSLConnectionStatusSetCipherSuite(kTLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+                                    &status);
+  SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2, &status);
+
+  scoped_refptr<X509Certificate> cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+
+  MockHttpCache cache;
+
+  ScopedMockTransaction transaction(kSimpleGET_Transaction);
+  transaction.cert = cert;
+  transaction.ssl_connection_status = status;
+
+  // Fetch the resource.
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), transaction,
+                                     &response_info);
+
+  // The request should have hit the network and a cache entry created.
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // The expected SSL state was reported.
+  EXPECT_EQ(transaction.ssl_connection_status,
+            response_info.ssl_info.connection_status);
+  EXPECT_TRUE(cert->Equals(response_info.ssl_info.cert.get()));
+
+  // Fetch the resource again.
+  RunTransactionTestWithResponseInfo(cache.http_cache(), transaction,
+                                     &response_info);
+
+  // The request should have been reused without hitting the network.
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // The SSL state was preserved.
+  EXPECT_EQ(status, response_info.ssl_info.connection_status);
+  EXPECT_TRUE(cert->Equals(response_info.ssl_info.cert.get()));
+}
+
+// Tests that SSLInfo gets updated when revalidating a cached response.
+TEST(HttpCache, RevalidationUpdatesSSLInfo) {
+  static const uint16_t kTLS_RSA_WITH_RC4_128_MD5 = 0x0004;
+  static const uint16_t kTLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 = 0xc02f;
+
+  int status1 = 0;
+  SSLConnectionStatusSetCipherSuite(kTLS_RSA_WITH_RC4_128_MD5, &status1);
+  SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1, &status1);
+  int status2 = 0;
+  SSLConnectionStatusSetCipherSuite(kTLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+                                    &status2);
+  SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_TLS1_2, &status2);
+
+  scoped_refptr<X509Certificate> cert1 =
+      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
+  scoped_refptr<X509Certificate> cert2 =
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem");
+
+  MockHttpCache cache;
+
+  ScopedMockTransaction transaction(kTypicalGET_Transaction);
+  transaction.cert = cert1;
+  transaction.ssl_connection_status = status1;
+
+  // Fetch the resource.
+  HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), transaction,
+                                     &response_info);
+
+  // The request should have hit the network and a cache entry created.
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  EXPECT_FALSE(response_info.was_cached);
+
+  // The expected SSL state was reported.
+  EXPECT_EQ(status1, response_info.ssl_info.connection_status);
+  EXPECT_TRUE(cert1->Equals(response_info.ssl_info.cert.get()));
+
+  // The server deploys a more modern configuration but reports 304 on the
+  // revalidation attempt.
+  transaction.status = "HTTP/1.1 304 Not Modified";
+  transaction.cert = cert2;
+  transaction.ssl_connection_status = status2;
+
+  // Fetch the resource again, forcing a revalidation.
+  transaction.request_headers = "Cache-Control: max-age=0\r\n";
+  RunTransactionTestWithResponseInfo(cache.http_cache(), transaction,
+                                     &response_info);
+
+  // The request should have been successfully revalidated.
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  EXPECT_TRUE(response_info.was_cached);
+
+  // The new SSL state is reported.
+  EXPECT_EQ(status2, response_info.ssl_info.connection_status);
+  EXPECT_TRUE(cert2->Equals(response_info.ssl_info.cert.get()));
+}
+
 }  // namespace net

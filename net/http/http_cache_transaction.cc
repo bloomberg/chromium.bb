@@ -1483,13 +1483,14 @@ int HttpCache::Transaction::DoCompletePartialCacheValidation(int result) {
 int HttpCache::Transaction::DoUpdateCachedResponse() {
   next_state_ = STATE_UPDATE_CACHED_RESPONSE_COMPLETE;
   int rv = OK;
-  // Update cached response based on headers in new_response.
-  // TODO(wtc): should we update cached certificate (response_.ssl_info), too?
+  // Update the cached response based on the headers and properties of
+  // new_response_.
   response_.headers->Update(*new_response_->headers.get());
   response_.response_time = new_response_->response_time;
   response_.request_time = new_response_->request_time;
   response_.network_accessed = new_response_->network_accessed;
   response_.unused_since_prefetch = new_response_->unused_since_prefetch;
+  response_.ssl_info = new_response_->ssl_info;
   if (new_response_->vary_data.is_valid()) {
     response_.vary_data = new_response_->vary_data;
   } else if (response_.vary_data.is_valid()) {

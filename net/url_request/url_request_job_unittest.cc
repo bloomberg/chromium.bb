@@ -50,8 +50,10 @@ const MockTransaction kGZip_Transaction = {
     "",
     TEST_MODE_NORMAL,
     &GZipServer,
+    nullptr,
     0,
-    OK
+    0,
+    OK,
 };
 
 const MockTransaction kRedirect_Transaction = {
@@ -67,9 +69,11 @@ const MockTransaction kRedirect_Transaction = {
     base::Time(),
     "hello",
     TEST_MODE_NORMAL,
-    NULL,
+    nullptr,
+    nullptr,
     0,
-    OK
+    0,
+    OK,
 };
 
 }  // namespace
