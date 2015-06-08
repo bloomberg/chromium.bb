@@ -128,3 +128,24 @@ ConnectionSecurityHelper::GetSecurityLevelForWebContents(
       return NONE;
   }
 }
+
+content::SecurityStyle ConnectionSecurityHelper::GetSecurityStyleForWebContents(
+    const content::WebContents* web_contents) {
+  SecurityLevel security_level = GetSecurityLevelForWebContents(web_contents);
+
+  switch (security_level) {
+    case NONE:
+      return content::SECURITY_STYLE_UNAUTHENTICATED;
+    case EV_SECURE:
+    case SECURE:
+      return content::SECURITY_STYLE_AUTHENTICATED;
+    case SECURITY_WARNING:
+    case SECURITY_POLICY_WARNING:
+      return content::SECURITY_STYLE_WARNING;
+    case SECURITY_ERROR:
+      return content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+  }
+
+  NOTREACHED();
+  return content::SECURITY_STYLE_UNKNOWN;
+}

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SSL_CONNECTION_SECURITY_HELPER_H_
 
 #include "base/macros.h"
+#include "content/public/common/security_style.h"
 
 namespace content {
 class WebContents;
@@ -50,6 +51,17 @@ class ConnectionSecurityHelper {
   // Returns a security level describing the overall security state of
   // the given |WebContents|.
   static SecurityLevel GetSecurityLevelForWebContents(
+      const content::WebContents* web_contents);
+
+  // Returns the content::SecurityStyle for the given |web_contents|.
+  // Note: This is a lossy operation. Not all of the policies
+  // that can be expressed by a SecurityLevel (a //chrome concept) can
+  // be expressed by a content::SecurityStyle.
+  // In general, code in //chrome should prefer to use
+  // GetSecurityLevelForWebContents() to determine security policy, and
+  // only use this function when policy needs to be supplied back to
+  // layers in //content.
+  static content::SecurityStyle GetSecurityStyleForWebContents(
       const content::WebContents* web_contents);
 
  private:

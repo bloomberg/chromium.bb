@@ -1301,6 +1301,11 @@ bool Browser::CanDragEnter(content::WebContents* source,
   return true;
 }
 
+content::SecurityStyle Browser::GetSecurityStyle(
+    const WebContents* web_contents) {
+  return ConnectionSecurityHelper::GetSecurityStyleForWebContents(web_contents);
+}
+
 bool Browser::IsMouseLocked() const {
   return exclusive_access_manager_->mouse_lock_controller()->IsMouseLocked();
 }

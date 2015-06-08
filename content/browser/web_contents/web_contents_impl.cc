@@ -92,6 +92,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/security_style.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
@@ -3221,8 +3222,13 @@ void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
 }
 
 void WebContentsImpl::DidChangeVisibleSSLState() {
-  if (delegate_)
+  if (delegate_) {
     delegate_->VisibleSSLStateChanged(this);
+
+    content::SecurityStyle security_style = delegate_->GetSecurityStyle(this);
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                      SecurityStyleChanged(security_style));
+  }
 }
 
 void WebContentsImpl::NotifyBeforeFormRepostWarningShow() {

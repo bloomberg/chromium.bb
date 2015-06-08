@@ -316,6 +316,51 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(RenderViewSizeObserver);
 };
 
+void ProceedThroughInterstitial(content::WebContents* web_contents) {
+  InterstitialPage* interstitial_page = web_contents->GetInterstitialPage();
+  ASSERT_TRUE(interstitial_page);
+
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<NavigationController>(&web_contents->GetController()));
+  interstitial_page->Proceed();
+  observer.Wait();
+}
+
+bool GetFilePathWithHostAndPortReplacement(
+    const std::string& original_file_path,
+    const net::HostPortPair& host_port_pair,
+    std::string* replacement_path) {
+  std::vector<net::SpawnedTestServer::StringPair> replacement_text;
+  replacement_text.push_back(
+      make_pair("REPLACE_WITH_HOST_AND_PORT", host_port_pair.ToString()));
+  return net::SpawnedTestServer::GetFilePathWithReplacements(
+      original_file_path, replacement_text, replacement_path);
+}
+
+// A WebContentsObserver useful for testing the SecurityStyleChanged()
+// method: it keeps track of the latest security style that was fired.
+class SecurityStyleTestObserver : public WebContentsObserver {
+ public:
+  explicit SecurityStyleTestObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents),
+        latest_security_style_(content::SECURITY_STYLE_UNKNOWN) {}
+  ~SecurityStyleTestObserver() override {}
+
+  void SecurityStyleChanged(content::SecurityStyle security_style) override {
+    latest_security_style_ = security_style;
+  }
+
+  content::SecurityStyle latest_security_style() const {
+    return latest_security_style_;
+  }
+
+ private:
+  content::SecurityStyle latest_security_style_;
+
+  DISALLOW_COPY_AND_ASSIGN(SecurityStyleTestObserver);
+};
+
 }  // namespace
 
 class BrowserTest : public ExtensionBrowserTest {
@@ -2767,4 +2812,57 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CanDuplicateTab) {
   EXPECT_TRUE(chrome::CanDuplicateTab(browser()));
   EXPECT_TRUE(chrome::CanDuplicateTabAt(browser(), 0));
   EXPECT_TRUE(chrome::CanDuplicateTabAt(browser(), 1));
+}
+
+// Tests that the WebContentsObserver::SecurityStyleChanged event fires
+// with the current style on HTTP, broken HTTPS, and valid HTTPS pages.
+IN_PROC_BROWSER_TEST_F(BrowserTest, SecurityStyleChangedObserver) {
+  net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
+                                           net::SpawnedTestServer::kLocalhost,
+                                           base::FilePath(kDocRoot));
+  net::SpawnedTestServer https_test_server_expired(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_EXPIRED),
+      base::FilePath(kDocRoot));
+
+  ASSERT_TRUE(https_test_server.Start());
+  ASSERT_TRUE(https_test_server_expired.Start());
+  ASSERT_TRUE(test_server()->Start());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SecurityStyleTestObserver observer(web_contents);
+
+  // Visit an HTTP url.
+  GURL http_url(test_server()->GetURL(std::string()));
+  ui_test_utils::NavigateToURL(browser(), http_url);
+  EXPECT_EQ(content::SECURITY_STYLE_UNAUTHENTICATED,
+            observer.latest_security_style());
+
+  // Visit a valid HTTPS url.
+  GURL valid_https_url(https_test_server.GetURL(std::string()));
+  ui_test_utils::NavigateToURL(browser(), valid_https_url);
+  EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATED,
+            observer.latest_security_style());
+
+  // Visit an (otherwise valid) HTTPS page that displays mixed content.
+  std::string replacement_path;
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/ssl/page_displays_insecure_content.html",
+      test_server()->host_port_pair(), &replacement_path));
+
+  GURL mixed_content_url(https_test_server.GetURL(replacement_path));
+  ui_test_utils::NavigateToURL(browser(), mixed_content_url);
+  EXPECT_EQ(content::SECURITY_STYLE_WARNING, observer.latest_security_style());
+
+  // Visit a broken HTTPS url. Other conditions cannot be tested after
+  // this one because once the interstitial is clicked through, all URLs
+  // for this host will remain in a broken state.
+  GURL expired_url(https_test_server_expired.GetURL(std::string()));
+  ui_test_utils::NavigateToURL(browser(), expired_url);
+
+  ProceedThroughInterstitial(web_contents);
+  EXPECT_EQ(content::SECURITY_STYLE_AUTHENTICATION_BROKEN,
+            observer.latest_security_style());
 }

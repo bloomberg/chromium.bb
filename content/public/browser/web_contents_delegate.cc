@@ -10,6 +10,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/security_style.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -223,6 +224,11 @@ bool WebContentsDelegate::IsNeverVisible(WebContents* web_contents) {
 
 bool WebContentsDelegate::SaveFrame(const GURL& url, const Referrer& referrer) {
   return false;
+}
+
+SecurityStyle WebContentsDelegate::GetSecurityStyle(
+    const WebContents* web_contents) {
+  return content::SECURITY_STYLE_UNKNOWN;
 }
 
 }  // namespace content

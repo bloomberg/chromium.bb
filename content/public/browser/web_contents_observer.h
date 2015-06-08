@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/security_style.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -175,6 +176,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
       RenderFrameHost* render_frame_host,
       const LoadCommittedDetails& details,
       const FrameNavigateParams& params) {}
+
+  // This method is invoked when the SecurityStyle of the WebContents changes.
+  virtual void SecurityStyleChanged(content::SecurityStyle security_style) {}
 
   // This method is invoked once the window.document object of the main frame
   // was created.
