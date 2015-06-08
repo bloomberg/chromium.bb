@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="../file_manager/foreground/css/share_dialog.css">
   <link rel="stylesheet" href="css/gallery.css">
 
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+
   <!-- Don't load gallery_scripts.js when flattening is disabled -->
   <if expr="False"><!-- </if>
     <script src="js/gallery_scripts.js"></script>
@@ -45,7 +47,7 @@
     <script src="chrome://resources/js/cr/ui/list.js"></script>
     <script src="chrome://resources/js/cr/ui/grid.js"></script>
 
-    <!-- Base classes. ->
+    <!-- Base classes. -->
     <script src="../file_manager/foreground/js/metadata/metadata_cache_set.js"></script>
     <script src="../file_manager/foreground/js/metadata/new_metadata_provider.js"></script>
 
@@ -94,16 +96,16 @@
 <body>
   <div class="gallery">
     <div id="content" class="content"></div>
-    <div id="header" class="header tool dimmable"></div>
     <div id="top-toolbar" class="toolbar top tool dimmable">
       <div class="filename-spacer"></div>
       <div class="button-spacer">
-        <button class="button mode"></button>
-        <button class="button slideshow"></button>
-        <button class="button edit"></button>
-        <button class="button print"></button>
-        <button class="delete"></button>
-        <button class="share"></button>
+        <paper-button class="button edit" i18n-values="title:GALLERY_EDIT" disabled></paper-button>
+        <paper-button class="button print" i18n-values="title:GALLERY_PRINT" disabled></paper-button>
+        <paper-button class="button delete" i18n-values="title:GALLERY_DELETE"></paper-button>
+        <paper-button class="button slide-mode" i18n-values="title:GALLERY_SLIDE"></paper-button>
+        <paper-button class="button mosaic-mode" i18n-values="title:GALLERY_MOSAIC"></paper-button>
+        <paper-button class="button slideshow" i18n-values="title:GALLERY_SLIDESHOW"></paper-button>
+        <paper-button class="button share" i18n-values="title:GALLERY_SHARE"></paper-button>
       </div>
     </div>
     <div id="bottom-toolbar" class="toolbar bottom tool dimmable">
