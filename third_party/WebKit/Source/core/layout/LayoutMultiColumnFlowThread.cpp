@@ -396,12 +396,64 @@ void LayoutMultiColumnFlowThread::createAndInsertMultiColumnSet(LayoutBox* inser
     ASSERT(!newSet->nextSiblingMultiColumnBox() || !newSet->nextSiblingMultiColumnBox()->isLayoutMultiColumnSet());
 }
 
-void LayoutMultiColumnFlowThread::createAndInsertSpannerPlaceholder(LayoutBox* spanner, LayoutBox* insertBefore)
+void LayoutMultiColumnFlowThread::createAndInsertSpannerPlaceholder(LayoutBox* spannerObjectInFlowThread, LayoutObject* insertedBeforeInFlowThread)
 {
+    LayoutBox* insertBeforeColumnBox = nullptr;
+    LayoutMultiColumnSet* setToSplit = nullptr;
+    if (insertedBeforeInFlowThread) {
+        // The spanner is inserted before something. Figure out what this entails. If the
+        // next object is a spanner too, it means that we can simply insert a new spanner
+        // placeholder in front of its placeholder.
+        insertBeforeColumnBox = insertedBeforeInFlowThread->spannerPlaceholder();
+        if (!insertBeforeColumnBox) {
+            // The next object isn't a spanner; it's regular column content. Examine what
+            // comes right before us in the flow thread, then.
+            LayoutObject* previousLayoutObject = previousInPreOrderSkippingOutOfFlow(this, spannerObjectInFlowThread);
+            if (!previousLayoutObject || previousLayoutObject == this) {
+                // The spanner is inserted as the first child of the multicol container,
+                // which means that we simply insert a new spanner placeholder at the
+                // beginning.
+                insertBeforeColumnBox = firstMultiColumnBox();
+            } else if (LayoutMultiColumnSpannerPlaceholder* previousPlaceholder = containingColumnSpannerPlaceholder(previousLayoutObject)) {
+                // Before us is another spanner. We belong right after it then.
+                insertBeforeColumnBox = previousPlaceholder->nextSiblingMultiColumnBox();
+            } else {
+                // We're inside regular column content with both feet. Find out which column
+                // set this is. It needs to be split it into two sets, so that we can insert
+                // a new spanner placeholder between them.
+                setToSplit = mapDescendantToColumnSet(previousLayoutObject);
+                ASSERT(setToSplit == mapDescendantToColumnSet(insertedBeforeInFlowThread));
+                setToSplit->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
+                insertBeforeColumnBox = setToSplit->nextSiblingMultiColumnBox();
+                // We've found out which set that needs to be split. Now proceed to
+                // inserting the spanner placeholder, and then insert a second column set.
+            }
+        }
+        ASSERT(setToSplit || insertBeforeColumnBox);
+    }
+
     LayoutBlockFlow* multicolContainer = multiColumnBlockFlow();
-    LayoutMultiColumnSpannerPlaceholder* newPlaceholder = LayoutMultiColumnSpannerPlaceholder::createAnonymous(multicolContainer->styleRef(), *spanner);
-    multicolContainer->LayoutBlock::addChild(newPlaceholder, insertBefore);
-    spanner->setSpannerPlaceholder(*newPlaceholder);
+    LayoutMultiColumnSpannerPlaceholder* newPlaceholder = LayoutMultiColumnSpannerPlaceholder::createAnonymous(multicolContainer->styleRef(), *spannerObjectInFlowThread);
+    multicolContainer->LayoutBlock::addChild(newPlaceholder, insertBeforeColumnBox);
+    spannerObjectInFlowThread->setSpannerPlaceholder(*newPlaceholder);
+
+    if (setToSplit)
+        createAndInsertMultiColumnSet(insertBeforeColumnBox);
+}
+
+void LayoutMultiColumnFlowThread::destroySpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder* placeholder)
+{
+    if (LayoutBox* nextColumnBox = placeholder->nextSiblingMultiColumnBox()) {
+        LayoutBox* previousColumnBox = placeholder->previousSiblingMultiColumnBox();
+        if (nextColumnBox && nextColumnBox->isLayoutMultiColumnSet()
+            && previousColumnBox && previousColumnBox->isLayoutMultiColumnSet()) {
+            // Need to merge two column sets.
+            nextColumnBox->destroy();
+            previousColumnBox->setNeedsLayout(LayoutInvalidationReason::ColumnsChanged);
+            invalidateColumnSets();
+        }
+    }
+    placeholder->destroy();
 }
 
 bool LayoutMultiColumnFlowThread::descendantIsValidColumnSpanner(LayoutObject* descendant) const
@@ -546,42 +598,7 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWasInserted(LayoutObject* 
             continue; // Inside a column spanner. Nothing to do, then.
         if (descendantIsValidColumnSpanner(layoutObject)) {
             // This layoutObject is a spanner, so it needs to establish a spanner placeholder.
-            LayoutBox* insertBefore = nullptr;
-            LayoutMultiColumnSet* setToSplit = nullptr;
-            if (objectAfterSubtree) {
-                // The spanner is inserted before something. Figure out what this entails. If the
-                // next layoutObject is a spanner too, it means that we can simply insert a new spanner
-                // placeholder in front of its placeholder.
-                insertBefore = objectAfterSubtree->spannerPlaceholder();
-                if (!insertBefore) {
-                    // The next layoutObject isn't a spanner; it's regular column content. Examine what
-                    // comes right before us in the flow thread, then.
-                    LayoutObject* previousLayoutObject = previousInPreOrderSkippingOutOfFlow(this, layoutObject);
-                    if (!previousLayoutObject || previousLayoutObject == this) {
-                        // The spanner is inserted as the first child of the multicol container,
-                        // which means that we simply insert a new spanner placeholder at the
-                        // beginning.
-                        insertBefore = firstMultiColumnBox();
-                    } else if (LayoutMultiColumnSpannerPlaceholder* previousPlaceholder = containingColumnSpannerPlaceholder(previousLayoutObject)) {
-                        // Before us is another spanner. We belong right after it then.
-                        insertBefore = previousPlaceholder->nextSiblingMultiColumnBox();
-                    } else {
-                        // We're inside regular column content with both feet. Find out which column
-                        // set this is. It needs to be split it into two sets, so that we can insert
-                        // a new spanner placeholder between them.
-                        setToSplit = mapDescendantToColumnSet(previousLayoutObject);
-                        ASSERT(setToSplit == mapDescendantToColumnSet(objectAfterSubtree));
-                        setToSplit->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::ColumnsChanged);
-                        insertBefore = setToSplit->nextSiblingMultiColumnBox();
-                        // We've found out which set that needs to be split. Now proceed to
-                        // inserting the spanner placeholder, and then insert a second column set.
-                    }
-                }
-                ASSERT(setToSplit || insertBefore);
-            }
-            createAndInsertSpannerPlaceholder(toLayoutBox(layoutObject), insertBefore);
-            if (setToSplit)
-                createAndInsertMultiColumnSet(insertBefore);
+            createAndInsertSpannerPlaceholder(toLayoutBox(layoutObject), objectAfterSubtree);
             continue;
         }
         // This layoutObject is regular column content (i.e. not a spanner). Create a set if necessary.
@@ -630,17 +647,7 @@ void LayoutMultiColumnFlowThread::flowThreadDescendantWillBeRemoved(LayoutObject
             continue;
         }
         next = layoutObject->nextInPreOrderAfterChildren(descendant); // It's a spanner. Its children are of no interest to us.
-        if (LayoutBox* nextColumnBox = placeholder->nextSiblingMultiColumnBox()) {
-            LayoutBox* previousColumnBox = placeholder->previousSiblingMultiColumnBox();
-            if (nextColumnBox && nextColumnBox->isLayoutMultiColumnSet()
-                && previousColumnBox && previousColumnBox->isLayoutMultiColumnSet()) {
-                // Need to merge two column sets.
-                nextColumnBox->destroy();
-                previousColumnBox->setNeedsLayout(LayoutInvalidationReason::ColumnsChanged);
-                invalidateColumnSets();
-            }
-        }
-        placeholder->destroy();
+        destroySpannerPlaceholder(placeholder);
     }
     if (hadContainingPlaceholder || !processedSomething)
         return; // No column content will be removed, so we can stop here.

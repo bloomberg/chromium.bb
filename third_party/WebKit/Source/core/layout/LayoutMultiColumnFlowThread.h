@@ -189,7 +189,8 @@ protected:
 private:
     void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
     void createAndInsertMultiColumnSet(LayoutBox* insertBefore = nullptr);
-    void createAndInsertSpannerPlaceholder(LayoutBox* spanner, LayoutBox* insertBefore = nullptr);
+    void createAndInsertSpannerPlaceholder(LayoutBox* spannerObjectInFlowThread, LayoutObject* insertedBeforeInFlowThread);
+    void destroySpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder*);
     virtual bool descendantIsValidColumnSpanner(LayoutObject* descendant) const;
 
     virtual void addColumnSetToThread(LayoutMultiColumnSet*) override;
