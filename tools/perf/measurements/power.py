@@ -35,6 +35,15 @@ class Power(page_test.PageTest):
     self._power_metric.AddResults(tab, results)
 
 
+class LoadPower(Power):
+  def WillNavigateToPage(self, page, tab):
+    self._network_metric.Start(page, tab)
+    self._power_metric.Start(page, tab)
+
+  def DidNavigateToPage(self, page, tab):
+    pass
+
+
 class QuiescentPower(page_test.PageTest):
   """Measures power draw and idle wakeups after the page finished loading."""
 

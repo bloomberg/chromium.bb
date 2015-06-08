@@ -29,6 +29,18 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'power.typical_10_mobile'
 
+
+@benchmark.Enabled('android')
+@benchmark.Disabled
+class PowerTypical10MobileReload(perf_benchmark.PerfBenchmark):
+  """Android typical 10 mobile power reload test."""
+  test = power.LoadPower
+  page_set = page_sets.Typical10MobileReloadPageSet
+  @classmethod
+  def Name(cls):
+    return 'power.typical_10_mobile_reload'
+
+
 @benchmark.Enabled('android')
 class PowerGpuRasterizationTypical10Mobile(perf_benchmark.PerfBenchmark):
   """Measures power on key mobile sites with GPU rasterization."""
