@@ -199,7 +199,14 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
   }
 
   int flag = modifiers_.GetEventFlagFromModifier(modifier);
+  bool was_down = modifiers_.GetModifierFlags() & flag;
   modifiers_.UpdateModifier(modifier, params.down);
+  bool down = modifiers_.GetModifierFlags() & flag;
+
+  // Suppress nested clicks. EventModifiersEvdev counts presses, we only
+  // dispatch an event on 0-1 (first press) and 1-0 (last release) transitions.
+  if (down == was_down)
+    return;
 
   MouseEvent event(params.down ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
                    params.location, params.location, params.timestamp,
