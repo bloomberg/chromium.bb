@@ -171,6 +171,23 @@ crbug.com/246749 inspector/extensions/extensions-panel.html [ Slow ]
 # This test takes 5+ seconds as intended because it tests connection throttling.
 crbug.com/459377 http/tests/websocket/multiple-connections-throttled.html [ Slow ]
 
+# These tests are slow to measure bounding box of every single Unicode character.
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001a.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001b.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001c.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001d.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001e.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001f.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001g.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001h.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001i.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001j.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001k.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001l.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001n.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001o.html [ Slow ]
+
 crbug.com/336481 inspector/jump-to-previous-editing-location.html [ Slow ]
 crbug.com/490511 imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/ [ Slow ]
 crbug.com/346259 http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]

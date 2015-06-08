@@ -352,8 +352,6 @@ imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_
 imported/web-platform-tests/html/semantics/forms/the-input-element/email.html [ Skip ]
 
 # CSS Writing Modes Level 3: Following tests have known issues and notified to the submitters.
-imported/csswg-test/css-writing-modes-3/block-flow-direction-017.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/block-flow-direction-018.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-combine-horizontal-010.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-combine-horizontal-011.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-orientation-010.xht [ Skip ]
@@ -365,29 +363,8 @@ imported/csswg-test/css-writing-modes-3/text-orientation-sideways-001.xht [ Skip
 imported/csswg-test/css-writing-modes-3/text-orientation-sideways-right-001.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/text-orientation-upright-001.xht [ Skip ]
 
-# CSS Writing Modes Level 3: Following tests pass (green) but images do not match, notified to the submitter.
-imported/csswg-test/css-writing-modes-3/block-flow-direction-009.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/clip-rect-vlr-003.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/clip-rect-vlr-005.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/clip-rect-vlr-007.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/clip-rect-vlr-009.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/clip-rect-vrl-002.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/clip-rect-vrl-004.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/clip-rect-vrl-006.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/clip-rect-vrl-008.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/inline-block-alignment-001.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/line-box-direction-009.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-combine-upright/value-all-002.html [ Skip ]
-imported/csswg-test/css-writing-modes-3/text-combine-upright/value-all-003.html [ Skip ]
-
-# CSS Writing Modes Level 3: Following tests pass on harness, but not on ours. Possible issue in the import script.
-imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vrl-004.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/vertical-alignment-001.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/vertical-alignment-004.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/vertical-alignment-007.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/vertical-alignment-010.xht [ Skip ]
-imported/csswg-test/css-writing-modes-3/vertical-alignment-019.xht [ Skip ]
+# Not test files but our script identify as test files
+imported/csswg-test/css-writing-modes-3/text-combine-upright/reference [ Skip ]
 
 # CSS Writing Modes Level 3: Following tests are "combo", import only one from each combo group (or improve the script to handle automatically).
 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001a.html [ Skip ]
@@ -417,6 +394,8 @@ imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001x.htm
 imported/csswg-test/css-writing-modes-3/text-orientation-script-001.html [ Skip ]
 
 # CSS Writing Modes Level 3: Following tests require applying writing-mode to table-cell, which we do not support today. crbug.com/409155
+imported/csswg-test/css-writing-modes-3/block-flow-direction-017.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/block-flow-direction-018.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/line-box-direction-015.xht [ Skip ]
 imported/csswg-test/css-writing-modes-3/line-box-direction-016.xht [ Skip ]
 
