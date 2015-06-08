@@ -59,13 +59,14 @@ class ContextualSearchDelegate
   void StartSearchTermResolutionRequest(
       const std::string& selection,
       bool use_resolved_search_term,
-      content::ContentViewCore* content_view_core);
+      content::ContentViewCore* content_view_core,
+      bool may_send_base_page_url);
 
   // Gathers surrounding text and saves it locally for a future query.
-  void GatherAndSaveSurroundingText(
-      const std::string& selection,
-      bool use_resolved_search_term,
-      content::ContentViewCore* content_view_core);
+  void GatherAndSaveSurroundingText(const std::string& selection,
+                                    bool use_resolved_search_term,
+                                    content::ContentViewCore* content_view_core,
+                                    bool may_send_base_page_url);
 
   // Continues making a Search Term Resolution request based on the context
   // set up through calling |GatherAndSaveSurroundingText|.
@@ -103,7 +104,7 @@ class ContextualSearchDelegate
   std::string GetSearchTermResolutionUrlString(
       const std::string& selected_text,
       const std::string& base_page_url,
-      const bool use_resolved_search_term);
+      const bool may_send_base_page_url);
 
   // Will gather the surrounding text from the |content_view_core| and call the
   // |callback|.
@@ -111,6 +112,7 @@ class ContextualSearchDelegate
       const std::string& selection,
       bool use_resolved_search_term,
       content::ContentViewCore* content_view_core,
+      bool may_send_base_page_url,
       HandleSurroundingsCallback callback);
 
   // Callback for GatherSurroundingTextWithCallback(). Will start the search
@@ -136,7 +138,7 @@ class ContextualSearchDelegate
       const ContextualSearchContext& context);
 
   // Checks if we can send the URL for this user. Several conditions are checked
-  // to make sure it's OK to send the url.  These fall into two categories:
+  // to make sure it's OK to send the URL.  These fall into two categories:
   // 1) check if it's allowed by our policy, and 2) ensure that the user is
   // already sending their URL browsing activity to Google.
   bool CanSendPageURL(const GURL& current_page_url,

@@ -37,11 +37,13 @@ class ContextualSearchManager {
   // When the server responds with the search term, the Java object is notified
   // by
   // calling OnSearchTermResolutionResponse().
-  void StartSearchTermResolutionRequest(JNIEnv* env,
-                                        jobject obj,
-                                        jstring j_selection,
-                                        jboolean j_use_resolved_search_term,
-                                        jobject j_base_content_view_core);
+  void StartSearchTermResolutionRequest(
+      JNIEnv* env,
+      jobject obj,
+      jstring j_selection,
+      jboolean j_use_resolved_search_term,
+      jobject j_base_content_view_core,
+      jboolean j_may_send_base_page_url);
 
   // Gathers the surrounding text around the selection and saves it locally.
   // Does not send a search term resolution request to the server.
@@ -49,7 +51,8 @@ class ContextualSearchManager {
                              jobject obj,
                              jstring j_selection,
                              jboolean j_use_resolved_search_term,
-                             jobject j_base_content_view_core);
+                             jobject j_base_content_view_core,
+                             jboolean j_may_send_base_page_url);
 
   // Continues making a Search Term Resolution request based on the context
   // set up through calling |GatherSurroundingText|.

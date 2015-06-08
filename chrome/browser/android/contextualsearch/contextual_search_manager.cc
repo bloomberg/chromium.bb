@@ -77,16 +77,19 @@ void ContextualSearchManager::StartSearchTermResolutionRequest(
     jobject obj,
     jstring j_selection,
     jboolean j_use_resolved_search_term,
-    jobject j_base_content_view_core) {
+    jobject j_base_content_view_core,
+    jboolean j_may_send_base_page_url) {
   ContentViewCore* base_content_view_core =
       ContentViewCore::GetNativeContentViewCore(env, j_base_content_view_core);
   DCHECK(base_content_view_core);
   std::string selection(
       base::android::ConvertJavaStringToUTF8(env, j_selection));
   bool use_resolved_search_term = j_use_resolved_search_term;
+  bool may_send_base_page_url = j_may_send_base_page_url;
   // Calls back to OnSearchTermResolutionResponse.
   delegate_->StartSearchTermResolutionRequest(
-      selection, use_resolved_search_term, base_content_view_core);
+      selection, use_resolved_search_term, base_content_view_core,
+      may_send_base_page_url);
 }
 
 void ContextualSearchManager::GatherSurroundingText(
@@ -94,15 +97,18 @@ void ContextualSearchManager::GatherSurroundingText(
     jobject obj,
     jstring j_selection,
     jboolean j_use_resolved_search_term,
-    jobject j_base_content_view_core) {
+    jobject j_base_content_view_core,
+    jboolean j_may_send_base_page_url) {
   ContentViewCore* base_content_view_core =
       ContentViewCore::GetNativeContentViewCore(env, j_base_content_view_core);
   DCHECK(base_content_view_core);
   std::string selection(
       base::android::ConvertJavaStringToUTF8(env, j_selection));
   bool use_resolved_search_term = j_use_resolved_search_term;
-  delegate_->GatherAndSaveSurroundingText(
-      selection, use_resolved_search_term, base_content_view_core);
+  bool may_send_base_page_url = j_may_send_base_page_url;
+  delegate_->GatherAndSaveSurroundingText(selection, use_resolved_search_term,
+                                          base_content_view_core,
+                                          may_send_base_page_url);
 }
 
 void ContextualSearchManager::ContinueSearchTermResolutionRequest(JNIEnv* env,

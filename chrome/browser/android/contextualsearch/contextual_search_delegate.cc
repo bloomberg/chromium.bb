@@ -86,11 +86,11 @@ ContextualSearchDelegate::~ContextualSearchDelegate() {
 void ContextualSearchDelegate::StartSearchTermResolutionRequest(
     const std::string& selection,
     bool use_resolved_search_term,
-    content::ContentViewCore* content_view_core) {
+    content::ContentViewCore* content_view_core,
+    bool may_send_base_page_url) {
   GatherSurroundingTextWithCallback(
-      selection,
-      use_resolved_search_term,
-      content_view_core,
+      selection, use_resolved_search_term, content_view_core,
+      may_send_base_page_url,
       base::Bind(&ContextualSearchDelegate::StartSearchTermRequestFromSelection,
                  AsWeakPtr()));
 }
@@ -98,11 +98,11 @@ void ContextualSearchDelegate::StartSearchTermResolutionRequest(
 void ContextualSearchDelegate::GatherAndSaveSurroundingText(
     const std::string& selection,
     bool use_resolved_search_term,
-    content::ContentViewCore* content_view_core) {
+    content::ContentViewCore* content_view_core,
+    bool may_send_base_page_url) {
   GatherSurroundingTextWithCallback(
-      selection,
-      use_resolved_search_term,
-      content_view_core,
+      selection, use_resolved_search_term, content_view_core,
+      may_send_base_page_url,
       base::Bind(&ContextualSearchDelegate::SaveSurroundingText, AsWeakPtr()));
   // TODO(donnd): clear the context here, since we're done with it (but risky).
 }
@@ -236,15 +236,16 @@ void ContextualSearchDelegate::GatherSurroundingTextWithCallback(
     const std::string& selection,
     bool use_resolved_search_term,
     content::ContentViewCore* content_view_core,
+    bool may_send_base_page_url,
     HandleSurroundingsCallback callback) {
   // Immediately cancel any request that's in flight, since we're building a new
   // context (and the response disposes of any existing context).
   search_term_fetcher_.reset();
-  // Decide if the URL be sent with the context.
+  // Decide if the URL should be sent with the context.
   GURL page_url(content_view_core->GetWebContents()->GetURL());
   GURL url_to_send;
-  if (CanSendPageURL(page_url,
-                     ProfileManager::GetActiveUserProfile(),
+  if (may_send_base_page_url &&
+      CanSendPageURL(page_url, ProfileManager::GetActiveUserProfile(),
                      template_url_service_)) {
     url_to_send = page_url;
   }

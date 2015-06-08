@@ -264,6 +264,19 @@ class ContextualSearchPolicy {
         }
     }
 
+    /**
+     * Whether sending the URL of the base page to the server may be done for policy reasons.
+     * NOTE: There may be additional privacy reasons why the base page URL should not be sent.
+     * TODO(donnd): Update this API to definitively determine if it's OK to send the URL,
+     * by merging the checks in the native contextual_search_delegate here.
+     * @return {@code true} if the URL may be sent for policy reasons.
+     *         Note that a return value of {@code true} may still require additional checks
+     *         to see if all privacy-related conditions are met to send the base page URL.
+     */
+    boolean maySendBasePageUrl() {
+        return !isUserUndecided();
+    }
+
     // --------------------------------------------------------------------------------------------
     // Testing support.
     // --------------------------------------------------------------------------------------------

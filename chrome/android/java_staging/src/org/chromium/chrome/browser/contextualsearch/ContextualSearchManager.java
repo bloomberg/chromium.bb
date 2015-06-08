@@ -497,7 +497,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
             // the user activates a Voice Search.
             nativeGatherSurroundingText(mNativeContextualSearchManagerPtr,
                     mSelectionController.getSelectedText(), NEVER_USE_RESOLVED_SEARCH_TERM,
-                    getBaseContentView());
+                    getBaseContentView(), mPolicy.maySendBasePageUrl());
         }
 
         mWereSearchResultsSeen = false;
@@ -524,7 +524,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
         ContentViewCore baseContentView = getBaseContentView();
         if (baseContentView != null) {
             nativeStartSearchTermResolutionRequest(mNativeContextualSearchManagerPtr, selection,
-                    true, getBaseContentView());
+                    ALWAYS_USE_RESOLVED_SEARCH_TERM, getBaseContentView(),
+                    mPolicy.maySendBasePageUrl());
         }
     }
 
@@ -558,8 +559,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
         // Saved in the case a search needs to be made after first run.
         if (mSelectionController.getSelectionType() == SelectionType.TAP) {
             nativeGatherSurroundingText(mNativeContextualSearchManagerPtr,
-                    mSelectionController.getSelectedText(),
-                    ALWAYS_USE_RESOLVED_SEARCH_TERM, getBaseContentView());
+                    mSelectionController.getSelectedText(), ALWAYS_USE_RESOLVED_SEARCH_TERM,
+                    getBaseContentView(), mPolicy.maySendBasePageUrl());
         }
     }
 
@@ -1354,12 +1355,12 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
     private native long nativeInit();
     private native void nativeDestroy(long nativeContextualSearchManager);
-    private native void nativeStartSearchTermResolutionRequest(
-            long nativeContextualSearchManager, String selection, boolean useResolvedSearchTerm,
-            ContentViewCore baseContentViewCore);
-    private native void nativeGatherSurroundingText(
-            long nativeContextualSearchManager, String selection, boolean useResolvedSearchTerm,
-            ContentViewCore baseContentViewCore);
+    private native void nativeStartSearchTermResolutionRequest(long nativeContextualSearchManager,
+            String selection, boolean useResolvedSearchTerm, ContentViewCore baseContentViewCore,
+            boolean maySendBasePageUrl);
+    private native void nativeGatherSurroundingText(long nativeContextualSearchManager,
+            String selection, boolean useResolvedSearchTerm, ContentViewCore baseContentViewCore,
+            boolean maySendBasePageUrl);
     private native void nativeContinueSearchTermResolutionRequest(
             long nativeContextualSearchManager);
     private native void nativeRemoveLastSearchVisit(
