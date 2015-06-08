@@ -43,15 +43,14 @@ namespace net {
 namespace {
 
 using NCryptFreeObjectFunc = SECURITY_STATUS(WINAPI*)(NCRYPT_HANDLE);
-using NCryptSignHashFunc =
-    SECURITY_STATUS(WINAPI*)(NCRYPT_KEY_HANDLE,  // hKey
-                             VOID*,  // pPaddingInfo
-                             PBYTE,  // pbHashValue
-                             DWORD,  // cbHashValue
-                             PBYTE,  // pbSignature
-                             DWORD,  // cbSignature
-                             DWORD*,  // pcbResult
-                             DWORD);  // dwFlags
+using NCryptSignHashFunc = SECURITY_STATUS(WINAPI*)(NCRYPT_KEY_HANDLE,  // hKey
+                                                    VOID*,   // pPaddingInfo
+                                                    BYTE*,   // pbHashValue
+                                                    DWORD,   // cbHashValue
+                                                    BYTE*,   // pbSignature
+                                                    DWORD,   // cbSignature
+                                                    DWORD*,  // pcbResult
+                                                    DWORD);  // dwFlags
 
 class CNGFunctions {
  public:
@@ -196,7 +195,7 @@ bool DoNCryptSignHash(NCRYPT_KEY_HANDLE key,
   // correct size. Some smartcards are buggy and do not write to it on the
   // second call.
   ncrypt_status = g_cng_functions.Get().ncrypt_sign_hash()(
-      key, padding, const_cast<PBYTE>(in), in_len, out, signature_len,
+      key, padding, const_cast<BYTE*>(in), in_len, out, signature_len,
       &signature_len, flags);
   if (FAILED(ncrypt_status)) {
     LOG(ERROR) << "NCryptSignHash failed: " << ncrypt_status;
