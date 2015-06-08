@@ -73,6 +73,7 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::lastMultiColumnSet() const
     return nullptr;
 }
 
+// Find the next layout object that has the multicol container in its containing block chain.
 static LayoutObject* nextInPreOrderAfterChildrenSkippingOutOfFlow(LayoutMultiColumnFlowThread* flowThread, LayoutObject* descendant)
 {
     ASSERT(descendant->isDescendantOf(flowThread));
@@ -92,20 +93,15 @@ static LayoutObject* nextInPreOrderAfterChildrenSkippingOutOfFlow(LayoutMultiCol
     return object;
 }
 
+// Find the previous layout object that has the multicol container in its containing block chain.
 static LayoutObject* previousInPreOrderSkippingOutOfFlow(LayoutMultiColumnFlowThread* flowThread, LayoutObject* descendant)
 {
     ASSERT(descendant->isDescendantOf(flowThread));
     LayoutObject* object = descendant->previousInPreOrder(flowThread);
     while (object && object != flowThread) {
-        // Walk through the siblings and find the first one which is either in-flow or has this
-        // flow thread as its containing block flow thread.
-        if (!object->isOutOfFlowPositioned())
+        if (object->isColumnSpanAll() || object->flowThreadContainingBlock() == flowThread)
             break;
-        if (object->containingBlock()->flowThreadContainingBlock() == flowThread) {
-            // This out-of-flow object is still part of the flow thread, because its containing
-            // block (probably relatively positioned) is part of the flow thread.
-            break;
-        }
+        // We're inside something that's out-of-flow. Keep looking upwards and backwards in the tree.
         object = object->previousInPreOrder(flowThread);
     }
     return object && object != flowThread ? object : nullptr;
