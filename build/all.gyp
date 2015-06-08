@@ -95,8 +95,8 @@
             }],
             ['target_arch == "arm" or target_arch == "arm64"', {
               'dependencies': [
-                # The relocation packer only works on ARM or ARM64.
-                '../tools/relocation_packer/relocation_packer.gyp:relocation_packer_unittests#host',
+                # The relocation packer is currently used only for ARM or ARM64.
+                '../third_party/android_platform/relocation_packer.gyp:android_relocation_packer_unittests#host',
               ],
             }],
           ],

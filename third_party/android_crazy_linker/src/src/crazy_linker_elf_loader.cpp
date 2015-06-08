@@ -193,7 +193,7 @@ bool ElfLoader::ReserveAddressSpace(Error* error) {
     return false;
   }
 
-  uint8_t* addr = reinterpret_cast<uint8_t*>(min_vaddr);
+  uint8_t* addr = NULL;
   int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
   // Support loading at a fixed address.

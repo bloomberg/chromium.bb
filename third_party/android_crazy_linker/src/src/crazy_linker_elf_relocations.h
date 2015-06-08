@@ -64,13 +64,21 @@ class ElfRelocations {
                      ELF::Addr reloc,
                      ELF::Addr* sym_addr,
                      Error* error);
+  bool ApplyResolvedRelaReloc(const ELF::Rela* rela,
+                              ELF::Addr sym_addr,
+                              bool resolved,
+                              Error* error);
+  bool ApplyResolvedRelReloc(const ELF::Rel* rel,
+                             ELF::Addr sym_addr,
+                             bool resolved,
+                             Error* error);
   bool ApplyRelaReloc(const ELF::Rela* rela,
-                      ELF::Addr sym_addr,
-                      bool resolved,
+                      const ElfSymbols* symbols,
+                      SymbolResolver* resolver,
                       Error* error);
   bool ApplyRelReloc(const ELF::Rel* rel,
-                     ELF::Addr sym_addr,
-                     bool resolved,
+                     const ElfSymbols* symbols,
+                     SymbolResolver* resolver,
                      Error* error);
   bool ApplyRelaRelocs(const ELF::Rela* relocs,
                        size_t relocs_count,
@@ -87,68 +95,43 @@ class ElfRelocations {
                         size_t dst_delta,
                         size_t map_delta);
   template<typename Rel>
-  void RelocateRelocation(size_t src_addr,
+  void RelocateRelocations(size_t src_addr,
                           size_t dst_addr,
                           size_t map_addr,
                           size_t size);
+  void AdjustAndroidRelocation(const ELF::Rela* relocation,
+                               size_t src_addr,
+                               size_t dst_addr,
+                               size_t map_addr,
+                               size_t size);
 
-#if defined(__arm__) || defined(__aarch64__)
-  // Packed relocations unpackers. Call the given handler for each
-  // relocation in the unpacking stream. There are two versions, one
-  // for REL, the other for RELA.
-  typedef bool (*RelRelocationHandler)(ElfRelocations* relocations,
-                                       const ELF::Rel* relocation,
-                                       void* opaque);
-  bool ForEachPackedRel(const uint8_t* packed_relocations,
-                        RelRelocationHandler handler,
-                        void* opaque);
+  // Android packed relocations unpacker. Calls the given handler for
+  // each relocation in the unpacking stream.
+  typedef bool (*RelocationHandler)(ElfRelocations* relocations,
+                                    const ELF::Rela* relocation,
+                                    void* opaque);
+  bool ForEachAndroidRelocation(RelocationHandler handler,
+                                void* opaque);
 
-  typedef bool (*RelaRelocationHandler)(ElfRelocations* relocations,
+  // Apply Android packed relocations.
+  // On error, return false and set |error| message.
+  // The static function is the ForEachAndroidRelocation() handler.
+  bool ApplyAndroidRelocations(const ElfSymbols* symbols,
+                               SymbolResolver* resolver,
+                               Error* error);
+  static bool ApplyAndroidRelocation(ElfRelocations* relocations,
+                                     const ELF::Rela* relocation,
+                                     void* opaque);
+
+  // Relocate Android packed relocations.
+  // The static function is the ForEachAndroidRelocation() handler.
+  void RelocateAndroidRelocations(size_t src_addr,
+                                  size_t dst_addr,
+                                  size_t map_addr,
+                                  size_t size);
+  static bool RelocateAndroidRelocation(ElfRelocations* relocations,
                                         const ELF::Rela* relocation,
                                         void* opaque);
-  bool ForEachPackedRela(const uint8_t* packed_relocations,
-                         RelaRelocationHandler handler,
-                         void* opaque);
-
-  // Apply packed REL and RELA relocations.  On error, return false.
-  bool ApplyPackedRels(const uint8_t* packed_relocations, Error* error);
-  static bool ApplyPackedRel(ElfRelocations* relocations,
-                             const ELF::Rel* relocation,
-                             void* opaque);
-  bool ApplyPackedRelas(const uint8_t* packed_relocations, Error* error);
-  static bool ApplyPackedRela(ElfRelocations* relocations,
-                              const ELF::Rela* relocation,
-                              void* opaque);
-
-  // Apply all packed relocations.
-  // On error, return false and set |error| message.  No-op if no packed
-  // relocations are present.
-  bool ApplyPackedRelocations(Error* error);
-
-  // Relocate packed REL and RELA relocations.
-  template<typename Rel>
-  static bool RelocatePackedRelocation(ElfRelocations* relocations,
-                                       const Rel* rel,
-                                       void* opaque);
-
-  void RelocatePackedRels(const uint8_t* packed_relocations,
-                          size_t src_addr,
-                          size_t dst_addr,
-                          size_t map_addr,
-                          size_t size);
-  void RelocatePackedRelas(const uint8_t* packed_relocations,
-                           size_t src_addr,
-                           size_t dst_addr,
-                           size_t map_addr,
-                           size_t size);
-
-  // Relocate all packed relocations. No-op if no packed relocations
-  // are present.
-  void RelocatePackedRelocations(size_t src_addr,
-                                 size_t dst_addr,
-                                 size_t map_addr,
-                                 size_t size);
-#endif
 
 #if defined(__mips__)
   bool RelocateMipsGot(const ElfSymbols* symbols,
@@ -175,9 +158,8 @@ class ElfRelocations {
   ELF::Word mips_gotsym_;
 #endif
 
-#if defined(__arm__) || defined(__aarch64__)
-  uint8_t* packed_relocations_;
-#endif
+  uint8_t* android_relocations_;
+  size_t android_relocations_size_;
 
   bool has_text_relocations_;
   bool has_symbolic_;

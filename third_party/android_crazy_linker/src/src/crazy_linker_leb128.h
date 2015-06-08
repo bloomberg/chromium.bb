@@ -5,6 +5,7 @@
 #ifndef CRAZY_LINKER_LEB128_H
 #define CRAZY_LINKER_LEB128_H
 
+#include <assert.h>
 #include <stdint.h>
 
 // Helper classes for decoding LEB128, used in packed relocation data.
@@ -12,58 +13,36 @@
 
 namespace crazy {
 
-class Leb128Decoder {
- public:
-  explicit Leb128Decoder(const uint8_t* encoding)
-      : encoding_(encoding), cursor_(0) { }
-
-  size_t Dequeue() {
-    size_t value = 0;
-
-    size_t shift = 0;
-    uint8_t byte;
-
-    do {
-      byte = encoding_[cursor_++];
-      value |= static_cast<size_t>(byte & 127) << shift;
-      shift += 7;
-    } while (byte & 128);
-
-    return value;
-  }
-
- private:
-  const uint8_t* encoding_;
-  size_t cursor_;
-};
-
 class Sleb128Decoder {
  public:
-  explicit Sleb128Decoder(const uint8_t* encoding)
-      : encoding_(encoding), cursor_(0) { }
+  Sleb128Decoder(const uint8_t* buffer, size_t count)
+      : current_(buffer), end_(buffer + count) { }
 
-  ssize_t Dequeue() {
-    ssize_t value = 0;
+  size_t pop_front() {
+    size_t value = 0;
     static const size_t size = CHAR_BIT * sizeof(value);
 
     size_t shift = 0;
     uint8_t byte;
 
     do {
-      byte = encoding_[cursor_++];
-      value |= (static_cast<ssize_t>(byte & 127) << shift);
+      assert(current_ < end_);
+
+      byte = *current_++;
+      value |= (static_cast<size_t>(byte & 127) << shift);
       shift += 7;
     } while (byte & 128);
 
-    if (shift < size && (byte & 64))
-      value |= -(static_cast<ssize_t>(1) << shift);
+    if (shift < size && (byte & 64)) {
+      value |= -(static_cast<size_t>(1) << shift);
+    }
 
     return value;
   }
 
  private:
-  const uint8_t* encoding_;
-  size_t cursor_;
+  const uint8_t* current_;
+  const uint8_t* const end_;
 };
 
 }  // namespace crazy

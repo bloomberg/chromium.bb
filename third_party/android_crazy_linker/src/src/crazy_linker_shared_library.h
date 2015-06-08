@@ -194,11 +194,6 @@ class SharedLibrary {
   size_t arm_exidx_count_;
 #endif
 
-#if defined(__arm__) || defined(__aarch64__)
-  // Packed relocations data, NULL if absent.
-  uint8_t* packed_relocations_;
-#endif
-
   link_map_t link_map_;
 
   bool has_DT_SYMBOLIC_;

@@ -5,8 +5,8 @@
 import("//base/android/linker/config.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/internal_rules.gni")
+import("//third_party/android_platform/config.gni")
 import("//tools/grit/grit_rule.gni")
-import("//tools/relocation_packer/config.gni")
 
 assert(is_android)
 
@@ -1572,12 +1572,9 @@ template("android_apk") {
         "--depfile",
         rebase_path(depfile, root_build_dir),
         "--enable-packing=$enable_packing_arg",
-        "--has-relocations-with-addends=$relocations_have_addends",
         "--exclude-packing-list=$skip_packing_list",
         "--android-pack-relocations",
         rebase_path(relocation_packer_exe, root_build_dir),
-        "--android-objcopy",
-        rebase_path(android_objcopy, root_build_dir),
         "--stripped-libraries-dir",
         rebase_path(root_build_dir, root_build_dir),
         "--packed-libraries-dir",

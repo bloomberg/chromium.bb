@@ -78,3 +78,5 @@ Local Modifications:
 
 - Fix link_map_.l_addr (was load address, should be load bias).
 
+- Convert packed relocation code to handle Android packed relocations.
+

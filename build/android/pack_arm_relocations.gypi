@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # This file is meant to be included into an action to provide a rule that
-# packs ARM relative relocations in Release builds of native libraries.
+# packs relocations in Release builds of native libraries.
 #
 # To use this, create a gyp target with the following form:
 #  {
@@ -25,13 +25,6 @@
 {
   'variables': {
     'input_paths': [],
-    'conditions': [
-      ['target_arch == "arm64"', {
-        'has_relocations_with_addends': 1,
-      }, {
-        'has_relocations_with_addends': 0,
-      }],
-    ],
   },
   'inputs': [
     '<(DEPTH)/build/android/gyp/util/build_utils.py',
@@ -44,21 +37,19 @@
   ],
   'conditions': [
     ['enable_packing == 1', {
-      'message': 'Packing ARM relative relocations for <(_target_name)',
+      'message': 'Packing relocations for <(_target_name)',
       'dependencies': [
-        '<(DEPTH)/tools/relocation_packer/relocation_packer.gyp:relocation_packer#host',
+        '<(DEPTH)/third_party/android_platform/relocation_packer.gyp:android_relocation_packer#host',
       ],
       'inputs': [
-        '<(PRODUCT_DIR)/relocation_packer',
+        '<(PRODUCT_DIR)/android_relocation_packer',
       ],
       'action': [
         'python', '<(DEPTH)/build/android/gyp/pack_arm_relocations.py',
         '--configuration-name=<(CONFIGURATION_NAME)',
         '--enable-packing=1',
-        '--has-relocations-with-addends=<(has_relocations_with_addends)',
         '--exclude-packing-list=<@(exclude_packing_list)',
-        '--android-pack-relocations=<(PRODUCT_DIR)/relocation_packer',
-        '--android-objcopy=<(android_objcopy)',
+        '--android-pack-relocations=<(PRODUCT_DIR)/android_relocation_packer',
         '--stripped-libraries-dir=<(stripped_libraries_dir)',
         '--packed-libraries-dir=<(packed_libraries_dir)',
         '--libraries=@FileArg(<(ordered_libraries_file):libraries)',
