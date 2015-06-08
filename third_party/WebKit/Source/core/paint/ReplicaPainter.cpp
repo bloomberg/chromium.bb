@@ -28,8 +28,7 @@ void ReplicaPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
         PaintLayerFlags flags = PaintLayerHaveTransparency | PaintLayerAppliedTransform | PaintLayerUncachedClipRects | PaintLayerPaintingReflection;
         DeprecatedPaintLayerPainter(*m_layoutReplica.layer()->parent()).paintLayer(paintInfo.context, paintingInfo, flags);
     } else if (paintInfo.phase == PaintPhaseMask) {
-        LayoutRect paintRect(adjustedPaintOffset, m_layoutReplica.size());
-        LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutReplica, paintInfo.phase, paintRect);
+        LayoutObjectDrawingRecorder drawingRecorder(*paintInfo.context, m_layoutReplica, paintInfo.phase, m_layoutReplica.visualOverflowRect());
         if (!drawingRecorder.canUseCachedDrawing())
             m_layoutReplica.paintMask(paintInfo, adjustedPaintOffset);
     }
