@@ -54,7 +54,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual ~BrowserAccessibilityDelegate() {}
   virtual void AccessibilitySetFocus(int acc_obj_id) = 0;
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
-  virtual void AccessibilityShowMenu(const gfx::Point& global_point) = 0;
+  virtual void AccessibilityShowContextMenu(int acc_obj_id) = 0;
   virtual void AccessibilityScrollToMakeVisible(
       int acc_obj_id, const gfx::Rect& subfocus) = 0;
   virtual void AccessibilityScrollToPoint(

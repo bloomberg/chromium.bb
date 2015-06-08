@@ -94,6 +94,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
   virtual void AccessibilityScrollToMakeVisible(
       int acc_obj_id, const gfx::Rect& subfocus) = 0;
+  virtual void AccessibilityShowContextMenu(int acc_obj_id) = 0;
   virtual void AccessibilitySetTextSelection(
       int acc_obj_id, int start_offset, int end_offset) = 0;
 

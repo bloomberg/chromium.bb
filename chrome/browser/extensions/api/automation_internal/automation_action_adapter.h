@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_ACTION_ADAPTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_AUTOMATION_INTERNAL_AUTOMATION_ACTION_ADAPTER_H_
 
+#include "ui/gfx/geometry/point.h"
+
 namespace extensions {
 
 // Adapts an object to receive actions from the Automation extension API.
@@ -23,6 +25,9 @@ class AutomationActionAdapter {
   // Sets selection for a start and end index (usually only relevant on text
   // fields).
   virtual void SetSelection(int32 id, int32 start, int32 end) = 0;
+
+  // Shows the context menu resulting from a right click.
+  virtual void ShowContextMenu(int32 id) = 0;
 };
 
 }  // namespace extensions

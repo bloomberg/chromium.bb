@@ -404,6 +404,9 @@
     // Sets selection within a text field.
     static void setSelection(long startIndex, long endIndex);
 
+    // Shows the context menu resulting from a right click on this node.
+    static void showContextMenu();
+
     // Adds a listener for the given event type and event phase.
     static void addEventListener(
         EventType eventType, AutomationListener listener, boolean capture);

@@ -95,4 +95,9 @@ void AXViewObjWrapper::SetSelection(int32 start, int32 end) {
   // TODO(dtseng): Implement.
 }
 
+void AXViewObjWrapper::ShowContextMenu() {
+  view_->ShowContextMenu(view_->bounds().CenterPoint(),
+                         ui::MENU_SOURCE_KEYBOARD);
+}
+
 }  // namespace views

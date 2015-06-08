@@ -51,6 +51,12 @@ void AXTreeSourceAura::SetSelection(int32 id, int32 start, int32 end) {
   obj->SetSelection(start, end);
 }
 
+void AXTreeSourceAura::ShowContextMenu(int32 id) {
+  AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
+  CHECK(obj);
+  obj->ShowContextMenu();
+}
+
 AXAuraObjWrapper* AXTreeSourceAura::GetRoot() const {
   return root_.get();
 }

@@ -544,6 +544,10 @@ chrome.automation.AutomationNode.prototype.doDefault = function() {};
 
 chrome.automation.AutomationNode.prototype.focus = function() {};
 
+
+chrome.automation.AutomationNode.prototype.showContextMenu = function() {};
+
+
 /** @type {string} */
 chrome.automation.AutomationNode.prototype.containerLiveStatus;
 

@@ -109,6 +109,11 @@ void AutomationManagerAura::SetSelection(int32 id, int32 start, int32 end) {
   current_tree_->SetSelection(id, start, end);
 }
 
+void AutomationManagerAura::ShowContextMenu(int32 id) {
+  CHECK(enabled_);
+  current_tree_->ShowContextMenu(id);
+}
+
 AutomationManagerAura::AutomationManagerAura()
     : enabled_(false), processing_events_(false) {
 }

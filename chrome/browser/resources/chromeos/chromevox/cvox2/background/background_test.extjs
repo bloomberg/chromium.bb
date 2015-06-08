@@ -200,7 +200,21 @@ TEST_F('BackgroundTest', 'LiveRegionRemoveElement', function() {
     function(rootNode) {
       var go = rootNode.find({ role: chrome.automation.RoleType.button });
       go.doDefault();
-      cvox.ChromeVox.tts.expectSpeech('removed: Hello, world', testDone);
+      cvox.ChromeVox.tts.expectSpeech('removed:');
+      cvox.ChromeVox.tts.expectSpeech('Hello, world', testDone);
       cvox.ChromeVox.tts.finishExpectations();
+    }.bind(this));
+});
+
+TEST_F('BackgroundTest', 'ShowContextMenu', function() {
+  this.runWithLoadedTree('<a href="a">a</a>',
+    function(rootNode) {
+      cvox.ChromeVox.tts.expectSpeech(' menu opened', testDone);
+
+      var go = rootNode.find({ role: chrome.automation.RoleType.link });
+      go.addEventListener('focus', function(e) {
+        this.doCmd('showContextMenu')();
+      }.bind(this), true);
+      go.focus();
     }.bind(this));
 });

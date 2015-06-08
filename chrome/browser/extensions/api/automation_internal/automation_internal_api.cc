@@ -168,6 +168,10 @@ class RenderFrameHostActionAdapter : public AutomationActionAdapter {
     rfh_->AccessibilitySetTextSelection(id, start, end);
   }
 
+  void ShowContextMenu(int32 id) override {
+    rfh_->AccessibilityShowContextMenu(id);
+  }
+
  private:
   content::RenderFrameHost* rfh_;
 
@@ -336,6 +340,10 @@ AutomationInternalPerformActionFunction::RouteActionToAdapter(
       adapter->SetSelection(automation_id,
                            selection_params.start_index,
                            selection_params.end_index);
+      break;
+    }
+    case api::automation_internal::ACTION_TYPE_SHOWCONTEXTMENU: {
+      adapter->ShowContextMenu(automation_id);
       break;
     }
     default:

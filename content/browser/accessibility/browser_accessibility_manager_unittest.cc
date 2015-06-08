@@ -65,7 +65,7 @@ class TestBrowserAccessibilityDelegate
 
   void AccessibilitySetFocus(int acc_obj_id) override {}
   void AccessibilityDoDefaultAction(int acc_obj_id) override {}
-  void AccessibilityShowMenu(const gfx::Point& point) override {}
+  void AccessibilityShowContextMenu(int acc_obj_id) override {}
   void AccessibilityScrollToMakeVisible(int acc_obj_id,
                                         const gfx::Rect& subfocus) override {}
   void AccessibilityScrollToPoint(int acc_obj_id,

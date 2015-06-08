@@ -159,7 +159,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BrowserAccessibilityDelegate
   void AccessibilitySetFocus(int acc_obj_id) override;
   void AccessibilityDoDefaultAction(int acc_obj_id) override;
-  void AccessibilityShowMenu(const gfx::Point& global_point) override;
+  void AccessibilityShowContextMenu(int acc_obj_id) override;
   void AccessibilityScrollToMakeVisible(int acc_obj_id,
                                         const gfx::Rect& subfocus) override;
   void AccessibilityScrollToPoint(int acc_obj_id,

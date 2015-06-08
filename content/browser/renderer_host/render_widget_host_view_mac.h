@@ -323,7 +323,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate) override;
   gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) override;
-  void AccessibilityShowMenu(const gfx::Point& point) override;
   bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) override;
 

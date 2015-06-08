@@ -442,12 +442,8 @@ void RenderFrameHostImpl::AccessibilityDoDefaultAction(int object_id) {
   Send(new AccessibilityMsg_DoDefaultAction(routing_id_, object_id));
 }
 
-void RenderFrameHostImpl::AccessibilityShowMenu(
-    const gfx::Point& global_point) {
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetView());
-  if (view)
-    view->AccessibilityShowMenu(global_point);
+void RenderFrameHostImpl::AccessibilityShowContextMenu(int acc_obj_id) {
+  Send(new AccessibilityMsg_ShowContextMenu(routing_id_, acc_obj_id));
 }
 
 void RenderFrameHostImpl::AccessibilityScrollToMakeVisible(

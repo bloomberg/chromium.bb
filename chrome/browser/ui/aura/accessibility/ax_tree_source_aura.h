@@ -28,6 +28,7 @@ class AXTreeSourceAura : public ui::AXTreeSource<views::AXAuraObjWrapper*> {
   void Focus(int32 id);
   void MakeVisible(int32 id);
   void SetSelection(int32 id, int32 start, int32 end);
+  void ShowContextMenu(int32 id);
 
   // AXTreeSource implementation.
   views::AXAuraObjWrapper* GetRoot() const override;

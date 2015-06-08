@@ -25,6 +25,15 @@ var allTests = [
       chrome.test.succeed();
     }, true);
     firstFocusableNode.focus();
+  },
+
+  function testContextMenu() {
+    var addressBar = rootNode.find({role: 'textField'});
+    rootNode.addEventListener(EventType.menuStart, function(e) {
+      addressBar.showContextMenu();
+      chrome.test.succeed();
+    }, true);
+    addressBar.showContextMenu();
   }
 ];
 

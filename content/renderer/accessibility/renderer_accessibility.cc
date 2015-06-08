@@ -96,6 +96,7 @@ bool RendererAccessibility::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AccessibilityMsg_ScrollToPoint, OnScrollToPoint)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetTextSelection, OnSetTextSelection)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetValue, OnSetValue)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_HitTest, OnHitTest)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetAccessibilityFocus,
                         OnSetAccessibilityFocus)
@@ -503,6 +504,22 @@ void RendererAccessibility::OnSetValue(
 
   obj.setValue(value);
   HandleAXEvent(obj, ui::AX_EVENT_VALUE_CHANGED);
+}
+
+void RendererAccessibility::OnShowContextMenu(int acc_obj_id) {
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
+  if (obj.isDetached()) {
+#ifndef NDEBUG
+    LOG(WARNING) << "ShowContextMenu on invalid object id " << acc_obj_id;
+#endif
+    return;
+  }
+
+  obj.showContextMenu();
 }
 
 }  // namespace content

@@ -65,7 +65,8 @@ namespace automationInternal {
     focus,
     doDefault,
     makeVisible,
-    setSelection
+    setSelection,
+    showContextMenu
   };
 
   // Arguments required for all actions supplied to performAction.

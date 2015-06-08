@@ -1663,23 +1663,6 @@ gfx::Point RenderWidgetHostViewMac::AccessibilityOriginInScreen(
   return gfx::Point(originInScreen.x, originInScreen.y);
 }
 
-void RenderWidgetHostViewMac::AccessibilityShowMenu(const gfx::Point& point) {
-  NSPoint location = NSMakePoint(point.x(), point.y());
-  location = [[cocoa_view_ window] convertScreenToBase:location];
-  NSEvent* fakeRightClick = [NSEvent
-                          mouseEventWithType:NSRightMouseDown
-                                    location:location
-                               modifierFlags:0
-                                   timestamp:0
-                                windowNumber:[[cocoa_view_ window] windowNumber]
-                                     context:[NSGraphicsContext currentContext]
-                                 eventNumber:0
-                                  clickCount:1
-                                    pressure:0];
-
-  [cocoa_view_ mouseEvent:fakeRightClick];
-}
-
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (active) {
     if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)

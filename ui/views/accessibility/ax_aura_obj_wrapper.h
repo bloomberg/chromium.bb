@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/views/views_export.h"
 
 namespace ui {
@@ -36,6 +37,7 @@ class VIEWS_EXPORT AXAuraObjWrapper {
   virtual void Focus() {}
   virtual void MakeVisible() {}
   virtual void SetSelection(int32 start, int32 end) {}
+  virtual void ShowContextMenu() {}
 };
 
 }  // namespace views

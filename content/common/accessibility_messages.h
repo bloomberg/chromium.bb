@@ -128,6 +128,10 @@ IPC_MESSAGE_ROUTED2(AccessibilityMsg_ScrollToMakeVisible,
                     int /* object id */,
                     gfx::Rect /* subfocus */)
 
+// Relay a request from assistive technology to show the context menu for a
+// given object.
+IPC_MESSAGE_ROUTED1(AccessibilityMsg_ShowContextMenu, int /* object id */)
+
 // Relay a request from assistive technology to move a given object
 // to a specific location, in the WebContents area coordinate space, i.e.
 // (0, 0) is the top-left corner of the WebContents.

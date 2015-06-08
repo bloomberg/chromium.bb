@@ -302,6 +302,15 @@ Background.prototype = {
 
         continueReading(null);
         return;
+      case 'showContextMenu':
+        if (this.currentRange_) {
+          var actionNode = this.currentRange_.getStart().getNode();
+          if (actionNode.role == chrome.automation.RoleType.inlineTextBox)
+            actionNode = actionNode.parent;
+          actionNode.showContextMenu();
+          return;
+        }
+        break;
     }
 
     if (pred) {

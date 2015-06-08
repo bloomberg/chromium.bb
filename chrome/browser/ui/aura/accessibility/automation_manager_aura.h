@@ -47,6 +47,7 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter {
   void Focus(int32 id) override;
   void MakeVisible(int32 id) override;
   void SetSelection(int32 id, int32 start, int32 end) override;
+  void ShowContextMenu(int32 id) override;
 
  protected:
   virtual ~AutomationManagerAura();

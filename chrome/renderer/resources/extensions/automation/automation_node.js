@@ -96,6 +96,10 @@ AutomationNodeImpl.prototype = {
                           endIndex: endIndex });
   },
 
+  showContextMenu: function() {
+    this.performAction_('showContextMenu');
+  },
+
   domQuerySelector: function(selector, callback) {
     automationInternal.querySelector(
       { treeID: this.rootImpl.treeID,
@@ -1023,6 +1027,7 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'makeVisible',
                                                 'matches',
                                                 'setSelection',
+                                                'showContextMenu',
                                                 'addEventListener',
                                                 'removeEventListener',
                                                 'domQuerySelector',

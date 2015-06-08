@@ -497,6 +497,12 @@ RenderWidgetHostViewBase::CreateBrowserAccessibilityManager(
 }
 
 void RenderWidgetHostViewBase::AccessibilityShowMenu(const gfx::Point& point) {
+  RenderWidgetHostImpl* impl = NULL;
+  if (GetRenderWidgetHost())
+    impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
+
+  if (impl)
+    impl->ShowContextMenuAtPoint(point);
 }
 
 gfx::Point RenderWidgetHostViewBase::AccessibilityOriginInScreen(

@@ -27,6 +27,7 @@ class AXViewObjWrapper : public AXAuraObjWrapper {
   void Focus() override;
   void MakeVisible() override;
   void SetSelection(int32 start, int32 end) override;
+  void ShowContextMenu() override;
 
  private:
   View* view_;
