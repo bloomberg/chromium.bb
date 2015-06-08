@@ -17,6 +17,7 @@ class RemoteFrameClient;
 class RemoteFrameView;
 class WebLayer;
 class WindowProxyManager;
+struct FrameLoadRequest;
 
 class CORE_EXPORT RemoteFrame: public Frame {
 public:
@@ -30,6 +31,7 @@ public:
     DOMWindow* domWindow() const override;
     WindowProxy* windowProxy(DOMWrapperWorld&) override;
     void navigate(Document& originDocument, const KURL&, bool lockBackForwardList, UserGestureStatus) override;
+    void navigate(const FrameLoadRequest& passedRequest) override;
     void reload(ReloadPolicy, ClientRedirectPolicy) override;
     void detach() override;
     RemoteSecurityContext* securityContext() const override;

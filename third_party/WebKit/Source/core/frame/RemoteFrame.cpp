@@ -13,7 +13,9 @@
 #include "core/frame/RemoteFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutPart.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebLayer.h"
@@ -67,6 +69,12 @@ void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool lockB
     request.setHTTPReferrer(SecurityPolicy::generateReferrer(originDocument.referrerPolicy(), url, originDocument.outgoingReferrer()));
     request.setHasUserGesture(userGestureStatus == UserGestureStatus::Active);
     remoteFrameClient()->navigate(request, lockBackForwardList);
+}
+
+void RemoteFrame::navigate(const FrameLoadRequest& passedRequest)
+{
+    UserGestureStatus gesture = UserGestureIndicator::processingUserGesture() ? UserGestureStatus::Active : UserGestureStatus::None;
+    navigate(*passedRequest.originDocument(), passedRequest.resourceRequest().url(), passedRequest.lockBackForwardList(), gesture);
 }
 
 void RemoteFrame::reload(ReloadPolicy reloadPolicy, ClientRedirectPolicy clientRedirectPolicy)

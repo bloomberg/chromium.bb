@@ -251,6 +251,11 @@ void LocalFrame::navigate(Document& originDocument, const KURL& url, bool lockBa
     }
 }
 
+void LocalFrame::navigate(const FrameLoadRequest& request)
+{
+    m_loader.load(request);
+}
+
 void LocalFrame::reload(ReloadPolicy reloadPolicy, ClientRedirectPolicy clientRedirectPolicy)
 {
     ASSERT(clientRedirectPolicy == NotClientRedirect || reloadPolicy == NormalReload);

@@ -693,7 +693,7 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
     return true;
 }
 
-static bool shouldOpenInNewWindow(LocalFrame* targetFrame, const FrameLoadRequest& request, NavigationPolicy policy)
+static bool shouldOpenInNewWindow(Frame* targetFrame, const FrameLoadRequest& request, NavigationPolicy policy)
 {
     if (!targetFrame && !request.frameName().isEmpty())
         return true;
@@ -778,12 +778,12 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     if (!prepareRequestForThisFrame(request))
         return;
 
-    RefPtrWillBeRawPtr<LocalFrame> targetFrame = toLocalFrame(request.form() ? nullptr : m_frame->findFrameForNavigation(AtomicString(request.frameName()), *m_frame));
+    RefPtrWillBeRawPtr<Frame> targetFrame = request.form() ? nullptr : m_frame->findFrameForNavigation(AtomicString(request.frameName()), *m_frame);
     if (targetFrame && targetFrame.get() != m_frame) {
         bool wasInSamePage = targetFrame->page() == m_frame->page();
 
         request.setFrameName("_self");
-        targetFrame->loader().load(request);
+        targetFrame->navigate(request);
         Page* page = targetFrame->page();
         if (!wasInSamePage && page)
             page->chromeClient().focus();

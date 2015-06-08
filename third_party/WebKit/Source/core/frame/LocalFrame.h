@@ -83,14 +83,15 @@ namespace blink {
         // Frame overrides:
         virtual ~LocalFrame();
         DECLARE_VIRTUAL_TRACE();
-        virtual bool isLocalFrame() const override { return true; }
-        virtual DOMWindow* domWindow() const override;
+        bool isLocalFrame() const override { return true; }
+        DOMWindow* domWindow() const override;
         WindowProxy* windowProxy(DOMWrapperWorld&) override;
-        virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList, UserGestureStatus) override;
-        virtual void reload(ReloadPolicy, ClientRedirectPolicy) override;
-        virtual void detach() override;
-        virtual void disconnectOwnerElement() override;
-        virtual SecurityContext* securityContext() const override;
+        void navigate(Document& originDocument, const KURL&, bool lockBackForwardList, UserGestureStatus) override;
+        void navigate(const FrameLoadRequest&) override;
+        void reload(ReloadPolicy, ClientRedirectPolicy) override;
+        void detach() override;
+        void disconnectOwnerElement() override;
+        SecurityContext* securityContext() const override;
         void printNavigationErrorMessage(const Frame&, const char* reason) override;
 
         void willDetachFrameHost();
