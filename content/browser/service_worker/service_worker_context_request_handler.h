@@ -29,12 +29,7 @@ class CONTENT_EXPORT ServiceWorkerContextRequestHandler
       net::NetworkDelegate* network_delegate,
       ResourceContext* resource_context) override;
 
-  void GetExtraResponseInfo(
-      bool* was_fetched_via_service_worker,
-      bool* was_fallback_required_by_service_worker,
-      GURL* original_url_via_service_worker,
-      blink::WebServiceWorkerResponseType* response_type_via_service_worker,
-      base::TimeTicks* worker_start_time) const override;
+  void GetExtraResponseInfo(ResourceResponseInfo* response_info) const override;
 
  private:
   bool ShouldAddToScriptCache(const GURL& url);

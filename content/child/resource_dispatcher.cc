@@ -644,6 +644,7 @@ void ResourceDispatcher::ToResourceResponseInfo(
   RemoteToLocalTimeTicks(converter, &load_timing->send_end);
   RemoteToLocalTimeTicks(converter, &load_timing->receive_headers_end);
   RemoteToLocalTimeTicks(converter, &renderer_info->service_worker_start_time);
+  RemoteToLocalTimeTicks(converter, &renderer_info->service_worker_ready_time);
 
   // Collect UMA on the inter-process skew.
   bool is_skew_additive = false;

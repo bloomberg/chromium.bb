@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/resource_response_info.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 
@@ -97,15 +98,11 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
 }
 
 void ServiceWorkerContextRequestHandler::GetExtraResponseInfo(
-    bool* was_fetched_via_service_worker,
-    bool* was_fallback_required_by_service_worker,
-    GURL* original_url_via_service_worker,
-    blink::WebServiceWorkerResponseType* response_type_via_service_worker,
-    base::TimeTicks* worker_start_time) const {
-  *was_fetched_via_service_worker = false;
-  *was_fallback_required_by_service_worker = false;
-  *original_url_via_service_worker = GURL();
-  *response_type_via_service_worker =
+    ResourceResponseInfo* response_info) const {
+  response_info->was_fetched_via_service_worker = false;
+  response_info->was_fallback_required_by_service_worker = false;
+  response_info->original_url_via_service_worker = GURL();
+  response_info->response_type_via_service_worker =
       blink::WebServiceWorkerResponseTypeDefault;
 }
 

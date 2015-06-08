@@ -16,7 +16,6 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "net/url_request/url_request_job_factory.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
 
 namespace net {
 class NetworkDelegate;
@@ -35,6 +34,7 @@ class ResourceRequestBody;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerProviderHost;
+struct ResourceResponseInfo;
 
 // Abstract base class for routing network requests to ServiceWorkers.
 // Created one per URLRequest and attached to each request.
@@ -85,11 +85,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       ResourceContext* context) = 0;
 
   virtual void GetExtraResponseInfo(
-      bool* was_fetched_via_service_worker,
-      bool* was_fallback_required_by_service_worker,
-      GURL* original_url_via_service_worker,
-      blink::WebServiceWorkerResponseType* response_type_via_service_worker,
-      base::TimeTicks* worker_start_time) const = 0;
+      ResourceResponseInfo* response_info) const = 0;
 
   // Methods to support cross site navigations.
   void PrepareForCrossSiteTransfer(int old_process_id);

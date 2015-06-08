@@ -994,6 +994,8 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
     const TimeTicks kNullTicks;
     timing.setWorkerStart(
         (info.service_worker_start_time - kNullTicks).InSecondsF());
+    timing.setWorkerReady(
+        (info.service_worker_ready_time - kNullTicks).InSecondsF());
     response->setLoadTiming(timing);
   }
 

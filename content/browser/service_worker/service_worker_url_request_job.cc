@@ -28,6 +28,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/resource_response_info.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -295,24 +296,22 @@ const net::HttpResponseInfo* ServiceWorkerURLRequestJob::http_info() const {
 }
 
 void ServiceWorkerURLRequestJob::GetExtraResponseInfo(
-    bool* was_fetched_via_service_worker,
-    bool* was_fallback_required_by_service_worker,
-    GURL* original_url_via_service_worker,
-    blink::WebServiceWorkerResponseType* response_type_via_service_worker,
-    base::TimeTicks* worker_start_time) const {
+    ResourceResponseInfo* response_info) const {
   if (response_type_ != FORWARD_TO_SERVICE_WORKER) {
-    *was_fetched_via_service_worker = false;
-    *was_fallback_required_by_service_worker = false;
-    *original_url_via_service_worker = GURL();
-    *response_type_via_service_worker =
+    response_info->was_fetched_via_service_worker = false;
+    response_info->was_fallback_required_by_service_worker = false;
+    response_info->original_url_via_service_worker = GURL();
+    response_info->response_type_via_service_worker =
         blink::WebServiceWorkerResponseTypeDefault;
     return;
   }
-  *was_fetched_via_service_worker = true;
-  *was_fallback_required_by_service_worker = fall_back_required_;
-  *original_url_via_service_worker = response_url_;
-  *response_type_via_service_worker = service_worker_response_type_;
-  *worker_start_time = worker_start_time_;
+  response_info->was_fetched_via_service_worker = true;
+  response_info->was_fallback_required_by_service_worker = fall_back_required_;
+  response_info->original_url_via_service_worker = response_url_;
+  response_info->response_type_via_service_worker =
+      service_worker_response_type_;
+  response_info->service_worker_start_time = worker_start_time_;
+  response_info->service_worker_ready_time = worker_ready_time_;
 }
 
 
@@ -473,7 +472,8 @@ bool ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
 }
 
 void ServiceWorkerURLRequestJob::DidPrepareFetchEvent() {
-  load_timing_info_.send_start = base::TimeTicks::Now();
+  worker_ready_time_ = base::TimeTicks::Now();
+  load_timing_info_.send_start = worker_ready_time_;
 }
 
 void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(

@@ -130,6 +130,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(original_url_via_service_worker)
   IPC_STRUCT_TRAITS_MEMBER(response_type_via_service_worker)
   IPC_STRUCT_TRAITS_MEMBER(service_worker_start_time)
+  IPC_STRUCT_TRAITS_MEMBER(service_worker_ready_time)
   IPC_STRUCT_TRAITS_MEMBER(proxy_server)
 IPC_STRUCT_TRAITS_END()
 
