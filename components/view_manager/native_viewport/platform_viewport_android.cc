@@ -8,6 +8,7 @@
 #include <android/native_window_jni.h>
 
 #include "base/android/jni_android.h"
+#include "components/view_manager/native_viewport/platform_viewport_headless.h"
 #include "jni/PlatformViewportAndroid_jni.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
@@ -98,12 +99,8 @@ void PlatformViewportAndroid::SurfaceSetSize(JNIEnv* env,
                                              jint width,
                                              jint height,
                                              jfloat density) {
-  metrics_ = mojo::ViewportMetrics::New();
-  metrics_->size = mojo::Size::New();
-  metrics_->size->width = static_cast<int>(width);
-  metrics_->size->height = static_cast<int>(height);
-  metrics_->device_pixel_ratio = density;
-  delegate_->OnMetricsChanged(metrics_.Clone());
+  size_ = gfx::Size(static_cast<int>(width), static_cast<int>(height));
+  delegate_->OnMetricsChanged(size_, density);
 }
 
 bool PlatformViewportAndroid::TouchEvent(JNIEnv* env,
@@ -189,7 +186,7 @@ void PlatformViewportAndroid::Close() {
 }
 
 gfx::Size PlatformViewportAndroid::GetSize() {
-  return metrics_->size.To<gfx::Size>();
+  return size_;
 }
 
 void PlatformViewportAndroid::SetBounds(const gfx::Rect& bounds) {
@@ -208,7 +205,11 @@ void PlatformViewportAndroid::ReleaseWindow() {
 // PlatformViewport, public:
 
 // static
-scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
+scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate,
+                                                      bool headless) {
+  if (headless)
+    return PlatformViewportHeadless::Create(delegate);
+
   return scoped_ptr<PlatformViewport>(
       new PlatformViewportAndroid(delegate)).Pass();
 }

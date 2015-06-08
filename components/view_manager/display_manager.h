@@ -11,22 +11,31 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "components/view_manager/native_viewport/platform_viewport.h"
 #include "components/view_manager/public/interfaces/display.mojom.h"
-#include "components/view_manager/public/interfaces/native_viewport.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 class SurfaceIdAllocator;
-}
+}  // namespace cc
+
+namespace gles2 {
+class GpuState;
+}  // namespace gles2
+
+namespace native_viewport {
+class OnscreenContextProvider;
+}  // namespace native_viewport
 
 namespace mojo {
 class ApplicationImpl;
-}
+}  // namespace mojo
 
 namespace view_manager {
 
+class EventDispatcher;
 class ConnectionManager;
 class ServerView;
 
@@ -37,7 +46,7 @@ class DisplayManager {
 
   virtual void Init(
       ConnectionManager* connection_manager,
-      mojo::NativeViewportEventDispatcherPtr event_dispatcher) = 0;
+      EventDispatcher* event_dispatcher) = 0;
 
   // Schedules a paint for the specified region in the coordinates of |view|.
   virtual void SchedulePaint(const ServerView* view,
@@ -50,17 +59,20 @@ class DisplayManager {
 
 // DisplayManager implementation that connects to the services necessary to
 // actually display.
-class DefaultDisplayManager : public DisplayManager,
-                              public mojo::ErrorHandler {
+class DefaultDisplayManager :
+    public DisplayManager,
+    public native_viewport::PlatformViewport::Delegate {
  public:
   DefaultDisplayManager(
+      bool is_headless,
       mojo::ApplicationImpl* app_impl,
-      const mojo::Callback<void()>& native_viewport_closed_callback);
+      const scoped_refptr<gles2::GpuState>& gpu_state,
+      const mojo::Callback<void()>& platform_viewport_closed_callback);
   ~DefaultDisplayManager() override;
 
   // DisplayManager:
   void Init(ConnectionManager* connection_manager,
-            mojo::NativeViewportEventDispatcherPtr event_dispatcher) override;
+            EventDispatcher* event_dispatcher) override;
   void SchedulePaint(const ServerView* view, const gfx::Rect& bounds) override;
   void SetViewportSize(const gfx::Size& size) override;
   const mojo::ViewportMetrics& GetViewportMetrics() override;
@@ -70,13 +82,20 @@ class DefaultDisplayManager : public DisplayManager,
   void Draw();
   void DidDraw();
 
-  void OnMetricsChanged(mojo::ViewportMetricsPtr metrics);
+  // PlatformViewport::Delegate implementation:
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
+                                    float device_pixel_ratio) override;
+  void OnAcceleratedWidgetDestroyed() override;
+  void OnEvent(mojo::EventPtr event) override;
+  void OnMetricsChanged(const gfx::Size& size,
+                        float device_scale_factor) override;
+  void OnDestroyed() override;
 
-  // ErrorHandler:
-  void OnConnectionError() override;
-
+  bool is_headless_;
   mojo::ApplicationImpl* app_impl_;
+  scoped_refptr<gles2::GpuState> gpu_state_;
   ConnectionManager* connection_manager_;
+  EventDispatcher* event_dispatcher_;
 
   mojo::ViewportMetrics metrics_;
   gfx::Rect dirty_rect_;
@@ -84,8 +103,10 @@ class DefaultDisplayManager : public DisplayManager,
   bool frame_pending_;
 
   mojo::DisplayPtr display_;
-  mojo::NativeViewportPtr native_viewport_;
-  mojo::Callback<void()> native_viewport_closed_callback_;
+  scoped_ptr<native_viewport::OnscreenContextProvider> context_provider_;
+  scoped_ptr<native_viewport::PlatformViewport> platform_viewport_;
+  mojo::Callback<void()> platform_viewport_closed_callback_;
+
   base::WeakPtrFactory<DefaultDisplayManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultDisplayManager);

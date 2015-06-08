@@ -7,8 +7,6 @@ import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
 source_set("native_viewport") {
   sources = [
-    "native_viewport_impl.cc",
-    "native_viewport_impl.h",
     "onscreen_context_provider.cc",
     "onscreen_context_provider.h",
     "platform_viewport.h",

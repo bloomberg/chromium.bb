@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/view_manager/native_viewport/platform_viewport.h"
+#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace native_viewport {

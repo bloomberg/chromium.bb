@@ -6,6 +6,8 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "components/view_manager/connection_manager.h"
+#include "components/view_manager/gles2/gpu_state.h"
+#include "components/view_manager/native_viewport/onscreen_context_provider.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/quads.mojom.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
@@ -73,49 +75,57 @@ void DrawViewTree(mojo::Pass* pass,
 }  // namespace
 
 DefaultDisplayManager::DefaultDisplayManager(
+    bool is_headless,
     mojo::ApplicationImpl* app_impl,
-    const mojo::Callback<void()>& native_viewport_closed_callback)
-    : app_impl_(app_impl),
+    const scoped_refptr<gles2::GpuState>& gpu_state,
+    const mojo::Callback<void()>& platform_viewport_closed_callback)
+    : is_headless_(is_headless),
+      app_impl_(app_impl),
+      gpu_state_(gpu_state),
       connection_manager_(nullptr),
+      event_dispatcher_(nullptr),
       draw_timer_(false, false),
       frame_pending_(false),
-      native_viewport_closed_callback_(native_viewport_closed_callback),
+      context_provider_(
+          new native_viewport::OnscreenContextProvider(gpu_state)),
+      platform_viewport_closed_callback_(platform_viewport_closed_callback),
       weak_factory_(this) {
-  metrics_.size = mojo::Size::New();
-  metrics_.size->width = 800;
-  metrics_.size->height = 600;
+  metrics_.size_in_pixels = mojo::Size::New();
+  metrics_.size_in_pixels->width = 800;
+  metrics_.size_in_pixels->height = 600;
 }
 
 void DefaultDisplayManager::Init(
     ConnectionManager* connection_manager,
-    mojo::NativeViewportEventDispatcherPtr event_dispatcher) {
+    EventDispatcher* event_dispatcher) {
   connection_manager_ = connection_manager;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  // TODO(beng): should not need to connect to ourselves, should just
-  //             create the appropriate platform window directly.
-  request->url = mojo::String::From("mojo:view_manager");
-  app_impl_->ConnectToService(request.Pass(),
-                              &native_viewport_);
-  native_viewport_.set_error_handler(this);
-  native_viewport_->Create(metrics_.size->Clone(),
-                           base::Bind(&DefaultDisplayManager::OnMetricsChanged,
-                                      weak_factory_.GetWeakPtr()));
-  native_viewport_->Show();
+  event_dispatcher_ = event_dispatcher;
+
+  platform_viewport_ =
+      native_viewport::PlatformViewport::Create(this, is_headless_).Pass();
+  platform_viewport_->Init(gfx::Rect(metrics_.size_in_pixels.To<gfx::Size>()));
+  platform_viewport_->Show();
 
   mojo::ContextProviderPtr context_provider;
-  native_viewport_->GetContextProvider(GetProxy(&context_provider));
+  context_provider_->Bind(GetProxy(&context_provider).Pass());
   mojo::DisplayFactoryPtr display_factory;
-  mojo::URLRequestPtr request2(mojo::URLRequest::New());
-  request2->url = mojo::String::From("mojo:surfaces_service");
-  app_impl_->ConnectToService(request2.Pass(), &display_factory);
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = mojo::String::From("mojo:surfaces_service");
+  app_impl_->ConnectToService(request.Pass(), &display_factory);
   display_factory->Create(context_provider.Pass(),
                           nullptr,  // returner - we never submit resources.
                           GetProxy(&display_));
-
-  native_viewport_->SetEventDispatcher(event_dispatcher.Pass());
 }
 
 DefaultDisplayManager::~DefaultDisplayManager() {
+  // Destroy before |platform_viewport_| because this will destroy
+  // CommandBufferDriver objects that contain child windows. Otherwise if this
+  // class destroys its window first, X errors will occur.
+  context_provider_.reset();
+
+  // Destroy the NativeViewport early on as it may call us back during
+  // destruction and we want to be in a known state.
+  platform_viewport_.reset();
 }
 
 void DefaultDisplayManager::SchedulePaint(const ServerView* view,
@@ -131,7 +141,7 @@ void DefaultDisplayManager::SchedulePaint(const ServerView* view,
 }
 
 void DefaultDisplayManager::SetViewportSize(const gfx::Size& size) {
-  native_viewport_->SetSize(Size::From(size));
+  platform_viewport_->SetBounds(gfx::Rect(size));
 }
 
 const mojo::ViewportMetrics& DefaultDisplayManager::GetViewportMetrics() {
@@ -139,7 +149,7 @@ const mojo::ViewportMetrics& DefaultDisplayManager::GetViewportMetrics() {
 }
 
 void DefaultDisplayManager::Draw() {
-  gfx::Rect rect(metrics_.size->width, metrics_.size->height);
+  gfx::Rect rect(metrics_.size_in_pixels.To<gfx::Size>());
   auto pass = mojo::CreateDefaultPass(1, rect);
   pass->damage_rect = Rect::From(dirty_rect_);
 
@@ -170,20 +180,41 @@ void DefaultDisplayManager::WantToDraw() {
       base::Bind(&DefaultDisplayManager::Draw, base::Unretained(this)));
 }
 
-void DefaultDisplayManager::OnMetricsChanged(mojo::ViewportMetricsPtr metrics) {
-  metrics_.size = metrics->size.Clone();
-  metrics_.device_pixel_ratio = metrics->device_pixel_ratio;
-  gfx::Rect bounds(metrics_.size.To<gfx::Size>());
-  connection_manager_->root()->SetBounds(bounds);
-  connection_manager_->ProcessViewportMetricsChanged(metrics_, *metrics);
-  native_viewport_->RequestMetrics(base::Bind(
-      &DefaultDisplayManager::OnMetricsChanged, weak_factory_.GetWeakPtr()));
+void DefaultDisplayManager::OnAcceleratedWidgetAvailable(
+    gfx::AcceleratedWidget widget,
+    float device_pixel_ratio) {
+  context_provider_->SetAcceleratedWidget(widget);
 }
 
-void DefaultDisplayManager::OnConnectionError() {
-  // This is called when the native_viewport is torn down before
-  // ~DefaultDisplayManager may be called.
-  native_viewport_closed_callback_.Run();
+void DefaultDisplayManager::OnAcceleratedWidgetDestroyed() {
+  context_provider_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
+}
+
+void DefaultDisplayManager::OnEvent(mojo::EventPtr event) {
+  event_dispatcher_->OnEvent(event.Pass());
+}
+
+void DefaultDisplayManager::OnMetricsChanged(const gfx::Size& size,
+                                             float device_scale_factor) {
+  if ((metrics_.size_in_pixels.To<gfx::Size>() == size) &&
+      (metrics_.device_pixel_ratio == device_scale_factor)) {
+    return;
+  }
+
+  mojo::ViewportMetrics metrics;
+  metrics.size_in_pixels = mojo::Size::From(size);
+  metrics.device_pixel_ratio = device_scale_factor;
+
+  connection_manager_->root()->SetBounds(gfx::Rect(size));
+  connection_manager_->ProcessViewportMetricsChanged(metrics_, metrics);
+
+  metrics_.size_in_pixels = metrics.size_in_pixels.Clone();
+  metrics_.device_pixel_ratio = metrics.device_pixel_ratio;
+}
+
+void DefaultDisplayManager::OnDestroyed() {
+  if (!platform_viewport_closed_callback_.is_null())
+    platform_viewport_closed_callback_.Run();
 }
 
 }  // namespace view_manager

@@ -8,7 +8,6 @@
 #include "components/view_manager/client_connection.h"
 #include "components/view_manager/connection_manager.h"
 #include "components/view_manager/display_manager.h"
-#include "components/view_manager/native_viewport/native_viewport_impl.h"
 #include "components/view_manager/public/cpp/args.h"
 #include "components/view_manager/view_manager_service_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -24,7 +23,6 @@ using mojo::ApplicationConnection;
 using mojo::ApplicationImpl;
 using mojo::Gpu;
 using mojo::InterfaceRequest;
-using mojo::NativeViewport;
 using mojo::ViewManagerRoot;
 using mojo::ViewManagerService;
 
@@ -39,12 +37,6 @@ void ViewManagerApp::Initialize(ApplicationImpl* app) {
   app_impl_ = app;
   tracing_.Initialize(app);
 
-  scoped_ptr<DefaultDisplayManager> display_manager(new DefaultDisplayManager(
-      app_impl_, base::Bind(&ViewManagerApp::OnLostConnectionToWindowManager,
-                            base::Unretained(this))));
-  connection_manager_.reset(
-      new ConnectionManager(this, display_manager.Pass()));
-
 #if !defined(OS_ANDROID)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   is_headless_ = command_line->HasSwitch(mojo::kUseHeadlessConfig);
@@ -56,6 +48,17 @@ void ViewManagerApp::Initialize(ApplicationImpl* app) {
       gfx::GLSurface::InitializeOneOff();
   }
 #endif
+
+  if (!gpu_state_.get())
+    gpu_state_ = new gles2::GpuState;
+  scoped_ptr<DefaultDisplayManager> display_manager(new DefaultDisplayManager(
+      is_headless_,
+      app_impl_,
+      gpu_state_,
+      base::Bind(&ViewManagerApp::OnLostConnectionToWindowManager,
+                 base::Unretained(this))));
+  connection_manager_.reset(
+      new ConnectionManager(this, display_manager.Pass()));
 }
 
 bool ViewManagerApp::ConfigureIncomingConnection(
@@ -65,7 +68,6 @@ bool ViewManagerApp::ConfigureIncomingConnection(
   // to the ViewManager.
   connection->AddService<ViewManagerService>(this);
   connection->AddService<ViewManagerRoot>(this);
-  connection->AddService<NativeViewport>(this);
   connection->AddService<Gpu>(this);
 
   return true;
@@ -137,18 +139,6 @@ void ViewManagerApp::Create(ApplicationConnection* connection,
   view_manager_root_binding_.reset(new mojo::Binding<ViewManagerRoot>(
       connection_manager_.get(), request.Pass()));
   view_manager_root_binding_->set_error_handler(this);
-}
-
-void ViewManagerApp::Create(
-    mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<NativeViewport> request) {
-  if (!gpu_state_.get())
-    gpu_state_ = new gles2::GpuState;
-  new native_viewport::NativeViewportImpl(
-      is_headless_,
-      gpu_state_,
-      request.Pass(),
-      app_impl_->app_lifetime_helper()->CreateAppRefCount());
 }
 
 void ViewManagerApp::Create(

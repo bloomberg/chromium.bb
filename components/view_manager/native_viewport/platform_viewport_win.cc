@@ -5,6 +5,8 @@
 #include "components/view_manager/native_viewport/platform_viewport.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "components/view_manager/native_viewport/platform_viewport_headless.h"
+#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/events/event.h"
@@ -42,7 +44,7 @@ class PlatformViewportWin : public PlatformViewport,
     metrics_ = mojo::ViewportMetrics::New();
     // TODO(sky): make density real.
     metrics_->device_pixel_ratio = 1.f;
-    metrics_->size = mojo::Size::From(bounds.size());
+    metrics_->size_in_pixels = mojo::Size::From(bounds.size());
     platform_window_.reset(new ui::WinWindow(this, bounds));
   }
 
@@ -58,7 +60,9 @@ class PlatformViewportWin : public PlatformViewport,
     platform_window_->Close();
   }
 
-  gfx::Size GetSize() override { return metrics_->size.To<gfx::Size>(); }
+  gfx::Size GetSize() override {
+    return metrics_->size_in_pixels.To<gfx::Size>();
+  }
 
   void SetBounds(const gfx::Rect& bounds) override {
     platform_window_->SetBounds(bounds);
@@ -66,8 +70,9 @@ class PlatformViewportWin : public PlatformViewport,
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override {
-    metrics_->size = mojo::Size::From(new_bounds.size());
-    delegate_->OnMetricsChanged(metrics_.Clone());
+    // TODO(fsamuel): Use the real device_scale_factor.
+    delegate_->OnMetricsChanged(new_bounds.size(),
+                                1.f /* device_scale_factor */);
   }
 
   void OnDamageRect(const gfx::Rect& damaged_region) override {
@@ -133,8 +138,11 @@ class PlatformViewportWin : public PlatformViewport,
 };
 
 // static
-scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate) {
-  return scoped_ptr<PlatformViewport>(new PlatformViewportWin(delegate)).Pass();
+scoped_ptr<PlatformViewport> PlatformViewport::Create(Delegate* delegate,
+                                                      bool headless) {
+  if (headless)
+    return PlatformViewportHeadless::Create(delegate);
+  return make_scoped_ptr(new PlatformViewportWin(delegate));
 }
 
 }  // namespace native_viewport
