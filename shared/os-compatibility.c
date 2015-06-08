@@ -36,8 +36,8 @@
 
 #include "os-compatibility.h"
 
-static int
-set_cloexec_or_close(int fd)
+int
+os_fd_set_cloexec(int fd)
 {
 	long flags;
 
@@ -46,16 +46,22 @@ set_cloexec_or_close(int fd)
 
 	flags = fcntl(fd, F_GETFD);
 	if (flags == -1)
-		goto err;
+		return -1;
 
 	if (fcntl(fd, F_SETFD, flags | FD_CLOEXEC) == -1)
-		goto err;
+		return -1;
 
+	return 0;
+}
+
+static int
+set_cloexec_or_close(int fd)
+{
+	if (os_fd_set_cloexec(fd) != 0) {
+		close(fd);
+		return -1;
+	}
 	return fd;
-
-err:
-	close(fd);
-	return -1;
 }
 
 int

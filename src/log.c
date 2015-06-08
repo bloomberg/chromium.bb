@@ -36,6 +36,8 @@
 
 #include "compositor.h"
 
+#include "os-compatibility.h"
+
 static FILE *weston_logfile = NULL;
 
 static int cached_tm_mday = -1;
@@ -77,8 +79,11 @@ weston_log_file_open(const char *filename)
 {
 	wl_log_set_handler_server(custom_handler);
 
-	if (filename != NULL)
+	if (filename != NULL) {
 		weston_logfile = fopen(filename, "a");
+		if (weston_logfile)
+			os_fd_set_cloexec(fileno(weston_logfile));
+	}
 
 	if (weston_logfile == NULL)
 		weston_logfile = stderr;

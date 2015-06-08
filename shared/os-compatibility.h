@@ -41,6 +41,9 @@ backtrace(void **buffer, int size)
 #endif
 
 int
+os_fd_set_cloexec(int fd);
+
+int
 os_socketpair_cloexec(int domain, int type, int protocol, int *sv);
 
 int
