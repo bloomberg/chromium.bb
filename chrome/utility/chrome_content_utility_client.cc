@@ -38,10 +38,6 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #endif
 
-#if defined(OS_ANDROID) && defined(USE_SECCOMP_BPF)
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/utility/font_cache_handler_win.h"
 #include "chrome/utility/shell_handler_win.h"
@@ -204,10 +200,6 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CreateZipFile, OnCreateZipFile)
 #endif
-#if defined(OS_ANDROID) && defined(USE_SECCOMP_BPF)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_DetectSeccompSupport,
-                        OnDetectSeccompSupport)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -333,21 +325,6 @@ void ChromeContentUtilityClient::OnCreateZipFile(
   ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_ANDROID) && defined(USE_SECCOMP_BPF)
-void ChromeContentUtilityClient::OnDetectSeccompSupport() {
-  bool supports_prctl = sandbox::SandboxBPF::SupportsSeccompSandbox(
-      sandbox::SandboxBPF::SeccompLevel::SINGLE_THREADED);
-  Send(new ChromeUtilityHostMsg_DetectSeccompSupport_ResultPrctl(
-      supports_prctl));
-
-  // Probing for the seccomp syscall can provoke kernel panics in certain LGE
-  // devices. For now, this data will not be collected. In the future, this
-  // should detect SeccompLevel::MULTI_THREADED. http://crbug.com/478478
-
-  ReleaseProcessIfNeeded();
-}
-#endif  // defined(OS_ANDROID) && defined(USE_SECCOMP_BPF)
 
 #if defined(OS_CHROMEOS)
 void ChromeContentUtilityClient::OnRobustJPEGDecodeImage(

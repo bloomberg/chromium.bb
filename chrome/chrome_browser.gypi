@@ -3624,6 +3624,9 @@
           'conditions': [
             ['use_seccomp_bpf==1', {
               'defines': ['USE_SECCOMP_BPF'],
+              'dependencies': [
+                '../sandbox/sandbox.gyp:seccomp_bpf',
+              ],
             }],
           ],
         }],

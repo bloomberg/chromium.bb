@@ -31,12 +31,7 @@ static_library("utility") {
     "//chrome/common",
   ]
 
-  if (is_android) {
-    if (use_seccomp_bpf) {
-      deps += [ "//sandbox/linux:seccomp_bpf" ]
-      defines += [ "USE_SECCOMP_BPF" ]
-    }
-  } else {
+  if (!is_android) {
     deps += [
       "//chrome/common:mojo_bindings",
       "//net:net_utility_services",

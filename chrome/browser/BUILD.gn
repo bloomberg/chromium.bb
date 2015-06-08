@@ -645,6 +645,7 @@ source_set("browser") {
 
     if (use_seccomp_bpf) {
       defines += [ "USE_SECCOMP_BPF" ]
+      deps += [ "//sandbox/linux:seccomp_bpf" ]
     }
   }
 

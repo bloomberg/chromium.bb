@@ -10,16 +10,21 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "chrome/common/chrome_utility_messages.h"
-#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_host.h"
-#include "ui/base/l10n/l10n_util.h"
+
+#if defined(USE_SECCOMP_BPF)
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#endif
 
 using content::BrowserThread;
 
 enum AndroidSeccompStatus {
-  DETECTION_FAILED,  // The process crashed during detection.
+  // DETECTION_FAILED was formerly used when probing for seccomp was done
+  // out-of-process. There does not appear to be a gain in doing so, as
+  // explained in the comment in DetectSeccomp(). This enum remains for
+  // historical reasons.
+  DETECTION_FAILED_OBSOLETE,  // The process crashed during detection.
+
   NOT_SUPPORTED,     // Kernel has no seccomp support.
   SUPPORTED,         // Kernel has seccomp support.
   LAST_STATUS
@@ -28,12 +33,13 @@ enum AndroidSeccompStatus {
 // static
 void SeccompSupportDetector::StartDetection() {
   // This is instantiated here, and then ownership is maintained by the
-  // Closure objects when the object is being passed between threads. A
-  // reference is also taken by the UtilityProcessHost, which will release
-  // it when the process exits.
+  // Closure objects when the object is being passed between threads. When
+  // the last Closure runs, it will delete this.
   scoped_refptr<SeccompSupportDetector> detector(new SeccompSupportDetector());
   BrowserThread::PostBlockingPoolTask(FROM_HERE,
       base::Bind(&SeccompSupportDetector::DetectKernelVersion, detector));
+  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+      base::Bind(&SeccompSupportDetector::DetectSeccomp, detector));
 }
 
 SeccompSupportDetector::SeccompSupportDetector() {
@@ -57,51 +63,23 @@ void SeccompSupportDetector::DetectKernelVersion() {
       UMA_HISTOGRAM_SPARSE_SLOWLY("Android.KernelVersion", version);
     }
   }
-
-#if defined(USE_SECCOMP_BPF)
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&SeccompSupportDetector::DetectSeccomp, this));
-#else
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(&SeccompSupportDetector::OnDetectPrctl, this, false));
-#endif
 }
 
 void SeccompSupportDetector::DetectSeccomp() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
-  content::UtilityProcessHost* utility_process_host =
-      content::UtilityProcessHost::Create(
-          this, base::MessageLoopProxy::current());
-  utility_process_host->SetName(l10n_util::GetStringUTF16(
-      IDS_UTILITY_PROCESS_SECCOMP_DETECTOR_NAME));
-  utility_process_host->Send(new ChromeUtilityMsg_DetectSeccompSupport());
-}
-
-void SeccompSupportDetector::OnProcessCrashed(int exit_code) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  UMA_HISTOGRAM_ENUMERATION("Android.SeccompStatus.Prctl",
-                            DETECTION_FAILED,
-                            LAST_STATUS);
-}
-
-bool SeccompSupportDetector::OnMessageReceived(const IPC::Message& message) {
-  bool handled = false;
-  IPC_BEGIN_MESSAGE_MAP(SeccompSupportDetector, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_DetectSeccompSupport_ResultPrctl,
-                        OnDetectPrctl)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void SeccompSupportDetector::OnDetectPrctl(bool prctl_supported) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+#if defined(USE_SECCOMP_BPF)
+  bool prctl_supported = sandbox::SandboxBPF::SupportsSeccompSandbox(
+      sandbox::SandboxBPF::SeccompLevel::SINGLE_THREADED);
+#else
+  bool prctl_supported = false;
+#endif
 
   UMA_HISTOGRAM_ENUMERATION("Android.SeccompStatus.Prctl",
                             prctl_supported ? SUPPORTED : NOT_SUPPORTED,
                             LAST_STATUS);
 
-  // The utility process will shutdown after this, and this object will
-  // be deleted when the UtilityProcessHost releases its reference.
+  // Probing for the seccomp syscall can provoke kernel panics in certain LGE
+  // devices. For now, this data will not be collected. In the future, this
+  // should detect SeccompLevel::MULTI_THREADED. http://crbug.com/478478
 }

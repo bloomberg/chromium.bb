@@ -154,12 +154,6 @@
             'utility/importer/nss_decryptor_system_nss.h',
           ],
         }],
-        ['OS=="android" and use_seccomp_bpf==1', {
-          'dependencies': [
-            '../sandbox/sandbox.gyp:seccomp_bpf',
-          ],
-          'defines': ['USE_SECCOMP_BPF'],
-        }],
         ['enable_extensions==1', {
           'dependencies': [
             '../extensions/extensions.gyp:extensions_utility',
