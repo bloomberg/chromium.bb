@@ -187,7 +187,7 @@ CHAR-LIMIT guidelines:
         Sign in to Chrome
       </message>
       <message name="IDS_SIGN_IN_TO_CHROME_SUMMARY" desc="Summary for the button to sign in to Chrome, explaining benefits of signing in.">
-        Sign in to get your tabs, bookmarks, history, and other settings on all your devices
+        Sign in to get your bookmarks, history, passwords, and other settings on all your devices
       </message>
       <message name="IDS_NUMBER_OF_SIGNED_IN_ACCOUNTS" desc="Summary indicating the number of accounts (always greater than 1) the user is signed in to the content area.">
         <ph name="NUMBER_OF_ACCOUNTS">%1$d<ex>3</ex></ph> accounts
@@ -908,7 +908,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         You're now signed in to Chrome.
       </message>
       <message name="IDS_FIRSTRUN_SIGNED_IN_DESCRIPTION" desc="Message informing the user what is being synced.">
-        Your open tabs, bookmarks, history, and more are being synced with your Google Account.
+        Your open bookmarks, history, passwords, and more are being synced with your Google Account.
       </message>
 
       <!-- Sync strings -->
@@ -1475,7 +1475,7 @@ Hit the back button to exit.
         Set up Chrome
       </message>
       <message name="IDS_FRE_ACCOUNT_CHOICE_DESCRIPTION" desc="Text for account chooser page">
-        Select an account to get your tabs, bookmarks, history, and other settings on all your devices.
+        Select an account to get your bookmarks, history, passwords, and other settings on all your devices.
       </message>
       <message name="IDS_FRE_SKIP_TEXT" desc="Text for second page skip button">
         No thanks
@@ -1496,7 +1496,7 @@ Hit the back button to exit.
         Make Chrome yours
       </message>
       <message name="IDS_FRE_NO_ACCOUNT_CHOICE_DESCRIPTION" desc="Text for account chooser page when there are no accounts on the device.">
-        Add an account to get your tabs, bookmarks, history, and other settings on all your devices.
+        Add an account to get your bookmarks, history, passwords, and other settings on all your devices.
       </message>
       <message name="IDS_SIGN_IN_TO_CHROME_SUMMARY_VARIANT" desc="A variant of summary for the signin promo; lists reasons to sign in to Chrome.">
         Sign in to access all your web stuff from any device
@@ -1508,7 +1508,7 @@ Hit the back button to exit.
         Hi, <ph name="FULL_NAME">%1$s<ex>John Smith</ex></ph>
       </message>
       <message name="IDS_FRE_SIGNED_IN_DESCRIPTION" desc="Explanation of what gets synced after the user signed in">
-        Your tabs, bookmarks, history and other settings will be synced to your Google Account.
+        Your bookmarks, history, passwords, and other settings will be synced to your Google Account.
       </message>
       <message name="IDS_FRE_SIGNED_IN_DESCRIPTION_UCA_ADDENDUM" desc="Additional explanation for child accounts that synced settings are managed by parents.">
         Your parents help manage these settings.
