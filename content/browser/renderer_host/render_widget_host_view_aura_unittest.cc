@@ -906,7 +906,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PopupRetainsCaptureAfterMouseRelease) {
       parent_view_->GetNativeView()->GetRootWindow(), gfx::Point(300, 300));
   generator.PressLeftButton();
 
-  view_->SetPopupType(blink::WebPopupTypeSelect);
+  view_->SetPopupType(blink::WebPopupTypePage);
   view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
   ASSERT_TRUE(view_->NeedsMouseCapture());
   aura::Window* window = view_->GetNativeView();
@@ -924,7 +924,7 @@ TEST_F(RenderWidgetHostViewAuraTest, PopupClosesWhenParentLosesFocus) {
   parent_view_->Focus();
   EXPECT_TRUE(parent_view_->HasFocus());
 
-  view_->SetPopupType(blink::WebPopupTypeSelect);
+  view_->SetPopupType(blink::WebPopupTypePage);
   view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
 
   aura::Window* popup_window = view_->GetNativeView();

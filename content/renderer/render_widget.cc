@@ -65,7 +65,6 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
-#include "third_party/WebKit/public/web/WebPopupMenu.h"
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
 #include "third_party/WebKit/public/web/WebRange.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
@@ -104,8 +103,6 @@ using blink::WebNavigationPolicy;
 using blink::WebNode;
 using blink::WebPagePopup;
 using blink::WebPoint;
-using blink::WebPopupMenu;
-using blink::WebPopupMenuInfo;
 using blink::WebPopupType;
 using blink::WebRange;
 using blink::WebRect;
@@ -577,9 +574,6 @@ blink::WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
   switch (render_widget->popup_type_) {
     case blink::WebPopupTypeNone:  // Nothing to create.
       break;
-    case blink::WebPopupTypeSelect:
-    case blink::WebPopupTypeSuggestion:
-      return WebPopupMenu::create(render_widget);
     case blink::WebPopupTypePage:
       return WebPagePopup::create(render_widget);
     default:
