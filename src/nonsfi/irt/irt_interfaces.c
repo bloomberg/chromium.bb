@@ -658,6 +658,16 @@ const struct nacl_irt_icache nacl_irt_icache = {
 };
 #endif
 
+static int g_allow_dev_interfaces = 0;
+
+void nacl_irt_allow_dev_interfaces() {
+  g_allow_dev_interfaces = 1;
+}
+
+static int irt_dev_filter(void) {
+  return g_allow_dev_interfaces;
+}
+
 static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_BASIC_v0_1, &nacl_irt_basic, sizeof(nacl_irt_basic), NULL },
   { NACL_IRT_FDIO_v0_1, &nacl_irt_fdio, sizeof(nacl_irt_fdio), NULL },
@@ -670,9 +680,9 @@ static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_CLOCK_v0_1, &nacl_irt_clock, sizeof(nacl_irt_clock), NULL },
 #endif
   { NACL_IRT_DEV_FILENAME_v0_3, &nacl_irt_dev_filename,
-    sizeof(nacl_irt_dev_filename), NULL },
+    sizeof(nacl_irt_dev_filename), irt_dev_filter },
   { NACL_IRT_DEV_GETPID_v0_1, &nacl_irt_dev_getpid,
-    sizeof(nacl_irt_dev_getpid), NULL },
+    sizeof(nacl_irt_dev_getpid), irt_dev_filter },
 #if defined(__native_client__)
   { NACL_IRT_EXCEPTION_HANDLING_v0_1, &nacl_irt_exception_handling,
     sizeof(nacl_irt_exception_handling), NULL },
@@ -732,6 +742,7 @@ int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
 
 #if defined(DEFINE_MAIN)
 int main(int argc, char **argv, char **environ) {
+  nacl_irt_allow_dev_interfaces();
   /*
    * On Linux, we rename _start() to _user_start() to avoid a clash
    * with the "_start" routine in the host toolchain.  On Mac OS X,

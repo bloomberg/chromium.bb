@@ -16,6 +16,9 @@ typedef void (*nacl_entry_func_t)(void *args);
 int nacl_irt_nonsfi_entry(int argc, char **argv, char **environ,
                           nacl_entry_func_t entry_func);
 
+/* For nonsfi_loader. */
+void nacl_irt_allow_dev_interfaces(void);
+
 EXTERN_C_END
 
 #endif
