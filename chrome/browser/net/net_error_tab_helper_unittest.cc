@@ -7,6 +7,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_renderer_host.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
@@ -56,6 +57,13 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+
+    // This will simulate the initialization of the RenderFrame in the renderer
+    // process. This is needed because WebContents does not initialize a
+    // RenderFrame on construction, and the tests expect one to exist.
+    content::RenderFrameHostTester::For(main_rfh())
+        ->InitializeRenderFrameIfNeeded();
+
     subframe_ = content::RenderFrameHostTester::For(main_rfh())
                     ->AppendChild("subframe");
 

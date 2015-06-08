@@ -44,7 +44,7 @@ BackgroundContents::BackgroundContents(
   WebContents::CreateParams create_params(profile_, site_instance);
   create_params.routing_id = routing_id;
   create_params.main_frame_routing_id = main_frame_routing_id;
-  create_params.renderer_initiated_creation = true;
+  create_params.renderer_initiated_creation = routing_id != MSG_ROUTING_NONE;
   if (session_storage_namespace) {
     content::SessionStorageNamespaceMap session_storage_namespace_map;
     session_storage_namespace_map.insert(

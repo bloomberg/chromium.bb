@@ -478,6 +478,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   gfx::NativeViewAccessible GetParentNativeViewAccessible();
 #endif
 
+  void set_renderer_initialized(bool renderer_initialized) {
+    renderer_initialized_ = renderer_initialized;
+  }
+
  protected:
   RenderWidgetHostImpl* AsRenderWidgetHostImpl() override;
 
@@ -551,10 +555,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   int decrement_in_flight_event_count() {
     DCHECK_GT(in_flight_event_count_, 0);
     return --in_flight_event_count_;
-  }
-
-  void set_renderer_initialized(bool renderer_initialized) {
-    renderer_initialized_ = renderer_initialized;
   }
 
   bool renderer_initialized() const { return renderer_initialized_; }

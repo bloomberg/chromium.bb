@@ -229,9 +229,12 @@ TEST_F(FrameTreeTest, DISABLED_Shape) {
 
 // Ensure frames can be found by frame_tree_node_id, routing ID, or name.
 TEST_F(FrameTreeTest, FindFrames) {
+  main_test_rfh()->InitializeRenderFrameIfNeeded();
+
   // Add a few child frames to the main frame.
   FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
+
   main_test_rfh()->OnCreateChildFrame(22, blink::WebTreeScopeType::Document,
                                       "child0", blink::WebSandboxFlags::None);
   main_test_rfh()->OnCreateChildFrame(23, blink::WebTreeScopeType::Document,
@@ -278,6 +281,8 @@ TEST_F(FrameTreeTest, FindFrames) {
 
 // Check that PreviousSibling() is retrieved correctly.
 TEST_F(FrameTreeTest, PreviousSibling) {
+  main_test_rfh()->InitializeRenderFrameIfNeeded();
+
   // Add a few child frames to the main frame.
   FrameTree* frame_tree = contents()->GetFrameTree();
   FrameTreeNode* root = frame_tree->root();
@@ -387,6 +392,8 @@ TEST_F(FrameTreeTest, FailAddFrameWithWrongProcessId) {
 // Ensure that frames removed while a process has crashed are not preserved in
 // the global map of id->frame.
 TEST_F(FrameTreeTest, ProcessCrashClearsGlobalMap) {
+  main_test_rfh()->InitializeRenderFrameIfNeeded();
+
   // Add a couple child frames to the main frame.
   FrameTreeNode* root = contents()->GetFrameTree()->root();
 

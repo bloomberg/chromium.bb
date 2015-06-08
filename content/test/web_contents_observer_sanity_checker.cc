@@ -5,6 +5,7 @@
 #include "content/test/web_contents_observer_sanity_checker.h"
 
 #include "base/strings/stringprintf.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -42,6 +43,15 @@ void WebContentsObserverSanityChecker::RenderFrameCreated(
     CHECK(false) << "RenderFrameCreated called more than once for routing pair:"
                  << Format(render_frame_host);
   }
+
+  CHECK(render_frame_host->GetProcess()->HasConnection())
+      << "RenderFrameCreated was called for a RenderFrameHost whose render "
+         "process is not currently live, so there's no way for the RenderFrame "
+         "to have been created.";
+  CHECK(
+      static_cast<RenderFrameHostImpl*>(render_frame_host)->IsRenderFrameLive())
+      << "RenderFrameCreated called on for a RenderFrameHost that thinks it is "
+         "not alive.";
 }
 
 void WebContentsObserverSanityChecker::RenderFrameDeleted(

@@ -1292,6 +1292,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // corresponding RenderView and main RenderFrame have already been created.
   // Ensure observers are notified about this.
   if (params.renderer_initiated_creation) {
+    GetRenderViewHost()->set_renderer_initialized(true);
     RenderViewCreated(GetRenderViewHost());
     GetRenderManager()->current_frame_host()->SetRenderFrameCreated(true);
   }
@@ -1617,7 +1618,8 @@ void WebContentsImpl::CreateNewWindow(
   create_params.opener_suppressed = params.opener_suppressed;
   if (params.disposition == NEW_BACKGROUND_TAB)
     create_params.initially_hidden = true;
-  create_params.renderer_initiated_creation = true;
+  create_params.renderer_initiated_creation =
+      main_frame_route_id != MSG_ROUTING_NONE;
 
   WebContentsImpl* new_contents = NULL;
   if (!is_guest) {

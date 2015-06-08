@@ -12,6 +12,14 @@
 namespace extensions {
 
 class FrameNavigationStateTest : public ChromeRenderViewHostTestHarness {
+ public:
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    content::RenderFrameHostTester::For(main_rfh())
+        ->InitializeRenderFrameIfNeeded();
+  }
+
  protected:
   FrameNavigationStateTest() {}
   ~FrameNavigationStateTest() override {}

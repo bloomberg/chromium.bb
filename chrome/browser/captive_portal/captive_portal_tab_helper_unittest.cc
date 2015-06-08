@@ -17,6 +17,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_renderer_host.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,6 +77,14 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     web_contents1_.reset(CreateTestWebContents());
     web_contents2_.reset(CreateTestWebContents());
+
+    // This will simulate the initialization of the RenderFrame in the renderer
+    // process. This is needed because WebContents does not initialize a
+    // RenderFrame on construction, and the tests expect one to exist.
+    content::RenderFrameHostTester::For(main_render_frame1())
+        ->InitializeRenderFrameIfNeeded();
+    content::RenderFrameHostTester::For(main_render_frame2())
+        ->InitializeRenderFrameIfNeeded();
   }
 
   void TearDown() override {
