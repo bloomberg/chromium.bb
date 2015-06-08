@@ -16,7 +16,7 @@ class TracedValue;
 // Data model for process-wide memory stats.
 class BASE_EXPORT ProcessMemoryTotals {
  public:
-  ProcessMemoryTotals() : resident_set_bytes_(0) {}
+  ProcessMemoryTotals();
 
   // Called at trace generation time to populate the TracedValue.
   void AsValueInto(TracedValue* value) const;
@@ -27,8 +27,22 @@ class BASE_EXPORT ProcessMemoryTotals {
   uint64 resident_set_bytes() const { return resident_set_bytes_; }
   void set_resident_set_bytes(uint64 value) { resident_set_bytes_ = value; }
 
+  uint64 peak_resident_set_bytes() const { return peak_resident_set_bytes_; }
+  void set_peak_resident_set_bytes(uint64 value) {
+    peak_resident_set_bytes_ = value;
+  }
+
+  // On some platforms (recent linux kernels, see goo.gl/sMvAVz) the peak rss
+  // can be reset. When is_peak_rss_resettable == true, the peak refers to
+  // peak from the previous measurement. When false, it is the absolute peak
+  // since the start of the process.
+  bool is_peak_rss_resetable() const { return is_peak_rss_resetable_; }
+  void set_is_peak_rss_resetable(bool value) { is_peak_rss_resetable_ = value; }
+
  private:
   uint64 resident_set_bytes_;
+  uint64 peak_resident_set_bytes_;
+  bool is_peak_rss_resetable_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryTotals);
 };
