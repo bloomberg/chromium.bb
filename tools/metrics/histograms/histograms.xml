@@ -15865,6 +15865,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.VideoCapture.FramesReceived" enum="BooleanReceived">
+  <obsolete>
+    Deprecated as of 10/2014 in issue 422822. Replaced by
+    Media.VideoCaptureManager.Event and the two new values 3 and 4 in the enum
+    VideoCaptureEvent.
+  </obsolete>
   <owner>grunell@chromium.org</owner>
   <owner>mcasas@chromium.org</owner>
   <summary>
