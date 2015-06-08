@@ -136,7 +136,7 @@ namespace BASE_HASH_NAMESPACE {
 template <>
 struct hash<cc::RenderPassId> {
   size_t operator()(cc::RenderPassId key) const {
-    return base::HashPair(key.layer_id, key.index);
+    return base::HashPair(key.layer_id, static_cast<int>(key.index));
   }
 };
 }  // namespace BASE_HASH_NAMESPACE

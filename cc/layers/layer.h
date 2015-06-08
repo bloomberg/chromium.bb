@@ -671,9 +671,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // trigger a Commit.
   void SetHasRenderSurface(bool has_render_surface);
 
-  // Returns the index of the child or -1 if not found.
-  int IndexOfChild(const Layer* reference);
-
   // This should only be called from RemoveFromParent().
   void RemoveChildOrDependent(Layer* child);
 

@@ -151,7 +151,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
   PassPtr mojo_pass = Pass::New();
   mojo_pass->id = RenderPassId::New();
   mojo_pass->id->layer_id = 1;
-  mojo_pass->id->index = 1;
+  mojo_pass->id->index = 1u;
   mojo_pass->quads.push_back(mojo_texture_quad.Pass());
   SharedQuadStatePtr mojo_sqs = SharedQuadState::New();
   mojo_pass->shared_quad_states.push_back(mojo_sqs.Pass());
@@ -170,7 +170,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
   PassPtr mojo_pass = Pass::New();
   mojo_pass->id = RenderPassId::New();
   mojo_pass->id->layer_id = 1;
-  mojo_pass->id->index = 1;
+  mojo_pass->id->index = 1u;
   mojo_pass->quads.push_back(mojo_texture_quad.Pass());
   SharedQuadStatePtr mojo_sqs = SharedQuadState::New();
   mojo_pass->shared_quad_states.push_back(mojo_sqs.Pass());
@@ -294,7 +294,7 @@ TEST(SurfaceLibTest, RenderPass) {
 
   PassPtr mojo_pass = Pass::From(*pass);
   ASSERT_FALSE(mojo_pass.is_null());
-  EXPECT_EQ(6, mojo_pass->id->index);
+  EXPECT_EQ(6u, mojo_pass->id->index);
   EXPECT_EQ(Rect::From(output_rect), mojo_pass->output_rect);
   EXPECT_EQ(Rect::From(damage_rect), mojo_pass->damage_rect);
   EXPECT_EQ(Transform::From(transform_to_root_target),

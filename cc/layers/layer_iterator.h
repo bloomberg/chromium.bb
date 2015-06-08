@@ -82,10 +82,11 @@ namespace cc {
 // Non-templated constants
 struct LayerIteratorValue {
   static const int kInvalidTargetRenderSurfaceLayerIndex = -1;
-  // This must be -1 since the iterator action code assumes that this value can
-  // be reached by subtracting one from the position of the first layer in the
-  // current target surface's child layer list, which is 0.
-  static const int kLayerIndexRepresentingTargetRenderSurface = -1;
+  // This must be (size_t)-1 since the iterator action code assumes that this
+  // value can be reached by subtracting one from the position of the first
+  // layer in the current target surface's child layer list, which is 0.
+  static const size_t kLayerIndexRepresentingTargetRenderSurface =
+      static_cast<size_t>(-1);
 };
 
 // The position of a layer iterator that is independent
@@ -286,9 +287,10 @@ class LayerIterator {
   // current target surface. When pointing to one of these layers,
   // this is a value from 0 to n-1 (n = number of children).
   // Since the iterator must also stop at the layers representing
-  // the target surface, this is done by setting the current_layerIndex
-  // to a value of LayerIteratorValue::LayerRepresentingTargetRenderSurface.
-  int current_layer_index_;
+  // the target surface, this is done by setting the current_layer_index
+  // to a value of
+  // LayerIteratorValue::kLayerIndexRepresentingTargetRenderSurface.
+  size_t current_layer_index_;
 };
 
 }  // namespace cc

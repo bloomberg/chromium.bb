@@ -225,7 +225,9 @@ RenderPassIdPtr TypeConverter<RenderPassIdPtr, cc::RenderPassId>::Convert(
     const cc::RenderPassId& input) {
   RenderPassIdPtr pass_id(RenderPassId::New());
   pass_id->layer_id = input.layer_id;
-  pass_id->index = input.index;
+  DCHECK_LE(input.index,
+            static_cast<size_t>(std::numeric_limits<uint32_t>::max()));
+  pass_id->index = static_cast<uint32_t>(input.index);
   return pass_id.Pass();
 }
 

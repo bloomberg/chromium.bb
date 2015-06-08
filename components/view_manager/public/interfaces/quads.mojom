@@ -20,7 +20,7 @@ struct IoSurfaceContentQuadState {};
 
 struct RenderPassId {
   int32 layer_id;
-  int32 index;
+  uint32 index;
 };
 
 struct RenderPassQuadState {
