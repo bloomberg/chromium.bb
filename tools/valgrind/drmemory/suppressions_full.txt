@@ -1777,9 +1777,7 @@ KERNELBASE.dll!CreateWaitableTimerExW
 KERNEL32.dll!CreateWaitableTimerW
 content.dll!rtc::Timing::Timing
 content.dll!content::RenderProcessHostImpl::CreateMessageFilters
-...
-content.dll!content::RenderViewHostImpl::CreateRenderView
-content.dll!content::WebContentsImpl::CreateRenderViewForRenderManager
+content.dll!content::RenderProcessHostImpl::Init
 ...
 content.dll!content::NavigationControllerImpl::LoadEntry
 ...
