@@ -565,18 +565,6 @@ crbug.com/227231 fast/events/keyboardevent-key.html [ Failure Pass ]
 crbug.com/227231 virtual/slimmingpaint/fast/events/keyboardevent-key.html [ Skip ]
 crbug.com/227231 virtual/pointerevent/fast/events/keyboardevent-key.html [ Failure Pass ]
 
-# https://codereview.chromium.org/1171583003/
-crbug.com/474265 css2.1/t0805-c5517-brdr-s-00-c.html [ NeedsRebaseline ]
-crbug.com/474265 css3/blending/background-blend-mode-data-uri-svg-image.html [ NeedsRebaseline ]
-crbug.com/474265 fast/borders/border-mixed-alpha.html [ NeedsRebaseline ]
-crbug.com/474265 fast/borders/border-mixed-alpha2.html [ NeedsRebaseline ]
-crbug.com/474265 fast/borders/borderRadiusDotted05.html [ NeedsRebaseline ]
-crbug.com/474265 fast/borders/mixed-border-styles.html [ NeedsRebaseline ]
-crbug.com/474265 virtual/slimmingpaint/fast/borders/border-mixed-alpha.html [ NeedsRebaseline ]
-crbug.com/474265 virtual/slimmingpaint/fast/borders/border-mixed-alpha2.html [ NeedsRebaseline ]
-crbug.com/474265 virtual/slimmingpaint/fast/borders/borderRadiusDotted05.html [ NeedsRebaseline ]
-crbug.com/474265 virtual/slimmingpaint/fast/borders/mixed-border-styles.html [ NeedsRebaseline ]
-
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get.html [ Pass Timeout ]
 
