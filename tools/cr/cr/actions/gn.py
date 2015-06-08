@@ -78,6 +78,11 @@ class GnPrepareOut(cr.PrepareOut):
     for key, value in args.items():
       arg_lines.append('%s = %s' % (key, value))
 
+    try:
+      os.makedirs(out_path)
+    except OSError:
+      if not os.path.isdir(out_path):
+        raise
     with open(args_file, 'w') as f:
       f.write('\n'.join(arg_lines) + '\n')
 
