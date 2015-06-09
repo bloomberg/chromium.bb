@@ -685,6 +685,12 @@ if (!is_android) {  # TODO(GYP) enable for Android.
       configs -= [ "//build/config/clang:extra_warnings" ]
     }
 
+    if (is_win) {
+      ldflags =
+          [ "/DEF:" + rebase_path("src/src/mesa/drivers/osmesa/osmesa.def",
+                                  root_build_dir) ]
+    }
+
     deps = [
       ":mesa_headers",
       ":mesa",
