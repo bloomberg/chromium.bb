@@ -82,7 +82,6 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     capabilities_.adjust_deadline_for_parent = false;
     capabilities_.max_frames_pending = 2;
     compositor_impl_ = compositor_impl;
-    main_thread_ = base::ThreadTaskRunnerHandle::Get();
   }
 
   void SwapBuffers(cc::CompositorFrame* frame) override {
@@ -100,11 +99,8 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
         swap_buffers_completion_callback_.callback());
 
-    main_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&CompositorImpl::PopulateGpuCapabilities,
-                   compositor_impl_,
-                   context_provider_->ContextCapabilities().gpu));
+    compositor_impl_->PopulateGpuCapabilities(
+        context_provider_->ContextCapabilities().gpu);
 
     return true;
   }
@@ -130,7 +126,6 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
                                 gfx::SwapResult)>
       swap_buffers_completion_callback_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   base::WeakPtr<CompositorImpl> compositor_impl_;
 };
 
