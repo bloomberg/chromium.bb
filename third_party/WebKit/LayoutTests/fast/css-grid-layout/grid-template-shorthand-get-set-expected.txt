@@ -43,6 +43,9 @@ PASS window.getComputedStyle(gridTemplateComplexFormOnlyAreas, '').getPropertyVa
 PASS window.getComputedStyle(gridTemplateNoColumnsRowWithEmptyTrailingLineNames, '').getPropertyValue('grid-template-columns') is "none"
 PASS window.getComputedStyle(gridTemplateNoColumnsRowWithEmptyTrailingLineNames, '').getPropertyValue('grid-template-rows') is "[first] 0px"
 PASS window.getComputedStyle(gridTemplateNoColumnsRowWithEmptyTrailingLineNames, '').getPropertyValue('grid-template-areas') is "\"a\""
+PASS window.getComputedStyle(gridTemplateConsecutiveAreas, '').getPropertyValue('grid-template-columns') is "10px"
+PASS window.getComputedStyle(gridTemplateConsecutiveAreas, '').getPropertyValue('grid-template-rows') is "0px 0px"
+PASS window.getComputedStyle(gridTemplateConsecutiveAreas, '').getPropertyValue('grid-template-areas') is "\"a\" \"a\""
 
 Test getting wrong values for grid-template shorthand through CSS (they should resolve to the default: 'none')
 PASS window.getComputedStyle(gridTemplateMultipleSlash, '').getPropertyValue('grid-template-columns') is "none"

@@ -45,6 +45,10 @@
 #gridTemplateNoColumnsRowWithEmptyTrailingLineNames {
     grid-template: [first] "a" auto [];
 }
+#gridTemplateConsecutiveAreas {
+     grid-template: 10px / "a"
+                           "a";
+}
 
 /* Bad values. */
 
@@ -155,6 +159,7 @@
 <div class="grid" id="gridTemplateComplexFormColumnsNotParsing2"></div>
 <div class="grid" id="gridTemplateComplexFormWithNoneColumns"></div>
 <div class="grid" id="gridTemplateNoColumnsRowWithTwoEmptyTrailingLineNames"></div>
+<div class="grid" id="gridTemplateConsecutiveAreas"></div>
 <script src="resources/grid-template-shorthand-parsing-utils.js"></script>
 <script>
     description("This test checks that the 'grid-template' shorthand is properly parsed and the longhand properties correctly assigned.");
@@ -173,6 +178,7 @@
     testGridDefinitionsValues(document.getElementById("gridTemplateComplexFormWithAuto"), "10px", "0px", '"a"');
     testGridDefinitionsValues(document.getElementById("gridTemplateComplexFormOnlyAreas"), "none", "0px", '"a"');
     testGridDefinitionsValues(document.getElementById("gridTemplateNoColumnsRowWithEmptyTrailingLineNames"), "none", "[first] 0px", '"a"');
+    testGridDefinitionsValues(document.getElementById("gridTemplateConsecutiveAreas"), "10px", "0px 0px", '"a" "a"');
 
     debug("");
     debug("Test getting wrong values for grid-template shorthand through CSS (they should resolve to the default: 'none')");

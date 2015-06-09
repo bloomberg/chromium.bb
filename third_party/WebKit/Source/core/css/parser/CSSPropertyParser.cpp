@@ -3286,7 +3286,7 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
         ++rowCount;
 
         // Handle template-rows's track-size.
-        if (m_valueList->current() && m_valueList->current()->unit != CSSParserValue::ValueList && m_valueList->current()->unit != CSSPrimitiveValue::CSS_STRING) {
+        if (m_valueList->current() && m_valueList->current()->unit != CSSPrimitiveValue::CSS_STRING) {
             RefPtrWillBeRawPtr<CSSValue> value = parseGridTrackSize(*m_valueList);
             if (!value)
                 return false;
@@ -3296,10 +3296,9 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
         }
 
         // This will handle the trailing/leading <custom-ident>* in the grammar.
-        const CSSParserValue* current = m_valueList->current();
-        trailingIdentWasAdded = current && current->unit == CSSParserValue::ValueList && current->valueList->size() > 0;
         if (!parseGridLineNames(*m_valueList, *templateRows))
             return false;
+        trailingIdentWasAdded = templateRows->item(templateRows->length() - 1)->isGridLineNamesValue();
     }
 
     // [<track-list> /]?
