@@ -628,7 +628,8 @@ cr.define('hotword', function() {
      * @private
      */
     handleStartup_: function() {
-      updateStatus();
+      // Nothing specific needs to be done here. This function exists solely to
+      // be registered on the startup event.
     }
   };
 
