@@ -107,6 +107,11 @@ bool FindChromecastInitData(const std::vector<uint8_t>& init_data,
     RCHECK(reader.SkipBits(16 * 8));
     box_bytes_read += 16;
 
+    uint32_t data_size;
+    RCHECK(reader.ReadBits(4 * 8, &data_size));
+    box_bytes_read += 4;
+    RCHECK(data_size == box_size - box_bytes_read);
+
     uint16_t msg_type;
     RCHECK(reader.ReadBits(2 * 8, &msg_type));
     box_bytes_read += 2;
