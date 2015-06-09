@@ -6,6 +6,8 @@
 #define COMPONENTS_PRECACHE_CORE_PRECACHE_FETCHER_H_
 
 #include <list>
+#include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -24,10 +26,10 @@ namespace precache {
 // Precaching is intended to be done when Chrome is not actively in use, likely
 // hours ahead of the time when the resources are actually needed.
 //
-// This class takes as input a prioritized list of page URLs that the user
-// commonly visits, referred to as starting URLs. This class interacts with a
-// server, sending it the list of starting URLs sequentially. For each starting
-// URL, the server returns a manifest of resource URLs that are good candidates
+// This class takes as input a prioritized list of URL domains that the user
+// commonly visits, referred to as starting hosts. This class interacts with a
+// server, sending it the list of starting hosts sequentially. For each starting
+// host, the server returns a manifest of resource URLs that are good candidates
 // for precaching. Every resource returned is fetched, and responses are cached
 // as they are received. Destroying the PrecacheFetcher while it is precaching
 // will cancel any fetch in progress and cancel precaching.
@@ -66,11 +68,11 @@ class PrecacheFetcher {
     virtual void OnDone() = 0;
   };
 
-  // Constructs a new PrecacheFetcher. The |starting_urls| parameter is a
-  // prioritized list of page URLs that the user commonly visits. These URLs are
+  // Constructs a new PrecacheFetcher. The |starting_hosts| parameter is a
+  // prioritized list of hosts that the user commonly visits. These hosts are
   // used by a server side component to construct a list of resource URLs that
   // the user is likely to fetch.
-  PrecacheFetcher(const std::list<GURL>& starting_urls,
+  PrecacheFetcher(const std::vector<std::string>& starting_hosts,
                   net::URLRequestContextGetter* request_context,
                   PrecacheDelegate* precache_delegate);
 
@@ -92,7 +94,7 @@ class PrecacheFetcher {
 
   // Called when the precache configuration settings have been fetched.
   // Determines the list of manifest URLs to fetch according to the list of
-  // |starting_urls_| and information from the precache configuration settings.
+  // |starting_hosts_| and information from the precache configuration settings.
   // If the fetch of the configuration settings fails, then precaching ends.
   void OnConfigFetchComplete(const net::URLFetcher& source);
 
@@ -104,9 +106,9 @@ class PrecacheFetcher {
   // Called when a resource has been fetched.
   void OnResourceFetchComplete(const net::URLFetcher& source);
 
-  // The prioritized list of starting URLs that the server will pick resource
+  // The prioritized list of starting hosts that the server will pick resource
   // URLs to be precached for.
-  const std::list<GURL> starting_urls_;
+  const std::vector<std::string> starting_hosts_;
 
   // The request context used when fetching URLs.
   scoped_refptr<net::URLRequestContextGetter> request_context_;

@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -447,6 +448,9 @@ class MostVisitedThumbnails
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedThumbnails);
 };
+
+// Map from host to visit count, sorted by visit count descending.
+typedef std::vector<std::pair<std::string, int>> TopHostsList;
 
 // Favicons -------------------------------------------------------------------
 

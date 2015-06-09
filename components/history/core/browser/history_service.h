@@ -26,6 +26,7 @@
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "components/history/core/browser/delete_directive_handler.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/typed_url_syncable_service.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -81,6 +82,9 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
  public:
   // Miscellaneous commonly-used types.
   typedef std::vector<PageUsageData*> PageUsageDataList;
+
+  // Callback for value asynchronously returned by TopHosts().
+  typedef base::Callback<void(const TopHostsList&)> TopHostsCallback;
 
   // Must call Init after construction. The empty constructor provided only for
   // unit tests. When using the full constructor, |history_client| may only be
@@ -147,6 +151,20 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
 
   // KeyedService:
   void Shutdown() override;
+
+  // Computes the |num_hosts| most-visited hostnames in the past 30 days and
+  // returns a list of those hosts paired with their visit counts. The following
+  // caveats apply:
+  // 1. Hostnames are stripped of their 'www.' prefix. Visits to foo.com and
+  //    www.foo.com are summed into the resultant foo.com entry.
+  // 2. Ports and schemes are ignored. Visits to http://foo.com/ and
+  //    https://foo.com:567/ are summed into the resultant foo.com entry.
+  // 3. If the history is abnormally large and diverse, the function will give
+  //    up early and return an approximate list.
+  // 4. Only http://, https://, and ftp:// URLs are counted.
+  //
+  // Note: Virtual needed for mocking.
+  virtual void TopHosts(int num_hosts, const TopHostsCallback& callback) const;
 
   // Navigation ----------------------------------------------------------------
 

@@ -4,7 +4,6 @@
 
 #include "components/precache/content/precache_manager.h"
 
-#include <list>
 #include <map>
 #include <set>
 #include <string>
@@ -20,14 +19,16 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/precache/core/precache_switches.h"
-#include "components/precache/core/url_list_provider.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -35,11 +36,16 @@ namespace precache {
 
 namespace {
 
+using ::testing::_;
+using ::testing::SaveArg;
+
 // A map of histogram names to the total sample counts.
 typedef std::map<std::string, base::HistogramBase::Count> HistogramCountMap;
 
 const char kConfigURL[] = "http://config-url.com";
 const char kManifestURLPrefix[] = "http://manifest-url-prefix.com/";
+const char kGoodManifestURL[] =
+    "http://manifest-url-prefix.com/good-manifest.com";
 
 base::HistogramBase::Count GetHistogramTotalCount(const char* histogram_name) {
   base::HistogramBase* histogram =
@@ -84,34 +90,15 @@ class TestURLFetcherCallback {
   std::multiset<GURL> requested_urls_;
 };
 
-class FakeURLListProvider : public URLListProvider {
+class MockHistoryService : public history::HistoryService {
  public:
-  FakeURLListProvider(const std::list<GURL>& urls, bool run_immediately)
-      : urls_(urls),
-        run_immediately_(run_immediately),
-        was_get_urls_called_(false) {}
-
-  void GetURLs(const GetURLsCallback& callback) override {
-    was_get_urls_called_ = true;
-
-    if (run_immediately_) {
-      callback.Run(urls_);
-    } else {
-      // Post the callback to be run later in the message loop.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, urls_));
-    }
-  }
-
-  bool was_get_urls_called() const {
-    return was_get_urls_called_;
-  }
-
- private:
-  const std::list<GURL> urls_;
-  const bool run_immediately_;
-  bool was_get_urls_called_;
+  MOCK_CONST_METHOD2(TopHosts,
+                     void(int num_hosts, const TopHostsCallback& callback));
 };
+
+ACTION_P(ReturnHosts, starting_hosts) {
+  arg1.Run(starting_hosts);
+}
 
 class TestPrecacheCompletionCallback {
  public:
@@ -168,39 +155,50 @@ class PrecacheManagerTest : public testing::Test {
 TEST_F(PrecacheManagerTest, StartAndFinishPrecaching) {
   EXPECT_FALSE(precache_manager_.IsPrecaching());
 
-  FakeURLListProvider url_list_provider(
-      std::list<GURL>(1, GURL("http://starting-url.com")), false);
+  MockHistoryService history_service;
+  MockHistoryService::TopHostsCallback top_hosts_callback;
+  EXPECT_CALL(history_service, TopHosts(NumTopHosts(), _))
+      .WillOnce(SaveArg<1>(&top_hosts_callback));
+
+  factory_.SetFakeResponse(GURL(kGoodManifestURL), "", net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+
   precache_manager_.StartPrecaching(precache_callback_.GetCallback(),
-                                    &url_list_provider);
+                                    history_service);
 
   EXPECT_TRUE(precache_manager_.IsPrecaching());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  top_hosts_callback.Run(
+      history::TopHostsList(1, std::make_pair("good-manifest.com", 1)));
+  base::MessageLoop::current()->RunUntilIdle();  // For PrecacheFetcher.
   EXPECT_FALSE(precache_manager_.IsPrecaching());
-  EXPECT_TRUE(url_list_provider.was_get_urls_called());
   EXPECT_TRUE(precache_callback_.was_on_done_called());
 
   std::multiset<GURL> expected_requested_urls;
   expected_requested_urls.insert(GURL(kConfigURL));
+  expected_requested_urls.insert(GURL(kGoodManifestURL));
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
 }
 
 TEST_F(PrecacheManagerTest, StartAndCancelPrecachingBeforeURLsReceived) {
   EXPECT_FALSE(precache_manager_.IsPrecaching());
 
-  FakeURLListProvider url_list_provider(
-      std::list<GURL>(1, GURL("http://starting-url.com")), false);
+  MockHistoryService history_service;
+  MockHistoryService::TopHostsCallback top_hosts_callback;
+  EXPECT_CALL(history_service, TopHosts(NumTopHosts(), _))
+      .WillOnce(SaveArg<1>(&top_hosts_callback));
 
   precache_manager_.StartPrecaching(precache_callback_.GetCallback(),
-                                    &url_list_provider);
+                                    history_service);
   EXPECT_TRUE(precache_manager_.IsPrecaching());
 
   precache_manager_.CancelPrecaching();
   EXPECT_FALSE(precache_manager_.IsPrecaching());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  top_hosts_callback.Run(
+      history::TopHostsList(1, std::make_pair("starting-url.com", 1)));
+  base::MessageLoop::current()->RunUntilIdle();  // For PrecacheFetcher.
   EXPECT_FALSE(precache_manager_.IsPrecaching());
-  EXPECT_TRUE(url_list_provider.was_get_urls_called());
   EXPECT_FALSE(precache_callback_.was_on_done_called());
   EXPECT_TRUE(url_callback_.requested_urls().empty());
 }
@@ -208,13 +206,15 @@ TEST_F(PrecacheManagerTest, StartAndCancelPrecachingBeforeURLsReceived) {
 TEST_F(PrecacheManagerTest, StartAndCancelPrecachingAfterURLsReceived) {
   EXPECT_FALSE(precache_manager_.IsPrecaching());
 
-  FakeURLListProvider url_list_provider(
-      std::list<GURL>(1, GURL("http://starting-url.com")), true);
+  MockHistoryService history_service;
+  EXPECT_CALL(history_service, TopHosts(NumTopHosts(), _))
+      .WillOnce(ReturnHosts(
+          history::TopHostsList(1, std::make_pair("starting-url.com", 1))));
 
   precache_manager_.StartPrecaching(precache_callback_.GetCallback(),
-                                    &url_list_provider);
+                                    history_service);
 
-  // Since the |url_list_provider| ran the callback immediately, Start() has
+  // Since the |history_service| ran the callback immediately, Start() has
   // been called on the PrecacheFetcher, and the precache config settings have
   // been requested. The response has not yet been received though, so
   // precaching is still in progress.
@@ -223,9 +223,8 @@ TEST_F(PrecacheManagerTest, StartAndCancelPrecachingAfterURLsReceived) {
   precache_manager_.CancelPrecaching();
   EXPECT_FALSE(precache_manager_.IsPrecaching());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();  // For PrecacheFetcher.
   EXPECT_FALSE(precache_manager_.IsPrecaching());
-  EXPECT_TRUE(url_list_provider.was_get_urls_called());
   EXPECT_FALSE(precache_callback_.was_on_done_called());
 
   // Even though the response for the precache config settings should not have
@@ -259,9 +258,12 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchWithIrrelevantFetches) {
 TEST_F(PrecacheManagerTest, RecordStatsForFetchDuringPrecaching) {
   HistogramCountMap expected_histogram_count_map = GetHistogramCountMap();
 
-  FakeURLListProvider url_list_provider(std::list<GURL>(), false);
+  MockHistoryService history_service;
+  EXPECT_CALL(history_service, TopHosts(NumTopHosts(), _))
+      .WillOnce(ReturnHosts(history::TopHostsList()));
+
   precache_manager_.StartPrecaching(precache_callback_.GetCallback(),
-                                    &url_list_provider);
+                                    history_service);
 
   EXPECT_TRUE(precache_manager_.IsPrecaching());
   precache_manager_.RecordStatsForFetch(GURL("http://url.com"), base::Time(),
@@ -269,6 +271,7 @@ TEST_F(PrecacheManagerTest, RecordStatsForFetchDuringPrecaching) {
 
   precache_manager_.CancelPrecaching();
 
+  // For PrecacheFetcher and RecordURLPrecached.
   base::MessageLoop::current()->RunUntilIdle();
   expected_histogram_count_map["Precache.DownloadedPrecacheMotivated"]++;
   EXPECT_EQ(expected_histogram_count_map, GetHistogramCountMap());
@@ -301,9 +304,13 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   const base::Time kCurrentTime = base::Time::Now();
   HistogramCountMap expected_histogram_count_map = GetHistogramCountMap();
 
-  FakeURLListProvider url_list_provider(std::list<GURL>(), false);
+  MockHistoryService history_service;
+  EXPECT_CALL(history_service, TopHosts(NumTopHosts(), _))
+      .Times(2)
+      .WillRepeatedly(ReturnHosts(history::TopHostsList()));
+
   precache_manager_.StartPrecaching(precache_callback_.GetCallback(),
-                                    &url_list_provider);
+                                    history_service);
   EXPECT_TRUE(precache_manager_.IsPrecaching());
 
   // Precache a bunch of URLs, with different fetch times.
@@ -319,15 +326,17 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   expected_histogram_count_map["Precache.DownloadedPrecacheMotivated"] += 3;
 
   precache_manager_.CancelPrecaching();
+  // For PrecacheFetcher and RecordURLPrecached.
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(expected_histogram_count_map, GetHistogramCountMap());
 
   // The expired precache will be deleted during precaching this time.
   precache_manager_.StartPrecaching(precache_callback_.GetCallback(),
-                                    &url_list_provider);
+                                    history_service);
   EXPECT_TRUE(precache_manager_.IsPrecaching());
 
   precache_manager_.CancelPrecaching();
+  // For PrecacheFetcher and RecordURLPrecached.
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_FALSE(precache_manager_.IsPrecaching());
 

@@ -47,7 +47,6 @@
         'precache/core/precache_switches.h',
         'precache/core/precache_url_table.cc',
         'precache/core/precache_url_table.h',
-        'precache/core/url_list_provider.h',
       ],
       'includes': [ 'precache/precache_defines.gypi', ],
       'direct_dependent_settings': {

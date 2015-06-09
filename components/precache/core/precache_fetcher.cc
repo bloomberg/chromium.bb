@@ -5,6 +5,7 @@
 #include "components/precache/core/precache_fetcher.h"
 
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -60,14 +61,13 @@ std::string GetManifestURLPrefix() {
 #endif
 }
 
-// Construct the URL of the precache manifest for the given starting URL.
-// The server is expecting a request for a URL consisting of the manifest URL
-// prefix followed by the doubly escaped starting URL.
-GURL ConstructManifestURL(const GURL& starting_url) {
-  return GURL(
-      GetManifestURLPrefix() +
-      net::EscapeQueryParamValue(
-          net::EscapeQueryParamValue(starting_url.spec(), false), false));
+// Construct the URL of the precache manifest for the given name (either host or
+// URL). The server is expecting a request for a URL consisting of the manifest
+// URL prefix followed by the doubly escaped name.
+std::string ConstructManifestURL(const std::string& name) {
+  return GetManifestURLPrefix() +
+         net::EscapeQueryParamValue(net::EscapeQueryParamValue(name, false),
+                                    false);
 }
 
 // Attempts to parse a protobuf message from the response string of a
@@ -123,6 +123,8 @@ PrecacheFetcher::Fetcher::Fetcher(
     : callback_(callback) {
   url_fetcher_ = URLFetcher::Create(url, URLFetcher::GET, this);
   url_fetcher_->SetRequestContext(request_context);
+  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                             net::LOAD_DO_NOT_SEND_COOKIES);
   url_fetcher_->Start();
 }
 
@@ -131,10 +133,10 @@ void PrecacheFetcher::Fetcher::OnURLFetchComplete(const URLFetcher* source) {
 }
 
 PrecacheFetcher::PrecacheFetcher(
-    const std::list<GURL>& starting_urls,
+    const std::vector<std::string>& starting_hosts,
     net::URLRequestContextGetter* request_context,
     PrecacheFetcher::PrecacheDelegate* precache_delegate)
-    : starting_urls_(starting_urls),
+    : starting_hosts_(starting_hosts),
       request_context_(request_context),
       precache_delegate_(precache_delegate) {
   DCHECK(request_context_.get());  // Request context must be non-NULL.
@@ -194,41 +196,31 @@ void PrecacheFetcher::StartNextFetch() {
 }
 
 void PrecacheFetcher::OnConfigFetchComplete(const URLFetcher& source) {
+  // Attempt to parse the config proto. On failure, continue on with the default
+  // configuration.
   PrecacheConfigurationSettings config;
+  ParseProtoFromFetchResponse(source, &config);
 
-  if (ParseProtoFromFetchResponse(source, &config)) {
-    // Keep track of starting URLs that manifests are being fetched for, in
-    // order to remove duplicates. This is a hash set on strings, and not GURLs,
-    // because there is no hash function defined for GURL.
-    base::hash_set<std::string> unique_starting_urls;
+  // Keep track of manifest URLs that are being fetched, in order to remove
+  // duplicates.
+  base::hash_set<std::string> unique_manifest_urls;
 
-    // Attempt to fetch manifests for starting URLs up to the maximum top sites
-    // count. If a manifest does not exist for a particular starting URL, then
-    // the fetch will fail, and that starting URL will be ignored.
-    int64 rank = 0;
-    for (std::list<GURL>::const_iterator it = starting_urls_.begin();
-         it != starting_urls_.end() && rank < config.top_sites_count();
-         ++it, ++rank) {
-      if (unique_starting_urls.find(it->spec()) == unique_starting_urls.end()) {
-        // Only add a fetch for the manifest URL if this manifest isn't already
-        // going to be fetched.
-        manifest_urls_to_fetch_.push_back(ConstructManifestURL(*it));
-        unique_starting_urls.insert(it->spec());
-      }
-    }
-
-    for (int i = 0; i < config.forced_starting_url_size(); ++i) {
-      // Convert the string URL into a GURL and take the spec() of it so that
-      // the URL string gets canonicalized.
-      GURL url(config.forced_starting_url(i));
-      if (unique_starting_urls.find(url.spec()) == unique_starting_urls.end()) {
-        // Only add a fetch for the manifest URL if this manifest isn't already
-        // going to be fetched.
-        manifest_urls_to_fetch_.push_back(ConstructManifestURL(url));
-        unique_starting_urls.insert(url.spec());
-      }
-    }
+  // Attempt to fetch manifests for starting hosts up to the maximum top sites
+  // count. If a manifest does not exist for a particular starting host, then
+  // the fetch will fail, and that starting host will be ignored.
+  int64 rank = 0;
+  for (const std::string& host : starting_hosts_) {
+    ++rank;
+    if (rank > config.top_sites_count())
+      break;
+    unique_manifest_urls.insert(ConstructManifestURL(host));
   }
+
+  for (const std::string& url : config.forced_site())
+    unique_manifest_urls.insert(ConstructManifestURL(url));
+
+  for (const std::string& manifest_url : unique_manifest_urls)
+    manifest_urls_to_fetch_.push_back(GURL(manifest_url));
 
   StartNextFetch();
 }

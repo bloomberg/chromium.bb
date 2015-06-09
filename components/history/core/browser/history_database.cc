@@ -7,13 +7,18 @@
 #include <algorithm>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/hash_tables.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "sql/statement.h"
 #include "sql/transaction.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -30,6 +35,7 @@ namespace {
 const int kCurrentVersionNumber = 29;
 const int kCompatibleVersionNumber = 16;
 const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
+const int kMaxHostsInMemory = 10000;
 
 }  // namespace
 
@@ -184,6 +190,53 @@ void HistoryDatabase::ComputeDatabaseMetrics(
     UMA_HISTOGRAM_TIMES("History.DatabaseAdvancedMetricsTime",
                         base::TimeTicks::Now() - start_time);
   }
+}
+
+TopHostsList HistoryDatabase::TopHosts(int num_hosts) {
+  base::Time one_month_ago =
+      std::max(base::Time::Now() - base::TimeDelta::FromDays(30), base::Time());
+
+  sql::Statement url_sql(db_.GetUniqueStatement(
+      "SELECT url, visit_count FROM urls WHERE last_visit_time > ?"));
+  url_sql.BindInt64(0, one_month_ago.ToInternalValue());
+
+  // Collect a map from host to visit count.
+  base::hash_map<std::string, int> host_count;
+  while (url_sql.Step()) {
+    GURL url(url_sql.ColumnString(0));
+    if (!(url.is_valid() && (url.SchemeIsHTTPOrHTTPS() || url.SchemeIs("ftp"))))
+      continue;
+
+    int64 visit_count = url_sql.ColumnInt64(1);
+    std::string host = url.host();
+    if (StartsWithASCII(host, "www.", true))
+      host.assign(host, 4, std::string::npos);
+    host_count[host] += visit_count;
+
+    // kMaxHostsInMemory is well above typical values for
+    // History.MonthlyHostCount, but here to guard against unbounded memory
+    // growth in the event of an atypical history.
+    if (host_count.size() >= kMaxHostsInMemory)
+      break;
+  }
+
+  // Collect the top 100 hosts by visit count, into the range
+  // [top_hosts.begin(), middle).
+  typedef std::vector<std::pair<int, std::string>> IntermediateList;
+  IntermediateList top_hosts;
+  for (const auto& it : host_count)
+    top_hosts.push_back(std::make_pair(-it.second, it.first));
+  IntermediateList::size_type middle_index = std::min(
+      base::saturated_cast<IntermediateList::size_type, int>(num_hosts),
+      top_hosts.size());
+  auto middle = std::min(top_hosts.end(), top_hosts.begin() + middle_index);
+  std::partial_sort(top_hosts.begin(), middle, top_hosts.end());
+
+  TopHostsList hosts;
+  for (IntermediateList::const_iterator it = top_hosts.begin(); it != middle;
+       ++it)
+    hosts.push_back(std::make_pair(it->second, -it->first));
+  return hosts;
 }
 
 void HistoryDatabase::BeginExclusiveMode() {

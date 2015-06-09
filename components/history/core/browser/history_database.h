@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/download_database.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/history/core/browser/visit_database.h"
 #include "components/history/core/browser/visitsegment_database.h"
@@ -83,6 +84,10 @@ class HistoryDatabase : public DownloadDatabase,
   // Computes and records various metrics for the database. Should only be
   // called once and only upon successful Init.
   void ComputeDatabaseMetrics(const base::FilePath& filename);
+
+  // Computes the |num_hosts| most-visited hostnames in the past 30 days. See
+  // history_service.h for details.
+  TopHostsList TopHosts(int num_hosts);
 
   // Call to set the mode on the database to exclusive. The default locking mode
   // is "normal" but we want to run in exclusive mode for slightly better

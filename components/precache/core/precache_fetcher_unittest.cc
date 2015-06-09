@@ -4,9 +4,9 @@
 
 #include "components/precache/core/precache_fetcher.h"
 
-#include <list>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -90,17 +90,15 @@ class PrecacheFetcherTest : public testing::Test {
 const char kConfigURL[] = "http://config-url.com";
 const char kManfiestURLPrefix[] = "http://manifest-url-prefix.com/";
 const char kManifestFetchFailureURL[] =
-    "http://manifest-url-prefix.com/"
-    "http%253A%252F%252Fmanifest-fetch-failure.com%252F";
+    "http://manifest-url-prefix.com/manifest-fetch-failure.com";
 const char kBadManifestURL[] =
-    "http://manifest-url-prefix.com/http%253A%252F%252Fbad-manifest.com%252F";
+    "http://manifest-url-prefix.com/bad-manifest.com";
 const char kGoodManifestURL[] =
-    "http://manifest-url-prefix.com/http%253A%252F%252Fgood-manifest.com%252F";
+    "http://manifest-url-prefix.com/good-manifest.com";
 const char kResourceFetchFailureURL[] = "http://resource-fetch-failure.com";
 const char kGoodResourceURL[] = "http://good-resource.com";
 const char kForcedStartingURLManifestURL[] =
-    "http://manifest-url-prefix.com/"
-    "http%253A%252F%252Fforced-starting-url.com%252F";
+    "http://manifest-url-prefix.com/forced-starting-url.com";
 
 TEST_F(PrecacheFetcherTest, FullPrecache) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -108,17 +106,17 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kPrecacheManifestURLPrefix, kManfiestURLPrefix);
 
-  std::list<GURL> starting_urls;
-  starting_urls.push_back(GURL("http://manifest-fetch-failure.com"));
-  starting_urls.push_back(GURL("http://bad-manifest.com"));
-  starting_urls.push_back(GURL("http://good-manifest.com"));
-  starting_urls.push_back(GURL("http://not-in-top-3.com"));
+  std::vector<std::string> starting_hosts;
+  starting_hosts.push_back("manifest-fetch-failure.com");
+  starting_hosts.push_back("bad-manifest.com");
+  starting_hosts.push_back("good-manifest.com");
+  starting_hosts.push_back("not-in-top-3.com");
 
   PrecacheConfigurationSettings config;
   config.set_top_sites_count(3);
-  config.add_forced_starting_url("http://forced-starting-url.com");
+  config.add_forced_site("forced-starting-url.com");
   // Duplicate starting URL, the manifest for this should only be fetched once.
-  config.add_forced_starting_url("http://good-manifest.com");
+  config.add_forced_site("good-manifest.com");
 
   PrecacheManifest good_manifest;
   good_manifest.add_resource()->set_url(kResourceFetchFailureURL);
@@ -144,7 +142,7 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
                            PrecacheManifest().SerializeAsString(), net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
 
-  PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
+  PrecacheFetcher precache_fetcher(starting_hosts, request_context_.get(),
                                    &precache_delegate_);
   precache_fetcher.Start();
 
@@ -167,14 +165,18 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
 TEST_F(PrecacheFetcherTest, ConfigFetchFailure) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kPrecacheConfigSettingsURL, kConfigURL);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kPrecacheManifestURLPrefix, kManfiestURLPrefix);
 
-  std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
+  std::vector<std::string> starting_hosts(1, "good-manifest.com");
 
   factory_.SetFakeResponse(GURL(kConfigURL), "",
                            net::HTTP_INTERNAL_SERVER_ERROR,
                            net::URLRequestStatus::FAILED);
+  factory_.SetFakeResponse(GURL(kGoodManifestURL), "", net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
 
-  PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
+  PrecacheFetcher precache_fetcher(starting_hosts, request_context_.get(),
                                    &precache_delegate_);
   precache_fetcher.Start();
 
@@ -182,6 +184,7 @@ TEST_F(PrecacheFetcherTest, ConfigFetchFailure) {
 
   std::multiset<GURL> expected_requested_urls;
   expected_requested_urls.insert(GURL(kConfigURL));
+  expected_requested_urls.insert(GURL(kGoodManifestURL));
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
 
   EXPECT_TRUE(precache_delegate_.was_on_done_called());
@@ -190,13 +193,17 @@ TEST_F(PrecacheFetcherTest, ConfigFetchFailure) {
 TEST_F(PrecacheFetcherTest, BadConfig) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kPrecacheConfigSettingsURL, kConfigURL);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kPrecacheManifestURLPrefix, kManfiestURLPrefix);
 
-  std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
+  std::vector<std::string> starting_hosts(1, "good-manifest.com");
 
   factory_.SetFakeResponse(GURL(kConfigURL), "bad protobuf", net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
+  factory_.SetFakeResponse(GURL(kGoodManifestURL), "", net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
 
-  PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
+  PrecacheFetcher precache_fetcher(starting_hosts, request_context_.get(),
                                    &precache_delegate_);
   precache_fetcher.Start();
 
@@ -204,6 +211,7 @@ TEST_F(PrecacheFetcherTest, BadConfig) {
 
   std::multiset<GURL> expected_requested_urls;
   expected_requested_urls.insert(GURL(kConfigURL));
+  expected_requested_urls.insert(GURL(kGoodManifestURL));
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
 
   EXPECT_TRUE(precache_delegate_.was_on_done_called());
@@ -213,7 +221,7 @@ TEST_F(PrecacheFetcherTest, Cancel) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kPrecacheConfigSettingsURL, kConfigURL);
 
-  std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
+  std::vector<std::string> starting_hosts(1, "starting-url.com");
 
   PrecacheConfigurationSettings config;
   config.set_top_sites_count(1);
@@ -222,7 +230,7 @@ TEST_F(PrecacheFetcherTest, Cancel) {
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   scoped_ptr<PrecacheFetcher> precache_fetcher(new PrecacheFetcher(
-      starting_urls, request_context_.get(), &precache_delegate_));
+      starting_hosts, request_context_.get(), &precache_delegate_));
   precache_fetcher->Start();
 
   // Destroy the PrecacheFetcher to cancel precaching. This should not cause
@@ -243,7 +251,7 @@ TEST_F(PrecacheFetcherTest, Cancel) {
 // If the default precache configuration settings URL is defined, then test that
 // it works with the PrecacheFetcher.
 TEST_F(PrecacheFetcherTest, PrecacheUsingDefaultConfigSettingsURL) {
-  std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
+  std::vector<std::string> starting_hosts(1, "starting-url.com");
 
   PrecacheConfigurationSettings config;
   config.set_top_sites_count(0);
@@ -252,7 +260,7 @@ TEST_F(PrecacheFetcherTest, PrecacheUsingDefaultConfigSettingsURL) {
                            config.SerializeAsString(), net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
 
-  PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
+  PrecacheFetcher precache_fetcher(starting_hosts, request_context_.get(),
                                    &precache_delegate_);
   precache_fetcher.Start();
 
@@ -275,20 +283,19 @@ TEST_F(PrecacheFetcherTest, PrecacheUsingDefaultManifestURLPrefix) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kPrecacheConfigSettingsURL, kConfigURL);
 
-  std::list<GURL> starting_urls(1, GURL("http://starting-url.com"));
+  std::vector<std::string> starting_hosts(1, "starting-url.com");
 
   PrecacheConfigurationSettings config;
   config.set_top_sites_count(1);
 
-  GURL manifest_url(PRECACHE_MANIFEST_URL_PREFIX
-                    "http%253A%252F%252Fstarting-url.com%252F");
+  GURL manifest_url(PRECACHE_MANIFEST_URL_PREFIX "starting-url.com");
 
   factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(),
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   factory_.SetFakeResponse(manifest_url, PrecacheManifest().SerializeAsString(),
                            net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
-  PrecacheFetcher precache_fetcher(starting_urls, request_context_.get(),
+  PrecacheFetcher precache_fetcher(starting_hosts, request_context_.get(),
                                    &precache_delegate_);
   precache_fetcher.Start();
 

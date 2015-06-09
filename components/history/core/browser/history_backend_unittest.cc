@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -49,6 +50,8 @@
 // harder than calling it directly for many things.
 
 namespace {
+
+using ::testing::ElementsAre;
 
 const int kTinyEdgeSize = 10;
 const int kSmallEdgeSize = 16;
@@ -2881,6 +2884,104 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
   EXPECT_EQ(std::string(yahoo_sports_soccer), filtered_list[1].url.spec());
   EXPECT_EQ(4U, filtered_list[0].extended_info.total_visits);
   EXPECT_EQ(1U, filtered_list[1].extended_info.total_visits);
+}
+
+TEST_F(HistoryBackendTest, TopHosts) {
+  std::vector<GURL> urls;
+  urls.push_back(GURL("http://cnn.com/us"));
+  urls.push_back(GURL("http://cnn.com/intl"));
+  urls.push_back(GURL("http://dogtopia.com/"));
+  for (const auto& url : urls) {
+    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
+                           history::SOURCE_BROWSED);
+  }
+
+  EXPECT_THAT(backend_->TopHosts(3),
+              ElementsAre(std::make_pair("cnn.com", 2),
+                          std::make_pair("dogtopia.com", 1)));
+}
+
+TEST_F(HistoryBackendTest, TopHosts_ElidePortAndScheme) {
+  std::vector<GURL> urls;
+  urls.push_back(GURL("http://cnn.com/us"));
+  urls.push_back(GURL("https://cnn.com/intl"));
+  urls.push_back(GURL("http://cnn.com:567/sports"));
+  for (const auto& url : urls) {
+    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
+                           history::SOURCE_BROWSED);
+  }
+
+  EXPECT_THAT(backend_->TopHosts(3), ElementsAre(std::make_pair("cnn.com", 3)));
+}
+
+TEST_F(HistoryBackendTest, TopHosts_ElideWWW) {
+  std::vector<GURL> urls;
+  urls.push_back(GURL("http://www.cnn.com/us"));
+  urls.push_back(GURL("http://cnn.com/intl"));
+  urls.push_back(GURL("http://www.dogtopia.com/"));
+  for (const auto& url : urls) {
+    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
+                           history::SOURCE_BROWSED);
+  }
+
+  EXPECT_THAT(backend_->TopHosts(3),
+              ElementsAre(std::make_pair("cnn.com", 2),
+                          std::make_pair("dogtopia.com", 1)));
+}
+
+TEST_F(HistoryBackendTest, TopHosts_OnlyLast30Days) {
+  std::vector<GURL> urls;
+  urls.push_back(GURL("http://cnn.com/us"));
+  urls.push_back(GURL("http://cnn.com/intl"));
+  urls.push_back(GURL("http://dogtopia.com/"));
+  for (const auto& url : urls) {
+    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
+                           history::SOURCE_BROWSED);
+  }
+  backend_->AddPageVisit(GURL("http://www.oracle.com/"),
+                         base::Time::Now() - base::TimeDelta::FromDays(31), 0,
+                         ui::PAGE_TRANSITION_LINK, history::SOURCE_BROWSED);
+
+  EXPECT_THAT(backend_->TopHosts(3),
+              ElementsAre(std::make_pair("cnn.com", 2),
+                          std::make_pair("dogtopia.com", 1)));
+}
+
+TEST_F(HistoryBackendTest, TopHosts_MaxNumHosts) {
+  std::vector<GURL> urls;
+  urls.push_back(GURL("http://cnn.com/us"));
+  urls.push_back(GURL("http://cnn.com/intl"));
+  urls.push_back(GURL("http://cnn.com/sports"));
+  urls.push_back(GURL("http://dogtopia.com/"));
+  urls.push_back(GURL("http://dogtopia.com/webcam"));
+  urls.push_back(GURL("http://www.gardenweb.com/"));
+  for (const auto& url : urls) {
+    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
+                           history::SOURCE_BROWSED);
+  }
+
+  EXPECT_THAT(backend_->TopHosts(2),
+              ElementsAre(std::make_pair("cnn.com", 3),
+                          std::make_pair("dogtopia.com", 2)));
+}
+
+TEST_F(HistoryBackendTest, TopHosts_IgnoreUnusualURLs) {
+  std::vector<GURL> urls;
+  urls.push_back(GURL("http://cnn.com/us"));
+  urls.push_back(GURL("ftp://cnn.com/intl"));
+  urls.push_back(GURL("https://cnn.com/sports"));
+  urls.push_back(
+      GURL("chrome-extension://nghiiepjnjgjeolabmjjceablnkpkjde/options.html"));
+  urls.push_back(GURL("file:///home/foobar/tmp/baz.html"));
+  urls.push_back(GURL("data:text/plain,Hello%20world%21"));
+  urls.push_back(GURL("chrome://memory"));
+  urls.push_back(GURL("about:mammon"));
+  for (const auto& url : urls) {
+    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
+                           history::SOURCE_BROWSED);
+  }
+
+  EXPECT_THAT(backend_->TopHosts(5), ElementsAre(std::make_pair("cnn.com", 3)));
 }
 
 TEST_F(HistoryBackendTest, UpdateVisitDuration) {

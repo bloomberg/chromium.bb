@@ -4,10 +4,12 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
+# These values are duplicated in the GYP build in:
+# //components/precache/precache_defines.gypi
 precache_config_settings_url =
     "http://www.gstatic.com/chrome/wifiprefetch/precache_config"
 precache_manifest_url_prefix =
-    "http://www.gstatic.com/chrome/wifiprefetch/precache_manifest_"
+    "http://www.gstatic.com/chrome/wifiprefetch/hosts/"
 
 config("precache_config") {
   defines = [
@@ -26,7 +28,6 @@ static_library("core") {
     "precache_switches.h",
     "precache_url_table.cc",
     "precache_url_table.h",
-    "url_list_provider.h",
   ]
 
   # Note the GYP build sets this as direct dependent settings, but this is

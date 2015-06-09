@@ -355,6 +355,16 @@ void HistoryService::SetOnBackendDestroyTask(const base::Closure& task) {
                  history_backend_.get(), base::MessageLoop::current(), task));
 }
 
+void HistoryService::TopHosts(int num_hosts,
+                              const TopHostsCallback& callback) const {
+  DCHECK(thread_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  PostTaskAndReplyWithResult(
+      thread_->message_loop_proxy().get(), FROM_HERE,
+      base::Bind(&HistoryBackend::TopHosts, history_backend_.get(), num_hosts),
+      callback);
+}
+
 void HistoryService::AddPage(const GURL& url,
                              Time time,
                              ContextID context_id,

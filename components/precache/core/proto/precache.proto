@@ -15,27 +15,26 @@ message PrecacheResource {
   optional string url = 1;
 };
 
-// A manifest of cacheable resources to be precached for a specific starting
-// URL.
+// A manifest of cacheable resources to be precached for a specific host.
 message PrecacheManifest {
   // List of resources that we predict that the user will need if they are
-  // likely to fetch the starting URL.
+  // likely to fetch the host.
   repeated PrecacheResource resource = 1;
 };
 
 message PrecacheConfigurationSettings {
-  // The maximum rank of the user's most visited URLs to consider precaching
+  // The maximum rank of the user's most visited hosts to consider precaching
   // resources for, starting from 1. For example, a value of 10 means that only
-  // URLs that are in the user's top 10 most visited URLs will be considered as
-  // starting URLs for resource precaching. This is specified by the server for
-  // testing purposes, so that it's easy to adjust how aggressively resources
-  // are precached.
+  // hosts that are in the user's top 10 most visited hosts will be considered
+  // as starting URLs for resource precaching. This is specified by the server
+  // for testing purposes, so that it's easy to adjust how aggressively
+  // resources are precached.
   // Values that are zero or lower indicate that none of the user's top sites
   // will be used for precaching.
-  optional int64 top_sites_count = 1 [default = 10];
+  optional int64 top_sites_count = 1 [default = 100];
 
-  // List of additional starting URLs that resources will be precached for.
-  // These are URLs that the server predicts that the user will visit, as a
+  // List of additional hosts that resources will be precached for.
+  // These are hosts that the server predicts that the user will visit, as a
   // result of server-side analytics.
-  repeated string forced_starting_url = 2;
+  repeated string forced_site = 2;
 };

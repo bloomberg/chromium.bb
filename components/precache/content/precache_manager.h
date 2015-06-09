@@ -6,12 +6,16 @@
 #define COMPONENTS_PRECACHE_CONTENT_PRECACHE_MANAGER_H_
 
 #include <list>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/precache/core/precache_fetcher.h"
 #include "url/gurl.h"
@@ -24,10 +28,16 @@ namespace content {
 class BrowserContext;
 }
 
+namespace history {
+class HistoryService;
+}
+
 namespace precache {
 
 class PrecacheDatabase;
-class URLListProvider;
+
+// Visible for test.
+int NumTopHosts();
 
 // Class that manages all precaching-related activities. Owned by the
 // BrowserContext that it is constructed for. Use
@@ -58,7 +68,7 @@ class PrecacheManager : public KeyedService,
   // precaching finishes, but will not be run if precaching is canceled.
   void StartPrecaching(
       const PrecacheCompletionCallback& precache_completion_callback,
-      URLListProvider* url_list_provider);
+      const history::HistoryService& history_service);
 
   // Cancels precaching if it is in progress.
   void CancelPrecaching();
@@ -79,7 +89,8 @@ class PrecacheManager : public KeyedService,
   // From PrecacheFetcher::PrecacheDelegate.
   void OnDone() override;
 
-  void OnURLsReceived(const std::list<GURL>& urls);
+  // From history::HistoryService::TopHosts.
+  void OnHostsReceived(const history::TopHostsList& host_counts);
 
   // The browser context that owns this PrecacheManager.
   content::BrowserContext* browser_context_;

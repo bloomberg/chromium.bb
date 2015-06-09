@@ -607,8 +607,6 @@
       'browser/platform_util_internal.h',
       'browser/platform_util_mac.mm',
       'browser/platform_util_win.cc',
-      'browser/precache/most_visited_urls_provider.cc',
-      'browser/precache/most_visited_urls_provider.h',
       'browser/pref_service_flags_storage.cc',
       'browser/pref_service_flags_storage.h',
       'browser/prefetch/prefetch.cc',
