@@ -7,6 +7,7 @@
 #include <string>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/settings/appearance_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
@@ -28,8 +29,8 @@ SettingsPageUIHandler::~SettingsPageUIHandler() {
 
 MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
-  DownloadsHandler* downloads_handler = new DownloadsHandler();
-  AddSettingsPageUIHandler(downloads_handler);
+  AddSettingsPageUIHandler(new AppearanceHandler(web_ui));
+  AddSettingsPageUIHandler(new DownloadsHandler());
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIMdSettingsHost);

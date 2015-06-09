@@ -16,7 +16,9 @@
         <cr-button id="get-themes" i18n-content="getThemes"
             on-click="openThemesGallery_">
         </cr-button>
-        <cr-button i18n-content="resetToDefaultTheme" disabled></cr-button>
+        <cr-button id="resetTheme" i18n-content="resetToDefaultTheme" disabled
+            on-click="resetTheme_">
+        </cr-button>
       </div>
       <hr>
       <cr-settings-checkbox pref="{{prefs.browser.show_home_button}}"

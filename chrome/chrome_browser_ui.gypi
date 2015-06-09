@@ -1912,6 +1912,8 @@
       'browser/ui/webui/quota_internals/quota_internals_types.h',
       'browser/ui/webui/quota_internals/quota_internals_ui.cc',
       'browser/ui/webui/quota_internals/quota_internals_ui.h',
+      'browser/ui/webui/settings/appearance_handler.cc',
+      'browser/ui/webui/settings/appearance_handler.h',
       'browser/ui/webui/settings/downloads_handler.cc',
       'browser/ui/webui/settings/downloads_handler.h',
       'browser/ui/webui/settings/md_settings_localized_strings_provider.cc',
