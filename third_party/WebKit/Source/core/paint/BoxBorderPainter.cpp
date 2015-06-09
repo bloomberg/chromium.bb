@@ -8,6 +8,7 @@
 #include "core/paint/BoxPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/BorderEdge.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/Vector.h"
@@ -104,7 +105,7 @@ inline bool willOverdraw(BoxSide side, EBorderStyle style, BorderEdgeFlags compl
     return borderStyleFillsBorderArea(style);
 }
 
-inline bool borderStylesRequireMitre(BoxSide side, BoxSide adjacentSide, EBorderStyle style, EBorderStyle adjacentStyle)
+inline bool borderStylesRequireMiter(BoxSide side, BoxSide adjacentSide, EBorderStyle style, EBorderStyle adjacentStyle)
 {
     if (style == DOUBLE || adjacentStyle == DOUBLE || adjacentStyle == GROOVE || adjacentStyle == RIDGE)
         return true;
@@ -349,7 +350,7 @@ const unsigned kStylePriority[] = {
 };
 
 // Given the same style, prefer drawing in non-adjacent order to minimize the number of sides
-// which require mitres.
+// which require miters.
 const unsigned kSidePriority[] = {
     0, /* BSTop */
     2, /* BSRight */
@@ -603,8 +604,10 @@ void BoxBorderPainter::paintBorder(const PaintInfo& info, const LayoutRect& rect
             graphicsContext->clipOutRoundedRect(m_inner);
     }
 
-    // If only one edge visible antialiasing doesn't create seams
-    bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext) || m_visibleEdgeCount == 1;
+    bool antialias =
+        RuntimeEnabledFeatures::slimmingPaintEnabled()
+        || m_visibleEdgeCount == 1
+        || BoxPainter::shouldAntialiasLines(graphicsContext);
 
     const ComplexBorderInfo borderInfo(*this, antialias);
     paintOpacityGroup(graphicsContext, borderInfo, 0, 1);
@@ -771,46 +774,43 @@ void BoxBorderPainter::paintSide(GraphicsContext* context, const ComplexBorderIn
     }
 }
 
-BoxBorderPainter::MitreType BoxBorderPainter::computeMitre(BoxSide side, BoxSide adjacentSide,
+BoxBorderPainter::MiterType BoxBorderPainter::computeMiter(BoxSide side, BoxSide adjacentSide,
     BorderEdgeFlags completedEdges, bool antialias) const
 {
     const BorderEdge& adjacentEdge = m_edges[adjacentSide];
 
     // No miters for missing edges.
     if (!adjacentEdge.isPresent)
-        return NoMitre;
+        return NoMiter;
 
-    // Legacy behavior - preserve for now.
-    bool allowOverdraw = !antialias;
+    // The adjacent edge will overdraw this corner, resulting in a correct miter.
+    if (willOverdraw(adjacentSide, adjacentEdge.borderStyle(), completedEdges))
+        return NoMiter;
 
-    // The adjacent edge will overdraw this corner, resulting in a correct mitre.
-    if (allowOverdraw && willOverdraw(adjacentSide, adjacentEdge.borderStyle(), completedEdges))
-        return NoMitre;
-
-    // Color transitions require mitres. Use mitres compatible with the AA drawing mode to avoid
+    // Color transitions require miters. Use miters compatible with the AA drawing mode to avoid
     // introducing extra clips.
     if (!colorsMatchAtCorner(side, adjacentSide, m_edges))
-        return antialias ? SoftMitre : HardMitre;
+        return antialias ? SoftMiter : HardMiter;
 
-    // Non-anti-aliased mitres ensure correct same-color seaming when required by style.
-    if (borderStylesRequireMitre(side, adjacentSide, m_edges[side].borderStyle(), adjacentEdge.borderStyle()))
-        return HardMitre;
+    // Non-anti-aliased miters ensure correct same-color seaming when required by style.
+    if (borderStylesRequireMiter(side, adjacentSide, m_edges[side].borderStyle(), adjacentEdge.borderStyle()))
+        return HardMiter;
 
     // Overdraw the adjacent edge when the colors match and we have no style restrictions.
-    return NoMitre;
+    return NoMiter;
 }
 
-bool BoxBorderPainter::mitresRequireClipping(MitreType mitre1, MitreType mitre2, EBorderStyle style,
+bool BoxBorderPainter::mitersRequireClipping(MiterType miter1, MiterType miter2, EBorderStyle style,
     bool antialias)
 {
-    // Clipping is required if any of the present mitres doesn't match the current AA mode.
+    // Clipping is required if any of the present miters doesn't match the current AA mode.
     bool shouldClip = antialias
-        ? mitre1 == HardMitre || mitre2 == HardMitre
-        : mitre1 == SoftMitre || mitre2 == SoftMitre;
+        ? miter1 == HardMiter || miter2 == HardMiter
+        : miter1 == SoftMiter || miter2 == SoftMiter;
 
-    // Some styles require clipping for any type of mitre.
+    // Some styles require clipping for any type of miter.
     shouldClip = shouldClip
-        || ((mitre1 != NoMitre || mitre2 != NoMitre) && styleRequiresClipPolygon(style));
+        || ((miter1 != NoMiter || miter2 != NoMiter) && styleRequiresClipPolygon(style));
 
     return shouldClip;
 }
@@ -825,33 +825,33 @@ void BoxBorderPainter::paintOneBorderSide(GraphicsContext* graphicsContext,
     const BorderEdge& adjacentEdge2 = m_edges[adjacentSide2];
 
     if (path) {
-        MitreType mitre1 = colorsMatchAtCorner(side, adjacentSide1, m_edges) ? HardMitre : SoftMitre;
-        MitreType mitre2 = colorsMatchAtCorner(side, adjacentSide2, m_edges) ? HardMitre : SoftMitre;
+        MiterType miter1 = colorsMatchAtCorner(side, adjacentSide1, m_edges) ? HardMiter : SoftMiter;
+        MiterType miter2 = colorsMatchAtCorner(side, adjacentSide2, m_edges) ? HardMiter : SoftMiter;
 
         GraphicsContextStateSaver stateSaver(*graphicsContext);
         if (m_inner.isRenderable())
-            clipBorderSidePolygon(graphicsContext, side, mitre1, mitre2);
+            clipBorderSidePolygon(graphicsContext, side, miter1, miter2);
         else
             clipBorderSideForComplexInnerPath(graphicsContext, side);
         float thickness = std::max(std::max(edgeToRender.width, adjacentEdge1.width), adjacentEdge2.width);
         drawBoxSideFromPath(graphicsContext, LayoutRect(m_outer.rect()), *path, edgeToRender.width,
             thickness, side, color, edgeToRender.borderStyle());
     } else {
-        MitreType mitre1 = computeMitre(side, adjacentSide1, completedEdges, antialias);
-        MitreType mitre2 = computeMitre(side, adjacentSide2, completedEdges, antialias);
-        bool shouldClip = mitresRequireClipping(mitre1, mitre2, edgeToRender.borderStyle(), antialias);
+        MiterType miter1 = computeMiter(side, adjacentSide1, completedEdges, antialias);
+        MiterType miter2 = computeMiter(side, adjacentSide2, completedEdges, antialias);
+        bool shouldClip = mitersRequireClipping(miter1, miter2, edgeToRender.borderStyle(), antialias);
 
         GraphicsContextStateSaver clipStateSaver(*graphicsContext, shouldClip);
         if (shouldClip) {
-            clipBorderSidePolygon(graphicsContext, side, mitre1, mitre2);
+            clipBorderSidePolygon(graphicsContext, side, miter1, miter2);
 
-            // Mitres are applied via clipping, no need to draw them.
-            mitre1 = mitre2 = NoMitre;
+            // Miters are applied via clipping, no need to draw them.
+            miter1 = miter2 = NoMiter;
         }
 
         ObjectPainter::drawLineForBoxSide(graphicsContext, sideRect.x(), sideRect.y(),
             sideRect.maxX(), sideRect.maxY(), side, color, edgeToRender.borderStyle(),
-            mitre1 != NoMitre ? adjacentEdge1.width : 0, mitre2 != NoMitre ? adjacentEdge2.width : 0,
+            miter1 != NoMiter ? adjacentEdge1.width : 0, miter2 != NoMiter ? adjacentEdge2.width : 0,
             antialias);
     }
 }
@@ -1006,9 +1006,9 @@ void BoxBorderPainter::clipBorderSideForComplexInnerPath(GraphicsContext* graphi
 }
 
 void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, BoxSide side,
-    MitreType firstMitre, MitreType secondMitre) const
+    MiterType firstMiter, MiterType secondMiter) const
 {
-    ASSERT(firstMitre != NoMitre || secondMitre != NoMitre);
+    ASSERT(firstMiter != NoMiter || secondMiter != NoMiter);
 
     FloatPoint quad[4];
 
@@ -1147,8 +1147,8 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, B
         break;
     }
 
-    if (firstMitre == secondMitre) {
-        graphicsContext->clipPolygon(4, quad, firstMitre == SoftMitre);
+    if (firstMiter == secondMiter) {
+        graphicsContext->clipPolygon(4, quad, firstMiter == SoftMiter);
         return;
     }
 
@@ -1175,22 +1175,22 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext* graphicsContext, B
         r2 = (-cx * by + cy * bx) / (ax * by - ay * bx) + kExtendFill;
     }
 
-    if (firstMitre != NoMitre) {
+    if (firstMiter != NoMiter) {
         FloatPoint firstQuad[4];
         firstQuad[0] = quad[0];
         firstQuad[1] = quad[1];
         firstQuad[2] = FloatPoint(quad[3].x() + r2 * ax, quad[3].y() + r2 * ay);
         firstQuad[3] = quad[3];
-        graphicsContext->clipPolygon(4, firstQuad, firstMitre == SoftMitre);
+        graphicsContext->clipPolygon(4, firstQuad, firstMiter == SoftMiter);
     }
 
-    if (secondMitre != NoMitre) {
+    if (secondMiter != NoMiter) {
         FloatPoint secondQuad[4];
         secondQuad[0] = quad[0];
         secondQuad[1] = FloatPoint(quad[0].x() - r1 * cx, quad[0].y() - r1 * cy);
         secondQuad[2] = quad[2];
         secondQuad[3] = quad[3];
-        graphicsContext->clipPolygon(4, secondQuad, secondMitre == SoftMitre);
+        graphicsContext->clipPolygon(4, secondQuad, secondMiter == SoftMiter);
     }
 }
 
