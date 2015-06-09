@@ -14,7 +14,7 @@
 #include "modules/EventTargetModules.h"
 #include "modules/screen_orientation/LockOrientationCallback.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
-#include "public/platform/WebScreenOrientationType.h"
+#include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
 // This code assumes that WebScreenOrientationType values are included in WebScreenOrientationLockType.
 #define STATIC_ASSERT_MATCHING_ENUM(enum1, enum2) \

@@ -32,7 +32,7 @@
 #define WebScreenInfo_h
 
 #include "WebRect.h"
-#include "WebScreenOrientationType.h"
+#include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
 namespace blink {
 
