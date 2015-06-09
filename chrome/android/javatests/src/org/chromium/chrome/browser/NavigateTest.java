@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_TABLET;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 import android.text.TextUtils;
@@ -350,12 +349,8 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         }
     }
 
-    /*
-     * Bug: crbug.com/413186
-     * @MediumTest
-     * @Feature({"Navigation"})
-     */
-    @FlakyTest
+    @MediumTest
+    @Feature({"Navigation"})
     public void testWindowOpenUrlSpoof() throws Exception {
         TestWebServer webServer = TestWebServer.start();
         try {
@@ -378,14 +373,20 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
             };
 
             // Mock out the test URL
-            final String mockedUrl = webServer.setResponseWithRunnableAction(
-                    "/mockme.html", "<html><body>Real</body></html>", null, checkAction);
+            final String mockedUrl = webServer.setResponseWithRunnableAction("/mockme.html",
+                    "<html>"
+                    + "  <head>"
+                    + "    <meta name=\"viewport\""
+                    + "        content=\"initial-scale=0.75,maximum-scale=0.75,user-scalable=no\">"
+                    + "  </head>"
+                    + "  <body>Real</body>"
+                    + "</html>", null, checkAction);
 
             // Navigate to the spoofable URL
             loadUrl(UrlUtils.encodeHtmlDataUri(
                       "<head>"
                     + "  <meta name=\"viewport\""
-                    + "      content=\"initial-scale=1,maximum-scale=1,user-scalable=no\">"
+                    + "      content=\"initial-scale=0.5,maximum-scale=0.5,user-scalable=no\">"
                     + "</head>"
                     + "<script>"
                     + "  function spoof() {"
@@ -395,18 +396,18 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
                     + "    w.location = '" + mockedUrl + "'"
                     + "  }"
                     + "</script>"
-                    + "<a href='JavaScript:spoof()' id='link'>Go</a>"));
-            assertWaitForPageScaleFactorMatch(1.0f);
+                    + "<body id='body' onclick='spoof()'></body>"));
+            assertWaitForPageScaleFactorMatch(0.5f);
 
-            // Click the 'Go' link
-            DOMUtils.clickNode(this, getActivity().getCurrentContentViewCore(), "link");
+            // Click the page, which triggers the URL load.
+            DOMUtils.clickNode(this, getActivity().getCurrentContentViewCore(), "body");
 
             // Wait for the proper URL to be served.
             assertTrue(urlServedSemaphore.tryAcquire(5, TimeUnit.SECONDS));
 
-            final Tab tab = TabModelUtils.getCurrentTab(model);
-
             // Wait for the url to change.
+            final Tab tab = TabModelUtils.getCurrentTab(model);
+            assertWaitForPageScaleFactorMatch(0.75f);
             assertTrue("Page url didn't change",
                     CriteriaHelper.pollForCriteria(new Criteria() {
                         @Override
