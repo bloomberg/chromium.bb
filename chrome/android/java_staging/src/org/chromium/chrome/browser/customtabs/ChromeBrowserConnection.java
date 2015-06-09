@@ -20,6 +20,7 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.text.TextUtils;
@@ -31,6 +32,7 @@ import com.google.android.apps.chrome.R;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
@@ -172,7 +174,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     @Override
     public long warmup(long flags) {
         // Here and in mayLaunchUrl(), don't do expensive work for background applications.
-        if (!isUidForeground(Binder.getCallingUid())) return RESULT_ERROR;
+        if (!isUidForegroundOrSelf(Binder.getCallingUid())) return RESULT_ERROR;
         if (!mWarmupHasBeenCalled.compareAndSet(false, true)) return RESULT_OK;
         // The call is non-blocking and this must execute on the UI thread, post a task.
         ThreadUtils.postOnUiThread(new Runnable() {
@@ -230,7 +232,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         if (scheme != null && !scheme.equals("http") && !scheme.equals("https")) {
             return RESULT_ERROR;
         }
-        if (!isUidForeground(uid)) return RESULT_ERROR;
+        if (!isUidForegroundOrSelf(uid)) return RESULT_ERROR;
         synchronized (mLock) {
             SessionParams sessionParams = mSessionParams.get(sessionId);
             if (sessionParams == null || sessionParams.mUid != uid) return RESULT_ERROR;
@@ -438,9 +440,11 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     }
 
     /**
-     * @return true iff the UID is associated with a process having a foreground importance.
+     * @return true if the |uid| is associated with a process having a
+     * foreground importance, or self.
      */
-    private boolean isUidForeground(int uid) {
+    private boolean isUidForegroundOrSelf(int uid) {
+        if (uid == Process.myUid()) return true;
         ActivityManager am =
                 (ActivityManager) mApplication.getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningAppProcessInfo> running = am.getRunningAppProcesses();
@@ -450,6 +454,16 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
             if (rpi.uid == uid && isForeground) return true;
         }
         return false;
+    }
+
+    /**
+     * {@link cleanupAlreadyLocked}, without holding mLock.
+     */
+    @VisibleForTesting
+    void cleanup(int uid) {
+        synchronized (mLock) {
+            cleanupAlreadyLocked(uid);
+        }
     }
 
     /**
