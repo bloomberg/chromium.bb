@@ -40,8 +40,8 @@ const char kTextPlain[] = "text/plain";
 bool IsRenderableStatusCode(int status_code) {
   // Chrome only uses the content of a response with one of these status codes
   // for CSS/JavaScript. For images, Chrome just ignores status code.
-  const int renderable_status_code[] = {200, 201, 202, 203, 206, 300,
-                                        301, 302, 303, 305, 306, 307};
+  const int renderable_status_code[] = {
+      200, 201, 202, 203, 206, 300, 301, 302, 303, 305, 306, 307};
   for (size_t i = 0; i < arraysize(renderable_status_code); ++i) {
     if (renderable_status_code[i] == status_code)
       return true;
@@ -52,7 +52,6 @@ bool IsRenderableStatusCode(int status_code) {
 bool MatchesSignature(StringPiece data,
                       const StringPiece signatures[],
                       size_t arr_size) {
-
   size_t offset = data.find_first_not_of(" \t\r\n");
   // There is no not-whitespace character in this document.
   if (offset == base::StringPiece::npos)
@@ -67,8 +66,8 @@ bool MatchesSignature(StringPiece data,
     if (length < signature_length)
       continue;
 
-    if (LowerCaseEqualsASCII(
-            data.begin(), data.begin() + signature_length, signature.data()))
+    if (LowerCaseEqualsASCII(data.begin(), data.begin() + signature_length,
+                             signature.data()))
       return true;
   }
   return false;
@@ -82,21 +81,18 @@ void IncrementHistogramCount(const std::string& name) {
 }
 
 void IncrementHistogramEnum(const std::string& name,
-                          uint32 sample,
-                          uint32 boundary_value) {
+                            uint32 sample,
+                            uint32 boundary_value) {
   // The default value of min, max, bucket_count are copied from histogram.h.
   base::HistogramBase* histogram_pointer = base::LinearHistogram::FactoryGet(
-      name,
-      1,
-      boundary_value,
-      boundary_value + 1,
+      name, 1, boundary_value, boundary_value + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram_pointer->Add(sample);
 }
 
 void HistogramCountBlockedResponse(
     const std::string& bucket_prefix,
-    linked_ptr<SiteIsolationResponseMetaData>& resp_data,
+    const linked_ptr<SiteIsolationResponseMetaData>& resp_data,
     bool nosniff_block) {
   std::string block_label(nosniff_block ? ".NoSniffBlocked" : ".Blocked");
   IncrementHistogramCount(bucket_prefix + block_label);
@@ -116,8 +112,7 @@ void HistogramCountBlockedResponse(
   if (renderable_status_code) {
     IncrementHistogramEnum(
         bucket_prefix + block_label + ".RenderableStatusCode",
-        resp_data->resource_type,
-        RESOURCE_TYPE_LAST_TYPE);
+        resp_data->resource_type, RESOURCE_TYPE_LAST_TYPE);
   } else {
     IncrementHistogramCount(bucket_prefix + block_label +
                             ".NonRenderableStatusCode");
@@ -133,7 +128,8 @@ void HistogramCountNotBlockedResponse(const std::string& bucket_prefix,
 
 }  // namespace
 
-SiteIsolationResponseMetaData::SiteIsolationResponseMetaData() {}
+SiteIsolationResponseMetaData::SiteIsolationResponseMetaData() {
+}
 
 void SiteIsolationPolicy::SetPolicyEnabled(bool enabled) {
   g_policy_enabled = enabled;
@@ -182,8 +178,8 @@ SiteIsolationPolicy::OnReceivedResponse(const GURL& frame_origin,
   std::string access_control_origin;
 
   // We can use a case-insensitive header name for EnumerateHeader().
-  info.headers->EnumerateHeader(
-      NULL, "access-control-allow-origin", &access_control_origin);
+  info.headers->EnumerateHeader(NULL, "access-control-allow-origin",
+                                &access_control_origin);
   if (IsValidCorsHeaderSet(frame_origin, response_url, access_control_origin))
     return linked_ptr<SiteIsolationResponseMetaData>();
 
@@ -204,7 +200,7 @@ SiteIsolationPolicy::OnReceivedResponse(const GURL& frame_origin,
 }
 
 bool SiteIsolationPolicy::ShouldBlockResponse(
-    linked_ptr<SiteIsolationResponseMetaData>& resp_data,
+    const linked_ptr<SiteIsolationResponseMetaData>& resp_data,
     const char* raw_data,
     int raw_length,
     std::string* alternative_data) {
@@ -222,8 +218,7 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
   // Record the number of cross-site document responses with a specific mime
   // type (text/html, text/xml, etc).
   UMA_HISTOGRAM_ENUMERATION(
-      "SiteIsolation.XSD.MimeType",
-      resp_data->canonical_mime_type,
+      "SiteIsolation.XSD.MimeType", resp_data->canonical_mime_type,
       SiteIsolationResponseMetaData::MaxCanonicalMimeType);
 
   // Store the result of cross-site document blocking analysis.
@@ -234,20 +229,18 @@ bool SiteIsolationPolicy::ShouldBlockResponse(
   // type claims it to be. For example, we apply a HTML sniffer for a document
   // tagged with text/html here. Whenever this check becomes true, we'll block
   // the response.
-  if (resp_data->canonical_mime_type !=
-          SiteIsolationResponseMetaData::Plain) {
+  if (resp_data->canonical_mime_type != SiteIsolationResponseMetaData::Plain) {
     std::string bucket_prefix;
     bool sniffed_as_target_document = false;
-    if (resp_data->canonical_mime_type ==
-            SiteIsolationResponseMetaData::HTML) {
+    if (resp_data->canonical_mime_type == SiteIsolationResponseMetaData::HTML) {
       bucket_prefix = "SiteIsolation.XSD.HTML";
       sniffed_as_target_document = SniffForHTML(data);
     } else if (resp_data->canonical_mime_type ==
-                   SiteIsolationResponseMetaData::XML) {
+               SiteIsolationResponseMetaData::XML) {
       bucket_prefix = "SiteIsolation.XSD.XML";
       sniffed_as_target_document = SniffForXML(data);
     } else if (resp_data->canonical_mime_type ==
-                   SiteIsolationResponseMetaData::JSON) {
+               SiteIsolationResponseMetaData::JSON) {
       bucket_prefix = "SiteIsolation.XSD.JSON";
       sniffed_as_target_document = SniffForJSON(data);
     } else {
@@ -326,7 +319,7 @@ SiteIsolationPolicy::GetCanonicalMimeType(const std::string& mime_type) {
     return SiteIsolationResponseMetaData::XML;
   }
 
- return SiteIsolationResponseMetaData::Others;
+  return SiteIsolationResponseMetaData::Others;
 }
 
 bool SiteIsolationPolicy::IsBlockableScheme(const GURL& url) {
@@ -338,7 +331,6 @@ bool SiteIsolationPolicy::IsBlockableScheme(const GURL& url) {
 
 bool SiteIsolationPolicy::IsSameSite(const GURL& frame_origin,
                                      const GURL& response_url) {
-
   if (!frame_origin.is_valid() || !response_url.is_valid())
     return false;
 
@@ -348,8 +340,7 @@ bool SiteIsolationPolicy::IsSameSite(const GURL& frame_origin,
   // SameDomainOrHost() extracts the effective domains (public suffix plus one)
   // from the two URLs and compare them.
   return net::registry_controlled_domains::SameDomainOrHost(
-      frame_origin,
-      response_url,
+      frame_origin, response_url,
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
@@ -399,32 +390,31 @@ bool SiteIsolationPolicy::SniffForHTML(StringPiece data) {
   // process, we should do single-thread checking here for the static
   // initializer.
   static const StringPiece kHtmlSignatures[] = {
-    StringPiece("<!DOCTYPE html"),  // HTML5 spec
-    StringPiece("<script"),  // HTML5 spec, Mozilla
-    StringPiece("<html"),    // HTML5 spec, Mozilla
-    StringPiece("<head"),    // HTML5 spec, Mozilla
-    StringPiece("<iframe"),  // Mozilla
-    StringPiece("<h1"),      // Mozilla
-    StringPiece("<div"),     // Mozilla
-    StringPiece("<font"),    // Mozilla
-    StringPiece("<table"),   // Mozilla
-    StringPiece("<a"),       // Mozilla
-    StringPiece("<style"),   // Mozilla
-    StringPiece("<title"),   // Mozilla
-    StringPiece("<b"),       // Mozilla
-    StringPiece("<body"),    // Mozilla
-    StringPiece("<br"),      // Mozilla
-    StringPiece("<p"),       // Mozilla
-    StringPiece("<?xml")     // Mozilla
+      StringPiece("<!DOCTYPE html"),  // HTML5 spec
+      StringPiece("<script"),         // HTML5 spec, Mozilla
+      StringPiece("<html"),           // HTML5 spec, Mozilla
+      StringPiece("<head"),           // HTML5 spec, Mozilla
+      StringPiece("<iframe"),         // Mozilla
+      StringPiece("<h1"),             // Mozilla
+      StringPiece("<div"),            // Mozilla
+      StringPiece("<font"),           // Mozilla
+      StringPiece("<table"),          // Mozilla
+      StringPiece("<a"),              // Mozilla
+      StringPiece("<style"),          // Mozilla
+      StringPiece("<title"),          // Mozilla
+      StringPiece("<b"),              // Mozilla
+      StringPiece("<body"),           // Mozilla
+      StringPiece("<br"),             // Mozilla
+      StringPiece("<p"),              // Mozilla
+      StringPiece("<?xml")            // Mozilla
   };
 
   while (data.length() > 0) {
-    if (MatchesSignature(
-          data, kHtmlSignatures, arraysize(kHtmlSignatures)))
+    if (MatchesSignature(data, kHtmlSignatures, arraysize(kHtmlSignatures)))
       return true;
 
     // If we cannot find "<!--", we fail sniffing this as HTML.
-    static const StringPiece kCommentBegins[] = { StringPiece("<!--") };
+    static const StringPiece kCommentBegins[] = {StringPiece("<!--")};
     if (!MatchesSignature(data, kCommentBegins, arraysize(kCommentBegins)))
       break;
 
@@ -450,7 +440,7 @@ bool SiteIsolationPolicy::SniffForXML(base::StringPiece data) {
   // TODO(dsjang): Once SiteIsolationPolicy is moved into the browser
   // process, we should do single-thread checking here for the static
   // initializer.
-  static const StringPiece kXmlSignatures[] = { StringPiece("<?xml") };
+  static const StringPiece kXmlSignatures[] = {StringPiece("<?xml")};
   return MatchesSignature(data, kXmlSignatures, arraysize(kXmlSignatures));
 }
 

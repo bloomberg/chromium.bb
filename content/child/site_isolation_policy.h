@@ -94,10 +94,12 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // |alternative_data|. This records various kinds of UMA data stats. This
   // function is called only if the length of received data is non-zero.
   static bool ShouldBlockResponse(
-      linked_ptr<SiteIsolationResponseMetaData>& resp_data, const char* payload,
-      int length, std::string* alternative_data);
+      const linked_ptr<SiteIsolationResponseMetaData>& resp_data,
+      const char* payload,
+      int length,
+      std::string* alternative_data);
 
-private:
+ private:
   FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, IsBlockableScheme);
   FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, IsSameSite);
   FRIEND_TEST_ALL_PREFIXES(SiteIsolationPolicyTest, IsValidCorsHeaderSet);
