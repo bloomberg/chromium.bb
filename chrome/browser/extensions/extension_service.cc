@@ -2124,7 +2124,6 @@ void ExtensionService::TrackTerminatedExtension(
 
   const Extension* extension = GetInstalledExtension(extension_id);
   if (!extension) {
-    LOG(WARNING) << "Terminated extension is already removed.";
     return;
   }
 
@@ -2134,8 +2133,7 @@ void ExtensionService::TrackTerminatedExtension(
 }
 
 void ExtensionService::TerminateExtension(const std::string& extension_id) {
-  const Extension* extension = GetInstalledExtension(extension_id);
-  TrackTerminatedExtension(extension->id());
+  TrackTerminatedExtension(extension_id);
 }
 
 void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
