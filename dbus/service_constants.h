@@ -723,6 +723,8 @@ const char kGatewayProperty[] = "Gateway";
 const char kDomainNameProperty[] = "DomainName";
 const char kAcceptedHostnameProperty[] = "AcceptedHostname";
 const char kNameServersProperty[] = "NameServers";
+const char kDelegatedPrefixProperty[] = "DelegatedPrefix";
+const char kDelegatedPrefixLengthProperty[] = "DelegatedPrefixLength";
 
 // IPConfig type options.
 const char kTypeIPv4[] = "ipv4";
