@@ -7,6 +7,7 @@
 
 #include "core/frame/FrameClient.h"
 #include "core/frame/FrameTypes.h"
+#include "core/loader/FrameLoaderTypes.h"
 
 namespace blink {
 
@@ -18,7 +19,7 @@ public:
     virtual ~RemoteFrameClient() { }
 
     virtual void navigate(const ResourceRequest&, bool shouldReplaceCurrentEntry) = 0;
-    virtual void reload(ReloadPolicy, ClientRedirectPolicy) = 0;
+    virtual void reload(FrameLoadType, ClientRedirectPolicy) = 0;
 
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.

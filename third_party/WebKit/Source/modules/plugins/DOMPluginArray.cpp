@@ -76,7 +76,7 @@ void DOMPluginArray::refresh(bool reload)
         return;
     Page::refreshPlugins();
     if (reload)
-        m_frame->reload(NormalReload, ClientRedirect);
+        m_frame->reload(FrameLoadTypeReload, ClientRedirect);
 }
 
 PluginData* DOMPluginArray::pluginData() const

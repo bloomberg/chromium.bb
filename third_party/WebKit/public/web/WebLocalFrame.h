@@ -6,6 +6,7 @@
 #define WebLocalFrame_h
 
 #include "WebFrame.h"
+#include "WebFrameLoadType.h"
 
 namespace blink {
 
@@ -60,6 +61,24 @@ public:
     // Navigation Ping --------------------------------------------------------
     virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) = 0;
 
+    // Navigation ----------------------------------------------------------
+
+    // Returns a WebURLRequest corresponding to the load of the WebHistoryItem.
+    virtual WebURLRequest requestFromHistoryItem(const WebHistoryItem&, WebURLRequest::CachePolicy)
+        const = 0;
+
+    // Returns a WebURLRequest corresponding to the reload of the current
+    // HistoryItem.
+    virtual WebURLRequest requestForReload(WebFrameLoadType,
+        const WebURL& overrideURL = WebURL()) const = 0;
+
+    // Load the given URL. For history navigations, a valid WebHistoryItem
+    // should be given, as well as a WebHistoryLoadType.
+    // TODO(clamy): Remove the reload, reloadWithOverrideURL, loadHistoryItem
+    // loadRequest functions in WebFrame once RenderFrame only calls loadRequest.
+    virtual void load(const WebURLRequest&, WebFrameLoadType = WebFrameLoadType::Standard,
+        const WebHistoryItem& = WebHistoryItem(),
+        WebHistoryLoadType = WebHistoryDifferentDocumentLoad) = 0;
 
     // Navigation State -------------------------------------------------------
 

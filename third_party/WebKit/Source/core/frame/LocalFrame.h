@@ -88,7 +88,7 @@ namespace blink {
         WindowProxy* windowProxy(DOMWrapperWorld&) override;
         void navigate(Document& originDocument, const KURL&, bool lockBackForwardList, UserGestureStatus) override;
         void navigate(const FrameLoadRequest&) override;
-        void reload(ReloadPolicy, ClientRedirectPolicy) override;
+        void reload(FrameLoadType, ClientRedirectPolicy) override;
         void detach() override;
         void disconnectOwnerElement() override;
         SecurityContext* securityContext() const override;

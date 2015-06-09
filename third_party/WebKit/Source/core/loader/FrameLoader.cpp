@@ -104,7 +104,55 @@ bool isBackForwardLoadType(FrameLoadType type)
 
 static bool needsHistoryItemRestore(FrameLoadType type)
 {
-    return type == FrameLoadTypeBackForward || type == FrameLoadTypeReload || type == FrameLoadTypeReloadFromOrigin;
+    return type == FrameLoadTypeBackForward || type == FrameLoadTypeReload
+        || type == FrameLoadTypeReloadFromOrigin;
+}
+
+// static
+ResourceRequest FrameLoader::resourceRequestFromHistoryItem(HistoryItem* item,
+    ResourceRequestCachePolicy cachePolicy)
+{
+    RefPtr<FormData> formData = item->formData();
+    ResourceRequest request(item->url());
+    request.setHTTPReferrer(item->referrer());
+    request.setCachePolicy(cachePolicy);
+    if (formData) {
+        request.setHTTPMethod("POST");
+        request.setHTTPBody(formData);
+        request.setHTTPContentType(item->formContentType());
+        RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer().referrer);
+        request.addHTTPOriginIfNeeded(securityOrigin->toAtomicString());
+    }
+    return request;
+}
+
+ResourceRequest FrameLoader::resourceRequestForReload(FrameLoadType frameLoadType,
+    const KURL& overrideURL, ClientRedirectPolicy clientRedirectPolicy)
+{
+    ASSERT(frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadFromOrigin);
+    ResourceRequestCachePolicy cachePolicy = frameLoadType == FrameLoadTypeReloadFromOrigin ?
+        ReloadBypassingCache : ReloadIgnoringCacheData;
+    if (!m_currentItem)
+        return ResourceRequest();
+    ResourceRequest request = resourceRequestFromHistoryItem(m_currentItem.get(), cachePolicy);
+
+    // ClientRedirectPolicy is an indication that this load was triggered by
+    // some direct interaction with the page. If this reload is not a client
+    // redirect, we should reuse the referrer from the original load of the
+    // current document. If this reload is a client redirect (e.g., location.reload()),
+    // it was initiated by something in the current document and should
+    // therefore show the current document's url as the referrer.
+    if (clientRedirectPolicy == ClientRedirect) {
+        request.setHTTPReferrer(Referrer(m_frame->document()->outgoingReferrer(),
+            m_frame->document()->referrerPolicy()));
+    }
+
+    if (!overrideURL.isEmpty()) {
+        request.setURL(overrideURL);
+        request.clearHTTPReferrer();
+    }
+    request.setSkipServiceWorker(frameLoadType == FrameLoadTypeReloadFromOrigin);
+    return request;
 }
 
 FrameLoader::FrameLoader(LocalFrame* frame)
@@ -168,10 +216,11 @@ void FrameLoader::setDefersLoading(bool defers)
     }
 
     if (!defers) {
-        if (m_deferredHistoryLoad.isValid()) {
-            loadHistoryItem(m_deferredHistoryLoad.m_item.get(), FrameLoadTypeBackForward,
-                m_deferredHistoryLoad.m_type, m_deferredHistoryLoad.m_cachePolicy);
-            m_deferredHistoryLoad = DeferredHistoryLoad();
+        if (m_deferredHistoryLoad.get()) {
+            load(FrameLoadRequest(nullptr, m_deferredHistoryLoad->m_request),
+                m_deferredHistoryLoad->m_loadType, m_deferredHistoryLoad->m_item.get(),
+                m_deferredHistoryLoad->m_historyLoadType);
+            m_deferredHistoryLoad.clear();
         }
         m_frame->navigationScheduler().startTimer();
         scheduleCheckCompleted();
@@ -397,7 +446,7 @@ void FrameLoader::didBeginDocument(bool dispatch)
         }
     }
 
-    if (m_provisionalItem && (m_loadType == FrameLoadTypeBackForward || m_loadType == FrameLoadTypeInitialHistoryLoad))
+    if (m_provisionalItem && isBackForwardLoadType(m_loadType))
         m_frame->document()->setStateForNewFormElements(m_provisionalItem->documentState());
 
     client()->didCreateNewDocument();
@@ -762,7 +811,8 @@ static NavigationPolicy navigationPolicyForRequest(const FrameLoadRequest& reque
     return policy;
 }
 
-void FrameLoader::load(const FrameLoadRequest& passedRequest)
+void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType frameLoadType,
+    HistoryItem* historyItem, HistoryLoadType historyLoadType)
 {
     ASSERT(m_frame->document());
 
@@ -771,6 +821,12 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     if (m_inStopAllLoaders)
         return;
 
+    if (m_frame->page()->defersLoading() && isBackForwardLoadType(frameLoadType)) {
+        m_deferredHistoryLoad = adoptPtr(new DeferredHistoryLoad(
+            passedRequest.resourceRequest(), historyItem, frameLoadType, historyLoadType));
+        return;
+    }
+
     FrameLoadRequest request(passedRequest);
     request.resourceRequest().setHasUserGesture(UserGestureIndicator::processingUserGesture());
 
@@ -778,6 +834,12 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         return;
 
     RefPtrWillBeRawPtr<Frame> targetFrame = request.form() ? nullptr : m_frame->findFrameForNavigation(AtomicString(request.frameName()), *m_frame);
+
+    if (isBackForwardLoadType(frameLoadType)) {
+        ASSERT(historyItem);
+        m_provisionalItem = historyItem;
+    }
+
     if (targetFrame && targetFrame.get() != m_frame) {
         bool wasInSamePage = targetFrame->page() == m_frame->page();
 
@@ -791,7 +853,8 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
 
     setReferrerForFrameRequest(request.resourceRequest(), request.shouldSendReferrer(), request.originDocument());
 
-    FrameLoadType newLoadType = determineFrameLoadType(request);
+    FrameLoadType newLoadType = (frameLoadType == FrameLoadTypeStandard) ?
+        determineFrameLoadType(request) : frameLoadType;
     NavigationPolicy policy = navigationPolicyForRequest(request);
     if (shouldOpenInNewWindow(targetFrame.get(), request, policy)) {
         if (policy == NavigationPolicyDownload) {
@@ -804,20 +867,46 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     }
 
     const KURL& url = request.resourceRequest().url();
-    if (policy == NavigationPolicyCurrentTab && shouldPerformFragmentNavigation(request.form(), request.resourceRequest().httpMethod(), newLoadType, url)) {
-        m_documentLoader->setNavigationType(determineNavigationType(newLoadType, false, request.triggeringEvent()));
-        if (shouldTreatURLAsSameAsCurrent(url))
-            newLoadType = FrameLoadTypeRedirectWithLockedBackForwardList;
-        loadInSameDocument(url, nullptr, newLoadType, request.clientRedirect());
+    bool sameDocumentHistoryNavigation =
+        isBackForwardLoadType(newLoadType) && historyLoadType == HistorySameDocumentLoad;
+    bool sameDocumentNavigation = policy == NavigationPolicyCurrentTab
+        && shouldPerformFragmentNavigation(
+            request.form(), request.resourceRequest().httpMethod(), newLoadType, url);
+
+    // Perform same document navigation.
+    if (sameDocumentHistoryNavigation || sameDocumentNavigation) {
+        ASSERT(historyItem || !sameDocumentHistoryNavigation);
+        RefPtr<SerializedScriptValue> stateObject = sameDocumentHistoryNavigation ?
+            historyItem->stateObject() : nullptr;
+
+        if (!sameDocumentHistoryNavigation) {
+            m_documentLoader->setNavigationType(determineNavigationType(
+                newLoadType, false, request.triggeringEvent()));
+            if (shouldTreatURLAsSameAsCurrent(url))
+                newLoadType = FrameLoadTypeRedirectWithLockedBackForwardList;
+        }
+
+        loadInSameDocument(url, stateObject, newLoadType, request.clientRedirect());
+
+        if (sameDocumentHistoryNavigation)
+            restoreScrollPositionAndViewState();
         return;
     }
+
+    // Perform navigation to a different document.
     bool sameURL = url == m_documentLoader->urlForHistory();
     startLoad(request, newLoadType, policy);
+
     // Example of this case are sites that reload the same URL with a different cookie
     // driving the generated content, or a master frame with links that drive a target
     // frame, where the user has clicked on the same link repeatedly.
-    if (sameURL && newLoadType != FrameLoadTypeReload && newLoadType != FrameLoadTypeReloadFromOrigin && request.resourceRequest().httpMethod() != "POST")
+    if (sameURL
+        && !isBackForwardLoadType(frameLoadType)
+        && newLoadType != FrameLoadTypeReload
+        && newLoadType != FrameLoadTypeReloadFromOrigin
+        && request.resourceRequest().httpMethod() != "POST") {
         m_loadType = FrameLoadTypeSame;
+    }
 }
 
 SubstituteData FrameLoader::defaultSubstituteDataForURL(const KURL& url)
@@ -837,50 +926,6 @@ void FrameLoader::reportLocalLoadFailed(LocalFrame* frame, const String& url)
         return;
 
     frame->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, "Not allowed to load local resource: " + url));
-}
-
-// static
-ResourceRequest FrameLoader::requestFromHistoryItem(HistoryItem* item, ResourceRequestCachePolicy cachePolicy)
-{
-    RefPtr<FormData> formData = item->formData();
-    ResourceRequest request(item->url());
-    request.setHTTPReferrer(item->referrer());
-    request.setCachePolicy(cachePolicy);
-    if (formData) {
-        request.setHTTPMethod("POST");
-        request.setHTTPBody(formData);
-        request.setHTTPContentType(item->formContentType());
-        RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer().referrer);
-        request.addHTTPOriginIfNeeded(securityOrigin->toAtomicString());
-    }
-    return request;
-}
-
-void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, ClientRedirectPolicy clientRedirectPolicy)
-{
-    if (!m_currentItem)
-        return;
-
-    ResourceRequestCachePolicy cachePolicy = reloadPolicy == EndToEndReload ? ReloadBypassingCache : ReloadIgnoringCacheData;
-    ResourceRequest request = requestFromHistoryItem(m_currentItem.get(), cachePolicy);
-
-    // ClientRedirectPolicy is an indication that this load was triggered by
-    // some direct interaction with the page. If this reload is not a client
-    // redirect, we should reuse the referrer from the original load of the
-    // current document. If this reload is a client redirect (e.g., location.reload()),
-    // it was initiated by something in the current document and should
-    // therefore show the current document's url as the referrer.
-    if (clientRedirectPolicy == ClientRedirect)
-        request.setHTTPReferrer(Referrer(m_frame->document()->outgoingReferrer(), m_frame->document()->referrerPolicy()));
-
-    if (!overrideURL.isEmpty()) {
-        request.setURL(overrideURL);
-        request.clearHTTPReferrer();
-    }
-    request.setSkipServiceWorker(reloadPolicy == EndToEndReload);
-    FrameLoadRequest frameLoadRequest(nullptr, request);
-    frameLoadRequest.setClientRedirect(clientRedirectPolicy);
-    startLoad(frameLoadRequest, reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload, NavigationPolicyCurrentTab);
 }
 
 void FrameLoader::stopAllLoaders()
@@ -1131,11 +1176,11 @@ void FrameLoader::receivedMainResourceError(DocumentLoader* loader, const Resour
 
 bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType loadType, const KURL& url)
 {
-    ASSERT(loadType != FrameLoadTypeReloadFromOrigin);
     // We don't do this if we are submitting a form with method other than "GET", explicitly reloading,
     // currently displaying a frameset, or if the URL does not have a fragment.
     return (!isFormSubmission || equalIgnoringCase(httpMethod, "GET"))
         && loadType != FrameLoadTypeReload
+        && loadType != FrameLoadTypeReloadFromOrigin
         && loadType != FrameLoadTypeSame
         && loadType != FrameLoadTypeBackForward
         && url.hasFragmentIdentifier()
@@ -1341,24 +1386,6 @@ bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
     if (!isHTMLIFrameElement(ownerElement))
         return false;
     return ownerElement->fastHasAttribute(srcdocAttr);
-}
-
-void FrameLoader::loadHistoryItem(HistoryItem* item, FrameLoadType frameLoadType, HistoryLoadType historyLoadType, ResourceRequestCachePolicy cachePolicy)
-{
-    RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
-    if (m_frame->page()->defersLoading()) {
-        m_deferredHistoryLoad = DeferredHistoryLoad(item, historyLoadType, cachePolicy);
-        return;
-    }
-
-    m_provisionalItem = item;
-    if (historyLoadType == HistorySameDocumentLoad) {
-        loadInSameDocument(item->url(), item->stateObject(), frameLoadType, NotClientRedirect);
-        restoreScrollPositionAndViewState();
-        return;
-    }
-    FrameLoadRequest request(nullptr, requestFromHistoryItem(item, cachePolicy));
-    startLoad(request, frameLoadType, NavigationPolicyCurrentTab);
 }
 
 void FrameLoader::dispatchDocumentElementAvailable()

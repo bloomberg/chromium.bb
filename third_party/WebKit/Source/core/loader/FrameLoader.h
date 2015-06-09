@@ -66,21 +66,25 @@ class CORE_EXPORT FrameLoader final {
     WTF_MAKE_NONCOPYABLE(FrameLoader);
     DISALLOW_ALLOCATION();
 public:
-    static ResourceRequest requestFromHistoryItem(HistoryItem*, ResourceRequestCachePolicy);
+    static ResourceRequest resourceRequestFromHistoryItem(HistoryItem*, ResourceRequestCachePolicy);
 
     FrameLoader(LocalFrame*);
     ~FrameLoader();
 
     void init();
 
+    ResourceRequest resourceRequestForReload(FrameLoadType, const KURL& overrideURL = KURL(),
+        ClientRedirectPolicy = NotClientRedirect);
+
     ProgressTracker& progress() const { return *m_progressTracker; }
 
-    // These functions start a load. All eventually call into startLoad() or loadInSameDocument().
-    void load(const FrameLoadRequest&); // The entry point for non-reload, non-history loads.
-    void reload(ReloadPolicy, const KURL& overrideURL = KURL(), ClientRedirectPolicy = NotClientRedirect);
-    void loadHistoryItem(HistoryItem*, FrameLoadType = FrameLoadTypeBackForward,
-        HistoryLoadType = HistoryDifferentDocumentLoad,
-        ResourceRequestCachePolicy = UseProtocolCachePolicy); // The entry point for all back/forward loads
+    // Starts a load. It will eventually call startLoad() or
+    // loadInSameDocument(). For history navigations or reloads, an appropriate
+    // FrameLoadType should be given. Otherwise, FrameLoadTypeStandard should be
+    // used (and the final FrameLoadType will be computed). For history
+    // navigations, a history item and a HistoryLoadType should also be provided.
+    void load(const FrameLoadRequest&, FrameLoadType = FrameLoadTypeStandard,
+        HistoryItem* = nullptr, HistoryLoadType = HistoryDifferentDocumentLoad);
 
     static void reportLocalLoadFailed(LocalFrame*, const String& url);
 
@@ -225,30 +229,31 @@ private:
     RefPtrWillBeMember<HistoryItem> m_provisionalItem;
 
     struct DeferredHistoryLoad {
-        DISALLOW_ALLOCATION();
+        DISALLOW_COPY(DeferredHistoryLoad);
     public:
-        DeferredHistoryLoad(HistoryItem* item, HistoryLoadType type, ResourceRequestCachePolicy cachePolicy)
-            : m_item(item)
-            , m_type(type)
-            , m_cachePolicy(cachePolicy)
+        DeferredHistoryLoad(ResourceRequest request, HistoryItem* item, FrameLoadType loadType,
+            HistoryLoadType historyLoadType)
+            : m_request(request)
+            , m_item(item)
+            , m_loadType(loadType)
+            , m_historyLoadType(historyLoadType)
         {
         }
 
         DeferredHistoryLoad() { }
-
-        bool isValid() { return m_item; }
 
         DEFINE_INLINE_TRACE()
         {
             visitor->trace(m_item);
         }
 
+        ResourceRequest m_request;
         RefPtrWillBeMember<HistoryItem> m_item;
-        HistoryLoadType m_type;
-        ResourceRequestCachePolicy m_cachePolicy;
+        FrameLoadType m_loadType;
+        HistoryLoadType m_historyLoadType;
     };
 
-    DeferredHistoryLoad m_deferredHistoryLoad;
+    OwnPtr<DeferredHistoryLoad> m_deferredHistoryLoad;
 
     bool m_inStopAllLoaders;
 

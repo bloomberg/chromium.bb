@@ -30,6 +30,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/FrameTypes.h"
+#include "core/loader/FrameLoaderTypes.h"
 #include "core/page/FrameTree.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -73,7 +74,7 @@ public:
     // This version of Frame::navigate assumes the resulting navigation is not
     // to be started on a timer. Use the method above in such cases.
     virtual void navigate(const FrameLoadRequest&) = 0;
-    virtual void reload(ReloadPolicy, ClientRedirectPolicy) = 0;
+    virtual void reload(FrameLoadType, ClientRedirectPolicy) = 0;
 
     virtual void detach();
     void detachChildren();

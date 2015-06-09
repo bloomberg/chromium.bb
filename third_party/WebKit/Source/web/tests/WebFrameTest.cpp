@@ -5979,7 +5979,10 @@ TEST_P(ParameterizedWebFrameTest, SameDocumentHistoryNavigationCommitType)
     RefPtrWillBePersistent<HistoryItem> item = toLocalFrame(webViewImpl->page()->mainFrame())->loader().currentItem();
     runPendingTasks();
 
-    toLocalFrame(webViewImpl->page()->mainFrame())->loader().loadHistoryItem(item.get(), FrameLoadTypeBackForward, HistorySameDocumentLoad);
+    toLocalFrame(webViewImpl->page()->mainFrame())->loader().load(
+        FrameLoadRequest(nullptr, FrameLoader::resourceRequestFromHistoryItem(
+            item.get(), UseProtocolCachePolicy)),
+        FrameLoadTypeBackForward, item.get(), HistorySameDocumentLoad);
     EXPECT_EQ(WebBackForwardCommit, client.lastCommitType());
 }
 

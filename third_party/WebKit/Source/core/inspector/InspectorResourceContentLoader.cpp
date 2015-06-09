@@ -98,7 +98,8 @@ void InspectorResourceContentLoader::start()
         ResourceRequest resourceRequest;
         HistoryItem* item = document->frame() ? document->frame()->loader().currentItem() : nullptr;
         if (item) {
-            resourceRequest = FrameLoader::requestFromHistoryItem(item, ReturnCacheDataDontLoad);
+            resourceRequest =
+                FrameLoader::resourceRequestFromHistoryItem(item, ReturnCacheDataDontLoad);
         } else {
             resourceRequest = document->url();
             resourceRequest.setCachePolicy(ReturnCacheDataDontLoad);

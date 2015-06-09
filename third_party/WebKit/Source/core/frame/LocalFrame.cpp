@@ -256,13 +256,20 @@ void LocalFrame::navigate(const FrameLoadRequest& request)
     m_loader.load(request);
 }
 
-void LocalFrame::reload(ReloadPolicy reloadPolicy, ClientRedirectPolicy clientRedirectPolicy)
+void LocalFrame::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedirectPolicy)
 {
-    ASSERT(clientRedirectPolicy == NotClientRedirect || reloadPolicy == NormalReload);
-    if (clientRedirectPolicy == NotClientRedirect)
-        m_loader.reload(reloadPolicy);
-    else
+    ASSERT(loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadFromOrigin);
+    ASSERT(clientRedirectPolicy == NotClientRedirect || loadType == FrameLoadTypeReload);
+    if (clientRedirectPolicy == NotClientRedirect) {
+        if (!m_loader.currentItem())
+            return;
+        FrameLoadRequest request = FrameLoadRequest(
+            nullptr, m_loader.resourceRequestForReload(loadType, KURL(), clientRedirectPolicy));
+        request.setClientRedirect(clientRedirectPolicy);
+        m_loader.load(request, loadType);
+    } else {
         m_navigationScheduler.scheduleReload();
+    }
 }
 
 void LocalFrame::detach()

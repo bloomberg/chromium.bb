@@ -31,11 +31,6 @@
 
 namespace blink {
 
-enum ReloadPolicy {
-    NormalReload,
-    EndToEndReload
-};
-
 enum ClientRedirectPolicy {
     NotClientRedirect,
     ClientRedirect

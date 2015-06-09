@@ -124,7 +124,7 @@ void History::go(ExecutionContext* context, int distance)
     if (distance)
         m_frame->loader().client()->navigateBackForward(distance);
     else
-        m_frame->reload(NormalReload, ClientRedirect);
+        m_frame->reload(FrameLoadTypeReload, ClientRedirect);
 }
 
 KURL History::urlForState(const String& urlString)

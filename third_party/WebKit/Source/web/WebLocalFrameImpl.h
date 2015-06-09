@@ -235,6 +235,11 @@ public:
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) override;
     virtual WebDevToolsAgent* devToolsAgent() override;
     virtual void sendPings(const WebNode& linkNode, const WebURL& destinationURL) override;
+    virtual WebURLRequest requestFromHistoryItem(const WebHistoryItem&, WebURLRequest::CachePolicy)
+        const override;
+    virtual WebURLRequest requestForReload(WebFrameLoadType, const WebURL&) const override;
+    virtual void load(const WebURLRequest&, WebFrameLoadType, const WebHistoryItem&,
+        WebHistoryLoadType) override;
     virtual bool isLoading() const override;
     virtual bool isResourceLoadInProgress() const override;
     virtual void setCommittedFirstRealLoad() override;

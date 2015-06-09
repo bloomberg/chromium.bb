@@ -30,7 +30,7 @@ public:
 
     // RemoteFrameClient overrides:
     virtual void navigate(const ResourceRequest&, bool shouldReplaceCurrentEntry) override;
-    virtual void reload(ReloadPolicy, ClientRedirectPolicy) override;
+    virtual void reload(FrameLoadType, ClientRedirectPolicy) override;
     virtual void forwardInputEvent(Event*) override;
 
     WebRemoteFrameImpl* webFrame() const { return m_webFrame; }

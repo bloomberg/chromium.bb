@@ -177,7 +177,13 @@ public:
     virtual void fire(LocalFrame* frame) override
     {
         OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        frame->loader().reload(NormalReload, KURL(), ClientRedirect);
+        ResourceRequest resourceRequest =
+            frame->loader().resourceRequestForReload(FrameLoadTypeReload, KURL(), ClientRedirect);
+        if (resourceRequest.isNull())
+            return;
+        FrameLoadRequest request = FrameLoadRequest(nullptr, resourceRequest);
+        request.setClientRedirect(ClientRedirect);
+        frame->loader().load(request, FrameLoadTypeReload);
     }
 
 private:

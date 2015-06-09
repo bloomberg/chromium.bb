@@ -104,10 +104,10 @@ void RemoteFrameClientImpl::navigate(const ResourceRequest& request, bool should
         m_webFrame->client()->navigate(WrappedResourceRequest(request), shouldReplaceCurrentEntry);
 }
 
-void RemoteFrameClientImpl::reload(ReloadPolicy reloadPolicy, ClientRedirectPolicy clientRedirectPolicy)
+void RemoteFrameClientImpl::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedirectPolicy)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->reload(reloadPolicy == EndToEndReload, clientRedirectPolicy == ClientRedirect);
+        m_webFrame->client()->reload(loadType == FrameLoadTypeReloadFromOrigin, clientRedirectPolicy == ClientRedirect);
 }
 
 // FIXME: Remove this code once we have input routing in the browser

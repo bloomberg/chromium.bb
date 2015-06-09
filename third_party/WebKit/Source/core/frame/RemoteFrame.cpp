@@ -77,9 +77,9 @@ void RemoteFrame::navigate(const FrameLoadRequest& passedRequest)
     navigate(*passedRequest.originDocument(), passedRequest.resourceRequest().url(), passedRequest.lockBackForwardList(), gesture);
 }
 
-void RemoteFrame::reload(ReloadPolicy reloadPolicy, ClientRedirectPolicy clientRedirectPolicy)
+void RemoteFrame::reload(FrameLoadType frameLoadType, ClientRedirectPolicy clientRedirectPolicy)
 {
-    remoteFrameClient()->reload(reloadPolicy, clientRedirectPolicy);
+    remoteFrameClient()->reload(frameLoadType, clientRedirectPolicy);
 }
 
 void RemoteFrame::detach()

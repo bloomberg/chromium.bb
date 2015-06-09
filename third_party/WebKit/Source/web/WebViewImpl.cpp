@@ -72,6 +72,7 @@
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/ContextMenuProvider.h"
@@ -2759,8 +2760,16 @@ void WebViewImpl::setPageEncoding(const WebString& encodingName)
         newEncodingName = encodingName;
     m_page->frameHost().setOverrideEncoding(newEncodingName);
 
-    if (m_page->mainFrame()->isLocalFrame())
-        m_page->deprecatedLocalMainFrame()->loader().reload(NormalReload);
+    if (m_page->mainFrame()->isLocalFrame()) {
+        if (!m_page->deprecatedLocalMainFrame()->loader().currentItem())
+            return;
+        FrameLoadRequest request = FrameLoadRequest(
+            nullptr,
+            m_page->deprecatedLocalMainFrame()->loader().resourceRequestForReload(
+                FrameLoadTypeReload, KURL(), ClientRedirect));
+        request.setClientRedirect(ClientRedirect);
+        m_page->deprecatedLocalMainFrame()->loader().load(request, FrameLoadTypeReload);
+    }
 }
 
 WebFrame* WebViewImpl::mainFrame()

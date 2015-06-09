@@ -944,14 +944,22 @@ v8::Local<v8::Context> WebLocalFrameImpl::mainWorldScriptContext() const
 
 void WebLocalFrameImpl::reload(bool ignoreCache)
 {
-    ASSERT(frame());
-    frame()->loader().reload(ignoreCache ? EndToEndReload : NormalReload);
+    // TODO(clamy): Remove this function once RenderFrame calls load for all
+    // requests.
+    reloadWithOverrideURL(KURL(), ignoreCache);
 }
 
 void WebLocalFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache)
 {
+    // TODO(clamy): Remove this function once RenderFrame calls load for all
+    // requests.
     ASSERT(frame());
-    frame()->loader().reload(ignoreCache ? EndToEndReload : NormalReload, overrideUrl);
+    WebFrameLoadType loadType = ignoreCache ?
+        WebFrameLoadType::ReloadFromOrigin : WebFrameLoadType::Reload;
+    WebURLRequest request = requestForReload(loadType, overrideUrl);
+    if (request.isNull())
+        return;
+    load(request, loadType, WebHistoryItem(), WebHistoryDifferentDocumentLoad);
 }
 
 void WebLocalFrameImpl::reloadImage(const WebNode& webNode)
@@ -965,25 +973,18 @@ void WebLocalFrameImpl::reloadImage(const WebNode& webNode)
 
 void WebLocalFrameImpl::loadRequest(const WebURLRequest& request)
 {
-    ASSERT(frame());
-    ASSERT(!request.isNull());
-    const ResourceRequest& resourceRequest = request.toResourceRequest();
-
-    if (resourceRequest.url().protocolIs("javascript")) {
-        loadJavaScriptURL(resourceRequest.url());
-        return;
-    }
-
-    frame()->loader().load(FrameLoadRequest(0, resourceRequest));
+    // TODO(clamy): Remove this function once RenderFrame calls load for all
+    // requests.
+    load(request, WebFrameLoadType::Standard, WebHistoryItem(), WebHistoryDifferentDocumentLoad);
 }
 
-void WebLocalFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLoadType loadType, WebURLRequest::CachePolicy cachePolicy)
+void WebLocalFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLoadType loadType,
+    WebURLRequest::CachePolicy cachePolicy)
 {
-    ASSERT(frame());
-    RefPtrWillBeRawPtr<HistoryItem> historyItem = PassRefPtrWillBeRawPtr<HistoryItem>(item);
-    ASSERT(historyItem);
-    frame()->loader().loadHistoryItem(historyItem.get(), FrameLoadTypeBackForward,
-        static_cast<HistoryLoadType>(loadType), static_cast<ResourceRequestCachePolicy>(cachePolicy));
+    // TODO(clamy): Remove this function once RenderFrame calls load for all
+    // requests.
+    WebURLRequest request = requestFromHistoryItem(item, cachePolicy);
+    load(request, WebFrameLoadType::BackForward, item, loadType);
 }
 
 void WebLocalFrameImpl::loadData(const WebData& data, const WebString& mimeType, const WebString& textEncoding, const WebURL& baseURL, const WebURL& unreachableURL, bool replace)
@@ -1734,10 +1735,14 @@ PassRefPtrWillBeRawPtr<LocalFrame> WebLocalFrameImpl::createChildFrame(const Fra
     if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
         childItem = PassRefPtrWillBeRawPtr<HistoryItem>(webframeChild->client()->historyItemForNewChildFrame(webframeChild));
 
-    if (childItem)
-        child->loader().loadHistoryItem(childItem.get(), FrameLoadTypeInitialHistoryLoad);
-    else
-        child->loader().load(request);
+    FrameLoadRequest newRequest = request;
+    FrameLoadType loadType = FrameLoadTypeStandard;
+    if (childItem) {
+        newRequest = FrameLoadRequest(request.originDocument(),
+            FrameLoader::resourceRequestFromHistoryItem(childItem.get(), UseProtocolCachePolicy));
+        loadType = FrameLoadTypeInitialHistoryLoad;
+    }
+    child->loader().load(newRequest, loadType, childItem.get());
 
     // Note a synchronous navigation (about:blank) would have already processed
     // onload, so it is possible for the child frame to have already been
@@ -2013,6 +2018,45 @@ void WebLocalFrameImpl::sendPings(const WebNode& linkNode, const WebURL& destina
     const Node* node = linkNode.constUnwrap<Node>();
     if (isHTMLAnchorElement(node))
         toHTMLAnchorElement(node)->sendPings(destinationURL);
+}
+
+WebURLRequest WebLocalFrameImpl::requestFromHistoryItem(const WebHistoryItem& item,
+    WebURLRequest::CachePolicy cachePolicy) const
+{
+    RefPtrWillBeRawPtr<HistoryItem> historyItem = PassRefPtrWillBeRawPtr<HistoryItem>(item);
+    ResourceRequest request = FrameLoader::resourceRequestFromHistoryItem(
+        historyItem.get(), static_cast<ResourceRequestCachePolicy>(cachePolicy));
+    return WrappedResourceRequest(request);
+}
+
+WebURLRequest WebLocalFrameImpl::requestForReload(WebFrameLoadType loadType,
+    const WebURL& overrideUrl) const
+{
+    ASSERT(frame());
+    ResourceRequest request = frame()->loader().resourceRequestForReload(
+        static_cast<FrameLoadType>(loadType), overrideUrl);
+    return WrappedResourceRequest(request);
+}
+
+void WebLocalFrameImpl::load(const WebURLRequest& request, WebFrameLoadType webFrameLoadType,
+    const WebHistoryItem& item, WebHistoryLoadType webHistoryLoadType)
+{
+    ASSERT(frame());
+    ASSERT(!request.isNull());
+    ASSERT(webFrameLoadType != WebFrameLoadType::RedirectWithLockedBackForwardList);
+    const ResourceRequest& resourceRequest = request.toResourceRequest();
+
+    if (resourceRequest.url().protocolIs("javascript")
+        && webFrameLoadType == WebFrameLoadType::Standard) {
+        loadJavaScriptURL(resourceRequest.url());
+        return;
+    }
+
+    FrameLoadRequest frameRequest = FrameLoadRequest(nullptr, resourceRequest);
+    RefPtrWillBeRawPtr<HistoryItem> historyItem = PassRefPtrWillBeRawPtr<HistoryItem>(item);
+    frame()->loader().load(
+        frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem.get(),
+        static_cast<HistoryLoadType>(webHistoryLoadType));
 }
 
 bool WebLocalFrameImpl::isLoading() const
