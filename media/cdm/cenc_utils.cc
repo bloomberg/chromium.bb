@@ -4,7 +4,9 @@
 
 #include "media/cdm/cenc_utils.h"
 
-#include "media/base/bit_reader.h"
+#include "base/stl_util.h"
+#include "media/formats/mp4/box_definitions.h"
+#include "media/formats/mp4/box_reader.h"
 
 namespace media {
 
@@ -12,31 +14,6 @@ namespace media {
 // Encryption ('cenc') protection scheme may contain one or more protection
 // system specific header ('pssh') boxes.
 // ref: https://w3c.github.io/encrypted-media/cenc-format.html
-//
-// The format of a 'pssh' box is as follows:
-//   unsigned int(32) size;
-//   unsigned int(32) type = "pssh";
-//   if (size==1) {
-//     unsigned int(64) largesize;
-//   } else if (size==0) {
-//     -- box extends to end of file
-//   }
-//   unsigned int(8) version;
-//   bit(24) flags;
-//   unsigned int(8)[16] SystemID;
-//   if (version > 0)
-//   {
-//     unsigned int(32) KID_count;
-//     {
-//       unsigned int(8)[16] KID;
-//     } [KID_count]
-//   }
-//   unsigned int(32) DataSize;
-//   unsigned int(8)[DataSize] Data;
-
-// Minimum size of a 'pssh' box includes  all the required fields (size, type,
-// version, flags, SystemID, DataSize).
-const int kMinimumBoxSizeInBytes = 32;
 
 // SystemID for the Common System.
 // https://w3c.github.io/encrypted-media/cenc-format.html#common-system
@@ -45,136 +22,102 @@ const uint8_t kCommonSystemId[] = { 0x10, 0x77, 0xef, 0xec,
                                     0xac, 0xe3, 0x3c, 0x1e,
                                     0x52, 0xe2, 0xfb, 0x4b };
 
-#define RCHECK(x)   \
-  do {              \
-    if (!(x))       \
-      return false; \
-  } while (0)
+static bool ReadAllPsshBoxes(
+    const std::vector<uint8_t>& input,
+    std::vector<mp4::FullProtectionSystemSpecificHeader>* pssh_boxes) {
+  DCHECK(!input.empty());
 
-// Helper function to read up to 32 bits from a bit stream.
-static uint32_t ReadBits(BitReader* reader, int num_bits) {
-  DCHECK_GE(reader->bits_available(), num_bits);
-  DCHECK((num_bits > 0) && (num_bits <= 32));
-  uint32_t value;
-  reader->ReadBits(num_bits, &value);
-  return value;
-}
+  // Verify that |input| contains only 'pssh' boxes. ReadAllChildren() is
+  // templated, so it checks that each box in |input| matches the box type of
+  // the parameter (in this case mp4::ProtectionSystemSpecificHeader is a
+  // 'pssh' box). mp4::ProtectionSystemSpecificHeader doesn't validate the
+  // 'pssh' contents, so this simply verifies that |input| only contains
+  // 'pssh' boxes and nothing else.
+  scoped_ptr<mp4::BoxReader> input_reader(
+      mp4::BoxReader::ReadConcatentatedBoxes(
+          vector_as_array(&input), input.size()));
+  std::vector<mp4::ProtectionSystemSpecificHeader> raw_pssh_boxes;
+  if (!input_reader->ReadAllChildren(&raw_pssh_boxes))
+    return false;
 
-// Checks whether the next 16 bytes matches the Common SystemID.
-// Assumes |reader| has enough data.
-static bool IsCommonSystemID(BitReader* reader) {
-  for (uint32_t i = 0; i < arraysize(kCommonSystemId); ++i) {
-    if (ReadBits(reader, 8) != kCommonSystemId[i])
-      return false;
-  }
-  return true;
-}
-
-// Checks that |reader| contains a valid 'ppsh' box header. |reader| is updated
-// to point to the content immediately following the box header. Returns true
-// if the header looks valid and |reader| contains enough data for the size of
-// header. |size| is updated as the computed size of the box header. Otherwise
-// false is returned.
-static bool ValidBoxHeader(BitReader* reader, uint32* size) {
-  // Enough data for a miniumum size 'pssh' box?
-  uint32 available_bytes = reader->bits_available() / 8;
-  RCHECK(available_bytes >= kMinimumBoxSizeInBytes);
-
-  *size = ReadBits(reader, 32);
-
-  // Must be a 'pssh' box or else fail.
-  RCHECK(ReadBits(reader, 8) == 'p');
-  RCHECK(ReadBits(reader, 8) == 's');
-  RCHECK(ReadBits(reader, 8) == 's');
-  RCHECK(ReadBits(reader, 8) == 'h');
-
-  if (*size == 1) {
-    // If largesize > 2**32 it is too big.
-    RCHECK(ReadBits(reader, 32) == 0);
-    *size = ReadBits(reader, 32);
-  } else if (*size == 0) {
-    *size = available_bytes;
+  // Now that we have |input| parsed into |raw_pssh_boxes|, reparse each one
+  // into a mp4::FullProtectionSystemSpecificHeader, which extracts all the
+  // relevant fields from the box. Since there may be unparseable 'pssh' boxes
+  // (due to unsupported version, for example), this is done one by one,
+  // ignoring any boxes that can't be parsed.
+  for (const auto& raw_pssh_box : raw_pssh_boxes) {
+    scoped_ptr<mp4::BoxReader> raw_pssh_reader(
+        mp4::BoxReader::ReadConcatentatedBoxes(
+            vector_as_array(&raw_pssh_box.raw_box),
+            raw_pssh_box.raw_box.size()));
+    // ReadAllChildren() appends any successfully parsed box onto it's
+    // parameter, so |pssh_boxes| will contain the collection of successfully
+    // parsed 'pssh' boxes. If an error occurs, try the next box.
+    if (!raw_pssh_reader->ReadAllChildren(pssh_boxes))
+      continue;
   }
 
-  // Check that the buffer contains at least size bytes.
-  return available_bytes >= *size;
+  // Must have successfully parsed at least one 'pssh' box.
+  return pssh_boxes->size() > 0;
 }
 
 bool ValidatePsshInput(const std::vector<uint8_t>& input) {
-  size_t offset = 0;
-  while (offset < input.size()) {
-    // Create a BitReader over the remaining part of the buffer.
-    BitReader reader(&input[offset], input.size() - offset);
-    uint32 size;
-    RCHECK(ValidBoxHeader(&reader, &size));
+  // No 'pssh' boxes is considered valid.
+  if (input.empty())
+    return true;
 
-    // Update offset to point at the next 'pssh' box (may not be one).
-    offset += size;
-  }
-
-  // Only valid if this contains 0 or more 'pssh' boxes.
-  return offset == input.size();
+  std::vector<mp4::FullProtectionSystemSpecificHeader> children;
+  return ReadAllPsshBoxes(input, &children);
 }
 
 bool GetKeyIdsForCommonSystemId(const std::vector<uint8_t>& input,
                                 KeyIdList* key_ids) {
-  size_t offset = 0;
   KeyIdList result;
+  std::vector<uint8_t> common_system_id(
+      kCommonSystemId, kCommonSystemId + arraysize(kCommonSystemId));
 
-  while (offset < input.size()) {
-    BitReader reader(&input[offset], input.size() - offset);
-    uint32 size;
-    RCHECK(ValidBoxHeader(&reader, &size));
+  if (!input.empty()) {
+    std::vector<mp4::FullProtectionSystemSpecificHeader> children;
+    if (!ReadAllPsshBoxes(input, &children))
+      return false;
 
-    // Update offset to point at the next 'pssh' box (may not be one).
-    offset += size;
-
-    // Check the version, as KIDs only available if version > 0.
-    uint8_t version = ReadBits(&reader, 8);
-    if (version == 0)
-      continue;
-
-    // flags must be 0. If not, assume incorrect 'pssh' box and move to the
-    // next one.
-    if (ReadBits(&reader, 24) != 0)
-      continue;
-
-    // Validate SystemID
-    RCHECK(static_cast<uint32_t>(reader.bits_available()) >=
-           arraysize(kCommonSystemId) * 8);
-    if (!IsCommonSystemID(&reader))
-      continue;  // Not Common System, so try the next pssh box.
-
-    // Since version > 0, next field is the KID_count.
-    RCHECK(static_cast<uint32_t>(reader.bits_available()) >=
-           sizeof(uint32_t) * 8);
-    uint32_t count = ReadBits(&reader, 32);
-
-    if (count == 0)
-      continue;
-
-    // Make sure there is enough data for all the KIDs specified, and then
-    // extract them.
-    RCHECK(static_cast<uint32_t>(reader.bits_available()) > count * 16 * 8);
-    while (count > 0) {
-      std::vector<uint8_t> key;
-      key.reserve(16);
-      for (int i = 0; i < 16; ++i) {
-        key.push_back(ReadBits(&reader, 8));
-      }
-      result.push_back(key);
-      --count;
+    // Check all children for an appropriate 'pssh' box, concatenating any
+    // key IDs found.
+    for (const auto& child : children) {
+      if (child.system_id == common_system_id && child.key_ids.size() > 0)
+        result.insert(result.end(), child.key_ids.begin(), child.key_ids.end());
     }
-
-    // Don't bother checking DataSize and Data.
   }
 
-  key_ids->swap(result);
-
+  // No matching 'pssh' box found.
   // TODO(jrummell): This should return true only if there was at least one
   // key ID present. However, numerous test files don't contain the 'pssh' box
   // for Common Format, so no keys are found. http://crbug.com/460308
+  key_ids->swap(result);
   return true;
+}
+
+bool GetPsshData(const std::vector<uint8_t>& input,
+                 const std::vector<uint8_t>& system_id,
+                 std::vector<uint8_t>* pssh_data) {
+  if (input.empty())
+    return false;
+
+  std::vector<mp4::FullProtectionSystemSpecificHeader> children;
+  if (!ReadAllPsshBoxes(input, &children))
+    return false;
+
+  // Check all children for an appropriate 'pssh' box, returning |data| from
+  // the first one found.
+  for (const auto& child : children) {
+    if (child.system_id == system_id) {
+      pssh_data->assign(child.data.begin(), child.data.end());
+      return true;
+    }
+  }
+
+  // No matching 'pssh' box found.
+  return false;
 }
 
 }  // namespace media

@@ -101,6 +101,14 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
                                int* box_size,
                                bool* err) WARN_UNUSED_RESULT;
 
+  // Create a BoxReader from a buffer. |buf| must be the complete buffer, as
+  // errors are returned when sufficient data is not available. |buf| can start
+  // with any type of box -- it does not have to be IsValidTopLevelBox().
+  //
+  // |buf| is retained but not owned, and must outlive the BoxReader instance.
+  static BoxReader* ReadConcatentatedBoxes(const uint8* buf,
+                                           const int buf_size);
+
   // Returns true if |type| is recognized to be a top-level box, false
   // otherwise. This returns true for some boxes which we do not parse.
   // Helpful in debugging misaligned appends.
@@ -148,7 +156,9 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
   const LogCB& log_cb() const { return log_cb_; }
 
  private:
-  BoxReader(const uint8* buf, const int size, const LogCB& log_cb);
+  // Create a BoxReader from |buf|. |is_EOS| should be true if |buf| is
+  // complete stream (i.e. no additional data is expected to be appended).
+  BoxReader(const uint8* buf, const int size, const LogCB& log_cb, bool is_EOS);
 
   // Must be called immediately after init. If the return is false, this
   // indicates that the box header and its contents were not available in the
@@ -170,6 +180,9 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
   // valid if scanned_ is true.
   ChildMap children_;
   bool scanned_;
+
+  // True if the buffer provided to the reader is the complete stream.
+  const bool is_EOS_;
 };
 
 // Template definitions
@@ -207,8 +220,8 @@ bool BoxReader::ReadAllChildren(std::vector<T>* children) {
   scanned_ = true;
 
   bool err = false;
-  while (pos() < size()) {
-    BoxReader child_reader(&buf_[pos_], size_ - pos_, log_cb_);
+  while (pos_ < size_) {
+    BoxReader child_reader(&buf_[pos_], size_ - pos_, log_cb_, is_EOS_);
     if (!child_reader.ReadHeader(&err)) break;
     T child;
     RCHECK(child.Parse(&child_reader));
