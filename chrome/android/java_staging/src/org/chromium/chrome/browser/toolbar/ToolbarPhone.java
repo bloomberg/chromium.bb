@@ -673,7 +673,7 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void updateUrlExpansionAnimation() {
-        if (mInTabSwitcherMode) return;
+        if (mInTabSwitcherMode || isTabSwitcherAnimationRunning()) return;
 
         mLocationBarBackgroundOffset.setEmpty();
 
