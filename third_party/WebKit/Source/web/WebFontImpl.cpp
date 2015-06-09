@@ -101,6 +101,7 @@ void WebFontImpl::drawText(WebCanvas* canvas, const WebTextRun& run, const WebFl
 
     {
         DrawingRecorder drawingRecorder(*context, *this, DisplayItem::WebFont, intRect);
+        ASSERT(!drawingRecorder.canUseCachedDrawing());
         context->save();
         context->setFillColor(color);
         context->clip(textClipRect);
