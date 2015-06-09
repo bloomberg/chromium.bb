@@ -676,9 +676,9 @@ LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
             return nullptr;
         if (curr->isLayoutFlowThread())
             return toLayoutFlowThread(curr);
-        LayoutObject* containingBlock = curr->containingBlock();
+        LayoutObject* container = curr->container();
         curr = curr->parent();
-        while (curr != containingBlock) {
+        while (curr != container) {
             if (curr->isLayoutFlowThread()) {
                 // The nearest ancestor flow thread isn't in our containing block chain. Then we
                 // aren't really part of any flow thread, and we should stop looking. This happens
