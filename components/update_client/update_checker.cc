@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"
@@ -128,30 +129,39 @@ bool UpdateCheckerImpl::CheckForUpdates(
 void UpdateCheckerImpl::OnRequestSenderComplete(const net::URLFetcher* source) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const GURL original_url(source->GetOriginalURL());
-  VLOG(1) << "Update check request went to: " << original_url.spec();
-
+  GURL original_url;
   int error = 0;
   std::string error_message;
   UpdateResponse update_response;
 
-  if (FetchSuccess(*source)) {
-    std::string xml;
-    source->GetResponseAsString(&xml);
-    if (!update_response.Parse(xml)) {
-      error = -1;
-      error_message = update_response.errors();
-      VLOG(1) << "Update request failed: " << error_message;
+  if (source) {
+    original_url = source->GetOriginalURL();
+    VLOG(1) << "Update check request went to: " << original_url.spec();
+    if (FetchSuccess(*source)) {
+      std::string xml;
+      source->GetResponseAsString(&xml);
+      if (!update_response.Parse(xml)) {
+        error = -1;
+        error_message = update_response.errors();
+      }
+    } else {
+      error = GetFetchError(*source);
+      error_message.assign("network error");
     }
   } else {
-    error = GetFetchError(*source);
-    error_message.assign("network error");
-    VLOG(1) << "Update request failed: network error";
+    error = -1;
+    error_message = "no fetcher";
+  }
+
+  if (error) {
+    VLOG(1) << "Update request failed: " << error_message;
   }
 
   request_sender_.reset();
-  update_check_callback_.Run(original_url, error, error_message,
-                             update_response.results());
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(update_check_callback_, original_url, error,
+                            error_message, update_response.results()));
 }
 
 }  // namespace

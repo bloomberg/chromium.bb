@@ -28,7 +28,8 @@ void RequestSender::Send(const std::string& request_string,
                          const RequestSenderCallback& request_sender_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (urls.empty()) {
-    request_sender_callback.Run(NULL);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(request_sender_callback, nullptr));
     return;
   }
 
@@ -64,7 +65,8 @@ void RequestSender::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  request_sender_callback_.Run(source);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(request_sender_callback_, source));
 }
 
 }  // namespace update_client

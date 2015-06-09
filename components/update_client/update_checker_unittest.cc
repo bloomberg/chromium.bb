@@ -181,7 +181,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
 
   EXPECT_EQ(1, post_interceptor_->GetHitCount())
       << post_interceptor_->GetRequestsAsString();
-  EXPECT_EQ(1, post_interceptor_->GetCount())
+  ASSERT_EQ(1, post_interceptor_->GetCount())
       << post_interceptor_->GetRequestsAsString();
 
   // Sanity check the request.
@@ -197,6 +197,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
             post_interceptor_->GetRequests()[0].find("<hw physmemory="));
 
   // Sanity check the arguments of the callback after parsing.
+  ASSERT_FALSE(config_->UpdateUrl().empty());
   EXPECT_EQ(config_->UpdateUrl().front(), original_url_);
   EXPECT_EQ(0, error_);
   EXPECT_TRUE(error_message_.empty());
@@ -228,6 +229,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
   EXPECT_EQ(1, post_interceptor_->GetCount())
       << post_interceptor_->GetRequestsAsString();
 
+  ASSERT_FALSE(config_->UpdateUrl().empty());
   EXPECT_EQ(config_->UpdateUrl().front(), original_url_);
   EXPECT_EQ(403, error_);
   EXPECT_STREQ("network error", error_message_.c_str());

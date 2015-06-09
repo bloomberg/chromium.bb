@@ -45,8 +45,8 @@ class RequestSenderTest : public testing::Test {
   scoped_ptr<RequestSender> request_sender_;
   scoped_ptr<InterceptorFactory> interceptor_factory_;
 
-  URLRequestPostInterceptor* post_interceptor_1;  // Owned by the factory.
-  URLRequestPostInterceptor* post_interceptor_2;  // Owned by the factory.
+  URLRequestPostInterceptor* post_interceptor_1_;  // Owned by the factory.
+  URLRequestPostInterceptor* post_interceptor_2_;  // Owned by the factory.
 
   const net::URLFetcher* url_fetcher_source_;
 
@@ -58,9 +58,9 @@ class RequestSenderTest : public testing::Test {
 };
 
 RequestSenderTest::RequestSenderTest()
-    : post_interceptor_1(NULL),
-      post_interceptor_2(NULL),
-      url_fetcher_source_(NULL) {
+    : post_interceptor_1_(nullptr),
+      post_interceptor_2_(nullptr),
+      url_fetcher_source_(nullptr) {
 }
 
 RequestSenderTest::~RequestSenderTest() {
@@ -71,12 +71,12 @@ void RequestSenderTest::SetUp() {
                                  base::ThreadTaskRunnerHandle::Get());
   interceptor_factory_.reset(
       new InterceptorFactory(base::ThreadTaskRunnerHandle::Get()));
-  post_interceptor_1 =
+  post_interceptor_1_ =
       interceptor_factory_->CreateInterceptorForPath(kUrlPath1);
-  post_interceptor_2 =
+  post_interceptor_2_ =
       interceptor_factory_->CreateInterceptorForPath(kUrlPath2);
-  EXPECT_TRUE(post_interceptor_1);
-  EXPECT_TRUE(post_interceptor_2);
+  EXPECT_TRUE(post_interceptor_1_);
+  EXPECT_TRUE(post_interceptor_2_);
 
   request_sender_.reset();
 }
@@ -84,8 +84,8 @@ void RequestSenderTest::SetUp() {
 void RequestSenderTest::TearDown() {
   request_sender_.reset();
 
-  post_interceptor_1 = NULL;
-  post_interceptor_2 = NULL;
+  post_interceptor_1_ = nullptr;
+  post_interceptor_2_ = nullptr;
 
   interceptor_factory_.reset();
 
@@ -123,7 +123,7 @@ void RequestSenderTest::RequestSenderComplete(const net::URLFetcher* source) {
 // Tests that when a request to the first url succeeds, the subsequent urls are
 // not tried.
 TEST_F(RequestSenderTest, RequestSendSuccess) {
-  EXPECT_TRUE(post_interceptor_1->ExpectRequest(new PartialMatch("test")));
+  EXPECT_TRUE(post_interceptor_1_->ExpectRequest(new PartialMatch("test")));
 
   std::vector<GURL> urls;
   urls.push_back(GURL(kUrl1));
@@ -134,12 +134,12 @@ TEST_F(RequestSenderTest, RequestSendSuccess) {
                                    base::Unretained(this)));
   RunThreads();
 
-  EXPECT_EQ(1, post_interceptor_1->GetHitCount())
-      << post_interceptor_1->GetRequestsAsString();
-  EXPECT_EQ(1, post_interceptor_1->GetCount())
-      << post_interceptor_1->GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor_1_->GetHitCount())
+      << post_interceptor_1_->GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor_1_->GetCount())
+      << post_interceptor_1_->GetRequestsAsString();
 
-  EXPECT_STREQ("test", post_interceptor_1->GetRequests()[0].c_str());
+  EXPECT_STREQ("test", post_interceptor_1_->GetRequests()[0].c_str());
   EXPECT_EQ(GURL(kUrl1), url_fetcher_source_->GetOriginalURL());
   EXPECT_EQ(200, url_fetcher_source_->GetResponseCode());
 }
@@ -147,8 +147,9 @@ TEST_F(RequestSenderTest, RequestSendSuccess) {
 // Tests that the request succeeds using the second url after the first url
 // has failed.
 TEST_F(RequestSenderTest, RequestSendSuccessWithFallback) {
-  EXPECT_TRUE(post_interceptor_1->ExpectRequest(new PartialMatch("test"), 403));
-  EXPECT_TRUE(post_interceptor_2->ExpectRequest(new PartialMatch("test")));
+  EXPECT_TRUE(
+      post_interceptor_1_->ExpectRequest(new PartialMatch("test"), 403));
+  EXPECT_TRUE(post_interceptor_2_->ExpectRequest(new PartialMatch("test")));
 
   std::vector<GURL> urls;
   urls.push_back(GURL(kUrl1));
@@ -159,25 +160,27 @@ TEST_F(RequestSenderTest, RequestSendSuccessWithFallback) {
                                    base::Unretained(this)));
   RunThreads();
 
-  EXPECT_EQ(1, post_interceptor_1->GetHitCount())
-      << post_interceptor_1->GetRequestsAsString();
-  EXPECT_EQ(1, post_interceptor_1->GetCount())
-      << post_interceptor_1->GetRequestsAsString();
-  EXPECT_EQ(1, post_interceptor_2->GetHitCount())
-      << post_interceptor_2->GetRequestsAsString();
-  EXPECT_EQ(1, post_interceptor_2->GetCount())
-      << post_interceptor_2->GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor_1_->GetHitCount())
+      << post_interceptor_1_->GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor_1_->GetCount())
+      << post_interceptor_1_->GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor_2_->GetHitCount())
+      << post_interceptor_2_->GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor_2_->GetCount())
+      << post_interceptor_2_->GetRequestsAsString();
 
-  EXPECT_STREQ("test", post_interceptor_1->GetRequests()[0].c_str());
-  EXPECT_STREQ("test", post_interceptor_2->GetRequests()[0].c_str());
+  EXPECT_STREQ("test", post_interceptor_1_->GetRequests()[0].c_str());
+  EXPECT_STREQ("test", post_interceptor_2_->GetRequests()[0].c_str());
   EXPECT_EQ(GURL(kUrl2), url_fetcher_source_->GetOriginalURL());
   EXPECT_EQ(200, url_fetcher_source_->GetResponseCode());
 }
 
 // Tests that the request fails when both urls have failed.
 TEST_F(RequestSenderTest, RequestSendFailed) {
-  EXPECT_TRUE(post_interceptor_1->ExpectRequest(new PartialMatch("test"), 403));
-  EXPECT_TRUE(post_interceptor_2->ExpectRequest(new PartialMatch("test"), 403));
+  EXPECT_TRUE(
+      post_interceptor_1_->ExpectRequest(new PartialMatch("test"), 403));
+  EXPECT_TRUE(
+      post_interceptor_2_->ExpectRequest(new PartialMatch("test"), 403));
 
   std::vector<GURL> urls;
   urls.push_back(GURL(kUrl1));
@@ -188,19 +191,31 @@ TEST_F(RequestSenderTest, RequestSendFailed) {
                                    base::Unretained(this)));
   RunThreads();
 
-  EXPECT_EQ(1, post_interceptor_1->GetHitCount())
-      << post_interceptor_1->GetRequestsAsString();
-  EXPECT_EQ(1, post_interceptor_1->GetCount())
-      << post_interceptor_1->GetRequestsAsString();
-  EXPECT_EQ(1, post_interceptor_2->GetHitCount())
-      << post_interceptor_2->GetRequestsAsString();
-  EXPECT_EQ(1, post_interceptor_2->GetCount())
-      << post_interceptor_2->GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor_1_->GetHitCount())
+      << post_interceptor_1_->GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor_1_->GetCount())
+      << post_interceptor_1_->GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor_2_->GetHitCount())
+      << post_interceptor_2_->GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor_2_->GetCount())
+      << post_interceptor_2_->GetRequestsAsString();
 
-  EXPECT_STREQ("test", post_interceptor_1->GetRequests()[0].c_str());
-  EXPECT_STREQ("test", post_interceptor_2->GetRequests()[0].c_str());
+  EXPECT_STREQ("test", post_interceptor_1_->GetRequests()[0].c_str());
+  EXPECT_STREQ("test", post_interceptor_2_->GetRequests()[0].c_str());
   EXPECT_EQ(GURL(kUrl2), url_fetcher_source_->GetOriginalURL());
   EXPECT_EQ(403, url_fetcher_source_->GetResponseCode());
+}
+
+// Tests that the request fails when no urls are provided.
+TEST_F(RequestSenderTest, RequestSendFailedNoUrls) {
+  std::vector<GURL> urls;
+  request_sender_.reset(new RequestSender(*config_));
+  request_sender_->Send("test", urls,
+                        base::Bind(&RequestSenderTest::RequestSenderComplete,
+                                   base::Unretained(this)));
+  RunThreads();
+
+  EXPECT_EQ(nullptr, url_fetcher_source_);
 }
 
 }  // namespace update_client
