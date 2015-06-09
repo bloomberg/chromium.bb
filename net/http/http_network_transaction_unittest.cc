@@ -3802,7 +3802,7 @@ TEST_P(HttpNetworkTransactionTest,
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(
-      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_));
+      SpdySessionDependencies::SpdyCreateSession(&session_deps_));
 
   HttpRequestInfo request1;
   request1.method = "GET";
@@ -3879,30 +3879,24 @@ TEST_P(HttpNetworkTransactionTest,
     MockRead(ASYNC, 0, 10),
   };
 
-  DeterministicSocketData spdy_data(
-      spdy_reads, arraysize(spdy_reads),
-      spdy_writes, arraysize(spdy_writes));
-  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&spdy_data);
+  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
+                                arraysize(spdy_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.SetNextProto(GetParam());
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl2);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
   SSLSocketDataProvider ssl3(ASYNC, OK);
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl3);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl3);
 
   TestCompletionCallback callback;
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  // The first connect and request, each of their responses, and the body.
-  spdy_data.RunFor(5);
-
-  rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_EQ(OK, callback.GetResult(rv));
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -3915,17 +3909,13 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::string response_data;
   scoped_refptr<IOBuffer> buf(new IOBuffer(256));
-  EXPECT_EQ(1, trans->Read(buf.get(), 256, callback.callback()));
+  rv = trans->Read(buf.get(), 256, callback.callback());
+  EXPECT_EQ(1, callback.GetResult(rv));
 
   scoped_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-
-  // The second connect and request, each of their responses, and the body.
-  spdy_data.RunFor(5);
-  rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_EQ(OK, callback.GetResult(rv));
 
   LoadTimingInfo load_timing_info2;
   EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
@@ -3937,7 +3927,8 @@ TEST_P(HttpNetworkTransactionTest,
   // separate stream.
   EXPECT_NE(load_timing_info.socket_log_id, load_timing_info2.socket_log_id);
 
-  EXPECT_EQ(2, trans2->Read(buf.get(), 256, callback.callback()));
+  rv = trans2->Read(buf.get(), 256, callback.callback());
+  EXPECT_EQ(2, callback.GetResult(rv));
 }
 
 // Test load timing in the case of two HTTPS (non-SPDY) requests through a SPDY
@@ -3950,7 +3941,7 @@ TEST_P(HttpNetworkTransactionTest,
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(
-      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_));
+      SpdySessionDependencies::SpdyCreateSession(&session_deps_));
 
   HttpRequestInfo request1;
   request1.method = "GET";
@@ -4013,16 +4004,15 @@ TEST_P(HttpNetworkTransactionTest,
     MockRead(ASYNC, 0, 8),
   };
 
-  DeterministicSocketData spdy_data(
-      spdy_reads, arraysize(spdy_reads),
-      spdy_writes, arraysize(spdy_writes));
-  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&spdy_data);
+  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
+                                arraysize(spdy_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.SetNextProto(GetParam());
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
   SSLSocketDataProvider ssl2(ASYNC, OK);
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl2);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
 
   TestCompletionCallback callback;
 
@@ -4030,8 +4020,6 @@ TEST_P(HttpNetworkTransactionTest,
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  // The first connect and request, each of their responses, and the body.
-  spdy_data.RunFor(5);
 
   rv = callback.WaitForResult();
   EXPECT_EQ(OK, rv);
@@ -4055,9 +4043,6 @@ TEST_P(HttpNetworkTransactionTest,
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  // The second request, response, and body.  There should not be a second
-  // connect.
-  spdy_data.RunFor(3);
   rv = callback.WaitForResult();
   EXPECT_EQ(OK, rv);
 
@@ -4073,15 +4058,14 @@ TEST_P(HttpNetworkTransactionTest,
 
 // Test load timing in the case of of two HTTP requests through a SPDY HTTPS
 // Proxy to different servers.
-TEST_P(HttpNetworkTransactionTest,
-       HttpsProxySpdyLoadTimingTwoHttpRequests) {
+TEST_P(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
   // Configure against https proxy server "proxy:70".
   session_deps_.proxy_service.reset(ProxyService::CreateFixed(
       "https://proxy:70"));
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
   scoped_refptr<HttpNetworkSession> session(
-      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_));
+      SpdySessionDependencies::SpdyCreateSession(&session_deps_));
 
   HttpRequestInfo request1;
   request1.method = "GET";
@@ -4126,25 +4110,20 @@ TEST_P(HttpNetworkTransactionTest,
     MockRead(ASYNC, 0, 6),
   };
 
-  DeterministicSocketData spdy_data(
-      spdy_reads, arraysize(spdy_reads),
-      spdy_writes, arraysize(spdy_writes));
-  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&spdy_data);
+  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
+                                arraysize(spdy_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.SetNextProto(GetParam());
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   TestCompletionCallback callback;
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   int rv = trans->Start(&request1, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  spdy_data.RunFor(2);
-
-  rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_EQ(OK, callback.GetResult(rv));
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
@@ -4158,20 +4137,15 @@ TEST_P(HttpNetworkTransactionTest,
 
   std::string response_data;
   scoped_refptr<IOBuffer> buf(new IOBuffer(256));
-  EXPECT_EQ(ERR_IO_PENDING, trans->Read(buf.get(), 256, callback.callback()));
-  spdy_data.RunFor(1);
-  EXPECT_EQ(1, callback.WaitForResult());
+  rv = trans->Read(buf.get(), 256, callback.callback());
+  EXPECT_EQ(1, callback.GetResult(rv));
   // Delete the first request, so the second one can reuse the socket.
   trans.reset();
 
   scoped_ptr<HttpTransaction> trans2(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
   rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-
-  spdy_data.RunFor(2);
-  rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_EQ(OK, callback.GetResult(rv));
 
   LoadTimingInfo load_timing_info2;
   EXPECT_TRUE(trans2->GetLoadTimingInfo(&load_timing_info2));
@@ -4180,9 +4154,8 @@ TEST_P(HttpNetworkTransactionTest,
   // The requests should have the same ID.
   EXPECT_EQ(load_timing_info.socket_log_id, load_timing_info2.socket_log_id);
 
-  EXPECT_EQ(ERR_IO_PENDING, trans2->Read(buf.get(), 256, callback.callback()));
-  spdy_data.RunFor(1);
-  EXPECT_EQ(2, callback.WaitForResult());
+  rv = trans2->Read(buf.get(), 256, callback.callback());
+  EXPECT_EQ(2, callback.GetResult(rv));
 }
 
 // Test the challenge-response-retry sequence through an HTTPS Proxy
@@ -12448,9 +12421,7 @@ TEST_P(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
     MockRead(SYNCHRONOUS, ERR_CONNECTION_CLOSED, 0)
   };
 
-  scoped_ptr<DeterministicSocketData> data1(
-      new DeterministicSocketData(reads1, arraysize(reads1), NULL, 0));
-  data1->SetStop(1);
+  SequencedSocketData data1(reads1, arraysize(reads1), NULL, 0);
 
   scoped_ptr<SpdyFrame> req2(
       spdy_util_.ConstructSpdyGet(https_url.c_str(), false, 1, MEDIUM));
@@ -12466,24 +12437,21 @@ TEST_P(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
     MockRead(ASYNC, OK, 3)  // EOF
   };
 
-  scoped_ptr<DeterministicSocketData> data2(
-      new DeterministicSocketData(reads2, arraysize(reads2),
-                                  writes2, arraysize(writes2)));
+  SequencedSocketData data2(reads2, arraysize(reads2), writes2,
+                            arraysize(writes2));
 
   SSLSocketDataProvider ssl1(ASYNC, OK);
   ssl1.SetNextProto(GetParam());
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl1);
-  session_deps_.deterministic_socket_factory->AddSocketDataProvider(
-      data1.get());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
 
   SSLSocketDataProvider ssl2(ASYNC, OK);
   ssl2.SetNextProto(GetParam());
-  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl2);
-  session_deps_.deterministic_socket_factory->AddSocketDataProvider(
-      data2.get());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
 
   scoped_refptr<HttpNetworkSession> session(
-      SpdySessionDependencies::SpdyCreateSessionDeterministic(&session_deps_));
+      SpdySessionDependencies::SpdyCreateSession(&session_deps_));
 
   // Start the first transaction to set up the SpdySession and verify that
   // connection was closed.
@@ -12495,7 +12463,6 @@ TEST_P(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
   TestCompletionCallback callback1;
   EXPECT_EQ(ERR_IO_PENDING,
             trans1.Start(&request1, callback1.callback(), BoundNetLog()));
-  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(ERR_CONNECTION_CLOSED, callback1.WaitForResult());
 
   // Now, start the second request and make sure it succeeds.
@@ -12507,11 +12474,8 @@ TEST_P(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
   TestCompletionCallback callback2;
   EXPECT_EQ(ERR_IO_PENDING,
             trans2.Start(&request2, callback2.callback(), BoundNetLog()));
-  base::MessageLoop::current()->RunUntilIdle();
-  data2->RunFor(3);
 
-  ASSERT_TRUE(callback2.have_result());
-  EXPECT_EQ(OK, callback2.WaitForResult());
+  ASSERT_EQ(OK, callback2.WaitForResult());
   EXPECT_TRUE(trans2.GetResponseInfo()->was_fetched_via_spdy);
 }
 
