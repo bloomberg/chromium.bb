@@ -741,10 +741,16 @@ class AppListViewTestDesktop : public views::ViewsTestBase,
 void AppListViewTestDesktop::AppListViewTestViewsDelegate::OnBeforeWidgetInit(
     views::Widget::InitParams* params,
     views::internal::NativeWidgetDelegate* delegate) {
-#if defined(USE_AURA)
-  // Use the root window from the AuraTestHelper.
+// Mimic the logic in ChromeViewsDelegate::OnBeforeWidgetInit(). Except, for
+// ChromeOS, use the root window from the AuraTestHelper rather than depending
+// on ash::Shell:GetPrimaryRootWindow(). Also assume non-ChromeOS is never the
+// Ash desktop, as that is covered by AppListViewTestAura.
+#if defined(OS_CHROMEOS)
   if (!params->parent && !params->context)
     params->context = parent_->GetContext();
+#elif defined(USE_AURA)
+  if (params->parent == NULL && params->context == NULL && !params->child)
+    params->native_widget = new views::DesktopNativeWidgetAura(delegate);
 #endif
 }
 
