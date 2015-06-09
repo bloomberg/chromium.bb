@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.graphics.Color;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
@@ -33,6 +32,7 @@ public class BrandColorTest extends DocumentActivityTestBase {
 
     private ToolbarPhone mToolbar;
     private ToolbarDataProvider mToolbarDataProvider;
+    private int mDefaultColor;
 
     private static String getUrlWithBrandColor(String brandColor) {
         String brandColorMetaTag = TextUtils.isEmpty(brandColor)
@@ -54,32 +54,25 @@ public class BrandColorTest extends DocumentActivityTestBase {
     }
 
     private void checkForBrandColor(final int brandColor) {
-        checkNoColorTransition();
+        try {
+            assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    if (mToolbarDataProvider.getPrimaryColor() != brandColor) return false;
+                    return mToolbarDataProvider.getPrimaryColor()
+                            == mToolbar.getBackgroundDrawable().getColor();
+                }
+            }));
+        } catch (InterruptedException e) {
+            fail();
+        }
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                assertEquals("The data provider doesn't contain the right color",
-                        brandColor, mToolbarDataProvider.getPrimaryColor());
-                assertEquals("The toolbar view doesn't contain the right color",
-                        brandColor, mToolbar.getBackgroundDrawable().getColor());
                 assertEquals("The overlay drawable doesn't contain the right color",
                         brandColor, mToolbar.getOverlayDrawable().getColor());
             }
         });
-    }
-
-    private void checkNoColorTransition() {
-        try {
-            CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mToolbarDataProvider.getPrimaryColor()
-                            == mToolbar.getBackgroundDrawable().getColor();
-                }
-            });
-        } catch (InterruptedException e) {
-            fail();
-        }
     }
 
     @Override
@@ -87,6 +80,7 @@ public class BrandColorTest extends DocumentActivityTestBase {
         super.startMainActivityWithURL(url);
         mToolbar = (ToolbarPhone) getActivity().findViewById(R.id.toolbar);
         mToolbarDataProvider = mToolbar.getToolbarDataProvider();
+        mDefaultColor = getActivity().getResources().getColor(R.color.default_primary_color);
     }
 
     /**
@@ -96,7 +90,7 @@ public class BrandColorTest extends DocumentActivityTestBase {
     @Feature({"Omnibox"})
     public void testNoBrandColor() throws InterruptedException {
         startMainActivityWithURL(getUrlWithBrandColor(""));
-        checkForBrandColor(getActivity().getResources().getColor(R.color.default_primary_color));
+        checkForBrandColor(mDefaultColor);
     }
 
     /**
@@ -128,12 +122,9 @@ public class BrandColorTest extends DocumentActivityTestBase {
 
     /**
      * Test for checking navigating to new brand color updates correctly.
-     *
-     * Bug: http://crbug.com/474414
-     * @SmallTest
-     * @Feature({"Omnibox"})
      */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Omnibox"})
     public void testNavigatingToNewBrandColor() throws InterruptedException {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
         checkForBrandColor(Color.parseColor(BRAND_COLOR_1));
@@ -142,12 +133,39 @@ public class BrandColorTest extends DocumentActivityTestBase {
     }
 
     /**
-     * Test for interstitial page loads resetting brand color.
-     * http://crbug.com/497866
-     * @SmallTest
-     * @Feature({"Omnibox"})
+     * Test for checking navigating to a brand color site from a site with no brand color and then
+     * back again.
      */
-    @FlakyTest
+    @SmallTest
+    @Feature({"Omnibox"})
+    public void testNavigatingToBrandColorAndBack() throws InterruptedException {
+        startMainActivityWithURL("about:blank");
+        checkForBrandColor(mDefaultColor);
+        loadUrl(getUrlWithBrandColor(BRAND_COLOR_1));
+        checkForBrandColor(Color.parseColor(BRAND_COLOR_1));
+        loadUrl("about:blank");
+        checkForBrandColor(mDefaultColor);
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().onBackPressed();
+            }
+        });
+        checkForBrandColor(Color.parseColor(BRAND_COLOR_1));
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().onBackPressed();
+            }
+        });
+        checkForBrandColor(mDefaultColor);
+    }
+
+    /**
+     * Test for interstitial page loads resetting brand color.
+     */
+    @SmallTest
+    @Feature({"Omnibox"})
     public void testBrandColorInterstitial() throws InterruptedException {
         final String brandColorUrl = getUrlWithBrandColor(BRAND_COLOR_1);
         startMainActivityWithURL(brandColorUrl);
