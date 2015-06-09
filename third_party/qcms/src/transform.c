@@ -1460,3 +1460,93 @@ float qcms_transform_get_matrix(qcms_transform *t, unsigned i, unsigned j)
 
 	return t->matrix[j][i];
 }
+
+static inline qcms_bool supported_trc_type(qcms_trc_type type)
+{
+	return type == QCMS_TRC_HALF_FLOAT;
+}
+
+const uint16_t half_float_one = 0x3c00;
+
+size_t qcms_transform_get_input_trc_rgba(qcms_transform *t, qcms_profile *in, qcms_trc_type type, unsigned short *data)
+{
+	const size_t size = 256; // The input gamma tables always have 256 entries.
+
+	size_t i;
+
+	if (in->color_space != RGB_SIGNATURE || !supported_trc_type(type))
+		return 0;
+
+	// qcms_profile *in is assumed to be the profile on the input-side of the color transform t.
+	// When a transform is created, the input gamma curve data is stored in the transform ...
+
+	if (!t->input_gamma_table_r || !t->input_gamma_table_g || !t->input_gamma_table_b)
+		return 0;
+
+	// Report the size if no output data is requested. This allows callers to first work out the
+	// the curve size, then provide allocated memory sufficient to store the curve rgba data.
+
+	if (!data)
+		return size;
+
+	for (i = 0; i < size; ++i) {
+		*data++ = float_to_half_float(t->input_gamma_table_r[i]); // r
+		*data++ = float_to_half_float(t->input_gamma_table_g[i]); // g
+		*data++ = float_to_half_float(t->input_gamma_table_b[i]); // b
+		*data++ = half_float_one;                                 // a
+	}
+
+	return size;
+}
+
+const float inverse65535 = (float) (1.0 / 65535.0);
+
+size_t qcms_transform_get_output_trc_rgba(qcms_transform *t, qcms_profile *out, qcms_trc_type type, unsigned short *data)
+{
+	size_t size, i;
+
+	if (out->color_space != RGB_SIGNATURE || !supported_trc_type(type))
+		return 0;
+
+	// qcms_profile *out is assumed to be the profile on the output-side of the transform t.
+	// If the transform output gamma curves need building, do that. They're usually built when
+	// the transform was created, but sometimes not due to the output gamma precache ...
+
+	if (!out->redTRC || !out->greenTRC || !out->blueTRC)
+		return 0;
+	if (!t->output_gamma_lut_r)
+		build_output_lut(out->redTRC, &t->output_gamma_lut_r, &t->output_gamma_lut_r_length);
+	if (!t->output_gamma_lut_g)
+		build_output_lut(out->greenTRC, &t->output_gamma_lut_g, &t->output_gamma_lut_g_length);
+	if (!t->output_gamma_lut_b)
+		build_output_lut(out->blueTRC, &t->output_gamma_lut_b, &t->output_gamma_lut_b_length);
+
+	if (!t->output_gamma_lut_r || !t->output_gamma_lut_g || !t->output_gamma_lut_b)
+		return 0;
+
+	// Output gamma tables should have the same size and should have 4096 entries at most (the
+	// minimum is 256). Larger tables are rare and ignored here: fail by returning 0.
+
+	size = t->output_gamma_lut_r_length;
+	if (size != t->output_gamma_lut_g_length)
+		return 0;
+	if (size != t->output_gamma_lut_b_length)
+		return 0;
+	if (size < 256 || size > 4096)
+		return 0;
+
+	// Report the size if no output data is requested. This allows callers to first work out the
+	// the curve size, then provide allocated memory sufficient to store the curve rgba data.
+
+	if (!data)
+		return size;
+
+	for (i = 0; i < size; ++i) {
+		*data++ = float_to_half_float(t->output_gamma_lut_r[i] * inverse65535); // r
+		*data++ = float_to_half_float(t->output_gamma_lut_g[i] * inverse65535); // g
+		*data++ = float_to_half_float(t->output_gamma_lut_b[i] * inverse65535); // b
+		*data++ = half_float_one;                                               // a
+	}
+
+	return size;
+}

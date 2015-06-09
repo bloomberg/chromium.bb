@@ -114,6 +114,14 @@ typedef enum {
 	QCMS_OUTPUT_BGRX
 } qcms_output_type;
 
+/* Data output format for qcms_transform_get_input|output_trc_rgba() */
+typedef enum {
+	QCMS_TRC_PARAMETRIC,
+	QCMS_TRC_FLOAT,
+	QCMS_TRC_HALF_FLOAT, // XXX: only type implemented.
+	QCMS_TRC_USHORT,
+} qcms_trc_type;
+
 /* the names for the following two types are sort of ugly */
 typedef struct
 {
@@ -160,6 +168,11 @@ qcms_transform* qcms_transform_create(
 		qcms_profile *in, qcms_data_type in_type,
 		qcms_profile *out, qcms_data_type out_type,
 		qcms_intent intent);
+
+size_t qcms_transform_get_input_trc_rgba(
+		qcms_transform *transform, qcms_profile *in, qcms_trc_type type, unsigned short *data);
+size_t qcms_transform_get_output_trc_rgba(
+		qcms_transform *transform, qcms_profile *out, qcms_trc_type type, unsigned short *data);
 
 qcms_bool qcms_transform_is_matrix(qcms_transform *transform);
 float qcms_transform_get_matrix(qcms_transform *transform, unsigned i, unsigned j);
