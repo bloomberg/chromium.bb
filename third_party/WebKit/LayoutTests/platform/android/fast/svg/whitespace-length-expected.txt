@@ -481,7 +481,7 @@ CONSOLE ERROR: Error: Invalid value for <svg> attribute x="1e-10)90"
 CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+32)90"
 CONSOLE ERROR: Error: Invalid value for <svg> attribute x="+17E-1)90"
 CONSOLE ERROR: Error: Invalid value for <svg> attribute x="17e+2)90"
-This is a testharness.js-based test.
+ This is a testharness.js-based test.
 PASS Test <length> valid value: -47 
 PASS Test <length> valid value: -47em 
 PASS Test <length> valid value: -47ex 

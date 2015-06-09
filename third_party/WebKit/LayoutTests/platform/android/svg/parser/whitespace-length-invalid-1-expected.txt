@@ -2098,7 +2098,7 @@ CONSOLE ERROR: Error: Invalid value for <svg> attribute x="emm"
 CONSOLE ERROR: Error: Invalid value for <svg> attribute x="ept"
 CONSOLE ERROR: Error: Invalid value for <svg> attribute x="epc"
 CONSOLE ERROR: Error: Invalid value for <svg> attribute x="e%"
-This is a testharness.js-based test.
+ This is a testharness.js-based test.
 PASS Test <length> invalid value: NaN 
 PASS Test <length> invalid value: NaNem 
 PASS Test <length> invalid value: NaNex 

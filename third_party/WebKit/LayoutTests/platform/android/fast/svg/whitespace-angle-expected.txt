@@ -2511,7 +2511,7 @@ CONSOLE ERROR: Error: Invalid value for <marker> attribute orient="1e-10)90"
 CONSOLE ERROR: Error: Invalid value for <marker> attribute orient="+32)90"
 CONSOLE ERROR: Error: Invalid value for <marker> attribute orient="+17E-1)90"
 CONSOLE ERROR: Error: Invalid value for <marker> attribute orient="17e+2)90"
-This is a testharness.js-based test.
+ This is a testharness.js-based test.
 PASS Test <angle> valid value: -47 
 PASS Test <angle> valid value: -47deg 
 PASS Test <angle> valid value: -47rad 

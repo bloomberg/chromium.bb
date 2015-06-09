@@ -2947,7 +2947,7 @@ CONSOLE ERROR: Error: Invalid value for <stop> attribute offset="+17E-1)90"
 CONSOLE ERROR: Error: Invalid value for <stop> attribute offset=""
 CONSOLE ERROR: Error: Invalid value for <stop> attribute offset="17e+2)90"
 CONSOLE ERROR: Error: Invalid value for <stop> attribute offset=""
-This is a testharness.js-based test.
+ This is a testharness.js-based test.
 PASS Test <number> valid value: -47 
 PASS Test <number> valid value: .1 
 PASS Test <number> valid value: 0.35 

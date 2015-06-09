@@ -3498,7 +3498,7 @@ CONSOLE ERROR: Error: Invalid value for <svg> attribute x="e1mm"
 CONSOLE ERROR: Error: Invalid value for <svg> attribute x="e1pt"
 CONSOLE ERROR: Error: Invalid value for <svg> attribute x="e1pc"
 CONSOLE ERROR: Error: Invalid value for <svg> attribute x="e1%"
-This is a testharness.js-based test.
+ This is a testharness.js-based test.
 PASS Test <length> invalid value: e+ 
 PASS Test <length> invalid value: e+em 
 PASS Test <length> invalid value: e+ex 

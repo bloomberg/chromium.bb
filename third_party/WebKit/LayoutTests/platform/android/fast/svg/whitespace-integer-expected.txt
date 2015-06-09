@@ -829,7 +829,7 @@ CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-4
 CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0)90"
 CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32)90"
 CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245)90"
-This is a testharness.js-based test.
+ This is a testharness.js-based test.
 PASS Test <integer> valid value: -47 
 PASS Test <integer> valid value: 0 
 PASS Test <integer> valid value: +32 
