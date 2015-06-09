@@ -66,8 +66,7 @@ public:
 
     int zIndex() const { return layoutObject()->style()->zIndex(); }
 
-    // A stacking context is a layer that has a non-auto z-index.
-    bool isStackingContext() const { return !layoutObject()->style()->hasAutoZIndex(); }
+    bool isStackingContext() const { return layoutObject()->style()->isStackingContext(); }
 
     // Update our normal and z-index lists.
     void updateLayerListsIfNeeded();
@@ -82,8 +81,9 @@ public:
     bool hasNegativeZOrderList() const { return negZOrderList() && negZOrderList()->size(); }
 
     // FIXME: should check for dirtiness here?
-    bool isNormalFlowOnly() const { return m_isNormalFlowOnly; }
-    void updateIsNormalFlowOnly();
+    bool isNormalFlowOnly() const { return !isTreatedAsStackingContextForPainting(); }
+    bool isTreatedAsStackingContextForPainting() const { return m_isTreatedAsStackingContextForPainting; }
+    void updateIsTreatedAsStackingContextForPainting();
     bool normalFlowListDirty() const { return m_normalFlowListDirty; }
     void dirtyNormalFlowList();
 
@@ -134,7 +134,7 @@ private:
     void setStackingParent(DeprecatedPaintLayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
 #endif
 
-    bool shouldBeNormalFlowOnly() const;
+    bool shouldBeTreatedAsStackingContextForPainting() const { return layoutObject()->style()->isTreatedAsStackingContextForPainting(); }
 
     void updateNormalFlowList();
 
@@ -158,7 +158,7 @@ private:
 
     unsigned m_zOrderListsDirty : 1;
     unsigned m_normalFlowListDirty: 1;
-    unsigned m_isNormalFlowOnly : 1;
+    unsigned m_isTreatedAsStackingContextForPainting : 1;
 
 #if ENABLE(ASSERT)
     unsigned m_layerListMutationAllowed : 1;

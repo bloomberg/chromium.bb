@@ -144,7 +144,7 @@ void CompositingInputsUpdater::updateRecursive(DeprecatedPaintLayer* layer, Upda
                         properties.clipParent = clippingLayer;
                 }
 
-                if (!layer->stackingNode()->isNormalFlowOnly()
+                if (layer->stackingNode()->isTreatedAsStackingContextForPainting()
                     && properties.ancestorScrollingLayer
                     && !info.ancestorStackingContext->layoutObject()->isDescendantOf(properties.ancestorScrollingLayer->layoutObject()))
                     properties.scrollParent = properties.ancestorScrollingLayer;

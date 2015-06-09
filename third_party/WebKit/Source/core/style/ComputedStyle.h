@@ -1204,6 +1204,22 @@ public:
     PrintColorAdjust printColorAdjust() const { return static_cast<PrintColorAdjust>(inherited_flags.m_printColorAdjust); }
     void setPrintColorAdjust(PrintColorAdjust value) { inherited_flags.m_printColorAdjust = value; }
 
+    // A stacking context is painted atomically and defines a stacking order, whereas
+    // a containing stacking context defines in which order the stacking contexts
+    // below are painted. In Blink, a stacking context is defined by non-auto
+    // z-index'. This invariant is enforced by the logic in StyleAdjuster
+    // See CSS 2.1, Appendix E for more details.
+    bool isStackingContext() const { return !hasAutoZIndex(); }
+
+    // Some elements are "treated as if they create a new stacking context" for the purpose
+    // of painting and hit testing. However they don't determine the stacking of the stacking
+    // context underneath them. That means that they are painted atomically.
+    bool isTreatedAsStackingContextForPainting() const
+    {
+        // FIXME: Floating objects are also considered stacking contexts for painting.
+        return isStackingContext() || position() != StaticPosition;
+    }
+
     bool hasAutoZIndex() const { return m_box->hasAutoZIndex(); }
     void setHasAutoZIndex() { SET_VAR(m_box, m_hasAutoZIndex, true); SET_VAR(m_box, m_zIndex, 0); }
     int zIndex() const { return m_box->zIndex(); }

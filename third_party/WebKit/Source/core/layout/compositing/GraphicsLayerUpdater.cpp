@@ -58,7 +58,7 @@ public:
 
     const DeprecatedPaintLayer* compositingContainer(const DeprecatedPaintLayer& layer) const
     {
-        return layer.stackingNode()->isNormalFlowOnly() ? m_compositingAncestor : m_compositingStackingContext;
+        return layer.stackingNode()->isTreatedAsStackingContextForPainting() ? m_compositingStackingContext : m_compositingAncestor;
     }
 
     const DeprecatedPaintLayer* compositingStackingContext() const

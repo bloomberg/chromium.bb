@@ -483,7 +483,7 @@ void DeprecatedPaintLayer::updatePagination()
         return;
     }
 
-    if (m_stackingNode->isNormalFlowOnly()) {
+    if (!m_stackingNode->isTreatedAsStackingContextForPainting()) {
         // We cannot take the fast path for spanners, as they do not have their nearest ancestor
         // pagination layer (flow thread) in their containing block chain.
         if (!layoutObject()->isColumnSpanAll()) {
@@ -893,7 +893,7 @@ LayoutPoint DeprecatedPaintLayer::computeOffsetFromTransformedAncestor() const
 
 const DeprecatedPaintLayer* DeprecatedPaintLayer::compositingContainer() const
 {
-    if (stackingNode()->isNormalFlowOnly())
+    if (!stackingNode()->isTreatedAsStackingContextForPainting())
         return parent();
     if (DeprecatedPaintLayerStackingNode* ancestorStackingNode = stackingNode()->ancestorStackingContextNode())
         return ancestorStackingNode->layer();
@@ -1150,10 +1150,10 @@ void DeprecatedPaintLayer::addChild(DeprecatedPaintLayer* child, DeprecatedPaint
 
     setNeedsCompositingInputsUpdate();
 
-    if (child->stackingNode()->isNormalFlowOnly())
+    if (!child->stackingNode()->isTreatedAsStackingContextForPainting())
         m_stackingNode->dirtyNormalFlowList();
 
-    if (!child->stackingNode()->isNormalFlowOnly() || child->firstChild()) {
+    if (child->stackingNode()->isTreatedAsStackingContextForPainting() || child->firstChild()) {
         // Dirty the z-order list in which we are contained. The ancestorStackingContextNode() can be null in the
         // case where we're building up generated content layers. This is ok, since the lists will start
         // off dirty in that case anyway.
@@ -1178,9 +1178,9 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::removeChild(DeprecatedPaintLayer* ol
     if (m_last == oldChild)
         m_last = oldChild->previousSibling();
 
-    if (oldChild->stackingNode()->isNormalFlowOnly())
+    if (!oldChild->stackingNode()->isTreatedAsStackingContextForPainting())
         m_stackingNode->dirtyNormalFlowList();
-    if (!oldChild->stackingNode()->isNormalFlowOnly() || oldChild->firstChild()) {
+    if (oldChild->stackingNode()->isTreatedAsStackingContextForPainting() || oldChild->firstChild()) {
         // Dirty the z-order list in which we are contained.  When called via the
         // reattachment process in removeOnlyThisLayer, the layer may already be disconnected
         // from the main layer tree, so we need to null-check the
@@ -2601,7 +2601,7 @@ void DeprecatedPaintLayer::styleChanged(StyleDifference diff, const ComputedStyl
     if (attemptDirectCompositingUpdate(diff, oldStyle))
         return;
 
-    m_stackingNode->updateIsNormalFlowOnly();
+    m_stackingNode->updateIsTreatedAsStackingContextForPainting();
     m_stackingNode->updateStackingNodesAfterStyleChange(oldStyle);
 
     if (m_scrollableArea)

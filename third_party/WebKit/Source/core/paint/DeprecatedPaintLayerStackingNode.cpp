@@ -52,7 +52,7 @@
 namespace blink {
 
 // FIXME: This should not require DeprecatedPaintLayer. There is currently a cycle where
-// in order to determine if we shoulBeNormalFlowOnly() we have to ask the paint
+// in order to determine if we shoulBeTreatedAsStackingContextForPainting() we have to ask the paint
 // layer about some of its state.
 DeprecatedPaintLayerStackingNode::DeprecatedPaintLayerStackingNode(DeprecatedPaintLayer* layer)
     : m_layer(layer)
@@ -62,7 +62,7 @@ DeprecatedPaintLayerStackingNode::DeprecatedPaintLayerStackingNode(DeprecatedPai
     , m_stackingParent(0)
 #endif
 {
-    m_isNormalFlowOnly = shouldBeNormalFlowOnly();
+    m_isTreatedAsStackingContextForPainting = shouldBeTreatedAsStackingContextForPainting();
 
     // Non-stacking contexts should have empty z-order lists. As this is already the case,
     // there is no need to dirty / recompute these lists.
@@ -183,7 +183,7 @@ void DeprecatedPaintLayerStackingNode::updateNormalFlowList()
     ASSERT(m_layerListMutationAllowed);
 
     for (DeprecatedPaintLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
-        if (child->stackingNode()->isNormalFlowOnly() && (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)) {
+        if (!child->stackingNode()->isTreatedAsStackingContextForPainting() && (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)) {
             if (!m_normalFlowList)
                 m_normalFlowList = adoptPtr(new Vector<DeprecatedPaintLayerStackingNode*>);
             m_normalFlowList->append(child->stackingNode());
@@ -202,7 +202,7 @@ void DeprecatedPaintLayerStackingNode::collectLayers(OwnPtr<Vector<DeprecatedPai
     if (layer()->isInTopLayer())
         return;
 
-    if (!isNormalFlowOnly()) {
+    if (isTreatedAsStackingContextForPainting()) {
         OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>>& buffer = (zIndex() >= 0) ? posBuffer : negBuffer;
         if (!buffer)
             buffer = adoptPtr(new Vector<DeprecatedPaintLayerStackingNode*>);
@@ -292,20 +292,13 @@ void DeprecatedPaintLayerStackingNode::updateStackingNodesAfterStyleChange(const
         clearZOrderLists();
 }
 
-// FIXME: Rename shouldBeNormalFlowOnly to something more accurate now that CSS
-// 2.1 defines the term "normal flow".
-bool DeprecatedPaintLayerStackingNode::shouldBeNormalFlowOnly() const
+void DeprecatedPaintLayerStackingNode::updateIsTreatedAsStackingContextForPainting()
 {
-    return !isStackingContext() && !layoutObject()->isPositioned();
-}
-
-void DeprecatedPaintLayerStackingNode::updateIsNormalFlowOnly()
-{
-    bool isNormalFlowOnly = shouldBeNormalFlowOnly();
-    if (isNormalFlowOnly == this->isNormalFlowOnly())
+    bool isTreatedAsStackingContextForPainting = shouldBeTreatedAsStackingContextForPainting();
+    if (isTreatedAsStackingContextForPainting == this->isTreatedAsStackingContextForPainting())
         return;
 
-    m_isNormalFlowOnly = isNormalFlowOnly;
+    m_isTreatedAsStackingContextForPainting = isTreatedAsStackingContextForPainting;
     if (DeprecatedPaintLayer* p = layer()->parent())
         p->stackingNode()->dirtyNormalFlowList();
     dirtyStackingContextZOrderLists();
