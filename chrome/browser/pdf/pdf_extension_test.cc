@@ -67,18 +67,21 @@ class PDFExtensionTest : public ExtensionApiTest,
     extensions::ResultCatcher catcher;
 
     GURL url(embedded_test_server()->GetURL("/pdf/" + pdf_filename));
-    ui_test_utils::NavigateToURL(browser(), url);
+
+    // It should be good enough to just navigate to the URL. But loading up the
+    // BrowserPluginGuest seems to happen asynchronously as there was flakiness
+    // being seen due to the BrowserPluginGuest not being available yet (see
+    // crbug.com/498077). So instead use |LoadPdf| which ensures that the PDF is
+    // loaded before continuing.
+    ASSERT_TRUE(LoadPdf(url));
 
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    ASSERT_TRUE(content::WaitForLoadStop(contents));
-
     content::BrowserPluginGuestManager* guest_manager =
         contents->GetBrowserContext()->GetGuestManager();
     content::WebContents* guest_contents =
         guest_manager->GetFullPageGuest(contents);
     ASSERT_TRUE(guest_contents);
-    EXPECT_TRUE(content::WaitForLoadStop(guest_contents));
 
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
