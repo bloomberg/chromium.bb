@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/histograms.h"
 #include "cc/debug/devtools_instrumentation.h"
@@ -208,8 +209,10 @@ scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
   scoped_refptr<base::trace_event::TracedValue> state =
       new base::trace_event::TracedValue();
-  state->SetInteger("completed_count", stats.completed_count);
-  state->SetInteger("canceled_count", stats.canceled_count);
+  state->SetInteger("completed_count",
+                    base::saturated_cast<int>(stats.completed_count));
+  state->SetInteger("canceled_count",
+                    base::saturated_cast<int>(stats.canceled_count));
   return state;
 }
 
@@ -413,7 +416,7 @@ TileManager::BasicStateAsValue() const {
 
 void TileManager::BasicStateAsValueInto(
     base::trace_event::TracedValue* state) const {
-  state->SetInteger("tile_count", tiles_.size());
+  state->SetInteger("tile_count", base::saturated_cast<int>(tiles_.size()));
   state->SetBoolean("did_oom_on_last_assign", did_oom_on_last_assign_);
   state->BeginDictionary("global_state");
   global_state_.AsValueInto(state);
@@ -586,6 +589,7 @@ void TileManager::AssignGpuMemoryToTiles(
   memory_stats_from_last_assign_.total_budget_in_bytes =
       global_state_.hard_memory_limit_in_bytes;
   memory_stats_from_last_assign_.total_bytes_used = memory_usage.memory_bytes();
+  DCHECK_GE(memory_stats_from_last_assign_.total_bytes_used, 0);
   memory_stats_from_last_assign_.had_enough_memory =
       had_enough_memory_to_schedule_tiles_needed_now;
 
@@ -966,8 +970,18 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
 TileManager::MemoryUsage::MemoryUsage() : memory_bytes_(0), resource_count_(0) {
 }
 
-TileManager::MemoryUsage::MemoryUsage(int64 memory_bytes, int resource_count)
-    : memory_bytes_(memory_bytes), resource_count_(resource_count) {
+TileManager::MemoryUsage::MemoryUsage(size_t memory_bytes,
+                                      size_t resource_count)
+    : memory_bytes_(static_cast<int64>(memory_bytes)),
+      resource_count_(static_cast<int>(resource_count)) {
+  // MemoryUsage is constructed using size_ts, since it deals with memory and
+  // the inputs are typically size_t. However, during the course of usage (in
+  // particular operator-=) can cause internal values to become negative. Thus,
+  // member variables are signed.
+  DCHECK_LE(memory_bytes,
+            static_cast<size_t>(std::numeric_limits<int64>::max()));
+  DCHECK_LE(resource_count,
+            static_cast<size_t>(std::numeric_limits<int>::max()));
 }
 
 // static

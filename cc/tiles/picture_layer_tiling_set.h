@@ -31,10 +31,10 @@ class CC_EXPORT PictureLayerTilingSet {
     LOWER_THAN_LOW_RES
   };
   struct TilingRange {
-    TilingRange(int start, int end) : start(start), end(end) {}
+    TilingRange(size_t start, size_t end) : start(start), end(end) {}
 
-    int start;
-    int end;
+    size_t start;
+    size_t end;
   };
 
   static scoped_ptr<PictureLayerTilingSet> Create(
@@ -152,14 +152,14 @@ class CC_EXPORT PictureLayerTilingSet {
     PictureLayerTiling* CurrentTiling() const;
 
    private:
-    int NextTiling() const;
+    size_t NextTiling() const;
 
     const PictureLayerTilingSet* set_;
     float contents_scale_;
     float ideal_contents_scale_;
     PictureLayerTiling::CoverageIterator tiling_iter_;
-    int current_tiling_;
-    int ideal_tiling_;
+    size_t current_tiling_;
+    size_t ideal_tiling_;
 
     Region current_region_;
     Region missing_region_;

@@ -213,7 +213,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   class MemoryUsage {
    public:
     MemoryUsage();
-    MemoryUsage(int64 memory_bytes, int resource_count);
+    MemoryUsage(size_t memory_bytes, size_t resource_count);
 
     static MemoryUsage FromConfig(const gfx::Size& size, ResourceFormat format);
     static MemoryUsage FromTile(const Tile* tile);

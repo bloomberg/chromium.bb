@@ -127,7 +127,7 @@ void FakeTiledLayer::UpdateContentsScale(float ideal_contents_scale) {
 }
 
 void FakeTiledLayer::ResetNumDependentsNeedPushProperties() {
-  size_t num = 0;
+  int num = 0;
   if (mask_layer()) {
     if (mask_layer()->needs_push_properties() ||
         mask_layer()->descendant_needs_push_properties())

@@ -213,7 +213,7 @@ void OcclusionTracker<LayerType>::EnterRenderTarget(
   if (!copy_outside_occlusion_forward)
     return;
 
-  int last_index = stack_.size() - 1;
+  size_t last_index = stack_.size() - 1;
   gfx::Transform old_target_to_new_target_transform(
       inverse_new_target_screen_space_transform,
       old_target->render_surface()->screen_space_transform());
@@ -318,7 +318,8 @@ static void ReduceOcclusionBelowSurface(
 template <typename LayerType>
 void OcclusionTracker<LayerType>::LeaveToRenderTarget(
     const LayerType* new_target) {
-  int last_index = stack_.size() - 1;
+  DCHECK(!stack_.empty());
+  size_t last_index = stack_.size() - 1;
   bool surface_will_be_at_top_after_pop =
       stack_.size() > 1 && stack_[last_index - 1].target == new_target;
 

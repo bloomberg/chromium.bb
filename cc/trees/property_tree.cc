@@ -239,8 +239,10 @@ bool TransformTree::CombineTransformsBetween(int source_id,
         SkDoubleToMScalar(1e-4)));
   }
 
-  for (int i = source_to_destination.size() - 1; i >= 0; i--) {
-    const TransformNode* node = Node(source_to_destination[i]);
+  size_t source_to_destination_size = source_to_destination.size();
+  for (size_t i = 0; i < source_to_destination_size; ++i) {
+    size_t index = source_to_destination_size - 1 - i;
+    const TransformNode* node = Node(source_to_destination[index]);
     if (node->data.flattens_inherited_transform)
       combined_transform.FlattenTo2d();
     combined_transform.PreconcatTransform(node->data.to_parent);

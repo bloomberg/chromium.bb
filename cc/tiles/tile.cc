@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
@@ -62,7 +63,8 @@ void Tile::AsValueInto(base::trace_event::TracedValue* value) const {
                     draw_info().has_resource() || HasRasterTask());
   value->SetInteger("scheduled_priority", scheduled_priority_);
   value->SetBoolean("use_picture_analysis", use_picture_analysis());
-  value->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());
+  value->SetInteger("gpu_memory_usage",
+                    base::saturated_cast<int>(GPUMemoryUsageInBytes()));
 }
 
 size_t Tile::GPUMemoryUsageInBytes() const {

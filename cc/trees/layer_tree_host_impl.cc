@@ -14,6 +14,7 @@
 #include "base/containers/small_map.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -571,10 +572,9 @@ void LayerTreeHostImpl::TrackDamageForAllSurfaces(
   // must compute all damage tracking before drawing anything, so that we know
   // the root damage rect. The root damage rect is then used to scissor each
   // surface.
-
-  for (int surface_index = render_surface_layer_list.size() - 1;
-       surface_index >= 0;
-       --surface_index) {
+  size_t render_surface_layer_list_size = render_surface_layer_list.size();
+  for (size_t i = 0; i < render_surface_layer_list_size; ++i) {
+    size_t surface_index = render_surface_layer_list_size - 1 - i;
     LayerImpl* render_surface_layer = render_surface_layer_list[surface_index];
     RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
     DCHECK(render_surface);
@@ -750,9 +750,10 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       "RequiresHighResToDraw", RequiresHighResToDraw());
 
   // Create the render passes in dependency order.
-  for (int surface_index = frame->render_surface_layer_list->size() - 1;
-       surface_index >= 0;
-       --surface_index) {
+  size_t render_surface_layer_list_size =
+      frame->render_surface_layer_list->size();
+  for (size_t i = 0; i < render_surface_layer_list_size; ++i) {
+    size_t surface_index = render_surface_layer_list_size - 1 - i;
     LayerImpl* render_surface_layer =
         (*frame->render_surface_layer_list)[surface_index];
     RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
@@ -996,14 +997,16 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
     input_handler_client_->ReconcileElasticOverscrollAndRootScroll();
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Compositing.NumActiveLayers", active_tree_->NumLayers(), 1, 400, 20);
+      "Compositing.NumActiveLayers",
+      base::saturated_cast<int>(active_tree_->NumLayers()), 1, 400, 20);
 
   size_t total_picture_memory = 0;
   for (const PictureLayerImpl* layer : active_tree()->picture_layers())
     total_picture_memory += layer->GetRasterSource()->GetPictureMemoryUsage();
   if (total_picture_memory != 0) {
-    UMA_HISTOGRAM_COUNTS("Compositing.PictureMemoryUsageKb",
-                         total_picture_memory / 1024);
+    UMA_HISTOGRAM_COUNTS(
+        "Compositing.PictureMemoryUsageKb",
+        base::saturated_cast<int>(total_picture_memory / 1024));
   }
 
   bool update_lcd_text = false;

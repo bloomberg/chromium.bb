@@ -4,6 +4,7 @@
 
 #include "cc/tiles/tile_priority.h"
 
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/base/math_util.h"
@@ -89,9 +90,12 @@ void GlobalStateThatImpactsTilePriority::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetString("memory_limit_policy",
                    TileMemoryLimitPolicyToString(memory_limit_policy));
-  state->SetInteger("soft_memory_limit_in_bytes", soft_memory_limit_in_bytes);
-  state->SetInteger("hard_memory_limit_in_bytes", hard_memory_limit_in_bytes);
-  state->SetInteger("num_resources_limit", num_resources_limit);
+  state->SetInteger("soft_memory_limit_in_bytes",
+                    base::saturated_cast<int>(soft_memory_limit_in_bytes));
+  state->SetInteger("hard_memory_limit_in_bytes",
+                    base::saturated_cast<int>(hard_memory_limit_in_bytes));
+  state->SetInteger("num_resources_limit",
+                    base::saturated_cast<int>(num_resources_limit));
   state->SetString("tree_priority", TreePriorityToString(tree_priority));
 }
 

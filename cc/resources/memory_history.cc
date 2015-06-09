@@ -19,21 +19,4 @@ void MemoryHistory::SaveEntry(const MemoryHistory::Entry& entry) {
   ring_buffer_.SaveToBuffer(entry);
 }
 
-void MemoryHistory::GetMinAndMax(size_t* min, size_t* max) const {
-  *min = std::numeric_limits<size_t>::max();
-  *max = 0;
-
-  for (RingBufferType::Iterator it = ring_buffer_.Begin(); it; ++it) {
-    size_t bytes_total = it->total_bytes_used;
-
-    if (bytes_total < *min)
-      *min = bytes_total;
-    if (bytes_total > *max)
-      *max = bytes_total;
-  }
-
-  if (*min > *max)
-    *min = *max;
-}
-
 }  // namespace cc

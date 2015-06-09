@@ -40,7 +40,7 @@ scoped_refptr<Layer> Layer::Create(const LayerSettings& settings) {
 
 Layer::Layer(const LayerSettings& settings)
     : needs_push_properties_(false),
-      num_dependents_need_push_properties_(false),
+      num_dependents_need_push_properties_(0),
       stacking_order_changed_(false),
       // Layer IDs start from 1.
       layer_id_(g_next_layer_id.GetNext() + 1),

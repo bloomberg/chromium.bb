@@ -26,12 +26,11 @@ class MemoryHistory {
           had_enough_memory(false) {}
 
     size_t total_budget_in_bytes;
-    size_t total_bytes_used;
+    int64 total_bytes_used;
     bool had_enough_memory;
   };
 
   void SaveEntry(const Entry& entry);
-  void GetMinAndMax(size_t* min, size_t* max) const;
 
   typedef RingBuffer<Entry, 80> RingBufferType;
   RingBufferType::Iterator Begin() const { return ring_buffer_.Begin(); }

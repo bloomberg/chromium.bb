@@ -12,6 +12,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/containers/small_map.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
@@ -940,7 +941,7 @@ void PictureLayerTiling::GetAllPrioritizedTilesForTracing(
 
 void PictureLayerTiling::AsValueInto(
     base::trace_event::TracedValue* state) const {
-  state->SetInteger("num_tiles", tiles_.size());
+  state->SetInteger("num_tiles", base::saturated_cast<int>(tiles_.size()));
   state->SetDouble("content_scale", contents_scale_);
   MathUtil::AddToTracedValue("visible_rect", current_visible_rect_, state);
   MathUtil::AddToTracedValue("skewport_rect", current_skewport_rect_, state);
