@@ -524,6 +524,10 @@ if (icu_use_data_file) {
       outputs = [
         "$root_out_dir/icudtl.dat",
       ]
+
+      data = [
+        "$root_out_dir/icudtl.dat",
+      ]
     }
   }
 } else {
@@ -535,6 +539,10 @@ if (icu_use_data_file) {
       ]
       outputs = [
         "$root_out_dir/icudt.dll",
+      ]
+
+      data = [
+        "$root_out_dir/icudtl.dll",
       ]
     }
   } else {
