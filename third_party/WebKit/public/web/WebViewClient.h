@@ -91,9 +91,8 @@ public:
         return 0;
     }
 
-    // Create a new WebPopupMenu.
+    // Create a new popup WebWidget.
     virtual WebWidget* createPopupMenu(WebPopupType) { return 0; }
-    virtual WebWidget* createPopupMenu(const WebPopupMenuInfo&) { return 0; }
 
     // Create a session storage namespace object associated with this WebView.
     virtual WebStorageNamespace* createSessionStorageNamespace() { return 0; }

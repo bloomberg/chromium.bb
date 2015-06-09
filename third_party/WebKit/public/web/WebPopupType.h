@@ -35,8 +35,6 @@ namespace blink {
 
 enum WebPopupType {
     WebPopupTypeNone, // Not a popup.
-    WebPopupTypeSelect, // An HTML select (combo-box) popup.
-    WebPopupTypeSuggestion, // An autofill/autocomplete popup.
     WebPopupTypePage, // An HTML-capable popup.
     WebPopupTypeLast = WebPopupTypePage
 };
