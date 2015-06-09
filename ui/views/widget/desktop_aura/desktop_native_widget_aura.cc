@@ -720,6 +720,8 @@ void DesktopNativeWidgetAura::SetSize(const gfx::Size& size) {
 }
 
 void DesktopNativeWidgetAura::StackAbove(gfx::NativeView native_view) {
+  if (content_window_)
+    desktop_window_tree_host_->StackAbove(native_view);
 }
 
 void DesktopNativeWidgetAura::StackAtTop() {

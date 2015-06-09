@@ -36,6 +36,7 @@
 #include "ui/views/widget/widget_hwnd_utils.h"
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler.h"
+#include "ui/views/win/hwnd_util.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/core/window_animations.h"
@@ -232,6 +233,12 @@ void DesktopWindowTreeHostWin::SetSize(const gfx::Size& size) {
       gfx::Vector2d(expanded.width() - size_in_pixels.width(),
                     expanded.height() - size_in_pixels.height());
   message_handler_->SetSize(expanded);
+}
+
+void DesktopWindowTreeHostWin::StackAbove(aura::Window* window) {
+  HWND hwnd = HWNDForNativeView(window);
+  if (hwnd)
+    message_handler_->StackAbove(hwnd);
 }
 
 void DesktopWindowTreeHostWin::StackAtTop() {

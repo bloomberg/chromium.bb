@@ -101,6 +101,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void ShowMaximizedWithBounds(const gfx::Rect& restored_bounds) override;
   bool IsVisible() const override;
   void SetSize(const gfx::Size& requested_size) override;
+  void StackAbove(aura::Window* window) override;
   void StackAtTop() override;
   void CenterWindow(const gfx::Size& size) override;
   void GetWindowPlacement(gfx::Rect* bounds,

@@ -533,7 +533,10 @@ void HWNDMessageHandler::SetRegion(HRGN region) {
 }
 
 void HWNDMessageHandler::StackAbove(HWND other_hwnd) {
-  SetWindowPos(hwnd(), other_hwnd, 0, 0, 0, 0,
+  // Windows API allows to stack behind another windows only.
+  DCHECK(other_hwnd);
+  HWND next_window = GetNextWindow(other_hwnd, GW_HWNDPREV);
+  SetWindowPos(hwnd(), next_window ? next_window : HWND_TOP, 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 

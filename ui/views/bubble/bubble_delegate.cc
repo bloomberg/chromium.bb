@@ -40,6 +40,8 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
       Widget::InitParams::ACTIVATABLE_YES : Widget::InitParams::ACTIVATABLE_NO;
   bubble->OnBeforeBubbleWidgetInit(&bubble_params, bubble_widget);
   bubble_widget->Init(bubble_params);
+  if (bubble_params.parent)
+    bubble_widget->StackAbove(bubble_params.parent);
   return bubble_widget;
 }
 

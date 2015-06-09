@@ -81,6 +81,7 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   virtual bool IsVisible() const = 0;
 
   virtual void SetSize(const gfx::Size& size) = 0;
+  virtual void StackAbove(aura::Window* window) = 0;
   virtual void StackAtTop() = 0;
   virtual void CenterWindow(const gfx::Size& size) = 0;
   virtual void GetWindowPlacement(gfx::Rect* bounds,
