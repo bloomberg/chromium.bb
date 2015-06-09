@@ -1006,10 +1006,7 @@ Node* Node::previousNodeConsideringAtomicNodes() const
             n = n->lastChild();
         return n;
     }
-    if (parentNode()) {
-        return parentNode();
-    }
-    return nullptr;
+    return parentNode();
 }
 
 Node* Node::nextNodeConsideringAtomicNodes() const
