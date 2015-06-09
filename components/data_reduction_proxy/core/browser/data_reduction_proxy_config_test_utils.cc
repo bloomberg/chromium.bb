@@ -52,7 +52,7 @@ TestDataReductionProxyConfig::~TestDataReductionProxyConfig() {
 }
 
 bool TestDataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
-    const net::NetworkQualityEstimator* network_quality_estimator) const {
+    const net::NetworkQualityEstimator* network_quality_estimator) {
   return network_quality_prohibitively_slow_;
 }
 

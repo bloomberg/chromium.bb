@@ -277,8 +277,7 @@ class DataReductionProxyConfig
                            TestMaybeDisableIfVPNTrialDisabled);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestMaybeDisableIfVPNTrialEnabled);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
-                           PopulateAutoLoFiParams);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, AutoLoFiParams);
 
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;
@@ -340,7 +339,7 @@ class DataReductionProxyConfig
   // |network_quality_estimator| may be NULL.
   // Virtualized for unit testing.
   virtual bool IsNetworkQualityProhibitivelySlow(
-      const net::NetworkQualityEstimator* network_quality_estimator) const;
+      const net::NetworkQualityEstimator* network_quality_estimator);
 
   // Returns true only if Lo-Fi "q=low" header should be added to the Chrome
   // Proxy header based on the value of |lofi_status|.
@@ -388,6 +387,17 @@ class DataReductionProxyConfig
   // State of auto Lo-Fi is not changed more than once in any period of
   // duration shorter than |auto_lofi_hysteresis_|.
   base::TimeDelta auto_lofi_hysteresis_;
+
+  // Time when the network quality was last updated.
+  base::TimeTicks network_quality_last_updated_;
+
+  // True iff the network was determined to be prohibitively slow when the
+  // network quality was last updated (most recent main frame request).
+  bool network_prohibitively_slow_;
+
+  // Set to the connection type reported by NetworkChangeNotifier when the
+  // network quality was last updated (most recent main frame request).
+  net::NetworkChangeNotifier::ConnectionType connection_type_;
 
   // Current Lo-Fi status.
   // The value changes only on main frame load.

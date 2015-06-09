@@ -196,9 +196,12 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       net_log_(net_log),
       configurator_(configurator),
       event_creator_(event_creator),
-      auto_lofi_minimum_rtt_(base::TimeDelta()),
-      auto_lofi_maximum_kbps_(0),
-      auto_lofi_hysteresis_(base::TimeDelta()),
+      auto_lofi_minimum_rtt_(base::TimeDelta::Max()),
+      auto_lofi_maximum_kbps_(UINT64_MAX),
+      auto_lofi_hysteresis_(base::TimeDelta::Max()),
+      network_quality_last_updated_(base::TimeTicks()),
+      network_prohibitively_slow_(false),
+      connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
       lofi_status_(LOFI_STATUS_TEMPORARILY_OFF) {
   DCHECK(configurator);
   DCHECK(event_creator);
@@ -370,19 +373,46 @@ bool DataReductionProxyConfig::AreProxiesBypassed(
 }
 
 bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
-    const net::NetworkQualityEstimator* network_quality_estimator) const {
+    const net::NetworkQualityEstimator* network_quality_estimator) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!network_quality_estimator)
     return false;
 
+  // True iff network type changed since the last call to
+  // IsNetworkQualityProhibitivelySlow(). This call happens only on main frame
+  // requests.
+  bool network_type_changed = false;
+  if (net::NetworkChangeNotifier::GetConnectionType() != connection_type_) {
+    connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
+    network_type_changed = true;
+  }
+  // Return the cached entry if the last update was within the hysteresis
+  // duration and if the connection type has not changed.
+  if (!network_type_changed && !network_quality_last_updated_.is_null() &&
+      base::TimeTicks::Now() - network_quality_last_updated_ <=
+          auto_lofi_hysteresis_) {
+    return network_prohibitively_slow_;
+  }
+
+  network_quality_last_updated_ = base::TimeTicks::Now();
+
   net::NetworkQuality network_quality =
       network_quality_estimator->GetEstimate();
   // TODO(tbansal): Set |network_prohibitively_slow| based on medians
   // provided by NetworkQualityEstimator API and field trial parameters.
-  // Also, ensure that state of network is not changed more than once within
-  // the hysteresis period.
-  return false;
+
+  // Network is prohibitvely slow if either the downlink bandwidth is too low
+  // or the RTT is too high.
+  if ((network_quality.peak_throughput_kbps > 0 &&
+       network_quality.peak_throughput_kbps <= auto_lofi_maximum_kbps_) ||
+      (network_quality.fastest_rtt > base::TimeDelta() &&
+       network_quality.fastest_rtt >= auto_lofi_minimum_rtt_)) {
+    network_prohibitively_slow_ = true;
+  } else {
+    network_prohibitively_slow_ = false;
+  }
+  return network_prohibitively_slow_;
 }
 
 bool DataReductionProxyConfig::IsIncludedInLoFiEnabledFieldTrial() const {

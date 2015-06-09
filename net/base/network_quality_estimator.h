@@ -34,7 +34,8 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   ~NetworkQualityEstimator() override;
 
   // Returns an estimate of the current network quality.
-  NetworkQuality GetEstimate() const;
+  // Virtualized for testing.
+  virtual NetworkQuality GetEstimate() const;
 
   // Notifies NetworkQualityEstimator that a response has been received.
   // |prefilter_bytes_read| is the count of the bytes received prior to

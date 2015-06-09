@@ -80,8 +80,7 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   void SetNetworkProhibitivelySlow(bool network_quality_prohibitively_slow);
 
   bool IsNetworkQualityProhibitivelySlow(
-      const net::NetworkQualityEstimator* network_quality_estimator)
-      const override;
+      const net::NetworkQualityEstimator* network_quality_estimator) override;
 
   net::NetworkInterfaceList* interfaces() {
     return network_interfaces_.get();
@@ -133,7 +132,7 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
   MOCK_METHOD2(SecureProxyCheck,
                void(const GURL& secure_proxy_check_url,
                     FetcherResponseCallback fetcher_callback));
-  MOCK_CONST_METHOD1(
+  MOCK_METHOD1(
       IsNetworkQualityProhibitivelySlow,
       bool(const net::NetworkQualityEstimator* network_quality_estimator));
   MOCK_CONST_METHOD0(IsIncludedInLoFiEnabledFieldTrial, bool());
