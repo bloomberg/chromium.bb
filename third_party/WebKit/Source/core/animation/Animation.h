@@ -133,6 +133,11 @@ public:
     void setStartTime(double);
     void setStartTimeInternal(double);
 
+    double startClip() const { return startClipInternal() * 1000; }
+    double endClip() const { return endClipInternal() * 1000; }
+    void setStartClip(double t) { setStartClipInternal(t / 1000); }
+    void setEndClip(double t) { setEndClipInternal(t / 1000); }
+
     const AnimationEffect* source() const { return m_content.get(); }
     AnimationEffect* source() { return m_content.get(); }
     void setSource(AnimationEffect*);
@@ -202,10 +207,19 @@ private:
     void notifyAnimationStarted(double monotonicTime, int group) override;
     void notifyAnimationFinished(double monotonicTime, int group) override { }
 
+    double startClipInternal() const { return m_startClip; };
+    double endClipInternal() const { return m_endClip; };
+    void setStartClipInternal(double t) { m_startClip = t; }
+    void setEndClipInternal(double t) { m_endClip = t; }
+    bool clipped(double);
+    double clipTimeToEffectChange(double) const;
+
     AnimationPlayState m_playState;
     double m_playbackRate;
     double m_startTime;
     double m_holdTime;
+    double m_startClip;
+    double m_endClip;
 
     unsigned m_sequenceNumber;
 

@@ -47,6 +47,8 @@ enum AnimationPlayState { "idle", "pending", "running", "paused", "finished" };
     [Measure] void play();
     [Measure] void pause();
     [Measure] void reverse();
+    [RuntimeEnabled=WebAnimationsAPI] attribute double startClip;
+    [RuntimeEnabled=WebAnimationsAPI] attribute double endClip;
 
     [Measure] void cancel();
     [Measure] attribute EventHandler onfinish;
