@@ -2366,16 +2366,9 @@
         "test": "angle_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "base_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
         "test": "browser_tests"
       },
       {
@@ -2388,27 +2381,15 @@
         "test": "components_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "content_browsertests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "content_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "courgette_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "crypto_unittests"
       },
       {
@@ -2442,9 +2423,6 @@
         "test": "midi_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "net_unittests"
       },
       {
@@ -2478,9 +2456,6 @@
         "test": "ui_base_unittests"
       },
       {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "unit_tests"
       },
       {

@@ -31,6 +31,9 @@
     'gn_debug_static_bot': ['gn', 'debug_static_bot'],
     'gn_debug_static_bot_x86': ['gn', 'debug_static_bot', 'x86'],
     'gyp_release_bot': ['gyp', 'release_bot'],
+    # clang/win doesn't work with goma yet, so this can't use debug_bot:
+    'win_clang_debug_bot':
+        ['gn', 'clang', 'debug', 'shared', 'minimal_symbols'],
   },
   
   # This is a list of configs that do not actually exist on any bot
@@ -67,6 +70,11 @@
     'chromeos': {
       'gn_args': 'target_os="chromeos"',
       'gyp_defines': 'chromeos=1',
+    },
+
+    'clang': {
+      'gn_args': 'is_clang=true',
+      'gyp_defines': 'clang=1',
     },
 
     'dcheck_always_on': {
@@ -178,6 +186,9 @@
       'Android GN (dbg)': 'android_gn_debug_bot',
       'Linux GN': 'gn_release_bot',
       'Linux GN (dbg)': 'gn_debug_bot'
+    },
+    'chromium.fyi': {
+      'CrWinClang64(dbg)': 'win_clang_debug_bot',
     },
     'chromium.webrtc.fyi': {
       'Android GN': 'android_gn_release_bot',
