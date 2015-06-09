@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/InspectorTypeBuilder.h"
-#include "core/inspector/InjectedScriptBase.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InjectedScriptNative.h"
 #include "wtf/Forward.h"
@@ -41,12 +40,25 @@
 
 namespace blink {
 
+class JSONValue;
 class Node;
+class ScriptFunctionCall;
 
-class InjectedScript final : public InjectedScriptBase {
+typedef String ErrorString;
+PassRefPtr<JSONValue> toJSONValue(const ScriptValue&);
+
+
+class InjectedScript final {
 public:
     InjectedScript();
-    virtual ~InjectedScript() { }
+    ~InjectedScript();
+
+    bool isEmpty() const { return m_injectedScriptObject.isEmpty(); }
+    ScriptState* scriptState() const
+    {
+        ASSERT(!isEmpty());
+        return m_injectedScriptObject.scriptState();
+    }
 
     void evaluate(
         ErrorString*,
@@ -106,10 +118,20 @@ public:
 
 private:
     friend InjectedScript InjectedScriptManager::injectedScriptFor(ScriptState*);
+    using InspectedStateAccessCheck = bool (*)(ScriptState*);
     InjectedScript(ScriptValue, InspectedStateAccessCheck, PassRefPtr<InjectedScriptNative>);
 
     ScriptValue nodeAsScriptValue(Node*);
+    void initialize(ScriptValue, InspectedStateAccessCheck);
+    bool canAccessInspectedWindow() const;
+    const ScriptValue& injectedScriptObject() const;
+    ScriptValue callFunctionWithEvalEnabled(ScriptFunctionCall&, bool& hadException) const;
+    void makeCall(ScriptFunctionCall&, RefPtr<JSONValue>* result);
+    void makeEvalCall(ErrorString*, ScriptFunctionCall&, RefPtr<TypeBuilder::Runtime::RemoteObject>* result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>* = 0);
+    void makeCallWithExceptionDetails(ScriptFunctionCall&, RefPtr<JSONValue>* result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>*);
 
+    ScriptValue m_injectedScriptObject;
+    InspectedStateAccessCheck m_inspectedStateAccessCheck;
     RefPtr<InjectedScriptNative> m_native;
 };
 

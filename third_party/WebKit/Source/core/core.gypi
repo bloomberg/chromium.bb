@@ -1609,8 +1609,6 @@
             'inspector/InjectedScript.h',
             'inspector/InjectedScriptNative.cpp',
             'inspector/InjectedScriptNative.h',
-            'inspector/InjectedScriptBase.cpp',
-            'inspector/InjectedScriptBase.h',
             'inspector/InjectedScriptHost.cpp',
             'inspector/InjectedScriptHost.h',
             'inspector/InjectedScriptManager.cpp',
