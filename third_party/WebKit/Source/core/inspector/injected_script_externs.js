@@ -226,6 +226,6 @@ JavaScriptCallFrame.prototype.scopeType = function(scopeIndex) {}
 
 
 /** @type {!Window} */
-var inspectedWindow;
+var inspectedGlobalObject;
 /** @type {number} */
 var injectedScriptId;
