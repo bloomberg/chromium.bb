@@ -737,10 +737,6 @@ crbug.com/271243 http/tests/misc/acid3.html [ Pass Failure ]
 
 crbug.com/278497 [ Mac Win ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
-crbug.com/496317 [ Mac ] fast/text/unicode-fallback-font.html [ NeedsManualRebaseline ] # crbug.com/419769
-crbug.com/496317 [ Mac ] virtual/slimmingpaint/fast/text/unicode-fallback-font.html [ NeedsManualRebaseline ] # crbug.com/419769
-crbug.com/496317 [ Mac ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ NeedsManualRebaseline ] # crbug.com/419769
-
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 crbug.com/282081 [ Win Release ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Pass Timeout ]
 crbug.com/282086 [ XP Release ] virtual/gpu/fast/canvas/webgl/gl-uniform-arrays.html [ Pass Timeout ]
@@ -1852,10 +1848,9 @@ crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Pass 
 # update and reenable the test once the bugfix for 475244 lands in Chromium
 crbug.com/475244 media/video-durationchange-on-ended.html [ Pass Failure ]
 
-# Reenable after manual rebaseline for crbug.com/496317
-#crbug.com/419769 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
-#crbug.com/419769 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/unicode-fallback-font.html [ Skip ]
-#crbug.com/419769 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
+crbug.com/419769 [ Debug SnowLeopard ] virtual/antialiasedtext/fast/text/unicode-fallback-font.html [ Crash ]
+crbug.com/419769 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/unicode-fallback-font.html [ Skip ]
+crbug.com/419769 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
 
 crbug.com/479164 inspector/geolocation-emulation-tests.html [ Pass Failure ]
 
