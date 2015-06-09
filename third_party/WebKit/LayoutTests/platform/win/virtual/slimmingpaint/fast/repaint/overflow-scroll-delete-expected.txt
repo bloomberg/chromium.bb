@@ -6,16 +6,19 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [102, 120, 50, 18],
-        [102, 120, 41, 18],
-        [102, 120, 31, 18]
+        [8, 112, 80, 35],
+        [8, 112, 45, 35],
+        [8, 112, 41, 35]
       ],
       "paintInvalidationClients": [
         "InlineTextBox ''",
         "RootInlineBox",
-        "LayoutBlockFlow DIV id='target'",
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='t'",
         "LayoutText #text",
-        "InlineTextBox 'after'"
+        "InlineTextBox 'Passed'",
+        "InlineTextBox 'Test'"
       ]
     }
   ]

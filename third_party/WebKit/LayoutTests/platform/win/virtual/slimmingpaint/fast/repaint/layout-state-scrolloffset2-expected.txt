@@ -6,9 +6,10 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [102, 120, 50, 17],
-        [102, 120, 41, 17],
-        [102, 120, 30, 17]
+        [102, 120, 50, 50],
+        [102, 120, 31, 17],
+        [101, 120, 51, 50],
+        [101, 120, 42, 17]
       ],
       "paintInvalidationClients": [
         "InlineTextBox ''",

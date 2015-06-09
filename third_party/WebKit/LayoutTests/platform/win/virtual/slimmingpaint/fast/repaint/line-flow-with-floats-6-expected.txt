@@ -8,7 +8,7 @@
       "repaintRects": [
         [27, 353, 22, 17],
         [14, 353, 48, 64],
-        [8, 548, 418, 17]
+        [8, 548, 418, 18]
       ],
       "paintInvalidationClients": [
         "InlineTextBox 'here; the great\n'",

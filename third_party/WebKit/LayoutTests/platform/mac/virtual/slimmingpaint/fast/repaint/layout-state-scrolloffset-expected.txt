@@ -8,7 +8,7 @@
       "repaintRects": [
         [100, 118, 50, 18],
         [100, 118, 41, 18],
-        [100, 118, 30, 18]
+        [100, 118, 31, 18]
       ],
       "paintInvalidationClients": [
         "InlineTextBox ''",
