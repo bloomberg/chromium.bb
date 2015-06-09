@@ -1040,6 +1040,9 @@ FcPatternObjectGetRange (const FcPattern *p, FcObject object, int id, FcRange **
 FcPrivate FcBool
 FcPatternAppend (FcPattern *p, FcPattern *s);
 
+FcPrivate int
+FcPatternPosition (const FcPattern *p, const char *object);
+
 FcPrivate FcChar32
 FcStringHash (const FcChar8 *s);
 
