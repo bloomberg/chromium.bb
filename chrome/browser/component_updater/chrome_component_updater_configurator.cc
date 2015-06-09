@@ -117,7 +117,6 @@ class ChromeConfigurator : public Configurator {
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
-  size_t UrlSizeLimit() const override;
   net::URLRequestContextGetter* RequestContext() const override;
   scoped_refptr<OutOfProcessPatcher> CreateOutOfProcessPatcher() const override;
   bool DeltasEnabled() const override;
@@ -235,10 +234,6 @@ std::string ChromeConfigurator::GetOSLongName() const {
 
 std::string ChromeConfigurator::ExtraRequestParams() const {
   return extra_info_;
-}
-
-size_t ChromeConfigurator::UrlSizeLimit() const {
-  return 1024ul;
 }
 
 net::URLRequestContextGetter* ChromeConfigurator::RequestContext() const {

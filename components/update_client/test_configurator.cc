@@ -82,10 +82,6 @@ std::string TestConfigurator::ExtraRequestParams() const {
   return "extra=\"foo\"";
 }
 
-size_t TestConfigurator::UrlSizeLimit() const {
-  return 256;
-}
-
 net::URLRequestContextGetter* TestConfigurator::RequestContext() const {
   return context_.get();
 }

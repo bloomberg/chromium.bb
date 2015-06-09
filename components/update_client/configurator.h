@@ -78,9 +78,6 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // XML element.
   virtual std::string ExtraRequestParams() const = 0;
 
-  // How big each update request can be. Don't go above 2000.
-  virtual size_t UrlSizeLimit() const = 0;
-
   // The source of contexts for all the url requests.
   virtual net::URLRequestContextGetter* RequestContext() const = 0;
 

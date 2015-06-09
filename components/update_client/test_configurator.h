@@ -67,7 +67,6 @@ class TestConfigurator : public Configurator {
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
-  size_t UrlSizeLimit() const override;
   net::URLRequestContextGetter* RequestContext() const override;
   scoped_refptr<OutOfProcessPatcher> CreateOutOfProcessPatcher() const override;
   bool DeltasEnabled() const override;
