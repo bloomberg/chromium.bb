@@ -129,6 +129,13 @@ static NSSize abs(NSSize size)
     return NSMakeRect(currentPosition.x(), currentPosition.y(), 0, 0);
 }
 
+- (void)_immediateScrollToPoint:(NSPoint)newPosition
+{
+    if (!_animator)
+        return;
+    _animator->immediateScrollToPointForScrollAnimation(newPosition);
+}
+
 - (NSPoint)_pixelAlignProposedScrollPosition:(NSPoint)newOrigin
 {
     return newOrigin;
@@ -760,6 +767,12 @@ void ScrollAnimatorMac::immediateScrollTo(const FloatPoint& newPosition)
     m_currentPosY = adjustedPosition.y();
     notifyContentAreaScrolled(delta);
     notifyPositionChanged();
+}
+
+void ScrollAnimatorMac::immediateScrollToPointForScrollAnimation(const FloatPoint& newPosition)
+{
+    ASSERT(m_scrollAnimationHelper);
+    immediateScrollTo(newPosition);
 }
 
 void ScrollAnimatorMac::contentAreaWillPaint() const
