@@ -11,7 +11,7 @@
 #include "base/ios/block_types.h"
 #include "ios/web/public/favicon_url.h"
 #include "ios/web/public/ssl_status.h"
-#import "ios/web/public/web_state/crw_native_content.h"
+#import "ios/web/public/web_state/ui/crw_native_content.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
 

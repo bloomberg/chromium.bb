@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/web/public/web_state/crw_native_content.h"
+#import "ios/web/public/web_state/ui/crw_native_content.h"
 #include "url/gurl.h"
 
 @class UIView;

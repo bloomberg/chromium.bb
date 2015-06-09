@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_CRW_NATIVE_CONTENT_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_CRW_NATIVE_CONTENT_H_
+#ifndef IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_NATIVE_CONTENT_H_
+#define IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_NATIVE_CONTENT_H_
 
 #import <UIKit/UIKit.h>
 
@@ -89,4 +89,4 @@
 
 @end
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_CRW_NATIVE_CONTENT_H_
+#endif  // IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_NATIVE_CONTENT_H_
