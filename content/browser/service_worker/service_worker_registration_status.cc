@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_registration_status.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -30,6 +32,7 @@ void GetServiceWorkerRegistrationStatusResponse(
     case SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
     case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
     case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
+    case SERVICE_WORKER_ERROR_REDUNDANT:
       *error_type = WebServiceWorkerError::ErrorTypeInstall;
       return;
 

@@ -555,11 +555,13 @@ void ServiceWorkerVersion::StartWorker(
     bool pause_after_download,
     const StatusCallback& callback) {
   if (!context_) {
+    RecordStartWorkerResult(SERVICE_WORKER_ERROR_ABORT);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
-  if (status_ == REDUNDANT) {
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+  if (is_redundant()) {
+    RecordStartWorkerResult(SERVICE_WORKER_ERROR_REDUNDANT);
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_REDUNDANT));
     return;
   }
   prestart_status_ = status_;
@@ -1703,8 +1705,8 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     return;
   }
   if (is_redundant()) {
-    RecordStartWorkerResult(SERVICE_WORKER_ERROR_NOT_FOUND);
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+    RecordStartWorkerResult(SERVICE_WORKER_ERROR_REDUNDANT);
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_REDUNDANT));
     return;
   }
 

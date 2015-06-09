@@ -64842,6 +64842,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="14" label="SERVICE_WORKER_ERROR_TIMEOUT"/>
   <int value="15" label="SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED"/>
   <int value="16" label="SERVICE_WORKER_ERROR_DISK_CACHE"/>
+  <int value="17" label="SERVICE_WORKER_ERROR_REDUNDANT"/>
 </enum>
 
 <enum name="ServiceWorkerWriteResponseResult" type="int">

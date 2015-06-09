@@ -4,6 +4,8 @@
 
 #include "content/browser/push_messaging/push_messaging_router.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -137,6 +139,7 @@ void PushMessagingRouter::DeliverMessageEnd(
     case SERVICE_WORKER_ERROR_TIMEOUT:
     case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
     case SERVICE_WORKER_ERROR_DISK_CACHE:
+    case SERVICE_WORKER_ERROR_REDUNDANT:
       delivery_status = PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR;
       break;
     case SERVICE_WORKER_ERROR_EXISTS:

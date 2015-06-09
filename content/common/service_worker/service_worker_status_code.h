@@ -66,6 +66,9 @@ enum ServiceWorkerStatusCode {
   // Generic error to indicate failure to read/write the disk cache.
   SERVICE_WORKER_ERROR_DISK_CACHE,
 
+  // The worker is in REDUNDANT state.
+  SERVICE_WORKER_ERROR_REDUNDANT,
+
   SERVICE_WORKER_ERROR_MAX_VALUE
 };
 

@@ -45,6 +45,8 @@ const char* ServiceWorkerStatusToString(ServiceWorkerStatusCode status) {
       return "ServiceWorker script evaluation failed";
     case SERVICE_WORKER_ERROR_DISK_CACHE:
       return "Disk cache error";
+    case SERVICE_WORKER_ERROR_REDUNDANT:
+      return "Redundant worker";
     case SERVICE_WORKER_ERROR_MAX_VALUE:
       NOTREACHED();
   }
