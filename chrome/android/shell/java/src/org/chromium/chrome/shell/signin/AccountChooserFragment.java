@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.shell.sync;
+package org.chromium.chrome.shell.signin;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -21,9 +21,8 @@ import java.util.List;
  *
  * It lists the available Google accounts on the device and makes the user choose one.
  */
-public class AccountChooserFragment extends DialogFragment
-        implements DialogInterface.OnClickListener {
-
+public class AccountChooserFragment
+        extends DialogFragment implements DialogInterface.OnClickListener {
     private String[] mAccounts;
     private int mSelectedAccount;
 

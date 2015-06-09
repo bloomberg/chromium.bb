@@ -50,14 +50,12 @@ class InvalidationServiceAndroid
       base::Callback<void(const base::DictionaryValue&)> caller) const override;
   IdentityProvider* GetIdentityProvider() override;
 
-  void RequestSync(JNIEnv* env,
-                   jobject obj,
-                   jint object_source,
-                   jstring object_id,
-                   jlong version,
-                   jstring state);
-
-  void RequestSyncForAllTypes(JNIEnv* env, jobject obj);
+  void Invalidate(JNIEnv* env,
+                  jobject obj,
+                  jint object_source,
+                  jstring object_id,
+                  jlong version,
+                  jstring state);
 
   // The InvalidationServiceAndroid always reports that it is enabled.
   // This is used only by unit tests.
@@ -88,9 +86,6 @@ class InvalidationServiceAndroid
   // The invalidation logger object we use to record state changes
   // and invalidations.
   InvalidationLogger logger_;
-
-  void DispatchInvalidations(
-      syncer::ObjectIdInvalidationMap& object_invalidation_map);
 
   DISALLOW_COPY_AND_ASSIGN(InvalidationServiceAndroid);
 };

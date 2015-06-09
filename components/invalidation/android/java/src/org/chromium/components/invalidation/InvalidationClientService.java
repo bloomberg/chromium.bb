@@ -116,13 +116,13 @@ public class InvalidationClientService extends AndroidListener {
 
     @Override
     public void invalidateUnknownVersion(ObjectId objectId, byte[] ackHandle) {
-        requestSync(objectId, null, null);
+        requestSync(objectId, 0L, null);
         acknowledge(ackHandle);
     }
 
     @Override
     public void invalidateAll(byte[] ackHandle) {
-        requestSync(null, null, null);
+        requestSync(null, 0L, null);
         acknowledge(ackHandle);
     }
 
@@ -426,23 +426,15 @@ public class InvalidationClientService extends AndroidListener {
      * @param version the version of the object that changed, if known.
      * @param payload the payload of the change, if known.
      */
-    private void requestSync(@Nullable ObjectId objectId, @Nullable Long version,
-            @Nullable String payload) {
-        // Construct the bundle to supply to the native sync code.
-        Bundle bundle = new Bundle();
-        if (objectId == null && version == null && payload == null) {
-            // Use an empty bundle in this case for compatibility with the v1 implementation.
-        } else {
-            if (objectId != null) {
-                bundle.putInt("objectSource", objectId.getSource());
-                bundle.putString("objectId", new String(objectId.getName()));
-            }
-            // We use "0" as the version if we have an unknown-version invalidation. This is OK
-            // because the native sync code special-cases zero and always syncs for invalidations at
-            // that version (Tango defines a special UNKNOWN_VERSION constant with this value).
-            bundle.putLong("version", (version == null) ? 0 : version);
-            bundle.putString("payload", (payload == null) ? "" : payload);
+    private void requestSync(@Nullable ObjectId objectId, long version, @Nullable String payload) {
+        int objectSource = 0;
+        String objectName = null;
+        if (objectId != null) {
+            objectName = new String(objectId.getName());
+            objectSource = objectId.getSource();
         }
+        Bundle bundle =
+                PendingInvalidation.createBundle(objectName, objectSource, version, payload);
         Account account = ChromeSigninController.get(this).getSignedInUser();
         String contractAuthority = AndroidSyncSettings.getContractAuthority(this);
         requestSyncFromContentResolver(bundle, account, contractAuthority);

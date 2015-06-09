@@ -119,55 +119,49 @@ void InvalidationServiceAndroid::TriggerStateChangeForTest(
   invalidator_registrar_.UpdateInvalidatorState(invalidator_state_);
 }
 
-void InvalidationServiceAndroid::RequestSync(JNIEnv* env,
-                                             jobject obj,
-                                             jint object_source,
-                                             jstring java_object_id,
-                                             jlong version,
-                                             jstring java_state) {
-  invalidation::ObjectId object_id(object_source,
-      ConvertJavaStringToUTF8(env, java_object_id));
-
-  syncer::ObjectIdInvalidationMap object_ids_with_states;
-
-  if (version == ipc::invalidation::Constants::UNKNOWN) {
-    object_ids_with_states.Insert(
-        syncer::Invalidation::InitUnknownVersion(object_id));
-  } else {
-    ObjectIdVersionMap::iterator it =
-        max_invalidation_versions_.find(object_id);
-    if ((it != max_invalidation_versions_.end()) &&
-        (version <= it->second)) {
-      DVLOG(1) << "Dropping redundant invalidation with version " << version;
-      return;
+void InvalidationServiceAndroid::Invalidate(JNIEnv* env,
+                                            jobject obj,
+                                            jint object_source,
+                                            jstring java_object_id,
+                                            jlong version,
+                                            jstring java_payload) {
+  syncer::ObjectIdInvalidationMap object_invalidation_map;
+  if (!java_object_id) {
+    syncer::ObjectIdSet sync_ids;
+    if (object_source == 0) {
+      sync_ids = invalidator_registrar_.GetAllRegisteredIds();
+    } else {
+      for (const auto& id : invalidator_registrar_.GetAllRegisteredIds()) {
+        if (id.source() == object_source)
+          sync_ids.insert(id);
+      }
     }
-    max_invalidation_versions_[object_id] = version;
-    object_ids_with_states.Insert(
-        syncer::Invalidation::Init(object_id, version,
-                                   ConvertJavaStringToUTF8(env, java_state)));
+    object_invalidation_map =
+        syncer::ObjectIdInvalidationMap::InvalidateAll(sync_ids);
+  } else {
+    invalidation::ObjectId object_id(
+        object_source, ConvertJavaStringToUTF8(env, java_object_id));
+    syncer::ObjectIdInvalidationMap object_invalidation_map;
+
+    if (version == ipc::invalidation::Constants::UNKNOWN) {
+      object_invalidation_map.Insert(
+          syncer::Invalidation::InitUnknownVersion(object_id));
+    } else {
+      ObjectIdVersionMap::iterator it =
+          max_invalidation_versions_.find(object_id);
+      if ((it != max_invalidation_versions_.end()) && (version <= it->second)) {
+        DVLOG(1) << "Dropping redundant invalidation with version " << version;
+        return;
+      }
+      max_invalidation_versions_[object_id] = version;
+      object_invalidation_map.Insert(syncer::Invalidation::Init(
+          object_id, version, ConvertJavaStringToUTF8(env, java_payload)));
+    }
   }
 
-  DispatchInvalidations(object_ids_with_states);
-}
-
-void InvalidationServiceAndroid::RequestSyncForAllTypes(JNIEnv* env,
-                                                        jobject obj) {
-  syncer::ObjectIdInvalidationMap object_ids_with_states;
-  DispatchInvalidations(object_ids_with_states);
-}
-
-void InvalidationServiceAndroid::DispatchInvalidations(
-    syncer::ObjectIdInvalidationMap& object_invalidation_map) {
-  // An empty map implies that we should invalidate all.
-  const syncer::ObjectIdInvalidationMap& effective_invalidation_map =
-      object_invalidation_map.Empty() ?
-      syncer::ObjectIdInvalidationMap::InvalidateAll(
-          invalidator_registrar_.GetAllRegisteredIds()) :
-      object_invalidation_map;
-
   invalidator_registrar_.DispatchInvalidationsToHandlers(
-      effective_invalidation_map);
-  logger_.OnInvalidation(effective_invalidation_map);
+      object_invalidation_map);
+  logger_.OnInvalidation(object_invalidation_map);
 }
 
 // static

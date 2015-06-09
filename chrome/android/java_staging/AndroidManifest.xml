@@ -372,8 +372,8 @@ by a child template that "extends" this file.
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- Sync adapter for browser sync. -->
-        <service android:name="org.chromium.chrome.browser.sync.ChromeBrowserSyncAdapterService"
+        <!-- Sync adapter for browser invalidation. -->
+        <service android:name="org.chromium.chrome.browser.invalidation.ChromeBrowserSyncAdapterService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />

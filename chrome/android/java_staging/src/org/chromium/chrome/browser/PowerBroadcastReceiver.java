@@ -14,8 +14,8 @@ import android.os.Looper;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.invalidation.DelayedInvalidationsController;
 import org.chromium.chrome.browser.omaha.OmahaClient;
-import org.chromium.chrome.browser.sync.DelayedSyncController;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -74,7 +74,7 @@ public class PowerBroadcastReceiver extends BroadcastReceiver {
                 context.startService(omahaIntent);
             }
 
-            DelayedSyncController.getInstance().resumeDelayedSyncs(context);
+            DelayedInvalidationsController.getInstance().notifyPendingInvalidations(context);
         }
     }
 

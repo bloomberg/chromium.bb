@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.sync;
+package org.chromium.chrome.browser.invalidation;
 
 import android.app.Application;
 import android.app.Service;
@@ -31,6 +31,6 @@ public abstract class ChromiumSyncAdapterService extends Service {
         return getOrCreateSyncAdapter(getApplicationContext()).getSyncAdapterBinder();
     }
 
-    protected abstract ChromiumSyncAdapter createChromiumSyncAdapter(Context applicationContext,
-                                                                     Application application);
+    protected abstract ChromiumSyncAdapter createChromiumSyncAdapter(
+            Context applicationContext, Application application);
 }

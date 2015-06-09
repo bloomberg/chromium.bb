@@ -7,7 +7,6 @@ package org.chromium.components.invalidation;
 import android.accounts.Account;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.os.Bundle;
 import android.test.ServiceTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -364,21 +363,23 @@ public class InvalidationClientServiceTest extends
          */
         // Call invalidate.
         int version = 4747;
-        ObjectId objectId = ObjectId.newInstance(55, "BOOKMARK".getBytes());
+        int objectSource = 55;
+        String objectName = "BOOKMARK";
+        ObjectId objectId = ObjectId.newInstance(objectSource, objectName.getBytes());
         final String payload = "testInvalidate-" + hasPayload;
-        Invalidation invalidation = hasPayload ?
-                Invalidation.newInstance(objectId, version, payload.getBytes()) :
-                Invalidation.newInstance(objectId, version);
+        Invalidation invalidation = hasPayload
+                ? Invalidation.newInstance(objectId, version, payload.getBytes())
+                : Invalidation.newInstance(objectId, version);
         byte[] ackHandle = ("testInvalidate-" + hasPayload).getBytes();
         getService().invalidate(invalidation, ackHandle);
 
         // Validate bundle.
         assertEquals(1, getService().mRequestedSyncs.size());
-        Bundle syncBundle = getService().mRequestedSyncs.get(0);
-        assertEquals(55, syncBundle.getInt("objectSource"));
-        assertEquals("BOOKMARK", syncBundle.getString("objectId"));
-        assertEquals(version, syncBundle.getLong("version"));
-        assertEquals(hasPayload ? payload : "", syncBundle.getString("payload"));
+        PendingInvalidation request = new PendingInvalidation(getService().mRequestedSyncs.get(0));
+        assertEquals(objectSource, request.mObjectSource);
+        assertEquals(objectName, request.mObjectId);
+        assertEquals(version, request.mVersion);
+        assertEquals(hasPayload ? payload : null, request.mPayload);
 
         // Ensure acknowledged.
         assertSingleAcknowledgement(ackHandle);
@@ -391,17 +392,19 @@ public class InvalidationClientServiceTest extends
          * Test plan: call invalidateUnknownVersion(). Verify the produced bundle has the correct
          * fields.
          */
-        ObjectId objectId = ObjectId.newInstance(55, "BOOKMARK".getBytes());
+        int objectSource = 55;
+        String objectName = "BOOKMARK";
+        ObjectId objectId = ObjectId.newInstance(objectSource, objectName.getBytes());
         byte[] ackHandle = "testInvalidateUV".getBytes();
         getService().invalidateUnknownVersion(objectId, ackHandle);
 
         // Validate bundle.
         assertEquals(1, getService().mRequestedSyncs.size());
-        Bundle syncBundle = getService().mRequestedSyncs.get(0);
-        assertEquals(55, syncBundle.getInt("objectSource"));
-        assertEquals("BOOKMARK", syncBundle.getString("objectId"));
-        assertEquals(0, syncBundle.getLong("version"));
-        assertEquals("", syncBundle.getString("payload"));
+        PendingInvalidation request = new PendingInvalidation(getService().mRequestedSyncs.get(0));
+        assertEquals(objectSource, request.mObjectSource);
+        assertEquals(objectName, request.mObjectId);
+        assertEquals(0, request.mVersion);
+        assertEquals(null, request.mPayload);
 
         // Ensure acknowledged.
         assertSingleAcknowledgement(ackHandle);
@@ -418,8 +421,8 @@ public class InvalidationClientServiceTest extends
 
         // Validate bundle.
         assertEquals(1, getService().mRequestedSyncs.size());
-        Bundle syncBundle = getService().mRequestedSyncs.get(0);
-        assertEquals(0, syncBundle.keySet().size());
+        PendingInvalidation request = new PendingInvalidation(getService().mRequestedSyncs.get(0));
+        assertEquals(0, request.mObjectSource);
 
         // Ensure acknowledged.
         assertSingleAcknowledgement(ackHandle);
@@ -589,9 +592,9 @@ public class InvalidationClientServiceTest extends
             expectedRegisteredIds.addAll(expectedObjectIds);
         }
 
-        return actualSyncTypes.equals(expectedSyncTypes) &&
-                actualObjectIds.equals(expectedObjectIds) &&
-                getService().mCurrentRegistrations.equals(expectedRegisteredIds);
+        return actualSyncTypes.equals(expectedSyncTypes)
+                && actualObjectIds.equals(expectedObjectIds)
+                && getService().mCurrentRegistrations.equals(expectedRegisteredIds);
     }
 
     @SmallTest

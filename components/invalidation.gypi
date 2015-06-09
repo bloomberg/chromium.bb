@@ -177,6 +177,7 @@
           'target_name': 'invalidation_java',
           'type': 'none',
           'dependencies': [
+            'invalidation_proto_java',
             '../base/base.gyp:base',
             '../sync/sync.gyp:sync_java',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
@@ -185,6 +186,14 @@
             'java_in_dir': 'invalidation/android/java',
           },
           'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'invalidation_proto_java',
+          'type': 'none',
+          'sources': [
+            'invalidation/android/proto/serialized_invalidation.proto',
+          ],
+          'includes': [ '../build/protoc_java.gypi' ],
         },
         {
           'target_name': 'invalidation_javatests',
@@ -197,6 +206,23 @@
             'java_in_dir': 'invalidation/android/javatests',
           },
           'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'invalidation_junit_tests',
+          'type': 'none',
+          'dependencies': [
+            'invalidation_java',
+            '../base/base.gyp:base_java',
+            '../base/base.gyp:base_java_test_support',
+            '../testing/android/junit/junit_test.gyp:junit_test_support',
+          ],
+          'variables': {
+            'main_class': 'org.chromium.testing.local.JunitTestMain',
+            'src_paths': [
+              'invalidation/android/junit/'
+            ],
+          },
+          'includes': [ '../build/host_jar.gypi' ],
         },
         {
           'target_name': 'invalidation_jni_headers',

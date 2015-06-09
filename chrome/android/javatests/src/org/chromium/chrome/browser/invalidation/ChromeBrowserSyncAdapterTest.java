@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.sync;
+package org.chromium.chrome.browser.invalidation;
 
 import android.accounts.Account;
 import android.app.Application;
@@ -17,6 +17,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.components.invalidation.PendingInvalidation;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.AndroidSyncSettings;
@@ -28,7 +29,6 @@ import org.chromium.sync.signin.AccountManagerHelper;
  * TODO(nyquist) Remove this class when Chrome sync starts up the same way as the testshell.
  */
 public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<ChromeActivity> {
-
     private static final Account TEST_ACCOUNT =
             AccountManagerHelper.createAccountFromName("test@gmail.com");
     private static final long WAIT_FOR_LAUNCHER_MS = 10 * 1000;
@@ -54,10 +54,14 @@ public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<Chr
                 }, WAIT_FOR_LAUNCHER_MS, POLL_INTERVAL_MS));
     }
 
+    private void performSyncWithBundle(Bundle bundle) {
+        mSyncAdapter.onPerformSync(TEST_ACCOUNT, bundle,
+                AndroidSyncSettings.getContractAuthority(getActivity()), null, new SyncResult());
+    }
 
     private static class TestChromeSyncAdapter extends ChromiumSyncAdapter {
-        private boolean mSyncRequested;
-        private boolean mSyncRequestedForAllTypes;
+        private boolean mInvalidationRequested;
+        private boolean mInvalidationRequestedForAllTypes;
         private int mObjectSource;
         private String mObjectId;
         private long mVersion;
@@ -73,25 +77,25 @@ public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<Chr
         }
 
         @Override
-        public void requestSync(int objectSource, String objectId, long version, String payload) {
+        public void notifyInvalidation(
+                int objectSource, String objectId, long version, String payload) {
             mObjectSource = objectSource;
             mObjectId = objectId;
             mVersion = version;
             mPayload = payload;
-            mSyncRequested = true;
-        }
-
-        @Override
-        public void requestSyncForAllTypes() {
-            mSyncRequestedForAllTypes = true;
+            if (objectSource == 0) {
+                mInvalidationRequestedForAllTypes = true;
+            } else {
+                mInvalidationRequested = true;
+            }
         }
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mSyncAdapter = new TestChromeSyncAdapter(getInstrumentation().getTargetContext(),
-                getActivity().getApplication());
+        mSyncAdapter = new TestChromeSyncAdapter(
+                getInstrumentation().getTargetContext(), getActivity().getApplication());
     }
 
     @Override
@@ -100,44 +104,40 @@ public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<Chr
     }
 
     @MediumTest
-    @Feature({"Sync"})
-    public void testRequestSyncNoInvalidationData() {
-        SyncResult syncResult = new SyncResult();
-        mSyncAdapter.onPerformSync(TEST_ACCOUNT, new Bundle(),
-                AndroidSyncSettings.getContractAuthority(getActivity()), null, syncResult);
-        assertTrue(mSyncAdapter.mSyncRequestedForAllTypes);
-        assertFalse(mSyncAdapter.mSyncRequested);
+    @Feature({"Sync", "Invalidation"})
+    public void testRequestInvalidationForAllTypes() {
+        performSyncWithBundle(new Bundle());
+        assertTrue(mSyncAdapter.mInvalidationRequestedForAllTypes);
+        assertFalse(mSyncAdapter.mInvalidationRequested);
         assertTrue(CommandLine.isInitialized());
     }
 
     @MediumTest
-    @Feature({"Sync"})
-    public void testRequestSyncSpecificDataType() {
-        SyncResult syncResult = new SyncResult();
-        Bundle extras = new Bundle();
-        extras.putInt(ChromiumSyncAdapter.INVALIDATION_OBJECT_SOURCE_KEY, 65);
-        extras.putString(ChromiumSyncAdapter.INVALIDATION_OBJECT_ID_KEY, "objectid_value");
-        extras.putLong(ChromiumSyncAdapter.INVALIDATION_VERSION_KEY, 42);
-        extras.putString(ChromiumSyncAdapter.INVALIDATION_PAYLOAD_KEY, "payload_value");
-        mSyncAdapter.onPerformSync(TEST_ACCOUNT, extras,
-                AndroidSyncSettings.getContractAuthority(getActivity()), null, syncResult);
-        assertFalse(mSyncAdapter.mSyncRequestedForAllTypes);
-        assertTrue(mSyncAdapter.mSyncRequested);
-        assertEquals(65, mSyncAdapter.mObjectSource);
-        assertEquals("objectid_value", mSyncAdapter.mObjectId);
-        assertEquals(42, mSyncAdapter.mVersion);
-        assertEquals("payload_value", mSyncAdapter.mPayload);
+    @Feature({"Sync", "Invalidation"})
+    public void testRequestSpecificInvalidation() {
+        String objectId = "objectid_value";
+        int objectSource = 65;
+        long version = 42L;
+        String payload = "payload_value";
+
+        performSyncWithBundle(
+                PendingInvalidation.createBundle(objectId, objectSource, version, payload));
+
+        assertFalse(mSyncAdapter.mInvalidationRequestedForAllTypes);
+        assertTrue(mSyncAdapter.mInvalidationRequested);
+        assertEquals(objectSource, mSyncAdapter.mObjectSource);
+        assertEquals(objectId, mSyncAdapter.mObjectId);
+        assertEquals(version, mSyncAdapter.mVersion);
+        assertEquals(payload, mSyncAdapter.mPayload);
         assertTrue(CommandLine.isInitialized());
     }
 
     @MediumTest
-    @Feature({"Sync"})
-    public void testRequestSyncWhenChromeInBackground() throws InterruptedException {
+    @Feature({"Sync", "Invalidation"})
+    public void testInvalidationsHeldWhenChromeInBackground() throws InterruptedException {
         sendChromeToBackground(getActivity());
-        SyncResult syncResult = new SyncResult();
-        mSyncAdapter.onPerformSync(TEST_ACCOUNT, new Bundle(),
-                AndroidSyncSettings.getContractAuthority(getActivity()), null, syncResult);
-        assertFalse(mSyncAdapter.mSyncRequestedForAllTypes);
-        assertFalse(mSyncAdapter.mSyncRequested);
+        performSyncWithBundle(new Bundle());
+        assertFalse(mSyncAdapter.mInvalidationRequestedForAllTypes);
+        assertFalse(mSyncAdapter.mInvalidationRequested);
     }
 }

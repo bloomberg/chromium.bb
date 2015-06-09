@@ -184,9 +184,9 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- Sync adapter for browser sync. -->
+        <!-- Sync adapter for browser invalidation. -->
         <service android:exported="false"
-                 android:name="org.chromium.chrome.shell.sync.ChromeShellSyncAdapterService">
+                 android:name="org.chromium.chrome.shell.invalidation.ChromeShellSyncAdapterService">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>

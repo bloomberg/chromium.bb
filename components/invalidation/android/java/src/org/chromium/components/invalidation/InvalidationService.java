@@ -8,6 +8,8 @@ import android.accounts.Account;
 import android.content.Context;
 import android.content.Intent;
 
+import com.google.protos.ipc.invalidation.Types;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
@@ -35,16 +37,15 @@ public class InvalidationService {
         mNativeInvalidationServiceAndroid = nativeInvalidationServiceAndroid;
     }
 
-    public void requestSyncFromNativeChrome(
+    public void notifyInvalidationToNativeChrome(
             int objectSource, String objectId, long version, String payload) {
         ThreadUtils.assertOnUiThread();
-        nativeRequestSync(
+        nativeInvalidate(
                 mNativeInvalidationServiceAndroid, objectSource, objectId, version, payload);
     }
 
     public void requestSyncFromNativeChromeForAllTypes() {
-        ThreadUtils.assertOnUiThread();
-        nativeRequestSyncForAllTypes(mNativeInvalidationServiceAndroid);
+        notifyInvalidationToNativeChrome(Types.ObjectSource.CHROME_SYNC, null, 0L, null);
     }
 
     @CalledByNative
@@ -66,9 +67,8 @@ public class InvalidationService {
     public void setRegisteredObjectIds(int[] objectSources, String[] objectNames) {
         InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
         Account account = invalidationPreferences.getSavedSyncedAccount();
-        Intent registerIntent =
-                InvalidationIntentProtocol.createRegisterIntent(
-                        account, objectSources, objectNames);
+        Intent registerIntent = InvalidationIntentProtocol.createRegisterIntent(
+                account, objectSources, objectNames);
         registerIntent.setClass(mContext, InvalidationClientService.class);
         mContext.startService(registerIntent);
     }
@@ -85,7 +85,6 @@ public class InvalidationService {
         return InvalidationClientNameProvider.get().getInvalidatorClientName();
     }
 
-    private native void nativeRequestSync(long nativeInvalidationServiceAndroid,
-            int objectSource, String objectId, long version, String payload);
-    private native void nativeRequestSyncForAllTypes(long nativeInvalidationServiceAndroid);
+    private native void nativeInvalidate(long nativeInvalidationServiceAndroid, int objectSource,
+            String objectId, long version, String payload);
 }
