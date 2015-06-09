@@ -142,6 +142,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
         # Android doesn't support multiple sessions on one device.
         'SessionHandlingTest.testGetSessions',
+        # Android doesn't use the chrome://print dialog.
+        'ChromeDriverTest.testCanSwitchToPrintPreviewDialog',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
