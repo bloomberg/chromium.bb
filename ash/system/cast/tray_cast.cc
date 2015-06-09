@@ -60,6 +60,7 @@ class CastSelectDefaultView : public TrayItemMore {
       const CastConfigDelegate::ReceiversAndActivites& receivers_activities);
 
   CastConfigDelegate* cast_config_delegate_;
+  base::WeakPtrFactory<CastSelectDefaultView> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(CastSelectDefaultView);
 };
 
@@ -68,7 +69,8 @@ CastSelectDefaultView::CastSelectDefaultView(
     CastConfigDelegate* cast_config_delegate,
     bool show_more)
     : TrayItemMore(owner, show_more),
-      cast_config_delegate_(cast_config_delegate) {
+      cast_config_delegate_(cast_config_delegate),
+      weak_ptr_factory_(this) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_CAST).ToImageSkia());
 
@@ -99,8 +101,9 @@ void CastSelectDefaultView::UpdateLabel() {
       cast_config_delegate_->HasCastExtension() == false)
     return;
 
-  cast_config_delegate_->GetReceiversAndActivities(base::Bind(
-      &CastSelectDefaultView::UpdateLabelCallback, base::Unretained(this)));
+  cast_config_delegate_->GetReceiversAndActivities(
+      base::Bind(&CastSelectDefaultView::UpdateLabelCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 // This view is displayed when the screen is actively being casted; it allows
@@ -128,12 +131,13 @@ class CastCastView : public views::View, public views::ButtonListener {
   views::ImageView* icon_;
   views::Label* label_;
   TrayPopupLabelButton* stop_button_;
+  base::WeakPtrFactory<CastCastView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastCastView);
 };
 
 CastCastView::CastCastView(CastConfigDelegate* cast_config_delegate)
-    : cast_config_delegate_(cast_config_delegate) {
+    : cast_config_delegate_(cast_config_delegate), weak_ptr_factory_(this) {
   // We will initialize the primary tray view which shows a stop button here.
 
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
@@ -193,8 +197,8 @@ void CastCastView::UpdateLabel() {
       cast_config_delegate_->HasCastExtension() == false)
     return;
 
-  cast_config_delegate_->GetReceiversAndActivities(
-      base::Bind(&CastCastView::UpdateLabelCallback, base::Unretained(this)));
+  cast_config_delegate_->GetReceiversAndActivities(base::Bind(
+      &CastCastView::UpdateLabelCallback, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CastCastView::UpdateLabelCallback(
@@ -380,10 +384,11 @@ class CastDetailedView : public TrayDetailsView, public ViewClickListener {
 
   CastConfigDelegate* cast_config_delegate_;
   user::LoginStatus login_;
-  views::View* options_;
+  views::View* options_ = nullptr;
   CastConfigDelegate::ReceiversAndActivites receivers_and_activities_;
   // A mapping from the view pointer to the associated activity id
   std::map<views::View*, std::string> receiver_activity_map_;
+  base::WeakPtrFactory<CastDetailedView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastDetailedView);
 };
@@ -394,7 +399,7 @@ CastDetailedView::CastDetailedView(SystemTrayItem* owner,
     : TrayDetailsView(owner),
       cast_config_delegate_(cast_config_delegate),
       login_(login),
-      options_(nullptr) {
+      weak_ptr_factory_(this) {
   CreateItems();
   UpdateReceiverList();
 }
@@ -409,8 +414,9 @@ void CastDetailedView::CreateItems() {
 }
 
 void CastDetailedView::UpdateReceiverList() {
-  cast_config_delegate_->GetReceiversAndActivities(base::Bind(
-      &CastDetailedView::UpdateReceiverListCallback, base::Unretained(this)));
+  cast_config_delegate_->GetReceiversAndActivities(
+      base::Bind(&CastDetailedView::UpdateReceiverListCallback,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CastDetailedView::UpdateReceiverListCallback(
