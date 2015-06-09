@@ -45,6 +45,7 @@
 #ifndef DeprecatedPaintLayerStackingNode_h
 #define DeprecatedPaintLayerStackingNode_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -57,7 +58,7 @@ class DeprecatedPaintLayerCompositor;
 class ComputedStyle;
 class LayoutBoxModelObject;
 
-class DeprecatedPaintLayerStackingNode {
+class CORE_EXPORT DeprecatedPaintLayerStackingNode {
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNode);
 public:
     explicit DeprecatedPaintLayerStackingNode(DeprecatedPaintLayer*);

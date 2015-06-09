@@ -31,6 +31,7 @@
 #ifndef PageScaleConstraintsSet_h
 #define PageScaleConstraintsSet_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/PageScaleConstraints.h"
 #include "platform/Length.h"
@@ -41,7 +42,7 @@ namespace blink {
 
 // This class harmonizes the viewport (particularly page scale) constraints from
 // the meta viewport tag and other sources.
-class PageScaleConstraintsSet {
+class CORE_EXPORT PageScaleConstraintsSet {
 public:
     static PassOwnPtr<PageScaleConstraintsSet> create()
     {

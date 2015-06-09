@@ -5,6 +5,7 @@
 #ifndef OriginsUsingFeatures_h
 #define OriginsUsingFeatures_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
@@ -17,7 +18,7 @@ class Document;
 class EventTarget;
 class ScriptState;
 
-class OriginsUsingFeatures {
+class CORE_EXPORT OriginsUsingFeatures {
     DISALLOW_ALLOCATION();
 public:
     ~OriginsUsingFeatures();

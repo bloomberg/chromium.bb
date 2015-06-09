@@ -25,12 +25,13 @@
 #ifndef Attr_h
 #define Attr_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/dom/QualifiedName.h"
 
 namespace blink {
 
-class Attr final : public Node {
+class CORE_EXPORT Attr final : public Node {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Attr> create(Element&, const QualifiedName&);

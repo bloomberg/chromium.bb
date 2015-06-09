@@ -5,6 +5,7 @@
 #ifndef ScopeRecorder_h
 #define ScopeRecorder_h
 
+#include "core/CoreExport.h"
 #include "platform/graphics/paint/DisplayItem.h"
 
 namespace blink {
@@ -13,7 +14,7 @@ class DisplayItemList;
 class GraphicsContext;
 class LayoutObject;
 
-class ScopeRecorder {
+class CORE_EXPORT ScopeRecorder {
 public:
     ScopeRecorder(GraphicsContext&, const DisplayItemClientWrapper&);
 

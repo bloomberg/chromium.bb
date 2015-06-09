@@ -27,12 +27,13 @@
 #ifndef PseudoElement_h
 #define PseudoElement_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Element.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
 
-class PseudoElement : public Element {
+class CORE_EXPORT PseudoElement : public Element {
 public:
     static PassRefPtrWillBeRawPtr<PseudoElement> create(Element* parent, PseudoId);
 

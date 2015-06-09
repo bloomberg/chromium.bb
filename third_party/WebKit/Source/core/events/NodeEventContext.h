@@ -27,6 +27,7 @@
 #ifndef NodeEventContext_h
 #define NodeEventContext_h
 
+#include "core/CoreExport.h"
 #include "core/events/TreeScopeEventContext.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -37,7 +38,7 @@ class EventTarget;
 class Node;
 class TouchEventContext;
 
-class NodeEventContext {
+class CORE_EXPORT NodeEventContext {
     ALLOW_ONLY_INLINE_ALLOCATION();
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NodeEventContext);
 public:

@@ -27,6 +27,7 @@
 #ifndef TreeScopeEventContext_h
 #define TreeScopeEventContext_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Node.h"
 #include "core/dom/TreeScope.h"
 #include "core/events/EventTarget.h"
@@ -44,7 +45,7 @@ typedef StaticNodeTypeList<Node> StaticNodeList;
 class TouchEventContext;
 class TreeScope;
 
-class TreeScopeEventContext final : public RefCountedWillBeGarbageCollected<TreeScopeEventContext> {
+class CORE_EXPORT TreeScopeEventContext final : public RefCountedWillBeGarbageCollected<TreeScopeEventContext> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TreeScopeEventContext);
 public:
     static PassRefPtrWillBeRawPtr<TreeScopeEventContext> create(TreeScope&);

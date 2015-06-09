@@ -27,6 +27,7 @@
 #ifndef EventPath_h
 #define EventPath_h
 
+#include "core/CoreExport.h"
 #include "core/events/NodeEventContext.h"
 #include "core/events/TreeScopeEventContext.h"
 #include "core/events/WindowEventContext.h"
@@ -43,7 +44,7 @@ class TouchEvent;
 class TouchList;
 class TreeScope;
 
-class EventPath final : public NoBaseWillBeGarbageCollectedFinalized<EventPath> {
+class CORE_EXPORT EventPath final : public NoBaseWillBeGarbageCollectedFinalized<EventPath> {
 public:
     explicit EventPath(Node&, Event* = nullptr);
 
