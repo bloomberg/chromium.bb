@@ -4,6 +4,7 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 
+#include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_types.h"
@@ -235,6 +236,11 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       break;
     case ash::UMA_CLOSE_THROUGH_CONTEXT_MENU:
       base::RecordAction(base::UserMetricsAction("CloseFromContextMenu"));
+      break;
+    case ash::UMA_DESKTOP_SWITCH_TASK:
+      base::RecordAction(base::UserMetricsAction("Desktop_SwitchTask"));
+      task_switch_metrics_recorder_.OnTaskSwitch(
+          TaskSwitchMetricsRecorder::kDesktop);
       break;
     case ash::UMA_DRAG_MAXIMIZE_LEFT:
       base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
@@ -596,6 +602,19 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
           base::UserMetricsAction("WindowCycleController_Cycle"));
       break;
   }
+}
+
+void UserMetricsRecorder::OnShellInitialized() {
+  // Lazy creation of the DesktopTaskSwitchMetricRecorder because it accesses
+  // Shell::GetInstance() which is not available when |this| is instantiated.
+  if (!desktop_task_switch_metric_recorder_) {
+    desktop_task_switch_metric_recorder_.reset(
+        new DesktopTaskSwitchMetricRecorder());
+  }
+}
+
+void UserMetricsRecorder::OnShellShuttingDown() {
+  desktop_task_switch_metric_recorder_.reset();
 }
 
 void UserMetricsRecorder::RecordPeriodicMetrics() {
