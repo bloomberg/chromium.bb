@@ -868,6 +868,9 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Various setup following backend initialization, mostly for syncing backend.
   void PostBackendInitialization();
 
+  // Whether sync has been authenticated with an account ID.
+  bool IsSignedIn() const;
+
   // True if a syncing backend exists.
   bool HasSyncingBackend() const;
 

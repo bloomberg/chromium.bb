@@ -294,8 +294,7 @@ bool ProfileSyncService::IsSyncEnabledAndLoggedIn() {
   if (IsManaged() || !IsSyncRequested())
     return false;
 
-  // Sync is logged in if there is a non-empty effective account id.
-  return !signin_->GetAccountIdToUse().empty();
+  return IsSignedIn();
 }
 
 bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
@@ -322,7 +321,7 @@ void ProfileSyncService::Initialize() {
 
   RegisterAuthNotifications();
 
-  if (!HasSyncSetupCompleted() || signin_->GetAccountIdToUse().empty()) {
+  if (!HasSyncSetupCompleted() || !IsSignedIn()) {
     // Clean up in case of previous crash / setup abort / signout.
     DisableForUser();
   }
@@ -348,8 +347,7 @@ void ProfileSyncService::Initialize() {
   if (browser_sync::BackupRollbackController::IsBackupEnabled()) {
     // Backup is needed if user's not signed in or signed in but previous
     // backup didn't finish, i.e. backend didn't switch from backup to sync.
-    need_backup_ = signin_->GetAccountIdToUse().empty() ||
-        sync_prefs_.GetFirstSyncTime().is_null();
+    need_backup_ = !IsSignedIn() || sync_prefs_.GetFirstSyncTime().is_null();
 
     // Try to resume rollback if it didn't finish in last session.
     running_rollback = backup_rollback_controller_->StartRollback();
@@ -358,7 +356,7 @@ void ProfileSyncService::Initialize() {
   }
 
 #if defined(ENABLE_PRE_SYNC_BACKUP)
-  if (!running_rollback && signin_->GetAccountIdToUse().empty()) {
+  if (!running_rollback && !IsSignedIn()) {
     CleanUpBackup();
   }
 #else
@@ -1628,6 +1626,11 @@ bool ProfileSyncService::IsSyncActive() const {
          directory_data_type_manager_->state() != DataTypeManager::STOPPED;
 }
 
+bool ProfileSyncService::IsSignedIn() const {
+  // Sync is logged in if there is a non-empty effective account id.
+  return !signin_->GetAccountIdToUse().empty();
+}
+
 bool ProfileSyncService::backend_initialized() const {
   return backend_initialized_;
 }
@@ -2558,7 +2561,7 @@ bool ProfileSyncService::HasSyncingBackend() const {
 }
 
 void ProfileSyncService::UpdateFirstSyncTimePref() {
-  if (signin_->GetAccountIdToUse().empty()) {
+  if (!IsSignedIn()) {
     // Clear if user's not signed in and rollback is done.
     if (backend_mode_ != ROLLBACK)
       sync_prefs_.ClearFirstSyncTime();
