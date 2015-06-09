@@ -142,6 +142,12 @@ public class UrlUtilitiesTest extends InstrumentationTestCase {
                 + "TEST_AUTHENTICATOR;category=android.intent.category."
                 + "BROWSABLE;S.inputData=cancelled;end"));
 
+        // null does not have a valid intent scheme.
+        assertFalse(UrlUtilities.validateIntentUrl(null));
+        // The empty string does not have a valid intent scheme.
+        assertFalse(UrlUtilities.validateIntentUrl(""));
+        // A whitespace string does not have a valid intent scheme.
+        assertFalse(UrlUtilities.validateIntentUrl(" "));
         // Junk after end.
         assertFalse(UrlUtilities.validateIntentUrl(
                 "intent://10010#Intent;scheme=tel;action=com.google.android.apps."

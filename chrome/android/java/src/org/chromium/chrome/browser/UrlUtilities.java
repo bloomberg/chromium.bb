@@ -237,7 +237,7 @@ public class UrlUtilities {
             return false;
         }
 
-        URI parsed = null;
+        URI parsed;
         try {
             parsed = new URI(url);
         } catch (URISyntaxException e) {
@@ -252,7 +252,8 @@ public class UrlUtilities {
             return false;
         }
 
-        if (!parsed.getScheme().equals("intent")) {
+        String scheme = parsed.getScheme();
+        if (scheme == null || !scheme.equals("intent")) {
             Log.d(TAG, "scheme was not 'intent'");
             return false;
         }
