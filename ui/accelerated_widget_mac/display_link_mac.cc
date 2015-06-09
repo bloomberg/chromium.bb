@@ -5,6 +5,7 @@
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
 
 namespace base {
@@ -25,7 +26,6 @@ namespace ui {
 
 // static
 scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     CGDirectDisplayID display_id) {
   // Return the existing display link for this display, if it exists.
   DisplayMap::iterator found = display_map_.Get().find(display_id);
@@ -45,8 +45,7 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
   }
 
   scoped_refptr<DisplayLinkMac> display_link_mac;
-  display_link_mac = new DisplayLinkMac(
-      main_thread_task_runner, display_id, display_link);
+  display_link_mac = new DisplayLinkMac(display_id, display_link);
   ret = CVDisplayLinkSetOutputCallback(
       display_link_mac->display_link_,
       &DisplayLinkCallback,
@@ -60,10 +59,10 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
 }
 
 DisplayLinkMac::DisplayLinkMac(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     CGDirectDisplayID display_id,
     base::ScopedTypeRef<CVDisplayLinkRef> display_link)
-      : main_thread_task_runner_(main_thread_task_runner),
+      : main_thread_task_runner_(
+            base::MessageLoop::current()->task_runner()),
         display_id_(display_id),
         display_link_(display_link),
         timebase_and_interval_valid_(false) {

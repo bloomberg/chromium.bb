@@ -828,8 +828,7 @@ void RenderWidgetHostViewMac::UpdateDisplayLink() {
   NSNumber* screen_number = [screen_description objectForKey:@"NSScreenNumber"];
   CGDirectDisplayID display_id = [screen_number unsignedIntValue];
 
-  display_link_ = ui::DisplayLinkMac::GetForDisplay(
-      RenderWidgetResizeHelper::Get()->task_runner(), display_id);
+  display_link_ = ui::DisplayLinkMac::GetForDisplay(display_id);
   if (!display_link_.get()) {
     // Note that on some headless systems, the display link will fail to be
     // created, so this should not be a fatal error.

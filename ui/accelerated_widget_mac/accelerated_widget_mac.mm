@@ -217,7 +217,8 @@ void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrameNSGL(
     const gfx::Rect& pixel_damage_rect) {
   if (!io_surface_ns_gl_surface_) {
     io_surface_ns_gl_surface_.reset(
-        IOSurfaceNSGLSurface::Create(view_->AcceleratedWidgetGetNSView()));
+        IOSurfaceNSGLSurface::Create(
+            this, view_->AcceleratedWidgetGetNSView()));
   }
 
   if (!io_surface_ns_gl_surface_) {
@@ -228,7 +229,6 @@ void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrameNSGL(
 
   io_surface_ns_gl_surface_->GotFrame(
       io_surface_id, pixel_size, scale_factor, pixel_damage_rect);
-  AcknowledgeAcceleratedFrame();
 }
 
 void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrame(
@@ -300,6 +300,7 @@ void AcceleratedWidgetMac::GotAcceleratedIOSurfaceFrame(
   // Remove any different-type layers that this is replacing.
   DestroyCAContextLayer(ca_context_layer_);
   DestroySoftwareLayer();
+  io_surface_ns_gl_surface_.reset();
 }
 
 void AcceleratedWidgetMac::GotSoftwareFrame(float scale_factor,
@@ -367,6 +368,10 @@ bool AcceleratedWidgetMac::IOSurfaceLayerShouldAckImmediately() const {
 }
 
 void AcceleratedWidgetMac::IOSurfaceLayerDidDrawFrame() {
+  AcknowledgeAcceleratedFrame();
+}
+
+void AcceleratedWidgetMac::IOSurfaceNSGLSurfaceDidDrawFrame() {
   AcknowledgeAcceleratedFrame();
 }
 

@@ -43,6 +43,11 @@ class IOSurfaceTexture
   static scoped_refptr<IOSurfaceTexture> Create(
       bool needs_gl_finish_workaround);
 
+  // Returns true if there is no need to call SetIOSurface with the provided
+  // values.
+  bool IsUpToDate(
+      IOSurfaceID io_surface_id, const gfx::Size& pixel_size) const;
+
   // Set IOSurfaceTexture that will be drawn on the next NSView drawRect.
   bool SetIOSurface(
       IOSurfaceID io_surface_id,
@@ -66,10 +71,6 @@ class IOSurfaceTexture
       const scoped_refptr<IOSurfaceContext>& context,
       bool needs_gl_finish_workaround);
   ~IOSurfaceTexture();
-
-  // Draw the sepecified rect of the IOSurface. If |draw_boundary| is true,
-  // clear any overflow regions with white.
-  bool DrawIOSurfaceInternal(gfx::Rect damage_rect, bool draw_boundary);
 
   // Unref the IOSurfaceTexture and delete the associated GL texture. If the GPU
   // process is no longer referencing it, this will delete the IOSurface.

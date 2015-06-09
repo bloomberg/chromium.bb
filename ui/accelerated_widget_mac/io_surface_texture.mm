@@ -63,16 +63,11 @@ IOSurfaceTexture::~IOSurfaceTexture() {
 }
 
 bool IOSurfaceTexture::DrawIOSurface() {
-  return DrawIOSurfaceInternal(gfx::Rect(pixel_size_), true);
+  return DrawIOSurfaceWithDamageRect(gfx::Rect(pixel_size_));
 }
 
 bool IOSurfaceTexture::DrawIOSurfaceWithDamageRect(gfx::Rect damage_rect) {
-  return DrawIOSurfaceInternal(damage_rect, false);
-}
-
-bool IOSurfaceTexture::DrawIOSurfaceInternal(
-    gfx::Rect damage_rect, bool draw_boundary) {
-  TRACE_EVENT0("browser", "IOSurfaceTexture::DrawIOSurfaceInternal");
+  TRACE_EVENT0("browser", "IOSurfaceTexture::DrawIOSurfaceWithDamageRect");
   DCHECK(CGLGetCurrentContext());
 
   // If we have release the IOSurface, clear the screen to light grey and
@@ -121,28 +116,6 @@ bool IOSurfaceTexture::DrawIOSurfaceInternal(
   glBegin(GL_TRIANGLES);
   glEnd();
 
-  // If the viewport is larger than the texture, clear out the overflow to
-  // white.
-  if (draw_boundary) {
-    if (pixel_size_.width() < viewport_rect.width()) {
-      glBegin(GL_QUADS);
-      glVertex2f(pixel_size_.width(), 0);
-      glVertex2f(pixel_size_.width(), viewport_rect.height());
-      glVertex2f(viewport_rect.width(), viewport_rect.height());
-      glVertex2f(viewport_rect.width(), 0);
-      glEnd();
-    }
-    if (pixel_size_.height() < viewport_rect.height()) {
-      int non_surface_height = viewport_rect.height() - pixel_size_.height();
-      glBegin(GL_QUADS);
-      glVertex2f(0, 0);
-      glVertex2f(0, non_surface_height);
-      glVertex2f(pixel_size_.width(), non_surface_height);
-      glVertex2f(pixel_size_.width(), 0);
-      glEnd();
-    }
-  }
-
   if (needs_gl_finish_workaround_) {
     TRACE_EVENT0("gpu", "glFinish");
     glFinish();
@@ -164,9 +137,15 @@ bool IOSurfaceTexture::DrawIOSurfaceInternal(
   return result;
 }
 
+bool IOSurfaceTexture::IsUpToDate(
+    IOSurfaceID io_surface_id, const gfx::Size& pixel_size) const {
+  return io_surface_ &&
+         io_surface_id == IOSurfaceGetID(io_surface_) &&
+         pixel_size == pixel_size_;
+}
+
 bool IOSurfaceTexture::SetIOSurface(
-    IOSurfaceID io_surface_id,
-    const gfx::Size& pixel_size) {
+    IOSurfaceID io_surface_id, const gfx::Size& pixel_size) {
   TRACE_EVENT0("browser", "IOSurfaceTexture::MapIOSurfaceToTexture");
 
   // Destroy the old IOSurface and texture if it is no longer needed.

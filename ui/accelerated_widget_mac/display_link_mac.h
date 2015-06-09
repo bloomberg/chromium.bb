@@ -22,7 +22,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac :
     public base::RefCounted<DisplayLinkMac> {
  public:
   static scoped_refptr<DisplayLinkMac> GetForDisplay(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       CGDirectDisplayID display_id);
 
   // Get vsync scheduling parameters.
@@ -34,7 +33,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac :
   friend class base::RefCounted<DisplayLinkMac>;
 
   DisplayLinkMac(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       CGDirectDisplayID display_id,
       base::ScopedTypeRef<CVDisplayLinkRef> display_link);
   virtual ~DisplayLinkMac();
@@ -60,7 +58,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac :
       CGDisplayChangeSummaryFlags flags,
       void* user_info);
 
-  // The task runner from which to post tasks to run on the main thread.
+  // The task runner to post tasks to from the display link thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   // The display that this display link is attached to.

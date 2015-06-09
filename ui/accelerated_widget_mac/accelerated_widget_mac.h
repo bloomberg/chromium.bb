@@ -18,6 +18,7 @@
 #import <Cocoa/Cocoa.h>
 #import "base/mac/scoped_nsobject.h"
 #import "ui/accelerated_widget_mac/io_surface_layer.h"
+#import "ui/accelerated_widget_mac/io_surface_ns_gl_surface.h"
 #import "ui/accelerated_widget_mac/software_layer.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #endif  // __OBJC__
@@ -52,7 +53,7 @@ class AcceleratedWidgetMacNSView {
 // GotAcceleratedFrame and GotSoftwareFrame. The CALayers may be installed
 // in an NSView by setting the AcceleratedWidgetMacNSView for the helper.
 class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
-    : public IOSurfaceLayerClient {
+    : public IOSurfaceLayerClient, public IOSurfaceNSGLSurfaceClient {
  public:
   explicit AcceleratedWidgetMac(bool needs_gl_finish_workaround);
   virtual ~AcceleratedWidgetMac();
@@ -91,6 +92,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
   bool IOSurfaceLayerShouldAckImmediately() const override;
   void IOSurfaceLayerDidDrawFrame() override;
   void IOSurfaceLayerHitError() override;
+
+  // IOSurfaceNSGLSurfaceClient implementation:
+  void IOSurfaceNSGLSurfaceDidDrawFrame() override;
 
   void GotAcceleratedCAContextFrame(CAContextID ca_context_id,
                                     const gfx::Size& pixel_size,
