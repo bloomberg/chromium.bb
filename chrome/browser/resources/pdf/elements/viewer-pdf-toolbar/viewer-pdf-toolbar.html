@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../viewer-page-selector/viewer-page-selector.html">
 
@@ -13,9 +14,7 @@
     <div id="animatable">
       <paper-material class="fit"></paper-material>
 
-      <!-- TODO(tsergeant): Re-enable once paper-progress is available in Polymer
-        0.8 -->
-      <!--<paper-progress value="{{loadProgress}}"></paper-progress>-->
+      <paper-progress value="{{loadProgress}}"></paper-progress>
 
       <paper-toolbar class="core-narrow">
         <div id="aligner" class="horizontal layout center">

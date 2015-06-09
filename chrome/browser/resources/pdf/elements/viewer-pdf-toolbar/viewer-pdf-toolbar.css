@@ -49,16 +49,13 @@ paper-progress {
   z-index: 3;
 }
 
-paper-progress::shadow #activeProgress {
-  background-color: rgb(50, 54, 57);
-}
-
-paper-progress::shadow #progressContainer {
-  background-color: rgba(0, 0, 0, 0.3);
+paper-progress {
+  --paper-progress-active-color: rgb(50, 54, 57);
+  --paper-progress-container-color: rgb(34, 36, 38);
 }
 
 paper-toolbar {
-  background-color: rgb(50, 54, 57);
+  background-color: transparent;
   color: rgb(241, 241, 241);
   font-size: 1.5em;
   height: 56px;
