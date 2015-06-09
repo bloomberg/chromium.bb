@@ -46,7 +46,7 @@ source_set("lib") {
     "//ui/mojo/events:interfaces",
   ]
 
-  if (use_aura) {
+  if (is_mac || use_aura) {
     sources += [
       "desktop/desktop_ui.cc",
       "desktop/desktop_ui.h",
