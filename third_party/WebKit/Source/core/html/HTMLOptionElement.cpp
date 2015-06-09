@@ -331,18 +331,6 @@ PassRefPtr<ComputedStyle> HTMLOptionElement::customStyleForLayoutObject()
     return m_style;
 }
 
-void HTMLOptionElement::didRecalcStyle(StyleRecalcChange change)
-{
-    if (change == NoChange)
-        return;
-
-    // FIXME: We ask our owner select to repaint regardless of which property changed.
-    if (HTMLSelectElement* select = ownerSelectElement()) {
-        if (LayoutObject* layoutObject = select->layoutObject())
-            layoutObject->setShouldDoFullPaintInvalidation();
-    }
-}
-
 String HTMLOptionElement::textIndentedToRespectGroupLabel() const
 {
     ContainerNode* parent = parentNode();

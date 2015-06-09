@@ -92,7 +92,6 @@ private:
     void updateNonComputedStyle();
     virtual ComputedStyle* nonLayoutObjectComputedStyle() const override;
     virtual PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;
-    virtual void didRecalcStyle(StyleRecalcChange) override;
     virtual void didAddUserAgentShadowRoot(ShadowRoot&) override;
 
     String collectOptionInnerText() const;
