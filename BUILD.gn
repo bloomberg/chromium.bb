@@ -75,8 +75,8 @@ config("icu_code") {
     if (is_win) {
       cflags += [
         # See http://bugs.icu-project.org/trac/ticket/11122
-        '-Wno-inline-new-delete',
-        '-Wno-implicit-exception-spec-mismatch',
+        "-Wno-inline-new-delete",
+        "-Wno-implicit-exception-spec-mismatch",
       ]
     }
   }
