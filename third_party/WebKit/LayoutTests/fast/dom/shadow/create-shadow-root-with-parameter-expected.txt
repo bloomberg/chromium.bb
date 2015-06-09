@@ -6,6 +6,8 @@ Create shadow root with empty parameter.
 PASS [object ShadowRoot] is non-null.
 Create shadow root whose mode is neither open nor closed.
 PASS host4.createShadowRoot({mode: 'illegal'}) threw exception TypeError: Failed to execute 'createShadowRoot' on 'Element': The provided value 'illegal' is not a valid enum value of type ShadowRootMode..
+Create open shadow root with shadow-dom.js utility.
+PASS [object ShadowRoot] is non-null.
 PASS successfullyParsed is true
 
 TEST COMPLETE

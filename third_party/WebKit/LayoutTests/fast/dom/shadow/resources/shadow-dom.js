@@ -1,10 +1,20 @@
 function createShadowRoot()
 {
     var children = Array.prototype.slice.call(arguments);
-    if ((children[0] instanceof Object) && !(children[0] instanceof Node))
+    if ((children[0] instanceof Object) && !(children[0] instanceof Node)) {
+        var attributes = {};
+        var parameter = {};
+        for (var key in children[0]) {
+            if (key == 'mode')
+                parameter[key] = children[0][key];
+            else
+                attributes[key] = children[0][key];
+        }
         return {'isShadowRoot': true,
-                'attributes': children[0],
+                'parameter': parameter,
+                'attributes': attributes,
                 'children': children.slice(1)};
+    }
     return {'isShadowRoot': true,
             'children': children};
 }
@@ -30,7 +40,10 @@ function createDOM(tagName, attributes)
             if (child.isUserAgentShadowRoot) {
                 shadowRoot = window.internals.createUserAgentShadowRoot(element);
             } else {
-                shadowRoot = element.createShadowRoot();
+                if (child.parameter && Object.keys(child.parameter).length > 0)
+                    shadowRoot = element.createShadowRoot(child.parameter);
+                else
+                    shadowRoot = element.createShadowRoot();
             }
             if (child.attributes) {
                 for (var attribute in child.attributes) {
