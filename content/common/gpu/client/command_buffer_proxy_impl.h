@@ -118,6 +118,7 @@ class CommandBufferProxyImpl
   void SetSurfaceVisible(bool visible) override;
   uint32 CreateStreamTexture(uint32 texture_id) override;
   void SetLock(base::Lock* lock) override;
+  bool IsGpuChannelLost() override;
 
   int GetRouteID() const;
   bool ProduceFrontBuffer(const gpu::Mailbox& mailbox);

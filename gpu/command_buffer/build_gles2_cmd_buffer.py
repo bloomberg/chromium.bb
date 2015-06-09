@@ -2699,6 +2699,12 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glGetFramebufferAttachmentParameterivEXT',
     'result': ['SizedResult<GLint>'],
   },
+  'GetGraphicsResetStatusKHR': {
+    'extension': True,
+    'client_test': False,
+    'gen_cmd': False,
+    'trace_level': 1,
+  },
   'GetInteger64v': {
     'type': 'GETn',
     'result': ['SizedResult<GLint64>'],

@@ -1615,6 +1615,10 @@ void MojoGLES2Impl::MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) {
 void MojoGLES2Impl::MatrixLoadIdentityCHROMIUM(GLenum matrixMode) {
   NOTREACHED() << "Unimplemented MatrixLoadIdentityCHROMIUM.";
 }
+GLenum MojoGLES2Impl::GetGraphicsResetStatusKHR() {
+  NOTREACHED() << "Unimplemented GetGraphicsResetStatusKHR.";
+  return 0;
+}
 void MojoGLES2Impl::BlendBarrierKHR() {
   NOTREACHED() << "Unimplemented BlendBarrierKHR.";
 }

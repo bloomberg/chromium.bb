@@ -339,4 +339,9 @@ void Display::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }
 
+bool Display::IsGpuChannelLost() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 }  // namespace egl

@@ -870,15 +870,8 @@ void ShaderProgram::Setup(const GLchar* vertex_shader_text,
   // The only reason fetching these attribute locations should fail is
   // if the context was spontaneously lost (i.e., because the GPU
   // process crashed, perhaps deliberately for testing).
-  // Unfortunately, the only way to reliably detect context loss from
-  // GLES2Interface would be to repeatedly call GetError(), and this
-  // seems fragile. Most of the APIs in GLHelper should be updated to
-  // be able to return an error. Fortunately, many users of this code
-  // check for context loss at a higher level.
-  if (!Initialized()) {
-    LOG(ERROR) << "ShaderProgram::Setup: initialization failed (context lost?)";
-  }
-  return;
+  DCHECK_IMPLIES(!Initialized(),
+                 gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
 }
 
 void ShaderProgram::UseProgram(const gfx::Size& src_size,

@@ -446,6 +446,10 @@ void CommandBufferProxyImpl::SetLock(base::Lock* lock) {
   lock_ = lock;
 }
 
+bool CommandBufferProxyImpl::IsGpuChannelLost() {
+  return !channel_ || channel_->IsLost();
+}
+
 uint32 CommandBufferProxyImpl::InsertSyncPoint() {
   CheckLock();
   if (last_state_.error != gpu::error::kNoError)

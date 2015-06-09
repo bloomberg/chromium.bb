@@ -774,6 +774,7 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
   void SwapInterval(GLint interval) override;
   void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) override;
   void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) override;
+  GLenum GetGraphicsResetStatusKHR() override;
   void BlendBarrierKHR() override;
 
  private:

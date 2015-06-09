@@ -162,6 +162,11 @@ void PpapiCommandBufferProxy::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }
 
+bool PpapiCommandBufferProxy::IsGpuChannelLost() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 uint32 PpapiCommandBufferProxy::InsertSyncPoint() {
   uint32 sync_point = 0;
   if (last_state_.error == gpu::error::kNoError) {

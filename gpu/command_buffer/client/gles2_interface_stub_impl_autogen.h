@@ -1274,6 +1274,9 @@ void GLES2InterfaceStub::MatrixLoadfCHROMIUM(GLenum /* matrixMode */,
 }
 void GLES2InterfaceStub::MatrixLoadIdentityCHROMIUM(GLenum /* matrixMode */) {
 }
+GLenum GLES2InterfaceStub::GetGraphicsResetStatusKHR() {
+  return 0;
+}
 void GLES2InterfaceStub::BlendBarrierKHR() {
 }
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

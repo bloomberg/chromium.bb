@@ -93,6 +93,7 @@ class Display : private gpu::GpuControl {
   void SetSurfaceVisible(bool visible) override;
   uint32 CreateStreamTexture(uint32 texture_id) override;
   void SetLock(base::Lock*) override;
+  bool IsGpuChannelLost() override;
 
  private:
   EGLNativeDisplayType display_id_;

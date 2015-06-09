@@ -121,6 +121,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void SetSurfaceVisible(bool visible) override;
   uint32 CreateStreamTexture(uint32 texture_id) override;
   void SetLock(base::Lock*) override;
+  bool IsGpuChannelLost() override;
 
   // The serializer interface to the GPU service (i.e. thread).
   class Service {

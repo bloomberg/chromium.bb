@@ -85,6 +85,10 @@ class GPU_EXPORT GpuControl {
   // may not be supported with all implementations.
   virtual void SetLock(base::Lock*) = 0;
 
+  // Returns true if the channel to the Gpu is lost. When true, all contexts
+  // should be considered as lost.
+  virtual bool IsGpuChannelLost() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);
 };

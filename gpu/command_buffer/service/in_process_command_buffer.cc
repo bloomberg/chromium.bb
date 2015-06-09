@@ -912,6 +912,12 @@ uint32 InProcessCommandBuffer::CreateStreamTexture(uint32 texture_id) {
 void InProcessCommandBuffer::SetLock(base::Lock*) {
 }
 
+bool InProcessCommandBuffer::IsGpuChannelLost() {
+  // There is no such channel to lose for in-process contexts. This only
+  // makes sense for out-of-process command buffers.
+  return false;
+}
+
 uint32 InProcessCommandBuffer::CreateStreamTextureOnGpuThread(
     uint32 client_texture_id) {
 #if defined(OS_ANDROID)

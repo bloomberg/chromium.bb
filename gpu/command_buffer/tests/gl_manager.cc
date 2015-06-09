@@ -516,4 +516,9 @@ void GLManager::SetLock(base::Lock*) {
   NOTIMPLEMENTED();
 }
 
+bool GLManager::IsGpuChannelLost() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 }  // namespace gpu

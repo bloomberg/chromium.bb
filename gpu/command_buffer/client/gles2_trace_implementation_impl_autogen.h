@@ -2181,6 +2181,11 @@ void GLES2TraceImplementation::MatrixLoadIdentityCHROMIUM(GLenum matrixMode) {
   gl_->MatrixLoadIdentityCHROMIUM(matrixMode);
 }
 
+GLenum GLES2TraceImplementation::GetGraphicsResetStatusKHR() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetGraphicsResetStatusKHR");
+  return gl_->GetGraphicsResetStatusKHR();
+}
+
 void GLES2TraceImplementation::BlendBarrierKHR() {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BlendBarrierKHR");
   gl_->BlendBarrierKHR();

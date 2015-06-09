@@ -1041,6 +1041,8 @@ void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) override;
 
 void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) override;
 
+GLenum GetGraphicsResetStatusKHR() override;
+
 void BlendBarrierKHR() override;
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_

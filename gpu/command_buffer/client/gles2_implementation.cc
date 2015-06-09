@@ -4103,6 +4103,21 @@ void GLES2Implementation::GetVertexAttribIuiv(
   CheckGLError();
 }
 
+GLenum GLES2Implementation::GetGraphicsResetStatusKHR() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetGraphicsResetStatusKHR()");
+  // If we can't make command buffers then the context is lost.
+  if (gpu_control_->IsGpuChannelLost())
+    return GL_UNKNOWN_CONTEXT_RESET_KHR;
+  // Otherwise, check the command buffer if it is lost.
+  if (helper_->IsContextLost()) {
+    // TODO(danakj): We could GetLastState() off the CommandBuffer and return
+    // the actual reason here if we cared to.
+    return GL_UNKNOWN_CONTEXT_RESET_KHR;
+  }
+  return GL_NO_ERROR;
+}
+
 void GLES2Implementation::Swap() {
   SwapBuffers();
 }

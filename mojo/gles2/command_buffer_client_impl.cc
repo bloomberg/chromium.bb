@@ -335,4 +335,9 @@ void CommandBufferClientImpl::MakeProgressAndUpdateState() {
 void CommandBufferClientImpl::SetLock(base::Lock* lock) {
 }
 
+bool CommandBufferClientImpl::IsGpuChannelLost() {
+  // This is only possible for out-of-process command buffers.
+  return false;
+}
+
 }  // namespace gles2
