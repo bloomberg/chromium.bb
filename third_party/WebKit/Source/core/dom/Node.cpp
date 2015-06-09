@@ -29,14 +29,12 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "core/HTMLNames.h"
-#include "core/XMLNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/ChildNodeList.h"
-#include "core/dom/DOMImplementation.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
@@ -47,7 +45,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
-#include "core/dom/LiveNodeList.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ProcessingInstruction.h"
@@ -63,7 +60,6 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/htmlediting.h"
-#include "core/editing/markup.h"
 #include "core/events/Event.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/EventDispatcher.h"
@@ -80,10 +76,8 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/HTMLStyleElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutBox.h"
 #include "core/page/ContextMenuController.h"
@@ -168,56 +162,56 @@ void Node::dumpStatistics()
         }
 
         switch (node->nodeType()) {
-            case ELEMENT_NODE: {
-                ++elementNodes;
+        case ELEMENT_NODE: {
+            ++elementNodes;
 
-                // Tag stats
-                Element* element = toElement(node);
-                HashMap<String, size_t>::AddResult result = perTagCount.add(element->tagName(), 1);
-                if (!result.isNewEntry)
-                    result.storedValue->value++;
+            // Tag stats
+            Element* element = toElement(node);
+            HashMap<String, size_t>::AddResult result = perTagCount.add(element->tagName(), 1);
+            if (!result.isNewEntry)
+                result.storedValue->value++;
 
-                if (const ElementData* elementData = element->elementData()) {
-                    attributes += elementData->attributes().size();
-                    ++elementsWithAttributeStorage;
-                }
-                break;
+            if (const ElementData* elementData = element->elementData()) {
+                attributes += elementData->attributes().size();
+                ++elementsWithAttributeStorage;
             }
-            case ATTRIBUTE_NODE: {
-                ++attrNodes;
-                break;
-            }
-            case TEXT_NODE: {
-                ++textNodes;
-                break;
-            }
-            case CDATA_SECTION_NODE: {
-                ++cdataNodes;
-                break;
-            }
-            case COMMENT_NODE: {
-                ++commentNodes;
-                break;
-            }
-            case PROCESSING_INSTRUCTION_NODE: {
-                ++piNodes;
-                break;
-            }
-            case DOCUMENT_NODE: {
-                ++documentNodes;
-                break;
-            }
-            case DOCUMENT_TYPE_NODE: {
-                ++docTypeNodes;
-                break;
-            }
-            case DOCUMENT_FRAGMENT_NODE: {
-                if (node->isShadowRoot())
-                    ++shadowRootNodes;
-                else
-                    ++fragmentNodes;
-                break;
-            }
+            break;
+        }
+        case ATTRIBUTE_NODE: {
+            ++attrNodes;
+            break;
+        }
+        case TEXT_NODE: {
+            ++textNodes;
+            break;
+        }
+        case CDATA_SECTION_NODE: {
+            ++cdataNodes;
+            break;
+        }
+        case COMMENT_NODE: {
+            ++commentNodes;
+            break;
+        }
+        case PROCESSING_INSTRUCTION_NODE: {
+            ++piNodes;
+            break;
+        }
+        case DOCUMENT_NODE: {
+            ++documentNodes;
+            break;
+        }
+        case DOCUMENT_TYPE_NODE: {
+            ++docTypeNodes;
+            break;
+        }
+        case DOCUMENT_FRAGMENT_NODE: {
+            if (node->isShadowRoot())
+                ++shadowRootNodes;
+            else
+                ++fragmentNodes;
+            break;
+        }
         }
     }
 
@@ -630,9 +624,11 @@ bool Node::hasNonEmptyBoundingBox() const
     FloatPoint absPos = layoutObject()->localToAbsolute();
     layoutObject()->absoluteRects(rects, flooredLayoutPoint(absPos));
     size_t n = rects.size();
-    for (size_t i = 0; i < n; ++i)
-        if (!rects[i].isEmpty())
+    for (size_t i = 0; i < n; ++i) {
+        if (!rects[i].isEmpty()) {
             return true;
+        }
+    }
 
     return false;
 }
@@ -793,10 +789,10 @@ bool Node::isInert() const
 
 unsigned Node::nodeIndex() const
 {
-    Node *_tempNode = previousSibling();
+    Node* tempNode = previousSibling();
     unsigned count = 0;
-    for (count = 0; _tempNode; count++)
-        _tempNode = _tempNode->previousSibling();
+    for (count = 0; tempNode; count++)
+        tempNode = tempNode->previousSibling();
     return count;
 }
 
@@ -1010,12 +1006,10 @@ Node* Node::previousNodeConsideringAtomicNodes() const
             n = n->lastChild();
         return n;
     }
-    else if (parentNode()) {
+    if (parentNode()) {
         return parentNode();
     }
-    else {
-        return nullptr;
-    }
+    return nullptr;
 }
 
 Node* Node::nextNodeConsideringAtomicNodes() const
@@ -1241,40 +1235,40 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
     const AtomicString& namespaceURI = namespaceURIMaybeEmpty.isEmpty() ? nullAtom : namespaceURIMaybeEmpty;
 
     switch (nodeType()) {
-        case ELEMENT_NODE: {
-            const Element& element = toElement(*this);
+    case ELEMENT_NODE: {
+        const Element& element = toElement(*this);
 
-            if (element.prefix().isNull())
-                return element.namespaceURI() == namespaceURI;
+        if (element.prefix().isNull())
+            return element.namespaceURI() == namespaceURI;
 
-            AttributeCollection attributes = element.attributes();
-            for (const Attribute& attr : attributes) {
-                if (attr.localName() == xmlnsAtom)
-                    return attr.value() == namespaceURI;
-            }
-
-            if (Element* parent = parentElement())
-                return parent->isDefaultNamespace(namespaceURI);
-
-            return false;
+        AttributeCollection attributes = element.attributes();
+        for (const Attribute& attr : attributes) {
+            if (attr.localName() == xmlnsAtom)
+                return attr.value() == namespaceURI;
         }
-        case DOCUMENT_NODE:
-            if (Element* de = toDocument(this)->documentElement())
-                return de->isDefaultNamespace(namespaceURI);
-            return false;
-        case DOCUMENT_TYPE_NODE:
-        case DOCUMENT_FRAGMENT_NODE:
-            return false;
-        case ATTRIBUTE_NODE: {
-            const Attr* attr = toAttr(this);
-            if (attr->ownerElement())
-                return attr->ownerElement()->isDefaultNamespace(namespaceURI);
-            return false;
-        }
-        default:
-            if (Element* parent = parentElement())
-                return parent->isDefaultNamespace(namespaceURI);
-            return false;
+
+        if (Element* parent = parentElement())
+            return parent->isDefaultNamespace(namespaceURI);
+
+        return false;
+    }
+    case DOCUMENT_NODE:
+        if (Element* de = toDocument(this)->documentElement())
+            return de->isDefaultNamespace(namespaceURI);
+        return false;
+    case DOCUMENT_TYPE_NODE:
+    case DOCUMENT_FRAGMENT_NODE:
+        return false;
+    case ATTRIBUTE_NODE: {
+        const Attr* attr = toAttr(this);
+        if (attr->ownerElement())
+            return attr->ownerElement()->isDefaultNamespace(namespaceURI);
+        return false;
+    }
+    default:
+        if (Element* parent = parentElement())
+            return parent->isDefaultNamespace(namespaceURI);
+        return false;
     }
 }
 
@@ -1289,23 +1283,23 @@ const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const
     const Element* context;
 
     switch (nodeType()) {
-        case ELEMENT_NODE:
-            context = toElement(this);
-            break;
-        case DOCUMENT_NODE:
-            context = toDocument(this)->documentElement();
-            break;
-        case DOCUMENT_FRAGMENT_NODE:
-        case DOCUMENT_TYPE_NODE:
-            context = nullptr;
-            break;
-        // FIXME: Remove this when Attr no longer extends Node (CR305105)
-        case ATTRIBUTE_NODE:
-            context = toAttr(this)->ownerElement();
-            break;
-        default:
-            context = parentElement();
-            break;
+    case ELEMENT_NODE:
+        context = toElement(this);
+        break;
+    case DOCUMENT_NODE:
+        context = toDocument(this)->documentElement();
+        break;
+    case DOCUMENT_FRAGMENT_NODE:
+    case DOCUMENT_TYPE_NODE:
+        context = nullptr;
+        break;
+    // FIXME: Remove this when Attr no longer extends Node (CR305105)
+    case ATTRIBUTE_NODE:
+        context = toAttr(this)->ownerElement();
+        break;
+    default:
+        context = parentElement();
+        break;
     }
 
     if (!context)
@@ -1323,48 +1317,47 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
         return nullAtom;
 
     switch (nodeType()) {
-        case ELEMENT_NODE: {
-            const Element& element = toElement(*this);
+    case ELEMENT_NODE: {
+        const Element& element = toElement(*this);
 
-            if (!element.namespaceURI().isNull() && element.prefix() == prefix)
-                return element.namespaceURI();
+        if (!element.namespaceURI().isNull() && element.prefix() == prefix)
+            return element.namespaceURI();
 
-            AttributeCollection attributes = element.attributes();
-            for (const Attribute& attr : attributes) {
-                if (attr.prefix() == xmlnsAtom && attr.localName() == prefix) {
-                    if (!attr.value().isEmpty())
-                        return attr.value();
-                    return nullAtom;
-                }
-                if (attr.localName() == xmlnsAtom && prefix.isNull()) {
-                    if (!attr.value().isEmpty())
-                        return attr.value();
-                    return nullAtom;
-                }
-            }
-
-            if (Element* parent = parentElement())
-                return parent->lookupNamespaceURI(prefix);
-            return nullAtom;
-        }
-        case DOCUMENT_NODE:
-            if (Element* de = toDocument(this)->documentElement())
-                return de->lookupNamespaceURI(prefix);
-            return nullAtom;
-        case DOCUMENT_TYPE_NODE:
-        case DOCUMENT_FRAGMENT_NODE:
-            return nullAtom;
-        case ATTRIBUTE_NODE: {
-            const Attr *attr = toAttr(this);
-            if (attr->ownerElement())
-                return attr->ownerElement()->lookupNamespaceURI(prefix);
-            else
+        AttributeCollection attributes = element.attributes();
+        for (const Attribute& attr : attributes) {
+            if (attr.prefix() == xmlnsAtom && attr.localName() == prefix) {
+                if (!attr.value().isEmpty())
+                    return attr.value();
                 return nullAtom;
+            }
+            if (attr.localName() == xmlnsAtom && prefix.isNull()) {
+                if (!attr.value().isEmpty())
+                    return attr.value();
+                return nullAtom;
+            }
         }
-        default:
-            if (Element* parent = parentElement())
-                return parent->lookupNamespaceURI(prefix);
-            return nullAtom;
+
+        if (Element* parent = parentElement())
+            return parent->lookupNamespaceURI(prefix);
+        return nullAtom;
+    }
+    case DOCUMENT_NODE:
+        if (Element* de = toDocument(this)->documentElement())
+            return de->lookupNamespaceURI(prefix);
+        return nullAtom;
+    case DOCUMENT_TYPE_NODE:
+    case DOCUMENT_FRAGMENT_NODE:
+        return nullAtom;
+    case ATTRIBUTE_NODE: {
+        const Attr *attr = toAttr(this);
+        if (attr->ownerElement())
+            return attr->ownerElement()->lookupNamespaceURI(prefix);
+        return nullAtom;
+    }
+    default:
+        if (Element* parent = parentElement())
+            return parent->lookupNamespaceURI(prefix);
+        return nullAtom;
     }
 }
 
@@ -1395,39 +1388,39 @@ String Node::textContent(bool convertBRsToNewlines) const
 void Node::setTextContent(const String& text)
 {
     switch (nodeType()) {
-        case TEXT_NODE:
-        case CDATA_SECTION_NODE:
-        case COMMENT_NODE:
-        case PROCESSING_INSTRUCTION_NODE:
-            setNodeValue(text);
-            return;
-        case ELEMENT_NODE:
-        case DOCUMENT_FRAGMENT_NODE: {
-            // FIXME: Merge this logic into replaceChildrenWithText.
-            RefPtrWillBeRawPtr<ContainerNode> container = toContainerNode(this);
+    case TEXT_NODE:
+    case CDATA_SECTION_NODE:
+    case COMMENT_NODE:
+    case PROCESSING_INSTRUCTION_NODE:
+        setNodeValue(text);
+        return;
+    case ELEMENT_NODE:
+    case DOCUMENT_FRAGMENT_NODE: {
+        // FIXME: Merge this logic into replaceChildrenWithText.
+        RefPtrWillBeRawPtr<ContainerNode> container = toContainerNode(this);
 
-            // Note: This is an intentional optimization.
-            // See crbug.com/352836 also.
-            // No need to do anything if the text is identical.
-            if (container->hasOneTextChild() && toText(container->firstChild())->data() == text)
-                return;
-
-            ChildListMutationScope mutation(*this);
-            // Note: This API will not insert empty text nodes:
-            // http://dom.spec.whatwg.org/#dom-node-textcontent
-            if (text.isEmpty()) {
-                container->removeChildren(DispatchSubtreeModifiedEvent);
-            } else {
-                container->removeChildren(OmitSubtreeModifiedEvent);
-                container->appendChild(document().createTextNode(text), ASSERT_NO_EXCEPTION);
-            }
+        // Note: This is an intentional optimization.
+        // See crbug.com/352836 also.
+        // No need to do anything if the text is identical.
+        if (container->hasOneTextChild() && toText(container->firstChild())->data() == text)
             return;
+
+        ChildListMutationScope mutation(*this);
+        // Note: This API will not insert empty text nodes:
+        // http://dom.spec.whatwg.org/#dom-node-textcontent
+        if (text.isEmpty()) {
+            container->removeChildren(DispatchSubtreeModifiedEvent);
+        } else {
+            container->removeChildren(OmitSubtreeModifiedEvent);
+            container->appendChild(document().createTextNode(text), ASSERT_NO_EXCEPTION);
         }
-        case ATTRIBUTE_NODE:
-        case DOCUMENT_NODE:
-        case DOCUMENT_TYPE_NODE:
-            // Do nothing.
-            return;
+        return;
+    }
+    case ATTRIBUTE_NODE:
+    case DOCUMENT_NODE:
+    case DOCUMENT_TYPE_NODE:
+        // Do nothing.
+        return;
     }
     ASSERT_NOT_REACHED();
 }
@@ -1526,9 +1519,11 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
                 if (!child1->isShadowRoot())
                     return Node::DOCUMENT_POSITION_PRECEDING | connection;
 
-                for (ShadowRoot* child = toShadowRoot(child2)->olderShadowRoot(); child; child = child->olderShadowRoot())
-                    if (child == child1)
+                for (ShadowRoot* child = toShadowRoot(child2)->olderShadowRoot(); child; child = child->olderShadowRoot()) {
+                    if (child == child1) {
                         return Node::DOCUMENT_POSITION_FOLLOWING | connection;
+                    }
+                }
 
                 return Node::DOCUMENT_POSITION_PRECEDING | connection;
             }
@@ -1550,8 +1545,8 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
     // There was no difference between the two parent chains, i.e., one was a subset of the other.  The shorter
     // chain is the ancestor.
     return index1 < index2 ?
-               DOCUMENT_POSITION_FOLLOWING | DOCUMENT_POSITION_CONTAINED_BY | connection :
-               DOCUMENT_POSITION_PRECEDING | DOCUMENT_POSITION_CONTAINS | connection;
+        DOCUMENT_POSITION_FOLLOWING | DOCUMENT_POSITION_CONTAINED_BY | connection :
+        DOCUMENT_POSITION_PRECEDING | DOCUMENT_POSITION_CONTAINS | connection;
 }
 
 String Node::debugName() const
@@ -1653,9 +1648,11 @@ void Node::showNodePathForThis() const
             bool hasIdAttr = !idattr.isNull() && !idattr.isEmpty();
             if (node->previousSibling() || node->nextSibling()) {
                 int count = 0;
-                for (Node* previous = node->previousSibling(); previous; previous = previous->previousSibling())
-                    if (previous->nodeName() == node->nodeName())
+                for (Node* previous = node->previousSibling(); previous; previous = previous->previousSibling()) {
+                    if (previous->nodeName() == node->nodeName()) {
                         ++count;
+                    }
+                }
                 if (hasIdAttr)
                     WTFLogAlways("[@id=\"%s\" and position()=%d]", idattr.utf8().data(), count);
                 else
@@ -1707,8 +1704,9 @@ static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, 
         if (node.isShadowRoot()) {
             if (ShadowRoot* youngerShadowRoot = toShadowRoot(node).youngerShadowRoot())
                 traverseTreeAndMark(indent.toString(), youngerShadowRoot, markedNode1, markedLabel1, markedNode2, markedLabel2);
-        } else if (ShadowRoot* oldestShadowRoot = oldestShadowRootFor(&node))
+        } else if (ShadowRoot* oldestShadowRoot = oldestShadowRootFor(&node)) {
             traverseTreeAndMark(indent.toString(), oldestShadowRoot, markedNode1, markedLabel1, markedNode2, markedLabel2);
+        }
     }
 }
 
