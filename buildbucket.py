@@ -43,6 +43,7 @@ def main(argv):
   subparsers = parser.add_subparsers(dest='command')
   put_parser = subparsers.add_parser('put')
   put_parser.add_argument(
+    '-b',
     '--bucket',
     help=(
       'The bucket to schedule the build on. Typically the master name, e.g.'
