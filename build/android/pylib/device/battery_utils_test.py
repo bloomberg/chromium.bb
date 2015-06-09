@@ -115,7 +115,7 @@ class BatteryUtilsSetBatteryMeasurementTest(BatteryUtilsTest):
             ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'batterystats', '--charged', '--checkin'],
-            check_return=True), []),
+            check_return=True, large_output=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'set', 'ac', '0'], check_return=True), []),
         (self.call.device.RunShellCommand(

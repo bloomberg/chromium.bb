@@ -294,7 +294,7 @@ class BatteryUtils(object):
         ['dumpsys', 'batterystats', '--reset'], check_return=True)
     battery_data = self._device.RunShellCommand(
         ['dumpsys', 'batterystats', '--charged', '--checkin'],
-        check_return=True)
+        check_return=True, large_output=True)
     ROW_TYPE_INDEX = 3
     PWI_POWER_INDEX = 5
     for line in battery_data:
