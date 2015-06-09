@@ -422,8 +422,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,
                                PrioritizingTaskQueueSelector::HIGH_PRIORITY);
       helper_.DisableQueue(LOADING_TASK_QUEUE);
-      // TODO(alexclarke): Set policy_disables_timers once the blink TimerBase
-      // refactor is safely landed.
+      policy_disables_timers = true;
       break;
     case Policy::NORMAL:
       helper_.SetQueuePriority(COMPOSITOR_TASK_QUEUE,

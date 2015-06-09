@@ -610,7 +610,8 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_Compositor) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "L1 D1 C1 D2 C2 T1 T2");
 
-  // Observation of touchstart should defer execution of idle and loading tasks.
+  // Observation of touchstart should defer execution of timer, idle and loading
+  // tasks.
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::TouchStart),
       RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
@@ -618,8 +619,7 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_Compositor) {
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("T1"), std::string("T2")));
+                                   std::string("D1"), std::string("D2")));
 
   // Meta events like TapDown/FlingCancel shouldn't affect the priority.
   run_order.clear();
@@ -640,7 +640,9 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_Compositor) {
       RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   RunUntilIdle();
 
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("L1")));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("T1"), std::string("T2"),
+                                   std::string("L1")));
 }
 
 TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_MainThread) {
@@ -657,8 +659,7 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_MainThread) {
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("T1"), std::string("T2")));
+                                   std::string("D1"), std::string("D2")));
 
   // Meta events like TapDown/FlingCancel shouldn't affect the priority.
   run_order.clear();
@@ -685,7 +686,9 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy_MainThread) {
       FakeInputEvent(blink::WebInputEvent::GestureScrollBegin));
   RunUntilIdle();
 
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("L1")));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("T1"), std::string("T2"),
+                                   std::string("L1")));
 }
 
 TEST_F(RendererSchedulerImplTest,
