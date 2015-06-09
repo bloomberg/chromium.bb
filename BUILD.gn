@@ -58,6 +58,17 @@ config("ffmpeg_dependent_config") {
   ]
 }
 
+if (is_chromeos) {
+  # This short-lived hack allows chromium changes to statically link ffmpeg to
+  # be independent from chrome-os changes to ebuild files that explicitly
+  # mention libffmpegsumo.so as a target.
+  # TODO(chcunningham): Remove this once ebuilds are patched.
+  shared_library("ffmpegsumo") {
+    # Reusing an existing dummy file.
+    sources = [ "xcode_hack.c" ]
+  }
+}
+
 if (is_win) {
   # Stub generator script and signatures of all functions used by Chrome.
   generate_stubs_script = "//tools/generate_stubs/generate_stubs.py"
