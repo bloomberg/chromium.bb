@@ -693,6 +693,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // children.
   void RemoveFromClipTree();
 
+  // When we detach or attach layer to new LayerTreeHost, all property trees'
+  // indices becomes invalid.
+  void InvalidatePropertyTreesIndices();
+
   void UpdateNumCopyRequestsForSubtree(bool add);
   void UpdateNumInputHandlersForSubtree(bool add);
 

@@ -132,6 +132,11 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   if (layer_tree_host_)
     layer_tree_host_->property_trees()->needs_rebuild = true;
 
+  if (host)
+    host->property_trees()->needs_rebuild = true;
+
+  InvalidatePropertyTreesIndices();
+
   layer_tree_host_ = host;
 
   // When changing hosts, the layer needs to commit its properties to the impl
@@ -1045,6 +1050,13 @@ int Layer::opacity_tree_index() const {
     return -1;
   }
   return opacity_tree_index_;
+}
+
+void Layer::InvalidatePropertyTreesIndices() {
+  int invalid_property_tree_index = -1;
+  SetTransformTreeIndex(invalid_property_tree_index);
+  SetClipTreeIndex(invalid_property_tree_index);
+  SetOpacityTreeIndex(invalid_property_tree_index);
 }
 
 void Layer::SetShouldFlattenTransform(bool should_flatten) {
