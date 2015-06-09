@@ -81,9 +81,9 @@ TEST(FontTest, TestCharacterRangeCodePath)
     static UChar c5[] = { 0x1DFF };
     EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c5, 1));
     static UChar c6[] = { 0x1E00 };
-    EXPECT_EQ(SimpleWithGlyphOverflowPath, Character::characterRangeCodePath(c6, 1));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c6, 1));
     static UChar c7[] = { 0x2000 };
-    EXPECT_EQ(SimpleWithGlyphOverflowPath, Character::characterRangeCodePath(c7, 1));
+    EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c7, 1));
     static UChar c8[] = { 0x2001 };
     EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c8, 1));
 
@@ -159,24 +159,12 @@ TEST(FontTest, TestCharacterRangeCodePathString)
     // Complex-Complex is Complex
     static UChar c4[] = { 0x36F, 0x330 };
     EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c4, 2));
-    // SimpleWithGlyphOverflow-Simple is SimpleWithGlyphOverflow
-    static UChar c5[] = { 0x1E00, 0x2FF };
-    EXPECT_EQ(SimpleWithGlyphOverflowPath, Character::characterRangeCodePath(c5, 2));
-    // Simple-SimpleWithGlyphOverflow is SimpleWithGlyphOverflow
-    static UChar c6[] = { 0x2FF, 0x2000 };
-    EXPECT_EQ(SimpleWithGlyphOverflowPath, Character::characterRangeCodePath(c6, 2));
-    // SimpleWithGlyphOverflow-Complex is Complex
-    static UChar c7[] = { 0x1E00, 0x330 };
-    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c7, 2));
-    // Complex-SimpleWithGlyphOverflow is Complex
-    static UChar c8[] = { 0x330, 0x2000 };
-    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c8, 2));
     // Surrogate-Complex is Complex
-    static UChar c9[] = { 0xD83C, 0xDDE5, 0x330 };
-    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c9, 3));
+    static UChar c5[] = { 0xD83C, 0xDDE5, 0x330 };
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c5, 3));
     // Complex-Surrogate is Complex
-    static UChar c10[] = { 0x330, 0xD83C, 0xDDE5 };
-    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c10, 3));
+    static UChar c6[] = { 0x330, 0xD83C, 0xDDE5 };
+    EXPECT_EQ(ComplexPath, Character::characterRangeCodePath(c6, 3));
 }
 
 static void TestSpecificUChar32RangeIdeograph(UChar32 rangeStart, UChar32 rangeEnd)

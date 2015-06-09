@@ -26,7 +26,7 @@
 #ifndef WidthCache_h
 #define WidthCache_h
 
-#include "platform/geometry/IntRectOutsets.h"
+#include "platform/geometry/FloatRectOutsets.h"
 #include "platform/text/TextRun.h"
 #include "wtf/Forward.h"
 #include "wtf/HashFunctions.h"
@@ -43,7 +43,7 @@ struct WidthCacheEntry {
     }
     bool isValid() const { return !std::isnan(width); }
     float width;
-    IntRectOutsets glyphBounds;
+    FloatRectOutsets glyphBounds;
 };
 
 class WidthCache {

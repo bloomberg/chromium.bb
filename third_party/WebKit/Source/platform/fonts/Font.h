@@ -76,6 +76,10 @@ struct GlyphOverflow {
         return !left && !right && !top && !bottom;
     }
 
+    // If computeBounds, top and bottom are the maximum heights of the glyphs above and below the baseline, respectively.
+    // Otherwise they are the amounts of glyph overflows exceeding the font metrics' ascent and descent, respectively.
+    // Left and right are the amounts of glyph overflows exceeding the left and right edge of normal layout boundary, respectively.
+    // All fields are in absolute number of pixels rounded up to the nearest integer.
     int left;
     int right;
     int top;
@@ -139,13 +143,13 @@ private:
         const FloatPoint&, const FloatRect& textRect, float deviceScaleFactor) const;
     void drawTextBlob(SkCanvas*, const SkPaint&, const SkTextBlob*, const SkPoint& origin) const;
     void drawGlyphBuffer(SkCanvas*, const SkPaint&, const TextRunPaintInfo&, const GlyphBuffer&, const FloatPoint&, float deviceScaleFactor) const;
-    float floatWidthForSimpleText(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, IntRectOutsets* glyphBounds = 0) const;
+    float floatWidthForSimpleText(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, FloatRectOutsets* glyphBounds = 0) const;
     int offsetForPositionForSimpleText(const TextRun&, float position, bool includePartialGlyphs) const;
     FloatRect selectionRectForSimpleText(const TextRun&, const FloatPoint&, int h, int from, int to, bool accountForGlyphBounds) const;
 
     bool getEmphasisMarkGlyphData(const AtomicString&, GlyphData&) const;
 
-    float floatWidthForComplexText(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts, IntRectOutsets* glyphBounds) const;
+    float floatWidthForComplexText(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts, FloatRectOutsets* glyphBounds) const;
     int offsetForPositionForComplexText(const TextRun&, float position, bool includePartialGlyphs) const;
     FloatRect selectionRectForComplexText(const TextRun&, const FloatPoint&, int h, int from, int to) const;
 

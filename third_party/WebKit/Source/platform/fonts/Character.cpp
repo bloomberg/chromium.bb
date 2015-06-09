@@ -130,12 +130,6 @@ CodePath Character::characterRangeCodePath(const UChar* characters, unsigned len
         if (c < 0x2E5)
             continue;
 
-        // U+1E00 through U+2000 characters with diacritics and stacked diacritics
-        if (c >= 0x1E00 && c <= 0x2000) {
-            result = SimpleWithGlyphOverflowPath;
-            continue;
-        }
-
         // Surrogate pairs
         if (c > 0xD7FF && c <= 0xDBFF) {
             if (i == len - 1)
