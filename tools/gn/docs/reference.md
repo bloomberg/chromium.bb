@@ -58,7 +58,7 @@
 
 
 ```
-## **--dotfile**: override the name of the ".gn" file.
+## **--dotfile**: Override the name of the ".gn" file.
 
 ```
   Normally GN loads the ".gn"file  from the source root for some basic
@@ -116,6 +116,41 @@
   gn gen //out/Default --root=/home/baracko/src
 
   gn desc //out/Default --root="C:\Users\BObama\My Documents\foo"
+
+
+```
+## **--runtime-deps-list-file**: Save runtime dependencies for targets in file.
+
+```
+  --runtime-deps-list-file=<filename>
+
+  Where <filename> is a text file consisting of the labels, one per
+  line, of the targets for which runtime dependencies are desired.
+
+  See "gn help runtime_deps" for a description of how runtime
+  dependencies are computed.
+
+```
+
+### **Runtime deps output file**
+
+```
+  For each target requested, GN will write a separate runtime dependency
+  file. The runtime dependency file will be in the output directory
+  alongside the output file of the target, with a ".runtime_deps"
+  extension. For example, if the target "//foo:bar" is listed in the
+  input file, and that target produces an output file "bar.so", GN
+  will create a file "bar.so.runtime_deps" in the build directory.
+
+  If a source set, action, copy, or group is listed, the runtime deps
+  file will correspond to the .stamp file corresponding to that target.
+  This is probably not useful; the use-case for this feature is
+  generally executable targets.
+
+  The runtime dependency file will list one file per line, with no
+  escaping. The files will be relative to the root_build_dir. The first
+  line of the file will be the main output file of the target itself
+  (in the above example, "bar.so").
 
 
 ```
@@ -347,6 +382,21 @@
       Shows the given values taken from the target and all configs
       applying. See "--blame" below.
 
+  runtime_deps
+      Compute all runtime deps for the given target. This is a
+      computed list and does not correspond to any GN variable, unlike
+      most other values here.
+
+      The output is a list of file names relative to the build
+      directory. See "gn help runtime_deps" for how this is computed.
+      This also works with "--blame" to see the source of the
+      dependency.
+
+```
+
+### **Shared flags**
+
+```
   --blame
       Used with any value specified by a config, this will name
       the config that specified the value. This doesn't currently work
@@ -563,6 +613,35 @@
 
 
 ```
+## **gn path <out_dir> <target_one> <target_two>**
+
+```
+  Finds paths of dependencies between two targets. Each unique path
+  will be printed in one group, and groups will be separate by newlines.
+  The two targets can appear in either order: paths will be found going
+  in either direction.
+
+  Each dependency will be annotated with its type. By default, only the
+  first path encountered will be printed, which is not necessarily the
+  shortest path.
+
+```
+
+### **Options**
+
+```
+  --all
+     Prints all paths found rather than just the first one.
+
+```
+
+### **Example**
+
+```
+  gn path out/Default //base //tools/gn
+
+
+```
 ## **gn refs <out_dir> (<label_pattern>|<label>|<file>|@<response_file>)* [--all]**
 ```
         [--all-toolchains] [--as=...] [--testonly=...] [--type=...]
@@ -581,9 +660,9 @@
      "gn help label_pattern" for details.
 
    - File name: The result will be which targets list the given file in
-     its "inputs", "sources", "public", or "data". Any input
-     that does not contain wildcards and does not match a target or a
-     config will be treated as a file.
+     its "inputs", "sources", "public", "data", or "outputs".
+     Any input that does not contain wildcards and does not match a
+     target or a config will be treated as a file.
 
    - Response file: If the input starts with an "@", it will be
      interpreted as a path to a file containing a list of labels or
@@ -3252,17 +3331,29 @@
 ## **data**: Runtime data file dependencies.
 
 ```
-  Lists files required to run the given target. These are typically
-  data files.
+  Lists files or directories required to run the given target. These are
+  typically data files or directories of data files. The paths are
+  interpreted as being relative to the current build file. Since these
+  are runtime dependencies, they do not affect which targets are built
+  or when. To declare input files to a script, use "inputs".
 
   Appearing in the "data" section does not imply any special handling
   such as copying them to the output directory. This is just used for
-  declaring runtime dependencies. There currently isn't a good use for
-  these but it is envisioned that test data can be listed here for use
-  running automated tests.
+  declaring runtime dependencies. Runtime dependencies can be queried
+  using the "runtime_deps" category of "gn desc" or written during
+  build generation via "--runtime-deps-list-file".
 
-  See also "gn help inputs" and "gn help data_deps", both of
-  which actually affect the build in concrete ways.
+  GN doesn't require data files to exist at build-time. So actions that
+  produce files that are in turn runtime dependencies can list those
+  generated files both in the "outputs" list as well as the "data"
+  list.
+
+  By convention, directories are be listed with a trailing slash:
+    data = [ "test/data/" ]
+  However, no verification is done on these so GN doesn't enforce this.
+  The paths are just rebased and passed along when requested.
+
+  See "gn help runtime_deps" for how these are used.
 
 
 ```
@@ -4291,6 +4382,50 @@
 
 
 ```
+## **Runtime dependencies**
+
+```
+  Runtime dependencies of a target are exposed via the "runtime_deps"
+  category of "gn desc" (see "gn help desc") or they can be written
+  at build generation time via "--runtime-deps-list-file"
+  (see "gn help --runtime-deps-list-file").
+
+  To a first approximation, the runtime dependencies of a target are
+  the set of "data" files, data directories, and the shared libraries
+  from all transitive dependencies. Executables and shared libraries are
+  considered runtime dependencies of themselves.
+
+```
+
+### **Details**
+
+```
+  Executable targets and those executable targets' transitive
+  dependencies are not considered unless that executable is listed in
+  "data_deps". Otherwise, GN assumes that the executable (and
+  everything it requires) is a build-time dependency only.
+
+  Action and copy targets that are listed as "data_deps" will have all
+  of their outputs and data files considered as runtime dependencies.
+  Action and copy targets that are "deps" or "public_deps" will have
+  only their data files considered as runtime dependencies. These
+  targets can list an output file in both the "outputs" and "data"
+  lists to force an output file as a runtime dependency in all cases.
+
+  The results of static_library or source_set targets are not considered
+  runtime dependencies since these are assumed to be intermediate
+  targets only. If you need to list a static library as a runtime
+  dependency, you can manually compute the .a/.lib file name for the
+  current platform and list it in the "data" list of a target
+  (possibly on the static library target itself).
+
+  When a tool produces more than one output, only the first output
+  is considered. For example, a shared library target may produce a
+  .dll and a .lib file on Windows. Only the .dll file will be considered
+  a runtime dependency.
+
+
+```
 ## **How Source Expansion Works**
 
 ```
@@ -4416,11 +4551,12 @@
 
 **  --args**: Specifies build arguments overrides.
 **  --color**: Force colored output.
-**  --dotfile**: override the name of the ".gn" file.
+**  --dotfile**: Override the name of the ".gn" file.
 **  --markdown**: write the output in the Markdown format.
 **  --nocolor**: Force non-colored output.
 **  -q**: Quiet mode. Don't print output on success.
 **  --root**: Explicitly specify source root.
+**  --runtime-deps-list-file**: Save runtime dependencies for targets in file.
 **  --time**: Outputs a summary of how long everything took.
 **  --tracelog**: Writes a Chrome-compatible trace log to the given file.
 **  -v**: Verbose logging.
