@@ -70,7 +70,7 @@ AppViewImpl.prototype.connect = function(app, data, callback) {
       }
       return;
     }
-    this.attachWindow();
+    this.attachWindow$();
     if (callback) {
       callback(true);
     }

@@ -42,7 +42,7 @@ SurfaceViewImpl.prototype.connect = function(url, callback) {
   this.guest.destroy();
 
   this.guest.create(this.buildParams(), function() {
-    this.attachWindow();
+    this.attachWindow$();
     if (callback) {
       callback(true);
     }

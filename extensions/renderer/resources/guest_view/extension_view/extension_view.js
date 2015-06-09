@@ -29,7 +29,7 @@ ExtensionViewImpl.setupElement = function(proto) {
 
 ExtensionViewImpl.prototype.createGuest = function() {
   this.guest.create(this.buildParams(), function() {
-    this.attachWindow();
+    this.attachWindow$();
   }.bind(this));
 };
 

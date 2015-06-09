@@ -472,6 +472,15 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("guestViewDeny", IDR_GUEST_VIEW_DENY_JS));
   resources.push_back(std::make_pair("guestViewEvents",
                                      IDR_GUEST_VIEW_EVENTS_JS));
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kSitePerProcess)) {
+    resources.push_back(std::make_pair("guestViewIframe",
+                                       IDR_GUEST_VIEW_IFRAME_JS));
+    resources.push_back(std::make_pair("guestViewIframeContainer",
+                                       IDR_GUEST_VIEW_IFRAME_CONTAINER_JS));
+  }
+
   resources.push_back(std::make_pair("imageUtil", IDR_IMAGE_UTIL_JS));
   resources.push_back(std::make_pair("json_schema", IDR_JSON_SCHEMA_JS));
   resources.push_back(std::make_pair("lastError", IDR_LAST_ERROR_JS));
@@ -509,6 +518,11 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("webViewEvents", IDR_WEB_VIEW_EVENTS_JS));
   resources.push_back(std::make_pair("webViewInternal",
                                      IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kSitePerProcess)) {
+    resources.push_back(std::make_pair("webViewIframe",
+                                       IDR_WEB_VIEW_IFRAME_JS));
+  }
   resources.push_back(
       std::make_pair(mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS));
   resources.push_back(
@@ -1417,6 +1431,11 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
     module_system->Require("webView");
     module_system->Require("webViewApiMethods");
     module_system->Require("webViewAttributes");
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            ::switches::kSitePerProcess)) {
+      module_system->Require("webViewIframe");
+    }
   }
 
   // The "guestViewDeny" module must always be loaded last. It registers

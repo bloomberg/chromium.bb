@@ -953,6 +953,7 @@
       'renderer/resources/guest_view/surface_view/surface_view.js',
       'renderer/resources/guest_view/web_view/web_view.js',
       'renderer/resources/guest_view/web_view/web_view_events.js',
+      'renderer/resources/guest_view/web_view/web_view_iframe.js',
       'renderer/resources/web_request_custom_bindings.js',
       'renderer/resources/web_request_internal_custom_bindings.js',
       'renderer/runtime_custom_bindings.cc',

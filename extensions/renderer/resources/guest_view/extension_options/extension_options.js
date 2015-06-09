@@ -41,7 +41,7 @@ ExtensionOptionsImpl.prototype.createGuest = function() {
       var createFailedEvent = new Event('createfailed', { bubbles: true });
       this.dispatchEvent(createFailedEvent);
     } else {
-      this.attachWindow();
+      this.attachWindow$();
     }
   }.bind(this));
 };

@@ -137,7 +137,7 @@ WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
 
 WebViewImpl.prototype.createGuest = function() {
   this.guest.create(this.buildParams(), function() {
-    this.attachWindow();
+    this.attachWindow$();
   }.bind(this));
 };
 
@@ -178,7 +178,7 @@ WebViewImpl.prototype.buildContainerParams = function() {
   return params;
 };
 
-WebViewImpl.prototype.attachWindow = function(opt_guestInstanceId) {
+WebViewImpl.prototype.attachWindow$ = function(opt_guestInstanceId) {
   // If |opt_guestInstanceId| was provided, then a different existing guest is
   // being attached to this webview, and the current one will get destroyed.
   if (opt_guestInstanceId) {
@@ -189,7 +189,7 @@ WebViewImpl.prototype.attachWindow = function(opt_guestInstanceId) {
     this.guest = new GuestView('webview', opt_guestInstanceId);
   }
 
-  return GuestViewContainer.prototype.attachWindow.call(this);
+  return GuestViewContainer.prototype.attachWindow$.call(this);
 };
 
 // Shared implementation of executeScript() and insertCSS().
