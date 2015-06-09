@@ -183,23 +183,13 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'ClickTest.testCanClickOnALinkThatContainsEmbeddedBlockElements',
 
     # https://code.google.com/p/chromedriver/issues/detail?id=604
-    'I18nTest.*',
+    'I18nTest.testShouldBeAbleToActivateIMEEngine',
 
     # https://code.google.com/p/chromium/issues/detail?id=418590
     'ClearTest.testContentEditableAreaShouldClear',
     'ClickScrollingTest.testClickingOnAnchorScrollsPage',
     'JavascriptEnabledDriverTest.testChangeEventIsFiredAppropriatelyWhenFocusIsLost',
     'TypingTest.testShouldBeAbleToTypeIntoEmptyContentEditableElement',
-
-    # https://code.google.com/p/chromedriver/issues/detail?id=922
-    'CorrectEventFiringTest.testShouldFireClickEventWhenClicking',
-    'CorrectEventFiringTest.testShouldEmitOnChangeEventsWhenChangingTheStateOfACheckbox',
-    'CorrectEventFiringTest.testShouldIssueMouseUpEvents',
-    'CorrectEventFiringTest.testsShouldIssueMouseDownEvents',
-    'CorrectEventFiringTest.testMouseEventsShouldBubbleUpToContainingElements',
-
-    # https://code.google.com/p/chromedriver/issues/detail?id=955
-    'TypingTest.testShiftSelectionDeletes',
 
     # https://code.google.com/p/chromedriver/issues/detail?id=998
     'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
