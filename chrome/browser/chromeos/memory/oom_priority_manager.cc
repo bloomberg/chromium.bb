@@ -24,13 +24,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/memory/low_memory_observer.h"
+#include "chrome/browser/chromeos/memory/oom_memory_details.h"
 #include "chrome/browser/chromeos/memory/system_memory_stats_recorder.h"
-#include "chrome/browser/memory_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -48,7 +47,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/zygote_host_linux.h"
-#include "ui/base/text/bytes_formatting.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -85,54 +83,6 @@ int64 IdFromWebContents(WebContents* web_contents) {
 }
 
 }  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// OomMemoryDetails logs details about all Chrome processes during an out-of-
-// memory event in an attempt to identify the culprit, then discards a tab and
-// deletes itself.
-class OomMemoryDetails : public MemoryDetails {
- public:
-  OomMemoryDetails();
-
-  // MemoryDetails overrides:
-  void OnDetailsAvailable() override;
-
- private:
-  ~OomMemoryDetails() override {}
-
-  TimeTicks start_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(OomMemoryDetails);
-};
-
-OomMemoryDetails::OomMemoryDetails() {
-  AddRef();  // Released in OnDetailsAvailable().
-  start_time_ = TimeTicks::Now();
-}
-
-void OomMemoryDetails::OnDetailsAvailable() {
-  TimeDelta delta = TimeTicks::Now() - start_time_;
-  // These logs are collected by user feedback reports.  We want them to help
-  // diagnose user-reported problems with frequently discarded tabs.
-  std::string log_string = ToLogString();
-  base::SystemMemoryInfoKB memory;
-  if (base::GetSystemMemoryInfo(&memory) && memory.gem_size != -1) {
-    log_string += "Graphics ";
-    log_string += base::UTF16ToASCII(ui::FormatBytes(memory.gem_size));
-  }
-  LOG(WARNING) << "OOM details (" << delta.InMilliseconds() << " ms):\n"
-      << log_string;
-  if (g_browser_process &&
-      g_browser_process->platform_part()->oom_priority_manager()) {
-    OomPriorityManager* manager =
-        g_browser_process->platform_part()->oom_priority_manager();
-    manager->PurgeBrowserMemory();
-    manager->DiscardTab();
-  }
-  // Delete ourselves so we don't have to worry about OomPriorityManager
-  // deleting us when we're still working.
-  Release();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // OomPriorityManager
@@ -261,14 +211,29 @@ bool OomPriorityManager::DiscardTab() {
 }
 
 void OomPriorityManager::LogMemoryAndDiscardTab() {
+  LogMemory("Tab Discards Memory details",
+            base::Bind(&OomPriorityManager::PurgeMemoryAndDiscardTabs));
+}
+
+void OomPriorityManager::LogMemory(const std::string& title,
+                                   const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Deletes itself upon completion.
-  OomMemoryDetails* details = new OomMemoryDetails();
-  details->StartFetch(MemoryDetails::FROM_CHROME_ONLY);
+  OomMemoryDetails::Log(title, callback);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // OomPriorityManager, private:
+
+// static
+void OomPriorityManager::PurgeMemoryAndDiscardTabs() {
+  if (g_browser_process &&
+      g_browser_process->platform_part()->oom_priority_manager()) {
+    OomPriorityManager* manager =
+        g_browser_process->platform_part()->oom_priority_manager();
+    manager->PurgeBrowserMemory();
+    manager->DiscardTab();
+  }
+}
 
 // static
 bool OomPriorityManager::IsReloadableUI(const GURL& url) {

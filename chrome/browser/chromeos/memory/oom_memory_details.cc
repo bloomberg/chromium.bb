@@ -1,0 +1,52 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/memory/oom_memory_details.h"
+
+#include "base/logging.h"
+#include "base/process/process_metrics.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/memory/oom_memory_details.h"
+#include "ui/base/text/bytes_formatting.h"
+
+namespace chromeos {
+
+// static
+void OomMemoryDetails::Log(const std::string& title,
+                           const base::Closure& callback) {
+  // Deletes itself upon completion.
+  OomMemoryDetails* details = new OomMemoryDetails(title, callback);
+  details->StartFetch(MemoryDetails::FROM_CHROME_ONLY);
+}
+
+OomMemoryDetails::OomMemoryDetails(const std::string& title,
+                                   const base::Closure& callback)
+    : title_(title), callback_(callback) {
+  AddRef();  // Released in OnDetailsAvailable().
+  start_time_ = base::TimeTicks::Now();
+}
+
+OomMemoryDetails::~OomMemoryDetails() {
+}
+
+void OomMemoryDetails::OnDetailsAvailable() {
+  base::TimeDelta delta = base::TimeTicks::Now() - start_time_;
+  // These logs are collected by user feedback reports.  We want them to help
+  // diagnose user-reported problems with frequently discarded tabs.
+  std::string log_string = ToLogString();
+  base::SystemMemoryInfoKB memory;
+  if (base::GetSystemMemoryInfo(&memory) && memory.gem_size != -1) {
+    log_string += "Graphics ";
+    log_string += base::UTF16ToASCII(ui::FormatBytes(memory.gem_size));
+  }
+  LOG(WARNING) << title_ << " (" << delta.InMilliseconds() << " ms):\n"
+               << log_string;
+  if (!callback_.is_null())
+    callback_.Run();
+  // Delete ourselves so we don't have to worry about OomPriorityManager
+  // deleting us when we're still working.
+  Release();
+}
+
+}  // namespace chromeos

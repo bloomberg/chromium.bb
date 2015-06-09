@@ -708,6 +708,8 @@
         'browser/chromeos/login/wizard_controller.h',
         'browser/chromeos/memory/low_memory_observer.cc',
         'browser/chromeos/memory/low_memory_observer.h',
+        'browser/chromeos/memory/oom_memory_details.cc',
+        'browser/chromeos/memory/oom_memory_details.h',
         'browser/chromeos/memory/oom_priority_manager.cc',
         'browser/chromeos/memory/oom_priority_manager.h',
         'browser/chromeos/memory/system_memory_stats_recorder.cc',

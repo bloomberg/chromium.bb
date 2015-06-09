@@ -33,6 +33,10 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/memory/oom_memory_details.h"
+#endif
+
 using content::OpenURLParams;
 using content::WebContents;
 
@@ -98,17 +102,23 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
           "Tabs.SadTab.CrashCreated", crashed, 1, 1000, 50);
       break;
     }
-    case chrome::SAD_TAB_KIND_KILLED:
+    case chrome::SAD_TAB_KIND_KILLED: {
       RecordKillCreated();
+      LOG(WARNING) << "Tab Killed: "
+                   <<  web_contents->GetURL().GetOrigin().spec();
       break;
+    }
 #if defined(OS_CHROMEOS)
-    case chrome::SAD_TAB_KIND_KILLED_BY_OOM:
+    case chrome::SAD_TAB_KIND_KILLED_BY_OOM: {
       RecordKillCreated();
       RecordKillCreatedOOM();
+      const std::string spec = web_contents->GetURL().GetOrigin().spec();
+      chromeos::OomMemoryDetails::Log(
+          "Tab OOM-Killed Memory details: " + spec + ", ",
+          base::Closure());
       break;
+    }
 #endif
-    default:
-      NOTREACHED();
   }
 
   // Set the background color.

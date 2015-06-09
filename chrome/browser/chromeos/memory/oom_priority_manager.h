@@ -64,8 +64,10 @@ class OomPriorityManager : public content::NotificationObserver {
   // multiple threads and takes time.
   void LogMemoryAndDiscardTab();
 
+  // Log memory statistics for the running processes, then call the callback.
+  void LogMemory(const std::string& title, const base::Closure& callback);
+
  private:
-  friend class OomMemoryDetails;
   FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, Comparator);
   FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, IsReloadableUI);
   FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, GetProcessHandles);
@@ -86,6 +88,8 @@ class OomPriorityManager : public content::NotificationObserver {
     int64 tab_contents_id;  // unique ID per WebContents
   };
   typedef std::vector<TabStats> TabStatsList;
+
+  static void PurgeMemoryAndDiscardTabs();
 
   // Returns true if the |url| represents an internal Chrome web UI page that
   // can be easily reloaded and hence makes a good choice to discard.
