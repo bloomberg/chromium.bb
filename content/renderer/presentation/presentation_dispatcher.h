@@ -50,6 +50,11 @@ class CONTENT_EXPORT PresentationDispatcher
       const blink::WebString& presentationId,
       const uint8* data,
       size_t length);
+  virtual void sendBlobData(
+      const blink::WebString& presentationUrl,
+      const blink::WebString& presentationId,
+      const uint8* data,
+      size_t length);
   virtual void closeSession(
       const blink::WebString& presentationUrl,
       const blink::WebString& presentationId);

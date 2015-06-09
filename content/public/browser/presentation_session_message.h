@@ -13,6 +13,12 @@
 
 namespace content {
 
+enum CONTENT_EXPORT PresentationMessageType {
+  TEXT,
+  ARRAY_BUFFER,
+  BLOB,
+};
+
 // Represents a presentation session message.
 // If this is a text message, |data| is null; otherwise, |message| is null.
 // Empty messages are allowed.
@@ -26,8 +32,14 @@ struct CONTENT_EXPORT PresentationSessionMessage {
       const std::string& presentation_id,
       scoped_ptr<std::string> message);
 
-  // Creates binary message, which takes the ownership of |data|.
-  static scoped_ptr<PresentationSessionMessage> CreateBinaryMessage(
+  // Creates array buffer message, which takes the ownership of |data|.
+  static scoped_ptr<PresentationSessionMessage> CreateArrayBufferMessage(
+      const std::string& presentation_url,
+      const std::string& presentation_id,
+      scoped_ptr<std::vector<uint8_t>> data);
+
+  // Creates blob message, which takes the ownership of |data|.
+  static scoped_ptr<PresentationSessionMessage> CreateBlobMessage(
       const std::string& presentation_url,
       const std::string& presentation_id,
       scoped_ptr<std::vector<uint8_t>> data);
@@ -35,6 +47,7 @@ struct CONTENT_EXPORT PresentationSessionMessage {
   bool is_binary() const;
   std::string presentation_url;
   std::string presentation_id;
+  PresentationMessageType type;
   scoped_ptr<std::string> message;
   scoped_ptr<std::vector<uint8_t>> data;
 
@@ -44,6 +57,7 @@ struct CONTENT_EXPORT PresentationSessionMessage {
                              scoped_ptr<std::string> message);
   PresentationSessionMessage(const std::string& presentation_url,
                              const std::string& presentation_id,
+                             PresentationMessageType type,
                              scoped_ptr<std::vector<uint8_t>> data);
 };
 

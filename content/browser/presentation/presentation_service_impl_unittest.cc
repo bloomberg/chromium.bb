@@ -305,7 +305,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
             presentation_url, presentation_id,
             scoped_ptr<std::string>(new std::string(text_msg))));
     messages->push_back(
-        content::PresentationSessionMessage::CreateBinaryMessage(
+        content::PresentationSessionMessage::CreateArrayBufferMessage(
             presentation_url, presentation_id,
             scoped_ptr<std::vector<uint8_t>>(
                 new std::vector<uint8_t>(binary_data))));
@@ -740,6 +740,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
   EXPECT_EQ(presentation_url, test_message->presentation_url);
   EXPECT_EQ(presentation_id, test_message->presentation_id);
   EXPECT_TRUE(test_message->is_binary());
+  EXPECT_EQ(PresentationMessageType::ARRAY_BUFFER, test_message->type);
   EXPECT_FALSE(test_message->message);
   EXPECT_EQ(data.size(), test_message->data.get()->size());
   EXPECT_TRUE(test_message->data.get()->size() <=
@@ -786,6 +787,50 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
   run_loop.Run();
 
   EXPECT_FALSE(test_message);
+  send_message_cb.Run();
+  SaveQuitClosureAndRunLoop();
+}
+
+TEST_F(PresentationServiceImplTest, SendBlobData) {
+  std::string presentation_url("http://foo.com/index.html");
+  std::string presentation_id("presentationId");
+  const uint8 buffer[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+  std::vector<uint8> data;
+  data.assign(buffer, buffer + sizeof(buffer));
+
+  presentation::SessionMessagePtr message_request(
+      presentation::SessionMessage::New());
+  message_request->presentation_url = presentation_url;
+  message_request->presentation_id = presentation_id;
+  message_request->type =
+      presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_BLOB;
+  message_request->data = mojo::Array<uint8>::From(data);
+  service_ptr_->SendSessionMessage(
+      message_request.Pass(),
+      base::Bind(&PresentationServiceImplTest::ExpectSendMessageMojoCallback,
+                 base::Unretained(this)));
+
+  base::RunLoop run_loop;
+  base::Closure send_message_cb;
+  PresentationSessionMessage* test_message = nullptr;
+  EXPECT_CALL(mock_delegate_, SendMessageRawPtr(_, _, _, _))
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit),
+          SaveArg<2>(&test_message),
+          SaveArg<3>(&send_message_cb)));
+  run_loop.Run();
+
+  EXPECT_TRUE(test_message);
+  EXPECT_EQ(presentation_url, test_message->presentation_url);
+  EXPECT_EQ(presentation_id, test_message->presentation_id);
+  EXPECT_TRUE(test_message->is_binary());
+  EXPECT_EQ(PresentationMessageType::BLOB, test_message->type);
+  EXPECT_FALSE(test_message->message);
+  EXPECT_EQ(data.size(), test_message->data.get()->size());
+  EXPECT_TRUE(test_message->data.get()->size() <=
+              kMaxPresentationSessionMessageSize);
+  EXPECT_EQ(0, memcmp(buffer, &(*test_message->data.get())[0], sizeof(buffer)));
+  delete test_message;
   send_message_cb.Run();
   SaveQuitClosureAndRunLoop();
 }

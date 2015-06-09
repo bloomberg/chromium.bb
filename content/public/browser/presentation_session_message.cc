@@ -12,6 +12,7 @@ PresentationSessionMessage::PresentationSessionMessage(
     scoped_ptr<std::string> message)
     : presentation_url(presentation_url),
       presentation_id(presentation_id),
+      type(PresentationMessageType::TEXT),
       message(message.Pass()),
       data(nullptr) {
 }
@@ -19,9 +20,11 @@ PresentationSessionMessage::PresentationSessionMessage(
 PresentationSessionMessage::PresentationSessionMessage(
     const std::string& presentation_url,
     const std::string& presentation_id,
+    PresentationMessageType type,
     scoped_ptr<std::vector<uint8_t>> data)
     : presentation_url(presentation_url),
       presentation_id(presentation_id),
+      type(type),
       message(nullptr),
       data(data.Pass()) {
 }
@@ -38,12 +41,24 @@ PresentationSessionMessage::CreateStringMessage(
 
 // static
 scoped_ptr<PresentationSessionMessage>
-PresentationSessionMessage::CreateBinaryMessage(
+PresentationSessionMessage::CreateArrayBufferMessage(
     const std::string& presentation_url,
     const std::string& presentation_id,
     scoped_ptr<std::vector<uint8_t>> data) {
   return scoped_ptr<PresentationSessionMessage>(new PresentationSessionMessage(
-      presentation_url, presentation_id, data.Pass()));
+      presentation_url, presentation_id, PresentationMessageType::ARRAY_BUFFER,
+      data.Pass()));
+}
+
+// static
+scoped_ptr<PresentationSessionMessage>
+PresentationSessionMessage::CreateBlobMessage(
+    const std::string& presentation_url,
+    const std::string& presentation_id,
+    scoped_ptr<std::vector<uint8_t>> data) {
+  return scoped_ptr<PresentationSessionMessage>(new PresentationSessionMessage(
+      presentation_url, presentation_id, PresentationMessageType::BLOB,
+      data.Pass()));
 }
 
 bool PresentationSessionMessage::is_binary() const {

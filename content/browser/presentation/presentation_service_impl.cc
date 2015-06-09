@@ -53,35 +53,50 @@ scoped_ptr<content::PresentationSessionMessage> GetPresentationSessionMessage(
     presentation::SessionMessagePtr input) {
   DCHECK(!input.is_null());
   scoped_ptr<content::PresentationSessionMessage> output;
-  if (input->type == presentation::PresentationMessageType::
-                     PRESENTATION_MESSAGE_TYPE_TEXT) {
-    DCHECK(!input->message.is_null());
-    DCHECK(input->data.is_null());
-    // Return null PresentationSessionMessage if size exceeds.
-    if (input->message.size() > content::kMaxPresentationSessionMessageSize)
+  switch (input->type) {
+    case presentation::PresentationMessageType::
+        PRESENTATION_MESSAGE_TYPE_TEXT: {
+      DCHECK(!input->message.is_null());
+      DCHECK(input->data.is_null());
+      // Return null PresentationSessionMessage if size exceeds.
+      if (input->message.size() > content::kMaxPresentationSessionMessageSize)
+        return output.Pass();
+
+      output = content::PresentationSessionMessage::CreateStringMessage(
+          input->presentation_url, input->presentation_id,
+          make_scoped_ptr(new std::string));
+      input->message.Swap(output->message.get());
       return output.Pass();
+    }
+    case presentation::PresentationMessageType::
+        PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER: {
+      DCHECK(!input->data.is_null());
+      DCHECK(input->message.is_null());
+      if (input->data.size() > content::kMaxPresentationSessionMessageSize)
+        return output.Pass();
 
-    output = content::PresentationSessionMessage::CreateStringMessage(
-        input->presentation_url,
-        input->presentation_id,
-        make_scoped_ptr(new std::string));
-    input->message.Swap(output->message.get());
-
-  } else if (input->type == presentation::PresentationMessageType::
-              PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER) {
-    DCHECK(!input->data.is_null());
-    DCHECK(input->message.is_null());
-    // Return null PresentationSessionMessage if size exceeds.
-    if (input->data.size() > content::kMaxPresentationSessionMessageSize)
+      output = content::PresentationSessionMessage::CreateArrayBufferMessage(
+          input->presentation_url, input->presentation_id,
+          make_scoped_ptr(new std::vector<uint8_t>));
+      input->data.Swap(output->data.get());
       return output.Pass();
+    }
+    case presentation::PresentationMessageType::
+        PRESENTATION_MESSAGE_TYPE_BLOB: {
+      DCHECK(!input->data.is_null());
+      DCHECK(input->message.is_null());
+      if (input->data.size() > content::kMaxPresentationSessionMessageSize)
+        return output.Pass();
 
-    output = content::PresentationSessionMessage::CreateBinaryMessage(
-        input->presentation_url,
-        input->presentation_id,
-        make_scoped_ptr(new std::vector<uint8_t>));
-    input->data.Swap(output->data.get());
+      output = content::PresentationSessionMessage::CreateBlobMessage(
+          input->presentation_url, input->presentation_id,
+          make_scoped_ptr(new std::vector<uint8_t>));
+      input->data.Swap(output->data.get());
+      return output.Pass();
+    }
   }
 
+  NOTREACHED() << "Invalid presentation message type " << input->type;
   return output.Pass();
 }
 

@@ -54,6 +54,22 @@ GURL GetPresentationURLFromFrame(content::RenderFrame* frame) {
   return url.is_valid() ? url : GURL();
 }
 
+presentation::SessionMessage* GetMojoSessionMessage(
+    const blink::WebString& presentationUrl,
+    const blink::WebString& presentationId,
+    presentation::PresentationMessageType type,
+    const uint8* data,
+    size_t length) {
+  presentation::SessionMessage* session_message =
+      new presentation::SessionMessage();
+  session_message->presentation_url = presentationUrl.utf8();
+  session_message->presentation_id = presentationId.utf8();
+  session_message->type = type;
+  const std::vector<uint8> vector(data, data + length);
+  session_message->data = mojo::Array<uint8>::From(vector);
+  return session_message;
+}
+
 }  // namespace
 
 namespace content {
@@ -165,17 +181,37 @@ void PresentationDispatcher::sendArrayBuffer(
     return;
   }
 
-  const std::vector<uint8> vector(data, data + length);
   presentation::SessionMessage* session_message =
-      new presentation::SessionMessage();
-  session_message->presentation_url = presentationUrl.utf8();
-  session_message->presentation_id = presentationId.utf8();
-  session_message->type = presentation::PresentationMessageType::
-                          PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
-  session_message->data = mojo::Array<uint8>::From(vector);
-
+      GetMojoSessionMessage(presentationUrl, presentationId,
+                            presentation::PresentationMessageType::
+                                PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER,
+                            data, length);
   message_request_queue_.push(make_linked_ptr(session_message));
   // Start processing request if only one in the queue.
+  if (message_request_queue_.size() == 1) {
+    const linked_ptr<presentation::SessionMessage>& request =
+        message_request_queue_.front();
+    DoSendMessage(*request);
+  }
+}
+
+void PresentationDispatcher::sendBlobData(
+    const blink::WebString& presentationUrl,
+    const blink::WebString& presentationId,
+    const uint8* data,
+    size_t length) {
+  DCHECK(data);
+  if (length > kMaxPresentationSessionMessageSize) {
+    // TODO(crbug.com/459008): Same as in sendString().
+    LOG(WARNING) << "data size exceeded limit!";
+    return;
+  }
+
+  presentation::SessionMessage* session_message = GetMojoSessionMessage(
+      presentationUrl, presentationId,
+      presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_BLOB,
+      data, length);
+  message_request_queue_.push(make_linked_ptr(session_message));
   if (message_request_queue_.size() == 1) {
     const linked_ptr<presentation::SessionMessage>& request =
         message_request_queue_.front();
@@ -186,19 +222,30 @@ void PresentationDispatcher::sendArrayBuffer(
 void PresentationDispatcher::DoSendMessage(
     const presentation::SessionMessage& session_message) {
   ConnectToPresentationServiceIfNeeded();
-
   presentation::SessionMessagePtr message_request(
       presentation::SessionMessage::New());
   message_request->presentation_url = session_message.presentation_url;
   message_request->presentation_id = session_message.presentation_id;
   message_request->type = session_message.type;
-  if (session_message.type == presentation::PresentationMessageType::
-                              PRESENTATION_MESSAGE_TYPE_TEXT) {
-    message_request->message = session_message.message;
-  } else if (session_message.type == presentation::PresentationMessageType::
-                                      PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER) {
-    message_request->data = mojo::Array<uint8>::From(
-        session_message.data.storage());
+  switch (session_message.type) {
+    case presentation::PresentationMessageType::
+        PRESENTATION_MESSAGE_TYPE_TEXT: {
+      message_request->message = session_message.message;
+      break;
+    }
+    case presentation::PresentationMessageType::
+        PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER:
+    case presentation::PresentationMessageType::
+        PRESENTATION_MESSAGE_TYPE_BLOB: {
+      message_request->data =
+          mojo::Array<uint8>::From(session_message.data.storage());
+      break;
+    }
+    default: {
+      NOTREACHED() << "Invalid presentation message type "
+                   << session_message.type;
+      break;
+    }
   }
 
   presentation_service_->SendSessionMessage(
