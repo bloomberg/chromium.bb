@@ -1713,6 +1713,9 @@
     ]
   },
 
+  "SSLVersionMin": {
+  },
+
   "SSLVersionFallbackMin": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "SSLVersionFallbackMin": "tls1.2" },
