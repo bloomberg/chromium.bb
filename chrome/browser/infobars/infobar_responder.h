@@ -22,26 +22,19 @@ class InfoBarService;
 // The asynchronous response matches how real users will use the infobar.
 class InfoBarResponder : public infobars::InfoBarManager::Observer {
  public:
-  enum AutoResponseType {
-    ACCEPT,
-    DENY,
-    DISMISS
-  };
-
-  // The responder will asynchronously perform the requested |response|.
-  InfoBarResponder(InfoBarService* infobar_service, AutoResponseType response);
+  // If |should_accept| is true, the responder will asynchronously Accept() the
+  // infobar; otherwise it will Cancel() it.
+  InfoBarResponder(InfoBarService* infobar_service, bool should_accept);
   ~InfoBarResponder() override;
 
   // infobars::InfoBarManager::Observer:
   void OnInfoBarAdded(infobars::InfoBar* infobar) override;
-  void OnInfoBarReplaced(infobars::InfoBar* old_infobar,
-                         infobars::InfoBar* new_infobar) override;
 
  private:
   void Respond(ConfirmInfoBarDelegate* delegate);
 
   InfoBarService* infobar_service_;
-  AutoResponseType response_;
+  bool should_accept_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarResponder);
 };
