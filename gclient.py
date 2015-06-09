@@ -1502,7 +1502,7 @@ been automagically updated.  The previous version is available at %s.old.
     revision_overrides = {}
     # It's unnecessary to check for revision overrides for 'recurse'.
     # Save a few seconds by not calling _EnforceRevisions() in that case.
-    if command not in ('diff', 'recurse', 'runhooks', 'status'):
+    if command not in ('diff', 'recurse', 'runhooks', 'status', 'revert'):
       self._CheckConfig()
       revision_overrides = self._EnforceRevisions()
     pm = None
