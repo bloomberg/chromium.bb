@@ -217,10 +217,8 @@ public abstract class FirstRunFlowSequencer  {
             return createGenericFirstRunIntent(activity, originalIntent, fromChromeIcon);
         }
 
-        // If Chrome isn't opened via the Chrome icon proceed directly to the intent handling.
-        if (!fromChromeIcon) return null;
-
-        return createGenericFirstRunIntent(activity, originalIntent, fromChromeIcon);
+        // Promo pages are removed, so there is nothing else to show in FRE.
+        return null;
     }
 
     /**
