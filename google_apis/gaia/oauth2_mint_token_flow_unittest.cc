@@ -241,7 +241,8 @@ TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
         "&client_id=client1"
         "&origin=ext1"
         "&device_id=device_id1"
-        "&device_type=chrome");
+        "&device_type=chrome"
+        "&lib_ver=extension");
     EXPECT_EQ(expected_body, body);
   }
 }

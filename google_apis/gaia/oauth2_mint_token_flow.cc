@@ -41,8 +41,11 @@ const char kOAuth2IssueTokenBodyFormat[] =
     "&scope=%s"
     "&client_id=%s"
     "&origin=%s";
+// TODO(pavely): lib_ver is passed to differentiate IssueToken requests from
+// different code locations. Remove once device_id mismatch is understood.
+// (crbug.com/481596)
 const char kOAuth2IssueTokenBodyFormatDeviceIdAddendum[] =
-    "&device_id=%s&device_type=chrome";
+    "&device_id=%s&device_type=chrome&lib_ver=extension";
 const char kIssueAdviceKey[] = "issueAdvice";
 const char kIssueAdviceValueConsent[] = "consent";
 const char kAccessTokenKey[] = "token";
