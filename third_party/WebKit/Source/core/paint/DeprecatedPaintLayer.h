@@ -229,6 +229,10 @@ public:
     // http://www.chromium.org/developers/design-documents/multi-column-layout for more info.
     LayoutPoint visualOffsetFromAncestor(const DeprecatedPaintLayer* ancestorLayer) const;
 
+    // The hitTest() method looks for mouse events by walking layers that intersect the point from front to back.
+    bool hitTest(HitTestResult&);
+    bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
+
     // Pass offsetFromRoot if known.
     bool intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const DeprecatedPaintLayer* rootLayer, const LayoutPoint* offsetFromRoot = 0) const;
 
@@ -525,10 +529,6 @@ public:
     static LayoutRect transparencyClipBox(const DeprecatedPaintLayer*, const DeprecatedPaintLayer* rootLayer, TransparencyClipBoxBehavior transparencyBehavior,
         TransparencyClipBoxMode transparencyMode, const LayoutSize& subPixelAccumulation, PaintBehavior = 0);
 
-    DeprecatedPaintLayer* hitTestLayer(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult&,
-        const LayoutRect& hitTestRect, const HitTestLocation&, bool appliedTransform,
-        const HitTestingTransformState* = 0, double* zOffset = 0);
-
 private:
     // Bounding box in the coordinates of this layer.
     LayoutRect logicalBoundingBox() const;
@@ -549,6 +549,9 @@ private:
     void setLastChild(DeprecatedPaintLayer* last) { m_last = last; }
 
     void updateHasSelfPaintingLayerDescendant() const;
+    DeprecatedPaintLayer* hitTestLayer(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult&,
+        const LayoutRect& hitTestRect, const HitTestLocation&, bool appliedTransform,
+        const HitTestingTransformState* = 0, double* zOffset = 0);
     DeprecatedPaintLayer* hitTestLayerByApplyingTransform(DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer* containerLayer, HitTestResult&,
         const LayoutRect& hitTestRect, const HitTestLocation&, const HitTestingTransformState* = 0, double* zOffset = 0,
         const LayoutPoint& translationOffset = LayoutPoint());
