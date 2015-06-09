@@ -52,6 +52,11 @@ interface HTMLElement : Element {
     readonly attribute long offsetWidth;
     readonly attribute long offsetHeight;
 
+    // CSS Object Model (CSSOM)
+    // http://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
+    // FIXME: style should have [PutForwards=cssText].
+    [SameObject, PerWorldBindings] readonly attribute CSSStyleDeclaration style;
+
     // Non-standard APIs
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementInnerText] attribute DOMString innerText;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter, MeasureAs=HTMLElementOuterText] attribute DOMString outerText;

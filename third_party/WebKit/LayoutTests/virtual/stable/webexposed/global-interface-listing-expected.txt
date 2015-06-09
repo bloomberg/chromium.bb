@@ -1031,7 +1031,6 @@ interface Element
     getter scrollTop
     getter scrollWidth
     getter shadowRoot
-    getter style
     getter tagName
     method animate
     method closest
@@ -1618,6 +1617,7 @@ interface HTMLElement
     getter onwaiting
     getter outerText
     getter spellcheck
+    getter style
     getter tabIndex
     getter title
     getter translate
