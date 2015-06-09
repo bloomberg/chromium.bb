@@ -62,6 +62,13 @@ class CORE_EXPORT ImageLoader : public NoBaseWillBeGarbageCollectedFinalized<Ima
 public:
     explicit ImageLoader(Element*);
     virtual ~ImageLoader();
+
+    // We must run the destructor in the eager sweeping phase and call
+    // m_image->removeClient(this). Otherwise, the ImageResource can invoke
+    // didAddClient() for the ImageLoader that is about to die in the current
+    // lazy sweeping, and the didAddClient() can access on-heap objects that
+    // have already been finalized in the current lazy sweeping.
+    EAGERLY_FINALIZE();
     DECLARE_TRACE();
 
     enum UpdateFromElementBehavior {

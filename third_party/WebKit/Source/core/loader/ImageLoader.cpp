@@ -106,25 +106,13 @@ public:
 
     void run() override
     {
-        if (m_loader) {
-#if ENABLE(OILPAN)
-            // Oilpan: this WebThread::Task microtask may run after the
-            // loader has been GCed, but not yet lazily swept & finalized
-            // (when this task's loader reference will be cleared.)
-            //
-            // Handle this transient condition by explicitly checking here
-            // before going ahead with the update operation. Unsafe to do it
-            // if so, as the objects that the loader refers to may have been
-            // finalized by this time.
-            if (Heap::willObjectBeLazilySwept(m_loader))
-                return;
-#endif
-            if (m_scriptState->contextIsValid()) {
-                ScriptState::Scope scope(m_scriptState.get());
-                m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);
-            } else {
-                m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);
-            }
+        if (!m_loader)
+            return;
+        if (m_scriptState->contextIsValid()) {
+            ScriptState::Scope scope(m_scriptState.get());
+            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);
+        } else {
+            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);
         }
     }
 
