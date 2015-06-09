@@ -75,7 +75,7 @@ source_set("sources") {
     "//mojo/services/tracing:lib",
   ]
 
-  if (!is_android) {
+  if (use_aura) {
     deps += [
       "//components/view_manager/public/cpp",
       "//mandoline/ui/omnibox:lib",

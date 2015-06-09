@@ -66,6 +66,18 @@ copy_ex("copy_mandoline_assets") {
     "$root_out_dir/surfaces_service.mojo",
   ]
 
+  if (use_aura) {
+    deps += [
+      "//mandoline/ui/browser",
+      "//mandoline/ui/omnibox",
+    ]
+
+    sources += [
+      "$root_out_dir/browser",
+      "$root_out_dir/omnibox",
+    ]
+  }
+
   # Directories can't be specified as sources so pass manually to the script.
   args =
       [ "--files=" + rebase_path("$root_out_dir/html_viewer", root_build_dir) ]

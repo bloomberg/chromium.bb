@@ -21,7 +21,7 @@
 #include "mojo/services/tracing/tracing_app.h"
 #include "url/gurl.h"
 
-#if !defined(OS_ANDROID)
+#if defined(USE_AURA)
 #include "mandoline/ui/omnibox/omnibox_impl.h"
 #endif
 
@@ -129,7 +129,7 @@ void CoreServicesApplicationDelegate::StartApplication(
     delegate.reset(new filesystem::FileSystemApp);
   else if (url == "mojo://network_service/")
     delegate.reset(new NetworkServiceDelegate);
-#if !defined(OS_ANDROID)
+#if defined(USE_AURA)
   else if (url == "mojo://omnibox/")
     delegate.reset(new mandoline::OmniboxImpl);
 #endif

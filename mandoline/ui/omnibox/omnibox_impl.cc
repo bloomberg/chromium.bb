@@ -55,7 +55,7 @@ void OmniboxImpl::OnEmbed(mojo::View* root,
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr exposed_services) {
   if (!aura_init_.get()) {
-    aura_init_.reset(new AuraInit);
+    aura_init_.reset(new AuraInit(app_impl_->shell()));
     edit_ = new views::Textfield;
     edit_->set_controller(this);
   }

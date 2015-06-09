@@ -402,7 +402,7 @@ component("base") {
     sources -= [ "idle/idle_linux.cc" ]
   }
 
-  if (is_chromeos || (use_aura && is_linux && !use_x11)) {
+  if (is_chromeos || (use_aura && ((is_linux && !use_x11) || is_android))) {
     sources += [
       "dragdrop/os_exchange_data_provider_aura.cc",
       "dragdrop/os_exchange_data_provider_aura.h",
@@ -498,16 +498,11 @@ component("base") {
     ]
   }
 
-  if (!toolkit_views) {
+  if (!toolkit_views && !use_aura) {
     sources -= [
       "dragdrop/drag_drop_types.h",
       "dragdrop/drop_target_event.cc",
       "dragdrop/drop_target_event.h",
-    ]
-  }
-
-  if (!toolkit_views && !use_aura) {
-    sources -= [
       "dragdrop/os_exchange_data.cc",
       "dragdrop/os_exchange_data.h",
       "nine_image_painter_factory.cc",
@@ -516,7 +511,18 @@ component("base") {
   }
 
   if (is_android) {
+    deps += [
+      "//cc",
+      ":ui_base_jni_headers",
+      "//ui/android:ui_java",
+    ]
+
+    libs += [ "jnigraphics" ]
+  }
+
+  if (is_android && !use_aura) {
     sources -= [
+      "cursor/cursor_android.cc",
       "cursor/image_cursors.cc",
       "cursor/image_cursors.h",
       "default_theme_provider.cc",
@@ -529,26 +535,14 @@ component("base") {
       "touch/touch_editing_controller.cc",
       "ui_base_types.cc",
     ]
-
-    deps += [
-      "//cc",
-      ":ui_base_jni_headers",
-      "//ui/android:ui_java",
-    ]
-
-    libs += [ "jnigraphics" ]
-  }
-
-  if (is_android && !use_aura) {
-    sources -= [ "cursor/cursor_android.cc" ]
   }
 
   # Aura clipboard.
   if (use_aura) {
     if (use_x11) {
       sources += [ "clipboard/clipboard_aurax11.cc" ]
-    } else if (!is_win) {
-      # This file is used for all non-X11, non-Windows aura Builds.
+    } else if (!is_win && !is_android) {
+      # This file is used for all non-X11, non-Windows, non-Android aura Builds.
       sources += [ "clipboard/clipboard_aura.cc" ]
     }
   }

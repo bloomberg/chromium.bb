@@ -2,6 +2,7 @@ include_rules = [
   "+cc",
   "-cc/blink",
   "+components/gpu",
+  "+components/resource_provider",
   "+components/view_manager",
   "+mojo/application/public",
   "+mojo/cc",

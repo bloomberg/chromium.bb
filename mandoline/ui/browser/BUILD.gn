@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+import("//build/config/ui.gni")
+import("//mojo/mojo_application_package.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
-mojo_native_application("browser") {
+mojo_application_package("browser") {
   sources = [
     "main.cc",
   ]
@@ -14,6 +15,10 @@ mojo_native_application("browser") {
     ":lib",
     "//mandoline/services/navigation/public/interfaces",
     "//mojo/application/public/cpp",
+  ]
+  resources = [
+    "$root_out_dir/icudtl.dat",
+    "$root_out_dir/ui_test.pak",
   ]
 }
 
@@ -26,18 +31,6 @@ source_set("lib") {
     "navigator_host_impl.cc",
     "navigator_host_impl.h",
   ]
-
-  if (is_android) {
-    sources += [
-      "android/android_ui.cc",
-      "android/android_ui.h",
-    ]
-  } else {
-    sources += [
-      "desktop/desktop_ui.cc",
-      "desktop/desktop_ui.h",
-    ]
-  }
 
   deps = [
     ":interfaces",
@@ -53,8 +46,18 @@ source_set("lib") {
     "//ui/mojo/events:interfaces",
   ]
 
-  if (!is_android) {
+  if (use_aura) {
+    sources += [
+      "desktop/desktop_ui.cc",
+      "desktop/desktop_ui.h",
+    ]
     deps += [ "//mandoline/ui/aura" ]
+  } else {
+    assert(is_android)
+    sources += [
+      "android/android_ui.cc",
+      "android/android_ui.h",
+    ]
   }
 }
 

@@ -12,51 +12,69 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
+#if defined(OS_ANDROID)
+#include "components/resource_provider/public/cpp/resource_loader.h"
+#endif
+
 namespace mandoline {
+
+#if defined(OS_ANDROID)
 namespace {
 
-// Used to ensure we only init once.
-class Setup {
- public:
-  Setup() {
-    base::i18n::InitializeICU();
+// Paths resources are loaded from.
+const char kResourceIcudtl[] = "icudtl.dat";
+const char kResourceUIPak[] = "ui_test.pak";
 
-    ui::RegisterPathProvider();
-
-    base::FilePath ui_test_pak_path;
-    CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-
-    // There is a bunch of static state in gfx::Font, by running this now,
-    // before any other apps load, we ensure all the state is set up.
-    gfx::Font();
-  }
-
-  ~Setup() {
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Setup);
-};
-
-static base::LazyInstance<Setup>::Leaky setup = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
-void InitViews() {
-  setup.Get();
+std::set<std::string> GetResourcePaths() {
+  std::set<std::string> paths;
+  paths.insert(kResourceIcudtl);
+  paths.insert(kResourceUIPak);
+  return paths;
 }
 
-AuraInit::AuraInit() {
+}  // namespace
+#endif  // defined(OS_ANDROID)
+
+AuraInit::AuraInit(mojo::Shell* shell) {
   aura::Env::CreateInstance(false);
 
   screen_.reset(ScreenMojo::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
-
-  InitViews();
+  InitializeResources(shell);
 }
 
 AuraInit::~AuraInit() {
+}
+
+void AuraInit::InitializeResources(mojo::Shell* shell) {
+  if (ui::ResourceBundle::HasSharedInstance())
+    return;
+#if defined(OS_ANDROID)
+  resource_provider::ResourceLoader resource_loader(shell, GetResourcePaths());
+  if (!resource_loader.BlockUntilLoaded())
+    return;
+  CHECK(resource_loader.loaded());
+  base::i18n::InitializeICUWithFileDescriptor(
+      resource_loader.ReleaseFile(kResourceIcudtl).TakePlatformFile(),
+      base::MemoryMappedFile::Region::kWholeFile);
+  ui::RegisterPathProvider();
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(base::FilePath());
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
+      resource_loader.ReleaseFile(kResourceUIPak),
+      ui::SCALE_FACTOR_100P);
+#else
+  base::i18n::InitializeICU();
+
+  ui::RegisterPathProvider();
+
+  base::FilePath ui_test_pak_path;
+  CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+#endif
+
+  // There is a bunch of static state in gfx::Font, by running this now,
+  // before any other apps load, we ensure all the state is set up.
+  gfx::Font();
 }
 
 }  // namespace mandoline

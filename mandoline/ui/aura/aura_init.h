@@ -7,6 +7,10 @@
 
 #include "base/memory/scoped_ptr.h"
 
+namespace mojo {
+class Shell;
+}
+
 namespace mandoline {
 
 class ScreenMojo;
@@ -14,10 +18,12 @@ class ScreenMojo;
 // Sets up necessary state for aura when run with the viewmanager.
 class AuraInit {
  public:
-  AuraInit();
+  explicit AuraInit(mojo::Shell* shell);
   ~AuraInit();
 
  private:
+  void InitializeResources(mojo::Shell* shell);
+
   scoped_ptr<ScreenMojo> screen_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraInit);

@@ -49,4 +49,11 @@ source_set("aura") {
     "//ui/resources:ui_test_pak",
     "//ui/views",
   ]
+
+  if (is_android) {
+    deps += [
+      "//components/resource_provider/public/cpp",
+      "//components/resource_provider/public/interfaces",
+    ]
+  }
 }

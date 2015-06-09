@@ -251,9 +251,7 @@ component("gfx") {
   ]
 
   # Text rendering conditions (complicated so separated out).
-  if (is_android || is_ios) {
-    # We don't support RenderText on these platforms.
-  } else {
+  if (use_aura || is_mac) {
     # Mac doesn't use RenderTextHarfBuzz by default yet.
     sources += [
       "harfbuzz_font_skia.cc",
@@ -266,6 +264,12 @@ component("gfx") {
       "render_text_mac.h",
       "text_utils_skia.cc",
     ]
+  } else {
+    # We don't support RenderText on these platforms.
+  }
+
+  if (is_android && use_aura) {
+    sources -= [ "text_utils_android.cc" ]
   }
 
   # iOS.
@@ -280,16 +284,19 @@ component("gfx") {
 
   # Android.
   if (is_android) {
-    sources -= [
-      "animation/throb_animation.cc",
-      "canvas_skia.cc",
-      "selection_model.cc",
-    ]
-
     if (use_aura) {
-      sources -= [ "screen_android.cc" ]
+      sources -= [
+        "canvas_notimplemented.cc",
+        "screen_android.cc",
+      ]
+      sources += [ "font_fallback_android.cc" ]
     } else {
-      sources -= [ "path.cc" ]
+      sources -= [
+        "animation/throb_animation.cc",
+        "canvas_skia.cc",
+        "path.cc",
+        "selection_model.cc",
+      ]
     }
 
     if (!is_debug) {

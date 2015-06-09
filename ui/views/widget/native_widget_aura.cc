@@ -705,7 +705,7 @@ void NativeWidgetAura::SetVisibilityAnimationTransition(
 }
 
 ui::NativeTheme* NativeWidgetAura::GetNativeTheme() const {
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   return DesktopWindowTreeHost::GetNativeTheme(window_);
 #else
   return ui::NativeThemeAura::instance();
