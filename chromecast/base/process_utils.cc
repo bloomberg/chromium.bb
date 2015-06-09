@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #include "base/logging.h"
-#include "base/safe_strerror_posix.h"
+#include "base/posix/safe_strerror.h"
 #include "base/strings/string_util.h"
 
 namespace chromecast {
@@ -22,7 +22,8 @@ bool GetAppOutput(const std::vector<std::string>& argv, std::string* output) {
   // Open the process.
   FILE* fp = popen(command.c_str(), "r");
   if (!fp) {
-    LOG(ERROR) << "popen (" << command << ") failed: " << safe_strerror(errno);
+    LOG(ERROR) << "popen (" << command << ") failed: "
+               << base::safe_strerror(errno);
     return false;
   }
 

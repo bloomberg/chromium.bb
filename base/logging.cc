@@ -59,7 +59,7 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/threading/platform_thread.h"
 #include "base/vlog.h"
 #if defined(OS_POSIX)
-#include "base/safe_strerror_posix.h"
+#include "base/posix/safe_strerror.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -719,7 +719,7 @@ BASE_EXPORT std::string SystemErrorCodeToString(SystemErrorCode error_code) {
 }
 #elif defined(OS_POSIX)
 BASE_EXPORT std::string SystemErrorCodeToString(SystemErrorCode error_code) {
-  return safe_strerror(error_code);
+  return base::safe_strerror(error_code);
 }
 #else
 #error Not implemented

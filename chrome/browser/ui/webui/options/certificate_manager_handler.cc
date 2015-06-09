@@ -13,7 +13,7 @@
 #include "base/i18n/string_compare.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_vector.h"
-#include "base/safe_strerror_posix.h"
+#include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -692,7 +692,8 @@ void CertificateManagerHandler::ExportPersonalFileWritten(
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_WRITE_ERROR_FORMAT,
-                                  UTF8ToUTF16(safe_strerror(*write_errno))));
+                                  UTF8ToUTF16(
+                                      base::safe_strerror(*write_errno))));
   }
 }
 
@@ -749,7 +750,8 @@ void CertificateManagerHandler::ImportPersonalFileRead(
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
-                                  UTF8ToUTF16(safe_strerror(*read_errno))));
+                                  UTF8ToUTF16(
+                                      base::safe_strerror(*read_errno))));
     return;
   }
 
@@ -857,7 +859,8 @@ void CertificateManagerHandler::ImportServerFileRead(const int* read_errno,
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
-                                  UTF8ToUTF16(safe_strerror(*read_errno))));
+                                  UTF8ToUTF16(
+                                      base::safe_strerror(*read_errno))));
     return;
   }
 
@@ -916,7 +919,8 @@ void CertificateManagerHandler::ImportCAFileRead(const int* read_errno,
     ShowError(
         l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
         l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
-                                  UTF8ToUTF16(safe_strerror(*read_errno))));
+                                  UTF8ToUTF16(
+                                      base::safe_strerror(*read_errno))));
     return;
   }
 

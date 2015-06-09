@@ -9,12 +9,12 @@
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/safe_strerror_posix.h"
+#include "base/posix/safe_strerror.h"
 
 namespace forwarder2 {
 
 void PError(const char* msg) {
-  LOG(ERROR) << msg << ": " << safe_strerror(errno);
+  LOG(ERROR) << msg << ": " << base::safe_strerror(errno);
 }
 
 void CloseFD(int fd) {

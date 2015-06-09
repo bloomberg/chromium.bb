@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/safe_strerror_posix.h"
+#include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -261,12 +261,13 @@ void MidiManagerAlsa::StartInitialization() {
       udev_monitor_.get(), kUdevSubsystemSound, nullptr);
   if (err != 0) {
     VLOG(1) << "udev_monitor_add_match_subsystem fails: "
-            << safe_strerror(-err);
+            << base::safe_strerror(-err);
     return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
   }
   err = device::udev_monitor_enable_receiving(udev_monitor_.get());
   if (err != 0) {
-    VLOG(1) << "udev_monitor_enable_receiving fails: " << safe_strerror(-err);
+    VLOG(1) << "udev_monitor_enable_receiving fails: "
+            << base::safe_strerror(-err);
     return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
   }
 
@@ -874,7 +875,7 @@ void MidiManagerAlsa::EventLoop() {
 
   int err = HANDLE_EINTR(poll(pfd, arraysize(pfd), -1));
   if (err < 0) {
-    VLOG(1) << "poll fails: " << safe_strerror(errno);
+    VLOG(1) << "poll fails: " << base::safe_strerror(errno);
     loop_again = false;
   } else {
     if (pfd[0].revents & POLLIN) {
@@ -1268,13 +1269,14 @@ bool MidiManagerAlsa::EnumerateUdevCards() {
                                                    kUdevSubsystemSound);
   if (err) {
     VLOG(1) << "udev_enumerate_add_match_subsystem fails: "
-            << safe_strerror(-err);
+            << base::safe_strerror(-err);
     return false;
   }
 
   err = device::udev_enumerate_scan_devices(enumerate.get());
   if (err) {
-    VLOG(1) << "udev_enumerate_scan_devices fails: " << safe_strerror(-err);
+    VLOG(1) << "udev_enumerate_scan_devices fails: "
+            << base::safe_strerror(-err);
     return false;
   }
 

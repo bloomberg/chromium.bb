@@ -16,7 +16,7 @@
 
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/safe_strerror_posix.h"
+#include "base/posix/safe_strerror.h"
 #include "tools/android/common/net.h"
 #include "tools/android/forwarder2/common.h"
 
@@ -243,7 +243,8 @@ bool Socket::Connect() {
     return false;
   }
   if (socket_errno != 0) {
-    LOG(ERROR) << "Could not connect to host: " << safe_strerror(socket_errno);
+    LOG(ERROR) << "Could not connect to host: "
+               << base::safe_strerror(socket_errno);
     SetSocketError();
     return false;
   }

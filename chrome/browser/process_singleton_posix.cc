@@ -62,8 +62,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/posix/safe_strerror.h"
 #include "base/rand_util.h"
-#include "base/safe_strerror_posix.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -135,7 +135,7 @@ int SetCloseOnExec(int fd) {
 // Close a socket and check return value.
 void CloseSocket(int fd) {
   int rv = IGNORE_EINTR(close(fd));
-  DCHECK_EQ(0, rv) << "Error closing socket: " << safe_strerror(errno);
+  DCHECK_EQ(0, rv) << "Error closing socket: " << base::safe_strerror(errno);
 }
 
 // Write a message to a socket fd.
@@ -1010,7 +1010,7 @@ bool ProcessSingleton::Create() {
   }
 
   if (listen(sock, 5) < 0)
-    NOTREACHED() << "listen failed: " << safe_strerror(errno);
+    NOTREACHED() << "listen failed: " << base::safe_strerror(errno);
 
   DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
   BrowserThread::PostTask(
@@ -1069,5 +1069,5 @@ void ProcessSingleton::KillProcess(int pid) {
   // ESRCH = No Such Process (can happen if the other process is already in
   // progress of shutting down and finishes before we try to kill it).
   DCHECK(rv == 0 || errno == ESRCH) << "Error killing process: "
-                                    << safe_strerror(errno);
+                                    << base::safe_strerror(errno);
 }

@@ -10,7 +10,7 @@
 #include <string.h>
 
 #include "base/logging.h"
-#include "base/safe_strerror_posix.h"
+#include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "tools/android/forwarder2/socket.h"
@@ -50,7 +50,7 @@ bool ReadCommand(Socket* socket,
   int bytes_read = socket->ReadNumBytes(command_buffer, kCommandStringSize);
   if (bytes_read != kCommandStringSize) {
     if (bytes_read < 0)
-      LOG(ERROR) << "Read() error: " << safe_strerror(errno);
+      LOG(ERROR) << "Read() error: " << base::safe_strerror(errno);
     else if (!bytes_read)
       LOG(ERROR) << "Read() error, endpoint was unexpectedly closed.";
     else

@@ -38,7 +38,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/safe_strerror_posix.h"
 #include "base/strings/string_piece.h"
 
 #if defined(USE_SYMBOLIZE)

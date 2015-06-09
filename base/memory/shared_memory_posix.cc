@@ -16,9 +16,9 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/posix/safe_strerror.h"
 #include "base/process/process_metrics.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/safe_strerror_posix.h"
 #include "base/scoped_generic.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -505,7 +505,7 @@ void SharedMemory::LockOrUnlockCommon(int function) {
                    << " function:" << function
                    << " fd:" << mapped_file_
                    << " errno:" << errno
-                   << " msg:" << safe_strerror(errno);
+                   << " msg:" << base::safe_strerror(errno);
     }
   }
 }
