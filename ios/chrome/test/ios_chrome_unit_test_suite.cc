@@ -10,6 +10,7 @@
 #include "ios/public/test/test_chrome_provider_initializer.h"
 #include "ios/web/public/web_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "url/url_util.h"
 
@@ -57,6 +58,9 @@ void IOSChromeUnitTestSuite::Initialize() {
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new IOSChromeUnitTestSuiteInitializer);
+
+  ui::ResourceBundle::InitSharedInstanceWithLocale(
+      "en-US", nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
   // Ensure that all BrowserStateKeyedServiceFactories are built before any
   // test is run so that the dependencies are correctly resolved.

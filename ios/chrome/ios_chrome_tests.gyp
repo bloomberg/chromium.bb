@@ -54,6 +54,8 @@
         '../../base/base.gyp:base',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
+        '../../ui/base/ui_base.gyp:ui_base',
+        '../../url/url.gyp:url_lib',
         '../provider/ios_provider_chrome.gyp:ios_provider_chrome_browser',
         'ios_chrome.gyp:ios_chrome_browser',
       ],
