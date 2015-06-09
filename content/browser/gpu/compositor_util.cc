@@ -198,7 +198,15 @@ bool IsImplSidePaintingEnabled() {
 }
 
 int NumberOfRendererRasterThreads() {
-  int num_raster_threads = base::SysInfo::NumberOfProcessors() / 2;
+  int num_processors = base::SysInfo::NumberOfProcessors();
+
+#if defined(OS_ANDROID)
+  // Android may report 6 to 8 CPUs for big.LITTLE configurations.
+  // Limit the number of raster threads based on maximum of 4 big cores.
+  num_processors = std::min(num_processors, 4);
+#endif
+
+  int num_raster_threads = num_processors / 2;
 
   // Async uploads is used when neither zero-copy nor one-copy is enabled and
   // it uses its own thread, so reduce the number of raster threads when async
