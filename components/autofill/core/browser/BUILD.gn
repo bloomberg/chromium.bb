@@ -123,8 +123,6 @@ static_library("browser") {
     "webdata/autofill_profile_syncable_service.h",
     "webdata/autofill_table.cc",
     "webdata/autofill_table.h",
-    "webdata/autofill_wallet_metadata_syncable_service.cc",
-    "webdata/autofill_wallet_metadata_syncable_service.h",
     "webdata/autofill_wallet_syncable_service.cc",
     "webdata/autofill_wallet_syncable_service.h",
     "webdata/autofill_webdata.h",
@@ -243,7 +241,6 @@ source_set("unit_tests") {
     "validation_unittest.cc",
     "webdata/autofill_profile_syncable_service_unittest.cc",
     "webdata/autofill_table_unittest.cc",
-    "webdata/autofill_wallet_metadata_syncable_service_unittest.cc",
     "webdata/web_data_service_unittest.cc",
   ]
 

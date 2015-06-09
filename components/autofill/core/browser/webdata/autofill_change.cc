@@ -17,11 +17,13 @@ AutofillChange::AutofillChange(Type type, const AutofillKey& key)
 AutofillChange::~AutofillChange() {
 }
 
-AutofillProfileChange::AutofillProfileChange(Type type,
-                                             const std::string& key,
-                                             const AutofillProfile* profile)
-    : GenericAutofillChange<std::string>(type, key), profile_(profile) {
-  DCHECK(type == REMOVE ? !profile : profile && profile->guid() == key);
+AutofillProfileChange::AutofillProfileChange(
+  Type type, const std::string& key, const AutofillProfile* profile)
+    : GenericAutofillChange<std::string>(type, key),
+      profile_(profile) {
+  DCHECK(type == ADD ? (profile && profile->guid() == key) : true);
+  DCHECK(type == UPDATE ? (profile && profile->guid() == key) : true);
+  DCHECK(type == REMOVE ? !profile : true);
 }
 
 AutofillProfileChange::~AutofillProfileChange() {
@@ -29,23 +31,9 @@ AutofillProfileChange::~AutofillProfileChange() {
 
 bool AutofillProfileChange::operator==(
     const AutofillProfileChange& change) const {
-  return type() == change.type() && key() == change.key() &&
-         (type() == REMOVE || *profile() == *change.profile());
-}
-
-CreditCardChange::CreditCardChange(Type type,
-                                   const std::string& key,
-                                   const CreditCard* card)
-    : GenericAutofillChange<std::string>(type, key), card_(card) {
-  DCHECK(type == REMOVE ? !card : card && card->guid() == key);
-}
-
-CreditCardChange::~CreditCardChange() {
-}
-
-bool CreditCardChange::operator==(const CreditCardChange& change) const {
-  return type() == change.type() && key() == change.key() &&
-         (type() == REMOVE || *card() == *change.card());
+  return type() == change.type() &&
+         key() == change.key() &&
+         (type() != REMOVE) ? *profile() == *change.profile() : true;
 }
 
 }  // namespace autofill

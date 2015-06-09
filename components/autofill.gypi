@@ -202,8 +202,6 @@
         'autofill/core/browser/webdata/autofill_profile_syncable_service.h',
         'autofill/core/browser/webdata/autofill_table.cc',
         'autofill/core/browser/webdata/autofill_table.h',
-        'autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.cc',
-        'autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h',
         'autofill/core/browser/webdata/autofill_wallet_syncable_service.cc',
         'autofill/core/browser/webdata/autofill_wallet_syncable_service.h',
         'autofill/core/browser/webdata/autofill_webdata.h',

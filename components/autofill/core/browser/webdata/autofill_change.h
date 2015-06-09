@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_WEBDATA_AUTOFILL_CHANGE_H__
 
-#include <string>
 #include <vector>
 
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
@@ -13,10 +12,9 @@
 namespace autofill {
 
 class AutofillProfile;
-class CreditCard;
 
 // For classic Autofill form fields, the KeyType is AutofillKey.
-// Autofill++ types such as AutofillProfile and CreditCard simply use a string.
+// Autofill++ types such as AutofillProfile and CreditCard simply use an int.
 template <typename KeyType>
 class GenericAutofillChange {
  public:
@@ -70,25 +68,6 @@ class AutofillProfileChange : public GenericAutofillChange<std::string> {
  private:
   // Weak reference, can be NULL.
   const AutofillProfile* profile_;
-};
-
-// Change notification details for credit card changes.
-class CreditCardChange : public GenericAutofillChange<std::string> {
- public:
-  // The |type| input specifies the change type.  The |key| input is the key,
-  // which is expected to be the GUID identifying the |card|.
-  // When |type| == ADD, |card| should be non-NULL.
-  // When |type| == UPDATE, |card| should be non-NULL.
-  // When |type| == REMOVE, |card| should be NULL.
-  CreditCardChange(Type type, const std::string& key, const CreditCard* card);
-  ~CreditCardChange() override;
-
-  const CreditCard* card() const { return card_; }
-  bool operator==(const CreditCardChange& change) const;
-
- private:
-  // Weak reference, can be NULL.
-  const CreditCard* card_;
 };
 
 }  // namespace autofill
