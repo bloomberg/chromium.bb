@@ -147,7 +147,7 @@ class CloudPrintServiceModule
         controller_(new ServiceController()) {
   }
 
-  static wchar_t* GetAppIdT() {
+  static const wchar_t* GetAppIdT() {
     return ServiceController::GetAppIdT();
   };
 
