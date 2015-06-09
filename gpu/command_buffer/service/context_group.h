@@ -45,10 +45,10 @@ struct DisallowedFeatures;
 class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
  public:
   enum ContextType {
-    kContextTypeWebGL1,
-    kContextTypeWebGL2,
-    kContextTypeOther,
-    kContextTypeUndefined
+    CONTEXT_TYPE_WEBGL1,
+    CONTEXT_TYPE_WEBGL2,
+    CONTEXT_TYPE_OTHER,
+    CONTEXT_TYPE_UNDEFINED
   };
 
   static ContextType GetContextType(unsigned webgl_version);
