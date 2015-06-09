@@ -642,13 +642,13 @@ class Builder(CommandRunner):
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
 
-  def VerifyArchive(self, archive_file, verbose=False):
+  def ListInvalidObjectsInArchive(self, archive_file, verbose=False):
     """Check the object size from the result of 'ar tv foo.a'.
 
     'ar tv foo.a' shows information like the following:
-    rw-r--r-- 0/0  1024 Jan  1 09:00 something1.o
-    rw-r--r-- 0/0 12023 Jan  1 09:00 something2.o
-    rw-r--r-- 0/0  1124 Jan  1 09:00 something3.o
+    rw-r--r-- 0/0  1024 Jan  1 09:00 1970 something1.o
+    rw-r--r-- 0/0 12023 Jan  1 09:00 1970 something2.o
+    rw-r--r-- 0/0  1124 Jan  1 09:00 1970 something3.o
 
     the third column is the size of object file. We parse it, and verify
     the object size is not 0.
@@ -658,7 +658,7 @@ class Builder(CommandRunner):
       verbose: print information if True.
 
     Returns:
-      True if succeeded. False if archive_file looks corrupted.
+      list of 0 byte files.
     """
 
     cmd_line = [self.GetAr(), 'tv', archive_file]
@@ -667,6 +667,7 @@ class Builder(CommandRunner):
     if verbose:
       print output
 
+    result = []
     for line in output.splitlines():
       xs = line.split()
       if len(xs) < 3:
@@ -674,10 +675,11 @@ class Builder(CommandRunner):
 
       object_size = xs[2]
       if object_size == '0':
-        return False
-    return True
+        result.append(xs[-1])
 
-  def Archive(self, srcs):
+    return result
+
+  def Archive(self, srcs, obj_to_src=None):
     """Archive these objects with predetermined options and output name."""
     out = self.ArchiveOutputName()
     self.Log('\nArchive %s' % out)
@@ -717,19 +719,35 @@ class Builder(CommandRunner):
     if needs_verify:
       ok = False
       for retry in xrange(3):
-        if self.VerifyArchive(out):
+        invalid_obj_names = self.ListInvalidObjectsInArchive(out)
+        if not invalid_obj_names:
           ok = True
           break
 
-        time.sleep(1)
-        print ('WARNING: found 0 byte object in %s. re-archive. (try=%d)'
+        print ('WARNING: found 0 byte objects in %s. '
+               'Recompile them without goma (try=%d)'
                % (out, retry + 1))
+
+        time.sleep(1)
+        if obj_to_src:
+          for invalid_obj_name in invalid_obj_names:
+            src = obj_to_src.get(invalid_obj_name)
+
+            if not src:
+              print ('Couldn\'t find the corresponding src for %s' %
+                     invalid_obj_name)
+              raise Error('ERROR archive is corrupted: %s' % out)
+
+            print 'Recompile without goma:', src
+            self.gomacc = None
+            self.Compile(src)
+
         RunArchive()
 
       if not ok:
         # Show the contents of archive if not ok.
-        self.VerifyArchive(out, verbose=True)
-        raise Error('ERROR: archive is corrupted : %s' % out)
+        self.ListInvalidObjectsInArchive(out, verbose=True)
+        raise Error('ERROR: archive is corrupted: %s' % out)
 
     return out
 
@@ -783,7 +801,7 @@ class Builder(CommandRunner):
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
 
-  def Generate(self, srcs):
+  def Generate(self, srcs, obj_to_src=None):
     """Generate final output file.
 
     Link or Archive the final output file, from the compiled sources.
@@ -796,7 +814,7 @@ class Builder(CommandRunner):
       elif self.strip_all or self.strip_debug:
         self.Strip(out)
     elif self.outtype in ['nlib', 'plib']:
-      out = self.Archive(srcs)
+      out = self.Archive(srcs, obj_to_src)
       if self.strip_debug:
         self.Strip(out)
       elif self.strip_all:
@@ -1011,6 +1029,7 @@ def Main(argv):
       build.Translate(list(files)[0])
       return 0
 
+    obj_to_src = {}
     if build.IsGomaParallelBuild():
       inputs = multiprocessing.Queue()
       returns = multiprocessing.Queue()
@@ -1051,6 +1070,12 @@ def Main(argv):
           raise out[0], out[1], None
         elif out and len(out) == 2:
           src_to_obj[out[0]] = out[1]
+          # Sometimes out[1] is None.
+          if out[1]:
+            basename = os.path.basename(out[1])
+            if basename in obj_to_src:
+              raise Error('multiple same name objects detected: %s' % basename)
+            obj_to_src[basename] = out[0]
         else:
           raise Error('Unexpected element in CompileProcess output_queue %s' %
                       out)
@@ -1060,6 +1085,7 @@ def Main(argv):
       for filename in files:
         # If input file to build.Compile is something it cannot handle, it
         # returns None.
+
         if src_to_obj[filename]:
           obj_name = src_to_obj[filename]
           objs.append(obj_name)
@@ -1085,6 +1111,10 @@ def Main(argv):
       for filename in files:
         out = build.Compile(filename)
         if out:
+          basename = os.path.basename(out)
+          if basename in obj_to_src:
+            raise Error('multiple same name objects detected: %s' % basename)
+          obj_to_src[basename] = out
           objs.append(out)
 
     # Do not link if building an object. However we still want the output file
@@ -1094,7 +1124,7 @@ def Main(argv):
         raise Error('--compile mode cannot be used with multiple sources')
       shutil.copy(objs[0], options.name)
     else:
-      build.Generate(objs)
+      build.Generate(objs, obj_to_src)
     return 0
   except Error as e:
     sys.stderr.write('%s\n' % e)
