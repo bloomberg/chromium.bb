@@ -289,7 +289,8 @@ class Forwarder(object):
         Forwarder._DEVICE_FORWARDER_FOLDER)])
     cmd = '%s %s' % (tool.GetUtilWrapper(), Forwarder._DEVICE_FORWARDER_PATH)
     device.RunShellCommand(
-        cmd, env={'LD_LIBRARY_PATH': Forwarder._DEVICE_FORWARDER_FOLDER})
+        cmd, env={'LD_LIBRARY_PATH': Forwarder._DEVICE_FORWARDER_FOLDER},
+        check_return=True)
     self._initialized_devices.add(device_serial)
 
   def _KillHostLocked(self):
@@ -326,4 +327,5 @@ class Forwarder(object):
     cmd = '%s %s --kill-server' % (tool.GetUtilWrapper(),
                                    Forwarder._DEVICE_FORWARDER_PATH)
     device.RunShellCommand(
-        cmd, env={'LD_LIBRARY_PATH': Forwarder._DEVICE_FORWARDER_FOLDER})
+        cmd, env={'LD_LIBRARY_PATH': Forwarder._DEVICE_FORWARDER_FOLDER},
+        check_return=True)
