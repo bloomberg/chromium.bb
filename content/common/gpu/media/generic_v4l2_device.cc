@@ -153,8 +153,9 @@ bool GenericV4L2Device::Initialize() {
     return false;
   }
 #if defined(USE_LIBV4L2)
-  if (HANDLE_EINTR(v4l2_fd_open(device_fd_.get(), V4L2_DISABLE_CONVERSION)) !=
-      -1) {
+  if (type_ == kEncoder &&
+      HANDLE_EINTR(v4l2_fd_open(device_fd_.get(), V4L2_DISABLE_CONVERSION)) !=
+          -1) {
     DVLOG(2) << "Using libv4l2 for " << device_path;
     use_libv4l2_ = true;
   }
