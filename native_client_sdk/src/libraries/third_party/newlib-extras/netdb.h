@@ -60,6 +60,7 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 #include <machine/ansi.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #ifndef __socklen_t_defined
