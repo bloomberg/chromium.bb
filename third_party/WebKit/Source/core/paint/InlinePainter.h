@@ -6,6 +6,7 @@
 #define InlinePainter_h
 
 #include "core/style/ComputedStyleConstants.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -24,6 +25,7 @@ public:
     void paintOutline(const PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
+    LayoutRect outlinePaintRect(const Vector<LayoutRect>&, const LayoutPoint& paintOffset) const;
     void paintOutlineForLine(GraphicsContext*, const LayoutPoint&, const LayoutRect& prevLine, const LayoutRect& thisLine,
         const LayoutRect& nextLine, const Color);
     LayoutInline& m_layoutInline;

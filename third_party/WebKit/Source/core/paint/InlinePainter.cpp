@@ -29,6 +29,26 @@ void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOf
     LineBoxListPainter(*m_layoutInline.lineBoxes()).paint(&m_layoutInline, paintInfo, paintOffset);
 }
 
+LayoutRect InlinePainter::outlinePaintRect(const Vector<LayoutRect>& outlineRects, const LayoutPoint& paintOffset) const
+{
+    const ComputedStyle& style = m_layoutInline.styleRef();
+    int outlineOutset;
+    if (style.outlineStyleIsAuto())
+        outlineOutset = GraphicsContext::focusRingOutsetExtent(style.outlineOffset(), style.outlineWidth());
+    else
+        outlineOutset = style.outlineSize();
+    LayoutRect outlineRect;
+    for (const LayoutRect& rect : outlineRects) {
+        LayoutRect inflatedRect(rect);
+        // Inflate the individual rects instead of the union, to avoid losing
+        // rects which have degenerate width/height (== isEmpty() true.)
+        inflatedRect.inflate(outlineOutset);
+        outlineRect.unite(inflatedRect);
+    }
+    outlineRect.moveBy(paintOffset);
+    return outlineRect;
+}
+
 void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     const ComputedStyle& styleToUse = m_layoutInline.styleRef();
@@ -39,11 +59,8 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
         if (LayoutTheme::theme().shouldDrawDefaultFocusRing(&m_layoutInline)) {
             Vector<LayoutRect> focusRingRects;
             m_layoutInline.addFocusRingRects(focusRingRects, paintOffset);
-            LayoutRect focusRingBoundingRect;
-            for (const auto& rect : focusRingRects)
-                focusRingBoundingRect.unite(rect);
 
-            LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutInline, paintInfo.phase, focusRingBoundingRect);
+            LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutInline, paintInfo.phase, outlinePaintRect(focusRingRects, LayoutPoint()));
             if (recorder.canUseCachedDrawing())
                 return;
 
@@ -70,16 +87,7 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     Color outlineColor = m_layoutInline.resolveColor(styleToUse, CSSPropertyOutlineColor);
     bool useTransparencyLayer = outlineColor.hasAlpha();
 
-    int outlineWidth = styleToUse.outlineWidth();
-    LayoutRect bounds;
-    for (const auto& rect : rects) {
-        LayoutRect rectCopy(rect);
-        rectCopy.expand(LayoutSize(outlineWidth, outlineWidth));
-        bounds.unite(rectCopy);
-    }
-    bounds.moveBy(paintOffset);
-
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutInline, paintInfo.phase, bounds);
+    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_layoutInline, paintInfo.phase, outlinePaintRect(rects, paintOffset));
     if (recorder.canUseCachedDrawing())
         return;
 
