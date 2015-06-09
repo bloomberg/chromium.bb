@@ -7,7 +7,7 @@
       "drawsContent": true,
       "repaintRects": [
         [372, 435, 48, 16],
-        [369, 422, 51, 54],
+        [369, 422, 52, 54],
         [8, 368, 418, 108]
       ],
       "paintInvalidationClients": [

@@ -7,22 +7,23 @@
       "drawsContent": true,
       "repaintRects": [
         [378, 138, 70, 30],
-        [368, 80, 52, 107],
-        [305, 170, 40, 17],
-        [301, 404, 67, 17],
-        [178, 350, 146, 17],
-        [65, 386, 303, 35],
-        [65, 350, 146, 17],
-        [14, 404, 355, 35],
-        [14, 386, 354, 35],
+        [369, 422, 1, 53],
+        [369, 80, 51, 108],
+        [305, 170, 41, 17],
+        [301, 404, 67, 18],
+        [178, 350, 146, 18],
+        [65, 386, 303, 36],
+        [65, 350, 146, 18],
+        [14, 404, 355, 36],
+        [14, 386, 354, 36],
         [14, 353, 48, 64],
         [14, 335, 48, 64],
-        [14, 242, 406, 125],
-        [14, 224, 406, 125],
-        [14, 188, 406, 71],
-        [14, 188, 40, 17],
-        [14, 170, 406, 71],
-        [8, 116, 418, 449]
+        [14, 224, 406, 126],
+        [14, 188, 41, 17],
+        [14, 170, 408, 72],
+        [13, 242, 407, 126],
+        [13, 188, 408, 71],
+        [8, 116, 418, 450]
       ],
       "paintInvalidationClients": [
         "InlineTextBox 'body tucked away,\n'",
@@ -139,7 +140,13 @@
         "InlineTextBox 'for the hedgehogs; and in\n'",
         "InlineTextBox 'a very short time '",
         "LayoutText #text",
-        "InlineTextBox 'the Queen'"
+        "InlineTextBox 'the Queen'",
+        "LayoutText #text",
+        "InlineTextBox 'was in a furious passion, and went\n'",
+        "InlineTextBox 'stamping about, and'",
+        "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+        "InlineTextBox 'her head!\u2019'",
+        "InlineTextBox 'about once in a minute.\n'"
       ]
     }
   ]

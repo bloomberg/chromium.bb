@@ -6,6 +6,7 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [369, 422, 1, 54],
         [65, 404, 304, 36],
         [14, 404, 355, 36],
         [14, 364, 48, 64],
@@ -37,7 +38,12 @@
         "LayoutBlockFlow (floating) SPAN id='blueFloat'",
         "LayoutText #text",
         "InlineTextBox 'the'",
-        "InlineTextBox 'Queen'"
+        "InlineTextBox 'Queen'",
+        "LayoutText #text",
+        "InlineTextBox ' was in a furious passion, and went'",
+        "InlineTextBox 'stamping about, and shouting \u2018Off with his head!\u2019 or'",
+        "InlineTextBox '\u2018Off with\n'",
+        "InlineTextBox 'her head!\u2019 about once in a minute.\n'"
       ]
     }
   ]

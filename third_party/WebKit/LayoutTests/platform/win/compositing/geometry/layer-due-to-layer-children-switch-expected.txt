@@ -28,9 +28,9 @@ Second dump layer tree:
           "drawsContent": true,
           "children": [
             {
-              "position": [121, 39],
-              "bounds": [250, 100],
-              "contentsOpaque": true,
+              "position": [120, 39],
+              "transformOrigin": [126, 50],
+              "bounds": [251, 100],
               "drawsContent": true,
               "backgroundColor": "#008000",
               "transform": [

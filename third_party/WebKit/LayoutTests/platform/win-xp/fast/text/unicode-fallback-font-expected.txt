@@ -21,7 +21,7 @@ layer at (0,0) size 785x1166 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (304,80) width 0: " "
           text run at (0,96) width 64: "U+16Fx \x{16F0}"
           text run at (64,96) width 0: " "
-        LayoutText {#text} at (0,112) size 328x133
+        LayoutText {#text} at (0,112) size 309x133
           text run at (0,112) width 0: " "
           text run at (0,129) width 239: "U+200x \x{2000} \x{2001} \x{2002} \x{2003} \x{2004} \x{2004} \x{2004} \x{2004} \x{2004} \x{2009} \x{200A} \x{200B} \x{200C} \x{200D} \x{200E} "
           text run at (239,129) width 0 RTL: "\x{200F}"
@@ -37,12 +37,12 @@ layer at (0,0) size 785x1166 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (222,163) width 16 RTL override: "\x{202E} \x{202F}"
           text run at (0,180) width 309: "U+203x \x{2030} \x{2031} \x{2032} \x{2033} \x{2034} \x{2035} \x{2036} \x{2037} \x{2038} \x{2039} \x{203A} \x{203B} \x{203C} \x{203D} \x{203E} \x{203F}"
           text run at (309,180) width 0: " "
-          text run at (0,197) width 320: "U+204x \x{2040} \x{2041} \x{2042} \x{2043} \x{2044} \x{2045} \x{2046} \x{2047} \x{2048} \x{2049} \x{204A} \x{204B} \x{204C} \x{204D} \x{204E} \x{204F}"
-          text run at (320,197) width 0: " "
-          text run at (0,213) width 328: "U+205x \x{2050} \x{2051} \x{2052} \x{2053} \x{2054} \x{2055} \x{2056} \x{2057} \x{2058} \x{2059} \x{205A} \x{205B} \x{205C} \x{205D} \x{205E} \x{205F}"
-          text run at (328,213) width 0: " "
-          text run at (0,229) width 136: "U+206x \x{2060} \x{2061} \x{2062} \x{2063} \x{2064} \x{206A} \x{206B} \x{206C} \x{206D} \x{206E} \x{206F}"
-          text run at (136,229) width 0: " "
+          text run at (0,197) width 296: "U+204x \x{2040} \x{2041} \x{2042} \x{2043} \x{2044} \x{2045} \x{2046} \x{2047} \x{2048} \x{2049} \x{204A} \x{204B} \x{204C} \x{204D} \x{204E} \x{204F}"
+          text run at (296,197) width 0: " "
+          text run at (0,213) width 304: "U+205x \x{2050} \x{2051} \x{2052} \x{2053} \x{2054} \x{2055} \x{2056} \x{2057} \x{2058} \x{2059} \x{205A} \x{205B} \x{205C} \x{205D} \x{205E} \x{205F}"
+          text run at (304,213) width 0: " "
+          text run at (0,229) width 224: "U+206x \x{2060} \x{2061} \x{2062} \x{2063} \x{2064} \x{206A} \x{206B} \x{206C} \x{206D} \x{206E} \x{206F}"
+          text run at (224,229) width 0: " "
         LayoutText {#text} at (0,245) size 384x273
           text run at (0,245) width 0: " "
           text run at (0,261) width 384: "U+260x \x{2600} \x{2601} \x{2602} \x{2603} \x{2604} \x{2605} \x{2606} \x{2607} \x{2608} \x{2609} \x{260A} \x{260B} \x{260C} \x{260D} \x{260E} \x{260F}"

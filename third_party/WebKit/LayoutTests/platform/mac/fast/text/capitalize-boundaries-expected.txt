@@ -50,9 +50,9 @@ layer at (0,0) size 785x1198 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (18,2) size 16x18
                 text run at (18,2) width 16: "en"
             LayoutTableCell {TD} at (56,111) size 711x60 [border: (1px solid #EEEEEE)] [r=3 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,3) size 440x18
-                text run at (2,3) width 440: "'cept nut'in safari\x{2019}s \x{2018}sure\x{2019} nai\x{308}ve r\x{E9}sum\x{E9}\x{2014}h\x{E1}c\x{30C}ek full\x{2010}time one-to-one"
-              LayoutBR {BR} at (441,17) size 1x0
+              LayoutText {#text} at (2,3) size 441x18
+                text run at (2,3) width 441: "'cept nut'in safari\x{2019}s \x{2018}sure\x{2019} nai\x{308}ve r\x{E9}sum\x{E9}\x{2014}h\x{E1}c\x{30C}ek full\x{2010}time one-to-one"
+              LayoutBR {BR} at (442,17) size 1x0
               LayoutText {#text} at (2,22) size 338x18
                 text run at (2,22) width 338: "\"newcastle\x{2011}upon\x{2011}tyne\" washington\x{2011}on\x{2011}the\x{2011}brazos"
               LayoutBR {BR} at (339,36) size 1x0
@@ -252,9 +252,9 @@ layer at (0,0) size 785x1198 backgroundClip at (0,0) size 785x600 clip at (0,0) 
               LayoutText {#text} at (18,2) size 16x18
                 text run at (18,2) width 16: "en"
             LayoutTableCell {TD} at (56,111) size 711x60 [border: (1px solid #EEEEEE)] [r=3 c=1 rs=1 cs=1]
-              LayoutText {#text} at (2,3) size 484x18
-                text run at (2,3) width 484: "'Cept Nut'in Safari\x{2019}s \x{2018}Sure\x{2019} Nai\x{308}ve R\x{E9}sum\x{E9}\x{2014}H\x{E1}c\x{30C}ek Full\x{2010}Time One-To-One"
-              LayoutBR {BR} at (485,17) size 1x0
+              LayoutText {#text} at (2,3) size 485x18
+                text run at (2,3) width 485: "'Cept Nut'in Safari\x{2019}s \x{2018}Sure\x{2019} Nai\x{308}ve R\x{E9}sum\x{E9}\x{2014}H\x{E1}c\x{30C}ek Full\x{2010}Time One-To-One"
+              LayoutBR {BR} at (486,17) size 1x0
               LayoutText {#text} at (2,22) size 365x18
                 text run at (2,22) width 365: "\"Newcastle\x{2011}Upon\x{2011}Tyne\" Washington\x{2011}On\x{2011}The\x{2011}Brazos"
               LayoutBR {BR} at (366,36) size 1x0
