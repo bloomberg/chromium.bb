@@ -293,7 +293,7 @@ def branch_config_map(option):
 
 
 def branches(*args):
-  NO_BRANCH = ('* (no branch', '* (detached from ')
+  NO_BRANCH = ('* (no branch', '* (detached', '* (HEAD detached')
 
   key = 'depot-tools.branch-limit'
   limit = 20
