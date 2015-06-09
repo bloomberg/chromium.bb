@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
@@ -558,8 +559,11 @@ void RenderMessageFilter::OnSetCookie(int render_frame_id,
                                       const std::string& cookie) {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanAccessCookiesForOrigin(render_process_id_, url))
+  if (!policy->CanAccessCookiesForOrigin(render_process_id_, url)) {
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::RMF_SET_COOKIE_BAD_ORIGIN);
     return;
+  }
 
   net::CookieOptions options;
   if (GetContentClient()->browser()->AllowSetCookie(
@@ -579,7 +583,9 @@ void RenderMessageFilter::OnGetCookies(int render_frame_id,
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessCookiesForOrigin(render_process_id_, url)) {
-    SendGetCookiesResponse(reply_msg, std::string());
+    bad_message::ReceivedBadMessage(this,
+                                    bad_message::RMF_GET_COOKIES_BAD_ORIGIN);
+    delete reply_msg;
     return;
   }
 

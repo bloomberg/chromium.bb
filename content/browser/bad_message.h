@@ -101,6 +101,8 @@ enum BadMessageReason {
   FAMF_APPEND_SHARED_MEMORY_TO_STREAM = 75,
   IDBDH_CAN_READ_FILE = 76,
   IDBDH_GET_OR_TERMINATE = 77,
+  RMF_SET_COOKIE_BAD_ORIGIN = 78,
+  RMF_GET_COOKIES_BAD_ORIGIN = 79,
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
   // reason.

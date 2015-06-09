@@ -63,8 +63,6 @@ void PostMessageAndWaitForReply(FrameTreeNode* sender_ftn,
   }
 }
 
-}  // anonymous namespace
-
 class RedirectNotificationObserver : public NotificationObserver {
  public:
   // Register to listen for notifications of the given type from either a
@@ -243,6 +241,8 @@ bool ConsoleObserverDelegate::AddMessageToConsole(
   }
   return false;
 }
+
+}  // namespace
 
 //
 // SitePerProcessBrowserTest
@@ -1081,10 +1081,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrashSubframe) {
   NavigateToURL(shell(), main_url);
 
   StartFrameAtDataURL();
-
-  // These must stay in scope with replace_host.
-  GURL::Replacements replace_host;
-  std::string foo_com("foo.com");
 
   // Load cross-site page into iframe.
   EXPECT_TRUE(NavigateIframeToURL(

@@ -49509,6 +49509,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="75" label="FAMF_APPEND_SHARED_MEMORY_TO_STREAM"/>
   <int value="76" label="IDBDH_CAN_READ_FILE"/>
   <int value="77" label="IDBDH_GET_OR_TERMINATE"/>
+  <int value="78" label="RMF_SET_COOKIE_BAD_ORIGIN"/>
+  <int value="79" label="RMF_GET_COOKIES_BAD_ORIGIN"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
