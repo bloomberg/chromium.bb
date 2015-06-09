@@ -1632,13 +1632,25 @@ public class ContentViewCore implements
         mFocusPreOSKViewportRect.setEmpty();
     }
 
+    private void updateNativeFocus() {
+        if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, hasFocus());
+    }
+
     /**
      * @see View#onWindowFocusChanged(boolean)
      */
     public void onWindowFocusChanged(boolean hasWindowFocus) {
+        // http://crbug.com/495547: View's focus status isn't changed even when Window's focus
+        // status is changed. But to receive key events, both View and its Window must have focus.
+        // So blinking a cursor in an input area doesn't make sense when Window's focus is lost
+        // even though |mContainerView| has focus.
+        updateNativeFocus();
         if (!hasWindowFocus) resetGestureDetection();
     }
 
+    /**
+     * @see View#onFocusChanged(boolean)
+     */
     public void onFocusChanged(boolean gainFocus) {
         if (gainFocus) {
             restoreSelectionPopupsIfNecessary();
@@ -1656,7 +1668,7 @@ public class ContentViewCore implements
                 clearUserSelection();
             }
         }
-        if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
+        updateNativeFocus();
     }
 
     /**
@@ -2616,14 +2628,16 @@ public class ContentViewCore implements
     }
 
     /**
-     * @see View#hasFocus()
+     * ContentViewCore has focus when both mContainerView.hasFocus() and
+     * mContainerView.hasWindowFocus() are true.
+     * @see View#hasFocus() and View#hasWindowFocus()
      */
     @CalledByNative
     private boolean hasFocus() {
         // If the container view is not focusable, we consider it always focused from
         // Chromium's point of view.
         if (!mContainerView.isFocusable()) return true;
-        return mContainerView.hasFocus();
+        return mContainerView.hasFocus() && mContainerView.hasWindowFocus();
     }
 
     /**
