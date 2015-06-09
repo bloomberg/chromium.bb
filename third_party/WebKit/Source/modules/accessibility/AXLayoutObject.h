@@ -85,6 +85,7 @@ protected:
 
     // Check object role or purpose.
     virtual bool isAttachment() const override;
+    virtual bool isRichlyEditable() const override;
     virtual bool isLinked() const override;
     virtual bool isLoaded() const override;
     virtual bool isOffScreen() const override;

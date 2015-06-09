@@ -536,6 +536,14 @@ bool WebAXObject::isMultiline() const
     return m_private->isMultiline();
 }
 
+bool WebAXObject::isRichlyEditable() const
+{
+    if (isDetached())
+        return false;
+
+    return m_private->isRichlyEditable();
+}
+
 int WebAXObject::posInSet() const
 {
     if (isDetached())
