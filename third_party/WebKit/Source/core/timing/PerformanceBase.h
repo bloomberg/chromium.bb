@@ -52,7 +52,6 @@ using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
 class CORE_EXPORT PerformanceBase : public RefCountedGarbageCollectedEventTargetWithInlineData<PerformanceBase> {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(PerformanceBase);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PerformanceBase);
 public:
     virtual ~PerformanceBase();
 
