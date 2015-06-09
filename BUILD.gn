@@ -72,6 +72,13 @@ config("icu_code") {
       "-Wno-tautological-compare",
       "-Wno-switch",
     ]
+    if (is_win) {
+      cflags += [
+        # See http://bugs.icu-project.org/trac/ticket/11122
+        '-Wno-inline-new-delete',
+        '-Wno-implicit-exception-spec-mismatch',
+      ]
+    }
   }
 }
 
