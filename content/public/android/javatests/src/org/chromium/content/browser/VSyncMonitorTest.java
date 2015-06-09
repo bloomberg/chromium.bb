@@ -43,6 +43,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
 
         @Override
         public void onVSync(VSyncMonitor monitor, long vsyncTimeMicros) {
+            ThreadUtils.assertOnUiThread();
             mLastVSyncCpuTimeMillis = SystemClock.uptimeMillis();
             if (mPreviousVSyncTimeMicros == 0) {
                 mPreviousVSyncTimeMicros = vsyncTimeMicros;
@@ -81,6 +82,17 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
         });
     }
 
+    // Vsync requests should be made on the same thread as that used to create the VSyncMonitor (the
+    // UI thread).
+    private void requestVSyncMonitorUpdate(final VSyncMonitor monitor) {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                monitor.requestUpdate();
+            }
+        });
+    }
+
     // Check that the vsync period roughly matches the timestamps that the monitor generates.
     @MediumTest
     public void testVSyncPeriod() throws InterruptedException {
@@ -92,7 +104,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
         assertTrue(reportedFramePeriod > 0);
 
         assertFalse(collector.isDone());
-        monitor.requestUpdate();
+        requestVSyncMonitorUpdate(monitor);
         collector.waitTillDone();
         assertTrue(collector.isDone());
 
@@ -122,7 +134,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
         VSyncDataCollector collector = new VSyncDataCollector(1);
         VSyncMonitor monitor = createVSyncMonitor(collector);
 
-        monitor.requestUpdate();
+        requestVSyncMonitorUpdate(monitor);
         collector.waitTillDone();
         assertTrue(collector.isDone());
 

@@ -6,6 +6,7 @@ package org.chromium.ui;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.Choreographer;
 import android.view.WindowManager;
 
@@ -108,10 +109,12 @@ public class VSyncMonitor {
     }
 
     /**
-     * Request to be notified of the closest display vsync events.
+     * Request to be notified of the closest display vsync events. This should
+     * always be called on the same thread used to create the VSyncMonitor.
      * Listener.onVSync() will be called soon after the upcoming vsync pulses.
      */
     public void requestUpdate() {
+        assert mHandler.getLooper() == Looper.myLooper();
         postCallback();
     }
 

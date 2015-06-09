@@ -45,13 +45,13 @@ public class AutofillTest extends ChromeShellTestBase {
         waitForActiveShellToBeDoneLoading();
 
         mMockAutofillCallback = new MockAutofillCallback();
-        mWindowAndroid = new ActivityWindowAndroid(activity);
         final ViewAndroidDelegate viewDelegate =
                 activity.getActiveContentViewCore().getViewAndroidDelegate();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                mWindowAndroid = new ActivityWindowAndroid(activity);
                 mAutofillPopup = new AutofillPopup(activity, viewDelegate, mMockAutofillCallback);
                 mAutofillPopup.filterAndShow(new AutofillSuggestion[0], false);
                 mAutofillPopup.setAnchorRect(50, 500, 500, 50);
