@@ -23,8 +23,11 @@ interface IRemoteAndroidKeyStore {
     // Remote calls for AndroidKeyStore - these functions are performing operations
     // with a PrivateKey in the remote process using the handle provided by
     // |getPrivateKeyHandle|.
+
     byte[] getRSAKeyModulus(in int handle);
+    // Deprecated: This RPC is never used.
     byte[] getPrivateKeyEncodedBytes(in int handle);
+    // Deprecated: This RPC is never used.
     byte[] getDSAKeyParamQ(in int handle);
     byte[] getECKeyOrder(in int handle);
     byte[] rawSignDigestWithPrivateKey(in int handle, in byte[] message);

@@ -36,21 +36,6 @@ bool GetRSAKeyModulus(jobject private_key_ref, std::vector<uint8_t>* result) {
   return true;
 }
 
-bool GetDSAKeyParamQ(jobject private_key_ref, std::vector<uint8_t>* result) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jbyteArray> q_ref =
-      Java_AndroidKeyStore_getDSAKeyParamQ(
-          env,
-          GetKeyStore(private_key_ref).obj(),
-          private_key_ref);
-  if (q_ref.is_null())
-    return false;
-
-  JavaByteArrayToByteVector(env, q_ref.obj(), result);
-  return true;
-}
-
 bool GetECKeyOrder(jobject private_key_ref, std::vector<uint8_t>* result) {
   JNIEnv* env = AttachCurrentThread();
 
@@ -64,22 +49,6 @@ bool GetECKeyOrder(jobject private_key_ref, std::vector<uint8_t>* result) {
     return false;
 
   JavaByteArrayToByteVector(env, order_ref.obj(), result);
-  return true;
-}
-
-bool GetPrivateKeyEncodedBytes(jobject private_key_ref,
-                               std::vector<uint8_t>* result) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jbyteArray> encoded_ref =
-      Java_AndroidKeyStore_getPrivateKeyEncodedBytes(
-          env,
-          GetKeyStore(private_key_ref).obj(),
-          private_key_ref);
-  if (encoded_ref.is_null())
-    return false;
-
-  JavaByteArrayToByteVector(env, encoded_ref.obj(), result);
   return true;
 }
 

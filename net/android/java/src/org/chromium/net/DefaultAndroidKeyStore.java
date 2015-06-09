@@ -10,9 +10,6 @@ import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
-import java.security.interfaces.DSAKey;
-import java.security.interfaces.DSAParams;
-import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.ECKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAKey;
@@ -62,17 +59,6 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
     }
 
     @Override
-    public byte[] getDSAKeyParamQ(AndroidPrivateKey key) {
-        PrivateKey javaKey = ((DefaultAndroidPrivateKey) key).getJavaKey();
-        if (javaKey instanceof DSAKey) {
-            DSAParams params = ((DSAKey) javaKey).getParams();
-            return params.getQ().toByteArray();
-        }
-        Log.w(TAG, "Not a DSAKey instance!");
-        return null;
-    }
-
-    @Override
     public byte[] getECKeyOrder(AndroidPrivateKey key) {
         PrivateKey javaKey = ((DefaultAndroidPrivateKey) key).getJavaKey();
         if (javaKey instanceof ECKey) {
@@ -81,12 +67,6 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
         }
         Log.w(TAG, "Not an ECKey instance!");
         return null;
-    }
-
-    @Override
-    public byte[] getPrivateKeyEncodedBytes(AndroidPrivateKey key) {
-        PrivateKey javaKey = ((DefaultAndroidPrivateKey) key).getJavaKey();
-        return javaKey.getEncoded();
     }
 
     @Override
@@ -103,8 +83,6 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
                 // on Android 4.0.x and 4.1.x. Fixed in 4.2 and higher.
                 // See https://android-review.googlesource.com/#/c/40352/
                 signature = Signature.getInstance("NONEwithRSA");
-            } else if (javaKey instanceof DSAPrivateKey) {
-                signature = Signature.getInstance("NONEwithDSA");
             } else if (javaKey instanceof ECPrivateKey) {
                 signature = Signature.getInstance("NONEwithECDSA");
             }
@@ -133,7 +111,6 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
     public int getPrivateKeyType(AndroidPrivateKey key) {
         PrivateKey javaKey = ((DefaultAndroidPrivateKey) key).getJavaKey();
         if (javaKey instanceof RSAPrivateKey) return PrivateKeyType.RSA;
-        if (javaKey instanceof DSAPrivateKey) return PrivateKeyType.DSA;
         if (javaKey instanceof ECPrivateKey) {
             return PrivateKeyType.ECDSA;
         } else {

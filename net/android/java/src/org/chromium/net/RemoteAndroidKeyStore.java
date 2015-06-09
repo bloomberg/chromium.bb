@@ -55,18 +55,6 @@ public class RemoteAndroidKeyStore implements AndroidKeyStore {
     }
 
     @Override
-    public byte[] getDSAKeyParamQ(AndroidPrivateKey key) {
-        RemotePrivateKey remoteKey = (RemotePrivateKey) key;
-        try {
-            Log.d(TAG, "getDSAKeyParamQ");
-            return mRemoteManager.getDSAKeyParamQ(remoteKey.getHandle());
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    @Override
     public byte[] getECKeyOrder(AndroidPrivateKey key) {
         RemotePrivateKey remoteKey = (RemotePrivateKey) key;
         try {
@@ -100,13 +88,6 @@ public class RemoteAndroidKeyStore implements AndroidKeyStore {
             e.printStackTrace();
             return 0;
         }
-    }
-
-    @Override
-    public byte[] getPrivateKeyEncodedBytes(AndroidPrivateKey key) {
-        // This should not be called as it's only for older versions of Android.
-        assert false;
-        return null;
     }
 
     @Override

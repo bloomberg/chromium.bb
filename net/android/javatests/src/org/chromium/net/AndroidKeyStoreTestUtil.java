@@ -16,6 +16,9 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 
+/**
+ * Utility functions to create Android platform keys in tests.
+ */
 @JNINamespace("net::android")
 public class AndroidKeyStoreTestUtil {
 
@@ -34,9 +37,6 @@ public class AndroidKeyStoreTestUtil {
         switch (type) {
             case PrivateKeyType.RSA:
                 algorithm = "RSA";
-                break;
-            case PrivateKeyType.DSA:
-                algorithm = "DSA";
                 break;
             case PrivateKeyType.ECDSA:
                 algorithm = "EC";

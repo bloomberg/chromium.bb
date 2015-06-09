@@ -28,19 +28,6 @@ public interface AndroidKeyStore {
     byte[] getRSAKeyModulus(AndroidPrivateKey key);
 
     /**
-     * Returns the 'Q' parameter of a given DSA private key as a byte
-     * buffer.
-     * This can be used by native code to convert it into an OpenSSL BIGNUM
-     * object where DSA_size() works as expected.
-     *
-     * @param key A PrivateKey instance. Must implement DSAKey.
-     * @return A byte buffer corresponding to the Q parameter. This is
-     * a big-endian representation of a BigInteger.
-     */
-    @CalledByNative
-    byte[] getDSAKeyParamQ(AndroidPrivateKey key);
-
-    /**
      * Returns the 'order' parameter of a given ECDSA private key as a
      * a byte buffer.
      * @param key A PrivateKey instance. Must implement ECKey.
@@ -49,17 +36,6 @@ public interface AndroidKeyStore {
      */
     @CalledByNative
     byte[] getECKeyOrder(AndroidPrivateKey key);
-
-    /**
-     * Returns the encoded data corresponding to a given PrivateKey.
-     * Note that this will fail for platform keys on Android 4.0.4
-     * and higher. It can be used on 4.0.3 and older platforms to
-     * route around the platform bug described below.
-     * @param key A PrivateKey instance
-     * @return encoded key as PKCS#8 byte array, can be null.
-     */
-    @CalledByNative
-    byte[] getPrivateKeyEncodedBytes(AndroidPrivateKey key);
 
     /**
      * Sign a given message with a given PrivateKey object. This method
@@ -77,10 +53,9 @@ public interface AndroidKeyStore {
      *    combined, 36-byte MD5+SHA1 message digest or a DigestInfo
      *    value wrapping a message digest.
      *
-     *  - For a DSA and ECDSA private keys, this should be equivalent to
-     *    calling DSA_sign(0,...) and ECDSA_sign(0,...) respectively. The
-     *    message must be a hash and the function shall compute a direct
-     *    DSA/ECDSA signature for it.
+     *  - For a ECDSA private keys, this should be equivalent to calling
+     *    ECDSA_sign(0,...). The message must be a hash and the function shall
+     *    compute a direct ECDSA signature for it.
      *
      * @param key The PrivateKey handle.
      * @param message The message to sign.
