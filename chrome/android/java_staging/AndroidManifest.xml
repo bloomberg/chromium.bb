@@ -84,7 +84,8 @@ by a child template that "extends" this file.
         android:label="@string/app_name"
         android:largeHeap="false"
         android:allowBackup="false"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        {% block extra_application_attributes %}{% endblock %}>
 
         <!-- Samsung MultiWindow Support -->
         <meta-data android:name="com.samsung.android.sdk.multiwindow.enable"
@@ -589,4 +590,3 @@ by a child template that "extends" this file.
         {% endblock %}
     </application>
 </manifest>
-
