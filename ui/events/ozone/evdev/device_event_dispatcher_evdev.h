@@ -23,7 +23,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT KeyEventParams {
   KeyEventParams(int device_id,
                  unsigned int code,
                  bool down,
-                 bool enable_repeat,
+                 bool suppress_auto_repeat,
                  base::TimeDelta timestamp);
   KeyEventParams(const KeyEventParams& other);
   ~KeyEventParams();
@@ -31,7 +31,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT KeyEventParams {
   int device_id;
   unsigned int code;
   bool down;
-  bool enable_repeat;
+  bool suppress_auto_repeat;
   base::TimeDelta timestamp;
 };
 

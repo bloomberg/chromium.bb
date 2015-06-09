@@ -66,18 +66,18 @@ void InputInjectorEvdev::MoveCursorTo(const gfx::PointF& location) {
       kDeviceIdForInjection, cursor_->GetLocation(), EventTimeForNow()));
 }
 
-void InputInjectorEvdev::InjectKeyPress(DomCode physical_key,
+void InputInjectorEvdev::InjectKeyEvent(DomCode physical_key,
                                         bool down,
-                                        bool enable_repeat) {
+                                        bool suppress_auto_repeat) {
   if (physical_key == DomCode::NONE)
     return;
 
   int native_keycode = KeycodeConverter::DomCodeToNativeKeycode(physical_key);
   int evdev_code = NativeCodeToEvdevCode(native_keycode);
 
-  dispatcher_->DispatchKeyEvent(KeyEventParams(kDeviceIdForInjection,
-                                               evdev_code, down, enable_repeat,
-                                               EventTimeForNow()));
+  dispatcher_->DispatchKeyEvent(
+      KeyEventParams(kDeviceIdForInjection, evdev_code, down,
+                     suppress_auto_repeat, EventTimeForNow()));
 }
 
 }  // namespace ui

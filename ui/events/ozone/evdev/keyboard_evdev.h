@@ -34,9 +34,14 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   ~KeyboardEvdev();
 
   // Handlers for raw key presses & releases.
+  //
+  // |code| is a Linux key code (from <linux/input.h>). |down| represents the
+  // key state. |suppress_auto_repeat| prevents the event from triggering
+  // auto-repeat, if enabled. |device_id| uniquely identifies the source
+  // keyboard device.
   void OnKeyChange(unsigned int code,
                    bool down,
-                   bool enable_repeat,
+                   bool suppress_auto_repeat,
                    base::TimeDelta timestamp,
                    int device_id);
 
@@ -56,7 +61,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   void UpdateCapsLockLed();
   void UpdateKeyRepeat(unsigned int key,
                        bool down,
-                       bool enable_repeat,
+                       bool suppress_auto_repeat,
                        int device_id);
   void StartKeyRepeat(unsigned int key, int device_id);
   void StopKeyRepeat();
@@ -88,7 +93,7 @@ class EVENTS_OZONE_EVDEV_EXPORT KeyboardEvdev {
   KeyboardLayoutEngine* keyboard_layout_engine_;
 
   // Key repeat state.
-  bool repeat_enabled_;
+  bool auto_repeat_enabled_;
   unsigned int repeat_key_;
   unsigned int repeat_sequence_;
   int repeat_device_id_;

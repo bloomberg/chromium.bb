@@ -152,7 +152,7 @@ scoped_ptr<SystemInputInjector> EventFactoryEvdev::CreateSystemInputInjector() {
 void EventFactoryEvdev::DispatchKeyEvent(const KeyEventParams& params) {
   TRACE_EVENT1("evdev", "EventFactoryEvdev::DispatchKeyEvent", "device",
                params.device_id);
-  keyboard_.OnKeyChange(params.code, params.down, params.enable_repeat,
+  keyboard_.OnKeyChange(params.code, params.down, params.suppress_auto_repeat,
                         params.timestamp, params.device_id);
 }
 

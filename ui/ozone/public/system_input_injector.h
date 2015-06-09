@@ -39,11 +39,13 @@ class OZONE_EXPORT SystemInputInjector {
   // factor.
   virtual void InjectMouseWheel(int delta_x, int delta_y) = 0;
 
-  // Simulates a key press.  SystemInputInjector maps |physical_key| to the
-  // correct logical key based on the current keyboard layout.
-  virtual void InjectKeyPress(DomCode physical_key,
+  // Simulates a key event.  SystemInputInjector maps |physical_key| to the
+  // correct logical key based on the current keyboard layout. |down| is true
+  // for presses. If |suppress_auto_repeat| is set, the platform must not
+  // auto-repeat the event.
+  virtual void InjectKeyEvent(DomCode physical_key,
                               bool down,
-                              bool enable_repeat) = 0;
+                              bool suppress_auto_repeat) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemInputInjector);

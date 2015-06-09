@@ -27,9 +27,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputInjectorEvdev
   void InjectMouseButton(EventFlags button, bool down) override;
   void InjectMouseWheel(int delta_x, int delta_y) override;
   void MoveCursorTo(const gfx::PointF& location) override;
-  void InjectKeyPress(DomCode physical_key,
+  void InjectKeyEvent(DomCode physical_key,
                       bool down,
-                      bool enable_repeat) override;
+                      bool suppress_auto_repeat) override;
 
  private:
   // Shared cursor state.
