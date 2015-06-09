@@ -14,9 +14,4 @@ declare_args() {
   # resources).
   # TODO(brettw) move here from BUILDCONFIG.gn when DEPS are updated.
   #is_chrome_branded = false
-
-  # Break chrome.dll into multple pieces based on process type. Only available
-  # on Windows.
-  # TODO(brettw) make this work. When it does, the declaration should be:
-  is_multi_dll_chrome = is_win && !is_component_build
 }
