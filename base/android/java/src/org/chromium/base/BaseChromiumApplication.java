@@ -12,6 +12,7 @@ import android.view.KeyEvent;
 import android.view.Window;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
@@ -60,7 +61,20 @@ public class BaseChromiumApplication extends Application {
                     && args[0] instanceof KeyEvent) {
                 return dispatchKeyEvent((KeyEvent) args[0]);
             } else {
-                return method.invoke(mCallback, args);
+                try {
+                    return method.invoke(mCallback, args);
+                } catch (InvocationTargetException e) {
+                    // Special-case for when a method is not defined on the underlying
+                    // Window.Callback object. Because we're using a Proxy to forward all method
+                    // calls, this breaks the Android framework's handling for apps built against
+                    // an older SDK. The framework expects an AbstractMethodError but due to
+                    // reflection it becomes wrapped inside an InvocationTargetException. Undo the
+                    // wrapping to signal the framework accordingly.
+                    if (e.getCause() instanceof AbstractMethodError) {
+                        throw e.getCause();
+                    }
+                    throw e;
+                }
             }
         }
 
