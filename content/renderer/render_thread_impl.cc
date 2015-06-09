@@ -269,8 +269,9 @@ class RenderViewZoomer : public RenderViewVisitor {
 class CompositorRasterThread : public base::SimpleThread {
  public:
   CompositorRasterThread(cc::TaskGraphRunner* task_graph_runner,
-                         const std::string& name_prefix)
-      : base::SimpleThread(name_prefix),
+                         const std::string& name_prefix,
+                         base::SimpleThread::Options options)
+      : base::SimpleThread(name_prefix, options),
         task_graph_runner_(task_graph_runner) {}
 
   // Overridden from base::SimpleThread:
@@ -670,6 +671,13 @@ void RenderThreadImpl::Init() {
     // Picture::Create.
     is_gather_pixel_refs_enabled_ = num_raster_threads > 1;
 
+    base::SimpleThread::Options thread_options;
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+    if (!command_line.HasSwitch(
+            switches::kUseNormalPriorityForTileTaskWorkerThreads)) {
+      thread_options.set_priority(base::ThreadPriority::BACKGROUND);
+    }
+#endif
     while (compositor_raster_threads_.size() <
            static_cast<size_t>(num_raster_threads)) {
       scoped_ptr<CompositorRasterThread> raster_thread(
@@ -678,14 +686,9 @@ void RenderThreadImpl::Init() {
               base::StringPrintf(
                   "CompositorTileWorker%u",
                   static_cast<unsigned>(compositor_raster_threads_.size() + 1))
-                  .c_str()));
+                  .c_str(),
+              thread_options));
       raster_thread->Start();
-#if defined(OS_ANDROID) || defined(OS_LINUX)
-      if (!command_line.HasSwitch(
-              switches::kUseNormalPriorityForTileTaskWorkerThreads)) {
-        raster_thread->SetThreadPriority(base::ThreadPriority::BACKGROUND);
-      }
-#endif
       compositor_raster_threads_.push_back(raster_thread.Pass());
     }
   }

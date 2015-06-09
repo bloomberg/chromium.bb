@@ -59,7 +59,7 @@ class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
  public:
   class BASE_EXPORT Options {
    public:
-    Options() : stack_size_(0) { }
+    Options() : stack_size_(0), priority_(ThreadPriority::NORMAL) { }
     ~Options() { }
 
     // We use the standard compiler-supplied copy constructor.
@@ -67,8 +67,13 @@ class BASE_EXPORT SimpleThread : public PlatformThread::Delegate {
     // A custom stack size, or 0 for the system default.
     void set_stack_size(size_t size) { stack_size_ = size; }
     size_t stack_size() const { return stack_size_; }
+
+    // A custom thread priority.
+    void set_priority(ThreadPriority priority) { priority_ = priority; }
+    ThreadPriority priority() const { return priority_; }
    private:
     size_t stack_size_;
+    ThreadPriority priority_;
   };
 
   // Create a SimpleThread.  |options| should be used to manage any specific

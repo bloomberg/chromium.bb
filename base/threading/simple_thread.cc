@@ -29,7 +29,13 @@ SimpleThread::~SimpleThread() {
 
 void SimpleThread::Start() {
   DCHECK(!HasBeenStarted()) << "Tried to Start a thread multiple times.";
-  bool success = PlatformThread::Create(options_.stack_size(), this, &thread_);
+  bool success;
+  if (options_.priority() == ThreadPriority::NORMAL) {
+    success = PlatformThread::Create(options_.stack_size(), this, &thread_);
+  } else {
+    success = PlatformThread::CreateWithPriority(options_.stack_size(), this,
+                                                 &thread_, options_.priority());
+  }
   DCHECK(success);
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   event_.Wait();  // Wait for the thread to complete initialization.
