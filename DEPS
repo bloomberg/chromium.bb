@@ -30,27 +30,15 @@ vars = {
   # Use this googlecode_url variable only if there is an internal mirror for it.
   # If you do not know, use the full path while defining your new deps entry.
   'googlecode_url': 'http://%s.googlecode.com/svn',
-  'sourceforge_url': 'http://svn.code.sf.net/p/%(repo)s/code',
-  'llvm_url': 'http://src.chromium.org/llvm-project',
-  'llvm_git': 'https://llvm.googlesource.com',
-  'webkit_trunk': 'http://src.chromium.org/blink/trunk',
   'webkit_revision': 'b6705b8d413f9bd148e4669b15378e682ffb4c7b', # from svn revision 196701
   'chromium_git': 'https://chromium.googlesource.com',
-  'chromiumos_git': 'https://chromium.googlesource.com/chromiumos',
-  'pdfium_git': 'https://pdfium.googlesource.com',
-  'skia_git': 'https://skia.googlesource.com',
-  'boringssl_git': 'https://boringssl.googlesource.com',
   'libvpx_revision': 'a43631169b4200f2000c8cfa82404ce507e31486',
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
   'skia_revision': '77dcbdeb19d26e52428e392fca0ec9a72658b746',
   # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling Skia
-  # and V8 without interference from each other.
-  'v8_branch': 'trunk',
+  # the commit queue can handle CLs rolling V8
+  # and whatever else without interference from each other.
   'v8_revision': 'c7e9b38c5ef7c0f5ee43a5f183f1cd44f097503a',
-  # Three lines of non-changing comments so that
-  # the commit queue can handle CLs rolling WebRTC
-  # and V8 without interference from each other.
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
