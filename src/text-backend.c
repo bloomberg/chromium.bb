@@ -920,6 +920,9 @@ launch_input_method(struct text_backend *text_backend)
 	if (!text_backend->input_method.path)
 		return;
 
+	if (strcmp(text_backend->input_method.path, "") == 0)
+		return;
+
 	if (text_backend->input_method.process.pid != 0)
 		return;
 
