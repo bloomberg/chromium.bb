@@ -400,6 +400,9 @@ void ExtensionDisabledGlobalError::Observe(
   GlobalErrorServiceFactory::GetForProfile(service_->profile())->
       RemoveGlobalError(this);
 
+  // Make sure we don't call RemoveGlobalError again.
+  registrar_.RemoveAll();
+
   if (type == extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED)
     user_response_ = REENABLE;
   else if (type == extensions::NOTIFICATION_EXTENSION_REMOVED)

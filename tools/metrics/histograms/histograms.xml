@@ -49611,6 +49611,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Bad version"/>
   <int value="2" label="Bad update URL"/>
   <int value="3" label="No ExtensionSpecifics"/>
+  <int value="4" label="Bad disable reasons"/>
 </enum>
 
 <enum name="BaseRelocationType" type="int">

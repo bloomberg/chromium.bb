@@ -141,6 +141,10 @@ bool PermissionSet::operator==(
       explicit_hosts_ == rhs.explicit_hosts_;
 }
 
+bool PermissionSet::operator!=(const PermissionSet& rhs) const {
+  return !(*this == rhs);
+}
+
 bool PermissionSet::Contains(const PermissionSet& set) const {
   return apis_.Contains(set.apis()) &&
          manifest_permissions_.Contains(set.manifest_permissions()) &&

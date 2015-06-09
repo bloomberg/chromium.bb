@@ -56,6 +56,7 @@ class PermissionSet
       const PermissionSet* set1, const PermissionSet* set2);
 
   bool operator==(const PermissionSet& rhs) const;
+  bool operator!=(const PermissionSet& rhs) const;
 
   // Returns true if every API or host permission available to |set| is also
   // available to this. In other words, if the API permissions of |set| are a

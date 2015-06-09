@@ -70,6 +70,7 @@ class ExtensionSyncData {
   // |version|).
   bool uninstalled() const { return uninstalled_; }
   bool enabled() const { return enabled_; }
+  bool supports_disable_reasons() const { return supports_disable_reasons_; }
   int disable_reasons() const { return disable_reasons_; }
   bool incognito_enabled() const { return incognito_enabled_; }
   bool remote_install() const { return remote_install_; }
@@ -90,6 +91,11 @@ class ExtensionSyncData {
   std::string id_;
   bool uninstalled_;
   bool enabled_;
+  // |supports_disable_reasons_| is true if the optional |disable_reasons_| was
+  // set to some value in the extension_specifics.proto. If not,
+  // |disable_reasons_| is given a default value and |supports_disable_reasons_|
+  // is false.
+  bool supports_disable_reasons_;
   int disable_reasons_;
   bool incognito_enabled_;
   bool remote_install_;

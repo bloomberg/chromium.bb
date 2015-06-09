@@ -491,8 +491,7 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
   if (extension_sync_data.uninstalled()) {
     if (!extension_service_->UninstallExtensionHelper(
             extension_service_, id, extensions::UNINSTALL_REASON_SYNC)) {
-      LOG(WARNING) << "Could not uninstall extension " << id
-                   << " for sync";
+      LOG(WARNING) << "Could not uninstall extension " << id << " for sync";
     }
     return true;
   }
@@ -507,33 +506,43 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
   }
 
   // Set user settings.
-  // If the extension has been disabled from sync, it may not have
-  // been installed yet, so we don't know if the disable reason was a
-  // permissions increase.  That will be updated once CheckPermissionsIncrease
-  // is called for it.
-  // However if the extension is marked as a remote install in sync, we know
-  // what the disable reason is, so set it to that directly. Note that when
-  // CheckPermissionsIncrease runs, it might still add permissions increase
-  // as a disable reason for the extension.
   if (extension_sync_data.enabled()) {
-    extension_service_->EnableExtension(id);
+    // Only grant permissions if the sync data explicitly sets the disable
+    // reasons to Extension::DISABLE_NONE (as opposed to the legacy (<M45) case
+    // where they're not set at all), and if the version from sync matches our
+    // local one. Otherwise we just enable it without granting permissions. If
+    // any permissions are missing, CheckPermissionsIncrease will soon disable
+    // it again.
+    DCHECK(!extension_sync_data.disable_reasons());
+    bool grant_permissions =
+        extension_sync_data.supports_disable_reasons() &&
+        extension &&
+        extension->version()->Equals(extension_sync_data.version());
+    if (grant_permissions)
+      extension_service_->GrantPermissionsAndEnableExtension(extension);
+    else
+      extension_service_->EnableExtension(id);
   } else if (!IsPendingEnable(id)) {
     int disable_reasons = extension_sync_data.disable_reasons();
     if (extension_sync_data.remote_install()) {
-      // In the non-legacy case (>=M45) where disable reasons are synced at all,
-      // DISABLE_REMOTE_INSTALL should be among them already.
-      DCHECK(!disable_reasons ||
-             (disable_reasons & Extension::DISABLE_REMOTE_INSTALL));
-      disable_reasons |= Extension::DISABLE_REMOTE_INSTALL;
-    }
-    if (!disable_reasons) {
+      if (!(disable_reasons & Extension::DISABLE_REMOTE_INSTALL)) {
+        // In the non-legacy case (>=M45) where disable reasons are synced at
+        // all, DISABLE_REMOTE_INSTALL should be among them already.
+        DCHECK(!extension_sync_data.supports_disable_reasons());
+        disable_reasons |= Extension::DISABLE_REMOTE_INSTALL;
+      }
+    } else if (!extension_sync_data.supports_disable_reasons()) {
       // Legacy case (<M45), from before we synced disable reasons (see
       // crbug.com/484214).
       disable_reasons = Extension::DISABLE_UNKNOWN_FROM_SYNC;
     }
 
-    extension_service_->DisableExtension(
-        id, Extension::DisableReason(disable_reasons));
+    // In the non-legacy case (>=M45), clear any existing disable reasons first.
+    // Otherwise sync can't remove just some of them.
+    if (extension_sync_data.supports_disable_reasons())
+      extensions::ExtensionPrefs::Get(profile_)->ClearDisableReasons(id);
+
+    extension_service_->DisableExtension(id, disable_reasons);
   }
 
   // We need to cache some version information here because setting the

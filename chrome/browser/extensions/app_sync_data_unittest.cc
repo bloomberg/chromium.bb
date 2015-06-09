@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/app_sync_data.h"
 
+#include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
@@ -15,6 +16,7 @@ const char kValidId[] = "abcdefghijklmnopabcdefghijklmnop";
 const char kName[] = "MyExtension";
 const char kValidVersion[] = "0.0.0.0";
 const char kValidUpdateUrl[] = "http://clients2.google.com/service/update2/crx";
+const int kValidDisableReasons = Extension::DISABLE_USER_ACTION;
 
 class AppSyncDataTest : public testing::Test {
  public:
@@ -27,7 +29,7 @@ class AppSyncDataTest : public testing::Test {
     extension_specifics->set_update_url(kValidUpdateUrl);
     extension_specifics->set_version(kValidVersion);
     extension_specifics->set_enabled(false);
-    extension_specifics->set_disable_reasons(0);
+    extension_specifics->set_disable_reasons(kValidDisableReasons);
     extension_specifics->set_incognito_enabled(true);
     extension_specifics->set_remote_install(false);
     extension_specifics->set_all_urls_enabled(true);

@@ -6488,18 +6488,14 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNewExtension) {
           new syncer::FakeSyncChangeProcessor),
       scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
 
-  sync_pb::EntitySpecifics specifics;
-  sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
-  ext_specifics->set_id(good_crx);
-  ext_specifics->set_version(base::Version("1").GetString());
-
   const base::FilePath path = data_dir().AppendASCII("good.crx");
   const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
 
   struct TestCase {
     const char* name;  // For failure output only.
     bool sync_enabled;  // The "enabled" flag coming in from Sync.
-    int sync_disable_reasons;  // The disable reason(s) coming in from Sync.
+    // The disable reason(s) coming in from Sync, or -1 for "not set".
+    int sync_disable_reasons;
     // The disable reason(s) that should be set on the installed extension.
     // This will usually be the same as |sync_disable_reasons|, but see the
     // "Legacy" case.
@@ -6518,7 +6514,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNewExtension) {
     // Legacy case (<M45): No disable reasons come in from Sync (see
     // crbug.com/484214). After installation, the reason should be set to
     // DISABLE_UNKNOWN_FROM_SYNC.
-    { "Legacy", false, 0, Extension::DISABLE_UNKNOWN_FROM_SYNC, true },
+    { "Legacy", false, -1, Extension::DISABLE_UNKNOWN_FROM_SYNC, true },
     // If the extension came in disabled due to a permissions increase, then the
     // user has *not* approved the permissions, and they shouldn't be granted.
     // crbug.com/484214
@@ -6529,16 +6525,20 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNewExtension) {
   for (const TestCase& test_case : test_cases) {
     SCOPED_TRACE(test_case.name);
 
+    sync_pb::EntitySpecifics specifics;
+    sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
+    ext_specifics->set_id(good_crx);
+    ext_specifics->set_version(base::Version("1").GetString());
     ext_specifics->set_enabled(test_case.sync_enabled);
-    ext_specifics->set_disable_reasons(test_case.sync_disable_reasons);
+    if (test_case.sync_disable_reasons != -1)
+      ext_specifics->set_disable_reasons(test_case.sync_disable_reasons);
 
     syncer::SyncData sync_data =
         syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
     syncer::SyncChange sync_change(FROM_HERE,
                                    syncer::SyncChange::ACTION_UPDATE,
                                    sync_data);
-    syncer::SyncChangeList list(1);
-    list[0] = sync_change;
+    syncer::SyncChangeList list(1, sync_change);
     extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
 
     ASSERT_TRUE(service()->pending_extension_manager()->IsIdPending(good_crx));
@@ -6706,6 +6706,225 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   EXPECT_TRUE(info->is_from_sync());
   EXPECT_EQ(Manifest::INTERNAL, info->install_source());
   // TODO(akalin): Figure out a way to test |info.ShouldAllowInstall()|.
+}
+
+TEST_F(ExtensionServiceTest, ProcessSyncDataEnableDisable) {
+  InitializeEmptyExtensionService();
+  InitializeExtensionSyncService();
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS,
+      syncer::SyncDataList(),
+      scoped_ptr<syncer::SyncChangeProcessor>(
+          new syncer::FakeSyncChangeProcessor),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  struct TestCase {
+    const char* name;  // For failure output only.
+    // Set of disable reasons before any Sync data comes in. If this is != 0,
+    // the extension is disabled.
+    int previous_disable_reasons;
+    bool sync_enable;  // The enabled flag coming in from Sync.
+    // The disable reason(s) coming in from Sync, or -1 for "not set".
+    int sync_disable_reasons;
+    // The expected set of disable reasons after processing the Sync update. The
+    // extension should be disabled iff this is != 0.
+    int expect_disable_reasons;
+  } test_cases[] = {
+    { "NopEnable", 0, true, 0, 0 },
+    { "NopDisable", Extension::DISABLE_USER_ACTION, false,
+      Extension::DISABLE_USER_ACTION, Extension::DISABLE_USER_ACTION },
+    { "Disable", 0, false, Extension::DISABLE_USER_ACTION,
+      Extension::DISABLE_USER_ACTION },
+    { "DisableLegacy", 0, false, -1, Extension::DISABLE_UNKNOWN_FROM_SYNC },
+    { "AddDisableReason", Extension::DISABLE_REMOTE_INSTALL, false,
+      Extension::DISABLE_REMOTE_INSTALL | Extension::DISABLE_USER_ACTION,
+      Extension::DISABLE_REMOTE_INSTALL | Extension::DISABLE_USER_ACTION },
+    { "AddDisableReasonLegacy", Extension::DISABLE_USER_ACTION, false, -1,
+      Extension::DISABLE_USER_ACTION | Extension::DISABLE_UNKNOWN_FROM_SYNC},
+    { "RemoveDisableReason",
+      Extension::DISABLE_REMOTE_INSTALL | Extension::DISABLE_USER_ACTION, false,
+      Extension::DISABLE_USER_ACTION, Extension::DISABLE_USER_ACTION },
+    { "Enable", Extension::DISABLE_USER_ACTION, true, 0, 0 },
+    { "EnableLegacy", Extension::DISABLE_USER_ACTION, true, -1, 0 },
+  };
+
+  for (const TestCase& test_case : test_cases) {
+    SCOPED_TRACE(test_case.name);
+
+    std::string id;
+    std::string version;
+    // Don't keep |extension| around longer than necessary.
+    {
+      const Extension* extension =
+          InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
+      // The extension should now be installed and enabled.
+      ASSERT_TRUE(extension);
+      id = extension->id();
+      version = extension->VersionString();
+    }
+    ASSERT_TRUE(registry()->enabled_extensions().Contains(id));
+
+    // Disable it if the test case says so.
+    if (test_case.previous_disable_reasons) {
+      service()->DisableExtension(id, test_case.previous_disable_reasons);
+      ASSERT_TRUE(registry()->disabled_extensions().Contains(id));
+    }
+
+    // Now a sync update comes in.
+    sync_pb::EntitySpecifics specifics;
+    sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
+    ext_specifics->set_id(id);
+    ext_specifics->set_enabled(test_case.sync_enable);
+    ext_specifics->set_version(version);
+    if (test_case.sync_disable_reasons != -1)
+      ext_specifics->set_disable_reasons(test_case.sync_disable_reasons);
+
+    syncer::SyncData sync_data =
+        syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
+    syncer::SyncChangeList list(1, sync_change);
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+
+    // Check expectations.
+    const bool expect_enabled = !test_case.expect_disable_reasons;
+    EXPECT_EQ(expect_enabled, service()->IsExtensionEnabled(id));
+    EXPECT_EQ(test_case.expect_disable_reasons, prefs->GetDisableReasons(id));
+
+    // Remove the extension again, so we can install it again for the next case.
+    UninstallExtension(id, false, expect_enabled ? Extension::ENABLED
+                                                 : Extension::DISABLED);
+  }
+}
+
+TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
+  // This is the update URL specified in the test extension. Setting it here is
+  // necessary to make it considered syncable.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryUpdateURL,
+      "http://localhost/autoupdate/updates.xml");
+
+  InitializeEmptyExtensionService();
+  InitializeExtensionSyncService();
+  extension_sync_service()->MergeDataAndStartSyncing(
+      syncer::EXTENSIONS,
+      syncer::SyncDataList(),
+      scoped_ptr<syncer::SyncChangeProcessor>(
+          new syncer::FakeSyncChangeProcessor),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+
+  const base::FilePath base_path =
+      data_dir().AppendASCII("permissions_increase");
+  const base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
+  const base::FilePath path_v1 = base_path.AppendASCII("v1");
+  const base::FilePath path_v2 = base_path.AppendASCII("v2");
+
+  base::ScopedTempDir crx_dir;
+  ASSERT_TRUE(crx_dir.CreateUniqueTempDir());
+  const base::FilePath crx_path_v1 = crx_dir.path().AppendASCII("temp1.crx");
+  PackCRX(path_v1, pem_path, crx_path_v1);
+  const base::FilePath crx_path_v2 = crx_dir.path().AppendASCII("temp2.crx");
+  PackCRX(path_v2, pem_path, crx_path_v2);
+
+  const std::string v1("1");
+  const std::string v2("2");
+
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  struct TestCase {
+    const char* name;  // For failure output only.
+    const std::string& sync_version;  // The version coming in from Sync.
+    // The disable reason(s) coming in from Sync, or -1 for "not set".
+    int sync_disable_reasons;
+    // Whether the extension's permissions should be auto-granted.
+    bool expect_permissions_granted;
+  } test_cases[] = {
+    // Sync tells us to re-enable an older version. No permissions should be
+    // granted, since we can't be sure if the user actually approved the right
+    // set of permissions. Note that the extension will get disabled again the
+    // next time ExtensionService::CheckPermissionsIncrease runs because of the
+    // extra permissions.
+    { "OldVersion", v1, 0, false },
+    // Legacy case: Sync tells us to re-enable the extension, but doesn't
+    // specify disable reasons. No permissions should be granted.
+    { "Legacy", v2, -1, false },
+    // Sync tells us to re-enable the extension and explicitly removes the
+    // disable reasons. Now the extension should have its permissions granted.
+    { "GrantPermissions", v2, 0, true },
+  };
+
+  for (const TestCase& test_case : test_cases) {
+    SCOPED_TRACE(test_case.name);
+
+    std::string id;
+    // Don't keep |extension| around longer than necessary (it'll be destroyed
+    // during updating).
+    {
+      const Extension* extension = InstallCRX(crx_path_v1, INSTALL_NEW);
+      // The extension should now be installed and enabled.
+      ASSERT_TRUE(extension);
+      ASSERT_EQ(v1, extension->VersionString());
+      id = extension->id();
+    }
+    ASSERT_TRUE(registry()->enabled_extensions().Contains(id));
+
+    scoped_refptr<PermissionSet> granted_permissions_v1(
+        prefs->GetGrantedPermissions(id));
+
+    // Update to a new version with increased permissions.
+    UpdateExtension(id, crx_path_v2, DISABLED);
+
+    // Now the extension should be disabled due to a permissions increase.
+    {
+      const Extension* extension =
+          registry()->disabled_extensions().GetByID(id);
+      ASSERT_TRUE(extension);
+      ASSERT_EQ(v2, extension->VersionString());
+    }
+    ASSERT_TRUE(prefs->HasDisableReason(
+        id, Extension::DISABLE_PERMISSIONS_INCREASE));
+
+    // No new permissions should have been granted.
+    scoped_refptr<PermissionSet> granted_permissions_v2(
+        prefs->GetGrantedPermissions(id));
+    ASSERT_EQ(*granted_permissions_v1, *granted_permissions_v2);
+
+    // Now a sync update comes in.
+    sync_pb::EntitySpecifics specifics;
+    sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
+    ext_specifics->set_id(id);
+    ext_specifics->set_enabled(true);
+    ext_specifics->set_version(test_case.sync_version);
+    if (test_case.sync_disable_reasons != -1)
+      ext_specifics->set_disable_reasons(test_case.sync_disable_reasons);
+
+    syncer::SyncData sync_data =
+        syncer::SyncData::CreateLocalData(good_crx, "Name", specifics);
+    syncer::SyncChange sync_change(FROM_HERE,
+                                   syncer::SyncChange::ACTION_UPDATE,
+                                   sync_data);
+    syncer::SyncChangeList list(1, sync_change);
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+
+    // Check expectations.
+    EXPECT_TRUE(registry()->GetExtensionById(id, ExtensionRegistry::ENABLED));
+    scoped_refptr<PermissionSet> granted_permissions(
+        prefs->GetGrantedPermissions(id));
+    if (test_case.expect_permissions_granted) {
+      scoped_refptr<PermissionSet> active_permissions(
+          prefs->GetActivePermissions(id));
+      EXPECT_EQ(*granted_permissions, *active_permissions);
+    } else {
+      EXPECT_EQ(*granted_permissions, *granted_permissions_v1);
+    }
+    EXPECT_EQ(Extension::DISABLE_NONE, prefs->GetDisableReasons(id));
+
+    // Remove the extension again, so we can install it again for the next case.
+    UninstallExtension(id, false);
+  }
 }
 
 #if defined(ENABLE_SUPERVISED_USERS)

@@ -22,10 +22,13 @@ namespace {
 
 std::string GetExtensionSpecificsLogMessage(
     const sync_pb::ExtensionSpecifics& specifics) {
-  return base::StringPrintf("id: %s\nversion: %s\nupdate_url: %s",
-                            specifics.id().c_str(),
-                            specifics.version().c_str(),
-                            specifics.update_url().c_str());
+  return base::StringPrintf(
+      "id: %s\nversion: %s\nupdate_url: %s\nenabled: %i\ndisable_reasons: %i",
+      specifics.id().c_str(),
+      specifics.version().c_str(),
+      specifics.update_url().c_str(),
+      specifics.enabled(),
+      specifics.disable_reasons());
 }
 
 enum BadSyncDataReason {
@@ -41,6 +44,9 @@ enum BadSyncDataReason {
   // No ExtensionSpecifics in the EntitySpecifics.
   NO_EXTENSION_SPECIFICS,
 
+  // Enabled extensions can't have disable reasons.
+  BAD_DISABLE_REASONS,
+
   // Must be at the end.
   NUM_BAD_SYNC_DATA_REASONS
 };
@@ -55,6 +61,7 @@ void RecordBadSyncData(BadSyncDataReason reason) {
 ExtensionSyncData::ExtensionSyncData()
     : uninstalled_(false),
       enabled_(false),
+      supports_disable_reasons_(false),
       disable_reasons_(Extension::DISABLE_NONE),
       incognito_enabled_(false),
       remote_install_(false),
@@ -71,6 +78,7 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
     : id_(extension.id()),
       uninstalled_(false),
       enabled_(enabled),
+      supports_disable_reasons_(true),
       disable_reasons_(disable_reasons),
       incognito_enabled_(incognito_enabled),
       remote_install_(remote_install),
@@ -125,7 +133,8 @@ void ExtensionSyncData::PopulateExtensionSpecifics(
   specifics->set_update_url(update_url_.spec());
   specifics->set_version(version_.GetString());
   specifics->set_enabled(enabled_);
-  specifics->set_disable_reasons(disable_reasons_);
+  if (supports_disable_reasons_)
+    specifics->set_disable_reasons(disable_reasons_);
   specifics->set_incognito_enabled(incognito_enabled_);
   specifics->set_remote_install(remote_install_);
   if (all_urls_enabled_ != BOOLEAN_UNSET)
@@ -160,10 +169,22 @@ bool ExtensionSyncData::PopulateFromExtensionSpecifics(
     return false;
   }
 
+  // Enabled extensions can't have disable reasons. (The proto field may be
+  // unset, in which case it defaults to DISABLE_NONE.)
+  if (specifics.enabled() &&
+      specifics.disable_reasons() != Extension::DISABLE_NONE) {
+    LOG(ERROR) << "Attempt to sync bad ExtensionSpecifics "
+               << "(enabled extension can't have disable reasons):\n"
+               << GetExtensionSpecificsLogMessage(specifics);
+    RecordBadSyncData(BAD_DISABLE_REASONS);
+    return false;
+  }
+
   id_ = specifics.id();
   update_url_ = specifics_update_url;
   version_ = specifics_version;
   enabled_ = specifics.enabled();
+  supports_disable_reasons_ = specifics.has_disable_reasons();
   disable_reasons_ = specifics.disable_reasons();
   incognito_enabled_ = specifics.incognito_enabled();
   if (specifics.has_all_urls_enabled()) {
