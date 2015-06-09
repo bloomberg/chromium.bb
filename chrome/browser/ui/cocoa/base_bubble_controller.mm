@@ -32,7 +32,6 @@
 
 @implementation BaseBubbleController
 
-@synthesize parentWindow = parentWindow_;
 @synthesize anchorPoint = anchor_;
 @synthesize bubble = bubble_;
 @synthesize shouldOpenAsKeyWindow = shouldOpenAsKeyWindow_;
@@ -44,11 +43,10 @@
   nibPath = [base::mac::FrameworkBundle() pathForResource:nibPath
                                                    ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
-    parentWindow_ = parentWindow;
+    [self setParentWindow:parentWindow];
     anchor_ = anchoredAt;
     shouldOpenAsKeyWindow_ = YES;
     shouldCloseOnResignKey_ = YES;
-    [self registerForNotifications];
   }
   return self;
 }
@@ -72,7 +70,7 @@
           anchoredAt:(NSPoint)anchoredAt {
   DCHECK(theWindow);
   if ((self = [super initWithWindow:theWindow])) {
-    parentWindow_ = parentWindow;
+    [self setParentWindow:parentWindow];
     shouldOpenAsKeyWindow_ = YES;
     shouldCloseOnResignKey_ = YES;
 
@@ -84,7 +82,6 @@
     [theWindow setContentView:contentView.get()];
     bubble_ = contentView.get();
 
-    [self registerForNotifications];
     [self awakeFromNib];
     [self setAnchorPoint:anchoredAt];
   }
@@ -115,6 +112,10 @@
 }
 
 - (void)registerForNotifications {
+  // No window to register notifications for.
+  if (!parentWindow_)
+    return;
+
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   // Watch to see if the parent window closes, and if so, close this one.
   [center addObserver:self
@@ -132,6 +133,45 @@
              selector:@selector(parentWindowDidResize:)
                  name:NSWindowDidResizeNotification
                object:parentWindow_];
+}
+
+- (void)unregisterFromNotifications {
+  // No window to unregister notifications.
+  if (!parentWindow_)
+    return;
+
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center removeObserver:self
+                    name:NSWindowWillCloseNotification
+                  object:parentWindow_];
+  [center removeObserver:self
+                    name:NSWindowWillEnterFullScreenNotification
+                  object:parentWindow_];
+  [center removeObserver:self
+                    name:NSWindowDidResizeNotification
+                  object:parentWindow_];
+}
+
+- (NSWindow*)parentWindow {
+  return parentWindow_;
+}
+
+- (void)setParentWindow:(NSWindow*)parentWindow {
+  if (parentWindow_ == parentWindow) {
+    return;
+  }
+
+  [self unregisterFromNotifications];
+
+  if (parentWindow_ && [[self window] isVisible]) {
+    [parentWindow_ removeChildWindow:[self window]];
+    parentWindow_ = parentWindow;
+    [parentWindow_ addChildWindow:[self window] ordered:NSWindowAbove];
+  } else {
+    parentWindow_ = parentWindow;
+  }
+
+  [self registerForNotifications];
 }
 
 - (void)setAnchorPoint:(NSPoint)anchor {
@@ -179,12 +219,12 @@
 }
 
 - (void)parentWindowWillClose:(NSNotification*)notification {
-  parentWindow_ = nil;
+  [self setParentWindow:nil];
   [self close];
 }
 
 - (void)parentWindowWillBecomeFullScreen:(NSNotification*)notification {
-  parentWindow_ = nil;
+  [self setParentWindow:nil];
   [self close];
 }
 

@@ -86,8 +86,14 @@ NSWindow* PermissionBubbleCocoa::window() {
   return [bubbleController_ window];
 }
 
-void PermissionBubbleCocoa::SwitchParentWindow(NSWindow* parent) {
+void PermissionBubbleCocoa::UpdateAnchorPoint() {
+  [bubbleController_ setAnchorPoint:GetAnchorPoint()];
+}
+
+void PermissionBubbleCocoa::SetParentWindow(NSWindow* parent) {
   parent_window_ = parent;
+  [bubbleController_ setParentWindow:parent_window_];
+  UpdateAnchorPoint();
 }
 
 bool PermissionBubbleCocoa::HasLocationBar() {

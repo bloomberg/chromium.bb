@@ -38,11 +38,15 @@ class PermissionBubbleCocoa : public PermissionBubbleView {
   // should point.
   NSPoint GetAnchorPoint();
 
+  // Repositions the bubble. This should be called if the anchor has moved
+  // within the window.
+  void UpdateAnchorPoint();
+
   // Returns the NSWindow containing the bubble.
   NSWindow* window();
 
-  // Change the parent window to be used the next time the bubble is shown.
-  void SwitchParentWindow(NSWindow* parent);
+  // Change the parent window.
+  void SetParentWindow(NSWindow* parent);
 
   info_bubble::BubbleArrowLocation GetArrowLocation();
 

@@ -2068,6 +2068,11 @@ willAnimateFromState:(BookmarkBar::State)oldState
                                                  command.accelerator());
 }
 
+// For testing purposes.
+- (PermissionBubbleCocoa*)permissionBubbleCocoa {
+  return permissionBubbleCocoa_.get();
+}
+
 @end  // @implementation BrowserWindowController
 
 @implementation BrowserWindowController(Fullscreen)

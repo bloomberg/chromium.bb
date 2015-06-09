@@ -228,6 +228,11 @@ willPositionSheet:(NSWindow*)sheet
   [self applyLayout:layout];
 
   [toolbarController_ setDividerOpacity:[self toolbarDividerOpacity]];
+
+  // Will update the location of the permission bubble when showing/hiding the
+  // top level toolbar in fullscreen.
+  if (permissionBubbleCocoa_)
+    permissionBubbleCocoa_->UpdateAnchorPoint();
 }
 
 - (void)applyTabStripLayout:(const chrome::TabStripLayout&)layout {
@@ -388,7 +393,8 @@ willPositionSheet:(NSWindow*)sheet
   if (statusBubble_)
     statusBubble_->SwitchParentWindow(destWindow);
 
-  permissionBubbleCocoa_->SwitchParentWindow(destWindow);
+  if (permissionBubbleCocoa_)
+    permissionBubbleCocoa_->SetParentWindow(destWindow);
 
   // Move the title over.
   [destWindow setTitle:[sourceWindow title]];

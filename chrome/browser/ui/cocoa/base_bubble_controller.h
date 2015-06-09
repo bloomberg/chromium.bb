@@ -47,7 +47,7 @@ class TabStripModelObserverBridge;
   BOOL shouldCloseOnResignKey_;
 }
 
-@property(nonatomic, readonly) NSWindow* parentWindow;
+@property(nonatomic, assign) NSWindow* parentWindow;
 // The point in base screen coordinates at which the bubble should open and the
 // arrow tip points.
 @property(nonatomic, assign) NSPoint anchorPoint;
