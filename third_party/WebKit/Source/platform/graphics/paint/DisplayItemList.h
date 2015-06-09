@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/paint/DisplayItem.h"
+#include "platform/graphics/paint/DisplayItems.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -14,8 +15,6 @@
 namespace blink {
 
 class GraphicsContext;
-
-typedef Vector<OwnPtr<DisplayItem>> DisplayItems;
 
 class PLATFORM_EXPORT DisplayItemList {
     WTF_MAKE_NONCOPYABLE(DisplayItemList);
@@ -54,6 +53,8 @@ public:
         replay(context);
     }
 
+    void commitNewDisplayItemsAndAppendToWebDisplayItemList(WebDisplayItemList*);
+
     bool displayItemConstructionIsDisabled() const { return m_constructionDisabled; }
     void setDisplayItemConstructionIsDisabled(const bool disable) { m_constructionDisabled = disable; }
 
@@ -86,15 +87,15 @@ private:
     // Temporarily used during merge to find out-of-order display items.
     using DisplayItemIndicesByClientMap = HashMap<DisplayItemClient, Vector<size_t>>;
 
-    static size_t findMatchingItemFromIndex(const DisplayItem&, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap&, const DisplayItems&);
-    static void addItemToIndex(const DisplayItem&, size_t index, DisplayItemIndicesByClientMap&);
-    size_t findOutOfOrderCachedItem(size_t& currentDisplayItemsIndex, const DisplayItem&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
-    size_t findOutOfOrderCachedItemForward(size_t& currentDisplayItemsIndex, const DisplayItem&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
+    static size_t findMatchingItemFromIndex(const DisplayItem::Id&, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap&, const DisplayItems&);
+    static void addItemToIndex(DisplayItemClient, DisplayItem::Type, size_t index, DisplayItemIndicesByClientMap&);
+    DisplayItems::Iterator findOutOfOrderCachedItem(DisplayItems::Iterator& currentIt, const DisplayItem::Id&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
+    DisplayItems::Iterator findOutOfOrderCachedItemForward(DisplayItems::Iterator& currentIt, const DisplayItem::Id&, DisplayItem::Type, DisplayItemIndicesByClientMap&);
 
 #if ENABLE(ASSERT)
     // The following two methods are for checking under-invalidations
     // (when RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled).
-    void checkCachedDisplayItemIsUnchanged(const DisplayItem&, DisplayItemIndicesByClientMap&);
+    void checkCachedDisplayItemIsUnchanged(const DisplayItems::ItemHandle&, DisplayItemIndicesByClientMap&);
     void checkNoRemainingCachedDisplayItems();
 #endif
 

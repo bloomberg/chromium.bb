@@ -57,7 +57,7 @@ public:
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.isScroll(); }
+    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return DisplayItem::isScrollType(otherType); }
 #endif
 };
 

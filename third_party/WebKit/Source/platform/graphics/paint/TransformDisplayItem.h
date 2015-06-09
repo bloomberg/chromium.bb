@@ -50,7 +50,7 @@ public:
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.type() == BeginTransform; }
+    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return otherType == BeginTransform; }
 #endif
 };
 

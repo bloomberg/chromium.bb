@@ -64,7 +64,7 @@ public:
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.isClip(); }
+    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return DisplayItem::isClipType(otherType); }
 #endif
 };
 

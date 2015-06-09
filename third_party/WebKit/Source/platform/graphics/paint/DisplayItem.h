@@ -176,18 +176,50 @@ public:
         TypeLast = EndSubtreeLast
     };
 
+    struct Id {
+        Id(DisplayItemClient c, Type t) : client(c), type(t), scopeId(0), scopeContainer(nullptr)
+        {
+            ASSERT(c);
+        }
+
+        bool operator==(const Id& other) const
+        {
+            return client == other.client
+                && type == other.type
+                && scopeId == other.scopeId
+                && scopeContainer == other.scopeContainer;
+        }
+
+        bool equalToExceptForType(const Id& other, DisplayItem::Type overrideType) const
+        {
+            return client == other.client
+                && type == overrideType
+                && scopeId == other.scopeId
+                && scopeContainer == other.scopeContainer;
+        }
+
+        const DisplayItemClient client;
+        const Type type;
+        int scopeId;
+        DisplayItemClient scopeContainer;
+    };
+
     virtual ~DisplayItem() { }
 
     virtual void replay(GraphicsContext&) { }
 
     DisplayItemClient client() const { return m_client; }
     Type type() const { return m_type; }
+    Id id() const
+    {
+        Id result(m_client, m_type);
+        result.scopeId = m_scopeId;
+        result.scopeContainer = m_scopeContainer;
+        return result;
+    }
     bool idsEqual(const DisplayItem& other, Type overrideType) const
     {
-        return m_client == other.m_client
-            && m_type == overrideType
-            && m_scopeId == other.m_scopeId
-            && m_scopeContainer == other.m_scopeContainer;
+        return id().equalToExceptForType(other.id(), overrideType);
     }
 
     void setScope(int scopeId, DisplayItemClient scopeContainer)
@@ -266,7 +298,7 @@ public:
     virtual bool isEnd() const { return false; }
 
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(const DisplayItem& other) const { return false; }
+    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const { return false; }
 #endif
 
     virtual bool drawsContent() const { return false; }
@@ -316,7 +348,7 @@ protected:
     PairedEndDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type) { }
 
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(const DisplayItem& other) const override = 0;
+    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override = 0;
 #endif
 
 private:

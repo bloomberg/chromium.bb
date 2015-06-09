@@ -62,7 +62,7 @@ private:
     }
 
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.isBeginSubtree(); }
+    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return DisplayItem::isBeginSubtreeType(otherType); }
 #endif
 };
 

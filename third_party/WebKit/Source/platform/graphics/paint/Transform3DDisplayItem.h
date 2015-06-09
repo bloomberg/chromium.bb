@@ -56,9 +56,9 @@ public:
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final
+    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final
     {
-        return DisplayItem::transform3DTypeToEndTransform3DType(other.type()) == type();
+        return DisplayItem::transform3DTypeToEndTransform3DType(otherType) == type();
     }
 #endif
 };

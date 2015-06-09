@@ -31,7 +31,7 @@ public:
 protected:
     LayoutView& layoutView() { return *m_layoutView; }
     DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
-    const Vector<OwnPtr<DisplayItem>>& newPaintListBeforeUpdate() { return rootDisplayItemList().m_newDisplayItems; }
+    const DisplayItems& newPaintListBeforeUpdate() { return rootDisplayItemList().m_newDisplayItems; }
 
 private:
     virtual void SetUp() override
@@ -76,9 +76,9 @@ public:
             break; \
         const TestDisplayItem expected[] = { __VA_ARGS__ }; \
         for (size_t index = 0; index < std::min<size_t>(actual.size(), expectedSize); index++) { \
-            TRACE_DISPLAY_ITEMS(index, expected[index], *actual[index]); \
-            EXPECT_EQ(expected[index].client(), actual[index]->client()); \
-            EXPECT_EQ(expected[index].type(), actual[index]->type()); \
+            TRACE_DISPLAY_ITEMS(index, expected[index], actual[index]); \
+            EXPECT_EQ(expected[index].client(), actual[index].client()); \
+            EXPECT_EQ(expected[index].type(), actual[index].type()); \
         } \
     } while (false);
 

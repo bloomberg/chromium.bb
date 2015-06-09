@@ -23,7 +23,7 @@ public:
 protected:
     LayoutView& layoutView() { return *m_layoutView; }
     DisplayItemList& rootDisplayItemList() { return *layoutView().layer()->graphicsLayerBacking()->displayItemList(); }
-    const Vector<OwnPtr<DisplayItem>>& newdisplayItemsBeforeUpdate() { return rootDisplayItemList().m_newDisplayItems; }
+    const DisplayItems& newDisplayItemsBeforeUpdate() { return rootDisplayItemList().m_newDisplayItems; }
 
 private:
     virtual void SetUp() override
@@ -45,6 +45,8 @@ private:
     LayoutView* m_layoutView;
 };
 
+namespace {
+
 void drawNothing(GraphicsContext& context, const LayoutView& layoutView, PaintPhase phase, const FloatRect& bound)
 {
     LayoutObjectDrawingRecorder drawingRecorder(context, layoutView, phase, bound);
@@ -63,6 +65,15 @@ void drawRect(GraphicsContext& context, LayoutView& layoutView, PaintPhase phase
     context.drawRect(rect);
 }
 
+bool isDrawing(const DisplayItems::ItemHandle& item)
+{
+    return DisplayItem::isDrawingType(item.type());
+}
+
+bool isCached(const DisplayItems::ItemHandle& item)
+{
+    return DisplayItem::isCachedType(item.type());
+}
 
 TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
 {
@@ -73,8 +84,9 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing)
     drawNothing(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
     EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
-    ASSERT_TRUE(rootDisplayItemList().displayItems()[0]->isDrawing());
-    EXPECT_FALSE(static_cast<DrawingDisplayItem*>(rootDisplayItemList().displayItems()[0].get())->picture());
+    const auto& item = rootDisplayItemList().displayItems()[0];
+    ASSERT_TRUE(isDrawing(item));
+    EXPECT_FALSE(item.picture());
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Rect)
@@ -84,7 +96,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect)
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
     EXPECT_EQ((size_t)1, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(rootDisplayItemList().displayItems()[0]->isDrawing());
+    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Cached)
@@ -95,18 +107,19 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootDisplayItemList().commitNewDisplayItems();
     EXPECT_EQ((size_t)2, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(rootDisplayItemList().displayItems()[0]->isDrawing());
-    EXPECT_TRUE(rootDisplayItemList().displayItems()[1]->isDrawing());
+    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
+    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[1]));
 
     drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
-    EXPECT_EQ((size_t)2, newdisplayItemsBeforeUpdate().size());
-    EXPECT_TRUE(newdisplayItemsBeforeUpdate()[0]->isCached());
-    EXPECT_TRUE(newdisplayItemsBeforeUpdate()[1]->isCached());
+    EXPECT_EQ((size_t)2, newDisplayItemsBeforeUpdate().size());
+    EXPECT_TRUE(isCached(newDisplayItemsBeforeUpdate()[0]));
+    EXPECT_TRUE(isCached(newDisplayItemsBeforeUpdate()[1]));
     rootDisplayItemList().commitNewDisplayItems();
     EXPECT_EQ((size_t)2, rootDisplayItemList().displayItems().size());
-    EXPECT_TRUE(rootDisplayItemList().displayItems()[0]->isDrawing());
-    EXPECT_TRUE(rootDisplayItemList().displayItems()[1]->isDrawing());
+    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[0]));
+    EXPECT_TRUE(isDrawing(rootDisplayItemList().displayItems()[1]));
 }
 
-}
+} // namespace
+} // namespace blink

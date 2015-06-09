@@ -42,7 +42,7 @@ public:
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
     virtual bool drawsContent() const override;
 
-    PassRefPtr<const SkPicture> picture() const { return m_picture; }
+    const SkPicture* picture() const { return m_picture.get(); }
 
 #if ENABLE(ASSERT)
     void setUnderInvalidationCheckingMode(UnderInvalidationCheckingMode mode) { m_underInvalidationCheckingMode = mode; }

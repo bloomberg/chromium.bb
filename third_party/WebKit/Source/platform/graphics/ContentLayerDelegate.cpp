@@ -90,11 +90,7 @@ void ContentLayerDelegate::paintContents(
 
     m_painter->paint(context, clip);
 
-    displayItemList->commitNewDisplayItems();
-
-    const DisplayItems& paintList = displayItemList->displayItems();
-    for (DisplayItems::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
-        (*it)->appendToWebDisplayItemList(webDisplayItemList);
+    displayItemList->commitNewDisplayItemsAndAppendToWebDisplayItemList(webDisplayItemList);
 }
 
 } // namespace blink

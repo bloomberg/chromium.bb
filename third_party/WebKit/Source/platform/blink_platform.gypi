@@ -644,6 +644,8 @@
       'graphics/paint/ClipRecorder.h',
       'graphics/paint/DisplayItem.cpp',
       'graphics/paint/DisplayItem.h',
+      'graphics/paint/DisplayItems.cpp',
+      'graphics/paint/DisplayItems.h',
       'graphics/paint/DisplayItemCacheSkipper.h',
       'graphics/paint/DisplayItemClient.h',
       'graphics/paint/DisplayItemList.cpp',

@@ -63,7 +63,7 @@ public:
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.type() == BeginFilter; }
+    virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const override final { return otherType == BeginFilter; }
 #endif
 };
 

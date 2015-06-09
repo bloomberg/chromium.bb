@@ -40,8 +40,8 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
 
     if (displayItem->isEnd()) {
         ASSERT(!m_newDisplayItems.isEmpty());
-        if (m_newDisplayItems.last()->isBegin() && !m_newDisplayItems.last()->drawsContent()) {
-            ASSERT(displayItem->isEndAndPairedWith(*m_newDisplayItems.last()));
+        if (m_newDisplayItems.last().isBegin() && !m_newDisplayItems.last().drawsContent()) {
+            ASSERT(displayItem->isEndAndPairedWith(m_newDisplayItems.last().type()));
             // Remove the beginning display item of this empty pair.
             m_newDisplayItems.removeLast();
 #if ENABLE(ASSERT)
@@ -61,16 +61,16 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
         displayItem->setScope(m_scopeStack.last().id, m_scopeStack.last().client);
 
 #if ENABLE(ASSERT)
-    size_t index = findMatchingItemFromIndex(*displayItem, displayItem->type(), m_newDisplayItemIndicesByClient, m_newDisplayItems);
+    size_t index = findMatchingItemFromIndex(displayItem->id(), displayItem->type(), m_newDisplayItemIndicesByClient, m_newDisplayItems);
     if (index != kNotFound) {
 #ifndef NDEBUG
         showDebugData();
         WTFLogAlways("DisplayItem %s has duplicated id with previous %s (index=%d)\n",
-            displayItem->asDebugString().utf8().data(), m_newDisplayItems[index]->asDebugString().utf8().data(), static_cast<int>(index));
+            displayItem->asDebugString().utf8().data(), m_newDisplayItems[index].asDebugString().utf8().data(), static_cast<int>(index));
 #endif
         ASSERT_NOT_REACHED();
     }
-    addItemToIndex(*displayItem, m_newDisplayItems.size(), m_newDisplayItemIndicesByClient);
+    addItemToIndex(displayItem->client(), displayItem->type(), m_newDisplayItems.size(), m_newDisplayItemIndicesByClient);
 #endif // ENABLE(ASSERT)
 
     ASSERT(!displayItem->skippedCache()); // Only DisplayItemList can set the flag.
@@ -125,61 +125,64 @@ bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
     return m_validlyCachedClients.contains(client);
 }
 
-size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem& displayItem, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const DisplayItems& list)
+size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem::Id& id, DisplayItem::Type matchingType, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const DisplayItems& list)
 {
-    DisplayItemIndicesByClientMap::const_iterator it = displayItemIndicesByClient.find(displayItem.client());
+    DisplayItemIndicesByClientMap::const_iterator it = displayItemIndicesByClient.find(id.client);
     if (it == displayItemIndicesByClient.end())
         return kNotFound;
 
     const Vector<size_t>& indices = it->value;
     for (size_t index : indices) {
-        const OwnPtr<DisplayItem>& existingItem = list[index];
-        ASSERT(!existingItem || existingItem->client() == displayItem.client());
-        if (existingItem && existingItem->idsEqual(displayItem, matchingType))
+        DisplayItems::ItemHandle existingItem = list[index];
+        ASSERT(existingItem.isGone() || existingItem.client() == id.client);
+        if (!existingItem.isGone() && existingItem.id().equalToExceptForType(id, matchingType))
             return index;
     }
 
     return kNotFound;
 }
 
-void DisplayItemList::addItemToIndex(const DisplayItem& displayItem, size_t index, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+void DisplayItemList::addItemToIndex(DisplayItemClient client, DisplayItem::Type type, size_t index, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
     // Only need to index DrawingDisplayItems and FIXME: BeginSubtreeDisplayItems.
-    if (!displayItem.isDrawing())
+    if (!DisplayItem::isDrawingType(type))
         return;
 
-    DisplayItemIndicesByClientMap::iterator it = displayItemIndicesByClient.find(displayItem.client());
+    DisplayItemIndicesByClientMap::iterator it = displayItemIndicesByClient.find(client);
     Vector<size_t>& indices = it == displayItemIndicesByClient.end() ?
-        displayItemIndicesByClient.add(displayItem.client(), Vector<size_t>()).storedValue->value : it->value;
+        displayItemIndicesByClient.add(client, Vector<size_t>()).storedValue->value : it->value;
     indices.append(index);
 }
 
-size_t DisplayItemList::findOutOfOrderCachedItem(size_t& currentDisplayItemsIndex, const DisplayItem& displayItem, DisplayItem::Type matchingType, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItem(DisplayItems::Iterator& currentIt, const DisplayItem::Id& id, DisplayItem::Type matchingType, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
-    ASSERT(displayItem.isCached());
-    ASSERT(clientCacheIsValid(displayItem.client()));
+    ASSERT(DisplayItem::isCachedType(id.type));
+    ASSERT(clientCacheIsValid(id.client));
 
-    size_t foundIndex = findMatchingItemFromIndex(displayItem, matchingType, displayItemIndicesByClient, m_currentDisplayItems);
+    size_t foundIndex = findMatchingItemFromIndex(id, matchingType, displayItemIndicesByClient, m_currentDisplayItems);
     if (foundIndex != kNotFound)
-        return foundIndex;
+        return m_currentDisplayItems.iteratorAt(foundIndex);
 
-    return findOutOfOrderCachedItemForward(currentDisplayItemsIndex, displayItem, matchingType, displayItemIndicesByClient);
+    return findOutOfOrderCachedItemForward(currentIt, id, matchingType, displayItemIndicesByClient);
 }
 
 // Find forward for the item and index all skipped indexable items.
-size_t DisplayItemList::findOutOfOrderCachedItemForward(size_t& currentDisplayItemsIndex, const DisplayItem& displayItem, DisplayItem::Type matchingType, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+DisplayItems::Iterator DisplayItemList::findOutOfOrderCachedItemForward(DisplayItems::Iterator& currentIt, const DisplayItem::Id& id, DisplayItem::Type matchingType, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
-    size_t currentDisplayItemsSize = m_currentDisplayItems.size();
-    for (; currentDisplayItemsIndex < currentDisplayItemsSize; ++currentDisplayItemsIndex) {
-        const DisplayItem* item = m_currentDisplayItems[currentDisplayItemsIndex].get();
-        if (item && item->isDrawing() && m_validlyCachedClients.contains(item->client())) {
-            if (item->idsEqual(displayItem, matchingType))
-                return currentDisplayItemsIndex;
+    DisplayItems::Iterator currentEnd = m_currentDisplayItems.end();
+    for (; currentIt != currentEnd; ++currentIt) {
+        DisplayItems::ItemHandle item = *currentIt;
+        if (!item.isGone()
+            && DisplayItem::isDrawingType(item.type())
+            && m_validlyCachedClients.contains(item.client())) {
+            if (item.id().equalToExceptForType(id, matchingType))
+                return currentIt;
 
-            addItemToIndex(*item, currentDisplayItemsIndex, displayItemIndicesByClient);
+            size_t currentDisplayItemsIndex = m_currentDisplayItems.indexForIterator(currentIt);
+            addItemToIndex(item.client(), item.type(), currentDisplayItemsIndex, displayItemIndicesByClient);
         }
     }
-    return kNotFound;
+    return currentEnd;
 }
 
 // Update the existing display items by removing invalidated entries, updating
@@ -208,8 +211,10 @@ void DisplayItemList::commitNewDisplayItems()
 
     if (m_currentDisplayItems.isEmpty()) {
 #if ENABLE(ASSERT)
-        for (auto& item : m_newDisplayItems)
-            ASSERT(!item->isCached() && !item->isSubtreeCached());
+        for (auto& item : m_newDisplayItems) {
+            ASSERT(!DisplayItem::isCachedType(item.type())
+                && !DisplayItem::isSubtreeCachedType(item.type()));
+        }
 #endif
         m_currentDisplayItems.swap(m_newDisplayItems);
         m_validlyCachedClientsDirty = true;
@@ -228,44 +233,49 @@ void DisplayItemList::commitNewDisplayItems()
 #if ENABLE(ASSERT)
     if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
         // Under-invalidation checking requires a full index of m_currentDisplayItems.
-        for (size_t i = 0; i < m_currentDisplayItems.size(); ++i)
-            addItemToIndex(*m_currentDisplayItems[i], i, displayItemIndicesByClient);
+        size_t i = 0;
+        for (const auto& item : m_currentDisplayItems) {
+            addItemToIndex(item.client(), item.type(), i, displayItemIndicesByClient);
+            ++i;
+        }
     }
 #endif // ENABLE(ASSERT)
 
     DisplayItems updatedList;
-    size_t currentDisplayItemsIndex = 0;
-    for (auto& newDisplayItem : m_newDisplayItems) {
-        DisplayItem::Type matchingType = newDisplayItem->type();
-        if (newDisplayItem->isCached())
+    DisplayItems::Iterator currentIt = m_currentDisplayItems.begin();
+    DisplayItems::Iterator currentEnd = m_currentDisplayItems.end();
+    for (DisplayItems::Iterator newIt = m_newDisplayItems.begin(); newIt != m_newDisplayItems.end(); ++newIt) {
+        DisplayItems::ItemHandle newDisplayItem = *newIt;
+        DisplayItem::Type matchingType = newDisplayItem.type();
+        if (DisplayItem::isCachedType(newDisplayItem.type()))
             matchingType = DisplayItem::cachedTypeToDrawingType(matchingType);
-        bool isSynchronized = currentDisplayItemsIndex < m_currentDisplayItems.size()
-            && m_currentDisplayItems[currentDisplayItemsIndex]
-            && m_currentDisplayItems[currentDisplayItemsIndex]->idsEqual(*newDisplayItem, matchingType);
+        bool isSynchronized = currentIt != currentEnd
+            && !currentIt->isGone()
+            && currentIt->id().equalToExceptForType(newDisplayItem.id(), matchingType);
 
-        if (newDisplayItem->isCached()) {
+        if (DisplayItem::isCachedType(newDisplayItem.type())) {
             ASSERT(!RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
-            ASSERT(clientCacheIsValid(newDisplayItem->client()));
+            ASSERT(clientCacheIsValid(newDisplayItem.client()));
             if (isSynchronized) {
-                updatedList.append(m_currentDisplayItems[currentDisplayItemsIndex].release());
+                updatedList.appendByMoving(currentIt);
             } else {
-                size_t foundIndex = findOutOfOrderCachedItem(currentDisplayItemsIndex, *newDisplayItem, matchingType, displayItemIndicesByClient);
-                ASSERT(foundIndex != kNotFound);
-                isSynchronized = (foundIndex == currentDisplayItemsIndex);
-                updatedList.append(m_currentDisplayItems[foundIndex].release());
+                DisplayItems::Iterator foundIt = findOutOfOrderCachedItem(currentIt, newDisplayItem.id(), matchingType, displayItemIndicesByClient);
+                ASSERT(foundIt != currentEnd);
+                isSynchronized = (foundIt == currentIt);
+                updatedList.appendByMoving(foundIt);
             }
         } else {
 #if ENABLE(ASSERT)
             if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
-                checkCachedDisplayItemIsUnchanged(*newDisplayItem, displayItemIndicesByClient);
+                checkCachedDisplayItemIsUnchanged(newDisplayItem, displayItemIndicesByClient);
             else
-                ASSERT(!newDisplayItem->isDrawing() || newDisplayItem->skippedCache() || !clientCacheIsValid(newDisplayItem->client()));
+                ASSERT(!DisplayItem::isDrawingType(newDisplayItem.type()) || newDisplayItem.skippedCache() || !clientCacheIsValid(newDisplayItem.client()));
 #endif // ENABLE(ASSERT)
-            updatedList.append(newDisplayItem.release());
+            updatedList.appendByMoving(newIt);
         }
 
         if (isSynchronized)
-            ++currentDisplayItemsIndex;
+            ++currentIt;
     }
 
 #if ENABLE(ASSERT)
@@ -289,17 +299,24 @@ void DisplayItemList::updateValidlyCachedClientsIfNeeded() const
 
     DisplayItemClient lastClient = nullptr;
     for (const auto& displayItem : m_currentDisplayItems) {
-        if (displayItem->client() == lastClient)
+        if (displayItem.client() == lastClient)
             continue;
-        lastClient = displayItem->client();
-        if (!displayItem->skippedCache())
+        lastClient = displayItem.client();
+        if (!displayItem.skippedCache())
             m_validlyCachedClients.add(lastClient);
     }
 }
 
+void DisplayItemList::commitNewDisplayItemsAndAppendToWebDisplayItemList(WebDisplayItemList* list)
+{
+    commitNewDisplayItems();
+    for (auto& item : m_currentDisplayItems)
+        item.appendToWebDisplayItemList(list);
+}
+
 #if ENABLE(ASSERT)
 
-static void showUnderInvalidationError(const char* reason, const DisplayItem& displayItem)
+static void showUnderInvalidationError(const char* reason, const DisplayItems::ItemHandle& displayItem)
 {
 #ifndef NDEBUG
     WTFLogAlways("%s: %s\nSee http://crbug.com/450725.", reason, displayItem.asDebugString().utf8().data());
@@ -322,35 +339,32 @@ static bool bitmapIsAllZero(const SkBitmap& bitmap)
     return result;
 }
 
-void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displayItem, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItems::ItemHandle& displayItem, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
 
-    if (!displayItem.isDrawing() || !clientCacheIsValid(displayItem.client()))
+    if (!DisplayItem::isDrawingType(displayItem.type()) || !clientCacheIsValid(displayItem.client()))
         return;
 
-    const DrawingDisplayItem& drawingDisplayItem = static_cast<const DrawingDisplayItem&>(displayItem);
-    if (drawingDisplayItem.skippedCache())
-        return;
-
-    DrawingDisplayItem::UnderInvalidationCheckingMode mode = drawingDisplayItem.underInvalidationCheckingMode();
+    DrawingDisplayItem::UnderInvalidationCheckingMode mode = displayItem.underInvalidationCheckingMode();
     if (mode == DrawingDisplayItem::DontCheck)
         return;
 
     // If checking under-invalidation, we always generate new display item even if the client is not invalidated.
     // Checks if the new picture is the same as the cached old picture. If the new picture is different but
     // the client is not invalidated, issue error about under-invalidation.
-    size_t index = findMatchingItemFromIndex(displayItem, displayItem.type(), displayItemIndicesByClient, m_currentDisplayItems);
+    size_t index = findMatchingItemFromIndex(displayItem.id(), displayItem.type(), displayItemIndicesByClient, m_currentDisplayItems);
     if (index == kNotFound) {
         showUnderInvalidationError("ERROR: under-invalidation: no cached display item", displayItem);
         ASSERT_NOT_REACHED();
         return;
     }
 
-    RefPtr<const SkPicture> newPicture = drawingDisplayItem.picture();
-    RefPtr<const SkPicture> oldPicture = static_cast<const DrawingDisplayItem&>(*m_currentDisplayItems[index]).picture();
+    DisplayItems::Iterator foundItem = m_currentDisplayItems.iteratorAt(index);
+    RefPtr<const SkPicture> newPicture = displayItem.picture();
+    RefPtr<const SkPicture> oldPicture = foundItem->picture();
     // Remove the display item from cache so that we can check if there are any remaining cached display items after merging.
-    m_currentDisplayItems[index] = nullptr;
+    m_currentDisplayItems.setGone(foundItem);
 
     if (!newPicture && !oldPicture)
         return;
@@ -405,10 +419,10 @@ void DisplayItemList::checkNoRemainingCachedDisplayItems()
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
 
-    for (OwnPtr<DisplayItem>& displayItem : m_currentDisplayItems) {
-        if (!displayItem || !displayItem->isDrawing() || !clientCacheIsValid(displayItem->client()))
+    for (const auto& displayItem : m_currentDisplayItems) {
+        if (displayItem.isGone() || !DisplayItem::isDrawingType(displayItem.type()) || !clientCacheIsValid(displayItem.client()))
             continue;
-        showUnderInvalidationError("May be under-invalidation: no new display item", *displayItem);
+        showUnderInvalidationError("May be under-invalidation: no new display item", displayItem);
     }
 }
 
@@ -419,18 +433,19 @@ void DisplayItemList::checkNoRemainingCachedDisplayItems()
 WTF::String DisplayItemList::displayItemsAsDebugString(const DisplayItems& list) const
 {
     StringBuilder stringBuilder;
-    for (size_t i = 0; i < list.size(); ++i) {
-        const OwnPtr<DisplayItem>& displayItem = list[i];
+    size_t i = 0;
+    for (auto it = list.begin(); it != list.end(); ++it, ++i) {
+        DisplayItems::ItemHandle displayItem = list[i];
         if (i)
             stringBuilder.append(",\n");
-        if (!displayItem) {
+        if (displayItem.isGone()) {
             stringBuilder.append("null");
             continue;
         }
         stringBuilder.append(String::format("{index: %d, ", (int)i));
-        displayItem->dumpPropertiesAsDebugString(stringBuilder);
+        displayItem.dumpPropertiesAsDebugString(stringBuilder);
         stringBuilder.append(", cacheIsValid: ");
-        stringBuilder.append(clientCacheIsValid(displayItem->client()) ? "true" : "false");
+        stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
         stringBuilder.append('}');
     }
     return stringBuilder.toString();
@@ -449,7 +464,7 @@ void DisplayItemList::replay(GraphicsContext& context) const
     TRACE_EVENT0("blink,benchmark", "DisplayItemList::replay");
     ASSERT(m_newDisplayItems.isEmpty());
     for (auto& displayItem : m_currentDisplayItems)
-        displayItem->replay(context);
+        displayItem.replay(context);
 }
 
 } // namespace blink
