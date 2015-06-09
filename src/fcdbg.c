@@ -235,7 +235,7 @@ FcPatternPrint2 (FcPattern         *pp1,
     {
 	e1 = &FcPatternElts(p1)[i];
 	e2 = &FcPatternElts(p2)[j];
-	if (e1->object != e2->object)
+	if (!e2 || e1->object != e2->object)
 	{
 	    pos = FcPatternPosition (p2, FcObjectName (e1->object));
 	    if (pos >= 0)
