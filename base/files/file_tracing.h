@@ -37,16 +37,13 @@ class BASE_EXPORT FileTracing {
     virtual void FileTracingDisable(void* id) = 0;
 
     // Begins an event for |id| with |name|. |path| tells where in the directory
-    // structure the event is happening (and may be blank). |size| is reported
-    // if not 0.
+    // structure the event is happening (and may be blank). |size| is the number
+    // of bytes involved in the event.
     virtual void FileTracingEventBegin(
         const char* name, void* id, const FilePath& path, int64 size) = 0;
 
-    // Ends an event for |id| with |name|. |path| tells where in the directory
-    // structure the event is happening (and may be blank). |size| is reported
-    // if not 0.
-    virtual void FileTracingEventEnd(
-        const char* name, void* id, const FilePath& path, int64 size) = 0;
+    // Ends an event for |id| with |name|.
+    virtual void FileTracingEventEnd(const char* name, void* id) = 0;
   };
 
   // Sets a global file tracing provider to query categories and record events.
@@ -67,22 +64,20 @@ class BASE_EXPORT FileTracing {
     // Whether this trace should be initialized or not.
     bool ShouldInitialize() const;
 
-    // Called only if the tracing category is enabled.
-    void Initialize(const char* event, File* file, int64 size);
+    // Called only if the tracing category is enabled. |name| is the name of the
+    // event to trace (e.g. "Read", "Write") and must have an application
+    // lifetime (e.g. static or literal). |file| is the file being traced; must
+    // outlive this class. |size| is the size (in bytes) of this event.
+    void Initialize(const char* name, File* file, int64 size);
 
    private:
-    // True if |Initialize()| has been called. Don't touch |path_|, |event_|,
-    // or |bytes_| if |initialized_| is false.
-    bool initialized_;
+    // The ID of this trace. Based on the |file| passed to |Initialize()|. Must
+    // outlive this class.
+    void* id_;
 
-    // The event name to trace (e.g. "Read", "Write"). Prefixed with "File".
+    // The name of the event to trace (e.g. "Read", "Write"). Prefixed with
+    // "File".
     const char* name_;
-
-    // The file being traced. Must outlive this class.
-    File* file_;
-
-    // The size (in bytes) of this trace. Not reported if 0.
-    int64 size_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedTrace);
   };

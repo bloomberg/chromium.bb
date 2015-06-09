@@ -32,24 +32,12 @@ void FileTracingProviderImpl::FileTracingDisable(void* id) {
 
 void FileTracingProviderImpl::FileTracingEventBegin(
     const char* name, void* id, const base::FilePath& path, int64 size) {
-  if (size) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(kFileTracingEventCategoryGroup, name, id,
-        "path", path.AsUTF8Unsafe(), "size", size);
-  } else {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(kFileTracingEventCategoryGroup, name, id,
-        "path", path.AsUTF8Unsafe());
-  }
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(kFileTracingEventCategoryGroup, name, id,
+      "path", path.AsUTF8Unsafe(), "size", size);
 }
 
-void FileTracingProviderImpl::FileTracingEventEnd(
-    const char* name, void* id, const base::FilePath& path, int64 size) {
-  if (size) {
-    TRACE_EVENT_NESTABLE_ASYNC_END2(kFileTracingEventCategoryGroup, name, id,
-        "path", path.AsUTF8Unsafe(), "size", size);
-  } else {
-    TRACE_EVENT_NESTABLE_ASYNC_END1(kFileTracingEventCategoryGroup, name, id,
-        "path", path.AsUTF8Unsafe());
-  }
+void FileTracingProviderImpl::FileTracingEventEnd(const char* name, void* id) {
+  TRACE_EVENT_NESTABLE_ASYNC_END0(kFileTracingEventCategoryGroup, name, id);
 }
 
 }  // namespace content

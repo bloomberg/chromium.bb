@@ -27,13 +27,11 @@ FileTracing::ScopedEnabler::~ScopedEnabler() {
     g_provider->FileTracingDisable(this);
 }
 
-FileTracing::ScopedTrace::ScopedTrace() : initialized_(false) {}
+FileTracing::ScopedTrace::ScopedTrace() : id_(nullptr) {}
 
 FileTracing::ScopedTrace::~ScopedTrace() {
-  if (initialized_ && g_provider) {
-    g_provider->FileTracingEventEnd(
-        name_, &file_->trace_enabler_, file_->path_, size_);
-  }
+  if (id_ && g_provider)
+    g_provider->FileTracingEventEnd(name_, id_);
 }
 
 bool FileTracing::ScopedTrace::ShouldInitialize() const {
@@ -42,15 +40,13 @@ bool FileTracing::ScopedTrace::ShouldInitialize() const {
 
 void FileTracing::ScopedTrace::Initialize(
     const char* name, File* file, int64 size) {
-  file_ = file;
-  name_ = name;
-  size_ = size;
-  initialized_ = true;
+  if (!g_provider)
+    return;
 
-  if (g_provider) {
-    g_provider->FileTracingEventBegin(
-        name_, &file_->trace_enabler_, file_->path_, size_);
-  }
+  id_ = &file->trace_enabler_;
+  name_ = name;
+
+  g_provider->FileTracingEventBegin(name_, id_, file->path_, size);
 }
 
 }  // namespace base

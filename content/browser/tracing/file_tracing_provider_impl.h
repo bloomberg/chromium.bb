@@ -23,8 +23,7 @@ class FileTracingProviderImpl : public base::FileTracing::Provider {
   void FileTracingDisable(void* id) override;
   void FileTracingEventBegin(const char* name, void* id,
                              const base::FilePath& path, int64 size) override;
-  void FileTracingEventEnd(const char* name, void* id,
-                           const base::FilePath& path, int64 size) override;
+  void FileTracingEventEnd(const char* name, void* id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileTracingProviderImpl);
