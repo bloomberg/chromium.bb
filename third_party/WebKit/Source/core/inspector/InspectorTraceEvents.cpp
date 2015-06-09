@@ -18,6 +18,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
@@ -756,6 +757,26 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationStateEvent::d
     RefPtr<TracedValue> value = TracedValue::create();
     value->setString("state", player.playState());
     return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorHitTestEvent::endData(const HitTestRequest& request, const HitTestLocation& location, const HitTestResult& result)
+{
+    RefPtr<TracedValue> value(TracedValue::create());
+    value->setInteger("x", location.roundedPoint().x());
+    value->setInteger("y", location.roundedPoint().y());
+    if (location.isRectBasedTest())
+        value->setBoolean("rect", true);
+    if (location.isRectilinear())
+        value->setBoolean("rectilinear", true);
+    if (request.touchEvent())
+        value->setBoolean("touch", true);
+    if (request.move())
+        value->setBoolean("move", true);
+    if (request.listBased())
+        value->setBoolean("listBased", true);
+    else if (Node* node = result.innerNode())
+        setNodeInfo(value.get(), node, "nodeId", "nodeName");
+    return value;
 }
 
 }

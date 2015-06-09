@@ -1,0 +1,20 @@
+Tests instrumentation for Timeline HitTest event.
+
+HitTest Properties:
+{
+    children : <object>
+    data : {
+        endData : {
+            nodeId : <number>
+            nodeName : "#text"
+            rectilinear : true
+            x : 10
+            y : 10
+        }
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "HitTest"
+}
+

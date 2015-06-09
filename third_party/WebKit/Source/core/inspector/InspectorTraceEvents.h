@@ -23,6 +23,9 @@ class Event;
 class ExecutionContext;
 class FrameView;
 class GraphicsLayer;
+class HitTestLocation;
+class HitTestRequest;
+class HitTestResult;
 class ImageResource;
 class KURL;
 class DeprecatedPaintLayer;
@@ -339,6 +342,11 @@ public:
 class InspectorAnimationStateEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Animation&);
+};
+
+class InspectorHitTestEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> endData(const HitTestRequest&, const HitTestLocation&, const HitTestResult&);
 };
 
 CORE_EXPORT String toHexString(const void* p);
