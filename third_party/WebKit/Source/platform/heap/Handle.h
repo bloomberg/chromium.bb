@@ -58,12 +58,6 @@ public:
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
     bool isHeapObjectAlive() { return m_trace; }
 
-    virtual ~PersistentNode()
-    {
-        ASSERT(isHeapObjectAlive());
-        m_trace = nullptr;
-    }
-
     // This operator= is important. Without having the operator=, m_next and
     // m_prev are inproperly copied and it breaks the link list of the
     // persistent handles.
@@ -80,6 +74,10 @@ private:
     void tracePersistentNode(Visitor* visitor)
     {
         m_trace(visitor, this);
+    }
+
+    ~PersistentNode()
+    {
     }
 
     TraceCallback m_trace;
@@ -111,12 +109,9 @@ public:
         return numberOfPersistents;
     }
 
-    virtual ~PersistentAnchor()
+    ~PersistentAnchor()
     {
-        // FIXME: oilpan: Ideally we should have no left-over persistents at this point. However currently there is a
-        // large number of objects leaked when we tear down the main thread. Since some of these might contain a
-        // persistent or e.g. be RefCountedGarbageCollected we cannot guarantee there are no remaining Persistents at
-        // this point.
+        m_trace = nullptr;
     }
 
     template<typename VisitorDispatcher>
@@ -208,10 +203,11 @@ public:
 
     void clear() { m_raw = nullptr; }
 
-    virtual ~Persistent()
+    ~Persistent()
     {
         uninitialize();
         m_raw = nullptr;
+        m_trace = nullptr;
     }
 
     template<typename VisitorDispatcher>
@@ -408,10 +404,11 @@ public:
 
     void clear() { m_raw = nullptr; }
 
-    virtual ~CrossThreadPersistent()
+    ~CrossThreadPersistent()
     {
         uninitialize();
         m_raw = nullptr;
+        m_trace = nullptr;
     }
 
     template<typename VisitorDispatcher>
@@ -545,9 +542,11 @@ private:
     T* m_raw;
 };
 
+// PersistentNode must be the left-most class to let the
+// visitor->trace(static_cast<Collection*>(this)) trace the correct position.
 // FIXME: derive affinity based on the collection.
 template<typename Collection>
-class PersistentHeapCollectionBase : public Collection, public PersistentNode {
+class PersistentHeapCollectionBase : public PersistentNode, public Collection {
     // We overload the various new and delete operators with using the WTF DefaultAllocator to ensure persistent
     // heap collections are always allocated off-heap. This allows persistent collections to be used in
     // DEFINE_STATIC_LOCAL et. al.
@@ -558,13 +557,13 @@ public:
         initialize();
     }
 
-    PersistentHeapCollectionBase(const PersistentHeapCollectionBase& other) : Collection(other), PersistentNode(TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline)
+    PersistentHeapCollectionBase(const PersistentHeapCollectionBase& other) : PersistentNode(TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline), Collection(other)
     {
         initialize();
     }
 
     template<typename OtherCollection>
-    PersistentHeapCollectionBase(const OtherCollection& other) : Collection(other), PersistentNode(TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline)
+    PersistentHeapCollectionBase(const OtherCollection& other) : PersistentNode(TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline), Collection(other)
     {
         initialize();
     }
@@ -572,6 +571,7 @@ public:
     ~PersistentHeapCollectionBase()
     {
         uninitialize();
+        m_trace = nullptr;
     }
 
     template<typename VisitorDispatcher>

@@ -77,6 +77,12 @@ private:
 };
 static_assert(WTF::NeedsTracing<IntWrapper>::value, "NeedsTracing macro failed to recognize trace method.");
 
+struct SameSizeAsPersistent {
+    void* m_pointer[4];
+};
+
+static_assert(sizeof(Persistent<IntWrapper>) <= sizeof(SameSizeAsPersistent), "Persistent handle should stay small");
+
 class ThreadMarker {
 public:
     ThreadMarker() : m_creatingThread(reinterpret_cast<ThreadState*>(0)), m_num(0) { }
