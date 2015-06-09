@@ -649,8 +649,6 @@
       # Platform sends memory pressure signals natively.
       'native_memory_pressure_signals%': 0,
 
-      'spdy_proxy_auth_property%' : '',
-      'spdy_proxy_auth_value%' : '',
       'enable_mdns%' : 0,
       'enable_service_discovery%': 0,
       'enable_wifi_bootstrapping%': 0,
@@ -1217,8 +1215,6 @@
     'google_default_client_secret%': '<(google_default_client_secret)',
     'enable_supervised_users%': '<(enable_supervised_users)',
     'native_memory_pressure_signals%': '<(native_memory_pressure_signals)',
-    'spdy_proxy_auth_property%': '<(spdy_proxy_auth_property)',
-    'spdy_proxy_auth_value%': '<(spdy_proxy_auth_value)',
     'enable_mdns%' : '<(enable_mdns)',
     'enable_service_discovery%' : '<(enable_service_discovery)',
     'enable_wifi_bootstrapping%': '<(enable_wifi_bootstrapping)',
@@ -3011,12 +3007,6 @@
       }],
       ['enable_supervised_users==1', {
         'defines': ['ENABLE_SUPERVISED_USERS=1'],
-      }],
-      ['spdy_proxy_auth_property != ""', {
-        'defines': ['SPDY_PROXY_AUTH_PROPERTY="<(spdy_proxy_auth_property)"'],
-      }],
-      ['spdy_proxy_auth_value != ""', {
-        'defines': ['SPDY_PROXY_AUTH_VALUE="<(spdy_proxy_auth_value)"'],
       }],
       ['enable_mdns==1', {
         'defines': ['ENABLE_MDNS=1'],

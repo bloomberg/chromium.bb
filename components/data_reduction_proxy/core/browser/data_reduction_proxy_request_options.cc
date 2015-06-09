@@ -28,7 +28,7 @@
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/url_request.h"
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_IOS)
 #include "google_apis/google_api_keys.h"
 #endif
 
@@ -344,9 +344,9 @@ std::string DataReductionProxyRequestOptions::GetDefaultKey() const {
       *base::CommandLine::ForCurrentProcess();
   std::string key =
     command_line.GetSwitchValueASCII(switches::kDataReductionProxyKey);
-// Android and iOS get the default key from a preprocessor constant. All other
+// iOS gets the default key from a preprocessor constant. All other
 // platforms get the key from google_apis
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_IOS)
 #if defined(SPDY_PROXY_AUTH_VALUE)
   if (key.empty())
     key = SPDY_PROXY_AUTH_VALUE;
@@ -355,7 +355,7 @@ std::string DataReductionProxyRequestOptions::GetDefaultKey() const {
   if (key.empty()) {
     key = google_apis::GetSpdyProxyAuthValue();
   }
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // defined(OS_IOS)
   return key;
 }
 
