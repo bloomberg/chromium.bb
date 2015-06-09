@@ -811,6 +811,8 @@
       'browser/api/vpn_provider/vpn_service_factory.h',
       'browser/api/webcam_private/v4l2_webcam.h',
       'browser/api/webcam_private/v4l2_webcam.cc',
+      'browser/api/webcam_private/visca_webcam.h',
+      'browser/api/webcam_private/visca_webcam.cc',
       'browser/api/webcam_private/webcam.h',
       'browser/api/webcam_private/webcam.cc',
       'browser/api/webcam_private/webcam_private_api.h',

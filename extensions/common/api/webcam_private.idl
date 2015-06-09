@@ -6,6 +6,11 @@
 namespace webcamPrivate {
   enum PanDirection { stop, right, left };
   enum TiltDirection { stop, up, down };
+  enum Protocol { visca };
+
+  dictionary ProtocolConfiguration {
+    Protocol? protocol;
+  };
 
   dictionary WebcamConfiguration {
     double? pan;
@@ -15,13 +20,21 @@ namespace webcamPrivate {
     double? zoom;
   };
 
+  callback WebcamIdCallback = void(DOMString webcamId);
   callback WebcamConfigurationCallback =
       void(WebcamConfiguration configuration);
 
   interface Functions {
-    static void get(DOMString webcamId, WebcamConfigurationCallback callback);
-    static void set(DOMString webcamId, WebcamConfiguration config);
-    static void reset(DOMString webcamId, WebcamConfiguration config);
+    // Open a serial port that controls a webcam.
+    static void openSerialWebcam(DOMString path, ProtocolConfiguration protocol,
+                                 WebcamIdCallback callback);
+
+    // Close a serial port connection to a webcam.
+    static void closeWebcam(DOMString path);
+
+    static void get(DOMString path, WebcamConfigurationCallback callback);
+    static void set(DOMString path, WebcamConfiguration config);
+    static void reset(DOMString path, WebcamConfiguration config);
   };
 };
 

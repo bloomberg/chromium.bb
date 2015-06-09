@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
+#include "extensions/browser/api/webcam_private/webcam.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/process_manager_observer.h"
@@ -18,7 +19,6 @@ class Profile;
 namespace extensions {
 
 class ProcessManager;
-class Webcam;
 
 class WebcamPrivateAPI : public BrowserContextKeyedAPI,
                          public ProcessManagerObserver {
@@ -32,14 +32,31 @@ class WebcamPrivateAPI : public BrowserContextKeyedAPI,
   ~WebcamPrivateAPI() override;
 
   Webcam* GetWebcam(const std::string& extension_id,
-                    const std::string& webcam_id);
+                    const std::string& device_id);
+
+  bool OpenSerialWebcam(
+      const std::string& extension_id,
+      const std::string& device_id,
+      const base::Callback<void(const std::string&, bool)>& callback);
+  bool CloseWebcam(const std::string& extension_id,
+                   const std::string& device_id);
 
  private:
   friend class BrowserContextKeyedAPIFactory<WebcamPrivateAPI>;
 
+  void OnOpenSerialWebcam(
+      const std::string& extension_id,
+      const std::string& device_id,
+      const base::Callback<void(const std::string&, bool)>& callback,
+      bool success);
+
+  // Todo(xdai): This function doesn't work for serial devices. It can't get the
+  // correct |device_id| for given |extension_id| and |webcam_id|. (why?)
   bool GetDeviceId(const std::string& extension_id,
                    const std::string& webcam_id,
                    std::string* device_id);
+  std::string GetWebcamId(const std::string& extension_id,
+                          const std::string& device_id);
 
   // ProcessManagerObserver:
   void OnBackgroundHostClose(const std::string& extension_id) override;
@@ -63,6 +80,40 @@ class WebcamPrivateAPI : public BrowserContextKeyedAPI,
 template <>
 void BrowserContextKeyedAPIFactory<WebcamPrivateAPI>
     ::DeclareFactoryDependencies();
+
+class WebcamPrivateOpenSerialWebcamFunction : public AsyncExtensionFunction {
+ public:
+  WebcamPrivateOpenSerialWebcamFunction();
+  DECLARE_EXTENSION_FUNCTION("webcamPrivate.openSerialWebcam",
+                             WEBCAMPRIVATE_OPENSERIALWEBCAM);
+
+ protected:
+  ~WebcamPrivateOpenSerialWebcamFunction() override;
+
+  // AsyncExtensionFunction:
+  bool RunAsync() override;
+
+ private:
+  void OnOpenWebcam(const std::string& webcam_id, bool success);
+
+  DISALLOW_COPY_AND_ASSIGN(WebcamPrivateOpenSerialWebcamFunction);
+};
+
+class WebcamPrivateCloseWebcamFunction : public AsyncExtensionFunction {
+ public:
+  WebcamPrivateCloseWebcamFunction();
+  DECLARE_EXTENSION_FUNCTION("webcamPrivate.closeWebcam",
+                             WEBCAMPRIVATE_CLOSEWEBCAM);
+
+ protected:
+  ~WebcamPrivateCloseWebcamFunction() override;
+
+  // AsyncApiFunction:
+  bool RunAsync() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebcamPrivateCloseWebcamFunction);
+};
 
 class WebcamPrivateSetFunction : public SyncExtensionFunction {
  public:

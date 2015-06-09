@@ -54225,6 +54225,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1048" label="USERSPRIVATE_ISCURRENTUSEROWNER"/>
   <int value="1049" label="USERSPRIVATE_ISWHITELISTMANAGED"/>
   <int value="1050" label="PRINTERPROVIDERINTERNAL_REPORTUSBPRINTERINFO"/>
+  <int value="1051" label="WEBCAMPRIVATE_OPENSERIALWEBCAM"/>
+  <int value="1052" label="WEBCAMPRIVATE_CLOSEWEBCAM"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
