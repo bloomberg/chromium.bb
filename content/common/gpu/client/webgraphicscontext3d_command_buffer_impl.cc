@@ -333,21 +333,6 @@ WebGraphicsContext3DCommandBufferImpl::GetContextSupport() {
   return real_gl_.get();
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::isContextLost() {
-  return initialize_failed_ ||
-      (command_buffer_ && IsCommandBufferContextLost()) ||
-      context_lost_reason_ != GL_NO_ERROR;
-}
-
-WGC3Denum WebGraphicsContext3DCommandBufferImpl::getGraphicsResetStatusARB() {
-  if (IsCommandBufferContextLost() &&
-      context_lost_reason_ == GL_NO_ERROR) {
-    return GL_UNKNOWN_CONTEXT_RESET_ARB;
-  }
-
-  return context_lost_reason_;
-}
-
 bool WebGraphicsContext3DCommandBufferImpl::IsCommandBufferContextLost() {
   // If the channel shut down unexpectedly, let that supersede the
   // command buffer's state.
@@ -382,33 +367,9 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
       share_context);
 }
 
-namespace {
-
-WGC3Denum convertReason(gpu::error::ContextLostReason reason) {
-  switch (reason) {
-  case gpu::error::kGuilty:
-    return GL_GUILTY_CONTEXT_RESET_ARB;
-  case gpu::error::kInnocent:
-    return GL_INNOCENT_CONTEXT_RESET_ARB;
-  case gpu::error::kOutOfMemory:
-  case gpu::error::kMakeCurrentFailed:
-  case gpu::error::kUnknown:
-  case gpu::error::kGpuChannelLost:
-    return GL_UNKNOWN_CONTEXT_RESET_ARB;
-  }
-
-  NOTREACHED();
-  return GL_UNKNOWN_CONTEXT_RESET_ARB;
-}
-
-}  // anonymous namespace
-
 void WebGraphicsContext3DCommandBufferImpl::OnContextLost() {
-  context_lost_reason_ =
-      convertReason(command_buffer_->GetLastState().context_lost_reason);
-  if (context_lost_callback_) {
+  if (context_lost_callback_)
     context_lost_callback_->onContextLost();
-  }
 
   share_group_->RemoveAllContexts();
 

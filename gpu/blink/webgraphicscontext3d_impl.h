@@ -921,6 +921,9 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                         blink::WGC3Dbitfield flags,
                         blink::WGC3Duint64 timeout);
 
+  virtual bool isContextLost();
+  virtual blink::WGC3Denum getGraphicsResetStatusARB();
+
   virtual GrGLInterface* createGrGLInterface();
 
   ::gpu::gles2::GLES2Interface* GetGLInterface() {
@@ -950,7 +953,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   bool initialize_failed_;
 
   WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
-  blink::WGC3Denum context_lost_reason_;
 
   WebGraphicsContext3D::WebGraphicsErrorMessageCallback*
       error_message_callback_;

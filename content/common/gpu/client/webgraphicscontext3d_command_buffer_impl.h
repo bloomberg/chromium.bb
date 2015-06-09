@@ -145,12 +145,6 @@ class WebGraphicsContext3DCommandBufferImpl
 
   CONTENT_EXPORT bool InitializeOnCurrentThread();
 
-  //----------------------------------------------------------------------
-  // WebGraphicsContext3D methods
-  virtual bool isContextLost();
-
-  virtual blink::WGC3Denum getGraphicsResetStatusARB();
-
   void SetContextType(CommandBufferContextType type) {
     context_type_ = type;
   }

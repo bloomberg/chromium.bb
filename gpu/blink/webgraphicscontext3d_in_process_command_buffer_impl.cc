@@ -154,23 +154,12 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::SetLock(base::Lock* lock) {
   context_->SetLock(lock);
 }
 
-bool WebGraphicsContext3DInProcessCommandBufferImpl::isContextLost() {
-  return context_lost_reason_ != GL_NO_ERROR;
-}
-
-WGC3Denum WebGraphicsContext3DInProcessCommandBufferImpl::
-    getGraphicsResetStatusARB() {
-  return context_lost_reason_;
-}
-
 ::gpu::ContextSupport*
 WebGraphicsContext3DInProcessCommandBufferImpl::GetContextSupport() {
   return real_gl_;
 }
 
 void WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost() {
-  // TODO(kbr): improve the precision here.
-  context_lost_reason_ = GL_UNKNOWN_CONTEXT_RESET_ARB;
   if (context_lost_callback_) {
     context_lost_callback_->onContextLost();
   }

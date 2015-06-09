@@ -185,7 +185,6 @@ WebGraphicsContext3DImpl::WebGraphicsContext3DImpl()
     : initialized_(false),
       initialize_failed_(false),
       context_lost_callback_(0),
-      context_lost_reason_(GL_NO_ERROR),
       error_message_callback_(0),
       gl_(NULL),
       flush_id_(0) {
@@ -1172,6 +1171,14 @@ void WebGraphicsContext3DImpl::waitSync(WGC3Dsync sync,
                                         WGC3Dbitfield flags,
                                         WGC3Duint64 timeout) {
   gl_->WaitSync(reinterpret_cast<GLsync>(sync), flags, timeout);
+}
+
+bool WebGraphicsContext3DImpl::isContextLost() {
+  return getGraphicsResetStatusARB() != GL_NO_ERROR;
+}
+
+blink::WGC3Denum WebGraphicsContext3DImpl::getGraphicsResetStatusARB() {
+  return gl_->GetGraphicsResetStatusKHR();
 }
 
 GrGLInterface* WebGraphicsContext3DImpl::createGrGLInterface() {
