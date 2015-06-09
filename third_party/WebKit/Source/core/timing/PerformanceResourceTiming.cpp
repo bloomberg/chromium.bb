@@ -77,13 +77,21 @@ double PerformanceResourceTiming::workerStart() const
     return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->workerStart());
 }
 
+double PerformanceResourceTiming::workerReady() const
+{
+    if (!m_timing || m_timing->workerReady() == 0.0)
+        return 0.0;
+
+    return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->workerReady());
+}
+
 double PerformanceResourceTiming::redirectStart() const
 {
     if (!m_lastRedirectEndTime || !m_allowRedirectDetails)
         return 0.0;
 
-    if (double workerStartTime = workerStart())
-        return workerStartTime;
+    if (double workerReadyTime = workerReady())
+        return workerReadyTime;
 
     return PerformanceEntry::startTime();
 }
@@ -105,8 +113,8 @@ double PerformanceResourceTiming::fetchStart() const
         return monotonicTimeToDocumentMilliseconds(m_requestingDocument.get(), m_timing->requestTime());
     }
 
-    if (double workerStartTime = workerStart())
-        return workerStartTime;
+    if (double workerReadyTime = workerReady())
+        return workerReadyTime;
 
     return PerformanceEntry::startTime();
 }

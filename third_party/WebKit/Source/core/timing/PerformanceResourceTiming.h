@@ -78,6 +78,8 @@ private:
     PerformanceResourceTiming(const ResourceTimingInfo&, Document* requestingDocument, double startTime, double lastRedirectEndTime, bool m_allowTimingDetails, bool m_allowRedirectDetails);
     virtual ~PerformanceResourceTiming();
 
+    double workerReady() const;
+
     AtomicString m_initiatorType;
     RefPtrWillBeMember<Document> m_requestingDocument;
     RefPtr<ResourceLoadTiming> m_timing;
