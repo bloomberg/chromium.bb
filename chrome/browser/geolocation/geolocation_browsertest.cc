@@ -832,10 +832,6 @@ IN_PROC_BROWSER_TEST_P(GeolocationBrowserTest, TwoWatchesInOneFrame) {
 }
 
 IN_PROC_BROWSER_TEST_P(GeolocationBrowserTest, TabDestroyed) {
-  // This test triggers crbug.com/433877.
-  // TODO(felt): Reenable this test for permission bubbles once that's fixed.
-  if (PermissionBubbleManager::Enabled()) return;
-
   set_html_for_tests("/geolocation/tab_destroyed.html");
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(3);

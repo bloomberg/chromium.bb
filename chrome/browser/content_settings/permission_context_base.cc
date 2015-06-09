@@ -134,8 +134,6 @@ void PermissionContextBase::DecidePermission(
       permission_type_, requesting_origin);
 
   if (PermissionBubbleManager::Enabled()) {
-    if (pending_bubbles_.get(id.ToString()) != NULL)
-      return;
     PermissionBubbleManager* bubble_manager =
         PermissionBubbleManager::FromWebContents(web_contents);
     // TODO(mlamouri): sometimes |bubble_manager| is null. This check is meant
