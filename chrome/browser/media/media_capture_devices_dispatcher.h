@@ -11,15 +11,15 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "content/public/browser/media_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/media_stream_request.h"
 
 class DesktopStreamsRegistry;
+class MediaAccessHandler;
 class MediaStreamCaptureIndicator;
 class Profile;
 
@@ -33,8 +33,7 @@ class PrefRegistrySyncable;
 
 // This singleton is used to receive updates about media events from the content
 // layer.
-class MediaCaptureDevicesDispatcher : public content::MediaObserver,
-                                      public content::NotificationObserver {
+class MediaCaptureDevicesDispatcher : public content::MediaObserver {
  public:
   class Observer {
    public:
@@ -67,6 +66,9 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   // Registers the preferences related to Media Stream default devices.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Returns true if the security origin is associated with casting.
+  static bool IsOriginForCasting(const GURL& origin);
+
   // Methods for observers. Called on UI thread.
   // Observers should add themselves on construction and remove themselves
   // on destruction.
@@ -91,12 +93,10 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
                                   content::MediaStreamType type);
 
   // Same as above but for an |extension|, which may not be NULL.
-#if defined(ENABLE_EXTENSIONS)
   bool CheckMediaAccessPermission(content::WebContents* web_contents,
                                   const GURL& security_origin,
                                   content::MediaStreamType type,
                                   const extensions::Extension* extension);
-#endif
 
   // Helper to get the default devices which can be used by the media request.
   // Uses the first available devices if the default devices are not available.
@@ -150,59 +150,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
  private:
   friend struct DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
-  struct PendingAccessRequest {
-    PendingAccessRequest(const content::MediaStreamRequest& request,
-                         const content::MediaResponseCallback& callback);
-    ~PendingAccessRequest();
-
-    // TODO(gbillock): make the MediaStreamDevicesController owned by
-    // this object when we're using bubbles.
-    content::MediaStreamRequest request;
-    content::MediaResponseCallback callback;
-  };
-  typedef std::deque<PendingAccessRequest> RequestsQueue;
-  typedef std::map<content::WebContents*, RequestsQueue> RequestsQueues;
-
   MediaCaptureDevicesDispatcher();
   ~MediaCaptureDevicesDispatcher() override;
-
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  // Helpers for ProcessMediaAccessRequest().
-  void ProcessDesktopCaptureAccessRequest(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
-      const extensions::Extension* extension);
-  void ProcessScreenCaptureAccessRequest(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
-      const extensions::Extension* extension);
-  void ProcessTabCaptureAccessRequest(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
-      const extensions::Extension* extension);
-#if defined(ENABLE_EXTENSIONS)
-  void ProcessMediaAccessRequestFromPlatformAppOrExtension(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback,
-      const extensions::Extension* extension);
-#endif
-  void ProcessRegularMediaAccessRequest(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback);
-  void ProcessQueuedAccessRequest(content::WebContents* web_contents);
-  void OnAccessRequestResponse(content::WebContents* web_contents,
-                               const content::MediaStreamDevices& devices,
-                               content::MediaStreamRequestResult result,
-                               scoped_ptr<content::MediaStreamUI> ui);
 
   // Called by the MediaObserver() functions, executed on UI thread.
   void NotifyAudioDevicesChangedOnUIThread();
@@ -229,24 +178,12 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   // Flag used by unittests to disable device enumeration.
   bool is_device_enumeration_disabled_;
 
-  RequestsQueues pending_requests_;
-
   scoped_refptr<MediaStreamCaptureIndicator> media_stream_capture_indicator_;
 
   scoped_ptr<DesktopStreamsRegistry> desktop_streams_registry_;
 
-  content::NotificationRegistrar notifications_registrar_;
-
-  // Tracks MEDIA_DESKTOP_VIDEO_CAPTURE sessions which reach the
-  // MEDIA_REQUEST_STATE_DONE state.  Sessions are remove when
-  // MEDIA_REQUEST_STATE_CLOSING is encountered.
-  struct DesktopCaptureSession {
-    int render_process_id;
-    int render_frame_id;
-    int page_request_id;
-  };
-  typedef std::list<DesktopCaptureSession> DesktopCaptureSessions;
-  DesktopCaptureSessions desktop_capture_sessions_;
+  // Handlers for processing media access requests.
+  ScopedVector<MediaAccessHandler> media_access_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCaptureDevicesDispatcher);
 };
