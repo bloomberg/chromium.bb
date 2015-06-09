@@ -25,9 +25,9 @@ ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
     const std::string& scheme) const {
   if (base::IsStringASCII(scheme) &&
       (ProfileIOData::IsHandledProtocol(scheme) ||
-       LowerCaseEqualsASCII(scheme, content::kViewSourceScheme) ||
-       LowerCaseEqualsASCII(scheme, url::kJavaScriptScheme) ||
-       LowerCaseEqualsASCII(scheme, url::kDataScheme))) {
+       base::LowerCaseEqualsASCII(scheme, content::kViewSourceScheme) ||
+       base::LowerCaseEqualsASCII(scheme, url::kJavaScriptScheme) ||
+       base::LowerCaseEqualsASCII(scheme, url::kDataScheme))) {
     return metrics::OmniboxInputType::URL;
   }
 

@@ -420,14 +420,12 @@ bool IsStringUTF8(const StringPiece& str) {
   return true;
 }
 
-}  // namespace base
-
 template<typename Iter>
 static inline bool DoLowerCaseEqualsASCII(Iter a_begin,
                                           Iter a_end,
                                           const char* b) {
   for (Iter it = a_begin; it != a_end; ++it, ++b) {
-    if (!*b || base::ToLowerASCII(*it) != *b)
+    if (!*b || ToLowerASCII(*it) != *b)
       return false;
   }
   return *b == 0;
@@ -460,11 +458,25 @@ bool LowerCaseEqualsASCII(const char* a_begin,
   return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
 
+bool LowerCaseEqualsASCII(const char* a_begin,
+                          const char* a_end,
+                          const char* b_begin,
+                          const char* b_end) {
+  while (a_begin != a_end && b_begin != b_end &&
+         ToLowerASCII(*a_begin) == *b_begin) {
+    a_begin++;
+    b_begin++;
+  }
+  return a_begin == a_end && b_begin == b_end;
+}
+
 bool LowerCaseEqualsASCII(const char16* a_begin,
                           const char16* a_end,
                           const char* b) {
   return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
+
+}  // namespace base
 
 bool EqualsASCII(const string16& a, const base::StringPiece& b) {
   if (a.length() != b.length())

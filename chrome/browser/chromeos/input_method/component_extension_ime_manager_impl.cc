@@ -166,7 +166,7 @@ scoped_ptr<base::DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
 // static
 bool ComponentExtensionIMEManagerImpl::IsIMEExtensionID(const std::string& id) {
   for (size_t i = 0; i < arraysize(whitelisted_component_extension); ++i) {
-    if (LowerCaseEqualsASCII(id, whitelisted_component_extension[i].id))
+    if (base::LowerCaseEqualsASCII(id, whitelisted_component_extension[i].id))
       return true;
   }
   return false;

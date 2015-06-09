@@ -141,7 +141,8 @@ const struct {
 DBusClientBundle::DBusClientType GetDBusClientType(
     const std::string& client_type_name) {
   for (size_t i = 0; i < arraysize(client_type_map); i++) {
-    if (LowerCaseEqualsASCII(client_type_name, client_type_map[i].param_name))
+    if (base::LowerCaseEqualsASCII(client_type_name,
+                                   client_type_map[i].param_name))
       return client_type_map[i].client_type;
   }
   return DBusClientBundle::NO_CLIENT;

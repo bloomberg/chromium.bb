@@ -18,7 +18,6 @@
 #include "net/base/escape.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon_stdstring.h"
-#include "url/url_util.h"
 
 namespace password_manager {
 
@@ -183,11 +182,11 @@ bool ParseAndCanonicalizeFacetURI(const std::string& input_uri,
   url::ParseStandardURL(input_uri.c_str(), input_uri.size(), &input_parsed);
 
   base::StringPiece scheme = ComponentString(input_uri, input_parsed.scheme);
-  if (url::LowerCaseEqualsASCII(scheme.begin(), scheme.end(),
-                                url::kHttpsScheme)) {
+  if (base::LowerCaseEqualsASCII(scheme.begin(), scheme.end(),
+                                 url::kHttpsScheme)) {
     return CanonicalizeWebFacetURI(input_uri, input_parsed, canonical_uri);
-  } else if (url::LowerCaseEqualsASCII(scheme.begin(), scheme.end(),
-                                       kAndroidAppScheme)) {
+  } else if (base::LowerCaseEqualsASCII(scheme.begin(), scheme.end(),
+                                        kAndroidAppScheme)) {
     return CanonicalizeAndroidFacetURI(input_uri, input_parsed, canonical_uri);
   }
   return false;
@@ -318,7 +317,7 @@ bool IsPropagatingPasswordChangesToWebCredentialsEnabled(
     return false;
   if (command_line.HasSwitch(switches::kEnableAffiliationBasedMatching))
     return true;
-  return LowerCaseEqualsASCII(update_enabled, "enabled");
+  return base::LowerCaseEqualsASCII(update_enabled, "enabled");
 }
 
 bool IsAffiliationRequestsForDummyFacetsEnabled(
@@ -329,7 +328,7 @@ bool IsAffiliationRequestsForDummyFacetsEnabled(
     return false;
   if (command_line.HasSwitch(switches::kEnableAffiliationBasedMatching))
     return true;
-  return LowerCaseEqualsASCII(synthesizing_enabled, "enabled");
+  return base::LowerCaseEqualsASCII(synthesizing_enabled, "enabled");
 }
 
 bool IsValidAndroidFacetURI(const std::string& url) {

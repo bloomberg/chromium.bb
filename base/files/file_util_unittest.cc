@@ -2498,7 +2498,9 @@ TEST(ScopedFD, ScopedFDDoesClose) {
   ASSERT_EQ(0, pipe(fds));
   const int write_end = fds[1];
   ScopedFD read_end_closer(fds[0]);
-  { ScopedFD write_end_closer(fds[1]); }
+  {
+    ScopedFD write_end_closer(fds[1]);
+  }
   // This is the only thread. This file descriptor should no longer be valid.
   int ret = close(write_end);
   EXPECT_EQ(-1, ret);

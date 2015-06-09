@@ -290,7 +290,7 @@ NET_EXPORT bool IsPortAllowedForScheme(int port,
   }
 
   // FTP requests have an extra set of whitelisted schemes.
-  if (LowerCaseEqualsASCII(url_scheme, url::kFtpScheme)) {
+  if (base::LowerCaseEqualsASCII(url_scheme, url::kFtpScheme)) {
     for (int allowed_ftp_port : kAllowedFtpPorts) {
       if (allowed_ftp_port == port)
         return true;

@@ -145,7 +145,7 @@ EventRewriter::DeviceType GetDeviceType(const std::string& device_name,
     return EventRewriter::kDeviceHotrodRemote;
   }
 
-  if (LowerCaseEqualsASCII(device_name, "virtual core keyboard"))
+  if (base::LowerCaseEqualsASCII(device_name, "virtual core keyboard"))
     return EventRewriter::kDeviceVirtualCoreKeyboard;
 
   std::vector<std::string> tokens;
@@ -157,9 +157,9 @@ EventRewriter::DeviceType GetDeviceType(const std::string& device_name,
   bool found_apple = false;
   bool found_keyboard = false;
   for (size_t i = 0; i < tokens.size(); ++i) {
-    if (!found_apple && LowerCaseEqualsASCII(tokens[i], "apple"))
+    if (!found_apple && base::LowerCaseEqualsASCII(tokens[i], "apple"))
       found_apple = true;
-    if (!found_keyboard && LowerCaseEqualsASCII(tokens[i], "keyboard"))
+    if (!found_keyboard && base::LowerCaseEqualsASCII(tokens[i], "keyboard"))
       found_keyboard = true;
     if (found_apple && found_keyboard)
       return EventRewriter::kDeviceAppleKeyboard;

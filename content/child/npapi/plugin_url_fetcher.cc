@@ -131,7 +131,7 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
       if (!request_info.headers.empty())
         request_info.headers += "\r\n";
       request_info.headers += names[i] + ": " + values[i];
-      if (LowerCaseEqualsASCII(names[i], "content-type"))
+      if (base::LowerCaseEqualsASCII(names[i], "content-type"))
         content_type_found = true;
     }
 

@@ -485,7 +485,7 @@ bool ChromeRenderViewObserver::HasRefreshMetaTag(WebFrame* frame) {
     if (!element.hasHTMLTagName(tag_name))
       continue;
     WebString value = element.getAttribute(attribute_name);
-    if (value.isNull() || !LowerCaseEqualsASCII(value, "refresh"))
+    if (value.isNull() || !base::LowerCaseEqualsASCII(value, "refresh"))
       continue;
     return true;
   }

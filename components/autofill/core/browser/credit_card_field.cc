@@ -344,7 +344,8 @@ bool CreditCardField::ClassifyField(ServerFieldTypeMap* map) const {
 
 bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
   if (!expiration_date_ &&
-      LowerCaseEqualsASCII(scanner->Cursor()->form_control_type, "month")) {
+      base::LowerCaseEqualsASCII(scanner->Cursor()->form_control_type,
+                                 "month")) {
     expiration_date_ = scanner->Cursor();
     expiration_month_ = nullptr;
     expiration_year_ = nullptr;

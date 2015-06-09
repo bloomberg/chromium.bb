@@ -23,7 +23,7 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
     const std::string& name_latin1 = name.latin1();
     const std::string& value_latin1 = value.latin1();
 
-    if (LowerCaseEqualsASCII(name_latin1, "accept"))
+    if (base::LowerCaseEqualsASCII(name_latin1, "accept"))
       has_accept_header_ = true;
 
     HttpHeaderPtr header = HttpHeader::New();

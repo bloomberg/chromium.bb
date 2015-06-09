@@ -221,13 +221,13 @@ Manifest::DisplayMode ManifestParser::ParseDisplay(
   if (display.is_null())
     return Manifest::DISPLAY_MODE_UNSPECIFIED;
 
-  if (LowerCaseEqualsASCII(display.string(), "fullscreen"))
+  if (base::LowerCaseEqualsASCII(display.string(), "fullscreen"))
     return Manifest::DISPLAY_MODE_FULLSCREEN;
-  else if (LowerCaseEqualsASCII(display.string(), "standalone"))
+  else if (base::LowerCaseEqualsASCII(display.string(), "standalone"))
     return Manifest::DISPLAY_MODE_STANDALONE;
-  else if (LowerCaseEqualsASCII(display.string(), "minimal-ui"))
+  else if (base::LowerCaseEqualsASCII(display.string(), "minimal-ui"))
     return Manifest::DISPLAY_MODE_MINIMAL_UI;
-  else if (LowerCaseEqualsASCII(display.string(), "browser"))
+  else if (base::LowerCaseEqualsASCII(display.string(), "browser"))
     return Manifest::DISPLAY_MODE_BROWSER;
   else {
     errors_.push_back(GetErrorPrefix() + "unknown 'display' value ignored.");
@@ -243,21 +243,25 @@ blink::WebScreenOrientationLockType ManifestParser::ParseOrientation(
   if (orientation.is_null())
     return blink::WebScreenOrientationLockDefault;
 
-  if (LowerCaseEqualsASCII(orientation.string(), "any"))
+  if (base::LowerCaseEqualsASCII(orientation.string(), "any"))
     return blink::WebScreenOrientationLockAny;
-  else if (LowerCaseEqualsASCII(orientation.string(), "natural"))
+  else if (base::LowerCaseEqualsASCII(orientation.string(), "natural"))
     return blink::WebScreenOrientationLockNatural;
-  else if (LowerCaseEqualsASCII(orientation.string(), "landscape"))
+  else if (base::LowerCaseEqualsASCII(orientation.string(), "landscape"))
     return blink::WebScreenOrientationLockLandscape;
-  else if (LowerCaseEqualsASCII(orientation.string(), "landscape-primary"))
+  else if (base::LowerCaseEqualsASCII(orientation.string(),
+                                      "landscape-primary"))
     return blink::WebScreenOrientationLockLandscapePrimary;
-  else if (LowerCaseEqualsASCII(orientation.string(), "landscape-secondary"))
+  else if (base::LowerCaseEqualsASCII(orientation.string(),
+                                      "landscape-secondary"))
     return blink::WebScreenOrientationLockLandscapeSecondary;
-  else if (LowerCaseEqualsASCII(orientation.string(), "portrait"))
+  else if (base::LowerCaseEqualsASCII(orientation.string(), "portrait"))
     return blink::WebScreenOrientationLockPortrait;
-  else if (LowerCaseEqualsASCII(orientation.string(), "portrait-primary"))
+  else if (base::LowerCaseEqualsASCII(orientation.string(),
+                                      "portrait-primary"))
     return blink::WebScreenOrientationLockPortraitPrimary;
-  else if (LowerCaseEqualsASCII(orientation.string(), "portrait-secondary"))
+  else if (base::LowerCaseEqualsASCII(orientation.string(),
+                                      "portrait-secondary"))
     return blink::WebScreenOrientationLockPortraitSecondary;
   else {
     errors_.push_back(GetErrorPrefix() +

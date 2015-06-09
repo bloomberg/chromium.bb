@@ -128,19 +128,17 @@ void GetSecureDirectiveValues(const std::string& directive_name,
     bool is_secure_csp_token = false;
 
     // We might need to relax this whitelist over time.
-    if (source == "'self'" ||
-        source == "'none'" ||
+    if (source == "'self'" || source == "'none'" ||
         source == "http://127.0.0.1" ||
-        LowerCaseEqualsASCII(source, "blob:") ||
-        LowerCaseEqualsASCII(source, "filesystem:") ||
-        LowerCaseEqualsASCII(source, "http://localhost") ||
+        base::LowerCaseEqualsASCII(source, "blob:") ||
+        base::LowerCaseEqualsASCII(source, "filesystem:") ||
+        base::LowerCaseEqualsASCII(source, "http://localhost") ||
         StartsWithASCII(source, "http://127.0.0.1:", true) ||
         StartsWithASCII(source, "http://localhost:", true) ||
         isNonWildcardTLD(source, "https://", true) ||
         isNonWildcardTLD(source, "chrome://", false) ||
-        isNonWildcardTLD(source,
-                         std::string(extensions::kExtensionScheme) +
-                         url::kStandardSchemeSeparator,
+        isNonWildcardTLD(source, std::string(extensions::kExtensionScheme) +
+                                     url::kStandardSchemeSeparator,
                          false) ||
         StartsWithASCII(source, "chrome-extension-resource:", true)) {
       is_secure_csp_token = true;
@@ -209,7 +207,7 @@ bool AllowedToHaveInsecureObjectSrc(
     base::StringTokenizer tokenizer(input, " \t\r\n");
     if (!tokenizer.GetNext())
       continue;
-    if (!LowerCaseEqualsASCII(tokenizer.token(), kPluginTypes))
+    if (!base::LowerCaseEqualsASCII(tokenizer.token(), kPluginTypes))
       continue;
     while (tokenizer.GetNext()) {
       if (!PluginTypeAllowed(tokenizer.token()))

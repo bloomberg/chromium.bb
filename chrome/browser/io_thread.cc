@@ -1036,17 +1036,17 @@ void IOThread::ConfigureSpdyGlobals(
   }
   if (spdy_trial_group.starts_with(kSpdyFieldTrialParametrizedPrefix)) {
     bool spdy_enabled = false;
-    if (LowerCaseEqualsASCII(
+    if (base::LowerCaseEqualsASCII(
             GetVariationParam(spdy_trial_params, "enable_spdy31"), "true")) {
       globals->next_protos.push_back(net::kProtoSPDY31);
       spdy_enabled = true;
     }
-    if (LowerCaseEqualsASCII(
+    if (base::LowerCaseEqualsASCII(
             GetVariationParam(spdy_trial_params, "enable_http2_14"), "true")) {
       globals->next_protos.push_back(net::kProtoSPDY4_14);
       spdy_enabled = true;
     }
-    if (LowerCaseEqualsASCII(
+    if (base::LowerCaseEqualsASCII(
             GetVariationParam(spdy_trial_params, "enable_http2"), "true")) {
       globals->next_protos.push_back(net::kProtoSPDY4);
       spdy_enabled = true;
@@ -1412,7 +1412,7 @@ bool IOThread::ShouldEnableQuicForDataReductionProxy() {
 // static
 bool IOThread::ShouldDisableInsecureQuic(
     const VariationParameters& quic_trial_params) {
-  return LowerCaseEqualsASCII(
+  return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "disable_insecure_quic"),
       "true");
 }
@@ -1482,7 +1482,7 @@ double IOThread::GetAlternativeProtocolProbabilityThreshold(
 // static
 bool IOThread::ShouldQuicAlwaysRequireHandshakeConfirmation(
     const VariationParameters& quic_trial_params) {
-  return LowerCaseEqualsASCII(
+  return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params,
                         "always_require_handshake_confirmation"),
       "true");
@@ -1491,7 +1491,7 @@ bool IOThread::ShouldQuicAlwaysRequireHandshakeConfirmation(
 // static
 bool IOThread::ShouldQuicDisableConnectionPooling(
     const VariationParameters& quic_trial_params) {
-  return LowerCaseEqualsASCII(
+  return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "disable_connection_pooling"),
       "true");
 }
@@ -1511,7 +1511,7 @@ float IOThread::GetQuicLoadServerInfoTimeoutSrttMultiplier(
 // static
 bool IOThread::ShouldQuicEnableConnectionRacing(
     const VariationParameters& quic_trial_params) {
-  return LowerCaseEqualsASCII(
+  return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "enable_connection_racing"),
       "true");
 }
@@ -1519,7 +1519,7 @@ bool IOThread::ShouldQuicEnableConnectionRacing(
 // static
 bool IOThread::ShouldQuicEnableNonBlockingIO(
     const VariationParameters& quic_trial_params) {
-  return LowerCaseEqualsASCII(
+  return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "enable_non_blocking_io"),
       "true");
 }
@@ -1527,7 +1527,7 @@ bool IOThread::ShouldQuicEnableNonBlockingIO(
 // static
 bool IOThread::ShouldQuicDisableDiskCache(
     const VariationParameters& quic_trial_params) {
-  return LowerCaseEqualsASCII(
+  return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "disable_disk_cache"), "true");
 }
 

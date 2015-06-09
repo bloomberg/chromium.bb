@@ -18,7 +18,7 @@
 
 bool UrlIsExternalFileReference(const GURL& url) {
   return url.SchemeIs(ios::GetChromeBrowserProvider()->GetChromeUIScheme()) &&
-         LowerCaseEqualsASCII(url.host(), kChromeUIExternalFileHost);
+         base::LowerCaseEqualsASCII(url.host(), kChromeUIExternalFileHost);
 }
 
 NSURL* UrlToLaunchChrome() {

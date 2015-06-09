@@ -108,7 +108,7 @@ void GetDeviceInfo(const base::DictionaryValue& properties,
   value->SetString("activation_type", activation_type);
   value->SetString("carrier", name);
   value->SetString("payment_url", payment_url);
-  if (LowerCaseEqualsASCII(post_method, "post") && !post_data.empty())
+  if (base::LowerCaseEqualsASCII(post_method, "post") && !post_data.empty())
     value->SetString("post_data", post_data);
 
   // Use the cached DeviceState properties.
@@ -464,7 +464,7 @@ void MobileSetupHandler::HandleSetTransactionStatus(
     return;
 
   MobileActivator::GetInstance()->OnSetTransactionStatus(
-      LowerCaseEqualsASCII(status, kJsApiResultOK));
+      base::LowerCaseEqualsASCII(status, kJsApiResultOK));
 }
 
 void MobileSetupHandler::HandlePaymentPortalLoad(const base::ListValue* args) {
@@ -481,7 +481,7 @@ void MobileSetupHandler::HandlePaymentPortalLoad(const base::ListValue* args) {
     return;
 
   MobileActivator::GetInstance()->OnPortalLoaded(
-      LowerCaseEqualsASCII(result, kJsApiResultOK));
+      base::LowerCaseEqualsASCII(result, kJsApiResultOK));
 }
 
 void MobileSetupHandler::HandleGetDeviceInfo(const base::ListValue* args) {

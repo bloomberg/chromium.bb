@@ -201,7 +201,7 @@ bool AXNodeData::GetHtmlAttribute(
     const char* html_attr, std::string* value) const {
   for (size_t i = 0; i < html_attributes.size(); ++i) {
     const std::string& attr = html_attributes[i].first;
-    if (LowerCaseEqualsASCII(attr, html_attr)) {
+    if (base::LowerCaseEqualsASCII(attr, html_attr)) {
       *value = html_attributes[i].second;
       return true;
     }

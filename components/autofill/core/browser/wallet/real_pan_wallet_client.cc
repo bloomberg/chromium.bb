@@ -147,7 +147,7 @@ void RealPanWalletClient::OnURLFetchComplete(const net::URLFetcher* source) {
         response_dict->GetString("error.code", &error_code);
       }
 
-      if (LowerCaseEqualsASCII(error_code, "internal"))
+      if (base::LowerCaseEqualsASCII(error_code, "internal"))
         result = AutofillClient::TRY_AGAIN_FAILURE;
       else if (real_pan.empty() || !error_code.empty())
         result = AutofillClient::PERMANENT_FAILURE;

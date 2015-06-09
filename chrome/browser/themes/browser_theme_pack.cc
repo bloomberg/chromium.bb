@@ -209,7 +209,8 @@ int GetPersistentIDByNameHelper(const std::string& key,
                                 const PersistingImagesTable* image_table,
                                 size_t image_table_size) {
   for (size_t i = 0; i < image_table_size; ++i) {
-    if (image_table[i].key && LowerCaseEqualsASCII(key, image_table[i].key)) {
+    if (image_table[i].key &&
+        base::LowerCaseEqualsASCII(key, image_table[i].key)) {
       return image_table[i].persistent_id;
     }
   }
@@ -344,7 +345,7 @@ int GetIntForString(const std::string& key,
                     StringToIntTable* table,
                     size_t table_length) {
   for (size_t i = 0; i < table_length; ++i) {
-    if (LowerCaseEqualsASCII(key, table[i].key)) {
+    if (base::LowerCaseEqualsASCII(key, table[i].key)) {
       return table[i].id;
     }
   }

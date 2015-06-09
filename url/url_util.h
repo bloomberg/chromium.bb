@@ -166,23 +166,6 @@ URL_EXPORT bool ReplaceComponents(
 
 // String helper functions ----------------------------------------------------
 
-// Compare the lower-case form of the given string against the given ASCII
-// string.  This is useful for doing checking if an input string matches some
-// token, and it is optimized to avoid intermediate string copies.
-//
-// The versions of this function that don't take a b_end assume that the b
-// string is NULL terminated.
-URL_EXPORT bool LowerCaseEqualsASCII(const char* a_begin,
-                                     const char* a_end,
-                                     const char* b);
-URL_EXPORT bool LowerCaseEqualsASCII(const char* a_begin,
-                                     const char* a_end,
-                                     const char* b_begin,
-                                     const char* b_end);
-URL_EXPORT bool LowerCaseEqualsASCII(const base::char16* a_begin,
-                                     const base::char16* a_end,
-                                     const char* b);
-
 // Unescapes the given string using URL escaping rules.
 URL_EXPORT void DecodeURLEscapeSequences(const char* input,
                                          int length,
