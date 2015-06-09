@@ -5530,6 +5530,7 @@ interface UIEvent
     getter layerY
     getter pageX
     getter pageY
+    getter sourceDevice
     getter view
     getter which
     method constructor

@@ -1,0 +1,21 @@
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+    description("This tests that UIEvent will have sourceDevice set to be null by default, and it can also be passed when initialization.")
+
+    var event = document.createEvent('UIEvent');
+    shouldBeNonNull("event");
+    shouldBeNull("event.sourceDevice");  
+    
+    event = new UIEvent('eventType', { sourceDevice: new InputDevice({ firesTouchEvents: false }) });
+    shouldBeNonNull("event.sourceDevice");
+    shouldBeFalse("event.sourceDevice.firesTouchEvents");
+    
+    event = new UIEvent('eventType', { sourceDevice: new InputDevice({ firesTouchEvents: true }) });
+    shouldBeNonNull("event.sourceDevice");
+    shouldBeTrue("event.sourceDevice.firesTouchEvents");
+
+</script>
+</body>

@@ -29,6 +29,7 @@
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/UIEventInit.h"
 #include "core/frame/DOMWindow.h"
+#include "core/input/InputDevice.h"
 
 namespace blink {
 
@@ -56,6 +57,7 @@ public:
 
     AbstractView* view() const { return m_view.get(); }
     int detail() const { return m_detail; }
+    InputDevice* sourceDevice() const { return m_sourceDevice.get(); }
 
     virtual const AtomicString& interfaceName() const override;
     virtual bool isUIEvent() const override final;
@@ -81,6 +83,7 @@ protected:
 private:
     RefPtrWillBeMember<AbstractView> m_view;
     int m_detail;
+    PersistentWillBeMember<InputDevice> m_sourceDevice;
 };
 
 } // namespace blink

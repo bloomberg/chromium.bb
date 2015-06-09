@@ -28,6 +28,7 @@ namespace blink {
 
 UIEvent::UIEvent()
     : m_detail(0)
+    , m_sourceDevice(nullptr)
 {
 }
 
@@ -35,6 +36,7 @@ UIEvent::UIEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelab
     : Event(eventType, canBubbleArg, cancelableArg)
     , m_view(viewArg)
     , m_detail(detailArg)
+    , m_sourceDevice(nullptr)
 {
 }
 
@@ -42,6 +44,7 @@ UIEvent::UIEvent(const AtomicString& eventType, const UIEventInit& initializer)
     : Event(eventType, initializer)
     , m_view(initializer.view())
     , m_detail(initializer.detail())
+    , m_sourceDevice(initializer.sourceDevice())
 {
 }
 
@@ -58,6 +61,7 @@ void UIEvent::initUIEvent(const AtomicString& typeArg, bool canBubbleArg, bool c
 
     m_view = viewArg;
     m_detail = detailArg;
+    m_sourceDevice = nullptr;
 }
 
 bool UIEvent::isUIEvent() const
@@ -108,6 +112,7 @@ int UIEvent::which() const
 DEFINE_TRACE(UIEvent)
 {
     visitor->trace(m_view);
+    visitor->trace(m_sourceDevice);
     Event::trace(visitor);
 }
 
