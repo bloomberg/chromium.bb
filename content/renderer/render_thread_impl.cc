@@ -1203,15 +1203,13 @@ void RenderThreadImpl::IdleHandler() {
     if (idle_notifications_to_skip_ > 0) {
       --idle_notifications_to_skip_;
     } else {
-      base::allocator::ReleaseFreeMemory();
-      discardable_shared_memory_manager()->ReleaseFreeMemory();
+      ReleaseFreeMemory();
     }
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
     return;
   }
 
-  base::allocator::ReleaseFreeMemory();
-  discardable_shared_memory_manager()->ReleaseFreeMemory();
+  ReleaseFreeMemory();
 
   // Continue the idle timer if the webkit shared timer is not suspended or
   // something is left to do.
@@ -1875,6 +1873,14 @@ void RenderThreadImpl::OnRendererVisible() {
     return;
 
   ScheduleIdleHandler(kLongIdleHandlerDelayMs);
+}
+
+void RenderThreadImpl::ReleaseFreeMemory() {
+  base::allocator::ReleaseFreeMemory();
+  discardable_shared_memory_manager()->ReleaseFreeMemory();
+
+  if (blink_platform_impl_)
+    blink::decommitFreeableMemory();
 }
 
 RenderThreadImpl::PendingRenderFrameConnect::PendingRenderFrameConnect(
