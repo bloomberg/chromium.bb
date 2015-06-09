@@ -4,7 +4,7 @@
 
 import("//media/media_options.gni")
 import("//testing/test.gni")
-import("//third_party/mojo/src/mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application.gni")
 
 # Target naming conventions:
 # - converters: C++/Mojo type converters.

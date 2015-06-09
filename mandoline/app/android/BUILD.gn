@@ -4,7 +4,6 @@
 
 assert(is_android)
 
-import("//third_party/mojo/src/mojo/public/mojo.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//mojo/generate_mojo_shell_assets_list.gni")

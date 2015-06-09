@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//mojo/mojo_application_package.gni")
+import("//mojo/public/mojo_application.gni")
 import("//testing/test.gni")
-import("//third_party/mojo/src/mojo/public/mojo_application.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")

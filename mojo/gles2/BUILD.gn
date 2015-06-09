@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
-
 config("mojo_use_gles2") {
   defines = [ "MOJO_USE_GLES2_IMPL" ]
 }
