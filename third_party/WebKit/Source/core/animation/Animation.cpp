@@ -792,13 +792,17 @@ bool Animation::update(TimingUpdateReason reason)
 
     if ((idle || limited()) && !m_finished) {
         if (reason == TimingUpdateForAnimationFrame && (idle || hasStartTime())) {
-            const AtomicString& eventType = EventTypeNames::finish;
-            if (executionContext() && hasEventListeners(eventType)) {
-                double eventCurrentTime = currentTimeInternal() * 1000;
-                m_pendingFinishedEvent = AnimationPlayerEvent::create(eventType, eventCurrentTime, timeline()->currentTime());
-                m_pendingFinishedEvent->setTarget(this);
-                m_pendingFinishedEvent->setCurrentTarget(this);
-                m_timeline->document()->enqueueAnimationFrameEvent(m_pendingFinishedEvent);
+            if (idle) {
+                // TODO(dstockwell): Fire the cancel event.
+            } else {
+                const AtomicString& eventType = EventTypeNames::finish;
+                if (executionContext() && hasEventListeners(eventType)) {
+                    double eventCurrentTime = currentTimeInternal() * 1000;
+                    m_pendingFinishedEvent = AnimationPlayerEvent::create(eventType, eventCurrentTime, timeline()->currentTime());
+                    m_pendingFinishedEvent->setTarget(this);
+                    m_pendingFinishedEvent->setCurrentTarget(this);
+                    m_timeline->document()->enqueueAnimationFrameEvent(m_pendingFinishedEvent);
+                }
             }
             m_finished = true;
         }

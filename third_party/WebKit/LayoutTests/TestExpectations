@@ -1640,7 +1640,6 @@ crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageO
 
 crbug.com/445889 virtual/slimmingpaint/fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Skip ]
 crbug.com/445889 fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
-crbug.com/445955 [ Mac ] web-animations-api/player-cancel-finishes.html [ Pass Failure ]
 
 crbug.com/447425 [ Win Mac Linux ] fast/dynamic/011.html [ Pass Failure ]
 
