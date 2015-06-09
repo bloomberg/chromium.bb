@@ -490,7 +490,7 @@
         }],
         ['disable_nacl==0 and disable_nacl_untrusted==0 and enable_nacl_nonsfi_test==1', {
           'dependencies': [
-            '../components/nacl_nonsfi.gyp:nacl_helper_nonsfi_unittests',
+            '../components/nacl.gyp:nacl_helper_nonsfi_unittests',
           ],
         }],
         ['disable_nacl==0 and disable_nacl_untrusted==0', {

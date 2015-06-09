@@ -18,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"
+#include "base/test/gtest_xml_unittest_result_printer.h"
 #include "base/test/gtest_xml_util.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/multiprocess_test.h"

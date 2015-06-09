@@ -651,6 +651,7 @@ bool GetFileInfo(const FilePath& file_path, File::Info* results) {
   results->FromStat(file_info);
   return true;
 }
+#endif  // !defined(OS_NACL_NONSFI)
 
 FILE* OpenFile(const FilePath& filename, const char* mode) {
   ThreadRestrictions::AssertIOAllowed();
@@ -709,6 +710,8 @@ bool WriteFileDescriptor(const int fd, const char* data, int size) {
 
   return true;
 }
+
+#if !defined(OS_NACL_NONSFI)
 
 bool AppendToFile(const FilePath& filename, const char* data, int size) {
   ThreadRestrictions::AssertIOAllowed();

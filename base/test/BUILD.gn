@@ -33,6 +33,8 @@ source_set("test_support") {
     "expectations/parser.h",
     "gtest_util.cc",
     "gtest_util.h",
+    "gtest_xml_unittest_result_printer.cc",
+    "gtest_xml_unittest_result_printer.h",
     "gtest_xml_util.cc",
     "gtest_xml_util.h",
     "histogram_tester.cc",

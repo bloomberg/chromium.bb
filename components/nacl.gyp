@@ -451,6 +451,22 @@
         },
       ],
     }],
+    ['disable_nacl==0 and disable_nacl_untrusted==0 and enable_nacl_nonsfi_test==1', {
+      'targets': [
+        {
+          'target_name': 'nacl_helper_nonsfi_unittests',
+          'type': '<(gtest_target_type)',
+          'sources': [
+            'nacl/loader/nonsfi/nacl_helper_nonsfi_unittests.cc',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_launcher_nacl_nonsfi',
+            'nacl_nonsfi.gyp:nacl_helper_nonsfi_unittests_main',
+          ],
+        },
+      ],
+    }],
   ],
   'targets': [
     {

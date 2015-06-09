@@ -488,14 +488,6 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
 BPF_TEST_C(NaClNonSfiSandboxTest,
            StartingAndJoiningThreadWorks,
            nacl::nonsfi::NaClNonSfiBPFSandboxPolicy) {
-#if defined(OS_NACL_NONSFI)
-  // base::Thread internally uses LazyInstance, which registers a callback to
-  // AtExitManager. However, in PNaCl toolchain build, it is not instantiated
-  // by the test runner, unlike host toolchain build (nacl_loader_unittests).
-  // Hence, declare it here so that the LazyInstance will work properly.
-  base::AtExitManager at_exit;
-#endif
-
   base::Thread thread("sandbox_tests");
   BPF_ASSERT(thread.Start());
   // |thread|'s destructor will join the thread.

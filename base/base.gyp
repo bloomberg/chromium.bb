@@ -905,6 +905,8 @@
         'test/expectations/parser.h',
         'test/gtest_util.cc',
         'test/gtest_util.h',
+        'test/gtest_xml_unittest_result_printer.cc',
+        'test/gtest_xml_unittest_result_printer.h',
         'test/gtest_xml_util.cc',
         'test/gtest_xml_util.h',
         'test/histogram_tester.cc',
@@ -1040,6 +1042,22 @@
           'PERF_TEST',
         ],
       },
+    },
+    {
+      'target_name': 'test_launcher_nacl_nonsfi',
+      'conditions': [
+        ['disable_nacl==0 and disable_nacl_untrusted==0 and enable_nacl_nonsfi_test==1', {
+          'type': 'static_library',
+          'sources': [
+            'test/launcher/test_launcher_nacl_nonsfi.cc',
+          ],
+          'dependencies': [
+            'test_support_base',
+          ],
+        }, {
+          'type': 'none',
+        }],
+      ],
     },
   ],
   'conditions': [

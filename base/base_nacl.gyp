@@ -83,6 +83,7 @@
               'base_switches.h',
 
               # For PathExists and ReadFromFD.
+              'files/file_util.cc',
               'files/file_util_posix.cc',
 
               # For MessageLoopForIO based on libevent.
@@ -110,6 +111,30 @@
           ],
           'dependencies': [
             '../third_party/libevent/libevent_nacl_nonsfi.gyp:event_nacl_nonsfi',
+          ],
+        },
+        {
+          'target_name': 'test_support_base_nacl_nonsfi',
+          'type': 'none',
+          'variables': {
+            'nacl_untrusted_build': 1,
+            'nlib_target': 'libtest_support_base_nacl_nonsfi.a',
+            'build_glibc': 0,
+            'build_newlib': 0,
+            'build_irt': 0,
+            'build_pnacl_newlib': 0,
+            'build_nonsfi_helper': 1,
+
+            'sources': [
+              'test/gtest_util.cc',
+              'test/launcher/unit_test_launcher_nacl_nonsfi.cc',
+              'test/gtest_xml_unittest_result_printer.cc',
+              'test/test_switches.cc',
+            ],
+          },
+          'dependencies': [
+            'base_nacl_nonsfi',
+            '../testing/gtest_nacl.gyp:gtest_nacl',
           ],
         },
       ],
