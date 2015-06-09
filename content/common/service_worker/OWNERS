@@ -3,9 +3,6 @@ falken@chromium.org
 horo@chromium.org
 nhiroki@chromium.org
 
-# may not be available
-kinuko@chromium.org
-
 # Changes to IPC messages require a security review to avoid introducing
 # new sandbox escapes.
 per-file *_messages*.h=set noparent
