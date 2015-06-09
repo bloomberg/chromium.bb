@@ -71,12 +71,6 @@ public class ReaderModeButtonView extends SwipableOverlayView {
         this.setClickable(true);
     }
 
-    // Expose dismiss to other classes in this package.
-    @Override
-    protected boolean dismiss(boolean horizontally) {
-        return super.dismiss(horizontally);
-    }
-
     @Override
     protected void onViewClicked() {
         mReaderModeButtonViewDelegate.onClick();

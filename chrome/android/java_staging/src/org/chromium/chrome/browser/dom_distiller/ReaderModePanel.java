@@ -551,7 +551,9 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
 
         if (mReaderModeButtonView != null
                 && (status != ReaderModeManager.POSSIBLE || !isReaderModeCurrentlyAllowed())) {
-            mReaderModeButtonView.dismiss(true);
+            // Unfortunately, dismiss() couldn't be used because it might attempt to remove a view
+            // while in onLayout, thus causing crash.
+            mReaderModeButtonView.removeFromParentView();
             mReaderModeButtonView = null;
             return;
         }
