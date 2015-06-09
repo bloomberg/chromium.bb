@@ -127,25 +127,30 @@ bool CastConfigDelegateChromeos::HasCastExtension() const {
 
 void CastConfigDelegateChromeos::GetReceiversAndActivities(
     const ReceiversAndActivitesCallback& callback) {
+  // The methods in backgroundSetup are renamed during minification, so we have
+  // to bind the exported global API methods to backgroundSetup using call().
   ExecuteJavaScriptWithCallback(
-      "backgroundSetup.getMirrorCapableReceiversAndActivities();",
+      "getMirrorCapableReceiversAndActivities.call(backgroundSetup);",
       base::Bind(&GetReceiversAndActivitiesCallback, callback));
 }
 
 void CastConfigDelegateChromeos::CastToReceiver(
     const std::string& receiver_id) {
-  ExecuteJavaScript("backgroundSetup.launchDesktopMirroring('" + receiver_id +
-                    "');");
+  // The methods in backgroundSetup are renamed during minification, so we have
+  // to bind the exported global API methods to backgroundSetup using call().
+  ExecuteJavaScript("launchDesktopMirroring.call(backgroundSetup, '" +
+                    receiver_id + "');");
 }
 
 void CastConfigDelegateChromeos::StopCasting() {
-  ExecuteJavaScript("backgroundSetup.stopMirroring('user-stop')");
+  // The methods in backgroundSetup are renamed during minification, so we have
+  // to bind the exported global API methods to backgroundSetup using call().
+  ExecuteJavaScript("stopMirroring.call(backgroundSetup, 'user-stop');");
 
   // TODO(jdufault): Remove this after the beta/release versions of the
   // cast extension have been updated so that they properly export the
   // stopMirroring function. For now, we try to invoke all of the other
   // names that the function goes by. See crbug.com/489929.
-  ExecuteJavaScript("backgroundSetup.stopCastMirroring('user-stop');");
   ExecuteJavaScript("backgroundSetup.Qu('user-stop');");
 }
 
