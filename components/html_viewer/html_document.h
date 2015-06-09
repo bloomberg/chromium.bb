@@ -42,7 +42,6 @@ class View;
 namespace html_viewer {
 
 class AxProviderImpl;
-class DevToolsAgentImpl;
 class Setup;
 class WebLayerTreeViewImpl;
 
@@ -171,8 +170,6 @@ class HTMLDocument : public blink::WebViewClient,
 
   FrameTreeManager frame_tree_manager_;
   mojo::Binding<mandoline::FrameTreeClient> frame_tree_manager_binding_;
-
-  scoped_ptr<DevToolsAgentImpl> devtools_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocument);
 };
