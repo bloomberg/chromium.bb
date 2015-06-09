@@ -38,6 +38,7 @@
 #include "content/common/navigation_params.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "third_party/WebKit/public/web/WebFrameLoadType.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 using blink::WebFrame;
@@ -89,9 +90,11 @@ void HistoryController::GoToEntry(
       continue;
     render_frame->SetPendingNavigationParams(make_scoped_ptr(
         new NavigationParams(*navigation_params_.get())));
-    frame->loadHistoryItem(item.second,
-                           blink::WebHistorySameDocumentLoad,
-                           cache_policy);
+    WebURLRequest request = frame->toWebLocalFrame()->requestFromHistoryItem(
+        item.second, cache_policy);
+    frame->toWebLocalFrame()->load(
+        request, blink::WebFrameLoadType::BackForward, item.second,
+        blink::WebHistorySameDocumentLoad);
   }
   for (const auto& item : different_document_loads) {
     WebFrame* frame = item.first;
@@ -100,9 +103,11 @@ void HistoryController::GoToEntry(
       continue;
     render_frame->SetPendingNavigationParams(make_scoped_ptr(
         new NavigationParams(*navigation_params_.get())));
-    frame->loadHistoryItem(item.second,
-                           blink::WebHistoryDifferentDocumentLoad,
-                           cache_policy);
+    WebURLRequest request = frame->toWebLocalFrame()->requestFromHistoryItem(
+        item.second, cache_policy);
+    frame->toWebLocalFrame()->load(
+        request, blink::WebFrameLoadType::BackForward, item.second,
+        blink::WebHistoryDifferentDocumentLoad);
   }
 }
 

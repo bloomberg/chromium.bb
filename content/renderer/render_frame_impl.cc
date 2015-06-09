@@ -4409,27 +4409,38 @@ void RenderFrameImpl::NavigateInternal(
   pending_navigation_params_.reset(
       new NavigationParams(common_params, start_params, request_params));
 
-  // If we are reloading, then Blink will use the history state of the current
-  // page, so we should just ignore any given history state.  Otherwise, if we
-  // have history state, then we need to navigate to it, which corresponds to a
-  // back/forward navigation event.
-  if (is_reload && !browser_side_navigation) {
-    // TODO(clamy): adapt this code for PlzNavigate. In particular the stream
-    // override should be given to the generated request.
-    bool reload_original_url =
-        (common_params.navigation_type ==
-         FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
+  // Create parameters for a standard navigation.
+  blink::WebFrameLoadType load_type = blink::WebFrameLoadType::Standard;
+  bool should_load_request = false;
+  WebHistoryItem item_for_history_navigation;
+  WebURLRequest request = CreateURLRequestForNavigation(
+      common_params, stream_params.Pass(), frame_->isViewSourceModeEnabled());
+
+  // PlzNavigate: Make sure that Blink's loader will not try to use browser side
+  // navigation for this request (since it already went to the browser).
+  if (browser_side_navigation)
+    request.setCheckForBrowserSideNavigation(false);
+
+  // If we are reloading, then use the history state of the current frame.
+  // Otherwise, if we have history state, then we need to navigate to it, which
+  // corresponds to a back/forward navigation event. Update the parameters
+  // depending on the navigation type.
+  if (is_reload) {
     bool ignore_cache = (common_params.navigation_type ==
                          FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
+    load_type = ignore_cache ? blink::WebFrameLoadType::ReloadFromOrigin
+                             : blink::WebFrameLoadType::Reload;
 
-    if (reload_original_url)
-      frame_->reloadWithOverrideURL(common_params.url, true);
-    else
-      frame_->reload(ignore_cache);
-  } else if (is_history_navigation && !browser_side_navigation) {
-    // TODO(clamy): adapt this code for PlzNavigate. In particular the stream
-    // override should be given to the generated request.
-
+    if (!browser_side_navigation) {
+      const GURL override_url =
+          (common_params.navigation_type ==
+           FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL)
+              ? common_params.url
+              : GURL();
+      request = frame_->requestForReload(load_type, override_url);
+    }
+    should_load_request = true;
+  } else if (is_history_navigation) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(request_params.page_id, -1);
     // We must know the nav entry ID of the page we are navigating back to,
@@ -4442,20 +4453,26 @@ void RenderFrameImpl::NavigateInternal(
       // Ensure we didn't save the swapped out URL in UpdateState, since the
       // browser should never be telling us to navigate to swappedout://.
       CHECK(entry->root().urlString() != WebString::fromUTF8(kSwappedOutURL));
-      scoped_ptr<NavigationParams> navigation_params(
-          new NavigationParams(*pending_navigation_params_.get()));
-      render_view_->history_controller()->GoToEntry(
-          entry.Pass(), navigation_params.Pass(), cache_policy);
+
+      if (!browser_side_navigation) {
+        scoped_ptr<NavigationParams> navigation_params(
+            new NavigationParams(*pending_navigation_params_.get()));
+        render_view_->history_controller()->GoToEntry(
+            entry.Pass(), navigation_params.Pass(), cache_policy);
+      } else {
+        // TODO(clamy): this should be set to the HistoryItem sent by the
+        // browser once the HistoryController has moved to the browser.
+        // TODO(clamy): distinguish between different document and same document
+        // loads.
+        // TODO(clamy): update this for subframes history loads.
+        item_for_history_navigation =
+            entry->GetHistoryNodeForFrame(this)->item();
+        load_type = blink::WebFrameLoadType::BackForward;
+        should_load_request = true;
+      }
     }
-  } else if (!common_params.base_url_for_data_url.is_empty() ||
-             (browser_side_navigation &&
-              common_params.url.SchemeIs(url::kDataScheme))) {
-    LoadDataURL(common_params, frame_);
   } else {
     // Navigate to the given URL.
-    WebURLRequest request = CreateURLRequestForNavigation(
-        common_params, stream_params.Pass(), frame_->isViewSourceModeEnabled());
-
     if (!start_params.extra_headers.empty() && !browser_side_navigation) {
       for (net::HttpUtil::HeadersIterator i(start_params.extra_headers.begin(),
                                             start_params.extra_headers.end(),
@@ -4485,18 +4502,30 @@ void RenderFrameImpl::NavigateInternal(
     // A session history navigation should have been accompanied by state.
     CHECK_EQ(request_params.page_id, -1);
 
-    // PlzNavigate: Make sure that Blink's loader will not try to use browser
-    // side navigation for this request (since it already went to the browser).
-    if (browser_side_navigation)
-      request.setCheckForBrowserSideNavigation(false);
+    should_load_request = true;
+  }
 
-    // Record this before starting the load. We need a lower bound of this time
-    // to sanitize the navigationStart override set below.
-    base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
-    frame_->loadRequest(request);
+  if (should_load_request) {
+    // Perform a navigation to a data url if needed.
+    if (!common_params.base_url_for_data_url.is_empty() ||
+        (browser_side_navigation &&
+         common_params.url.SchemeIs(url::kDataScheme))) {
+      LoadDataURL(common_params, frame_);
+    } else {
+      // Record this before starting the load. We need a lower bound of this
+      // time to sanitize the navigationStart override set below.
+      base::TimeTicks renderer_navigation_start = base::TimeTicks::Now();
 
-    UpdateFrameNavigationTiming(frame_, request_params.browser_navigation_start,
-                                renderer_navigation_start);
+      // Load the request.
+      frame_->toWebLocalFrame()->load(request, load_type,
+                                      item_for_history_navigation);
+
+      if (load_type == blink::WebFrameLoadType::Standard) {
+        UpdateFrameNavigationTiming(frame_,
+                                    request_params.browser_navigation_start,
+                                    renderer_navigation_start);
+      }
+    }
   }
 
   // In case LoadRequest failed before didCreateDataSource was called.
