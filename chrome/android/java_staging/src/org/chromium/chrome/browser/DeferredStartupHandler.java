@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.signin.AccountManagementFragmentDelegateImpl;
 
 /**
  * Handler for application level tasks to be completed on deferred startup.
@@ -98,8 +97,6 @@ public class DeferredStartupHandler {
 
         DownloadManagerService.getDownloadManagerService(application)
                 .clearPendingDownloadNotifications();
-
-        AccountManagementFragmentDelegateImpl.registerAccountManagementFragmentDelegate();
 
         application.initializeSharedClasses();
 
