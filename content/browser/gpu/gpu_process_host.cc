@@ -45,6 +45,10 @@
 #include "ui/events/latency_info.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "content/common/sandbox_win.h"
@@ -1066,6 +1070,9 @@ std::string GpuProcessHost::GetShaderPrefixKey() {
     gpu::GPUInfo info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
 
     std::string in_str = GetContentClient()->GetProduct() + "-" +
+#if defined(OS_ANDROID)
+        base::android::BuildInfo::GetInstance()->android_build_fp() + "-" +
+#endif
         info.gl_vendor + "-" + info.gl_renderer + "-" +
         info.driver_version + "-" + info.driver_vendor;
 
