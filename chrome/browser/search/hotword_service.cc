@@ -639,7 +639,11 @@ bool HotwordService::IsServiceAvailable() {
 }
 
 bool HotwordService::IsHotwordAllowed() {
+#if defined(ENABLE_HOTWORDING)
   return DoesHotwordSupportLanguage(profile_);
+#else
+  return false;
+#endif
 }
 
 bool HotwordService::IsOptedIntoAudioLogging() {

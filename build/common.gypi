@@ -416,6 +416,9 @@
       # Web speech is enabled by default. Set to 0 to disable.
       'enable_web_speech%': 1,
 
+      # 'Ok Google' hotwording is enabled by default. Set to 0 to disable.
+      'enable_hotwording%': 1,
+
       # Notifications are compiled in by default. Set to 0 to disable.
       'notifications%' : 1,
 
@@ -1143,6 +1146,7 @@
     'configuration_policy%': '<(configuration_policy)',
     'safe_browsing%': '<(safe_browsing)',
     'enable_web_speech%': '<(enable_web_speech)',
+    'enable_hotwording%': '<(enable_hotwording)',
     'notifications%': '<(notifications)',
     'clang_use_chrome_plugins%': '<(clang_use_chrome_plugins)',
     'mac_want_real_dsym%': '<(mac_want_real_dsym)',

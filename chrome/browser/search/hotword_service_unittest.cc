@@ -157,6 +157,7 @@ INSTANTIATE_TEST_CASE_P(HotwordServiceTests,
                             extension_misc::kHotwordSharedModuleId));
 
 TEST_P(HotwordServiceTest, IsHotwordAllowedLocale) {
+#if defined(ENABLE_HOTWORDING)
   TestingProfile::Builder profile_builder;
   scoped_ptr<TestingProfile> profile = profile_builder.Build();
 
@@ -187,6 +188,7 @@ TEST_P(HotwordServiceTest, IsHotwordAllowedLocale) {
   Profile* otr_profile = profile->GetOffTheRecordProfile();
   SetApplicationLocale(otr_profile, "en");
   EXPECT_FALSE(HotwordServiceFactory::IsHotwordAllowed(otr_profile));
+#endif  // defined(ENABLE_HOTWORDING)
 }
 
 TEST_P(HotwordServiceTest, ShouldReinstallExtension) {
@@ -243,6 +245,7 @@ TEST_P(HotwordServiceTest, PreviousLanguageSetOnInstall) {
 }
 
 TEST_P(HotwordServiceTest, UninstallReinstallTriggeredCorrectly) {
+#if defined(ENABLE_HOTWORDING)
   InitializeEmptyExtensionService();
   service_->Init();
 
@@ -313,6 +316,7 @@ TEST_P(HotwordServiceTest, UninstallReinstallTriggeredCorrectly) {
   EXPECT_TRUE(HotwordServiceFactory::IsHotwordAllowed(profile()));
   EXPECT_FALSE(hotword_service->MaybeReinstallHotwordExtension());
   EXPECT_EQ(1, hotword_service->uninstall_count());  // no change
+#endif  // defined(ENABLE_HOTWORDING)
 }
 
 TEST_P(HotwordServiceTest, DisableAlwaysOnOnLanguageChange) {

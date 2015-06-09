@@ -3589,6 +3589,9 @@
         ['enable_session_service==1', {
           'sources': [ '<@(chrome_browser_session_service_sources)' ],
         }],
+        ['enable_hotwording==1', {
+          'defines': [ 'ENABLE_HOTWORDING' ],
+        }],
         ['OS!="android" and OS!="ios" and chromeos==0', {
           'sources': [ '<@(chrome_browser_desktop_sources)' ],
         }],
