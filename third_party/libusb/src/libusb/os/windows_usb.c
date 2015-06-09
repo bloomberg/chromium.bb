@@ -2290,6 +2290,7 @@ const struct usbi_os_backend windows_backend = {
 	windows_get_device_list,
 	NULL,				/* hotplug_poll */
 	windows_open,
+	NULL,       /* open_fd */
 	windows_close,
 
 	windows_get_device_descriptor,

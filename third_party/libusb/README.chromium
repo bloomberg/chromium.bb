@@ -20,3 +20,4 @@ Local Modifications:
 - linux-udev.patch has been applied.
 - composite-hid-close.patch has been applied.
 - assign-endpoints-checks.patch has been applied.
+- open-fd.patch has been applied.

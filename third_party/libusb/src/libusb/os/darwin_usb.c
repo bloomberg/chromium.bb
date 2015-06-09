@@ -1877,6 +1877,7 @@ const struct usbi_os_backend darwin_backend = {
         .get_config_descriptor = darwin_get_config_descriptor,
 
         .open = darwin_open,
+        .open_fd = NULL, /* not implemented */
         .close = darwin_close,
         .get_configuration = darwin_get_configuration,
         .set_configuration = darwin_set_configuration,
