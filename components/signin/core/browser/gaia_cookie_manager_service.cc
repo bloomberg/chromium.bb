@@ -561,7 +561,8 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
     return;
   }
 
-  for (gaia::ListedAccount account : listed_accounts_) {
+  for (gaia::ListedAccount& account : listed_accounts_) {
+    DCHECK(account.id.empty());
     account.id = AccountTrackerService::PickAccountIdForAccount(
         signin_client_->GetPrefs(), account.gaia_id, account.email);
   }

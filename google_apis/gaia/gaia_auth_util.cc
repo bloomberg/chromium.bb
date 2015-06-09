@@ -49,10 +49,16 @@ ListedAccount::ListedAccount() {}
 ListedAccount::~ListedAccount() {}
 
 bool ListedAccount::operator==(const ListedAccount& other) const {
-  return email == other.email &&
-         gaia_id == other.gaia_id &&
-         valid == other.valid &&
-         raw_email == other.raw_email;
+  // Only use ids for comparison if they've been computed by some caller, since
+  // this class does not assign the id.
+  if (!id.empty() && !other.id.empty()) {
+    return id == other.id;
+  } else {
+    return email == other.email &&
+           gaia_id == other.gaia_id &&
+           valid == other.valid &&
+           raw_email == other.raw_email;
+  }
 }
 
 std::string CanonicalizeEmail(const std::string& email_address) {

@@ -291,7 +291,7 @@ TEST_F(CrossDevicePromoTest, TrackAccountsInCookie) {
   // Setting a single cookie sets the time.
   base::Time before_setting_cookies = base::Time::Now();
   cookie_manager_service()->set_list_accounts_fetched_once_for_testing(false);
-  cookie_manager_service()->SetListAccountsResponseOneAccount("foo@bar.com");
+  cookie_manager_service()->SetListAccountsResponseOneAccount("f@bar.com", "1");
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();
 
@@ -307,7 +307,7 @@ TEST_F(CrossDevicePromoTest, TrackAccountsInCookie) {
 
   // A single cookie a second time doesn't change the time.
   cookie_manager_service()->set_list_accounts_fetched_once_for_testing(false);
-  cookie_manager_service()->SetListAccountsResponseOneAccount("foo@bar.com");
+  cookie_manager_service()->SetListAccountsResponseOneAccount("f@bar.com", "1");
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();
 
@@ -358,7 +358,7 @@ TEST_F(CrossDevicePromoTest, SingleAccountEligibility) {
     base::HistogramTester test_single_account;
     std::vector<gaia::ListedAccount> accounts;
     cookie_manager_service()->set_list_accounts_fetched_once_for_testing(false);
-    cookie_manager_service()->SetListAccountsResponseOneAccount("foo@bar.com");
+    cookie_manager_service()->SetListAccountsResponseOneAccount("a@b.com", "1");
     EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
     base::RunLoop().RunUntilIdle();
 
@@ -385,7 +385,7 @@ TEST_F(CrossDevicePromoTest, NumDevicesEligibility) {
   InitPromoVariation();
   EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
   cookie_manager_service()->set_list_accounts_fetched_once_for_testing(false);
-  cookie_manager_service()->SetListAccountsResponseOneAccount("foo@bar.com");
+  cookie_manager_service()->SetListAccountsResponseOneAccount("f@bar.com", "1");
   std::vector<gaia::ListedAccount> accounts;
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();
@@ -455,7 +455,7 @@ TEST_F(CrossDevicePromoTest, ThrottleDeviceActivityCall) {
 
   EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
   cookie_manager_service()->set_list_accounts_fetched_once_for_testing(false);
-  cookie_manager_service()->SetListAccountsResponseOneAccount("foo@bar.com");
+  cookie_manager_service()->SetListAccountsResponseOneAccount("f@bar.com", "1");
   std::vector<gaia::ListedAccount> accounts;
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();
@@ -477,7 +477,7 @@ TEST_F(CrossDevicePromoTest, NumDevicesKnown) {
   InitPromoVariation();
   EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
   cookie_manager_service()->set_list_accounts_fetched_once_for_testing(false);
-  cookie_manager_service()->SetListAccountsResponseOneAccount("foo@bar.com");
+  cookie_manager_service()->SetListAccountsResponseOneAccount("f@bar.com", "1");
   std::vector<gaia::ListedAccount> accounts;
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();
@@ -505,7 +505,7 @@ TEST_F(CrossDevicePromoTest, FetchDeviceResults) {
   InitPromoVariation();
   EXPECT_FALSE(promo()->CheckPromoEligibilityForTesting());
   cookie_manager_service()->set_list_accounts_fetched_once_for_testing(false);
-  cookie_manager_service()->SetListAccountsResponseOneAccount("foo@bar.com");
+  cookie_manager_service()->SetListAccountsResponseOneAccount("f@bar.com", "1");
   std::vector<gaia::ListedAccount> accounts;
   EXPECT_FALSE(cookie_manager_service()->ListAccounts(&accounts));
   base::RunLoop().RunUntilIdle();

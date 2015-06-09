@@ -55,41 +55,42 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseNoAccounts() {
 }
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseOneAccount(
-    const char* account) {
+    const char* email, const char* gaia_id) {
   DCHECK(url_fetcher_factory_);
   url_fetcher_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->ListAccountsURLWithSource(
           GaiaConstants::kChromeSource),
       base::StringPrintf(
-          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1, \"22\"]]]",
-          account),
+          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1, \"%s\"]]]",
+          email, gaia_id),
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 }
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseOneAccountWithExpiry(
-    const char* account, bool expired) {
+    const char* email, const char* gaia_id, bool expired) {
   DCHECK(url_fetcher_factory_);
   url_fetcher_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->ListAccountsURLWithSource(
           GaiaConstants::kChromeSource),
       base::StringPrintf(
-          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d, \"22\"]]]",
-          account, expired ? 0 : 1),
+          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, %d, \"%s\"]]]",
+          email, expired ? 0 : 1, gaia_id),
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 }
 
 void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccounts(
-    const char* account1, const char* account2) {
+    const char* email1, const char* gaia_id1,
+    const char* email2, const char* gaia_id2) {
   DCHECK(url_fetcher_factory_);
   url_fetcher_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->ListAccountsURLWithSource(
           GaiaConstants::kChromeSource),
       base::StringPrintf(
-          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1, \"22\"], "
-          "[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1, \"24\"]]]",
-          account1, account2),
+          "[\"f\", [[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1, \"%s\"], "
+          "[\"b\", 0, \"n\", \"%s\", \"p\", 0, 0, 0, 0, 1, \"%s\"]]]",
+          email1, gaia_id1, email2, gaia_id2),
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
 }
