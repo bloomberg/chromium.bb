@@ -12,9 +12,6 @@
  */
 (function() {
 
-/** @typedef {chrome.networkingPrivate.NetworkStateProperties} */
-var NetworkStateProperties;
-
 Polymer({
   is: 'cr-settings-internet-detail-page',
 
@@ -92,7 +89,7 @@ Polymer({
     /**
      * The current state for the network matching |guid|.
      *
-     * @type {?NetworkStateProperties}
+     * @type {?CrOnc.NetworkStateProperties}
      */
     networkState: {
       type: Object,
@@ -143,18 +140,6 @@ Polymer({
   },
 
   /**
-   * Polymer networkState changed method.
-   */
-  networkStateChanged_: function() {
-    if (!this.networkState)
-      return;
-    // Set networkIcon.networkState explicitly since networkState is an element.
-    // TODO(stevenjb): Remove this function when CrOncDataElement is removed.
-    this.$.networkIcon.networkState =
-        CrOncDataElement.create(this.networkState);
-  },
-
-  /**
    * networkingPrivate.onNetworksChanged event callback.
    * @param {!Array<string>} networkIds The list of changed network GUIDs.
    * @private
@@ -177,7 +162,7 @@ Polymer({
 
   /**
    * networkingPrivate.getProperties callback.
-   * @param {!NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkStateProperties} state The network state properties.
    * @private
    */
   getPropertiesCallback_: function(state) {
@@ -185,16 +170,16 @@ Polymer({
   },
 
   /**
-   * @param {?NetworkStateProperties} state The network state properties.
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
    * @return {string} The text to display for the network name.
    * @private
    */
   getStateName_: function(state) {
-    return state && state.Name;
+    return (state && state.Name) || '';
   },
 
   /**
-   * @param {?NetworkStateProperties} state The network state properties.
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
    * @return {string} The text to display for the network name.
    * @private
    */
@@ -203,17 +188,17 @@ Polymer({
   },
 
   /**
-   * @param {?NetworkStateProperties} state The network state properties.
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
    * @return {string} The text to display for the network connection state.
    * @private
    */
   getStateText_: function(state) {
     // TODO(stevenjb): Localize.
-    return state && state.ConnectionState;
+    return (state && state.ConnectionState) || '';
   },
 
   /**
-   * @param {?NetworkStateProperties} state The network state properties.
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
    * @param {string} property The property name.
    * @return {string} The text to display for the property, including the label.
    * @private
@@ -227,7 +212,7 @@ Polymer({
   },
 
   /**
-   * @param {?NetworkStateProperties} state The network state properties.
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
    * @return {boolean} True if the state is connected.
    * @private
    */
@@ -236,7 +221,7 @@ Polymer({
   },
 
   /**
-   * @param {?NetworkStateProperties} state The network state properties.
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
    * @return {boolean} Whether or not the network can be connected.
    * @private
    */
@@ -246,7 +231,7 @@ Polymer({
   },
 
   /**
-   * @param {?NetworkStateProperties} state The network state properties.
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
    * @return {boolean} Whether or not the network can be disconnected.
    * @private
    */
@@ -256,7 +241,7 @@ Polymer({
   },
 
   /**
-   * @param {?NetworkStateProperties} state The network state properties.
+   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
    * @param {string} type The network type to match.
    * @return {boolean} Whether or not the type of 'state' matches 'type'.
    * @private

@@ -13,7 +13,7 @@
 /** @constructor @extends {HTMLElement} */
 var CrNetworkIconElement = function() {};
 
-/** @type {CrOncDataElement} */
+/** @type {CrOnc.NetworkStateProperties} */
 CrNetworkIconElement.prototype.networkState;
 
 /** @type {CrOnc.Type} */

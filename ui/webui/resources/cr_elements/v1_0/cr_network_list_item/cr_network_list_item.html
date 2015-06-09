@@ -1,5 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_data.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_icon/cr_network_icon.html">
 
 <dom-module id="cr-network-list-item">
@@ -7,7 +7,8 @@
   <template>
     <div id="divOuter" class$="[[isListItemClass_(isListItem)]]">
       <div id="divIcon">
-        <cr-network-icon id="icon" isListItem="[[isListItem]]">
+        <cr-network-icon id="icon" isListItem="[[isListItem]]"
+            network-state="[[networkState]]">
         </cr-network-icon>
       </div>
       <div id="divText">

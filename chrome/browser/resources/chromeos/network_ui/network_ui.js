@@ -110,7 +110,7 @@ var NetworkUI = (function() {
     var icon = /** @type {!CrNetworkIconElement} */(
         document.createElement('cr-network-icon'));
     icon.isListItem = true;
-    icon.networkState = CrOncDataElement.create(networkState);
+    icon.networkState = networkState;
     cell.appendChild(icon);
     return cell;
   };
@@ -207,7 +207,7 @@ var NetworkUI = (function() {
           loadTimeData.getStringF('defaultNetworkText',
                                   defaultState.Name,
                                   defaultState.ConnectionState);
-      icon.networkState = CrOncDataElement.create(defaultState);
+      icon.networkState = defaultState;
     } else {
       $('default-network-text').textContent =
           loadTimeData.getString('noNetworkText');

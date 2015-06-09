@@ -8,9 +8,6 @@
  */
 (function() {
 
-/** @typedef {chrome.networkingPrivate.NetworkStateProperties} */
-var NetworkStateProperties;
-
 /**
  * TODO(stevenjb): Replace getText with a proper localization function that
  * handles string substitution.
@@ -56,7 +53,7 @@ Polymer({
     /**
      * The ONC data properties used to display the list item.
      *
-     * @type {?NetworkStateProperties}
+     * @type {?CrOnc.NetworkStateProperties}
      */
     networkState: {
       type: Object,
@@ -83,9 +80,6 @@ Polymer({
   networkStateChanged_: function() {
     if (!this.networkState)
       return;
-
-    // Set icon.networkState explicitly since networkState is an element.
-    this.$.icon.networkState = CrOncDataElement.create(this.networkState);
 
     var network = this.networkState;
     var isDisconnected =

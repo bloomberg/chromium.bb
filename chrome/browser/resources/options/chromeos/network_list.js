@@ -4,6 +4,8 @@
 
 /**
  * Partial definition of the result of networkingPrivate.getProperties()).
+ * TODO(stevenjb): Replace with chrome.networkingPrivate.NetworkStateProperties
+ * once that is fully speced.
  * @typedef {{
  *   ConnectionState: string,
  *   Cellular: {
@@ -211,9 +213,8 @@ cr.define('options.network', function() {
       if (!isNetworkType(data.Type))
         return;
       var networkIcon = this.getNetworkIcon();
-      networkIcon.networkState = CrOncDataElement.create(
-          /** @type {chrome.networkingPrivate.NetworkStateProperties} */ (
-              data));
+      networkIcon.networkState =
+          /** @type {chrome.networkingPrivate.NetworkStateProperties} */ (data);
     },
 
     /**
@@ -827,7 +828,8 @@ cr.define('options.network', function() {
           document.createElement('cr-network-icon'));
       buttonIconDiv.appendChild(networkIcon);
       networkIcon.isListItem = true;
-      networkIcon.networkState = CrOncDataElement.create(data);
+      networkIcon.networkState =
+          /** @type {chrome.networkingPrivate.NetworkStateProperties} */ (data);
     }
 
     var buttonLabel = menu.ownerDocument.createElement('span');

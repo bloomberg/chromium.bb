@@ -8,9 +8,6 @@
 
 (function() {
 
-/** @typedef {chrome.networkingPrivate.NetworkStateProperties} */
-var NetworkStateProperties;
-
 /**
  * Polymer class definition for 'cr-network-list'.
  * TODO(stevenjb): Update with iron-list(?) once implemented in Polymer 1.0.
@@ -32,7 +29,7 @@ Polymer({
     /**
      * The list of network state properties for the items to display.
      *
-     * @type {!Array<!NetworkStateProperties>}
+     * @type {!Array<!CrOnc.NetworkStateProperties>}
      */
     networks: {
       type: Array,

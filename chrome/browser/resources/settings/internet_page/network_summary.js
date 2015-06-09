@@ -11,9 +11,6 @@
 /** @typedef {chrome.networkingPrivate.DeviceStateProperties} */
 var DeviceStateProperties;
 
-/** @typedef {chrome.networkingPrivate.NetworkStateProperties} */
-var NetworkStateProperties;
-
 /**
  * @typedef {{
  *   Ethernet: (DeviceStateProperties|undefined),
@@ -27,22 +24,22 @@ var DeviceStateObject;
 
 /**
  * @typedef {{
- *   Ethernet: (?NetworkStateProperties|undefined),
- *   WiFi: (?NetworkStateProperties|undefined),
- *   Cellular: (?NetworkStateProperties|undefined),
- *   WiMAX: (?NetworkStateProperties|undefined),
- *   VPN: (?NetworkStateProperties|undefined)
+ *   Ethernet: (?CrOnc.NetworkStateProperties|undefined),
+ *   WiFi: (?CrOnc.NetworkStateProperties|undefined),
+ *   Cellular: (?CrOnc.NetworkStateProperties|undefined),
+ *   WiMAX: (?CrOnc.NetworkStateProperties|undefined),
+ *   VPN: (?CrOnc.NetworkStateProperties|undefined)
  * }}
  */
 var NetworkStateObject;
 
 /**
  * @typedef {{
- *   Ethernet: (Array<NetworkStateProperties>|undefined),
- *   WiFi: (Array<NetworkStateProperties>|undefined),
- *   Cellular: (Array<NetworkStateProperties>|undefined),
- *   WiMAX: (Array<NetworkStateProperties>|undefined),
- *   VPN: (Array<NetworkStateProperties>|undefined)
+ *   Ethernet: (Array<CrOnc.NetworkStateProperties>|undefined),
+ *   WiFi: (Array<CrOnc.NetworkStateProperties>|undefined),
+ *   Cellular: (Array<CrOnc.NetworkStateProperties>|undefined),
+ *   WiMAX: (Array<CrOnc.NetworkStateProperties>|undefined),
+ *   VPN: (Array<CrOnc.NetworkStateProperties>|undefined)
  * }}
  */
 var NetworkStateListObject;
@@ -159,7 +156,7 @@ Polymer({
 
   /**
    * Event triggered when a cr-network-summary-item is selected.
-   * @param {!{detail: !NetworkStateProperties}} event
+   * @param {!{detail: !CrOnc.NetworkStateProperties}} event
    * @private
    */
   onSelected_: function(event) {
@@ -213,7 +210,7 @@ Polymer({
   /**
    * Handles UI requests to connect to a network.
    * TODO(stevenjb): Handle Cellular activation, etc.
-   * @param {!NetworkStateProperties} state The network state.
+   * @param {!CrOnc.NetworkStateProperties} state The network state.
    * @private
    */
   connectToNetwork_: function(state) {
@@ -265,8 +262,8 @@ Polymer({
 
   /**
    * networkingPrivate.getNetworksState callback.
-   * @param {!Array<!NetworkStateProperties>} states The state properties for
-   *     all visible networks.
+   * @param {!Array<!CrOnc.NetworkStateProperties>} states The state properties
+   *     for all visible networks.
    * @private
    */
   getNetworksCallback_: function(states) {
@@ -294,7 +291,7 @@ Polymer({
     // Set any types not found to a default value or null.
     NETWORK_TYPES.forEach(function(type) {
       if (!foundTypes[type]) {
-        /** @type {NetworkStateProperties} */ var defaultState = null;
+        /** @type {CrOnc.NetworkStateProperties} */ var defaultState = null;
         if (this.deviceStates[type])
           defaultState = { GUID: '', Type: type };
         this.updateNetworkState_(type, defaultState);
@@ -312,7 +309,7 @@ Polymer({
 
   /**
    * networkingPrivate.getState callback.
-   * @param {!NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkStateProperties} state The network state properties.
    * @private
    */
   getStateCallback_: function(state) {
@@ -326,9 +323,9 @@ Polymer({
    * Sets 'networkStates[type]' which will update the cr-network-list-item
    * associated with 'type'.
    * @param {string} type The network type.
-   * @param {?NetworkStateProperties} state The state properties for the network
-   *     to associate with |type|. May be null if there are no networks matching
-   *     |type|.
+   * @param {?CrOnc.NetworkStateProperties} state The state properties for the
+   *     network to associate with |type|. May be null if there are no networks
+   *     matching |type|.
    * @private
    */
   updateNetworkState_: function(type, state) {

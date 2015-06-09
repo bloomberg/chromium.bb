@@ -11,9 +11,6 @@
 /** @typedef {chrome.networkingPrivate.DeviceStateProperties} */
 var DeviceStateProperties;
 
-/** @typedef {chrome.networkingPrivate.NetworkStateProperties} */
-var NetworkStateProperties;
-
 Polymer({
   is: 'cr-network-summary-item',
 
@@ -60,7 +57,7 @@ Polymer({
     /**
      * Network state for the active network.
      *
-     * @type {?NetworkStateProperties}
+     * @type {?CrOnc.NetworkStateProperties}
      */
     networkState: {
       type: Object,
@@ -70,7 +67,7 @@ Polymer({
     /**
      * List of all network state data for the network type.
      *
-     * @type {!Array<!NetworkStateProperties>}
+     * @type {!Array<!CrOnc.NetworkStateProperties>}
      */
     networkStateList: {
       type: Array,
@@ -134,7 +131,7 @@ Polymer({
 
   /**
    * @param {?DeviceStateProperties} deviceState The device state.
-   * @param {!Array<!NetworkStateProperties>} networkList A list of networks.
+   * @param {!Array<!CrOnc.NetworkStateProperties>} networkList
    * @return {string} The class value for the expand button.
    * @private
    */
@@ -145,7 +142,7 @@ Polymer({
 
   /**
    * @param {?DeviceStateProperties} deviceState The device state.
-   * @param {!Array<!NetworkStateProperties>} networkList A list of networks.
+   * @param {!Array<!CrOnc.NetworkStateProperties>} networkList
    * @return {boolean} Whether or not to show the UI to expand the list.
    * @private
    */

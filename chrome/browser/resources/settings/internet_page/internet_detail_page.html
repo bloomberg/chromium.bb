@@ -1,5 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_data.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_onc/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_network_icon/cr_network_icon.html">
 
 <dom-module id="cr-settings-internet-detail-page">
@@ -10,7 +10,8 @@
       <div class="layout vertical">
         <div id="titleDiv" class="layout horizontal">
           <div class="layout center horizontal flex">
-            <cr-network-icon id="networkIcon"></cr-network-icon>
+            <cr-network-icon id="networkIcon" network-state="[[networkState]]">
+            </cr-network-icon>
             <span id="networkName">[[getStateName_(networkState)]]</span>
             <span id="networkState" class="[[getStateClass_(networkState)]]"
                 >[[getStateText_(networkState)]]</span>

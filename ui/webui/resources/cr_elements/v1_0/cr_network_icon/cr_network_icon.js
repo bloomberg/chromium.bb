@@ -53,13 +53,9 @@ Polymer({
 
   properties: {
     /**
-     * If set, the ONC data properties will be used to display the icon.
-     * NOTE: Because this is a Polymer element, it can not be set using
-     * data binding; it must be set directly. TODO(stevenjb): Use
-     * NetworkStateProperties instead and replace CrOncDataElement with a
-     * set of utility functions.
+     * If set, the ONC state properties will be used to display the icon.
      *
-     * @type {?CrOncDataElement}
+     * @type {?CrOnc.NetworkStateProperties}
      */
     networkState: {
       type: Object,
@@ -136,11 +132,13 @@ Polymer({
       return;
 
     this.networkType = null;
-    this.iconType_ = getIconTypeFromNetworkType(this.networkState.data.Type);
+    this.iconType_ = getIconTypeFromNetworkType(this.networkState.Type);
+    var strength = /** @type {number} */ (
+        CrOnc.getTypeProperty(this.networkState, 'SignalStrength') || 0);
     var params = /** @type {IconParams} */ {
       showBadges: true,
       showDisconnected: !this.isListItem,
-      strength: this.networkState.getStrength(),
+      strength: strength
     };
     this.setIcon_(params);
   },
@@ -170,7 +168,7 @@ Polymer({
    */
   isListItemChanged_: function() {
     if (this.networkState)
-      this.networkStateChaged_();
+      this.networkStateChanged_();
     else if (this.networkType)
       this.networkTypeChanged_();
   },
@@ -225,12 +223,14 @@ Polymer({
     // Set the strength or connecting properties.
     var networkState = this.networkState;
 
+    var connectionState = networkState.ConnectionState;
     var connecting = false;
     var strength = -1;
-    if (networkState.connecting()) {
+    if (connectionState == CrOnc.ConnectionState.CONNECTING) {
       strength = 0;
       connecting = true;
-    } else if (networkState.connected() || !params.showDisconnected) {
+    } else if (connectionState == CrOnc.ConnectionState.CONNECTED ||
+               !params.showDisconnected) {
       strength = params.strength || 0;
     }
 
@@ -253,20 +253,22 @@ Polymer({
     var networkState = this.networkState;
 
     var type =
-        (params.showBadges && networkState) ? networkState.data.Type : '';
+        (params.showBadges && networkState) ? networkState.Type : '';
     if (type == CrOnc.Type.WIFI) {
       this.roaming_ = false;
-      this.secure_ = networkState.getWiFiSecurity() != 'None';
+      var security = CrOnc.getTypeProperty(networkState, 'Security');
+      this.secure_ = security && security != 'None';
       this.technology_ = '';
     } else if (type == CrOnc.Type.WIMAX) {
       this.roaming_ = false;
       this.secure_ = false;
       this.technology_ = '4g';
     } else if (type == CrOnc.Type.CELLULAR) {
-      this.roaming_ =
-          networkState.getCellularRoamingState() == CrOnc.RoamingState.ROAMING;
+      this.roaming_ = CrOnc.getTypeProperty(networkState, 'RoamingState') ==
+                      CrOnc.RoamingState.ROAMING;
       this.secure_ = false;
-      var oncTechnology = networkState.getCellularTechnology();
+      var oncTechnology =
+          CrOnc.getTypeProperty(networkState, 'NetworkTechnology');
       switch (oncTechnology) {
         case CrOnc.NetworkTechnology.CDMA1XRTT:
           this.technology_ = '1x';
