@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/location.h"
@@ -43,7 +45,7 @@ const char kUMANetworkErrorCode[] =
 // Returns the power of the next power-of-2 starting at |value|.
 int NextPowerOf2(int64 value) {
   for (int i = 0; i <= AutoEnrollmentClient::kMaximumPower; ++i) {
-    if ((GG_INT64_C(1) << i) >= value)
+    if ((INT64_C(1) << i) >= value)
       return i;
   }
   // No other value can be represented in an int64.
@@ -239,7 +241,7 @@ void AutoEnrollmentClient::SendBucketDownloadRequest() {
     uint64 byte = server_backed_state_key_hash_[31 - i] & 0xff;
     remainder = remainder | (byte << (8 * i));
   }
-  remainder = remainder & ((GG_UINT64_C(1) << current_power_) - 1);
+  remainder = remainder & ((UINT64_C(1) << current_power_) - 1);
 
   ReportProgress(AUTO_ENROLLMENT_STATE_PENDING);
 
@@ -251,7 +253,7 @@ void AutoEnrollmentClient::SendBucketDownloadRequest() {
   em::DeviceAutoEnrollmentRequest* request =
       request_job_->GetRequest()->mutable_auto_enrollment_request();
   request->set_remainder(remainder);
-  request->set_modulus(GG_INT64_C(1) << current_power_);
+  request->set_modulus(INT64_C(1) << current_power_);
   request_job_->Start(
       base::Bind(&AutoEnrollmentClient::HandleRequestCompletion,
                  base::Unretained(this),
@@ -321,7 +323,7 @@ bool AutoEnrollmentClient::OnBucketDownloadRequestCompletion(
 
     int64 modulus = enrollment_response.expected_modulus();
     int power = NextPowerOf2(modulus);
-    if ((GG_INT64_C(1) << power) != modulus) {
+    if ((INT64_C(1) << power) != modulus) {
       LOG(WARNING) << "Auto enrollment: the server didn't ask for a power-of-2 "
                    << "modulus. Using the closest power-of-2 instead "
                    << "(" << modulus << " vs 2^" << power << ")";

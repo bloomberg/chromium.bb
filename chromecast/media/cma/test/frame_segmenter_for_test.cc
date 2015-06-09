@@ -4,10 +4,11 @@
 
 #include "chromecast/media/cma/test/frame_segmenter_for_test.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/port.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
@@ -83,7 +84,7 @@ AudioFrameHeader FindNextMp3Header(const uint8* data, size_t data_size) {
   return header;
 }
 
-}
+}  // namespace
 
 BufferList Mp3SegmenterForTest(const uint8* data, size_t data_size) {
   size_t offset = 0;
@@ -108,7 +109,7 @@ BufferList Mp3SegmenterForTest(const uint8* data, size_t data_size) {
 
     // 1152 samples in an MP3 frame.
     timestamp += base::TimeDelta::FromMicroseconds(
-        (GG_UINT64_C(1152) * 1000 * 1000) / header.sampling_frequency);
+        (UINT64_C(1152) * 1000 * 1000) / header.sampling_frequency);
   }
   return audio_frames;
 }

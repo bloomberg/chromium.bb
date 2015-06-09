@@ -4,6 +4,7 @@
 
 #include "content/browser/android/java/gin_java_script_to_java_types_coercion.h"
 
+#include <stdint.h>
 #include <unistd.h>
 
 #include "base/android/jni_android.h"
@@ -37,7 +38,7 @@ jlong RoundDoubleToLong(const double& x) {
   // compare to custom constants. kint64max is 2^63 - 1, but the spacing
   // between double values in the the range 2^62 to 2^63 is 2^10. The cast is
   // required to silence a spurious gcc warning for integer overflow.
-  const int64 kLimit = (GG_INT64_C(1) << 63) - static_cast<uint64>(1 << 10);
+  const int64 kLimit = (INT64_C(1) << 63) - static_cast<uint64>(1 << 10);
   DCHECK(kLimit > 0);
   const double kLargestDoubleLessThanInt64Max = kLimit;
   const double kSmallestDoubleGreaterThanInt64Min = -kLimit;

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
@@ -388,7 +390,7 @@ TEST_F(AutoEnrollmentClientTest, NoBitsUploaded) {
 }
 
 TEST_F(AutoEnrollmentClientTest, ManyBitsUploaded) {
-  int64 bottom62 = GG_INT64_C(0x386e7244d097c3e6);
+  int64 bottom62 = INT64_C(0x386e7244d097c3e6);
   for (int i = 0; i <= 62; ++i) {
     CreateClient(kStateKey, i, i);
     ServerWillReply(-1, false, false);
@@ -396,8 +398,8 @@ TEST_F(AutoEnrollmentClientTest, ManyBitsUploaded) {
     EXPECT_EQ(AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
     EXPECT_TRUE(auto_enrollment_request().has_remainder());
     EXPECT_TRUE(auto_enrollment_request().has_modulus());
-    EXPECT_EQ(GG_INT64_C(1) << i, auto_enrollment_request().modulus());
-    EXPECT_EQ(bottom62 % (GG_INT64_C(1) << i),
+    EXPECT_EQ(INT64_C(1) << i, auto_enrollment_request().modulus());
+    EXPECT_EQ(bottom62 % (INT64_C(1) << i),
               auto_enrollment_request().remainder());
     VerifyCachedResult(false, i);
     EXPECT_FALSE(HasServerBackedState());
@@ -407,7 +409,7 @@ TEST_F(AutoEnrollmentClientTest, ManyBitsUploaded) {
 TEST_F(AutoEnrollmentClientTest, MoreThan32BitsUploaded) {
   CreateClient(kStateKey, 10, 37);
   InSequence sequence;
-  ServerWillReply(GG_INT64_C(1) << 37, false, false);
+  ServerWillReply(INT64_C(1) << 37, false, false);
   ServerWillReply(-1, true, true);
   ServerWillSendState(
       "example.com",
