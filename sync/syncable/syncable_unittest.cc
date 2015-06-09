@@ -116,7 +116,7 @@ TestDirectory* TestDirectory::Create(
 TestDirectory::TestDirectory(Encryptor* encryptor,
                              UnrecoverableErrorHandler* handler,
                              TestBackingStore* backing_store)
-    : Directory(backing_store, handler, NULL, NULL, NULL),
+    : Directory(backing_store, handler, base::Closure(), NULL, NULL),
       backing_store_(backing_store) {
 }
 
@@ -344,12 +344,9 @@ TEST_F(OnDiskSyncableDirectoryTest,
   }
 
   dir()->SaveChanges();
-  dir().reset(
-      new Directory(new OnDiskDirectoryBackingStore(kDirectoryName, file_path_),
-                    unrecoverable_error_handler(),
-                    NULL,
-                    NULL,
-                    NULL));
+  dir().reset(new Directory(
+      new OnDiskDirectoryBackingStore(kDirectoryName, file_path_),
+      unrecoverable_error_handler(), base::Closure(), NULL, NULL));
 
   ASSERT_TRUE(dir().get());
   ASSERT_EQ(OPENED,
@@ -563,7 +560,7 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
 
   {
     Directory dir(new OnDiskDirectoryBackingStore("ScopeTest", path), &handler_,
-                  NULL, NULL, NULL);
+                  base::Closure(), NULL, NULL);
     DirOpenResult result =
         dir.Open("ScopeTest", &delegate_, NullTransactionObserver());
     ASSERT_EQ(result, OPENED);

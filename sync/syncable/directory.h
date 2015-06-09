@@ -11,13 +11,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_util.h"
 #include "base/gtest_prod_util.h"
 #include "base/values.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/base/sync_export.h"
-#include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/syncable/dir_open_result.h"
 #include "sync/syncable/entry.h"
@@ -248,13 +248,11 @@ class SYNC_EXPORT Directory {
   // Does not take ownership of |encryptor|.
   // |report_unrecoverable_error_function| may be NULL.
   // Takes ownership of |store|.
-  Directory(
-      DirectoryBackingStore* store,
-      UnrecoverableErrorHandler* unrecoverable_error_handler,
-      ReportUnrecoverableErrorFunction
-          report_unrecoverable_error_function,
-      NigoriHandler* nigori_handler,
-      Cryptographer* cryptographer);
+  Directory(DirectoryBackingStore* store,
+            UnrecoverableErrorHandler* unrecoverable_error_handler,
+            const base::Closure& report_unrecoverable_error_function,
+            NigoriHandler* nigori_handler,
+            Cryptographer* cryptographer);
   virtual ~Directory();
 
   // Does not take ownership of |delegate|, which must not be NULL.
@@ -327,11 +325,7 @@ class SYNC_EXPORT Directory {
 
   // Called to immediately report an unrecoverable error (but don't
   // propagate it up).
-  void ReportUnrecoverableError() {
-    if (report_unrecoverable_error_function_) {
-      report_unrecoverable_error_function_();
-    }
-  }
+  void ReportUnrecoverableError();
 
   // Called to set the unrecoverable error on the directory and to propagate
   // the error to upper layers.
@@ -643,7 +637,7 @@ class SYNC_EXPORT Directory {
   scoped_ptr<DirectoryBackingStore> store_;
 
   UnrecoverableErrorHandler* const unrecoverable_error_handler_;
-  const ReportUnrecoverableErrorFunction report_unrecoverable_error_function_;
+  base::Closure report_unrecoverable_error_function_;
   bool unrecoverable_error_set_;
 
   // Not owned.

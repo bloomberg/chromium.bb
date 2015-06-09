@@ -103,12 +103,11 @@ Directory::Kernel::~Kernel() {
                                        metahandles_map.end());
 }
 
-Directory::Directory(
-    DirectoryBackingStore* store,
-    UnrecoverableErrorHandler* unrecoverable_error_handler,
-    ReportUnrecoverableErrorFunction report_unrecoverable_error_function,
-    NigoriHandler* nigori_handler,
-    Cryptographer* cryptographer)
+Directory::Directory(DirectoryBackingStore* store,
+                     UnrecoverableErrorHandler* unrecoverable_error_handler,
+                     const base::Closure& report_unrecoverable_error_function,
+                     NigoriHandler* nigori_handler,
+                     Cryptographer* cryptographer)
     : kernel_(NULL),
       store_(store),
       unrecoverable_error_handler_(unrecoverable_error_handler),
@@ -1029,6 +1028,12 @@ NigoriHandler* Directory::GetNigoriHandler() {
 Cryptographer* Directory::GetCryptographer(const BaseTransaction* trans) {
   DCHECK_EQ(this, trans->directory());
   return cryptographer_;
+}
+
+void Directory::ReportUnrecoverableError() {
+  if (!report_unrecoverable_error_function_.is_null()) {
+    report_unrecoverable_error_function_.Run();
+  }
 }
 
 void Directory::GetAllMetaHandles(BaseTransaction* trans,

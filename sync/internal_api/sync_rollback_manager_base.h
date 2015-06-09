@@ -100,7 +100,7 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
       InternalComponentsFactory* internal_components_factory,
       InternalComponentsFactory::StorageOption storage,
       scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
-      ReportUnrecoverableErrorFunction report_unrecoverable_error_function);
+      const base::Closure& report_unrecoverable_error_function);
 
   void RegisterDirectoryTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
@@ -129,7 +129,7 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
   base::ObserverList<SyncManager::Observer> observers_;
 
   scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler_;
-  ReportUnrecoverableErrorFunction report_unrecoverable_error_function_;
+  base::Closure report_unrecoverable_error_function_;
 
   scoped_ptr<SyncEncryptionHandler> dummy_handler_;
 

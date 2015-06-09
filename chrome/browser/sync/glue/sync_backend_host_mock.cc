@@ -22,8 +22,7 @@ void SyncBackendHostMock::Initialize(
     bool delete_sync_data_folder,
     scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
-    syncer::ReportUnrecoverableErrorFunction
-        report_unrecoverable_error_function,
+    const base::Closure& report_unrecoverable_error_function,
     syncer::NetworkResources* network_resources) {
   frontend->OnBackendInitialized(
       syncer::WeakHandle<syncer::JsBackend>(),

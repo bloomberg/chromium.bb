@@ -75,10 +75,7 @@ DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
   // performance benefits of not writing to disk.
   dir_.reset(
       new Directory(new TestDirectoryBackingStore(kDirectoryName, &connection_),
-                    &handler_,
-                    NULL,
-                    NULL,
-                    NULL));
+                    &handler_, base::Closure(), NULL, NULL));
 
   DirOpenResult open_result =
       dir_->Open(kDirectoryName, &delegate_, NullTransactionObserver());
@@ -2006,7 +2003,8 @@ TEST_F(SyncableDirectoryTest, SaveChangesSnapshot_HasUnsavedMetahandleChanges) {
 TEST_F(SyncableDirectoryTest, CatastrophicError) {
   MockUnrecoverableErrorHandler unrecoverable_error_handler;
   Directory dir(new InMemoryDirectoryBackingStore("catastrophic_error"),
-                &unrecoverable_error_handler, nullptr, nullptr, nullptr);
+                &unrecoverable_error_handler, base::Closure(), nullptr,
+                nullptr);
   ASSERT_EQ(OPENED, dir.Open(kDirectoryName, directory_change_delegate(),
                              NullTransactionObserver()));
   ASSERT_EQ(0, unrecoverable_error_handler.invocation_count());

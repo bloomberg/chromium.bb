@@ -37,8 +37,7 @@ class DummyEntryptionHandler : public syncer::SyncEncryptionHandler {
 namespace syncer {
 
 SyncRollbackManagerBase::SyncRollbackManagerBase()
-    : report_unrecoverable_error_function_(NULL),
-      dummy_handler_(new DummyEntryptionHandler),
+    : dummy_handler_(new DummyEntryptionHandler),
       initialized_(false),
       weak_ptr_factory_(this) {
 }
@@ -51,7 +50,7 @@ bool SyncRollbackManagerBase::InitInternal(
     InternalComponentsFactory* internal_components_factory,
     InternalComponentsFactory::StorageOption storage,
     scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler,
-    ReportUnrecoverableErrorFunction report_unrecoverable_error_function) {
+    const base::Closure& report_unrecoverable_error_function) {
   unrecoverable_error_handler_ = unrecoverable_error_handler.Pass();
   report_unrecoverable_error_function_ = report_unrecoverable_error_function;
 

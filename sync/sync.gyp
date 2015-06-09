@@ -303,7 +303,6 @@
         'internal_api/public/user_share.h',
         'internal_api/public/util/experiments.h',
         'internal_api/public/util/immutable.h',
-        'internal_api/public/util/report_unrecoverable_error_function.h',
         'internal_api/public/util/sync_db_util.h',
         'internal_api/public/util/sync_string_conversions.cc',
         'internal_api/public/util/sync_string_conversions.h',

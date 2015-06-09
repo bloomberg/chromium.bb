@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -30,7 +30,6 @@
 #include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
-#include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/sync_protocol_error.h"
@@ -263,7 +262,7 @@ class SYNC_EXPORT SyncManager {
     Encryptor* encryptor;
 
     scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler;
-    ReportUnrecoverableErrorFunction report_unrecoverable_error_function;
+    base::Closure report_unrecoverable_error_function;
 
     // Carries shutdown requests across threads and will be used to cut short
     // any network I/O and tell the syncer to exit early.

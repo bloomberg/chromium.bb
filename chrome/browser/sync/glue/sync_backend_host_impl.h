@@ -24,7 +24,6 @@
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
 #include "sync/internal_api/public/sync_manager.h"
-#include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/encryption.pb.h"
@@ -88,8 +87,7 @@ class SyncBackendHostImpl
       bool delete_sync_data_folder,
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
-      syncer::ReportUnrecoverableErrorFunction
-          report_unrecoverable_error_function,
+      const base::Closure& report_unrecoverable_error_function,
       syncer::NetworkResources* network_resources) override;
   void UpdateCredentials(const syncer::SyncCredentials& credentials) override;
   void StartSyncingWithServer() override;

@@ -543,16 +543,12 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
               MakeWeakHandle(weak_factory_.GetWeakPtr())));
 
   backend_->Initialize(
-      this,
-      sync_thread_.Pass(),
-      GetJsEventHandler(),
-      sync_service_url_,
-      credentials,
-      delete_stale_data,
+      this, sync_thread_.Pass(), GetJsEventHandler(), sync_service_url_,
+      credentials, delete_stale_data,
       scoped_ptr<syncer::SyncManagerFactory>(
           new syncer::SyncManagerFactory(GetManagerType())).Pass(),
       backend_unrecoverable_error_handler.Pass(),
-      &browser_sync::ChromeReportUnrecoverableError,
+      base::Bind(browser_sync::ChromeReportUnrecoverableError),
       network_resources_.get());
 }
 

@@ -88,7 +88,6 @@ SyncManagerImpl::SyncManagerImpl(const std::string& name)
       change_delegate_(NULL),
       initialized_(false),
       observing_network_connectivity_changes_(false),
-      report_unrecoverable_error_function_(NULL),
       weak_ptr_factory_(this) {
   // Pre-fill |notification_info_map_|.
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {

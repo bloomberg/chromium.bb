@@ -56,7 +56,7 @@ DoInitializeOptions::DoInitializeOptions(
     base::MessageLoop* sync_loop,
     SyncBackendRegistrar* registrar,
     const syncer::ModelSafeRoutingInfo& routing_info,
-    const std::vector<scoped_refptr<syncer::ModelSafeWorker> >& workers,
+    const std::vector<scoped_refptr<syncer::ModelSafeWorker>>& workers,
     const scoped_refptr<syncer::ExtensionsActivity>& extensions_activity,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& service_url,
@@ -69,8 +69,7 @@ DoInitializeOptions::DoInitializeOptions(
     const std::string& restored_keystore_key_for_bootstrapping,
     scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
-    syncer::ReportUnrecoverableErrorFunction
-        report_unrecoverable_error_function)
+    const base::Closure& report_unrecoverable_error_function)
     : sync_loop(sync_loop),
       registrar(registrar),
       routing_info(routing_info),

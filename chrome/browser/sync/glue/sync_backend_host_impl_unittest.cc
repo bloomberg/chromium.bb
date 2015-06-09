@@ -214,7 +214,7 @@ class SyncBackendHostTest : public testing::Test {
         true,
         fake_manager_factory_.Pass(),
         make_scoped_ptr(new syncer::TestUnrecoverableErrorHandler),
-        NULL,
+        base::Closure(),
         network_resources_.get());
     base::RunLoop run_loop;
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,

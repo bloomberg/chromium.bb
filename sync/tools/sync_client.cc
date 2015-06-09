@@ -38,7 +38,6 @@
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
-#include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_event_details.h"
@@ -437,7 +436,8 @@ int SyncClientMain(int argc, char* argv[]) {
       new InternalComponentsFactoryImpl(factory_switches));
   args.encryptor = &null_encryptor;
   args.unrecoverable_error_handler.reset(new LoggingUnrecoverableErrorHandler);
-  args.report_unrecoverable_error_function = &LogUnrecoverableErrorContext;
+  args.report_unrecoverable_error_function =
+      base::Bind(LogUnrecoverableErrorContext);
   args.cancelation_signal = &scm_cancelation_signal;
   sync_manager->Init(&args);
   // TODO(akalin): Avoid passing in model parameters multiple times by
