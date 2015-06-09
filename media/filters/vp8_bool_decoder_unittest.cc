@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "media/filters/vp8_bool_decoder.h"
+
+#include <limits>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -110,7 +113,8 @@ TEST_F(Vp8BoolDecoderTest, DecodeBoolsWithParitiesAndIncreasingProbabilities) {
 
   for (size_t i = 0; i < NUM_BITS_TO_TEST; ++i) {
     bool out = !(i & 1);
-    ASSERT_TRUE(bd_.ReadBool(&out, static_cast<int>(i)));
+    ASSERT_LE(i, std::numeric_limits<uint8_t>::max());
+    ASSERT_TRUE(bd_.ReadBool(&out, static_cast<uint8_t>(i)));
     EXPECT_EQ(out, !!(i & 1));
   }
 }
