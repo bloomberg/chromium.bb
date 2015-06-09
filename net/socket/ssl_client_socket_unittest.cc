@@ -1134,16 +1134,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthCertRequested) {
     rv = callback.WaitForResult();
 
   log.GetEntries(&entries);
-  // Because the handshake is aborted during the CertificateRequest, the server
-  // may still send the ServerHelloDone afterwards. As a result, the SSL_CONNECT
-  // may not be the last entry. See http://crbug.com/54445. Because of this, use
-  // ExpectLogContainsSomewhere, rather than LogContainsEndEvent, to avoid
-  // assuming particular details about the read (e.g. assuming there will only
-  // be one extra read, when there might be more).
-  //
-  // TODO(davidben): Is this still possible with memio_GetReadRequest?
-  ExpectLogContainsSomewhere(
-      entries, 0, NetLog::TYPE_SSL_CONNECT, NetLog::PHASE_END);
+  EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
   EXPECT_EQ(ERR_SSL_CLIENT_AUTH_CERT_NEEDED, rv);
   EXPECT_FALSE(sock->IsConnected());
 }

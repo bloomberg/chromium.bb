@@ -440,6 +440,9 @@ void memio_PutReadResult(memio_Private *secret, int bytes_read)
     } else /* if (bytes_read < 0) */ {
         mb->last_err = bytes_read;
     }
+
+    /* Clear read_requested now that the read has been satisfied. */
+    ((PRFilePrivate *)secret)->read_requested = 0;
 }
 
 int memio_GetWriteParams(memio_Private *secret,
