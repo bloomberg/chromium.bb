@@ -78,6 +78,13 @@ row, const LayoutTableCell* cell)
     }
 }
 
+void CellSpan::ensureConsistency(const unsigned maximumSpanSize)
+{
+    RELEASE_ASSERT(m_start >= 0 && m_start <= maximumSpanSize);
+    RELEASE_ASSERT(m_end >= 0 && m_end <= maximumSpanSize);
+    RELEASE_ASSERT(m_start <= m_end);
+}
+
 LayoutTableSection::LayoutTableSection(Element* element)
     : LayoutBox(element)
     , m_cCol(0)
@@ -1297,12 +1304,18 @@ CellSpan LayoutTableSection::dirtiedRows(const LayoutRect& damageRect) const
 
     CellSpan coveredRows = spannedRows(damageRect);
 
-    // To issue paint invalidations for the border we might need to paint invalidate the first or last row even if they are not spanned themselves.
-    if (coveredRows.start() >= m_rowPos.size() - 1 && m_rowPos[m_rowPos.size() - 1] + table()->outerBorderAfter() >= damageRect.y())
+    // To issue paint invalidations for the border we might need to paint invalidate the first
+    // or last row even if they are not spanned themselves.
+    RELEASE_ASSERT(coveredRows.start() < m_rowPos.size());
+    if (coveredRows.start() == m_rowPos.size() - 1
+        && m_rowPos[m_rowPos.size() - 1] + table()->outerBorderAfter() >= damageRect.y())
         coveredRows.decreaseStart();
 
-    if (!coveredRows.end() && m_rowPos[0] - table()->outerBorderBefore() <= damageRect.maxY())
+    if (!coveredRows.end()
+        && m_rowPos[0] - table()->outerBorderBefore() <= damageRect.maxY())
         coveredRows.increaseEnd();
+
+    coveredRows.ensureConsistency(m_grid.size());
 
     return coveredRows;
 }
@@ -1315,12 +1328,18 @@ CellSpan LayoutTableSection::dirtiedColumns(const LayoutRect& damageRect) const
     CellSpan coveredColumns = spannedColumns(damageRect);
 
     const Vector<int>& columnPos = table()->columnPositions();
-    // To issue paint invalidations for the border we might need to paint invalidate the first or last column even if they are not spanned themselves.
-    if (coveredColumns.start() >= columnPos.size() - 1 && columnPos[columnPos.size() - 1] + table()->outerBorderEnd() >= damageRect.x())
+    // To issue paint invalidations for the border we might need to paint invalidate the first
+    // or last column even if they are not spanned themselves.
+    RELEASE_ASSERT(coveredColumns.start() < columnPos.size());
+    if (coveredColumns.start() == columnPos.size() - 1
+        && columnPos[columnPos.size() - 1] + table()->outerBorderEnd() >= damageRect.x())
         coveredColumns.decreaseStart();
 
-    if (!coveredColumns.end() && columnPos[0] - table()->outerBorderStart() <= damageRect.maxX())
+    if (!coveredColumns.end()
+        && columnPos[0] - table()->outerBorderStart() <= damageRect.maxX())
         coveredColumns.increaseEnd();
+
+    coveredColumns.ensureConsistency(table()->numEffCols());
 
     return coveredColumns;
 }

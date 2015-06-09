@@ -56,6 +56,8 @@ public:
     void decreaseStart() { --m_start; }
     void increaseEnd() { ++m_end; }
 
+    void ensureConsistency(const unsigned);
+
 private:
     unsigned m_start;
     unsigned m_end;
