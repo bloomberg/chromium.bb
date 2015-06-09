@@ -93,6 +93,12 @@
 
       <!-- Extension styles. -->
       <include name="IDR_EXTENSION_FONTS_CSS" file="extension_fonts.css" type="BINDATA"/>
+
+      <!-- Media Router Mojo service and bindings. -->
+      <if expr="enable_media_router">
+        <include name="IDR_MEDIA_ROUTER_MOJOM_JS" file="${mojom_root}\chrome\browser\media\router\media_router.mojom.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_MEDIA_ROUTER_BINDINGS_JS" file="media_router_bindings.js" type="BINDATA" />
+      </if>
     </includes>
     <structures>
       <!-- Extension styles. -->

@@ -590,6 +590,14 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   // Platform app sources that are not API-specific..
   resources.push_back(std::make_pair("platformApp", IDR_PLATFORM_APP_JS));
 
+#if defined(ENABLE_MEDIA_ROUTER)
+  resources.push_back(
+      std::make_pair("chrome/browser/media/router/media_router.mojom",
+                     IDR_MEDIA_ROUTER_MOJOM_JS));
+  resources.push_back(
+      std::make_pair("media_router_bindings", IDR_MEDIA_ROUTER_BINDINGS_JS));
+#endif  // defined(ENABLE_MEDIA_ROUTER)
+
   return resources;
 }
 
