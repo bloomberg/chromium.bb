@@ -785,6 +785,7 @@ public class ToolbarPhone extends ToolbarLayout
         if (!mUrlFocusChangeInProgress) {
             float searchBoxTranslationY =
                     mNtpSearchBoxTransformedBounds.top - mNtpSearchBoxOriginalBounds.top;
+            searchBoxTranslationY = Math.min(searchBoxTranslationY, 0);
             mToolbarButtonsContainer.setTranslationY(searchBoxTranslationY);
             mHomeButton.setTranslationY(searchBoxTranslationY);
         }
