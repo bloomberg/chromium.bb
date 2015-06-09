@@ -139,9 +139,7 @@ class ChromiumEnv : public leveldb::Env,
                                     leveldb::Logger** result);
 
  protected:
-  std::string name_;
-  std::string uma_ioerror_base_name_;
-  bool make_backup_;
+  ChromiumEnv(const std::string& name, bool make_backup);
 
  private:
   static const char* FileErrorString(base::File::Error error);
@@ -192,6 +190,10 @@ class ChromiumEnv : public leveldb::Env,
       MethodID method) const;
 
   base::FilePath test_directory_;
+
+  std::string name_;
+  std::string uma_ioerror_base_name_;
+  bool make_backup_;
 
   base::Lock mu_;
   base::ConditionVariable bgsignal_;

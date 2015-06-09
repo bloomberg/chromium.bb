@@ -14681,6 +14681,79 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="LevelDBEnv.ServiceWorker.IOError" enum="LevelDBIOErrorMethods">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Methods where leveldb's Chromium environment has IO errors when being used
+    by ServiceWorker.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.ServiceWorker.IOError." enum="PlatformFileError">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    PlatformFileErrors encountered by a single leveldb env method.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.ServiceWorker.IOError.BFE" enum="PlatformFileError">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Errors (base::File::Error) encountered by a single leveldb env method.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.ServiceWorker.LockFileAncestorsNotFound"
+    units="directories">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Number of directories missing when ServiceWorker LevelDBEnv tries to create
+    a Lock file.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.ServiceWorker.MaxFDs" units="files">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    File descriptor limit recorded every time LevelDB calls NewRandomAccessFile
+    for ServiceWorker.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.ServiceWorker.MissingFiles" units="files">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Number of backup files found without corresponding ldb files. As measured by
+    GetChildren when used in ServiceWorker.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.ServiceWorker.RetryRecoveredFromErrorIn"
+    enum="PlatformFileError">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    When ServiceWorker LevelDBEnv successfully retries an operation that had
+    failed, record the error from the most recent failed attempt.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.ServiceWorker.Table" enum="BooleanSuccess">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Success indicates a successful backup or restore operation for .ldb table
+    files when used in ServiceWorker.
+  </summary>
+</histogram>
+
+<histogram name="LevelDBEnv.ServiceWorker.TimeUntilSuccessFor"
+    units="milliseconds">
+  <owner>nhiroki@chromium.org</owner>
+  <summary>
+    Time ServiceWorker LevelDBEnv slept before successfully completing this
+    operation. 0 means success on the first try.
+  </summary>
+</histogram>
+
 <histogram name="LevelDBEnv.Table" enum="BooleanSuccess">
   <owner>dgrogan@chromium.org</owner>
   <summary>
@@ -69511,6 +69584,7 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="ChromiumWritableFile::SyncParent"/>
   <affected-histogram name="LevelDBEnv.IDB.IOError.BFE"/>
   <affected-histogram name="LevelDBEnv.IOError.BFE"/>
+  <affected-histogram name="LevelDBEnv.ServiceWorker.IOError.BFE"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBOpenErrors.BFE"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBReadErrors.BFE"/>
   <affected-histogram name="WebCore.IndexedDB.LevelDBWriteErrors.BFE"/>
@@ -69520,6 +69594,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Backup" label="Backing up an ldb file."/>
   <suffix name="Restore" label="Restoring an ldb file."/>
   <affected-histogram name="LevelDBEnv.IDB.Table"/>
+  <affected-histogram name="LevelDBEnv.ServiceWorker.Table"/>
   <affected-histogram name="LevelDBEnv.Table"/>
 </histogram_suffixes>
 
@@ -69534,6 +69609,7 @@ To add a new entry, add it with any value and run test to compute valid value.
              other than exceeding the limit."/>
   <affected-histogram name="LevelDBEnv.IDB.MaxFDs"/>
   <affected-histogram name="LevelDBEnv.MaxFDs"/>
+  <affected-histogram name="LevelDBEnv.ServiceWorker.MaxFDs"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LevelDBEnvPlatformFileErrors" separator="">
@@ -69544,6 +69620,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="RenameFile" label="ChromiumEnv::RenameFile"/>
   <affected-histogram name="LevelDBEnv.IDB.IOError."/>
   <affected-histogram name="LevelDBEnv.IOError."/>
+  <affected-histogram name="LevelDBEnv.ServiceWorker.IOError."/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LevelDBEnvRetry" separator="">
@@ -69553,6 +69630,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="LevelDBEnv.IDB.RetryRecoveredFromErrorIn"/>
   <affected-histogram name="LevelDBEnv.IDB.TimeUntilSuccessFor"/>
   <affected-histogram name="LevelDBEnv.RetryRecoveredFromErrorIn"/>
+  <affected-histogram
+      name="LevelDBEnv.ServiceWorker.RetryRecoveredFromErrorIn"/>
+  <affected-histogram name="LevelDBEnv.ServiceWorker.TimeUntilSuccessFor"/>
   <affected-histogram name="LevelDBEnv.TimeUntilSuccessFor"/>
 </histogram_suffixes>
 

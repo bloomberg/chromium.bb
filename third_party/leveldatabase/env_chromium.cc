@@ -320,11 +320,7 @@ Status ChromiumWritableFile::Sync() {
 
 class IDBEnv : public ChromiumEnv {
  public:
-  IDBEnv() : ChromiumEnv() {
-    name_ = "LevelDBEnv.IDB";
-    uma_ioerror_base_name_ = name_ + ".IOError.BFE";
-    make_backup_ = true;
-  }
+  IDBEnv() : ChromiumEnv("LevelDBEnv.IDB", true /* make_backup */) {}
 };
 
 base::LazyInstance<IDBEnv>::Leaky idb_env = LAZY_INSTANCE_INITIALIZER;
@@ -517,8 +513,11 @@ bool ChromiumEnv::MakeBackup(const std::string& fname) {
 }
 
 ChromiumEnv::ChromiumEnv()
-    : name_("LevelDBEnv"),
-      make_backup_(false),
+    : ChromiumEnv("LevelDBEnv", false /* make_backup */) {}
+
+ChromiumEnv::ChromiumEnv(const std::string& name, bool make_backup)
+    : name_(name),
+      make_backup_(make_backup),
       bgsignal_(&mu_),
       started_bgthread_(false),
       kMaxRetryTimeMillis(1000) {

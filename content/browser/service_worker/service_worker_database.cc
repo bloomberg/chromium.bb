@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_database.h"
 
 #include "base/files/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -93,6 +94,15 @@ const char kUncommittedResIdKeyPrefix[] = "URES:";
 const char kPurgeableResIdKeyPrefix[] = "PRES:";
 
 const int64 kCurrentSchemaVersion = 2;
+
+class ServiceWorkerEnv : public leveldb_env::ChromiumEnv {
+ public:
+  ServiceWorkerEnv()
+      : ChromiumEnv("LevelDBEnv.ServiceWorker", false /* make_backup */) {}
+};
+
+base::LazyInstance<ServiceWorkerEnv>::Leaky g_service_worker_env =
+    LAZY_INSTANCE_INITIALIZER;
 
 bool RemovePrefix(const std::string& str,
                   const std::string& prefix,
@@ -987,6 +997,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DestroyDatabase() {
       // In-memory database not initialized.
       return STATUS_OK;
     }
+  } else {
+    options.env = g_service_worker_env.Pointer();
   }
 
   Status status =
@@ -1023,6 +1035,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   if (use_in_memory_db) {
     env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     options.env = env_.get();
+  } else {
+    options.env = g_service_worker_env.Pointer();
   }
 
   leveldb::DB* db = NULL;
