@@ -4,6 +4,7 @@ include_rules = [
   "+blink/public/resources",
   "+cc",
   "+components/clipboard",
+  "+components/devtools_service/public",
   "+components/gpu",
   "+components/mime_util",
   "+components/resource_provider/public",
