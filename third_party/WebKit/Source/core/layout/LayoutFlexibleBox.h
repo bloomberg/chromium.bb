@@ -135,7 +135,7 @@ private:
     bool needToStretchChildLogicalHeight(LayoutBox& child) const;
     EOverflow mainAxisOverflowForChild(LayoutBox& child) const;
 
-    void layoutFlexItems(bool relayoutChildren);
+    void layoutFlexItems(bool relayoutChildren, SubtreeLayoutScope&);
     LayoutUnit autoMarginOffsetInMainAxis(const OrderedFlexItemList&, LayoutUnit& availableFreeSpace);
     void updateAutoMarginsInMainAxis(LayoutBox& child, LayoutUnit autoMarginOffset);
     bool hasAutoMarginsInCrossAxis(LayoutBox& child) const;
@@ -161,7 +161,7 @@ private:
     void setOverrideMainAxisSizeForChild(LayoutBox& child, LayoutUnit childPreferredSize);
     void prepareChildForPositionedLayout(LayoutBox& child, LayoutUnit mainAxisOffset, LayoutUnit crossAxisOffset, PositionedLayoutMode);
     size_t numberOfInFlowPositionedChildren(const OrderedFlexItemList&) const;
-    void layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList&, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, Vector<LineContext>&);
+    void layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList&, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, SubtreeLayoutScope&, Vector<LineContext>&);
     void layoutColumnReverse(const OrderedFlexItemList&, LayoutUnit crossAxisOffset, LayoutUnit availableFreeSpace);
     void alignFlexLines(Vector<LineContext>&);
     void alignChildren(const Vector<LineContext>&);

@@ -233,6 +233,7 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren)
     if (updateLogicalWidthAndColumnWidth())
         relayoutChildren = true;
 
+    SubtreeLayoutScope layoutScope(*this);
     LayoutUnit previousHeight = logicalHeight();
     setLogicalHeight(borderAndPaddingLogicalHeight() + scrollbarLogicalHeight());
 
@@ -249,7 +250,7 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren)
         ChildFrameRects oldChildRects;
         appendChildFrameRects(oldChildRects);
 
-        layoutFlexItems(relayoutChildren);
+        layoutFlexItems(relayoutChildren, layoutScope);
 
         LayoutBlock::finishDelayUpdateScrollInfo();
 
@@ -645,7 +646,7 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child,
     return std::max(LayoutUnit(), computeMainAxisExtentForChild(child, MainOrPreferredSize, flexBasis));
 }
 
-void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren)
+void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     Vector<LineContext> lineContexts;
     OrderedFlexItemList orderedChildren;
@@ -669,7 +670,7 @@ void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren)
             ASSERT(inflexibleItems.size() > 0);
         }
 
-        layoutAndPlaceChildren(crossAxisOffset, orderedChildren, childSizes, availableFreeSpace, relayoutChildren, lineContexts);
+        layoutAndPlaceChildren(crossAxisOffset, orderedChildren, childSizes, availableFreeSpace, relayoutChildren, layoutScope, lineContexts);
     }
     if (hasLineIfEmpty()) {
         // Even if computeNextFlexLine returns true, the flexbox might not have
@@ -1110,7 +1111,7 @@ EOverflow LayoutFlexibleBox::mainAxisOverflowForChild(LayoutBox& child) const
     return child.styleRef().overflowY();
 }
 
-void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, Vector<LineContext>& lineContexts)
+void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList& children, const Vector<LayoutUnit, 16>& childSizes, LayoutUnit availableFreeSpace, bool relayoutChildren, SubtreeLayoutScope& layoutScope, Vector<LineContext>& lineContexts)
 {
     ASSERT(childSizes.size() == children.size());
 
@@ -1148,6 +1149,8 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         // We may have already forced relayout for orthogonal flowing children in computeInnerFlexBaseSizeForChild.
         bool forceChildRelayout = relayoutChildren && !childFlexBaseSizeRequiresLayout(*child);
         updateBlockChildDirtyBitsBeforeLayout(forceChildRelayout, *child);
+        if (!child->needsLayout())
+            child->markForPaginationRelayoutIfNeeded(layoutScope);
         child->layoutIfNeeded();
 
         updateAutoMarginsInMainAxis(*child, autoMarginOffset);
