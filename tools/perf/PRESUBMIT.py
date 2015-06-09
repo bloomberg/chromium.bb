@@ -31,7 +31,7 @@ def _CommonChecks(input_api, output_api):
 
 def _CheckWprShaFiles(input_api, output_api):
   """Check whether the wpr sha files have matching URLs."""
-  from telemetry.util import cloud_storage
+  from catapult_base import cloud_storage
   results = []
   for affected_file in input_api.AffectedFiles(include_deletes=False):
     filename = affected_file.AbsoluteLocalPath()
