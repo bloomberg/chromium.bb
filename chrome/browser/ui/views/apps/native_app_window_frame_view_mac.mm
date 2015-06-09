@@ -6,11 +6,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "extensions/browser/app_window/native_app_window.h"
+#include "ui/base/hit_test.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/views/widget/widget.h"
 
-NativeAppWindowFrameViewMac::NativeAppWindowFrameViewMac(views::Widget* frame)
-    : views::NativeFrameView(frame) {
+NativeAppWindowFrameViewMac::NativeAppWindowFrameViewMac(
+    views::Widget* frame,
+    extensions::NativeAppWindow* window)
+    : views::NativeFrameView(frame), native_app_window_(window) {
 }
 
 NativeAppWindowFrameViewMac::~NativeAppWindowFrameViewMac() {
@@ -26,4 +30,20 @@ gfx::Rect NativeAppWindowFrameViewMac::GetWindowBoundsForClientBounds(
   if (window_bounds.IsEmpty())
     window_bounds.set_size(gfx::Size(1, 1));
   return window_bounds;
+}
+
+int NativeAppWindowFrameViewMac::NonClientHitTest(const gfx::Point& point) {
+  if (!bounds().Contains(point))
+    return HTNOWHERE;
+
+  if (GetWidget()->IsFullscreen())
+    return HTCLIENT;
+
+  // Check for possible draggable region in the client area for the frameless
+  // window.
+  SkRegion* draggable_region = native_app_window_->GetDraggableRegion();
+  if (draggable_region && draggable_region->contains(point.x(), point.y()))
+    return HTCAPTION;
+
+  return HTCLIENT;
 }

@@ -59,6 +59,13 @@ VIEWS_EXPORT
 - (void)windowDidFailToEnterFullScreen:(NSWindow*)window;
 - (void)windowDidFailToExitFullScreen:(NSWindow*)window;
 
+// Called when the application receives a mouse-down, but before the event
+// is processed by NSWindows. Returns NO if the event should be processed as-is,
+// or YES if the event should be reposted to handle window dragging. Events are
+// reposted at the CGSessionEventTap level because window dragging happens there
+// before the application receives the event.
+- (BOOL)shouldRepostPendingLeftMouseDown:(NSPoint)locationInWindow;
+
 @end
 
 #endif  // UI_VIEWS_COCOA_VIEWS_NSWINDOW_DELEGATE_H_

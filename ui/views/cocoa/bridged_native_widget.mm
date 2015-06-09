@@ -7,10 +7,12 @@
 #import <objc/runtime.h>
 
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/thread_task_runner_handle.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -78,6 +80,104 @@ gfx::Size GetClientSizeForWindowSize(NSWindow* window,
   return gfx::Size([window contentRectForFrameRect:frame_rect].size);
 }
 
+BOOL WindowWantsMouseDownReposted(NSEvent* ns_event) {
+  id delegate = [[ns_event window] delegate];
+  return
+      [delegate
+          respondsToSelector:@selector(shouldRepostPendingLeftMouseDown:)] &&
+      [delegate shouldRepostPendingLeftMouseDown:[ns_event locationInWindow]];
+}
+
+// Check if a mouse-down event should drag the window. If so, repost the event.
+NSEvent* RepostEventIfHandledByWindow(NSEvent* ns_event) {
+  enum RepostState {
+    // Nothing reposted: hit-test new mouse-downs to see if they need to be
+    // ignored and reposted after changing draggability.
+    NONE,
+    // Expecting the next event to be the reposted event: let it go through.
+    EXPECTING_REPOST,
+    // If, while reposting, another mousedown was received: when the reposted
+    // event is seen, ignore it.
+    REPOST_CANCELLED,
+  };
+
+  // Which repost we're expecting to receive.
+  static RepostState repost_state = NONE;
+  // The event number of the reposted event. This let's us track whether an
+  // event is actually the repost since user-generated events have increasing
+  // event numbers. This is only valid while |repost_state != NONE|.
+  static NSInteger reposted_event_number;
+
+  NSInteger event_number = [ns_event eventNumber];
+
+  // The logic here is a bit convoluted because we want to mitigate race
+  // conditions if somehow a different mouse-down occurs between reposts.
+  // Specifically, we want to avoid:
+  // - BridgedNativeWidget's draggability getting out of sync (e.g. if it is
+  //   draggable outside of a repost cycle),
+  // - any repost loop.
+
+  if (repost_state == NONE) {
+    if (WindowWantsMouseDownReposted(ns_event)) {
+      repost_state = EXPECTING_REPOST;
+      reposted_event_number = event_number;
+      CGEventPost(kCGSessionEventTap, [ns_event CGEvent]);
+      return nil;
+    }
+
+    return ns_event;
+  }
+
+  if (repost_state == EXPECTING_REPOST) {
+    // Call through so that the window is made non-draggable again.
+    WindowWantsMouseDownReposted(ns_event);
+
+    if (reposted_event_number == event_number) {
+      // Reposted event received.
+      repost_state = NONE;
+      return nil;
+    }
+
+    // We were expecting a repost, but since this is a new mouse-down, cancel
+    // reposting and allow event to continue as usual.
+    repost_state = REPOST_CANCELLED;
+    return ns_event;
+  }
+
+  DCHECK_EQ(REPOST_CANCELLED, repost_state);
+  if (reposted_event_number == event_number) {
+    // Reposting was cancelled, now that we've received the event, we don't
+    // expect to see it again.
+    repost_state = NONE;
+    return nil;
+  }
+
+  return ns_event;
+}
+
+// Support window caption/draggable regions.
+// In AppKit, non-client regions are set by overriding
+// -[NSView mouseDownCanMoveWindow]. NSApplication caches this area as views are
+// installed and performs window moving when mouse-downs land in the area.
+// In Views, non-client regions are determined via hit-tests when the event
+// occurs.
+// To bridge the two models, we monitor mouse-downs with
+// +[NSEvent addLocalMonitorForEventsMatchingMask:handler:]. This receives
+// events after window dragging is handled, so for mouse-downs that land on a
+// draggable point, we cancel the event and repost it at the CGSessionEventTap
+// level so that window dragging will be handled again.
+void SetupDragEventMonitor() {
+  static id monitor = nil;
+  if (monitor)
+    return;
+
+  monitor = [NSEvent
+      addLocalMonitorForEventsMatchingMask:NSLeftMouseDownMask
+      handler:^NSEvent*(NSEvent* ns_event) {
+        return RepostEventIfHandledByWindow(ns_event);
+      }];
+}
+
 }  // namespace
 
 namespace views {
@@ -101,6 +201,7 @@ BridgedNativeWidget::BridgedNativeWidget(NativeWidgetMac* parent)
       in_fullscreen_transition_(false),
       window_visible_(false),
       wants_to_be_visible_(false) {
+  SetupDragEventMonitor();
   DCHECK(parent);
   window_delegate_.reset(
       [[ViewsNSWindowDelegate alloc] initWithBridgedNativeWidget:this]);
@@ -548,6 +649,44 @@ void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
   }
 }
 
+bool BridgedNativeWidget::ShouldRepostPendingLeftMouseDown(
+    NSPoint location_in_window) {
+  if (!bridged_view_)
+    return false;
+
+  if ([bridged_view_ mouseDownCanMoveWindow]) {
+    // This is a re-post, the movement has already started, so we can make the
+    // window non-draggable again.
+    SetDraggable(false);
+    return false;
+  }
+
+  gfx::Point point(location_in_window.x,
+                   NSHeight([window_ frame]) - location_in_window.y);
+  bool should_move_window =
+      native_widget_mac()->GetWidget()->GetNonClientComponent(point) ==
+      HTCAPTION;
+
+  // Check that the point is not obscured by non-content NSViews.
+  for (NSView* subview : [[bridged_view_ superview] subviews]) {
+    if (subview == bridged_view_.get())
+      continue;
+
+    if (![subview mouseDownCanMoveWindow] &&
+        NSPointInRect(location_in_window, [subview frame])) {
+      should_move_window = false;
+      break;
+    }
+  }
+
+  if (!should_move_window)
+    return false;
+
+  // Make the window draggable, then return true to repost the event.
+  SetDraggable(true);
+  return true;
+}
+
 void BridgedNativeWidget::OnSizeConstraintsChanged() {
   // Don't modify the size constraints or fullscreen collection behavior while
   // in fullscreen or during a transition. OnFullscreenTransitionComplete will
@@ -884,6 +1023,16 @@ NSMutableDictionary* BridgedNativeWidget::GetWindowProperties() const {
                              properties, OBJC_ASSOCIATION_RETAIN);
   }
   return properties;
+}
+
+void BridgedNativeWidget::SetDraggable(bool draggable) {
+  [bridged_view_ setMouseDownCanMoveWindow:draggable];
+  // AppKit will not update its cache of mouseDownCanMoveWindow unless something
+  // changes. Previously we tried adding an NSView and removing it, but for some
+  // reason it required reposting the mouse-down event, and didn't always work.
+  // Calling the below seems to be an effective solution.
+  [window_ setMovableByWindowBackground:NO];
+  [window_ setMovableByWindowBackground:YES];
 }
 
 }  // namespace views

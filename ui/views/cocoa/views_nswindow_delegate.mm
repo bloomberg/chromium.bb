@@ -54,6 +54,10 @@
   parent_->OnWindowWillClose();
 }
 
+- (BOOL)shouldRepostPendingLeftMouseDown:(NSPoint)locationInWindow {
+  return parent_->ShouldRepostPendingLeftMouseDown(locationInWindow);
+}
+
 // NSWindowDelegate implementation.
 
 - (void)windowDidFailToEnterFullScreen:(NSWindow*)window {

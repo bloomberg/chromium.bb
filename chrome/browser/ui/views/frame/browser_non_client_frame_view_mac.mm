@@ -69,7 +69,15 @@ gfx::Rect BrowserNonClientFrameViewMac::GetWindowBoundsForClientBounds(
 }
 
 int BrowserNonClientFrameViewMac::NonClientHitTest(const gfx::Point& point) {
-  return frame()->client_view()->NonClientHitTest(point);
+  int component = frame()->client_view()->NonClientHitTest(point);
+
+  // BrowserView::NonClientHitTest will return HTNOWHERE for points that hit
+  // the native title bar. On Mac, we need to explicitly return HTCAPTION for
+  // those points.
+  if (component == HTNOWHERE && bounds().Contains(point))
+    return HTCAPTION;
+
+  return component;
 }
 
 void BrowserNonClientFrameViewMac::GetWindowMask(const gfx::Size& size,

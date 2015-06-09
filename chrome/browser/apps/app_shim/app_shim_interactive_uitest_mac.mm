@@ -35,6 +35,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/test/extension_test_message_listener.h"
+#import "ui/base/test/windowed_nsnotification_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {
@@ -301,59 +302,6 @@ Browser* GetFirstHostedAppWindow() {
 
 }  // namespace
 
-// Watches for NSNotifications from the shared workspace.
-@interface WindowedNSNotificationObserver : NSObject {
- @private
-  base::scoped_nsobject<NSString> bundleId_;
-  BOOL notificationReceived_;
-  scoped_ptr<base::RunLoop> runLoop_;
-}
-
-- (id)initForNotification:(NSString*)name
-              andBundleId:(NSString*)bundleId;
-- (void)observe:(NSNotification*)notification;
-- (void)wait;
-@end
-
-@implementation WindowedNSNotificationObserver
-
-- (id)initForNotification:(NSString*)name
-              andBundleId:(NSString*)bundleId {
-  if (self = [super init]) {
-    bundleId_.reset([[bundleId copy] retain]);
-    [[[NSWorkspace sharedWorkspace] notificationCenter]
-        addObserver:self
-           selector:@selector(observe:)
-               name:name
-             object:nil];
-  }
-  return self;
-}
-
-- (void)observe:(NSNotification*)notification {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  NSRunningApplication* application =
-      [[notification userInfo] objectForKey:NSWorkspaceApplicationKey];
-  if (![[application bundleIdentifier] isEqualToString:bundleId_])
-    return;
-
-  [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
-  notificationReceived_ = YES;
-  if (runLoop_.get())
-    runLoop_->Quit();
-}
-
-- (void)wait {
-  if (notificationReceived_)
-    return;
-
-  runLoop_.reset(new base::RunLoop);
-  runLoop_->Run();
-}
-
-@end
-
 namespace apps {
 
 // Shims require static libraries http://crbug.com/386024.
@@ -387,8 +335,8 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_HostedAppLaunch) {
   {
     base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer;
     ns_observer.reset([[WindowedNSNotificationObserver alloc]
-        initForNotification:NSWorkspaceDidLaunchApplicationNotification
-                andBundleId:bundle_id]);
+        initForWorkspaceNotification:NSWorkspaceDidLaunchApplicationNotification
+                            bundleId:bundle_id]);
     WindowedAppShimLaunchObserver observer(app->id());
     LaunchHostedApp(app);
     [ns_observer wait];
@@ -402,8 +350,9 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_HostedAppLaunch) {
     ASSERT_EQ(1u, [running_shim count]);
 
     ns_observer.reset([[WindowedNSNotificationObserver alloc]
-        initForNotification:NSWorkspaceDidTerminateApplicationNotification
-                andBundleId:bundle_id]);
+        initForWorkspaceNotification:
+            NSWorkspaceDidTerminateApplicationNotification
+                            bundleId:bundle_id]);
     [base::mac::ObjCCastStrict<NSRunningApplication>(
         [running_shim objectAtIndex:0]) terminate];
     [ns_observer wait];
@@ -458,8 +407,8 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
   {
     base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer;
     ns_observer.reset([[WindowedNSNotificationObserver alloc]
-        initForNotification:NSWorkspaceDidLaunchApplicationNotification
-                andBundleId:bundle_id]);
+        initForWorkspaceNotification:NSWorkspaceDidLaunchApplicationNotification
+                            bundleId:bundle_id]);
     WindowedAppShimLaunchObserver observer(app->id());
     LaunchPlatformApp(app);
     [ns_observer wait];
@@ -478,8 +427,9 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
     ASSERT_EQ(1u, [running_shim count]);
 
     ns_observer.reset([[WindowedNSNotificationObserver alloc]
-        initForNotification:NSWorkspaceDidTerminateApplicationNotification
-                andBundleId:bundle_id]);
+        initForWorkspaceNotification:
+            NSWorkspaceDidTerminateApplicationNotification
+                            bundleId:bundle_id]);
     [base::mac::ObjCCastStrict<NSRunningApplication>(
         [running_shim objectAtIndex:0]) terminate];
     [ns_observer wait];
@@ -546,10 +496,10 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_ShowWindow) {
 
   // Showing the window causes the shim to launch.
   {
-    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
-        [[WindowedNSNotificationObserver alloc]
-            initForNotification:NSWorkspaceDidLaunchApplicationNotification
-                    andBundleId:bundle_id]);
+    base::scoped_nsobject<WindowedNSNotificationObserver>
+    ns_observer([[WindowedNSNotificationObserver alloc]
+        initForWorkspaceNotification:NSWorkspaceDidLaunchApplicationNotification
+                            bundleId:bundle_id]);
     WindowedAppShimLaunchObserver observer(app->id());
     window_1->Show(extensions::AppWindow::SHOW_INACTIVE);
     [ns_observer wait];
@@ -562,8 +512,9 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_ShowWindow) {
   {
     base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
         [[WindowedNSNotificationObserver alloc]
-            initForNotification:NSWorkspaceDidTerminateApplicationNotification
-                    andBundleId:bundle_id]);
+            initForWorkspaceNotification:
+                NSWorkspaceDidTerminateApplicationNotification
+                                bundleId:bundle_id]);
     window_1->Hide();
     [ns_observer wait];
     EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
@@ -587,10 +538,10 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_ShowWindow) {
 
   // Showing one of the windows should launch the shim.
   {
-    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
-        [[WindowedNSNotificationObserver alloc]
-            initForNotification:NSWorkspaceDidLaunchApplicationNotification
-                    andBundleId:bundle_id]);
+    base::scoped_nsobject<WindowedNSNotificationObserver>
+    ns_observer([[WindowedNSNotificationObserver alloc]
+        initForWorkspaceNotification:NSWorkspaceDidLaunchApplicationNotification
+                            bundleId:bundle_id]);
     WindowedAppShimLaunchObserver observer(app->id());
     window_1->Show(extensions::AppWindow::SHOW_INACTIVE);
     [ns_observer wait];
@@ -625,8 +576,9 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_ShowWindow) {
     EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
     base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
         [[WindowedNSNotificationObserver alloc]
-            initForNotification:NSWorkspaceDidTerminateApplicationNotification
-                    andBundleId:bundle_id]);
+            initForWorkspaceNotification:
+                NSWorkspaceDidTerminateApplicationNotification
+                                bundleId:bundle_id]);
     window_2->Hide();
     [ns_observer wait];
     EXPECT_EQ(1, deactivate_observer.deactivated_count());

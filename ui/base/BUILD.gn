@@ -569,6 +569,8 @@ source_set("test_support") {
     "test/ui_controls_internal_win.h",
     "test/ui_controls_mac.mm",
     "test/ui_controls_win.cc",
+    "test/windowed_nsnotification_observer.h",
+    "test/windowed_nsnotification_observer.mm",
   ]
 
   public_deps = [

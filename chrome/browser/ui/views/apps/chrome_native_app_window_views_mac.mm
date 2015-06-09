@@ -4,9 +4,16 @@
 
 #import "chrome/browser/ui/views/apps/chrome_native_app_window_views_mac.h"
 
+#import <Cocoa/Cocoa.h>
+
+#import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
-#include "chrome/browser/ui/views/apps/app_window_native_widget_mac.h"
-#include "chrome/browser/ui/views/apps/native_app_window_frame_view_mac.h"
+#import "chrome/browser/ui/views/apps/app_window_native_widget_mac.h"
+#import "chrome/browser/ui/views/apps/native_app_window_frame_view_mac.h"
+
+@interface NSView (WebContentsView)
+- (void)setMouseDownCanMoveWindow:(BOOL)can_move;
+@end
 
 ChromeNativeAppWindowViewsMac::ChromeNativeAppWindowViewsMac()
     : is_hidden_with_app_(false) {
@@ -28,12 +35,12 @@ void ChromeNativeAppWindowViewsMac::OnBeforeWidgetInit(
 
 views::NonClientFrameView*
 ChromeNativeAppWindowViewsMac::CreateStandardDesktopAppFrame() {
-  return new NativeAppWindowFrameViewMac(widget());
+  return new NativeAppWindowFrameViewMac(widget(), this);
 }
 
 views::NonClientFrameView*
 ChromeNativeAppWindowViewsMac::CreateNonStandardAppFrame() {
-  return new NativeAppWindowFrameViewMac(widget());
+  return new NativeAppWindowFrameViewMac(widget(), this);
 }
 
 void ChromeNativeAppWindowViewsMac::Show() {
@@ -57,6 +64,14 @@ void ChromeNativeAppWindowViewsMac::FlashFrame(bool flash) {
   apps::ExtensionAppShimHandler::RequestUserAttentionForWindow(
       app_window(), flash ? apps::APP_SHIM_ATTENTION_CRITICAL
                           : apps::APP_SHIM_ATTENTION_CANCEL);
+}
+
+void ChromeNativeAppWindowViewsMac::UpdateDraggableRegions(
+    const std::vector<extensions::DraggableRegion>& regions) {
+  ChromeNativeAppWindowViews::UpdateDraggableRegions(regions);
+
+  NSView* web_contents_view = app_window()->web_contents()->GetNativeView();
+  [web_contents_view setMouseDownCanMoveWindow:YES];
 }
 
 void ChromeNativeAppWindowViewsMac::ShowWithApp() {

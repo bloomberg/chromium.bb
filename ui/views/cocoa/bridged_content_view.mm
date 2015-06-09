@@ -93,6 +93,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
 
 @synthesize hostedView = hostedView_;
 @synthesize textInputClient = textInputClient_;
+@synthesize mouseDownCanMoveWindow = mouseDownCanMoveWindow_;
 
 - (id)initWithView:(views::View*)viewToHost {
   DCHECK(viewToHost);

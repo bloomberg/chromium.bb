@@ -44,7 +44,8 @@ NSInteger StyleMaskForParams(const Widget::InitParams& params) {
 
   if (params.type == Widget::InitParams::TYPE_WINDOW) {
     return NSTitledWindowMask | NSClosableWindowMask |
-           NSMiniaturizableWindowMask | NSResizableWindowMask;
+           NSMiniaturizableWindowMask | NSResizableWindowMask |
+           NSTexturedBackgroundWindowMask;
   }
   return NSBorderlessWindowMask;
 }

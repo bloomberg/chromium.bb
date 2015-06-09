@@ -7,20 +7,30 @@
 
 #include "ui/views/window/native_frame_view.h"
 
+namespace extensions {
+class NativeAppWindow;
+}
+
 class Widget;
 
 // Provides metrics consistent with a native frame on Mac. The actual frame is
 // drawn by NSWindow.
 class NativeAppWindowFrameViewMac : public views::NativeFrameView {
  public:
-  explicit NativeAppWindowFrameViewMac(views::Widget* frame);
+  NativeAppWindowFrameViewMac(views::Widget* frame,
+                              extensions::NativeAppWindow* window);
   ~NativeAppWindowFrameViewMac() override;
 
   // NonClientFrameView:
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override;
+  int NonClientHitTest(const gfx::Point& point) override;
 
  private:
+  // Weak. Owned by extensions::AppWindow (which manages our Widget via its
+  // WebContents).
+  extensions::NativeAppWindow* native_app_window_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowFrameViewMac);
 };
 

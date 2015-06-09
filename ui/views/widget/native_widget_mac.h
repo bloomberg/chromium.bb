@@ -10,6 +10,7 @@
 
 namespace views {
 namespace test {
+class HitTestNativeWidgetMac;
 class MockNativeWidgetMac;
 }
 
@@ -132,6 +133,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
 
  private:
   friend class test::MockNativeWidgetMac;
+  friend class test::HitTestNativeWidgetMac;
 
   internal::NativeWidgetDelegate* delegate_;
   scoped_ptr<BridgedNativeWidget> bridge_;

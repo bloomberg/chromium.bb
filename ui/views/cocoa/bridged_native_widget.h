@@ -132,6 +132,12 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   // Called by the NSWindowDelegate when the window becomes or resigns key.
   void OnWindowKeyStatusChangedTo(bool is_key);
 
+  // Called by NSWindowDelegate when the application receives a mouse-down, but
+  // before the event is processed by NSWindows. Returning true here will cause
+  // the event to be cancelled and reposted at the CGSessionEventTap level. This
+  // is used to determine whether a mouse-down should drag the window.
+  virtual bool ShouldRepostPendingLeftMouseDown(NSPoint location_in_window);
+
   // Called by NativeWidgetMac when the window size constraints change.
   void OnSizeConstraintsChanged();
 
@@ -190,6 +196,10 @@ class VIEWS_EXPORT BridgedNativeWidget : public ui::LayerDelegate,
   // Size the layer to match the client area bounds, taking into account display
   // scale factor.
   void UpdateLayerProperties();
+
+  // Sets mouseDownCanMoveWindow on |bridged_view_| and triggers the NSWindow to
+  // update its draggable region.
+  void SetDraggable(bool draggable);
 
   // Overridden from CocoaMouseCaptureDelegate:
   void PostCapturedEvent(NSEvent* event) override;

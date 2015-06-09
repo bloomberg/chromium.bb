@@ -9,9 +9,14 @@
 #import "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
+#include "ui/base/hit_test.h"
+#import "ui/base/test/windowed_nsnotification_observer.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/window/native_frame_view.h"
 
 namespace views {
+namespace test {
 
 class BridgedNativeWidgetUITest : public test::WidgetTest {
  public:
@@ -144,4 +149,191 @@ TEST_F(BridgedNativeWidgetUITest, FullscreenEnterAndExit) {
   EXPECT_EQ(restored_bounds, widget_->GetRestoredBounds());
 }
 
+namespace {
+
+// This is used to wait for reposted events to be seen. We can't just use
+// RunPendingMessages() because CGEventPost might not be synchronous.
+class HitTestBridgedNativeWidget : public BridgedNativeWidget {
+ public:
+  explicit HitTestBridgedNativeWidget(NativeWidgetMac* widget)
+      : BridgedNativeWidget(widget) {}
+
+  // BridgedNativeWidget:
+  bool ShouldRepostPendingLeftMouseDown(NSPoint location_in_window) override {
+    bool draggable_before = [ns_view() mouseDownCanMoveWindow];
+    bool should_repost = BridgedNativeWidget::ShouldRepostPendingLeftMouseDown(
+        location_in_window);
+    bool draggable_after = [ns_view() mouseDownCanMoveWindow];
+
+    if (run_loop_ && draggable_before && !draggable_after)
+      run_loop_->Quit();
+
+    return should_repost;
+  }
+
+  void WaitForIsDraggableChange() {
+    base::RunLoop run_loop;
+    run_loop_ = &run_loop;
+    run_loop.Run();
+    run_loop_ = nullptr;
+  }
+
+ private:
+  base::RunLoop* run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(HitTestBridgedNativeWidget);
+};
+
+// This is used to return a customized result to NonClientHitTest.
+class HitTestNonClientFrameView : public NativeFrameView {
+ public:
+  explicit HitTestNonClientFrameView(Widget* widget)
+      : NativeFrameView(widget), hit_test_result_(HTNOWHERE) {}
+
+  // NonClientFrameView overrides:
+  int NonClientHitTest(const gfx::Point& point) override {
+    return hit_test_result_;
+  }
+
+  void set_hit_test_result(int component) { hit_test_result_ = component; }
+
+ private:
+  int hit_test_result_;
+
+  DISALLOW_COPY_AND_ASSIGN(HitTestNonClientFrameView);
+};
+
+void WaitForEvent(NSUInteger mask) {
+  // Pointer because the handler block captures local variables by copying.
+  base::RunLoop run_loop;
+  base::RunLoop* run_loop_ref = &run_loop;
+  id monitor = [NSEvent
+      addLocalMonitorForEventsMatchingMask:mask
+                                   handler:^NSEvent*(NSEvent* ns_event) {
+                                     run_loop_ref->Quit();
+                                     return ns_event;
+                                   }];
+  run_loop.Run();
+  [NSEvent removeMonitor:monitor];
+}
+
+}  // namespace
+
+// This is used to inject test versions of NativeFrameView and
+// BridgedNativeWidget.
+class HitTestNativeWidgetMac : public NativeWidgetMac {
+ public:
+  HitTestNativeWidgetMac(internal::NativeWidgetDelegate* delegate,
+                         NativeFrameView* native_frame_view)
+      : NativeWidgetMac(delegate), native_frame_view_(native_frame_view) {
+    NativeWidgetMac::bridge_.reset(new HitTestBridgedNativeWidget(this));
+  }
+
+  HitTestBridgedNativeWidget* bridge() {
+    return static_cast<HitTestBridgedNativeWidget*>(
+        NativeWidgetMac::bridge_.get());
+  }
+
+  // internal::NativeWidgetPrivate:
+  NonClientFrameView* CreateNonClientFrameView() override {
+    return native_frame_view_;
+  }
+
+ private:
+  // Owned by Widget.
+  NativeFrameView* native_frame_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(HitTestNativeWidgetMac);
+};
+
+TEST_F(BridgedNativeWidgetUITest, HitTest) {
+  Widget widget;
+  HitTestNonClientFrameView* frame_view =
+      new HitTestNonClientFrameView(&widget);
+  test::HitTestNativeWidgetMac* native_widget =
+      new test::HitTestNativeWidgetMac(&widget, frame_view);
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.native_widget = native_widget;
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.bounds = gfx::Rect(100, 200, 400, 300);
+  widget.Init(init_params);
+  widget.Show();
+
+  // Dragging the window should work.
+  frame_view->set_hit_test_result(HTCAPTION);
+  {
+    EXPECT_EQ(100, [widget.GetNativeWindow() frame].origin.x);
+
+    NSEvent* mouse_down = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
+        NSMakePoint(10, 10), widget.GetNativeWindow());
+    CGEventPost(kCGSessionEventTap, [mouse_down CGEvent]);
+    native_widget->bridge()->WaitForIsDraggableChange();
+
+    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWindowDidMoveNotification]);
+    NSEvent* mouse_drag = cocoa_test_event_utils::MouseEventAtPointInWindow(
+        NSMakePoint(110, 110), NSLeftMouseDragged, widget.GetNativeWindow(), 0);
+    CGEventPost(kCGSessionEventTap, [mouse_drag CGEvent]);
+    [ns_observer wait];
+    EXPECT_EQ(200, [widget.GetNativeWindow() frame].origin.x);
+
+    NSEvent* mouse_up = cocoa_test_event_utils::MouseEventAtPointInWindow(
+        NSMakePoint(10, 10), NSLeftMouseUp, widget.GetNativeWindow(), 0);
+    CGEventPost(kCGSessionEventTap, [mouse_up CGEvent]);
+    WaitForEvent(NSLeftMouseUpMask);
+    EXPECT_EQ(200, [widget.GetNativeWindow() frame].origin.x);
+  }
+
+  // Mouse-downs on the window controls should not be intercepted.
+  {
+    EXPECT_EQ(200, [widget.GetNativeWindow() frame].origin.x);
+
+    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWindowDidMiniaturizeNotification]);
+
+    // Position this on the minimize button.
+    NSEvent* mouse_down = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
+        NSMakePoint(30, 290), widget.GetNativeWindow());
+    CGEventPost(kCGSessionEventTap, [mouse_down CGEvent]);
+
+    NSEvent* mouse_up = cocoa_test_event_utils::MouseEventAtPointInWindow(
+        NSMakePoint(30, 290), NSLeftMouseUp, widget.GetNativeWindow(), 0);
+    EXPECT_FALSE([widget.GetNativeWindow() isMiniaturized]);
+    CGEventPost(kCGSessionEventTap, [mouse_up CGEvent]);
+    [ns_observer wait];
+    EXPECT_TRUE([widget.GetNativeWindow() isMiniaturized]);
+    [widget.GetNativeWindow() deminiaturize:nil];
+
+    // Position unchanged.
+    EXPECT_EQ(200, [widget.GetNativeWindow() frame].origin.x);
+  }
+
+  // Non-draggable areas should do nothing.
+  frame_view->set_hit_test_result(HTCLIENT);
+  {
+    EXPECT_EQ(200, [widget.GetNativeWindow() frame].origin.x);
+
+    NSEvent* mouse_down = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
+        NSMakePoint(10, 10), widget.GetNativeWindow());
+    CGEventPost(kCGSessionEventTap, [mouse_down CGEvent]);
+    WaitForEvent(NSLeftMouseDownMask);
+
+    NSEvent* mouse_drag = cocoa_test_event_utils::MouseEventAtPointInWindow(
+        NSMakePoint(110, 110), NSLeftMouseDragged, widget.GetNativeWindow(), 0);
+    CGEventPost(kCGSessionEventTap, [mouse_drag CGEvent]);
+    WaitForEvent(NSLeftMouseDraggedMask);
+    EXPECT_EQ(200, [widget.GetNativeWindow() frame].origin.x);
+
+    NSEvent* mouse_up = cocoa_test_event_utils::MouseEventAtPointInWindow(
+        NSMakePoint(110, 110), NSLeftMouseUp, widget.GetNativeWindow(), 0);
+    CGEventPost(kCGSessionEventTap, [mouse_up CGEvent]);
+    WaitForEvent(NSLeftMouseUpMask);
+    EXPECT_EQ(200, [widget.GetNativeWindow() frame].origin.x);
+  }
+}
+
+}  // namespace test
 }  // namespace views

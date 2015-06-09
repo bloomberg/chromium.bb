@@ -675,6 +675,8 @@
             'ime/dummy_text_input_client.h',
             'test/nswindow_fullscreen_notification_waiter.h',
             'test/nswindow_fullscreen_notification_waiter.mm',
+            'test/windowed_nsnotification_observer.h',
+            'test/windowed_nsnotification_observer.mm',
           ],
         }],
         ['use_aura==1', {

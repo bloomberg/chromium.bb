@@ -40,10 +40,18 @@ class View;
 
   // The last tooltip text, used to limit updates.
   base::string16 lastTooltipText_;
+
+  // Whether dragging on the view moves the window.
+  BOOL mouseDownCanMoveWindow_;
 }
 
 @property(readonly, nonatomic) views::View* hostedView;
 @property(assign, nonatomic) ui::TextInputClient* textInputClient;
+
+// Extends an atomic, readonly property on NSView to make it assignable.
+// This usually returns YES if the view is transparent. We want to control it
+// so that BridgedNativeWidget can dynamically enable dragging of the window.
+@property(assign) BOOL mouseDownCanMoveWindow;
 
 // Initialize the NSView -> views::View bridge. |viewToHost| must be non-NULL.
 - (id)initWithView:(views::View*)viewToHost;
