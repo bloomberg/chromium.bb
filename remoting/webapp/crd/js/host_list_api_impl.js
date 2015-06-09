@@ -23,7 +23,8 @@ remoting.HostListApiImpl = function() {
 
 /** @override */
 remoting.HostListApiImpl.prototype.register = function(
-    newHostId, hostName, publicKey, hostClientId) {
+    hostName, publicKey, hostClientId) {
+  var newHostId = base.generateUuid();
   var newHostDetails = { data: {
     hostId: newHostId,
     hostName: hostName,
@@ -44,7 +45,12 @@ remoting.HostListApiImpl.prototype.register = function(
       var result = /** @type {!Object} */ (response.getJson());
       var data = base.getObjectAttr(result, 'data');
       var authCode = base.getStringAttr(data, 'authorizationCode');
-      return { authCode: authCode, email: '', gcdId: '' };
+      return {
+        authCode: authCode,
+        email: '',
+        hostId: newHostId,
+        isLegacy: true
+      };
     } else {
       console.log(
           'Failed to register the host. Status: ' + response.status +

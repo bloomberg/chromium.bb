@@ -82,6 +82,7 @@ QUnit.module('host_controller', {
     mockHostListApi = new remoting.MockHostListApi;
     mockHostListApi.authCodeFromRegister = FAKE_AUTH_CODE;
     mockHostListApi.emailFromRegister = '';
+    mockHostListApi.hostIdFromRegister = FAKE_HOST_ID;
     remoting.HostListApi.setInstance(mockHostListApi);
     base.debug.assert(remoting.oauth2 === null);
     remoting.oauth2 = new remoting.OAuth2();
@@ -265,7 +266,7 @@ QUnit.test('start with host registration failure', function(assert) {
 QUnit.test('start with getCredentialsFromAuthCode failure', function(assert) {
   mockHostDaemonFacade.useEmail = null;
   mockHostDaemonFacade.refreshToken = null;
-  return controller.start(FAKE_HOST_PIN, true).then(function() {
+  return controller.start(FAKE_HOST_PIN, true).then(function(result) {
     throw 'test failed';
   }, function(/** remoting.Error */ e) {
     assert.equal(e.getDetail(), 'getCredentialsFromAuthCode');
@@ -355,18 +356,23 @@ QUnit.test('start with startDaemon returning failure code', function(assert) {
       assert.equal(unregisterHostByIdSpy.callCount, 0);
       assert.equal(onLocalHostStartedSpy.callCount, 1);
       assert.equal(startDaemonSpy.callCount, 1);
+      var expectedConfig = {
+        xmpp_login: FAKE_XMPP_LOGIN,
+        oauth_refresh_token: FAKE_REFRESH_TOKEN,
+        host_owner: FAKE_CLIENT_JID.toLowerCase(),
+        host_owner_email: FAKE_USER_EMAIL,
+        host_name: FAKE_HOST_NAME,
+        host_secret_hash: fakePinHash,
+        private_key: FAKE_PRIVATE_KEY
+      };
+      if (remoting.settings.USE_GCD) {
+        expectedConfig['gcd_device_id'] = FAKE_HOST_ID;
+      } else {
+        expectedConfig['host_id'] = FAKE_HOST_ID;
+      }
       assert.deepEqual(
           startDaemonSpy.args[0].slice(0, 2),
-          [{
-            xmpp_login: FAKE_XMPP_LOGIN,
-            oauth_refresh_token: FAKE_REFRESH_TOKEN,
-            host_owner: FAKE_CLIENT_JID.toLowerCase(),
-            host_owner_email: FAKE_USER_EMAIL,
-            host_id: FAKE_HOST_ID,
-            host_name: FAKE_HOST_NAME,
-            host_secret_hash: fakePinHash,
-            private_key: FAKE_PRIVATE_KEY
-          }, consent]);
+          [expectedConfig, consent]);
     });
   });
 });

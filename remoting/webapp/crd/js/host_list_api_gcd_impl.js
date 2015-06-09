@@ -26,18 +26,26 @@ remoting.HostListApiGcdImpl = function() {
 
 /** @override */
 remoting.HostListApiGcdImpl.prototype.register = function(
-    newHostId, hostName, publicKey, hostClientId) {
+    hostName, publicKey, hostClientId) {
   var self = this;
   var deviceDraft = {
     channel: {
       supportedType: 'xmpp'
     },
     deviceKind: 'vendor',
-    name: newHostId,
-    displayName: hostName,
+    name: hostName,
     state: {
-      'publicKey': publicKey
-    }
+      base: {
+        firmwareVersion: 'none',
+        localDiscoveryEnabled: false,
+        localAnonymousAccessMaxRole: 'none',
+        localPairingEnabled: false,
+        // The leading underscore is necessary for |_publicKey|
+        // because it's not a standard key defined by GCD.
+        _publicKey: publicKey
+      }
+    },
+    'tags': [CHROMOTING_DEVICE_TAG]
   };
 
   return /** @type {!Promise<remoting.HostListApi.RegisterResult>} */ (
@@ -53,7 +61,8 @@ remoting.HostListApiGcdImpl.prototype.register = function(
         return {
           authCode: ticket.robotAccountAuthorizationCode,
           email: ticket.robotAccountEmail,
-          gcdId: ticket.deviceId
+          hostId: ticket.deviceId,
+          isLegacy: false
         };
       }).
       catch(function(error) {
@@ -69,7 +78,9 @@ remoting.HostListApiGcdImpl.prototype.get = function() {
         var hosts = [];
         devices.forEach(function(device) {
           try {
-            hosts.push(deviceToHost(device));
+            if (isChromotingHost(device)) {
+              hosts.push(deviceToHost(device));
+            }
           } catch (/** @type {*} */ error) {
             console.warn('Invalid device spec:', error);
           }
@@ -81,28 +92,31 @@ remoting.HostListApiGcdImpl.prototype.get = function() {
 /** @override */
 remoting.HostListApiGcdImpl.prototype.put =
     function(hostId, hostName, hostPublicKey) {
-  // TODO(jrw)
-  throw new Error('Not implemented');
+  return this.gcd_.patchDevice(hostId, {
+    'name': hostName
+  }).then(function(device) {
+    if (device.name != hostName) {
+      console.error('error updating host name');
+      throw remoting.Error.unexpected();
+    }
+    if (!device.state || device.state['_publicKey'] != hostPublicKey) {
+      // TODO(jrw): Is there any reason to believe this would ever be
+      // happen?
+      console.error('unexpected host public key');
+      throw remoting.Error.unexpected();
+    }
+    // Don't return anything.
+  });
 };
 
 /** @override */
 remoting.HostListApiGcdImpl.prototype.remove = function(hostId) {
-  var that = this;
-  return this.gcd_.listDevices(hostId).then(function(devices) {
-    var gcdId = null;
-    for (var i = 0; i < devices.length; i++) {
-      var device = devices[i];
-      // The "name" field in GCD holds what Chromoting considers to be
-      // the host ID.
-      if (device.name == hostId) {
-        gcdId = device.id;
-      }
+  return this.gcd_.deleteDevice(hostId).then(function(deleted) {
+    if (!deleted) {
+      console.error('error deleting host from GCD');
+      throw remoting.Error.unexpected();
     }
-    if (gcdId == null) {
-      return false;
-    } else {
-      return that.gcd_.deleteDevice(gcdId);
-    }
+    // Don't return anything.
   });
 };
 
@@ -113,7 +127,27 @@ remoting.HostListApiGcdImpl.prototype.getSupportHost = function(supportId) {
 };
 
 /**
+ * Tag for distinguishing Chromoting hosts from other devices stored
+ * in GCD.
+ *
+ * @const
+ */
+var CHROMOTING_DEVICE_TAG = '1ce4542c-dd87-4320-ba19-ac173f98c04e';
+
+/**
+ * Check whether a GCD device entry is a Chromoting host.
+ *
+ * @param {remoting.gcd.Device} device
+ * @return {boolean}
+ */
+function isChromotingHost(device) {
+  return device.tags != null &&
+      device.tags.indexOf(CHROMOTING_DEVICE_TAG) != -1;
+}
+
+/**
  * Converts a GCD device description to a Host object.
+ *
  * @param {!Object} device
  * @return {!remoting.Host}
  */
@@ -122,15 +156,16 @@ function deviceToHost(device) {
     'online': 'ONLINE',
     'offline': 'OFFLINE'
   };
-  var hostId = base.getStringAttr(device, 'name');
+  var hostId = base.getStringAttr(device, 'id');
   var host = new remoting.Host(hostId);
-  host.hostName = base.getStringAttr(device, 'displayName');
+  host.hostName = base.getStringAttr(device, 'name');
   host.status = base.getStringAttr(
       statusMap, base.getStringAttr(device, 'connectionStatus'));
   var state = base.getObjectAttr(device, 'state', {});
-  host.publicKey = base.getStringAttr(state, 'publicKey');
-  host.jabberId = base.getStringAttr(state, 'jabberId', '');
-  host.hostVersion = base.getStringAttr(state, 'hostVersion', '');
+  var baseState = base.getObjectAttr(state, 'base', {});
+  host.publicKey = base.getStringAttr(baseState, '_publicKey');
+  host.jabberId = base.getStringAttr(baseState, '_jabberId', '');
+  host.hostVersion = base.getStringAttr(baseState, '_hostVersion', '');
   var creationTimeMs = base.getNumberAttr(device, 'creationTimeMs', 0);
   if (creationTimeMs) {
     host.createdTime = new Date(creationTimeMs).toISOString();

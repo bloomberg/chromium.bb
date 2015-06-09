@@ -22,14 +22,13 @@ remoting.HostListApi = function() {
  * Registers a new host with the host registry service (either the
  * Chromoting registry or GCD).
  *
- * @param {string} newHostId The ID of the new host to register.
  * @param {string} hostName The user-visible name of the new host.
  * @param {string} publicKey The public half of the host's key pair.
  * @param {string} hostClientId The OAuth2 client ID of the host.
  * @return {!Promise<remoting.HostListApi.RegisterResult>}
  */
 remoting.HostListApi.prototype.register = function(
-    newHostId, hostName, publicKey, hostClientId) {
+    hostName, publicKey, hostClientId) {
 };
 
 /**
@@ -100,23 +99,27 @@ remoting.HostListApi.setInstance = function(newInstance) {
 
 /**
  * Information returned from the registry/GCD server when registering
- * a device.  GCD will fill in all three fields; the Chromoting
- * registry will only return an auth code; other fields will be empty.
+ * a device.
  *
  * The fields are:
  *
  * authCode: An OAuth2 authorization code that can be exchanged for a
  *     refresh token.
  *
- * email: The email/XMPP address of the robot account associated
- *     with this device.
+ * email: The email/XMPP address of the robot account associated with
+ *     this device.  The Chromoting directory sets this field to the
+ *     empty string; GCD returns a real email address.
  *
- * gcmId: The ID string assigned to this device by GCD.
+ * hostId: The ID of the newly registered host.
+ *
+ * isLegacy: True for registrations in the legacy directory, false for
+ *     registrations in GCD.
  *
  * @typedef {{
  *   authCode: string,
  *   email: string,
- *   gcdId: string
+ *   hostId: string,
+ *   isLegacy: boolean
  * }}
  */
 remoting.HostListApi.RegisterResult;

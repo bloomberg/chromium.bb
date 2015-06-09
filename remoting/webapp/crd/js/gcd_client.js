@@ -32,7 +32,9 @@ remoting.gcd.RegistrationTicket;
  * TODO: Flesh out with typical fields.
  * @typedef {{
  *   id:string,
- *   name:string
+ *   name:string,
+ *   state:(!Object|undefined),
+ *   tags:(!Array<string>|undefined)
  * }}
  */
 remoting.gcd.Device;
@@ -206,18 +208,12 @@ remoting.gcd.Client.prototype.finalizeRegistrationTicket = function(ticketId) {
 /**
  * Lists devices user has access to.
  * TODO: Add link to GCD docs.
- * @param {string=} opt_nameSubstring If present, the list of devices
- *     is filtered by GCD such that every device returned contains
- *     this string as as a substring of its |name| or |displayName|.
  * @return {!Promise<!Array<remoting.gcd.Device>>}
  */
-remoting.gcd.Client.prototype.listDevices = function(opt_nameSubstring) {
+remoting.gcd.Client.prototype.listDevices = function() {
   return new remoting.Xhr({
     method: 'GET',
     url: this.apiBaseUrl_ + '/devices',
-    urlParams: {
-      nameSubstring: opt_nameSubstring || null
-    },
     useIdentity: true,
     acceptJson: true
   }).start().then(function(response) {

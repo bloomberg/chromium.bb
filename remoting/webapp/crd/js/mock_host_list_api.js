@@ -31,6 +31,12 @@ remoting.MockHostListApi = function() {
    */
   this.emailFromRegister = null;
 
+  /**
+   * This host ID to return from register(), or null if it should fail.
+   * @type {?string}
+   */
+  this.hostIdFromRegister = null;
+
   /** @type {Array<remoting.Host>} */
   this.hosts = [
     {
@@ -56,7 +62,7 @@ remoting.MockHostListApi = function() {
 
 /** @override */
 remoting.MockHostListApi.prototype.register = function(
-    newHostId, hostName, publicKey, hostClientId) {
+    hostName, publicKey, hostClientId) {
   if (this.authCodeFromRegister === null || this.emailFromRegister === null) {
     return Promise.reject(
         new remoting.Error(
@@ -65,7 +71,8 @@ remoting.MockHostListApi.prototype.register = function(
   } else {
     return Promise.resolve({
       authCode: this.authCodeFromRegister,
-      email: this.emailFromRegister
+      email: this.emailFromRegister,
+      hostId: this.hostIdFromRegister
     });
   }
 };

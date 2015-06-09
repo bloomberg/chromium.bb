@@ -17,12 +17,18 @@ var FAKE_PUBLIC_KEY = '<FAKE_PUBLIC_KEY>';
 var FAKE_HOST_CLIENT_ID = '<FAKE_HOST_CLIENT_ID>';
 var FAKE_AUTH_CODE = '<FAKE_AUTH_CODE>';
 
+/** @type {sinon.TestStub} */
+var generateUuidStub;
+
 QUnit.module('host_list_api_impl', {
   beforeEach: function(/** QUnit.Assert */ assert) {
     remoting.settings = new remoting.Settings();
     remoting.MockXhr.activate();
+    generateUuidStub = sinon.stub(base, 'generateUuid');
+    generateUuidStub.returns(FAKE_HOST_ID);
   },
   afterEach: function(/** QUnit.Assert */ assert) {
+    generateUuidStub.restore();
     remoting.MockXhr.restore();
     remoting.settings = null;
   }
@@ -57,7 +63,6 @@ QUnit.test('register', function(assert) {
   var impl = new remoting.HostListApiImpl();
   queueRegistryResponse(assert);
   return impl.register(
-      FAKE_HOST_ID,
       FAKE_HOST_NAME,
       FAKE_PUBLIC_KEY,
       FAKE_HOST_CLIENT_ID
@@ -72,7 +77,6 @@ QUnit.test('register failure', function(assert) {
   remoting.MockXhr.setEmptyResponseFor(
       'POST', 'DIRECTORY_API_BASE_URL/@me/hosts', 500);
   return impl.register(
-      FAKE_HOST_ID,
       FAKE_HOST_NAME,
       FAKE_PUBLIC_KEY,
       FAKE_HOST_CLIENT_ID
