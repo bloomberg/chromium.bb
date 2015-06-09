@@ -51341,6 +51341,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Proxy pref containing a DRP was cleared"/>
   <int value="4"
       label="Proxy pref containing a *.googlezip.net proxy was cleared"/>
+  <int value="5"
+      label="Proxy pref of an embedded PAC script containing a
+             *.googlezip.net proxy was cleared"/>
 </enum>
 
 <enum name="DataReductionProxyResponseProxyServerStatus" type="int">
