@@ -216,11 +216,6 @@ source_set("base") {
       "media_file_checker.cc",
       "media_file_checker.h",
     ]
-    if (is_win) {
-      sources += [ "media_win.cc" ]
-    } else if (is_posix) {
-      sources += [ "media_posix.cc" ]
-    }
 
     deps += [ "//third_party/ffmpeg" ]
   }
@@ -235,7 +230,6 @@ source_set("base") {
   }
 
   if (is_android) {
-    sources += [ "media_stub.cc" ]
     public_deps = [
       "//media/base/android",
       "//media/base/android:media_java",

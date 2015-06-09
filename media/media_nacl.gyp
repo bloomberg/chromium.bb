@@ -53,7 +53,6 @@
           'sources': [
             'base/media.cc',
             'base/media.h',
-            'base/media_stub.cc',
             'base/simd/convert_rgb_to_yuv.h',
             'base/simd/convert_rgb_to_yuv_c.cc',
             'base/simd/convert_yuv_to_rgb.h',
@@ -62,6 +61,9 @@
             'base/simd/filter_yuv_c.cc',
             'base/yuv_convert.cc',
             'base/yuv_convert.h',
+          ],
+          'defines': [
+            'MEDIA_DISABLE_FFMPEG',
           ],
         },  # end of target 'media_yuv_nacl'
       ],

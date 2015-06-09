@@ -1558,8 +1558,8 @@ int HostProcessMain() {
   // single-threaded.
   net::EnableSSLServerSockets();
 
-  // Ensures runtime specific CPU features are initialized.
-  media::InitializeCPUSpecificMediaFeatures();
+  // Ensures that media library and specific CPU features are initialized.
+  media::InitializeMediaLibrary();
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;

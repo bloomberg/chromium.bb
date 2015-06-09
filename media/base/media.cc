@@ -11,47 +11,36 @@
 #include "build/build_config.h"
 #include "media/base/yuv_convert.h"
 
-namespace media {
+#if !defined(MEDIA_DISABLE_FFMPEG)
+#include "media/ffmpeg/ffmpeg_common.h"
+#endif
 
-namespace internal {
-// Platform specific initialization method.
-extern bool InitializeMediaLibraryInternal(const base::FilePath& module_dir);
-}  // namespace internal
+namespace media {
 
 // Media must only be initialized once, so use a LazyInstance to ensure this.
 class MediaInitializer {
- public:
-  bool Initialize(const base::FilePath& module_dir) {
-    base::AutoLock auto_lock(lock_);
-    if (!tried_initialize_) {
-      tried_initialize_ = true;
-      initialized_ = internal::InitializeMediaLibraryInternal(module_dir);
-    }
-    return initialized_;
-  }
-
-  bool IsInitialized() {
-    base::AutoLock auto_lock(lock_);
-    return initialized_;
-  }
-
  private:
   friend struct base::DefaultLazyInstanceTraits<MediaInitializer>;
 
-  MediaInitializer()
-      : initialized_(false),
-        tried_initialize_(false) {
+  MediaInitializer() {
     // Perform initialization of libraries which require runtime CPU detection.
     InitializeCPUSpecificYUVConversions();
+
+#if !defined(MEDIA_DISABLE_FFMPEG)
+    // Disable logging as it interferes with layout tests.
+    av_log_set_level(AV_LOG_QUIET);
+
+#if defined(ALLOCATOR_SHIM)
+    // Remove allocation limit from ffmpeg, so calls go down to shim layer.
+    av_max_alloc(0);
+#endif  // defined(ALLOCATOR_SHIM)
+
+#endif  // !defined(MEDIA_DISABLE_FFMPEG)
   }
 
   ~MediaInitializer() {
     NOTREACHED() << "MediaInitializer should be leaky!";
   }
-
-  base::Lock lock_;
-  bool initialized_;
-  bool tried_initialize_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInitializer);
 };
@@ -59,22 +48,7 @@ class MediaInitializer {
 static base::LazyInstance<MediaInitializer>::Leaky g_media_library =
     LAZY_INSTANCE_INITIALIZER;
 
-bool InitializeMediaLibrary(const base::FilePath& module_dir) {
-  return g_media_library.Get().Initialize(module_dir);
-}
-
-void InitializeMediaLibraryForTesting() {
-  base::FilePath module_dir;
-  CHECK(PathService::Get(base::DIR_EXE, &module_dir));
-  CHECK(g_media_library.Get().Initialize(module_dir));
-}
-
-bool IsMediaLibraryInitialized() {
-  return g_media_library.Get().IsInitialized();
-}
-
-void InitializeCPUSpecificMediaFeatures() {
-  // Force initialization of the media initializer, but don't call Initialize().
+void InitializeMediaLibrary() {
   g_media_library.Get();
 }
 

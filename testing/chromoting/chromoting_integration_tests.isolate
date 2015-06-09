@@ -24,7 +24,6 @@
           '../xvfb.py',
           './browser_tests_launcher.py',
           './browser_test_commands_linux.txt',
-          '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
           '../../remoting/tools/internal/test-account-host-config.json',
@@ -71,7 +70,6 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/chrome_elf.dll',
-          '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libglesv2.dll',
         ],
       },
@@ -81,7 +79,6 @@
         'files': [
           '<(PRODUCT_DIR)/<(mac_product_name).app/',
           '<(PRODUCT_DIR)/exif.so',
-          '<(PRODUCT_DIR)/ffmpegsumo.so',
         ],
       },
     }],

@@ -67,7 +67,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
         context_should_support_io_surface_(false),
         fallback_context_works_(false),
         async_output_surface_creation_(false) {
-    media::InitializeMediaLibraryForTesting();
+    media::InitializeMediaLibrary();
   }
 
   void LoseContext() {

@@ -42,7 +42,7 @@ void TestSuiteNoAtExit::Initialize() {
 
   // Run this here instead of main() to ensure an AtExitManager is already
   // present.
-  media::InitializeMediaLibraryForTesting();
+  media::InitializeMediaLibrary();
 }
 
 int main(int argc, char** argv) {

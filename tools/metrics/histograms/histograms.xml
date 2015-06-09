@@ -15582,6 +15582,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Initialize.Windows" units="GetLastError">
+  <obsolete>
+    Deprecated 05/2015 in Issue 1141703002. FFmpeg is now statically linked.
+  </obsolete>
   <owner>scherkus@chromium.org</owner>
   <summary>
     Errors returned by LoadLibraryEx on Windows while attempting to load

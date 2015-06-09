@@ -96,9 +96,6 @@ class FFmpegInitializer {
 
   FFmpegInitializer()
       : initialized_(false) {
-    // Before doing anything disable logging as it interferes with layout tests.
-    av_log_set_level(AV_LOG_QUIET);
-
     // Register our protocol glue code with FFmpeg.
     if (av_lockmgr_register(&LockManagerOperation) != 0)
       return;
