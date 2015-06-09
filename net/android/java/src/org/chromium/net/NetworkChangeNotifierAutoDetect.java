@@ -19,6 +19,7 @@ import android.util.Log;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * Used by the NetworkChangeNotifier to listens to platform changes in connectivity.
@@ -181,6 +182,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
             registerReceiver();
         } else {
             ApplicationStatus.registerApplicationStateListener(this);
+            onApplicationStateChange(getApplicationState());
         }
     }
 
@@ -196,6 +198,23 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver
      */
     void setWifiManagerDelegateForTests(WifiManagerDelegate delegate) {
         mWifiManagerDelegate = delegate;
+    }
+
+    /**
+     * Returns the activity's status.
+     * @return an {@code int} that is one of {@code ApplicationState.HAS_*_ACTIVITIES}.
+     */
+    @VisibleForTesting
+    int getApplicationState() {
+        return ApplicationStatus.getStateForApplication();
+    }
+
+    /**
+     * Returns whether the object has registered to receive network connectivity intents.
+     */
+    @VisibleForTesting
+    boolean isReceiverRegisteredForTesting() {
+        return mRegistered;
     }
 
     public void destroy() {

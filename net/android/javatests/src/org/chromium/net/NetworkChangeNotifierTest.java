@@ -153,6 +153,52 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     }
 
     /**
+     * Tests that the receiver registers for connectivity intents during construction.
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testNetworkChangeNotifierRegistersInConstructor() throws InterruptedException {
+        Context context = getInstrumentation().getTargetContext();
+
+        NetworkChangeNotifierAutoDetect.Observer observer =
+                new NetworkChangeNotifierAutoDetect.Observer() {
+            @Override
+            public void onConnectionTypeChanged(int newConnectionType) {}
+            @Override
+            public void onMaxBandwidthChanged(double maxBandwidthMbps) {}
+        };
+
+        NetworkChangeNotifierAutoDetect receiver = new NetworkChangeNotifierAutoDetect(
+                observer, context, false /* always watch for changes */) {
+            @Override
+            int getApplicationState() {
+                return ApplicationState.HAS_RUNNING_ACTIVITIES;
+            }
+        };
+
+        assertTrue(receiver.isReceiverRegisteredForTesting());
+    }
+
+    /**
+     * Tests that the receiver toggles registration for connectivity intents based on activity
+     * state.
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testNetworkChangeNotifierRegistersForIntents() throws InterruptedException {
+        mReceiver.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
+        assertTrue(mReceiver.isReceiverRegisteredForTesting());
+
+        mReceiver.onApplicationStateChange(ApplicationState.HAS_PAUSED_ACTIVITIES);
+        assertFalse(mReceiver.isReceiverRegisteredForTesting());
+
+        mReceiver.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
+        assertTrue(mReceiver.isReceiverRegisteredForTesting());
+    }
+
+    /**
      * Tests that changing the RSSI_CHANGED_ACTION intent updates MaxBandwidth.
      */
     @UiThreadTest
@@ -304,6 +350,8 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     @Feature({"Android-AppBase"})
     public void testCreateNetworkChangeNotifierAlwaysWatchForChanges() throws InterruptedException {
         createTestNotifier(WatchForChanges.ALWAYS);
+        assertTrue(mReceiver.isReceiverRegisteredForTesting());
+
         // Make sure notifications can be received.
         NetworkChangeNotifierTestObserver observer = new NetworkChangeNotifierTestObserver();
         NetworkChangeNotifier.addConnectionTypeObserver(observer);
