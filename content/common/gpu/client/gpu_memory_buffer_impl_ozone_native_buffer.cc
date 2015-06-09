@@ -25,6 +25,7 @@ GpuMemoryBufferImplOzoneNativeBuffer::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     Format format,
+    Usage usage,
     const DestructionCallback& callback) {
   return make_scoped_ptr<GpuMemoryBufferImpl>(
       new GpuMemoryBufferImplOzoneNativeBuffer(

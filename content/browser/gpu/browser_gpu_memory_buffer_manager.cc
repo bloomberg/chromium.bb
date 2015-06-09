@@ -297,12 +297,9 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferAllocatedOnIO(
 
   DCHECK_NE(handle.type, gfx::SHARED_MEMORY_BUFFER);
   request->result = GpuMemoryBufferImpl::CreateFromHandle(
-      handle,
-      request->size,
-      request->format,
+      handle, request->size, request->format, request->usage,
       base::Bind(&BrowserGpuMemoryBufferManager::GpuMemoryBufferDeleted,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 handle.id,
+                 weak_ptr_factory_.GetWeakPtr(), handle.id,
                  request->client_id));
   request->event.Signal();
 }

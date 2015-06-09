@@ -16,6 +16,7 @@ class GpuMemoryBufferImplOzoneNativeBuffer : public GpuMemoryBufferImpl {
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       Format format,
+      Usage usage,
       const DestructionCallback& callback);
 
   // Overridden from gfx::GpuMemoryBuffer:

@@ -28,6 +28,7 @@ class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       Format format,
+      Usage usage,
       const DestructionCallback& callback);
 
   // Type-checking upcast routine. Returns an NULL on failure.

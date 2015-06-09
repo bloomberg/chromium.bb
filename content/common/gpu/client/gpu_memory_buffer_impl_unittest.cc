@@ -57,15 +57,11 @@ TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
   for (auto configuration : supported_configurations_) {
     scoped_ptr<GpuMemoryBufferImpl> buffer(
         GpuMemoryBufferImpl::CreateFromHandle(
-            CreateGpuMemoryBuffer(kBufferId,
-                                  buffer_size,
-                                  configuration.format,
+            CreateGpuMemoryBuffer(kBufferId, buffer_size, configuration.format,
                                   configuration.usage),
-            buffer_size,
-            configuration.format,
+            buffer_size, configuration.format, configuration.usage,
             base::Bind(&GpuMemoryBufferImplTest::DestroyGpuMemoryBuffer,
-                       base::Unretained(this),
-                       kBufferId)));
+                       base::Unretained(this), kBufferId)));
     EXPECT_EQ(1, buffer_count_);
     ASSERT_TRUE(buffer);
     EXPECT_EQ(buffer->GetFormat(), configuration.format);
@@ -90,7 +86,7 @@ TEST_P(GpuMemoryBufferImplTest, Map) {
         GpuMemoryBufferImpl::CreateFromHandle(
             CreateGpuMemoryBuffer(kBufferId, buffer_size, configuration.format,
                                   configuration.usage),
-            buffer_size, configuration.format,
+            buffer_size, configuration.format, configuration.usage,
             base::Bind(&GpuMemoryBufferImplTest::DestroyGpuMemoryBuffer,
                        base::Unretained(this), kBufferId)));
     ASSERT_TRUE(buffer);
@@ -153,7 +149,7 @@ TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
         GpuMemoryBufferImpl::CreateFromHandle(
             CreateGpuMemoryBuffer(kBufferId, buffer_size, configuration.format,
                                   configuration.usage),
-            buffer_size, configuration.format,
+            buffer_size, configuration.format, configuration.usage,
             base::Bind(&GpuMemoryBufferImplTest::DestroyGpuMemoryBuffer,
                        base::Unretained(this), kBufferId)));
     ASSERT_TRUE(buffer);

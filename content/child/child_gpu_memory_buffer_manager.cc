@@ -48,9 +48,7 @@ ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     return scoped_ptr<gfx::GpuMemoryBuffer>();
 
   scoped_ptr<GpuMemoryBufferImpl> buffer(GpuMemoryBufferImpl::CreateFromHandle(
-      handle,
-      size,
-      format,
+      handle, size, format, usage,
       base::Bind(&DeletedGpuMemoryBuffer, sender_, handle.id)));
   if (!buffer) {
     sender_->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(handle.id, 0));

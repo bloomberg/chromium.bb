@@ -45,6 +45,7 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
     const gfx::GpuMemoryBufferHandle& handle,
     const gfx::Size& size,
     Format format,
+    Usage usage,
     const DestructionCallback& callback) {
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER:
@@ -63,7 +64,7 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
 #if defined(USE_OZONE)
     case gfx::OZONE_NATIVE_BUFFER:
       return GpuMemoryBufferImplOzoneNativeBuffer::CreateFromHandle(
-          handle, size, format, callback);
+          handle, size, format, usage, callback);
 #endif
     default:
       NOTREACHED();
