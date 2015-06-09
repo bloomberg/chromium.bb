@@ -20,16 +20,19 @@ MD5SUM_DEVICE_SCRIPT_FORMAT = (
     'test -f {path} -o -d {path} '
     '&& LD_LIBRARY_PATH={md5sum_lib} {md5sum_bin} {path}')
 
-_STARTS_WITH_CHECKSUM_RE = re.compile(r'^\s*[0-9a-fA-f]{32}\s+')
+_STARTS_WITH_CHECKSUM_RE = re.compile(r'^\s*[0-9a-fA-F]{32}\s+')
 
 
 def CalculateHostMd5Sums(paths):
   """Calculates the MD5 sum value for all items in |paths|.
 
+  Directories are traversed recursively and the MD5 sum of each file found is
+  reported in the result.
+
   Args:
     paths: A list of host paths to md5sum.
   Returns:
-    A dict mapping paths to their respective md5sum checksums.
+    A dict mapping file paths to their respective md5sum checksums.
   """
   if isinstance(paths, basestring):
     paths = [paths]
@@ -46,10 +49,13 @@ def CalculateHostMd5Sums(paths):
 def CalculateDeviceMd5Sums(paths, device):
   """Calculates the MD5 sum value for all items in |paths|.
 
+  Directories are traversed recursively and the MD5 sum of each file found is
+  reported in the result.
+
   Args:
     paths: A list of device paths to md5sum.
   Returns:
-    A dict mapping paths to their respective md5sum checksums.
+    A dict mapping file paths to their respective md5sum checksums.
   """
   if isinstance(paths, basestring):
     paths = [paths]

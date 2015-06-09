@@ -199,6 +199,7 @@ class Md5SumTest(unittest.TestCase):
     device_md5sum_output = [
         'WARNING: linker: /data/local/tmp/md5sum/md5sum_bin: '
             'unused DT entry: type 0x1d arg 0x15db',
+        'THIS_IS_NOT_A_VALID_CHECKSUM_ZZZ some random text',
         '0123456789abcdeffedcba9876543210 '
             '/storage/emulated/legacy/test/file.dat',
     ]
