@@ -228,9 +228,14 @@ private:
     RefPtrWillBeMember<HistoryItem> m_currentItem;
     RefPtrWillBeMember<HistoryItem> m_provisionalItem;
 
-    struct DeferredHistoryLoad {
+    class DeferredHistoryLoad : public NoBaseWillBeGarbageCollectedFinalized<DeferredHistoryLoad> {
         DISALLOW_COPY(DeferredHistoryLoad);
     public:
+        static PassOwnPtrWillBeRawPtr<DeferredHistoryLoad> create(ResourceRequest request, HistoryItem* item, FrameLoadType loadType, HistoryLoadType historyLoadType)
+        {
+            return adoptPtrWillBeNoop(new DeferredHistoryLoad(request, item, loadType, historyLoadType));
+        }
+
         DeferredHistoryLoad(ResourceRequest request, HistoryItem* item, FrameLoadType loadType,
             HistoryLoadType historyLoadType)
             : m_request(request)
@@ -239,8 +244,6 @@ private:
             , m_historyLoadType(historyLoadType)
         {
         }
-
-        DeferredHistoryLoad() { }
 
         DEFINE_INLINE_TRACE()
         {
@@ -253,7 +256,7 @@ private:
         HistoryLoadType m_historyLoadType;
     };
 
-    OwnPtr<DeferredHistoryLoad> m_deferredHistoryLoad;
+    OwnPtrWillBeMember<DeferredHistoryLoad> m_deferredHistoryLoad;
 
     bool m_inStopAllLoaders;
 

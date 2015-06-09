@@ -216,7 +216,7 @@ void FrameLoader::setDefersLoading(bool defers)
     }
 
     if (!defers) {
-        if (m_deferredHistoryLoad.get()) {
+        if (m_deferredHistoryLoad) {
             load(FrameLoadRequest(nullptr, m_deferredHistoryLoad->m_request),
                 m_deferredHistoryLoad->m_loadType, m_deferredHistoryLoad->m_item.get(),
                 m_deferredHistoryLoad->m_historyLoadType);
@@ -822,8 +822,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
         return;
 
     if (m_frame->page()->defersLoading() && isBackForwardLoadType(frameLoadType)) {
-        m_deferredHistoryLoad = adoptPtr(new DeferredHistoryLoad(
-            passedRequest.resourceRequest(), historyItem, frameLoadType, historyLoadType));
+        m_deferredHistoryLoad = DeferredHistoryLoad::create(passedRequest.resourceRequest(), historyItem, frameLoadType, historyLoadType);
         return;
     }
 
