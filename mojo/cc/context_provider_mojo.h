@@ -27,7 +27,6 @@ class ContextProviderMojo : public cc::ContextProvider {
   void SetupLock() override;
   base::Lock* GetLock() override;
   Capabilities ContextCapabilities() override;
-  bool IsContextLost() override;
   void VerifyContexts() override {}
   void DeleteCachedResources() override {}
   bool DestroyedOnMainThread() override;
@@ -51,7 +50,6 @@ class ContextProviderMojo : public cc::ContextProvider {
   ScopedMessagePipeHandle command_buffer_handle_;
   MojoGLES2Context context_;
   scoped_ptr<gpu::gles2::GLES2Interface> context_gl_;
-  bool context_lost_;
 
   base::Lock context_lock_;
 

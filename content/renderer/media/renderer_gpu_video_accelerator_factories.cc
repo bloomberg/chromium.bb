@@ -66,7 +66,8 @@ RendererGpuVideoAcceleratorFactories::GetContext3d() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (!context_provider_.get())
     return NULL;
-  if (context_provider_->IsContextLost()) {
+  if (context_provider_->ContextGL()->GetGraphicsResetStatusKHR() !=
+      GL_NO_ERROR) {
     context_provider_->VerifyContexts();
     context_provider_ = NULL;
     gl_helper_.reset(NULL);

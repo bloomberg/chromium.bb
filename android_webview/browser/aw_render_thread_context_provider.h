@@ -44,7 +44,6 @@ class AwRenderThreadContextProvider : public cc::ContextProvider {
   void InvalidateGrContext(uint32_t state) override;
   void SetupLock() override;
   base::Lock* GetLock() override;
-  bool IsContextLost() override;
   void VerifyContexts() override;
   void DeleteCachedResources() override;
   bool DestroyedOnMainThread() override;

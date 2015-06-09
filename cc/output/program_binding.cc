@@ -6,6 +6,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "cc/output/geometry_binding.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 using gpu::gles2::GLES2Interface;
@@ -127,6 +128,10 @@ void ProgramBindingBase::CleanupShaders(GLES2Interface* context) {
     context->DeleteShader(fragment_shader_id_);
     fragment_shader_id_ = 0;
   }
+}
+
+bool ProgramBindingBase::IsContextLost(GLES2Interface* context) {
+  return context->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
 }  // namespace cc

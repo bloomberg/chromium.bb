@@ -176,18 +176,11 @@ base::Lock* ContextProviderInProcess::GetLock() {
   return &context_lock_;
 }
 
-bool ContextProviderInProcess::IsContextLost() {
-  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  return context3d_->isContextLost();
-}
-
 void ContextProviderInProcess::VerifyContexts() {
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  if (context3d_->isContextLost())
+  if (ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
     OnLostContext();
 }
 

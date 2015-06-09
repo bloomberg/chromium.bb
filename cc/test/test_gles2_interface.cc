@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "gpu/GLES2/gl2extchromium.h"
 
 namespace cc {
 
@@ -421,6 +422,12 @@ void TestGLES2Interface::ResizeCHROMIUM(GLuint width,
 
 void TestGLES2Interface::LoseContextCHROMIUM(GLenum current, GLenum other) {
   test_context_->loseContextCHROMIUM(current, other);
+}
+
+GLenum TestGLES2Interface::GetGraphicsResetStatusKHR() {
+  if (test_context_->isContextLost())
+    return GL_UNKNOWN_CONTEXT_RESET_KHR;
+  return GL_NO_ERROR;
 }
 
 }  // namespace cc

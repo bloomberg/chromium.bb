@@ -43,7 +43,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   void SetupLock() override;
   base::Lock* GetLock() override;
   Capabilities ContextCapabilities() override;
-  bool IsContextLost() override;
   void VerifyContexts() override;
   void DeleteCachedResources() override;
   bool DestroyedOnMainThread() override;

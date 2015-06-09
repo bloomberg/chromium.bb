@@ -157,12 +157,6 @@ base::Lock* AwRenderThreadContextProvider::GetLock() {
   return &context_lock_;
 }
 
-bool AwRenderThreadContextProvider::IsContextLost() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  return destroyed_;
-}
-
 void AwRenderThreadContextProvider::VerifyContexts() {
 }
 

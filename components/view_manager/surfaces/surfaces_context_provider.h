@@ -25,7 +25,6 @@ class SurfacesContextProvider : public cc::ContextProvider {
   class GrContext* GrContext() override;
   void InvalidateGrContext(uint32_t state) override;
   Capabilities ContextCapabilities() override;
-  bool IsContextLost() override;
   void VerifyContexts() override {}
   void DeleteCachedResources() override {}
   bool DestroyedOnMainThread() override;
@@ -50,7 +49,6 @@ class SurfacesContextProvider : public cc::ContextProvider {
   cc::ContextProvider::Capabilities capabilities_;
   mojo::ScopedMessagePipeHandle command_buffer_handle_;
   MojoGLES2Context context_;
-  bool context_lost_;
   LostContextCallback lost_context_callback_;
 
   base::Lock context_lock_;

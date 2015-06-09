@@ -155,8 +155,6 @@ TestInProcessContextProvider::ContextCapabilities() {
   return capabilities;
 }
 
-bool TestInProcessContextProvider::IsContextLost() { return false; }
-
 void TestInProcessContextProvider::VerifyContexts() {}
 
 void TestInProcessContextProvider::DeleteCachedResources() {

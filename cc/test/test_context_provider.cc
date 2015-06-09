@@ -55,7 +55,7 @@ bool TestContextProvider::BindToCurrentThread() {
   if (bound_)
     return true;
 
-  if (context3d_->isContextLost()) {
+  if (context_gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
     base::AutoLock lock(destroyed_lock_);
     destroyed_ = true;
     return false;
@@ -106,7 +106,7 @@ class GrContext* TestContextProvider::GrContext() {
       kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(gl_context->gl())));
 
   // If GlContext is already lost, also abandon the new GrContext.
-  if (IsContextLost())
+  if (ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
     gr_context_->abandonContext();
 
   return gr_context_.get();
@@ -127,18 +127,11 @@ base::Lock* TestContextProvider::GetLock() {
   return &context_lock_;
 }
 
-bool TestContextProvider::IsContextLost() {
-  DCHECK(bound_);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  return context3d_->isContextLost();
-}
-
 void TestContextProvider::VerifyContexts() {
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  if (context3d_->isContextLost()) {
+  if (ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
     base::AutoLock lock(destroyed_lock_);
     destroyed_ = true;
   }

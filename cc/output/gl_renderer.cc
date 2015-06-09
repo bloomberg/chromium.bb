@@ -3502,7 +3502,7 @@ void GLRenderer::RestoreFramebuffer(DrawingFrame* frame) {
 }
 
 bool GLRenderer::IsContextLost() {
-  return output_surface_->context_provider()->IsContextLost();
+  return gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
 void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {

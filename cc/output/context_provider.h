@@ -58,9 +58,6 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   // Returns the capabilities of the currently bound 3d context.
   virtual Capabilities ContextCapabilities() = 0;
 
-  // Checks if the context is currently known to be lost.
-  virtual bool IsContextLost() = 0;
-
   // Ask the provider to check if the contexts are valid or lost. If they are,
   // this should invalidate the provider so that it can be replaced with a new
   // one.

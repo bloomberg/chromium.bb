@@ -11,9 +11,7 @@ namespace surfaces {
 
 SurfacesContextProvider::SurfacesContextProvider(
     mojo::ScopedMessagePipeHandle command_buffer_handle)
-    : command_buffer_handle_(command_buffer_handle.Pass()),
-      context_(nullptr),
-      context_lost_(false) {
+    : command_buffer_handle_(command_buffer_handle.Pass()), context_(nullptr) {
 }
 
 bool SurfacesContextProvider::BindToCurrentThread() {
@@ -58,9 +56,6 @@ base::Lock* SurfacesContextProvider::GetLock() {
   return &context_lock_;
 }
 
-bool SurfacesContextProvider::IsContextLost() {
-  return context_lost_;
-}
 bool SurfacesContextProvider::DestroyedOnMainThread() {
   return !context_;
 }
@@ -76,7 +71,6 @@ SurfacesContextProvider::~SurfacesContextProvider() {
 }
 
 void SurfacesContextProvider::ContextLost() {
-  context_lost_ = true;
   if (!lost_context_callback_.is_null())
     lost_context_callback_.Run();
 }

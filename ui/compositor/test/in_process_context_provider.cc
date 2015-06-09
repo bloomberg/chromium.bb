@@ -189,13 +189,6 @@ base::Lock* InProcessContextProvider::GetLock() {
   return &context_lock_;
 }
 
-bool InProcessContextProvider::IsContextLost() {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
-
-  base::AutoLock lock(destroyed_lock_);
-  return destroyed_;
-}
-
 void InProcessContextProvider::VerifyContexts() {
 }
 
