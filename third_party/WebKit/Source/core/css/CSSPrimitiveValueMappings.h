@@ -1513,26 +1513,11 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EListStyleType e)
 {
     m_primitiveUnitType = CSS_VALUE_ID;
     switch (e) {
-    case Afar:
-        m_value.valueID = CSSValueAfar;
-        break;
-    case Amharic:
-        m_value.valueID = CSSValueAmharic;
-        break;
-    case AmharicAbegede:
-        m_value.valueID = CSSValueAmharicAbegede;
-        break;
     case ArabicIndic:
         m_value.valueID = CSSValueArabicIndic;
         break;
     case Armenian:
         m_value.valueID = CSSValueArmenian;
-        break;
-    case Asterisks:
-        m_value.valueID = CSSValueAsterisks;
-        break;
-    case BinaryListStyle:
-        m_value.valueID = CSSValueBinary;
         break;
     case Bengali:
         m_value.valueID = CSSValueBengali;
@@ -1564,56 +1549,17 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EListStyleType e)
     case Disc:
         m_value.valueID = CSSValueDisc;
         break;
-    case Ethiopic:
-        m_value.valueID = CSSValueEthiopic;
+    case EthiopicHalehame:
+        m_value.valueID = CSSValueEthiopicHalehame;
         break;
-    case EthiopicAbegede:
-        m_value.valueID = CSSValueEthiopicAbegede;
-        break;
-    case EthiopicAbegedeAmEt:
-        m_value.valueID = CSSValueEthiopicAbegedeAmEt;
-        break;
-    case EthiopicAbegedeGez:
-        m_value.valueID = CSSValueEthiopicAbegedeGez;
-        break;
-    case EthiopicAbegedeTiEr:
-        m_value.valueID = CSSValueEthiopicAbegedeTiEr;
-        break;
-    case EthiopicAbegedeTiEt:
-        m_value.valueID = CSSValueEthiopicAbegedeTiEt;
-        break;
-    case EthiopicHalehameAaEr:
-        m_value.valueID = CSSValueEthiopicHalehameAaEr;
-        break;
-    case EthiopicHalehameAaEt:
-        m_value.valueID = CSSValueEthiopicHalehameAaEt;
-        break;
-    case EthiopicHalehameAmEt:
-        m_value.valueID = CSSValueEthiopicHalehameAmEt;
-        break;
-    case EthiopicHalehameGez:
-        m_value.valueID = CSSValueEthiopicHalehameGez;
-        break;
-    case EthiopicHalehameOmEt:
-        m_value.valueID = CSSValueEthiopicHalehameOmEt;
-        break;
-    case EthiopicHalehameSidEt:
-        m_value.valueID = CSSValueEthiopicHalehameSidEt;
-        break;
-    case EthiopicHalehameSoEt:
-        m_value.valueID = CSSValueEthiopicHalehameSoEt;
-        break;
-    case EthiopicHalehameTiEr:
-        m_value.valueID = CSSValueEthiopicHalehameTiEr;
+    case EthiopicHalehameAm:
+        m_value.valueID = CSSValueEthiopicHalehameAm;
         break;
     case EthiopicHalehameTiEt:
         m_value.valueID = CSSValueEthiopicHalehameTiEt;
         break;
-    case EthiopicHalehameTig:
-        m_value.valueID = CSSValueEthiopicHalehameTig;
-        break;
-    case Footnotes:
-        m_value.valueID = CSSValueFootnotes;
+    case EthiopicHalehameTiEr:
+        m_value.valueID = CSSValueEthiopicHalehameTiEr;
         break;
     case Georgian:
         m_value.valueID = CSSValueGeorgian;
@@ -1663,14 +1609,8 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EListStyleType e)
     case LowerGreek:
         m_value.valueID = CSSValueLowerGreek;
         break;
-    case LowerHexadecimal:
-        m_value.valueID = CSSValueLowerHexadecimal;
-        break;
     case LowerLatin:
         m_value.valueID = CSSValueLowerLatin;
-        break;
-    case LowerNorwegian:
-        m_value.valueID = CSSValueLowerNorwegian;
         break;
     case LowerRoman:
         m_value.valueID = CSSValueLowerRoman;
@@ -1687,23 +1627,11 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EListStyleType e)
     case NoneListStyle:
         m_value.valueID = CSSValueNone;
         break;
-    case Octal:
-        m_value.valueID = CSSValueOctal;
-        break;
     case Oriya:
         m_value.valueID = CSSValueOriya;
         break;
-    case Oromo:
-        m_value.valueID = CSSValueOromo;
-        break;
     case Persian:
         m_value.valueID = CSSValuePersian;
-        break;
-    case Sidama:
-        m_value.valueID = CSSValueSidama;
-        break;
-    case Somali:
-        m_value.valueID = CSSValueSomali;
         break;
     case Square:
         m_value.valueID = CSSValueSquare;
@@ -1717,38 +1645,14 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EListStyleType e)
     case Tibetan:
         m_value.valueID = CSSValueTibetan;
         break;
-    case Tigre:
-        m_value.valueID = CSSValueTigre;
-        break;
-    case TigrinyaEr:
-        m_value.valueID = CSSValueTigrinyaEr;
-        break;
-    case TigrinyaErAbegede:
-        m_value.valueID = CSSValueTigrinyaErAbegede;
-        break;
-    case TigrinyaEt:
-        m_value.valueID = CSSValueTigrinyaEt;
-        break;
-    case TigrinyaEtAbegede:
-        m_value.valueID = CSSValueTigrinyaEtAbegede;
-        break;
     case UpperAlpha:
         m_value.valueID = CSSValueUpperAlpha;
         break;
     case UpperArmenian:
         m_value.valueID = CSSValueUpperArmenian;
         break;
-    case UpperGreek:
-        m_value.valueID = CSSValueUpperGreek;
-        break;
-    case UpperHexadecimal:
-        m_value.valueID = CSSValueUpperHexadecimal;
-        break;
     case UpperLatin:
         m_value.valueID = CSSValueUpperLatin;
-        break;
-    case UpperNorwegian:
-        m_value.valueID = CSSValueUpperNorwegian;
         break;
     case UpperRoman:
         m_value.valueID = CSSValueUpperRoman;

@@ -406,7 +406,6 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int value)
     switch (type) {
     case ArabicIndic:
     case Bengali:
-    case BinaryListStyle:
     case Cambodian:
     case Circle:
     case DecimalLeadingZero:
@@ -418,19 +417,16 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int value)
     case Kannada:
     case Khmer:
     case Lao:
-    case LowerHexadecimal:
     case Malayalam:
     case Mongolian:
     case Myanmar:
     case NoneListStyle:
-    case Octal:
     case Oriya:
     case Persian:
     case Square:
     case Telugu:
     case Thai:
     case Tibetan:
-    case UpperHexadecimal:
     case Urdu:
         return type; // Can represent all ordinals.
     case Armenian:
@@ -444,29 +440,12 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int value)
     case LowerRoman:
     case UpperRoman:
         return (value < 1 || value > 3999) ? DecimalListStyle : type;
-    case Afar:
-    case Amharic:
-    case AmharicAbegede:
-    case Asterisks:
     case CjkEarthlyBranch:
     case CjkHeavenlyStem:
-    case Ethiopic:
-    case EthiopicAbegede:
-    case EthiopicAbegedeAmEt:
-    case EthiopicAbegedeGez:
-    case EthiopicAbegedeTiEr:
-    case EthiopicAbegedeTiEt:
-    case EthiopicHalehameAaEr:
-    case EthiopicHalehameAaEt:
-    case EthiopicHalehameAmEt:
-    case EthiopicHalehameGez:
-    case EthiopicHalehameOmEt:
-    case EthiopicHalehameSidEt:
-    case EthiopicHalehameSoEt:
+    case EthiopicHalehameAm:
+    case EthiopicHalehame:
     case EthiopicHalehameTiEr:
     case EthiopicHalehameTiEt:
-    case EthiopicHalehameTig:
-    case Footnotes:
     case Hangul:
     case HangulConsonant:
     case Hiragana:
@@ -477,20 +456,9 @@ static EListStyleType effectiveListMarkerType(EListStyleType type, int value)
     case LowerArmenian:
     case LowerGreek:
     case LowerLatin:
-    case LowerNorwegian:
-    case Oromo:
-    case Sidama:
-    case Somali:
-    case Tigre:
-    case TigrinyaEr:
-    case TigrinyaErAbegede:
-    case TigrinyaEt:
-    case TigrinyaEtAbegede:
     case UpperAlpha:
     case UpperArmenian:
-    case UpperGreek:
     case UpperLatin:
-    case UpperNorwegian:
         return (value < 1) ? DecimalListStyle : type;
     }
 
@@ -507,45 +475,19 @@ UChar LayoutListMarker::listMarkerSuffix(EListStyleType type, int value)
     // Note, the following switch statement has been explicitly
     // grouped by list-style-type suffix.
     switch (effectiveType) {
-    case Asterisks:
     case Circle:
     case Disc:
-    case Footnotes:
     case NoneListStyle:
     case Square:
         return ' ';
-    case Afar:
-    case Amharic:
-    case AmharicAbegede:
-    case Ethiopic:
-    case EthiopicAbegede:
-    case EthiopicAbegedeAmEt:
-    case EthiopicAbegedeGez:
-    case EthiopicAbegedeTiEr:
-    case EthiopicAbegedeTiEt:
-    case EthiopicHalehameAaEr:
-    case EthiopicHalehameAaEt:
-    case EthiopicHalehameAmEt:
-    case EthiopicHalehameGez:
-    case EthiopicHalehameOmEt:
-    case EthiopicHalehameSidEt:
-    case EthiopicHalehameSoEt:
+    case EthiopicHalehame:
+    case EthiopicHalehameAm:
     case EthiopicHalehameTiEr:
     case EthiopicHalehameTiEt:
-    case EthiopicHalehameTig:
-    case Oromo:
-    case Sidama:
-    case Somali:
-    case Tigre:
-    case TigrinyaEr:
-    case TigrinyaErAbegede:
-    case TigrinyaEt:
-    case TigrinyaEtAbegede:
         return ethiopicPrefaceColonCharacter;
     case Armenian:
     case ArabicIndic:
     case Bengali:
-    case BinaryListStyle:
     case Cambodian:
     case CJKIdeographic:
     case CjkEarthlyBranch:
@@ -569,14 +511,11 @@ UChar LayoutListMarker::listMarkerSuffix(EListStyleType type, int value)
     case LowerAlpha:
     case LowerArmenian:
     case LowerGreek:
-    case LowerHexadecimal:
     case LowerLatin:
-    case LowerNorwegian:
     case LowerRoman:
     case Malayalam:
     case Mongolian:
     case Myanmar:
-    case Octal:
     case Oriya:
     case Persian:
     case Telugu:
@@ -584,10 +523,7 @@ UChar LayoutListMarker::listMarkerSuffix(EListStyleType type, int value)
     case Tibetan:
     case UpperAlpha:
     case UpperArmenian:
-    case UpperGreek:
-    case UpperHexadecimal:
     case UpperLatin:
-    case UpperNorwegian:
     case UpperRoman:
     case Urdu:
         return '.';
@@ -605,24 +541,12 @@ String listMarkerText(EListStyleType type, int value)
     case NoneListStyle:
         return "";
 
-    case Asterisks: {
-        static const LChar asterisksSymbols[1] = {
-            0x2A
-        };
-        return toSymbolic(value, asterisksSymbols);
-    }
     // We use the same characters for text security.
     // See LayoutText::setInternalString.
     case Circle:
         return String(&whiteBulletCharacter, 1);
     case Disc:
         return String(&bulletCharacter, 1);
-    case Footnotes: {
-        static const UChar footnotesSymbols[4] = {
-            0x002A, 0x2051, 0x2020, 0x2021
-        };
-        return toSymbolic(value, footnotesSymbols);
-    }
     case Square:
         // The CSS 2.1 test suite uses U+25EE BLACK MEDIUM SMALL SQUARE
         // instead, but I think this looks better.
@@ -642,12 +566,6 @@ String listMarkerText(EListStyleType type, int value)
             0x0660, 0x0661, 0x0662, 0x0663, 0x0664, 0x0665, 0x0666, 0x0667, 0x0668, 0x0669
         };
         return toNumeric(value, arabicIndicNumerals);
-    }
-    case BinaryListStyle: {
-        static const LChar binaryNumerals[2] = {
-            '0', '1'
-        };
-        return toNumeric(value, binaryNumerals);
     }
     case Bengali: {
         static const UChar bengaliNumerals[10] = {
@@ -686,12 +604,6 @@ String listMarkerText(EListStyleType type, int value)
         };
         return toNumeric(value, kannadaNumerals);
     }
-    case LowerHexadecimal: {
-        static const LChar lowerHexadecimalNumerals[16] = {
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
-        };
-        return toNumeric(value, lowerHexadecimalNumerals);
-    }
     case Lao: {
         static const UChar laoNumerals[10] = {
             0x0ED0, 0x0ED1, 0x0ED2, 0x0ED3, 0x0ED4, 0x0ED5, 0x0ED6, 0x0ED7, 0x0ED8, 0x0ED9
@@ -715,12 +627,6 @@ String listMarkerText(EListStyleType type, int value)
             0x1040, 0x1041, 0x1042, 0x1043, 0x1044, 0x1045, 0x1046, 0x1047, 0x1048, 0x1049
         };
         return toNumeric(value, myanmarNumerals);
-    }
-    case Octal: {
-        static const LChar octalNumerals[8] = {
-            '0', '1', '2', '3', '4', '5', '6', '7'
-        };
-        return toNumeric(value, octalNumerals);
     }
     case Oriya: {
         static const UChar oriyaNumerals[10] = {
@@ -752,12 +658,6 @@ String listMarkerText(EListStyleType type, int value)
             0x0E50, 0x0E51, 0x0E52, 0x0E53, 0x0E54, 0x0E55, 0x0E56, 0x0E57, 0x0E58, 0x0E59
         };
         return toNumeric(value, thaiNumerals);
-    }
-    case UpperHexadecimal: {
-        static const LChar upperHexadecimalNumerals[16] = {
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-        };
-        return toNumeric(value, upperHexadecimalNumerals);
     }
 
     case LowerAlpha:
@@ -838,35 +738,6 @@ String listMarkerText(EListStyleType type, int value)
         return toAlphabetic(value, katakanaIrohaAlphabet);
     }
 
-    case Afar:
-    case EthiopicHalehameAaEt:
-    case EthiopicHalehameAaEr: {
-        static const UChar ethiopicHalehameAaErAlphabet[18] = {
-            0x1200, 0x1208, 0x1210, 0x1218, 0x1228, 0x1230, 0x1260, 0x1270, 0x1290,
-            0x12A0, 0x12A8, 0x12C8, 0x12D0, 0x12E8, 0x12F0, 0x1308, 0x1338, 0x1348
-        };
-        return toAlphabetic(value, ethiopicHalehameAaErAlphabet);
-    }
-    case Amharic:
-    case EthiopicHalehameAmEt: {
-        static const UChar ethiopicHalehameAmEtAlphabet[33] = {
-            0x1200, 0x1208, 0x1210, 0x1218, 0x1220, 0x1228, 0x1230, 0x1238, 0x1240,
-            0x1260, 0x1270, 0x1278, 0x1280, 0x1290, 0x1298, 0x12A0, 0x12A8, 0x12B8,
-            0x12C8, 0x12D0, 0x12D8, 0x12E0, 0x12E8, 0x12F0, 0x1300, 0x1308, 0x1320,
-            0x1328, 0x1330, 0x1338, 0x1340, 0x1348, 0x1350
-        };
-        return toAlphabetic(value, ethiopicHalehameAmEtAlphabet);
-    }
-    case AmharicAbegede:
-    case EthiopicAbegedeAmEt: {
-        static const UChar ethiopicAbegedeAmEtAlphabet[33] = {
-            0x12A0, 0x1260, 0x1308, 0x12F0, 0x1300, 0x1200, 0x12C8, 0x12D8, 0x12E0,
-            0x1210, 0x1320, 0x1328, 0x12E8, 0x12A8, 0x12B8, 0x1208, 0x1218, 0x1290,
-            0x1298, 0x1220, 0x12D0, 0x1348, 0x1338, 0x1240, 0x1228, 0x1230, 0x1238,
-            0x1270, 0x1278, 0x1280, 0x1340, 0x1330, 0x1350
-        };
-        return toAlphabetic(value, ethiopicAbegedeAmEtAlphabet);
-    }
     case CjkEarthlyBranch: {
         static const UChar cjkEarthlyBranchAlphabet[12] = {
             0x5B50, 0x4E11, 0x5BC5, 0x536F, 0x8FB0, 0x5DF3, 0x5348, 0x672A, 0x7533,
@@ -880,24 +751,6 @@ String listMarkerText(EListStyleType type, int value)
             0x7678
         };
         return toAlphabetic(value, cjkHeavenlyStemAlphabet);
-    }
-    case Ethiopic:
-    case EthiopicHalehameGez: {
-        static const UChar ethiopicHalehameGezAlphabet[26] = {
-            0x1200, 0x1208, 0x1210, 0x1218, 0x1220, 0x1228, 0x1230, 0x1240, 0x1260,
-            0x1270, 0x1280, 0x1290, 0x12A0, 0x12A8, 0x12C8, 0x12D0, 0x12D8, 0x12E8,
-            0x12F0, 0x1308, 0x1320, 0x1330, 0x1338, 0x1340, 0x1348, 0x1350
-        };
-        return toAlphabetic(value, ethiopicHalehameGezAlphabet);
-    }
-    case EthiopicAbegede:
-    case EthiopicAbegedeGez: {
-        static const UChar ethiopicAbegedeGezAlphabet[26] = {
-            0x12A0, 0x1260, 0x1308, 0x12F0, 0x1200, 0x12C8, 0x12D8, 0x1210, 0x1320,
-            0x12E8, 0x12A8, 0x1208, 0x1218, 0x1290, 0x1220, 0x12D0, 0x1348, 0x1338,
-            0x1240, 0x1228, 0x1230, 0x1270, 0x1280, 0x1340, 0x1330, 0x1350
-        };
-        return toAlphabetic(value, ethiopicAbegedeGezAlphabet);
     }
     case HangulConsonant: {
         static const UChar hangulConsonantAlphabet[14] = {
@@ -913,43 +766,23 @@ String listMarkerText(EListStyleType type, int value)
         };
         return toAlphabetic(value, hangulAlphabet);
     }
-    case Oromo:
-    case EthiopicHalehameOmEt: {
-        static const UChar ethiopicHalehameOmEtAlphabet[25] = {
-            0x1200, 0x1208, 0x1218, 0x1228, 0x1230, 0x1238, 0x1240, 0x1260, 0x1270,
-            0x1278, 0x1290, 0x1298, 0x12A0, 0x12A8, 0x12C8, 0x12E8, 0x12F0, 0x12F8,
-            0x1300, 0x1308, 0x1320, 0x1328, 0x1338, 0x1330, 0x1348
+    case EthiopicHalehame: {
+        static const UChar ethiopicHalehameGezAlphabet[26] = {
+            0x1200, 0x1208, 0x1210, 0x1218, 0x1220, 0x1228, 0x1230, 0x1240, 0x1260,
+            0x1270, 0x1280, 0x1290, 0x12A0, 0x12A8, 0x12C8, 0x12D0, 0x12D8, 0x12E8,
+            0x12F0, 0x1308, 0x1320, 0x1330, 0x1338, 0x1340, 0x1348, 0x1350
         };
-        return toAlphabetic(value, ethiopicHalehameOmEtAlphabet);
+        return toAlphabetic(value, ethiopicHalehameGezAlphabet);
     }
-    case Sidama:
-    case EthiopicHalehameSidEt: {
-        static const UChar ethiopicHalehameSidEtAlphabet[26] = {
-            0x1200, 0x1208, 0x1210, 0x1218, 0x1228, 0x1230, 0x1238, 0x1240, 0x1260,
-            0x1270, 0x1278, 0x1290, 0x1298, 0x12A0, 0x12A8, 0x12C8, 0x12E8, 0x12F0,
-            0x12F8, 0x1300, 0x1308, 0x1320, 0x1328, 0x1338, 0x1330, 0x1348
+    case EthiopicHalehameAm: {
+        static const UChar ethiopicHalehameAmAlphabet[33] = {
+            0x1200, 0x1208, 0x1210, 0x1218, 0x1220, 0x1228, 0x1230, 0x1238, 0x1240,
+            0x1260, 0x1270, 0x1278, 0x1280, 0x1290, 0x1298, 0x12A0, 0x12A8, 0x12B8,
+            0x12C8, 0x12D0, 0x12D8, 0x12E0, 0x12E8, 0x12F0, 0x1300, 0x1308, 0x1320,
+            0x1328, 0x1330, 0x1338, 0x1340, 0x1348, 0x1350
         };
-        return toAlphabetic(value, ethiopicHalehameSidEtAlphabet);
+        return toAlphabetic(value, ethiopicHalehameAmAlphabet);
     }
-    case Somali:
-    case EthiopicHalehameSoEt: {
-        static const UChar ethiopicHalehameSoEtAlphabet[22] = {
-            0x1200, 0x1208, 0x1210, 0x1218, 0x1228, 0x1230, 0x1238, 0x1240, 0x1260,
-            0x1270, 0x1290, 0x12A0, 0x12A8, 0x12B8, 0x12C8, 0x12D0, 0x12E8, 0x12F0,
-            0x1300, 0x1308, 0x1338, 0x1348
-        };
-        return toAlphabetic(value, ethiopicHalehameSoEtAlphabet);
-    }
-    case Tigre:
-    case EthiopicHalehameTig: {
-        static const UChar ethiopicHalehameTigAlphabet[27] = {
-            0x1200, 0x1208, 0x1210, 0x1218, 0x1228, 0x1230, 0x1238, 0x1240, 0x1260,
-            0x1270, 0x1278, 0x1290, 0x12A0, 0x12A8, 0x12C8, 0x12D0, 0x12D8, 0x12E8,
-            0x12F0, 0x1300, 0x1308, 0x1320, 0x1328, 0x1338, 0x1330, 0x1348, 0x1350
-        };
-        return toAlphabetic(value, ethiopicHalehameTigAlphabet);
-    }
-    case TigrinyaEr:
     case EthiopicHalehameTiEr: {
         static const UChar ethiopicHalehameTiErAlphabet[31] = {
             0x1200, 0x1208, 0x1210, 0x1218, 0x1228, 0x1230, 0x1238, 0x1240, 0x1250,
@@ -959,17 +792,6 @@ String listMarkerText(EListStyleType type, int value)
         };
         return toAlphabetic(value, ethiopicHalehameTiErAlphabet);
     }
-    case TigrinyaErAbegede:
-    case EthiopicAbegedeTiEr: {
-        static const UChar ethiopicAbegedeTiErAlphabet[31] = {
-            0x12A0, 0x1260, 0x1308, 0x12F0, 0x1300, 0x1200, 0x12C8, 0x12D8, 0x12E0,
-            0x1210, 0x1320, 0x1328, 0x12E8, 0x12A8, 0x12B8, 0x1208, 0x1218, 0x1290,
-            0x1298, 0x12D0, 0x1348, 0x1338, 0x1240, 0x1250, 0x1228, 0x1230, 0x1238,
-            0x1270, 0x1278, 0x1330, 0x1350
-        };
-        return toAlphabetic(value, ethiopicAbegedeTiErAlphabet);
-    }
-    case TigrinyaEt:
     case EthiopicHalehameTiEt: {
         static const UChar ethiopicHalehameTiEtAlphabet[34] = {
             0x1200, 0x1208, 0x1210, 0x1218, 0x1220, 0x1228, 0x1230, 0x1238, 0x1240,
@@ -978,42 +800,6 @@ String listMarkerText(EListStyleType type, int value)
             0x1320, 0x1328, 0x1330, 0x1338, 0x1340, 0x1348, 0x1350
         };
         return toAlphabetic(value, ethiopicHalehameTiEtAlphabet);
-    }
-    case TigrinyaEtAbegede:
-    case EthiopicAbegedeTiEt: {
-        static const UChar ethiopicAbegedeTiEtAlphabet[34] = {
-            0x12A0, 0x1260, 0x1308, 0x12F0, 0x1300, 0x1200, 0x12C8, 0x12D8, 0x12E0,
-            0x1210, 0x1320, 0x1328, 0x12E8, 0x12A8, 0x12B8, 0x1208, 0x1218, 0x1290,
-            0x1298, 0x1220, 0x12D0, 0x1348, 0x1338, 0x1240, 0x1250, 0x1228, 0x1230,
-            0x1238, 0x1270, 0x1278, 0x1280, 0x1340, 0x1330, 0x1350
-        };
-        return toAlphabetic(value, ethiopicAbegedeTiEtAlphabet);
-    }
-    case UpperGreek: {
-        static const UChar upperGreekAlphabet[24] = {
-            0x0391, 0x0392, 0x0393, 0x0394, 0x0395, 0x0396, 0x0397, 0x0398, 0x0399,
-            0x039A, 0x039B, 0x039C, 0x039D, 0x039E, 0x039F, 0x03A0, 0x03A1, 0x03A3,
-            0x03A4, 0x03A5, 0x03A6, 0x03A7, 0x03A8, 0x03A9
-        };
-        return toAlphabetic(value, upperGreekAlphabet);
-    }
-    case LowerNorwegian: {
-        static const LChar lowerNorwegianAlphabet[29] = {
-            0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69,
-            0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F, 0x70, 0x71, 0x72,
-            0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0xE6,
-            0xF8, 0xE5
-        };
-        return toAlphabetic(value, lowerNorwegianAlphabet);
-    }
-    case UpperNorwegian: {
-        static const LChar upperNorwegianAlphabet[29] = {
-            0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49,
-            0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52,
-            0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0xC6,
-            0xD8, 0xC5
-        };
-        return toAlphabetic(value, upperNorwegianAlphabet);
     }
     case CJKIdeographic: {
         static const UChar traditionalChineseInformalTable[16] = {
@@ -1199,14 +985,8 @@ void LayoutListMarker::updateContent()
     case Square:
         m_text = listMarkerText(type, 0); // value is ignored for these types
         break;
-    case Asterisks:
-    case Footnotes:
-    case Afar:
-    case Amharic:
-    case AmharicAbegede:
     case ArabicIndic:
     case Armenian:
-    case BinaryListStyle:
     case Bengali:
     case Cambodian:
     case CJKIdeographic:
@@ -1215,22 +995,10 @@ void LayoutListMarker::updateContent()
     case DecimalLeadingZero:
     case DecimalListStyle:
     case Devanagari:
-    case Ethiopic:
-    case EthiopicAbegede:
-    case EthiopicAbegedeAmEt:
-    case EthiopicAbegedeGez:
-    case EthiopicAbegedeTiEr:
-    case EthiopicAbegedeTiEt:
-    case EthiopicHalehameAaEr:
-    case EthiopicHalehameAaEt:
-    case EthiopicHalehameAmEt:
-    case EthiopicHalehameGez:
-    case EthiopicHalehameOmEt:
-    case EthiopicHalehameSidEt:
-    case EthiopicHalehameSoEt:
+    case EthiopicHalehame:
+    case EthiopicHalehameAm:
     case EthiopicHalehameTiEr:
     case EthiopicHalehameTiEt:
-    case EthiopicHalehameTig:
     case Georgian:
     case Gujarati:
     case Gurmukhi:
@@ -1247,33 +1015,19 @@ void LayoutListMarker::updateContent()
     case LowerAlpha:
     case LowerArmenian:
     case LowerGreek:
-    case LowerHexadecimal:
     case LowerLatin:
-    case LowerNorwegian:
     case LowerRoman:
     case Malayalam:
     case Mongolian:
     case Myanmar:
-    case Octal:
     case Oriya:
-    case Oromo:
     case Persian:
-    case Sidama:
-    case Somali:
     case Telugu:
     case Thai:
     case Tibetan:
-    case Tigre:
-    case TigrinyaEr:
-    case TigrinyaErAbegede:
-    case TigrinyaEt:
-    case TigrinyaEtAbegede:
     case UpperAlpha:
     case UpperArmenian:
-    case UpperGreek:
-    case UpperHexadecimal:
     case UpperLatin:
-    case UpperNorwegian:
     case UpperRoman:
     case Urdu:
         m_text = listMarkerText(type, m_listItem->value());
@@ -1301,21 +1055,13 @@ void LayoutListMarker::computePreferredLogicalWidths()
     switch (type) {
     case NoneListStyle:
         break;
-    case Asterisks:
-    case Footnotes:
-        logicalWidth = font.width(m_text); // no suffix for these types
-        break;
     case Circle:
     case Disc:
     case Square:
         logicalWidth = (font.fontMetrics().ascent() * 2 / 3 + 1) / 2 + 2;
         break;
-    case Afar:
-    case Amharic:
-    case AmharicAbegede:
     case ArabicIndic:
     case Armenian:
-    case BinaryListStyle:
     case Bengali:
     case Cambodian:
     case CJKIdeographic:
@@ -1324,22 +1070,10 @@ void LayoutListMarker::computePreferredLogicalWidths()
     case DecimalLeadingZero:
     case DecimalListStyle:
     case Devanagari:
-    case Ethiopic:
-    case EthiopicAbegede:
-    case EthiopicAbegedeAmEt:
-    case EthiopicAbegedeGez:
-    case EthiopicAbegedeTiEr:
-    case EthiopicAbegedeTiEt:
-    case EthiopicHalehameAaEr:
-    case EthiopicHalehameAaEt:
-    case EthiopicHalehameAmEt:
-    case EthiopicHalehameGez:
-    case EthiopicHalehameOmEt:
-    case EthiopicHalehameSidEt:
-    case EthiopicHalehameSoEt:
+    case EthiopicHalehame:
+    case EthiopicHalehameAm:
     case EthiopicHalehameTiEr:
     case EthiopicHalehameTiEt:
-    case EthiopicHalehameTig:
     case Georgian:
     case Gujarati:
     case Gurmukhi:
@@ -1356,33 +1090,19 @@ void LayoutListMarker::computePreferredLogicalWidths()
     case LowerAlpha:
     case LowerArmenian:
     case LowerGreek:
-    case LowerHexadecimal:
     case LowerLatin:
-    case LowerNorwegian:
     case LowerRoman:
     case Malayalam:
     case Mongolian:
     case Myanmar:
-    case Octal:
     case Oriya:
-    case Oromo:
     case Persian:
-    case Sidama:
-    case Somali:
     case Telugu:
     case Thai:
     case Tibetan:
-    case Tigre:
-    case TigrinyaEr:
-    case TigrinyaErAbegede:
-    case TigrinyaEt:
-    case TigrinyaEtAbegede:
     case UpperAlpha:
     case UpperArmenian:
-    case UpperGreek:
-    case UpperHexadecimal:
     case UpperLatin:
-    case UpperNorwegian:
     case UpperRoman:
     case Urdu:
         if (m_text.isEmpty()) {
@@ -1499,12 +1219,6 @@ IntRect LayoutListMarker::getRelativeMarkerRect()
     IntRect relativeRect;
     EListStyleType type = style()->listStyleType();
     switch (type) {
-    case Asterisks:
-    case Footnotes: {
-        const Font& font = style()->font();
-        relativeRect = IntRect(0, 0, font.width(m_text), font.fontMetrics().height());
-        break;
-    }
     case Disc:
     case Circle:
     case Square: {
@@ -1517,12 +1231,8 @@ IntRect LayoutListMarker::getRelativeMarkerRect()
     }
     case NoneListStyle:
         return IntRect();
-    case Afar:
-    case Amharic:
-    case AmharicAbegede:
     case ArabicIndic:
     case Armenian:
-    case BinaryListStyle:
     case Bengali:
     case Cambodian:
     case CJKIdeographic:
@@ -1531,22 +1241,10 @@ IntRect LayoutListMarker::getRelativeMarkerRect()
     case DecimalLeadingZero:
     case DecimalListStyle:
     case Devanagari:
-    case Ethiopic:
-    case EthiopicAbegede:
-    case EthiopicAbegedeAmEt:
-    case EthiopicAbegedeGez:
-    case EthiopicAbegedeTiEr:
-    case EthiopicAbegedeTiEt:
-    case EthiopicHalehameAaEr:
-    case EthiopicHalehameAaEt:
-    case EthiopicHalehameAmEt:
-    case EthiopicHalehameGez:
-    case EthiopicHalehameOmEt:
-    case EthiopicHalehameSidEt:
-    case EthiopicHalehameSoEt:
+    case EthiopicHalehame:
+    case EthiopicHalehameAm:
     case EthiopicHalehameTiEr:
     case EthiopicHalehameTiEt:
-    case EthiopicHalehameTig:
     case Georgian:
     case Gujarati:
     case Gurmukhi:
@@ -1563,33 +1261,19 @@ IntRect LayoutListMarker::getRelativeMarkerRect()
     case LowerAlpha:
     case LowerArmenian:
     case LowerGreek:
-    case LowerHexadecimal:
     case LowerLatin:
-    case LowerNorwegian:
     case LowerRoman:
     case Malayalam:
     case Mongolian:
     case Myanmar:
-    case Octal:
     case Oriya:
-    case Oromo:
     case Persian:
-    case Sidama:
-    case Somali:
     case Telugu:
     case Thai:
     case Tibetan:
-    case Tigre:
-    case TigrinyaEr:
-    case TigrinyaErAbegede:
-    case TigrinyaEt:
-    case TigrinyaEtAbegede:
     case UpperAlpha:
     case UpperArmenian:
-    case UpperGreek:
-    case UpperHexadecimal:
     case UpperLatin:
-    case UpperNorwegian:
     case UpperRoman:
     case Urdu:
         if (m_text.isEmpty())

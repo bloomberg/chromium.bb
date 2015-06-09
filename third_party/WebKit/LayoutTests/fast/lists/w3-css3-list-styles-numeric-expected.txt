@@ -16,14 +16,6 @@ PASS list marker is ٠.
 PASS list marker is ١.
 PASS list marker is -٢١٤٧٤٨٣٦٤٨.
 PASS list marker is -٢١٤٧٤٨٣٦٤٧.
-binary
-
-PASS list marker is 1.
-PASS list marker is 10.
-PASS list marker is 0.
-PASS list marker is 1.
-PASS list marker is -10000000000000000000000000000000.
-PASS list marker is -1111111111111111111111111111111.
 bengali
 
 PASS list marker is ১.
@@ -168,28 +160,6 @@ PASS list marker is ೦.
 PASS list marker is ೧.
 PASS list marker is -೨೧೪೭೪೮೩೬೪೮.
 PASS list marker is -೨೧೪೭೪೮೩೬೪೭.
-lower-hexadecimal
-
-PASS list marker is 1.
-PASS list marker is 2.
-PASS list marker is 3.
-PASS list marker is 4.
-PASS list marker is 5.
-PASS list marker is 6.
-PASS list marker is 7.
-PASS list marker is 8.
-PASS list marker is 9.
-PASS list marker is a.
-PASS list marker is b.
-PASS list marker is c.
-PASS list marker is d.
-PASS list marker is e.
-PASS list marker is f.
-PASS list marker is 10.
-PASS list marker is 0.
-PASS list marker is 1.
-PASS list marker is -80000000.
-PASS list marker is -7fffffff.
 lao
 
 PASS list marker is ໑.
@@ -254,20 +224,6 @@ PASS list marker is ၀.
 PASS list marker is ၁.
 PASS list marker is -၂၁၄၇၄၈၃၆၄၈.
 PASS list marker is -၂၁၄၇၄၈၃၆၄၇.
-octal
-
-PASS list marker is 1.
-PASS list marker is 2.
-PASS list marker is 3.
-PASS list marker is 4.
-PASS list marker is 5.
-PASS list marker is 6.
-PASS list marker is 7.
-PASS list marker is 10.
-PASS list marker is 0.
-PASS list marker is 1.
-PASS list marker is -20000000000.
-PASS list marker is -17777777777.
 oriya
 
 PASS list marker is ୧.
@@ -364,26 +320,4 @@ PASS list marker is ๐.
 PASS list marker is ๑.
 PASS list marker is -๒๑๔๗๔๘๓๖๔๘.
 PASS list marker is -๒๑๔๗๔๘๓๖๔๗.
-upper-hexadecimal
-
-PASS list marker is 1.
-PASS list marker is 2.
-PASS list marker is 3.
-PASS list marker is 4.
-PASS list marker is 5.
-PASS list marker is 6.
-PASS list marker is 7.
-PASS list marker is 8.
-PASS list marker is 9.
-PASS list marker is A.
-PASS list marker is B.
-PASS list marker is C.
-PASS list marker is D.
-PASS list marker is E.
-PASS list marker is F.
-PASS list marker is 10.
-PASS list marker is 0.
-PASS list marker is 1.
-PASS list marker is -80000000.
-PASS list marker is -7FFFFFFF.
 
