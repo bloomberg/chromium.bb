@@ -772,3 +772,15 @@ system call NtCreateEvent
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlIntegerToUnicodeString
+
+UNINITIALIZED READ
+name=http://crbug.com/498519_a
+blink_web.dll!blink::Element::styleForLayoutObject
+blink_web.dll!blink::LayoutTreeBuilderForElement::style
+blink_web.dll!blink::LayoutTreeBuilderForElement::shouldCreateLayoutObject
+
+UNINITIALIZED READ
+name=http://crbug.com/498519_b
+blink_web.dll!blink::Element::styleForLayoutObject
+blink_web.dll!blink::Element::recalcOwnStyle
+blink_web.dll!blink::Element::recalcStyle
