@@ -1291,7 +1291,7 @@ void WebLocalFrameImpl::selectRange(const WebRange& webRange)
 
 void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point)
 {
-    frame()->selection().moveRangeSelectionExtent(visiblePositionForViewportPoint(point));
+    frame()->selection().moveRangeSelectionExtent(frame()->view()->viewportToContents(point));
 }
 
 void WebLocalFrameImpl::moveRangeSelection(const WebPoint& baseInViewport, const WebPoint& extentInViewport, WebFrame::TextGranularity granularity)
@@ -1352,13 +1352,7 @@ void WebLocalFrameImpl::setCaretVisible(bool visible)
 
 VisiblePosition WebLocalFrameImpl::visiblePositionForViewportPoint(const WebPoint& pointInViewport)
 {
-    HitTestRequest request = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping;
-    HitTestResult result(request, frame()->view()->viewportToContents(pointInViewport));
-    frame()->document()->layoutView()->hitTest(result);
-
-    if (Node* node = result.innerNode())
-        return frame()->selection().selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);
-    return VisiblePosition();
+    return visiblePositionForContentsPoint(frame()->view()->viewportToContents(pointInViewport), frame());
 }
 
 WebPlugin* WebLocalFrameImpl::focusedPluginIfInputMethodSupported()

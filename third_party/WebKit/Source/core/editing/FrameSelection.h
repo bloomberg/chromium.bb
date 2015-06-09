@@ -127,10 +127,10 @@ public:
     bool modify(EAlteration, unsigned verticalDistance, VerticalDirection, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded);
 
     // Moves the selection extent based on the selection granularity strategy.
-    // This function does not allow the selection to collapse. If the new extent
-    // is set to the same position as the current base, this function will do
-    // nothing.
-    void moveRangeSelectionExtent(const VisiblePosition&);
+    // This function does not allow the selection to collapse. If the new
+    // extent is resolved to the same position as the current base, this
+    // function will do nothing.
+    void moveRangeSelectionExtent(const IntPoint&);
     void moveRangeSelection(const VisiblePosition& base, const VisiblePosition& extent, TextGranularity);
 
     TextGranularity granularity() const { return m_granularity; }

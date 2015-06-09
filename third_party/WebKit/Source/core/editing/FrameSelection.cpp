@@ -1938,12 +1938,13 @@ GranularityStrategy* FrameSelection::granularityStrategy()
     return m_granularityStrategy.get();
 }
 
-void FrameSelection::moveRangeSelectionExtent(const VisiblePosition& extentPosition)
+void FrameSelection::moveRangeSelectionExtent(const IntPoint& contentsPoint)
 {
-    if (isNone() || m_selection.visibleBase() == extentPosition)
+    TRACE_EVENT0("blink", "FrameSelection::moveRangeSelectionExtent");
+    if (isNone())
         return;
 
-    VisibleSelection newSelection = granularityStrategy()->updateExtent(extentPosition, selection());
+    VisibleSelection newSelection = granularityStrategy()->updateExtent(contentsPoint, m_frame);
     setSelection(
         newSelection,
         FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotClearStrategy | UserTriggered,

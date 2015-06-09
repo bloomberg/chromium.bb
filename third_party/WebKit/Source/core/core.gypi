@@ -3859,6 +3859,7 @@
             'dom/shadow/ComposedTreeTraversalTest.cpp',
             'editing/CompositionUnderlineRangeFilterTest.cpp',
             'editing/FrameSelectionTest.cpp',
+            'editing/GranularityStrategyTest.cpp',
             'editing/InputMethodControllerTest.cpp',
             'editing/iterators/TextIteratorTest.cpp',
             'editing/StyledMarkupSerializerTest.cpp',

@@ -34,6 +34,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Position.h"
 #include "core/dom/Text.h"
+#include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/htmlediting.h"
@@ -42,9 +43,13 @@
 #include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/html/HTMLBRElement.h"
+#include "core/layout/HitTestRequest.h"
+#include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBoundaries.h"
@@ -1410,6 +1415,17 @@ LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, Layout
         layoutObject = &inlineBox->layoutObject();
 
     return layoutObject->localCaretRect(inlineBox, caretOffset);
+}
+
+VisiblePosition visiblePositionForContentsPoint(const IntPoint& contentsPoint, LocalFrame* frame)
+{
+    HitTestRequest request = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping;
+    HitTestResult result(request, contentsPoint);
+    frame->document()->layoutView()->hitTest(result);
+
+    if (Node* node = result.innerNode())
+        return frame->selection().selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);
+    return VisiblePosition();
 }
 
 }

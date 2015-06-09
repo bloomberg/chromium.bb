@@ -38,6 +38,8 @@ class PositionWithAffinity;
 class LayoutObject;
 class Node;
 class VisiblePosition;
+class IntPoint;
+class LocalFrame;
 
 enum EWordSide { RightWordIfOnBoundary = false, LeftWordIfOnBoundary = true };
 
@@ -101,6 +103,10 @@ bool isEndOfEditableOrNonEditableContent(const VisiblePosition&);
 
 // Rect is local to the returned layoutObject
 LayoutRect localCaretRectOfPosition(const PositionWithAffinity&, LayoutObject*&);
+
+// Returns a hit-tested VisiblePosition for the given point in contents-space
+// coordinates.
+CORE_EXPORT VisiblePosition visiblePositionForContentsPoint(const IntPoint&, LocalFrame*);
 
 } // namespace blink
 
