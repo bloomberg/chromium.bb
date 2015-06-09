@@ -269,7 +269,7 @@ static Length lengthFromInterpolableValue(const InterpolableValue& value, Interp
     if (hasPixels && hasPercent)
         return Length(CalculationValue::create(pixelsAndPercent, range));
     if (hasPixels)
-        return Length(clampToRange(pixelsAndPercent.pixels, range), Fixed);
+        return Length(CSSPrimitiveValue::clampToCSSLengthRange(clampToRange(pixelsAndPercent.pixels, range)), Fixed);
     if (hasPercent)
         return Length(clampToRange(pixelsAndPercent.percent, range), Percent);
     ASSERT_NOT_REACHED();
