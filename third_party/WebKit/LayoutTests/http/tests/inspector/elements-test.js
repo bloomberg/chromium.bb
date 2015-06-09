@@ -356,10 +356,10 @@ function printStyleSection(section, omitLonghands, includeSelectorGroupMarks)
     if (!section)
         return;
     InspectorTest.addResult("[expanded] " + (section.element.classList.contains("no-affect") ? "[no-affect] " : ""));
-    var chainEntries = section.titleElement.querySelectorAll(".media-list .media");
+    var chainEntries = section._titleElement.querySelectorAll(".media-list .media");
     chainEntries = Array.prototype.slice.call(chainEntries);
-    if (section.titleElement.children[1])
-        chainEntries.push(section.titleElement.children[1]);
+    if (section._titleElement.children[1])
+        chainEntries.push(section._titleElement.children[1]);
 
     for (var j = 0; j < chainEntries.length; ++j) {
         var chainEntry = chainEntries[j];

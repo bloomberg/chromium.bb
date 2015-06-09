@@ -10,7 +10,7 @@ function initialize_extensionsSidebarTest()
     {
         var sidebar = InspectorTest._extensionSidebar(panelName);
         InspectorTest.runAfterPendingDispatches(function() {
-            InspectorTest.addResult(panelName + " sidebar content: " + InspectorTest.textContentWithoutStyles(sidebar.bodyElement));
+            InspectorTest.addResult(panelName + " sidebar content: " + InspectorTest.textContentWithoutStyles(sidebar.element));
             callback();
         });
     }

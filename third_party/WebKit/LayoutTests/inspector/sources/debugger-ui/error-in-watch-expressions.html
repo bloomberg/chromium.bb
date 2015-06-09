@@ -15,7 +15,7 @@ var test = function()
 
     function step1()
     {
-        InspectorTest.addResult(watchExpressionsPane.bodyElement.textContent.indexOf("<not available>") !== -1 ? "SUCCESS" : "FAILED");
+        InspectorTest.addResult(watchExpressionsPane.element.textContent.indexOf("<not available>") !== -1 ? "SUCCESS" : "FAILED");
 
         // Clear watch expressions after execution.
         watchExpressionsPane._deleteAllButtonClicked();

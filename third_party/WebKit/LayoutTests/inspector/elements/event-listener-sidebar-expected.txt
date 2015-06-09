@@ -39,7 +39,7 @@ Inspect Me
     handler: function hoverHandler(event) { console.log("hover - button - bubbling"); }
 
 ======== load ========
-[expanded] Windowevent-listener-sidebar.html:75
+[expanded] Windowevent-listener-sidebar.html:73
     useCapture: false
     handler: function onload(event) {
   onloadHandler()
