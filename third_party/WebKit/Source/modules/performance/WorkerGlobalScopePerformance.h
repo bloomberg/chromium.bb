@@ -51,7 +51,7 @@ public:
 private:
     WorkerGlobalScopePerformance();
 
-    WorkerPerformance* performance();
+    WorkerPerformance* performance(WorkerGlobalScope*);
     static const char* supplementName();
 
     PersistentWillBeMember<WorkerPerformance> m_performance;

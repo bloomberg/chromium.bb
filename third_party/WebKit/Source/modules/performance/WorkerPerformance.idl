@@ -31,9 +31,22 @@
 [
     GarbageCollected,
     NoInterfaceObject
-] interface WorkerPerformance {
+] interface WorkerPerformance : EventTarget {
     // See https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/HighResolutionTime2/Overview.html for details.
-    [CallWith=ExecutionContext] double now();
+    double now();
+
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] sequence<PerformanceEntry> getEntries();
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] sequence<PerformanceEntry> getEntriesByType(DOMString entryType);
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] sequence<PerformanceEntry> getEntriesByName(DOMString name, optional DOMString entryType = null);
+
+    // TODO(ksakamoto): Add Resource Timing methods and attributes. crbug.com/465641
+
+    // See http://www.w3.org/TR/2012/CR-user-timing-20120726/
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline, RaisesException] void mark(DOMString markName);
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] void clearMarks(optional DOMString markName = null);
+
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline, RaisesException] void measure(DOMString measureName, optional DOMString startMark = null, optional DOMString endMark = null);
+    [RuntimeEnabled=ServiceWorkerPerformanceTimeline] void clearMeasures(optional DOMString measureName = null);
 
     [RuntimeEnabled=MemoryInfoInWorkers] readonly attribute MemoryInfo memory;
 };

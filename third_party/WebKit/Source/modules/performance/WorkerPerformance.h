@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/timing/PerformanceBase.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
@@ -40,22 +41,24 @@ namespace blink {
 
 class ExecutionContext;
 class MemoryInfo;
+class WorkerGlobalScope;
 
-class WorkerPerformance final : public GarbageCollected<WorkerPerformance>, public ScriptWrappable {
+class WorkerPerformance final : public PerformanceBase, public ContextLifecycleObserver {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static WorkerPerformance* create()
+    static WorkerPerformance* create(WorkerGlobalScope* context)
     {
-        return new WorkerPerformance();
+        return new WorkerPerformance(context);
     }
 
-    double now(ExecutionContext*) const;
+    virtual ExecutionContext* executionContext() const override;
+
     MemoryInfo* memory();
 
-    DECLARE_TRACE();
+    DECLARE_VIRTUAL_TRACE();
 
 private:
-    WorkerPerformance();
+    explicit WorkerPerformance(WorkerGlobalScope*);
 
     Member<MemoryInfo> m_memoryInfo;
 };

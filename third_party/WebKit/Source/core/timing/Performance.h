@@ -33,30 +33,16 @@
 #define Performance_h
 
 #include "core/CoreExport.h"
-#include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "core/timing/MemoryInfo.h"
-#include "core/timing/PerformanceEntry.h"
+#include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceNavigation.h"
 #include "core/timing/PerformanceTiming.h"
-#include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class Document;
-class ExceptionState;
-class ResourceTimingInfo;
-class UserTiming;
-
-using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
-
-class CORE_EXPORT Performance final : public RefCountedGarbageCollectedEventTargetWithInlineData<Performance>, public DOMWindowProperty {
+class CORE_EXPORT Performance final : public PerformanceBase, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
-    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(Performance);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Performance);
 public:
     static Performance* create(LocalFrame* frame)
     {
@@ -64,62 +50,21 @@ public:
     }
     virtual ~Performance();
 
-    virtual const AtomicString& interfaceName() const override;
     virtual ExecutionContext* executionContext() const override;
 
     MemoryInfo* memory();
     PerformanceNavigation* navigation() const;
-    PerformanceTiming* timing() const;
-    double now() const;
-
-    PerformanceEntryVector getEntries() const;
-    PerformanceEntryVector getEntriesByType(const String& entryType);
-    PerformanceEntryVector getEntriesByName(const String& name, const String& entryType);
-
-    void webkitClearResourceTimings();
-    void webkitSetResourceTimingBufferSize(unsigned);
-
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(webkitresourcetimingbufferfull);
-
-    void clearFrameTimings();
-    void setFrameTimingBufferSize(unsigned);
-
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(frametimingbufferfull);
-
-    void addResourceTiming(const ResourceTimingInfo&, Document*);
-
-    void addRenderTiming(Document*, unsigned, double, double);
-
-    void addCompositeTiming(Document*, unsigned, double);
-
-    void mark(const String& markName, ExceptionState&);
-    void clearMarks(const String& markName);
-
-    void measure(const String& measureName, const String& startMark, const String& endMark, ExceptionState&);
-    void clearMeasures(const String& measureName);
+    PerformanceTiming* timing() const override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit Performance(LocalFrame*);
 
-    bool isResourceTimingBufferFull();
-    void addResourceTimingBuffer(PerformanceEntry*);
-
     mutable Member<PerformanceNavigation> m_navigation;
     mutable Member<PerformanceTiming> m_timing;
 
-    bool isFrameTimingBufferFull();
-    void addFrameTimingBuffer(PerformanceEntry*);
-
-    PerformanceEntryVector m_frameTimingBuffer;
-    unsigned m_frameTimingBufferSize;
-    PerformanceEntryVector m_resourceTimingBuffer;
-    unsigned m_resourceTimingBufferSize;
-    double m_referenceTime;
-
     Member<MemoryInfo> m_memoryInfo;
-    Member<UserTiming> m_userTiming;
 };
 
 } // namespace blink

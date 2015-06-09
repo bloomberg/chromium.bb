@@ -38,21 +38,22 @@
 
 namespace blink {
 
-WorkerPerformance::WorkerPerformance()
+WorkerPerformance::WorkerPerformance(WorkerGlobalScope* context)
+    : PerformanceBase(context->timeOrigin())
+    , ContextLifecycleObserver(context)
 {
+}
+
+ExecutionContext* WorkerPerformance::executionContext() const
+{
+    return ContextLifecycleObserver::executionContext();
 }
 
 DEFINE_TRACE(WorkerPerformance)
 {
     visitor->trace(m_memoryInfo);
-}
-
-double WorkerPerformance::now(ExecutionContext* context) const
-{
-    ASSERT(context);
-    ASSERT(context->isWorkerGlobalScope());
-    WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-    return 1000.0 * (monotonicallyIncreasingTime() - workerGlobalScope->timeOrigin());
+    PerformanceBase::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 MemoryInfo* WorkerPerformance::memory()

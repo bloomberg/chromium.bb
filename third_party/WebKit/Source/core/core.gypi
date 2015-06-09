@@ -2004,6 +2004,8 @@
             'timing/MemoryInfo.cpp',
             'timing/Performance.cpp',
             'timing/Performance.h',
+            'timing/PerformanceBase.cpp',
+            'timing/PerformanceBase.h',
             'timing/PerformanceCompositeTiming.cpp',
             'timing/PerformanceCompositeTiming.h',
             'timing/PerformanceEntry.cpp',

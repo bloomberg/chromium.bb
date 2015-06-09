@@ -58,13 +58,13 @@ WorkerGlobalScopePerformance& WorkerGlobalScopePerformance::from(WorkerGlobalSco
 
 WorkerPerformance* WorkerGlobalScopePerformance::performance(WorkerGlobalScope& context)
 {
-    return from(context).performance();
+    return from(context).performance(&context);
 }
 
-WorkerPerformance* WorkerGlobalScopePerformance::performance()
+WorkerPerformance* WorkerGlobalScopePerformance::performance(WorkerGlobalScope* context)
 {
     if (!m_performance)
-        m_performance = WorkerPerformance::create();
+        m_performance = WorkerPerformance::create(context);
     return m_performance.get();
 }
 
