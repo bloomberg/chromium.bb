@@ -1235,6 +1235,28 @@ Index: simd/jcsammmx.asm
  
  EXTN(jsimd_h2v2_downsample_mmx):
  	push	ebp
++Index: simd/jsimd_arm.c
++===================================================================
++--- simd/jsimd_arm.c (revision 272637)
+++++ simd/jsimd_arm.c (working copy)
++@@ -29,0 +29,0 @@
++
++ static unsigned int simd_support = ~0;
++
++-#if defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
+++#if !defined(__ARM_NEON__) && (defined(__linux__) || defined(ANDROID) || defined(__ANDROID__))
++
++ #define SOMEWHAT_SANE_PROC_CPUINFO_SIZE_LIMIT (1024 * 1024)
++
++@@ -100,6 +100,6 @@
++ init_simd (void)
++ {
++   char *env = NULL;
++-#if !defined(__ARM_NEON__) && defined(__linux__) || defined(ANDROID) || defined(__ANDROID__)
+++#if !defined(__ARM_NEON__) && (defined(__linux__) || defined(ANDROID) || defined(__ANDROID__))
++   int bufsize = 1024; /* an initial guess for the line buffer size limit */
++ #endif
++
 Index: simd/jsimd_arm_neon.S
 ===================================================================
 --- simd/jsimd_arm_neon.S	(revision 272637)

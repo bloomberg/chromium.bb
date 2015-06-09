@@ -35,6 +35,8 @@ following changes which are not merged to upstream:
   decoder fallback to slow decoding if the Huffman decoding bit sentinel > 16,
   this to match the exact behavior of jpeg_huff_decode().
   http://crbug.com/398235
+* Fixed an issue with the ARM NEON build.
+  http://crbug.com/451035
 
 The 'google.patch' file represents our changes from the original
 libjpeg-turbo-1.2.
