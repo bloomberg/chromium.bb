@@ -39,7 +39,6 @@
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/session_command.h"
 #include "components/sessions/session_types.h"
-#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -700,9 +699,6 @@ void SessionService::OnGotSessionCommands(
     ScopedVector<sessions::SessionCommand> commands) {
   ScopedVector<sessions::SessionWindow> valid_windows;
   SessionID::id_type active_window_id = 0;
-
-  startup_metric_utils::ScopedSlowStartupUMA
-      scoped_timer("Startup.SlowStartupSessionServiceCreateTabsAndWindows");
 
   sessions::RestoreSessionFromCommands(
       commands, &valid_windows.get(), &active_window_id);

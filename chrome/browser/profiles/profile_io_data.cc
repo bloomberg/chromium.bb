@@ -56,7 +56,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/dom_distiller/core/url_constants.h"
-#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/sync_driver/pref_names.h"
 #include "components/url_fixer/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
@@ -981,9 +980,6 @@ void ProfileIOData::Init(
   // functions have been provided to assist in common operations.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!initialized_);
-
-  startup_metric_utils::ScopedSlowStartupUMA
-      scoped_timer("Startup.SlowStartupProfileIODataInit");
 
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
   CHECK(initialized_on_UI_thread_);

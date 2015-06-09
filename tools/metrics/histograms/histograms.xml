@@ -41635,20 +41635,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Startup.LoadTime.ExeMainToDllMain">
   <owner>jeremy@chromium.org</owner>
   <summary>
-    Time from the main() function in chrome.exe to chrome.dll's main().
+    Time from the main() function in chrome.exe to chrome.dll's main(). This
+    stat is only recorded after 7 minutes of OS uptime to try to mitigate the
+    variance resulting from Chrome being autostarted.
   </summary>
 </histogram>
 
 <histogram name="Startup.LoadTime.ProcessCreateToDllMain">
   <owner>jeremy@chromium.org</owner>
-  <summary>Time from the process creation to chrome.dll's main().</summary>
+  <summary>
+    Time from the process creation to chrome.dll's main(). This stat is only
+    recorded after 7 minutes of OS uptime to try to mitigate the variance
+    resulting from Chrome being autostarted.
+  </summary>
 </histogram>
 
 <histogram name="Startup.LoadTime.ProcessCreateToExeMain">
   <owner>jeremy@chromium.org</owner>
   <summary>
     Time from the process creation to executing the main() function in
-    chrome.exe.
+    chrome.exe. This stat is only recorded after 7 minutes of OS uptime to try
+    to mitigate the variance resulting from Chrome being autostarted.
   </summary>
 </histogram>
 
@@ -41778,6 +41785,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.SlowStartupBookmarksLoad" units="milliseconds">
+  <obsolete>
+    Deprecated 06/2015.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <summary>
     Time it takes to load bookmarks from disk. This measurement is only sent for
@@ -41787,6 +41797,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Startup.SlowStartupExtensionServiceInitAfterImport"
     units="milliseconds">
+  <obsolete>
+    Deprecated 06/2015.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <summary>
     Time it takes to finish initialization of the extension service including
@@ -41796,6 +41809,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.SlowStartupFinalProfileInit" units="milliseconds">
+  <obsolete>
+    Deprecated 06/2015.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <summary>
     Time the final stages of profile initialization taking including
@@ -41805,6 +41821,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.SlowStartupNSSInit" units="milliseconds">
+  <obsolete>
+    Deprecated 06/2015.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <summary>
     Time it takes to load the NSS libraries and initialize it. This measurement
@@ -41814,6 +41833,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.SlowStartupPreferenceLoading" units="milliseconds">
+  <obsolete>
+    Deprecated 06/2015.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <summary>
     Time it takes to load preferences from disk. This measurement is only sent
@@ -41822,6 +41844,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.SlowStartupProfileIODataInit" units="milliseconds">
+  <obsolete>
+    Deprecated 06/2015.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <summary>
     Time it takes to initialize the ProfileIOData object - this includes
@@ -41832,6 +41857,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Startup.SlowStartupSafeBrowsingGetDatabase"
     units="milliseconds">
+  <obsolete>
+    Deprecated 06/2015.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <summary>
     Time it takes to load the safe browsing database from disk. This measurement
@@ -41842,6 +41870,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Startup.SlowStartupSafeBrowsingServiceInitialize"
     units="milliseconds">
+  <obsolete>
+    Deprecated 06/2015.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <summary>
     Time it takes to initialize the safe browsing service. This measurement is
@@ -41852,6 +41883,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Startup.SlowStartupSessionServiceCreateTabsAndWindows"
     units="milliseconds">
+  <obsolete>
+    Deprecated 06/2015.
+  </obsolete>
   <owner>jeremy@chromium.org</owner>
   <summary>
     Time it takes for session restore to finish initiating creation of restored

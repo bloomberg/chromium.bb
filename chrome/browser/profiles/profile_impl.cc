@@ -88,7 +88,6 @@
 #include "components/metrics/metrics_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/ui/zoom/zoom_event_manager.h"
 #include "components/url_fixer/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
@@ -451,10 +450,6 @@ ProfileImpl::ProfileImpl(
   }
 
   {
-    // On startup, preference loading is always synchronous so a scoped timer
-    // will work here.
-    startup_metric_utils::ScopedSlowStartupUMA
-        scoped_timer("Startup.SlowStartupPreferenceLoading");
     prefs_ = chrome_prefs::CreateProfilePrefs(
         path_,
         sequenced_task_runner,
@@ -468,8 +463,6 @@ ProfileImpl::ProfileImpl(
     user_prefs::UserPrefs::Set(this, prefs_.get());
   }
 
-  startup_metric_utils::ScopedSlowStartupUMA
-      scoped_timer("Startup.SlowStartupFinalProfileInit");
   if (async_prefs) {
     // Wait for the notification that prefs has been loaded
     // (successfully or not).  Note that we can use base::Unretained

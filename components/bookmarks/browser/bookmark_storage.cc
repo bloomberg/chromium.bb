@@ -16,7 +16,6 @@
 #include "components/bookmarks/browser/bookmark_index.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
-#include "components/startup_metric_utils/startup_metric_utils.h"
 
 using base::TimeTicks;
 
@@ -51,8 +50,6 @@ void LoadCallback(const base::FilePath& path,
                   const base::WeakPtr<BookmarkStorage>& storage,
                   scoped_ptr<BookmarkLoadDetails> details,
                   base::SequencedTaskRunner* task_runner) {
-  startup_metric_utils::ScopedSlowStartupUMA
-      scoped_timer("Startup.SlowStartupBookmarksLoad");
   bool load_index = false;
   bool bookmark_file_exists = base::PathExists(path);
   if (bookmark_file_exists) {

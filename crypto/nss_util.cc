@@ -37,7 +37,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -685,8 +684,6 @@ class NSSInitSingleton {
         initializing_tpm_token_(false),
         chaps_module_(NULL),
         root_(NULL) {
-    base::TimeTicks start_time = base::TimeTicks::Now();
-
     // It's safe to construct on any thread, since LazyInstance will prevent any
     // other threads from accessing until the constructor is done.
     thread_checker_.DetachFromThread();
@@ -783,14 +780,6 @@ class NSSInitSingleton {
     NSS_SetAlgorithmPolicy(SEC_OID_MD5, 0, NSS_USE_ALG_IN_CERT_SIGNATURE);
     NSS_SetAlgorithmPolicy(SEC_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION,
                            0, NSS_USE_ALG_IN_CERT_SIGNATURE);
-
-    // The UMA bit is conditionally set for this histogram in
-    // components/startup_metric_utils.cc .
-    LOCAL_HISTOGRAM_CUSTOM_TIMES("Startup.SlowStartupNSSInit",
-                                 base::TimeTicks::Now() - start_time,
-                                 base::TimeDelta::FromMilliseconds(10),
-                                 base::TimeDelta::FromHours(1),
-                                 50);
   }
 
   // NOTE(willchan): We don't actually execute this code since we leak NSS to

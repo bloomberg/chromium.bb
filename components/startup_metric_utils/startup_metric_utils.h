@@ -48,32 +48,10 @@ void RecordSavedMainEntryPointTime(const base::Time& entry_point_time);
 // |is_first_run| - is the current launch part of a first run.
 void OnBrowserStartupComplete(bool is_first_run);
 
-// Called when the initial page load has finished in order to record startup
-// stats.
-void OnInitialPageLoadComplete();
-
 // Returns the time of main entry recorded from RecordMainEntryPointTime.
 // Returns NULL if that method has not yet been called.
 // This method is expected to be called from the UI thread.
 const base::Time* MainEntryPointTime();
-
-// Scoper that records the time period before it's destructed in a histogram
-// with the given name. The histogram is only recorded for slow chrome startups.
-// Useful for trying to figure out what parts of Chrome cause slow startup.
-class ScopedSlowStartupUMA {
- public:
-  explicit ScopedSlowStartupUMA(const std::string& histogram_name)
-      : start_time_(base::TimeTicks::Now()),
-        histogram_name_(histogram_name) {}
-
-  ~ScopedSlowStartupUMA();
-
- private:
-  const base::TimeTicks start_time_;
-  const std::string histogram_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedSlowStartupUMA);
-};
 
 }  // namespace startup_metric_utils
 

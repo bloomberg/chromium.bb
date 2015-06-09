@@ -536,31 +536,6 @@ void LaunchDevToolsHandlerIfNeeded(const base::CommandLine& command_line) {
   }
 }
 
-// Heap allocated class that listens for first page load, kicks off stat
-// recording and then deletes itself.
-class LoadCompleteListener : public content::NotificationObserver {
- public:
-  LoadCompleteListener() {
-    registrar_.Add(this,
-                   content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                   content::NotificationService::AllSources());
-  }
-  ~LoadCompleteListener() override {}
-
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME, type);
-    startup_metric_utils::OnInitialPageLoadComplete();
-    delete this;
-  }
-
- private:
-  content::NotificationRegistrar registrar_;
-  DISALLOW_COPY_AND_ASSIGN(LoadCompleteListener);
-};
-
 }  // namespace
 
 namespace chrome_browser {
@@ -748,9 +723,6 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
 
   // Record collected startup metrics.
   startup_metric_utils::OnBrowserStartupComplete(is_first_run);
-
-  // Deletes self.
-  new LoadCompleteListener();
 }
 
 // -----------------------------------------------------------------------------

@@ -27,7 +27,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/startup_metric_utils/startup_metric_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "url/url_constants.h"
@@ -750,10 +749,8 @@ SafeBrowsingDatabase* LocalSafeBrowsingDatabaseManager::GetDatabase() {
 
   if (database_)
     return database_;
-  startup_metric_utils::ScopedSlowStartupUMA
-      scoped_timer("Startup.SlowStartupSafeBrowsingGetDatabase");
-  const base::TimeTicks before = base::TimeTicks::Now();
 
+  const base::TimeTicks before = base::TimeTicks::Now();
   SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create(
       safe_browsing_task_runner_, enable_download_protection_,
       enable_csd_whitelist_, enable_download_whitelist_,
