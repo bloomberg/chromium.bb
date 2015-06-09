@@ -173,10 +173,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
 
   virtual void SetIgnoreCachedStateForTest(bool ignore) = 0;
 
-  // Allow the decoder to exit the current process.
-  // Defaults to |false|.
-  virtual void SetAllowExit(bool allow_exit) = 0;
-
   // Gets the QueryManager for this context.
   virtual QueryManager* GetQueryManager() = 0;
 

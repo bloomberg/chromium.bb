@@ -71,7 +71,17 @@ void CommandBufferProxyImpl::OnChannelError() {
   scoped_ptr<base::AutoLock> lock;
   if (lock_)
     lock.reset(new base::AutoLock(*lock_));
-  OnDestroyed(gpu::error::kGpuChannelLost, gpu::error::kLostContext);
+
+  gpu::error::ContextLostReason context_lost_reason =
+      gpu::error::kGpuChannelLost;
+  if (shared_state_shm_ && shared_state_shm_->memory()) {
+    TryUpdateState();
+    // The GPU process might have intentionally been crashed
+    // (exit_on_context_lost), so try to find out the original reason.
+    if (last_state_.error == gpu::error::kLostContext)
+      context_lost_reason = last_state_.context_lost_reason;
+  }
+  OnDestroyed(context_lost_reason, gpu::error::kLostContext);
 }
 
 void CommandBufferProxyImpl::OnDestroyed(gpu::error::ContextLostReason reason,

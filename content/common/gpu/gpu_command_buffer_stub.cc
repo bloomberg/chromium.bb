@@ -40,6 +40,7 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_WIN)
+#include "base/win/win_util.h"
 #include "content/public/common/sandbox_init.h"
 #endif
 
@@ -472,14 +473,6 @@ void GpuCommandBufferStub::OnInitialize(
   DCHECK(result);
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group_.get()));
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSingleProcess) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kInProcessGPU)) {
-    decoder_->SetAllowExit(true);
-  }
-
   scheduler_.reset(new gpu::GpuScheduler(command_buffer_.get(),
                                          decoder_.get(),
                                          decoder_.get()));
@@ -1089,6 +1082,21 @@ bool GpuCommandBufferStub::CheckContextLost() {
   DCHECK(command_buffer_);
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
   bool was_lost = state.error == gpu::error::kLostContext;
+
+  // Work around issues with recovery by allowing a new GPU process to launch.
+  if (was_lost &&
+      context_group_->feature_info()->workarounds().exit_on_context_lost &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSingleProcess) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kInProcessGPU)) {
+    LOG(ERROR) << "Exiting GPU process because some drivers cannot recover"
+               << " from problems.";
+#if defined(OS_WIN)
+    base::win::SetShouldCrashOnProcessDetach(false);
+#endif
+    exit(0);
+  }
   // Lose all other contexts if the reset was triggered by the robustness
   // extension instead of being synthetic.
   if (was_lost && decoder_ && decoder_->WasContextLostByRobustnessExtension() &&
