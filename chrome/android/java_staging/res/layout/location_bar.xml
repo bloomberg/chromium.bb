@@ -23,7 +23,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:scaleType="center"
-            android:contentDescription="@string/accessibility_toolbar_btn_security_lock"/>
+            android:contentDescription="@string/accessibility_toolbar_btn_site_info"/>
         <ImageButton android:id="@+id/security_button"
             style="@style/LocationBarButton"
             android:layout_height="match_parent"
@@ -32,7 +32,7 @@
             android:layout_gravity="center"
             android:alpha="0"
             android:visibility="invisible"
-            android:contentDescription="@string/accessibility_toolbar_btn_security_lock" />
+            android:contentDescription="@string/accessibility_toolbar_btn_site_info" />
     </FrameLayout>
     <include
         android:id="@+id/url_container"

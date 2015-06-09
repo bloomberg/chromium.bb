@@ -1983,7 +1983,7 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_MENU" desc="Content description for the settings menu button.">
         More options
       </message>
-      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_SECURITY_LOCK" desc="Content description for the security lock icon that gives more site information when clicked.">
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_SITE_INFO" desc="Content description for the page icon that gives more site information when clicked.  The icon can be a lock for secure pages, a magnifier for search result pages, or other icons representing the page state.">
         Site information
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_MIC" desc="Content description for the voice search button.">

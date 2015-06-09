@@ -18,7 +18,7 @@
         android:layout_gravity="center_vertical"
         android:alpha="0"
         android:visibility="gone"
-        android:contentDescription="@string/accessibility_toolbar_btn_security_lock" />
+        android:contentDescription="@string/accessibility_toolbar_btn_site_info" />
     <FrameLayout
         android:id="@+id/url_info_container"
         android:background="@null"
