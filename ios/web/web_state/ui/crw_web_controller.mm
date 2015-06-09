@@ -3382,9 +3382,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!scrollState.IsValid())
     return;
   base::WeakNSObject<CRWWebController> weakSelf(self);
+  web::PageScrollState scrollStateCopy = scrollState;
   [self queryUserScalableProperty:^(BOOL isUserScalable) {
     base::scoped_nsobject<CRWWebController> strongSelf([weakSelf retain]);
-    [strongSelf applyPageScrollState:scrollState userScalable:isUserScalable];
+    [strongSelf applyPageScrollState:scrollStateCopy
+                        userScalable:isUserScalable];
   }];
 }
 

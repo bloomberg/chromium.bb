@@ -314,6 +314,9 @@ struct TrackerCounts {
       case web::SECURITY_STYLE_AUTHENTICATION_BROKEN:
         sslInfo = @"Not secure ";
         break;
+      case web::SECURITY_STYLE_WARNING:
+        sslInfo = @"Security warning";
+        break;
       case web::SECURITY_STYLE_AUTHENTICATED:
         if (status_.content_status ==
             web::SSLStatus::DISPLAYED_INSECURE_CONTENT)
