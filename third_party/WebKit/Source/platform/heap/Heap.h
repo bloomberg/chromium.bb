@@ -1002,10 +1002,6 @@ public:
 
     static void flushHeapDoesNotContainCache();
 
-    // Return true if the last GC found a pointer into a heap page
-    // during conservative scanning.
-    static bool lastGCWasConservative() { return s_lastGCWasConservative; }
-
     static FreePagePool* freePagePool() { return s_freePagePool; }
     static OrphanedPagePool* orphanedPagePool() { return s_orphanedPagePool; }
 
@@ -1073,7 +1069,6 @@ private:
     static CallbackStack* s_ephemeronStack;
     static HeapDoesNotContainCache* s_heapDoesNotContainCache;
     static bool s_shutdownCalled;
-    static bool s_lastGCWasConservative;
     static FreePagePool* s_freePagePool;
     static OrphanedPagePool* s_orphanedPagePool;
     static RegionTree* s_regionTree;

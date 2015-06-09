@@ -1821,9 +1821,6 @@ Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
         ASSERT(!page->orphaned());
         ASSERT(!s_heapDoesNotContainCache->lookup(address));
         page->checkAndMarkPointer(visitor, address);
-        // FIXME: We only need to set the conservative flag if
-        // checkAndMarkPointer actually marked the pointer.
-        s_lastGCWasConservative = true;
         return address;
     }
 
@@ -2023,8 +2020,6 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     if (state->isMainThread())
         ScriptForbiddenScope::enter();
 
-    s_lastGCWasConservative = false;
-
     TRACE_EVENT2("blink_gc", "Heap::collectGarbage",
         "lazySweeping", gcType == ThreadState::GCWithoutSweep,
         "gcReason", gcReasonString(reason));
@@ -2048,19 +2043,12 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::GCTyp
     // 1. Trace persistent roots.
     ThreadState::visitPersistentRoots(gcScope.visitor());
 
-    // 2. Trace objects reachable from the persistent roots including
-    // ephemerons.
-    processMarkingStack(gcScope.visitor());
-
-    // 3. Trace objects reachable from the stack.  We do this independent of the
+    // 2. Trace objects reachable from the stack.  We do this independent of the
     // given stackState since other threads might have a different stack state.
     ThreadState::visitStackRoots(gcScope.visitor());
 
-    // 4. Trace objects reachable from the stack "roots" including ephemerons.
-    // Only do the processing if we found a pointer to an object on one of the
-    // thread stacks.
-    if (lastGCWasConservative())
-        processMarkingStack(gcScope.visitor());
+    // 3. Transitive closure to trace objects including ephemerons.
+    processMarkingStack(gcScope.visitor());
 
     postMarkingProcessing(gcScope.visitor());
     globalWeakProcessing(gcScope.visitor());
@@ -2351,7 +2339,6 @@ CallbackStack* Heap::s_globalWeakCallbackStack;
 CallbackStack* Heap::s_ephemeronStack;
 HeapDoesNotContainCache* Heap::s_heapDoesNotContainCache;
 bool Heap::s_shutdownCalled = false;
-bool Heap::s_lastGCWasConservative = false;
 FreePagePool* Heap::s_freePagePool;
 OrphanedPagePool* Heap::s_orphanedPagePool;
 Heap::RegionTree* Heap::s_regionTree = nullptr;
