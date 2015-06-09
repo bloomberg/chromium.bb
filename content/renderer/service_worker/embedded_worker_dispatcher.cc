@@ -15,8 +15,8 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
+#include "content/renderer/service_worker/service_worker_context_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"
@@ -73,7 +73,7 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
   RenderThread::Get()->EnsureWebKitInitialized();
   scoped_ptr<WorkerWrapper> wrapper(
       new WorkerWrapper(blink::WebEmbeddedWorker::create(
-                            new EmbeddedWorkerContextClient(
+                            new ServiceWorkerContextClient(
                                 params.embedded_worker_id,
                                 params.service_worker_version_id,
                                 params.scope,

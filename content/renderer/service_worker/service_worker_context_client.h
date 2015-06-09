@@ -1,17 +1,26 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_CONTEXT_CLIENT_H_
-#define CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_CONTEXT_CLIENT_H_
+#ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_CLIENT_H_
+#define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_CLIENT_H_
 
+#include <map>
+#include <string>
+#include <vector>
+
+#include "base/id_map.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
+#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
+#include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
+#include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
-#include "url/gurl.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -19,47 +28,50 @@ class TaskRunner;
 }
 
 namespace blink {
+struct WebCircularGeofencingRegion;
+struct WebCrossOriginServiceWorkerClient;
 class WebDataSource;
+struct WebServiceWorkerClientQueryOptions;
+class WebServiceWorkerContextProxy;
 class WebServiceWorkerProvider;
+}
+
+namespace IPC {
+class Message;
 }
 
 namespace content {
 
+struct NavigatorConnectClient;
+struct PlatformNotificationData;
+struct ServiceWorkerClientInfo;
 class ServiceWorkerProviderContext;
-class ServiceWorkerScriptContext;
+class ServiceWorkerContextClient;
 class ThreadSafeSender;
+class WebServiceWorkerRegistrationImpl;
 
-// This class provides access to/from an embedded worker's WorkerGlobalScope.
+// This class provides access to/from an ServiceWorker's WorkerGlobalScope.
 // Unless otherwise noted, all methods are called on the worker thread.
-//
-// TODO(kinuko): Currently EW/SW separation is made a little hazily.
-// This should implement WebEmbeddedWorkerContextClient
-// or sort of it (which doesn't exist yet) rather than
-// WebServiceWorkerContextClient if we want to separate them more cleanly,
-// or ServiceWorkerScriptContext should be merged into this class
-// if we consider EW == SW script context.
-class EmbeddedWorkerContextClient
+class ServiceWorkerContextClient
     : public blink::WebServiceWorkerContextClient {
  public:
   // Returns a thread-specific client instance.  This does NOT create a
   // new instance.
-  static EmbeddedWorkerContextClient* ThreadSpecificInstance();
+  static ServiceWorkerContextClient* ThreadSpecificInstance();
 
   // Called on the main thread.
-  EmbeddedWorkerContextClient(int embedded_worker_id,
-                              int64 service_worker_version_id,
-                              const GURL& service_worker_scope,
-                              const GURL& script_url,
-                              int worker_devtools_agent_route_id);
+  ServiceWorkerContextClient(int embedded_worker_id,
+                             int64 service_worker_version_id,
+                             const GURL& service_worker_scope,
+                             const GURL& script_url,
+                             int worker_devtools_agent_route_id);
+  ~ServiceWorkerContextClient() override;
 
-  virtual ~EmbeddedWorkerContextClient();
+  void OnMessageReceived(int thread_id,
+                         int embedded_worker_id,
+                         const IPC::Message& message);
 
-  bool OnMessageReceived(const IPC::Message& msg);
-
-  void Send(IPC::Message* message);
-
-  // WebServiceWorkerContextClient overrides, some of them are just dispatched
-  // on to script_context_.
+  // WebServiceWorkerContextClient overrides.
   virtual blink::WebURL scope() const;
   virtual void didPauseAfterDownload();
   virtual void getClients(const blink::WebServiceWorkerClientQueryOptions&,
@@ -132,20 +144,60 @@ class EmbeddedWorkerContextClient
   virtual void stashMessagePort(blink::WebMessagePortChannel* channel,
                                 const blink::WebString& name);
 
-  // TODO: Implement DevTools related method overrides.
-
-  int embedded_worker_id() const { return embedded_worker_id_; }
-  base::SingleThreadTaskRunner* main_thread_task_runner() const {
-    return main_thread_task_runner_.get();
-  }
-  ThreadSafeSender* thread_safe_sender() { return sender_.get(); }
-
  private:
-  void OnMessageToWorker(int thread_id,
-                         int embedded_worker_id,
-                         const IPC::Message& message);
+  struct WorkerContextData;
+
+  // Get routing_id for sending message to the ServiceWorkerVersion
+  // in the browser process.
+  int GetRoutingID() const { return embedded_worker_id_; }
+
+  void Send(IPC::Message* message);
   void SendWorkerStarted();
   void SetRegistrationInServiceWorkerGlobalScope();
+
+  void OnActivateEvent(int request_id);
+  void OnInstallEvent(int request_id);
+  void OnFetchEvent(int request_id, const ServiceWorkerFetchRequest& request);
+  void OnSyncEvent(int request_id);
+  void OnNotificationClickEvent(
+      int request_id,
+      int64_t persistent_notification_id,
+      const PlatformNotificationData& notification_data);
+  void OnPushEvent(int request_id, const std::string& data);
+  void OnGeofencingEvent(int request_id,
+                         blink::WebGeofencingEventType event_type,
+                         const std::string& region_id,
+                         const blink::WebCircularGeofencingRegion& region);
+  void OnCrossOriginConnectEvent(int request_id,
+                                 const NavigatorConnectClient& client);
+  void OnPostMessage(
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const std::vector<int>& new_routing_ids);
+  void OnCrossOriginMessageToWorker(
+      const NavigatorConnectClient& client,
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const std::vector<int>& new_routing_ids);
+  void OnSendStashedMessagePorts(
+      const std::vector<TransferredMessagePort>& stashed_message_ports,
+      const std::vector<int>& new_routing_ids,
+      const std::vector<base::string16>& port_names);
+  void OnDidGetClients(
+      int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
+  void OnOpenWindowResponse(int request_id,
+                            const ServiceWorkerClientInfo& client);
+  void OnOpenWindowError(int request_id, const std::string& message);
+  void OnFocusClientResponse(int request_id,
+                             const ServiceWorkerClientInfo& client);
+  void OnDidSkipWaiting(int request_id);
+  void OnDidClaimClients(int request_id);
+  void OnClaimClientsError(int request_id,
+                           blink::WebServiceWorkerError::ErrorType error_type,
+                           const base::string16& message);
+  void OnPing();
+
+  base::WeakPtr<ServiceWorkerContextClient> GetWeakPtr();
 
   const int embedded_worker_id_;
   const int64 service_worker_version_id_;
@@ -156,14 +208,30 @@ class EmbeddedWorkerContextClient
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;
 
-  scoped_ptr<ServiceWorkerScriptContext> script_context_;
   scoped_refptr<ServiceWorkerProviderContext> provider_context_;
 
-  base::WeakPtrFactory<EmbeddedWorkerContextClient> weak_factory_;
+  // Not owned; this object is destroyed when proxy_ becomes invalid.
+  blink::WebServiceWorkerContextProxy* proxy_;
 
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerContextClient);
+  // Used for incoming messages from the browser for which an outgoing response
+  // back to the browser is expected, the id must be sent back with the
+  // response.
+  int current_request_id_;
+
+  // Initialized on the worker thread in workerContextStarted and
+  // destructed on the worker thread in willDestroyWorkerContext.
+  scoped_ptr<WorkerContextData> context_;
+
+  // Capture timestamps for UMA
+  std::map<int, base::TimeTicks> activate_start_timings_;
+  std::map<int, base::TimeTicks> fetch_start_timings_;
+  std::map<int, base::TimeTicks> install_start_timings_;
+  std::map<int, base::TimeTicks> notification_click_start_timings_;
+  std::map<int, base::TimeTicks> push_start_timings_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_SERVICE_WORKER_EMBEDDED_WORKER_CONTEXT_CLIENT_H_
+#endif  // CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_CLIENT_H_
