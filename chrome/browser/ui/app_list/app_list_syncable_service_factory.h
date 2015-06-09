@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_APP_LIST_SYNCABLE_SERVICE_FACTORY_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -24,7 +25,7 @@ class AppListSyncableServiceFactory : public BrowserContextKeyedServiceFactory {
 
   static AppListSyncableServiceFactory* GetInstance();
 
-  static KeyedService* BuildInstanceFor(
+  static scoped_ptr<KeyedService> BuildInstanceFor(
       content::BrowserContext* browser_context);
 
  private:

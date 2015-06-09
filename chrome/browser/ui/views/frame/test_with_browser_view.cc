@@ -31,10 +31,10 @@
 
 namespace {
 
-// Caller owns the returned service.
-KeyedService* CreateTemplateURLService(content::BrowserContext* context) {
+scoped_ptr<KeyedService> CreateTemplateURLService(
+    content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return new TemplateURLService(
+  return make_scoped_ptr(new TemplateURLService(
       profile->GetPrefs(),
       scoped_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
       WebDataServiceFactory::GetKeywordWebDataForProfile(
@@ -42,16 +42,17 @@ KeyedService* CreateTemplateURLService(content::BrowserContext* context) {
       scoped_ptr<TemplateURLServiceClient>(new ChromeTemplateURLServiceClient(
           HistoryServiceFactory::GetForProfile(
               profile, ServiceAccessType::EXPLICIT_ACCESS))),
-      nullptr, nullptr, base::Closure());
+      nullptr, nullptr, base::Closure()));
 }
 
-KeyedService* CreateAutocompleteClassifier(content::BrowserContext* context) {
+scoped_ptr<KeyedService> CreateAutocompleteClassifier(
+    content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return new AutocompleteClassifier(
+  return make_scoped_ptr(new AutocompleteClassifier(
       make_scoped_ptr(new AutocompleteController(
           profile, TemplateURLServiceFactory::GetForProfile(profile), nullptr,
           AutocompleteClassifier::kDefaultOmniboxProviders)),
-      scoped_ptr<AutocompleteSchemeClassifier>(new TestSchemeClassifier()));
+      scoped_ptr<AutocompleteSchemeClassifier>(new TestSchemeClassifier())));
 }
 
 }  // namespace

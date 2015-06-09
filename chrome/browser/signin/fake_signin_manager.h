@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
@@ -32,7 +33,7 @@ class FakeSigninManagerBase : public SigninManagerBase {
   // the API of SigninManagerFactory::GetForProfile(), returns a
   // FakeSigninManagerBase* on ChromeOS, and a FakeSigninManager* on all other
   // platforms. The returned instance is initialized.
-  static KeyedService* Build(content::BrowserContext* context);
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* context);
 };
 
 #if !defined(OS_CHROMEOS)

@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
@@ -38,13 +39,11 @@ class MockUploader : public feedback::FeedbackUploader, public KeyedService {
   MOCK_METHOD1(DispatchReport, void(const std::string&));
 };
 
-MockUploader *g_uploader;
-
-KeyedService* CreateFeedbackUploaderService(content::BrowserContext* context) {
-  if (!g_uploader)
-    g_uploader = new MockUploader(context);
-  EXPECT_CALL(*g_uploader, DispatchReport(testing::_)).Times(1);
-  return g_uploader;
+scoped_ptr<KeyedService> CreateFeedbackUploaderService(
+    content::BrowserContext* context) {
+  scoped_ptr<MockUploader> uploader(new MockUploader(context));
+  EXPECT_CALL(*uploader, DispatchReport(testing::_)).Times(1);
+  return uploader.Pass();
 }
 
 scoped_ptr<std::string> MakeScoped(const char* str) {
@@ -108,8 +107,6 @@ TEST_F(FeedbackDataTest, ReportSending) {
   Send();
   RunMessageLoop();
   EXPECT_TRUE(data_->IsDataComplete());
-  delete g_uploader;
-  g_uploader = NULL;
 }
 
 }  // namespace feedback

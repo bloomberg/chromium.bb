@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -26,12 +27,13 @@ namespace extensions {
 
 namespace {
 
-KeyedService* BuildManagementApi(content::BrowserContext* context) {
-  return new ManagementAPI(context);
+scoped_ptr<KeyedService> BuildManagementApi(content::BrowserContext* context) {
+  return make_scoped_ptr(new ManagementAPI(context));
 }
 
-KeyedService* BuildEventRouter(content::BrowserContext* profile) {
-  return new extensions::EventRouter(profile, ExtensionPrefs::Get(profile));
+scoped_ptr<KeyedService> BuildEventRouter(content::BrowserContext* profile) {
+  return make_scoped_ptr(
+      new extensions::EventRouter(profile, ExtensionPrefs::Get(profile)));
 }
 
 }  // namespace

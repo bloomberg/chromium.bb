@@ -195,13 +195,13 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
   std::map<std::string, TestingValueStore*> created_;
 };
 
-KeyedService* MockExtensionSystemFactoryFunction(
+scoped_ptr<KeyedService> MockExtensionSystemFactoryFunction(
     content::BrowserContext* context) {
-  return new MockExtensionSystem(context);
+  return make_scoped_ptr(new MockExtensionSystem(context));
 }
 
-KeyedService* BuildEventRouter(content::BrowserContext* profile) {
-  return new extensions::EventRouter(profile, nullptr);
+scoped_ptr<KeyedService> BuildEventRouter(content::BrowserContext* profile) {
+  return make_scoped_ptr(new extensions::EventRouter(profile, nullptr));
 }
 
 }  // namespace
@@ -220,8 +220,8 @@ class ExtensionSettingsSyncTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_.reset(new TestingProfile(temp_dir_.path()));
     storage_factory_->Reset(new LeveldbSettingsStorageFactory());
-    frontend_.reset(
-        StorageFrontend::CreateForTesting(storage_factory_, profile_.get()));
+    frontend_ = StorageFrontend::CreateForTesting(storage_factory_,
+                                                  profile_.get()).Pass();
 
     ExtensionsBrowserClient::Get()
         ->GetExtensionSystemFactory()

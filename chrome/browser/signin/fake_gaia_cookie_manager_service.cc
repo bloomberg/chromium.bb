@@ -112,12 +112,11 @@ void FakeGaiaCookieManagerService::SetListAccountsResponseTwoAccountsWithExpiry(
 }
 
 // static
-KeyedService* FakeGaiaCookieManagerService::Build(
+scoped_ptr<KeyedService> FakeGaiaCookieManagerService::Build(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  FakeGaiaCookieManagerService* service = new FakeGaiaCookieManagerService(
+  return make_scoped_ptr(new FakeGaiaCookieManagerService(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       GaiaConstants::kChromeSource,
-      ChromeSigninClientFactory::GetForProfile(profile));
-  return service;
+      ChromeSigninClientFactory::GetForProfile(profile)));
 }

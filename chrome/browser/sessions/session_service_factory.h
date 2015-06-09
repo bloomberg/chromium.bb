@@ -44,10 +44,11 @@ class SessionServiceFactory : public BrowserContextKeyedServiceFactory {
 #if defined(UNIT_TEST)
   // For test use: force setting of the session service for a given profile.
   // This will delete a previous session service for this profile if it exists.
-  static void SetForTestProfile(Profile* profile, SessionService* service) {
+  static void SetForTestProfile(Profile* profile,
+                                scoped_ptr<SessionService> service) {
     GetInstance()->BrowserContextShutdown(profile);
     GetInstance()->BrowserContextDestroyed(profile);
-    GetInstance()->Associate(profile, service);
+    GetInstance()->Associate(profile, service.Pass());
   }
 #endif
 

@@ -195,12 +195,13 @@ std::string TestingWebHistoryService::GetExpectedAudioHistoryValue() {
   return "false";
 }
 
-static KeyedService* BuildWebHistoryService(content::BrowserContext* context) {
+static scoped_ptr<KeyedService> BuildWebHistoryService(
+    content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return new TestingWebHistoryService(
+  return make_scoped_ptr(new TestingWebHistoryService(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile),
-      profile->GetRequestContext());
+      profile->GetRequestContext()));
 }
 
 }  // namespace

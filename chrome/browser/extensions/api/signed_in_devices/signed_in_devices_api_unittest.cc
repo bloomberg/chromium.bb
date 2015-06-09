@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/guid.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -144,9 +145,10 @@ class ProfileSyncServiceMockForExtensionTests:
   MOCK_CONST_METHOD0(GetDeviceInfoTracker, DeviceInfoTracker*());
 };
 
-KeyedService* CreateProfileSyncServiceMock(content::BrowserContext* profile) {
-  return new ProfileSyncServiceMockForExtensionTests(
-      Profile::FromBrowserContext(profile));
+scoped_ptr<KeyedService> CreateProfileSyncServiceMock(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(new ProfileSyncServiceMockForExtensionTests(
+      Profile::FromBrowserContext(context)));
 }
 
 class ExtensionSignedInDevicesTest : public ExtensionApiUnittest {

@@ -32,15 +32,15 @@ AutocompleteClassifierFactory* AutocompleteClassifierFactory::GetInstance() {
 }
 
 // static
-KeyedService* AutocompleteClassifierFactory::BuildInstanceFor(
+scoped_ptr<KeyedService> AutocompleteClassifierFactory::BuildInstanceFor(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  return new AutocompleteClassifier(
+  return make_scoped_ptr(new AutocompleteClassifier(
       make_scoped_ptr(new AutocompleteController(
           profile, TemplateURLServiceFactory::GetForProfile(profile), NULL,
           AutocompleteClassifier::kDefaultOmniboxProviders)),
       scoped_ptr<AutocompleteSchemeClassifier>(
-          new ChromeAutocompleteSchemeClassifier(profile)));
+          new ChromeAutocompleteSchemeClassifier(profile))));
 }
 
 AutocompleteClassifierFactory::AutocompleteClassifierFactory()
@@ -72,5 +72,5 @@ bool AutocompleteClassifierFactory::ServiceIsNULLWhileTesting() const {
 
 KeyedService* AutocompleteClassifierFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return BuildInstanceFor(static_cast<Profile*>(profile));
+  return BuildInstanceFor(static_cast<Profile*>(profile)).release();
 }

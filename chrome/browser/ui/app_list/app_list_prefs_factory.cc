@@ -27,8 +27,8 @@ AppListPrefsFactory* AppListPrefsFactory::GetInstance() {
 
 void AppListPrefsFactory::SetInstanceForTesting(
     content::BrowserContext* context,
-    AppListPrefs* prefs) {
-  Associate(context, prefs);
+    scoped_ptr<AppListPrefs> prefs) {
+  Associate(context, prefs.Pass());
 }
 
 AppListPrefsFactory::AppListPrefsFactory()

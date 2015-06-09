@@ -7,6 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/onc/onc_constants.h"
@@ -276,10 +277,10 @@ class NetworkingPrivateApiTest : public ExtensionApiTest {
     }
   }
 
-  static KeyedService* GetNetworkingPrivateDelegate(
+  static scoped_ptr<KeyedService> GetNetworkingPrivateDelegate(
       content::BrowserContext* profile) {
     CHECK(s_test_delegate_);
-    return s_test_delegate_;
+    return make_scoped_ptr(s_test_delegate_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

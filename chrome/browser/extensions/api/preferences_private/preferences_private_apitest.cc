@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/values.h"
@@ -54,9 +55,10 @@ class FakeProfileSyncService : public ProfileSyncService {
 
   ~FakeProfileSyncService() override {}
 
-  static KeyedService* BuildFakeProfileSyncService(
+  static scoped_ptr<KeyedService> BuildFakeProfileSyncService(
       content::BrowserContext* context) {
-    return new FakeProfileSyncService(static_cast<Profile*>(context));
+    return make_scoped_ptr(
+        new FakeProfileSyncService(static_cast<Profile*>(context)));
   }
 
   void set_sync_initialized(bool sync_initialized) {

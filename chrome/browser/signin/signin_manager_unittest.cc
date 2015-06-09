@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
@@ -48,16 +49,15 @@
 
 namespace {
 
-KeyedService* SigninManagerBuild(content::BrowserContext* context) {
-  SigninManager* service = NULL;
+scoped_ptr<KeyedService> SigninManagerBuild(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
-  service = new SigninManager(
+  scoped_ptr<SigninManager> service(new SigninManager(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       AccountTrackerServiceFactory::GetForProfile(profile),
-      GaiaCookieManagerServiceFactory::GetForProfile(profile));
+      GaiaCookieManagerServiceFactory::GetForProfile(profile)));
   service->Initialize(NULL);
-  return service;
+  return service.Pass();
 }
 
 class TestSigninManagerObserver : public SigninManagerBase::Observer {

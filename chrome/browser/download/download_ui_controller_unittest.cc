@@ -135,7 +135,7 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
   };
 
   // Constructs and returns a TestDownloadService.
-  static KeyedService* TestingDownloadServiceFactory(
+  static scoped_ptr<KeyedService> TestingDownloadServiceFactory(
       content::BrowserContext* browser_context);
 
   scoped_ptr<MockDownloadManager> manager_;
@@ -148,9 +148,11 @@ class DownloadUIControllerTest : public ChromeRenderViewHostTestHarness {
 };
 
 // static
-KeyedService* DownloadUIControllerTest::TestingDownloadServiceFactory(
+scoped_ptr<KeyedService>
+DownloadUIControllerTest::TestingDownloadServiceFactory(
     content::BrowserContext* browser_context) {
-  return new TestDownloadService(Profile::FromBrowserContext(browser_context));
+  return make_scoped_ptr(
+      new TestDownloadService(Profile::FromBrowserContext(browser_context)));
 }
 
 DownloadUIControllerTest::DownloadUIControllerTest()

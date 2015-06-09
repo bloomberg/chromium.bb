@@ -26,18 +26,19 @@ FakeSigninManagerBase::~FakeSigninManagerBase() {
 }
 
 // static
-KeyedService* FakeSigninManagerBase::Build(content::BrowserContext* context) {
-  SigninManagerBase* manager;
+scoped_ptr<KeyedService> FakeSigninManagerBase::Build(
+    content::BrowserContext* context) {
+  scoped_ptr<SigninManagerBase> manager;
   Profile* profile = static_cast<Profile*>(context);
 #if defined(OS_CHROMEOS)
-  manager = new FakeSigninManagerBase(profile);
+  manager.reset(new FakeSigninManagerBase(profile));
 #else
-  manager = new FakeSigninManager(profile);
+  manager.reset(new FakeSigninManager(profile));
 #endif
   manager->Initialize(NULL);
   SigninManagerFactory::GetInstance()
-      ->NotifyObserversOfSigninManagerCreationForTesting(manager);
-  return manager;
+      ->NotifyObserversOfSigninManagerCreationForTesting(manager.get());
+  return manager.Pass();
 }
 
 #if !defined (OS_CHROMEOS)

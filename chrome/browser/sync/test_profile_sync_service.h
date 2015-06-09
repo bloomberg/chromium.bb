@@ -97,7 +97,8 @@ class TestProfileSyncService : public ProfileSyncService {
   using ProfileSyncService::NotifyObservers;
 
  protected:
-  static KeyedService* TestFactoryFunction(content::BrowserContext* profile);
+  static scoped_ptr<KeyedService> TestFactoryFunction(
+      content::BrowserContext* profile);
 
   // Return NULL handle to use in backend initialization to avoid receiving
   // js messages on UI loop when it's being destroyed, which are not deleted

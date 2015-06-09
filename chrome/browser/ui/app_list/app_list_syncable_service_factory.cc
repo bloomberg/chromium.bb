@@ -35,7 +35,7 @@ AppListSyncableServiceFactory* AppListSyncableServiceFactory::GetInstance() {
 }
 
 // static
-KeyedService* AppListSyncableServiceFactory::BuildInstanceFor(
+scoped_ptr<KeyedService> AppListSyncableServiceFactory::BuildInstanceFor(
     content::BrowserContext* browser_context) {
   Profile* profile = static_cast<Profile*>(browser_context);
 #if defined(OS_CHROMEOS)
@@ -44,8 +44,8 @@ KeyedService* AppListSyncableServiceFactory::BuildInstanceFor(
 #endif
   VLOG(1) << "BuildInstanceFor: " << profile->GetDebugName()
           << " (" << profile << ")";
-  return new AppListSyncableService(profile,
-                                    extensions::ExtensionSystem::Get(profile));
+  return make_scoped_ptr(new AppListSyncableService(
+      profile, extensions::ExtensionSystem::Get(profile)));
 }
 
 AppListSyncableServiceFactory::AppListSyncableServiceFactory()
@@ -70,7 +70,7 @@ AppListSyncableServiceFactory::~AppListSyncableServiceFactory() {
 
 KeyedService* AppListSyncableServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
-  return BuildInstanceFor(static_cast<Profile*>(browser_context));
+  return BuildInstanceFor(static_cast<Profile*>(browser_context)).release();
 }
 
 void AppListSyncableServiceFactory::RegisterProfilePrefs(

@@ -19,20 +19,14 @@
 
 namespace extensions {
 
-namespace {
-KeyedService* CreateProfileSyncServiceMock(content::BrowserContext* profile) {
-  return NULL;
-}
-}  // namespace
-
 // Adds a listener and removes it.
 TEST(SignedInDevicesManager, UpdateListener) {
   content::TestBrowserThreadBundle thread_bundle;
   scoped_ptr<TestingProfile> profile(new TestingProfile());
   SigninManagerFactory::GetForProfile(profile.get())->
       SetAuthenticatedAccountInfo("gaia_id", "foo");
-  ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
-      profile.get(), CreateProfileSyncServiceMock);
+  ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(profile.get(),
+                                                              nullptr);
   SignedInDevicesManager manager(profile.get());
 
   EventListenerInfo info(api::signed_in_devices::OnDeviceInfoChange::kEventName,

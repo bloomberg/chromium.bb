@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/instance_id/instance_id_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -22,11 +23,12 @@ namespace extensions {
 
 namespace {
 
-KeyedService* BuildFakeGCMProfileService(content::BrowserContext* context) {
-  gcm::FakeGCMProfileService* service =
-      new gcm::FakeGCMProfileService(Profile::FromBrowserContext(context));
+scoped_ptr<KeyedService> BuildFakeGCMProfileService(
+    content::BrowserContext* context) {
+  scoped_ptr<gcm::FakeGCMProfileService> service(
+      new gcm::FakeGCMProfileService(Profile::FromBrowserContext(context)));
   service->SetDriverForTesting(new instance_id::FakeGCMDriverForInstanceID());
-  return service;
+  return service.Pass();
 }
 
 }  // namespace

@@ -121,16 +121,16 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   void TearDown() override { sync_->RemoveObserver(&observer_); }
 
-  static KeyedService* BuildService(content::BrowserContext* browser_context) {
+  static scoped_ptr<KeyedService> BuildService(
+      content::BrowserContext* browser_context) {
     Profile* profile = static_cast<Profile*>(browser_context);
-    return new TestProfileSyncServiceNoBackup(
+    return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
         scoped_ptr<ProfileSyncComponentsFactory>(
             new ProfileSyncComponentsFactoryMock()),
-        profile,
-        make_scoped_ptr(new SupervisedUserSigninManagerWrapper(
-            profile, SigninManagerFactory::GetForProfile(profile))),
+        profile, make_scoped_ptr(new SupervisedUserSigninManagerWrapper(
+                     profile, SigninManagerFactory::GetForProfile(profile))),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-        browser_sync::MANUAL_START);
+        browser_sync::MANUAL_START));
   }
 
   void CreateSyncService() {
@@ -217,7 +217,8 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
     sync_->AddObserver(&observer_);
   }
 
-  static KeyedService* BuildCrosService(content::BrowserContext* context) {
+  static scoped_ptr<KeyedService> BuildCrosService(
+      content::BrowserContext* context) {
     Profile* profile = static_cast<Profile*>(context);
     FakeSigninManagerForTesting* signin =
         static_cast<FakeSigninManagerForTesting*>(
@@ -226,14 +227,12 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
     ProfileOAuth2TokenService* oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     EXPECT_TRUE(signin->IsAuthenticated());
-    return new TestProfileSyncServiceNoBackup(
+    return make_scoped_ptr(new TestProfileSyncServiceNoBackup(
         scoped_ptr<ProfileSyncComponentsFactory>(
             new ProfileSyncComponentsFactoryMock()),
-        profile,
-        make_scoped_ptr(new SupervisedUserSigninManagerWrapper(profile,
-                                                               signin)),
-        oauth2_token_service,
-        browser_sync::AUTO_START);
+        profile, make_scoped_ptr(
+                     new SupervisedUserSigninManagerWrapper(profile, signin)),
+        oauth2_token_service, browser_sync::AUTO_START));
   }
 };
 

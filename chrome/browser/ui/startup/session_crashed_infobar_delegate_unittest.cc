@@ -51,9 +51,9 @@ class SessionCrashedInfoBarDelegateUnitTest : public BrowserWithTestWindowTest {
 TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
   SessionServiceFactory::SetForTestProfile(
       browser()->profile(),
-      static_cast<SessionService*>(
+      make_scoped_ptr(static_cast<SessionService*>(
           SessionServiceFactory::GetInstance()->BuildServiceInstanceFor(
-              browser()->profile())));
+              browser()->profile()))));
 
   // Create a browser which we can close during the test.
   Browser::CreateParams params(browser()->profile(),

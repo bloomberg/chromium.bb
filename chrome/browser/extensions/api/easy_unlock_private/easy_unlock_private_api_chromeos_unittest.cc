@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
@@ -419,13 +421,14 @@ struct AutoPairingResult {
 };
 
 // Test factory to register EasyUnlockService.
-KeyedService* BuildTestEasyUnlockService(content::BrowserContext* context) {
-  EasyUnlockService* service =
-      new EasyUnlockServiceRegular(static_cast<Profile*>(context));
+scoped_ptr<KeyedService> BuildTestEasyUnlockService(
+    content::BrowserContext* context) {
+  scoped_ptr<EasyUnlockServiceRegular> service(
+      new EasyUnlockServiceRegular(Profile::FromBrowserContext(context)));
   service->Initialize(
       EasyUnlockAppManager::Create(extensions::ExtensionSystem::Get(context),
-                                   -1 /* manifest id*/, base::FilePath()));
-  return service;
+                                   -1 /* manifest id */, base::FilePath()));
+  return service.Pass();
 }
 
 // A fake EventRouter that logs event it dispatches for testing.
@@ -456,11 +459,12 @@ class FakeEventRouter : public extensions::EventRouter {
 };
 
 // FakeEventRouter factory function
-KeyedService* FakeEventRouterFactoryFunction(content::BrowserContext* profile) {
+scoped_ptr<KeyedService> FakeEventRouterFactoryFunction(
+    content::BrowserContext* profile) {
   scoped_ptr<extensions::TestExtensionPrefs> extension_prefs(
       new extensions::TestExtensionPrefs(base::ThreadTaskRunnerHandle::Get()));
-  return new FakeEventRouter(static_cast<Profile*>(profile),
-                             extension_prefs.Pass());
+  return make_scoped_ptr(new FakeEventRouter(static_cast<Profile*>(profile),
+                                             extension_prefs.Pass()));
 }
 
 TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {

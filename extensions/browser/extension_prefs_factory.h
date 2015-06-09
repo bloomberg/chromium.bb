@@ -19,8 +19,8 @@ class ExtensionPrefsFactory : public BrowserContextKeyedServiceFactory {
 
   static ExtensionPrefsFactory* GetInstance();
 
-  void SetInstanceForTesting(
-      content::BrowserContext* context, ExtensionPrefs* prefs);
+  void SetInstanceForTesting(content::BrowserContext* context,
+                             scoped_ptr<ExtensionPrefs> prefs);
 
  private:
   friend struct DefaultSingletonTraits<ExtensionPrefsFactory>;

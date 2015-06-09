@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sessions/persistent_tab_restore_service.h"
@@ -140,11 +141,10 @@ class RecentTabsSubMenuModelTest
     content::RunAllBlockingPoolTasksUntilIdle();
   }
 
-  static KeyedService* GetTabRestoreService(
+  static scoped_ptr<KeyedService> GetTabRestoreService(
       content::BrowserContext* browser_context) {
-    // Ownership is tranfered to the profile.
-    return new PersistentTabRestoreService(
-        Profile::FromBrowserContext(browser_context), NULL);
+    return make_scoped_ptr(new PersistentTabRestoreService(
+        Profile::FromBrowserContext(browser_context), NULL));
   }
 
   browser_sync::OpenTabsUIDelegate* GetOpenTabsDelegate() {
@@ -258,7 +258,8 @@ TEST_F(RecentTabsSubMenuModelTest,
   // Create a SessionService for the profile (profile owns the service) and add
   // a window with a tab to this session.
   SessionService* session_service = new SessionService(profile());
-  SessionServiceFactory::SetForTestProfile(profile(), session_service);
+  SessionServiceFactory::SetForTestProfile(profile(),
+                                           make_scoped_ptr(session_service));
   SessionID tab_id;
   SessionID window_id;
   session_service->SetWindowType(window_id,

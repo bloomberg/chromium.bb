@@ -6,6 +6,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -83,12 +84,12 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
         "epcifkihnkjgphfkloaaleeakhpmgdmn");
   }
 
-  static KeyedService* CreateNetworkingPrivateServiceClient(
-      content::BrowserContext* profile) {
+  static scoped_ptr<KeyedService> CreateNetworkingPrivateServiceClient(
+      content::BrowserContext* context) {
     scoped_ptr<wifi::FakeWiFiService> wifi_service(new wifi::FakeWiFiService());
     scoped_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
-    return new NetworkingPrivateServiceClient(wifi_service.Pass(),
-                                              crypto_verify.Pass());
+    return scoped_ptr<KeyedService>(new NetworkingPrivateServiceClient(
+        wifi_service.Pass(), crypto_verify.Pass()));
   }
 
   void SetUpOnMainThread() override {

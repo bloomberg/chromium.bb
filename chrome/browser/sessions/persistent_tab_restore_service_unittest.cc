@@ -146,9 +146,8 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   // way of AddWindowWithOneTabToSessionService. If |pinned| is true, the
   // tab is marked as pinned in the session service.
   void CreateSessionServiceWithOneWindow(bool pinned) {
-    // The profile takes ownership of this.
-    SessionService* session_service = new SessionService(profile());
-    SessionServiceFactory::SetForTestProfile(profile(), session_service);
+    scoped_ptr<SessionService> session_service(new SessionService(profile()));
+    SessionServiceFactory::SetForTestProfile(profile(), session_service.Pass());
 
     AddWindowWithOneTabToSessionService(pinned);
 

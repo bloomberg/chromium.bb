@@ -44,7 +44,7 @@ void TestExtensionSystem::Shutdown() {
     extension_service_->Shutdown();
 }
 
-ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
+scoped_ptr<ExtensionPrefs> TestExtensionSystem::CreateExtensionPrefs(
     const base::CommandLine* command_line,
     const base::FilePath& install_directory) {
   bool extensions_disabled =
@@ -55,11 +55,11 @@ ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
   // are not reflected in the pref service. One would need to
   // inject a new ExtensionPrefStore(extension_pref_value_map, false).
 
-  return ExtensionPrefs::Create(
+  return make_scoped_ptr(ExtensionPrefs::Create(
       profile_->GetPrefs(), install_directory,
       ExtensionPrefValueMapFactory::GetForBrowserContext(profile_),
       ExtensionsBrowserClient::Get()->CreateAppSorting().Pass(),
-      extensions_disabled, std::vector<ExtensionPrefsObserver*>());
+      extensions_disabled, std::vector<ExtensionPrefsObserver*>()));
 }
 
 ExtensionService* TestExtensionSystem::CreateExtensionService(
@@ -137,8 +137,10 @@ scoped_ptr<ExtensionSet> TestExtensionSystem::GetDependentExtensions(
 }
 
 // static
-KeyedService* TestExtensionSystem::Build(content::BrowserContext* profile) {
-  return new TestExtensionSystem(static_cast<Profile*>(profile));
+scoped_ptr<KeyedService> TestExtensionSystem::Build(
+    content::BrowserContext* profile) {
+  return make_scoped_ptr(
+      new TestExtensionSystem(static_cast<Profile*>(profile)));
 }
 
 }  // namespace extensions

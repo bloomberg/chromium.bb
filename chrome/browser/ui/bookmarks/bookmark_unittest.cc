@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -57,12 +58,12 @@ class BookmarkInstantExtendedTest : public BrowserWithTestWindowTest {
   }
 
  private:
-  static KeyedService* CreateTemplateURLService(
+  static scoped_ptr<KeyedService> CreateTemplateURLService(
       content::BrowserContext* profile) {
-    return new TemplateURLService(
+    return make_scoped_ptr(new TemplateURLService(
         static_cast<Profile*>(profile)->GetPrefs(),
         make_scoped_ptr(new SearchTermsData), NULL,
-        scoped_ptr<TemplateURLServiceClient>(), NULL, NULL, base::Closure());
+        scoped_ptr<TemplateURLServiceClient>(), NULL, NULL, base::Closure()));
   }
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkInstantExtendedTest);

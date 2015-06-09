@@ -744,7 +744,7 @@ struct TestingDomainReliabilityServiceFactoryUserData
 const void* TestingDomainReliabilityServiceFactoryUserData::kKey =
     &TestingDomainReliabilityServiceFactoryUserData::kKey;
 
-KeyedService* TestingDomainReliabilityServiceFactoryFunction(
+scoped_ptr<KeyedService> TestingDomainReliabilityServiceFactoryFunction(
     content::BrowserContext* context) {
   const void* kKey = TestingDomainReliabilityServiceFactoryUserData::kKey;
 
@@ -756,7 +756,7 @@ KeyedService* TestingDomainReliabilityServiceFactoryFunction(
   EXPECT_FALSE(data->attached);
 
   data->attached = true;
-  return data->service;
+  return make_scoped_ptr(data->service);
 }
 
 class ClearDomainReliabilityTester {

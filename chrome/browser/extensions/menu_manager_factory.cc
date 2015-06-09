@@ -26,9 +26,9 @@ MenuManagerFactory* MenuManagerFactory::GetInstance() {
 }
 
 // static
-KeyedService* MenuManagerFactory::BuildServiceInstanceForTesting(
+scoped_ptr<KeyedService> MenuManagerFactory::BuildServiceInstanceForTesting(
     content::BrowserContext* context) {
-  return GetInstance()->BuildServiceInstanceFor(context);
+  return make_scoped_ptr(GetInstance()->BuildServiceInstanceFor(context));
 }
 
 MenuManagerFactory::MenuManagerFactory()

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
@@ -95,8 +96,9 @@ class SigninManagerFake : public FakeSigninManager {
     SignOut(signin_metrics::SIGNOUT_TEST);
   }
 
-  static KeyedService* Build(content::BrowserContext* profile) {
-    return new SigninManagerFake(static_cast<Profile*>(profile));
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* profile) {
+    return make_scoped_ptr(
+        new SigninManagerFake(static_cast<Profile*>(profile)));
   }
 };
 

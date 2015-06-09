@@ -7,19 +7,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/signin/core/browser/test_signin_client.h"
 
-class KeyedService;
-
-namespace content {
-class BrowserContext;
-}
-
 namespace signin {
 
-KeyedService* BuildTestSigninClient(
+scoped_ptr<KeyedService> BuildTestSigninClient(
     content::BrowserContext* context) {
-  TestSigninClient* test_signin_client =
-      new TestSigninClient(static_cast<Profile*>(context)->GetPrefs());
-  return test_signin_client;
+  return make_scoped_ptr(
+      new TestSigninClient(static_cast<Profile*>(context)->GetPrefs()));
 }
 
 }  // namespace signin

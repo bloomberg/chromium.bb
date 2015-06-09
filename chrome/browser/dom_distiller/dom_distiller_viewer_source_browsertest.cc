@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/guid.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -93,22 +94,19 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableDomDistiller);
   }
 
-  static KeyedService* Build(content::BrowserContext* context) {
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* context) {
     FakeDB<ArticleEntry>* fake_db = new FakeDB<ArticleEntry>(database_model_);
     distiller_factory_ = new MockDistillerFactory();
     MockDistillerPageFactory* distiller_page_factory_ =
         new MockDistillerPageFactory();
-    DomDistillerContextKeyedService* service =
+    scoped_ptr<DomDistillerContextKeyedService> service(
         new DomDistillerContextKeyedService(
-            scoped_ptr<DomDistillerStoreInterface>(
-                CreateStoreWithFakeDB(fake_db,
-                                      FakeDB<ArticleEntry>::EntryMap())),
+            scoped_ptr<DomDistillerStoreInterface>(CreateStoreWithFakeDB(
+                fake_db, FakeDB<ArticleEntry>::EntryMap())),
             scoped_ptr<DistillerFactory>(distiller_factory_),
             scoped_ptr<DistillerPageFactory>(distiller_page_factory_),
-            scoped_ptr<DistilledPagePrefs>(
-                new DistilledPagePrefs(
-                      Profile::FromBrowserContext(
-                          context)->GetPrefs())));
+            scoped_ptr<DistilledPagePrefs>(new DistilledPagePrefs(
+                Profile::FromBrowserContext(context)->GetPrefs()))));
     fake_db->InitCallback(true);
     fake_db->LoadCallback(true);
     if (expect_distillation_) {
@@ -123,7 +121,7 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
       EXPECT_CALL(*distiller_page_factory_, CreateDistillerPageImpl())
           .WillOnce(testing::Return(distiller_page));
     }
-    return service;
+    return service.Pass();
   }
 
   void ViewSingleDistilledPage(const GURL& url,

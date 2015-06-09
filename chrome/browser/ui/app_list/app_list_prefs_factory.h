@@ -20,7 +20,7 @@ class AppListPrefsFactory : public BrowserContextKeyedServiceFactory {
   static AppListPrefsFactory* GetInstance();
 
   void SetInstanceForTesting(content::BrowserContext* context,
-                             AppListPrefs* prefs);
+                             scoped_ptr<AppListPrefs> prefs);
 
  private:
   friend struct DefaultSingletonTraits<AppListPrefsFactory>;

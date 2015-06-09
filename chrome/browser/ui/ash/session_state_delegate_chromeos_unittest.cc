@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
@@ -33,11 +34,11 @@ const char* kUser = "user@test.com";
 // we've ensured the profile has been shut down.
 policy::PolicyCertVerifier* g_policy_cert_verifier_for_factory = NULL;
 
-KeyedService* CreateTestPolicyCertService(content::BrowserContext* context) {
+scoped_ptr<KeyedService> CreateTestPolicyCertService(
+    content::BrowserContext* context) {
   return policy::PolicyCertService::CreateForTesting(
-             kUser,
-             g_policy_cert_verifier_for_factory,
-             user_manager::UserManager::Get()).release();
+      kUser, g_policy_cert_verifier_for_factory,
+      user_manager::UserManager::Get());
 }
 
 }  // namespace

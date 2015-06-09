@@ -6,6 +6,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
@@ -483,8 +484,9 @@ class MockEventRouter : public EventRouter {
 };
 
 // MockEventRouter factory function
-KeyedService* MockEventRouterFactoryFunction(content::BrowserContext* profile) {
-  return new MockEventRouter(static_cast<Profile*>(profile));
+scoped_ptr<KeyedService> MockEventRouterFactoryFunction(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(new MockEventRouter(static_cast<Profile*>(context)));
 }
 
 }  // namespace

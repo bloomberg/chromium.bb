@@ -6,6 +6,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -107,8 +108,8 @@ class FakeWebDataService : public AutofillWebDataService {
 
 class MockWebDataServiceWrapperSyncable : public MockWebDataServiceWrapper {
  public:
-  static KeyedService* Build(content::BrowserContext* profile) {
-    return new MockWebDataServiceWrapperSyncable();
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* profile) {
+    return make_scoped_ptr(new MockWebDataServiceWrapperSyncable());
   }
 
   MockWebDataServiceWrapperSyncable()

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_number_conversions.h"
@@ -53,8 +54,9 @@ syncer::SyncDataList GetAllSyncDataNoLimit(
 
 }  // namespace
 
-static KeyedService* BuildSpellcheckService(content::BrowserContext* profile) {
-  return new SpellcheckService(static_cast<Profile*>(profile));
+static scoped_ptr<KeyedService> BuildSpellcheckService(
+    content::BrowserContext* profile) {
+  return make_scoped_ptr(new SpellcheckService(static_cast<Profile*>(profile)));
 }
 
 class SpellcheckCustomDictionaryTest : public testing::Test {

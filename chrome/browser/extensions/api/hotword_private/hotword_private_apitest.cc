@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -98,8 +99,9 @@ class MockHotwordService : public HotwordService {
     service_available_ = available;
   }
 
-  static KeyedService* Build(content::BrowserContext* profile) {
-    return new MockHotwordService(static_cast<Profile*>(profile));
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* profile) {
+    return make_scoped_ptr(
+        new MockHotwordService(static_cast<Profile*>(profile)));
   }
 
   LaunchMode GetHotwordAudioVerificationLaunchMode() override {

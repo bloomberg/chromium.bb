@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 #define CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SYSTEM_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
@@ -41,8 +42,9 @@ class TestExtensionSystem : public ExtensionSystem {
   // Creates an ExtensionPrefs with the testing profile and returns it.
   // Useful for tests that need to modify prefs before creating the
   // ExtensionService.
-  ExtensionPrefs* CreateExtensionPrefs(const base::CommandLine* command_line,
-                                       const base::FilePath& install_directory);
+  scoped_ptr<ExtensionPrefs> CreateExtensionPrefs(
+      const base::CommandLine* command_line,
+      const base::FilePath& install_directory);
 
   // Creates an ExtensionService initialized with the testing profile and
   // returns it, and creates ExtensionPrefs if it hasn't been created yet.
@@ -74,7 +76,7 @@ class TestExtensionSystem : public ExtensionSystem {
   void SetReady() { ready_.Signal(); }
 
   // Factory method for tests to use with SetTestingProfile.
-  static KeyedService* Build(content::BrowserContext* profile);
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* profile);
 
  protected:
   Profile* profile_;

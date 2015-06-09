@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_TRACKER_SERVICE_H_
 #define CHROME_BROWSER_SIGNIN_FAKE_ACCOUNT_TRACKER_SERVICE_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 
 class KeyedService;
@@ -18,7 +19,7 @@ class BrowserContext;
 // to prevent AccountTrackerService from sending network requests.
 class FakeAccountTrackerService : public AccountTrackerService {
  public:
-  static KeyedService* Build(content::BrowserContext* context);
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* context);
 
   void FakeUserInfoFetchSuccess(const std::string& email,
                                 const std::string& gaia,

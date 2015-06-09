@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
@@ -18,8 +19,9 @@
 
 namespace {
 
-KeyedService* BuildPinnedTabService(content::BrowserContext* profile) {
-  return new PinnedTabService(static_cast<Profile*>(profile));
+scoped_ptr<KeyedService> BuildPinnedTabService(
+    content::BrowserContext* profile) {
+  return make_scoped_ptr(new PinnedTabService(static_cast<Profile*>(profile)));
 }
 
 PinnedTabService* BuildForProfile(Profile* profile) {

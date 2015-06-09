@@ -35,7 +35,7 @@ TemplateURLServiceFactory* TemplateURLServiceFactory::GetInstance() {
 }
 
 // static
-KeyedService* TemplateURLServiceFactory::BuildInstanceFor(
+scoped_ptr<KeyedService> TemplateURLServiceFactory::BuildInstanceFor(
     content::BrowserContext* context) {
   base::Closure dsp_change_callback;
 #if defined(ENABLE_RLZ)
@@ -46,7 +46,7 @@ KeyedService* TemplateURLServiceFactory::BuildInstanceFor(
                  rlz_lib::SET_TO_GOOGLE);
 #endif
   Profile* profile = static_cast<Profile*>(context);
-  return new TemplateURLService(
+  return make_scoped_ptr(new TemplateURLService(
       profile->GetPrefs(),
       scoped_ptr<SearchTermsData>(new UIThreadSearchTermsData(profile)),
       WebDataServiceFactory::GetKeywordWebDataForProfile(
@@ -55,8 +55,7 @@ KeyedService* TemplateURLServiceFactory::BuildInstanceFor(
           HistoryServiceFactory::GetForProfile(
               profile, ServiceAccessType::EXPLICIT_ACCESS))),
       GoogleURLTrackerFactory::GetForProfile(profile),
-      g_browser_process->rappor_service(),
-      dsp_change_callback);
+      g_browser_process->rappor_service(), dsp_change_callback));
 }
 
 TemplateURLServiceFactory::TemplateURLServiceFactory()
@@ -72,7 +71,7 @@ TemplateURLServiceFactory::~TemplateURLServiceFactory() {}
 
 KeyedService* TemplateURLServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return BuildInstanceFor(static_cast<Profile*>(profile));
+  return BuildInstanceFor(static_cast<Profile*>(profile)).release();
 }
 
 void TemplateURLServiceFactory::RegisterProfilePrefs(

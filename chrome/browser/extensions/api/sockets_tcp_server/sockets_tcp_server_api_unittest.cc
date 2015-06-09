@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
@@ -18,7 +19,7 @@
 namespace extensions {
 namespace core_api {
 
-static KeyedService* ApiResourceManagerTestFactory(
+static scoped_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
   content::BrowserThread::ID id;
   CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
@@ -26,7 +27,7 @@ static KeyedService* ApiResourceManagerTestFactory(
       ResumableTCPSocket>::CreateApiResourceManagerForTest(context, id);
 }
 
-static KeyedService* ApiResourceManagerTestServerFactory(
+static scoped_ptr<KeyedService> ApiResourceManagerTestServerFactory(
     content::BrowserContext* context) {
   content::BrowserThread::ID id;
   CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));

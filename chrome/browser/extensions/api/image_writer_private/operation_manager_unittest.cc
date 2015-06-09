@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
@@ -35,8 +36,9 @@ class FakeEventRouter : public extensions::EventRouter {
 };
 
 // FakeEventRouter factory function
-KeyedService* FakeEventRouterFactoryFunction(content::BrowserContext* context) {
-  return new FakeEventRouter(static_cast<Profile*>(context));
+scoped_ptr<KeyedService> FakeEventRouterFactoryFunction(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(new FakeEventRouter(static_cast<Profile*>(context)));
 }
 
 namespace {

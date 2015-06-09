@@ -65,10 +65,10 @@ StorageFrontend* StorageFrontend::Get(BrowserContext* context) {
 }
 
 // static
-StorageFrontend* StorageFrontend::CreateForTesting(
+scoped_ptr<StorageFrontend> StorageFrontend::CreateForTesting(
     const scoped_refptr<SettingsStorageFactory>& storage_factory,
     BrowserContext* context) {
-  return new StorageFrontend(storage_factory, context);
+  return make_scoped_ptr(new StorageFrontend(storage_factory, context));
 }
 
 StorageFrontend::StorageFrontend(BrowserContext* context)

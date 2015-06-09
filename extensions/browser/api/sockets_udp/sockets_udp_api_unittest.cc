@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/socket/socket.h"
@@ -14,7 +15,7 @@
 namespace extensions {
 namespace core_api {
 
-static KeyedService* ApiResourceManagerTestFactory(
+static scoped_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
   content::BrowserThread::ID id;
   CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));

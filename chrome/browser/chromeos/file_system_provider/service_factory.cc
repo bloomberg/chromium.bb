@@ -42,9 +42,8 @@ ServiceFactory::~ServiceFactory() {}
 
 KeyedService* ServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new Service(
-      Profile::FromBrowserContext(profile),
-      extensions::ExtensionRegistry::Get(Profile::FromBrowserContext(profile)));
+  return new Service(Profile::FromBrowserContext(profile),
+                     extensions::ExtensionRegistry::Get(profile));
 }
 
 bool ServiceFactory::ServiceIsCreatedWithBrowserContext() const { return true; }

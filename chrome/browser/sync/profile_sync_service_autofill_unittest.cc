@@ -337,10 +337,10 @@ class WebDataServiceFake : public AutofillWebDataService {
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceFake);
 };
 
-KeyedService* BuildMockWebDataServiceWrapper(content::BrowserContext* profile) {
-  return new MockWebDataServiceWrapper(
-      new WebDataServiceFake(),
-      new TokenWebDataServiceFake());
+scoped_ptr<KeyedService> BuildMockWebDataServiceWrapper(
+    content::BrowserContext* profile) {
+  return make_scoped_ptr(new MockWebDataServiceWrapper(
+      new WebDataServiceFake(), new TokenWebDataServiceFake()));
 }
 
 ACTION_P(MakeAutocompleteSyncComponents, wds) {
@@ -425,8 +425,8 @@ class MockPersonalDataManager : public PersonalDataManager {
   MOCK_METHOD0(LoadCreditCards, void());
   MOCK_METHOD0(Refresh, void());
 
-  static KeyedService* Build(content::BrowserContext* profile) {
-    return new MockPersonalDataManager();
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* profile) {
+    return make_scoped_ptr(new MockPersonalDataManager());
   }
 };
 

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -48,8 +49,9 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
 
   // Helper routine to be used in conjunction with
   // BrowserContextKeyedServiceFactory::SetTestingFactory().
-  static KeyedService* Build(content::BrowserContext* profile) {
-    return new OneClickTestProfileSyncService(static_cast<Profile*>(profile));
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* profile) {
+    return make_scoped_ptr(
+        new OneClickTestProfileSyncService(static_cast<Profile*>(profile)));
   }
 
   bool FirstSetupInProgress() const override {
@@ -103,8 +105,8 @@ class TestOneClickSigninSyncObserver : public OneClickSigninSyncObserver {
 };
 
 // A trivial factory to build a null service.
-KeyedService* BuildNullService(content::BrowserContext* context) {
-  return NULL;
+scoped_ptr<KeyedService> BuildNullService(content::BrowserContext* context) {
+  return nullptr;
 }
 
 }  // namespace

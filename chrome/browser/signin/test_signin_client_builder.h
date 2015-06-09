@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SIGNIN_TEST_SIGNIN_CLIENT_BUILDER_H_
 #define CHROME_BROWSER_SIGNIN_TEST_SIGNIN_CLIENT_BUILDER_H_
 
+#include "base/memory/scoped_ptr.h"
+
 class KeyedService;
 
 namespace content {
@@ -15,7 +17,8 @@ namespace signin {
 
 // Method to be used by the |ChromeSigninClientFactory| to create a test version
 // of the SigninClient
-KeyedService* BuildTestSigninClient(content::BrowserContext* context);
+scoped_ptr<KeyedService> BuildTestSigninClient(
+    content::BrowserContext* context);
 
 }  // namespace signin
 

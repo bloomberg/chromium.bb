@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 #include "components/keyed_service/core/keyed_service_factory.h"
 
@@ -30,7 +31,8 @@ class KEYED_SERVICE_EXPORT BrowserStateKeyedServiceFactory
   // A function that supplies the instance of a KeyedService for a given
   // BrowserState. This is used primarily for testing, where we want to feed
   // a specific mock into the BSKSF system.
-  typedef KeyedService* (*TestingFactoryFunction)(web::BrowserState* context);
+  typedef scoped_ptr<KeyedService>(*TestingFactoryFunction)(
+      web::BrowserState* context);
 
   // Associates |factory| with |context| so that |factory| is used to create
   // the KeyedService when requested.  |factory| can be NULL to signal that
@@ -114,7 +116,7 @@ class KEYED_SERVICE_EXPORT BrowserStateKeyedServiceFactory
       user_prefs::PrefRegistrySyncable* registry) {}
 
   // KeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
+  scoped_ptr<KeyedService> BuildServiceInstanceFor(
       base::SupportsUserData* context) const final;
   bool IsOffTheRecord(base::SupportsUserData* context) const final;
 

@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
@@ -30,8 +31,9 @@ const char kReportFive[] = "five";
 const base::TimeDelta kRetryDelayForTest =
     base::TimeDelta::FromMilliseconds(100);
 
-KeyedService* CreateFeedbackUploaderService(content::BrowserContext* context) {
-  return new feedback::FeedbackUploaderChrome(context);
+scoped_ptr<KeyedService> CreateFeedbackUploaderService(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(new feedback::FeedbackUploaderChrome(context));
 }
 
 }  // namespace

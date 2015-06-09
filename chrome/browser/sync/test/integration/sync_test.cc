@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -142,34 +143,33 @@ void SetupNetworkCallback(
   done->Signal();
 }
 
-KeyedService* BuildFakeServerProfileInvalidationProvider(
+scoped_ptr<KeyedService> BuildFakeServerProfileInvalidationProvider(
     content::BrowserContext* context) {
-  return new invalidation::ProfileInvalidationProvider(
+  return make_scoped_ptr(new invalidation::ProfileInvalidationProvider(
       scoped_ptr<invalidation::InvalidationService>(
-          new fake_server::FakeServerInvalidationService));
+          new fake_server::FakeServerInvalidationService)));
 }
 
-KeyedService* BuildP2PProfileInvalidationProvider(
+scoped_ptr<KeyedService> BuildP2PProfileInvalidationProvider(
     content::BrowserContext* context,
     syncer::P2PNotificationTarget notification_target) {
   Profile* profile = static_cast<Profile*>(context);
-  return new invalidation::ProfileInvalidationProvider(
+  return make_scoped_ptr(new invalidation::ProfileInvalidationProvider(
       scoped_ptr<invalidation::InvalidationService>(
           new invalidation::P2PInvalidationService(
               scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
                   SigninManagerFactory::GetForProfile(profile),
                   ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
                   LoginUIServiceFactory::GetForProfile(profile))),
-              profile->GetRequestContext(),
-              notification_target)));
+              profile->GetRequestContext(), notification_target))));
 }
 
-KeyedService* BuildSelfNotifyingP2PProfileInvalidationProvider(
+scoped_ptr<KeyedService> BuildSelfNotifyingP2PProfileInvalidationProvider(
     content::BrowserContext* context) {
   return BuildP2PProfileInvalidationProvider(context, syncer::NOTIFY_ALL);
 }
 
-KeyedService* BuildRealisticP2PProfileInvalidationProvider(
+scoped_ptr<KeyedService> BuildRealisticP2PProfileInvalidationProvider(
     content::BrowserContext* context) {
   return BuildP2PProfileInvalidationProvider(context, syncer::NOTIFY_OTHERS);
 }

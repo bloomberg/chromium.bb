@@ -6,6 +6,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -229,10 +230,11 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
                               state, true /* add_to_visible */);
   }
 
-  static KeyedService* CreateNetworkingPrivateServiceClient(
-      content::BrowserContext* profile) {
+  static scoped_ptr<KeyedService> CreateNetworkingPrivateServiceClient(
+      content::BrowserContext* context) {
     scoped_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
-    return new NetworkingPrivateChromeOS(profile, crypto_verify.Pass());
+    return make_scoped_ptr(
+        new NetworkingPrivateChromeOS(context, crypto_verify.Pass()));
   }
 
   void SetUpOnMainThread() override {

@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -169,21 +170,22 @@ TestAppManagerFactory* app_manager_factory = NULL;
 
 // EasyUnlockService factory function injected into testing profiles.
 // It creates an EasyUnlockService with test AppManager.
-KeyedService* CreateEasyUnlockServiceForTest(content::BrowserContext* context) {
+scoped_ptr<KeyedService> CreateEasyUnlockServiceForTest(
+    content::BrowserContext* context) {
   EXPECT_TRUE(app_manager_factory);
   if (!app_manager_factory)
-    return NULL;
+    return nullptr;
 
   scoped_ptr<EasyUnlockAppManager> app_manager =
       app_manager_factory->Create(context);
   EXPECT_TRUE(app_manager.get());
   if (!app_manager.get())
-    return NULL;
+    return nullptr;
 
-  EasyUnlockService* service =
-      new EasyUnlockServiceRegular(Profile::FromBrowserContext(context));
+  scoped_ptr<EasyUnlockServiceRegular> service(
+      new EasyUnlockServiceRegular(Profile::FromBrowserContext(context)));
   service->Initialize(app_manager.Pass());
-  return service;
+  return service.Pass();
 }
 
 class EasyUnlockServiceTest : public testing::Test {

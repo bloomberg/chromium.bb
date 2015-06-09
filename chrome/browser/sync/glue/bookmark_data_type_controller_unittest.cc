@@ -58,23 +58,25 @@ class HistoryMock : public history::HistoryService {
   ~HistoryMock() override {}
 };
 
-KeyedService* BuildChromeBookmarkClient(content::BrowserContext* context) {
-  return new ChromeBookmarkClient(static_cast<Profile*>(context));
+scoped_ptr<KeyedService> BuildChromeBookmarkClient(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(
+      new ChromeBookmarkClient(static_cast<Profile*>(context)));
 }
 
-KeyedService* BuildBookmarkModelWithoutLoading(
+scoped_ptr<KeyedService> BuildBookmarkModelWithoutLoading(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   ChromeBookmarkClient* bookmark_client =
       ChromeBookmarkClientFactory::GetForProfile(profile);
-  BookmarkModel* bookmark_model = new BookmarkModel(bookmark_client);
-  bookmark_client->Init(bookmark_model);
-  return bookmark_model;
+  scoped_ptr<BookmarkModel> bookmark_model(new BookmarkModel(bookmark_client));
+  bookmark_client->Init(bookmark_model.get());
+  return bookmark_model.Pass();
 }
 
-KeyedService* BuildBookmarkModel(content::BrowserContext* context) {
-  BookmarkModel* bookmark_model = static_cast<BookmarkModel*>(
-      BuildBookmarkModelWithoutLoading(context));
+scoped_ptr<KeyedService> BuildBookmarkModel(content::BrowserContext* context) {
+  scoped_ptr<BookmarkModel> bookmark_model(static_cast<BookmarkModel*>(
+      BuildBookmarkModelWithoutLoading(context).release()));
   Profile* profile = static_cast<Profile*>(context);
   bookmark_model->Load(profile->GetPrefs(),
                        profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
@@ -82,11 +84,11 @@ KeyedService* BuildBookmarkModel(content::BrowserContext* context) {
                        profile->GetIOTaskRunner(),
                        content::BrowserThread::GetMessageLoopProxyForThread(
                            content::BrowserThread::UI));
-  return bookmark_model;
+  return bookmark_model.Pass();
 }
 
-KeyedService* BuildHistoryService(content::BrowserContext* profile) {
-  return new HistoryMock;
+scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* profile) {
+  return scoped_ptr<KeyedService>(new HistoryMock);
 }
 
 }  // namespace

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -124,12 +125,12 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
   scoped_ptr<BookmarkBarView> bookmark_bar_view_;
 
  private:
-  static KeyedService* CreateTemplateURLService(
+  static scoped_ptr<KeyedService> CreateTemplateURLService(
       content::BrowserContext* profile) {
-    return new TemplateURLService(
+    return make_scoped_ptr(new TemplateURLService(
         static_cast<Profile*>(profile)->GetPrefs(),
         make_scoped_ptr(new SearchTermsData), NULL,
-        scoped_ptr<TemplateURLServiceClient>(), NULL, NULL, base::Closure());
+        scoped_ptr<TemplateURLServiceClient>(), NULL, NULL, base::Closure()));
   }
 
   scoped_ptr<ScopedTestingLocalState> local_state_;

@@ -43,7 +43,7 @@ namespace {
 
 class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
  public:
-  static KeyedService* Build(content::BrowserContext* context);
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* context);
 
   MockAccountReconcilor(ProfileOAuth2TokenService* token_service,
                         SigninManagerBase* signin_manager,
@@ -56,15 +56,16 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
 };
 
 // static
-KeyedService* MockAccountReconcilor::Build(content::BrowserContext* context) {
+scoped_ptr<KeyedService> MockAccountReconcilor::Build(
+    content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  AccountReconcilor* reconcilor = new MockAccountReconcilor(
+  scoped_ptr<AccountReconcilor> reconcilor(new MockAccountReconcilor(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile),
       ChromeSigninClientFactory::GetForProfile(profile),
-      GaiaCookieManagerServiceFactory::GetForProfile(profile));
+      GaiaCookieManagerServiceFactory::GetForProfile(profile)));
   reconcilor->Initialize(false /* start_reconcile_if_tokens_available */);
-  return reconcilor;
+  return reconcilor.Pass();
 }
 
 MockAccountReconcilor::MockAccountReconcilor(

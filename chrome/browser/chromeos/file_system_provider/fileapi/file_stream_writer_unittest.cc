@@ -54,13 +54,6 @@ storage::FileSystemURL CreateFileSystemURL(const std::string& mount_point_name,
       base::FilePath::FromUTF8Unsafe(mount_point_name).Append(file_path));
 }
 
-// Creates a Service instance. Used to be able to destroy the service in
-// TearDown().
-KeyedService* CreateService(content::BrowserContext* context) {
-  return new Service(Profile::FromBrowserContext(context),
-                     extensions::ExtensionRegistry::Get(context));
-}
-
 }  // namespace
 
 class FileSystemProviderFileStreamWriter : public testing::Test {
@@ -75,7 +68,6 @@ class FileSystemProviderFileStreamWriter : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("testing-profile");
 
-    ServiceFactory::GetInstance()->SetTestingFactory(profile_, &CreateService);
     Service* service = Service::Get(profile_);  // Owned by its factory.
     service->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
@@ -97,12 +89,6 @@ class FileSystemProviderFileStreamWriter : public testing::Test {
     wrong_file_url_ = CreateFileSystemURL(
         mount_point_name, base::FilePath(FILE_PATH_LITERAL("im-not-here.txt")));
     ASSERT_TRUE(wrong_file_url_.is_valid());
-  }
-
-  void TearDown() override {
-    // Setting the testing factory to NULL will destroy the created service
-    // associated with the testing profile.
-    ServiceFactory::GetInstance()->SetTestingFactory(profile_, NULL);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

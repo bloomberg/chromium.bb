@@ -22,7 +22,7 @@ class MenuManagerFactory : public BrowserContextKeyedServiceFactory {
 
   static MenuManagerFactory* GetInstance();
 
-  static KeyedService* BuildServiceInstanceForTesting(
+  static scoped_ptr<KeyedService> BuildServiceInstanceForTesting(
       content::BrowserContext* context);
 
  private:

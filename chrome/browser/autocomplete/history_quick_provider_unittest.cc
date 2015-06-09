@@ -169,15 +169,15 @@ class HistoryQuickProviderTest : public testing::Test {
     std::set<std::string> matches_;
   };
 
-  static KeyedService* CreateTemplateURLService(
+  static scoped_ptr<KeyedService> CreateTemplateURLService(
       content::BrowserContext* context) {
     Profile* profile = static_cast<Profile*>(context);
-    return new TemplateURLService(
+    return make_scoped_ptr(new TemplateURLService(
         profile->GetPrefs(), make_scoped_ptr(new SearchTermsData), NULL,
         scoped_ptr<TemplateURLServiceClient>(new ChromeTemplateURLServiceClient(
             HistoryServiceFactory::GetForProfile(
                 profile, ServiceAccessType::EXPLICIT_ACCESS))),
-        NULL, NULL, base::Closure());
+        NULL, NULL, base::Closure()));
   }
 
   void SetUp() override;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
@@ -38,12 +39,13 @@ namespace extensions {
 
 namespace {
 
-KeyedService* BuildAPI(content::BrowserContext* context) {
-  return new DeveloperPrivateAPI(context);
+scoped_ptr<KeyedService> BuildAPI(content::BrowserContext* context) {
+  return make_scoped_ptr(new DeveloperPrivateAPI(context));
 }
 
-KeyedService* BuildEventRouter(content::BrowserContext* profile) {
-  return new EventRouter(profile, ExtensionPrefs::Get(profile));
+scoped_ptr<KeyedService> BuildEventRouter(content::BrowserContext* profile) {
+  return make_scoped_ptr(
+      new EventRouter(profile, ExtensionPrefs::Get(profile)));
 }
 
 }  // namespace

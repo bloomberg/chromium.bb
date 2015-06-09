@@ -11,14 +11,14 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
 // static
-KeyedService* FakeAccountTrackerService::Build(
+scoped_ptr<KeyedService> FakeAccountTrackerService::Build(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   FakeAccountTrackerService* service = new FakeAccountTrackerService();
   service->Initialize(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       ChromeSigninClientFactory::GetForProfile(profile));
-  return service;
+  return scoped_ptr<KeyedService>(service);
 }
 
 FakeAccountTrackerService::FakeAccountTrackerService() {}

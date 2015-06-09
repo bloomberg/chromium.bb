@@ -441,8 +441,9 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
   DISALLOW_COPY_AND_ASSIGN(FakePrinterProviderAPI);
 };
 
-KeyedService* BuildTestingPrinterProviderAPI(content::BrowserContext* context) {
-  return new FakePrinterProviderAPI();
+scoped_ptr<KeyedService> BuildTestingPrinterProviderAPI(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(new FakePrinterProviderAPI());
 }
 
 class FakeDeviceClient : public device::DeviceClient {

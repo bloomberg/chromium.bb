@@ -47,13 +47,13 @@ namespace {
 std::map<BrowserContext*, StubModem*> g_modems;
 
 // Create a test AudioModemAPI and store the modem it uses.
-KeyedService* ApiFactoryFunction(BrowserContext* context) {
+scoped_ptr<KeyedService> ApiFactoryFunction(BrowserContext* context) {
   StubModem* modem = new StubModem;
   g_modems[context] = modem;
-  return new AudioModemAPI(
+  return make_scoped_ptr(new AudioModemAPI(
       context,
       make_scoped_ptr<audio_modem::WhispernetClient>(new StubWhispernetClient),
-      make_scoped_ptr<audio_modem::Modem>(modem));
+      make_scoped_ptr<audio_modem::Modem>(modem)));
 }
 
 DictionaryValue* CreateParams(const std::string& audio_band) {
@@ -131,8 +131,9 @@ class StubEventRouter : public EventRouter {
 };
 
 // StubEventRouter factory function
-KeyedService* StubEventRouterFactoryFunction(content::BrowserContext* context) {
-  return new StubEventRouter(context);
+scoped_ptr<KeyedService> StubEventRouterFactoryFunction(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(new StubEventRouter(context));
 }
 
 }  // namespace

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/test_profile_sync_service.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -127,20 +128,17 @@ TestProfileSyncService::~TestProfileSyncService() {
 }
 
 // static
-KeyedService* TestProfileSyncService::TestFactoryFunction(
+scoped_ptr<KeyedService> TestProfileSyncService::TestFactoryFunction(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(profile);
   ProfileOAuth2TokenService* oauth2_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  return new TestProfileSyncService(
+  return make_scoped_ptr(new TestProfileSyncService(
       scoped_ptr<ProfileSyncComponentsFactory>(
           new ProfileSyncComponentsFactoryMock()),
-      profile,
-      signin,
-      oauth2_token_service,
-      browser_sync::AUTO_START);
+      profile, signin, oauth2_token_service, browser_sync::AUTO_START));
 }
 
 // static

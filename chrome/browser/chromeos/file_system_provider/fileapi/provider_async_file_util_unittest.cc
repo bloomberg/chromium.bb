@@ -100,13 +100,6 @@ storage::FileSystemURL CreateFileSystemURL(const std::string& mount_point_name,
       base::FilePath::FromUTF8Unsafe(mount_point_name).Append(file_path));
 }
 
-// Creates a Service instance. Used to be able to destroy the service in
-// TearDown().
-KeyedService* CreateService(content::BrowserContext* context) {
-  return new Service(Profile::FromBrowserContext(context),
-                     extensions::ExtensionRegistry::Get(context));
-}
-
 }  // namespace
 
 // Tests in this file are very lightweight and just test integration between
@@ -130,7 +123,6 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
     file_system_context_ =
         content::CreateFileSystemContextForTesting(NULL, data_dir_.path());
 
-    ServiceFactory::GetInstance()->SetTestingFactory(profile_, &CreateService);
     Service* service = Service::Get(profile_);  // Owned by its factory.
     service->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
@@ -153,12 +145,6 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
     ASSERT_TRUE(directory_url_.is_valid());
     root_url_ = CreateFileSystemURL(mount_point_name, base::FilePath());
     ASSERT_TRUE(root_url_.is_valid());
-  }
-
-  void TearDown() override {
-    // Setting the testing factory to NULL will destroy the created service
-    // associated with the testing profile.
-    ServiceFactory::GetInstance()->SetTestingFactory(profile_, NULL);
   }
 
   scoped_ptr<storage::FileSystemOperationContext> CreateOperationContext() {

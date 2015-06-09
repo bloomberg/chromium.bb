@@ -24,7 +24,8 @@ class ExtensionGarbageCollectorFactory
 
   static ExtensionGarbageCollectorFactory* GetInstance();
 
-  static KeyedService* BuildInstanceFor(content::BrowserContext* profile);
+  static scoped_ptr<KeyedService> BuildInstanceFor(
+      content::BrowserContext* context);
 
  private:
   friend struct DefaultSingletonTraits<ExtensionGarbageCollectorFactory>;

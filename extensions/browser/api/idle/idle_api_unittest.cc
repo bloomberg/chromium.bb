@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "extensions/browser/api/idle/idle_api_constants.h"
 #include "extensions/browser/api/idle/idle_manager_factory.h"
@@ -111,8 +112,9 @@ ScopedListen::~ScopedListen() {
   idle_manager_->OnListenerRemoved(details);
 }
 
-KeyedService* IdleManagerTestFactory(content::BrowserContext* context) {
-  return new IdleManager(context);
+scoped_ptr<KeyedService> IdleManagerTestFactory(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(new IdleManager(context));
 }
 
 }  // namespace

@@ -56,7 +56,7 @@ const int kFakeRenderProcessId = 123;
 
 // A BrowserContextKeyedServiceFactory::TestingFactoryFunction that creates a
 // HistoryService for a TestingProfile.
-KeyedService* BuildHistoryService(content::BrowserContext* context) {
+scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* context) {
   TestingProfile* profile = static_cast<TestingProfile*>(context);
 
   // Delete the file before creating the service.
@@ -66,21 +66,21 @@ KeyedService* BuildHistoryService(content::BrowserContext* context) {
       base::PathExists(history_path)) {
     ADD_FAILURE() << "failed to delete history db file "
                   << history_path.value();
-    return NULL;
+    return nullptr;
   }
 
-  history::HistoryService* history_service = new history::HistoryService(
-      ChromeHistoryClientFactory::GetForProfile(profile),
-      scoped_ptr<history::VisitDelegate>());
+  scoped_ptr<history::HistoryService> history_service(
+      new history::HistoryService(
+          ChromeHistoryClientFactory::GetForProfile(profile),
+          scoped_ptr<history::VisitDelegate>()));
   if (history_service->Init(
           profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
           history::HistoryDatabaseParamsForPath(profile->GetPath()))) {
-    return history_service;
+    return history_service.Pass();
   }
 
   ADD_FAILURE() << "failed to initialize history service";
-  delete history_service;
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace

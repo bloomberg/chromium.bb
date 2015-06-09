@@ -82,9 +82,9 @@ class FakeLoginUI : public LoginUIService::LoginUI {
   int focus_ui_call_count_;
 };
 
-KeyedService* BuildMockLoginUIService(
+scoped_ptr<KeyedService> BuildMockLoginUIService(
     content::BrowserContext* profile) {
-  return new FakeLoginUIService();
+  return make_scoped_ptr(new FakeLoginUIService());
 }
 
 class SyncErrorNotifierTest : public AshTestBase  {

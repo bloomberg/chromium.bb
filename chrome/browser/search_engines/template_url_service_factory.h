@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_SERVICE_FACTORY_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -19,7 +20,8 @@ class TemplateURLServiceFactory : public BrowserContextKeyedServiceFactory {
 
   static TemplateURLServiceFactory* GetInstance();
 
-  static KeyedService* BuildInstanceFor(content::BrowserContext* profile);
+  static scoped_ptr<KeyedService> BuildInstanceFor(
+      content::BrowserContext* profile);
 
  private:
   friend struct DefaultSingletonTraits<TemplateURLServiceFactory>;

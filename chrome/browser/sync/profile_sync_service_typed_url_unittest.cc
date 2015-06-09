@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -157,15 +158,15 @@ class HistoryServiceMock : public history::HistoryService {
   scoped_refptr<history::HistoryBackend> backend_;
 };
 
-KeyedService* BuildFakeProfileInvalidationProvider(
+scoped_ptr<KeyedService> BuildFakeProfileInvalidationProvider(
     content::BrowserContext* context) {
-  return new invalidation::ProfileInvalidationProvider(
+  return make_scoped_ptr(new invalidation::ProfileInvalidationProvider(
       scoped_ptr<invalidation::InvalidationService>(
-          new invalidation::FakeInvalidationService));
+          new invalidation::FakeInvalidationService)));
 }
 
-KeyedService* BuildHistoryService(content::BrowserContext* profile) {
-  return new HistoryServiceMock;
+scoped_ptr<KeyedService> BuildHistoryService(content::BrowserContext* profile) {
+  return scoped_ptr<KeyedService>(new HistoryServiceMock);
 }
 
 class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {

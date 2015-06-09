@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_TEST_PASSWORD_STORE_SERVICE_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_TEST_PASSWORD_STORE_SERVICE_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 
 namespace content {
@@ -17,7 +18,7 @@ class PasswordStore;
 
 class TestPasswordStoreService : public PasswordStoreService {
  public:
-  static KeyedService* Build(content::BrowserContext* profile);
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* profile);
 
  private:
   explicit TestPasswordStoreService(

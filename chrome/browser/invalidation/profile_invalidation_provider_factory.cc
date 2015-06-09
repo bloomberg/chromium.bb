@@ -95,7 +95,7 @@ void ProfileInvalidationProviderFactory::RegisterTestingFactory(
 KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   if (testing_factory_)
-    return testing_factory_(context);
+    return testing_factory_(context).release();
 
 #if defined(OS_ANDROID)
   return new ProfileInvalidationProvider(scoped_ptr<InvalidationService>(

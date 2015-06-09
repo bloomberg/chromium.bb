@@ -28,10 +28,6 @@ using content::DownloadItem;
 
 namespace {
 
-KeyedService* CreateDownloadService(content::BrowserContext* context) {
-  return new DownloadService(Profile::FromBrowserContext(context));
-}
-
 class DownloadShelfTest : public testing::Test {
  public:
   DownloadShelfTest();
@@ -49,13 +45,9 @@ class DownloadShelfTest : public testing::Test {
   Profile* profile() { return profile_.get(); }
 
   void SetUp() override {
-    DownloadServiceFactory::GetInstance()->SetTestingFactory(
-        profile(), &CreateDownloadService);
   }
 
   void TearDown() override {
-    DownloadServiceFactory::GetInstance()->SetTestingFactory(
-        profile(), NULL);
   }
 
  private:

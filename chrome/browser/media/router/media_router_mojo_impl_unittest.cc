@@ -83,8 +83,8 @@ class TestProcessManager : public extensions::ProcessManager {
             extensions::ExtensionRegistry::Get(context)) {}
   ~TestProcessManager() override {}
 
-  static KeyedService* Create(content::BrowserContext* context) {
-    return new TestProcessManager(context);
+  static scoped_ptr<KeyedService> Create(content::BrowserContext* context) {
+    return make_scoped_ptr(new TestProcessManager(context));
   }
 
   MOCK_METHOD1(IsEventPageSuspended, bool(const std::string& ext_id));

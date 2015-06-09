@@ -55,7 +55,7 @@ class StartupControllerTest : public testing::Test {
     profile_.reset(new TestingProfile());
     sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
     token_service_.reset(static_cast<FakeProfileOAuth2TokenService*>(
-        BuildFakeProfileOAuth2TokenService(profile_.get())));
+        BuildFakeProfileOAuth2TokenService(profile_.get()).release()));
     signin_.reset(new FakeSupervisedUserSigninManagerWrapper());
 
     ProfileSyncServiceStartBehavior behavior =

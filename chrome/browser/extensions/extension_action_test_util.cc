@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_action_test_util.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -69,10 +70,10 @@ size_t GetPageActionCount(content::WebContents* web_contents,
 }
 
 // Creates a new ExtensionToolbarModel for the given |context|.
-KeyedService* BuildToolbarModel(content::BrowserContext* context) {
-  return new extensions::ExtensionToolbarModel(
+scoped_ptr<KeyedService> BuildToolbarModel(content::BrowserContext* context) {
+  return make_scoped_ptr(new extensions::ExtensionToolbarModel(
       Profile::FromBrowserContext(context),
-      extensions::ExtensionPrefs::Get(context));
+      extensions::ExtensionPrefs::Get(context)));
 }
 
 // Creates a new ExtensionToolbarModel for the given profile, optionally

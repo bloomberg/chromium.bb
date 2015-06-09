@@ -94,8 +94,10 @@ class OneClickSigninSyncStarterTest : public ChromeRenderViewHostTestHarness {
   int succeeded_count_;
 
  private:
-  static KeyedService* BuildSigninManager(content::BrowserContext* profile) {
-    return new FakeSigninManager(static_cast<Profile*>(profile));
+  static scoped_ptr<KeyedService> BuildSigninManager(
+      content::BrowserContext* profile) {
+    return make_scoped_ptr(
+        new FakeSigninManager(static_cast<Profile*>(profile)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninSyncStarterTest);

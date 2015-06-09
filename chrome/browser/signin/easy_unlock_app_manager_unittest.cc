@@ -69,8 +69,9 @@ class TestProcessManager : public extensions::ProcessManager {
   DISALLOW_COPY_AND_ASSIGN(TestProcessManager);
 };
 
-KeyedService* CreateTestProcessManager(content::BrowserContext* context) {
-  return new TestProcessManager(context);
+scoped_ptr<KeyedService> CreateTestProcessManager(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(new TestProcessManager(context));
 }
 
 // Observes extension registry for unload and load events (in that order) of an
@@ -262,9 +263,11 @@ class TestEventRouter : public extensions::EventRouter {
 };
 
 // TestEventRouter factory function
-KeyedService* TestEventRouterFactoryFunction(content::BrowserContext* context) {
-  return new TestEventRouter(static_cast<Profile*>(context),
-                             extensions::ExtensionPrefs::Get(context));
+scoped_ptr<KeyedService> TestEventRouterFactoryFunction(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(
+      new TestEventRouter(static_cast<Profile*>(context),
+                          extensions::ExtensionPrefs::Get(context)));
 }
 
 class EasyUnlockAppManagerTest : public testing::Test {

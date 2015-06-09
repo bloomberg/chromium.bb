@@ -109,8 +109,10 @@ class MockHotwordService : public HotwordService {
   std::string extension_id_;
 };
 
-KeyedService* BuildMockHotwordService(content::BrowserContext* context) {
-  return new MockHotwordService(static_cast<Profile*>(context));
+scoped_ptr<KeyedService> BuildMockHotwordService(
+    content::BrowserContext* context) {
+  return make_scoped_ptr(
+      new MockHotwordService(static_cast<Profile*>(context)));
 }
 
 }  // namespace

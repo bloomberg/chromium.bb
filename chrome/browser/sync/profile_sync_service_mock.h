@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -35,7 +36,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   // Helper routine to be used in conjunction with
   // BrowserContextKeyedServiceFactory::SetTestingFactory().
-  static KeyedService* BuildMockProfileSyncService(
+  static scoped_ptr<KeyedService> BuildMockProfileSyncService(
       content::BrowserContext* profile);
 
   MOCK_METHOD0(DisableForUser, void());

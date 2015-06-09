@@ -28,8 +28,8 @@ class StorageFrontend : public BrowserContextKeyedAPI {
   // Returns the current instance for |context|.
   static StorageFrontend* Get(content::BrowserContext* context);
 
-  // Creates with a specific |storage_factory|. Caller owns the object.
-  static StorageFrontend* CreateForTesting(
+  // Creates with a specific |storage_factory|.
+  static scoped_ptr<StorageFrontend> CreateForTesting(
       const scoped_refptr<SettingsStorageFactory>& storage_factory,
       content::BrowserContext* context);
 

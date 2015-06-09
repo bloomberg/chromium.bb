@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/keyed_service/core/keyed_service_base_factory.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
@@ -32,7 +33,7 @@ class KEYED_SERVICE_EXPORT KeyedServiceFactory
   // A function that supplies the instance of a KeyedService for a given
   // |context|. This is used primarily for testing, where we want to feed
   // a specific mock into the KeyedServiceFactory system.
-  typedef KeyedService* (*TestingFactoryFunction)(
+  typedef scoped_ptr<KeyedService>(*TestingFactoryFunction)(
       base::SupportsUserData* context);
 
   // Associates |factory| with |context| so that |factory| is used to create
@@ -56,13 +57,14 @@ class KEYED_SERVICE_EXPORT KeyedServiceFactory
                                      bool create);
 
   // Maps |context| to |service| with debug checks to prevent duplication.
-  void Associate(base::SupportsUserData* context, KeyedService* service);
+  void Associate(base::SupportsUserData* context,
+                 scoped_ptr<KeyedService> service);
 
   // Removes the mapping from |context| to a service.
   void Disassociate(base::SupportsUserData* context);
 
   // Returns a new KeyedService that will be associated with |context|.
-  virtual KeyedService* BuildServiceInstanceFor(
+  virtual scoped_ptr<KeyedService> BuildServiceInstanceFor(
       base::SupportsUserData* context) const = 0;
 
   // Returns whether the |context| is off-the-record or not.

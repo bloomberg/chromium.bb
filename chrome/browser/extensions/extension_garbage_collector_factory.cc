@@ -42,18 +42,18 @@ ExtensionGarbageCollectorFactory::ExtensionGarbageCollectorFactory()
 ExtensionGarbageCollectorFactory::~ExtensionGarbageCollectorFactory() {}
 
 // static
-KeyedService* ExtensionGarbageCollectorFactory::BuildInstanceFor(
+scoped_ptr<KeyedService> ExtensionGarbageCollectorFactory::BuildInstanceFor(
     content::BrowserContext* context) {
 #if defined(OS_CHROMEOS)
-  return new ExtensionGarbageCollectorChromeOS(context);
+  return make_scoped_ptr(new ExtensionGarbageCollectorChromeOS(context));
 #else
-  return new ExtensionGarbageCollector(context);
+  return make_scoped_ptr(new ExtensionGarbageCollector(context));
 #endif
 }
 
 KeyedService* ExtensionGarbageCollectorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return BuildInstanceFor(context);
+  return BuildInstanceFor(context).release();
 }
 
 bool ExtensionGarbageCollectorFactory::ServiceIsCreatedWithBrowserContext()

@@ -32,11 +32,6 @@ namespace {
 
 const char kAllHostsPermission[] = "*://*/*";
 
-// We skip syncing for testing purposes.
-KeyedService* BuildSyncService(content::BrowserContext* context) {
-  return nullptr;
-}
-
 }  // namespace
 
 // Unittests for the ActiveScriptController mostly test the internal logic
@@ -169,8 +164,9 @@ void ActiveScriptControllerUnitTest::IncrementExecutionCount(
 void ActiveScriptControllerUnitTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
 
-  ExtensionSyncServiceFactory::GetInstance()->SetTestingFactory(
-      profile(), &BuildSyncService);
+  // Skip syncing for testing purposes.
+  ExtensionSyncServiceFactory::GetInstance()->SetTestingFactory(profile(),
+                                                                nullptr);
 
   TabHelper::CreateForWebContents(web_contents());
   TabHelper* tab_helper = TabHelper::FromWebContents(web_contents());

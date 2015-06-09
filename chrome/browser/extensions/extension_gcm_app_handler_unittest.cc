@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -187,15 +188,15 @@ class FakeExtensionGCMAppHandler : public ExtensionGCMAppHandler {
 
 class ExtensionGCMAppHandlerTest : public testing::Test {
  public:
-  static KeyedService* BuildGCMProfileService(
+  static scoped_ptr<KeyedService> BuildGCMProfileService(
       content::BrowserContext* context) {
-    return new gcm::GCMProfileService(
+    return make_scoped_ptr(new gcm::GCMProfileService(
         Profile::FromBrowserContext(context),
         scoped_ptr<gcm::GCMClientFactory>(new gcm::FakeGCMClientFactory(
             content::BrowserThread::GetMessageLoopProxyForThread(
                 content::BrowserThread::UI),
             content::BrowserThread::GetMessageLoopProxyForThread(
-                content::BrowserThread::IO))));
+                content::BrowserThread::IO)))));
   }
 
   ExtensionGCMAppHandlerTest()

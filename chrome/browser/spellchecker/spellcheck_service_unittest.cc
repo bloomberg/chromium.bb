@@ -6,14 +6,16 @@
 
 #include <algorithm>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/spellchecker/feedback_sender.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static KeyedService* BuildSpellcheckService(content::BrowserContext* profile) {
-  return new SpellcheckService(static_cast<Profile*>(profile));
+static scoped_ptr<KeyedService> BuildSpellcheckService(
+    content::BrowserContext* profile) {
+  return make_scoped_ptr(new SpellcheckService(static_cast<Profile*>(profile)));
 }
 
 class SpellcheckServiceTest : public testing::Test {

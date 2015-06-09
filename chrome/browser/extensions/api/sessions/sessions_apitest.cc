@@ -90,7 +90,7 @@ class ExtensionSessionsTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override;
 
  protected:
-  static KeyedService* BuildProfileSyncService(
+  static scoped_ptr<KeyedService> BuildProfileSyncService(
       content::BrowserContext* profile);
 
   void CreateTestProfileSyncService();
@@ -121,11 +121,10 @@ void ExtensionSessionsTest::SetUpOnMainThread() {
   CreateTestExtension();
 }
 
-KeyedService* ExtensionSessionsTest::BuildProfileSyncService(
-    content::BrowserContext* profile) {
-
-  ProfileSyncComponentsFactoryMock* factory =
-      new ProfileSyncComponentsFactoryMock();
+scoped_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
+    content::BrowserContext* context) {
+  scoped_ptr<ProfileSyncComponentsFactoryMock> factory(
+      new ProfileSyncComponentsFactoryMock());
 
   factory->SetLocalDeviceInfoProvider(
       scoped_ptr<sync_driver::LocalDeviceInfoProvider>(
@@ -137,9 +136,8 @@ KeyedService* ExtensionSessionsTest::BuildProfileSyncService(
               sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
               "device_id")));
 
-  return new ProfileSyncServiceMock(
-      scoped_ptr<ProfileSyncComponentsFactory>(factory),
-      static_cast<Profile*>(profile));
+  return make_scoped_ptr(new ProfileSyncServiceMock(
+      factory.Pass(), static_cast<Profile*>(context)));
 }
 
 void ExtensionSessionsTest::CreateTestProfileSyncService() {

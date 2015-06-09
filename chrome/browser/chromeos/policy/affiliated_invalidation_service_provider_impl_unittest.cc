@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -41,14 +42,14 @@ const char kAffiliatedUserID1[] = "test_1@example.com";
 const char kAffiliatedUserID2[] = "test_2@example.com";
 const char kUnaffiliatedUserID[] = "test@other_domain.test";
 
-KeyedService* BuildProfileInvalidationProvider(
+scoped_ptr<KeyedService> BuildProfileInvalidationProvider(
     content::BrowserContext* context) {
   scoped_ptr<invalidation::FakeInvalidationService> invalidation_service(
       new invalidation::FakeInvalidationService);
   invalidation_service->SetInvalidatorState(
       syncer::TRANSIENT_INVALIDATION_ERROR);
-  return new invalidation::ProfileInvalidationProvider(
-      invalidation_service.Pass());
+  return make_scoped_ptr(new invalidation::ProfileInvalidationProvider(
+      invalidation_service.Pass()));
 }
 
 }  // namespace

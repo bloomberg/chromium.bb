@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/extensions/api/reading_list_private/reading_list_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -31,7 +32,7 @@ using leveldb_proto::test::FakeDB;
 
 class ReadingListPrivateApiTest : public ExtensionApiTest {
  public:
-  static KeyedService* Build(content::BrowserContext* context) {
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* context) {
     FakeDB<ArticleEntry>* fake_db =
         new FakeDB<ArticleEntry>(new FakeDB<ArticleEntry>::EntryMap);
     FakeDistiller* distiller = new FakeDistiller(true);
@@ -46,22 +47,21 @@ class ReadingListPrivateApiTest : public ExtensionApiTest {
     dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(
         pref_service->registry());
 
-    DomDistillerContextKeyedService* service =
+    scoped_ptr<DomDistillerContextKeyedService> service(
         new DomDistillerContextKeyedService(
-            scoped_ptr<DomDistillerStoreInterface>(
-                CreateStoreWithFakeDB(fake_db,
-                                      FakeDB<ArticleEntry>::EntryMap())),
+            scoped_ptr<DomDistillerStoreInterface>(CreateStoreWithFakeDB(
+                fake_db, FakeDB<ArticleEntry>::EntryMap())),
             scoped_ptr<DistillerFactory>(distiller_factory),
             scoped_ptr<DistillerPageFactory>(distiller_page_factory),
             scoped_ptr<dom_distiller::DistilledPagePrefs>(
-                new dom_distiller::DistilledPagePrefs(pref_service)));
+                new dom_distiller::DistilledPagePrefs(pref_service))));
     fake_db->InitCallback(true);
     fake_db->LoadCallback(true);
     EXPECT_CALL(*distiller_factory, CreateDistillerImpl())
         .WillOnce(testing::Return(distiller));
     EXPECT_CALL(*distiller_page_factory, CreateDistillerPageImpl())
         .WillOnce(testing::Return(distiller_page));
-    return service;
+    return service.Pass();
   }
 };
 

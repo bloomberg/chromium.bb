@@ -8,6 +8,7 @@
 #include <list>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "components/gcm_driver/gcm_driver.h"
 
@@ -24,7 +25,7 @@ class FakeGCMProfileService : public GCMProfileService {
 
   // Helper function to be used with
   // KeyedService::SetTestingFactory().
-  static KeyedService* Build(content::BrowserContext* context);
+  static scoped_ptr<KeyedService> Build(content::BrowserContext* context);
 
   explicit FakeGCMProfileService(Profile* profile);
   ~FakeGCMProfileService() override;
