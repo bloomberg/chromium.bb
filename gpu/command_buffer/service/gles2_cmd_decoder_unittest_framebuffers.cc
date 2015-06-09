@@ -1675,19 +1675,22 @@ TEST_P(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnClear) {
                          kFBOServiceTextureId,
                          0,
                          GL_NO_ERROR);
+  // Set scissor rect and enable GL_SCISSOR_TEST to make sure we re-enable it
+  // and restore the rect again after the clear.
+  DoEnableDisable(GL_SCISSOR_TEST, true);
+  DoScissor(0, 0, 64, 64);
 
   // Setup "render from" texture.
   SetupTexture();
 
   SetupExpectationsForFramebufferClearing(GL_FRAMEBUFFER,       // target
                                           GL_COLOR_BUFFER_BIT,  // clear bits
-                                          0,
-                                          0,
-                                          0,
-                                          0,       // color
-                                          0,       // stencil
-                                          1.0f,    // depth
-                                          false);  // scissor test
+                                          0, 0, 0,
+                                          0,      // color
+                                          0,      // stencil
+                                          1.0f,   // depth
+                                          true,  // scissor test
+                                          0, 0, 64, 64);
   SetupExpectationsForApplyingDirtyState(false,    // Framebuffer is RGB
                                          false,    // Framebuffer has depth
                                          false,    // Framebuffer has stencil
@@ -1729,19 +1732,20 @@ TEST_P(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnReadPixels) {
                          kFBOServiceTextureId,
                          0,
                          GL_NO_ERROR);
+  DoEnableDisable(GL_SCISSOR_TEST, false);
+  DoScissor(0, 0, 1, 1);
 
   // Setup "render from" texture.
   SetupTexture();
 
   SetupExpectationsForFramebufferClearing(GL_FRAMEBUFFER,       // target
                                           GL_COLOR_BUFFER_BIT,  // clear bits
-                                          0,
-                                          0,
-                                          0,
-                                          0,       // color
-                                          0,       // stencil
-                                          1.0f,    // depth
-                                          false);  // scissor test
+                                          0, 0, 0,
+                                          0,      // color
+                                          0,      // stencil
+                                          1.0f,   // depth
+                                          false,  // scissor test
+                                          0, 0, 1, 1);
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -1800,22 +1804,22 @@ TEST_P(GLES2DecoderManualInitTest,
                          0,
                          GL_NO_ERROR);
 
-  // Enable GL_SCISSOR_TEST to make sure we disable it in the clear,
-  // then re-enable after.
-  DoEnableDisable(GL_SCISSOR_TEST, true);
+  // Set scissor rect and disable GL_SCISSOR_TEST to make sure we enable it in
+  // the clear, then disable it and restore the rect again.
+  DoScissor(0, 0, 32, 32);
+  DoEnableDisable(GL_SCISSOR_TEST, false);
 
   SetupExpectationsForFramebufferClearingMulti(
       kServiceFramebufferId,  // read framebuffer service id
       0,                      // backbuffer service id
       GL_READ_FRAMEBUFFER,    // target
       GL_COLOR_BUFFER_BIT,    // clear bits
-      0,
-      0,
-      0,
+      0, 0, 0,
       0,      // color
       0,      // stencil
       1.0f,   // depth
-      true);  // scissor test
+      false,  // scissor test
+      0, 0, 32, 32);
 
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
@@ -2201,19 +2205,20 @@ TEST_P(GLES2DecoderManualInitTest,
                          kFBOServiceTextureId,
                          0,
                          GL_NO_ERROR);
+  DoEnableDisable(GL_SCISSOR_TEST, false);
+  DoScissor(0, 0, 1, 1);
 
   // Setup "render from" texture.
   SetupTexture();
 
   SetupExpectationsForFramebufferClearing(GL_FRAMEBUFFER,       // target
                                           GL_COLOR_BUFFER_BIT,  // clear bits
-                                          0,
-                                          0,
-                                          0,
-                                          0,       // color
-                                          0,       // stencil
-                                          1.0f,    // depth
-                                          false);  // scissor test
+                                          0, 0, 0,
+                                          0,      // color
+                                          0,      // stencil
+                                          1.0f,   // depth
+                                          false,  // scissor test
+                                          0, 0, 1, 1);
   SetupExpectationsForApplyingDirtyState(false,    // Framebuffer is RGB
                                          false,    // Framebuffer has depth
                                          false,    // Framebuffer has stencil

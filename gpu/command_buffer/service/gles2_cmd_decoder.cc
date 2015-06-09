@@ -5713,9 +5713,10 @@ void GLES2DecoderImpl::RestoreClearState() {
       state_.color_clear_alpha);
   glClearStencil(state_.stencil_clear);
   glClearDepth(state_.depth_clear);
-  if (state_.enable_flags.scissor_test) {
-    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
-  }
+  state_.SetDeviceCapabilityState(GL_SCISSOR_TEST,
+                                  state_.enable_flags.scissor_test);
+  glScissor(state_.scissor_x, state_.scissor_y, state_.scissor_width,
+            state_.scissor_height);
 }
 
 GLenum GLES2DecoderImpl::DoCheckFramebufferStatus(GLenum target) {
@@ -8958,7 +8959,6 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
     glScissor(xoffset, yoffset, width, height);
     glClear(GL_DEPTH_BUFFER_BIT | (have_stencil ? GL_STENCIL_BUFFER_BIT : 0));
 
-    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
     RestoreClearState();
 
     glDeleteFramebuffersEXT(1, &fb);

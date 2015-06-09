@@ -327,6 +327,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void DoBufferSubData(
       GLenum target, GLint offset, GLsizei size, const void* data);
 
+  void DoScissor(GLint x, GLint y, GLsizei width, GLsizei height);
+
   void SetupVertexBuffer();
   void SetupAllNeededVertexBuffers();
 
@@ -349,25 +351,31 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
                                      GLsizei width,
                                      GLsizei height);
 
-  void SetupExpectationsForRestoreClearState(
-      GLclampf restore_red,
-      GLclampf restore_green,
-      GLclampf restore_blue,
-      GLclampf restore_alpha,
-      GLuint restore_stencil,
-      GLclampf restore_depth,
-      bool restore_scissor_test);
+  void SetupExpectationsForRestoreClearState(GLclampf restore_red,
+                                             GLclampf restore_green,
+                                             GLclampf restore_blue,
+                                             GLclampf restore_alpha,
+                                             GLuint restore_stencil,
+                                             GLclampf restore_depth,
+                                             bool restore_scissor_test,
+                                             GLint restore_scissor_x,
+                                             GLint restore_scissor_y,
+                                             GLsizei restore_scissor_width,
+                                             GLsizei restore_scissor_height);
 
-  void SetupExpectationsForFramebufferClearing(
-      GLenum target,
-      GLuint clear_bits,
-      GLclampf restore_red,
-      GLclampf restore_green,
-      GLclampf restore_blue,
-      GLclampf restore_alpha,
-      GLuint restore_stencil,
-      GLclampf restore_depth,
-      bool restore_scissor_test);
+  void SetupExpectationsForFramebufferClearing(GLenum target,
+                                               GLuint clear_bits,
+                                               GLclampf restore_red,
+                                               GLclampf restore_green,
+                                               GLclampf restore_blue,
+                                               GLclampf restore_alpha,
+                                               GLuint restore_stencil,
+                                               GLclampf restore_depth,
+                                               bool restore_scissor_test,
+                                               GLint restore_scissor_x,
+                                               GLint restore_scissor_y,
+                                               GLsizei restore_scissor_width,
+                                               GLsizei restore_scissor_height);
 
   void SetupExpectationsForFramebufferClearingMulti(
       GLuint read_framebuffer_service_id,
@@ -380,7 +388,11 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
       GLclampf restore_alpha,
       GLuint restore_stencil,
       GLclampf restore_depth,
-      bool restore_scissor_test);
+      bool restore_scissor_test,
+      GLint restore_scissor_x,
+      GLint restore_scissor_y,
+      GLsizei restore_scissor_width,
+      GLsizei restore_scissor_height);
 
   void SetupExpectationsForDepthMask(bool mask);
   void SetupExpectationsForEnableDisable(GLenum cap, bool enable);

@@ -692,19 +692,16 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearing(
     GLclampf restore_alpha,
     GLuint restore_stencil,
     GLclampf restore_depth,
-    bool restore_scissor_test) {
+    bool restore_scissor_test,
+    GLint restore_scissor_x,
+    GLint restore_scissor_y,
+    GLsizei restore_scissor_width,
+    GLsizei restore_scissor_height) {
   SetupExpectationsForFramebufferClearingMulti(
-      0,
-      0,
-      target,
-      clear_bits,
-      restore_red,
-      restore_green,
-      restore_blue,
-      restore_alpha,
-      restore_stencil,
-      restore_depth,
-      restore_scissor_test);
+      0, 0, target, clear_bits, restore_red, restore_green, restore_blue,
+      restore_alpha, restore_stencil, restore_depth, restore_scissor_test,
+      restore_scissor_x, restore_scissor_y, restore_scissor_width,
+      restore_scissor_height);
 }
 
 void GLES2DecoderTestBase::SetupExpectationsForRestoreClearState(
@@ -714,7 +711,11 @@ void GLES2DecoderTestBase::SetupExpectationsForRestoreClearState(
     GLclampf restore_alpha,
     GLuint restore_stencil,
     GLclampf restore_depth,
-    bool restore_scissor_test) {
+    bool restore_scissor_test,
+    GLint restore_scissor_x,
+    GLint restore_scissor_y,
+    GLsizei restore_scissor_width,
+    GLsizei restore_scissor_height) {
   EXPECT_CALL(*gl_, ClearColor(
       restore_red, restore_green, restore_blue, restore_alpha))
       .Times(1)
@@ -725,11 +726,11 @@ void GLES2DecoderTestBase::SetupExpectationsForRestoreClearState(
   EXPECT_CALL(*gl_, ClearDepth(restore_depth))
       .Times(1)
       .RetiresOnSaturation();
-  if (restore_scissor_test) {
-    EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
+  SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, restore_scissor_test);
+  EXPECT_CALL(*gl_, Scissor(restore_scissor_x, restore_scissor_y,
+                            restore_scissor_width, restore_scissor_height))
+      .Times(1)
+      .RetiresOnSaturation();
 }
 
 void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
@@ -743,7 +744,11 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
     GLclampf restore_alpha,
     GLuint restore_stencil,
     GLclampf restore_depth,
-    bool restore_scissor_test) {
+    bool restore_scissor_test,
+    GLint restore_scissor_x,
+    GLint restore_scissor_y,
+    GLsizei restore_scissor_width,
+    GLsizei restore_scissor_height) {
   // TODO(gman): Figure out why InSequence stopped working.
   // InSequence sequence;
   EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(target))
@@ -783,8 +788,9 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
       .Times(1)
       .RetiresOnSaturation();
   SetupExpectationsForRestoreClearState(
-      restore_red, restore_green, restore_blue, restore_alpha,
-      restore_stencil, restore_depth, restore_scissor_test);
+      restore_red, restore_green, restore_blue, restore_alpha, restore_stencil,
+      restore_depth, restore_scissor_test, restore_scissor_x, restore_scissor_y,
+      restore_scissor_width, restore_scissor_height);
   if (target == GL_READ_FRAMEBUFFER_EXT) {
     EXPECT_CALL(*gl_, BindFramebufferEXT(
         GL_READ_FRAMEBUFFER_EXT, read_framebuffer_service_id))
@@ -1673,6 +1679,18 @@ void GLES2DecoderTestBase::DoBufferSubData(
   memcpy(shared_memory_address_, data, size);
   cmds::BufferSubData cmd;
   cmd.Init(target, offset, size, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderTestBase::DoScissor(GLint x,
+                                     GLint y,
+                                     GLsizei width,
+                                     GLsizei height) {
+  EXPECT_CALL(*gl_, Scissor(x, y, width, height))
+      .Times(1)
+      .RetiresOnSaturation();
+  cmds::Scissor cmd;
+  cmd.Init(x, y, width, height);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
