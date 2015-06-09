@@ -144,7 +144,6 @@ StaleWhileRevalidateCacheControl
 ExperimentalStream status=experimental
 Suborigins status=experimental
 SubresourceIntegrity status=experimental
-TabStopAttribute status=experimental
 TextBlob
 ThreadedParserDataReceiver
 // Many websites disable mouse support when touch APIs are available.  We'd

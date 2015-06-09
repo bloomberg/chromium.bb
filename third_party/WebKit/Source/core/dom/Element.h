@@ -79,9 +79,8 @@ enum ElementFlags {
     ContainsFullScreenElement = 1 << 3,
     IsInTopLayer = 1 << 4,
     HasPendingResources = 1 << 5,
-    TabStopWasSetExplicitly = 1 << 6,
 
-    NumberOfElementFlags = 7, // Required size of bitfield used to store the flags.
+    NumberOfElementFlags = 6, // Required size of bitfield used to store the flags.
 };
 
 typedef WillBeHeapVector<RefPtrWillBeMember<Attr>> AttrNodeList;
@@ -375,9 +374,6 @@ public:
     virtual bool supportsFocus() const;
     // Whether the node can actually be focused.
     bool isFocusable() const;
-    bool tabStop() const;
-    void setTabStop(bool);
-    void setTabStopInternal(bool);
     bool isFocusedElementInDocument() const;
     virtual bool isKeyboardFocusable() const;
     virtual bool isMouseFocusable() const;

@@ -65,10 +65,6 @@ public:
         clearElementFlag(TabIndexWasSetExplicitly);
     }
 
-    bool tabStop() const { return m_tabStop; }
-
-    void setTabStop(bool flag) { m_tabStop = flag; }
-
     CSSStyleDeclaration& ensureInlineCSSStyleDeclaration(Element* ownerElement);
 
     void clearShadow() { m_shadow = nullptr; }
@@ -133,7 +129,6 @@ public:
 
 private:
     short m_tabindex;
-    unsigned short m_tabStop : 1;
     unsigned short m_proxyCount : 10;
 
     LayoutSize m_minimumSizeForResizing;
@@ -166,7 +161,6 @@ inline LayoutSize defaultMinimumSizeForResizing()
 inline ElementRareData::ElementRareData(LayoutObject* layoutObject)
     : NodeRareData(layoutObject)
     , m_tabindex(0)
-    , m_tabStop(true)
     , m_proxyCount(0)
     , m_minimumSizeForResizing(defaultMinimumSizeForResizing())
 {

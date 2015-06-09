@@ -360,10 +360,6 @@ public:
     bool active() const { return isUserActionElement() && isUserActionElementActive(); }
     bool inActiveChain() const { return isUserActionElement() && isUserActionElementInActiveChain(); }
     bool hovered() const { return isUserActionElement() && isUserActionElementHovered(); }
-    // Note: As a shadow host whose tabStop=false may become focused state when an inner element
-    // gets focused in its shadow, in that case more than one elements in a document can return
-    // true for |focused()|.  Use Element::isFocusedElementInDocument() or Document::focusedElement()
-    // to check which element is exactly focused.
     bool focused() const { return isUserActionElement() && isUserActionElementFocused(); }
 
     bool needsAttach() const { return styleChangeType() == NeedsReattachStyleChange; }

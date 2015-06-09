@@ -650,8 +650,6 @@ public:
         GlobalCacheStorage = 743,
         NetInfo = 744,
         BackgroundSync = 745,
-        TabStopProperty = 746,
-        TabStopAttribute = 747,
         LegacyConst = 748,
         V8Permissions_Query_Method = 750,
         // The above items are available in M43 branch.

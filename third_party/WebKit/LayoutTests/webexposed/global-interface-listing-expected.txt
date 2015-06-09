@@ -1305,7 +1305,6 @@ interface Element
     getter scrollWidth
     getter shadowRoot
     getter style
-    getter tabStop
     getter tagName
     method animate
     method closest
@@ -1370,7 +1369,6 @@ interface Element
     setter outerHTML
     setter scrollLeft
     setter scrollTop
-    setter tabStop
 interface Error
     attribute message
     attribute name

@@ -344,7 +344,7 @@ const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& 
 
 void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (name == tabindexAttr || name == tabstopAttr)
+    if (name == tabindexAttr)
         return Element::parseAttribute(name, value);
 
     if (name == dirAttr) {
