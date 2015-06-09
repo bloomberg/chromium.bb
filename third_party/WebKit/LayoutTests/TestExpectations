@@ -477,6 +477,11 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-0
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-008.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-009.xht [ ImageOnlyFailure ]
 
+crbug.com/496317 [ Win ] fast/repaint/float-overflow-right.html [ NeedsRebaseline ]
+crbug.com/496317 [ Win ] fast/repaint/float-overflow.html [ NeedsRebaseline ]
+crbug.com/496317 fast/repaint/quotes.html [ NeedsRebaseline ]
+crbug.com/496317 [ Win ] fast/repaint/transform-inline-layered-child.html [ NeedsRebaseline ]
+
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/diamond.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-1.html [ ImageOnlyFailure ]
 crbug.com/382491 virtual/slimmingpaint/fast/transforms/rotated-transform-affects-scrolling-2.html [ ImageOnlyFailure ]
