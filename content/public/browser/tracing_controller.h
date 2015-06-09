@@ -199,6 +199,9 @@ class TracingController {
   // watch event callback.
   virtual bool CancelWatchEvent() = 0;
 
+  // Check if the tracing system is recording
+  virtual bool IsRecording() const = 0;
+
  protected:
   virtual ~TracingController() {}
 };

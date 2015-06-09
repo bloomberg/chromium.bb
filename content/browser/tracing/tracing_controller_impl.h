@@ -50,6 +50,7 @@ class TracingControllerImpl
                      const std::string& event_name,
                      const WatchEventCallback& callback) override;
   bool CancelWatchEvent() override;
+  bool IsRecording() const override;
 
   void RegisterTracingUI(TracingUI* tracing_ui);
   void UnregisterTracingUI(TracingUI* tracing_ui);

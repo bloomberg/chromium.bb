@@ -432,6 +432,10 @@ bool TracingControllerImpl::CancelWatchEvent() {
   return true;
 }
 
+bool TracingControllerImpl::IsRecording() const {
+  return is_recording_;
+}
+
 void TracingControllerImpl::AddTraceMessageFilter(
     TraceMessageFilter* trace_message_filter) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
