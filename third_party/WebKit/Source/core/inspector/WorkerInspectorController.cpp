@@ -125,6 +125,7 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     , m_workerThreadDebugger(WorkerThreadDebugger::create(workerGlobalScope))
     , m_agents(m_instrumentingAgents.get(), m_state.get())
     , m_inspectorTaskRunner(adoptPtr(new InspectorTaskRunner(v8::Isolate::GetCurrent())))
+    , m_beforeInitlizedScope(adoptPtr(new InspectorTaskRunner::IgnoreInterruptsScope(m_inspectorTaskRunner.get())))
     , m_paused(false)
 {
     OwnPtrWillBeRawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(m_injectedScriptManager.get(), m_workerThreadDebugger->debugger(), workerGlobalScope, this);
@@ -219,6 +220,13 @@ void WorkerInspectorController::resumeStartup()
 bool WorkerInspectorController::isRunRequired()
 {
     return m_paused;
+}
+
+void WorkerInspectorController::workerContextInitialized(bool shouldPauseOnStart)
+{
+    m_beforeInitlizedScope.clear();
+    if (shouldPauseOnStart)
+        pauseOnStart();
 }
 
 void WorkerInspectorController::pauseOnStart()

@@ -1334,8 +1334,6 @@ crbug.com/362499 [ Mac ] touchadjustment/touch-inlines.html [ Failure Pass ]
 
 crbug.com/362501 [ Mac ] svg/text/obb-paintserver.html [ ImageOnlyFailure Crash Pass ]
 
-crbug.com/496805 inspector-protocol/debugger/debugger-step-into-dedicated-worker.html [ Pass Crash Timeout ]
-
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/transform-interpolation.html [ Pass Crash Slow ]
 crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash Slow ]
 
