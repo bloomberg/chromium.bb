@@ -292,6 +292,7 @@ NaClManager.prototype.initialize = function(naclArch, stream) {
   assert(this.recognizerState_ == ManagerState_.UNINITIALIZED,
          'Recognizer not in uninitialized state. State: ' +
          this.recognizerState_);
+  assert(this.plugin_ == null);
   var langs = this.getPossibleLanguages_();
   var i, j;
   // For country-lang variations. For example, when combined with path it will
@@ -308,12 +309,12 @@ NaClManager.prototype.initialize = function(naclArch, stream) {
     }
 
     var plugin = this.createPlugin_(pluginSrc);
-    this.plugin_ = plugin;
-    if (!this.plugin_ || !this.plugin_.postMessage) {
-      document.body.removeChild(this.plugin_);
+    if (!plugin || !plugin.postMessage) {
+      document.body.removeChild(plugin);
       this.recognizerState_ = ManagerState_.ERROR;
       return false;
     }
+    this.plugin_ = plugin;
     this.modelUrl_ = chrome.extension.getURL(dataSrc);
     this.stream_ = stream;
     this.recognizerState_ = ManagerState_.LOADING;
