@@ -87,10 +87,11 @@ Still reading?
   </issue>
   <issue id="SetJavaScriptEnabled" severity="ignore"/>
   <issue id="UnusedResources">
-    <!-- These files are used by chrome_shell_apk and chrome_apk targets. -->
-    <ignore path="chrome/android/java/res/layout/accessibility_tab_switcher.xml" />
-    <ignore path="chrome/android/java/res/drawable/btn_back.xml" />
-    <ignore path="chrome/android/java/res/drawable/btn_forward.xml" />
+    <!--
+      TODO(pkotwicz): Re-enable after the chrome_java and chrome_staging_java
+      targets have been merged. crbug.com/484934
+    -->
+    <ignore path="chrome/android/java/res" />
   </issue>
   <issue id="SignatureOrSystemPermissions" severity="ignore"/>
   <issue id="UnusedAttribute" severity="ignore"/>
