@@ -304,6 +304,7 @@ private:
         m_next->m_prev = this;
     }
 
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void uninitialize()
     {
         ASSERT(isHeapObjectAlive());
@@ -502,6 +503,7 @@ private:
         m_next->m_prev = this;
     }
 
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void uninitialize()
     {
         MutexLocker m_locker(ThreadState::globalRootsMutex());
@@ -592,6 +594,7 @@ private:
         m_next->m_prev = this;
     }
 
+    NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void uninitialize()
     {
         ASSERT(isHeapObjectAlive());
