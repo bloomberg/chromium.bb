@@ -438,6 +438,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 
   prefs.pinch_overlay_scrollbar_thickness = 10;
   prefs.use_solid_color_scrollbars = ui::IsOverlayScrollbarEnabled();
+  prefs.invert_viewport_scroll_order =
+      command_line.HasSwitch(switches::kInvertViewportScrollOrder);
 
 #if defined(OS_ANDROID)
   // On Android, user gestures are normally required, unless that requirement

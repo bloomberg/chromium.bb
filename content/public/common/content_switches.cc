@@ -476,10 +476,8 @@ const char kEnableViewport[]                = "enable-viewport";
 // only on mobile browsers.
 const char kEnableViewportMeta[]            = "enable-viewport-meta";
 
-// Resizes of the main frame are the caused by changing between landscape
-// and portrait mode (i.e. Android) so the page should be rescaled to fit
-const char kMainFrameResizesAreOrientationChanges[] =
-    "main-frame-resizes-are-orientation-changes";
+// Enables experiment to scroll the inner viewport first in some situations.
+const char kInvertViewportScrollOrder[] = "invert-viewport-scroll-order";
 
 // Enable the Vtune profiler support.
 const char kEnableVtune[]                   = "enable-vtune-support";
@@ -595,6 +593,11 @@ const char kLogNetLog[]                     = "log-net-log";
 
 // Make plugin processes log their sent and received messages to VLOG(1).
 const char kLogPluginMessages[]             = "log-plugin-messages";
+
+// Resizes of the main frame are caused by changing between landscape and
+// portrait mode (i.e. Android) so the page should be rescaled to fit.
+const char kMainFrameResizesAreOrientationChanges[] =
+    "main-frame-resizes-are-orientation-changes";
 
 // Sets the width and height above which a composited layer will get tiled.
 const char kMaxUntiledLayerHeight[]         = "max-untiled-layer-height";

@@ -75,6 +75,7 @@ LayerTreeSettings::LayerTreeSettings()
       verify_property_trees(false),
       gather_pixel_refs(false),
       use_compositor_animation_timelines(false),
+      invert_viewport_scroll_order(false),
       max_bytes_per_copy_operation(std::numeric_limits<int>::max()) {
 }
 

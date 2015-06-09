@@ -1870,6 +1870,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableThreadedScrolling)
   },
   {
+    "invert-viewport-scroll-order",
+    IDS_FLAGS_INVERT_VIEWPORT_SCROLL_ORDER_NAME,
+    IDS_FLAGS_INVERT_VIEWPORT_SCROLL_ORDER_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kInvertViewportScrollOrder)
+  },
+  {
     "bleeding-edge-renderer-mode",
     IDS_FLAGS_BLEEDING_RENDERER_NAME,
     IDS_FLAGS_BLEEDING_RENDERER_DESCRIPTION,

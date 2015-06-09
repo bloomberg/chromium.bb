@@ -24,13 +24,23 @@ Viewport::Viewport(LayerTreeHostImpl* host_impl)
   DCHECK(host_impl_);
 }
 
+void Viewport::Pan(const gfx::Vector2dF& delta) {
+  gfx::Vector2dF pending_delta = delta;
+
+  pending_delta -= host_impl_->ScrollLayer(InnerScrollLayer(),
+                                           pending_delta,
+                                           gfx::Point(),
+                                           false);
+}
+
 Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
                                           const gfx::Point& viewport_point,
-                                          bool is_wheel_scroll) {
+                                          bool is_wheel_scroll,
+                                          bool affect_top_controls) {
   gfx::Vector2dF content_delta = delta;
   ScrollResult result;
 
-  if (ShouldTopControlsConsumeScroll(delta)) {
+  if (affect_top_controls && ShouldTopControlsConsumeScroll(delta)) {
     result.top_controls_applied_delta = ScrollTopControls(delta);
     content_delta -= result.top_controls_applied_delta;
   }

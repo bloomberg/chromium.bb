@@ -362,6 +362,9 @@ void RenderWidgetCompositor::Initialize() {
         &settings.initial_debug_state.slow_down_raster_scale_factor);
   }
 
+  settings.invert_viewport_scroll_order =
+      cmd->HasSwitch(switches::kInvertViewportScrollOrder);
+
   if (cmd->HasSwitch(cc::switches::kMaxUnusedResourceMemoryUsagePercentage)) {
     int max_unused_resource_memory_percentage;
     if (GetSwitchValueAsInt(

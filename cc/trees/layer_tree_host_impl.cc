@@ -2639,6 +2639,13 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   bool did_scroll_y = false;
   bool did_scroll_top_controls = false;
 
+  if (pinch_gesture_active_ && settings().invert_viewport_scroll_order) {
+    // Scrolls during a pinch gesture should pan the visual viewport, rather
+    // than a typical bubbling scroll.
+    viewport()->Pan(pending_delta);
+    return InputHandlerScrollResult();
+  }
+
   for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
        layer_impl;
        layer_impl = layer_impl->parent()) {
@@ -2650,9 +2657,11 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
     gfx::Vector2dF applied_delta;
     if (layer_impl == InnerViewportScrollLayer()) {
+      bool affect_top_controls = true;
       Viewport::ScrollResult result = viewport()->ScrollBy(pending_delta,
                                                            viewport_point,
-                                                           wheel_scrolling_);
+                                                           wheel_scrolling_,
+                                                           affect_top_controls);
       applied_delta = result.applied_delta;
       unused_root_delta = result.unused_scroll_delta;
       did_scroll_top_controls = result.top_controls_applied_delta.y() != 0;
@@ -2941,25 +2950,26 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
   gfx::PointF new_scale_anchor = gfx::ScalePoint(anchor, 1.f / page_scale);
   gfx::Vector2dF move = previous_scale_anchor - new_scale_anchor;
 
+  // Scale back to viewport space since that's the coordinate space ScrollBy
+  // uses.
+  move.Scale(page_scale);
+
   previous_pinch_anchor_ = anchor;
 
   // If clamping the inner viewport scroll offset causes a change, it should
   // be accounted for from the intended move.
   move -= InnerViewportScrollLayer()->ClampScrollToMaxScrollOffset();
 
-  // We manually manage the bubbling behaviour here as it is different to that
-  // implemented in LayerTreeHostImpl::ScrollBy(). Specifically:
-  // 1) we want to explicit limit the bubbling to the outer/inner viewports,
-  // 2) we don't want the directional limitations on the unused parts that
-  //    ScrollBy() implements, and
-  // 3) pinching should not engage the top controls manager.
-  gfx::Vector2dF unused = OuterViewportScrollLayer()
-                              ? OuterViewportScrollLayer()->ScrollBy(move)
-                              : move;
-
-  if (!unused.IsZero()) {
-    InnerViewportScrollLayer()->ScrollBy(unused);
-    InnerViewportScrollLayer()->ClampScrollToMaxScrollOffset();
+  if (settings().invert_viewport_scroll_order) {
+    viewport()->Pan(move);
+  } else {
+    gfx::Point viewport_point;
+    bool is_wheel_event = false;
+    bool affect_top_controls = false;
+    viewport()->ScrollBy(move,
+                         viewport_point,
+                         is_wheel_event,
+                         affect_top_controls);
   }
 
   active_tree_->SetRootLayerScrollOffsetDelegate(

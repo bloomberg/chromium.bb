@@ -28,11 +28,16 @@ class CC_EXPORT Viewport {
 
   static scoped_ptr<Viewport> Create(LayerTreeHostImpl* host_impl);
 
+  // Differs from scrolling in that only the visual viewport is moved, without
+  // affecting the top controls or outer viewport.
+  void Pan(const gfx::Vector2dF& delta);
+
   // Scrolls the viewport, applying the unique bubbling between the inner and
   // outer viewport. Scrolls can be consumed by top controls.
   ScrollResult ScrollBy(const gfx::Vector2dF& delta,
                         const gfx::Point& viewport_point,
-                        bool is_wheel_scroll);
+                        bool is_wheel_scroll,
+                        bool affect_top_controls);
 
  private:
   explicit Viewport(LayerTreeHostImpl* host_impl);

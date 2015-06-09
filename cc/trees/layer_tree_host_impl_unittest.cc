@@ -1136,6 +1136,50 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   }
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollDuringPinchScrollsInnerViewport) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.invert_viewport_scroll_order = true;
+  CreateHostImpl(settings,
+                 CreateOutputSurface());
+
+  LayerImpl* inner_scroll_layer =
+      SetupScrollAndContentsLayers(gfx::Size(100, 100));
+
+  // Adjust the content layer to be larger than the outer viewport container so
+  // that we get scrolling in both viewports.
+  LayerImpl* content_layer =
+      host_impl_->OuterViewportScrollLayer()->children().back();
+  LayerImpl* outer_scroll_layer = host_impl_->OuterViewportScrollLayer();
+  LayerImpl* inner_clip_layer =
+      host_impl_->InnerViewportScrollLayer()->parent()->parent();
+  inner_clip_layer->SetBounds(gfx::Size(100, 100));
+  inner_clip_layer->SetContentBounds(gfx::Size(100, 100));
+  outer_scroll_layer->SetBounds(gfx::Size(200, 200));
+  outer_scroll_layer->SetContentBounds(gfx::Size(200, 200));
+  content_layer->SetBounds(gfx::Size(200, 200));
+  content_layer->SetContentBounds(gfx::Size(200, 200));
+
+  host_impl_->SetViewportSize(gfx::Size(100, 100));
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(100, 100),
+      outer_scroll_layer->MaxScrollOffset());
+
+  host_impl_->ScrollBegin(gfx::Point(99, 99), InputHandler::GESTURE);
+  host_impl_->PinchGestureBegin();
+  host_impl_->PinchGestureUpdate(2, gfx::Point(99, 99));
+  host_impl_->ScrollBy(gfx::Point(99, 99), gfx::Vector2dF(10.f, 10.f));
+  host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd();
+
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(0, 0),
+      outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(50, 50),
+      inner_scroll_layer->CurrentScrollOffset());
+}
+
 TEST_F(LayerTreeHostImplTest, ImplPinchZoomWheelBubbleBetweenViewports) {
   LayerImpl* inner_scroll_layer =
       SetupScrollAndContentsLayers(gfx::Size(100, 100));

@@ -90,6 +90,7 @@ class CC_EXPORT LayerTreeSettings {
   bool verify_property_trees;
   bool gather_pixel_refs;
   bool use_compositor_animation_timelines;
+  bool invert_viewport_scroll_order;
   int max_bytes_per_copy_operation;
 
   LayerTreeDebugState initial_debug_state;
