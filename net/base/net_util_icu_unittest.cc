@@ -331,6 +331,21 @@ const IDNTestCase idn_cases[] = {
      false, false, false, false, false,
      false, false, false, false, false,
   }},
+  // Padlock icon spoof.
+  {"xn--google-hj64e", L"\U0001f512google.com",
+    {false, false, false, false, false,
+     false, false, false, false, false,
+     false, false, false, false, false,
+     false, false, false, false, false,
+  }},
+  // Ensure that blacklisting "\xd83d\xdd12" did not inadvertently blacklist
+  // all strings with the surrogate '\xdd12'.
+  {"xn--fk9c.com", L"\U00010912.com",
+    {true,  false, false, false, false,
+     false, false, false, false, false,
+     false, false, false, false, false,
+     false, false, false, false, false,
+  }},
 #if 0
   // These two cases are special. We need a separate test.
   // U+3000 and U+3002 are normalized to ASCII space and dot.
@@ -422,7 +437,9 @@ TEST(NetUtilTest, IDNToUnicodeFast) {
           WideToUTF16(idn_cases[i].unicode_output) :
           ASCIIToUTF16(idn_cases[i].input));
       AppendLanguagesToOutputs(kLanguages[j], &expected, &output);
-      EXPECT_EQ(expected, output);
+      EXPECT_EQ(expected, output) << "input: \"" << idn_cases[i].input
+                                  << "\", languages: \"" << kLanguages[j]
+                                  << "\"";
     }
   }
 }
@@ -438,7 +455,9 @@ TEST(NetUtilTest, IDNToUnicodeSlow) {
           WideToUTF16(idn_cases[i].unicode_output) :
           ASCIIToUTF16(idn_cases[i].input));
       AppendLanguagesToOutputs(kLanguages[j], &expected, &output);
-      EXPECT_EQ(expected, output);
+      EXPECT_EQ(expected, output) << "input: \"" << idn_cases[i].input
+                                  << "\", languages: \"" << kLanguages[j]
+                                  << "\"";
     }
   }
 }

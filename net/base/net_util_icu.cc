@@ -194,15 +194,17 @@ bool IsIDNComponentSafe(const base::char16* str,
 
   UErrorCode status = U_ZERO_ERROR;
 #ifdef U_WCHAR_IS_UTF16
-  icu::UnicodeSet dangerous_characters(icu::UnicodeString(
-      L"[[\\ \u00ad\u00bc\u00bd\u01c3\u0337\u0338"
-      L"\u05c3\u05f4\u06d4\u0702\u115f\u1160][\u2000-\u200b]"
-      L"[\u2024\u2027\u2028\u2029\u2039\u203a\u2044\u205f]"
-      L"[\u2154-\u2156][\u2159-\u215b][\u215f\u2215\u23ae"
-      L"\u29f6\u29f8\u2afb\u2afd][\u2ff0-\u2ffb][\u3014"
-      L"\u3015\u3033\u3164\u321d\u321e\u33ae\u33af\u33c6\u33df\ufe14"
-      L"\ufe15\ufe3f\ufe5d\ufe5e\ufeff\uff0e\uff06\uff61\uffa0\ufff9]"
-      L"[\ufffa-\ufffd]]"), status);
+  icu::UnicodeSet dangerous_characters(
+      icu::UnicodeString(
+          L"[[\\ \u00ad\u00bc\u00bd\u01c3\u0337\u0338"
+          L"\u05c3\u05f4\u06d4\u0702\u115f\u1160][\u2000-\u200b]"
+          L"[\u2024\u2027\u2028\u2029\u2039\u203a\u2044\u205f]"
+          L"[\u2154-\u2156][\u2159-\u215b][\u215f\u2215\u23ae"
+          L"\u29f6\u29f8\u2afb\u2afd][\u2ff0-\u2ffb][\u3014"
+          L"\u3015\u3033\u3164\u321d\u321e\u33ae\u33af\u33c6\u33df\ufe14"
+          L"\ufe15\ufe3f\ufe5d\ufe5e\ufeff\uff0e\uff06\uff61\uffa0\ufff9]"
+          L"[\ufffa-\ufffd]\U0001f50f\U0001f510\U0001f512\U0001f513]"),
+      status);
   DCHECK(U_SUCCESS(status));
   icu::RegexMatcher dangerous_patterns(icu::UnicodeString(
       // Lone katakana no, so, or n
@@ -219,7 +221,8 @@ bool IsIDNComponentSafe(const base::char16* str,
       "\\u29f6\\u29f8\\u2afb\\u2afd][\\u2ff0-\\u2ffb][\\u3014"
       "\\u3015\\u3033\\u3164\\u321d\\u321e\\u33ae\\u33af\\u33c6\\u33df\\ufe14"
       "\\ufe15\\ufe3f\\ufe5d\\ufe5e\\ufeff\\uff0e\\uff06\\uff61\\uffa0\\ufff9]"
-      "[\\ufffa-\\ufffd]]", -1, US_INV), status);
+      "[\\ufffa-\\ufffd]\\U0001f50f\\U0001f510\\U0001f512\\U0001f513]", -1,
+      US_INV), status);
   DCHECK(U_SUCCESS(status));
   icu::RegexMatcher dangerous_patterns(icu::UnicodeString(
       // Lone katakana no, so, or n
