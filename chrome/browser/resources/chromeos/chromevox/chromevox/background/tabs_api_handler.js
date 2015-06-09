@@ -135,9 +135,10 @@ cvox.TabsApiHandler.prototype = {
       return;
     }
     chrome.windows.get(windowId, function(window) {
-      chrome.tabs.query({active: true, windowId: windowId}, function(tab) {
+      chrome.tabs.query({active: true, windowId: windowId}, function(tabs) {
         var msgId = window.incognito ? 'chrome_incognito_window_selected' :
-          'chrome_normal_window_selected';
+            'chrome_normal_window_selected';
+        var tab = tabs[0] || {};
         var title = tab.title ? tab.title : tab.url;
         this.tts_.speak(this.msg_(msgId, [title]),
                        cvox.QueueMode.FLUSH,
