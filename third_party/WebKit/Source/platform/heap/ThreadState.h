@@ -57,7 +57,7 @@ class GarbageCollectedMixinConstructorMarker;
 class HeapObjectHeader;
 class PageMemoryRegion;
 class PageMemory;
-class PersistentNode;
+class PersistentAnchor;
 class BaseHeap;
 class SafePointAwareMutexLocker;
 class SafePointBarrier;
@@ -474,11 +474,11 @@ public:
 #endif
 
     // List of persistent roots allocated on the given thread.
-    PersistentNode* roots() const { return m_persistents.get(); }
+    PersistentAnchor* roots() const { return m_persistents.get(); }
 
     // List of global persistent roots not owned by any particular thread.
     // globalRootsMutex must be acquired before any modifications.
-    static PersistentNode& globalRoots();
+    static PersistentAnchor& globalRoots();
     static Mutex& globalRootsMutex();
 
     // Visit local thread stack and trace all pointers conservatively.
@@ -711,7 +711,7 @@ private:
     static uint8_t s_mainThreadStateStorage[];
 
     ThreadIdentifier m_thread;
-    OwnPtr<PersistentNode> m_persistents;
+    OwnPtr<PersistentAnchor> m_persistents;
     StackState m_stackState;
     intptr_t* m_startOfStack;
     intptr_t* m_endOfStack;

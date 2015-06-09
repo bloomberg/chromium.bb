@@ -243,7 +243,7 @@ void ThreadState::cleanup()
 
         // Do thread local GC's as long as the count of thread local Persistents
         // changes and is above zero.
-        PersistentAnchor* anchor = static_cast<PersistentAnchor*>(m_persistents.get());
+        PersistentAnchor* anchor = m_persistents.get();
         int oldCount = -1;
         int currentCount = anchor->numberOfPersistents();
         ASSERT(currentCount >= 0);
@@ -285,7 +285,7 @@ void ThreadState::visitPersistentRoots(Visitor* visitor)
         // However we acquire the mutex to make mutation and traversal of this
         // list symmetrical.
         MutexLocker locker(globalRootsMutex());
-        globalRoots().trace(visitor);
+        globalRoots().tracePersistentNodes(visitor);
     }
 
     for (ThreadState* state : attachedThreads())
@@ -373,7 +373,7 @@ void ThreadState::visitStack(Visitor* visitor)
 
 void ThreadState::visitPersistents(Visitor* visitor)
 {
-    m_persistents->trace(visitor);
+    m_persistents->tracePersistentNodes(visitor);
     if (m_traceDOMWrappers) {
         TRACE_EVENT0("blink_gc", "V8GCController::traceDOMWrappers");
         m_traceDOMWrappers(m_isolate, visitor);
@@ -513,9 +513,9 @@ bool ThreadState::popAndInvokeThreadLocalWeakCallback(Visitor* visitor)
     return false;
 }
 
-PersistentNode& ThreadState::globalRoots()
+PersistentAnchor& ThreadState::globalRoots()
 {
-    AtomicallyInitializedStaticReference(PersistentNode, anchor, new PersistentAnchor);
+    AtomicallyInitializedStaticReference(PersistentAnchor, anchor, new PersistentAnchor);
     return anchor;
 }
 

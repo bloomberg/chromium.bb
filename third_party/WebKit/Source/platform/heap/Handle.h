@@ -64,6 +64,12 @@ public:
         m_trace = nullptr;
     }
 
+    // This operator= is important. Without having the operator=, m_next and
+    // m_prev are inproperly copied and it breaks the link list of the
+    // persistent handles.
+    inline PersistentNode& operator=(const PersistentNode& otherref) { return *this; }
+
+private:
     // Ideally the trace method should be virtual and automatically dispatch
     // to the most specific implementation. However having a virtual method
     // on PersistentNode leads to too eager template instantiation with MSVC
@@ -71,106 +77,30 @@ public:
     // Instead we call the constructor with a TraceCallback which knows the
     // type of the most specific child and calls trace directly. See
     // TraceMethodDelegate in Visitor.h for how this is done.
-    void trace(Visitor* visitor)
+    void tracePersistentNode(Visitor* visitor)
     {
         m_trace(visitor, this);
     }
 
-protected:
     TraceCallback m_trace;
-
-private:
     PersistentNode* m_next;
     PersistentNode* m_prev;
 
-    template<typename RootsAccessor, typename Owner> friend class PersistentBase;
+    template<typename T> friend class CrossThreadPersistent;
+    template<typename T> friend class Persistent;
+    template<typename Collection> friend class PersistentHeapCollectionBase;
     friend class PersistentAnchor;
     friend class ThreadState;
-};
-
-// RootsAccessor for Persistent that provides access to thread-local list
-// of persistent handles. Can only be used to create handles that
-// are constructed and destructed on the same thread.
-template<ThreadAffinity Affinity>
-class ThreadLocalPersistents {
-public:
-    static PersistentNode* roots() { return state()->roots(); }
-
-    // No locking required. Just check that we are at the right thread.
-    class Lock {
-    public:
-        Lock() { state()->checkThread(); }
-    };
-
-private:
-    static ThreadState* state() { return ThreadStateFor<Affinity>::state(); }
-};
-
-// RootsAccessor for Persistent that provides synchronized access to global
-// list of persistent handles. Can be used for persistent handles that are
-// passed between threads.
-class GlobalPersistents {
-public:
-    static PersistentNode* roots() { return &ThreadState::globalRoots(); }
-
-    class Lock {
-    public:
-        Lock() : m_locker(ThreadState::globalRootsMutex()) { }
-    private:
-        MutexLocker m_locker;
-    };
-};
-
-// Base class for persistent handles. RootsAccessor specifies which list to
-// link resulting handle into. Owner specifies the class containing trace
-// method.
-template<typename RootsAccessor, typename Owner>
-class PersistentBase : public PersistentNode {
-public:
-    NO_LAZY_SWEEP_SANITIZE_ADDRESS
-    ~PersistentBase()
-    {
-        typename RootsAccessor::Lock lock;
-        ASSERT(m_roots == RootsAccessor::roots()); // Check that the thread is using the same roots list.
-        ASSERT(isHeapObjectAlive());
-        ASSERT(m_next->isHeapObjectAlive());
-        ASSERT(m_prev->isHeapObjectAlive());
-        m_next->m_prev = m_prev;
-        m_prev->m_next = m_next;
-    }
-
-protected:
-    inline PersistentBase()
-        : PersistentNode(TraceMethodDelegate<Owner, &Owner::trace>::trampoline)
-#if ENABLE(ASSERT)
-        , m_roots(RootsAccessor::roots())
-#endif
-    {
-        // Persistent must belong to a thread that will GC it.
-        ASSERT(m_roots == GlobalPersistents::roots() || ThreadState::current());
-        typename RootsAccessor::Lock lock;
-        m_prev = RootsAccessor::roots();
-        m_next = m_prev->m_next;
-        m_prev->m_next = this;
-        m_next->m_prev = this;
-    }
-
-    inline PersistentBase& operator=(const PersistentBase& otherref) { return *this; }
-
-#if ENABLE(ASSERT)
-private:
-    PersistentNode* m_roots;
-#endif
 };
 
 // A dummy Persistent handle that ensures the list of persistents is never null.
 // This removes a test from a hot path.
 class PersistentAnchor : public PersistentNode {
 public:
-    void trace(Visitor* visitor)
+    void tracePersistentNodes(Visitor* visitor)
     {
         for (PersistentNode* current = m_next; current != this; current = current->m_next)
-            current->trace(visitor);
+            current->tracePersistentNode(visitor);
     }
 
     int numberOfPersistents()
@@ -189,6 +119,12 @@ public:
         // this point.
     }
 
+    template<typename VisitorDispatcher>
+    void trace(VisitorDispatcher visitor)
+    {
+        ASSERT_NOT_REACHED();
+    }
+
 private:
     PersistentAnchor() : PersistentNode(TraceMethodDelegate<PersistentAnchor, &PersistentAnchor::trace>::trampoline)
     {
@@ -198,9 +134,6 @@ private:
 
     friend class ThreadState;
 };
-
-template<typename T>
-class CrossThreadPersistent;
 
 // Persistent handles are used to store pointers into the
 // managed heap. As long as the Persistent handle is alive
@@ -216,47 +149,59 @@ class CrossThreadPersistent;
 //
 // We have to construct and destruct Persistent in the same thread.
 template<typename T>
-class Persistent : public PersistentBase<ThreadLocalPersistents<ThreadingTrait<T>::Affinity>, Persistent<T>> {
+class Persistent : public PersistentNode {
 public:
-    Persistent() : m_raw(nullptr) { }
-
-    Persistent(std::nullptr_t) : m_raw(nullptr) { }
-
-    Persistent(T* raw) : m_raw(raw)
+    Persistent() : PersistentNode(TraceMethodDelegate<Persistent<T>, &Persistent<T>::trace>::trampoline), m_raw(nullptr)
     {
+        initialize();
+    }
+
+    Persistent(std::nullptr_t) : PersistentNode(TraceMethodDelegate<Persistent<T>, &Persistent<T>::trace>::trampoline), m_raw(nullptr)
+    {
+        initialize();
+    }
+
+    Persistent(T* raw) : PersistentNode(TraceMethodDelegate<Persistent<T>, &Persistent<T>::trace>::trampoline), m_raw(raw)
+    {
+        initialize();
         checkPointer();
         recordBacktrace();
     }
 
-    explicit Persistent(T& raw) : m_raw(&raw)
+    Persistent(T& raw) : PersistentNode(TraceMethodDelegate<Persistent<T>, &Persistent<T>::trace>::trampoline), m_raw(&raw)
     {
+        initialize();
         checkPointer();
         recordBacktrace();
     }
 
-    Persistent(const Persistent& other) : m_raw(other)
+    Persistent(const Persistent& other) : PersistentNode(TraceMethodDelegate<Persistent<T>, &Persistent<T>::trace>::trampoline), m_raw(other)
     {
-        checkPointer();
-        recordBacktrace();
-    }
-
-    template<typename U>
-    Persistent(const Persistent<U>& other) : m_raw(other)
-    {
-        checkPointer();
-        recordBacktrace();
-    }
-
-    template<typename U>
-    Persistent(const Member<U>& other) : m_raw(other)
-    {
+        initialize();
         checkPointer();
         recordBacktrace();
     }
 
     template<typename U>
-    Persistent(const RawPtr<U>& other) : m_raw(other.get())
+    Persistent(const Persistent<U>& other) : PersistentNode(TraceMethodDelegate<Persistent<T>, &Persistent<T>::trace>::trampoline), m_raw(other)
     {
+        initialize();
+        checkPointer();
+        recordBacktrace();
+    }
+
+    template<typename U>
+    Persistent(const Member<U>& other) : PersistentNode(TraceMethodDelegate<Persistent<T>, &Persistent<T>::trace>::trampoline), m_raw(other)
+    {
+        initialize();
+        checkPointer();
+        recordBacktrace();
+    }
+
+    template<typename U>
+    Persistent(const RawPtr<U>& other) : PersistentNode(TraceMethodDelegate<Persistent<T>, &Persistent<T>::trace>::trampoline), m_raw(other.get())
+    {
+        initialize();
         checkPointer();
         recordBacktrace();
     }
@@ -265,6 +210,7 @@ public:
 
     virtual ~Persistent()
     {
+        uninitialize();
         m_raw = nullptr;
     }
 
@@ -348,6 +294,25 @@ public:
     T* get() const { return m_raw; }
 
 private:
+    void initialize()
+    {
+        ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+        state->checkThread();
+        m_prev = state->roots();
+        m_next = m_prev->m_next;
+        m_prev->m_next = this;
+        m_next->m_prev = this;
+    }
+
+    void uninitialize()
+    {
+        ASSERT(isHeapObjectAlive());
+        ASSERT(m_next->isHeapObjectAlive());
+        ASSERT(m_prev->isHeapObjectAlive());
+        m_next->m_prev = m_prev;
+        m_prev->m_next = m_next;
+    }
+
     void checkPointer()
     {
 #if ENABLE(ASSERT)
@@ -383,47 +348,59 @@ private:
 // Unlike Persistent, we can destruct a CrossThreadPersistent in a thread
 // different from the construction thread.
 template<typename T>
-class CrossThreadPersistent : public PersistentBase<GlobalPersistents, CrossThreadPersistent<T>> {
+class CrossThreadPersistent : public PersistentNode {
 public:
-    CrossThreadPersistent() : m_raw(nullptr) { }
-
-    CrossThreadPersistent(std::nullptr_t) : m_raw(nullptr) { }
-
-    CrossThreadPersistent(T* raw) : m_raw(raw)
+    CrossThreadPersistent() : PersistentNode(TraceMethodDelegate<CrossThreadPersistent<T>, &CrossThreadPersistent<T>::trace>::trampoline), m_raw(nullptr)
     {
+        initialize();
+    }
+
+    CrossThreadPersistent(std::nullptr_t) : PersistentNode(TraceMethodDelegate<CrossThreadPersistent<T>, &CrossThreadPersistent<T>::trace>::trampoline), m_raw(nullptr)
+    {
+        initialize();
+    }
+
+    CrossThreadPersistent(T* raw) : PersistentNode(TraceMethodDelegate<CrossThreadPersistent<T>, &CrossThreadPersistent<T>::trace>::trampoline), m_raw(raw)
+    {
+        initialize();
         checkPointer();
         recordBacktrace();
     }
 
-    explicit CrossThreadPersistent(T& raw) : m_raw(&raw)
+    CrossThreadPersistent(T& raw) : PersistentNode(TraceMethodDelegate<CrossThreadPersistent<T>, &CrossThreadPersistent<T>::trace>::trampoline), m_raw(&raw)
     {
+        initialize();
         checkPointer();
         recordBacktrace();
     }
 
-    CrossThreadPersistent(const CrossThreadPersistent& other) : m_raw(other)
+    CrossThreadPersistent(const CrossThreadPersistent& other) : PersistentNode(TraceMethodDelegate<CrossThreadPersistent<T>, &CrossThreadPersistent<T>::trace>::trampoline), m_raw(other)
     {
-        checkPointer();
-        recordBacktrace();
-    }
-
-    template<typename U>
-    CrossThreadPersistent(const CrossThreadPersistent<U>& other) : m_raw(other)
-    {
-        checkPointer();
-        recordBacktrace();
-    }
-
-    template<typename U>
-    CrossThreadPersistent(const Member<U>& other) : m_raw(other)
-    {
+        initialize();
         checkPointer();
         recordBacktrace();
     }
 
     template<typename U>
-    CrossThreadPersistent(const RawPtr<U>& other) : m_raw(other.get())
+    CrossThreadPersistent(const CrossThreadPersistent<U>& other) : PersistentNode(TraceMethodDelegate<CrossThreadPersistent<T>, &CrossThreadPersistent<T>::trace>::trampoline), m_raw(other)
     {
+        initialize();
+        checkPointer();
+        recordBacktrace();
+    }
+
+    template<typename U>
+    CrossThreadPersistent(const Member<U>& other) : PersistentNode(TraceMethodDelegate<CrossThreadPersistent<T>, &CrossThreadPersistent<T>::trace>::trampoline), m_raw(other)
+    {
+        initialize();
+        checkPointer();
+        recordBacktrace();
+    }
+
+    template<typename U>
+    CrossThreadPersistent(const RawPtr<U>& other) : PersistentNode(TraceMethodDelegate<CrossThreadPersistent<T>, &CrossThreadPersistent<T>::trace>::trampoline), m_raw(other.get())
+    {
+        initialize();
         checkPointer();
         recordBacktrace();
     }
@@ -432,6 +409,7 @@ public:
 
     virtual ~CrossThreadPersistent()
     {
+        uninitialize();
         m_raw = nullptr;
     }
 
@@ -515,6 +493,25 @@ public:
     T* get() const { return m_raw; }
 
 private:
+    void initialize()
+    {
+        MutexLocker m_locker(ThreadState::globalRootsMutex());
+        m_prev = &ThreadState::globalRoots();
+        m_next = m_prev->m_next;
+        m_prev->m_next = this;
+        m_next->m_prev = this;
+    }
+
+    void uninitialize()
+    {
+        MutexLocker m_locker(ThreadState::globalRootsMutex());
+        ASSERT(isHeapObjectAlive());
+        ASSERT(m_next->isHeapObjectAlive());
+        ASSERT(m_prev->isHeapObjectAlive());
+        m_next->m_prev = m_prev;
+        m_prev->m_next = m_next;
+    }
+
     void checkPointer()
     {
 #if ENABLE(ASSERT)
@@ -547,21 +544,33 @@ private:
 };
 
 // FIXME: derive affinity based on the collection.
-template<typename Collection, ThreadAffinity Affinity = AnyThread>
-class PersistentHeapCollectionBase
-    : public Collection
-    , public PersistentBase<ThreadLocalPersistents<Affinity>, PersistentHeapCollectionBase<Collection, Affinity>> {
+template<typename Collection>
+class PersistentHeapCollectionBase : public Collection, public PersistentNode {
     // We overload the various new and delete operators with using the WTF DefaultAllocator to ensure persistent
     // heap collections are always allocated off-heap. This allows persistent collections to be used in
     // DEFINE_STATIC_LOCAL et. al.
     WTF_USE_ALLOCATOR(PersistentHeapCollectionBase, WTF::DefaultAllocator);
 public:
-    PersistentHeapCollectionBase() { }
+    PersistentHeapCollectionBase() : PersistentNode(TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline)
+    {
+        initialize();
+    }
 
-    PersistentHeapCollectionBase(const PersistentHeapCollectionBase& other) : Collection(other) { }
+    PersistentHeapCollectionBase(const PersistentHeapCollectionBase& other) : Collection(other), PersistentNode(TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline)
+    {
+        initialize();
+    }
 
     template<typename OtherCollection>
-    PersistentHeapCollectionBase(const OtherCollection& other) : Collection(other) { }
+    PersistentHeapCollectionBase(const OtherCollection& other) : Collection(other), PersistentNode(TraceMethodDelegate<PersistentHeapCollectionBase<Collection>, &PersistentHeapCollectionBase<Collection>::trace>::trampoline)
+    {
+        initialize();
+    }
+
+    ~PersistentHeapCollectionBase()
+    {
+        uninitialize();
+    }
 
     template<typename VisitorDispatcher>
     void trace(VisitorDispatcher visitor)
@@ -571,6 +580,25 @@ public:
         visitor->setHostInfo(this, "PersistentHeapCollectionBase");
 #endif
         visitor->trace(*static_cast<Collection*>(this));
+    }
+
+private:
+    void initialize()
+    {
+        ThreadState* state = ThreadState::current();
+        m_prev = state->roots();
+        m_next = m_prev->m_next;
+        m_prev->m_next = this;
+        m_next->m_prev = this;
+    }
+
+    void uninitialize()
+    {
+        ASSERT(isHeapObjectAlive());
+        ASSERT(m_next->isHeapObjectAlive());
+        ASSERT(m_prev->isHeapObjectAlive());
+        m_next->m_prev = m_prev;
+        m_prev->m_next = m_next;
     }
 };
 
