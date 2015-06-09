@@ -110,6 +110,8 @@ void ExecuteScriptHelper(
       content::WebContents::FromRenderViewHost(render_view_host);
   if (!web_contents)
     return;
+  if (!extensions::TabHelper::FromWebContents(web_contents))
+    extensions::TabHelper::CreateForWebContents(web_contents);
   extensions::TabHelper::FromWebContents(web_contents)->script_executor()->
       ExecuteScript(HostID(HostID::EXTENSIONS, extension_id),
                     extensions::ScriptExecutor::JAVASCRIPT,

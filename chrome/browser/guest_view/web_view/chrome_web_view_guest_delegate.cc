@@ -35,6 +35,7 @@ namespace extensions {
 ChromeWebViewGuestDelegate::ChromeWebViewGuestDelegate(
     WebViewGuest* web_view_guest)
     : pending_context_menu_request_id_(0),
+      chromevox_injected_(false),
       web_view_guest_(web_view_guest),
       weak_ptr_factory_(this) {
 }
@@ -87,6 +88,17 @@ void ChromeWebViewGuestDelegate::OnAttachWebViewHelpers(
           new ChromePDFWebContentsHelperClient()));
 }
 
+void ChromeWebViewGuestDelegate::OnDidInitialize() {
+#if defined(OS_CHROMEOS)
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  CHECK(accessibility_manager);
+  accessibility_subscription_ = accessibility_manager->RegisterCallback(
+      base::Bind(&ChromeWebViewGuestDelegate::OnAccessibilityStatusChanged,
+                 weak_ptr_factory_.GetWeakPtr()));
+#endif
+}
+
 void ChromeWebViewGuestDelegate::OnGuestDestroyed() {
   // Clean up custom context menu items for this guest.
   MenuManager* menu_manager = MenuManager::Get(
@@ -129,5 +141,34 @@ void ChromeWebViewGuestDelegate::OnShowContextMenu(
       ContextMenuDelegate::FromWebContents(guest_web_contents());
   menu_delegate->ShowMenu(pending_menu_.Pass());
 }
+
+void ChromeWebViewGuestDelegate::InjectChromeVoxIfNeeded(
+    content::RenderViewHost* render_view_host) {
+#if defined(OS_CHROMEOS)
+  if (!chromevox_injected_) {
+    chromeos::AccessibilityManager* manager =
+        chromeos::AccessibilityManager::Get();
+    if (manager && manager->IsSpokenFeedbackEnabled()) {
+      manager->InjectChromeVox(render_view_host);
+      chromevox_injected_ = true;
+    }
+  }
+#endif
+}
+
+#if defined(OS_CHROMEOS)
+void ChromeWebViewGuestDelegate::OnAccessibilityStatusChanged(
+    const chromeos::AccessibilityStatusEventDetails& details) {
+  if (details.notification_type == chromeos::ACCESSIBILITY_MANAGER_SHUTDOWN) {
+    accessibility_subscription_.reset();
+  } else if (details.notification_type ==
+      chromeos::ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
+    if (details.enabled)
+      InjectChromeVoxIfNeeded(guest_web_contents()->GetRenderViewHost());
+    else
+      chromevox_injected_ = false;
+  }
+}
+#endif
 
 }  // namespace extensions

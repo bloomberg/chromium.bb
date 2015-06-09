@@ -334,6 +334,8 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
                               content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
                               content::Source<WebContents>(web_contents()));
 
+  if (web_view_guest_delegate_)
+    web_view_guest_delegate_->OnDidInitialize();
   AttachWebViewHelpers(web_contents());
 
   rules_registry_id_ = GetOrGenerateRulesRegistryID(
