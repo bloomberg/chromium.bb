@@ -1080,16 +1080,14 @@
     ]
   },
   "Win8 Aura": {
+    "additional_compile_targets": [
+      "ash_unittests",
+      "aura_unittests",
+      "compositor_unittests",
+      "views_unittests",
+      "wm_unittests"
+    ],
     "gtest_tests": [
-      {
-        "test": "ash_unittests"
-      },
-      {
-        "test": "aura_unittests"
-      },
-      {
-        "test": "compositor_unittests"
-      },
       {
         "test": "content_browsertests"
       },
@@ -1098,12 +1096,6 @@
       },
       {
         "test": "ui_touch_selection_unittests"
-      },
-      {
-        "test": "views_unittests"
-      },
-      {
-        "test": "wm_unittests"
       }
     ]
   },
