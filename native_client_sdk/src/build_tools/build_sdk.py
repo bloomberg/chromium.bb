@@ -892,23 +892,21 @@ def BuildStepSyncNaClPorts():
   """Pull the pinned revision of naclports from SVN."""
   buildbot_common.BuildStep('Sync naclports')
 
-  # In case a previous svn checkout exists, remove it.
+  # In case a previous non-gclient checkout exists, remove it.
   # TODO(sbc): remove this once all the build machines
   # have removed the old checkout
   if (os.path.exists(NACLPORTS_DIR) and
-      not os.path.exists(os.path.join(NACLPORTS_DIR, '.git'))):
+      not os.path.exists(os.path.join(NACLPORTS_DIR, 'src'))):
     buildbot_common.RemoveDir(NACLPORTS_DIR)
 
   if not os.path.exists(NACLPORTS_DIR):
+    buildbot_common.MakeDir(NACLPORTS_DIR)
     # checkout new copy of naclports
-    cmd = ['git', 'clone', NACLPORTS_URL, 'naclports']
-    buildbot_common.Run(cmd, cwd=os.path.dirname(NACLPORTS_DIR))
-  else:
-    # checkout new copy of naclports
-    buildbot_common.Run(['git', 'fetch'], cwd=NACLPORTS_DIR)
+    cmd = ['gclient', 'config', '--name=src', NACLPORTS_URL]
+    buildbot_common.Run(cmd, cwd=NACLPORTS_DIR)
 
   # sync to required revision
-  cmd = ['git', 'checkout', str(NACLPORTS_REV)]
+  cmd = ['gclient', 'sync', '-R', '-r', 'src@' + str(NACLPORTS_REV)]
   buildbot_common.Run(cmd, cwd=NACLPORTS_DIR)
 
 
@@ -927,20 +925,21 @@ def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
   build_script = 'build_tools/buildbot_sdk_bundle.sh'
   buildbot_common.BuildStep('Build naclports')
 
-  bundle_dir = os.path.join(NACLPORTS_DIR, 'out', 'sdk_bundle')
+  naclports_src = os.path.join(NACLPORTS_DIR, 'src')
+  bundle_dir = os.path.join(naclports_src, 'out', 'sdk_bundle')
   out_dir = os.path.join(bundle_dir, 'pepper_%s' % pepper_ver)
 
   # Remove the sdk_bundle directory to remove stale files from previous builds.
   buildbot_common.RemoveDir(bundle_dir)
 
-  buildbot_common.Run([build_script], env=env, cwd=NACLPORTS_DIR)
+  buildbot_common.Run([build_script], env=env, cwd=naclports_src)
 
   # Some naclports do not include a standalone LICENSE/COPYING file
   # so we explicitly list those here for inclusion.
   extra_licenses = ('tinyxml/readme.txt',
                     'jpeg-8d/README',
                     'zlib-1.2.3/README')
-  src_root = os.path.join(NACLPORTS_DIR, 'out', 'build')
+  src_root = os.path.join(naclports_src, 'out', 'build')
   output_license = os.path.join(out_dir, 'ports', 'LICENSE')
   GenerateNotice(src_root, output_license, extra_licenses)
   readme = os.path.join(out_dir, 'ports', 'README')
@@ -954,7 +953,7 @@ def BuildStepTarNaClPorts(pepper_ver, tarfile):
   pepper_dir = 'pepper_%s' % pepper_ver
   archive_dirs = [os.path.join(pepper_dir, 'ports')]
 
-  ports_out = os.path.join(NACLPORTS_DIR, 'out', 'sdk_bundle')
+  ports_out = os.path.join(NACLPORTS_DIR, 'src', 'out', 'sdk_bundle')
   cmd = [sys.executable, CYGTAR, '-C', ports_out, '-cjf', tarfile]
   cmd += archive_dirs
   buildbot_common.Run(cmd, cwd=NACL_DIR)
