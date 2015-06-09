@@ -1,4 +1,4 @@
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 PASS The prototype for li is HTMLLIElement.prototype 
 FAIL li should have a 'value' attribute assert_own_property: li should have a 'value' attribute expected property "value" missing
 PASS Default (unspecified) value of value is 0. 

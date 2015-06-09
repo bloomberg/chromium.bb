@@ -1,4 +1,4 @@
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 PASS [INPUT in EMAIL status] The multiple attribute is false and the value attribute is empty 
 PASS [INPUT in EMAIL status] The multiple attribute is false and the value attribute is a valid e-mail address 
 PASS [INPUT in EMAIL status] The multiple attribute is true and the value contains valid e-mail addresses 

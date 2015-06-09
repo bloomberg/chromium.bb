@@ -1,4 +1,3 @@
-           
 This is a testharness.js-based test.
 FAIL click on mutable radio fires the input event assert_true: expected true got false
 FAIL click on mutable radio fires the change event assert_true: event should be trusted expected true got undefined

@@ -101,8 +101,13 @@ add_completion_callback(function (tests, harness_status) {
             if ((isCSSWGTest() || isJSTest()) && logDiv) {
                 // Assume it's a CSSWG style test, and anything other than the log div isn't
                 // material to the testrunner output, so should be hidden from the text dump
-                for (var i = 0; i < document.body.children.length; i++) {
-                    document.body.children[i].style.visibility = "hidden";
+                var next = null;
+                for (var child = document.body.firstChild; child; child = next) {
+                    next = child.nextSibling;
+                    if (child.nodeType == Node.ELEMENT_NODE)
+                        child.style.visibility = "hidden";
+                    else if (child.nodeType == Node.TEXT_NODE)
+                        document.body.removeChild(child);
                 }
             }
         }

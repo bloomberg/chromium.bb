@@ -1,4 +1,4 @@
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 PASS VTTCue.getCueAsHTML(), creating the cue 
 PASS VTTCue.getCueAsHTML(), <c> 
 PASS VTTCue.getCueAsHTML(), <c.a.b> 

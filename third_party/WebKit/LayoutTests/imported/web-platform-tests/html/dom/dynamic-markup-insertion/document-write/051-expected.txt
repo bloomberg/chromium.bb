@@ -1,5 +1,0 @@
-A
-This is a testharness.js-based test.
-PASS document.write \r\n 
-Harness: the test ran to completion.
-

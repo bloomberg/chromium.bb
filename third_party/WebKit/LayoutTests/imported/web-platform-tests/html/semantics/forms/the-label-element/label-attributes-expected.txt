@@ -1,4 +1,4 @@
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 PASS A label element with a 'for' attribute should only be associated with a labelable element. 
 FAIL A label element not in a document can not label any element in the document. assert_not_equals: A label element not in a document should not label an element in a document. got disallowed value Element node <input id="test1"></input>
 PASS The labeled control for a label element that has no 'for' attribute is the first labelable element which is a descendant of that label element. 

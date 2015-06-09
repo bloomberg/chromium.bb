@@ -1,7 +1,3 @@
-        
-
-
-   
 This is a testharness.js-based test.
 FAIL ':disabled' should match only disabled elements assert_array_equals: lengths differ, expected 9 got 10
 FAIL ':disabled' should not match elements whose disabled attribute has been removed assert_array_equals: lengths differ, expected 8 got 9

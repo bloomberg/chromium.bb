@@ -44,7 +44,7 @@ ValidationMessageClient: main-message=Please select one of these options. sub-me
 ValidationMessageClient: main-message=Please select a file. sub-message=
 ValidationMessageClient: main-message=Please select an item in the list. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 PASS [INPUT in TEXT status] no constraint 
 PASS [INPUT in TEXT status] no constraint (in a form) 
 FAIL [INPUT in TEXT status] suffering from being too long assert_true: The invalid event should be fired. expected true got false

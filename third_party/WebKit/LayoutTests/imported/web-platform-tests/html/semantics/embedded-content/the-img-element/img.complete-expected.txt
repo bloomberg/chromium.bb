@@ -1,4 +1,3 @@
-  
 This is a testharness.js-based test.
 PASS img src omitted 
 PASS img src empty 

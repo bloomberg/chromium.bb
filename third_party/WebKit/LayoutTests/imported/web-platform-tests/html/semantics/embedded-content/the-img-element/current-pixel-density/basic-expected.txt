@@ -1,4 +1,3 @@
-          
 This is a testharness.js-based test.
 FAIL <img src="/images/green-256x256.png" data-expect="256"> assert_equals: width expected 256 but got 20
 FAIL <img srcset="/images/green-256x256.png 1x" data-expect="256"> assert_equals: width expected 256 but got 20

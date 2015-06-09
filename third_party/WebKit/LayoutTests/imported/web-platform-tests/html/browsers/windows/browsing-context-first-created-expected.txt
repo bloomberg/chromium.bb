@@ -1,4 +1,4 @@
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 PASS Check the history.length of the first created browsing context 
 FAIL Check the document's meta data assert_equals: The document's encoding should be 'UTF-8'. expected "UTF-8" but got "windows-1252"
 PASS Check the document's status 

@@ -1,4 +1,4 @@
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 PASS if only one item has a *name* or id value matching the parameter, return that object and stop 
 PASS if only one item has a name or *id* value matching the parameter, return that object and stop 
 PASS if no item has a name or id value matching the parameter, return null and stop 

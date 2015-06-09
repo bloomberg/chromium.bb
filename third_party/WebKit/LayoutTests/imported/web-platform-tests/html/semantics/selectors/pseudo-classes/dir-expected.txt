@@ -1,4 +1,3 @@
-        ‮‬  
 This is a testharness.js-based test.
 FAIL ':dir(rtl)' matches all elements whose directionality is 'rtl'. Failed to execute 'querySelectorAll' on 'Document': ':dir(rtl)' is not a valid selector.
 FAIL ':dir(ltr)' matches all elements whose directionality is 'ltr'. Failed to execute 'querySelectorAll' on 'Document': ':dir(ltr)' is not a valid selector.

@@ -1,4 +1,4 @@
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 PASS Indexed properties of the window object (strict mode) 
 FAIL Indexed properties of the window object (strict mode) 1 assert_throws: function "function () {
     window[0] = "foo";

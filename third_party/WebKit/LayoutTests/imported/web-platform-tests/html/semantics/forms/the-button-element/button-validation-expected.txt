@@ -1,4 +1,3 @@
-     
 This is a testharness.js-based test.
 PASS missing type attribute 
 PASS submit type attribute 

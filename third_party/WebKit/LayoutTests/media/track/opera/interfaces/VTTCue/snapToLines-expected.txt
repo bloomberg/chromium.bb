@@ -1,4 +1,4 @@
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 PASS VTTCue.snapToLines, script-created cue 
 FAIL VTTCue.snapToLines, parsed cue assert_true: expected true got false
 Harness: the test ran to completion.

@@ -1,4 +1,3 @@
-     
 This is a testharness.js-based test.
 FAIL click on mutable checkbox fires the input and change events assert_true: event should be trusted expected true got undefined
 PASS click on non-mutable checkbox doesn't fire the input or change event 

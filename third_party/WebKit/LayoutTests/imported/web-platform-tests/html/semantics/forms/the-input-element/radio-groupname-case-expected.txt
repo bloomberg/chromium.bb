@@ -1,4 +1,3 @@
-                                   
 This is a testharness.js-based test.
 PASS radio button group name = sImPlE 
 FAIL radio button group name = paSSfield-killroyß assert_false: expected false got true
