@@ -223,6 +223,11 @@ gfx::Size BubbleFrameView::GetMinimumSize() const {
   return GetWindowBoundsForClientBounds(gfx::Rect(client_size)).size();
 }
 
+gfx::Size BubbleFrameView::GetMaximumSize() const {
+  // A bubble should be non-resizable, so its max size is its preferred size.
+  return GetPreferredSize();
+}
+
 void BubbleFrameView::Layout() {
   gfx::Rect bounds(GetContentsBounds());
   bounds.Inset(GetTitleInsets());

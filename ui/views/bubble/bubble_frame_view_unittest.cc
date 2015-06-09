@@ -24,6 +24,8 @@ const SkColor kColor = SK_ColorRED;
 const int kMargin = 6;
 const int kMinimumClientWidth = 100;
 const int kMinimumClientHeight = 200;
+const int kMaximumClientWidth = 300;
+const int kMaximumClientHeight = 300;
 const int kPreferredClientWidth = 150;
 const int kPreferredClientHeight = 250;
 const int kExpectedBorderWidth = 22;
@@ -45,6 +47,8 @@ class TestBubbleFrameViewWidgetDelegate : public WidgetDelegate {
           gfx::Size(kPreferredClientWidth, kPreferredClientHeight));
       contents_view->set_minimum_size(
           gfx::Size(kMinimumClientWidth, kMinimumClientHeight));
+      contents_view->set_maximum_size(
+          gfx::Size(kMaximumClientWidth, kMaximumClientHeight));
       contents_view_ = contents_view;
     }
     return contents_view_;
@@ -426,6 +430,15 @@ TEST_F(BubbleFrameViewTest, GetMinimumSize) {
   EXPECT_EQ(kMinimumClientWidth + kExpectedBorderWidth, minimum_size.width());
   EXPECT_EQ(kMinimumClientHeight + kExpectedBorderHeight,
             minimum_size.height());
+}
+
+TEST_F(BubbleFrameViewTest, GetMaximumSize) {
+  TestBubbleFrameView frame(this);
+  gfx::Size maximum_size = frame.GetMaximumSize();
+  // Should ignore the contents view's maximum size and use the preferred size.
+  EXPECT_EQ(kPreferredClientWidth + kExpectedBorderWidth, maximum_size.width());
+  EXPECT_EQ(kPreferredClientHeight + kExpectedBorderHeight,
+            maximum_size.height());
 }
 
 }  // namespace views
