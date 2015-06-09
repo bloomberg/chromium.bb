@@ -294,6 +294,9 @@ This directory contains the source code of ICU 54.1 for C/C++.
    - patches/ucnv_name.patch
    - upstream bug
      http://bugs.icu-project.org/trac/ticket/11696
- 
 
-
+17. Cherry-pick an upstream patch to add a separate field for ref-counting in
+    the converter data.
+   - patches/ucnv_refcount.patch
+   - upstream change:
+     http://bugs.icu-project.org/trac/ticket/11601

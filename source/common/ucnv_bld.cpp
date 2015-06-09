@@ -285,6 +285,7 @@ ucnv_data_unFlattenClone(UConverterLoadArgs *pArgs, UDataMemory *pData, UErrorCo
 
     if( (uint16_t)type >= UCNV_NUMBER_OF_SUPPORTED_CONVERTER_TYPES ||
         converterData[type] == NULL ||
+        !converterData[type]->isReferenceCounted ||
         converterData[type]->referenceCounter != 1 ||
         source->structSize != sizeof(UConverterStaticData))
     {
@@ -301,26 +302,6 @@ ucnv_data_unFlattenClone(UConverterLoadArgs *pArgs, UDataMemory *pData, UErrorCo
     /* copy initial values from the static structure for this type */
     uprv_memcpy(data, converterData[type], sizeof(UConverterSharedData));
 
-#if 0 /* made UConverterMBCSTable part of UConverterSharedData -- markus 20031107 */
-    /*
-     * It would be much more efficient if the table were a direct member, not a pointer.
-     * However, that would add to the size of all UConverterSharedData objects
-     * even if they do not use this table (especially algorithmic ones).
-     * If this changes, then the static templates from converterData[type]
-     * need more entries.
-     *
-     * In principle, it would be cleaner if the load() function below
-     * allocated the table.
-     */
-    data->table = (UConverterTable *)uprv_malloc(sizeof(UConverterTable));
-    if(data->table == NULL) {
-        uprv_free(data);
-        *status = U_MEMORY_ALLOCATION_ERROR;
-        return NULL;
-    }
-    uprv_memset(data->table, 0, sizeof(UConverterTable));
-#endif
-
     data->staticData = source;
 
     data->sharedDataCached = FALSE;
@@ -331,7 +312,6 @@ ucnv_data_unFlattenClone(UConverterLoadArgs *pArgs, UDataMemory *pData, UErrorCo
     if(data->impl->load != NULL) {
         data->impl->load(data, pArgs, raw + source->structSize, status);
         if(U_FAILURE(*status)) {
-            uprv_free(data->table);
             uprv_free(data);
             return NULL;
         }
@@ -535,25 +515,6 @@ ucnv_deleteSharedConverterData(UConverterSharedData * deadSharedData)
         udata_close(data);
     }
 
-    if(deadSharedData->table != NULL)
-    {
-        uprv_free(deadSharedData->table);
-    }
-
-#if 0
-    /* if the static data is actually owned by the shared data */
-    /* enable if we ever have this situation. */
-    if(deadSharedData->staticDataOwned == TRUE) /* see ucnv_bld.h */
-    {
-        uprv_free((void*)deadSharedData->staticData);
-    }
-#endif
-
-#if 0
-    /* Zap it ! */
-    uprv_memset(deadSharedData->0, sizeof(*deadSharedData));
-#endif
-
     uprv_free(deadSharedData);
 
     UTRACE_EXIT_VALUE((int32_t)TRUE);
@@ -604,7 +565,7 @@ ucnv_load(UConverterLoadArgs *pArgs, UErrorCode *err) {
 
 /**
  * Unload a non-algorithmic converter.
- * It must be sharedData->referenceCounter != ~0
+ * It must be sharedData->isReferenceCounted
  * and this function must be called inside umtx_lock(&cnvCacheMutex).
  */
 U_CAPI void
@@ -623,12 +584,7 @@ ucnv_unload(UConverterSharedData *sharedData) {
 U_CFUNC void
 ucnv_unloadSharedDataIfReady(UConverterSharedData *sharedData)
 {
-    /*
-    Checking whether it's an algorithic converter is okay
-    in multithreaded applications because the value never changes.
-    Don't check referenceCounter for any other value.
-    */
-    if(sharedData != NULL && sharedData->referenceCounter != (uint32_t)~0) {
+    if(sharedData != NULL && sharedData->isReferenceCounted) {
         umtx_lock(&cnvCacheMutex);
         ucnv_unload(sharedData);
         umtx_unlock(&cnvCacheMutex);
@@ -638,12 +594,7 @@ ucnv_unloadSharedDataIfReady(UConverterSharedData *sharedData)
 U_CFUNC void
 ucnv_incrementRefCount(UConverterSharedData *sharedData)
 {
-    /*
-    Checking whether it's an algorithic converter is okay
-    in multithreaded applications because the value never changes.
-    Don't check referenceCounter for any other value.
-    */
-    if(sharedData != NULL && sharedData->referenceCounter != (uint32_t)~0) {
+    if(sharedData != NULL && sharedData->isReferenceCounted) {
         umtx_lock(&cnvCacheMutex);
         sharedData->referenceCounter++;
         umtx_unlock(&cnvCacheMutex);
@@ -933,12 +884,7 @@ ucnv_createAlgorithmicConverter(UConverter *myUConverter,
     }
 
     sharedData = converterData[type];
-    /*
-    Checking whether it's an algorithic converter is okay
-    in multithreaded applications because the value never changes.
-    Don't check referenceCounter for any other value.
-    */
-    if(sharedData == NULL || sharedData->referenceCounter != (uint32_t)~0) {
+    if(sharedData == NULL || sharedData->isReferenceCounted) {
         /* not a valid type, or not an algorithmic converter */
         *err = U_ILLEGAL_ARGUMENT_ERROR;
         UTRACE_EXIT_STATUS(U_ILLEGAL_ARGUMENT_ERROR);
