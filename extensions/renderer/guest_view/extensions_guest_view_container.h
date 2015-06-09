@@ -19,7 +19,6 @@ namespace extensions {
 class ExtensionsGuestViewContainer : public guest_view::GuestViewContainer {
  public:
   explicit ExtensionsGuestViewContainer(content::RenderFrame* render_frame);
-  ~ExtensionsGuestViewContainer() override;
 
   void RegisterDestructionCallback(v8::Local<v8::Function> callback,
                                    v8::Isolate* isolate);
@@ -29,8 +28,14 @@ class ExtensionsGuestViewContainer : public guest_view::GuestViewContainer {
   // BrowserPluginDelegate implementation.
   void DidResizeElement(const gfx::Size& new_size) override;
 
+ protected:
+  ~ExtensionsGuestViewContainer() override;
+
  private:
   void CallElementResizeCallback(const gfx::Size& new_size);
+
+  // GuestViewContainer implementation.
+  void OnDestroy() override;
 
   v8::Global<v8::Function> destruction_callback_;
   v8::Isolate* destruction_isolate_;

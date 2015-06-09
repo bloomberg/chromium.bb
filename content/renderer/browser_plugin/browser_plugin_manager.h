@@ -34,9 +34,11 @@ class CONTENT_EXPORT BrowserPluginManager : public RenderProcessObserver {
   // BrowserPlugin is responsible for associating itself with the
   // BrowserPluginManager via AddBrowserPlugin. When it is destroyed, it is
   // responsible for removing its association via RemoveBrowserPlugin.
-  BrowserPlugin* CreateBrowserPlugin(
-      RenderFrame* render_frame,
-      scoped_ptr<BrowserPluginDelegate> delegate);
+  // The |delegate| is expected to manage its own lifetime.
+  // Generally BrowserPlugin calls DidDestroyElement() on the delegate and
+  // right now the delegate destroys itself once it hears that callback.
+  BrowserPlugin* CreateBrowserPlugin(RenderFrame* render_frame,
+                                     BrowserPluginDelegate* delegate);
 
   void Attach(int browser_plugin_instance_id);
 

@@ -5,8 +5,6 @@
 #ifndef CONTENT_PUBLIC_RENDERER_BROWSER_PLUGIN_DELEGATE_H_
 #define CONTENT_PUBLIC_RENDERER_BROWSER_PLUGIN_DELEGATE_H_
 
-#include <string>
-
 #include "content/common/content_export.h"
 
 namespace gfx {
@@ -28,8 +26,6 @@ class RenderFrame;
 // behavior of the plugin.
 class CONTENT_EXPORT BrowserPluginDelegate {
  public:
-  virtual ~BrowserPluginDelegate() {}
-
   // Called when the BrowserPlugin's geometry has been computed for the first
   // time.
   virtual void Ready() {}
@@ -47,8 +43,14 @@ class CONTENT_EXPORT BrowserPluginDelegate {
   // Called when the plugin resizes.
   virtual void DidResizeElement(const gfx::Size& new_size) {}
 
+  // Called when the plugin is about to be destroyed.
+  virtual void DidDestroyElement() {}
+
   // Return a scriptable object for the plugin.
   virtual v8::Local<v8::Object> V8ScriptableObject(v8::Isolate* isolate);
+
+ protected:
+  virtual ~BrowserPluginDelegate() {}
 };
 
 }  // namespace content

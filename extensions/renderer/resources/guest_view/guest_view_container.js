@@ -9,6 +9,7 @@ var DocumentNatives = requireNative('document_natives');
 var GuestView = require('guestView').GuestView;
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 var IdGenerator = requireNative('id_generator');
+var MessagingNatives = requireNative('messaging_natives');
 
 function GuestViewContainer(element, viewType) {
   privates(element).internal = this;
@@ -122,11 +123,19 @@ GuestViewContainer.prototype.attachWindow = function() {
   return true;
 };
 
+GuestViewContainer.prototype.makeGCOwnContainer = function(internalInstanceId) {
+  MessagingNatives.BindToGC(this, function() {
+    GuestViewInternalNatives.DestroyContainer(internalInstanceId);
+  }, -1);
+};
+
 GuestViewContainer.prototype.handleBrowserPluginAttributeMutation =
     function(name, oldValue, newValue) {
   if (name == 'internalinstanceid' && !oldValue && !!newValue) {
     privates(this).browserPluginElement.removeAttribute('internalinstanceid');
     this.internalInstanceId = parseInt(newValue);
+
+    this.makeGCOwnContainer(this.internalInstanceId);
 
     // Track when the element resizes using the element resize callback.
     GuestViewInternalNatives.RegisterElementResizeCallback(

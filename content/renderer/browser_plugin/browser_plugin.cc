@@ -61,7 +61,7 @@ BrowserPlugin* BrowserPlugin::GetFromNode(blink::WebNode& node) {
 }
 
 BrowserPlugin::BrowserPlugin(RenderFrame* render_frame,
-                             scoped_ptr<BrowserPluginDelegate> delegate)
+                             BrowserPluginDelegate* delegate)
     : attached_(false),
       render_frame_routing_id_(render_frame->GetRoutingID()),
       container_(nullptr),
@@ -73,7 +73,7 @@ BrowserPlugin::BrowserPlugin(RenderFrame* render_frame,
       ready_(false),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
       contents_opaque_(true),
-      delegate_(delegate.Pass()),
+      delegate_(delegate),
       weak_ptr_factory_(this) {
   browser_plugin_instance_id_ =
       BrowserPluginManager::Get()->GetNextInstanceID();
@@ -85,6 +85,10 @@ BrowserPlugin::BrowserPlugin(RenderFrame* render_frame,
 BrowserPlugin::~BrowserPlugin() {
   if (compositing_helper_.get())
     compositing_helper_->OnContainerDestroy();
+
+  if (delegate_)
+    delegate_->DidDestroyElement();
+  delegate_ = nullptr;
 
   BrowserPluginManager::Get()->RemoveBrowserPlugin(browser_plugin_instance_id_);
 }
@@ -263,6 +267,16 @@ void BrowserPlugin::ShowSadGraphic() {
     container_->invalidate();
 }
 
+void BrowserPlugin::UpdateInternalInstanceId() {
+  // This is a way to notify observers of our attributes that this plugin is
+  // available in render tree.
+  // TODO(lazyboy): This should be done through the delegate instead. Perhaps
+  // by firing an event from there.
+  UpdateDOMAttribute(
+      "internalinstanceid",
+      base::UTF8ToUTF16(base::IntToString(browser_plugin_instance_id_)));
+}
+
 void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {
   if (!attached())
     return;
@@ -329,16 +343,6 @@ void BrowserPlugin::EnableCompositing(bool enable) {
   }
 }
 
-void BrowserPlugin::UpdateInternalInstanceId() {
-  // This is a way to notify observers of our attributes that this plugin is
-  // available in render tree.
-  // TODO(lazyboy): This should be done through the delegate instead. Perhaps
-  // by firing an event from there.
-  UpdateDOMAttribute(
-      "internalinstanceid",
-      base::UTF8ToUTF16(base::IntToString(browser_plugin_instance_id_)));
-}
-
 void BrowserPlugin::destroy() {
   if (container_) {
     // The BrowserPlugin's WebPluginContainer is deleted immediately after this
@@ -379,8 +383,7 @@ bool BrowserPlugin::canProcessDrag() const {
 void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   if (guest_crashed_) {
     if (!sad_guest_)  // Lazily initialize bitmap.
-      sad_guest_ = content::GetContentClient()->renderer()->
-          GetSadWebViewBitmap();
+      sad_guest_ = GetContentClient()->renderer()->GetSadWebViewBitmap();
     // content_shell does not have the sad plugin bitmap, so we'll paint black
     // instead to make it clear that something went wrong.
     if (sad_guest_) {

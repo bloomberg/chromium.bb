@@ -49,12 +49,43 @@ void GuestViewContainer::RenderFrameLifetimeObserver::OnDestruct() {
 GuestViewContainer::GuestViewContainer(content::RenderFrame* render_frame)
     : element_instance_id_(guest_view::kInstanceIDNone),
       render_frame_(render_frame),
-      ready_(false) {
+      ready_(false),
+      in_destruction_(false) {
   render_frame_lifetime_observer_.reset(
       new RenderFrameLifetimeObserver(this, render_frame_));
 }
 
 GuestViewContainer::~GuestViewContainer() {
+  // Note: Cleanups should be done in GuestViewContainer::Destroy(), not here.
+}
+
+// static.
+GuestViewContainer* GuestViewContainer::FromID(int element_instance_id) {
+  GuestViewContainerMap* guest_view_containers =
+      g_guest_view_container_map.Pointer();
+  auto it = guest_view_containers->find(element_instance_id);
+  return it == guest_view_containers->end() ? nullptr : it->second;
+}
+
+// Right now a GuestViewContainer can be destroyed in one of the following
+// ways:
+//
+// 1. If GuestViewContainer is driven by content/, the element (browser plugin)
+//   can destroy GuestViewContainer when the element is destroyed.
+// 2. If GuestViewContainer is managed outside of content/, then the
+//   <webview> element's GC will destroy it.
+// 3. If GuestViewContainer's embedder frame is destroyed, we'd also destroy
+//   GuestViewContainer.
+void GuestViewContainer::Destroy() {
+  if (in_destruction_)
+    return;
+
+  in_destruction_ = true;
+
+  // Give our derived class an opportunity to perform some cleanup prior to
+  // destruction.
+  OnDestroy();
+
   if (element_instance_id() != guest_view::kInstanceIDNone)
     g_guest_view_container_map.Get().erase(element_instance_id());
 
@@ -67,19 +98,14 @@ GuestViewContainer::~GuestViewContainer() {
     // Call the JavaScript callbacks with no arguments which implies an error.
     pending_request->ExecuteCallbackIfAvailable(0 /* argc */, nullptr);
   }
-}
 
-// static.
-GuestViewContainer* GuestViewContainer::FromID(int element_instance_id) {
-  GuestViewContainerMap* guest_view_containers =
-      g_guest_view_container_map.Pointer();
-  auto it = guest_view_containers->find(element_instance_id);
-  return it == guest_view_containers->end() ? nullptr : it->second;
+  delete this;
 }
 
 void GuestViewContainer::RenderFrameDestroyed() {
   OnRenderFrameDestroyed();
   render_frame_ = nullptr;
+  Destroy();
 }
 
 void GuestViewContainer::IssueRequest(linked_ptr<GuestViewRequest> request) {
@@ -144,6 +170,10 @@ void GuestViewContainer::SetElementInstanceID(int element_instance_id) {
   DCHECK(!g_guest_view_container_map.Get().count(element_instance_id));
   g_guest_view_container_map.Get().insert(
       std::make_pair(element_instance_id, this));
+}
+
+void GuestViewContainer::DidDestroyElement() {
+  Destroy();
 }
 
 }  // namespace guest_view

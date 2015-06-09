@@ -51,6 +51,9 @@ class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {
   // Window JavaScript object for that RenderView.
   void GetContentWindow(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Destroys the GuestViewContainer given an element instance ID in |args|.
+  void DestroyContainer(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // GetViewFromID takes a view ID, and returns the GuestView element associated
   // with that ID, if one exists. Otherwise, null is returned.
   void GetViewFromID(const v8::FunctionCallbackInfo<v8::Value>& args);

@@ -47,6 +47,9 @@ GuestViewInternalCustomBindings::GuestViewInternalCustomBindings(
   RouteFunction("DetachGuest",
                 base::Bind(&GuestViewInternalCustomBindings::DetachGuest,
                            base::Unretained(this)));
+  RouteFunction("DestroyContainer",
+                base::Bind(&GuestViewInternalCustomBindings::DestroyContainer,
+                           base::Unretained(this)));
   RouteFunction("GetContentWindow",
                 base::Bind(&GuestViewInternalCustomBindings::GetContentWindow,
                            base::Unretained(this)));
@@ -172,6 +175,30 @@ void GuestViewInternalCustomBindings::DetachGuest(
   guest_view_container->IssueRequest(request);
 
   args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
+}
+
+void GuestViewInternalCustomBindings::DestroyContainer(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  args.GetReturnValue().SetNull();
+
+  if (args.Length() != 1)
+    return;
+
+  // Element Instance ID.
+  if (!args[0]->IsInt32())
+    return;
+
+  int element_instance_id = args[0]->Int32Value();
+  auto* guest_view_container =
+      guest_view::GuestViewContainer::FromID(element_instance_id);
+  if (!guest_view_container)
+    return;
+
+  // Note: |guest_view_container| is deleted.
+  // GuestViewContainer::DidDestroyElement() currently also destroys
+  // a GuestViewContainer. That won't be necessary once GuestViewContainer
+  // always runs w/o plugin.
+  guest_view_container->Destroy();
 }
 
 void GuestViewInternalCustomBindings::GetContentWindow(

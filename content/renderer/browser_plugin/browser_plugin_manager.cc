@@ -68,8 +68,8 @@ void BrowserPluginManager::Detach(int browser_plugin_instance_id) {
 
 BrowserPlugin* BrowserPluginManager::CreateBrowserPlugin(
     RenderFrame* render_frame,
-    scoped_ptr<BrowserPluginDelegate> delegate) {
-  return new BrowserPlugin(render_frame, delegate.Pass());
+    BrowserPluginDelegate* delegate) {
+  return new BrowserPlugin(render_frame, delegate);
 }
 
 void BrowserPluginManager::DidCommitCompositorFrame(

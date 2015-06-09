@@ -19,6 +19,9 @@ ExtensionsGuestViewContainer::ExtensionsGuestViewContainer(
 }
 
 ExtensionsGuestViewContainer::~ExtensionsGuestViewContainer() {
+}
+
+void ExtensionsGuestViewContainer::OnDestroy() {
   // Call the destruction callback, if one is registered.
   if (!destruction_callback_.IsEmpty()) {
     v8::HandleScope handle_scope(destruction_isolate_);

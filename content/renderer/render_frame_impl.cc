@@ -1799,11 +1799,10 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
   DCHECK_EQ(frame_, frame);
 #if defined(ENABLE_PLUGINS)
   if (info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
-    scoped_ptr<BrowserPluginDelegate> browser_plugin_delegate(
+    return BrowserPluginManager::Get()->CreateBrowserPlugin(
+        this,
         GetContentClient()->renderer()->CreateBrowserPluginDelegate(
             this, params.mimeType.utf8(), GURL(params.url)));
-    return BrowserPluginManager::Get()->CreateBrowserPlugin(
-        this, browser_plugin_delegate.Pass());
   }
 
   bool pepper_plugin_was_registered = false;
@@ -1919,11 +1918,10 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
   }
 
   if (base::UTF16ToUTF8(params.mimeType) == kBrowserPluginMimeType) {
-    scoped_ptr<BrowserPluginDelegate> browser_plugin_delegate(
+    return BrowserPluginManager::Get()->CreateBrowserPlugin(
+        this,
         GetContentClient()->renderer()->CreateBrowserPluginDelegate(this,
             kBrowserPluginMimeType, GURL(params.url)));
-    return BrowserPluginManager::Get()->CreateBrowserPlugin(
-        this, browser_plugin_delegate.Pass());
   }
 
 #if defined(ENABLE_PLUGINS)

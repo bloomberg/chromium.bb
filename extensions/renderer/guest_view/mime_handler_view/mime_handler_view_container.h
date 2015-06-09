@@ -41,7 +41,6 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
   MimeHandlerViewContainer(content::RenderFrame* render_frame,
                            const std::string& mime_type,
                            const GURL& original_url);
-  ~MimeHandlerViewContainer() override;
 
   static std::vector<MimeHandlerViewContainer*> FromRenderFrame(
       content::RenderFrame* render_frame);
@@ -73,6 +72,9 @@ class MimeHandlerViewContainer : public guest_view::GuestViewContainer,
 
   // Post |message| to the guest.
   void PostMessageFromValue(const base::Value& message);
+
+ protected:
+  ~MimeHandlerViewContainer() override;
 
  private:
   // Message handlers.

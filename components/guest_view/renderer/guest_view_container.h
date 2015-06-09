@@ -17,7 +17,6 @@ class GuestViewRequest;
 class GuestViewContainer : public content::BrowserPluginDelegate {
  public:
   explicit GuestViewContainer(content::RenderFrame* render_frame);
-  ~GuestViewContainer() override;
 
   static GuestViewContainer* FromID(int element_instance_id);
 
@@ -33,6 +32,9 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   // container.
   bool OnMessageReceived(const IPC::Message& message);
 
+  // Destroys this GuestViewContainer after performing necessary cleanup.
+  void Destroy();
+
   // Called when the embedding RenderFrame is destroyed.
   virtual void OnRenderFrameDestroyed() {}
 
@@ -42,6 +44,14 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
 
   // Called to perform actions when a GuestViewContainer gets a geometry.
   virtual void OnReady() {}
+
+  // Called to perform actions when a GuestViewContainer is about to be
+  // destroyed.
+  // Note that this should be called exactly once.
+  virtual void OnDestroy() {}
+
+ protected:
+  ~GuestViewContainer() override;
 
  private:
   class RenderFrameLifetimeObserver;
@@ -58,12 +68,14 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   // BrowserPluginDelegate implementation.
   void Ready() final;
   void SetElementInstanceID(int element_instance_id) final;
+  void DidDestroyElement() final;
 
   int element_instance_id_;
   content::RenderFrame* render_frame_;
   scoped_ptr<RenderFrameLifetimeObserver> render_frame_lifetime_observer_;
 
   bool ready_;
+  bool in_destruction_;
 
   std::deque<linked_ptr<GuestViewRequest> > pending_requests_;
   linked_ptr<GuestViewRequest> pending_response_;

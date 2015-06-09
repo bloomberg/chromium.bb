@@ -55,8 +55,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // A request to enable hardware compositing.
   void EnableCompositing(bool enable);
 
-  void UpdateInternalInstanceId();
-
   // Provided that a guest instance ID has been allocated, this method attaches
   // this BrowserPlugin instance to that guest.
   void Attach();
@@ -146,13 +144,14 @@ class CONTENT_EXPORT BrowserPlugin :
   // uniquely identifies a guest WebContents that's hosted by this
   // BrowserPlugin.
   BrowserPlugin(RenderFrame* render_frame,
-                scoped_ptr<BrowserPluginDelegate> delegate);
+                BrowserPluginDelegate* delegate);
 
   ~BrowserPlugin() override;
 
   gfx::Rect view_rect() const { return view_rect_; }
 
   void ShowSadGraphic();
+  void UpdateInternalInstanceId();
 
   // IPC message handlers.
   // Please keep in alphabetical order.
@@ -201,7 +200,9 @@ class CONTENT_EXPORT BrowserPlugin :
 
   std::vector<EditCommand> edit_commands_;
 
-  scoped_ptr<BrowserPluginDelegate> delegate_;
+  // We call lifetime managing methods on |delegate_|, but we do not directly
+  // own this. The delegate destroys itself.
+  BrowserPluginDelegate* delegate_;
 
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
   // get called after BrowserPlugin has been destroyed.
