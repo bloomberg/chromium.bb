@@ -527,6 +527,10 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
   if (newState == remoting.ClientSession.State.CONNECTED) {
     this.connectedDisposables_.add(
         new base.RepeatingTimer(this.reportStatistics.bind(this), 1000));
+    if (this.plugin_.hasCapability(
+          remoting.ClientSession.Capability.TOUCH_EVENTS)) {
+      this.plugin_.enableTouchEvents(true);
+    }
   } else if (this.isFinished()) {
     base.dispose(this.connectedDisposables_);
     this.connectedDisposables_ = null;
@@ -534,10 +538,6 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
 
   this.notifyStateChanges_(oldState, this.state_);
   this.logToServer_.logClientSessionStateChange(this.state_, this.error_);
-  if (this.plugin_.hasCapability(
-          remoting.ClientSession.Capability.TOUCH_EVENTS)) {
-    this.plugin_.enableTouchEvents(true);
-  }
 };
 
 /**
