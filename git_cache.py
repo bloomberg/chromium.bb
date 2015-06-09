@@ -219,23 +219,26 @@ class Mirror(object):
   def config(self, cwd=None):
     if cwd is None:
       cwd = self.mirror_path
+    env = os.environ.copy()
+    env['GIT_DIR'] = cwd
 
     # Don't run git-gc in a daemon.  Bad things can happen if it gets killed.
-    self.RunGit(['config', 'gc.autodetach', '0'], cwd=cwd)
+    self.RunGit(['config', 'gc.autodetach', '0'], cwd=cwd, env=env)
 
     # Don't combine pack files into one big pack file.  It's really slow for
     # repositories, and there's no way to track progress and make sure it's
     # not stuck.
-    self.RunGit(['config', 'gc.autopacklimit', '0'], cwd=cwd)
+    self.RunGit(['config', 'gc.autopacklimit', '0'], cwd=cwd, env=env)
 
     # Allocate more RAM for cache-ing delta chains, for better performance
     # of "Resolving deltas".
     self.RunGit(['config', 'core.deltaBaseCacheLimit',
-                 gclient_utils.DefaultDeltaBaseCacheLimit()], cwd=cwd)
+                 gclient_utils.DefaultDeltaBaseCacheLimit()], cwd=cwd, env=env)
 
-    self.RunGit(['config', 'remote.origin.url', self.url], cwd=cwd)
+    self.RunGit(['config', 'remote.origin.url', self.url], cwd=cwd, env=env)
     self.RunGit(['config', '--replace-all', 'remote.origin.fetch',
-                 '+refs/heads/*:refs/heads/*', r'\+refs/heads/\*:.*'], cwd=cwd)
+                 '+refs/heads/*:refs/heads/*', r'\+refs/heads/\*:.*'],
+                cwd=cwd, env=env)
     for ref in self.refs:
       ref = ref.lstrip('+').rstrip('/')
       if ref.startswith('refs/'):
@@ -246,7 +249,7 @@ class Mirror(object):
         regex = r'\+refs/heads/%s:.*' % ref.replace('*', r'\*')
       self.RunGit(
           ['config', '--replace-all', 'remote.origin.fetch', refspec, regex],
-          cwd=cwd)
+          cwd=cwd, env=env)
 
   def bootstrap_repo(self, directory):
     """Bootstrap the repo from Google Stroage if possible.
