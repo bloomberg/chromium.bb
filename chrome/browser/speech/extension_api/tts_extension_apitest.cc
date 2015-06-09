@@ -359,6 +359,14 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformPauseResume) {
   ASSERT_TRUE(RunExtensionTest("tts/pause_resume")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformPauseSpeakNoEnqueue) {
+  // While paused, one utterance is enqueued, and then a second utterance that
+  // cannot be enqueued cancels both.
+  InSequence s;
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking()).WillOnce(Return(true));
+  ASSERT_TRUE(RunExtensionTest("tts/pause_speak_no_enqueue")) << message_;
+}
+
 //
 // TTS Engine tests.
 //

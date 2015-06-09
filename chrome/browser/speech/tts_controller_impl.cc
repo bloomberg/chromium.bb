@@ -135,9 +135,9 @@ void TtsControllerImpl::SpeakOrEnqueue(Utterance* utterance) {
   // If we're paused and we get an utterance that can't be queued,
   // flush the queue but stay in the paused state.
   if (paused_ && !utterance->can_enqueue()) {
+    utterance_queue_.push(utterance);
     Stop();
     paused_ = true;
-    delete utterance;
     return;
   }
 
