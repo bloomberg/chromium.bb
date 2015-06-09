@@ -234,13 +234,14 @@ def RunCurl(args, fail=True, **kwargs):
       # We'll let the common exit code filter do the right thing.
       return None
 
-  kwargs.update({
+  args = {
       'retry_on': retriable_exits,
       'error_check': _CheckExit,
       'capture_output': True,
-  })
+  }
+  args.update(kwargs)
   try:
-    return RunCommandWithRetries(5, cmd, sleep=3, **kwargs)
+    return RunCommandWithRetries(5, cmd, sleep=3, **args)
   except cros_build_lib.RunCommandError as e:
     code = e.result.returncode
     if code in (51, 58, 60):
