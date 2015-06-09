@@ -50,7 +50,7 @@ TEST_F(NSSKeyUtilTest, FindNSSKeyFromPublicKeyInfo) {
   // Create an NSS keypair, which will put the keys in the user's NSSDB.
   ScopedSECKEYPublicKey public_key;
   ScopedSECKEYPrivateKey private_key;
-  ASSERT_TRUE(GenerateRSAKeyPairNSS(internal_slot(), 256,
+  ASSERT_TRUE(GenerateRSAKeyPairNSS(internal_slot(), 512,
                                     false /* not permanent */, &public_key,
                                     &private_key));
 
@@ -68,7 +68,7 @@ TEST_F(NSSKeyUtilTest, FailedFindNSSKeyFromPublicKeyInfo) {
   // Create an NSS keypair, which will put the keys in the user's NSSDB.
   ScopedSECKEYPublicKey public_key;
   ScopedSECKEYPrivateKey private_key;
-  ASSERT_TRUE(GenerateRSAKeyPairNSS(internal_slot(), 256,
+  ASSERT_TRUE(GenerateRSAKeyPairNSS(internal_slot(), 512,
                                     false /* not permanent */, &public_key,
                                     &private_key));
 

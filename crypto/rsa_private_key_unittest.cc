@@ -447,7 +447,8 @@ TEST(RSAPrivateKeyUnitTest, ShortIntegers) {
 
 TEST(RSAPrivateKeyUnitTest, CreateFromKeyTest) {
   scoped_ptr<crypto::RSAPrivateKey> key_pair(
-      crypto::RSAPrivateKey::Create(256));
+      crypto::RSAPrivateKey::Create(512));
+  ASSERT_TRUE(key_pair.get());
 
   scoped_ptr<crypto::RSAPrivateKey> key_copy(
       crypto::RSAPrivateKey::CreateFromKey(key_pair->key()));
