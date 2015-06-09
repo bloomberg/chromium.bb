@@ -4903,14 +4903,6 @@ interface SVGRectElement
     getter x
     getter y
     method constructor
-interface SVGRenderingIntent
-    attribute RENDERING_INTENT_ABSOLUTE_COLORIMETRIC
-    attribute RENDERING_INTENT_AUTO
-    attribute RENDERING_INTENT_PERCEPTUAL
-    attribute RENDERING_INTENT_RELATIVE_COLORIMETRIC
-    attribute RENDERING_INTENT_SATURATION
-    attribute RENDERING_INTENT_UNKNOWN
-    method constructor
 interface SVGSVGElement
     attribute SVG_ZOOMANDPAN_DISABLE
     attribute SVG_ZOOMANDPAN_MAGNIFY
