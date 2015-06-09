@@ -304,6 +304,7 @@ if (!is_mac) {
       "//third_party/WebKit/public:blink",
       "//third_party/leveldatabase",
       "//third_party/mesa:osmesa",
+      "//third_party/zlib",
       "//ui/accessibility",
       "//ui/accessibility:ax_gen",
       "//ui/base",

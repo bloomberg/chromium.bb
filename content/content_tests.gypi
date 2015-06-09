@@ -1389,6 +1389,7 @@
             '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
             '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../third_party/mojo/mojo_public.gyp:mojo_js_bindings',
+            '../third_party/zlib/zlib.gyp:zlib',
             '../ui/accessibility/accessibility.gyp:accessibility',
             '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',
