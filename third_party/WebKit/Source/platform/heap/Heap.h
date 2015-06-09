@@ -1190,7 +1190,7 @@ public:                                           \
         return allocateObject(size, true);        \
     }
 #define EAGERLY_FINALIZE_WILL_BE_REMOVED()
-#if ENABLE(ASSERT)
+#if ENABLE(ASSERT) && ENABLE(OILPAN)
 class VerifyEagerFinalization {
 public:
     ~VerifyEagerFinalization()
