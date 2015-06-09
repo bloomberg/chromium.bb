@@ -638,9 +638,6 @@
       # with one of those tools.
       'build_for_tool%': '',
 
-      # If no directory is specified then a temporary directory will be used.
-      'test_isolation_outdir%': '',
-
       'wix_path%': '<(DEPTH)/third_party/wix',
 
       # Supervised users are enabled by default.
@@ -1189,7 +1186,6 @@
     'linux_use_debug_fission%': '<(linux_use_debug_fission)',
     'use_canvas_skia%': '<(use_canvas_skia)',
     'test_isolation_mode%': '<(test_isolation_mode)',
-    'test_isolation_outdir%': '<(test_isolation_outdir)',
     'enable_basic_printing%': '<(enable_basic_printing)',
     'enable_print_preview%': '<(enable_print_preview)',
     'enable_spellcheck%': '<(enable_spellcheck)',
