@@ -113,6 +113,8 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
 
     private static final long OMNIBOX_FIND_SUGGESTION_TIMEOUT_MS = 10 * 1000;
 
+    private static final float FLOAT_EPSILON = 0.001f;
+
     public ChromeActivityTestCaseBase(Class<T> activityClass) {
         super(activityClass);
     }
@@ -875,8 +877,8 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         boolean scaleFactorMatch = CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return getActivity().getCurrentContentViewCore().getScale()
-                        == expectedScale;
+                return Math.abs(getActivity().getCurrentContentViewCore().getScale()
+                        - expectedScale) < FLOAT_EPSILON;
             }
         });
         assertTrue("Expecting scale factor of: " + expectedScale + ", got: "
