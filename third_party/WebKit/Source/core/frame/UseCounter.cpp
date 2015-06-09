@@ -928,6 +928,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedMouseEventMovementY:
         return replacedBy("webkitMovementY", "movementY");
 
+    case VideoFullscreenAllowedExemption:
+        return "Entering fullscreen in an <iframe> with no allowfullscreen attribute is deprecated and will stop working in M46, around October 2015. Please use the allowfullscreen attribute.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
