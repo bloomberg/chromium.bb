@@ -173,8 +173,10 @@ To just build a single package:
       chroot_args = ['--toolchains',
                      ','.join(toolchain.GetToolchainsForBrick(
                          self.blueprint.GetBSP()).iterkeys())]
-    else:
+    elif self.board:
       chroot_args = ['--board', self.board]
+    else:
+      chroot_args = None
 
     commandline.RunInsideChroot(self, chroot_args=chroot_args)
 
