@@ -363,46 +363,6 @@ TEST_F(WebPageNewSerializeTest, FAILS_TestMHTMLEncoding)
     EXPECT_EQ(12, sectionCheckedCount);
 }
 
-// Test that we don't regress https://bugs.webkit.org/show_bug.cgi?id=99105
-TEST_F(WebPageNewSerializeTest, SVGImageDontCrash)
-{
-    WebURL pageUrl = toKURL(m_baseURL);
-    WebURL imageUrl = toTestURL("green_rectangle.svg");
-
-    registerMockedURLLoad(pageUrl, WebString::fromUTF8("page_with_svg_image.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
-    registerMockedURLLoad(imageUrl, WebString::fromUTF8("green_rectangle.svg"), WebString::fromUTF8("pageserializer/"), svgMimeType());
-
-    loadURLInTopFrame(pageUrl);
-
-    WebCString mhtml = WebPageSerializer::serializeToMHTML(webView());
-    // We expect some data to be generated.
-    EXPECT_GT(mhtml.length(), 50U);
-}
-
-
-TEST_F(WebPageNewSerializeTest, NamespaceElementsDontCrash)
-{
-    WebURL pageUrl = toKURL(m_baseURL);
-    registerMockedURLLoad(pageUrl, WebString::fromUTF8("namespace_element.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
-
-    loadURLInTopFrame(pageUrl);
-
-    WebVector<WebURL> localLinks(static_cast<size_t>(1));
-    WebVector<WebString> localPaths(static_cast<size_t>(1));
-    localLinks[0] = pageUrl;
-    localPaths[0] = WebString("/");
-
-    size_t counter = 0;
-    LengthCountingWebPageSerializerClient client(&counter);
-
-    // We just want to make sure nothing crazy happens, namely that no
-    // assertions are hit. As a sanity check, we also make sure that some data
-    // was returned.
-    WebPageSerializer::serialize(webView()->mainFrame()->toWebLocalFrame(), true, &client, localLinks, localPaths, WebString(""));
-
-    EXPECT_GT(counter, 0U);
-}
-
 TEST_F(WebPageNewSerializeTest, SubFrameSerialization)
 {
     WebURL pageUrl = toKURL(m_baseURL);

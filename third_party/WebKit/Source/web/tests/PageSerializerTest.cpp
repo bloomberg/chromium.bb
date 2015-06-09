@@ -244,6 +244,22 @@ TEST_F(PageSerializerTest, DataURIMorphing)
     EXPECT_TRUE(isSerialized("page_with_morphing_data.html", "text/html"));
 }
 
+// Test that we don't regress https://bugs.webkit.org/show_bug.cgi?id=99105
+TEST_F(PageSerializerTest, SVGImageDontCrash)
+{
+    setBaseFolder("pageserializer/svg/");
+
+    registerURL("page_with_svg_image.html", "text/html");
+    registerURL("green_rectangle.svg", "image/svg+xml");
+
+    serialize("page_with_svg_image.html");
+
+    EXPECT_EQ(2U, getResources().size());
+
+    EXPECT_TRUE(isSerialized("green_rectangle.svg", "image/svg+xml"));
+    EXPECT_GT(getSerializedData("green_rectangle.svg", "image/svg+xml").length(), 250U);
+}
+
 TEST_F(PageSerializerTest, DontIncludeErrorImage)
 {
     setBaseFolder("pageserializer/image/");
@@ -256,6 +272,19 @@ TEST_F(PageSerializerTest, DontIncludeErrorImage)
     EXPECT_EQ(1U, getResources().size());
     EXPECT_TRUE(isSerialized("page_with_img_error.html", "text/html"));
     EXPECT_FALSE(isSerialized("error_image.png", "image/png"));
+}
+
+TEST_F(PageSerializerTest, NamespaceElementsDontCrash)
+{
+    setBaseFolder("pageserializer/namespace/");
+
+    registerURL("namespace_element.html", "text/html");
+
+    serialize("namespace_element.html");
+
+    EXPECT_EQ(1U, getResources().size());
+    EXPECT_TRUE(isSerialized("namespace_element.html", "text/html"));
+    EXPECT_GT(getSerializedData("namespace_element.html", "text/html").length(), 0U);
 }
 
 }
