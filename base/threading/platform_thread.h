@@ -192,6 +192,11 @@ class BASE_EXPORT PlatformThread {
   // |thread_handle|.
   static void Join(PlatformThreadHandle thread_handle);
 
+  // Toggles the target thread's priority at runtime.  Prefer
+  // CreateWithPriority() to set the thread's initial priority.
+  // NOTE: The call may fail if the caller thread is not the same as the
+  // target thread on POSIX.  For example, seccomp-bpf blocks it by default
+  // in the sandbox.
   static void SetThreadPriority(PlatformThreadHandle handle,
                                 ThreadPriority priority);
 

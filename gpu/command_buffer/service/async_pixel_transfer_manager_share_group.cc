@@ -47,10 +47,11 @@ class TransferThread : public base::Thread {
   TransferThread()
       : base::Thread(kAsyncTransferThreadName),
         initialized_(false) {
-    Start();
+    base::Thread::Options options;
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-    SetPriority(base::ThreadPriority::BACKGROUND);
+    options.priority = base::ThreadPriority::BACKGROUND;
 #endif
+    StartWithOptions(options);
   }
 
   ~TransferThread() override {

@@ -90,10 +90,11 @@ void PerformNotifyCompletion(
 class TransferThread : public base::Thread {
  public:
   TransferThread() : base::Thread(kAsyncTransferThreadName) {
-    Start();
+    base::Thread::Options options;
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-    SetPriority(base::ThreadPriority::BACKGROUND);
+    options.priority = base::ThreadPriority::BACKGROUND;
 #endif
+    StartWithOptions(options);
   }
   ~TransferThread() override { Stop(); }
 

@@ -60,6 +60,9 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
     // This does not necessarily correspond to the thread's initial stack size.
     // A value of 0 indicates that the default maximum should be used.
     size_t stack_size;
+
+    // Specifies the initial thread priority.
+    ThreadPriority priority;
   };
 
   // Constructor.

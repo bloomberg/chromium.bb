@@ -39,14 +39,16 @@ void ThreadQuitHelper() {
 Thread::Options::Options()
     : message_loop_type(MessageLoop::TYPE_DEFAULT),
       timer_slack(TIMER_SLACK_NONE),
-      stack_size(0) {
+      stack_size(0),
+      priority(ThreadPriority::NORMAL) {
 }
 
 Thread::Options::Options(MessageLoop::Type type,
                          size_t size)
     : message_loop_type(type),
       timer_slack(TIMER_SLACK_NONE),
-      stack_size(size) {
+      stack_size(size),
+      priority(ThreadPriority::NORMAL) {
 }
 
 Thread::Options::~Options() {
@@ -100,7 +102,14 @@ bool Thread::StartWithOptions(const Options& options) {
   // that thread_ is populated before the newly created thread accesses it.
   {
     AutoLock lock(thread_lock_);
-    if (!PlatformThread::Create(options.stack_size, this, &thread_)) {
+    bool created;
+    if (options.priority == ThreadPriority::NORMAL) {
+      created = PlatformThread::Create(options.stack_size, this, &thread_);
+    } else {
+      created = PlatformThread::CreateWithPriority(options.stack_size, this,
+                                                   &thread_, options.priority);
+    }
+    if (!created) {
       DLOG(ERROR) << "failed to create thread";
       delete message_loop_;
       message_loop_ = nullptr;
