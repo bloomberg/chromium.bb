@@ -4161,34 +4161,6 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   bool is_content_initiated =
       document_state->navigation_state()->IsContentInitiated();
 
-  // Experimental:
-  // If --enable-strict-site-isolation is enabled, send all top-level
-  // navigations to the browser to let it swap processes when crossing site
-  // boundaries.  This is currently expected to break some script calls and
-  // navigations, such as form submissions.
-  bool force_swap_due_to_flag =
-      command_line.HasSwitch(switches::kEnableStrictSiteIsolation);
-  if (force_swap_due_to_flag &&
-      !info.frame->parent() && (is_content_initiated || info.isRedirect)) {
-    WebString origin_str = info.frame->document().securityOrigin().toString();
-    GURL frame_url(origin_str.utf8().data());
-    // TODO(cevans): revisit whether this site check is still necessary once
-    // crbug.com/101395 is fixed.
-    bool same_domain_or_host =
-        net::registry_controlled_domains::SameDomainOrHost(
-            frame_url,
-            url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-    // Only keep same-site (domain + scheme) and data URLs in the same process.
-    bool is_same_site =
-        (same_domain_or_host && frame_url.scheme() == url.scheme()) ||
-        url.SchemeIs(url::kDataScheme);
-    if (!is_same_site) {
-      OpenURL(info.frame, url, referrer, info.defaultPolicy);
-      return blink::WebNavigationPolicyIgnore;
-    }
-  }
-
   // If the browser is interested, then give it a chance to look at the request.
   if (is_content_initiated) {
     bool is_form_post =

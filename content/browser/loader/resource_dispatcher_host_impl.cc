@@ -2352,11 +2352,6 @@ int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanSendCookiesForOrigin(child_id, request_data.url)) {
-    load_flags |= (net::LOAD_DO_NOT_SEND_COOKIES |
-                   net::LOAD_DO_NOT_SEND_AUTH_DATA |
-                   net::LOAD_DO_NOT_SAVE_COOKIES);
-  }
 
   // Raw headers are sensitive, as they include Cookie/Set-Cookie, so only
   // allow requesting them if requester has ReadRawCookies permission.

@@ -235,26 +235,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return origin_lock_ == site_gurl;
   }
 
-  bool CanSendCookiesForOrigin(const GURL& gurl) {
-    // We only block cross-site cookies on network requests if the
-    // --enable-strict-site-isolation flag is passed.  This is expected to break
-    // compatibility with many sites.  The similar --site-per-process flag only
-    // blocks JavaScript access to cross-site cookies (in
-    // CanAccessCookiesForOrigin).
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    if (!command_line.HasSwitch(switches::kEnableStrictSiteIsolation))
-      return true;
-
-    if (origin_lock_.is_empty())
-      return true;
-    // TODO(creis): We must pass the valid browser_context to convert hosted
-    // apps URLs.  Currently, hosted apps cannot set cookies in this mode.
-    // See http://crbug.com/160576.
-    GURL site_gurl = SiteInstanceImpl::GetSiteForURL(NULL, gurl);
-    return origin_lock_ == site_gurl;
-  }
-
   void LockToOrigin(const GURL& gurl) {
     origin_lock_ = gurl;
   }
@@ -820,26 +800,6 @@ bool ChildProcessSecurityPolicyImpl::CanAccessCookiesForOrigin(
   if (state == security_state_.end())
     return false;
   return state->second->CanAccessCookiesForOrigin(gurl);
-}
-
-bool ChildProcessSecurityPolicyImpl::CanSendCookiesForOrigin(int child_id,
-                                                             const GURL& gurl) {
-  for (PluginProcessHostIterator iter; !iter.Done(); ++iter) {
-    if (iter.GetData().id == child_id) {
-      if (iter.GetData().process_type == PROCESS_TYPE_PLUGIN) {
-        // NPAPI plugin processes are unsandboxed and so are trusted. Plugins
-        // can make request to any origin.
-        return true;
-      }
-      break;
-    }
-  }
-
-  base::AutoLock lock(lock_);
-  SecurityStateMap::iterator state = security_state_.find(child_id);
-  if (state == security_state_.end())
-    return false;
-  return state->second->CanSendCookiesForOrigin(gurl);
 }
 
 void ChildProcessSecurityPolicyImpl::LockToOrigin(int child_id,

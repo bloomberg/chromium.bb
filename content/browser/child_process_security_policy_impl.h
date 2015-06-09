@@ -148,20 +148,12 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Returns true if the process is permitted to read and modify the cookies for
   // the given origin.  Does not affect cookies attached to or set by network
   // requests.
-  // Only might return false if the very experimental
-  // --enable-strict-site-isolation or --site-per-process flags are used.
+  // Only might return false if the --site-per-process flag is used.
   bool CanAccessCookiesForOrigin(int child_id, const GURL& gurl);
-
-  // Returns true if the process is permitted to attach cookies to (or have
-  // cookies set by) network requests.
-  // Only might return false if the very experimental
-  // --enable-strict-site-isolation or --site-per-process flags are used.
-  bool CanSendCookiesForOrigin(int child_id, const GURL& gurl);
 
   // Sets the process as only permitted to use and see the cookies for the
   // given origin.
-  // Only used if the very experimental --enable-strict-site-isolation or
-  // --site-per-process flags are used.
+  // Origin lock is applied only if the --site-per-process flag is used.
   void LockToOrigin(int child_id, const GURL& gurl);
 
   // Register FileSystem type and permission policy which should be used

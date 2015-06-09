@@ -33,13 +33,11 @@ TEST_F(RenderProcessHostUnitTest, GuestsAreNotSuitableHosts) {
 
 #if !defined(OS_ANDROID)
 TEST_F(RenderProcessHostUnitTest, RendererProcessLimit) {
-  // This test shouldn't run with --site-per-process or
-  // --enable-strict-site-isolation modes, since they don't allow renderer
-  // process reuse, which this test explicitly exercises.
+  // This test shouldn't run with --site-per-process mode, which prohibits
+  // the renderer process reuse this test explicitly exercises.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kSitePerProcess) ||
-      command_line.HasSwitch(switches::kEnableStrictSiteIsolation))
+  if (command_line.HasSwitch(switches::kSitePerProcess))
     return;
 
   // Disable any overrides.

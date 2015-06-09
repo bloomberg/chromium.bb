@@ -437,18 +437,6 @@ const char kEnableStaleWhileRevalidate[]    = "enable-stale-while-revalidate";
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 
-// Experimentally ensures that each renderer process:
-// 1) Only handles rendering for pages from a single site, apart from iframes.
-// (Note that a page can reference content from multiple origins due to images,
-// JavaScript files, etc.  Cross-site iframes are also loaded in-process.)
-// 2) Only has authority to see or use cookies for the page's top-level origin.
-// (So if a.com iframes b.com, the b.com network request will be sent without
-// cookies.)
-// This is expected to break compatibility with many pages for now.  Unlike the
-// --site-per-process flag, this allows cross-site iframes, but it blocks all
-// cookies on cross-site requests.
-const char kEnableStrictSiteIsolation[]     = "enable-strict-site-isolation";
-
 // Blocks all insecure requests from secure contexts, and prevents the user
 // from overriding that decision.
 const char kEnableStrictMixedContentChecking[] =
@@ -749,15 +737,16 @@ const char kShowPaintRects[]                = "show-paint-rects";
 // Runs the renderer and plugins in the same process as the browser
 const char kSingleProcess[]                 = "single-process";
 
-// Experimentally enforces a one-site-per-process security policy.
-// All cross-site navigations force process swaps, and we can restrict a
-// renderer process's access rights based on its site.  For details, see:
-// http://www.chromium.org/developers/design-documents/site-isolation
+// Enforces a one-site-per-process security policy:
+//  * Each renderer process, for its whole lifetime, is dedicated to rendering
+//    pages for just one site.
+//  * Thus, pages from different sites are never in the same process.
+//  * A renderer process's access rights are restricted based on its site.
+//  * All cross-site navigations force process swaps.
+//  * <iframe>s are rendered out-of-process whenever the src= is cross-site.
 //
-// Unlike --enable-strict-site-isolation (which allows cross-site iframes),
-// this flag does not affect which cookies are attached to cross-site requests.
-// Support is being added to render cross-site iframes in a different process
-// than their parent pages.
+// More details here:
+// http://www.chromium.org/developers/design-documents/site-isolation
 const char kSitePerProcess[]                = "site-per-process";
 
 // Skip gpu info collection, blacklist loading, and blacklist auto-update
