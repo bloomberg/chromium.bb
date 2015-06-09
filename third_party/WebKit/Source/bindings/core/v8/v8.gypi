@@ -186,6 +186,8 @@
             'WrapCanvasContext.h',
             'WrapperTypeInfo.cpp',
             'WrapperTypeInfo.h',
+            'inspector/InspectorWrapper.cpp',
+            'inspector/InspectorWrapper.h',
             'inspector/V8InjectedScriptHost.cpp',
             'inspector/V8InjectedScriptHost.h',
             'inspector/V8JavaScriptCallFrame.cpp',
