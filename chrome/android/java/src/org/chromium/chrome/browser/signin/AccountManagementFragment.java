@@ -127,6 +127,7 @@ public class AccountManagementFragment extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
+        mSaveInstanceStateWasCalled = false;
 
         mGaiaServiceType = GAIA_SERVICE_TYPE_NONE;
         if (getArguments() != null) {
