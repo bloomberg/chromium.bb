@@ -47,11 +47,12 @@ namespace blink {
 class Document;
 class FormSubmission;
 class LocalFrame;
+class NavigationScheduler;
 class ScheduledNavigation;
 
 class NavigationDisablerForBeforeUnload {
     WTF_MAKE_NONCOPYABLE(NavigationDisablerForBeforeUnload);
-
+    STACK_ALLOCATED();
 public:
     NavigationDisablerForBeforeUnload()
     {
@@ -66,6 +67,19 @@ public:
 
 private:
     static unsigned s_navigationDisableCount;
+};
+
+class FrameNavigationDisabler {
+    WTF_MAKE_NONCOPYABLE(FrameNavigationDisabler);
+    STACK_ALLOCATED();
+public:
+    explicit FrameNavigationDisabler(LocalFrame*);
+    ~FrameNavigationDisabler();
+
+private:
+    FrameNavigationDisabler() = delete;
+
+    NavigationScheduler& m_navigationScheduler;
 };
 
 class CORE_EXPORT NavigationScheduler final {
@@ -89,6 +103,12 @@ public:
     DECLARE_TRACE();
 
 private:
+    friend class FrameNavigationDisabler;
+
+    void disableFrameNavigation() { ++m_navigationDisableCount; }
+    void enableFrameNavigation() { --m_navigationDisableCount; }
+    bool isFrameNavigationAllowed() const { return !m_navigationDisableCount; }
+
     bool shouldScheduleReload() const;
     bool shouldScheduleNavigation(const String& url) const;
 
@@ -100,6 +120,7 @@ private:
     RawPtrWillBeMember<LocalFrame> m_frame;
     Timer<NavigationScheduler> m_timer;
     OwnPtrWillBeMember<ScheduledNavigation> m_redirect;
+    int m_navigationDisableCount;
 };
 
 } // namespace blink

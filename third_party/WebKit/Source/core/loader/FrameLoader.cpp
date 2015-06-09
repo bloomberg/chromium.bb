@@ -1022,8 +1022,10 @@ void FrameLoader::commitProvisionalLoad()
     // we need to abandon the current load.
     if (pdl != m_provisionalDocumentLoader)
         return;
-    if (m_documentLoader)
+    if (m_documentLoader) {
+        FrameNavigationDisabler navigationDisabler(m_frame);
         m_documentLoader->detachFromFrame();
+    }
     // detachFromFrame() will abort XHRs that haven't completed, which can
     // trigger event listeners for 'abort'. These event listeners might detach
     // the frame.

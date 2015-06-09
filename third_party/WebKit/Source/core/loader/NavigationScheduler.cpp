@@ -54,6 +54,17 @@ namespace blink {
 
 unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
 
+FrameNavigationDisabler::FrameNavigationDisabler(LocalFrame* frame)
+    : m_navigationScheduler(frame->navigationScheduler())
+{
+    m_navigationScheduler.disableFrameNavigation();
+}
+
+FrameNavigationDisabler::~FrameNavigationDisabler()
+{
+    m_navigationScheduler.enableFrameNavigation();
+}
+
 class ScheduledNavigation : public NoBaseWillBeGarbageCollectedFinalized<ScheduledNavigation> {
     WTF_MAKE_NONCOPYABLE(ScheduledNavigation); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScheduledNavigation);
 public:
@@ -255,6 +266,7 @@ private:
 NavigationScheduler::NavigationScheduler(LocalFrame* frame)
     : m_frame(frame)
     , m_timer(this, &NavigationScheduler::timerFired)
+    , m_navigationDisableCount(0)
 {
 }
 
@@ -269,12 +281,12 @@ bool NavigationScheduler::locationChangePending()
 
 inline bool NavigationScheduler::shouldScheduleReload() const
 {
-    return m_frame->page() && NavigationDisablerForBeforeUnload::isNavigationAllowed();
+    return m_frame->page() && isFrameNavigationAllowed() && NavigationDisablerForBeforeUnload::isNavigationAllowed();
 }
 
 inline bool NavigationScheduler::shouldScheduleNavigation(const String& url) const
 {
-    return m_frame->page() && (protocolIsJavaScript(url) || NavigationDisablerForBeforeUnload::isNavigationAllowed());
+    return m_frame->page() && isFrameNavigationAllowed() && (protocolIsJavaScript(url) || NavigationDisablerForBeforeUnload::isNavigationAllowed());
 }
 
 void NavigationScheduler::scheduleRedirect(double delay, const String& url)
