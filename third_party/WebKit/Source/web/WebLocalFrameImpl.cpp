@@ -366,6 +366,7 @@ public:
 
         float scale = spoolPage(pictureBuilder.context(), pageNumber);
         pictureBuilder.endRecording()->playback(canvas);
+        outputLinkedDestinations(canvas, pageRect);
         return scale;
     }
 
@@ -428,6 +429,7 @@ public:
             currentHeight += pageSizeInPixels.height() + 1;
         }
         pictureBuilder.endRecording()->playback(canvas);
+        outputLinkedDestinations(canvas, allPagesRect);
     }
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
@@ -455,8 +457,6 @@ protected:
         ClipRecorder clipRecorder(context, *this, DisplayItem::ClipPrintedPage, LayoutRect(pageRect));
 
         frame()->view()->paintContents(&context, pageRect);
-
-        outputLinkedDestinations(context, pageRect);
 
         return scale;
     }

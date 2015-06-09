@@ -24,7 +24,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutView.h"
-#include "platform/graphics/GraphicsContext.h"
+#include "third_party/skia/include/core/SkAnnotation.h"
 
 namespace blink {
 
@@ -230,7 +230,7 @@ void PrintContext::collectLinkedDestinations(Node* node)
     }
 }
 
-void PrintContext::outputLinkedDestinations(GraphicsContext& graphicsContext, const IntRect& pageRect)
+void PrintContext::outputLinkedDestinations(SkCanvas* canvas, const IntRect& pageRect)
 {
     if (!m_linkedDestinationsValid) {
         // Collect anchors in the top-level frame only because our PrintContext
@@ -249,7 +249,8 @@ void PrintContext::outputLinkedDestinations(GraphicsContext& graphicsContext, co
             continue;
         IntPoint point = boundingBox.minXMinYCorner();
         point.clampNegativeToZero();
-        graphicsContext.addURLTargetAtPoint(entry.key, point);
+        SkAutoDataUnref nameData(SkData::NewWithCString(entry.key.utf8().data()));
+        SkAnnotateNamedDestination(canvas, SkPoint::Make(point.x(), point.y()), nameData);
     }
 }
 

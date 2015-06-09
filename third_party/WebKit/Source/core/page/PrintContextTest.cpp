@@ -31,9 +31,9 @@ class MockPrintContext : public PrintContext {
 public:
     MockPrintContext(LocalFrame* frame) : PrintContext(frame) { }
 
-    void outputLinkedDestinations(GraphicsContext& context, const IntRect& pageRect)
+    void outputLinkedDestinations(SkCanvas* canvas, const IntRect& pageRect)
     {
-        PrintContext::outputLinkedDestinations(context, pageRect);
+        PrintContext::outputLinkedDestinations(canvas, pageRect);
     }
 };
 
@@ -103,9 +103,9 @@ protected:
         DeprecatedPaintLayerPaintingInfo paintingInfo(&rootLayer, LayoutRect(pageRect), PaintBehaviorNormal, LayoutSize());
         DeprecatedPaintLayerPainter(rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
         printContext().begin(kPageWidth, kPageHeight);
-        printContext().outputLinkedDestinations(context, pageRect);
         printContext().end();
         pictureBuilder.endRecording()->playback(&canvas);
+        printContext().outputLinkedDestinations(&canvas, pageRect);
         document().setPrinting(false);
     }
 
