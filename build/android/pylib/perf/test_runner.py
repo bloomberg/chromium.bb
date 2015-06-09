@@ -233,8 +233,15 @@ class TestRunner(base_test_runner.BaseTestRunner):
       return ''
 
     json_output_path = os.path.join(self._output_dir, 'results-chart.json')
-    with open(json_output_path) as f:
-      return f.read()
+    try:
+      with open(json_output_path) as f:
+        return f.read()
+    except IOError:
+      logging.exception('Exception when reading chartjson.')
+      logging.error('This usually means that telemetry did not run, so it could'
+                    ' not generate the file. Please check the device running'
+                    ' the test.')
+      return ''
 
   def _LaunchPerfTest(self, test_name):
     """Runs a perf test.
