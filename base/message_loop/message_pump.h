@@ -42,6 +42,9 @@ class BASE_EXPORT MessagePump : public NonThreadSafe {
     // Returns true to indicate that idle work was done. Returning false means
     // the pump will now wait.
     virtual bool DoIdleWork() = 0;
+
+    // Returns the delay for the newly added task.
+    virtual TimeTicks GetNewlyAddedTaskDelay() = 0;
   };
 
   MessagePump();
