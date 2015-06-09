@@ -523,10 +523,11 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   // Check if we should allow GL_OES_texture_npot
-  if (gl_version_info_->is_es3 ||
-      gl_version_info_->is_desktop_core_profile ||
-      extensions.Contains("GL_ARB_texture_non_power_of_two") ||
-      extensions.Contains("GL_OES_texture_npot")) {
+  if (!disallowed_features_.npot_support &&
+      (gl_version_info_->is_es3 ||
+       gl_version_info_->is_desktop_core_profile ||
+       extensions.Contains("GL_ARB_texture_non_power_of_two") ||
+       extensions.Contains("GL_OES_texture_npot"))) {
     AddExtensionString("GL_OES_texture_npot");
     feature_flags_.npot_ok = true;
   }

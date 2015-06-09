@@ -82,7 +82,6 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
         bool is_offscreen,
         gfx::AcceleratedWidget window)
     : share_resources_(attributes.shareResources),
-      webgl_context_(attributes.webGL),
       is_offscreen_(is_offscreen),
       window_(window),
       context_(context.Pass()) {
@@ -139,9 +138,6 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
 
   real_gl_ = context_->GetImplementation();
   setGLInterface(real_gl_);
-
-  if (real_gl_ && webgl_context_)
-    real_gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
 
   initialized_ = true;
   return true;

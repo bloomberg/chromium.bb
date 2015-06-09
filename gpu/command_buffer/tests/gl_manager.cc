@@ -189,7 +189,8 @@ GLManager::Options::Options()
       virtual_manager(NULL),
       bind_generates_resource(false),
       lose_context_when_out_of_memory(false),
-      context_lost_allowed(false) {
+      context_lost_allowed(false),
+      webgl_version(0) {
 }
 
 GLManager::GLManager() : context_lost_allowed_(false) {
@@ -277,6 +278,7 @@ void GLManager::InitializeWithCommandLine(const GLManager::Options& options,
   attrib_helper.alpha_size = 8;
   attrib_helper.depth_size = 16;
   attrib_helper.stencil_size = 8;
+  attrib_helper.webgl_version = options.webgl_version;
   attrib_helper.Serialize(&attribs);
 
   DCHECK(!command_line || !context_group);

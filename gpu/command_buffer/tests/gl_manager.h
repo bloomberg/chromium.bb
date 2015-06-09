@@ -61,6 +61,10 @@ class GLManager : private GpuControl {
     bool lose_context_when_out_of_memory;
     // Whether or not it's ok to lose the context.
     bool context_lost_allowed;
+    // 0 indicates not WebGL context - default.
+    // 1 indicates WebGL 1 context.
+    // 2 indicates WebGL 2 context.
+    unsigned webgl_version;
   };
   GLManager();
   ~GLManager() override;

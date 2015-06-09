@@ -44,6 +44,15 @@ struct DisallowedFeatures;
 // resources.
 class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
  public:
+  enum ContextType {
+    kContextTypeWebGL1,
+    kContextTypeWebGL2,
+    kContextTypeOther,
+    kContextTypeUndefined
+  };
+
+  static ContextType GetContextType(unsigned webgl_version);
+
   ContextGroup(
       const scoped_refptr<MailboxManager>& mailbox_manager,
       const scoped_refptr<MemoryTracker>& memory_tracker,
@@ -57,6 +66,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   // call to destroy if it succeeds.
   bool Initialize(
       GLES2Decoder* decoder,
+      ContextType context_type,
       const DisallowedFeatures& disallowed_features);
 
   // Destroys all the resources when called for the last context in the group.
@@ -248,6 +258,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   bool QueryGLFeature(GLenum pname, GLint min_required, GLint* v);
   bool QueryGLFeatureU(GLenum pname, GLint min_required, uint32* v);
   bool HaveContexts();
+
+  ContextType context_type_;
 
   scoped_refptr<MailboxManager> mailbox_manager_;
   scoped_refptr<MemoryTracker> memory_tracker_;

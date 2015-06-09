@@ -45,10 +45,12 @@ struct ContextState;
 
 struct DisallowedFeatures {
   DisallowedFeatures()
-      : gpu_memory_manager(false) {
+      : gpu_memory_manager(false),
+        npot_support(false) {
   }
 
   bool gpu_memory_manager;
+  bool npot_support;
 };
 
 typedef base::Callback<void(const std::string& key,

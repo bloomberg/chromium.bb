@@ -868,6 +868,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return true;
   }
 
+  bool IsWebGLContext() const {
+    return webgl_version_ == 1 || webgl_version_ == 2;
+  }
+
   bool IsOffscreenBufferMultisampled() const {
     return offscreen_target_samples_ > 1;
   }
@@ -1972,12 +1976,17 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool reset_by_robustness_extension_;
   bool supports_post_sub_buffer_;
 
+  // Indicates whether this is a context for WebGL1, WebGL2, or others.
+  //   0: other types
+  //   1: WebGL 1
+  //   2: WebGL 2
+  unsigned webgl_version_;
+
   // These flags are used to override the state of the shared feature_info_
   // member.  Because the same FeatureInfo instance may be shared among many
   // contexts, the assumptions on the availablity of extensions in WebGL
   // contexts may be broken.  These flags override the shared state to preserve
   // WebGL semantics.
-  bool force_webgl_glsl_validation_;
   bool derivatives_explicitly_enabled_;
   bool frag_depth_explicitly_enabled_;
   bool draw_buffers_explicitly_enabled_;
@@ -2516,7 +2525,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       context_was_lost_(false),
       reset_by_robustness_extension_(false),
       supports_post_sub_buffer_(false),
-      force_webgl_glsl_validation_(false),
+      webgl_version_(0),
       derivatives_explicitly_enabled_(false),
       frag_depth_explicitly_enabled_(false),
       draw_buffers_explicitly_enabled_(false),
@@ -2573,6 +2582,7 @@ bool GLES2DecoderImpl::Initialize(
   ContextCreationAttribHelper attrib_parser;
   if (!attrib_parser.Parse(attribs))
     return false;
+  webgl_version_ = attrib_parser.webgl_version;
 
   surfaceless_ = surface->IsSurfaceless() && !offscreen;
 
@@ -2614,22 +2624,29 @@ bool GLES2DecoderImpl::Initialize(
     return false;
   }
 
-  if (!group_->Initialize(this, disallowed_features)) {
-    LOG(ERROR) << "GpuScheduler::InitializeCommon failed because group "
-               << "failed to initialize.";
+  disallowed_features_ = disallowed_features;
+  if (webgl_version_ == 1) {
+    disallowed_features_.npot_support = true;
+  }
+
+  if (!group_->Initialize(this,
+                          ContextGroup::GetContextType(webgl_version_),
+                          disallowed_features_)) {
     group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
     Destroy(true);
     return false;
   }
   CHECK_GL_ERROR();
 
-  if (attrib_parser.es3_context_required &&
-      feature_info_->IsES3Capable()) {
+  if (webgl_version_ == 2) {
+    if (!feature_info_->IsES3Capable()) {
+      LOG(ERROR) << "Underlying driver does not support ES3.";
+      Destroy(true);
+      return false;
+    }
     feature_info_->EnableES3Validators();
     set_unsafe_es3_apis_enabled(true);
   }
-
-  disallowed_features_ = disallowed_features;
 
   state_.attrib_values.resize(group_->max_vertex_attribs());
   vertex_array_manager_.reset(new VertexArrayManager());
@@ -3157,7 +3174,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   resources.FragmentPrecisionHigh =
       PrecisionMeetsSpecForHighpFloat(range[0], range[1], precision);
 
-  if (force_webgl_glsl_validation_) {
+  if (IsWebGLContext()) {
     resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
     resources.EXT_frag_depth = frag_depth_explicitly_enabled_;
     resources.EXT_draw_buffers = draw_buffers_explicitly_enabled_;
@@ -3184,8 +3201,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   }
 
   ShShaderSpec shader_spec;
-  if (force_webgl_glsl_validation_) {
-    shader_spec = unsafe_es3_apis_enabled() ? SH_WEBGL2_SPEC : SH_WEBGL_SPEC;
+  if (IsWebGLContext()) {
+    shader_spec = webgl_version_ == 2 ? SH_WEBGL2_SPEC : SH_WEBGL_SPEC;
   } else {
     shader_spec = unsafe_es3_apis_enabled() ? SH_GLES3_SPEC : SH_GLES2_SPEC;
   }
@@ -8804,16 +8821,22 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32 immediate_data_size,
   std::string extensions;
   switch (name) {
     case GL_VERSION:
-      str = "OpenGL ES 2.0 Chromium";
+      if (unsafe_es3_apis_enabled())
+        str = "OpenGL ES 3.0 Chromium";
+      else
+        str = "OpenGL ES 2.0 Chromium";
       break;
     case GL_SHADING_LANGUAGE_VERSION:
-      str = "OpenGL ES GLSL ES 1.0 Chromium";
+      if (unsafe_es3_apis_enabled())
+        str = "OpenGL ES GLSL ES 3.0 Chromium";
+      else
+        str = "OpenGL ES GLSL ES 1.0 Chromium";
       break;
     case GL_RENDERER:
     case GL_VENDOR:
       // Return the unmasked VENDOR/RENDERER string for WebGL contexts.
       // They are used by WEBGL_debug_renderer_info.
-      if (!force_webgl_glsl_validation_)
+      if (!IsWebGLContext())
         str = "Chromium";
       else
         str = reinterpret_cast<const char*>(glGetString(name));
@@ -8822,7 +8845,7 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32 immediate_data_size,
       {
         // For WebGL contexts, strip out the OES derivatives and
         // EXT frag depth extensions if they have not been enabled.
-        if (force_webgl_glsl_validation_) {
+        if (IsWebGLContext()) {
           extensions = feature_info_->extensions();
           if (!derivatives_explicitly_enabled_) {
             size_t offset = extensions.find(kOESDerivativeExtension);
@@ -11131,9 +11154,6 @@ error::Error GLES2DecoderImpl::HandleEnableFeatureCHROMIUM(
     // needs to be done it seems like refactoring for one to one of those
     // methods is a very low priority.
     const_cast<Validators*>(validators_)->vertex_attrib_type.AddValue(GL_FIXED);
-  } else if (feature_str.compare("webgl_enable_glsl_webgl_validation") == 0) {
-    force_webgl_glsl_validation_ = true;
-    InitializeShaderTranslator();
   } else {
     return error::kNoError;
   }
@@ -11169,13 +11189,11 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
     return error::kInvalidArguments;
   }
 
-  bool desire_webgl_glsl_validation =
-      feature_str.find("GL_CHROMIUM_webglsl") != std::string::npos;
   bool desire_standard_derivatives = false;
   bool desire_frag_depth = false;
   bool desire_draw_buffers = false;
   bool desire_shader_texture_lod = false;
-  if (force_webgl_glsl_validation_) {
+  if (IsWebGLContext()) {
     desire_standard_derivatives =
         feature_str.find("GL_OES_standard_derivatives") != std::string::npos;
     desire_frag_depth =
@@ -11186,11 +11204,10 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
         feature_str.find("GL_EXT_shader_texture_lod") != std::string::npos;
   }
 
-  if (desire_webgl_glsl_validation != force_webgl_glsl_validation_ ||
-      desire_standard_derivatives != derivatives_explicitly_enabled_ ||
+  if (desire_standard_derivatives != derivatives_explicitly_enabled_ ||
       desire_frag_depth != frag_depth_explicitly_enabled_ ||
-      desire_draw_buffers != draw_buffers_explicitly_enabled_) {
-    force_webgl_glsl_validation_ |= desire_webgl_glsl_validation;
+      desire_draw_buffers != draw_buffers_explicitly_enabled_ ||
+      desire_shader_texture_lod != shader_texture_lod_explicitly_enabled_) {
     derivatives_explicitly_enabled_ |= desire_standard_derivatives;
     frag_depth_explicitly_enabled_ |= desire_frag_depth;
     draw_buffers_explicitly_enabled_ |= desire_draw_buffers;

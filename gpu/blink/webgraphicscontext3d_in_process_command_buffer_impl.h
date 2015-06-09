@@ -89,7 +89,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 
   ::gpu::gles2::ContextCreationAttribHelper attribs_;
   bool share_resources_;
-  bool webgl_context_;
 
   bool is_offscreen_;
   // Only used when not offscreen.

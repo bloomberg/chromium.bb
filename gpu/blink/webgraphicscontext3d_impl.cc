@@ -1230,8 +1230,7 @@ void WebGraphicsContext3DImpl::ConvertAttributes(
   output_attribs->fail_if_major_perf_caveat =
       attributes.failIfMajorPerformanceCaveat;
   output_attribs->bind_generates_resource = false;
-  output_attribs->es3_context_required =
-      (attributes.webGL && attributes.webGLVersion == 2);
+  output_attribs->webgl_version = attributes.webGLVersion;
 }
 
 }  // namespace gpu_blink

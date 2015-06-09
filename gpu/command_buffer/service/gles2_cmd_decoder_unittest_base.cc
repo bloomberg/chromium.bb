@@ -157,7 +157,8 @@ GLES2DecoderTestBase::InitState::InitState()
       request_stencil(false),
       bind_generates_resource(false),
       lose_context_when_out_of_memory(false),
-      use_native_vao(true) {
+      use_native_vao(true),
+      webgl_version(0) {
 }
 
 void GLES2DecoderTestBase::InitDecoder(const InitState& init) {
@@ -227,10 +228,13 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   EXPECT_CALL(*mock_decoder_, DoCommands(_, _, _, _)).WillRepeatedly(
       Invoke(mock_decoder_.get(), &MockGLES2Decoder::FakeDoCommands));
 
-  EXPECT_TRUE(
-      group_->Initialize(mock_decoder_.get(), DisallowedFeatures()));
 
-  if (group_->feature_info()->IsES3Capable()) {
+  EXPECT_TRUE(group_->Initialize(
+      mock_decoder_.get(),
+      ContextGroup::GetContextType(init.webgl_version),
+      DisallowedFeatures()));
+
+  if (init.webgl_version == 2) {
     EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS, _))
         .WillOnce(SetArgumentPointee<1>(kMaxColorAttachments))
         .RetiresOnSaturation();
@@ -400,9 +404,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   shared_memory_base_ = buffer->memory();
 
   static const int32 kLoseContextWhenOutOfMemory = 0x10002;
-  static const int32 kES3ContextRequired = 0x10003;
-
-  bool es3_context_required = group_->feature_info()->IsES3Capable();
+  static const int32 kWebGLVersion = 0x10003;
 
   int32 attributes[] = {
       EGL_ALPHA_SIZE,
@@ -413,8 +415,8 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       normalized_init.request_stencil ? 8 : 0,
       kLoseContextWhenOutOfMemory,
       normalized_init.lose_context_when_out_of_memory ? 1 : 0,
-      kES3ContextRequired,
-      es3_context_required ? 1 : 0
+      kWebGLVersion,
+      init.webgl_version
   };
   std::vector<int32> attribs(attributes, attributes + arraysize(attributes));
 

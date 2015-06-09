@@ -145,9 +145,6 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
     return false;
   }
 
-  if (gl_ && attributes_.webGL)
-    gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
-
   command_buffer_->SetContextLostCallback(
       base::Bind(&WebGraphicsContext3DCommandBufferImpl::OnContextLost,
                  weak_ptr_factory_.GetWeakPtr()));
