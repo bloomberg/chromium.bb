@@ -59553,6 +59553,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="496" label="alias-webkit-shape-image-threshold"/>
   <int value="497" label="alias-webkit-shape-margin"/>
   <int value="498" label="alias-webkit-shape-outside"/>
+  <int value="499" label="scroll-snap-type"/>
+  <int value="500" label="scroll-snap-points-x"/>
+  <int value="501" label="scroll-snap-points-y"/>
+  <int value="502" label="scroll-snap-coordinate"/>
+  <int value="503" label="scroll-snap-destination"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">
