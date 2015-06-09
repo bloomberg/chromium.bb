@@ -124,10 +124,11 @@ TEST_F(StartupControllerTest, Basic) {
                                state == kStateStringStarted);
 }
 
-// Test that sync doesn't when suppressed even if all other conditons are met.
-TEST_F(StartupControllerTest, Suppressed) {
+// Test that sync doesn't start when not requested even if all other
+// conditons are met.
+TEST_F(StartupControllerTest, NotRequested) {
   sync_prefs()->SetSyncSetupCompleted();
-  sync_prefs()->SetStartSuppressed(true);
+  sync_prefs()->SetSyncRequested(false);
   signin()->set_account(kTestUser);
   token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
   controller()->TryStart();

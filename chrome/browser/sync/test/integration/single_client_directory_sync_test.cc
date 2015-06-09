@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   ProfileSyncService* sync_service = GetSyncService(0);
   base::FilePath directory_path = sync_service->GetDirectoryPathForTest();
   ASSERT_TRUE(base::DirectoryExists(directory_path));
-  sync_service->StopAndSuppress();
+  sync_service->RequestStop();
   sync_service->DisableForUser();
 
   // Wait for StartupController::StartUp()'s tasks to finish.

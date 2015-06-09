@@ -120,7 +120,7 @@ bool SyncPrefs::HasSyncSetupCompleted() const {
 void SyncPrefs::SetSyncSetupCompleted() {
   DCHECK(CalledOnValidThread());
   pref_service_->SetBoolean(prefs::kSyncHasSetupCompleted, true);
-  SetStartSuppressed(false);
+  SetSyncRequested(true);
 }
 
 bool SyncPrefs::SyncHasAuthError() const {
@@ -133,14 +133,17 @@ void SyncPrefs::SetSyncAuthError(bool error) {
   pref_service_->SetBoolean(prefs::kSyncHasAuthError, error);
 }
 
-bool SyncPrefs::IsStartSuppressed() const {
+bool SyncPrefs::IsSyncRequested() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_->GetBoolean(prefs::kSyncSuppressStart);
+  // IsSyncRequested is the inverse of the old SuppressStart pref.
+  // Since renaming a pref value is hard, here we still use the old one.
+  return !pref_service_->GetBoolean(prefs::kSyncSuppressStart);
 }
 
-void SyncPrefs::SetStartSuppressed(bool is_suppressed) {
+void SyncPrefs::SetSyncRequested(bool is_requested) {
   DCHECK(CalledOnValidThread());
-  pref_service_->SetBoolean(prefs::kSyncSuppressStart, is_suppressed);
+  // See IsSyncRequested for why we use this pref and !is_requested.
+  pref_service_->SetBoolean(prefs::kSyncSuppressStart, !is_requested);
 }
 
 base::Time SyncPrefs::GetLastSyncedTime() const {

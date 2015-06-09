@@ -74,7 +74,7 @@ base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
       // User is signed in, but sync is disabled.
       return l10n_util::GetStringFUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED,
                                         user_name);
-    } else if (service->IsStartSuppressed()) {
+    } else if (!service->IsSyncRequested()) {
       // User is signed in, but sync has been stopped.
       return l10n_util::GetStringFUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
                                         user_name);
@@ -154,7 +154,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     return PRE_SYNCED;
 
   if (!service || service->IsManaged() || service->HasSyncSetupCompleted() ||
-      service->IsStartSuppressed()) {
+      !service->IsSyncRequested()) {
     // The order or priority is going to be: 1. Unrecoverable errors.
     // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
 
@@ -220,7 +220,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
 
       // Check to see if sync has been disabled via the dasboard and needs to be
       // set up once again.
-      if (service->IsStartSuppressed() &&
+      if (!service->IsSyncRequested() &&
           status.sync_protocol_error.error_type == syncer::NOT_MY_BIRTHDAY) {
         if (status_label) {
           status_label->assign(GetSyncedStateStatusLabel(service,

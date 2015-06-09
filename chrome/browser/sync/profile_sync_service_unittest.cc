@@ -412,12 +412,12 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
   ShutdownAndDeleteService();
 }
 
-// Test StopAndSuppress() before we've initialized the backend.
-TEST_F(ProfileSyncServiceTest, EarlyStopAndSuppress) {
+// Test RequestStop() before we've initialized the backend.
+TEST_F(ProfileSyncServiceTest, EarlyRequestStop) {
   CreateService(browser_sync::AUTO_START);
   IssueTestTokens();
 
-  service()->StopAndSuppress();
+  service()->RequestStop();
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
       sync_driver::prefs::kSyncSuppressStart));
 
@@ -428,13 +428,13 @@ TEST_F(ProfileSyncServiceTest, EarlyStopAndSuppress) {
   // Remove suppression.  This should be enough to allow init to happen.
   ExpectDataTypeManagerCreation(1);
   ExpectSyncBackendHostCreation(1);
-  service()->UnsuppressAndStart();
+  service()->RequestStart();
   EXPECT_TRUE(service()->IsSyncActive());
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
       sync_driver::prefs::kSyncSuppressStart));
 }
 
-// Test StopAndSuppress() after we've initialized the backend.
+// Test RequestStop() after we've initialized the backend.
 TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   CreateService(browser_sync::AUTO_START);
   IssueTestTokens();
@@ -448,7 +448,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
 
   testing::Mock::VerifyAndClearExpectations(components_factory());
 
-  service()->StopAndSuppress();
+  service()->RequestStop();
   EXPECT_FALSE(service()->IsSyncActive());
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
       sync_driver::prefs::kSyncSuppressStart));
@@ -456,7 +456,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
   ExpectDataTypeManagerCreation(1);
   ExpectSyncBackendHostCreation(1);
 
-  service()->UnsuppressAndStart();
+  service()->RequestStart();
   EXPECT_TRUE(service()->IsSyncActive());
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
       sync_driver::prefs::kSyncSuppressStart));

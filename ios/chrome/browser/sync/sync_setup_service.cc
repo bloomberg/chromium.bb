@@ -190,7 +190,7 @@ void SyncSetupService::SetSyncEnabledWithoutChangingDatatypes(
     bool sync_enabled) {
   sync_service_->SetSetupInProgress(true);
   if (sync_enabled)
-    sync_service_->UnsuppressAndStart();
+    sync_service_->RequestStart();
   else
-    sync_service_->StopAndSuppress();
+    sync_service_->RequestStop();
 }

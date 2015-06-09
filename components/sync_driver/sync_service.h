@@ -75,11 +75,14 @@ class SyncService : public sync_driver::DataTypeEncryptionHandler {
   // Disables sync for user. Use ShowLoginDialog to enable.
   virtual void DisableForUser() = 0;
 
-  // Stops the sync backend and sets the flag for suppressing sync startup.
-  virtual void StopAndSuppress() = 0;
+  // Stops sync at the user's request.
+  virtual void RequestStop() = 0;
 
-  // Resets the flag for suppressing sync startup and starts the sync backend.
-  virtual void UnsuppressAndStart() = 0;
+  // The user requests that sync start. This only actually starts sync if
+  // IsSyncAllowed is true and the user is signed in. Once sync starts,
+  // other things such as HasSyncSetupCompleted being false can still prevent
+  // it from moving into the "active" state.
+  virtual void RequestStart() = 0;
 
   // Returns the set of types which are preferred for enabling. This is a
   // superset of the active types (see GetActiveDataTypes()).

@@ -174,8 +174,8 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   // Returns true if sync setup has been completed.
   jboolean HasSyncSetupCompleted(JNIEnv* env, jobject obj);
 
-  // Returns true if sync startup is currently suppressed.
-  jboolean IsStartSuppressed(JNIEnv* env, jobject obj);
+  // See ProfileSyncService::IsSyncRequested().
+  jboolean IsSyncRequested(JNIEnv* env, jobject obj);
 
   // Returns true if sync is configured to "sync everything".
   jboolean HasKeepEverythingSynced(JNIEnv* env, jobject obj);

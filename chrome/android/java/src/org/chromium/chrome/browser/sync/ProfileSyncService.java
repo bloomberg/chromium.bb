@@ -463,8 +463,8 @@ public class ProfileSyncService {
         return nativeHasSyncSetupCompleted(mNativeProfileSyncServiceAndroid);
     }
 
-    public boolean isStartSuppressed() {
-        return nativeIsStartSuppressed(mNativeProfileSyncServiceAndroid);
+    public boolean isSyncRequested() {
+        return nativeIsSyncRequested(mNativeProfileSyncServiceAndroid);
     }
 
     /**
@@ -671,7 +671,7 @@ public class ProfileSyncService {
             long nativeProfileSyncServiceAndroid, boolean inProgress);
     private native void nativeSetSyncSetupCompleted(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasSyncSetupCompleted(long nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsStartSuppressed(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsSyncRequested(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasKeepEverythingSynced(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsPassphrasePrompted(long nativeProfileSyncServiceAndroid);

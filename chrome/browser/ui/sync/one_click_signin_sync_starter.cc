@@ -141,10 +141,10 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
   if (profile_sync_service)
     profile_sync_service->SetSetupInProgress(true);
 
-  // Make sure the syncing is not suppressed, otherwise the SigninManager
+  // Make sure the syncing is requested, otherwise the SigninManager
   // will not be able to complete sucessfully.
   sync_driver::SyncPrefs sync_prefs(profile_->GetPrefs());
-  sync_prefs.SetStartSuppressed(false);
+  sync_prefs.SetSyncRequested(true);
 }
 
 void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {

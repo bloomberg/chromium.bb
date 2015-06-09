@@ -42,7 +42,7 @@ class StartupController {
                     base::Closure start_backend);
   ~StartupController();
 
-  // Starts up sync if it is not suppressed and preconditions are met.
+  // Starts up sync if it is requested by the user and preconditions are met.
   // Returns true if these preconditions are met, although does not imply
   // the backend was started.
   bool TryStart();

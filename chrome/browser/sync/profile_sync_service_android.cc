@@ -153,8 +153,8 @@ void ProfileSyncServiceAndroid::SetPassphrasePrompted(JNIEnv* env,
 void ProfileSyncServiceAndroid::EnableSync(JNIEnv* env, jobject) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Don't need to do anything if we're already enabled.
-  if (sync_prefs_->IsStartSuppressed())
-    sync_service_->UnsuppressAndStart();
+  if (!sync_service_->IsSyncRequested())
+    sync_service_->RequestStart();
   else
     DVLOG(2) << "Ignoring call to EnableSync() because sync is already enabled";
 }
@@ -162,8 +162,8 @@ void ProfileSyncServiceAndroid::EnableSync(JNIEnv* env, jobject) {
 void ProfileSyncServiceAndroid::DisableSync(JNIEnv* env, jobject) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Don't need to do anything if we're already disabled.
-  if (!sync_prefs_->IsStartSuppressed()) {
-    sync_service_->StopAndSuppress();
+  if (sync_service_->IsSyncRequested()) {
+    sync_service_->RequestStop();
   } else {
     DVLOG(2)
         << "Ignoring call to DisableSync() because sync is already disabled";
@@ -182,9 +182,9 @@ void ProfileSyncServiceAndroid::SignInSync(JNIEnv* env, jobject) {
     return;
   }
 
-  // Enable sync (if we don't have credentials yet, this will enable sync but
-  // will not start it up - sync will start once credentials arrive).
-  sync_service_->UnsuppressAndStart();
+  // Request that sync starts. If we don't have credentials yet, this will
+  // let sync start once credentials arrive.
+  sync_service_->RequestStart();
 }
 
 void ProfileSyncServiceAndroid::SignOutSync(JNIEnv* env, jobject) {
@@ -192,8 +192,8 @@ void ProfileSyncServiceAndroid::SignOutSync(JNIEnv* env, jobject) {
   DCHECK(profile_);
   sync_service_->DisableForUser();
 
-  // Need to clear suppress start flag manually
-  sync_prefs_->SetStartSuppressed(false);
+  // Need to reset sync requested flag manually
+  sync_prefs_->SetSyncRequested(true);
 }
 
 void ProfileSyncServiceAndroid::FlushDirectory(JNIEnv* env, jobject) {
@@ -442,10 +442,10 @@ jboolean ProfileSyncServiceAndroid::HasSyncSetupCompleted(
   return sync_service_->HasSyncSetupCompleted();
 }
 
-jboolean ProfileSyncServiceAndroid::IsStartSuppressed(
+jboolean ProfileSyncServiceAndroid::IsSyncRequested(
     JNIEnv* env, jobject obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_prefs_->IsStartSuppressed();
+  return sync_service_->IsSyncRequested();
 }
 
 void ProfileSyncServiceAndroid::EnableEncryptEverything(

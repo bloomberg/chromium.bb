@@ -198,9 +198,8 @@ public class SyncController implements ApplicationStateListener,
     @Override
     public void syncStateChanged() {
         ThreadUtils.assertOnUiThread();
-        boolean isSyncActive = !mProfileSyncService.isStartSuppressed();
         // Make the Java state match the native state.
-        if (isSyncActive) {
+        if (mProfileSyncService.isSyncRequested()) {
             InvalidationController.get(mContext).start();
             AndroidSyncSettings.enableChromeSync(mContext);
         } else {

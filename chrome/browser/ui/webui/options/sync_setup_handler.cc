@@ -803,7 +803,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool passphrase_failed) {
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
   if (!service->backend_initialized()) {
-    service->UnsuppressAndStart();
+    service->RequestStart();
 
     // See if it's even possible to bring up the sync backend - if not
     // (unrecoverable error?), don't bother displaying a spinner that will be

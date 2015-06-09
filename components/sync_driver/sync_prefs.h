@@ -74,8 +74,8 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   bool SyncHasAuthError() const;
   void SetSyncAuthError(bool error);
 
-  bool IsStartSuppressed() const;
-  void SetStartSuppressed(bool is_suppressed);
+  bool IsSyncRequested() const;
+  void SetSyncRequested(bool is_requested);
 
   base::Time GetLastSyncedTime() const;
   void SetLastSyncedTime(base::Time time);

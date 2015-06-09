@@ -118,7 +118,7 @@ bool StartupController::TryStart() {
   if (sync_prefs_->IsManaged())
     return false;
 
-  if (sync_prefs_->IsStartSuppressed())
+  if (!sync_prefs_->IsSyncRequested())
     return false;
 
   if (signin_->GetEffectiveUsername().empty())

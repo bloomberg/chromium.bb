@@ -291,7 +291,7 @@ ProfileSyncService::~ProfileSyncService() {
 
 bool ProfileSyncService::IsSyncEnabledAndLoggedIn() {
   // Exit if sync is disabled.
-  if (IsManaged() || sync_prefs_.IsStartSuppressed())
+  if (IsManaged() || !IsSyncRequested())
     return false;
 
   // Sync is logged in if there is a non-empty effective account id.
@@ -1258,7 +1258,7 @@ void ProfileSyncService::OnConnectionStatusChange(
 }
 
 void ProfileSyncService::StopSyncingPermanently() {
-  sync_prefs_.SetStartSuppressed(true);
+  sync_prefs_.SetSyncRequested(false);
   DisableForUser();
 }
 
@@ -2217,7 +2217,7 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
 void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
                                                const std::string& username,
                                                const std::string& password) {
-  if (!sync_prefs_.IsStartSuppressed() && !password.empty()) {
+  if (IsSyncRequested() && !password.empty()) {
     cached_passphrase_ = password;
     // Try to consume the passphrase we just cached. If the sync backend
     // is not running yet, the passphrase will remain cached until the
@@ -2429,16 +2429,16 @@ bool ProfileSyncService::IsManaged() const {
   return sync_prefs_.IsManaged() || sync_disabled_by_admin_;
 }
 
-void ProfileSyncService::StopAndSuppress() {
-  sync_prefs_.SetStartSuppressed(true);
+void ProfileSyncService::RequestStop() {
+  sync_prefs_.SetSyncRequested(false);
   if (HasSyncingBackend()) {
     backend_->UnregisterInvalidationIds();
   }
   ShutdownImpl(syncer::STOP_SYNC);
 }
 
-bool ProfileSyncService::IsStartSuppressed() const {
-  return sync_prefs_.IsStartSuppressed();
+bool ProfileSyncService::IsSyncRequested() const {
+  return sync_prefs_.IsSyncRequested();
 }
 
 SigninManagerBase* ProfileSyncService::signin() const {
@@ -2447,9 +2447,9 @@ SigninManagerBase* ProfileSyncService::signin() const {
   return signin_->GetOriginal();
 }
 
-void ProfileSyncService::UnsuppressAndStart() {
+void ProfileSyncService::RequestStart() {
   DCHECK(profile_);
-  sync_prefs_.SetStartSuppressed(false);
+  sync_prefs_.SetSyncRequested(true);
   DCHECK(!signin_.get() || signin_->GetOriginal()->IsAuthenticated());
   startup_controller_->TryStart();
 }

@@ -278,8 +278,8 @@ class ProfileSyncService : public sync_driver::SyncService,
   bool IsSyncActive() const override;
   bool IsSyncEnabledAndLoggedIn() override;
   void DisableForUser() override;
-  void StopAndSuppress() override;
-  void UnsuppressAndStart() override;
+  void RequestStop() override;
+  void RequestStart() override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
@@ -474,9 +474,12 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Returns a human readable string describing backend initialization state.
   std::string GetBackendInitializationStateString() const;
 
-  // Returns true if startup is suppressed (i.e. user has stopped syncing via
-  // the google dashboard).
-  virtual bool IsStartSuppressed() const;
+  // Returns true if sync is requested to be running by the user.
+  // Note that this does not mean that sync WILL be running; e.g. if
+  // IsSyncAllowed() is false then sync won't start, and if the user
+  // doesn't confirm their settings (HasSyncSetupCompleted), sync will
+  // never become active. Use IsSyncActive to see if sync is running.
+  virtual bool IsSyncRequested() const;
 
   ProfileSyncComponentsFactory* factory() { return factory_.get(); }
 
