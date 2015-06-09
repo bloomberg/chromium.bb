@@ -19,7 +19,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/views/layout/layout_constants.h"
 
 using namespace password_manager::mac::ui;
 
@@ -27,6 +26,10 @@ namespace {
 
 const CGFloat kBorderWidth = 1;
 const SkColor kHoverColor = SkColorSetARGBInline(0xFF, 0xEB, 0xEB, 0xEB);
+
+// Constants shared with toolkit-views layout_constants.h.
+const CGFloat kItemLabelSpacing = 10;
+const CGFloat kRelatedControlVerticalSpacing = 8;
 
 NSColor* HoverColor() {
   return gfx::SkColorToCalibratedNSColor(kHoverColor);
@@ -63,9 +66,9 @@ CGFloat ItemWidth() {
   const CGFloat width =
       kFramePadding +
       FirstFieldWidth() +
-      views::kItemLabelSpacing +
+      kItemLabelSpacing +
       SecondFieldWidth() +
-      views::kItemLabelSpacing +
+      kItemLabelSpacing +
       chrome_style::GetCloseButtonSize() +
       kFramePadding;
   return width;
@@ -131,7 +134,7 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 
     const CGFloat width = ItemWidth();
     CGFloat curX = kFramePadding;
-    CGFloat curY = views::kRelatedControlVerticalSpacing;
+    CGFloat curY = kRelatedControlVerticalSpacing;
 
     // Add the explanation text.
     NSTextField* label =
@@ -146,7 +149,7 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 
     // Move to the top-right of the delete button.
     curX = NSMaxX([undoButton_ frame]) + kFramePadding;
-    curY = NSMaxY([undoButton_ frame]) + views::kRelatedControlVerticalSpacing;
+    curY = NSMaxY([undoButton_ frame]) + kRelatedControlVerticalSpacing;
 
     // Update the frame.
     DCHECK_EQ(width, curX);
@@ -184,7 +187,7 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 
     const CGFloat width = ItemWidth();
     CGFloat curX = kFramePadding;
-    CGFloat curY = views::kRelatedControlVerticalSpacing;
+    CGFloat curY = kRelatedControlVerticalSpacing;
 
     // Add the username.
     usernameField_.reset([UsernameLabel(GetDisplayUsername(form)) retain]);
@@ -192,7 +195,7 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
     [self addSubview:usernameField_];
 
     // Move to the right of the username and add the password.
-    curX = NSMaxX([usernameField_ frame]) + views::kItemLabelSpacing;
+    curX = NSMaxX([usernameField_ frame]) + kItemLabelSpacing;
     passwordField_.reset([PasswordLabel(form.password_value) retain]);
     [passwordField_ setFrameOrigin:NSMakePoint(curX, curY)];
     [self addSubview:passwordField_];
@@ -204,8 +207,7 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 
     // Move to the top-right of the delete button.
     curX = NSMaxX([deleteButton_ frame]) + kFramePadding;
-    curY =
-        NSMaxY([deleteButton_ frame]) + views::kRelatedControlVerticalSpacing;
+    curY = NSMaxY([deleteButton_ frame]) + kRelatedControlVerticalSpacing;
 
     // Update the frame.
     DCHECK_EQ(width, curX);
@@ -232,7 +234,7 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 - (id)initWithForm:(const autofill::PasswordForm&)form {
   if ((self = [super initWithFrame:NSZeroRect])) {
     CGFloat curX = kFramePadding;
-    CGFloat curY = views::kRelatedControlVerticalSpacing;
+    CGFloat curY = kRelatedControlVerticalSpacing;
 
     // Add the username.
     usernameField_.reset([UsernameLabel(GetDisplayUsername(form)) retain]);
@@ -240,14 +242,13 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
     [self addSubview:usernameField_];
 
     // Move to the right of the username and add the password.
-    curX = NSMaxX([usernameField_ frame]) + views::kItemLabelSpacing;
+    curX = NSMaxX([usernameField_ frame]) + kItemLabelSpacing;
     passwordField_.reset([PasswordLabel(form.password_value) retain]);
     [passwordField_ setFrameOrigin:NSMakePoint(curX, curY)];
     [self addSubview:passwordField_];
 
     // Move to the top-right of the password.
-    curY =
-        NSMaxY([passwordField_ frame]) + views::kRelatedControlVerticalSpacing;
+    curY = NSMaxY([passwordField_ frame]) + kRelatedControlVerticalSpacing;
 
     // Update the frame.
     [self setFrameSize:NSMakeSize(ItemWidth(), curY)];
