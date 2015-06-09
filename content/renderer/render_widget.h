@@ -190,6 +190,11 @@ class CONTENT_EXPORT RenderWidget
   virtual void resetInputMethod();
   virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
                                      bool event_cancelled);
+  virtual void didOverscroll(
+      const blink::WebFloatSize& unusedDelta,
+      const blink::WebFloatSize& accumulatedRootOverScroll,
+      const blink::WebFloatPoint& position,
+      const blink::WebFloatSize& velocity);
   virtual void showImeIfNeeded();
 
 #if defined(OS_ANDROID)

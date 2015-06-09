@@ -2216,6 +2216,24 @@ void RenderWidget::didHandleGestureEvent(
 #endif
 }
 
+void RenderWidget::didOverscroll(
+    const blink::WebFloatSize& unusedDelta,
+    const blink::WebFloatSize& accumulatedRootOverScroll,
+    const blink::WebFloatPoint& position,
+    const blink::WebFloatSize& velocity) {
+  DidOverscrollParams params;
+  // TODO(jdduke): Consider bundling the overscroll with the input event ack to
+  // save an IPC.
+  params.accumulated_overscroll = gfx::Vector2dF(
+      accumulatedRootOverScroll.width, accumulatedRootOverScroll.height);
+  params.latest_overscroll_delta =
+      gfx::Vector2dF(unusedDelta.width, unusedDelta.height);
+  params.current_fling_velocity =
+      gfx::Vector2dF(velocity.width, velocity.height);
+  params.causal_event_viewport_point = gfx::PointF(position.x, position.y);
+  Send(new InputHostMsg_DidOverscroll(routing_id_, params));
+}
+
 void RenderWidget::StartCompositor() {
   // For widgets that are never visible, we don't need the compositor to run
   // at all.
