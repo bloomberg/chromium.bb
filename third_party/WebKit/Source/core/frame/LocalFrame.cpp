@@ -718,21 +718,21 @@ void LocalFrame::removeSpellingMarkersUnderWords(const Vector<String>& words)
     spellChecker().removeSpellingMarkersUnderWords(words);
 }
 
-static bool scrollAreaOnBothAxes(const FloatSize& delta, ScrollableArea& view)
+static ScrollResult scrollAreaOnBothAxes(const FloatSize& delta, ScrollableArea& view)
 {
-    bool scrolledHorizontal = view.userScroll(ScrollLeft, ScrollByPrecisePixel, delta.width());
-    bool scrolledVertical = view.userScroll(ScrollUp, ScrollByPrecisePixel, delta.height());
-    return scrolledHorizontal || scrolledVertical;
+    ScrollResultOneDimensional scrolledHorizontal = view.userScroll(ScrollLeft, ScrollByPrecisePixel, delta.width());
+    ScrollResultOneDimensional scrolledVertical = view.userScroll(ScrollUp, ScrollByPrecisePixel, delta.height());
+    return ScrollResult(scrolledHorizontal.didScroll, scrolledVertical.didScroll, scrolledHorizontal.unusedScrollDelta, scrolledVertical.unusedScrollDelta);
 }
 
 // Returns true if a scroll occurred.
-bool LocalFrame::applyScrollDelta(const FloatSize& delta, bool isScrollBegin)
+ScrollResult LocalFrame::applyScrollDelta(const FloatSize& delta, bool isScrollBegin)
 {
     if (isScrollBegin)
         host()->topControls().scrollBegin();
 
     if (!view() || delta.isZero())
-        return false;
+        return ScrollResult(false, false, delta.width(), delta.height());
 
     FloatSize remainingDelta = delta;
 
@@ -741,14 +741,13 @@ bool LocalFrame::applyScrollDelta(const FloatSize& delta, bool isScrollBegin)
         remainingDelta = host()->topControls().scrollBy(remainingDelta);
 
     if (remainingDelta.isZero())
-        return true;
+        return ScrollResult(delta.width(), delta.height(), 0.0f, 0.0f);
 
-    bool consumed = remainingDelta != delta;
+    ScrollResult result = scrollAreaOnBothAxes(remainingDelta, *view()->scrollableArea());
+    result.didScrollX = result.didScrollX || (remainingDelta.width() != delta.width());
+    result.didScrollY = result.didScrollY || (remainingDelta.height() != delta.height());
 
-    if (scrollAreaOnBothAxes(remainingDelta, *view()->scrollableArea()))
-        return true;
-
-    return consumed;
+    return result;
 }
 
 bool LocalFrame::shouldScrollTopControls(const FloatSize& delta) const

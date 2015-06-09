@@ -122,7 +122,7 @@ GraphicsLayer* ScrollableArea::layerForContainer() const
     return layerForScrolling() ? layerForScrolling()->parent() : 0;
 }
 
-bool ScrollableArea::userScroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
+ScrollResultOneDimensional ScrollableArea::userScroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
 {
     ScrollbarOrientation orientation;
     if (direction == ScrollUp || direction == ScrollDown)
@@ -131,7 +131,7 @@ bool ScrollableArea::userScroll(ScrollDirectionPhysical direction, ScrollGranula
         orientation = HorizontalScrollbar;
 
     if (!userInputScrollable(orientation))
-        return false;
+        return ScrollResultOneDimensional(false, delta);
 
     cancelProgrammaticScrollAnimation();
 
@@ -155,7 +155,7 @@ bool ScrollableArea::userScroll(ScrollDirectionPhysical direction, ScrollGranula
     if (direction == ScrollUp || direction == ScrollLeft)
         delta = -delta;
 
-    return scrollAnimator()->userScroll(orientation, granularity, step, delta).didScroll;
+    return scrollAnimator()->userScroll(orientation, granularity, step, delta);
 }
 
 void ScrollableArea::setScrollPosition(const DoublePoint& position, ScrollBehavior behavior)
@@ -275,7 +275,7 @@ ScrollResult ScrollableArea::handleWheel(const PlatformWheelEvent& wheelEvent)
 {
     // Wheel events which do not scroll are used to trigger zooming.
     if (!wheelEvent.canScroll())
-        return ScrollResult(false);
+        return ScrollResult();
 
     cancelProgrammaticScrollAnimation();
     return scrollAnimator()->handleWheelEvent(wheelEvent);

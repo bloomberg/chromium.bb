@@ -50,6 +50,7 @@ class DateTimeChooserClient;
 class Element;
 class FileChooser;
 class Frame;
+class FloatPoint;
 class GraphicsContext;
 class GraphicsLayer;
 class GraphicsLayerFactory;
@@ -101,6 +102,8 @@ public:
     virtual void show(NavigationPolicy = NavigationPolicyIgnore) = 0;
 
     void setWindowFeatures(const WindowFeatures&);
+
+    virtual void didOverscroll(const FloatSize&, const FloatSize&, const FloatPoint&, const FloatSize&) = 0;
 
     virtual void setToolbarsVisible(bool) = 0;
     virtual bool toolbarsVisible() = 0;

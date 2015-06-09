@@ -119,6 +119,7 @@
 #include "web/tests/FrameTestHelpers.h"
 #include "wtf/Forward.h"
 #include "wtf/dtoa/utils.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <map>
 #include <v8.h>
@@ -127,8 +128,21 @@ using blink::URLTestHelpers::toKURL;
 using blink::FrameTestHelpers::UseMockScrollbarSettings;
 using blink::testing::runPendingTasks;
 using testing::ElementsAre;
+using ::testing::Mock;
 
 namespace blink {
+
+::std::ostream& operator<<(::std::ostream& os, const WebFloatSize& size)
+{
+    return os << "WebFloatSize: ["
+        << size.width<< ", " << size.height<< "]";
+}
+
+::std::ostream& operator<<(::std::ostream& os, const WebFloatPoint& point)
+{
+    return os << "WebFloatPoint: ["
+        << point.x<< ", " << point.y<< "]";
+}
 
 const int touchPointPadding = 32;
 
@@ -7469,6 +7483,236 @@ TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
     EXPECT_EQ(parent, fourthFrame->parent());
 
     view->close();
+}
+
+class OverscrollWebViewClient : public FrameTestHelpers::TestWebViewClient {
+public:
+    MOCK_METHOD4(didOverscroll, void(const WebFloatSize&, const WebFloatSize&, const WebFloatPoint&, const WebFloatSize&));
+};
+
+class WebFrameOverscrollTest : public WebFrameTest {
+protected:
+    WebGestureEvent generateEvent(WebInputEvent::Type type, int deltaX = 0, int deltaY = 0)
+    {
+        WebGestureEvent event;
+        event.type = type;
+        event.x = 100;
+        event.y = 100;
+        if (type == WebInputEvent::GestureScrollUpdate) {
+            event.data.scrollUpdate.deltaX = deltaX;
+            event.data.scrollUpdate.deltaY = deltaY;
+        }
+        return event;
+    }
+
+    void ScrollBegin(FrameTestHelpers::WebViewHelper* webViewHelper)
+    {
+        webViewHelper->webViewImpl()->handleInputEvent(generateEvent(WebInputEvent::GestureScrollBegin));
+    }
+
+    void ScrollUpdate(FrameTestHelpers::WebViewHelper* webViewHelper, float deltaX, float deltaY)
+    {
+        webViewHelper->webViewImpl()->handleInputEvent(generateEvent(WebInputEvent::GestureScrollUpdate, deltaX, deltaY));
+    }
+
+    void ScrollEnd(FrameTestHelpers::WebViewHelper* webViewHelper)
+    {
+        webViewHelper->webViewImpl()->handleInputEvent(generateEvent(WebInputEvent::GestureScrollEnd));
+    }
+};
+
+TEST_F(WebFrameOverscrollTest, AccumulatedRootOverscrollAndUnsedDeltaValuesOnOverscroll)
+{
+    OverscrollWebViewClient client;
+    registerMockedHttpURLLoad("overscroll/overscroll.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "overscroll/overscroll.html", true, 0, &client, configureAndroid);
+
+    // Calculation of accumulatedRootOverscroll and unusedDelta on multiple scrollUpdate.
+    ScrollBegin(&webViewHelper);
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(8, 16), WebFloatSize(8, 16), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, -308, -316);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, 13), WebFloatSize(8, 29), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 0, -13);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(20, 13), WebFloatSize(28, 42), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, -20, -13);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // Overscroll is not reported.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, 0, 1);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, 1, 0);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // Overscroll is reported.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, -701), WebFloatSize(0, -701), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 0, 1000);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // Overscroll is not reported.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollEnd(&webViewHelper);
+    Mock::VerifyAndClearExpectations(&client);
+}
+
+TEST_F(WebFrameOverscrollTest, AccumulatedOverscrollAndUnusedDeltaValuesOnDifferentAxesOverscroll)
+{
+    OverscrollWebViewClient client;
+    registerMockedHttpURLLoad("overscroll/div-overscroll.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "overscroll/div-overscroll.html", true, 0, &client, configureAndroid);
+
+    ScrollBegin(&webViewHelper);
+
+    // Scroll the Div to the end.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, 0, -316);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // Now On Scrolling DIV, scroll is bubbled and root layer is over-scrolled.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, 100), WebFloatSize(0, 100), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 0, -100);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // Page scrolls vertically, but over-scrolls horizontally.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(-100, 0), WebFloatSize(-100, 0), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 100, 50);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // Scrolling up, Overscroll is not reported.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, 0, -50);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // Page scrolls horizontally, but over-scrolls vertically.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, 100), WebFloatSize(0, 100), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, -100, -100);
+    Mock::VerifyAndClearExpectations(&client);
+}
+
+TEST_F(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll)
+{
+    OverscrollWebViewClient client;
+    registerMockedHttpURLLoad("overscroll/div-overscroll.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "overscroll/div-overscroll.html", true, 0, &client, configureAndroid);
+
+    ScrollBegin(&webViewHelper);
+
+    // Scroll the Div to the end.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, 0, -316);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // Now On Scrolling DIV, scroll is bubbled and root layer is over-scrolled.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, 50), WebFloatSize(0, 50), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 0, -50);
+    Mock::VerifyAndClearExpectations(&client);
+}
+
+TEST_F(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll)
+{
+    OverscrollWebViewClient client;
+    registerMockedHttpURLLoad("overscroll/iframe-overscroll.html");
+    registerMockedHttpURLLoad("overscroll/scrollable-iframe.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "overscroll/iframe-overscroll.html", true, 0, &client, configureAndroid);
+
+    ScrollBegin(&webViewHelper);
+    // Scroll the IFrame to the end.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, 0, -320);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // Now On Scrolling IFrame, scroll is bubbled and root layer is over-scrolled.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, 50), WebFloatSize(0, 50), WebFloatPoint(100, 100), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 0, -50);
+    Mock::VerifyAndClearExpectations(&client);
+}
+
+TEST_F(WebFrameOverscrollTest, NoOverscrollOnNonScrollableaxes)
+{
+    OverscrollWebViewClient client;
+    registerMockedHttpURLLoad("overscroll/no-overscroll-on-nonscrollable-axes.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "overscroll/no-overscroll-on-nonscrollable-axes.html", true, 0, &client, configureAndroid);
+
+    // Overscroll is not reported in all the directions.
+    ScrollBegin(&webViewHelper);
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, 0, -1);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, 0, 1);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, 1, 0);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, -1, 0);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, 1, 1);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, -1, 1);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, 1, -1);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollUpdate(&webViewHelper, -1, -1);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(100, 100), WebFloatSize())).Times(0);
+    ScrollEnd(&webViewHelper);
+    Mock::VerifyAndClearExpectations(&client);
+}
+
+TEST_F(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled)
+{
+    OverscrollWebViewClient client;
+    registerMockedHttpURLLoad("overscroll/overscroll.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "overscroll/overscroll.html", true, 0, &client, configureAndroid);
+    webViewImpl->setPageScaleFactor(3.0);
+
+    // Calculation of accumulatedRootOverscroll and unusedDelta on scaled page.
+    ScrollBegin(&webViewHelper);
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, -10), WebFloatSize(0, -10), WebFloatPoint(33, 33), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 0, 30);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(0, -10), WebFloatSize(0, -20), WebFloatPoint(33, 33), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 0, 30);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(-10, -10), WebFloatSize(-10, -30), WebFloatPoint(33, 33), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 30, 30);
+    Mock::VerifyAndClearExpectations(&client);
+
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(-10, 0), WebFloatSize(-20, -30), WebFloatPoint(33, 33), WebFloatSize()));
+    ScrollUpdate(&webViewHelper, 30, 0);
+    Mock::VerifyAndClearExpectations(&client);
+
+    // Overscroll is not reported.
+    EXPECT_CALL(client, didOverscroll(WebFloatSize(), WebFloatSize(), WebFloatPoint(33, 33), WebFloatSize())).Times(0);
+    ScrollEnd(&webViewHelper);
+    Mock::VerifyAndClearExpectations(&client);
 }
 
 } // namespace blink

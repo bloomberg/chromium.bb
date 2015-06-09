@@ -2932,10 +2932,10 @@ void FrameView::removeChild(Widget* child)
 ScrollResult FrameView::wheelEvent(const PlatformWheelEvent& wheelEvent)
 {
     if (!isScrollable())
-        return ScrollResult(false);
+        return ScrollResult();
 
     if (m_frame->settings()->rootLayerScrolls())
-        return ScrollResult(false);
+        return ScrollResult();
 
     return ScrollableArea::handleWheel(wheelEvent);
 }

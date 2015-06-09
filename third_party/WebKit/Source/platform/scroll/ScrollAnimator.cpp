@@ -55,7 +55,7 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(ScrollbarOrientation orien
     float& currentPos = (orientation == HorizontalScrollbar) ? m_currentPosX : m_currentPosY;
     float newPos = clampScrollPosition(orientation, currentPos + step * delta);
     if (currentPos == newPos)
-        return ScrollResultOneDimensional(false);
+        return ScrollResultOneDimensional(false, delta);
 
     float usedDelta = (newPos - currentPos) / step;
     currentPos = newPos;
@@ -84,7 +84,7 @@ ScrollResult ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
     float deltaX = canScrollX ? e.deltaX() : 0;
     float deltaY = canScrollY ? e.deltaY() : 0;
 
-    ScrollResult result(false);
+    ScrollResult result;
 
 #if !OS(MACOSX)
     ScrollGranularity granularity = e.hasPreciseScrollingDeltas() ? ScrollByPrecisePixel : ScrollByPixel;
@@ -95,11 +95,12 @@ ScrollResult ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
     IntSize maxForwardScrollDelta = m_scrollableArea->maximumScrollPosition() - m_scrollableArea->scrollPosition();
     IntSize maxBackwardScrollDelta = m_scrollableArea->scrollPosition() - m_scrollableArea->minimumScrollPosition();
     if ((deltaX < 0 && maxForwardScrollDelta.width() > 0)
-        || (deltaX > 0 && maxBackwardScrollDelta.width() > 0)
-        || (deltaY < 0 && maxForwardScrollDelta.height() > 0)
-        || (deltaY > 0 && maxBackwardScrollDelta.height() > 0)) {
-        result.didScroll = true;
-
+        || (deltaX > 0 && maxBackwardScrollDelta.width() > 0))
+        result.didScrollX = true;
+    if ((deltaY < 0 && maxForwardScrollDelta.height() > 0)
+        || (deltaY > 0 && maxBackwardScrollDelta.height() > 0))
+        result.didScrollY = true;
+    if (result.didScroll()) {
         if (deltaY) {
             if (e.granularity() == ScrollByPageWheelEvent) {
                 bool negative = deltaY < 0;

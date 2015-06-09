@@ -41,6 +41,8 @@
 
 namespace blink {
 
+struct WebFloatPoint;
+struct WebFloatSize;
 class WebGestureEvent;
 class WebNode;
 class WebString;
@@ -151,6 +153,9 @@ public:
 
     // Called when a gesture event is handled.
     virtual void didHandleGestureEvent(const WebGestureEvent& event, bool eventCancelled) { }
+
+    // Called when overscrolled on main thread.
+    virtual void didOverscroll(const WebFloatSize& unusedDelta, const WebFloatSize& accumulatedRootOverScroll, const WebFloatPoint& position, const WebFloatSize& velocity) { }
 
     // Called to update if touch events should be sent.
     virtual void hasTouchEventHandlers(bool) { }

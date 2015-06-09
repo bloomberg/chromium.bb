@@ -699,13 +699,13 @@ int LayoutBox::intrinsicScrollbarLogicalWidth() const
     return 0;
 }
 
-bool LayoutBox::scroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
+ScrollResultOneDimensional LayoutBox::scroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
 {
     // Presumably the same issue as in setScrollTop. See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
 
     if (!layer() || !layer()->scrollableArea())
-        return false;
+        return ScrollResultOneDimensional(false);
 
     return layer()->scrollableArea()->userScroll(direction, granularity, delta);
 }

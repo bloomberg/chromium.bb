@@ -297,6 +297,14 @@ Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& 
     return newView->page();
 }
 
+void ChromeClientImpl::didOverscroll(const FloatSize& unusedDelta, const FloatSize& accumulatedRootOverScroll, const FloatPoint& position, const FloatSize& velocity)
+{
+    if (!m_webView->client())
+        return;
+
+    m_webView->client()->didOverscroll(unusedDelta, accumulatedRootOverScroll, position, velocity);
+}
+
 void ChromeClientImpl::show(NavigationPolicy navigationPolicy)
 {
     if (m_webView->client())

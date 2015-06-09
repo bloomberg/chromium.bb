@@ -509,7 +509,7 @@ void Element::applyScroll(ScrollState& scrollState)
     // Handle the documentElement separately, as it scrolls the FrameView.
     if (this == document().documentElement()) {
         FloatSize delta(deltaX, deltaY);
-        if (document().frame()->applyScrollDelta(delta, scrollState.isBeginning())) {
+        if (document().frame()->applyScrollDelta(delta, scrollState.isBeginning()).didScroll()) {
             scrolled = true;
             scrollState.consumeDeltaNative(scrollState.deltaX(), scrollState.deltaY());
         }
@@ -519,12 +519,12 @@ void Element::applyScroll(ScrollState& scrollState)
         LayoutBox* curBox = layoutObject()->enclosingBox();
         // FIXME: Native scrollers should only consume the scroll they
         // apply. See crbug.com/457765.
-        if (deltaX && curBox->scroll(ScrollLeft, ScrollByPrecisePixel, deltaX)) {
+        if (deltaX && curBox->scroll(ScrollLeft, ScrollByPrecisePixel, deltaX).didScroll) {
             scrollState.consumeDeltaNative(scrollState.deltaX(), 0);
             scrolled = true;
         }
 
-        if (deltaY && curBox->scroll(ScrollUp, ScrollByPrecisePixel, deltaY)) {
+        if (deltaY && curBox->scroll(ScrollUp, ScrollByPrecisePixel, deltaY).didScroll) {
             scrollState.consumeDeltaNative(0, scrollState.deltaY());
             scrolled = true;
         }

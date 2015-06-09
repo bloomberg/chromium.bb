@@ -193,16 +193,21 @@ struct ScrollResultOneDimensional {
 };
 
 struct ScrollResult {
-    explicit ScrollResult(bool didScroll)
-        : didScroll(didScroll)
+    explicit ScrollResult()
+        : didScrollX(false)
+        , didScrollY(false)
         , unusedScrollDeltaX(0)
         , unusedScrollDeltaY(0) { }
-    ScrollResult(bool didScroll, float unusedScrollDeltaX, float unusedScrollDeltaY)
-        : didScroll(didScroll)
+    ScrollResult(bool didScrollX, bool didScrollY, float unusedScrollDeltaX, float unusedScrollDeltaY)
+        : didScrollX(didScrollX)
+        , didScrollY(didScrollY)
         , unusedScrollDeltaX(unusedScrollDeltaX)
         , unusedScrollDeltaY(unusedScrollDeltaY) { }
 
-    bool didScroll;
+    bool didScroll() { return didScrollX || didScrollY; }
+
+    bool didScrollX;
+    bool didScrollY;
     float unusedScrollDeltaX;
     float unusedScrollDeltaY;
 };

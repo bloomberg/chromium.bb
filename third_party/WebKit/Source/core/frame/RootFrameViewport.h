@@ -59,7 +59,7 @@ public:
     GraphicsLayer* layerForScrolling() const override;
     GraphicsLayer* layerForHorizontalScrollbar() const override;
     GraphicsLayer* layerForVerticalScrollbar() const override;
-    bool userScroll(ScrollDirectionPhysical, ScrollGranularity, float delta = 1) override;
+    ScrollResultOneDimensional userScroll(ScrollDirectionPhysical, ScrollGranularity, float delta = 1) override;
     bool scrollAnimatorEnabled() const override;
     HostWindow* hostWindow() const override;
     void serviceScrollAnimations(double) override;

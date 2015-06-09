@@ -232,6 +232,7 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_eventHandlerWillResetCapturingMouseEventsNode(0)
     , m_clickCount(0)
     , m_shouldOnlyFireDragOverEvent(false)
+    , m_accumulatedRootOverscroll(FloatSize())
     , m_mousePositionIsUnknown(true)
     , m_mouseDownTimestamp(0)
     , m_widgetIsLatched(false)
@@ -923,10 +924,10 @@ void EventHandler::stopAutoscroll()
         controller->stopAutoscroll();
 }
 
-bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granularity, Node* startNode, Node** stopNode, float delta, IntPoint absolutePoint)
+ScrollResultOneDimensional EventHandler::scroll(ScrollDirection direction, ScrollGranularity granularity, Node* startNode, Node** stopNode, float delta, IntPoint absolutePoint)
 {
     if (!delta)
-        return false;
+        return ScrollResultOneDimensional(false);
 
     Node* node = startNode;
 
@@ -937,7 +938,7 @@ bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granulari
         node = m_mousePressNode.get();
 
     if (!node || !node->layoutObject())
-        return false;
+        return ScrollResultOneDimensional(false, delta);
 
     LayoutBox* curBox = node->layoutObject()->enclosingBox();
     while (curBox && !curBox->isLayoutView()) {
@@ -946,20 +947,21 @@ bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granulari
 
         // If we're at the stopNode, we should try to scroll it but we shouldn't bubble past it
         bool shouldStopBubbling = stopNode && *stopNode && curBox->node() == *stopNode;
-        bool didScroll = curBox->scroll(physicalDirection, granularity, delta);
+        ScrollResultOneDimensional result = curBox->scroll(physicalDirection, granularity, delta);
 
-        if (didScroll && stopNode)
+        if (result.didScroll && stopNode)
             *stopNode = curBox->node();
 
-        if (didScroll || shouldStopBubbling) {
+        if (result.didScroll || shouldStopBubbling) {
             setFrameWasScrolledByUser();
-            return true;
+            result.didScroll = true;
+            return result;
         }
 
         curBox = curBox->containingBlock();
     }
 
-    return false;
+    return ScrollResultOneDimensional(false, delta);
 }
 
 void EventHandler::customizedScroll(const Node& startNode, ScrollState& scrollState)
@@ -979,14 +981,14 @@ bool EventHandler::bubblingScroll(ScrollDirection direction, ScrollGranularity g
     // here because of an onLoad event, in which case the final layout hasn't been performed yet.
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
     // FIXME: enable scroll customization in this case. See crbug.com/410974.
-    if (scroll(direction, granularity, startingNode))
+    if (scroll(direction, granularity, startingNode).didScroll)
         return true;
     LocalFrame* frame = m_frame;
     FrameView* view = frame->view();
     if (view) {
         ScrollDirectionPhysical physicalDirection =
             toPhysicalDirection(direction, view->isVerticalDocument(), view->isFlippedDocument());
-        if (view->scrollableArea()->userScroll(physicalDirection, granularity)) {
+        if (view->scrollableArea()->userScroll(physicalDirection, granularity).didScroll) {
             setFrameWasScrolledByUser();
             return true;
         }
@@ -2153,7 +2155,7 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& event)
     if (!view)
         return false;
 
-    if (view->scrollableArea()->handleWheel(event).didScroll)
+    if (view->scrollableArea()->handleWheel(event).didScroll())
         RETURN_WHEEL_EVENT_HANDLED();
 
     return false;
@@ -2178,11 +2180,11 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
 
     // FIXME: enable scroll customization in this case. See crbug.com/410974.
     if (wheelEvent->railsMode() != Event::RailsModeVertical
-        && scroll(ScrollRightIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaX(), absolutePosition))
+        && scroll(ScrollRightIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaX(), absolutePosition).didScroll)
         wheelEvent->setDefaultHandled();
 
     if (wheelEvent->railsMode() != Event::RailsModeHorizontal
-        && scroll(ScrollDownIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaY(), absolutePosition))
+        && scroll(ScrollDownIgnoringWritingMode, granularity, startNode, &stopNode, wheelEvent->deltaY(), absolutePosition).didScroll)
         wheelEvent->setDefaultHandled();
 
     if (!m_latchedWheelEventNode)
@@ -2583,7 +2585,7 @@ bool EventHandler::handleGestureScrollEnd(const PlatformGestureEvent& gestureEve
         }
     }
 
-    clearGestureScrollNodes();
+    clearGestureScrollState();
     return false;
 }
 
@@ -2622,6 +2624,30 @@ bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureE
             m_frame->host()->topControls().scrollBegin();
     }
     return true;
+}
+
+void EventHandler::resetOverscroll(bool didScrollX, bool didScrollY)
+{
+    if (didScrollX)
+        m_accumulatedRootOverscroll.setWidth(0);
+    if (didScrollY)
+        m_accumulatedRootOverscroll.setHeight(0);
+}
+
+void EventHandler::handleOverscroll(const ScrollResult& scrollResult, const PlatformGestureEvent& gestureEvent)
+{
+    if (m_frame->isMainFrame() && m_frame->view() && m_frame->view()->scrollableArea()) {
+        ScrollableArea* scrollablearea = m_frame->view()->scrollableArea();
+        // Set unusedDelta if axis is scrollable, else set 0 to ensure overflow is not reported on non-scrollable axes.
+        FloatSize unusedDelta(scrollablearea->scrollSize(HorizontalScrollbar) ? scrollResult.unusedScrollDeltaX : 0, scrollablearea->scrollSize(VerticalScrollbar) ? scrollResult.unusedScrollDeltaY : 0);
+        resetOverscroll(scrollResult.didScrollX, scrollResult.didScrollY);
+        if (unusedDelta != FloatSize()) {
+            m_accumulatedRootOverscroll += unusedDelta;
+            FloatPoint position = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
+            FloatSize velocity = FloatSize(gestureEvent.velocityX(), gestureEvent.velocityY());
+            m_frame->chromeClient().didOverscroll(unusedDelta, m_accumulatedRootOverscroll, position, velocity);
+        }
+    }
 }
 
 bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gestureEvent)
@@ -2683,14 +2709,18 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
             // First try to scroll the closest scrollable LayoutBox ancestor of |node|.
             ScrollGranularity granularity = ScrollByPrecisePixel;
-            bool horizontalScroll = scroll(ScrollLeftIgnoringWritingMode, granularity, node, &stopNode, delta.width());
+            ScrollResultOneDimensional result = scroll(ScrollLeftIgnoringWritingMode, granularity, node, &stopNode, delta.width());
+            bool horizontalScroll = result.didScroll;
             if (!gestureEvent.preventPropagation())
                 stopNode = nullptr;
-            bool verticalScroll = scroll(ScrollUpIgnoringWritingMode, granularity, node, &stopNode, delta.height());
+            result = scroll(ScrollUpIgnoringWritingMode, granularity, node, &stopNode, delta.height());
+            bool verticalScroll = result.didScroll;
             scrolled = horizontalScroll || verticalScroll;
 
             if (gestureEvent.preventPropagation())
                 m_previousGestureScrolledNode = stopNode;
+
+            resetOverscroll(horizontalScroll, verticalScroll);
         }
         if (scrolled) {
             setFrameWasScrolledByUser();
@@ -2702,7 +2732,9 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
         return false;
 
     // Try to scroll the frame view.
-    if (m_frame->applyScrollDelta(delta, false)) {
+    ScrollResult scrollResult = m_frame->applyScrollDelta(delta, false);
+    handleOverscroll(scrollResult, gestureEvent);
+    if (scrollResult.didScroll()) {
         setFrameWasScrolledByUser();
         return true;
     }
@@ -2710,12 +2742,13 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
     return false;
 }
 
-void EventHandler::clearGestureScrollNodes()
+void EventHandler::clearGestureScrollState()
 {
     m_scrollGestureHandlingNode = nullptr;
     m_previousGestureScrolledNode = nullptr;
     m_deltaConsumedForScrollSequence = false;
     m_currentScrollChain.clear();
+    m_accumulatedRootOverscroll = FloatSize();
 }
 
 bool EventHandler::isScrollbarHandlingGestures() const
@@ -3618,7 +3651,7 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
     ScrollDirection direction = event->shiftKey() ? ScrollBlockDirectionBackward : ScrollBlockDirectionForward;
 
     // FIXME: enable scroll customization in this case. See crbug.com/410974.
-    if (scroll(direction, ScrollByPage)) {
+    if (scroll(direction, ScrollByPage).didScroll) {
         event->setDefaultHandled();
         return;
     }
@@ -3630,7 +3663,7 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
     ScrollDirectionPhysical physicalDirection =
         toPhysicalDirection(direction, view->isVerticalDocument(), view->isFlippedDocument());
 
-    if (view->scrollableArea()->userScroll(physicalDirection, ScrollByPage))
+    if (view->scrollableArea()->userScroll(physicalDirection, ScrollByPage).didScroll)
         event->setDefaultHandled();
 }
 

@@ -493,7 +493,7 @@ TEST_F(RootFrameViewportTest, BasicWheelEvent)
 
     ScrollResult result = rootFrameViewport->handleWheel(wheelEvent);
 
-    EXPECT_TRUE(result.didScroll);
+    EXPECT_TRUE(result.didScroll());
     EXPECT_POINT_EQ(DoublePoint(50, 50), visualViewport.scrollPositionDouble());
     EXPECT_POINT_EQ(DoublePoint(100, 200), layoutViewport.scrollPositionDouble());
     EXPECT_EQ(-350, result.unusedScrollDeltaX);

@@ -230,7 +230,7 @@ private:
     bool handleGestureLongTap(const GestureEventWithHitTestResults&);
     bool handleGestureScrollUpdate(const PlatformGestureEvent&);
     bool handleGestureScrollBegin(const PlatformGestureEvent&);
-    void clearGestureScrollNodes();
+    void clearGestureScrollState();
 
     bool shouldApplyTouchAdjustment(const PlatformGestureEvent&) const;
 
@@ -261,7 +261,10 @@ private:
     //            On output, if provided and a node was scrolled stopNode will point to that node.
     // delta - The delta to scroll by, in the units of the granularity parameter. (e.g. pixels, lines, pages, etc.)
     // absolutePoint - For wheel scrolls - the location, in absolute coordinates, where the event occured.
-    bool scroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr, Node** stopNode = nullptr, float delta = 1.0f, IntPoint absolutePoint = IntPoint());
+    ScrollResultOneDimensional scroll(ScrollDirection, ScrollGranularity, Node* startNode = nullptr, Node** stopNode = nullptr, float delta = 1.0f, IntPoint absolutePoint = IntPoint());
+
+    void resetOverscroll(bool didScrollX, bool didScrollY);
+    void handleOverscroll(const ScrollResult&, const PlatformGestureEvent&);
 
     void customizedScroll(const Node& startNode, ScrollState&);
 
@@ -373,6 +376,8 @@ private:
     RefPtrWillBeMember<HTMLFrameSetElement> m_frameSetBeingResized;
 
     LayoutSize m_offsetFromResizeCorner; // In the coords of m_resizeScrollableArea.
+
+    FloatSize m_accumulatedRootOverscroll;
 
     bool m_mousePositionIsUnknown;
     // The last mouse movement position this frame has seen in root frame coordinates.

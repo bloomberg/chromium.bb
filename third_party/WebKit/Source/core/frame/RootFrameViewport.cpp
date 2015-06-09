@@ -91,7 +91,7 @@ ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
 {
     updateScrollAnimator();
 
-    ScrollResult viewScrollResult(false);
+    ScrollResult viewScrollResult;
     if (layoutViewport().isScrollable())
         viewScrollResult = layoutViewport().handleWheel(event);
 
@@ -102,7 +102,7 @@ ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
     // Move the location by the negative of the remaining scroll delta.
     DoublePoint oldOffset = visualViewport().scrollPositionDouble();
     DoublePoint locationDelta;
-    if (viewScrollResult.didScroll) {
+    if (viewScrollResult.didScroll()) {
         locationDelta = -DoublePoint(viewScrollResult.unusedScrollDeltaX, viewScrollResult.unusedScrollDeltaY);
     } else {
         if (event.railsMode() != PlatformEvent::RailsModeVertical)
@@ -116,11 +116,13 @@ ScrollResult RootFrameViewport::handleWheel(const PlatformWheelEvent& event)
     visualViewport().scrollToOffsetWithoutAnimation(FloatPoint(targetPosition));
 
     DoublePoint usedLocationDelta(visualViewport().scrollPositionDouble() - oldOffset);
-    if (!viewScrollResult.didScroll && usedLocationDelta == DoublePoint::zero())
-        return ScrollResult(false);
+    if (!viewScrollResult.didScroll() && usedLocationDelta == DoublePoint::zero())
+        return ScrollResult();
 
     DoubleSize unusedLocationDelta(locationDelta - usedLocationDelta);
-    return ScrollResult(true, -unusedLocationDelta.width(), -unusedLocationDelta.height());
+    bool didScrollX = viewScrollResult.didScrollX || unusedLocationDelta.width();
+    bool didScrollY = viewScrollResult.didScrollY || unusedLocationDelta.height();
+    return ScrollResult(didScrollX, didScrollY, -unusedLocationDelta.width(), -unusedLocationDelta.height());
 }
 
 LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent, const ScrollAlignment& alignX, const ScrollAlignment& alignY)
@@ -276,7 +278,7 @@ GraphicsLayer* RootFrameViewport::layerForVerticalScrollbar() const
     return layoutViewport().layerForVerticalScrollbar();
 }
 
-bool RootFrameViewport::userScroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
+ScrollResultOneDimensional RootFrameViewport::userScroll(ScrollDirectionPhysical direction, ScrollGranularity granularity, float delta)
 {
     updateScrollAnimator();
 
@@ -296,7 +298,7 @@ bool RootFrameViewport::userScroll(ScrollDirectionPhysical direction, ScrollGran
     if (layoutViewport().userInputScrollable(orientation))
         return layoutViewport().userScroll(direction, granularity, delta);
 
-    return false;
+    return ScrollResultOneDimensional(false, delta);
 }
 
 bool RootFrameViewport::scrollAnimatorEnabled() const
