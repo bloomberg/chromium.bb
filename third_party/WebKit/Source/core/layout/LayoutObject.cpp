@@ -1096,6 +1096,8 @@ String LayoutObject::decoratedName() const
         name.append(" (relative positioned)");
     if (isFloating())
         name.append(" (floating)");
+    if (spannerPlaceholder())
+        name.append(" (column spanner)");
 
     return name.toString();
 }
