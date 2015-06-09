@@ -3,7 +3,7 @@
     'snapshot_additional_input_paths': [],
     'snapshot_copy_files': [],
     'conditions': [
-      ['v8_use_external_startup_data==1 and (target_arch=="arm" or target_arch=="ia32" or target_arch=="mipsel")', {
+      ['target_arch=="arm" or target_arch=="ia32" or target_arch=="mipsel"', {
         'snapshot_additional_input_paths': [
           '<(asset_location)/natives_blob_32.bin',
           '<(asset_location)/snapshot_blob_32.bin',
@@ -13,7 +13,7 @@
           '<(PRODUCT_DIR)/snapshot_blob_32.bin',
         ],
       }],
-      ['v8_use_external_startup_data==1 and (target_arch=="arm64" or target_arch=="x64" or target_arch=="mips64el")', {
+      ['target_arch=="arm64" or target_arch=="x64" or target_arch=="mips64el"', {
         'snapshot_additional_input_paths': [
           '<(asset_location)/natives_blob_64.bin',
           '<(asset_location)/snapshot_blob_64.bin',

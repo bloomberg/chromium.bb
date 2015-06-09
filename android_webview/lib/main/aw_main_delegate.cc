@@ -104,7 +104,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // content_main_runner that reads these values tries to do so.
   // In multi-process mode this code would live in
   // AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess.
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
 #ifdef __LP64__
   const char kNativesFileName[] = "assets/natives_blob_64.bin";
   const char kSnapshotFileName[] = "assets/snapshot_blob_64.bin";
@@ -119,7 +118,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       kV8NativesDataDescriptor, kNativesFileName));
   CHECK(base::android::RegisterApkAssetWithGlobalDescriptors(
       kV8SnapshotDataDescriptor, kSnapshotFileName));
-#endif
   CHECK(base::android::RegisterApkAssetWithGlobalDescriptors(
       kAndroidICUDataDescriptor, "assets/icudtl.dat"));
 

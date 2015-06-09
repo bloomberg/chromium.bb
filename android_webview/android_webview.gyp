@@ -15,6 +15,16 @@
         '<(DEPTH)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
       ],
+      'variables': {
+        'conditions': [
+          ['target_arch=="arm" or target_arch=="ia32" or target_arch=="mipsel"', {
+            'arch_suffix':'32'
+          }],
+          ['target_arch=="arm64" or target_arch=="x64" or target_arch=="mips64el"', {
+            'arch_suffix':'64'
+          }],
+        ],
+      },
       'actions': [
         {
           'action_name': 'repack_android_webview_pack',
@@ -51,52 +61,36 @@
             '<@(locales)',
           ],
         },
-      ],
-      'conditions': [
-        ['v8_use_external_startup_data==1', {
-          'variables': {
-            'conditions': [
-              ['(target_arch=="arm" or target_arch=="ia32" or target_arch=="mipsel")', {
-                'arch_suffix':'32'
-              }],
-              ['(target_arch=="arm64" or target_arch=="x64" or target_arch=="mips64el")', {
-                'arch_suffix':'64'
-              }],
-            ],
-          },
-          'actions': [
-            {
-              'action_name': 'rename_snapshot_blob',
-              'inputs': [
-                '<(PRODUCT_DIR)/snapshot_blob.bin',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/snapshot_blob_<(arch_suffix).bin',
-              ],
-              'action': [
-                'python',
-                '<(DEPTH)/build/cp.py',
-                '<@(_inputs)',
-                '<@(_outputs)',
-              ],
-            },
-            {
-              'action_name': 'rename_natives_blob',
-              'inputs': [
-                '<(PRODUCT_DIR)/natives_blob.bin',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/natives_blob_<(arch_suffix).bin',
-              ],
-              'action': [
-                'python',
-                '<(DEPTH)/build/cp.py',
-                '<@(_inputs)',
-                '<@(_outputs)',
-              ],
-            },
+        {
+          'action_name': 'rename_snapshot_blob',
+          'inputs': [
+            '<(PRODUCT_DIR)/snapshot_blob.bin',
           ],
-        }],
+          'outputs': [
+            '<(PRODUCT_DIR)/snapshot_blob_<(arch_suffix).bin',
+          ],
+          'action': [
+            'python',
+            '<(DEPTH)/build/cp.py',
+            '<@(_inputs)',
+            '<@(_outputs)',
+          ],
+        },
+        {
+          'action_name': 'rename_natives_blob',
+          'inputs': [
+            '<(PRODUCT_DIR)/natives_blob.bin',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/natives_blob_<(arch_suffix).bin',
+          ],
+          'action': [
+            'python',
+            '<(DEPTH)/build/cp.py',
+            '<@(_inputs)',
+            '<@(_outputs)',
+          ],
+        },
       ],
     },
     {
