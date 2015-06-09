@@ -26,6 +26,7 @@
 
 #include "platform/graphics/GraphicsContext.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -209,6 +210,11 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped)
 
 TEST(GraphicsContextTest, RecordingTotalMatrix)
 {
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        // GraphicsContext::getCTM() won't do the right thing in Slimming Paint, so just skip this test.
+        return;
+    }
+
     SkBitmap bitmap;
     bitmap.allocN32Pixels(400, 400);
     bitmap.eraseColor(0);
@@ -243,6 +249,12 @@ TEST(GraphicsContextTest, RecordingTotalMatrix)
 
 TEST(GraphicsContextTest, RecordingCanvas)
 {
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+        // This test doesn't make any sense in slimming paint as you can't begin recording within an existing recording,
+        // so just bail out.
+        return;
+    }
+
     SkBitmap bitmap;
     bitmap.allocN32Pixels(1, 1);
     bitmap.eraseColor(0);
