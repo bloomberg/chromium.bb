@@ -99,14 +99,21 @@ class SRTFetcher : public net::URLFetcherDelegate {
       }
     }
 
-    // Even if the fetch could not be completed, still display the prompt. In
-    // this case, the prompt will fall back to visiting the download page.
+    // As long as the fetch didn't fail due to HTTP_NOT_FOUND, show a prompt
+    // (either offering the tool directly or pointing to the download page).
+    // If the fetch failed to find the file, don't prompt the user since the
+    // tool is not currently available.
     // TODO(mad): Consider implementing another layer of retries / alternate
     //            fetching mechanisms. http://crbug.com/460293
     // TODO(mad): In the event the browser is closed before the prompt displays,
     //            we will wait until the next scanner run to re-display it.
     //            Improve this. http://crbug.com/460295
-    DisplaySRTPrompt(download_path);
+    if (source->GetResponseCode() != net::HTTP_NOT_FOUND) {
+      DisplaySRTPrompt(download_path);
+    } else {
+      safe_browsing::RecordSRTPromptHistogram(
+          safe_browsing::SRT_PROMPT_DOWNLOAD_UNAVAILABLE);
+    }
 
     // Explicitly destroy the url_fetcher_ to avoid destruction races.
     url_fetcher_.reset();

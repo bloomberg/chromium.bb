@@ -65740,6 +65740,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Accepted"/>
   <int value="2" label="Denied"/>
   <int value="3" label="Fell back to download page"/>
+  <int value="4" label="SRT download unavailable, no prompt shown."/>
 </enum>
 
 <enum name="SSLCaptivePortal" type="int">

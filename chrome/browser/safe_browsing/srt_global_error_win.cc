@@ -9,11 +9,11 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/metrics/histogram.h"
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/safe_browsing/srt_field_trial_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -39,22 +39,6 @@ const base::FilePath::CharType kExecutableExtension[] = L"exe";
 
 // A switch to add to the command line when executing the SRT.
 const char kChromePromptSwitch[] = "chrome-prompt";
-
-// Enum values for the SRTPrompt histogram. Don't change order, always add
-// to the end, before SRT_PROMPT_MAX, of course.
-enum SRTPromptHistogramValue {
-  SRT_PROMPT_SHOWN = 0,
-  SRT_PROMPT_ACCEPTED = 1,
-  SRT_PROMPT_DENIED = 2,
-  SRT_PROMPT_FALLBACK = 3,
-
-  SRT_PROMPT_MAX,
-};
-
-void RecordSRTPromptHistogram(SRTPromptHistogramValue value) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "SoftwareReporter.PromptUsage", value, SRT_PROMPT_MAX);
-}
 
 void MaybeExecuteSRTFromBlockingPool(
     const base::FilePath& downloaded_path,
@@ -118,7 +102,7 @@ void SRTGlobalError::ExecuteMenuItem(Browser* browser) {
 }
 
 void SRTGlobalError::ShowBubbleView(Browser* browser) {
-  RecordSRTPromptHistogram(SRT_PROMPT_SHOWN);
+  safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_SHOWN);
   GlobalErrorWithStandardBubble::ShowBubbleView(browser);
 }
 
@@ -150,13 +134,13 @@ void SRTGlobalError::OnBubbleViewDidClose(Browser* browser) {
 }
 
 void SRTGlobalError::BubbleViewAcceptButtonPressed(Browser* browser) {
-  RecordSRTPromptHistogram(SRT_PROMPT_ACCEPTED);
+  safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_ACCEPTED);
   global_error_service_->RemoveGlobalError(this);
   MaybeExecuteSRT();
 }
 
 void SRTGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
-  RecordSRTPromptHistogram(SRT_PROMPT_DENIED);
+  safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_DENIED);
   global_error_service_->RemoveGlobalError(this);
 
   BrowserThread::PostBlockingPoolTask(
@@ -186,7 +170,7 @@ void SRTGlobalError::MaybeExecuteSRT() {
 }
 
 void SRTGlobalError::FallbackToDownloadPage() {
-  RecordSRTPromptHistogram(SRT_PROMPT_FALLBACK);
+  safe_browsing::RecordSRTPromptHistogram(safe_browsing::SRT_PROMPT_FALLBACK);
 
   chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
   Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
