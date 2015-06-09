@@ -32,7 +32,6 @@
 #define V8RecursionScope_h
 
 #include "bindings/core/v8/V8PerIsolateData.h"
-#include "core/dom/ExecutionContext.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "wtf/Noncopyable.h"
 #include <v8.h>
