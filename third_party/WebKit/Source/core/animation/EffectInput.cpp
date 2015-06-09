@@ -44,6 +44,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/svg/animation/SVGSMILElement.h"
+#include "wtf/ASCIICType.h"
 #include "wtf/HashSet.h"
 #include "wtf/NonCopyingSort.h"
 
@@ -51,13 +52,18 @@ namespace blink {
 
 namespace {
 
+bool svgPrefixed(const String& property)
+{
+    return property.length() >= 4 && property.startsWith("svg") && isASCIIUpper(property[3]);
+}
+
 QualifiedName svgAttributeName(String property)
 {
-    if (property.length() >= 4 && property.startsWith("svg")) {
-        // Replace 'svgTransform' with 'transform', etc.
-        property.remove(0, 3);
-        property = property.lower();
-    }
+    // Replace 'svgTransform' with 'transform', etc.
+    ASSERT(svgPrefixed(property));
+    UChar first = toASCIILower(property[3]);
+    property.remove(0, 4);
+    property.insert(&first, 1, 0);
 
     if (property == "href")
         return XLinkNames::hrefAttr;
@@ -260,7 +266,7 @@ PassRefPtrWillBeRawPtr<EffectModel> EffectInput::convert(Element* element, const
                 continue;
             }
 
-            if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() || !element->isSVGElement())
+            if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() || !element->isSVGElement() || !svgPrefixed(property))
                 continue;
 
             SVGElement* svgElement = toSVGElement(element);

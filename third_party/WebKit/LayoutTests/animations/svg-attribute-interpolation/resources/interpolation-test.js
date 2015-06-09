@@ -469,29 +469,12 @@
     }
   }
 
-  // The following collide with CSS properties or the Web Animations API (offset).
-  var svgPrefixedAttributes = [
-    'cx',
-    'cy',
-    'height',
-    'offset',
-    'offset',
-    'order',
-    'r',
-    'rx',
-    'ry',
-    'transform',
-    'width',
-    'x',
-    'y',
-  ];
-
   function makeKeyframes(target, attributeName, params) {
-    if (svgPrefixedAttributes.indexOf(attributeName) !== -1)
-      attributeName = 'svg' + attributeName[0].toUpperCase() + attributeName.slice(1);
+    // Replace 'transform' with 'svgTransform', etc. This avoids collisions with CSS properties or the Web Animations API (offset).
+    attributeName = 'svg' + attributeName[0].toUpperCase() + attributeName.slice(1);
 
     var keyframes = [{}, {}];
-    if (attributeName === 'class') {
+    if (attributeName === 'svgClass') {
       // Preserve the existing classes as we use them to select elements.
       keyframes[0][attributeName] = target['className'].baseVal + ' ' + params.from;
       keyframes[1][attributeName] = target['className'].baseVal + ' ' + params.to;
