@@ -15,9 +15,9 @@ public class FirstRunStatus {
     private static final String FIRST_RUN_FLOW_COMPLETE = "first_run_flow";
 
     /**
-     * Sets the "main First Run Experience flow complete" preference.
+     * Sets the "First Run Experience flow complete" preference.
      * @param context Any context
-     * @param isComplete Whether the main First Run Experience flow is complete
+     * @param isComplete Whether the First Run Experience flow is complete
      */
     public static void setFirstRunFlowComplete(Context context, boolean isComplete) {
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -27,9 +27,7 @@ public class FirstRunStatus {
     }
 
     /**
-     * Returns whether the main First Run Experience flow is complete.
-     * Note: that might NOT include "intro"/"what's new" pages, but it always
-     * includes ToS and Sign In pages if necessary.
+     * Returns whether the First Run Experience flow is complete.
      * @param context Any context
      */
     public static boolean getFirstRunFlowComplete(Context context) {

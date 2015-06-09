@@ -827,11 +827,9 @@ public class ChromeTabbedActivity extends CompositorChromeActivity implements Ac
             return;
         }
 
-        final boolean isIntentActionMain = getIntent() != null
-                && TextUtils.equals(getIntent().getAction(), Intent.ACTION_MAIN);
         android.util.Log.i(TAG, "begin FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
         final Intent freIntent = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
-                this, getIntent(), isIntentActionMain);
+                this, getIntent());
         android.util.Log.i(TAG, "end FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
         if (freIntent == null) return;
 
