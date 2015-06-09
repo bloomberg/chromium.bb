@@ -9,6 +9,7 @@ import sys
 import webgl_conformance_expectations
 
 from telemetry import benchmark as benchmark_module
+from telemetry.core import browser_finder
 from telemetry.core import util
 from telemetry.page import page as page_module
 from telemetry.page import page_set
@@ -97,6 +98,11 @@ class Webgl2ConformanceValidator(WebglConformanceValidator):
         '--disable-gpu-process-crash-limit',
         '--enable-unsafe-es3-apis'
     ])
+    target_os = browser_finder.FindBrowser(options.finder_options).target_os
+    if target_os.startswith('win'):
+      options.AppendExtraBrowserArgs([
+          '--use-gl=desktop'
+      ])
 
 
 class WebglConformancePage(page_module.Page):

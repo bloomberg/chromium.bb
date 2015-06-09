@@ -492,3 +492,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/tex-storage-and-subimage-3d.html',
         ['mac'], bug=483282)
+
+    # Win only (using OpenGL).
+    self.Fail('conformance2/textures/tex-storage-and-subimage-3d.html',
+        ['win'], bug=483282)
