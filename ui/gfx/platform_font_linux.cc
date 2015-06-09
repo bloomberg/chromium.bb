@@ -27,7 +27,11 @@ namespace {
 // The font family name which is used when a user's application font for
 // GNOME/KDE is a non-scalable one. The name should be listed in the
 // IsFallbackFontAllowed function in skia/ext/SkFontHost_fontconfig_direct.cpp.
+#if defined(OS_ANDROID)
+const char* kFallbackFontFamilyName = "serif";
+#else
 const char* kFallbackFontFamilyName = "sans";
+#endif
 
 // The default font, used for the default constructor.
 base::LazyInstance<scoped_refptr<PlatformFontLinux>>::Leaky g_default_font =

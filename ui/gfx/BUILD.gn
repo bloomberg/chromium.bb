@@ -269,7 +269,13 @@ component("gfx") {
   }
 
   if (is_android && use_aura) {
-    sources -= [ "text_utils_android.cc" ]
+    sources -= [
+      "platform_font_android.cc",
+      "text_utils_android.cc",
+    ]
+    set_sources_assignment_filter([])
+    sources += [ "platform_font_linux.cc" ]
+    set_sources_assignment_filter(sources_assignment_filter)
   }
 
   # iOS.

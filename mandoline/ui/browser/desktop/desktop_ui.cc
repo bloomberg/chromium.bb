@@ -40,11 +40,9 @@ void DesktopUI::Init(mojo::View* root) {
   views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
   widget_delegate->GetContentsView()->set_background(
     views::Background::CreateSolidBackground(0xFFDDDDDD));
-#if !defined(OS_ANDROID)
   omnibox_launcher_ =
       new views::LabelButton(this, base::ASCIIToUTF16("Open Omnibox"));
   widget_delegate->GetContentsView()->AddChildView(omnibox_launcher_);
-#endif
   widget_delegate->GetContentsView()->SetLayoutManager(this);
 
   views::Widget* widget = new views::Widget;
@@ -60,10 +58,7 @@ void DesktopUI::Init(mojo::View* root) {
 }
 
 void DesktopUI::OnURLChanged() {
-  // TODO(sad): Remove the conditional below once UI fonts are fixed on android.
-  if (omnibox_launcher_)
-    omnibox_launcher_->SetText(
-        base::UTF8ToUTF16(browser_->current_url().spec()));
+  omnibox_launcher_->SetText(base::UTF8ToUTF16(browser_->current_url().spec()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -76,9 +71,7 @@ gfx::Size DesktopUI::GetPreferredSize(const views::View* view) const {
 void DesktopUI::Layout(views::View* host) {
   gfx::Rect omnibox_launcher_bounds = host->bounds();
   omnibox_launcher_bounds.Inset(10, 10, 10, host->bounds().height() - 40);
-  // TODO(sad): Remove the conditional below once UI fonts are fixed on android.
-  if (omnibox_launcher_)
-    omnibox_launcher_->SetBoundsRect(omnibox_launcher_bounds);
+  omnibox_launcher_->SetBoundsRect(omnibox_launcher_bounds);
 
   mojo::Rect content_bounds_mojo;
   content_bounds_mojo.x = omnibox_launcher_bounds.x();

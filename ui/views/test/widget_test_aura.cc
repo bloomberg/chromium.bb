@@ -88,6 +88,7 @@ gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
   return gfx::Size(hints.min_width, hints.min_height);
 #else
   NOTREACHED();
+  return gfx::Size();
 #endif
 }
 
