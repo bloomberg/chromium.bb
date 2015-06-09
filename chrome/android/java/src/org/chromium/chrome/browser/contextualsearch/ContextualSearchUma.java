@@ -459,7 +459,7 @@ public class ContextualSearchUma {
      *        before the first open of the panel, for all users that have ever opened the panel.
      */
     public static void logPromoTapsBeforeFirstOpen(int promoTaps) {
-        RecordHistogram.recordCountHistogram("Search.ContextualSearchPromosTapsBeforeFirstOpen",
+        RecordHistogram.recordCountHistogram("Search.ContextualSearchPromoTapsBeforeFirstOpen",
                 promoTaps);
     }
 
