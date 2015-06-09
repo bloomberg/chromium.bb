@@ -30,8 +30,9 @@ def _CreateOptionParser():
                                  'tool for detailed instructions for '
                                  'profiling.')
   parser.add_option('--url', help='URL to visit on startup. Default: '
-                    'https://www.google.com', default='https://www.google.com',
-                    metavar='URL')
+                    'https://www.google.com. An empty URL launches Chrome with'
+                    ' a MAIN action instead of VIEW.',
+                    default='https://www.google.com', metavar='URL')
   parser.add_option('--cold', help='Flush the OS page cache before starting the'
                     ' browser. Note that this require a device with root '
                     'access.', default=False, action='store_true')

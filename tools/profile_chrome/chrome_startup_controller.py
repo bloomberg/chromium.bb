@@ -35,12 +35,19 @@ class ChromeStartupTracingController(controllers.BaseController):
     if self._cold:
       self._device.EnableRoot()
       cache_control.CacheControl(self._device).DropRamCaches()
-    self._device.StartActivity(
-        intent.Intent(
-            package=self._package_info.package,
-            activity=self._package_info.activity,
-            data=self._url,
-            extras={'create_new_tab' : True}), blocking=True)
+    launch_intent = None
+    if self._url == '':
+      launch_intent = intent.Intent(
+          action='android.intent.action.MAIN',
+          package=self._package_info.package,
+          activity=self._package_info.activity)
+    else:
+      launch_intent = intent.Intent(
+          package=self._package_info.package,
+          activity=self._package_info.activity,
+          data=self._url,
+          extras={'create_new_tab': True})
+    self._device.StartActivity(launch_intent, blocking=True)
 
   def _TearDownTracing(self):
     changer = flag_changer.FlagChanger(
