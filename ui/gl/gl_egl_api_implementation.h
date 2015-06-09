@@ -5,10 +5,15 @@
 #ifndef UI_GL_GL_EGL_API_IMPLEMENTATION_H_
 #define UI_GL_GL_EGL_API_IMPLEMENTATION_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "gl_bindings.h"
 #include "ui/gl/gl_export.h"
 
+namespace base {
+class CommandLine;
+}
 namespace gfx {
 
 class GLContext;
@@ -39,6 +44,16 @@ class GL_EXPORT RealEGLApi : public EGLApiBase {
   RealEGLApi();
   ~RealEGLApi() override;
   void Initialize(DriverEGL* driver);
+  void InitializeWithCommandLine(DriverEGL* driver,
+                                 base::CommandLine* command_line);
+  void InitializeFilteredExtensions();
+
+  const char* eglQueryStringFn(EGLDisplay dpy, EGLint name) override;
+
+ private:
+  // Filtered EGL_EXTENSIONS we return to eglQueryStringFn() calls.
+  std::vector<std::string> disabled_exts_;
+  std::string filtered_exts_;
 };
 
 

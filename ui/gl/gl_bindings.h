@@ -386,7 +386,6 @@ struct GL_EXPORT DriverEGL {
   ProcsEGL debug_fn;
   ExtensionsEGL ext;
 
- private:
   static std::string GetPlatformExtensions();
   static std::string GetClientExtensions();
 };

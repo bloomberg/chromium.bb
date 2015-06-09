@@ -14,6 +14,9 @@
         'test/run_all_unittests.cc',
         'gl_api_unittest.cc',
       ],
+      'include_dirs': [
+        '<(DEPTH)/third_party/khronos',
+      ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:test_support_base',
@@ -28,13 +31,8 @@
         }],
         ['OS in ("win", "android", "linux")', {
           'sources': [
+            'egl_api_unittest.cc',
             'test/egl_initialization_displays_unittest.cc',
-          ],
-          'dependencies': [
-            '<(DEPTH)/ui/gl/gl.gyp:gl',
-          ],
-          'include_dirs': [
-            '<(DEPTH)/third_party/khronos',
           ],
         }],
       ],

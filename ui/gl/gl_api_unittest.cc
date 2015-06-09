@@ -151,4 +151,4 @@ TEST_F(GLApiTest, DisabledExtensionStringIndexTest) {
   }
 }
 
-}  // namespace gpu
+}  // namespace gfx

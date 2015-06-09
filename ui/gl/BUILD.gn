@@ -284,6 +284,15 @@ test("gl_unittests") {
     "test/run_all_unittests.cc",
   ]
 
+  if (is_win || is_android || is_linux) {
+    sources += [
+      "egl_api_unittest.cc",
+      "test/egl_initialization_displays_unittest.cc",
+    ]
+  }
+
+  include_dirs = [ "//third_party/khronos" ]
+
   deps = [
     ":gl",
     "//base",
