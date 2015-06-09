@@ -41,7 +41,7 @@
       </cr-settings-checkbox>
 
       <div class="autoclick-delay-label"
-          hidden$="{{!prefs.settings.a11y.autoclick}}">
+          hidden$="[[!prefs.settings.a11y.autoclick]]">
         <span i18n-content="delayBeforeClickLabel"></span>
         <select id="autoclickDropdown"
             value="{{prefs.settings.a11y.autoclick_delay_ms::change}}">
