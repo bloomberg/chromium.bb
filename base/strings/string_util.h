@@ -272,6 +272,20 @@ template <class str> inline str StringToLowerASCII(const str& s) {
   return output;
 }
 
+// Converts the elements of the given string.  This version uses a pointer to
+// clearly differentiate it from the non-pointer variant.
+template <class str> inline void StringToUpperASCII(str* s) {
+  for (typename str::iterator i = s->begin(); i != s->end(); ++i)
+    *i = ToUpperASCII(*i);
+}
+
+template <class str> inline str StringToUpperASCII(const str& s) {
+  // for std::string and std::wstring
+  str output(s);
+  StringToUpperASCII(&output);
+  return output;
+}
+
 }  // namespace base
 
 #if defined(OS_WIN)
@@ -281,20 +295,6 @@ template <class str> inline str StringToLowerASCII(const str& s) {
 #else
 #error Define string operations appropriately for your platform
 #endif
-
-// Converts the elements of the given string.  This version uses a pointer to
-// clearly differentiate it from the non-pointer variant.
-template <class str> inline void StringToUpperASCII(str* s) {
-  for (typename str::iterator i = s->begin(); i != s->end(); ++i)
-    *i = base::ToUpperASCII(*i);
-}
-
-template <class str> inline str StringToUpperASCII(const str& s) {
-  // for std::string and std::wstring
-  str output(s);
-  StringToUpperASCII(&output);
-  return output;
-}
 
 // Compare the lower-case form of the given string against the given ASCII
 // string.  This is useful for doing checking if an input string matches some

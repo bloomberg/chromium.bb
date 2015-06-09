@@ -317,11 +317,11 @@ void PrinterServiceProvider::PrinterAdded(
 
   std::string vendor_id;
   reader.PopString(&vendor_id);
-  StringToUpperASCII(&vendor_id);
+  base::StringToUpperASCII(&vendor_id);
 
   std::string product_id;
   reader.PopString(&product_id);
-  StringToUpperASCII(&product_id);
+  base::StringToUpperASCII(&product_id);
 
   // Send an empty response.
   response_sender.Run(dbus::Response::FromMethodCall(method_call));

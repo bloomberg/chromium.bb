@@ -1275,7 +1275,7 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
   std::vector<std::string> country_codes;
   AutofillCountry::GetAvailableCountries(&country_codes);
   for (size_t i = 0; i < profiles.size(); ++i) {
-    std::string country_code = StringToUpperASCII(base::UTF16ToASCII(
+    std::string country_code = base::StringToUpperASCII(base::UTF16ToASCII(
         profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY)));
 
     if (std::find(country_codes.begin(), country_codes.end(), country_code) !=

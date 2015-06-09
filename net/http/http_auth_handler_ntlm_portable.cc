@@ -261,7 +261,7 @@ static void LM_Hash(const base::string16& password, uint8* hash) {
   // Convert password to OEM character set.  We'll just use the native
   // filesystem charset.
   std::string passbuf = base::SysWideToNativeMB(base::UTF16ToWide(password));
-  StringToUpperASCII(&passbuf);
+  base::StringToUpperASCII(&passbuf);
   passbuf.resize(14, '\0');
 
   uint8 k1[8], k2[8];

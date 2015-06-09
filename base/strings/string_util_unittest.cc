@@ -494,8 +494,8 @@ TEST(StringUtilTest, ConvertASCII) {
   const char chars_with_nul[] = "test\0string";
   const int length_with_nul = arraysize(chars_with_nul) - 1;
   std::string string_with_nul(chars_with_nul, length_with_nul);
-  base::string16 string16_with_nul = ASCIIToUTF16(string_with_nul);
-  EXPECT_EQ(static_cast<base::string16::size_type>(length_with_nul),
+  string16 string16_with_nul = ASCIIToUTF16(string_with_nul);
+  EXPECT_EQ(static_cast<string16::size_type>(length_with_nul),
             string16_with_nul.length());
   std::string narrow_with_nul = UTF16ToASCII(string16_with_nul);
   EXPECT_EQ(static_cast<std::string::size_type>(length_with_nul),
@@ -768,7 +768,7 @@ TEST(StringUtilTest, TokenizeStdString) {
 }
 
 TEST(StringUtilTest, TokenizeStringPiece) {
-  TokenizeTest<base::StringPiece>();
+  TokenizeTest<StringPiece>();
 }
 
 // Test for JoinString
@@ -1038,9 +1038,9 @@ TEST(StringUtilTest, LcpyTest) {
   {
     char dst[10];
     wchar_t wdst[10];
-    EXPECT_EQ(7U, base::strlcpy(dst, "abcdefg", arraysize(dst)));
+    EXPECT_EQ(7U, strlcpy(dst, "abcdefg", arraysize(dst)));
     EXPECT_EQ(0, memcmp(dst, "abcdefg", 8));
-    EXPECT_EQ(7U, base::wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
+    EXPECT_EQ(7U, wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
     EXPECT_EQ(0, memcmp(wdst, L"abcdefg", sizeof(wchar_t) * 8));
   }
 
@@ -1049,10 +1049,10 @@ TEST(StringUtilTest, LcpyTest) {
   {
     char dst[2] = {1, 2};
     wchar_t wdst[2] = {1, 2};
-    EXPECT_EQ(7U, base::strlcpy(dst, "abcdefg", 0));
+    EXPECT_EQ(7U, strlcpy(dst, "abcdefg", 0));
     EXPECT_EQ(1, dst[0]);
     EXPECT_EQ(2, dst[1]);
-    EXPECT_EQ(7U, base::wcslcpy(wdst, L"abcdefg", 0));
+    EXPECT_EQ(7U, wcslcpy(wdst, L"abcdefg", 0));
     EXPECT_EQ(static_cast<wchar_t>(1), wdst[0]);
     EXPECT_EQ(static_cast<wchar_t>(2), wdst[1]);
   }
@@ -1061,9 +1061,9 @@ TEST(StringUtilTest, LcpyTest) {
   {
     char dst[8];
     wchar_t wdst[8];
-    EXPECT_EQ(7U, base::strlcpy(dst, "abcdefg", arraysize(dst)));
+    EXPECT_EQ(7U, strlcpy(dst, "abcdefg", arraysize(dst)));
     EXPECT_EQ(0, memcmp(dst, "abcdefg", 8));
-    EXPECT_EQ(7U, base::wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
+    EXPECT_EQ(7U, wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
     EXPECT_EQ(0, memcmp(wdst, L"abcdefg", sizeof(wchar_t) * 8));
   }
 
@@ -1071,9 +1071,9 @@ TEST(StringUtilTest, LcpyTest) {
   {
     char dst[7];
     wchar_t wdst[7];
-    EXPECT_EQ(7U, base::strlcpy(dst, "abcdefg", arraysize(dst)));
+    EXPECT_EQ(7U, strlcpy(dst, "abcdefg", arraysize(dst)));
     EXPECT_EQ(0, memcmp(dst, "abcdef", 7));
-    EXPECT_EQ(7U, base::wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
+    EXPECT_EQ(7U, wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
     EXPECT_EQ(0, memcmp(wdst, L"abcdef", sizeof(wchar_t) * 7));
   }
 
@@ -1081,9 +1081,9 @@ TEST(StringUtilTest, LcpyTest) {
   {
     char dst[3];
     wchar_t wdst[3];
-    EXPECT_EQ(7U, base::strlcpy(dst, "abcdefg", arraysize(dst)));
+    EXPECT_EQ(7U, strlcpy(dst, "abcdefg", arraysize(dst)));
     EXPECT_EQ(0, memcmp(dst, "ab", 3));
-    EXPECT_EQ(7U, base::wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
+    EXPECT_EQ(7U, wcslcpy(wdst, L"abcdefg", arraysize(wdst)));
     EXPECT_EQ(0, memcmp(wdst, L"ab", sizeof(wchar_t) * 3));
   }
 }
@@ -1116,7 +1116,7 @@ TEST(StringUtilTest, WprintfFormatPortabilityTest) {
     { L"% 10ls", true }
   };
   for (size_t i = 0; i < arraysize(cases); ++i)
-    EXPECT_EQ(cases[i].portable, base::IsWprintfFormatPortable(cases[i].input));
+    EXPECT_EQ(cases[i].portable, IsWprintfFormatPortable(cases[i].input));
 }
 
 TEST(StringUtilTest, RemoveChars) {

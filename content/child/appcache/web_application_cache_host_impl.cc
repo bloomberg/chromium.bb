@@ -167,7 +167,7 @@ void WebApplicationCacheHostImpl::willStartMainResourceRequest(
 
   std::string method = request.httpMethod().utf8();
   is_get_method_ = (method == kHttpGETMethod);
-  DCHECK(method == StringToUpperASCII(method));
+  DCHECK(method == base::StringToUpperASCII(method));
 
   const WebApplicationCacheHostImpl* spawning_host_impl =
       static_cast<const WebApplicationCacheHostImpl*>(spawning_host);

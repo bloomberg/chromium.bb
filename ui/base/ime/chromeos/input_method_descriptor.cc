@@ -44,10 +44,12 @@ std::string InputMethodDescriptor::GetIndicator() const {
   // If indicator is empty, use the first two character in its preferred
   // keyboard layout or language code.
   if (indicator_.empty()) {
-    if (extension_ime_util::IsKeyboardLayoutExtension(id_))
-      return StringToUpperASCII(GetPreferredKeyboardLayout().substr(0, 2));
+    if (extension_ime_util::IsKeyboardLayoutExtension(id_)) {
+      return base::StringToUpperASCII(
+          GetPreferredKeyboardLayout().substr(0, 2));
+    }
     DCHECK(language_codes_.size() > 0);
-    return StringToUpperASCII(language_codes_[0].substr(0, 2));
+    return base::StringToUpperASCII(language_codes_[0].substr(0, 2));
   }
   return indicator_;
 }
