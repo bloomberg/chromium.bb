@@ -94,7 +94,7 @@ static PassRefPtr<SkTypeface> loadFromBrowserProcess(NSFont* nsFont, float textS
     }
     RetainPtr<CGFontRef> cgFont(AdoptCF, loadedCgFont);
     RetainPtr<CTFontRef> ctFont(AdoptCF, CTFontCreateWithGraphicsFont(cgFont.get(), textSize, 0, cascadeToLastResortFontDescriptor()));
-    PassRefPtr<SkTypeface> returnFont = adoptRef(SkCreateTypefaceFromCTFont(ctFont.get()));
+    PassRefPtr<SkTypeface> returnFont = adoptRef(SkCreateTypefaceFromCTFont(ctFont.get(), cgFont.get()));
 
     if (!returnFont.get())
         // TODO crbug.com/461279: Make this appear in the inspector console?
