@@ -9,9 +9,9 @@ import android.content.Intent;
 import android.os.IBinder;
 
 /**
- * Chrome browser connection service, used by the embedded Chrome activities.
+ * Custom tabs connection service, used by the embedded Chrome activities.
  */
-public class ChromeConnectionService extends Service {
+public class CustomTabsConnectionService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
@@ -19,7 +19,7 @@ public class ChromeConnectionService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        return (IBinder) ChromeBrowserConnection.getInstance(getApplication());
+        return (IBinder) CustomTabsConnection.getInstance(getApplication());
     }
 
     @Override

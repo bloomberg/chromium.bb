@@ -9,7 +9,7 @@ import android.os.Bundle;
 /**
  * Interface for communicating between a browser background service and another application.
  */
-interface IBrowserConnectionService {
+interface ICustomTabsConnectionService {
     /**
      * Sets the callback triggered on an external navigation.
      *
@@ -21,7 +21,7 @@ interface IBrowserConnectionService {
      * @param callback Callback to be called, null if no callback is wanted.
      * @return 0 for success.
      */
-    long finishSetup(IBrowserConnectionCallback callback);
+    long finishSetup(ICustomTabsConnectionCallback callback);
 
     /**
      * Warms up the browser process.

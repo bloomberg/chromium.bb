@@ -198,8 +198,8 @@
         'aidl_import_include': '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs',
       },
       'sources': [
-        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionCallback.aidl',
-        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionService.aidl',
+        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionCallback.aidl',
+        '<(chrome_java_dir)/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionService.aidl',
       ],
       'includes': [ '../../build/java_aidl.gypi' ],
     },

@@ -41,7 +41,7 @@ public class CustomTabIntentDataProvider {
     /**
      * Extra used to match the session. This has to be included in the intent to open in
      * a custom tab. Can be -1 if there is no session id taken. Its value is a long returned
-     * by {@link IBrowserConnectionService#newSession}.
+     * by {@link ICustomTabsConnectionService#newSession}.
      */
     public static final String EXTRA_CUSTOM_TABS_SESSION_ID =
             "android.support.CUSTOM_TABS:session_id";

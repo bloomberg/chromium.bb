@@ -12,9 +12,9 @@ import android.os.Process;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
-/** Tests for ChromeBrowserConnection. */
-public class ChromeBrowserConnectionTest extends InstrumentationTestCase {
-    private ChromeBrowserConnection mBrowserConnection;
+/** Tests for CustomTabsConnection. */
+public class CustomTabsConnectionTest extends InstrumentationTestCase {
+    private CustomTabsConnection mCustomTabsConnection;
     private static final String URL = "http://www.google.com";
     private static final String INVALID_SCHEME_URL = "intent://www.google.com";
 
@@ -22,13 +22,13 @@ public class ChromeBrowserConnectionTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        mBrowserConnection = ChromeBrowserConnection.getInstance((Application) context);
+        mCustomTabsConnection = CustomTabsConnection.getInstance((Application) context);
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        mBrowserConnection.cleanup(Process.myUid());
+        mCustomTabsConnection.cleanup(Process.myUid());
     }
 
     /**
@@ -38,8 +38,8 @@ public class ChromeBrowserConnectionTest extends InstrumentationTestCase {
     @SmallTest
     public void testFinishSetup() {
         assertTrue("It should not be possible to set a null callback.",
-                mBrowserConnection.finishSetup(null) != 0);
-        IBrowserConnectionCallback cb = new IBrowserConnectionCallback.Stub() {
+                mCustomTabsConnection.finishSetup(null) != 0);
+        ICustomTabsConnectionCallback cb = new ICustomTabsConnectionCallback.Stub() {
             @Override
             public void onUserNavigationStarted(long sessionId, String url, Bundle extras) {}
             @Override
@@ -49,32 +49,33 @@ public class ChromeBrowserConnectionTest extends InstrumentationTestCase {
                 return this;
             }
         };
-        assertEquals(0, mBrowserConnection.finishSetup(cb));
+        assertEquals(0, mCustomTabsConnection.finishSetup(cb));
         assertTrue("It should not be possible to set the callback twice.",
-                mBrowserConnection.finishSetup(cb) != 0);
+                mCustomTabsConnection.finishSetup(cb) != 0);
     }
 
     /**
-     * Tests that {@link ChromeBrowserConnection#warmup(long)} succeeds and can
+     * Tests that {@link CustomTabsConnection#warmup(long)} succeeds and can
      * be issued multiple times.
      */
     @SmallTest
     public void testCanWarmup() {
-        assertEquals(0, mBrowserConnection.warmup(0));
+        assertEquals(0, mCustomTabsConnection.warmup(0));
         // Can call it several times.
-        assertEquals(0, mBrowserConnection.warmup(0));
+        assertEquals(0, mCustomTabsConnection.warmup(0));
     }
 
     /**
      * Tests that the session ID is positive, multiple sessions can be created,
-     * and {@link ChromeBrowserConnection#newSession()} doesn't always return
+     * and {@link CustomTabsConnection#newSession()} doesn't always return
      * the same session ID.
      */
     @SmallTest
     public void testNewSession() {
-        long sessionId = mBrowserConnection.newSession();
+        long sessionId = mCustomTabsConnection.newSession();
         assertTrue("Session IDs should be strictly positive.", sessionId > 0);
-        assertTrue("Session IDs should be unique.", mBrowserConnection.newSession() != sessionId);
+        assertTrue("Session IDs should be unique.",
+                mCustomTabsConnection.newSession() != sessionId);
     }
 
     /**
@@ -82,10 +83,10 @@ public class ChromeBrowserConnectionTest extends InstrumentationTestCase {
      * (success or failure) and returns the result code.
      */
     private long assertWarmupAndMayLaunchUrl(long id, String url, boolean shouldSucceed) {
-        mBrowserConnection.warmup(0);
-        long sessionId = id == 0 ? mBrowserConnection.newSession() : id;
-        mBrowserConnection.mayLaunchUrl(sessionId, url, null, null);
-        long result = mBrowserConnection.mayLaunchUrl(sessionId, url, null, null);
+        mCustomTabsConnection.warmup(0);
+        long sessionId = id == 0 ? mCustomTabsConnection.newSession() : id;
+        mCustomTabsConnection.mayLaunchUrl(sessionId, url, null, null);
+        long result = mCustomTabsConnection.mayLaunchUrl(sessionId, url, null, null);
         if (shouldSucceed) {
             assertEquals(sessionId, result);
         } else {
@@ -96,7 +97,7 @@ public class ChromeBrowserConnectionTest extends InstrumentationTestCase {
 
     /**
      * Tests that
-     * {@link ChromeBrowserConnection#mayLaunchUrl(long, String, Bundle, List<Bundle>)}
+     * {@link CustomTabsConnection#mayLaunchUrl(long, String, Bundle, List<Bundle>)}
      * returns an error when called with an invalid session ID.
      */
     @SmallTest
@@ -107,7 +108,7 @@ public class ChromeBrowserConnectionTest extends InstrumentationTestCase {
 
     /**
      * Tests that
-     * {@link ChromeBrowserConnection#mayLaunchUrl(long, String, Bundle, List<Bundle>)}
+     * {@link CustomTabsConnection#mayLaunchUrl(long, String, Bundle, List<Bundle>)}
      * rejects invalid URL schemes.
      */
     @SmallTest
@@ -117,7 +118,7 @@ public class ChromeBrowserConnectionTest extends InstrumentationTestCase {
 
     /**
      * Tests that
-     * {@link ChromeBrowserConnection#mayLaunchUrl(long, String, Bundle, List<Bundle>)}
+     * {@link CustomTabsConnection#mayLaunchUrl(long, String, Bundle, List<Bundle>)}
      * succeeds.
      */
     @SmallTest
@@ -131,7 +132,7 @@ public class ChromeBrowserConnectionTest extends InstrumentationTestCase {
     @SmallTest
     public void testForgetsSessionId() {
         long sessionId = assertWarmupAndMayLaunchUrl(0, URL, true);
-        mBrowserConnection.cleanup(Process.myUid());
+        mCustomTabsConnection.cleanup(Process.myUid());
         assertWarmupAndMayLaunchUrl(sessionId, URL, false);
     }
 }

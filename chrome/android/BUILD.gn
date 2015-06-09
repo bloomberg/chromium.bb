@@ -568,8 +568,8 @@ android_aidl("custom_tabs_service_aidl") {
   interface_file =
       "java_staging/src/org/chromium/chrome/browser/customtabs/common.aidl"
   sources = [
-    "java_staging/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionCallback.aidl",
-    "java_staging/src/org/chromium/chrome/browser/customtabs/IBrowserConnectionService.aidl",
+    "java_staging/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionCallback.aidl",
+    "java_staging/src/org/chromium/chrome/browser/customtabs/ICustomTabsConnectionService.aidl",
   ]
 }
 

@@ -9,11 +9,11 @@ import android.os.Bundle;
 /**
  * Interface for the client-provided callback on user navigation.
  */
-interface IBrowserConnectionCallback {
+interface ICustomTabsConnectionCallback {
     /**
      * To be called when a page navigation starts.
      *
-     * @param sessionId As returned by {@link IBrowserConnectionService#newSession}.
+     * @param sessionId As returned by {@link ICustomTabsConnectionService#newSession}.
      * @param url URL the user has navigated to.
      * @param extras Reserved for future use.
      */
@@ -22,7 +22,7 @@ interface IBrowserConnectionCallback {
     /**
      * To be called when a page navigation finishes.
      *
-     * @param sessionId As returned by {@link IBrowserConnectionService#newSession}.
+     * @param sessionId As returned by {@link ICustomTabsConnectionService#newSession}.
      * @param url URL the user has navigated to.
      * @param extras Reserved for future use.
      */

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is needed to compile IBrowserConnectionService.aidl.
+// This file is needed to compile ICustomTabsConnectionService.aidl.
 
-interface org.chromium.chrome.browser.customtabs.IBrowserConnectionService;
-interface org.chromium.chrome.browser.customtabs.IBrowserConnectionCallback;
+interface org.chromium.chrome.browser.customtabs.ICustomTabsConnectionService;
+interface org.chromium.chrome.browser.customtabs.ICustomTabsConnectionCallback;

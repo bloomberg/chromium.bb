@@ -83,7 +83,7 @@ public class CustomTabActivity extends CompositorChromeActivity {
     @Override
     public void onStart() {
         super.onStart();
-        ChromeBrowserConnection.getInstance(getApplication())
+        CustomTabsConnection.getInstance(getApplication())
                 .keepAliveForSessionId(mIntentDataProvider.getSessionId(),
                         mIntentDataProvider.getKeepAliveServiceIntent());
     }
@@ -91,7 +91,7 @@ public class CustomTabActivity extends CompositorChromeActivity {
     @Override
     public void onStop() {
         super.onStop();
-        ChromeBrowserConnection.getInstance(getApplication())
+        CustomTabsConnection.getInstance(getApplication())
                 .dontKeepAliveForSessionId(mIntentDataProvider.getSessionId());
     }
 

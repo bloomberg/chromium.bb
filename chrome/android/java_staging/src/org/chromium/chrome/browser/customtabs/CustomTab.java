@@ -30,38 +30,38 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class CustomTab extends ChromeTab {
     private static class LoadUrlTabObserver extends EmptyTabObserver {
-        private ChromeBrowserConnection mChromeBrowserConnection;
+        private CustomTabsConnection mCustomTabsConnection;
         private long mSessionId;
 
         @Override
         public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
-            mChromeBrowserConnection.registerLaunch(mSessionId, params.getUrl());
+            mCustomTabsConnection.registerLaunch(mSessionId, params.getUrl());
         }
 
-        public LoadUrlTabObserver(ChromeBrowserConnection chromeBrowserConnection, long sessionId) {
-            mChromeBrowserConnection = chromeBrowserConnection;
+        public LoadUrlTabObserver(CustomTabsConnection customTabsConnection, long sessionId) {
+            mCustomTabsConnection = customTabsConnection;
             mSessionId = sessionId;
         }
     }
 
     private static class CallbackTabObserver extends EmptyTabObserver {
-        private final ChromeBrowserConnection mChromeBrowserConnection;
+        private final CustomTabsConnection mCustomTabsConnection;
         private final long mSessionId;
 
         public CallbackTabObserver(
-                ChromeBrowserConnection chromeBrowserConnection, long sessionId) {
-            mChromeBrowserConnection = chromeBrowserConnection;
+                CustomTabsConnection customTabsConnection, long sessionId) {
+            mCustomTabsConnection = customTabsConnection;
             mSessionId = sessionId;
         }
 
         @Override
         public void onPageLoadStarted(Tab tab, String url) {
-            mChromeBrowserConnection.notifyPageLoadStarted(mSessionId, url);
+            mCustomTabsConnection.notifyPageLoadStarted(mSessionId, url);
         }
 
         @Override
         public void onPageLoadFinished(Tab tab) {
-            mChromeBrowserConnection.notifyPageLoadFinished(mSessionId, tab.getUrl());
+            mCustomTabsConnection.notifyPageLoadFinished(mSessionId, tab.getUrl());
         }
     }
 
@@ -76,22 +76,22 @@ public class CustomTab extends ChromeTab {
 
     /**
      * Construct an CustomTab. It might load a prerendered {@link WebContents} for the URL, if
-     * {@link ChromeConnectionService} has successfully warmed up for the url.
+     * {@link CustomTabsConnectionService} has successfully warmed up for the url.
      */
     public CustomTab(CompositorChromeActivity activity, WindowAndroid windowAndroid,
             long sessionId, String url, int parentTabId) {
         super(Tab.generateValidId(Tab.INVALID_TAB_ID), activity, false, windowAndroid,
                 TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);
-        ChromeBrowserConnection browserConnection =
-                ChromeBrowserConnection.getInstance(activity.getApplication());
-        WebContents webContents = browserConnection.takePrerenderedUrl(sessionId, url, null);
+        CustomTabsConnection customTabsConnection =
+                CustomTabsConnection.getInstance(activity.getApplication());
+        WebContents webContents = customTabsConnection.takePrerenderedUrl(sessionId, url, null);
         if (webContents == null) {
             webContents = ContentViewUtil.createWebContents(isIncognito(), false);
         }
         initialize(webContents, activity.getTabContentManager(), false);
         getView().requestFocus();
-        addObserver(new LoadUrlTabObserver(browserConnection, sessionId));
-        addObserver(new CallbackTabObserver(browserConnection, sessionId));
+        addObserver(new LoadUrlTabObserver(customTabsConnection, sessionId));
+        addObserver(new CallbackTabObserver(customTabsConnection, sessionId));
     }
 
     @Override

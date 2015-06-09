@@ -51,9 +51,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Implementation of the IBrowserConnectionService interface.
+ * Implementation of the ICustomTabsConnectionService interface.
  */
-class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
+class CustomTabsConnection extends ICustomTabsConnectionService.Stub {
     private static final String TAG = Log.makeTag("ChromeConnection");
     private static final long RESULT_OK = 0;
     private static final long RESULT_ERROR = -1;
@@ -66,7 +66,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     private static final int PREDICTION_STATUS_COUNT = 3;
 
     private static final Object sConstructionLock = new Object();
-    private static ChromeBrowserConnection sInstance;
+    private static CustomTabsConnection sInstance;
 
     private static final class PrerenderedUrlParams {
         public final long mSessionId;
@@ -124,30 +124,30 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     }
 
     private final Object mLock;
-    private final SparseArray<IBrowserConnectionCallback> mUidToCallback;
+    private final SparseArray<ICustomTabsConnectionCallback> mUidToCallback;
     private final LongSparseArray<SessionParams> mSessionParams;
 
-    private ChromeBrowserConnection(Application application) {
+    private CustomTabsConnection(Application application) {
         super();
         mApplication = application;
         mWarmupHasBeenCalled = new AtomicBoolean();
         mLock = new Object();
-        mUidToCallback = new SparseArray<IBrowserConnectionCallback>();
+        mUidToCallback = new SparseArray<ICustomTabsConnectionCallback>();
         mSessionParams = new LongSparseArray<SessionParams>();
     }
 
     /**
-     * @return The unique instance of ChromeBrowserConnection.
+     * @return The unique instance of ChromeCustomTabsConnection.
      */
-    public static ChromeBrowserConnection getInstance(Application application) {
+    public static CustomTabsConnection getInstance(Application application) {
         synchronized (sConstructionLock) {
-            if (sInstance == null) sInstance = new ChromeBrowserConnection(application);
+            if (sInstance == null) sInstance = new CustomTabsConnection(application);
         }
         return sInstance;
     }
 
     @Override
-    public long finishSetup(IBrowserConnectionCallback callback) {
+    public long finishSetup(ICustomTabsConnectionCallback callback) {
         if (callback == null) return RESULT_ERROR;
         final int uid = Binder.getCallingUid();
         synchronized (mLock) {
@@ -320,7 +320,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
         return null;
     }
 
-    private IBrowserConnectionCallback getCallbackForSessionIdAlreadyLocked(long sessionId) {
+    private ICustomTabsConnectionCallback getCallbackForSessionIdAlreadyLocked(long sessionId) {
         SessionParams sessionParams = mSessionParams.get(sessionId);
         if (sessionParams == null) return null;
         return mUidToCallback.get(sessionParams.mUid);
@@ -329,7 +329,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     /**
      * Notifies the application that a page load has started.
      *
-     * Delivers the {@link IBrowserConnectionCallback#onUserNavigationStarted}
+     * Delivers the {@link ICustomTabsConnectionCallback#onUserNavigationStarted}
      * callback to the aplication.
      *
      * @param sessionId The session ID.
@@ -338,7 +338,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
      */
     boolean notifyPageLoadStarted(long sessionId, String url) {
         synchronized (mLock) {
-            IBrowserConnectionCallback cb = getCallbackForSessionIdAlreadyLocked(sessionId);
+            ICustomTabsConnectionCallback cb = getCallbackForSessionIdAlreadyLocked(sessionId);
             if (cb == null) return false;
             try {
                 cb.onUserNavigationStarted(sessionId, url, null);
@@ -352,7 +352,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
     /**
      * Notifies the application that a page load has finished.
      *
-     * Delivers the {@link IBrowserConnectionCallback#onUserNavigationFinished}
+     * Delivers the {@link ICustomTabsConnectionCallback#onUserNavigationFinished}
      * callback to the aplication.
      *
      * @param sessionId The session ID.
@@ -361,7 +361,7 @@ class ChromeBrowserConnection extends IBrowserConnectionService.Stub {
      */
     boolean notifyPageLoadFinished(long sessionId, String url) {
         synchronized (mLock) {
-            IBrowserConnectionCallback cb = getCallbackForSessionIdAlreadyLocked(sessionId);
+            ICustomTabsConnectionCallback cb = getCallbackForSessionIdAlreadyLocked(sessionId);
             if (cb == null) return false;
             try {
                 cb.onUserNavigationFinished(sessionId, url, null);
