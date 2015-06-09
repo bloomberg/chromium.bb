@@ -29,7 +29,15 @@ public:
     void interruptAndRun(PassOwnPtr<Task>);
     void runPendingTasks();
 
-    void setIgnoreInterrupts(bool ignore) { m_ignoreInterrupts = ignore; }
+    class IgnoreInterruptsScope final {
+    public:
+        explicit IgnoreInterruptsScope(InspectorTaskRunner*);
+        ~IgnoreInterruptsScope();
+
+    private:
+        bool m_wasIgnoring;
+        InspectorTaskRunner* m_taskRunner;
+    };
 
 private:
     static void v8InterruptCallback(v8::Isolate*, void* data);

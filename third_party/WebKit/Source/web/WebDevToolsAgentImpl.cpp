@@ -641,6 +641,7 @@ void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
 
 void WebDevToolsAgentImpl::dispatchMessageFromFrontend(const String& message)
 {
+    InspectorTaskRunner::IgnoreInterruptsScope scope(MainThreadDebugger::instance()->taskRunner());
     if (m_inspectorBackendDispatcher)
         m_inspectorBackendDispatcher->dispatch(message);
 }

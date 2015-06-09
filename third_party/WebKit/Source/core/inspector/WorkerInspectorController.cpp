@@ -195,10 +195,9 @@ void WorkerInspectorController::restoreInspectorStateFromCookie(const String& in
 
 void WorkerInspectorController::dispatchMessageFromFrontend(const String& message)
 {
-    m_inspectorTaskRunner->setIgnoreInterrupts(true);
+    InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
     if (m_backendDispatcher)
         m_backendDispatcher->dispatch(message);
-    m_inspectorTaskRunner->setIgnoreInterrupts(false);
 }
 
 void WorkerInspectorController::dispose()

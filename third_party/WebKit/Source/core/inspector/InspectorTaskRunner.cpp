@@ -11,6 +11,19 @@
 
 namespace blink {
 
+InspectorTaskRunner::IgnoreInterruptsScope::IgnoreInterruptsScope(InspectorTaskRunner* taskRunner)
+    : m_wasIgnoring(taskRunner->m_ignoreInterrupts)
+    , m_taskRunner(taskRunner)
+{
+    // There may be nested scopes e.g. when tasks are being executed on XHR breakpoint.
+    m_taskRunner->m_ignoreInterrupts = true;
+}
+
+InspectorTaskRunner::IgnoreInterruptsScope::~IgnoreInterruptsScope()
+{
+    m_taskRunner->m_ignoreInterrupts = m_wasIgnoring;
+}
+
 class InspectorTaskRunner::ThreadSafeTaskQueue {
     WTF_MAKE_NONCOPYABLE(ThreadSafeTaskQueue);
 public:
