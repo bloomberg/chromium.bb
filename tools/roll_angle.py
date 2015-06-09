@@ -32,12 +32,16 @@ TRYJOB_STATUS_SLEEP_SECONDS = 30
 
 # Use a shell for subcommands on Windows to get a PATH search.
 USE_SHELL = sys.platform.startswith('win')
-ANGLE_PATH = 'third_party/angle'
+ANGLE_PATH = os.path.join('third_party', 'angle')
 
 CommitInfo = collections.namedtuple('CommitInfo', ['git_commit',
                                                    'git_repo_url'])
 CLInfo = collections.namedtuple('CLInfo', ['issue', 'url', 'rietveld_server'])
 
+def _PosixPath(path):
+  """Convert a possibly-Windows path to a posix-style path."""
+  (_, path) = os.path.splitdrive(path)
+  return path.replace(os.sep, '/')
 
 def _ParseGitCommitHash(description):
   for line in description.splitlines():
@@ -67,14 +71,18 @@ def _ParseDepsDict(deps_content):
   return local_scope
 
 
-def _GenerateCLDescription(angle_current, angle_new):
-  delim = ''
-  angle_str = ''
+def _GenerateCLDescriptionCommand(angle_current, angle_new, bugs):
   def GetChangeString(current_hash, new_hash):
     return '%s..%s' % (current_hash[0:7], new_hash[0:7]);
 
   def GetChangeLogURL(git_repo_url, change_string):
     return '%s/+log/%s' % (git_repo_url, change_string)
+
+  def GetBugString(bugs):
+    bug_str = 'BUG='
+    for bug in bugs:
+      bug_str += str(bug) + ','
+    return bug_str.rstrip(',')
 
   if angle_current.git_commit != angle_new.git_commit:
     change_str = GetChangeString(angle_current.git_commit,
@@ -82,10 +90,12 @@ def _GenerateCLDescription(angle_current, angle_new):
     changelog_url = GetChangeLogURL(angle_current.git_repo_url,
                                     change_str)
 
-  description = 'Roll ANGLE ' + change_str + '\n\n'
-  description += '%s\n\n' % changelog_url
-  description += 'BUG=\nTEST=bots\n'
-  return description
+  return [
+    '-m', 'Roll ANGLE ' + change_str,
+    '-m', '%s' % changelog_url,
+    '-m', GetBugString(bugs),
+    '-m', 'TEST=bots',
+  ]
 
 
 class AutoRoller(object):
@@ -127,7 +137,7 @@ class AutoRoller(object):
     return CommitInfo(_ParseGitCommitHash(ret), git_repo_url)
 
   def _GetDepsCommitInfo(self, deps_dict, path_below_src):
-    entry = deps_dict['deps']['src/%s' % path_below_src]
+    entry = deps_dict['deps'][_PosixPath('src/%s' % path_below_src)]
     at_index = entry.find('@')
     git_repo_url = entry[:at_index]
     git_hash = entry[at_index + 1:]
@@ -162,6 +172,27 @@ class AutoRoller(object):
 
     logging.debug('Dirty/unversioned files:\n%s', '\n'.join(lines))
     return False
+
+  def _GetBugList(self, path_below_src, angle_current, angle_new):
+    working_dir = os.path.join(self._chromium_src, path_below_src)
+    lines = self._RunCommand(
+        ['git','log',
+            '%s..%s' % (angle_current.git_commit, angle_new.git_commit)],
+        working_dir=working_dir).split('\n')
+    bugs = set()
+    for line in lines:
+      line = line.strip()
+      bug_prefix = 'BUG='
+      if line.startswith(bug_prefix):
+        bugs_strings = line[len(bug_prefix):].split(',')
+        for bug_string in bugs_strings:
+          try:
+            bugs.add(int(bug_string))
+          except:
+            # skip this, it may be a project specific bug such as
+            # "angleproject:X" or an ill-formed BUG= message
+            pass
+    return bugs
 
   def _UpdateReadmeFile(self, readme_path, new_revision):
     readme = open(os.path.join(self._chromium_src, readme_path), 'r+')
@@ -203,19 +234,25 @@ class AutoRoller(object):
     # Find ToT revisions.
     angle_latest = self._GetCommitInfo(ANGLE_PATH)
 
+    # Make sure the roll script doesn't use windows line endings
+    self._RunCommand(['git', 'config', 'core.autocrlf', 'true'])
+
     self._UpdateDep(deps_filename, ANGLE_PATH, angle_latest)
 
     if self._IsTreeClean():
       logging.debug('Tree is clean - no changes detected.')
       self._DeleteRollBranch()
     else:
-      description = _GenerateCLDescription(angle_current, angle_latest)
+      bugs = self._GetBugList(ANGLE_PATH, angle_current, angle_latest)
+      description = _GenerateCLDescriptionCommand(
+          angle_current, angle_latest, bugs)
       logging.debug('Committing changes locally.')
       self._RunCommand(['git', 'add', '--update', '.'])
-      self._RunCommand(['git', 'commit', '-m', description])
+      self._RunCommand(['git', 'commit'] + description)
       logging.debug('Uploading changes...')
-      self._RunCommand(['git', 'cl', 'upload', '-m', description],
+      self._RunCommand(['git', 'cl', 'upload'],
                        extra_env={'EDITOR': 'true'})
+      self._RunCommand(['git', 'cl', 'try'])
       cl_info = self._GetCLInfo()
       print 'Issue: %d URL: %s' % (cl_info.issue, cl_info.url)
 
@@ -225,7 +262,7 @@ class AutoRoller(object):
     return 0
 
   def _UpdateDep(self, deps_filename, dep_relative_to_src, commit_info):
-    dep_name = os.path.join('src', dep_relative_to_src)
+    dep_name = _PosixPath(os.path.join('src', dep_relative_to_src))
 
     # roll_dep_svn.py relies on cwd being the Chromium checkout, so let's
     # temporarily change the working directory and then change back.
@@ -276,10 +313,6 @@ class AutoRoller(object):
 
 
 def main():
-  if sys.platform in ('win32', 'cygwin'):
-    logging.error('Only Linux and Mac platforms are supported right now.')
-    return -1
-
   parser = argparse.ArgumentParser(
       description='Auto-generates a CL containing an ANGLE roll.')
   parser.add_argument('--abort',
