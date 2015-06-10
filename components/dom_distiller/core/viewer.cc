@@ -117,7 +117,7 @@ std::string ReplaceHtmlTemplateValues(
 #if defined(OS_IOS)
   // On iOS the content is inlined as there is no API to detect those requests
   // and return the local data once a page is loaded.
-  css << "<style>" << viewer::GetCss() << "</style>";
+  css << "<style>" << viewer::GetCss() << viewer::GetIOSCss() << "</style>";
   script << "<script>\n" << viewer::GetJavaScript() << "\n</script>";
 #else
   css << "<link rel=\"stylesheet\" href=\"/" << kViewerCssPath << "\">";
@@ -139,7 +139,8 @@ std::string ReplaceHtmlTemplateValues(
 
   substitutions.push_back(original_url);                                  // $6
   substitutions.push_back(
-      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL));  // $7
+      l10n_util::GetStringUTF8(
+          IDS_DOM_DISTILLER_VIEWER_CLOSE_READER_VIEW));                   // $7
 
   substitutions.push_back(script.str());                                  // $8
 
@@ -243,6 +244,11 @@ const std::string GetUnsafeArticleContentJs(
 const std::string GetCss() {
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DISTILLER_CSS).as_string();
+}
+
+const std::string GetIOSCss() {
+  return ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_DISTILLER_IOS_CSS).as_string();
 }
 
 const std::string GetJavaScript() {

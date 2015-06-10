@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This variable will be changed by iOS scripts.
+var distiller_on_ios = false;
+
 function addToPage(html) {
   var div = document.createElement('div');
   div.innerHTML = html;
@@ -120,10 +123,15 @@ var updateLoadingIndicator = function() {
  * @param noText The i18n text for the feedback answer 'NO'.
  */
 function showFeedbackForm(questionText, yesText, noText) {
+  // If the distiller is running on iOS, do not show the feedback form. This
+  // variable is set in distiller_viewer.cc before this function is run.
+  if (distiller_on_ios) return;
+
   document.getElementById('feedbackYes').innerText = yesText;
   document.getElementById('feedbackNo').innerText = noText;
   document.getElementById('feedbackQuestion').innerText = questionText;
 
+  document.getElementById('contentWrap').style.paddingBottom = '120px';
   document.getElementById('feedbackContainer').style.display = 'block';
 }
 
@@ -143,12 +151,13 @@ function sendFeedback(good) {
 }
 
 // Add a listener to the "View Original" link to report opt-outs.
-document.getElementById('showOriginal').addEventListener('click', function(e) {
-  var img = document.createElement('img');
-  img.src = "/vieworiginal";
-  img.style.display = "none";
-  document.body.appendChild(img);
-}, true);
+document.getElementById('closeReaderView').addEventListener('click',
+    function(e) {
+      var img = document.createElement('img');
+      img.src = "/vieworiginal";
+      img.style.display = "none";
+      document.body.appendChild(img);
+    }, true);
 
 document.getElementById('feedbackYes').addEventListener('click', function(e) {
   sendFeedback(true);

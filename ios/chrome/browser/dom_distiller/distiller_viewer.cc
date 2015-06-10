@@ -49,9 +49,8 @@ void DistillerViewer::OnArticleReady(
       distilled_page_prefs_->GetFontFamily());
 
   std::string html_and_script(html);
-  std::string hide_feedback =
-      "document.getElementById('feedbackContainer').style.display = 'none';";
-  html_and_script += "<script>" + js_buffer_ + hide_feedback + "</script>";
+  html_and_script +=
+      "<script> distiller_on_ios = true; " + js_buffer_ + "</script>";
   callback_.Run(url_, html_and_script);
 }
 

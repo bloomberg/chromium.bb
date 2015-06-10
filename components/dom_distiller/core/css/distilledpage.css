@@ -81,6 +81,7 @@ html {
 body {
   height: 100%;
   line-height: 1.4;
+  margin: 0px auto;
   text-rendering: optimizeLegibility;
   transition-property: color, background-color;
   transition-duration: 0.5s;
@@ -156,23 +157,32 @@ h6 {
 
 /* Margins for Show Original link. */
 
-#showOriginal {
-  margin: auto 1.296rem 1.296rem 5%;
+#closeReaderView {
+  background-color: #FFFFFF;
+  border-top: 1px solid #E0E0E0;
+  color: #4285F4;
+  flex: 0 0 auto;
+  font-family: 'Roboto-Medium', 'Open Sans', sans-serif;
+  font-weight: 700;
+  line-height: 14px;
+  margin-top: 24px;
+  padding: 24px 16px;
+  font-size: 14px;
+  text-align: right;
+  text-decoration: none;
+  text-transform: uppercase;
+  width: 100%;
 }
 
 #content {
   margin: 0.2rem 2.2%;
 }
 
-/* Main margins. */
-
-body {
-  max-width: 800px;
-  margin: 0px auto 0px auto;
-}
-
 #mainContent {
-  margin: auto 0px;
+  flex: 1 1 auto;
+  margin: 0px auto;
+  max-width: 800px;
+  width: 100%;
 }
 
 #articleHeader {
@@ -323,9 +333,10 @@ pre {
 
 /* Footer feedback form. */
 #contentWrap {
+  display: flex;
+  flex-flow: column;
   min-height: 100%;
   overflow: auto;
-  padding-bottom: 120px;
   position: relative;
   z-index: 1;
 }

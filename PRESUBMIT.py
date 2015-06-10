@@ -1481,7 +1481,8 @@ _DEPRECATED_CSS = [
 def _CheckNoDeprecatedCSS(input_api, output_api):
   """ Make sure that we don't use deprecated CSS
       properties, functions or values. Our external
-      documentation is ignored by the hooks as it
+      documentation and iOS CSS for dom distiller
+      (reader mode) are ignored by the hooks as it
       needs to be consumed by WebKit. """
   results = []
   file_inclusion_pattern = (r".+\.css$",)
@@ -1490,6 +1491,7 @@ def _CheckNoDeprecatedCSS(input_api, output_api):
                 input_api.DEFAULT_BLACK_LIST +
                 (r"^chrome/common/extensions/docs",
                  r"^chrome/docs",
+                 r"^components/dom_distiller/core/css/distilledpage_ios.css",
                  r"^native_client_sdk"))
   file_filter = lambda f: input_api.FilterSourceFile(
       f, white_list=file_inclusion_pattern, black_list=black_list)
