@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "mandoline/ui/aura/screen_mojo.h"
 #include "ui/aura/env.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
@@ -41,6 +42,8 @@ AuraInit::AuraInit(mojo::Shell* shell) {
   screen_.reset(ScreenMojo::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
   InitializeResources(shell);
+
+  ui::InitializeInputMethodForTesting();
 }
 
 AuraInit::~AuraInit() {
