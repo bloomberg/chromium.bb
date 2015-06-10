@@ -11,14 +11,16 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
@@ -38,13 +40,13 @@
 #include "crypto/nss_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/renderer/extensions/extension_localization_peer.h"
@@ -72,7 +74,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
     // Update the browser about our cache.
     // Rate limit informing the host of our cache stats.
     if (!weak_factory_.HasWeakPtrs()) {
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&RendererResourceDelegate::InformHostOfCacheStats,
                      weak_factory_.GetWeakPtr()),
@@ -168,12 +170,12 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
     usage_data_->v8_bytes_used = heap_stats.used_heap_size();
     base::Closure collect = base::Bind(
         &ResourceUsageReporterImpl::CollectOnWorkerThread,
-        base::MessageLoopProxy::current(), weak_factory_.GetWeakPtr());
+        base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
     workers_to_go_ = RenderThread::Get()->PostTaskToAllWebWorkers(collect);
     if (workers_to_go_) {
       // The guard task to send out partial stats
       // in case some workers are not responsive.
-      base::MessageLoopProxy::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&ResourceUsageReporterImpl::SendResults,
                                 weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kWaitForWorkersStatsTimeoutMS));

@@ -11,9 +11,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_file_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -576,8 +579,8 @@ void InProcessBrowserTest::QuitBrowsers() {
   // Invoke AttemptExit on a running message loop.
   // AttemptExit exits the message loop after everything has been
   // shut down properly.
-  base::MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                              base::Bind(&chrome::AttemptExit));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&chrome::AttemptExit));
   content::RunMessageLoop();
 
 #if defined(OS_MACOSX)

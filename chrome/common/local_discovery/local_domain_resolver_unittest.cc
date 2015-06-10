@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/local_discovery/service_discovery_client_impl.h"
 #include "net/dns/mdns_client_impl.h"
 #include "net/dns/mock_mdns_socket_factory.h"
@@ -81,7 +84,7 @@ class LocalDomainResolverTest : public testing::Test {
     base::CancelableCallback<void()> callback(base::Bind(
         &base::MessageLoop::Quit,
         base::Unretained(base::MessageLoop::current())));
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, callback.callback(), time_period);
 
     base::MessageLoop::current()->Run();

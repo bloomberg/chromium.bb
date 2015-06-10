@@ -8,9 +8,10 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -218,7 +219,7 @@ TEST(CommandsTest, ExecuteSessionCommand) {
   linked_ptr<base::Thread> thread(new base::Thread("1"));
   ASSERT_TRUE(thread->Start());
   std::string id("id");
-  thread->message_loop()->PostTask(
+  thread->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&internal::CreateSessionOnSessionThreadForTesting, id));
   map[id] = thread;
@@ -700,7 +701,7 @@ TEST(CommandsTest, SuccessNotifyingCommandListeners) {
   linked_ptr<base::Thread> thread(new base::Thread("1"));
   ASSERT_TRUE(thread->Start());
   std::string id("id");
-  thread->message_loop()->PostTask(
+  thread->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&internal::CreateSessionOnSessionThreadForTesting, id));
 
@@ -789,7 +790,7 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
   linked_ptr<base::Thread> thread(new base::Thread("1"));
   ASSERT_TRUE(thread->Start());
   std::string id("id");
-  thread->message_loop()->PostTask(
+  thread->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&internal::CreateSessionOnSessionThreadForTesting, id));
   map[id] = thread;
@@ -798,9 +799,8 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
   // was called before (as opposed to after) command execution. We don't need to
   // verify this again, so we can just add |listener| with PostTask.
   CommandListener* listener = new FailingCommandListener();
-  thread->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&AddListenerToSessionIfSessionExists, listener));
+  thread->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&AddListenerToSessionIfSessionExists, listener));
 
   base::DictionaryValue params;
   // The command should never be executed if BeforeCommand fails for a listener.
@@ -818,7 +818,6 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
       base::Bind(&OnFailBecauseErrorNotifyingListeners, &run_loop));
   run_loop.Run();
 
-  thread->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&VerifySessionWasDeleted));
+  thread->task_runner()->PostTask(FROM_HERE,
+                                  base::Bind(&VerifySessionWasDeleted));
 }

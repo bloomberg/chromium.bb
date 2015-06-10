@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sync_socket.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -124,10 +124,9 @@ class PortServerTest : public testing::Test {
                  const std::string& response,
                  std::string* request) {
     base::WaitableEvent listen_event(false, false);
-    thread_.message_loop()->PostTask(
+    thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(
-            &RunServerOnThread, path, response, &listen_event, request));
+        base::Bind(&RunServerOnThread, path, response, &listen_event, request));
     ASSERT_TRUE(listen_event.TimedWait(base::TimeDelta::FromSeconds(5)));
   }
 

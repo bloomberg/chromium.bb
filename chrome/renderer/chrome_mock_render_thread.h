@@ -25,7 +25,7 @@ class ChromeMockRenderThread : public content::MockRenderThread {
 
   // Set IO message loop proxy.
   void set_io_message_loop_proxy(
-      const scoped_refptr<base::MessageLoopProxy>& proxy);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
  private:
   // Overrides base class implementation to add custom handling for
@@ -41,7 +41,7 @@ class ChromeMockRenderThread : public content::MockRenderThread {
                                 int* port_id);
 #endif
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMockRenderThread);
 };

@@ -4,7 +4,10 @@
 
 #include "chrome/test/base/browser_with_test_window_test.h"
 
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -117,8 +120,8 @@ void BrowserWithTestWindowTest::TearDown() {
 
   // A Task is leaked if we don't destroy everything, then run the message
   // loop.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::MessageLoop::QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitClosure());
   base::MessageLoop::current()->Run();
 
 #if defined(TOOLKIT_VIEWS)

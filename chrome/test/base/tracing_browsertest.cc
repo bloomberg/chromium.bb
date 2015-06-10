@@ -4,8 +4,10 @@
 
 #include "chrome/test/base/tracing.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -56,7 +58,8 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
 
   // One event after wait.
   ASSERT_TRUE(BeginTracingWithWatch(g_category, g_category, g_event, 1));
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&AddEvents, 1));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(&AddEvents, 1));
   EXPECT_TRUE(WaitForWatchEvent(no_timeout));
   ASSERT_TRUE(EndTracing(&json_events));
 
@@ -74,7 +77,8 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, BeginTracingWithWatch) {
 
   // Multi event after wait.
   ASSERT_TRUE(BeginTracingWithWatch(g_category, g_category, g_event, 5));
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&AddEvents, 5));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(&AddEvents, 5));
   EXPECT_TRUE(WaitForWatchEvent(no_timeout));
   ASSERT_TRUE(EndTracing(&json_events));
 

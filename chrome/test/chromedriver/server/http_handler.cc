@@ -11,11 +11,11 @@
 #include "base/logging.h"  // For CHECK macros.
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/alert_commands.h"
 #include "chrome/test/chromedriver/chrome/adb_impl.h"

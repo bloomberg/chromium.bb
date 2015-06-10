@@ -4,10 +4,12 @@
 
 #include <utility>
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/local_discovery/service_discovery_client_impl.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/record_rdata.h"
@@ -270,10 +272,9 @@ void ServiceWatcherImpl::DeferUpdate(ServiceWatcher::UpdateType update_type,
 
   if (found != services_.end() && !found->second->update_pending()) {
     found->second->set_update_pending(true);
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ServiceWatcherImpl::DeliverDeferredUpdate, AsWeakPtr(),
-                   update_type, service_name));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ServiceWatcherImpl::DeliverDeferredUpdate,
+                              AsWeakPtr(), update_type, service_name));
   }
 }
 
@@ -326,12 +327,10 @@ void ServiceWatcherImpl::OnNsecRecord(const std::string& name,
 
 void ServiceWatcherImpl::ScheduleQuery(int timeout_seconds) {
   if (timeout_seconds <= kMaxRequeryTimeSeconds) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ServiceWatcherImpl::SendQuery,
-                   AsWeakPtr(),
-                   timeout_seconds * 2 /*next_timeout_seconds*/,
-                   false /*force_update*/),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ServiceWatcherImpl::SendQuery, AsWeakPtr(),
+                              timeout_seconds * 2 /*next_timeout_seconds*/,
+                              false /*force_update*/),
         base::TimeDelta::FromSeconds(timeout_seconds));
   }
 }
@@ -560,9 +559,8 @@ void LocalDomainResolverImpl::OnTransactionComplete(
         &LocalDomainResolverImpl::SendResolvedAddresses,
         base::Unretained(this)));
 
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        timeout_callback_.callback(),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, timeout_callback_.callback(),
         base::TimeDelta::FromMilliseconds(kLocalDomainSecondAddressTimeoutMs));
   } else if (transactions_finished_ == 2
       || address_family_ != net::ADDRESS_FAMILY_UNSPECIFIED) {

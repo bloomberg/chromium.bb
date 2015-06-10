@@ -9,7 +9,8 @@
 #include "base/command_line.h"
 #include "base/debug/profiler.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_switches.h"
@@ -82,9 +83,8 @@ void FlushProfilingData(base::Thread* thread) {
       flush_seconds = kProfilingFlushSeconds;
     }
   }
-  thread->message_loop()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FlushProfilingData, thread),
+  thread->task_runner()->PostDelayedTask(
+      FROM_HERE, base::Bind(&FlushProfilingData, thread),
       base::TimeDelta::FromSeconds(flush_seconds));
 }
 
@@ -99,8 +99,8 @@ class ProfilingThreadControl {
       return;
     thread_ = new base::Thread("Profiling_Flush");
     thread_->Start();
-    thread_->message_loop()->PostTask(
-        FROM_HERE, base::Bind(&FlushProfilingData, thread_));
+    thread_->task_runner()->PostTask(FROM_HERE,
+                                     base::Bind(&FlushProfilingData, thread_));
   }
 
   void Stop() {

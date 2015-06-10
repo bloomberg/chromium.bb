@@ -132,9 +132,8 @@ bool ServiceProcessState::TakeSingletonLock() {
   return true;
 }
 
-bool ServiceProcessState::SignalReady(
-    base::MessageLoopProxy* message_loop_proxy,
-    const base::Closure& terminate_task) {
+bool ServiceProcessState::SignalReady(base::SingleThreadTaskRunner* task_runner,
+                                      const base::Closure& terminate_task) {
   DCHECK(state_);
   DCHECK(state_->ready_event.IsValid());
   if (!SetEvent(state_->ready_event.Get())) {

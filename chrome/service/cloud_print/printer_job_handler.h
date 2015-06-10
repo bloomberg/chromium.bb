@@ -12,7 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
@@ -275,7 +275,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   scoped_refptr<PrintSystem::JobSpooler> job_spooler_;
   // The message loop proxy representing the thread on which this object
   // was created. Used by the print thread.
-  scoped_refptr<base::MessageLoopProxy> job_handler_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> job_handler_task_runner_;
 
   // There may be pending tasks in the message queue when Shutdown is called.
   // We set this flag so as to do nothing in those tasks.

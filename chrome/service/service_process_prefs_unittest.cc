@@ -18,7 +18,7 @@ class ServiceProcessPrefsTest : public testing::Test {
 
     prefs_.reset(new ServiceProcessPrefs(
         temp_dir_.path().AppendASCII("service_process_prefs.txt"),
-        message_loop_.message_loop_proxy().get()));
+        message_loop_.task_runner().get()));
   }
 
   void TearDown() override { prefs_.reset(); }

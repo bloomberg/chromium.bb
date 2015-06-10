@@ -5,6 +5,7 @@
 #include "chrome/renderer/media/cast_threads.h"
 
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 
 CastThreads::CastThreads()
     : audio_encode_thread_("CastAudioEncodeThread"),
@@ -15,10 +16,10 @@ CastThreads::CastThreads()
 
 scoped_refptr<base::SingleThreadTaskRunner>
 CastThreads::GetAudioEncodeMessageLoopProxy() {
-  return audio_encode_thread_.message_loop_proxy();
+  return audio_encode_thread_.task_runner();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 CastThreads::GetVideoEncodeMessageLoopProxy() {
-  return video_encode_thread_.message_loop_proxy();
+  return video_encode_thread_.task_runner();
 }

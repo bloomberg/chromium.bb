@@ -46,17 +46,17 @@ class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
   bool Teardown();
   // TODO(sanjeevr): Change various parts of the code such as
   // net::ProxyService::CreateSystemProxyConfigService to take in
-  // MessageLoopProxy* instead of MessageLoop*. When we have done that, we can
-  // remove the io_thread() and file_thread() accessors and replace them with
-  // io_message_loop_proxy() and file_message_loop_proxy() respectively.
+  // SingleThreadTaskRunner* instead of MessageLoop*. When we have done that,
+  // we can remove the io_thread() and file_thread() accessors and replace them
+  // with io_message_loop_proxy() and file_message_loop_proxy() respectively.
 
   // Returns the thread that we perform I/O coordination on (network requests,
   // communication with renderers, etc.
   // NOTE: You should ONLY use this to pass to IPC or other objects which must
   // need a MessageLoop*. If you just want to post a task, use the thread's
-  // message_loop_proxy() as it takes care of checking that a thread is still
-  // alive, race conditions, lifetime differences etc.
-  // If you still must use this, need to check the return value for NULL.
+  // task_runner() as it takes care of checking that a thread is still alive,
+  // race conditions, lifetime differences etc. If you still must use this,
+  // need to check the return value for NULL.
   base::Thread* io_thread() const {
     return io_thread_.get();
   }

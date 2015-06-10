@@ -13,10 +13,10 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/process/launch.h"
 #include "base/task_runner_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
 #include "content/public/common/child_process_host.h"
@@ -150,9 +150,9 @@ class ServiceUtilityProcessHost::PdfToEmfState {
 
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
     Client* client,
-    base::MessageLoopProxy* client_message_loop_proxy)
+    base::SingleThreadTaskRunner* client_task_runner)
     : client_(client),
-      client_message_loop_proxy_(client_message_loop_proxy),
+      client_task_runner_(client_task_runner),
       waiting_for_reply_(false),
       weak_ptr_factory_(this) {
   child_process_host_.reset(ChildProcessHost::Create(this));
@@ -258,7 +258,7 @@ void ServiceUtilityProcessHost::OnChildDisconnected() {
   if (waiting_for_reply_) {
     // If we are yet to receive a reply then notify the client that the
     // child died.
-    client_message_loop_proxy_->PostTask(
+    client_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Client::OnChildDied, client_.get()));
     ReportUmaEvent(SERVICE_UTILITY_DISCONNECTED);
     UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityDisconnectTime",
@@ -319,7 +319,7 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageDone(
     return OnPDFToEmfFinished(false);
   base::File emf_file = pdf_to_emf_state_->TakeNextFile();
   base::PostTaskAndReplyWithResult(
-      client_message_loop_proxy_.get(), FROM_HERE,
+      client_task_runner_.get(), FROM_HERE,
       base::Bind(&Client::MetafileAvailable, client_.get(), scale_factor,
                  base::Passed(&emf_file)),
       base::Bind(&ServiceUtilityProcessHost::OnMetafileSpooled,
@@ -339,10 +339,9 @@ void ServiceUtilityProcessHost::OnPDFToEmfFinished(bool success) {
     UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityMetafileFailTime",
                         base::Time::Now() - start_time_);
   }
-  client_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &Client::OnRenderPDFPagesToMetafileDone, client_.get(), success));
+  client_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Client::OnRenderPDFPagesToMetafileDone,
+                            client_.get(), success));
   pdf_to_emf_state_.reset();
 }
 
@@ -354,10 +353,9 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsSucceeded(
   UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityCapsTime",
                       base::Time::Now() - start_time_);
   waiting_for_reply_ = false;
-  client_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(), true,
-                 printer_name, caps_and_defaults));
+  client_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(),
+                            true, printer_name, caps_and_defaults));
 }
 
 void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsSucceeded(
@@ -368,7 +366,7 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsSucceeded(
   UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilitySemanticCapsTime",
                       base::Time::Now() - start_time_);
   waiting_for_reply_ = false;
-  client_message_loop_proxy_->PostTask(
+  client_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&Client::OnGetPrinterSemanticCapsAndDefaults, client_.get(),
                  true, printer_name, caps_and_defaults));
@@ -381,7 +379,7 @@ void ServiceUtilityProcessHost::OnGetPrinterCapsAndDefaultsFailed(
   UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilityCapsFailTime",
                       base::Time::Now() - start_time_);
   waiting_for_reply_ = false;
-  client_message_loop_proxy_->PostTask(
+  client_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&Client::OnGetPrinterCapsAndDefaults, client_.get(), false,
                  printer_name, printing::PrinterCapsAndDefaults()));
@@ -394,11 +392,10 @@ void ServiceUtilityProcessHost::OnGetPrinterSemanticCapsAndDefaultsFailed(
   UMA_HISTOGRAM_TIMES("CloudPrint.ServiceUtilitySemanticCapsFailTime",
                       base::Time::Now() - start_time_);
   waiting_for_reply_ = false;
-  client_message_loop_proxy_->PostTask(
-      FROM_HERE,
-      base::Bind(&Client::OnGetPrinterSemanticCapsAndDefaults,
-                 client_.get(), false, printer_name,
-                 printing::PrinterSemanticCapsAndDefaults()));
+  client_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Client::OnGetPrinterSemanticCapsAndDefaults,
+                            client_.get(), false, printer_name,
+                            printing::PrinterSemanticCapsAndDefaults()));
 }
 
 bool ServiceUtilityProcessHost::Client::MetafileAvailable(float scale_factor,

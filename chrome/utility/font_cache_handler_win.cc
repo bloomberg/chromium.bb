@@ -29,7 +29,7 @@ bool FontCacheHandler::OnMessageReceived(const IPC::Message& message) {
 void FontCacheHandler::OnBuildFontCache(const base::FilePath& full_path) {
   DCHECK(!cache_thread_);
 
-  utility_task_runner_ = base::MessageLoop::current()->message_loop_proxy();
+  utility_task_runner_ = base::MessageLoop::current()->task_runner();
 
   // Create worker thread for building font cache.
   cache_thread_.reset(new base::Thread("font_cache_thread"));

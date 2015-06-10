@@ -6,8 +6,9 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/common/multi_process_lock.h"
 
@@ -161,9 +162,8 @@ void ServiceProcessState::CreateState() {
   state_->AddRef();
 }
 
-bool ServiceProcessState::SignalReady(
-    base::MessageLoopProxy* message_loop_proxy,
-    const base::Closure& terminate_task) {
+bool ServiceProcessState::SignalReady(base::SingleThreadTaskRunner* task_runner,
+                                      const base::Closure& terminate_task) {
   DCHECK(state_);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -181,11 +181,9 @@ bool ServiceProcessState::SignalReady(
   base::WaitableEvent signal_ready(true, false);
   bool success = false;
 
-  message_loop_proxy->PostTask(FROM_HERE,
-      base::Bind(&ServiceProcessState::StateData::SignalReady,
-                 state_,
-                 &signal_ready,
-                 &success));
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(&ServiceProcessState::StateData::SignalReady,
+                                   state_, &signal_ready, &success));
   signal_ready.Wait();
   return success;
 }

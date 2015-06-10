@@ -5,7 +5,9 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/renderer/media/chrome_webrtc_log_message_delegate.h"
 #include "chrome/renderer/media/mock_webrtc_logging_message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +16,7 @@ TEST(ChromeWebRtcLogMessageDelegateTest, Basic) {
   const char kTestString[] = "abcdefghijklmnopqrstuvwxyz";
   base::MessageLoopForIO message_loop;
   scoped_refptr<MockWebRtcLoggingMessageFilter> log_message_filter(
-      new MockWebRtcLoggingMessageFilter(message_loop.message_loop_proxy()));
+      new MockWebRtcLoggingMessageFilter(message_loop.task_runner()));
   // Run message loop to initialize delegate.
   // TODO(vrk): Fix this so that we can construct a delegate without needing to
   // construct a message filter.
@@ -24,10 +26,9 @@ TEST(ChromeWebRtcLogMessageDelegateTest, Basic) {
       log_message_filter->log_message_delegate();
 
   // Start logging on the IO loop.
-  message_loop.message_loop_proxy()->PostTask(
-      FROM_HERE, base::Bind(
-          &ChromeWebRtcLogMessageDelegate::OnStartLogging,
-          base::Unretained(log_message_delegate)));
+  message_loop.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&ChromeWebRtcLogMessageDelegate::OnStartLogging,
+                            base::Unretained(log_message_delegate)));
 
   // These log messages should be added to the log buffer outside of the IO
   // loop.
@@ -35,10 +36,9 @@ TEST(ChromeWebRtcLogMessageDelegateTest, Basic) {
   log_message_delegate->LogMessage(kTestString);
 
   // Stop logging on IO loop.
-  message_loop.message_loop_proxy()->PostTask(
-      FROM_HERE, base::Bind(
-          &ChromeWebRtcLogMessageDelegate::OnStopLogging,
-          base::Unretained(log_message_delegate)));
+  message_loop.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&ChromeWebRtcLogMessageDelegate::OnStopLogging,
+                            base::Unretained(log_message_delegate)));
 
   // This log message should not be added to the log buffer.
   log_message_delegate->LogMessage(kTestString);

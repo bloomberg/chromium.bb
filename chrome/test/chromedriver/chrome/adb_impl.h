@@ -21,7 +21,7 @@ class Status;
 class AdbImpl : public Adb {
  public:
   explicit AdbImpl(
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_message_loop_proxy,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       int port);
   ~AdbImpl() override;
 

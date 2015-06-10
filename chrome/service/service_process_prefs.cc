@@ -4,8 +4,8 @@
 
 #include "chrome/service/service_process_prefs.h"
 
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_filter.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 
 ServiceProcessPrefs::ServiceProcessPrefs(

@@ -11,11 +11,13 @@
 #include "base/compiler_specific.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
@@ -123,7 +125,7 @@ void PhishingTermFeatureExtractor::ExtractFeatures(
   done_callback_ = done_callback;
 
   state_.reset(new ExtractionState(*page_text_, clock_->Now()));
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout,
                  weak_factory_.GetWeakPtr()));
@@ -178,7 +180,7 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
         // clock granularity.
         UMA_HISTOGRAM_TIMES("SBClientPhishing.TermFeatureChunkTime",
                             chunk_elapsed);
-        base::MessageLoop::current()->PostTask(
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
             base::Bind(
                 &PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout,

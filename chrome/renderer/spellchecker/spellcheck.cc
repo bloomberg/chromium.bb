@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
@@ -355,10 +357,9 @@ void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
   if (!request)
     return;
 
-  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
-      base::Bind(&SpellCheck::PerformSpellCheck,
-                 AsWeakPtr(),
-                 base::Owned(request)));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&SpellCheck::PerformSpellCheck, AsWeakPtr(),
+                            base::Owned(request)));
 }
 #endif
 

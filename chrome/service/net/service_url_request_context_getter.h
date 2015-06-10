@@ -21,7 +21,7 @@
 #include "net/url_request/url_request_context_storage.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace net {

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
@@ -36,10 +36,9 @@ bool TestHttpServer::Start() {
     return false;
   bool success;
   base::WaitableEvent event(false, false);
-  thread_.message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestHttpServer::StartOnServerThread,
-                 base::Unretained(this), &success, &event));
+  thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TestHttpServer::StartOnServerThread,
+                            base::Unretained(this), &success, &event));
   event.Wait();
   return success;
 }
@@ -48,10 +47,9 @@ void TestHttpServer::Stop() {
   if (!thread_.IsRunning())
     return;
   base::WaitableEvent event(false, false);
-  thread_.message_loop_proxy()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestHttpServer::StopOnServerThread,
-                 base::Unretained(this), &event));
+  thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&TestHttpServer::StopOnServerThread,
+                            base::Unretained(this), &event));
   event.Wait();
   thread_.Stop();
 }

@@ -5,8 +5,10 @@
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
@@ -118,7 +120,7 @@ class InterceptingMessageFilter : public content::BrowserMessageFilter {
         verdict->IsInitialized()) {
       verdict_.swap(verdict);
     }
-    waiting_message_loop_->PostTask(FROM_HERE, quit_closure_);
+    waiting_message_loop_->task_runner()->PostTask(FROM_HERE, quit_closure_);
   }
 
  private:

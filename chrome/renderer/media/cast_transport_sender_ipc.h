@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/thread_task_runner_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_sender.h"

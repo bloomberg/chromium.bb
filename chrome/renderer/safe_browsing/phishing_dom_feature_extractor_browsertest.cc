@@ -13,9 +13,11 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -62,10 +64,9 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
   // Helper for the SubframeRemoval test that posts a message to remove
   // the iframe "frame1" from the document.
   void ScheduleRemoveIframe() {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&PhishingDOMFeatureExtractorTest::RemoveIframe,
-                   weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&PhishingDOMFeatureExtractorTest::RemoveIframe,
+                              weak_factory_.GetWeakPtr()));
   }
 
  protected:

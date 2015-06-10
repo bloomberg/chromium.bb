@@ -7,9 +7,11 @@
 #include <functional>
 #include <iterator>
 
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/extensions/api/cast_streaming_receiver_session.h"
 #include "chrome/common/extensions/api/cast_streaming_rtp_stream.h"
 #include "chrome/common/extensions/api/cast_streaming_udp_transport.h"
@@ -259,14 +261,11 @@ void CastStreamingNativeHandler::CreateCastSession(
   // invalid context when the callback is invoked.
   create_callback_.Reset(isolate, args[2].As<v8::Function>());
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
-          &CastStreamingNativeHandler::CallCreateCallback,
-          weak_factory_.GetWeakPtr(),
-          base::Passed(&stream1),
-          base::Passed(&stream2),
-          base::Passed(&udp_transport)));
+      base::Bind(&CastStreamingNativeHandler::CallCreateCallback,
+                 weak_factory_.GetWeakPtr(), base::Passed(&stream1),
+                 base::Passed(&stream2), base::Passed(&udp_transport)));
 }
 
 void CastStreamingNativeHandler::CallCreateCallback(

@@ -6,9 +6,12 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/service/cloud_print/cloud_print_service_helpers.h"
@@ -100,7 +103,7 @@ CloudPrintURLFetcher::ResponseAction JobStatusUpdater::HandleJSONData(
       base::DictionaryValue* json_data,
       bool succeeded) {
   if (IsTerminalJobState(last_job_details_.status)) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&JobStatusUpdater::Stop, this));
   }
   return CloudPrintURLFetcher::STOP_PROCESSING;

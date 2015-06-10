@@ -10,9 +10,12 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/service/cloud_print/cloud_print_auth.h"
@@ -172,7 +175,7 @@ bool CloudPrintProxyBackend::InitializeWithToken(
     const std::string& cloud_print_token) {
   if (!core_thread_.Start())
     return false;
-  core_thread_.message_loop()->PostTask(
+  core_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithToken,
                  core_.get(), cloud_print_token));
@@ -184,7 +187,7 @@ bool CloudPrintProxyBackend::InitializeWithRobotToken(
     const std::string& robot_email) {
   if (!core_thread_.Start())
     return false;
-  core_thread_.message_loop()->PostTask(
+  core_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithRobotToken,
                  core_.get(), robot_oauth_refresh_token, robot_email));
@@ -196,7 +199,7 @@ bool CloudPrintProxyBackend::InitializeWithRobotAuthCode(
     const std::string& robot_email) {
   if (!core_thread_.Start())
     return false;
-  core_thread_.message_loop()->PostTask(
+  core_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&CloudPrintProxyBackend::Core::DoInitializeWithRobotAuthCode,
                  core_.get(), robot_oauth_auth_code, robot_email));
@@ -204,7 +207,7 @@ bool CloudPrintProxyBackend::InitializeWithRobotAuthCode(
 }
 
 void CloudPrintProxyBackend::Shutdown() {
-  core_thread_.message_loop()->PostTask(
+  core_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&CloudPrintProxyBackend::Core::DoShutdown, core_.get()));
   core_thread_.Stop();
@@ -212,10 +215,9 @@ void CloudPrintProxyBackend::Shutdown() {
 }
 
 void CloudPrintProxyBackend::UnregisterPrinters() {
-  core_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&CloudPrintProxyBackend::Core::DoUnregisterPrinters,
-                 core_.get()));
+  core_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&CloudPrintProxyBackend::Core::DoUnregisterPrinters,
+                            core_.get()));
 }
 
 CloudPrintProxyBackend::Core::Core(
@@ -282,7 +284,7 @@ void CloudPrintProxyBackend::Core::OnAuthenticationComplete(
   token_store->SetToken(access_token);
   robot_email_ = robot_email;
   // Let the frontend know that we have authenticated.
-  backend_->frontend_loop_->PostTask(
+  backend_->frontend_loop_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&Core::NotifyAuthenticated, this, robot_oauth_refresh_token,
                  robot_email, user_email));
@@ -297,7 +299,7 @@ void CloudPrintProxyBackend::Core::OnAuthenticationComplete(
   if (!connector_->IsRunning()) {
     if (!connector_->Start()) {
       // Let the frontend know that we do not have a print system.
-      backend_->frontend_loop_->PostTask(
+      backend_->frontend_loop_->task_runner()->PostTask(
           FROM_HERE, base::Bind(&Core::NotifyPrintSystemUnavailable, this));
     }
   }
@@ -306,7 +308,7 @@ void CloudPrintProxyBackend::Core::OnAuthenticationComplete(
 void CloudPrintProxyBackend::Core::OnInvalidCredentials() {
   DCHECK(base::MessageLoop::current() == backend_->core_thread_.message_loop());
   VLOG(1) << "CP_CONNECTOR: Auth Error";
-  backend_->frontend_loop_->PostTask(
+  backend_->frontend_loop_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&Core::NotifyAuthenticationFailed, this));
 }
 
@@ -323,9 +325,8 @@ void CloudPrintProxyBackend::Core::OnAuthFailed() {
 
 void CloudPrintProxyBackend::Core::OnXmppPingUpdated(int ping_timeout) {
   settings_.SetXmppPingTimeoutSec(ping_timeout);
-  backend_->frontend_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&Core::NotifyXmppPingUpdated, this, ping_timeout));
+  backend_->frontend_loop_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&Core::NotifyXmppPingUpdated, this, ping_timeout));
 }
 
 void CloudPrintProxyBackend::Core::InitNotifications(
@@ -379,10 +380,9 @@ void CloudPrintProxyBackend::Core::DoUnregisterPrinters() {
   std::list<std::string> printer_ids;
   connector_->GetPrinterIds(&printer_ids);
 
-  backend_->frontend_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&Core::NotifyUnregisterPrinters,
-                 this, access_token, printer_ids));
+  backend_->frontend_loop_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&Core::NotifyUnregisterPrinters, this, access_token,
+                            printer_ids));
 }
 
 void CloudPrintProxyBackend::Core::HandlePrinterNotification(
@@ -419,9 +419,8 @@ void CloudPrintProxyBackend::Core::ScheduleJobPoll() {
   if (!job_poll_scheduled_) {
     base::TimeDelta interval = base::TimeDelta::FromSeconds(
         base::RandInt(kMinJobPollIntervalSecs, kMaxJobPollIntervalSecs));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&CloudPrintProxyBackend::Core::PollForJobs, this),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&CloudPrintProxyBackend::Core::PollForJobs, this),
         interval);
     job_poll_scheduled_ = true;
   }
@@ -438,7 +437,7 @@ void CloudPrintProxyBackend::Core::PingXmppServer() {
   pending_xmpp_pings_++;
   if (pending_xmpp_pings_ >= kMaxFailedXmppPings) {
     // Check ping status when we close to the limit.
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&CloudPrintProxyBackend::Core::CheckXmppPingStatus, this),
         base::TimeDelta::FromSeconds(kXmppPingCheckIntervalSecs));
@@ -456,7 +455,7 @@ void CloudPrintProxyBackend::Core::ScheduleXmppPing() {
     base::TimeDelta interval = base::TimeDelta::FromSeconds(
       base::RandInt(settings_.xmpp_ping_timeout_sec() * 0.9,
                     settings_.xmpp_ping_timeout_sec() * 1.1));
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&CloudPrintProxyBackend::Core::PingXmppServer, this),
         interval);

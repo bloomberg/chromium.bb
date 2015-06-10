@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/local_discovery/service_discovery_client_impl.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_protocol.h"
@@ -213,7 +216,7 @@ class ServiceDiscoveryTest : public ::testing::Test {
   void RunFor(base::TimeDelta time_period) {
     base::CancelableCallback<void()> callback(base::Bind(
         &ServiceDiscoveryTest::Stop, base::Unretained(this)));
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, callback.callback(), time_period);
 
     base::MessageLoop::current()->Run();

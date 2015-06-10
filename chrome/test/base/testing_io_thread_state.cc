@@ -4,8 +4,10 @@
 
 #include "chrome/test/base/testing_io_thread_state.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -26,9 +28,8 @@ base::Closure ThreadSafeQuit(base::RunLoop* run_loop) {
   } else {
     using base::Bind;
     using base::IgnoreResult;
-    return Bind(IgnoreResult(&base::MessageLoopProxy::PostTask),
-                base::MessageLoopProxy::current(),
-                FROM_HERE,
+    return Bind(IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+                base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
                 run_loop->QuitClosure());
   }
 }

@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "chrome/test/chromedriver/logging.h"
@@ -136,12 +137,10 @@ void HandleRequestOnIOThread(
     const net::HttpServerRequestInfo& request,
     const HttpResponseSenderFunc& send_response_func) {
   cmd_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(handle_request_on_cmd_func,
-                 request,
-                 base::Bind(&SendResponseOnCmdThread,
-                            base::MessageLoopProxy::current(),
-                            send_response_func)));
+      FROM_HERE, base::Bind(handle_request_on_cmd_func, request,
+                            base::Bind(&SendResponseOnCmdThread,
+                                       base::ThreadTaskRunnerHandle::Get(),
+                                       send_response_func)));
 }
 
 base::LazyInstance<base::ThreadLocalPointer<HttpServer> >
@@ -177,22 +176,16 @@ void RunServer(uint16 port,
 
   base::MessageLoop cmd_loop;
   base::RunLoop cmd_run_loop;
-  HttpHandler handler(cmd_run_loop.QuitClosure(),
-                      io_thread.message_loop_proxy(),
-                      url_base,
-                      adb_port,
-                      port_server.Pass());
+  HttpHandler handler(cmd_run_loop.QuitClosure(), io_thread.task_runner(),
+                      url_base, adb_port, port_server.Pass());
   HttpRequestHandlerFunc handle_request_func =
       base::Bind(&HandleRequestOnCmdThread, &handler, whitelisted_ips);
 
-  io_thread.message_loop()
-      ->PostTask(FROM_HERE,
-                 base::Bind(&StartServerOnIOThread,
-                            port,
-                            allow_remote,
-                            base::Bind(&HandleRequestOnIOThread,
-                                       cmd_loop.message_loop_proxy(),
-                                       handle_request_func)));
+  io_thread.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&StartServerOnIOThread, port, allow_remote,
+                 base::Bind(&HandleRequestOnIOThread, cmd_loop.task_runner(),
+                            handle_request_func)));
   // Run the command loop. This loop is quit after the response for a shutdown
   // request is posted to the IO loop. After the command loop quits, a task
   // is posted to the IO loop to stop the server. Lastly, the IO thread is

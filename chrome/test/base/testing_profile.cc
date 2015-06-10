@@ -7,11 +7,13 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/location.h"
 #include "base/path_service.h"
 #include "base/prefs/testing_pref_store.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/in_memory_url_index.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
@@ -319,7 +321,7 @@ TestingProfile::TestingProfile(const base::FilePath& path,
       delegate_(delegate) {
   Init();
   if (delegate_) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&TestingProfile::FinishInit, base::Unretained(this)));
   } else {
@@ -376,7 +378,7 @@ TestingProfile::TestingProfile(
   // TODO(atwilson): See if this is still required once we convert the current
   // users of the constructor that takes a Delegate* param.
   if (delegate_) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&TestingProfile::FinishInit, base::Unretained(this)));
   } else {
@@ -596,8 +598,8 @@ void TestingProfile::DestroyHistoryService() {
 
   // Make sure we don't have any event pending that could disrupt the next
   // test.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::MessageLoop::QuitClosure());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitClosure());
   base::MessageLoop::current()->Run();
 }
 
@@ -654,7 +656,7 @@ scoped_ptr<content::ZoomLevelDelegate> TestingProfile::CreateZoomLevelDelegate(
 }
 
 scoped_refptr<base::SequencedTaskRunner> TestingProfile::GetIOTaskRunner() {
-  return base::MessageLoop::current()->message_loop_proxy();
+  return base::MessageLoop::current()->task_runner();
 }
 
 TestingPrefServiceSyncable* TestingProfile::GetTestingPrefService() {

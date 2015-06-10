@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/service/cloud_print/cloud_print_service_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
@@ -247,9 +249,10 @@ std::string StatusResponse(int job_num, const char* status_string) {
 class CloudPrintURLFetcherNoServiceProcess
     : public CloudPrintURLFetcher {
  public:
-  CloudPrintURLFetcherNoServiceProcess() :
-      context_getter_(new net::TestURLRequestContextGetter(
-          base::MessageLoopProxy::current())) {}
+  CloudPrintURLFetcherNoServiceProcess()
+      : context_getter_(new net::TestURLRequestContextGetter(
+            base::ThreadTaskRunnerHandle::Get())) {}
+
  protected:
   net::URLRequestContextGetter* GetRequestContextGetter() override {
     return context_getter_.get();
@@ -522,7 +525,7 @@ void PrinterJobHandlerTest::MessageLoopQuitNowHelper(
 
 void PrinterJobHandlerTest::MessageLoopQuitSoonHelper(
     base::MessageLoop* message_loop) {
-  message_loop->message_loop_proxy()->PostTask(
+  message_loop->task_runner()->PostTask(
       FROM_HERE, base::Bind(&MessageLoopQuitNowHelper, message_loop));
 }
 
@@ -532,14 +535,14 @@ PrinterJobHandlerTest::PrinterJobHandlerTest()
 }
 
 bool PrinterJobHandlerTest::PostSpoolSuccess() {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&PrinterJobHandler::OnJobSpoolSucceeded, job_handler_, 0));
 
   // Everything that would be posted on the printer thread queue
   // has been posted, we can tell the main message loop to quit when idle
   // and not worry about it idling while the print thread does work
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&MessageLoopQuitSoonHelper, &loop_));
   return true;
 }
@@ -769,15 +772,12 @@ TEST_F(PrinterJobHandlerTest, DISABLED_ManyFailureTest) {
                            net::HTTP_INTERNAL_SERVER_ERROR,
                            net::URLRequestStatus::FAILED);
 
-  loop_.PostDelayedTask(FROM_HERE,
-                        base::Bind(&net::FakeURLFetcherFactory::SetFakeResponse,
-                                   base::Unretained(&factory_),
-                                   TicketURI(1),
-                                   kExamplePrintTicket,
-                                   net::HTTP_OK,
-                                   net::URLRequestStatus::SUCCESS),
-                        base::TimeDelta::FromSeconds(1));
-
+  loop_.task_runner()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&net::FakeURLFetcherFactory::SetFakeResponse,
+                 base::Unretained(&factory_), TicketURI(1), kExamplePrintTicket,
+                 net::HTTP_OK, net::URLRequestStatus::SUCCESS),
+      base::TimeDelta::FromSeconds(1));
 
   BeginTest(5);
 }

@@ -6,13 +6,16 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/md5.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
@@ -51,10 +54,9 @@ bool CloudPrintConnector::InitPrintSystem() {
 }
 
 void CloudPrintConnector::ScheduleStatsReport() {
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&CloudPrintConnector::ReportStats,
-                 stats_ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&CloudPrintConnector::ReportStats,
+                            stats_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromHours(1));
 }
 
@@ -492,7 +494,7 @@ void CloudPrintConnector::AddPendingTask(const PendingTask& task) {
   pending_tasks_.push_back(task);
   // If this is the only pending task, we need to start the process.
   if (pending_tasks_.size() == 1) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
   }
 }
@@ -527,7 +529,7 @@ void CloudPrintConnector::ContinuePendingTaskProcessing() {
   // Delete current task and repost if we have more task available.
   pending_tasks_.pop_front();
   if (pending_tasks_.size() != 0) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
   }
 }

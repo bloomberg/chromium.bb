@@ -16,14 +16,16 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/crash_keys.h"
@@ -183,9 +185,8 @@ class PrintServerWatcherCUPS
       PrintSystem::PrintServerWatcher::Delegate* delegate) override {
     delegate_ = delegate;
     printers_hash_ = GetPrintersHash();
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PrintServerWatcherCUPS::CheckForUpdates, this),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&PrintServerWatcherCUPS::CheckForUpdates, this),
         print_system_->GetUpdateTimeout());
     return true;
   }
@@ -204,9 +205,8 @@ class PrintServerWatcherCUPS
       printers_hash_ = new_hash;
       delegate_->OnPrinterAdded();
     }
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PrintServerWatcherCUPS::CheckForUpdates, this),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&PrintServerWatcherCUPS::CheckForUpdates, this),
         print_system_->GetUpdateTimeout());
   }
 
@@ -260,15 +260,13 @@ class PrinterWatcherCUPS
     delegate_ = delegate;
     settings_hash_ = GetSettingsHash();
     // Schedule next job status update.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PrinterWatcherCUPS::JobStatusUpdate, this),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&PrinterWatcherCUPS::JobStatusUpdate, this),
         base::TimeDelta::FromSeconds(kJobUpdateTimeoutSeconds));
     // Schedule next printer check.
     // TODO(gene): Randomize time for the next printer update.
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PrinterWatcherCUPS::PrinterUpdate, this),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&PrinterWatcherCUPS::PrinterUpdate, this),
         print_system_->GetUpdateTimeout());
     return true;
   }
@@ -292,9 +290,8 @@ class PrinterWatcherCUPS
     // jobs for this printer and check their status. If printer has no
     // outstanding jobs, OnJobChanged() will do nothing.
     delegate_->OnJobChanged();
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PrinterWatcherCUPS::JobStatusUpdate, this),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&PrinterWatcherCUPS::JobStatusUpdate, this),
         base::TimeDelta::FromSeconds(kJobUpdateTimeoutSeconds));
   }
 
@@ -317,9 +314,8 @@ class PrinterWatcherCUPS
                 << ", printer name: " << printer_name_;
       }
     }
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PrinterWatcherCUPS::PrinterUpdate, this),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&PrinterWatcherCUPS::PrinterUpdate, this),
         print_system_->GetUpdateTimeout());
   }
 
@@ -380,7 +376,7 @@ class JobSpoolerCUPS : public PrintSystem::JobSpooler {
     int job_id = print_system_->SpoolPrintJob(
         print_ticket, print_data_file_path, print_data_mime_type,
         printer_name, job_title, tags, &dry_run);
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&JobSpoolerCUPS::NotifyDelegate, delegate, job_id, dry_run));
     return true;
@@ -498,9 +494,8 @@ void PrintSystemCUPS::UpdatePrinters() {
   }
 
   // Schedule next update.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&PrintSystemCUPS::UpdatePrinters, this),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&PrintSystemCUPS::UpdatePrinters, this),
       GetUpdateTimeout());
 }
 
@@ -524,13 +519,9 @@ void PrintSystemCUPS::GetPrinterCapsAndDefaults(
     const PrinterCapsAndDefaultsCallback& callback) {
   printing::PrinterCapsAndDefaults printer_info;
   bool succeeded = GetPrinterCapsAndDefaults(printer_name, &printer_info);
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PrintSystemCUPS::RunCapsCallback,
-                 callback,
-                 succeeded,
-                 printer_name,
-                 printer_info));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PrintSystemCUPS::RunCapsCallback, callback,
+                            succeeded, printer_name, printer_info));
 }
 
 bool PrintSystemCUPS::IsValidPrinter(const std::string& printer_name) {

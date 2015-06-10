@@ -17,7 +17,6 @@ namespace base {
 class CommandLine;
 class File;
 class FilePath;
-class MessageLoopProxy;
 class ScopedTempDir;
 }  // namespace base
 
@@ -84,7 +83,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   };
 
   ServiceUtilityProcessHost(Client* client,
-                            base::MessageLoopProxy* client_message_loop_proxy);
+                            base::SingleThreadTaskRunner* client_task_runner);
   ~ServiceUtilityProcessHost() override;
 
   // Starts a process to render the specified pages in the given PDF file into
@@ -146,7 +145,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   base::Process process_;
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<Client> client_;
-  scoped_refptr<base::MessageLoopProxy> client_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
   bool waiting_for_reply_;
 
   // Start time of operation.

@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -31,7 +30,7 @@ void OnConnectFinished(base::RunLoop* run_loop, int* save_error, int error) {
 
 void RunPending(base::MessageLoop* loop) {
   base::RunLoop run_loop;
-  loop->PostTask(FROM_HERE, run_loop.QuitClosure());
+  loop->task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
 }
 
@@ -92,9 +91,8 @@ class WebSocketTest : public testing::Test {
     scoped_ptr<WebSocket> sock(new WebSocket(url, listener));
     base::RunLoop run_loop;
     sock->Connect(base::Bind(&OnConnectFinished, &run_loop, &error));
-    loop_.PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromSeconds(10));
+    loop_.task_runner()->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
+                                         base::TimeDelta::FromSeconds(10));
     run_loop.Run();
     if (error == net::OK)
       return sock.Pass();
@@ -113,9 +111,8 @@ class WebSocketTest : public testing::Test {
       ASSERT_TRUE(sock->Send(messages[i]));
     }
     base::RunLoop run_loop;
-    loop_.PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromSeconds(10));
+    loop_.task_runner()->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
+                                         base::TimeDelta::FromSeconds(10));
     run_loop.Run();
   }
 
@@ -163,9 +160,8 @@ TEST_F(WebSocketTest, CloseOnReceive) {
   scoped_ptr<WebSocket> sock(CreateConnectedWebSocket(&listener));
   ASSERT_TRUE(sock);
   ASSERT_TRUE(sock->Send("hi"));
-  loop_.PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromSeconds(10));
+  loop_.task_runner()->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
+                                       base::TimeDelta::FromSeconds(10));
   run_loop.Run();
 }
 
@@ -177,9 +173,8 @@ TEST_F(WebSocketTest, CloseOnSend) {
   server_.Stop();
 
   sock->Send("hi");
-  loop_.PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromSeconds(10));
+  loop_.task_runner()->PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
+                                       base::TimeDelta::FromSeconds(10));
   run_loop.Run();
   ASSERT_FALSE(sock->Send("hi"));
 }

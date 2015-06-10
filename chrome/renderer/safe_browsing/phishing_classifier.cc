@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
@@ -98,10 +100,9 @@ void PhishingClassifier::BeginClassification(
   // asynchronously, rather than directly from this method.  To ensure that
   // this is the case, post a task to begin feature extraction on the next
   // iteration of the message loop.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&PhishingClassifier::BeginFeatureExtraction,
-                 weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&PhishingClassifier::BeginFeatureExtraction,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void PhishingClassifier::BeginFeatureExtraction() {

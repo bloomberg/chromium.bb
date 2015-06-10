@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -110,10 +112,9 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
         shingle_hashes,
         base::Bind(&PhishingTermFeatureExtractorTest::ExtractionDone,
                    base::Unretained(this)));
-    msg_loop_.PostTask(
-        FROM_HERE,
-        base::Bind(&PhishingTermFeatureExtractorTest::QuitExtraction,
-                   base::Unretained(this)));
+    msg_loop_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&PhishingTermFeatureExtractorTest::QuitExtraction,
+                              base::Unretained(this)));
     msg_loop_.RunUntilIdle();
   }
 

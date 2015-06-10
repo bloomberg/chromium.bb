@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/memory/linked_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
@@ -175,10 +175,9 @@ void MediaMetadataParser::Start(const MetadataCallback& callback) {
 
     media_thread_.reset(new base::Thread("media_thread"));
     CHECK(media_thread_->Start());
-    media_thread_->message_loop_proxy()->PostTaskAndReply(
-        FROM_HERE,
-        base::Bind(&ParseAudioVideoMetadata, source_, get_attached_images_,
-                   metadata, attached_images),
+    media_thread_->task_runner()->PostTaskAndReply(
+        FROM_HERE, base::Bind(&ParseAudioVideoMetadata, source_,
+                              get_attached_images_, metadata, attached_images),
         base::Bind(&FinishParseAudioVideoMetadata, callback,
                    base::Owned(metadata), base::Owned(attached_images)));
     return;

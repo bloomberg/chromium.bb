@@ -8,8 +8,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 
 WorkerThreadTicker::WorkerThreadTicker(int tick_interval)
@@ -76,7 +77,7 @@ bool WorkerThreadTicker::Stop() {
 }
 
 void WorkerThreadTicker::ScheduleTimerTask() {
-  timer_thread_.message_loop()->PostDelayedTask(
+  timer_thread_.task_runner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WorkerThreadTicker::TimerTask, base::Unretained(this)),
       tick_interval_);

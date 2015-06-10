@@ -26,7 +26,7 @@ class NSString;
 
 namespace base {
 class CommandLine;
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 // Return the IPC channel to connect to the service process.
@@ -88,11 +88,10 @@ class ServiceProcessState {
   // This method is called when the service process is running and initialized.
   // |terminate_task| is invoked when we get a terminate request from another
   // process (in the same thread that called SignalReady). It can be NULL.
-  // |message_loop_proxy| must be of type IO and is the loop that POSIX uses
+  // |task_runner| must be of type IO and is the loop that POSIX uses
   // to monitor the service process.
-  bool SignalReady(
-      base::MessageLoopProxy* message_loop_proxy,
-      const base::Closure& terminate_task);
+  bool SignalReady(base::SingleThreadTaskRunner* task_runner,
+                   const base::Closure& terminate_task);
 
   // Signal that the service process is stopped.
   void SignalStopped();

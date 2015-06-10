@@ -4,7 +4,10 @@
 
 #include "chrome/common/worker_thread_ticker.h"
 
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +21,8 @@ class TestCallback : public WorkerThreadTicker::Callback {
     counter_++;
 
     // Finish the test faster.
-    message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+    message_loop_->task_runner()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
   }
 
   int counter() const { return counter_; }
@@ -36,9 +40,8 @@ class LongCallback : public WorkerThreadTicker::Callback {
 };
 
 void RunMessageLoopForAWhile() {
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitClosure(),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(500));
   base::MessageLoop::current()->Run();
 }

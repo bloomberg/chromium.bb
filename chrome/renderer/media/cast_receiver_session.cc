@@ -4,7 +4,9 @@
 
 #include "chrome/renderer/media/cast_receiver_session.h"
 
+#include "base/location.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/renderer/media/cast_receiver_audio_valve.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/base/audio_capturer_source.h"
@@ -92,9 +94,8 @@ void CastReceiverSession::Start(
       new CastReceiverSession::AudioCapturerSource(this));
   scoped_ptr<media::VideoCapturerSource> video(
       new CastReceiverSession::VideoCapturerSource(this));
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(start_callback, audio, base::Passed(&video)));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(start_callback, audio, base::Passed(&video)));
 }
 
 void CastReceiverSession::StartAudio(

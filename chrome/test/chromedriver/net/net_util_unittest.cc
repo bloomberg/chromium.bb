@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -34,22 +33,19 @@ class FetchUrlTest : public testing::Test,
         response_(kSendHello) {
     base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
     CHECK(io_thread_.StartWithOptions(options));
-    context_getter_ = new URLRequestContextGetter(
-        io_thread_.message_loop_proxy());
+    context_getter_ = new URLRequestContextGetter(io_thread_.task_runner());
     base::WaitableEvent event(false, false);
-    io_thread_.message_loop_proxy()->PostTask(
+    io_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&FetchUrlTest::InitOnIO,
-                   base::Unretained(this), &event));
+        base::Bind(&FetchUrlTest::InitOnIO, base::Unretained(this), &event));
     event.Wait();
   }
 
   ~FetchUrlTest() override {
     base::WaitableEvent event(false, false);
-    io_thread_.message_loop_proxy()->PostTask(
-        FROM_HERE,
-        base::Bind(&FetchUrlTest::DestroyServerOnIO,
-                   base::Unretained(this), &event));
+    io_thread_.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&FetchUrlTest::DestroyServerOnIO,
+                              base::Unretained(this), &event));
     event.Wait();
   }
 

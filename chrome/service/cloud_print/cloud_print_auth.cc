@@ -5,8 +5,11 @@
 #include "chrome/service/cloud_print/cloud_print_auth.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
@@ -134,9 +137,8 @@ void CloudPrintAuth::OnRefreshTokenResponse(const std::string& access_token,
   DCHECK(expires_in_seconds > kTokenRefreshGracePeriodSecs);
   base::TimeDelta refresh_delay = base::TimeDelta::FromSeconds(
       expires_in_seconds - kTokenRefreshGracePeriodSecs);
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&CloudPrintAuth::RefreshAccessToken, this),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&CloudPrintAuth::RefreshAccessToken, this),
       refresh_delay);
 }
 

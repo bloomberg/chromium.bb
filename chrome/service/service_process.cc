@@ -11,11 +11,14 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
+#include "base/location.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
 #include "base/prefs/json_pref_store.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -193,7 +196,7 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   // After the IPC server has started we signal that the service process is
   // ready.
   if (!service_process_state_->SignalReady(
-          io_thread_->message_loop_proxy().get(),
+          io_thread_->task_runner().get(),
           base::Bind(&ServiceProcess::Terminate, base::Unretained(this)))) {
     return false;
   }
@@ -253,7 +256,8 @@ void ServiceProcess::Shutdown() {
 }
 
 void ServiceProcess::Terminate() {
-  main_message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+  main_message_loop_->task_runner()->PostTask(FROM_HERE,
+                                              base::MessageLoop::QuitClosure());
 }
 
 bool ServiceProcess::HandleClientDisconnect() {
@@ -325,7 +329,7 @@ void ServiceProcess::OnServiceDisabled() {
 }
 
 void ServiceProcess::ScheduleShutdownCheck() {
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ServiceProcess::ShutdownIfNeeded, base::Unretained(this)),
       base::TimeDelta::FromSeconds(kShutdownDelaySeconds));

@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/chrome_mock_render_thread.h"
 
+#include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -18,12 +19,12 @@ ChromeMockRenderThread::~ChromeMockRenderThread() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 ChromeMockRenderThread::GetIOMessageLoopProxy() {
-  return io_message_loop_proxy_;
+  return io_task_runner_;
 }
 
 void ChromeMockRenderThread::set_io_message_loop_proxy(
-    const scoped_refptr<base::MessageLoopProxy>& proxy) {
-  io_message_loop_proxy_ = proxy;
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  io_task_runner_ = task_runner;
 }
 
 bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {

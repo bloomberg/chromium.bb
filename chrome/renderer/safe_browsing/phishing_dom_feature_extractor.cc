@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
@@ -133,7 +135,7 @@ void PhishingDOMFeatureExtractor::ExtractFeatures(
     cur_document_ = web_view->mainFrame()->document();
   }
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout,
                  weak_factory_.GetWeakPtr()));
@@ -213,7 +215,7 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
           // clock granularity.
           UMA_HISTOGRAM_TIMES("SBClientPhishing.DOMFeatureChunkTime",
                               chunk_elapsed);
-          base::MessageLoop::current()->PostTask(
+          base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
               base::Bind(
                   &PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout,

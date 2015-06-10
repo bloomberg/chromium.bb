@@ -9,7 +9,7 @@
 #endif
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/common/chrome_version_info.h"
@@ -96,14 +96,13 @@ std::string MakeUserAgentForServiceProcess() {
 
 ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
     : user_agent_(MakeUserAgentForServiceProcess()),
-      network_task_runner_(
-          g_service_process->io_thread()->message_loop_proxy()) {
+      network_task_runner_(g_service_process->io_thread()->task_runner()) {
   // TODO(sanjeevr): Change CreateSystemProxyConfigService to accept a
-  // MessageLoopProxy* instead of MessageLoop*.
+  // SingleThreadTaskRunner* instead of MessageLoop*.
   DCHECK(g_service_process);
   proxy_config_service_.reset(net::ProxyService::CreateSystemProxyConfigService(
-      g_service_process->io_thread()->message_loop_proxy(),
-      g_service_process->file_thread()->message_loop_proxy()));
+      g_service_process->io_thread()->task_runner(),
+      g_service_process->file_thread()->task_runner()));
 }
 
 net::URLRequestContext*

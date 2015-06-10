@@ -7,6 +7,8 @@
 #include <algorithm>
 
 #include "base/lazy_instance.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #include "chrome/common/local_discovery/service_discovery_client_impl.h"
 #include "content/public/utility/utility_thread.h"
@@ -202,11 +204,11 @@ bool ServiceDiscoveryMessageHandler::InitializeThread() {
     return true;
   if (discovery_thread_)
     return false;
-  utility_task_runner_ = base::MessageLoop::current()->message_loop_proxy();
+  utility_task_runner_ = base::MessageLoop::current()->task_runner();
   discovery_thread_.reset(new base::Thread("ServiceDiscoveryThread"));
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   if (discovery_thread_->StartWithOptions(thread_options)) {
-    discovery_task_runner_ = discovery_thread_->message_loop_proxy();
+    discovery_task_runner_ = discovery_thread_->task_runner();
     discovery_task_runner_->PostTask(FROM_HERE,
         base::Bind(&ServiceDiscoveryMessageHandler::InitializeMdns,
                     base::Unretained(this)));
