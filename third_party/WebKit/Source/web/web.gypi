@@ -202,6 +202,7 @@
       'WebPluginDocument.cpp',
       'WebPluginLoadObserver.cpp',
       'WebPluginLoadObserver.h',
+      'WebPluginScriptForbiddenScope.cpp',
       'WebRange.cpp',
       'WebRemoteFrameImpl.cpp',
       'WebRemoteFrameImpl.h',

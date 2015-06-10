@@ -65,6 +65,7 @@
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/DragImage.h"
+#include "platform/PluginScriptForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -274,6 +275,7 @@ void LocalFrame::reload(FrameLoadType loadType, ClientRedirectPolicy clientRedir
 
 void LocalFrame::detach()
 {
+    PluginScriptForbiddenScope forbidPluginDestructorScripting;
     // A lot of the following steps can result in the current frame being
     // detached, so protect a reference to it.
     RefPtrWillBeRawPtr<LocalFrame> protect(this);

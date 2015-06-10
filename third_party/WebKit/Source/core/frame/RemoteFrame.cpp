@@ -15,6 +15,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "platform/PluginScriptForbiddenScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -84,6 +85,7 @@ void RemoteFrame::reload(FrameLoadType frameLoadType, ClientRedirectPolicy clien
 
 void RemoteFrame::detach()
 {
+    PluginScriptForbiddenScope forbidPluginDestructorScripting;
     // Frame::detach() requires the caller to keep a reference to this, since
     // otherwise it may clear the last reference to this, causing it to be
     // deleted, which can cause a use-after-free.

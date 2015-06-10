@@ -80,6 +80,7 @@
 #include "core/svg/graphics/SVGImage.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/Logging.h"
+#include "platform/PluginScriptForbiddenScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/ResourceRequest.h"
@@ -1002,6 +1003,7 @@ void FrameLoader::notifyIfInitialDocumentAccessed()
 void FrameLoader::commitProvisionalLoad()
 {
     ASSERT(client()->hasWebView());
+    PluginScriptForbiddenScope forbidPluginDestructorScripting;
     RefPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 

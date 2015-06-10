@@ -197,6 +197,7 @@
 #include "platform/Language.h"
 #include "platform/LengthFunctions.h"
 #include "platform/Logging.h"
+#include "platform/PluginScriptForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -2574,6 +2575,7 @@ bool Document::dispatchBeforeUnloadEvent(ChromeClient& chromeClient, bool& didAl
 
 void Document::dispatchUnloadEvents()
 {
+    PluginScriptForbiddenScope forbidPluginDestructorScripting;
     RefPtrWillBeRawPtr<Document> protect(this);
     if (m_parser)
         m_parser->stopParsing();

@@ -93,6 +93,8 @@
       'PlatformTouchEvent.h',
       'PlatformTouchPoint.h',
       'PlatformWheelEvent.h',
+      'PluginScriptForbiddenScope.cpp',
+      'PluginScriptForbiddenScope.h',
       'PopupMenu.h',
       'PopupMenuStyle.h',
       'Prerender.cpp',
