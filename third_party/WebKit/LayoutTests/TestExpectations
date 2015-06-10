@@ -1429,8 +1429,6 @@ crbug.com/417229 fast/events/touch/gesture/gesture-tap-result.html [ Pass Failur
 
 crbug.com/418021 inspector/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pass Slow ]
 
-crbug.com/418324 http/tests/media/media-source/mediasource-redundant-seek.html [ Pass Failure ]
-
 crbug.com/437131 [ Win Linux ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass ImageOnlyFailure ]
 
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
