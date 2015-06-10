@@ -530,21 +530,19 @@ void LocalDOMWindow::reset()
 void LocalDOMWindow::sendOrientationChangeEvent()
 {
     ASSERT(RuntimeEnabledFeatures::orientationEventEnabled());
+    ASSERT(frame()->isMainFrame());
 
-    // Before dispatching the event, build a list of the child frames to
-    // also send the event to, to mitigate side effects from event handlers
+    // Before dispatching the event, build a list of all frames in the page
+    // to send the event to, to mitigate side effects from event handlers
     // potentially interfering with others.
-    WillBeHeapVector<RefPtrWillBeMember<Frame>> childFrames;
-    for (Frame* child = frame()->tree().firstChild(); child; child = child->tree().nextSibling()) {
-        childFrames.append(child);
-    }
+    WillBeHeapVector<RefPtrWillBeMember<Frame>> frames;
+    for (Frame* f = frame(); f; f = f->tree().traverseNext())
+        frames.append(f);
 
-    dispatchEvent(Event::create(EventTypeNames::orientationchange));
-
-    for (size_t i = 0; i < childFrames.size(); ++i) {
-        if (!childFrames[i]->isLocalFrame())
+    for (size_t i = 0; i < frames.size(); ++i) {
+        if (!frames[i]->isLocalFrame())
             continue;
-        toLocalFrame(childFrames[i].get())->localDOMWindow()->sendOrientationChangeEvent();
+        toLocalFrame(frames[i].get())->localDOMWindow()->dispatchEvent(Event::create(EventTypeNames::orientationchange));
     }
 }
 

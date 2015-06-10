@@ -7718,4 +7718,13 @@ TEST_F(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled)
     Mock::VerifyAndClearExpectations(&client);
 }
 
+TEST_F(WebFrameTest, OrientationFrameDetach)
+{
+    RuntimeEnabledFeatures::setOrientationEventEnabled(true);
+    registerMockedHttpURLLoad("orientation-frame-detach.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "orientation-frame-detach.html", true);
+    webViewImpl->mainFrameImpl()->sendOrientationChangeEvent();
+}
+
 } // namespace blink
