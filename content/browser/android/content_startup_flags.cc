@@ -63,6 +63,14 @@ void SetContentCommandLineFlags(bool single_process,
   parsed_command_line->AppendSwitch(switches::kEnableOverlayScrollbar);
   parsed_command_line->AppendSwitch(switches::kValidateInputEventStream);
 
+  // TODO(jdduke): Use the proper SDK version when available, crbug.com/466749.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >
+      base::android::SDK_VERSION_LOLLIPOP_MR1) {
+    parsed_command_line->AppendSwitch(switches::kEnableLongpressDragSelection);
+    parsed_command_line->AppendSwitchASCII(
+        switches::kTouchTextSelectionStrategy, "direction");
+  }
+
   // There is no software fallback on Android, so don't limit GPU crashes.
   parsed_command_line->AppendSwitch(switches::kDisableGpuProcessCrashLimit);
 
