@@ -43,8 +43,7 @@ public class CustomTabAppMenuPropertiesDelegate extends ChromeAppMenuPropertiesD
 
             mReloadMenuItem = menu.findItem(R.id.reload_menu_id);
             mReloadMenuItem.setIcon(R.drawable.btn_reload_stop);
-            // Update the loading state of mReloadMenuItem.
-            if (currentTab.isLoading()) loadingStateChanged(true);
+            loadingStateChanged(currentTab.isLoading());
 
             // Add custom menu items. Make sure they are only added once.
             if (!mIsCustomEntryAdded) {

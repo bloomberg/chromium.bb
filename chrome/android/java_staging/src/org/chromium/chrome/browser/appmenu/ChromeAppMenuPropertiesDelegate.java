@@ -90,9 +90,8 @@ public class ChromeAppMenuPropertiesDelegate implements AppMenuPropertiesDelegat
 
                 mReloadMenuItem = menu.findItem(R.id.reload_menu_id);
                 mReloadMenuItem.setIcon(R.drawable.btn_reload_stop);
+                loadingStateChanged(currentTab.isLoading());
 
-                // Update the loading state of mReloadMenuItem.
-                if (currentTab.isLoading()) loadingStateChanged(true);
                 MenuItem bookmarkMenuItem = menu.findItem(R.id.bookmark_this_page_id);
                 bookmarkMenuItem.setEnabled(BookmarksBridge.isEditBookmarksEnabled(
                         mActivity.getActivityTab().getProfile().getOriginalProfile()));
