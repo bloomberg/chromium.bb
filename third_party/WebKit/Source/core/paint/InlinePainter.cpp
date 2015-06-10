@@ -31,12 +31,7 @@ void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOf
 
 LayoutRect InlinePainter::outlinePaintRect(const Vector<LayoutRect>& outlineRects, const LayoutPoint& paintOffset) const
 {
-    const ComputedStyle& style = m_layoutInline.styleRef();
-    int outlineOutset;
-    if (style.outlineStyleIsAuto())
-        outlineOutset = GraphicsContext::focusRingOutsetExtent(style.outlineOffset(), style.outlineWidth());
-    else
-        outlineOutset = style.outlineSize();
+    int outlineOutset = m_layoutInline.styleRef().outlineOutset();
     LayoutRect outlineRect;
     for (const LayoutRect& rect : outlineRects) {
         LayoutRect inflatedRect(rect);

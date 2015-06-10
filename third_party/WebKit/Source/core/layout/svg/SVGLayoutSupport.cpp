@@ -51,26 +51,15 @@ static inline LayoutRect enclosingIntRectIfNotEmpty(const FloatRect& rect)
     return LayoutRect(enclosingIntRect(rect));
 }
 
-static void inflateWithOutlineIfNeeded(FloatRect& paintInvalidationRect, const ComputedStyle& style)
-{
-    if (!style.hasOutline())
-        return;
-    int outlineSize = 0;
-    if (style.outlineStyleIsAuto())
-        outlineSize = GraphicsContext::focusRingOutsetExtent(style.outlineOffset(), style.outlineWidth());
-    else
-        outlineSize = style.outlineSize();
-    paintInvalidationRect.inflate(outlineSize);
-}
-
 LayoutRect SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(const LayoutObject& object, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
 {
     // Return early for any cases where we don't actually paint
-    if (object.style()->visibility() != VISIBLE && !object.enclosingLayer()->hasVisibleContent())
+    if (object.styleRef().visibility() != VISIBLE && !object.enclosingLayer()->hasVisibleContent())
         return LayoutRect();
 
     FloatRect paintInvalidationRect = object.paintInvalidationRectInLocalCoordinates();
-    inflateWithOutlineIfNeeded(paintInvalidationRect, object.styleRef());
+    if (int outlineOutset = object.styleRef().outlineOutset())
+        paintInvalidationRect.inflate(outlineOutset);
 
     if (paintInvalidationState && paintInvalidationState->canMapToContainer(paintInvalidationContainer)) {
         // Compute accumulated SVG transform and apply to local paint rect.

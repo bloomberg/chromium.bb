@@ -41,6 +41,7 @@
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/geometry/FloatRoundedRect.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "wtf/MathExtras.h"
 
 #include <algorithm>
@@ -1609,6 +1610,15 @@ void ComputedStyle::setMotionPath(PassRefPtr<StyleMotionPath> path)
 void ComputedStyle::resetMotionPath()
 {
     rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = nullptr;
+}
+
+int ComputedStyle::outlineOutset() const
+{
+    if (!hasOutline())
+        return 0;
+    if (outlineStyleIsAuto())
+        return GraphicsContext::focusRingOutsetExtent(outlineOffset(), outlineWidth());
+    return outlineSize();
 }
 
 bool ComputedStyle::columnRuleEquivalent(const ComputedStyle* otherStyle) const
