@@ -722,11 +722,11 @@ static BOOL FileAlreadyExists(NSURL* base, NSString* name) {
 
 // Takes a destination URL, a suggested file name, & an extension (eg .webloc).
 // Returns the complete file name with extension you should use.
-// The name returned will not contain /, : or ?, will not be longer than
-// kMaxNameLength + length of extension, and will not be a file name that
-// already exists in that directory. If necessary it will try appending a space
-// and a number to the name (but before the extension) trying numbers up to and
-// including kMaxIndex.
+// The name returned will not contain /, : or ?, will not start with a dot,
+// will not be longer than kMaxNameLength + length of extension, and will not
+// be a file name that already exists in that directory. If necessary it will
+// try appending a space and a number to the name (but before the extension)
+// trying numbers up to and including kMaxIndex.
 // If the function gives up it returns nil.
 static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
                                                NSString *fileName,
@@ -741,6 +741,11 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
                                                          withString:@"-"];
   filteredName = [filteredName stringByReplacingOccurrencesOfString:@"?"
                                                          withString:@"-"];
+  filteredName =
+      [filteredName stringByReplacingOccurrencesOfString:@"."
+                                              withString:@"-"
+                                                 options:0
+                                                   range:NSMakeRange(0,1)];
 
   if ([filteredName length] > kMaxNameLength)
     filteredName = [filteredName substringToIndex:kMaxNameLength];
