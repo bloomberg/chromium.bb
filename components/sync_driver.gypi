@@ -105,6 +105,8 @@
         'sync_driver/fake_data_type_controller.h',
         'sync_driver/fake_generic_change_processor.cc',
         'sync_driver/fake_generic_change_processor.h',
+        'sync_driver/fake_sync_service.cc',
+        'sync_driver/fake_sync_service.h',
         'sync_driver/local_device_info_provider_mock.cc',
         'sync_driver/local_device_info_provider_mock.h',
         'sync_driver/model_associator_mock.cc',
