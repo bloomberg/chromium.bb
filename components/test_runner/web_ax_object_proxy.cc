@@ -498,6 +498,7 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
                    &WebAXObjectProxy::SelectionEndLineNumber)
       .SetProperty("isEnabled", &WebAXObjectProxy::IsEnabled)
       .SetProperty("isRequired", &WebAXObjectProxy::IsRequired)
+      .SetProperty("isRichlyEditable", &WebAXObjectProxy::IsRichlyEditable)
       .SetProperty("isFocused", &WebAXObjectProxy::IsFocused)
       .SetProperty("isFocusable", &WebAXObjectProxy::IsFocusable)
       .SetProperty("isSelected", &WebAXObjectProxy::IsSelected)
@@ -758,6 +759,11 @@ bool WebAXObjectProxy::IsEnabled() {
 bool WebAXObjectProxy::IsRequired() {
   accessibility_object_.updateLayoutAndCheckValidity();
   return accessibility_object_.isRequired();
+}
+
+bool WebAXObjectProxy::IsRichlyEditable() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.isRichlyEditable();
 }
 
 bool WebAXObjectProxy::IsFocused() {
