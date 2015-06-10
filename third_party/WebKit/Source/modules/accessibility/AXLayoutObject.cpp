@@ -674,6 +674,9 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     if (roleValue() == TimeRole)
         return false;
 
+    if (roleValue() == MarkRole)
+        return false;
+
     // if this element has aria attributes on it, it should not be ignored.
     if (supportsARIAAttributes())
         return false;
