@@ -933,13 +933,9 @@ launch_input_method(struct text_backend *text_backend)
 }
 
 static void
-handle_seat_created(struct wl_listener *listener,
-		    void *data)
+text_backend_seat_created(struct text_backend *text_backend,
+			  struct weston_seat *seat)
 {
-	struct weston_seat *seat = data;
-	struct text_backend *text_backend =
-		container_of(listener, struct text_backend,
-			     seat_created_listener);
 	struct input_method *input_method;
 	struct weston_compositor *ec = seat->compositor;
 
@@ -963,6 +959,17 @@ handle_seat_created(struct wl_listener *listener,
 	seat->input_method = input_method;
 
 	launch_input_method(text_backend);
+}
+
+static void
+handle_seat_created(struct wl_listener *listener, void *data)
+{
+	struct weston_seat *seat = data;
+	struct text_backend *text_backend =
+		container_of(listener, struct text_backend,
+			     seat_created_listener);
+
+	text_backend_seat_created(text_backend, seat);
 }
 
 static void
@@ -998,11 +1005,11 @@ text_backend_notifier_destroy(struct wl_listener *listener, void *data)
 	free(text_backend);
 }
 
-
 WL_EXPORT int
 text_backend_init(struct weston_compositor *ec)
 {
 	struct text_backend *text_backend;
+	struct weston_seat *seat;
 
 	text_backend = zalloc(sizeof(*text_backend));
 	if (text_backend == NULL)
@@ -1010,14 +1017,16 @@ text_backend_init(struct weston_compositor *ec)
 
 	text_backend->compositor = ec;
 
+	text_backend_configuration(text_backend);
+
+	wl_list_for_each(seat, &ec->seat_list, link)
+		text_backend_seat_created(text_backend, seat);
 	text_backend->seat_created_listener.notify = handle_seat_created;
 	wl_signal_add(&ec->seat_created_signal,
 		      &text_backend->seat_created_listener);
 
 	text_backend->destroy_listener.notify = text_backend_notifier_destroy;
 	wl_signal_add(&ec->destroy_signal, &text_backend->destroy_listener);
-
-	text_backend_configuration(text_backend);
 
 	text_input_manager_create(ec);
 
