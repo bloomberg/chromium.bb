@@ -147,6 +147,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/textures/tex-image-canvas-corruption.html',
         ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('deqp/data/gles2/shaders/conditionals.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('deqp/data/gles2/shaders/conversions.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('deqp/data/gles2/shaders/qualification_order.html',
+        ['win', 'opengl'], bug=1007) # angle bug ID
+
+    # Skip all WebGL CTS on OpenGL+AMD/Intel
+    self.Skip('*', ['win', 'opengl', 'amd'], bug=1007) # angle bug ID
+    self.Skip('*', ['win', 'opengl', 'intel'], bug=1007) # angle bug ID
 
     # Mac failures
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
