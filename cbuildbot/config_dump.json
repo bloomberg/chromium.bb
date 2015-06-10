@@ -84,7 +84,6 @@
         "shared_user_password": null,
         "signer_tests": false,
         "sync_chrome": null,
-        "tests_supported": true,
         "trybot_list": false,
         "unittest_blacklist": [],
         "unittests": true,
@@ -103,6 +102,10 @@
         "vm_tests": [
             "smoke_suite",
             "pfq_suite"
+        ],
+        "vm_tests_supported": [
+            "smoke_suite",
+            "pfq_suite"
         ]
     },
     "_templates": {
@@ -113,6 +116,9 @@
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ASAN",
             "profile": "asan",
             "vm_tests": [
+                "smoke_suite"
+            ],
+            "vm_tests_supported": [
                 "smoke_suite"
             ]
         },
@@ -140,7 +146,8 @@
                 "-cros-debug",
                 "chrome_internal"
             ],
-            "vm_tests": []
+            "vm_tests": [],
+            "vm_tests_supported": []
         },
         "chrome-pfq": {
             "_template": "chrome-pfq",
@@ -181,6 +188,11 @@
             ],
             "vm_tests": [
                 "smoke_suite"
+            ],
+            "vm_tests_supported": [
+                "smoke_suite",
+                "pfq_suite",
+                "cros_vm_test"
             ]
         },
         "chromium-pfq": {
@@ -209,6 +221,11 @@
             "use_lkgm": true,
             "vm_tests": [
                 "smoke_suite"
+            ],
+            "vm_tests_supported": [
+                "smoke_suite",
+                "pfq_suite",
+                "cros_vm_test"
             ]
         },
         "compile-only-pre-cq": {
@@ -241,7 +258,8 @@
             "trybot_list": true,
             "unittests": false,
             "upload_standalone_images": false,
-            "vm_tests": []
+            "vm_tests": [],
+            "vm_tests_supported": []
         },
         "depthcharge-firmware": {
             "_template": "depthcharge-firmware",
@@ -286,7 +304,8 @@
                 "depthcharge"
             ],
             "usepkg_build_packages": true,
-            "vm_tests": []
+            "vm_tests": [],
+            "vm_tests_supported": []
         },
         "depthcharge-full-firmware": {
             "_template": "depthcharge-full-firmware",
@@ -320,7 +339,8 @@
                 "depthcharge"
             ],
             "usepkg_build_packages": true,
-            "vm_tests": []
+            "vm_tests": [],
+            "vm_tests_supported": []
         },
         "factory": {
             "_template": "factory",
@@ -364,6 +384,11 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
+                "smoke_suite",
+                "dev_mode_test",
+                "cros_vm_test"
+            ],
+            "vm_tests_supported": [
                 "smoke_suite",
                 "dev_mode_test",
                 "cros_vm_test"
@@ -411,7 +436,8 @@
                 "chrome_internal"
             ],
             "usepkg_build_packages": true,
-            "vm_tests": []
+            "vm_tests": [],
+            "vm_tests_supported": []
         },
         "full": {
             "_template": "full",
@@ -474,7 +500,8 @@
             "prebuilts": false,
             "trybot_list": true,
             "upload_standalone_images": false,
-            "vm_tests": []
+            "vm_tests": [],
+            "vm_tests_supported": []
         },
         "paladin": {
             "_template": "paladin",
@@ -493,7 +520,15 @@
             "overlays": "public",
             "prebuilts": "public",
             "trybot_list": true,
-            "upload_standalone_images": false
+            "upload_standalone_images": false,
+            "vm_tests": [
+                "smoke_suite"
+            ],
+            "vm_tests_supported": [
+                "smoke_suite",
+                "pfq_suite",
+                "cros_vm_test"
+            ]
         },
         "payloads": {
             "_template": "payloads",
@@ -505,8 +540,10 @@
             "manifest_version": true,
             "overlays": "both",
             "paygen": true,
+            "unittests": false,
             "upload_hw_test_artifacts": false,
-            "vm_tests": []
+            "vm_tests": [],
+            "vm_tests_supported": []
         },
         "pre-cq": {
             "_template": "pre-cq",
@@ -538,6 +575,11 @@
             "upload_standalone_images": false,
             "vm_tests": [
                 "smoke_suite"
+            ],
+            "vm_tests_supported": [
+                "smoke_suite",
+                "pfq_suite",
+                "cros_vm_test"
             ]
         },
         "pre-flight-branch": {
@@ -628,6 +670,11 @@
                 "smoke_suite",
                 "dev_mode_test",
                 "cros_vm_test"
+            ],
+            "vm_tests_supported": [
+                "smoke_suite",
+                "dev_mode_test",
+                "cros_vm_test"
             ]
         },
         "release-afdo-generate": {
@@ -679,6 +726,11 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
+                "smoke_suite",
+                "dev_mode_test",
+                "cros_vm_test"
+            ],
+            "vm_tests_supported": [
                 "smoke_suite",
                 "dev_mode_test",
                 "cros_vm_test"
@@ -734,6 +786,11 @@
                 "smoke_suite",
                 "dev_mode_test",
                 "cros_vm_test"
+            ],
+            "vm_tests_supported": [
+                "smoke_suite",
+                "dev_mode_test",
+                "cros_vm_test"
             ]
         },
         "telemetry": {
@@ -743,6 +800,9 @@
             "overlays": "public",
             "uprev": false,
             "vm_tests": [
+                "telemetry_suite"
+            ],
+            "vm_tests_supported": [
                 "telemetry_suite"
             ]
         },
@@ -771,6 +831,9 @@
             "uprev": false,
             "use_lkgm": true,
             "vm_tests": [
+                "smoke_suite"
+            ],
+            "vm_tests_supported": [
                 "smoke_suite"
             ]
         }
@@ -809,7 +872,7 @@
         "important": false,
         "name": "amd64-generic-asan-paladin",
         "profile": "asan",
-        "vm_tests": [
+        "vm_tests_supported": [
             "smoke_suite"
         ]
     },
@@ -899,10 +962,7 @@
         "boards": [
             "amd64-generic"
         ],
-        "name": "amd64-generic-paladin",
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "name": "amd64-generic-paladin"
     },
     "amd64-generic-pre-cq": {
         "_template": "pre-cq",
@@ -919,6 +979,9 @@
         "description": "Telemetry Builds",
         "name": "amd64-generic-telem-chromium-pfq-informational",
         "vm_tests": [
+            "telemetry_suite"
+        ],
+        "vm_tests_supported": [
             "telemetry_suite"
         ]
     },
@@ -1028,7 +1091,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm-generic-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -1048,7 +1112,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm-generic-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -1064,7 +1129,8 @@
             "arm-generic"
         ],
         "name": "arm-generic-paladin",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm-generic-pre-cq": {
         "_template": "pre-cq",
@@ -1072,7 +1138,8 @@
             "arm-generic"
         ],
         "name": "arm-generic-pre-cq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm-generic-telemetry": {
         "_template": "telemetry",
@@ -1080,7 +1147,8 @@
             "arm-generic"
         ],
         "name": "arm-generic-telemetry",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm-generic-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -1091,7 +1159,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm-generic_freon-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -1108,7 +1177,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm-generic_freon-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -1127,7 +1197,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm-generic_freon-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -1143,7 +1214,8 @@
         ],
         "important": false,
         "name": "arm-generic_freon-paladin",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm-generic_freon-pre-cq": {
         "_template": "pre-cq",
@@ -1151,7 +1223,8 @@
             "arm-generic_freon"
         ],
         "name": "arm-generic_freon-pre-cq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm-generic_freon-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -1162,7 +1235,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm64-generic-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -1179,7 +1253,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm64-generic-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -1198,7 +1273,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm64-generic-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -1214,7 +1290,8 @@
         ],
         "important": false,
         "name": "arm64-generic-paladin",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm64-generic-pre-cq": {
         "_template": "pre-cq",
@@ -1222,7 +1299,8 @@
             "arm64-generic"
         ],
         "name": "arm64-generic-pre-cq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "arm64-generic-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -1233,7 +1311,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "auron-b-full-group": {
         "_template": "full",
@@ -2369,7 +2448,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "beaglebone-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -2386,7 +2466,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -2412,7 +2493,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone-incremental": {
         "_template": "incremental",
@@ -2475,7 +2557,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone-release": {
         "_template": "release",
@@ -2511,7 +2594,8 @@
                 ],
                 "grouped": true,
                 "name": "beaglebone-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -2520,11 +2604,13 @@
                 ],
                 "grouped": true,
                 "name": "beaglebone-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "beaglebone-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -2532,7 +2618,8 @@
             "beaglebone"
         ],
         "name": "beaglebone-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -2540,7 +2627,8 @@
             "beaglebone"
         ],
         "name": "beaglebone-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone-release-group": {
         "_template": "release",
@@ -2622,7 +2710,8 @@
         ],
         "manifest": "official.xml",
         "name": "beaglebone-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -2633,7 +2722,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone_servo-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -2643,7 +2733,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "beaglebone_servo-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone_servo-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -2660,7 +2751,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone_servo-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -2686,7 +2778,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone_servo-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -2737,7 +2830,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone_servo-release": {
         "_template": "release",
@@ -2774,7 +2868,8 @@
                 ],
                 "grouped": true,
                 "name": "beaglebone_servo-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -2783,11 +2878,13 @@
                 ],
                 "grouped": true,
                 "name": "beaglebone_servo-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "beaglebone_servo-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone_servo-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -2795,7 +2892,8 @@
             "beaglebone_servo"
         ],
         "name": "beaglebone_servo-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone_servo-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -2803,7 +2901,8 @@
             "beaglebone_servo"
         ],
         "name": "beaglebone_servo-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone_servo-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -2812,7 +2911,8 @@
         ],
         "manifest": "official.xml",
         "name": "beaglebone_servo-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beaglebone_servo-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -2823,7 +2923,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "beltino-a-full-group": {
         "_template": "full",
@@ -3187,7 +3288,8 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "name": "binhost-pre-cq",
         "overlays": "both",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "bobcat-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -3396,7 +3498,12 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": [
+            "smoke_suite",
+            "pfq_suite",
+            "cros_vm_test"
+        ]
     },
     "butterfly-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -4337,7 +4444,8 @@
         "manifest": "official.xml",
         "name": "cosmos-chrome-pfq",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "cosmos-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -4356,7 +4464,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "cosmos-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -4385,7 +4494,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "cosmos-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -4420,7 +4530,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "cosmos-payloads": {
         "_template": "payloads",
@@ -4443,7 +4554,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "cosmos-release": {
         "_template": "release",
@@ -4459,7 +4571,8 @@
         "paygen_skip_testing": true,
         "signer_tests": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "cosmos-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -4469,7 +4582,8 @@
         "manifest": "official.xml",
         "name": "cosmos-tot-chrome-pfq-informational",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "cosmos-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -4481,7 +4595,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "cranky-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -4862,7 +4977,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "daisy-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -4879,7 +4995,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -4920,7 +5037,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -4936,7 +5054,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -4952,7 +5071,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Full Builds; Group config (boards: daisy_freon, daisy_spring-freon, daisy_skate-freon)",
@@ -4961,7 +5081,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-freon-release-group": {
         "_template": "release",
@@ -4977,7 +5098,8 @@
                 ],
                 "grouped": true,
                 "name": "daisy_freon-release",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -4989,7 +5111,8 @@
                 "grouped": true,
                 "name": "daisy_spring-freon-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -5001,12 +5124,14 @@
                 "grouped": true,
                 "name": "daisy_skate-freon-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: daisy_freon, daisy_spring-freon, daisy_skate-freon)",
         "name": "daisy-freon-release-group",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-full": {
         "_template": "full",
@@ -5019,7 +5144,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-full-group": {
         "_template": "full",
@@ -5038,7 +5164,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -5054,7 +5181,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -5070,7 +5198,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Full Builds; Group config (boards: daisy, daisy_spring, daisy_skate)",
@@ -5079,7 +5208,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-incremental": {
         "_template": "incremental",
@@ -5091,7 +5221,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -5123,7 +5254,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-payloads": {
         "_template": "payloads",
@@ -5145,7 +5277,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-release": {
         "_template": "release",
@@ -5154,7 +5287,8 @@
         ],
         "critical_for_chrome": true,
         "name": "daisy-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-release-afdo": {
         "_template": "release-afdo-generate",
@@ -5169,7 +5303,8 @@
                 ],
                 "grouped": true,
                 "name": "daisy-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -5178,11 +5313,13 @@
                 ],
                 "grouped": true,
                 "name": "daisy-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "daisy-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -5190,7 +5327,8 @@
             "daisy"
         ],
         "name": "daisy-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -5198,7 +5336,8 @@
             "daisy"
         ],
         "name": "daisy-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-release-group": {
         "_template": "release",
@@ -5215,7 +5354,8 @@
                 "critical_for_chrome": true,
                 "grouped": true,
                 "name": "daisy-release",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -5227,7 +5367,8 @@
                 "grouped": true,
                 "name": "daisy_spring-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -5239,14 +5380,16 @@
                 "grouped": true,
                 "name": "daisy_skate-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "critical_for_chrome": true,
         "description": "Release Builds (canary) (internal); Group config (boards: daisy, daisy_spring, daisy_skate)",
         "important": true,
         "name": "daisy-release-group",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -5255,7 +5398,8 @@
         ],
         "manifest": "official.xml",
         "name": "daisy-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -5266,7 +5410,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_freon-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -5276,7 +5421,8 @@
         ],
         "manifest": "official.xml",
         "name": "daisy_freon-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_freon-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -5293,7 +5439,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_freon-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -5319,7 +5466,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_freon-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -5352,7 +5500,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_freon-payloads": {
         "_template": "payloads",
@@ -5374,7 +5523,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_freon-release": {
         "_template": "release",
@@ -5382,7 +5532,8 @@
             "daisy_freon"
         ],
         "name": "daisy_freon-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_freon-release-afdo": {
         "_template": "release-afdo-generate",
@@ -5397,7 +5548,8 @@
                 ],
                 "grouped": true,
                 "name": "daisy_freon-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -5406,11 +5558,13 @@
                 ],
                 "grouped": true,
                 "name": "daisy_freon-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "daisy_freon-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_freon-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -5418,7 +5572,8 @@
             "daisy_freon"
         ],
         "name": "daisy_freon-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_freon-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -5426,7 +5581,8 @@
             "daisy_freon"
         ],
         "name": "daisy_freon-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_freon-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -5435,7 +5591,8 @@
         ],
         "manifest": "official.xml",
         "name": "daisy_freon-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_freon-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -5446,7 +5603,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -5461,7 +5619,8 @@
         ],
         "manifest": "official.xml",
         "name": "daisy_skate-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -5478,7 +5637,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -5510,7 +5670,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "daisy_skate-freon-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-freon-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -5527,7 +5688,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-freon-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -5553,7 +5715,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-freon-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -5585,7 +5748,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-freon-payloads": {
         "_template": "payloads",
@@ -5607,7 +5771,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-freon-release": {
         "_template": "release",
@@ -5615,7 +5780,8 @@
             "daisy_skate-freon"
         ],
         "name": "daisy_skate-freon-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-freon-release-afdo": {
         "_template": "release-afdo-generate",
@@ -5630,7 +5796,8 @@
                 ],
                 "grouped": true,
                 "name": "daisy_skate-freon-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -5639,11 +5806,13 @@
                 ],
                 "grouped": true,
                 "name": "daisy_skate-freon-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "daisy_skate-freon-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-freon-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -5651,7 +5820,8 @@
             "daisy_skate-freon"
         ],
         "name": "daisy_skate-freon-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-freon-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -5659,7 +5829,8 @@
             "daisy_skate-freon"
         ],
         "name": "daisy_skate-freon-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-freon-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -5668,7 +5839,8 @@
         ],
         "manifest": "official.xml",
         "name": "daisy_skate-freon-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-freon-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -5679,7 +5851,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-full": {
         "_template": "full",
@@ -5691,7 +5864,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -5726,7 +5900,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-payloads": {
         "_template": "payloads",
@@ -5748,7 +5923,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-release": {
         "_template": "release",
@@ -5756,7 +5932,8 @@
             "daisy_skate"
         ],
         "name": "daisy_skate-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-release-afdo": {
         "_template": "release-afdo-generate",
@@ -5771,7 +5948,8 @@
                 ],
                 "grouped": true,
                 "name": "daisy_skate-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -5780,11 +5958,13 @@
                 ],
                 "grouped": true,
                 "name": "daisy_skate-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "daisy_skate-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -5792,7 +5972,8 @@
             "daisy_skate"
         ],
         "name": "daisy_skate-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -5800,7 +5981,8 @@
             "daisy_skate"
         ],
         "name": "daisy_skate-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -5809,7 +5991,8 @@
         ],
         "manifest": "official.xml",
         "name": "daisy_skate-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_skate-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -5820,7 +6003,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -5830,7 +6014,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "daisy_spring-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -5847,7 +6032,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -5879,7 +6065,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "daisy_spring-freon-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-freon-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -5896,7 +6083,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-freon-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -5922,7 +6110,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-freon-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -5954,7 +6143,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-freon-payloads": {
         "_template": "payloads",
@@ -5976,7 +6166,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-freon-release": {
         "_template": "release",
@@ -5984,7 +6175,8 @@
             "daisy_spring-freon"
         ],
         "name": "daisy_spring-freon-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-freon-release-afdo": {
         "_template": "release-afdo-generate",
@@ -5999,7 +6191,8 @@
                 ],
                 "grouped": true,
                 "name": "daisy_spring-freon-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -6008,11 +6201,13 @@
                 ],
                 "grouped": true,
                 "name": "daisy_spring-freon-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "daisy_spring-freon-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-freon-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -6020,7 +6215,8 @@
             "daisy_spring-freon"
         ],
         "name": "daisy_spring-freon-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-freon-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -6028,7 +6224,8 @@
             "daisy_spring-freon"
         ],
         "name": "daisy_spring-freon-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-freon-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -6037,7 +6234,8 @@
         ],
         "manifest": "official.xml",
         "name": "daisy_spring-freon-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-freon-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -6048,7 +6246,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-full": {
         "_template": "full",
@@ -6060,7 +6259,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -6093,7 +6293,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-payloads": {
         "_template": "payloads",
@@ -6115,7 +6316,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-release": {
         "_template": "release",
@@ -6123,7 +6325,8 @@
             "daisy_spring"
         ],
         "name": "daisy_spring-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-release-afdo": {
         "_template": "release-afdo-generate",
@@ -6138,7 +6341,8 @@
                 ],
                 "grouped": true,
                 "name": "daisy_spring-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -6147,11 +6351,13 @@
                 ],
                 "grouped": true,
                 "name": "daisy_spring-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "daisy_spring-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -6159,7 +6365,8 @@
             "daisy_spring"
         ],
         "name": "daisy_spring-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -6167,7 +6374,8 @@
             "daisy_spring"
         ],
         "name": "daisy_spring-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -6176,7 +6384,8 @@
         ],
         "manifest": "official.xml",
         "name": "daisy_spring-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_spring-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -6187,7 +6396,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_winter-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -6200,7 +6410,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "daisy_winter-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_winter-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -6220,7 +6431,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_winter-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -6257,7 +6469,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_winter-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -6295,7 +6508,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_winter-payloads": {
         "_template": "payloads",
@@ -6320,7 +6534,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_winter-release": {
         "_template": "release",
@@ -6337,7 +6552,8 @@
             "test"
         ],
         "name": "daisy_winter-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_winter-release-afdo": {
         "_template": "release-afdo-generate",
@@ -6355,7 +6571,8 @@
                 "factory_toolkit": false,
                 "grouped": true,
                 "name": "daisy_winter-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -6367,14 +6584,16 @@
                 "factory_toolkit": false,
                 "grouped": true,
                 "name": "daisy_winter-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "name": "daisy_winter-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_winter-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -6385,7 +6604,8 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "name": "daisy_winter-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_winter-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -6396,7 +6616,8 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "name": "daisy_winter-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_winter-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -6408,7 +6629,8 @@
         "factory_toolkit": false,
         "manifest": "official.xml",
         "name": "daisy_winter-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "daisy_winter-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -6422,7 +6644,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "enguarde-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -8557,7 +8780,8 @@
         "manifest": "kayle.xml",
         "name": "kayle-chrome-pfq",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "kayle-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -8582,7 +8806,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "kayle-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -8623,7 +8848,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "kayle-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -8670,7 +8896,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "kayle-pre-cq": {
         "_template": "pre-cq",
@@ -8692,7 +8919,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "kayle-release": {
         "_template": "release",
@@ -8716,7 +8944,8 @@
         "paygen": false,
         "signer_tests": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "kayle-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -8732,7 +8961,8 @@
         "manifest": "kayle.xml",
         "name": "kayle-tot-chrome-pfq-informational",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "kayle-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -8750,7 +8980,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "kernel-3_14-a-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -9141,6 +9372,11 @@
         ],
         "vm_tests": [
             "smoke_suite"
+        ],
+        "vm_tests_supported": [
+            "smoke_suite",
+            "pfq_suite",
+            "cros_vm_test"
         ]
     },
     "lakitu-no-vmtest-pre-cq": {
@@ -10473,7 +10709,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-n32-generic-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -10494,7 +10731,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-n32-generic-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -10512,7 +10750,8 @@
         "important": false,
         "name": "mipseb-n32-generic-paladin",
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-n32-generic-pre-cq": {
         "_template": "pre-cq",
@@ -10521,7 +10760,8 @@
         ],
         "name": "mipseb-n32-generic-pre-cq",
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-n32-generic-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -10533,7 +10773,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-n64-generic-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -10551,7 +10792,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-n64-generic-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -10572,7 +10814,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-n64-generic-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -10590,7 +10833,8 @@
         "important": false,
         "name": "mipseb-n64-generic-paladin",
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-n64-generic-pre-cq": {
         "_template": "pre-cq",
@@ -10599,7 +10843,8 @@
         ],
         "name": "mipseb-n64-generic-pre-cq",
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-n64-generic-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -10611,7 +10856,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-o32-generic-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -10629,7 +10875,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-o32-generic-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -10650,7 +10897,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-o32-generic-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -10668,7 +10916,8 @@
         "important": false,
         "name": "mipseb-o32-generic-paladin",
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-o32-generic-pre-cq": {
         "_template": "pre-cq",
@@ -10677,7 +10926,8 @@
         ],
         "name": "mipseb-o32-generic-pre-cq",
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipseb-o32-generic-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -10689,7 +10939,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-n32-generic-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -10707,7 +10958,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-n32-generic-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -10728,7 +10980,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-n32-generic-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -10746,7 +10999,8 @@
         "important": false,
         "name": "mipsel-n32-generic-paladin",
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-n32-generic-pre-cq": {
         "_template": "pre-cq",
@@ -10755,7 +11009,8 @@
         ],
         "name": "mipsel-n32-generic-pre-cq",
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-n32-generic-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -10767,7 +11022,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-n64-generic-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -10785,7 +11041,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-n64-generic-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -10806,7 +11063,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-n64-generic-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -10824,7 +11082,8 @@
         "important": false,
         "name": "mipsel-n64-generic-paladin",
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-n64-generic-pre-cq": {
         "_template": "pre-cq",
@@ -10833,7 +11092,8 @@
         ],
         "name": "mipsel-n64-generic-pre-cq",
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-n64-generic-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -10845,7 +11105,8 @@
             "-chrome_internal"
         ],
         "usepkg_toolchain": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-o32-generic-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -10862,7 +11123,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-o32-generic-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -10882,7 +11144,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-o32-generic-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -10898,7 +11161,8 @@
             "mipsel-o32-generic"
         ],
         "name": "mipsel-o32-generic-paladin",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-o32-generic-payloads": {
         "_template": "payloads",
@@ -10913,7 +11177,8 @@
             "mipsel-o32-generic"
         ],
         "name": "mipsel-o32-generic-pre-cq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-o32-generic-release": {
         "_template": "release",
@@ -10924,7 +11189,8 @@
         "hw_tests": [],
         "name": "mipsel-o32-generic-release",
         "paygen_skip_delta_payloads": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mipsel-o32-generic-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -10935,7 +11201,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "mixed-a-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -11440,7 +11707,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "nyan-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -11457,7 +11725,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -11483,7 +11752,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-full-compile-paladin": {
         "_template": "paladin",
@@ -11507,7 +11777,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-full-group": {
         "_template": "full",
@@ -11526,7 +11797,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -11542,7 +11814,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -11558,7 +11831,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -11574,7 +11848,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Full Builds; Group config (boards: nyan, nyan_big, nyan_blaze, nyan_kitty)",
@@ -11583,7 +11858,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -11615,7 +11891,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-payloads": {
         "_template": "payloads",
@@ -11637,7 +11914,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-release": {
         "_template": "release",
@@ -11645,7 +11923,8 @@
             "nyan"
         ],
         "name": "nyan-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-release-afdo": {
         "_template": "release-afdo-generate",
@@ -11660,7 +11939,8 @@
                 ],
                 "grouped": true,
                 "name": "nyan-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -11669,11 +11949,13 @@
                 ],
                 "grouped": true,
                 "name": "nyan-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "nyan-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -11681,7 +11963,8 @@
             "nyan"
         ],
         "name": "nyan-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -11689,7 +11972,8 @@
             "nyan"
         ],
         "name": "nyan-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-release-group": {
         "_template": "release",
@@ -11705,7 +11989,8 @@
                 ],
                 "grouped": true,
                 "name": "nyan-release",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -11717,7 +12002,8 @@
                 "grouped": true,
                 "name": "nyan_big-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -11729,7 +12015,8 @@
                 "grouped": true,
                 "name": "nyan_blaze-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -11741,13 +12028,15 @@
                 "grouped": true,
                 "name": "nyan_kitty-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: nyan, nyan_big, nyan_blaze, nyan_kitty)",
         "important": true,
         "name": "nyan-release-group",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -11756,7 +12045,8 @@
         ],
         "manifest": "official.xml",
         "name": "nyan-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -11767,7 +12057,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_big-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -11777,7 +12068,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "nyan_big-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_big-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -11794,7 +12086,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_big-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -11820,7 +12113,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_big-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -11852,7 +12146,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_big-payloads": {
         "_template": "payloads",
@@ -11874,7 +12169,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_big-release": {
         "_template": "release",
@@ -11882,7 +12178,8 @@
             "nyan_big"
         ],
         "name": "nyan_big-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_big-release-afdo": {
         "_template": "release-afdo-generate",
@@ -11897,7 +12194,8 @@
                 ],
                 "grouped": true,
                 "name": "nyan_big-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -11906,11 +12204,13 @@
                 ],
                 "grouped": true,
                 "name": "nyan_big-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "nyan_big-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_big-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -11918,7 +12218,8 @@
             "nyan_big"
         ],
         "name": "nyan_big-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_big-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -11926,7 +12227,8 @@
             "nyan_big"
         ],
         "name": "nyan_big-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_big-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -11935,7 +12237,8 @@
         ],
         "manifest": "official.xml",
         "name": "nyan_big-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_big-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -11946,7 +12249,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_blaze-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -11956,7 +12260,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "nyan_blaze-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_blaze-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -11973,7 +12278,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_blaze-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -11999,7 +12305,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_blaze-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -12031,7 +12338,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_blaze-payloads": {
         "_template": "payloads",
@@ -12053,7 +12361,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_blaze-release": {
         "_template": "release",
@@ -12061,7 +12370,8 @@
             "nyan_blaze"
         ],
         "name": "nyan_blaze-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_blaze-release-afdo": {
         "_template": "release-afdo-generate",
@@ -12076,7 +12386,8 @@
                 ],
                 "grouped": true,
                 "name": "nyan_blaze-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -12085,11 +12396,13 @@
                 ],
                 "grouped": true,
                 "name": "nyan_blaze-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "nyan_blaze-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_blaze-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -12097,7 +12410,8 @@
             "nyan_blaze"
         ],
         "name": "nyan_blaze-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_blaze-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -12105,7 +12419,8 @@
             "nyan_blaze"
         ],
         "name": "nyan_blaze-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_blaze-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -12114,7 +12429,8 @@
         ],
         "manifest": "official.xml",
         "name": "nyan_blaze-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_blaze-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -12125,7 +12441,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_freon-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -12135,7 +12452,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "nyan_freon-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_freon-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -12152,7 +12470,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_freon-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -12178,7 +12497,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_freon-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -12211,7 +12531,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_freon-payloads": {
         "_template": "payloads",
@@ -12233,7 +12554,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_freon-release": {
         "_template": "release",
@@ -12242,7 +12564,8 @@
             "nyan_freon"
         ],
         "name": "nyan_freon-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_freon-release-afdo": {
         "_template": "release-afdo-generate",
@@ -12257,7 +12580,8 @@
                 ],
                 "grouped": true,
                 "name": "nyan_freon-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -12266,11 +12590,13 @@
                 ],
                 "grouped": true,
                 "name": "nyan_freon-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "nyan_freon-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_freon-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -12278,7 +12604,8 @@
             "nyan_freon"
         ],
         "name": "nyan_freon-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_freon-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -12286,7 +12613,8 @@
             "nyan_freon"
         ],
         "name": "nyan_freon-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_freon-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -12295,7 +12623,8 @@
         ],
         "manifest": "official.xml",
         "name": "nyan_freon-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_freon-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -12306,7 +12635,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_kitty-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -12316,7 +12646,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "nyan_kitty-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_kitty-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -12333,7 +12664,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_kitty-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -12359,7 +12691,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_kitty-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -12391,7 +12724,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_kitty-payloads": {
         "_template": "payloads",
@@ -12413,7 +12747,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_kitty-release": {
         "_template": "release",
@@ -12421,7 +12756,8 @@
             "nyan_kitty"
         ],
         "name": "nyan_kitty-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_kitty-release-afdo": {
         "_template": "release-afdo-generate",
@@ -12436,7 +12772,8 @@
                 ],
                 "grouped": true,
                 "name": "nyan_kitty-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -12445,11 +12782,13 @@
                 ],
                 "grouped": true,
                 "name": "nyan_kitty-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "nyan_kitty-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_kitty-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -12457,7 +12796,8 @@
             "nyan_kitty"
         ],
         "name": "nyan_kitty-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_kitty-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -12465,7 +12805,8 @@
             "nyan_kitty"
         ],
         "name": "nyan_kitty-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_kitty-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -12474,7 +12815,8 @@
         ],
         "manifest": "official.xml",
         "name": "nyan_kitty-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "nyan_kitty-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -12485,7 +12827,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -12495,7 +12838,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "oak-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -12512,7 +12856,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -12539,7 +12884,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-full-group": {
         "_template": "full",
@@ -12558,7 +12904,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Full Builds; Group config (boards: oak)",
@@ -12567,7 +12914,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -12599,7 +12947,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-payloads": {
         "_template": "payloads",
@@ -12621,7 +12970,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-release": {
         "_template": "release",
@@ -12629,7 +12979,8 @@
             "oak"
         ],
         "name": "oak-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-release-afdo": {
         "_template": "release-afdo-generate",
@@ -12644,7 +12995,8 @@
                 ],
                 "grouped": true,
                 "name": "oak-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -12653,11 +13005,13 @@
                 ],
                 "grouped": true,
                 "name": "oak-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "oak-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -12665,7 +13019,8 @@
             "oak"
         ],
         "name": "oak-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -12673,7 +13028,8 @@
             "oak"
         ],
         "name": "oak-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-release-group": {
         "_template": "release",
@@ -12689,13 +13045,15 @@
                 ],
                 "grouped": true,
                 "name": "oak-release",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: oak)",
         "important": true,
         "name": "oak-release-group",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -12704,7 +13062,8 @@
         ],
         "manifest": "official.xml",
         "name": "oak-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "oak-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -12715,7 +13074,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "orco-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -13588,6 +13948,12 @@
         ],
         "vm_tests": [
             "dev_mode_test"
+        ],
+        "vm_tests_supported": [
+            "smoke_suite",
+            "pfq_suite",
+            "cros_vm_test",
+            "dev_mode_test"
         ]
     },
     "parrot-payloads": {
@@ -14222,7 +14588,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -14238,7 +14605,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Full Builds; Group config (boards: peach_pit-freon, peach_pi-freon)",
@@ -14247,7 +14615,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach-freon-release-group": {
         "_template": "release",
@@ -14263,7 +14632,8 @@
                 ],
                 "grouped": true,
                 "name": "peach_pit-freon-release",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -14275,12 +14645,14 @@
                 "grouped": true,
                 "name": "peach_pi-freon-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: peach_pit-freon, peach_pi-freon)",
         "name": "peach-freon-release-group",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach-full-group": {
         "_template": "full",
@@ -14299,7 +14671,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -14315,7 +14688,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Full Builds; Group config (boards: peach_pit, peach_pi)",
@@ -14324,7 +14698,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach-release-group": {
         "_template": "release",
@@ -14340,7 +14715,8 @@
                 ],
                 "grouped": true,
                 "name": "peach_pit-release",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -14352,13 +14728,15 @@
                 "grouped": true,
                 "name": "peach_pi-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: peach_pit, peach_pi)",
         "important": true,
         "name": "peach-release-group",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -14368,7 +14746,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "peach_pi-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -14385,7 +14764,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -14417,7 +14797,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "peach_pi-freon-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-freon-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -14434,7 +14815,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-freon-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -14460,7 +14842,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-freon-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -14492,7 +14875,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-freon-payloads": {
         "_template": "payloads",
@@ -14514,7 +14898,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-freon-release": {
         "_template": "release",
@@ -14522,7 +14907,8 @@
             "peach_pi-freon"
         ],
         "name": "peach_pi-freon-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-freon-release-afdo": {
         "_template": "release-afdo-generate",
@@ -14537,7 +14923,8 @@
                 ],
                 "grouped": true,
                 "name": "peach_pi-freon-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -14546,11 +14933,13 @@
                 ],
                 "grouped": true,
                 "name": "peach_pi-freon-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "peach_pi-freon-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-freon-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -14558,7 +14947,8 @@
             "peach_pi-freon"
         ],
         "name": "peach_pi-freon-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-freon-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -14566,7 +14956,8 @@
             "peach_pi-freon"
         ],
         "name": "peach_pi-freon-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-freon-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -14575,7 +14966,8 @@
         ],
         "manifest": "official.xml",
         "name": "peach_pi-freon-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-freon-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -14586,7 +14978,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-full": {
         "_template": "full",
@@ -14598,7 +14991,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -14630,7 +15024,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-payloads": {
         "_template": "payloads",
@@ -14652,7 +15047,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-release": {
         "_template": "release",
@@ -14660,7 +15056,8 @@
             "peach_pi"
         ],
         "name": "peach_pi-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-release-afdo": {
         "_template": "release-afdo-generate",
@@ -14675,7 +15072,8 @@
                 ],
                 "grouped": true,
                 "name": "peach_pi-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -14684,11 +15082,13 @@
                 ],
                 "grouped": true,
                 "name": "peach_pi-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "peach_pi-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -14696,7 +15096,8 @@
             "peach_pi"
         ],
         "name": "peach_pi-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -14704,7 +15105,8 @@
             "peach_pi"
         ],
         "name": "peach_pi-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -14713,7 +15115,8 @@
         ],
         "manifest": "official.xml",
         "name": "peach_pi-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pi-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -14724,7 +15127,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -14740,7 +15144,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "peach_pit-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -14757,7 +15162,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -14789,7 +15195,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "peach_pit-freon-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-freon-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -14806,7 +15213,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-freon-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -14832,7 +15240,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-freon-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -14864,7 +15273,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-freon-payloads": {
         "_template": "payloads",
@@ -14886,7 +15296,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-freon-release": {
         "_template": "release",
@@ -14894,7 +15305,8 @@
             "peach_pit-freon"
         ],
         "name": "peach_pit-freon-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-freon-release-afdo": {
         "_template": "release-afdo-generate",
@@ -14909,7 +15321,8 @@
                 ],
                 "grouped": true,
                 "name": "peach_pit-freon-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -14918,11 +15331,13 @@
                 ],
                 "grouped": true,
                 "name": "peach_pit-freon-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "peach_pit-freon-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-freon-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -14930,7 +15345,8 @@
             "peach_pit-freon"
         ],
         "name": "peach_pit-freon-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-freon-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -14938,7 +15354,8 @@
             "peach_pit-freon"
         ],
         "name": "peach_pit-freon-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-freon-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -14947,7 +15364,8 @@
         ],
         "manifest": "official.xml",
         "name": "peach_pit-freon-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-freon-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -14958,7 +15376,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-full": {
         "_template": "full",
@@ -14970,7 +15389,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -15005,7 +15425,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-payloads": {
         "_template": "payloads",
@@ -15027,7 +15448,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-release": {
         "_template": "release",
@@ -15035,7 +15457,8 @@
             "peach_pit"
         ],
         "name": "peach_pit-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-release-afdo": {
         "_template": "release-afdo-generate",
@@ -15050,7 +15473,8 @@
                 ],
                 "grouped": true,
                 "name": "peach_pit-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -15059,11 +15483,13 @@
                 ],
                 "grouped": true,
                 "name": "peach_pit-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "peach_pit-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -15071,7 +15497,8 @@
             "peach_pit"
         ],
         "name": "peach_pit-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -15079,7 +15506,8 @@
             "peach_pit"
         ],
         "name": "peach_pit-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -15088,7 +15516,8 @@
         ],
         "manifest": "official.xml",
         "name": "peach_pit-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peach_pit-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -15099,7 +15528,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "peppy-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -15637,7 +16067,12 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": [
+            "smoke_suite",
+            "pfq_suite",
+            "cros_vm_test"
+        ]
     },
     "purin-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -15649,7 +16084,8 @@
         "manifest": "official.xml",
         "name": "purin-chrome-pfq",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "purin-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -15668,7 +16104,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "purin-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -15697,7 +16134,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "purin-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -15732,7 +16170,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "purin-payloads": {
         "_template": "payloads",
@@ -15755,7 +16194,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "purin-release": {
         "_template": "release",
@@ -15768,7 +16208,8 @@
         "hw_tests": [],
         "name": "purin-release",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "purin-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -15778,7 +16219,8 @@
         "manifest": "official.xml",
         "name": "purin-tot-chrome-pfq-informational",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "purin-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -15790,7 +16232,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "quawks-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -17130,7 +17573,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "rush-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -17147,7 +17591,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -17173,7 +17618,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -17205,7 +17651,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush-pre-cq": {
         "_template": "pre-cq",
@@ -17220,7 +17667,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush-release": {
         "_template": "release",
@@ -17231,7 +17679,8 @@
         "name": "rush-release",
         "paygen": false,
         "signer_tests": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush-release-afdo": {
         "_template": "release-afdo-generate",
@@ -17246,7 +17695,8 @@
                 ],
                 "grouped": true,
                 "name": "rush-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -17255,11 +17705,13 @@
                 ],
                 "grouped": true,
                 "name": "rush-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "rush-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -17267,7 +17719,8 @@
             "rush"
         ],
         "name": "rush-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -17275,7 +17728,8 @@
             "rush"
         ],
         "name": "rush-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -17284,7 +17738,8 @@
         ],
         "manifest": "official.xml",
         "name": "rush-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -17295,7 +17750,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush_ryu-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -17305,7 +17761,8 @@
         ],
         "manifest": "official.xml",
         "name": "rush_ryu-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush_ryu-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -17322,7 +17779,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush_ryu-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -17348,7 +17806,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush_ryu-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -17380,7 +17839,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush_ryu-pre-cq": {
         "_template": "pre-cq",
@@ -17395,7 +17855,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush_ryu-release": {
         "_template": "release",
@@ -17414,7 +17875,8 @@
         "paygen": false,
         "push_image": false,
         "signer_tests": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush_ryu-release-afdo": {
         "_template": "release-afdo-generate",
@@ -17429,7 +17891,8 @@
                 ],
                 "grouped": true,
                 "name": "rush_ryu-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -17438,11 +17901,13 @@
                 ],
                 "grouped": true,
                 "name": "rush_ryu-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "rush_ryu-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush_ryu-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -17450,7 +17915,8 @@
             "rush_ryu"
         ],
         "name": "rush_ryu-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush_ryu-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -17458,7 +17924,8 @@
             "rush_ryu"
         ],
         "name": "rush_ryu-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush_ryu-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -17467,7 +17934,8 @@
         ],
         "manifest": "official.xml",
         "name": "rush_ryu-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "rush_ryu-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -17478,7 +17946,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "samus-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -18286,7 +18755,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "smaug-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "smaug-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -18306,7 +18776,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "smaug-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -18353,7 +18824,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "smaug-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -18392,7 +18864,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "smaug-payloads": {
         "_template": "payloads",
@@ -18417,7 +18890,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "smaug-release": {
         "_template": "release",
@@ -18434,7 +18908,8 @@
             "test"
         ],
         "name": "smaug-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "smaug-release-afdo": {
         "_template": "release-afdo-generate",
@@ -18452,7 +18927,8 @@
                 "factory_toolkit": false,
                 "grouped": true,
                 "name": "smaug-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -18464,14 +18940,16 @@
                 "factory_toolkit": false,
                 "grouped": true,
                 "name": "smaug-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "name": "smaug-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "smaug-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -18482,7 +18960,8 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "name": "smaug-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "smaug-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -18493,7 +18972,8 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "name": "smaug-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "smaug-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -18505,7 +18985,8 @@
         "factory_toolkit": false,
         "manifest": "official.xml",
         "name": "smaug-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "smaug-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -18519,7 +19000,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "squawks-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -18726,7 +19208,8 @@
         "manifest": "official.xml",
         "name": "storm-chrome-pfq",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "storm-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -18745,7 +19228,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "storm-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -18782,7 +19266,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "storm-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -18817,7 +19302,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "storm-payloads": {
         "_template": "payloads",
@@ -18840,7 +19326,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "storm-release": {
         "_template": "release",
@@ -18857,7 +19344,8 @@
         "paygen_skip_testing": true,
         "signer_tests": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "storm-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -18867,7 +19355,8 @@
         "manifest": "official.xml",
         "name": "storm-tot-chrome-pfq-informational",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "storm-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -18879,7 +19368,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "stout-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -19235,7 +19725,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "strago-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -19252,7 +19743,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -19306,7 +19798,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-full-group": {
         "_template": "full",
@@ -19325,7 +19818,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -19350,7 +19844,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -19383,7 +19878,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-payloads": {
         "_template": "payloads",
@@ -19405,7 +19901,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-release": {
         "_template": "release",
@@ -19413,7 +19910,8 @@
             "strago"
         ],
         "name": "strago-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-release-afdo": {
         "_template": "release-afdo-generate",
@@ -19428,7 +19926,8 @@
                 ],
                 "grouped": true,
                 "name": "strago-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -19437,11 +19936,13 @@
                 ],
                 "grouped": true,
                 "name": "strago-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "strago-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -19449,7 +19950,8 @@
             "strago"
         ],
         "name": "strago-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -19457,7 +19959,8 @@
             "strago"
         ],
         "name": "strago-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-release-group": {
         "_template": "release",
@@ -19473,7 +19976,8 @@
                 ],
                 "grouped": true,
                 "name": "strago-release",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -19490,7 +19994,8 @@
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: strago, cyan)",
         "name": "strago-release-group",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -19499,7 +20004,8 @@
         ],
         "manifest": "official.xml",
         "name": "strago-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "strago-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -19510,7 +20016,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "stumpy-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -20910,7 +21417,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -20926,7 +21434,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -20942,7 +21451,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -20958,7 +21468,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Full Builds; Group config (boards: veyron_gus, veyron_jaq, veyron_minnie, veyron_rialto)",
@@ -20967,7 +21478,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron-b-release-group": {
         "_template": "release",
@@ -20983,7 +21495,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_gus-release",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -20995,7 +21508,8 @@
                 "grouped": true,
                 "name": "veyron_jaq-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -21007,7 +21521,8 @@
                 "grouped": true,
                 "name": "veyron_minnie-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -21021,12 +21536,14 @@
                 "name": "veyron_rialto-release",
                 "sync_chrome": false,
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: veyron_gus, veyron_jaq, veyron_minnie, veyron_rialto)",
         "name": "veyron-b-release-group",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron-c-full-group": {
         "_template": "full",
@@ -21045,7 +21562,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -21061,7 +21579,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -21077,7 +21596,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Full Builds; Group config (boards: veyron_brain, veyron_danger, veyron_thea)",
@@ -21086,7 +21606,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron-c-release-group": {
         "_template": "release",
@@ -21102,7 +21623,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_brain-release",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -21114,7 +21636,8 @@
                 "grouped": true,
                 "name": "veyron_danger-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -21126,12 +21649,14 @@
                 "grouped": true,
                 "name": "veyron_thea-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: veyron_brain, veyron_danger, veyron_thea)",
         "name": "veyron-c-release-group",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron-d-full-group": {
         "_template": "full",
@@ -21150,7 +21675,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -21166,7 +21692,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Full Builds; Group config (boards: veyron_mickey, veyron_romy)",
@@ -21175,7 +21702,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron-d-release-group": {
         "_template": "release",
@@ -21192,7 +21720,8 @@
                 "grouped": true,
                 "hw_tests": [],
                 "name": "veyron_mickey-release",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -21205,13 +21734,15 @@
                 "hw_tests": [],
                 "name": "veyron_romy-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: veyron_mickey, veyron_romy)",
         "hw_tests": [],
         "name": "veyron-d-release-group",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron-full-group": {
         "_template": "full",
@@ -21230,7 +21761,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -21246,7 +21778,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -21262,7 +21795,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "full",
@@ -21278,7 +21812,8 @@
                 "useflags": [
                     "-chrome_internal"
                 ],
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Full Builds; Group config (boards: veyron_pinky, veyron_jerry, veyron_mighty, veyron_speedy)",
@@ -21287,7 +21822,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron-release-group": {
         "_template": "release",
@@ -21303,7 +21839,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_pinky-release",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -21315,7 +21852,8 @@
                 "grouped": true,
                 "name": "veyron_jerry-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -21327,7 +21865,8 @@
                 "grouped": true,
                 "name": "veyron_mighty-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release",
@@ -21339,13 +21878,15 @@
                 "grouped": true,
                 "name": "veyron_speedy-release",
                 "unittests": null,
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "description": "Release Builds (canary) (internal); Group config (boards: veyron_pinky, veyron_jerry, veyron_mighty, veyron_speedy)",
         "important": true,
         "name": "veyron-release-group",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_brain-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -21355,7 +21896,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_brain-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_brain-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -21372,7 +21914,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_brain-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -21398,7 +21941,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_brain-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -21430,7 +21974,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_brain-payloads": {
         "_template": "payloads",
@@ -21452,7 +21997,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_brain-release": {
         "_template": "release",
@@ -21460,7 +22006,8 @@
             "veyron_brain"
         ],
         "name": "veyron_brain-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_brain-release-afdo": {
         "_template": "release-afdo-generate",
@@ -21475,7 +22022,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_brain-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -21484,11 +22032,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_brain-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_brain-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_brain-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -21496,7 +22046,8 @@
             "veyron_brain"
         ],
         "name": "veyron_brain-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_brain-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -21504,7 +22055,8 @@
             "veyron_brain"
         ],
         "name": "veyron_brain-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_brain-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -21513,7 +22065,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_brain-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_brain-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -21524,7 +22077,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_danger-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -21534,7 +22088,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_danger-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_danger-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -21551,7 +22106,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_danger-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -21577,7 +22133,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_danger-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -21609,7 +22166,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_danger-payloads": {
         "_template": "payloads",
@@ -21631,7 +22189,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_danger-release": {
         "_template": "release",
@@ -21639,7 +22198,8 @@
             "veyron_danger"
         ],
         "name": "veyron_danger-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_danger-release-afdo": {
         "_template": "release-afdo-generate",
@@ -21654,7 +22214,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_danger-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -21663,11 +22224,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_danger-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_danger-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_danger-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -21675,7 +22238,8 @@
             "veyron_danger"
         ],
         "name": "veyron_danger-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_danger-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -21683,7 +22247,8 @@
             "veyron_danger"
         ],
         "name": "veyron_danger-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_danger-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -21692,7 +22257,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_danger-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_danger-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -21703,7 +22269,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_gus-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -21713,7 +22280,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_gus-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_gus-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -21730,7 +22298,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_gus-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -21756,7 +22325,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_gus-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -21788,7 +22358,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_gus-payloads": {
         "_template": "payloads",
@@ -21810,7 +22381,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_gus-release": {
         "_template": "release",
@@ -21818,7 +22390,8 @@
             "veyron_gus"
         ],
         "name": "veyron_gus-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_gus-release-afdo": {
         "_template": "release-afdo-generate",
@@ -21833,7 +22406,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_gus-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -21842,11 +22416,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_gus-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_gus-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_gus-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -21854,7 +22430,8 @@
             "veyron_gus"
         ],
         "name": "veyron_gus-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_gus-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -21862,7 +22439,8 @@
             "veyron_gus"
         ],
         "name": "veyron_gus-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_gus-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -21871,7 +22449,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_gus-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_gus-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -21882,7 +22461,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jaq-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -21892,7 +22472,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_jaq-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jaq-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -21909,7 +22490,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jaq-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -21935,7 +22517,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jaq-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -21967,7 +22550,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jaq-payloads": {
         "_template": "payloads",
@@ -21989,7 +22573,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jaq-release": {
         "_template": "release",
@@ -21997,7 +22582,8 @@
             "veyron_jaq"
         ],
         "name": "veyron_jaq-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jaq-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22012,7 +22598,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_jaq-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -22021,11 +22608,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_jaq-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_jaq-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jaq-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -22033,7 +22622,8 @@
             "veyron_jaq"
         ],
         "name": "veyron_jaq-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jaq-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -22041,7 +22631,8 @@
             "veyron_jaq"
         ],
         "name": "veyron_jaq-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jaq-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22050,7 +22641,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_jaq-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jaq-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -22061,7 +22653,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jerry-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -22071,7 +22664,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_jerry-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jerry-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -22088,7 +22682,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jerry-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -22114,7 +22709,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jerry-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -22146,7 +22742,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jerry-payloads": {
         "_template": "payloads",
@@ -22168,7 +22765,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jerry-release": {
         "_template": "release",
@@ -22176,7 +22774,8 @@
             "veyron_jerry"
         ],
         "name": "veyron_jerry-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jerry-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22191,7 +22790,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_jerry-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -22200,11 +22800,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_jerry-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_jerry-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jerry-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -22212,7 +22814,8 @@
             "veyron_jerry"
         ],
         "name": "veyron_jerry-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jerry-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -22220,7 +22823,8 @@
             "veyron_jerry"
         ],
         "name": "veyron_jerry-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jerry-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22229,7 +22833,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_jerry-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_jerry-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -22240,7 +22845,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mickey-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -22250,7 +22856,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_mickey-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mickey-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -22267,7 +22874,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mickey-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -22293,7 +22901,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mickey-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -22325,7 +22934,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mickey-payloads": {
         "_template": "payloads",
@@ -22347,7 +22957,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mickey-release": {
         "_template": "release",
@@ -22356,7 +22967,8 @@
         ],
         "hw_tests": [],
         "name": "veyron_mickey-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mickey-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22371,7 +22983,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_mickey-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -22380,11 +22993,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_mickey-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_mickey-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mickey-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -22392,7 +23007,8 @@
             "veyron_mickey"
         ],
         "name": "veyron_mickey-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mickey-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -22400,7 +23016,8 @@
             "veyron_mickey"
         ],
         "name": "veyron_mickey-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mickey-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22409,7 +23026,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_mickey-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mickey-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -22420,7 +23038,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mighty-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -22430,7 +23049,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_mighty-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mighty-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -22447,7 +23067,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mighty-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -22473,7 +23094,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mighty-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -22505,7 +23127,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mighty-payloads": {
         "_template": "payloads",
@@ -22527,7 +23150,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mighty-release": {
         "_template": "release",
@@ -22535,7 +23159,8 @@
             "veyron_mighty"
         ],
         "name": "veyron_mighty-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mighty-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22550,7 +23175,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_mighty-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -22559,11 +23185,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_mighty-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_mighty-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mighty-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -22571,7 +23199,8 @@
             "veyron_mighty"
         ],
         "name": "veyron_mighty-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mighty-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -22579,7 +23208,8 @@
             "veyron_mighty"
         ],
         "name": "veyron_mighty-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mighty-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22588,7 +23218,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_mighty-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_mighty-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -22599,7 +23230,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_minnie-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -22609,7 +23241,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_minnie-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_minnie-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -22626,7 +23259,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_minnie-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -22652,7 +23286,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_minnie-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -22684,7 +23319,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_minnie-payloads": {
         "_template": "payloads",
@@ -22706,7 +23342,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_minnie-release": {
         "_template": "release",
@@ -22714,7 +23351,8 @@
             "veyron_minnie"
         ],
         "name": "veyron_minnie-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_minnie-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22729,7 +23367,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_minnie-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -22738,11 +23377,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_minnie-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_minnie-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_minnie-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -22750,7 +23391,8 @@
             "veyron_minnie"
         ],
         "name": "veyron_minnie-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_minnie-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -22758,7 +23400,8 @@
             "veyron_minnie"
         ],
         "name": "veyron_minnie-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_minnie-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22767,7 +23410,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_minnie-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_minnie-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -22778,7 +23422,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_pinky-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -22788,7 +23433,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_pinky-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_pinky-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -22805,7 +23451,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_pinky-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -22831,7 +23478,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_pinky-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -22863,7 +23511,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_pinky-payloads": {
         "_template": "payloads",
@@ -22885,7 +23534,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_pinky-release": {
         "_template": "release",
@@ -22893,7 +23543,8 @@
             "veyron_pinky"
         ],
         "name": "veyron_pinky-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_pinky-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22908,7 +23559,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_pinky-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -22917,11 +23569,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_pinky-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_pinky-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_pinky-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -22929,7 +23583,8 @@
             "veyron_pinky"
         ],
         "name": "veyron_pinky-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_pinky-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -22937,7 +23592,8 @@
             "veyron_pinky"
         ],
         "name": "veyron_pinky-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_pinky-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22946,7 +23602,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_pinky-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_pinky-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -22957,7 +23614,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_rialto-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -22967,7 +23625,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_rialto-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_rialto-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -22984,7 +23643,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_rialto-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -23010,7 +23670,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_rialto-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -23042,7 +23703,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_rialto-payloads": {
         "_template": "payloads",
@@ -23064,7 +23726,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_rialto-release": {
         "_template": "release",
@@ -23074,7 +23737,8 @@
         "chrome_sdk": false,
         "name": "veyron_rialto-release",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_rialto-release-afdo": {
         "_template": "release-afdo-generate",
@@ -23089,7 +23753,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_rialto-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -23098,11 +23763,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_rialto-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_rialto-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_rialto-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -23110,7 +23777,8 @@
             "veyron_rialto"
         ],
         "name": "veyron_rialto-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_rialto-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -23118,7 +23786,8 @@
             "veyron_rialto"
         ],
         "name": "veyron_rialto-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_rialto-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -23127,7 +23796,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_rialto-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_rialto-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -23138,7 +23808,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_romy-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -23148,7 +23819,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_romy-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_romy-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -23165,7 +23837,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_romy-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -23191,7 +23864,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_romy-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -23223,7 +23897,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_romy-payloads": {
         "_template": "payloads",
@@ -23245,7 +23920,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_romy-release": {
         "_template": "release",
@@ -23254,7 +23930,8 @@
         ],
         "hw_tests": [],
         "name": "veyron_romy-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_romy-release-afdo": {
         "_template": "release-afdo-generate",
@@ -23269,7 +23946,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_romy-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -23278,11 +23956,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_romy-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_romy-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_romy-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -23290,7 +23970,8 @@
             "veyron_romy"
         ],
         "name": "veyron_romy-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_romy-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -23298,7 +23979,8 @@
             "veyron_romy"
         ],
         "name": "veyron_romy-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_romy-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -23307,7 +23989,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_romy-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_romy-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -23318,7 +24001,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_speedy-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -23328,7 +24012,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_speedy-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_speedy-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -23345,7 +24030,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_speedy-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -23371,7 +24057,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_speedy-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -23403,7 +24090,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_speedy-payloads": {
         "_template": "payloads",
@@ -23425,7 +24113,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_speedy-release": {
         "_template": "release",
@@ -23433,7 +24122,8 @@
             "veyron_speedy"
         ],
         "name": "veyron_speedy-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_speedy-release-afdo": {
         "_template": "release-afdo-generate",
@@ -23448,7 +24138,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_speedy-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -23457,11 +24148,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_speedy-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_speedy-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_speedy-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -23469,7 +24162,8 @@
             "veyron_speedy"
         ],
         "name": "veyron_speedy-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_speedy-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -23477,7 +24171,8 @@
             "veyron_speedy"
         ],
         "name": "veyron_speedy-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_speedy-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -23486,7 +24181,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_speedy-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_speedy-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -23497,7 +24193,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_thea-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -23507,7 +24204,8 @@
         "important": false,
         "manifest": "official.xml",
         "name": "veyron_thea-chrome-pfq",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_thea-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -23524,7 +24222,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_thea-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -23550,7 +24249,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_thea-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -23582,7 +24282,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_thea-payloads": {
         "_template": "payloads",
@@ -23604,7 +24305,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_thea-release": {
         "_template": "release",
@@ -23612,7 +24314,8 @@
             "veyron_thea"
         ],
         "name": "veyron_thea-release",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_thea-release-afdo": {
         "_template": "release-afdo-generate",
@@ -23627,7 +24330,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_thea-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             },
             {
                 "_template": "release-afdo-use",
@@ -23636,11 +24340,13 @@
                 ],
                 "grouped": true,
                 "name": "veyron_thea-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_supported": []
             }
         ],
         "name": "veyron_thea-release-afdo",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_thea-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -23648,7 +24354,8 @@
             "veyron_thea"
         ],
         "name": "veyron_thea-release-afdo-generate",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_thea-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -23656,7 +24363,8 @@
             "veyron_thea"
         ],
         "name": "veyron_thea-release-afdo-use",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_thea-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -23665,7 +24373,8 @@
         ],
         "manifest": "official.xml",
         "name": "veyron_thea-tot-chrome-pfq-informational",
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "veyron_thea-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -23676,7 +24385,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "whirlwind-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -23688,7 +24398,8 @@
         "manifest": "official.xml",
         "name": "whirlwind-chrome-pfq",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "whirlwind-chromium-pfq": {
         "_template": "chromium-pfq",
@@ -23707,7 +24418,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "whirlwind-compile-only-pre-cq": {
         "_template": "compile-only-pre-cq",
@@ -23736,7 +24448,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "whirlwind-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -23772,7 +24485,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "whirlwind-payloads": {
         "_template": "payloads",
@@ -23795,7 +24509,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "whirlwind-release": {
         "_template": "release",
@@ -23808,7 +24523,8 @@
         "important": true,
         "name": "whirlwind-release",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "whirlwind-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -23818,7 +24534,8 @@
         "manifest": "official.xml",
         "name": "whirlwind-tot-chrome-pfq-informational",
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "whirlwind-tot-chromium-pfq-informational": {
         "_template": "chromium-pfq-informational",
@@ -23830,7 +24547,8 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_supported": []
     },
     "winky-chrome-pfq": {
         "_template": "chrome-pfq",
@@ -25049,7 +25767,7 @@
         "important": false,
         "name": "x86-generic-asan-paladin",
         "profile": "asan",
-        "vm_tests": [
+        "vm_tests_supported": [
             "smoke_suite"
         ]
     },
@@ -25128,10 +25846,7 @@
         "boards": [
             "x86-generic"
         ],
-        "name": "x86-generic-paladin",
-        "vm_tests": [
-            "smoke_suite"
-        ]
+        "name": "x86-generic-paladin"
     },
     "x86-generic-pre-cq": {
         "_template": "pre-cq",
@@ -25148,6 +25863,9 @@
         "description": "Telemetry Builds",
         "name": "x86-generic-telem-chromium-pfq-informational",
         "vm_tests": [
+            "telemetry_suite"
+        ],
+        "vm_tests_supported": [
             "telemetry_suite"
         ]
     },

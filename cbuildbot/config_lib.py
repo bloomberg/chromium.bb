@@ -457,9 +457,14 @@ def DefaultSettings():
       # profile information found in the chrome ebuild file.
       afdo_use=False,
 
-      # A list of vm tests to run.
+      # A list of the vm_tests to run by default.
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
                 constants.SIMPLE_AU_TEST_TYPE],
+
+      # A list of all VM Tests the current build is capable of running if the
+      # command line forces VM Tests to run.
+      vm_tests_supported=[constants.SMOKE_SUITE_TEST_TYPE,
+                          constants.SIMPLE_AU_TEST_TYPE],
 
       # The number of times to run the VMTest stage. If this is >1, then we
       # will run the stage this many times, stopping if we encounter any
@@ -498,11 +503,6 @@ def DefaultSettings():
       # specified, we'll fallback to legacy probing behavior until everyone
       # has been converted (see the scripts/cbuildbot.py file for details).
       builder_class_name=None,
-
-      # Whether the tests for the board we are building can be run on the
-      # builder. Normally, we wouldn't be able to run unit and VM tests form
-      # non-x86 boards.
-      tests_supported=True,
 
       # List of images we want to build -- see build_image for more details.
       images=['test'],

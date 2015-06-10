@@ -78,12 +78,9 @@ def OverrideConfigForTrybot(build_config, options):
     # In trybots, we want to always run VM tests and all unit tests, so that
     # developers will get better testing for their changes.
     if (my_config['build_type'] == constants.PALADIN_TYPE and
-        my_config['tests_supported'] and
         all(x not in _arm_boards for x in my_config['boards']) and
         all(x not in _brillo_boards for x in my_config['boards'])):
-      my_config['vm_tests'] = [constants.SMOKE_SUITE_TEST_TYPE,
-                               constants.SIMPLE_AU_TEST_TYPE,
-                               constants.CROS_VM_TEST_TYPE]
+      my_config['vm_tests'] = my_config['vm_tests_supported']
       my_config['quick_unit'] = False
 
   return copy_config
@@ -328,6 +325,10 @@ def append_useflags(useflags):
 
   return handler
 
+
+TRADITIONAL_VM_TESTS_SUPPORTED = [constants.SMOKE_SUITE_TEST_TYPE,
+                                  constants.SIMPLE_AU_TEST_TYPE,
+                                  constants.CROS_VM_TEST_TYPE]
 
 #
 # Define assorted constants describing various sets of boards.
@@ -689,10 +690,13 @@ def GetConfig():
 
   # Config parameters for builders that do not run tests on the builder.
   no_unittest_builder = config_lib.BuildConfig(
-      tests_supported=False,
       unittests=False,
   )
 
+  no_vmtest_builder = config_lib.BuildConfig(
+      vm_tests=[],
+      vm_tests_supported=[],
+  )
 
   # Builder-specific mixins
 
@@ -754,6 +758,9 @@ def GetConfig():
       chrome_sdk=True,
       chrome_sdk_build_chrome=False,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ',
+
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests_supported=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
 
   # Incremental builders are intended to test the developer workflow.
@@ -857,8 +864,10 @@ def GetConfig():
       disk_layout='2gb-rootfs',
       # TODO(deymo): ASan builders generate bigger files, in particular a bigger
       # Chrome binary, that update_engine can't handle in delta payloads due to
-      # memory limits. Remove the following line once crbug.com/329248 is fixed.
+      # memory limits. Remove the following lines once crbug.com/329248 is
+      # fixed.
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests_supported=[constants.SMOKE_SUITE_TEST_TYPE],
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-ASAN',
   )
@@ -876,6 +885,7 @@ def GetConfig():
       uprev=False,
       overlays=constants.PUBLIC_OVERLAYS,
       vm_tests=[constants.TELEMETRY_SUITE_TEST_TYPE],
+      vm_tests_supported=[constants.TELEMETRY_SUITE_TEST_TYPE],
       description='Telemetry Builds',
   )
 
@@ -937,6 +947,7 @@ def GetConfig():
       chromium_pfq,
       chrome_try,
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests_supported=TRADITIONAL_VM_TESTS_SUPPORTED,
       chrome_sdk=False,
       description='Informational Chromium Uprev & Build (public)',
   )
@@ -951,9 +962,9 @@ def GetConfig():
   chrome_perf = site_config.AddTemplate(
       'chrome-perf',
       chrome_info,
+      no_unittest_builder,
+      no_vmtest_builder,
       description='Chrome Performance test bot',
-      vm_tests=[],
-      unittests=False,
       hw_tests=[config_lib.HWTestConfig(
           'perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
           timeout=90 * 60, critical=True, num=1)],
@@ -969,6 +980,7 @@ def GetConfig():
   def _CreateBaseConfigs():
     for board in _all_boards:
       base = config_lib.BuildConfig()
+
       if board in _internal_boards:
         base.update(internal)
         base.update(official_chrome)
@@ -996,7 +1008,7 @@ def GetConfig():
       if board in _no_unittest_boards:
         base.update(no_unittest_builder)
       if board in _no_vmtest_boards:
-        base.update(vm_tests=[])
+        base.update(no_vmtest_builder)
       if board in _upload_gce_images_boards:
         base.update(upload_gce_images=True)
 
@@ -1377,6 +1389,7 @@ def GetConfig():
       prebuilts=False,
       cpe_export=False,
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests_supported=TRADITIONAL_VM_TESTS_SUPPORTED,
       description='Verifies compilation, building an image, and vm/unit tests '
                   'if supported.',
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
@@ -1390,6 +1403,7 @@ def GetConfig():
       description='Verifies compilation and unit tests only',
       compilecheck=True,
       vm_tests=[],
+      vm_tests_supported=[],
   )
 
   # Pre-CQ targets that don't run VMTests.
@@ -1399,6 +1413,7 @@ def GetConfig():
       description='Verifies compilation, building an image, and unit tests '
                   'if supported.',
       vm_tests=[],
+      vm_tests_supported=[],
   )
 
   # Pre-CQ targets that only check compilation.
@@ -1630,6 +1645,16 @@ def GetConfig():
           vm_tests.append(constants.SMOKE_SUITE_TEST_TYPE)
         customizations.update(vm_tests=vm_tests)
 
+      # Supported VM Tests is the paladin list + any new tests.
+      # If the board doesn't support them, base_config will disable.
+      if 'vm_tests' in customizations:
+        supported = paladin.vm_tests_supported[:]
+        for test in customizations.vm_tests:
+          if test not in supported:
+            supported.append(test)
+
+        customizations.update(vm_tests_supported=supported)
+
       if base_config.get('internal'):
         customizations.update(
             prebuilts=constants.PRIVATE,
@@ -1640,6 +1665,7 @@ def GetConfig():
           paladin, config_name,
           customizations,
           base_config)
+
 
   _CreatePaladinConfigs()
 
@@ -1801,6 +1827,7 @@ def GetConfig():
       internal_incremental, 'lakitu-incremental',
       _base_configs['lakitu'],
       vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests_supported=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
 
   site_config.AddConfigWithoutTemplate(
@@ -1839,8 +1866,12 @@ def GetConfig():
                        'chromeos-dev-installer',
       dev_installer_prebuilts=True,
       git_sync=False,
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.DEV_MODE_TEST_TYPE,
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
+                constants.DEV_MODE_TEST_TYPE,
                 constants.CROS_VM_TEST_TYPE],
+      vm_tests_supported=[constants.SMOKE_SUITE_TEST_TYPE,
+                          constants.DEV_MODE_TEST_TYPE,
+                          constants.CROS_VM_TEST_TYPE],
       hw_tests=HWTestList.SharedPoolCanary(),
       paygen=True,
       signer_tests=True,
@@ -2514,6 +2545,7 @@ def GetConfig():
   )
 
   _firmware = config_lib.BuildConfig(
+      no_vmtest_builder,
       images=[],
       factory_toolkit=False,
       packages=['virtual/chromeos-firmware'],
@@ -2522,7 +2554,6 @@ def GetConfig():
       build_tests=False,
       chrome_sdk=False,
       unittests=False,
-      vm_tests=[],
       hw_tests=[],
       dev_installer_prebuilts=False,
       upload_hw_test_artifacts=False,
@@ -2644,6 +2675,7 @@ def GetConfig():
           _firmware_release,
           '%s-%s' % (board, config_lib.CONFIG_TYPE_FIRMWARE),
           _base_configs[board],
+          no_vmtest_builder,
       )
 
     for board in _x86_depthcharge_firmware_boards:
@@ -2651,12 +2683,14 @@ def GetConfig():
           _depthcharge_release,
           '%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FIRMWARE),
           _base_configs[board],
+          no_vmtest_builder,
       )
       site_config.AddConfig(
           _depthcharge_full_internal,
           '%s-%s-%s-%s' % (board, 'depthcharge', config_lib.CONFIG_TYPE_FULL,
                            config_lib.CONFIG_TYPE_FIRMWARE),
           _base_configs[board],
+          no_vmtest_builder,
       )
 
   _AddFirmwareConfigs()
@@ -2672,10 +2706,11 @@ def GetConfig():
   _payloads = site_config.AddTemplate(
       'payloads',
       internal,
+      no_vmtest_builder,
+      no_unittest_builder,
       build_type=constants.PAYLOADS_TYPE,
       builder_class_name='release_builders.GeneratePayloadsBuilder',
       description='Regenerate release payloads.',
-      vm_tests=[],
 
       # Sync to the code used to do the build the first time.
       manifest_version=True,
