@@ -29,8 +29,31 @@ function declareTests(tester) {
       'application/x-pnacl',
       // Use a regular expression here: the translator outputs debug information
       // in the error message.
-      new RegExp('NaCl module load failed: PnaclCoordinator: ' +
-                 'PNaCl Translator Error: .*' +
+      new RegExp('NaCl module load failed: PnaclCoordinator:.*' +
+                 'Invalid PNaCl bitcode header'));
+
+  // 'bad_pexe_O0' loads a manifest, then loads a pexe that is invalid
+  // using the O0 translator (which may have a different codepath from O2).
+  badLoadTest(
+      tester,
+      'bad_pexe_O0',
+      'pnacl_bad_pexe_O0.nmf',
+      'application/x-pnacl',
+      // Use a regular expression here: the translator outputs debug information
+      // in the error message.
+      new RegExp('NaCl module load failed: PnaclCoordinator:.*' +
+                 'Invalid PNaCl bitcode header'));
+
+  // 'bad_nonfinal_pexe_O0' loads a manifest, then loads a non-finalized pexe
+  // using the O0 translator (which may have a different codepath from O2).
+  badLoadTest(
+      tester,
+      'bad_nonfinal_pexe_O0',
+      'pnacl_nonfinal_pexe_O0.nmf',
+      'application/x-pnacl',
+      // Use a regular expression here: the translator outputs debug information
+      // in the error message.
+      new RegExp('NaCl module load failed: PnaclCoordinator:.*' +
                  'Invalid PNaCl bitcode header'));
 
   // 'nonexistent_pexe' loads a manifest, then tries to to load a nonexistent

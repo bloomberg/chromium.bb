@@ -650,16 +650,22 @@
       'target_name': 'pnacl_error_handling_test',
       'type': 'none',
       'variables': {
+        'nexe_target': 'pnacl_errors',
+        'extra_args': ['--nonstable-pnacl'],
         'build_pnacl_newlib': 1,
         'nexe_destination_dir': 'nacl_test_data',
-        # Use prebuilt NMF files.
+        'sources': [
+          'simple.cc',
+        ],
         'generate_nmf': 0,
         'test_files': [
           'pnacl_error_handling/pnacl_error_handling.html',
           'pnacl_error_handling/bad.pexe',
           'pnacl_error_handling/pnacl_bad_pexe.nmf',
+          'pnacl_error_handling/pnacl_bad_pexe_O0.nmf',
           'pnacl_error_handling/pnacl_bad_doesnotexist.nmf',
           'pnacl_error_handling/pnacl_illformed_manifest.nmf',
+          'pnacl_error_handling/pnacl_nonfinal_pexe_O0.nmf',
         ],
       },
     },
