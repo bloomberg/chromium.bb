@@ -74,7 +74,7 @@ class PowerTop25(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'power.top_25'
 
-  def CreateUserStorySet(self, _):
+  def CreateStorySet(self, _):
     # Exclude techcrunch.com. It is not suitable for this benchmark because it
     # does not consistently become quiescent within 60 seconds.
     user_stories = self.page_set()
