@@ -15,16 +15,10 @@
 #include "sync/internal_api/public/base_node.h"
 
 namespace sync_pb {
-class AppSpecifics;
-class AutofillSpecifics;
-class AutofillProfileSpecifics;
 class BookmarkSpecifics;
 class EntitySpecifics;
-class ExtensionSpecifics;
-class SessionSpecifics;
 class NigoriSpecifics;
 class PasswordSpecificsData;
-class ThemeSpecifics;
 class TypedUrlSpecifics;
 }
 
@@ -131,17 +125,6 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   // TODO(sync): Remove the setters below when the corresponding data
   // types are ported to the new sync service API.
 
-  // Set the app specifics (id, update url, enabled state, etc).
-  // Should only be called if GetModelType() == APPS.
-  void SetAppSpecifics(const sync_pb::AppSpecifics& specifics);
-
-  // Set the autofill specifics (name and value).
-  // Should only be called if GetModelType() == AUTOFILL.
-  void SetAutofillSpecifics(const sync_pb::AutofillSpecifics& specifics);
-
-  void SetAutofillProfileSpecifics(
-      const sync_pb::AutofillProfileSpecifics& specifics);
-
   // Set the nigori specifics.
   // Should only be called if GetModelType() == NIGORI.
   void SetNigoriSpecifics(const sync_pb::NigoriSpecifics& specifics);
@@ -150,34 +133,9 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   // Should only be called if GetModelType() == PASSWORD.
   void SetPasswordSpecifics(const sync_pb::PasswordSpecificsData& specifics);
 
-  // Set the theme specifics (name and value).
-  // Should only be called if GetModelType() == THEME.
-  void SetThemeSpecifics(const sync_pb::ThemeSpecifics& specifics);
-
   // Set the typed_url specifics (url, title, typed_count, etc).
   // Should only be called if GetModelType() == TYPED_URLS.
   void SetTypedUrlSpecifics(const sync_pb::TypedUrlSpecifics& specifics);
-
-  // Set the extension specifics (id, update url, enabled state, etc).
-  // Should only be called if GetModelType() == EXTENSIONS.
-  void SetExtensionSpecifics(const sync_pb::ExtensionSpecifics& specifics);
-
-  // Set the session specifics (windows, tabs, navigations etc.).
-  // Should only be called if GetModelType() == SESSIONS.
-  void SetSessionSpecifics(const sync_pb::SessionSpecifics& specifics);
-
-  // Set the device info specifics.
-  // Should only be called if GetModelType() == DEVICE_INFO.
-  void SetDeviceInfoSpecifics(const sync_pb::DeviceInfoSpecifics& specifics);
-
-  // Set the experiments specifics.
-  // Should only be called if GetModelType() == EXPERIMENTS.
-  void SetExperimentsSpecifics(const sync_pb::ExperimentsSpecifics& specifics);
-
-  // Set the priority preference specifics.
-  // Should only be called if GetModelType() == PRIORITY_PREFERENCE.
-  void SetPriorityPreferenceSpecifics(
-      const sync_pb::PriorityPreferenceSpecifics& specifics);
 
   // Set the attachment metadata.
   void SetAttachmentMetadata(

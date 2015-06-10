@@ -218,21 +218,6 @@ int64 BaseNode::GetExternalId() const {
   return GetEntry()->GetLocalExternalId();
 }
 
-const sync_pb::AppSpecifics& BaseNode::GetAppSpecifics() const {
-  DCHECK_EQ(GetModelType(), APPS);
-  return GetEntitySpecifics().app();
-}
-
-const sync_pb::AutofillSpecifics& BaseNode::GetAutofillSpecifics() const {
-  DCHECK_EQ(GetModelType(), AUTOFILL);
-  return GetEntitySpecifics().autofill();
-}
-
-const AutofillProfileSpecifics& BaseNode::GetAutofillProfileSpecifics() const {
-  DCHECK_EQ(GetModelType(), AUTOFILL_PROFILE);
-  return GetEntitySpecifics().autofill_profile();
-}
-
 const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
   DCHECK_EQ(GetModelType(), BOOKMARKS);
   return GetEntitySpecifics().bookmark();
@@ -248,40 +233,14 @@ const sync_pb::PasswordSpecificsData& BaseNode::GetPasswordSpecifics() const {
   return *password_data_;
 }
 
-const sync_pb::ThemeSpecifics& BaseNode::GetThemeSpecifics() const {
-  DCHECK_EQ(GetModelType(), THEMES);
-  return GetEntitySpecifics().theme();
-}
-
 const sync_pb::TypedUrlSpecifics& BaseNode::GetTypedUrlSpecifics() const {
   DCHECK_EQ(GetModelType(), TYPED_URLS);
   return GetEntitySpecifics().typed_url();
 }
 
-const sync_pb::ExtensionSpecifics& BaseNode::GetExtensionSpecifics() const {
-  DCHECK_EQ(GetModelType(), EXTENSIONS);
-  return GetEntitySpecifics().extension();
-}
-
-const sync_pb::SessionSpecifics& BaseNode::GetSessionSpecifics() const {
-  DCHECK_EQ(GetModelType(), SESSIONS);
-  return GetEntitySpecifics().session();
-}
-
-const sync_pb::DeviceInfoSpecifics& BaseNode::GetDeviceInfoSpecifics() const {
-  DCHECK_EQ(GetModelType(), DEVICE_INFO);
-  return GetEntitySpecifics().device_info();
-}
-
 const sync_pb::ExperimentsSpecifics& BaseNode::GetExperimentsSpecifics() const {
   DCHECK_EQ(GetModelType(), EXPERIMENTS);
   return GetEntitySpecifics().experiments();
-}
-
-const sync_pb::PriorityPreferenceSpecifics&
-    BaseNode::GetPriorityPreferenceSpecifics() const {
-  DCHECK_EQ(GetModelType(), PRIORITY_PREFERENCES);
-  return GetEntitySpecifics().priority_preference();
 }
 
 const sync_pb::EntitySpecifics& BaseNode::GetEntitySpecifics() const {

@@ -596,9 +596,7 @@ class ProfileSyncServiceAutofillTest
 
     sync_pb::EntitySpecifics specifics;
     AutocompleteSyncableService::WriteAutofillEntry(entry, &specifics);
-    sync_pb::AutofillSpecifics* autofill_specifics =
-        specifics.mutable_autofill();
-    node.SetAutofillSpecifics(*autofill_specifics);
+    node.SetEntitySpecifics(specifics);
     return true;
   }
 
@@ -618,9 +616,7 @@ class ProfileSyncServiceAutofillTest
 
     sync_pb::EntitySpecifics specifics;
     AutofillProfileSyncableService::WriteAutofillProfile(profile, &specifics);
-    sync_pb::AutofillProfileSpecifics* profile_specifics =
-        specifics.mutable_autofill_profile();
-    node.SetAutofillProfileSpecifics(*profile_specifics);
+    node.SetEntitySpecifics(specifics);
     return true;
   }
 
@@ -639,7 +635,7 @@ class ProfileSyncServiceAutofillTest
         return false;
 
       const sync_pb::AutofillSpecifics& autofill(
-          child_node.GetAutofillSpecifics());
+          child_node.GetEntitySpecifics().autofill());
       if (autofill.has_value()) {
         AutofillKey key(base::UTF8ToUTF16(autofill.name()),
                         base::UTF8ToUTF16(autofill.value()));
@@ -678,7 +674,7 @@ class ProfileSyncServiceAutofillTest
         return false;
 
       const sync_pb::AutofillProfileSpecifics& autofill(
-          child_node.GetAutofillProfileSpecifics());
+          child_node.GetEntitySpecifics().autofill_profile());
         AutofillProfile p;
         p.set_guid(autofill.guid());
         AutofillProfileSyncableService::OverwriteProfileWithServerData(

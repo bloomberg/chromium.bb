@@ -10,13 +10,7 @@
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/internal_api/syncapi_internal.h"
-#include "sync/protocol/app_specifics.pb.h"
-#include "sync/protocol/autofill_specifics.pb.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
-#include "sync/protocol/extension_specifics.pb.h"
-#include "sync/protocol/password_specifics.pb.h"
-#include "sync/protocol/session_specifics.pb.h"
-#include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/nigori_util.h"
@@ -110,28 +104,6 @@ void WriteNode::SetTitle(const std::string& title) {
   MarkForSyncing();
 }
 
-void WriteNode::SetAppSpecifics(
-    const sync_pb::AppSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.mutable_app()->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetAutofillSpecifics(
-    const sync_pb::AutofillSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.mutable_autofill()->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetAutofillProfileSpecifics(
-    const sync_pb::AutofillProfileSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.mutable_autofill_profile()->
-      CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
 void WriteNode::SetBookmarkSpecifics(
     const sync_pb::BookmarkSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
@@ -172,41 +144,6 @@ void WriteNode::SetPasswordSpecifics(
                << "corruption";
     return;
   }
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetThemeSpecifics(
-    const sync_pb::ThemeSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.mutable_theme()->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetSessionSpecifics(
-    const sync_pb::SessionSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.mutable_session()->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetDeviceInfoSpecifics(
-    const sync_pb::DeviceInfoSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.mutable_device_info()->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetExperimentsSpecifics(
-    const sync_pb::ExperimentsSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.mutable_experiments()->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetPriorityPreferenceSpecifics(
-    const sync_pb::PriorityPreferenceSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.mutable_priority_preference()->CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
 
@@ -253,13 +190,6 @@ void WriteNode::SetTypedUrlSpecifics(
     const sync_pb::TypedUrlSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_typed_url()->CopyFrom(new_value);
-  SetEntitySpecifics(entity_specifics);
-}
-
-void WriteNode::SetExtensionSpecifics(
-    const sync_pb::ExtensionSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.mutable_extension()->CopyFrom(new_value);
   SetEntitySpecifics(entity_specifics);
 }
 

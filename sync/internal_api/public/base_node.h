@@ -115,17 +115,6 @@ class SYNC_EXPORT BaseNode {
   // data.  Can only be called if GetModelType() == BOOKMARK.
   const sync_pb::BookmarkSpecifics& GetBookmarkSpecifics() const;
 
-  // Getter specific to the APPS datatype.  Returns protobuf
-  // data.  Can only be called if GetModelType() == APPS.
-  const sync_pb::AppSpecifics& GetAppSpecifics() const;
-
-  // Getter specific to the AUTOFILL datatype.  Returns protobuf
-  // data.  Can only be called if GetModelType() == AUTOFILL.
-  const sync_pb::AutofillSpecifics& GetAutofillSpecifics() const;
-
-  virtual const sync_pb::AutofillProfileSpecifics&
-      GetAutofillProfileSpecifics() const;
-
   // Getter specific to the NIGORI datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == NIGORI.
   const sync_pb::NigoriSpecifics& GetNigoriSpecifics() const;
@@ -134,38 +123,13 @@ class SYNC_EXPORT BaseNode {
   // data.  Can only be called if GetModelType() == PASSWORD.
   const sync_pb::PasswordSpecificsData& GetPasswordSpecifics() const;
 
-  // Getter specific to the PREFERENCE datatype.  Returns protobuf
-  // data.  Can only be called if GetModelType() == PREFERENCE.
-  const sync_pb::PreferenceSpecifics& GetPreferenceSpecifics() const;
-
-  // Getter specific to the THEME datatype.  Returns protobuf
-  // data.  Can only be called if GetModelType() == THEME.
-  const sync_pb::ThemeSpecifics& GetThemeSpecifics() const;
-
   // Getter specific to the TYPED_URLS datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == TYPED_URLS.
   const sync_pb::TypedUrlSpecifics& GetTypedUrlSpecifics() const;
 
-  // Getter specific to the EXTENSIONS datatype.  Returns protobuf
-  // data.  Can only be called if GetModelType() == EXTENSIONS.
-  const sync_pb::ExtensionSpecifics& GetExtensionSpecifics() const;
-
-  // Getter specific to the SESSIONS datatype.  Returns protobuf
-  // data.  Can only be called if GetModelType() == SESSIONS.
-  const sync_pb::SessionSpecifics& GetSessionSpecifics() const;
-
-  // Getter specific to the DEVICE_INFO datatype.  Returns protobuf
-  // data.  Can only be called if GetModelType() == DEVICE_INFO.
-  const sync_pb::DeviceInfoSpecifics& GetDeviceInfoSpecifics() const;
-
   // Getter specific to the EXPERIMENTS datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == EXPERIMENTS.
   const sync_pb::ExperimentsSpecifics& GetExperimentsSpecifics() const;
-
-  // Getter specific to the PRIORITY_PREFERENCE datatype. Returns protobuf
-  // data.  Can only be called if GetModelType() == PRIORITY_PREFERENCE.
-  const sync_pb::PriorityPreferenceSpecifics&
-      GetPriorityPreferenceSpecifics() const;
 
   const sync_pb::EntitySpecifics& GetEntitySpecifics() const;
 
