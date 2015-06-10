@@ -54,6 +54,20 @@ crbug.com/474440 [ Mac ] plugins/destroy-reentry.html [ Pass Timeout ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
+Bug(wangxianzhu) virtual/slimmingpaint/fast/frames/iframe-scaling-with-scroll.html [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/media/video-layer-crash.html [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/media/video-transformed.html [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/svg/W3C-SVG-1.1/animate-elem-52-t.svg [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/svg/W3C-SVG-1.1/animate-elem-77-t.svg [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/svg/custom/animate-target-id-changed.svg [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/svg/filters/filter-refresh.svg [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/svg/transforms/svg-css-transforms.xhtml [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/fast/css/resize-corner-tracking-transformed-iframe.html [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/fast/css/resize-corner-tracking-transformed.html [ NeedsRebaseline ]
+Bug(wangxianzhu) virtual/slimmingpaint/plugins/embed-attributes-style.html [ NeedsRebaseline ]
+
 # In root-layer-scrolls, the scrollbars make the scroll offsets difficult to compute.
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/keyboard-scroll-page-scale.html [ Failure ]
 crbug.com/487948 virtual/rootlayerscrolls/fast/scrolling/editor-command-scroll-page-scale.html [ Failure ]
