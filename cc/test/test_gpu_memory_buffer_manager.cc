@@ -5,12 +5,13 @@
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace cc {
 namespace {
 
-size_t NumberOfPlanesForGpuMemoryBufferFormat(
+int NumberOfPlanesForGpuMemoryBufferFormat(
     gfx::GpuMemoryBuffer::Format format) {
   switch (format) {
     case gfx::GpuMemoryBuffer::ATC:
@@ -88,8 +89,8 @@ size_t StrideInBytes(size_t width,
 size_t BufferSizeInBytes(const gfx::Size& size,
                          gfx::GpuMemoryBuffer::Format format) {
   size_t size_in_bytes = 0;
-  size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
-  for (size_t i = 0; i < num_planes; ++i) {
+  int num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
+  for (int i = 0; i < num_planes; ++i) {
     size_in_bytes += StrideInBytes(size.width(), format, i) *
                      (size.height() / SubsamplingFactor(format, i));
   }
@@ -113,8 +114,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       return false;
     mapped_ = true;
     size_t offset = 0;
-    size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
-    for (size_t i = 0; i < num_planes; ++i) {
+    int num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
+    for (int i = 0; i < num_planes; ++i) {
       data[i] = reinterpret_cast<uint8*>(shared_memory_->memory()) + offset;
       offset += StrideInBytes(size_.width(), format_, i) *
                 (size_.height() / SubsamplingFactor(format_, i));
@@ -129,9 +130,10 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   bool IsMapped() const override { return mapped_; }
   Format GetFormat() const override { return format_; }
   void GetStride(int* stride) const override {
-    size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
-    for (size_t i = 0; i < num_planes; ++i)
-      stride[i] = StrideInBytes(size_.width(), format_, i);
+    int num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format_);
+    for (int i = 0; i < num_planes; ++i)
+      stride[i] =
+          base::checked_cast<int>(StrideInBytes(size_.width(), format_, i));
   }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     gfx::GpuMemoryBufferHandle handle;

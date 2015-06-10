@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -84,7 +85,7 @@ class FakeSchedulerClient : public SchedulerClient {
   int ActionIndex(const char* action) const {
     for (size_t i = 0; i < actions_.size(); i++)
       if (!strcmp(actions_[i], action))
-        return i;
+        return base::checked_cast<int>(i);
     return -1;
   }
 

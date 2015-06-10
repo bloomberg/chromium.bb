@@ -132,7 +132,7 @@ TEST_F(PrioritizedResourceTest, RequestTextureExceedingMaxLimit) {
 
   // Set decreasing priorities
   for (size_t i = 0; i < kMaxTextures * 2; ++i)
-    textures[i]->set_request_priority(100 + i);
+    textures[i]->set_request_priority(base::checked_cast<int>(100 + i));
 
   // Only lower half should be available.
   PrioritizeTexturesAndBackings(resource_manager.get());
@@ -143,7 +143,7 @@ TEST_F(PrioritizedResourceTest, RequestTextureExceedingMaxLimit) {
 
   // Set increasing priorities
   for (size_t i = 0; i < kMaxTextures * 2; ++i)
-    textures[i]->set_request_priority(100 - i);
+    textures[i]->set_request_priority(base::checked_cast<int>(100 - i));
 
   // Only upper half should be available.
   PrioritizeTexturesAndBackings(resource_manager.get());
@@ -175,7 +175,7 @@ TEST_F(PrioritizedResourceTest, ChangeMemoryLimits) {
         resource_manager->CreateTexture(texture_size_, texture_format_);
   }
   for (size_t i = 0; i < kMaxTextures; ++i)
-    textures[i]->set_request_priority(100 + i);
+    textures[i]->set_request_priority(base::checked_cast<int>(100 + i));
 
   // Set max limit to 8 textures
   resource_manager->SetMaxMemoryLimitBytes(TexturesMemorySize(8));
@@ -242,7 +242,7 @@ TEST_F(PrioritizedResourceTest, ReduceWastedMemory) {
         resource_manager->CreateTexture(texture_size_, texture_format_);
   }
   for (size_t i = 0; i < kMaxTextures; ++i)
-    textures[i]->set_request_priority(100 + i);
+    textures[i]->set_request_priority(base::checked_cast<int>(100 + i));
 
   // Set the memory limit to the max number of textures.
   resource_manager->SetMaxMemoryLimitBytes(TexturesMemorySize(kMaxTextures));
@@ -312,7 +312,7 @@ TEST_F(PrioritizedResourceTest, InUseNotWastedMemory) {
         resource_manager->CreateTexture(texture_size_, texture_format_);
   }
   for (size_t i = 0; i < kMaxTextures; ++i)
-    textures[i]->set_request_priority(100 + i);
+    textures[i]->set_request_priority(base::checked_cast<int>(100 + i));
 
   // Set the memory limit to the max number of textures.
   resource_manager->SetMaxMemoryLimitBytes(TexturesMemorySize(kMaxTextures));
@@ -392,7 +392,7 @@ TEST_F(PrioritizedResourceTest, ChangePriorityCutoff) {
         resource_manager->CreateTexture(texture_size_, texture_format_);
   }
   for (size_t i = 0; i < kMaxTextures; ++i)
-    textures[i]->set_request_priority(100 + i);
+    textures[i]->set_request_priority(base::checked_cast<int>(100 + i));
 
   // Set the cutoff to drop two textures. Try to request_late on all textures,
   // and make sure that request_late doesn't work on a texture with equal
@@ -464,7 +464,7 @@ TEST_F(PrioritizedResourceTest, EvictingTexturesInParent) {
   for (size_t i = 0; i < kMaxTextures; ++i) {
     textures[i] =
         resource_manager->CreateTexture(texture_size_, texture_format_);
-    textures[i]->set_request_priority(100 + i);
+    textures[i]->set_request_priority(base::checked_cast<int>(100 + i));
   }
 
   PrioritizeTexturesAndBackings(resource_manager.get());
@@ -613,7 +613,7 @@ TEST_F(PrioritizedResourceTest, ResourceManagerPartialUpdateTextures) {
   }
 
   for (size_t i = 0; i < kNumTextures; ++i)
-    textures[i]->set_request_priority(200 + i);
+    textures[i]->set_request_priority(base::checked_cast<int>(200 + i));
   PrioritizeTexturesAndBackings(resource_manager.get());
 
   // Allocate textures which are currently high priority.
@@ -628,7 +628,7 @@ TEST_F(PrioritizedResourceTest, ResourceManagerPartialUpdateTextures) {
   EXPECT_TRUE(textures[3]->have_backing_texture());
 
   for (size_t i = 0; i < kNumTextures; ++i)
-    more_textures[i]->set_request_priority(100 + i);
+    more_textures[i]->set_request_priority(base::checked_cast<int>(100 + i));
   PrioritizeTexturesAndBackings(resource_manager.get());
 
   // Textures are now below cutoff.
@@ -796,7 +796,7 @@ TEST_F(PrioritizedResourceTest,
 
   // Set decreasing non-visible priorities outside root surface.
   for (size_t i = 0; i < kMaxTextures; ++i)
-    textures[i]->set_request_priority(100 + i);
+    textures[i]->set_request_priority(base::checked_cast<int>(100 + i));
 
   // Only lower half should be available.
   PrioritizeTexturesAndBackings(resource_manager.get());
@@ -807,7 +807,7 @@ TEST_F(PrioritizedResourceTest,
 
   // Set increasing non-visible priorities outside root surface.
   for (size_t i = 0; i < kMaxTextures; ++i)
-    textures[i]->set_request_priority(100 - i);
+    textures[i]->set_request_priority(base::checked_cast<int>(100 - i));
 
   // Only upper half should be available.
   PrioritizeTexturesAndBackings(resource_manager.get());

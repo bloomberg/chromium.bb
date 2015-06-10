@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/auto_reset.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -70,7 +71,7 @@ TestOrderablePendingTask::AsValue() const {
 
 void TestOrderablePendingTask::AsValueInto(
     base::trace_event::TracedValue* state) const {
-  state->SetInteger("id", task_id_);
+  state->SetInteger("id", base::saturated_cast<int>(task_id_));
   state->SetInteger("run_at", GetTimeToRun().ToInternalValue());
   state->SetString("posted_from", location.ToString());
 }
@@ -271,7 +272,8 @@ OrderedSimpleTaskRunner::AsValue() const {
 
 void OrderedSimpleTaskRunner::AsValueInto(
     base::trace_event::TracedValue* state) const {
-  state->SetInteger("pending_tasks", pending_tasks_.size());
+  state->SetInteger("pending_tasks",
+                    base::saturated_cast<int>(pending_tasks_.size()));
 
   state->BeginArray("tasks");
   for (std::set<TestOrderablePendingTask>::const_iterator it =

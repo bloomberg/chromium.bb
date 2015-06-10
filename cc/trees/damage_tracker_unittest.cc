@@ -60,16 +60,17 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
 
   // Iterate back-to-front, so that damage correctly propagates from descendant
   // surfaces to ancestors.
-  for (int i = render_surface_layer_list.size() - 1; i >= 0; --i) {
+  size_t render_surface_layer_list_size = render_surface_layer_list.size();
+  for (size_t i = 0; i < render_surface_layer_list_size; ++i) {
+    size_t index = render_surface_layer_list_size - 1 - i;
     RenderSurfaceImpl* target_surface =
-            render_surface_layer_list[i]->render_surface();
+        render_surface_layer_list[index]->render_surface();
     target_surface->damage_tracker()->UpdateDamageTrackingState(
-        target_surface->layer_list(),
-        target_surface->OwningLayerId(),
+        target_surface->layer_list(), target_surface->OwningLayerId(),
         target_surface->SurfacePropertyChangedOnlyFromDescendant(),
         target_surface->content_rect(),
-        render_surface_layer_list[i]->mask_layer(),
-        render_surface_layer_list[i]->filters());
+        render_surface_layer_list[index]->mask_layer(),
+        render_surface_layer_list[index]->filters());
   }
 
   root->ResetAllChangeTrackingForSubtree();

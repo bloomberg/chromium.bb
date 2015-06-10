@@ -1443,7 +1443,7 @@ class LayerTreeHostTestOpacityChange : public LayerTreeHostTest {
   void AfterTest() override {
     // Update() should have been called once.
     if (is_impl_paint_)
-      EXPECT_EQ(1u, update_check_picture_layer_->update_count());
+      EXPECT_EQ(1, update_check_picture_layer_->update_count());
     else
       EXPECT_EQ(1, update_check_content_layer_->PaintContentsCount());
   }
@@ -4119,7 +4119,7 @@ class LayerTreeHostTestUpdateLayerInEmptyViewport : public LayerTreeHostTest {
   void DidCommit() override {
     // The layer should be updated even though the viewport is empty, so we
     // are capable of drawing it on the impl tree.
-    EXPECT_GT(root_layer_->update_count(), 0u);
+    EXPECT_GT(root_layer_->update_count(), 0);
     EndTest();
   }
 

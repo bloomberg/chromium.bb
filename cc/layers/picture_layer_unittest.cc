@@ -150,16 +150,16 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   // The PictureLayer is put in one LayerTreeHost.
   host1->SetRootLayer(layer);
   // Do a main frame, record the picture layers.
-  EXPECT_EQ(0u, layer->update_count());
+  EXPECT_EQ(0, layer->update_count());
   layer->SetNeedsDisplay();
   host1->Composite(base::TimeTicks::Now());
-  EXPECT_EQ(1u, layer->update_count());
+  EXPECT_EQ(1, layer->update_count());
   EXPECT_EQ(1, host1->source_frame_number());
 
   // The source frame number in |host1| is now higher than host2.
   layer->SetNeedsDisplay();
   host1->Composite(base::TimeTicks::Now());
-  EXPECT_EQ(2u, layer->update_count());
+  EXPECT_EQ(2, layer->update_count());
   EXPECT_EQ(2, host1->source_frame_number());
 
   // Then moved to another LayerTreeHost.
@@ -170,7 +170,7 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
   // non-monotonically.
   layer->SetNeedsDisplay();
   host2->Composite(base::TimeTicks::Now());
-  EXPECT_EQ(3u, layer->update_count());
+  EXPECT_EQ(3, layer->update_count());
   EXPECT_EQ(1, host2->source_frame_number());
 }
 

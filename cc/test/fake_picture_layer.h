@@ -28,7 +28,7 @@ class FakePictureLayer : public PictureLayer {
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
-  size_t update_count() const { return update_count_; }
+  int update_count() const { return update_count_; }
   void reset_update_count() { update_count_ = 0; }
 
   size_t push_properties_count() const { return push_properties_count_; }
@@ -57,7 +57,7 @@ class FakePictureLayer : public PictureLayer {
                    scoped_ptr<RecordingSource> source);
   ~FakePictureLayer() override;
 
-  size_t update_count_;
+  int update_count_;
   size_t push_properties_count_;
   size_t output_surface_created_count_;
   bool always_update_resources_;

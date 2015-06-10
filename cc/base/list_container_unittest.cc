@@ -513,16 +513,16 @@ TEST(ListContainerTest, SimpleReverseInsertionNonDerivedElement) {
 TEST(ListContainerTest, SimpleDeletion) {
   ListContainer<DerivedElement> list(kCurrentLargestDerivedElementSize);
   std::vector<SimpleDerivedElement*> sde_list;
-  size_t size = 10;
-  for (size_t i = 0; i < size; ++i) {
+  int size = 10;
+  for (int i = 0; i < size; ++i) {
     sde_list.push_back(list.AllocateAndConstruct<SimpleDerivedElement>());
     sde_list.back()->set_value(i);
   }
-  EXPECT_EQ(size, list.size());
+  EXPECT_EQ(static_cast<size_t>(size), list.size());
 
   list.EraseAndInvalidateAllPointers(list.begin());
   --size;
-  EXPECT_EQ(size, list.size());
+  EXPECT_EQ(static_cast<size_t>(size), list.size());
   int i = 1;
   for (ListContainer<DerivedElement>::Iterator iter = list.begin();
        iter != list.end(); ++iter) {
@@ -643,13 +643,13 @@ TEST(ListContainerTest, SimpleIterationAndManipulation) {
 TEST(ListContainerTest, SimpleManipulationWithIndexSimpleDerivedElement) {
   ListContainer<DerivedElement> list(kCurrentLargestDerivedElementSize);
   std::vector<SimpleDerivedElement*> de_list;
-  size_t size = 10;
-  for (size_t i = 0; i < size; ++i) {
+  int size = 10;
+  for (int i = 0; i < size; ++i) {
     de_list.push_back(list.AllocateAndConstruct<SimpleDerivedElement>());
   }
-  EXPECT_EQ(size, list.size());
+  EXPECT_EQ(static_cast<size_t>(size), list.size());
 
-  for (size_t i = 0; i < size; ++i) {
+  for (int i = 0; i < size; ++i) {
     static_cast<SimpleDerivedElement*>(list.ElementAt(i))->set_value(i);
   }
 
@@ -665,13 +665,13 @@ TEST(ListContainerTest,
      SimpleManipulationWithIndexMoreThanOneAllocationSimpleDerivedElement) {
   ListContainer<DerivedElement> list(LargestDerivedElementSize(), 2);
   std::vector<SimpleDerivedElement*> de_list;
-  size_t size = 10;
-  for (size_t i = 0; i < size; ++i) {
+  int size = 10;
+  for (int i = 0; i < size; ++i) {
     de_list.push_back(list.AllocateAndConstruct<SimpleDerivedElement>());
   }
-  EXPECT_EQ(size, list.size());
+  EXPECT_EQ(static_cast<size_t>(size), list.size());
 
-  for (size_t i = 0; i < size; ++i) {
+  for (int i = 0; i < size; ++i) {
     static_cast<SimpleDerivedElement*>(list.ElementAt(i))->set_value(i);
   }
 

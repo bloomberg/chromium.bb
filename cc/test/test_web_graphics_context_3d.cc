@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/numerics/safe_conversions.h"
 #include "cc/test/test_context_support.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -553,7 +554,9 @@ void TestWebGraphicsContext3D::bufferData(GLenum target,
   if (data != NULL)
     memcpy(buffer->pixels.get(), data, size);
   if (buffer->target == GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM)
-    current_used_transfer_buffer_usage_bytes_ += buffer->size - old_size;
+    current_used_transfer_buffer_usage_bytes_ +=
+        base::checked_cast<int>(buffer->size) -
+        base::checked_cast<int>(old_size);
   max_used_transfer_buffer_usage_bytes_ =
       std::max(max_used_transfer_buffer_usage_bytes_,
                current_used_transfer_buffer_usage_bytes_);
