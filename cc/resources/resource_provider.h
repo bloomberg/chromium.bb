@@ -107,7 +107,6 @@ class CC_EXPORT ResourceProvider {
   bool InUseByConsumer(ResourceId id);
 
   bool IsLost(ResourceId id);
-  bool AllowOverlay(ResourceId id);
 
   // Producer interface.
 
@@ -503,7 +502,6 @@ class CC_EXPORT ResourceProvider {
     bool allocated : 1;
     bool read_lock_fences_enabled : 1;
     bool has_shared_bitmap_id : 1;
-    bool allow_overlay : 1;
     scoped_refptr<Fence> read_lock_fence;
     gfx::Size size;
     Origin origin;

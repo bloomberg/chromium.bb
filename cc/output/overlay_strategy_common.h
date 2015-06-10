@@ -17,8 +17,7 @@ class OverlayCandidate;
 
 class CC_EXPORT OverlayStrategyCommon : public OverlayProcessor::Strategy {
  public:
-  OverlayStrategyCommon(OverlayCandidateValidator* capability_checker,
-                        ResourceProvider* resource_provider);
+  OverlayStrategyCommon();
   ~OverlayStrategyCommon() override;
 
  protected:
@@ -37,9 +36,6 @@ class CC_EXPORT OverlayStrategyCommon : public OverlayProcessor::Strategy {
                           OverlayCandidate* quad_info);
   bool GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
                         OverlayCandidate* quad_info);
-
-  OverlayCandidateValidator* capability_checker_;
-  ResourceProvider* resource_provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategyCommon);

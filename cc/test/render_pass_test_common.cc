@@ -144,12 +144,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
 
   StreamVideoDrawQuad* stream_video_quad =
       this->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
-  stream_video_quad->SetNew(shared_state,
-                            rect,
-                            opaque_rect,
-                            visible_rect,
-                            resource6,
-                            gfx::Transform());
+  stream_video_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
+                            resource6, gfx::Size(), false, gfx::Transform());
 
   TextureDrawQuad* texture_quad =
       this->CreateAndAppendDrawQuad<TextureDrawQuad>();

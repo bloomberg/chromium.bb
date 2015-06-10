@@ -133,8 +133,7 @@ DirectRenderer::DirectRenderer(RendererClient* client,
     : Renderer(client, settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider),
-      overlay_processor_(
-          new OverlayProcessor(output_surface, resource_provider)) {
+      overlay_processor_(new OverlayProcessor(output_surface)) {
   overlay_processor_->Initialize();
 }
 

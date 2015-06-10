@@ -29,7 +29,7 @@ class CC_EXPORT OverlayProcessor {
   };
   typedef ScopedPtrVector<Strategy> StrategyList;
 
-  OverlayProcessor(OutputSurface* surface, ResourceProvider* resource_provider);
+  explicit OverlayProcessor(OutputSurface* surface);
   virtual ~OverlayProcessor();
   // Virtual to allow testing different strategies.
   virtual void Initialize();
@@ -40,7 +40,6 @@ class CC_EXPORT OverlayProcessor {
  protected:
   StrategyList strategies_;
   OutputSurface* surface_;
-  ResourceProvider* resource_provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessor);

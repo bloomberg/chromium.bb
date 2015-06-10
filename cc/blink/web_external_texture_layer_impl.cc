@@ -87,10 +87,10 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
   if (bitmap) {
     *mailbox = cc::TextureMailbox(bitmap->shared_bitmap(), bitmap->size());
   } else {
-    *mailbox =
-        cc::TextureMailbox(name, GL_TEXTURE_2D, client_mailbox.syncPoint);
+    // TODO(achaulk): pass a valid size here if allowOverlay is set.
+    *mailbox = cc::TextureMailbox(name, GL_TEXTURE_2D, client_mailbox.syncPoint,
+                                  gfx::Size(), client_mailbox.allowOverlay);
   }
-  mailbox->set_allow_overlay(client_mailbox.allowOverlay);
   mailbox->set_nearest_neighbor(client_mailbox.nearestNeighbor);
 
   if (mailbox->IsValid()) {

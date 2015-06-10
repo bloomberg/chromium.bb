@@ -169,6 +169,8 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const StreamVideoDrawQuad* a, const StreamVideoDrawQuad* b) {
     EXPECT_EQ(a->resource_id(), b->resource_id());
+    EXPECT_EQ(a->resource_size_in_pixels(), b->resource_size_in_pixels());
+    EXPECT_EQ(a->allow_overlay(), b->allow_overlay());
     EXPECT_EQ(a->matrix, b->matrix);
   }
 
@@ -178,6 +180,8 @@ class CCMessagesTest : public testing::Test {
 
   void Compare(const TextureDrawQuad* a, const TextureDrawQuad* b) {
     EXPECT_EQ(a->resource_id(), b->resource_id());
+    EXPECT_EQ(a->resource_size_in_pixels(), b->resource_size_in_pixels());
+    EXPECT_EQ(a->allow_overlay(), b->allow_overlay());
     EXPECT_EQ(a->premultiplied_alpha, b->premultiplied_alpha);
     EXPECT_EQ(a->uv_top_left, b->uv_top_left);
     EXPECT_EQ(a->uv_bottom_right, b->uv_bottom_right);
@@ -263,6 +267,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   bool arbitrary_bool2 = false;
   bool arbitrary_bool3 = true;
   bool arbitrary_bool4 = true;
+  bool arbitrary_bool5 = false;
   int arbitrary_context_id1 = 12;
   int arbitrary_context_id2 = 57;
   int arbitrary_context_id3 = -503;
@@ -397,10 +402,10 @@ TEST_F(CCMessagesTest, AllQuads) {
 
   StreamVideoDrawQuad* streamvideo_in =
       pass_in->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
-  streamvideo_in->SetAll(shared_state3_in, arbitrary_rect2,
-                         arbitrary_rect2_inside_rect2,
-                         arbitrary_rect1_inside_rect2, arbitrary_bool1,
-                         arbitrary_resourceid2, arbitrary_matrix1);
+  streamvideo_in->SetAll(
+      shared_state3_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
+      arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_resourceid2,
+      arbitrary_size1, arbitrary_bool2, arbitrary_matrix1);
   pass_cmp->CopyFromAndAppendDrawQuad(streamvideo_in,
                                       streamvideo_in->shared_quad_state);
 
@@ -418,19 +423,12 @@ TEST_F(CCMessagesTest, AllQuads) {
 
   TextureDrawQuad* texture_in =
       pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  texture_in->SetAll(shared_state3_in,
-                     arbitrary_rect2,
-                     arbitrary_rect2_inside_rect2,
-                     arbitrary_rect1_inside_rect2,
-                     arbitrary_bool1,
-                     arbitrary_resourceid1,
-                     arbitrary_bool2,
-                     arbitrary_pointf1,
-                     arbitrary_pointf2,
-                     arbitrary_color,
-                     arbitrary_float_array,
-                     arbitrary_bool3,
-                     arbitrary_bool4);
+  texture_in->SetAll(shared_state3_in, arbitrary_rect2,
+                     arbitrary_rect2_inside_rect2, arbitrary_rect1_inside_rect2,
+                     arbitrary_bool1, arbitrary_resourceid1, arbitrary_size1,
+                     arbitrary_bool2, arbitrary_bool3, arbitrary_pointf1,
+                     arbitrary_pointf2, arbitrary_color, arbitrary_float_array,
+                     arbitrary_bool4, arbitrary_bool5);
   pass_cmp->CopyFromAndAppendDrawQuad(texture_in,
                                       texture_in->shared_quad_state);
 

@@ -59,6 +59,8 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& visible_rect,
                              bool needs_blending,
                              unsigned resource_id,
+                             gfx::Size resource_size_in_pixels,
+                             bool allow_overlay,
                              bool premultiplied_alpha,
                              const gfx::PointF& uv_top_left,
                              const gfx::PointF& uv_bottom_right,
@@ -69,6 +71,8 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;
+  overlay_resources.size_in_pixels[kResourceIdIndex] = resource_size_in_pixels;
+  overlay_resources.allow_overlay[kResourceIdIndex] = allow_overlay;
   resources.count = 1;
   this->premultiplied_alpha = premultiplied_alpha;
   this->uv_top_left = uv_top_left;
@@ -103,6 +107,11 @@ void TextureDrawQuad::ExtendValue(base::trace_event::TracedValue* value) const {
 
   value->SetBoolean("y_flipped", y_flipped);
   value->SetBoolean("nearest_neighbor", nearest_neighbor);
+}
+
+TextureDrawQuad::OverlayResources::OverlayResources() {
+  for (size_t i = 0; i < Resources::kMaxResourceIdCount; ++i)
+    allow_overlay[i] = false;
 }
 
 }  // namespace cc

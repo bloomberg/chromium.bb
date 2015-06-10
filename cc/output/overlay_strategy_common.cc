@@ -16,29 +16,21 @@
 
 namespace cc {
 
-OverlayStrategyCommon::OverlayStrategyCommon(
-    OverlayCandidateValidator* capability_checker,
-    ResourceProvider* resource_provider)
-    : capability_checker_(capability_checker),
-      resource_provider_(resource_provider) {
+OverlayStrategyCommon::OverlayStrategyCommon() {
 }
 
 OverlayStrategyCommon::~OverlayStrategyCommon() {
 }
 
 bool OverlayStrategyCommon::IsOverlayQuad(const DrawQuad* draw_quad) {
-  unsigned int resource_id;
   switch (draw_quad->material) {
     case DrawQuad::TEXTURE_CONTENT:
-      resource_id = TextureDrawQuad::MaterialCast(draw_quad)->resource_id();
-      break;
+      return TextureDrawQuad::MaterialCast(draw_quad)->allow_overlay();
     case DrawQuad::STREAM_VIDEO_CONTENT:
-      resource_id = StreamVideoDrawQuad::MaterialCast(draw_quad)->resource_id();
-      break;
+      return StreamVideoDrawQuad::MaterialCast(draw_quad)->allow_overlay();
     default:
       return false;
   }
-  return resource_provider_->AllowOverlay(resource_id);
 }
 
 bool OverlayStrategyCommon::IsInvisibleQuad(const DrawQuad* draw_quad) {
@@ -64,6 +56,7 @@ bool OverlayStrategyCommon::GetTextureQuadInfo(const TextureDrawQuad& quad,
       overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID)
     return false;
   quad_info->resource_id = quad.resource_id();
+  quad_info->resource_size_in_pixels = quad.resource_size_in_pixels();
   quad_info->transform = overlay_transform;
   quad_info->uv_rect = BoundingRect(quad.uv_top_left, quad.uv_bottom_right);
   return true;
@@ -82,6 +75,7 @@ bool OverlayStrategyCommon::GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
     return false;
   }
   quad_info->resource_id = quad.resource_id();
+  quad_info->resource_size_in_pixels = quad.resource_size_in_pixels();
   quad_info->transform = overlay_transform;
 
   gfx::Point3F uv0 = gfx::Point3F(0, 0, 0);

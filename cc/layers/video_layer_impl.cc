@@ -125,7 +125,9 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
         external_resources.mailboxes[i],
         SingleReleaseCallbackImpl::Create(
             external_resources.release_callbacks[i]));
-    frame_resources_.push_back(resource_id);
+    frame_resources_.push_back(FrameResource(
+        resource_id, external_resources.mailboxes[i].size_in_pixels(),
+        external_resources.mailboxes[i].allow_overlay()));
   }
 
   return true;
@@ -271,8 +273,10 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       yuv_video_quad->SetNew(
           shared_quad_state, quad_rect, opaque_rect, visible_quad_rect,
           ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size, uv_tex_size,
-          frame_resources_[0], frame_resources_[1], frame_resources_[2],
-          frame_resources_.size() > 3 ? frame_resources_[3] : 0, color_space);
+          frame_resources_[0].id, frame_resources_[1].id,
+          frame_resources_[2].id,
+          frame_resources_.size() > 3 ? frame_resources_[3].id : 0,
+          color_space);
       ValidateQuadResources(yuv_video_quad);
       break;
     }
@@ -290,17 +294,10 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       bool nearest_neighbor = false;
       TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      texture_quad->SetNew(shared_quad_state,
-                           quad_rect,
-                           opaque_rect,
-                           visible_quad_rect,
-                           frame_resources_[0],
-                           premultiplied_alpha,
-                           uv_top_left,
-                           uv_bottom_right,
-                           SK_ColorTRANSPARENT,
-                           opacity,
-                           flipped,
+      texture_quad->SetNew(shared_quad_state, quad_rect, opaque_rect,
+                           visible_quad_rect, frame_resources_[0].id,
+                           premultiplied_alpha, uv_top_left, uv_bottom_right,
+                           SK_ColorTRANSPARENT, opacity, flipped,
                            nearest_neighbor);
       ValidateQuadResources(texture_quad);
       break;
@@ -315,7 +312,8 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
           render_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
       stream_video_quad->SetNew(
           shared_quad_state, quad_rect, opaque_rect, visible_quad_rect,
-          frame_resources_[0],
+          frame_resources_[0].id, frame_resources_[0].size_in_pixels,
+          frame_resources_[0].allow_overlay,
           scale * provider_client_impl_->StreamTextureMatrix());
       ValidateQuadResources(stream_video_quad);
       break;
@@ -326,12 +324,9 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
         break;
       IOSurfaceDrawQuad* io_surface_quad =
           render_pass->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
-      io_surface_quad->SetNew(shared_quad_state,
-                              quad_rect,
-                              opaque_rect,
-                              visible_quad_rect,
-                              visible_rect.size(),
-                              frame_resources_[0],
+      io_surface_quad->SetNew(shared_quad_state, quad_rect, opaque_rect,
+                              visible_quad_rect, visible_rect.size(),
+                              frame_resources_[0].id,
                               IOSurfaceDrawQuad::UNFLIPPED);
       ValidateQuadResources(io_surface_quad);
       break;
@@ -383,7 +378,7 @@ void VideoLayerImpl::DidDraw(ResourceProvider* resource_provider) {
     software_release_callback_.Reset();
   } else {
     for (size_t i = 0; i < frame_resources_.size(); ++i)
-      resource_provider->DeleteResource(frame_resources_[i]);
+      resource_provider->DeleteResource(frame_resources_[i].id);
     frame_resources_.clear();
   }
 

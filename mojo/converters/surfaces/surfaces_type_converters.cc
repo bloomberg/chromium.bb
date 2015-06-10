@@ -129,19 +129,15 @@ bool ConvertDrawQuad(const QuadPtr& input,
       cc::TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
       texture_quad->SetAll(
-          sqs,
-          input->rect.To<gfx::Rect>(),
-          input->opaque_rect.To<gfx::Rect>(),
-          input->visible_rect.To<gfx::Rect>(),
-          input->needs_blending,
-          texture_quad_state->resource_id,
+          sqs, input->rect.To<gfx::Rect>(), input->opaque_rect.To<gfx::Rect>(),
+          input->visible_rect.To<gfx::Rect>(), input->needs_blending,
+          texture_quad_state->resource_id, gfx::Size(), false,
           texture_quad_state->premultiplied_alpha,
           texture_quad_state->uv_top_left.To<gfx::PointF>(),
           texture_quad_state->uv_bottom_right.To<gfx::PointF>(),
           texture_quad_state->background_color.To<SkColor>(),
           &texture_quad_state->vertex_opacity.storage()[0],
-          texture_quad_state->y_flipped,
-          texture_quad_state->nearest_neighbor);
+          texture_quad_state->y_flipped, texture_quad_state->nearest_neighbor);
       break;
     }
     case MATERIAL_TILED_CONTENT: {

@@ -2029,9 +2029,8 @@ class TestOverlayProcessor : public OverlayProcessor {
                       OverlayCandidateList* candidates));
   };
 
-  TestOverlayProcessor(OutputSurface* surface,
-                       ResourceProvider* resource_provider)
-      : OverlayProcessor(surface, resource_provider) {}
+  explicit TestOverlayProcessor(OutputSurface* surface)
+      : OverlayProcessor(surface) {}
   ~TestOverlayProcessor() override {}
   void Initialize() override {
     strategy_ = new Strategy();
@@ -2069,7 +2068,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                           resource_provider.get(), mailbox_deleter.get());
 
   TestOverlayProcessor* processor =
-      new TestOverlayProcessor(output_surface.get(), resource_provider.get());
+      new TestOverlayProcessor(output_surface.get());
   processor->Initialize();
   renderer.SetOverlayProcessor(processor);
 
@@ -2084,7 +2083,6 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   unsigned sync_point = 0;
   TextureMailbox mailbox =
       TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
-  mailbox.set_allow_overlay(true);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
   ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
@@ -2101,6 +2099,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                        premultiplied_alpha, gfx::PointF(0, 0),
                        gfx::PointF(1, 1), SK_ColorTRANSPARENT, vertex_opacity,
                        flipped, nearest_neighbor);
+  overlay_quad->set_allow_overlay(true);
 
   // DirectRenderer::DrawFrame calls into OverlayProcessor::ProcessForOverlays.
   // Attempt will be called for each strategy in OverlayProcessor. We have
@@ -2140,13 +2139,12 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
     }
   };
 
-  SingleOverlayOnTopProcessor(OutputSurface* surface,
-                              ResourceProvider* resource_provider)
-      : OverlayProcessor(surface, resource_provider) {}
+  explicit SingleOverlayOnTopProcessor(OutputSurface* surface)
+      : OverlayProcessor(surface) {}
 
   void Initialize() override {
-    strategies_.push_back(scoped_ptr<Strategy>(
-        new OverlayStrategySingleOnTop(&validator_, resource_provider_)));
+    strategies_.push_back(
+        scoped_ptr<Strategy>(new OverlayStrategySingleOnTop(&validator_)));
   }
 
   SingleOverlayValidator validator_;
@@ -2195,8 +2193,8 @@ TEST_F(GLRendererTest, OverlaySyncPointsAreProcessed) {
   FakeRendererGL renderer(&renderer_client, &settings, output_surface.get(),
                           resource_provider.get(), mailbox_deleter.get());
 
-  SingleOverlayOnTopProcessor* processor = new SingleOverlayOnTopProcessor(
-      output_surface.get(), resource_provider.get());
+  SingleOverlayOnTopProcessor* processor =
+      new SingleOverlayOnTopProcessor(output_surface.get());
   processor->Initialize();
   renderer.SetOverlayProcessor(processor);
 
@@ -2209,7 +2207,6 @@ TEST_F(GLRendererTest, OverlaySyncPointsAreProcessed) {
   unsigned sync_point = TestRenderPass::kSyncPointForMailboxTextureQuad;
   TextureMailbox mailbox =
       TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
-  mailbox.set_allow_overlay(true);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
   ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
@@ -2230,6 +2227,7 @@ TEST_F(GLRendererTest, OverlaySyncPointsAreProcessed) {
                        viewport_rect, resource_id, premultiplied_alpha,
                        uv_top_left, uv_bottom_right, SK_ColorTRANSPARENT,
                        vertex_opacity, flipped, nearest_neighbor);
+  overlay_quad->set_allow_overlay(true);
 
   // Verify that overlay_quad actually gets turned into an overlay, and even
   // though it's not drawn, that its sync point is waited on.

@@ -57,6 +57,8 @@ void BrowserCompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
     ozone_surface_list.at(i).display_rect = surfaces->at(i).display_rect;
     ozone_surface_list.at(i).crop_rect = surfaces->at(i).uv_rect;
     ozone_surface_list.at(i).plane_z_order = surfaces->at(i).plane_z_order;
+    ozone_surface_list.at(i).buffer_size =
+        surfaces->at(i).resource_size_in_pixels;
   }
 
   overlay_candidates_->CheckOverlaySupport(&ozone_surface_list);

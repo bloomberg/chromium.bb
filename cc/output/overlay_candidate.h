@@ -34,6 +34,8 @@ class CC_EXPORT OverlayCandidate {
   gfx::OverlayTransform transform;
   // Format of the buffer to composite.
   ResourceFormat format;
+  // Size of the resource, in pixels.
+  gfx::Size resource_size_in_pixels;
   // Rect on the display to position the overlay to. Implementer must convert
   // to integer coordinates if setting |overlay_handled| to true.
   gfx::RectF display_rect;

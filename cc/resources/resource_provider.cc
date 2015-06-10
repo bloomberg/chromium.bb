@@ -278,7 +278,6 @@ ResourceProvider::Resource::Resource(GLuint texture_id,
       allocated(false),
       read_lock_fences_enabled(false),
       has_shared_bitmap_id(false),
-      allow_overlay(false),
       read_lock_fence(NULL),
       size(size),
       origin(origin),
@@ -322,7 +321,6 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
       allocated(false),
       read_lock_fences_enabled(false),
       has_shared_bitmap_id(!!bitmap),
-      allow_overlay(false),
       read_lock_fence(NULL),
       size(size),
       origin(origin),
@@ -367,7 +365,6 @@ ResourceProvider::Resource::Resource(const SharedBitmapId& bitmap_id,
       allocated(false),
       read_lock_fences_enabled(false),
       has_shared_bitmap_id(true),
-      allow_overlay(false),
       read_lock_fence(NULL),
       size(size),
       origin(origin),
@@ -449,11 +446,6 @@ bool ResourceProvider::InUseByConsumer(ResourceId id) {
 bool ResourceProvider::IsLost(ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->lost;
-}
-
-bool ResourceProvider::AllowOverlay(ResourceId id) {
-  Resource* resource = GetResource(id);
-  return resource->allow_overlay;
 }
 
 ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
@@ -575,7 +567,7 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     uint8_t* pixels = shared_bitmap->pixels();
     DCHECK(pixels);
     resource = InsertResource(
-        id, Resource(pixels, shared_bitmap, mailbox.shared_memory_size(),
+        id, Resource(pixels, shared_bitmap, mailbox.size_in_pixels(),
                      Resource::EXTERNAL, GL_LINEAR, GL_CLAMP_TO_EDGE));
   }
   resource->allocated = true;
@@ -583,7 +575,6 @@ ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
   resource->release_callback_impl =
       base::Bind(&SingleReleaseCallbackImpl::Run,
                  base::Owned(release_callback_impl.release()));
-  resource->allow_overlay = mailbox.allow_overlay();
   return id;
 }
 
@@ -1389,7 +1380,6 @@ void ResourceProvider::ReceiveFromChild(
     // Don't allocate a texture for a child.
     resource->allocated = true;
     resource->imported_count = 1;
-    resource->allow_overlay = it->allow_overlay;
     child_info.parent_to_child_map[local_id] = it->id;
     child_info.child_to_parent_map[it->id] = local_id;
   }
@@ -1493,7 +1483,6 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   resource->filter = source->filter;
   resource->size = source->size;
   resource->is_repeated = (source->wrap_mode == GL_REPEAT);
-  resource->allow_overlay = source->allow_overlay;
 
   if (source->type == RESOURCE_TYPE_BITMAP) {
     resource->mailbox_holder.mailbox = source->shared_bitmap_id;

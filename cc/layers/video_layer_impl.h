@@ -62,7 +62,16 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
 
   scoped_ptr<VideoResourceUpdater> updater_;
   VideoFrameExternalResources::ResourceType frame_resource_type_;
-  std::vector<ResourceId> frame_resources_;
+  struct FrameResource {
+    FrameResource(ResourceId id, gfx::Size size_in_pixels, bool allow_overlay)
+        : id(id),
+          size_in_pixels(size_in_pixels),
+          allow_overlay(allow_overlay) {}
+    ResourceId id;
+    gfx::Size size_in_pixels;
+    bool allow_overlay;
+  };
+  std::vector<FrameResource> frame_resources_;
 
   // TODO(danakj): Remove these, hide software path inside ResourceProvider and
   // ExternalResource (aka TextureMailbox) classes.

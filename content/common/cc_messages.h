@@ -126,6 +126,22 @@ struct CONTENT_EXPORT ParamTraits<cc::DrawQuad::Resources> {
   static void Log(const param_type& p, std::string* l);
 };
 
+template <>
+struct CONTENT_EXPORT ParamTraits<cc::StreamVideoDrawQuad::OverlayResources> {
+  typedef cc::StreamVideoDrawQuad::OverlayResources param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<cc::TextureDrawQuad::OverlayResources> {
+  typedef cc::TextureDrawQuad::OverlayResources param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, base::PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
 }  // namespace IPC
 
 #endif  // CONTENT_COMMON_CC_MESSAGES_H_
@@ -206,6 +222,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::StreamVideoDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
+  IPC_STRUCT_TRAITS_MEMBER(overlay_resources)
   IPC_STRUCT_TRAITS_MEMBER(matrix)
 IPC_STRUCT_TRAITS_END()
 
@@ -216,6 +233,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::TextureDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
+  IPC_STRUCT_TRAITS_MEMBER(overlay_resources)
   IPC_STRUCT_TRAITS_MEMBER(premultiplied_alpha)
   IPC_STRUCT_TRAITS_MEMBER(uv_top_left)
   IPC_STRUCT_TRAITS_MEMBER(uv_bottom_right)

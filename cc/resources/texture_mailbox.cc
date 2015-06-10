@@ -28,15 +28,28 @@ TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
       nearest_neighbor_(false) {
 }
 
+TextureMailbox::TextureMailbox(const gpu::Mailbox& mailbox,
+                               uint32 target,
+                               uint32 sync_point,
+                               const gfx::Size& size_in_pixels,
+                               bool allow_overlay)
+    : mailbox_holder_(mailbox, target, sync_point),
+      shared_bitmap_(nullptr),
+      size_in_pixels_(size_in_pixels),
+      allow_overlay_(allow_overlay),
+      nearest_neighbor_(false) {
+  DCHECK_IMPLIES(allow_overlay, !size_in_pixels.IsEmpty());
+}
+
 TextureMailbox::TextureMailbox(SharedBitmap* shared_bitmap,
-                               const gfx::Size& size)
+                               const gfx::Size& size_in_pixels)
     : shared_bitmap_(shared_bitmap),
-      shared_memory_size_(size),
+      size_in_pixels_(size_in_pixels),
       allow_overlay_(false),
       nearest_neighbor_(false) {
   // If an embedder of cc gives an invalid TextureMailbox, we should crash
   // here to identify the offender.
-  CHECK(SharedBitmap::VerifySizeInBytes(shared_memory_size_));
+  CHECK(SharedBitmap::VerifySizeInBytes(size_in_pixels_));
 }
 
 TextureMailbox::~TextureMailbox() {}
@@ -57,7 +70,7 @@ bool TextureMailbox::Equals(const TextureMailbox& other) const {
 size_t TextureMailbox::SharedMemorySizeInBytes() const {
   // UncheckedSizeInBytes is okay because we VerifySizeInBytes in the
   // constructor and the field is immutable.
-  return SharedBitmap::UncheckedSizeInBytes(shared_memory_size_);
+  return SharedBitmap::UncheckedSizeInBytes(size_in_pixels_);
 }
 
 }  // namespace cc

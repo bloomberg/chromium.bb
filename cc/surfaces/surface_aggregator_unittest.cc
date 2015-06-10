@@ -1352,19 +1352,10 @@ void SubmitFrameWithResources(ResourceId* resource_ids,
     const float vertex_opacity[4] = {0.f, 0.f, 1.f, 1.f};
     bool flipped = false;
     bool nearest_neighbor = false;
-    quad->SetAll(sqs,
-                 rect,
-                 opaque_rect,
-                 visible_rect,
-                 needs_blending,
-                 resource_ids[i],
-                 premultiplied_alpha,
-                 uv_top_left,
-                 uv_bottom_right,
-                 background_color,
-                 vertex_opacity,
-                 flipped,
-                 nearest_neighbor);
+    quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending,
+                 resource_ids[i], gfx::Size(), false, premultiplied_alpha,
+                 uv_top_left, uv_bottom_right, background_color, vertex_opacity,
+                 flipped, nearest_neighbor);
   }
   frame_data->render_pass_list.push_back(pass.Pass());
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);

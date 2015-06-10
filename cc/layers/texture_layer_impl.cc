@@ -99,12 +99,12 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
     // hardware draw.
     if (!texture_copy_)
       texture_copy_ = ScopedResource::Create(resource_provider);
-    if (texture_copy_->size() != texture_mailbox_.shared_memory_size() ||
+    if (texture_copy_->size() != texture_mailbox_.size_in_pixels() ||
         resource_provider->InUseByConsumer(texture_copy_->id()))
       texture_copy_->Free();
 
     if (!texture_copy_->id()) {
-      texture_copy_->Allocate(texture_mailbox_.shared_memory_size(),
+      texture_copy_->Allocate(texture_mailbox_.size_in_pixels(),
                               ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                               resource_provider->best_texture_format());
     }
@@ -126,12 +126,10 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
         pixels = &swizzled[0];
       }
 
-      resource_provider->SetPixels(
-          texture_copy_->id(),
-          pixels,
-          gfx::Rect(texture_mailbox_.shared_memory_size()),
-          gfx::Rect(texture_mailbox_.shared_memory_size()),
-          gfx::Vector2d());
+      resource_provider->SetPixels(texture_copy_->id(), pixels,
+                                   gfx::Rect(texture_mailbox_.size_in_pixels()),
+                                   gfx::Rect(texture_mailbox_.size_in_pixels()),
+                                   gfx::Vector2d());
 
       valid_texture_copy_ = true;
     }
@@ -179,6 +177,10 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
                vertex_opacity_,
                flipped_,
                nearest_neighbor_);
+  if (!valid_texture_copy_) {
+    quad->set_resource_size_in_pixels(texture_mailbox_.size_in_pixels());
+    quad->set_allow_overlay(texture_mailbox_.allow_overlay());
+  }
   ValidateQuadResources(quad);
 }
 

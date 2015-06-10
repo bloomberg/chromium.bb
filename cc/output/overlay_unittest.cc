@@ -78,11 +78,9 @@ void SingleOverlayValidator::CheckOverlaySupport(
 template <typename OverlayStrategyType>
 class SingleOverlayProcessor : public OverlayProcessor {
  public:
-  SingleOverlayProcessor(OutputSurface* surface,
-                         ResourceProvider* resource_provider)
-      : OverlayProcessor(surface, resource_provider) {
+  explicit SingleOverlayProcessor(OutputSurface* surface)
+      : OverlayProcessor(surface) {
     EXPECT_EQ(surface, surface_);
-    EXPECT_EQ(resource_provider, resource_provider_);
   }
 
   // Virtual to allow testing different strategies.
@@ -90,22 +88,20 @@ class SingleOverlayProcessor : public OverlayProcessor {
     OverlayCandidateValidator* candidates =
         surface_->GetOverlayCandidateValidator();
     ASSERT_TRUE(candidates != NULL);
-    strategies_.push_back(scoped_ptr<Strategy>(
-        new OverlayStrategyType(candidates, resource_provider_)));
+    strategies_.push_back(
+        scoped_ptr<Strategy>(new OverlayStrategyType(candidates)));
   }
 };
 
 class DefaultOverlayProcessor : public OverlayProcessor {
  public:
-  DefaultOverlayProcessor(OutputSurface* surface,
-                          ResourceProvider* resource_provider);
+  explicit DefaultOverlayProcessor(OutputSurface* surface);
   size_t GetStrategyCount();
 };
 
-DefaultOverlayProcessor::DefaultOverlayProcessor(
-    OutputSurface* surface,
-    ResourceProvider* resource_provider)
-    : OverlayProcessor(surface, resource_provider) {}
+DefaultOverlayProcessor::DefaultOverlayProcessor(OutputSurface* surface)
+    : OverlayProcessor(surface) {
+}
 
 size_t DefaultOverlayProcessor::GetStrategyCount() {
   return strategies_.size();
@@ -157,7 +153,6 @@ ResourceId CreateResource(ResourceProvider* resource_provider) {
   unsigned sync_point = 0;
   TextureMailbox mailbox =
       TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
-  mailbox.set_allow_overlay(true);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
       SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
 
@@ -185,6 +180,8 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
   bool flipped = false;
   bool nearest_neighbor = false;
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  gfx::Size resource_size_in_pixels = gfx::Size(64, 64);
+  bool allow_overlay = true;
 
   TextureDrawQuad* overlay_quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
@@ -200,6 +197,8 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
                        vertex_opacity,
                        flipped,
                        nearest_neighbor);
+  overlay_quad->set_allow_overlay(allow_overlay);
+  overlay_quad->set_resource_size_in_pixels(resource_size_in_pixels);
 
   return overlay_quad;
 }
@@ -211,11 +210,13 @@ StreamVideoDrawQuad* CreateCandidateVideoQuadAt(
     const gfx::Rect& rect,
     const gfx::Transform& transform) {
   ResourceId resource_id = CreateResource(resource_provider);
+  gfx::Size resource_size_in_pixels = gfx::Size(64, 64);
+  bool allow_overlay = true;
 
   StreamVideoDrawQuad* overlay_quad =
       render_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
   overlay_quad->SetNew(shared_quad_state, rect, rect, rect, resource_id,
-                       transform);
+                       resource_size_in_pixels, allow_overlay, transform);
 
   return overlay_quad;
 }
@@ -306,7 +307,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
       &output_surface, shared_bitmap_manager.get());
 
   scoped_ptr<DefaultOverlayProcessor> overlay_processor(
-      new DefaultOverlayProcessor(&output_surface, resource_provider.get()));
+      new DefaultOverlayProcessor(&output_surface));
   overlay_processor->Initialize();
   EXPECT_GE(2U, overlay_processor->GetStrategyCount());
 }
@@ -325,8 +326,8 @@ class OverlayTest : public testing::Test {
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), shared_bitmap_manager_.get());
 
-    overlay_processor_.reset(new SingleOverlayProcessor<OverlayStrategyType>(
-        output_surface_.get(), resource_provider_.get()));
+    overlay_processor_.reset(
+        new SingleOverlayProcessor<OverlayStrategyType>(output_surface_.get()));
     overlay_processor_->Initialize();
   }
 

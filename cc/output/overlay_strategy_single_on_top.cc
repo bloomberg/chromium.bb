@@ -12,9 +12,8 @@
 namespace cc {
 
 OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
-    OverlayCandidateValidator* capability_checker,
-    ResourceProvider* resource_provider)
-    : OverlayStrategyCommon(capability_checker, resource_provider) {
+    OverlayCandidateValidator* capability_checker)
+    : capability_checker_(capability_checker) {
 }
 
 bool OverlayStrategySingleOnTop::Attempt(

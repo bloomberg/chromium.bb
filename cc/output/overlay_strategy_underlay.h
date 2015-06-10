@@ -18,12 +18,14 @@ class TextureDrawQuad;
 // are fully opaque.
 class CC_EXPORT OverlayStrategyUnderlay : public OverlayStrategyCommon {
  public:
-  OverlayStrategyUnderlay(OverlayCandidateValidator* capability_checker,
-                          ResourceProvider* resource_provider);
+  explicit OverlayStrategyUnderlay(
+      OverlayCandidateValidator* capability_checker);
   bool Attempt(RenderPassList* render_passes_in_draw_order,
                OverlayCandidateList* candidate_list) override;
 
  private:
+  OverlayCandidateValidator* capability_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategyUnderlay);
 };
 

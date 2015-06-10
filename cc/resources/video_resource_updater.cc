@@ -417,9 +417,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(i);
     external_resources.mailboxes.push_back(
         TextureMailbox(mailbox_holder.mailbox, mailbox_holder.texture_target,
-                       mailbox_holder.sync_point));
-    external_resources.mailboxes.back().set_allow_overlay(
-        video_frame->allow_overlay());
+                       mailbox_holder.sync_point, video_frame->coded_size(),
+                       video_frame->allow_overlay()));
     external_resources.release_callbacks.push_back(
         base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));
   }
