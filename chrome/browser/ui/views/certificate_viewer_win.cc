@@ -43,10 +43,16 @@ void ShowCertificateViewerImpl(content::WebContents* web_contents,
   // while the the certificate dialog is open.
   base::MessageLoop::ScopedNestableTaskAllower allow(
       base::MessageLoop::current());
+
+  // Tell the message loop to only handle certain types of messages while the
+  // dialog is open to avoid bad things happening. See https://crbug.com/344012
+  // for details.
+  base::MessageLoop::current()->set_os_modal_loop(true);
   // This next call blocks but keeps processing windows messages, making it
   // modal to the browser window.
   ::CryptUIDlgViewCertificate(&view_info, &properties_changed);
 
+  base::MessageLoop::current()->set_os_modal_loop(false);
   CertFreeCertificateContext(cert_list);
 }
 
