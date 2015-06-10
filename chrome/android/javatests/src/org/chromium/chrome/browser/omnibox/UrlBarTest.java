@@ -264,6 +264,43 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     @SmallTest
     @Feature({"Omnibox"})
+    public void testSelectionChangesIgnoredInBatchMode() throws InterruptedException {
+        startMainActivityOnBlankPage();
+        stubLocationBarAutocomplete();
+        final UrlBar urlBar = getUrlBar();
+        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+
+        setTextAndVerifyNoAutocomplete(urlBar, "test");
+        setAutocomplete(urlBar, "test", "ing is fun");
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                urlBar.beginBatchEdit();
+            }
+        });
+        // Ensure the autocomplete is not modified if in batch mode.
+        AutocompleteState state = setSelection(urlBar, 1, 1);
+        assertTrue(state.hasAutocomplete);
+        assertEquals("test", state.textWithoutAutocomplete);
+        assertEquals("testing is fun", state.textWithAutocomplete);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                urlBar.endBatchEdit();
+            }
+        });
+
+        // Ensure that after batch mode has ended that the autocomplete is cleared due to the
+        // invalid selection range.
+        state = getAutocompleteState(urlBar, null);
+        assertFalse(state.hasAutocomplete);
+        assertEquals("test", state.textWithoutAutocomplete);
+        assertEquals("test", state.textWithAutocomplete);
+    }
+
+    @SmallTest
+    @Feature({"Omnibox"})
     public void testAutocompleteUpdatedOnDefocus() throws InterruptedException {
         startMainActivityOnBlankPage();
         stubLocationBarAutocomplete();

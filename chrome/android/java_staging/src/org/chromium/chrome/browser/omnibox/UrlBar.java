@@ -109,6 +109,8 @@ public class UrlBar extends VerticallyFixedEditText {
 
     private long mFirstFocusTimeMs;
 
+    private boolean mInBatchEditMode;
+
     /**
      * Implement this to get updates when the direction of the text in the URL bar changes.
      * E.g. If the user is typing a URL, then erases it and starts typing a query in Arabic,
@@ -272,6 +274,14 @@ public class UrlBar extends VerticallyFixedEditText {
     }
 
     /**
+     * @return Whether the URL is currently in batch edit mode triggered by an IME.  No external
+     *         text changes should be triggered while this is true.
+     */
+    public boolean isInBatchEditMode() {
+        return mInBatchEditMode;
+    }
+
+    /**
      * @return The user text without the autocomplete text.
      */
     public String getTextWithoutAutocomplete() {
@@ -292,7 +302,25 @@ public class UrlBar extends VerticallyFixedEditText {
     }
 
     @Override
+    public void onBeginBatchEdit() {
+        super.onBeginBatchEdit();
+        mInBatchEditMode = true;
+    }
+
+    @Override
+    public void onEndBatchEdit() {
+        super.onEndBatchEdit();
+        mInBatchEditMode = false;
+        validateSelection(getSelectionStart(), getSelectionEnd());
+    }
+
+    @Override
     protected void onSelectionChanged(int selStart, int selEnd) {
+        if (!mInBatchEditMode) validateSelection(selStart, selEnd);
+        super.onSelectionChanged(selStart, selEnd);
+    }
+
+    private void validateSelection(int selStart, int selEnd) {
         int spanStart = getText().getSpanStart(mAutocompleteSpan);
         int spanEnd = getText().getSpanEnd(mAutocompleteSpan);
         if (spanStart >= 0 && (spanStart != selStart || spanEnd != selEnd)) {
@@ -309,7 +337,6 @@ public class UrlBar extends VerticallyFixedEditText {
             // alone.  See crbug/273763 for more details.
             if (selEnd <= spanStart) getText().delete(spanStart, getText().length());
         }
-        super.onSelectionChanged(selStart, selEnd);
     }
 
     @Override
@@ -781,6 +808,7 @@ public class UrlBar extends VerticallyFixedEditText {
         }
     }
 
+    @VisibleForTesting
     InputConnectionWrapper mInputConnection = new InputConnectionWrapper(null, true) {
         private final char[] mTempSelectionChar = new char[1];
 
