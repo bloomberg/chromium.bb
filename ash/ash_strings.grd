@@ -258,10 +258,10 @@ Press Ctrl+Alt+Z to disable.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_CAST" desc="The label used as the header in the cast popup.">
-        Cast desktop to
+        Cast screen
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP" desc="The label used in the tray popup to tell the user we are casting the desktop.">
-        Casting desktop to $1
+        Casting screen to $1
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_TAB" desc="The title label used in the tray popup to tell the user we are casting a tab.">
         Casting $1 to $2
