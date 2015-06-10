@@ -3248,8 +3248,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 #pragma mark Session Information
 
 - (CRWSessionController*)sessionController {
-  DCHECK(_webStateImpl);
-  return _webStateImpl->GetNavigationManagerImpl().GetSessionController();
+  return _webStateImpl
+      ? _webStateImpl->GetNavigationManagerImpl().GetSessionController()
+      : nil;
 }
 
 - (CRWSessionEntry*)currentSessionEntry {
@@ -3392,6 +3393,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)applyPageScrollState:(const web::PageScrollState&)scrollState
                 userScalable:(BOOL)isUserScalable {
+  // Early return if |scrollState| doesn't match the current NavigationItem.
+  // This can sometimes occur in tests, as navigation occurs programmatically
+  // and |-applyPageScrollState:| is asynchronous.
+  web::NavigationItem* currentItem = [self currentSessionEntry].navigationItem;
+  if (currentItem && currentItem->GetPageScrollState() != scrollState)
+    return;
   DCHECK(scrollState.IsValid());
   if (isUserScalable) {
     [self prepareToApplyWebViewScrollZoomScale];

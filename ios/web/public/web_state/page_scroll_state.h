@@ -64,8 +64,9 @@ class PageScrollState {
   double zoom_scale() const { return zoom_scale_; }
   void set_zoom_scale(double zoom_scale) { zoom_scale_ = zoom_scale; }
 
-  // Comparator operator.
+  // Comparator operators.
   bool operator==(const PageScrollState& other) const;
+  bool operator!=(const PageScrollState& other) const;
 
  private:
   double scroll_offset_x_;

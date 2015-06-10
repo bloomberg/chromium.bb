@@ -69,4 +69,8 @@ bool PageScrollState::operator==(const PageScrollState& other) const {
          StateValuesAreEqual(zoom_scale_, other.zoom_scale_);
 }
 
+bool PageScrollState::operator!=(const PageScrollState& other) const {
+  return !(*this == other);
+}
+
 }  // namespace web
