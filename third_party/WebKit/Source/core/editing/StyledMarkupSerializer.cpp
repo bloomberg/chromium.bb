@@ -117,8 +117,6 @@ static PassRefPtrWillBeRawPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(c
 template<typename Strategy>
 String StyledMarkupSerializer<Strategy>::createMarkup()
 {
-    DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, ("<br class=\"" AppleInterchangeNewline "\">"));
-
     StyledMarkupAccumulator markupAccumulator(m_shouldResolveURLs, toTextOffset(m_start.parentAnchoredEquivalent()), toTextOffset(m_end.parentAnchoredEquivalent()), m_start.document(), m_shouldAnnotate, m_highestNodeToBeSerialized.get());
 
     Node* pastEnd = m_end.nodeAsRangePastLastNode();
@@ -127,15 +125,15 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
     VisiblePosition visibleStart(toPositionInDOMTree(m_start), VP_DEFAULT_AFFINITY);
     VisiblePosition visibleEnd(toPositionInDOMTree(m_end), VP_DEFAULT_AFFINITY);
     if (m_shouldAnnotate == AnnotateForInterchange && needInterchangeNewlineAfter(visibleStart)) {
+        markupAccumulator.appendInterchangeNewline();
         if (visibleStart == visibleEnd.previous())
-            return interchangeNewlineString;
+            return markupAccumulator.takeResults();
 
-        markupAccumulator.appendString(interchangeNewlineString);
         firstNode = visibleStart.next().deepEquivalent().deprecatedNode();
 
         if (pastEnd && Strategy::PositionType::beforeNode(firstNode).compareTo(Strategy::PositionType::beforeNode(pastEnd)) >= 0) {
             // This condition hits in editing/pasteboard/copy-display-none.html.
-            return interchangeNewlineString;
+            return markupAccumulator.takeResults();
         }
     }
 
@@ -186,7 +184,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
 
     // FIXME: The interchange newline should be placed in the block that it's in, not after all of the content, unconditionally.
     if (m_shouldAnnotate == AnnotateForInterchange && needInterchangeNewlineAt(visibleEnd))
-        markupAccumulator.appendString(interchangeNewlineString);
+        markupAccumulator.appendInterchangeNewline();
 
     return markupAccumulator.takeResults();
 }

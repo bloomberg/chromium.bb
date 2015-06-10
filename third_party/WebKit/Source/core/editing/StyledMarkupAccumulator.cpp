@@ -49,11 +49,6 @@ StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs
 {
 }
 
-void StyledMarkupAccumulator::appendString(const String& str)
-{
-    m_result.append(str);
-}
-
 void StyledMarkupAccumulator::appendStartTag(Node& node)
 {
     appendStartMarkup(m_result, node);
@@ -209,7 +204,7 @@ void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style)
     openTag.appendLiteral("\">");
     m_reversedPrecedingMarkup.append(openTag.toString());
 
-    appendString("</div>");
+    m_result.append("</div>");
 }
 
 String StyledMarkupAccumulator::takeResults()
@@ -265,6 +260,12 @@ bool StyledMarkupAccumulator::shouldAnnotate() const
 void StyledMarkupAccumulator::pushMarkup(const String& str)
 {
     m_reversedPrecedingMarkup.append(str);
+}
+
+void StyledMarkupAccumulator::appendInterchangeNewline()
+{
+    DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, ("<br class=\"" AppleInterchangeNewline "\">"));
+    m_result.append(interchangeNewlineString);
 }
 
 } // namespace blink

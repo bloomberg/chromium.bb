@@ -48,9 +48,9 @@ public:
 
     StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, Node*);
 
-    void appendString(const String&);
     void appendStartTag(Node&);
     void appendEndTag(const Element&);
+    void appendInterchangeNewline();
 
     // TODO(hajimehoshi): These functions are called from the serializer, but
     // should not.
