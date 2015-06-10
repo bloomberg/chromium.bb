@@ -41,6 +41,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       was_shutdown_(false),
       pending_main_thread_input_event_count_(0),
       awaiting_touch_start_response_(false),
+      begin_main_frame_on_critical_path_(false),
       last_input_type_(blink::WebInputEvent::Undefined),
       policy_may_need_update_(&incoming_signals_lock_),
       timer_queue_suspend_count_(0),
@@ -126,6 +127,7 @@ void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
 
   EndIdlePeriod();
   estimated_next_frame_begin_ = args.frame_time + args.interval;
+  begin_main_frame_on_critical_path_ = args.on_critical_path;
 }
 
 void RendererSchedulerImpl::DidCommitFrameToCompositor() {
@@ -591,6 +593,8 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                     pending_main_thread_input_event_count_);
   state->SetBoolean("awaiting_touch_start_response",
                     awaiting_touch_start_response_);
+  state->SetBoolean("begin_main_frame_on_critical_path",
+                    begin_main_frame_on_critical_path_);
   state->SetDouble(
       "estimated_next_frame_begin",
       (estimated_next_frame_begin_ - base::TimeTicks()).InMillisecondsF());

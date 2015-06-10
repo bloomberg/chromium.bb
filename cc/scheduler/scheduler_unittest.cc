@@ -3003,5 +3003,38 @@ TEST_F(SchedulerTest, AuthoritativeVSyncInterval) {
   EXPECT_EQ(authoritative_interval, scheduler_->BeginImplFrameInterval());
 }
 
+TEST_F(SchedulerTest, ImplLatencyTakesPriority) {
+  SetUpScheduler(true);
+  scheduler_->SetImplLatencyTakesPriority(true);
+  EXPECT_TRUE(scheduler_->ImplLatencyTakesPriority());
+
+  scheduler_->SetImplLatencyTakesPriority(false);
+  EXPECT_FALSE(scheduler_->ImplLatencyTakesPriority());
+}
+
+TEST_F(SchedulerTest, BeginFrameArgs_OnCriticalPath) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  scheduler_->SetImplLatencyTakesPriority(false);
+  scheduler_->SetChildrenNeedBeginFrames(true);
+
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(client_->begin_frame_is_sent_to_children());
+  EXPECT_TRUE(client_->begin_frame_args_sent_to_children().on_critical_path);
+}
+
+TEST_F(SchedulerTest, BeginFrameArgs_NotOnCriticalPath) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  scheduler_->SetImplLatencyTakesPriority(true);
+  scheduler_->SetChildrenNeedBeginFrames(true);
+
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_TRUE(client_->begin_frame_is_sent_to_children());
+  EXPECT_FALSE(client_->begin_frame_args_sent_to_children().on_critical_path);
+}
+
 }  // namespace
 }  // namespace cc

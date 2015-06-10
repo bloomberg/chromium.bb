@@ -152,6 +152,9 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn {
   bool BeginImplFrameDeadlinePending() const {
     return !begin_impl_frame_deadline_task_.IsCancelled();
   }
+  bool ImplLatencyTakesPriority() const {
+    return state_machine_.impl_latency_takes_priority();
+  }
 
   base::TimeTicks AnticipatedDrawTime() const;
 

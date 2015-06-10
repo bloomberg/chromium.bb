@@ -77,6 +77,7 @@ TEST(BeginFrameArgsTest, Create) {
   // BeginFrames are not valid by default
   BeginFrameArgs args1;
   EXPECT_FALSE(args1.IsValid()) << args1;
+  EXPECT_TRUE(args1.on_critical_path);
 
   BeginFrameArgs args2 = BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, base::TimeTicks::FromInternalValue(1),

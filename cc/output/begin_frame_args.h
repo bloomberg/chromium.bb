@@ -83,6 +83,7 @@ struct CC_EXPORT BeginFrameArgs {
   base::TimeTicks deadline;
   base::TimeDelta interval;
   BeginFrameArgsType type;
+  bool on_critical_path;
 
  private:
   BeginFrameArgs(base::TimeTicks frame_time,

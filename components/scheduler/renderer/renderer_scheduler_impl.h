@@ -205,6 +205,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   int pending_main_thread_input_event_count_;
   bool awaiting_touch_start_response_;
 
+  bool begin_main_frame_on_critical_path_;
+
   // Variables in this (contiguous) block are only accessed from the compositor
   // thread.
   blink::WebInputEvent::Type last_input_type_;

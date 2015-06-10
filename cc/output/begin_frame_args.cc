@@ -27,7 +27,8 @@ BeginFrameArgs::BeginFrameArgs()
     : frame_time(base::TimeTicks()),
       deadline(base::TimeTicks()),
       interval(base::TimeDelta::FromMicroseconds(-1)),
-      type(BeginFrameArgs::INVALID) {
+      type(BeginFrameArgs::INVALID),
+      on_critical_path(true) {
 }
 
 BeginFrameArgs::BeginFrameArgs(base::TimeTicks frame_time,
@@ -37,7 +38,8 @@ BeginFrameArgs::BeginFrameArgs(base::TimeTicks frame_time,
     : frame_time(frame_time),
       deadline(deadline),
       interval(interval),
-      type(type) {
+      type(type),
+      on_critical_path(true) {
 }
 
 BeginFrameArgs BeginFrameArgs::Create(BeginFrameArgs::CreationLocation location,
@@ -73,6 +75,7 @@ void BeginFrameArgs::AsValueInto(base::trace_event::TracedValue* state) const {
 #ifndef NDEBUG
   state->SetString("created_from", created_from.ToString());
 #endif
+  state->SetBoolean("on_critical_path", on_critical_path);
 }
 
 // This is a hard-coded deadline adjustment that assumes 60Hz, to be used in

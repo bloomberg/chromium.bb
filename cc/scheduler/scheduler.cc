@@ -356,6 +356,7 @@ bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
   // TODO(brianderson): Adjust deadline in the DisplayScheduler.
   BeginFrameArgs adjusted_args(args);
   adjusted_args.deadline -= EstimatedParentDrawTime();
+  adjusted_args.on_critical_path = !ImplLatencyTakesPriority();
 
   // Deliver BeginFrames to children.
   // TODO(brianderson): Move this responsibility to the DisplayScheduler.

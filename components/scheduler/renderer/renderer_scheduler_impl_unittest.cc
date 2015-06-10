@@ -214,6 +214,10 @@ class RendererSchedulerImplTest : public testing::Test {
 
   Policy CurrentPolicy() { return scheduler_->current_policy_; }
 
+  bool BeginMainFrameOnCriticalPath() {
+    return scheduler_->begin_main_frame_on_critical_path_;
+  }
+
   // Helper for posting several tasks of specific types. |task_descriptor| is a
   // string with space delimited task identifiers. The first letter of each
   // task identifier specifies the task type:
@@ -1643,6 +1647,20 @@ TEST_F(RendererSchedulerImplTest, MismatchedDidHandleInputEventOnMainThread) {
   // compositor to not be there and we don't want to make debugging impossible.
   scheduler_->DidHandleInputEventOnMainThread(
       FakeInputEvent(blink::WebInputEvent::GestureFlingStart));
+}
+
+TEST_F(RendererSchedulerImplTest, BeginMainFrameOnCriticalPath) {
+  ASSERT_FALSE(BeginMainFrameOnCriticalPath());
+
+  cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL);
+  scheduler_->WillBeginFrame(begin_frame_args);
+  ASSERT_TRUE(BeginMainFrameOnCriticalPath());
+
+  begin_frame_args.on_critical_path = false;
+  scheduler_->WillBeginFrame(begin_frame_args);
+  ASSERT_FALSE(BeginMainFrameOnCriticalPath());
 }
 
 }  // namespace scheduler
