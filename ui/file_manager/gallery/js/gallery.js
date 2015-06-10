@@ -17,7 +17,8 @@ ContentMetadataProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
  */
 function Gallery(volumeManager) {
   /**
-   * @type {{appWindow: chrome.app.window.AppWindow,
+   * @type {{appWindow: chrome.app.window.AppWindow, onClose: function(),
+   *     onMaximize: function(), onMinimize: function(),
    *     onAppRegionChanged: function(), readonlyDirName: string,
    *     displayStringFunction: function(), loadTimeData: Object,
    *     curDirEntry: Entry, searchResults: *}}
