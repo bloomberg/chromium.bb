@@ -48,7 +48,7 @@
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGTitleElement.h"
 #include "core/svg/SVGUseElement.h"
-
+#include "platform/JSONValues.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
@@ -186,7 +186,7 @@ void SVGElement::reportAttributeParsingError(SVGParsingError error, const Qualif
     if (error == NoError)
         return;
 
-    String errorString = "<" + tagName() + "> attribute " + name.toString() + "=\"" + value + "\"";
+    String errorString = "<" + tagName() + "> attribute " + name.toString() + "=" + JSONValue::quoteString(value);
     SVGDocumentExtensions& extensions = document().accessSVGExtensions();
 
     if (error == NegativeValueForbiddenError) {

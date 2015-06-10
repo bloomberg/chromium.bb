@@ -1,8 +1,8 @@
 CONSOLE ERROR: Error: Invalid value for <path> attribute d="M100,200 a3,4,5,2,1,6,7"
 CONSOLE ERROR: Error: Invalid value for <path> attribute d="M100,200 a3,4,5,1,2,6,7"
-CONSOLE ERROR: Error: Invalid value for <path> attribute d="M1,2"
+CONSOLE ERROR: Error: Invalid value for <path> attribute d="\u000BM1,2"
 CONSOLE ERROR: Error: Invalid value for <path> attribute d="xM1,2"
-CONSOLE ERROR: Error: Invalid value for <path> attribute d="M1,2"
+CONSOLE ERROR: Error: Invalid value for <path> attribute d="M1,2\u000B"
 CONSOLE ERROR: Error: Invalid value for <path> attribute d="M1,2x"
 CONSOLE ERROR: Error: Invalid value for <path> attribute d="M1,2 L40,0#90"
 CONSOLE ERROR: Error: Invalid value for <path> attribute d="x"
