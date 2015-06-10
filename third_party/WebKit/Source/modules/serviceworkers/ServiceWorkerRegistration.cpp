@@ -86,6 +86,25 @@ String ServiceWorkerRegistration::scope() const
     return m_outerRegistration->scope().string();
 }
 
+void ServiceWorkerRegistration::update(ScriptState* scriptState, ExceptionState& exceptionState)
+{
+    if (!m_provider) {
+        exceptionState.throwDOMException(InvalidStateError, "Failed to update a ServiceWorkerRegistration: No associated provider is available.");
+        return;
+    }
+
+    RefPtr<SecurityOrigin> documentOrigin = scriptState->executionContext()->securityOrigin();
+    KURL scopeURL = scriptState->executionContext()->completeURL(scope());
+    scopeURL.removeFragmentIdentifier();
+    if (!scope().isEmpty() && !documentOrigin->canRequest(scopeURL)) {
+        RefPtr<SecurityOrigin> scopeOrigin = SecurityOrigin::create(scopeURL);
+        exceptionState.throwSecurityError("Failed to update a ServiceWorkerRegistration: The origin of the registration's scope ('" + scopeOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "').");
+        return;
+    }
+
+    m_provider->updateServiceWorker(scopeURL);
+}
+
 ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState)
 {
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);

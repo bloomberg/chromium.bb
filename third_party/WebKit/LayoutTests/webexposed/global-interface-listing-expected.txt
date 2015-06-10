@@ -5189,6 +5189,7 @@ interface ServiceWorkerRegistration
     method getNotifications
     method showNotification
     method unregister
+    method update
     setter onupdatefound
 interface Set
     getter size
