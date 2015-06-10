@@ -21,6 +21,11 @@ namespace content {
 
 namespace {
 
+// Maximum dimensions plugin content may have while still being considered
+// peripheral content.
+const int kPeripheralContentMaxWidth = 398;
+const int kPeripheralContentMaxHeight = 298;
+
 // Threshold for 'boring' score to accept a frame as good enough to be a
 // representative keyframe. Units are the ratio of all pixels that are within
 // the most common luma bin. The same threshold is used for history thumbnails.
@@ -47,6 +52,12 @@ void PluginInstanceThrottler::RecordUnthrottleMethodMetric(
   UMA_HISTOGRAM_ENUMERATION(
       "Plugin.PowerSaver.Unthrottle", method,
       PluginInstanceThrottler::UNTHROTTLE_METHOD_NUM_ITEMS);
+}
+
+// static
+bool PluginInstanceThrottler::IsLargeContent(int width, int height) {
+  return width >= kPeripheralContentMaxWidth &&
+         height >= kPeripheralContentMaxHeight;
 }
 
 PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl()

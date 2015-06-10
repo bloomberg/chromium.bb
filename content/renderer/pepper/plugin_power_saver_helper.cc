@@ -12,6 +12,7 @@
 #include "content/common/frame_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -36,11 +37,6 @@ enum PeripheralHeuristicDecision {
 
 const char kPeripheralHeuristicHistogram[] =
     "Plugin.PowerSaver.PeripheralHeuristic";
-
-// Maximum dimensions plugin content may have while still being considered
-// peripheral content. These are similar to the numbers used by WebKit.
-const int kPeripheralContentMaxWidth = 398;
-const int kPeripheralContentMaxHeight = 298;
 
 // Plugin content below this size in height and width is considered "tiny".
 // Tiny content is never peripheral, as tiny plugins often serve a critical
@@ -180,8 +176,7 @@ bool PluginPowerSaverHelper::ShouldThrottleContent(
   }
 
   // Plugin content large in both dimensions are the "main attraction".
-  if (width >= kPeripheralContentMaxWidth &&
-      height >= kPeripheralContentMaxHeight) {
+  if (PluginInstanceThrottler::IsLargeContent(width, height)) {
     RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG);
     if (cross_origin_main_content)
       *cross_origin_main_content = true;

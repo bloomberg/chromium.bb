@@ -52,6 +52,7 @@ class CONTENT_EXPORT PluginInstanceThrottler {
     UNTHROTTLE_METHOD_BY_CLICK = 1,
     UNTHROTTLE_METHOD_BY_WHITELIST = 2,
     UNTHROTTLE_METHOD_BY_AUDIO = 3,
+    UNTHROTTLE_METHOD_BY_SIZE_CHANGE = 4,
     UNTHROTTLE_METHOD_NUM_ITEMS
   };
 
@@ -73,6 +74,9 @@ class CONTENT_EXPORT PluginInstanceThrottler {
   static scoped_ptr<PluginInstanceThrottler> Create();
 
   static void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method);
+
+  // Returns true if content is considered "large", and thus essential.
+  static bool IsLargeContent(int width, int height);
 
   virtual ~PluginInstanceThrottler() {}
 

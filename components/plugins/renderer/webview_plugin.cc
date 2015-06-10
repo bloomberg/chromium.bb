@@ -171,6 +171,9 @@ void WebViewPlugin::updateGeometry(const WebRect& window_rect,
     WebSize newSize(window_rect.width, window_rect.height);
     web_view_->resize(newSize);
   }
+
+  if (delegate_)
+    delegate_->OnUnobscuredSizeUpdate(gfx::Rect(unobscured_rect).size());
 }
 
 void WebViewPlugin::updateFocus(bool focused, blink::WebFocusType focus_type) {

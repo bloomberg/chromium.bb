@@ -224,12 +224,31 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, OriginWhitelisting) {
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargeCrossOriginObscured) {
   LoadHTML(
-      "<div style='width: 100px; height: 100px; overflow: hidden;'>"
+      "<div id='container' "
+      "    style='width: 400px; height: 100px; overflow: hidden;'>"
       "  <object id='plugin' data='http://otherorigin.com/fake.swf' "
       "      type='application/x-ppapi-tests' width='400' height='500'>"
       "  </object>"
       "</div>");
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
+
+  // Test that's unthrottled if it is unobscured.
+  std::string script =
+      "var container = window.document.getElementById('container');"
+      "container.setAttribute('style', 'width: 400px; height: 400px;');";
+  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), script));
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin");
+}
+
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingSmallPlugin) {
+  LoadHTML(
+      "<object id='plugin' data='http://otherorigin.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='400' height='80'></object>");
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
+
+  std::string script = "window.document.getElementById('plugin').height = 400;";
+  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), script));
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin");
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabPlugins) {

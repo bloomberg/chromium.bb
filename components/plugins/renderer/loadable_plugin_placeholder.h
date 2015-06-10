@@ -6,6 +6,7 @@
 #define COMPONENTS_PLUGINS_RENDERER_LOADABLE_PLUGIN_PLACEHOLDER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "components/plugins/renderer/plugin_placeholder.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
@@ -85,6 +86,9 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   void PluginDestroyed() override;
   v8::Local<v8::Object> GetV8ScriptableObject(
       v8::Isolate* isolate) const override;
+#if defined(ENABLE_PLUGINS)
+  void OnUnobscuredSizeUpdate(const gfx::Size& unobscured_size) override;
+#endif
 
   // RenderFrameObserver methods:
   void WasShown() override;
@@ -97,6 +101,9 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   void UpdateMessage();
 
   bool LoadingBlocked() const;
+#if defined(ENABLE_PLUGINS)
+  void RecheckSizeAndMaybeUnthrottle();
+#endif
 
   // Plugin creation is embedder-specific.
   virtual blink::WebPlugin* CreatePlugin() = 0;
@@ -128,6 +135,11 @@ class LoadablePluginPlaceholder : public PluginPlaceholder {
   bool hidden_;
   bool finished_loading_;
   std::string identifier_;
+
+  // Used to prevent re-entrancy during the size recheck for throttled plugins.
+  bool in_size_recheck_;
+  gfx::Size unobscured_size_;
+  base::OneShotTimer<LoadablePluginPlaceholder> size_update_timer_;
 
   base::WeakPtrFactory<LoadablePluginPlaceholder> weak_factory_;
 

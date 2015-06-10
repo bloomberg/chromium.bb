@@ -25,6 +25,10 @@ class RenderView;
 struct WebPreferences;
 }
 
+namespace gfx {
+class Size;
+}
+
 // This class implements the WebPlugin interface by forwarding drawing and
 // handling input events to a WebView.
 // It can be used as a placeholder for an actual plugin, using HTML for the UI.
@@ -52,6 +56,9 @@ class WebViewPlugin : public blink::WebPlugin,
     // Called to enable JavaScript pass-through to a throttled plugin, which is
     // loaded but idle. Doesn't work for blocked plugins, which is not loaded.
     virtual v8::Local<v8::Object> GetV8ScriptableObject(v8::Isolate*) const = 0;
+
+    // Called when the unobscured size of the plugin is updated.
+    virtual void OnUnobscuredSizeUpdate(const gfx::Size& unobscured_size) {}
   };
 
   // Convenience method to set up a new WebViewPlugin using |preferences|

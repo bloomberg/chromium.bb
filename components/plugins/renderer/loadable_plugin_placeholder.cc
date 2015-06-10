@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/common/content_switches.h"
@@ -46,6 +47,11 @@ using content::RenderThread;
 namespace plugins {
 
 #if defined(ENABLE_PLUGINS)
+// TODO(tommycli): After an unthrottling size update, re-check the size after
+// this delay, as Blink can report incorrect sizes to plugins while the
+// compositing state is dirty. Chosen because it seems to work.
+const int kSizeChangeRecheckDelayMilliseconds = 100;
+
 void LoadablePluginPlaceholder::BlockForPowerSaverPoster() {
   DCHECK(!is_blocked_for_power_saver_poster_);
   is_blocked_for_power_saver_poster_ = true;
@@ -84,6 +90,7 @@ LoadablePluginPlaceholder::LoadablePluginPlaceholder(
       allow_loading_(false),
       hidden_(false),
       finished_loading_(false),
+      in_size_recheck_(false),
       weak_factory_(this) {
 }
 
@@ -265,6 +272,40 @@ v8::Local<v8::Object> LoadablePluginPlaceholder::GetV8ScriptableObject(
   return v8::Local<v8::Object>();
 }
 
+#if defined(ENABLE_PLUGINS)
+void LoadablePluginPlaceholder::OnUnobscuredSizeUpdate(
+    const gfx::Size& unobscured_size) {
+  DCHECK(
+      content::RenderThread::Get()->GetTaskRunner()->BelongsToCurrentThread());
+  if (!power_saver_enabled_ || !premade_throttler_ || !finished_loading_)
+    return;
+
+  unobscured_size_ = unobscured_size;
+
+  // During a size recheck, we will get another notification into this method.
+  // Use this flag to early exit to prevent reentrancy issues.
+  if (in_size_recheck_)
+    return;
+
+  if (PluginInstanceThrottler::IsLargeContent(unobscured_size.width(),
+                                              unobscured_size.height())) {
+    if (!size_update_timer_.IsRunning()) {
+      // TODO(tommycli): We have to post a delayed task to recheck the size, as
+      // Blink can report wrong sizes for partially obscured plugins while the
+      // compositing state is dirty. https://crbug.com/343769
+      size_update_timer_.Start(
+          FROM_HERE, base::TimeDelta::FromMilliseconds(
+                         kSizeChangeRecheckDelayMilliseconds),
+          base::Bind(&LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle,
+                     weak_factory_.GetWeakPtr()));
+    }
+  } else {
+    // Cancel any pending unthrottle due to resize calls.
+    size_update_timer_.Stop();
+  }
+}
+#endif  // defined(ENABLE_PLUGINS)
+
 void LoadablePluginPlaceholder::WasShown() {
   if (is_blocked_for_background_tab_) {
     is_blocked_for_background_tab_ = false;
@@ -388,5 +429,25 @@ bool LoadablePluginPlaceholder::LoadingBlocked() const {
   return is_blocked_for_background_tab_ || is_blocked_for_power_saver_poster_ ||
          is_blocked_for_prerendering_;
 }
+
+#if defined(ENABLE_PLUGINS)
+void LoadablePluginPlaceholder::RecheckSizeAndMaybeUnthrottle() {
+  DCHECK(
+      content::RenderThread::Get()->GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(!in_size_recheck_);
+  in_size_recheck_ = true;
+
+  // Re-check the size in case the reported size was incorrect.
+  plugin()->container()->reportGeometry();
+
+  if (PluginInstanceThrottler::IsLargeContent(unobscured_size_.width(),
+                                              unobscured_size_.height())) {
+    MarkPluginEssential(
+        PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_SIZE_CHANGE);
+  }
+
+  in_size_recheck_ = false;
+}
+#endif  // defined(ENABLE_PLUGINS)
 
 }  // namespace plugins
