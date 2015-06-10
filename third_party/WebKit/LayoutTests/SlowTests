@@ -212,3 +212,6 @@ crbug.com/459009 crypto/subtle/ [ Slow ]
 
 crbug.com/24182 [ Debug ] animations/interpolation/transform-interpolation.html [ Slow ]
 crbug.com/24182 [ Debug ] animations/interpolation/webkit-transform-interpolation.html [ Slow ]
+
+crbug.com/498539 inspector/sources/debugger-step/debugger-step-into-async1.html [ Slow ]
+crbug.com/498539 inspector/sources/debugger-step/debugger-step-into-async2.html [ Slow ]
