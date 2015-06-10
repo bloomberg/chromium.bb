@@ -557,7 +557,10 @@ URLRequest::URLRequest(const GURL& url,
       has_notified_completion_(false),
       received_response_content_length_(0),
       creation_time_(base::TimeTicks::Now()),
-      notified_before_network_start_(false) {
+      notified_before_network_start_(false),
+      // TODO(mmenke):  Remove this after we figure out current causes of
+      // http://crbug.com/498289.
+      stack_trace_(new base::debug::StackTrace()) {
   // Sanity check out environment.
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";
@@ -1178,10 +1181,7 @@ void URLRequest::OnCallToDelegateComplete() {
 }
 
 void URLRequest::set_stack_trace(const base::debug::StackTrace& stack_trace) {
-  base::debug::StackTrace* stack_trace_copy =
-      new base::debug::StackTrace(NULL, 0);
-  *stack_trace_copy = stack_trace;
-  stack_trace_.reset(stack_trace_copy);
+  stack_trace_.reset(new base::debug::StackTrace(stack_trace));
 }
 
 const base::debug::StackTrace* URLRequest::stack_trace() const {
