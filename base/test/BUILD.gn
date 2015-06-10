@@ -114,6 +114,8 @@ source_set("test_support") {
     "test_support_android.h",
     "test_support_ios.h",
     "test_support_ios.mm",
+    "test_ui_thread_android.cc",
+    "test_ui_thread_android.h",
     "thread_test_helper.cc",
     "thread_test_helper.h",
     "trace_event_analyzer.cc",
@@ -205,6 +207,7 @@ if (is_android) {
   generate_jni("base_unittests_jni_headers") {
     sources = [
       "android/java/src/org/chromium/base/ContentUriTestUtils.java",
+      "android/java/src/org/chromium/base/TestUiThread.java",
     ]
     jni_package = "base"
   }

@@ -992,6 +992,8 @@
         'test/test_switches.h',
         'test/test_timeouts.cc',
         'test/test_timeouts.h',
+        'test/test_ui_thread_android.cc',
+        'test/test_ui_thread_android.h',
         'test/thread_test_helper.cc',
         'test/thread_test_helper.h',
         'test/trace_event_analyzer.cc',
@@ -1409,6 +1411,7 @@
           'type': 'none',
           'sources': [
             'test/android/java/src/org/chromium/base/ContentUriTestUtils.java',
+            'test/android/java/src/org/chromium/base/TestUiThread.java',
           ],
           'variables': {
             'jni_gen_package': 'base',
