@@ -74,14 +74,15 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
  public:
   OutputSurfaceWithoutParent(
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
-      base::WeakPtr<CompositorImpl> compositor_impl)
+      const base::Callback<void(gpu::Capabilities)>&
+          populate_gpu_capabilities_callback)
       : cc::OutputSurface(context_provider),
+        populate_gpu_capabilities_callback_(populate_gpu_capabilities_callback),
         swap_buffers_completion_callback_(
             base::Bind(&OutputSurfaceWithoutParent::OnSwapBuffersCompleted,
                        base::Unretained(this))) {
     capabilities_.adjust_deadline_for_parent = false;
     capabilities_.max_frames_pending = 2;
-    compositor_impl_ = compositor_impl;
   }
 
   void SwapBuffers(cc::CompositorFrame* frame) override {
@@ -99,7 +100,7 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
         swap_buffers_completion_callback_.callback());
 
-    compositor_impl_->PopulateGpuCapabilities(
+    populate_gpu_capabilities_callback_.Run(
         context_provider_->ContextCapabilities().gpu);
 
     return true;
@@ -122,11 +123,10 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
     OutputSurface::OnSwapBuffersComplete();
   }
 
+  base::Callback<void(gpu::Capabilities)> populate_gpu_capabilities_callback_;
   base::CancelableCallback<void(const std::vector<ui::LatencyInfo>&,
                                 gfx::SwapResult)>
       swap_buffers_completion_callback_;
-
-  base::WeakPtr<CompositorImpl> compositor_impl_;
 };
 
 static bool g_initialized = false;
@@ -643,8 +643,9 @@ void CompositorImpl::CreateOutputSurface() {
   DCHECK(context_provider.get());
 
   scoped_ptr<cc::OutputSurface> real_output_surface(
-      new OutputSurfaceWithoutParent(context_provider,
-                                     weak_factory_.GetWeakPtr()));
+      new OutputSurfaceWithoutParent(
+          context_provider, base::Bind(&CompositorImpl::PopulateGpuCapabilities,
+                                       base::Unretained(this))));
 
   cc::SurfaceManager* manager = GetSurfaceManager();
   if (manager) {
