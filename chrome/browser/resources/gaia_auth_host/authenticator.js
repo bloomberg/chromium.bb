@@ -185,6 +185,7 @@ cr.define('cr.login', function() {
    * @param {Object} data Parameters for the authorization flow.
    */
   Authenticator.prototype.load = function(authMode, data) {
+    this.authMode = authMode;
     this.clearCredentials_();
     this.loaded_ = false;
     this.idpOrigin_ = data.gaiaUrl || IDP_ORIGIN;
@@ -322,7 +323,8 @@ cr.define('cr.login', function() {
    * @private
    */
   Authenticator.prototype.onFocus_ = function(e) {
-    this.webview_.focus();
+    if (this.authMode == AuthMode.DESKTOP)
+      this.webview_.focus();
   };
 
   /**
