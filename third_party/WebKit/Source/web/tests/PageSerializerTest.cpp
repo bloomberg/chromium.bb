@@ -81,9 +81,14 @@ protected:
         m_folder = WebString::fromUTF8(folder);
     }
 
+    void registerURL(const char* url, const char* file, const char* mimeType)
+    {
+        registerMockedURLLoad(KURL(m_baseUrl, url), WebString::fromUTF8(file), m_folder, WebString::fromUTF8(mimeType));
+    }
+
     void registerURL(const char* file, const char* mimeType)
     {
-        registerMockedURLLoad(KURL(m_baseUrl, file), WebString::fromUTF8(file), m_folder, WebString::fromUTF8(mimeType));
+        registerURL(file, file, mimeType);
     }
 
     void registerErrorURL(const char* file, int statusCode)
@@ -153,7 +158,6 @@ private:
     Vector<SerializedResource> m_resources;
 };
 
-
 TEST_F(PageSerializerTest, InputImage)
 {
     setBaseFolder("pageserializer/input-image/");
@@ -166,6 +170,87 @@ TEST_F(PageSerializerTest, InputImage)
 
     EXPECT_TRUE(isSerialized("button.png", "image/png"));
     EXPECT_FALSE(isSerialized("non-existing-button.png", "image/png"));
+}
+
+TEST_F(PageSerializerTest, Frames)
+{
+    setBaseFolder("pageserializer/frames/");
+
+    registerURL("simple_frames.html", "text/html");
+    registerURL("simple_frames_top.html", "text/html");
+    registerURL("simple_frames_1.html", "text/html");
+    registerURL("simple_frames_3.html", "text/html");
+
+    registerURL("frame_1.png", "image.png", "image/png");
+    registerURL("frame_2.png", "image.png", "image/png");
+    registerURL("frame_3.png", "image.png", "image/png");
+    registerURL("frame_4.png", "image.png", "image/png");
+
+    serialize("simple_frames.html");
+
+    EXPECT_EQ(8U, getResources().size());
+
+    EXPECT_TRUE(isSerialized("simple_frames.html", "text/html"));
+    EXPECT_TRUE(isSerialized("simple_frames_top.html", "text/html"));
+    EXPECT_TRUE(isSerialized("simple_frames_1.html", "text/html"));
+    EXPECT_TRUE(isSerialized("simple_frames_3.html", "text/html"));
+
+    EXPECT_TRUE(isSerialized("frame_1.png", "image/png"));
+    EXPECT_TRUE(isSerialized("frame_2.png", "image/png"));
+    EXPECT_TRUE(isSerialized("frame_3.png", "image/png"));
+    EXPECT_TRUE(isSerialized("frame_4.png", "image/png"));
+}
+
+TEST_F(PageSerializerTest, IFrames)
+{
+    setBaseFolder("pageserializer/frames/");
+
+    registerURL("top_frame.html", "text/html");
+    registerURL("simple_iframe.html", "text/html");
+    registerURL("object_iframe.html", "text/html");
+    registerURL("embed_iframe.html", "text/html");
+
+    registerURL("top.png", "image.png", "image/png");
+    registerURL("simple.png", "image.png", "image/png");
+    registerURL("object.png", "image.png", "image/png");
+    registerURL("embed.png", "image.png", "image/png");
+
+    serialize("top_frame.html");
+
+    EXPECT_EQ(8U, getResources().size());
+
+    EXPECT_TRUE(isSerialized("top_frame.html", "text/html"));
+    EXPECT_TRUE(isSerialized("simple_iframe.html", "text/html"));
+    EXPECT_TRUE(isSerialized("object_iframe.html", "text/html"));
+    EXPECT_TRUE(isSerialized("embed_iframe.html", "text/html"));
+
+    EXPECT_TRUE(isSerialized("top.png", "image/png"));
+    EXPECT_TRUE(isSerialized("simple.png", "image/png"));
+    EXPECT_TRUE(isSerialized("object.png", "image/png"));
+    EXPECT_TRUE(isSerialized("embed.png", "image/png"));
+}
+
+// Tests that when serializing a page with blank frames these are reported with their resources.
+TEST_F(PageSerializerTest, BlankFrames)
+{
+    setBaseFolder("pageserializer/frames/");
+
+    registerURL("blank_frames.html", "text/html");
+    registerURL("red_background.png", "image.png", "image/png");
+    registerURL("orange_background.png", "image.png", "image/png");
+    registerURL("blue_background.png", "image.png", "image/png");
+
+    serialize("blank_frames.html");
+
+    EXPECT_EQ(7U, getResources().size());
+
+    EXPECT_TRUE(isSerialized("http://www.test.com/red_background.png", "image/png"));
+    EXPECT_TRUE(isSerialized("http://www.test.com/orange_background.png", "image/png"));
+    EXPECT_TRUE(isSerialized("http://www.test.com/blue_background.png", "image/png"));
+    // The blank frames should have got a magic URL.
+    EXPECT_TRUE(isSerialized("wyciwyg://frame/0", "text/html"));
+    EXPECT_TRUE(isSerialized("wyciwyg://frame/1", "text/html"));
+    EXPECT_TRUE(isSerialized("wyciwyg://frame/2", "text/html"));
 }
 
 TEST_F(PageSerializerTest, CSSImport)

@@ -56,10 +56,11 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLMetaElement.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/html/ImageDocument.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/page/Page.h"
 #include "core/style/StyleFetchedImage.h"
 #include "core/style/StyleImage.h"
-#include "core/page/Page.h"
 #include "platform/SerializedResource.h"
 #include "platform/graphics/Image.h"
 #include "wtf/OwnPtr.h"
@@ -226,16 +227,17 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
         return;
     }
 
-    WTF::TextEncoding textEncoding(document.charset());
-    if (!textEncoding.isValid()) {
-        // FIXME: iframes used as images trigger this. We should deal with them correctly.
+    // If frame is an image document, add the image and don't continue
+    if (document.isImageDocument()) {
+        ImageDocument& imageDocument = toImageDocument(document);
+        addImageToResources(imageDocument.cachedImage(), imageDocument.imageElement()->layoutObject(), url);
         return;
     }
 
     WillBeHeapVector<RawPtrWillBeMember<Node>> serializedNodes;
     SerializerMarkupAccumulator accumulator(this, document, serializedNodes);
     String text = serializeNodes<EditingStrategy>(accumulator, document, IncludeNode);
-    CString frameHTML = textEncoding.normalizeAndEncode(text, WTF::EntitiesForUnencodables);
+    CString frameHTML = document.encoding().normalizeAndEncode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document.suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
     m_resourceURLs.add(url);
 
@@ -343,7 +345,7 @@ void PageSerializer::addImageToResources(ImageResource* image, LayoutObject* ima
     if (!shouldAddURL(url))
         return;
 
-    if (!image || image->image() == Image::nullImage() || image->errorOccurred())
+    if (!image || !image->hasImage() || image->errorOccurred())
         return;
 
     RefPtr<SharedBuffer> data = imageLayoutObject ? image->imageForLayoutObject(imageLayoutObject)->data() : nullptr;

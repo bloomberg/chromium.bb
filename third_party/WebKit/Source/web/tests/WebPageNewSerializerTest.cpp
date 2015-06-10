@@ -205,37 +205,6 @@ private:
     WebString m_svgMimeType;
 };
 
-// Tests that a page with resources and sub-frame is reported with all its resources.
-TEST_F(WebPageNewSerializeTest, PageWithFrames)
-{
-    // Register the mocked frames.
-    registerMockedURLLoad(toTestURL(""), WebString::fromUTF8("top_frame.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
-    registerMockedURLLoad(toTestURL("iframe.html"), WebString::fromUTF8("iframe.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
-    registerMockedURLLoad(toTestURL("iframe2.html"), WebString::fromUTF8("iframe2.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
-    registerMockedURLLoad(toTestURL("red_background.png"), WebString::fromUTF8("red_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
-    registerMockedURLLoad(toTestURL("green_background.png"), WebString::fromUTF8("green_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
-    registerMockedURLLoad(toTestURL("blue_background.png"), WebString::fromUTF8("blue_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
-
-    loadURLInTopFrame(toKURL(m_baseURL));
-
-    WebVector<WebPageSerializer::Resource> resources;
-    WebPageSerializer::serialize(webView(), &resources);
-    ASSERT_FALSE(resources.isEmpty());
-
-    // The first resource should be the main-frame.
-    const WebPageSerializer::Resource& resource = resources[0];
-    EXPECT_TRUE(resource.url == WebURL(toKURL(m_baseURL)));
-    EXPECT_EQ(0, resource.mimeType.compare(WebCString("text/html")));
-    EXPECT_FALSE(resource.data.isEmpty());
-
-    EXPECT_EQ(6U, resources.size()); // There should be no duplicates.
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "red_background.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "green_background.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "blue_background.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "iframe.html", "text/html"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "iframe2.html", "text/html"));
-}
-
 // Test that when serializing a page, all CSS resources are reported, including url()'s
 // and imports and links. Note that we don't test the resources contents, we only make sure
 // they are all reported with the right mime type and that they contain some data.
@@ -267,38 +236,6 @@ TEST_F(WebPageNewSerializeTest, FAILS_CSSResources)
     EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "purple_background.png", "image/png"));
     EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "ul-dot.png", "image/png"));
     EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "ol-dot.png", "image/png"));
-}
-
-// Tests that when serializing a page with blank frames these are reported with their resources.
-TEST_F(WebPageNewSerializeTest, BlankFrames)
-{
-    // Register the mocked frame and load it.
-    WebURL topFrameURL = toKURL(m_baseURL);
-    registerMockedURLLoad(topFrameURL, WebString::fromUTF8("blank_frames.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
-    registerMockedURLLoad(toTestURL("red_background.png"), WebString::fromUTF8("red_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
-    registerMockedURLLoad(toTestURL("orange_background.png"), WebString::fromUTF8("orange_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
-    registerMockedURLLoad(toTestURL("blue_background.png"), WebString::fromUTF8("blue_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
-
-    loadURLInTopFrame(topFrameURL);
-
-    WebVector<WebPageSerializer::Resource> resources;
-    WebPageSerializer::serialize(webView(), &resources);
-    ASSERT_FALSE(resources.isEmpty());
-
-    // The first resource should be the main-frame.
-    const WebPageSerializer::Resource& resource = resources[0];
-    EXPECT_TRUE(resource.url == WebURL(toKURL(m_baseURL)));
-    EXPECT_EQ(0, resource.mimeType.compare(WebCString("text/html")));
-    EXPECT_FALSE(resource.data.isEmpty());
-
-    EXPECT_EQ(7U, resources.size()); // There should be no duplicates.
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "red_background.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "orange_background.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "blue_background.png", "image/png"));
-    // The blank frames should have got a magic URL.
-    EXPECT_TRUE(resourceVectorContains(resources, "wyciwyg://frame/0", "text/html"));
-    EXPECT_TRUE(resourceVectorContains(resources, "wyciwyg://frame/1", "text/html"));
-    EXPECT_TRUE(resourceVectorContains(resources, "wyciwyg://frame/2", "text/html"));
 }
 
 TEST_F(WebPageNewSerializeTest, SerializeXMLHasRightDeclaration)
@@ -361,37 +298,6 @@ TEST_F(WebPageNewSerializeTest, FAILS_TestMHTMLEncoding)
         }
     }
     EXPECT_EQ(12, sectionCheckedCount);
-}
-
-TEST_F(WebPageNewSerializeTest, SubFrameSerialization)
-{
-    WebURL pageUrl = toKURL(m_baseURL);
-    registerMockedURLLoad(pageUrl, WebString::fromUTF8("top_frame.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
-    registerMockedURLLoad(toTestURL("iframe.html"), WebString::fromUTF8("iframe.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
-    registerMockedURLLoad(toTestURL("iframe2.html"), WebString::fromUTF8("iframe2.html"), WebString::fromUTF8("pageserializer/"), htmlMimeType());
-    registerMockedURLLoad(toTestURL("red_background.png"), WebString::fromUTF8("red_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
-    registerMockedURLLoad(toTestURL("green_background.png"), WebString::fromUTF8("green_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
-    registerMockedURLLoad(toTestURL("blue_background.png"), WebString::fromUTF8("blue_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
-
-    loadURLInTopFrame(pageUrl);
-
-    WebVector<WebURL> localLinks(static_cast<size_t>(2));
-    WebVector<WebString> localPaths(static_cast<size_t>(2));
-    localLinks[0] = pageUrl;
-    localPaths[0] = WebString("/");
-    localLinks[1] = toTestURL("iframe.html");
-    localPaths[1] = WebString("SavedFiles/iframe.html");
-
-    WebString serializedData;
-    FrameDataWebPageSerializerClient client(pageUrl, &serializedData);
-
-    // We just want to make sure nothing crazy happens, namely that no
-    // assertions are hit. As a sanity check, we also make sure that some data
-    // was returned.
-    WebPageSerializer::serialize(webView()->mainFrame()->toWebLocalFrame(), true, &client, localLinks, localPaths, WebString(""));
-
-    // Subframe src
-    EXPECT_TRUE(static_cast<String>(serializedData).contains("src=\"SavedFiles/iframe.html\""));
 }
 
 }
