@@ -73,12 +73,10 @@ static void SetSurfacePeer(scoped_refptr<gfx::SurfaceTexture> surface_texture,
 
 }  // namespace
 
-BrowserSurfaceTextureManager::BrowserSurfaceTextureManager() {
-  SurfaceTexturePeer::InitInstance(this);
-}
-
-BrowserSurfaceTextureManager::~BrowserSurfaceTextureManager() {
-  SurfaceTexturePeer::InitInstance(NULL);
+// static
+BrowserSurfaceTextureManager* BrowserSurfaceTextureManager::GetInstance() {
+  return Singleton<BrowserSurfaceTextureManager,
+                   LeakySingletonTraits<BrowserSurfaceTextureManager>>::get();
 }
 
 void BrowserSurfaceTextureManager::RegisterSurfaceTexture(
@@ -131,6 +129,14 @@ void BrowserSurfaceTextureManager::EstablishSurfaceTexturePeer(
                                      render_process_handle,
                                      render_frame_id,
                                      player_id));
+}
+
+BrowserSurfaceTextureManager::BrowserSurfaceTextureManager() {
+  SurfaceTexturePeer::InitInstance(this);
+}
+
+BrowserSurfaceTextureManager::~BrowserSurfaceTextureManager() {
+  SurfaceTexturePeer::InitInstance(nullptr);
 }
 
 }  // namespace content

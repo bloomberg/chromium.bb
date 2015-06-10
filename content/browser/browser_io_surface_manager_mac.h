@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "content/common/content_export.h"
 #include "content/common/mac/io_surface_manager.h"
 #include "content/common/mac/io_surface_manager_messages.h"
 #include "content/common/mac/io_surface_manager_token.h"
