@@ -64,4 +64,22 @@ TEST(ProximityAuthBase64UrlTest, DecodeSpecialCharacters) {
   EXPECT_EQ("/+Y=", non_web_safe_encoded);
 }
 
+TEST(ProximityAuthBase64UrlTest, DecodeBailsOnPlus) {
+  // Note that "_-Y=" is a valid encoded string, as tested above. This test
+  // simply verifies that an otherwise correctly encoded string cannot use '+'
+  // in place of '-', since the proximity auth code expects websafe encodings.
+  const std::string encoded = "_+Y=";
+  std::string decoded;
+  EXPECT_FALSE(Base64UrlDecode(encoded, &decoded));
+}
+
+TEST(ProximityAuthBase64UrlTest, DecodeBailsOnSlash) {
+  // Note that "_-Y=" is a valid encoded string, as tested above. This test
+  // simply verifies that an otherwise correctly encoded string cannot use '/'
+  // in place of '_', since the proximity auth code expects websafe encodings.
+  const std::string encoded = "/-Y=";
+  std::string decoded;
+  EXPECT_FALSE(Base64UrlDecode(encoded, &decoded));
+}
+
 }  // namespace proximity_auth

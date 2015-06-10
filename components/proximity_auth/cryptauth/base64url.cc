@@ -18,6 +18,12 @@ void Base64UrlEncode(const std::string& decoded_input,
 
 bool Base64UrlDecode(const std::string& encoded_input,
                      std::string* decoded_output) {
+  // Bail on malformed strings, which already contain a '+' or a '/'. All valid
+  // strings should escape these special characters as '-' and '_',
+  // respectively.
+  if (encoded_input.find_first_of("+/") != std::string::npos)
+    return false;
+
   std::string adjusted_encoded_input = encoded_input;
   base::ReplaceChars(adjusted_encoded_input, "-", "+", &adjusted_encoded_input);
   base::ReplaceChars(adjusted_encoded_input, "_", "/", &adjusted_encoded_input);
