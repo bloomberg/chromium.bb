@@ -147,11 +147,11 @@ class RenderViewImplTest : public RenderViewTest {
   ~RenderViewImplTest() override {}
 
   void SetUp() override {
-    RenderViewTest::SetUp();
     // Enable Blink's experimental and test only features so that test code
     // does not have to bother enabling each feature.
     WebRuntimeFeatures::enableExperimentalFeatures(true);
     WebRuntimeFeatures::enableTestOnlyFeatures(true);
+    RenderViewTest::SetUp();
   }
 
   RenderViewImpl* view() {
