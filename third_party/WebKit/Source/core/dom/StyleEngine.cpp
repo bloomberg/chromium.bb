@@ -113,66 +113,6 @@ inline Document* StyleEngine::master()
     return import->master();
 }
 
-void StyleEngine::OrderedTreeScopeSet::insert(TreeScope* treeScope)
-{
-    if (m_treeScopes.isEmpty()) {
-        m_treeScopes.append(treeScope);
-        m_hash.add(treeScope);
-        return;
-    }
-    if (m_hash.contains(treeScope))
-        return;
-
-    int end = m_treeScopes.size() - 1;
-    int start = 0;
-    int position = 0;
-    unsigned result = 0;
-
-    while (start <= end) {
-        position = (start + end) / 2;
-        result = m_treeScopes[position]->comparePosition(*treeScope);
-
-        if (result & Node::DOCUMENT_POSITION_PRECEDING) {
-            end = position - 1;
-        } else {
-            ASSERT(result & Node::DOCUMENT_POSITION_FOLLOWING);
-            start = position + 1;
-        }
-    }
-
-    if (result & Node::DOCUMENT_POSITION_FOLLOWING) {
-        ++position;
-        ASSERT(static_cast<size_t>(position) == m_treeScopes.size() || (m_treeScopes[position]->comparePosition(*treeScope) & Node::DOCUMENT_POSITION_PRECEDING));
-    }
-    m_treeScopes.insert(position, treeScope);
-    m_hash.add(treeScope);
-
-#if ENABLE(ASSERT)
-    // Check whether m_treeScopes is sorted in document order or not.
-    for (unsigned i = 0; i < m_treeScopes.size() - 1; ++i) {
-        unsigned result = m_treeScopes[i]->comparePosition(*m_treeScopes[i + 1]);
-        ASSERT(result & Node::DOCUMENT_POSITION_FOLLOWING);
-    }
-#endif
-}
-
-void StyleEngine::OrderedTreeScopeSet::remove(TreeScope* treeScope)
-{
-    if (!m_hash.contains(treeScope))
-        return;
-    size_t position = m_treeScopes.find(treeScope);
-    m_treeScopes.remove(position);
-    m_hash.remove(treeScope);
-}
-
-DEFINE_TRACE(StyleEngine::OrderedTreeScopeSet)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_treeScopes);
-    visitor->trace(m_hash);
-#endif
-}
-
 TreeScopeStyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(TreeScope& treeScope)
 {
     if (treeScope == m_document)
@@ -286,7 +226,7 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
 
     markTreeScopeDirty(treeScope);
     if (treeScope != m_document)
-        m_activeTreeScopes.insert(&treeScope);
+        m_activeTreeScopes.add(&treeScope);
 }
 
 void StyleEngine::removeStyleSheetCandidateNode(Node* node)
@@ -329,12 +269,11 @@ bool StyleEngine::shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdate
     return !m_dirtyTreeScopes.isEmpty() || updateMode == FullStyleUpdate;
 }
 
-void StyleEngine::clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScopeSet::iterator begin, UnorderedTreeScopeSet::iterator end)
+void StyleEngine::clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScopeSet& treeScopes)
 {
-    for (UnorderedTreeScopeSet::iterator it = begin; it != end; ++it) {
-        TreeScope& treeScope = **it;
+    for (TreeScope* treeScope : treeScopes) {
         ASSERT(treeScope != m_document);
-        ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(treeScope));
+        ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(*treeScope));
         ASSERT(collection);
         collection->clearMediaQueryRuleSetStyleSheets();
     }
@@ -343,8 +282,8 @@ void StyleEngine::clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScop
 void StyleEngine::clearMediaQueryRuleSetStyleSheets()
 {
     documentStyleSheetCollection()->clearMediaQueryRuleSetStyleSheets();
-    clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_activeTreeScopes.beginUnordered(), m_activeTreeScopes.endUnordered());
-    clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_dirtyTreeScopes.begin(), m_dirtyTreeScopes.end());
+    clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_activeTreeScopes);
+    clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_dirtyTreeScopes);
 }
 
 void StyleEngine::updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector)
@@ -385,15 +324,14 @@ void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
         UnorderedTreeScopeSet treeScopesRemoved;
 
         if (updateMode == FullStyleUpdate) {
-            for (unsigned i = 0; i < m_activeTreeScopes.size(); ++i)
-                updateActiveStyleSheetsInShadow(updateMode, m_activeTreeScopes[i], treeScopesRemoved);
+            for (TreeScope* treeScope : m_activeTreeScopes)
+                updateActiveStyleSheetsInShadow(updateMode, treeScope, treeScopesRemoved);
         } else {
-            for (UnorderedTreeScopeSet::iterator it = m_dirtyTreeScopes.begin(); it != m_dirtyTreeScopes.end(); ++it) {
-                updateActiveStyleSheetsInShadow(updateMode, *it, treeScopesRemoved);
-            }
+            for (TreeScope* treeScope : m_dirtyTreeScopes)
+                updateActiveStyleSheetsInShadow(updateMode, treeScope, treeScopesRemoved);
         }
-        for (UnorderedTreeScopeSet::iterator it = treeScopesRemoved.begin(); it != treeScopesRemoved.end(); ++it)
-            m_activeTreeScopes.remove(*it);
+        for (TreeScope* treeScope : treeScopesRemoved)
+            m_activeTreeScopes.remove(treeScope);
     }
 
     InspectorInstrumentation::activeStyleSheetsUpdated(m_document);
@@ -411,8 +349,7 @@ const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>> StyleEngine::activeSty
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>> activeStyleSheets;
 
     activeStyleSheets.appendVector(documentStyleSheetCollection()->activeAuthorStyleSheets());
-    for (unsigned i = 0; i < m_activeTreeScopes.size(); ++i) {
-        TreeScope* treeScope = const_cast<TreeScope*>(m_activeTreeScopes[i]);
+    for (TreeScope* treeScope : m_activeTreeScopes) {
         if (TreeScopeStyleSheetCollection* collection = m_styleSheetCollectionMap.get(treeScope))
             activeStyleSheets.appendVector(collection->activeAuthorStyleSheets());
     }
@@ -448,8 +385,8 @@ void StyleEngine::appendActiveAuthorStyleSheets()
     ASSERT(isMaster());
 
     m_resolver->appendAuthorStyleSheets(documentStyleSheetCollection()->activeAuthorStyleSheets());
-    for (unsigned i = 0; i < m_activeTreeScopes.size(); ++i) {
-        if (TreeScopeStyleSheetCollection* collection = m_styleSheetCollectionMap.get(m_activeTreeScopes[i]))
+    for (TreeScope* treeScope : m_activeTreeScopes) {
+        if (TreeScopeStyleSheetCollection* collection = m_styleSheetCollectionMap.get(treeScope))
             m_resolver->appendAuthorStyleSheets(collection->activeAuthorStyleSheets());
     }
     m_resolver->finishAppendAuthorStyleSheets();
@@ -484,8 +421,8 @@ void StyleEngine::clearResolver()
     // just removed from document. If document is destroyed before invoking
     // updateActiveStyleSheets, the treescope has a scopedStyleResolver which
     // has destroyed StyleSheetContents.
-    for (UnorderedTreeScopeSet::iterator it = m_activeTreeScopes.beginUnordered(); it != m_activeTreeScopes.endUnordered(); ++it)
-        (*it)->clearScopedStyleResolver();
+    for (TreeScope* treeScope : m_activeTreeScopes)
+        treeScope->clearScopedStyleResolver();
 
     m_resolver.clear();
 }
@@ -649,8 +586,7 @@ void StyleEngine::collectScopedStyleFeaturesTo(RuleFeatureSet& features) const
     HashSet<const StyleSheetContents*> visitedSharedStyleSheetContents;
     if (document().scopedStyleResolver())
         document().scopedStyleResolver()->collectFeaturesTo(features, visitedSharedStyleSheetContents);
-    for (unsigned i = 0; i < m_activeTreeScopes.size(); ++i) {
-        TreeScope* treeScope = const_cast<TreeScope*>(m_activeTreeScopes[i]);
+    for (TreeScope* treeScope : m_activeTreeScopes) {
         // When creating StyleResolver, dirty treescopes might not be processed.
         // So some active treescopes might not have a scoped style resolver.
         // In this case, we should skip collectFeatures for the treescopes without

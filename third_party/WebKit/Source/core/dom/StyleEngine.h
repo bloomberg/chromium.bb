@@ -201,49 +201,7 @@ private:
 
     typedef WillBeHeapHashSet<RawPtrWillBeMember<TreeScope>> UnorderedTreeScopeSet;
 
-    // A class which holds document-ordered treescopes which have stylesheets.
-    // ListHashSet allows only sequential access, not random access.
-    // So it gets slow when the size of treescopes gets larger when finding
-    // the best place to insert a treescope into the document-ordered
-    // treescopes (requires linear search).
-    // To solve this, use a vector for the document-ordered treescopes and
-    // use a hashset for quickly checking whether a given treescope is
-    // in the document-ordered treescopes or not.
-    class OrderedTreeScopeSet final {
-        DISALLOW_ALLOCATION();
-        WTF_MAKE_NONCOPYABLE(OrderedTreeScopeSet);
-    public:
-        OrderedTreeScopeSet() { }
-
-        void insert(TreeScope*);
-        void remove(TreeScope*);
-
-        // When we don't need to consider document-order, use this iterator.
-        // Otherwise, use [] operator.
-        UnorderedTreeScopeSet::iterator beginUnordered() { return m_hash.begin(); }
-        UnorderedTreeScopeSet::iterator endUnordered() { return m_hash.end(); }
-
-        bool isEmpty() const { return m_treeScopes.isEmpty(); }
-        void clear()
-        {
-            m_treeScopes.clear();
-            m_hash.clear();
-        }
-
-        size_t size() const { return m_treeScopes.size(); }
-
-        TreeScope* operator[](size_t i) { return m_treeScopes[i]; }
-        const TreeScope* operator[](size_t i) const { return m_treeScopes[i]; }
-
-        DECLARE_TRACE();
-
-    private:
-        WillBeHeapVector<RawPtrWillBeMember<TreeScope>, 16> m_treeScopes;
-        UnorderedTreeScopeSet m_hash;
-    };
-
-    static void insertTreeScopeInDocumentOrder(OrderedTreeScopeSet&, TreeScope*);
-    void clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScopeSet::iterator begin, UnorderedTreeScopeSet::iterator end);
+    void clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScopeSet&);
 
     void createResolver();
 
@@ -279,7 +237,7 @@ private:
 
     bool m_documentScopeDirty;
     UnorderedTreeScopeSet m_dirtyTreeScopes;
-    OrderedTreeScopeSet m_activeTreeScopes;
+    UnorderedTreeScopeSet m_activeTreeScopes;
 
     String m_preferredStylesheetSetName;
     String m_selectedStylesheetSetName;
