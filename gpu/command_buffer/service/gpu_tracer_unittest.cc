@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <map>
-#include <set>
-
 #include "base/bind.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
@@ -12,17 +9,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/gpu_timing.h"
+#include "ui/gl/gpu_timing_fake.h"
 
 namespace gpu {
 namespace gles2 {
 namespace {
 
 using ::testing::_;
-using ::testing::AtLeast;
 using ::testing::AtMost;
 using ::testing::Exactly;
 using ::testing::Invoke;
-using ::testing::NotNull;
 using ::testing::Return;
 
 int64 g_fakeCPUTime = 0;
@@ -48,107 +44,6 @@ class MockOutputter : public Outputter {
 
  protected:
   ~MockOutputter() {}
-};
-
-class GlFakeQueries {
- public:
-  GlFakeQueries() {}
-
-  void Reset() {
-    current_time_ = 0;
-    next_query_id_ = 23;
-    alloced_queries_.clear();
-    query_timestamp_.clear();
-  }
-
-  void SetCurrentGLTime(GLint64 current_time) { current_time_ = current_time; }
-  void SetDisjoint() { disjointed_ = true; }
-
-  void GenQueries(GLsizei n, GLuint* ids) {
-    for (GLsizei i = 0; i < n; i++) {
-      ids[i] = next_query_id_++;
-      alloced_queries_.insert(ids[i]);
-    }
-  }
-
-  void DeleteQueries(GLsizei n, const GLuint* ids) {
-    for (GLsizei i = 0; i < n; i++) {
-      alloced_queries_.erase(ids[i]);
-      query_timestamp_.erase(ids[i]);
-    }
-  }
-
-  void GetQueryObjectiv(GLuint id, GLenum pname, GLint* params) {
-    switch (pname) {
-      case GL_QUERY_RESULT_AVAILABLE: {
-        std::map<GLuint, GLint64>::iterator it = query_timestamp_.find(id);
-        if (it != query_timestamp_.end() && it->second <= current_time_)
-          *params = 1;
-        else
-          *params = 0;
-        break;
-      }
-      default:
-        FAIL() << "Invalid variable passed to GetQueryObjectiv: " << pname;
-    }
-  }
-
-  void QueryCounter(GLuint id, GLenum target) {
-    switch (target) {
-      case GL_TIMESTAMP:
-        ASSERT_TRUE(alloced_queries_.find(id) != alloced_queries_.end());
-        query_timestamp_[id] = current_time_;
-        break;
-      default:
-        FAIL() << "Invalid variable passed to QueryCounter: " << target;
-    }
-  }
-
-  void GetInteger64v(GLenum pname, GLint64 * data) {
-    switch (pname) {
-      case GL_TIMESTAMP:
-        *data = current_time_;
-        break;
-      default:
-        FAIL() << "Invalid variable passed to GetInteger64v: " << pname;
-    }
-  }
-
-  void GetQueryObjectui64v(GLuint id, GLenum pname, GLuint64* params) {
-    switch (pname) {
-      case GL_QUERY_RESULT:
-        ASSERT_TRUE(query_timestamp_.find(id) != query_timestamp_.end());
-        *params = query_timestamp_.find(id)->second;
-        break;
-      default:
-        FAIL() << "Invalid variable passed to GetQueryObjectui64v: " << pname;
-    }
-  }
-
-  void GetIntegerv(GLenum pname, GLint* params) {
-    switch (pname) {
-      case GL_GPU_DISJOINT_EXT:
-        *params = static_cast<GLint>(disjointed_);
-        disjointed_ = false;
-        break;
-      default:
-        FAIL() << "Invalid variable passed to GetIntegerv: " << pname;
-    }
-  }
-
-  void Finish() {
-  }
-
-  GLenum GetError() {
-    return GL_NO_ERROR;
-  }
-
- protected:
-  bool disjointed_ = false;
-  GLint64 current_time_ = 0;
-  GLuint next_query_id_ = 0;
-  std::set<GLuint> alloced_queries_;
-  std::map<GLuint, GLint64> query_timestamp_;
 };
 
 class GPUTracerTester : public GPUTracer {
@@ -215,13 +110,11 @@ class BaseGpuTest : public GpuServiceTest {
     GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
 
     // Disjoint check should only be called by kTracerTypeDisjointTimer type.
-    if (GetTimerType() == gfx::GPUTiming::kTimerTypeDisjoint) {
-      EXPECT_CALL(*gl_, GetIntegerv(GL_GPU_DISJOINT_EXT, _)).Times(AtLeast(1))
-          .WillRepeatedly(
-              Invoke(&gl_fake_queries_, &GlFakeQueries::GetIntegerv));
-    } else {
-      EXPECT_CALL(*gl_, GetIntegerv(GL_GPU_DISJOINT_EXT, _)).Times(Exactly(0));
-    }
+    if (GetTimerType() == gfx::GPUTiming::kTimerTypeDisjoint)
+      gl_fake_queries_.ExpectDisjointCalls(*gl_);
+    else
+      gl_fake_queries_.ExpectNoDisjointCalls(*gl_);
+
     gpu_timing_client_ = GetGLContext()->CreateGPUTimingClient();
     gpu_timing_client_->SetCpuTimeForTesting(base::Bind(&FakeCpuTime));
     gl_fake_queries_.Reset();
@@ -238,34 +131,10 @@ class BaseGpuTest : public GpuServiceTest {
   }
 
   void ExpectTraceQueryMocks() {
-    if (gpu_timing_client_->IsAvailable() &&
-        gpu_timing_client_->IsTimerOffsetAvailable()) {
+    if (gpu_timing_client_->IsAvailable()) {
       // Delegate query APIs used by GPUTrace to a GlFakeQueries
-      EXPECT_CALL(*gl_, GenQueries(2, NotNull())).Times(AtLeast(1))
-          .WillRepeatedly(
-              Invoke(&gl_fake_queries_, &GlFakeQueries::GenQueries));
-
-      EXPECT_CALL(*gl_, GetQueryObjectiv(_, GL_QUERY_RESULT_AVAILABLE,
-                                            NotNull()))
-          .WillRepeatedly(
-              Invoke(&gl_fake_queries_, &GlFakeQueries::GetQueryObjectiv));
-
-      EXPECT_CALL(*gl_, GetInteger64v(GL_TIMESTAMP, _))
-          .WillRepeatedly(
-              Invoke(&gl_fake_queries_, &GlFakeQueries::GetInteger64v));
-
-      EXPECT_CALL(*gl_, QueryCounter(_, GL_TIMESTAMP)).Times(AtLeast(2))
-          .WillRepeatedly(
-               Invoke(&gl_fake_queries_, &GlFakeQueries::QueryCounter));
-
-      EXPECT_CALL(*gl_, GetQueryObjectui64v(_, GL_QUERY_RESULT, NotNull()))
-          .WillRepeatedly(
-               Invoke(&gl_fake_queries_,
-                      &GlFakeQueries::GetQueryObjectui64v));
-
-      EXPECT_CALL(*gl_, DeleteQueries(2, NotNull())).Times(AtLeast(1))
-          .WillRepeatedly(
-               Invoke(&gl_fake_queries_, &GlFakeQueries::DeleteQueries));
+      const bool elapsed = (GetTimerType() == gfx::GPUTiming::kTimerTypeEXT);
+      gl_fake_queries_.ExpectGPUTimerQuery(*gl_, elapsed);
     }
   }
 
@@ -282,9 +151,12 @@ class BaseGpuTest : public GpuServiceTest {
                                const std::string& category,
                                const std::string& name, int64 expect_start_time,
                                int64 expect_end_time,
+                               bool trace_service,
                                bool trace_device) {
-    EXPECT_CALL(*outputter,
-                TraceServiceEnd(source, category, name));
+    if (trace_service) {
+      EXPECT_CALL(*outputter,
+                  TraceServiceEnd(source, category, name));
+    }
 
     if (trace_device) {
       EXPECT_CALL(*outputter,
@@ -299,35 +171,34 @@ class BaseGpuTest : public GpuServiceTest {
   }
 
   void ExpectOutputterMocks(MockOutputter* outputter,
+                            bool tracing_service,
                             bool tracing_device,
                             GpuTracerSource source,
                             const std::string& category,
                             const std::string& name, int64 expect_start_time,
                             int64 expect_end_time) {
-    ExpectOutputterBeginMocks(outputter, source, category, name);
-    bool valid_timer = tracing_device &&
-                       gpu_timing_client_->IsAvailable() &&
-                       gpu_timing_client_->IsTimerOffsetAvailable();
+    if (tracing_service)
+      ExpectOutputterBeginMocks(outputter, source, category, name);
+    const bool valid_timer = tracing_device &&
+                             gpu_timing_client_->IsAvailable() &&
+                             GetTimerType() != gfx::GPUTiming::kTimerTypeEXT;
     ExpectOutputterEndMocks(outputter, source, category, name,
-                            expect_start_time, expect_end_time, valid_timer);
+                            expect_start_time, expect_end_time,
+                            tracing_service, valid_timer);
   }
 
   void ExpectTracerOffsetQueryMocks() {
     if (GetTimerType() != gfx::GPUTiming::kTimerTypeARB) {
-      EXPECT_CALL(*gl_, GetInteger64v(GL_TIMESTAMP, NotNull()))
-          .Times(Exactly(0));
+      gl_fake_queries_.ExpectNoOffsetCalculationQuery(*gl_);
     } else {
-      EXPECT_CALL(*gl_, GetInteger64v(GL_TIMESTAMP, NotNull()))
-          .Times(AtMost(1))
-          .WillRepeatedly(
-              Invoke(&gl_fake_queries_, &GlFakeQueries::GetInteger64v));
+      gl_fake_queries_.ExpectOffsetCalculationQuery(*gl_);
     }
   }
 
   gfx::GPUTiming::TimerType GetTimerType() { return test_timer_type_; }
 
   gfx::GPUTiming::TimerType test_timer_type_;
-  GlFakeQueries gl_fake_queries_;
+  gfx::GPUTimingFake gl_fake_queries_;
 
   scoped_refptr<gfx::GPUTimingClient> gpu_timing_client_;
   scoped_refptr<MockOutputter> outputter_ref_;
@@ -353,10 +224,9 @@ class BaseGpuTraceTest : public BaseGpuTest {
     const int64 expect_end_time =
         (end_timestamp / base::Time::kNanosecondsPerMicrosecond) + offset_time;
 
-    if (tracing_service)
-      ExpectOutputterMocks(outputter_ref_.get(), tracing_device, tracer_source,
-                           category_name, trace_name,
-                           expect_start_time, expect_end_time);
+    ExpectOutputterMocks(outputter_ref_.get(), tracing_service, tracing_device,
+                         tracer_source, category_name, trace_name,
+                         expect_start_time, expect_end_time);
 
     if (tracing_device)
       ExpectTraceQueryMocks();
@@ -380,11 +250,13 @@ class BaseGpuTraceTest : public BaseGpuTest {
     // Shouldn't be available until the queries complete
     gl_fake_queries_.SetCurrentGLTime(end_timestamp -
                                       base::Time::kNanosecondsPerMicrosecond);
+    g_fakeCPUTime = expect_end_time - 1;
     if (tracing_device)
       EXPECT_FALSE(trace->IsAvailable());
 
     // Now it should be available
     gl_fake_queries_.SetCurrentGLTime(end_timestamp);
+    g_fakeCPUTime = expect_end_time;
     EXPECT_TRUE(trace->IsAvailable());
 
     // Proces should output expected Trace results to MockOutputter
@@ -464,10 +336,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
 
   void DoTracerMarkersTest() {
     ExpectTracerOffsetQueryMocks();
-
-    EXPECT_CALL(*gl_, GetError()).Times(AtLeast(0))
-          .WillRepeatedly(
-               Invoke(&gl_fake_queries_, &GlFakeQueries::GetError));
+    gl_fake_queries_.ExpectGetErrorCalls(*gl_);
 
     const std::string category_name("trace_category");
     const std::string trace_name("trace_test");
@@ -512,7 +381,6 @@ class BaseGpuTracerTest : public BaseGpuTest {
                                 source_category, source_trace_name);
       ASSERT_TRUE(tracer.Begin(source_category, source_trace_name, source));
     }
-
     for (int i = 0; i < NUM_TRACER_SOURCES; ++i) {
       // Set times so each source has a different time.
       gl_fake_queries_.SetCurrentGLTime(
@@ -525,33 +393,27 @@ class BaseGpuTracerTest : public BaseGpuTest {
       std::string source_category = category_name + num_char;
       std::string source_trace_name = trace_name + num_char;
 
-      bool valid_timer = gpu_timing_client_->IsAvailable() &&
-                         gpu_timing_client_->IsTimerOffsetAvailable();
+      const bool valid_timer = gpu_timing_client_->IsAvailable() &&
+                               GetTimerType() != gfx::GPUTiming::kTimerTypeEXT;
 
       const GpuTracerSource source = static_cast<GpuTracerSource>(i);
       ExpectOutputterEndMocks(outputter_ref_.get(), source, source_category,
                               source_trace_name, expect_start_time + i,
-                              expect_end_time + i, valid_timer);
-
+                              expect_end_time + i, true, valid_timer);
       // Check if the current category/name are correct for this source.
       ASSERT_EQ(source_category, tracer.CurrentCategory(source));
       ASSERT_EQ(source_trace_name, tracer.CurrentName(source));
 
       ASSERT_TRUE(tracer.End(source));
     }
-
     ASSERT_TRUE(tracer.EndDecoding());
-
     outputter_ref_ = NULL;
   }
 
   void DoDisjointTest() {
     // Cause a disjoint in a middle of a trace and expect no output calls.
     ExpectTracerOffsetQueryMocks();
-
-    EXPECT_CALL(*gl_, GetError()).Times(AtLeast(0))
-          .WillRepeatedly(
-               Invoke(&gl_fake_queries_, &GlFakeQueries::GetError));
+    gl_fake_queries_.ExpectGetErrorCalls(*gl_);
 
     const GpuTracerSource tracer_source = kTraceGroupMarker;
     const std::string category_name("trace_category");
@@ -589,7 +451,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
 
     // Create GPUTimingClient to make sure disjoint value is correct. This
     // should not interfere with the tracer's disjoint value.
-    scoped_refptr<gfx::GPUTimingClient>  disjoint_client =
+    scoped_refptr<gfx::GPUTimingClient> disjoint_client =
         GetGLContext()->CreateGPUTimingClient();
 
     // We assert here based on the disjoint_client because if disjoints are not
@@ -600,7 +462,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
 
     ExpectOutputterEndMocks(outputter_ref_.get(), tracer_source,
                             category_name, trace_name,
-                            expect_start_time, expect_end_time, false);
+                            expect_start_time, expect_end_time, true, false);
 
     ASSERT_TRUE(tracer.End(source));
     ASSERT_TRUE(tracer.EndDecoding());

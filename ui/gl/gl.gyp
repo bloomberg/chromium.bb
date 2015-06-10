@@ -283,6 +283,8 @@
         'gl_mock.cc',
         'gl_mock.h',
         'gl_mock_autogen_gl.h',
+        'gpu_timing_fake.cc',
+        'gpu_timing_fake.h',
       ],
     },
   ],

@@ -130,6 +130,7 @@ class GL_EXPORT GPUTimingClient
   void InvalidateTimerOffset();
 
   void SetCpuTimeForTesting(const base::Callback<int64(void)>& cpu_time);
+  int64 GetCurrentCPUTime();
 
  private:
   friend class base::RefCounted<GPUTimingClient>;

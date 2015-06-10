@@ -12,6 +12,7 @@
       'type': '<(gtest_target_type)',
       'sources': [
         'test/run_all_unittests.cc',
+        'gpu_timing_unittest.cc',
         'gl_api_unittest.cc',
       ],
       'include_dirs': [
@@ -20,8 +21,10 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
-        'gl.gyp:gl',
+        '<(DEPTH)/ui/gl/gl.gyp:gl',
+        '<(DEPTH)/ui/gl/gl.gyp:gl_unittest_utils',
       ],
       'conditions': [
         ['OS == "android"', {

@@ -52,7 +52,7 @@ int64 GPUTiming::CalculateTimerOffset(base::Callback<int64(void)> cpu_time) {
       int64 now =
           cpu_time.is_null()
           ? (base::TraceTicks::Now() - base::TraceTicks()).InMicroseconds()
-              : cpu_time.Run();
+          : cpu_time.Run();
       offset_ = now - gl_now / base::Time::kNanosecondsPerMicrosecond;
       offset_valid_ = (timer_type_ == kTimerTypeARB);
     } else {
@@ -249,6 +249,12 @@ void GPUTimingClient::InvalidateTimerOffset() {
 void GPUTimingClient::SetCpuTimeForTesting(
     const base::Callback<int64(void)>& cpu_time) {
   cpu_time_for_testing_ = cpu_time;
+}
+
+int64 GPUTimingClient::GetCurrentCPUTime() {
+  return cpu_time_for_testing_.is_null()
+         ? (base::TraceTicks::Now() - base::TraceTicks()).InMicroseconds()
+         : cpu_time_for_testing_.Run();
 }
 
 GPUTimingClient::~GPUTimingClient() {
