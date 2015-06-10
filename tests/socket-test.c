@@ -34,8 +34,9 @@
 #include "test-runner.h"
 
 /* Paths longer than what the .sun_path array can contain must be rejected.
-   This is a hard limitation of assigning a name to AF_UNIX/AF_LOCAL sockets.
-   See `man 7 unix`. */
+ * This is a hard limitation of assigning a name to AF_UNIX/AF_LOCAL sockets.
+ * See `man 7 unix`.
+ */
 
 static const struct sockaddr_un example_sockaddr_un;
 
