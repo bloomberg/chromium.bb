@@ -36,7 +36,7 @@ namespace content {
 namespace {
 const char kDecoderDevice[] = "/dev/video-dec";
 const char kEncoderDevice[] = "/dev/video-enc";
-const char kImageProcessorDevice[] = "/dev/gsc0";
+const char kImageProcessorDevice[] = "/dev/image-proc0";
 }
 
 GenericV4L2Device::GenericV4L2Device(Type type)
