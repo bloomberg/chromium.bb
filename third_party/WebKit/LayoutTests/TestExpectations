@@ -333,11 +333,6 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
-crbug.com/382491 fast/reflections/reflection-with-zoom.html [ NeedsRebaseline ]
-crbug.com/382491 media/video-layer-crash.html [ NeedsRebaseline ]
-crbug.com/382491 media/video-transformed.html [ NeedsRebaseline ]
-crbug.com/382491 virtual/slimmingpaint/printing/setPrinting.html [ NeedsRebaseline ]
-
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-009.xht [ ImageOnlyFailure ]
