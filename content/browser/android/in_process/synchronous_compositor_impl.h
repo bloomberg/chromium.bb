@@ -87,7 +87,8 @@ class SynchronousCompositorImpl
                             float page_scale_factor,
                             float min_page_scale_factor,
                             float max_page_scale_factor) override;
-  bool IsExternalFlingActive() const override;
+  bool IsExternalScrollActive() const override;
+  void SetNeedsAnimate(const AnimationCallback& scroll_animation) override;
 
   void DidOverscroll(const DidOverscrollParams& params);
   void DidStopFlinging();

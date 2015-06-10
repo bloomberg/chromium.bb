@@ -1207,9 +1207,8 @@ public class ContentViewCore implements
     }
 
     public boolean isScrollInProgress() {
-        return mTouchScrollInProgress
-                || mPotentiallyActiveFlingCount > 0
-                || getContentViewClient().isExternalFlingActive();
+        return mTouchScrollInProgress || mPotentiallyActiveFlingCount > 0
+                || getContentViewClient().isExternalScrollActive();
     }
 
     @SuppressWarnings("unused")
@@ -1228,10 +1227,6 @@ public class ContentViewCore implements
     @CalledByNative
     private void onFlingStartEventHadNoConsumer(int vx, int vy) {
         mTouchScrollInProgress = false;
-        for (mGestureStateListenersIterator.rewind();
-                    mGestureStateListenersIterator.hasNext();) {
-            mGestureStateListenersIterator.next().onUnhandledFlingStartEvent(vx, vy);
-        }
     }
 
     @SuppressWarnings("unused")
@@ -1315,8 +1310,7 @@ public class ContentViewCore implements
         nativeDoubleTap(mNativeContentViewCore, timeMs, x, y);
     }
 
-    @VisibleForTesting
-    public void flingForTest(long timeMs, int x, int y, int velocityX, int velocityY) {
+    public void fling(long timeMs, int x, int y, int velocityX, int velocityY) {
         if (mNativeContentViewCore == 0) return;
         nativeFlingCancel(mNativeContentViewCore, timeMs);
         nativeScrollBegin(mNativeContentViewCore, timeMs, x, y, velocityX, velocityY);

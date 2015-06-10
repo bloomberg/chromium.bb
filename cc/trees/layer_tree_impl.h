@@ -343,7 +343,7 @@ class CC_EXPORT LayerTreeImpl {
 
   void GatherFrameTimingRequestIds(std::vector<int64_t>* request_ids);
 
-  bool IsExternalFlingActive() const;
+  bool IsExternalScrollActive() const;
   void DidUpdateScrollOffset(int layer_id);
 
  protected:

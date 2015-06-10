@@ -41,7 +41,7 @@ class BrowserViewRendererClient {
   virtual void ScrollContainerViewTo(gfx::Vector2d new_value) = 0;
 
   // Is a Android view system managed fling in progress?
-  virtual bool IsFlingActive() const = 0;
+  virtual bool IsSmoothScrollingActive() const = 0;
 
   // Sets the following:
   // view's scroll offset cap to |max_scroll_offset|,
@@ -55,7 +55,8 @@ class BrowserViewRendererClient {
                                  float max_page_scale_factor) = 0;
 
   // Handle overscroll.
-  virtual void DidOverscroll(gfx::Vector2d overscroll_delta) = 0;
+  virtual void DidOverscroll(gfx::Vector2d overscroll_delta,
+                             gfx::Vector2dF overscroll_velocity) = 0;
 
   // Visible for testing
   // Called when the parent draw constraints in browser view renderer gets

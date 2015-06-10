@@ -35,11 +35,6 @@ public class GestureStateListener {
     public void onFlingEndGesture(int scrollOffsetY, int scrollExtentY) {}
 
     /**
-     * Called when a fling event was not handled by the renderer.
-     */
-    public void onUnhandledFlingStartEvent(int vx, int vy) {}
-
-    /**
      * Called to indicate that a scroll update gesture had been consumed by the page.
      * This callback is called whenever any layer is scrolled (like a frame or div). It is
      * not called when a JS touch handler consumes the event (preventDefault), it is not called

@@ -22,8 +22,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.FloatMath;
 import android.util.Log;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -33,6 +35,7 @@ import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.webkit.GeolocationPermissions;
@@ -553,6 +556,11 @@ public class AwContents implements SmartClipProvider,
         public void invalidate() {
             postInvalidateOnAnimation();
         }
+
+        @Override
+        public void cancelFling() {
+            mContentViewCore.cancelFling(SystemClock.uptimeMillis());
+        }
     }
 
     //--------------------------------------------------------------------------------------------
@@ -575,12 +583,7 @@ public class AwContents implements SmartClipProvider,
 
         @Override
         public void onFlingCancelGesture() {
-            mScrollOffsetManager.onFlingCancelGesture();
-        }
-
-        @Override
-        public void onUnhandledFlingStartEvent(int velocityX, int velocityY) {
-            mScrollOffsetManager.onUnhandledFlingStartEvent(velocityX, velocityY);
+            mScrollOffsetManager.finishScroll();
         }
 
         @Override
@@ -1936,7 +1939,14 @@ public class AwContents implements SmartClipProvider,
      */
     public void flingScroll(int velocityX, int velocityY) {
         if (TRACE) Log.d(TAG, "flingScroll");
-        mScrollOffsetManager.flingScroll(velocityX, velocityY);
+        // Cancel the current smooth scroll, if there is one.
+        mScrollOffsetManager.finishScroll();
+        // TODO(hush): crbug.com/493765. A hit test at 0, 0 may not
+        // target the scroll at root scrolling layer.  Instead, we
+        // should add a method flingRootLayer to ContentViewCore
+        // and call it here to specifically target the scroll at
+        // the root layer.
+        mContentViewCore.fling(SystemClock.uptimeMillis(), 0, 0, -velocityX, -velocityY);
     }
 
     /**
@@ -2549,8 +2559,8 @@ public class AwContents implements SmartClipProvider,
     }
 
     @CalledByNative
-    public boolean isFlingActive() {
-        return mScrollOffsetManager.isFlingActive();
+    public boolean isSmoothScrollingActive() {
+        return mScrollOffsetManager.isSmoothScrollingActive();
     }
 
     @CalledByNative
@@ -2570,15 +2580,24 @@ public class AwContents implements SmartClipProvider,
         client.init(mContentViewCore);
     }
 
+    @SuppressLint("NewApi") // FloatMath#hypot requires API level 17.
     @CalledByNative
-    private void didOverscroll(int deltaX, int deltaY) {
-        if (mOverScrollGlow != null) {
-            mOverScrollGlow.setOverScrollDeltas(deltaX, deltaY);
-        }
-
+    private void didOverscroll(int deltaX, int deltaY, float velocityX, float velocityY) {
         mScrollOffsetManager.overScrollBy(deltaX, deltaY);
 
-        if (mOverScrollGlow != null && mOverScrollGlow.isAnimating()) {
+        if (mOverScrollGlow == null) return;
+
+        mOverScrollGlow.setOverScrollDeltas(deltaX, deltaY);
+        final int oldX = mContainerView.getScrollX();
+        final int oldY = mContainerView.getScrollY();
+        final int x = oldX + deltaX;
+        final int y = oldY + deltaY;
+        final int scrollRangeX = mScrollOffsetManager.computeMaximumHorizontalScrollOffset();
+        final int scrollRangeY = mScrollOffsetManager.computeMaximumVerticalScrollOffset();
+        mOverScrollGlow.absorbGlow(x, y, oldX, oldY, scrollRangeX, scrollRangeY,
+                FloatMath.hypot(velocityX, velocityY));
+
+        if (mOverScrollGlow.isAnimating()) {
             postInvalidateOnAnimation();
         }
     }
@@ -2987,7 +3006,13 @@ public class AwContents implements SmartClipProvider,
 
         @Override
         public void computeScroll() {
-            mScrollOffsetManager.computeScrollAndAbsorbGlow(mOverScrollGlow);
+            if (mScrollOffsetManager.isSmoothScrollingActive()) {
+                mScrollOffsetManager.computeScrollAndAbsorbGlow(mOverScrollGlow);
+            } else {
+                if (isDestroyed()) return;
+                nativeOnComputeScroll(
+                        mNativeAwContents, AnimationUtils.currentAnimationTimeMillis());
+            }
         }
     }
 
@@ -3026,6 +3051,8 @@ public class AwContents implements SmartClipProvider,
             long nativeAwContents, String path, ValueCallback<String> callback);
 
     private native void nativeAddVisitedLinks(long nativeAwContents, String[] visitedLinks);
+    private native void nativeOnComputeScroll(
+            long nativeAwContents, long currentAnimationTimeMillis);
     private native boolean nativeOnDraw(long nativeAwContents, Canvas canvas,
             boolean isHardwareAccelerated, int scrollX, int scrollY,
             int visibleLeft, int visibleTop, int visibleRight, int visibleBottom);

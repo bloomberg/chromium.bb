@@ -93,7 +93,7 @@ gfx::Point RenderingTest::GetLocationOnScreen() {
   return gfx::Point();
 }
 
-bool RenderingTest::IsFlingActive() const {
+bool RenderingTest::IsSmoothScrollingActive() const {
   return false;
 }
 

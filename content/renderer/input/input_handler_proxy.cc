@@ -419,7 +419,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
     const WebGestureEvent& gesture_event) {
-  DCHECK(!gesture_scroll_on_impl_thread_);
+  if (gesture_scroll_on_impl_thread_)
+    CancelCurrentFling();
+
 #ifndef NDEBUG
   DCHECK(!expect_scroll_update_end_);
   expect_scroll_update_end_ = true;
@@ -531,7 +533,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
           WebPoint(gesture_event.globalX, gesture_event.globalY);
       fling_parameters_.modifiers = gesture_event.modifiers;
       fling_parameters_.sourceDevice = gesture_event.sourceDevice;
-      input_handler_->SetNeedsAnimate();
+      input_handler_->SetNeedsAnimateInput();
       return DID_HANDLE;
     }
     case cc::InputHandler::SCROLL_UNKNOWN:
@@ -753,7 +755,7 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
         monotonic_time_sec >= fling_parameters_.startTime +
                                   kMaxSecondsFromFlingTimestampToFirstAnimate) {
       fling_parameters_.startTime = monotonic_time_sec;
-      input_handler_->SetNeedsAnimate();
+      input_handler_->SetNeedsAnimateInput();
       return;
     }
   }
@@ -766,7 +768,7 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
     fling_is_active = false;
 
   if (fling_is_active) {
-    input_handler_->SetNeedsAnimate();
+    input_handler_->SetNeedsAnimateInput();
   } else {
     TRACE_EVENT_INSTANT0("input",
                          "InputHandlerProxy::animate::flingOver",

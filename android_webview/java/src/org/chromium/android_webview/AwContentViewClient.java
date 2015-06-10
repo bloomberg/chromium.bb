@@ -192,7 +192,7 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
     }
 
     @Override
-    public boolean isExternalFlingActive() {
-        return mAwContents.isFlingActive();
+    public boolean isExternalScrollActive() {
+        return mAwContents.isSmoothScrollingActive();
     }
 }

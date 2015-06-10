@@ -46,6 +46,8 @@ public class AwScrollOffsetManager {
         int getContainerViewScrollY();
 
         void invalidate();
+
+        void cancelFling();
     }
 
     private final Delegate mDelegate;
@@ -64,9 +66,6 @@ public class AwScrollOffsetManager {
 
     // Whether we're in the middle of processing a touch event.
     private boolean mProcessingTouchEvent;
-
-    // Don't skip computeScrollAndAbsorbGlow just because isFling is called in between.
-    private boolean mWasFlinging;
 
     // Whether (and to what value) to update the native side scroll offset after we've finished
     // processing a touch event.
@@ -163,10 +162,10 @@ public class AwScrollOffsetManager {
                 scrollRangeX, scrollRangeY, mProcessingTouchEvent);
     }
 
-    public boolean isFlingActive() {
-        boolean flinging = mScroller.computeScrollOffset();
-        mWasFlinging |= flinging;
-        return flinging;
+    // This is used temporarily until animateScrollTo path of Android WebView (pageUp, pageDown)
+    // is unified with Chrome smooth scrolling.
+    public boolean isSmoothScrollingActive() {
+        return !mScroller.isFinished();
     }
 
     // Called by the native side to over-scroll the container view.
@@ -252,39 +251,16 @@ public class AwScrollOffsetManager {
     }
 
     // Called whenever some other touch interaction requires the fling gesture to be canceled.
-    public void onFlingCancelGesture() {
+    public void finishScroll() {
         // TODO(mkosiba): Support speeding up a fling by flinging again.
         // http://crbug.com/265841
         mScroller.forceFinished(true);
     }
 
-    // Called when a fling gesture is not handled by the renderer.
-    // We explicitly ask the renderer not to handle fling gestures targeted at the root
-    // scroll layer.
-    public void onUnhandledFlingStartEvent(int velocityX, int velocityY) {
-        flingScroll(-velocityX, -velocityY);
-    }
-
-    // Starts the fling animation. Called both as a response to a fling gesture and as via the
-    // public WebView#flingScroll(int, int) API.
-    public void flingScroll(int velocityX, int velocityY) {
-        final int scrollX = mDelegate.getContainerViewScrollX();
-        final int scrollY = mDelegate.getContainerViewScrollY();
-        final int scrollRangeX = computeMaximumHorizontalScrollOffset();
-        final int scrollRangeY = computeMaximumVerticalScrollOffset();
-
-        mScroller.fling(scrollX, scrollY, velocityX, velocityY,
-                0, scrollRangeX, 0, scrollRangeY);
-        mDelegate.invalidate();
-    }
-
     // Called immediately before the draw to update the scroll offset.
     public void computeScrollAndAbsorbGlow(OverScrollGlow overScrollGlow) {
-        if (!mScroller.computeScrollOffset() && !mWasFlinging) {
-            return;
-        }
-        mWasFlinging = false;
-
+        assert isSmoothScrollingActive();
+        mScroller.computeScrollOffset();
         final int oldX = mDelegate.getContainerViewScrollX();
         final int oldY = mDelegate.getContainerViewScrollY();
         int x = mScroller.getCurrX();
@@ -323,6 +299,9 @@ public class AwScrollOffsetManager {
 
         if (dx == 0 && dy == 0) return false;
 
+        // The scroll will be handled by AwScrollOffsetManager instead of the compositor.
+        // So stop the current fling (either by flingScroll() or by user finger).
+        mDelegate.cancelFling();
         mScroller.startScroll(scrollX, scrollY, dx, dy, computeDurationInMilliSec(dx, dy));
         mDelegate.invalidate();
 

@@ -403,8 +403,11 @@ void LayerTreeHostImpl::Animate(base::TimeTicks monotonic_time) {
   // DCHECK(!current_begin_frame_tracker_.HasFinished());
   // DCHECK(monotonic_time == current_begin_frame_tracker_.Current().frame_time)
   //  << "Called animate with unknown frame time!?";
-  if (input_handler_client_)
-    input_handler_client_->Animate(monotonic_time);
+  if (!root_layer_scroll_offset_delegate_ ||
+      (CurrentlyScrollingLayer() != InnerViewportScrollLayer() &&
+       CurrentlyScrollingLayer() != OuterViewportScrollLayer())) {
+    AnimateInput(monotonic_time);
+  }
   AnimatePageScale(monotonic_time);
   AnimateLayers(monotonic_time);
   AnimateScrollbars(monotonic_time);
@@ -461,6 +464,22 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
   SetNeedsAnimate();
   client_->SetNeedsCommitOnImplThread();
   client_->RenewTreePriority();
+}
+
+void LayerTreeHostImpl::SetNeedsAnimateInput() {
+  if (root_layer_scroll_offset_delegate_ &&
+      (CurrentlyScrollingLayer() == InnerViewportScrollLayer() ||
+       CurrentlyScrollingLayer() == OuterViewportScrollLayer())) {
+    if (root_layer_animation_callback_.is_null()) {
+      root_layer_animation_callback_ =
+          base::Bind(&LayerTreeHostImpl::AnimateInput, AsWeakPtr());
+    }
+    root_layer_scroll_offset_delegate_->SetNeedsAnimate(
+        root_layer_animation_callback_);
+    return;
+  }
+
+  SetNeedsAnimate();
 }
 
 bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
@@ -1827,9 +1846,9 @@ LayerImpl* LayerTreeHostImpl::CurrentlyScrollingLayer() const {
 bool LayerTreeHostImpl::IsActivelyScrolling() const {
   return (did_lock_scrolling_layer_ && CurrentlyScrollingLayer()) ||
          (InnerViewportScrollLayer() &&
-          InnerViewportScrollLayer()->IsExternalFlingActive()) ||
+          InnerViewportScrollLayer()->IsExternalScrollActive()) ||
          (OuterViewportScrollLayer() &&
-          OuterViewportScrollLayer()->IsExternalFlingActive());
+          OuterViewportScrollLayer()->IsExternalScrollActive());
 }
 
 // Content layers can be either directly scrollable or contained in an outer
@@ -2817,13 +2836,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
   if (!active_tree_->CurrentlyScrollingLayer())
     return SCROLL_IGNORED;
 
-  if (settings_.ignore_root_layer_flings &&
-      (active_tree_->CurrentlyScrollingLayer() == InnerViewportScrollLayer() ||
-       active_tree_->CurrentlyScrollingLayer() == OuterViewportScrollLayer())) {
-    ClearCurrentlyScrollingLayer();
-    return SCROLL_IGNORED;
-  }
-
   if (!wheel_scrolling_) {
     // Allow the fling to lock to the first layer that moves after the initial
     // fling |ScrollBy()| event.
@@ -3055,6 +3067,12 @@ void LayerTreeHostImpl::ScrollViewportBy(gfx::Vector2dF scroll_delta) {
 
   if (!unused_delta.IsZero() && (scroll_layer == OuterViewportScrollLayer()))
     InnerViewportScrollLayer()->ScrollBy(unused_delta);
+}
+
+void LayerTreeHostImpl::AnimateInput(base::TimeTicks monotonic_time) {
+  DCHECK(proxy_->IsImplThread());
+  if (input_handler_client_)
+    input_handler_client_->Animate(monotonic_time);
 }
 
 void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {

@@ -118,6 +118,7 @@ class AwContents : public FindHelper::Listener,
   jboolean RestoreFromOpaqueState(JNIEnv* env, jobject obj, jbyteArray state);
   void FocusFirstNode(JNIEnv* env, jobject obj);
   void SetBackgroundColor(JNIEnv* env, jobject obj, jint color);
+  void OnComputeScroll(JNIEnv* env, jobject obj, jlong animation_time_millis);
   bool OnDraw(JNIEnv* env,
               jobject obj,
               jobject canvas,
@@ -199,13 +200,15 @@ class AwContents : public FindHelper::Listener,
   void OnNewPicture() override;
   gfx::Point GetLocationOnScreen() override;
   void ScrollContainerViewTo(gfx::Vector2d new_value) override;
-  bool IsFlingActive() const override;
+  bool IsSmoothScrollingActive() const override;
   void UpdateScrollState(gfx::Vector2d max_scroll_offset,
                          gfx::SizeF contents_size_dip,
                          float page_scale_factor,
                          float min_page_scale_factor,
                          float max_page_scale_factor) override;
-  void DidOverscroll(gfx::Vector2d overscroll_delta) override;
+  void DidOverscroll(gfx::Vector2d overscroll_delta,
+                     gfx::Vector2dF overscroll_velocity) override;
+
   void ParentDrawConstraintsUpdated(
       const ParentCompositorDrawConstraints& draw_constraints) override {}
 

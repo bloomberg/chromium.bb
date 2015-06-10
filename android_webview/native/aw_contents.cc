@@ -940,6 +940,15 @@ void AwContents::SetBackgroundColor(JNIEnv* env, jobject obj, jint color) {
   render_view_host_ext_->SetBackgroundColor(color);
 }
 
+void AwContents::OnComputeScroll(JNIEnv* env,
+                                 jobject obj,
+                                 jlong animation_time_millis) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  browser_view_renderer_.OnComputeScroll(
+      base::TimeTicks() +
+      base::TimeDelta::FromMilliseconds(animation_time_millis));
+}
+
 jlong AwContents::ReleasePopupAwContents(JNIEnv* env, jobject obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return reinterpret_cast<intptr_t>(pending_contents_.release());
@@ -969,13 +978,13 @@ void AwContents::ScrollContainerViewTo(gfx::Vector2d new_value) {
       env, obj.obj(), new_value.x(), new_value.y());
 }
 
-bool AwContents::IsFlingActive() const {
+bool AwContents::IsSmoothScrollingActive() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return false;
-  return Java_AwContents_isFlingActive(env, obj.obj());
+  return Java_AwContents_isSmoothScrollingActive(env, obj.obj());
 }
 
 void AwContents::UpdateScrollState(gfx::Vector2d max_scroll_offset,
@@ -999,14 +1008,16 @@ void AwContents::UpdateScrollState(gfx::Vector2d max_scroll_offset,
                                     max_page_scale_factor);
 }
 
-void AwContents::DidOverscroll(gfx::Vector2d overscroll_delta) {
+void AwContents::DidOverscroll(gfx::Vector2d overscroll_delta,
+                               gfx::Vector2dF overscroll_velocity) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_AwContents_didOverscroll(
-      env, obj.obj(), overscroll_delta.x(), overscroll_delta.y());
+  Java_AwContents_didOverscroll(env, obj.obj(), overscroll_delta.x(),
+                                overscroll_delta.y(), overscroll_velocity.x(),
+                                overscroll_velocity.y());
 }
 
 void AwContents::SetDipScale(JNIEnv* env, jobject obj, jfloat dip_scale) {

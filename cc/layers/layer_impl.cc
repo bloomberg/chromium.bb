@@ -1151,8 +1151,8 @@ void LayerImpl::SetContentsScale(float contents_scale_x,
   NoteLayerPropertyChanged();
 }
 
-bool LayerImpl::IsExternalFlingActive() const {
-  return layer_tree_impl_->IsExternalFlingActive();
+bool LayerImpl::IsExternalScrollActive() const {
+  return layer_tree_impl_->IsExternalScrollActive();
 }
 
 void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {

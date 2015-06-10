@@ -3994,7 +3994,8 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
   TestScrollOffsetDelegate()
       : page_scale_factor_(0.f),
         min_page_scale_factor_(-1.f),
-        max_page_scale_factor_(-1.f) {}
+        max_page_scale_factor_(-1.f),
+        needs_animate_(false) {}
 
   ~TestScrollOffsetDelegate() override {}
 
@@ -4002,7 +4003,11 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
     return getter_return_value_;
   }
 
-  bool IsExternalFlingActive() const override { return false; }
+  bool IsExternalScrollActive() const override { return false; }
+
+  void SetNeedsAnimate(const AnimationCallback&) override {
+    needs_animate_ = true;
+  }
 
   void UpdateRootLayerState(const gfx::ScrollOffset& total_scroll_offset,
                             const gfx::ScrollOffset& max_scroll_offset,
@@ -4020,6 +4025,12 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
     max_page_scale_factor_ = max_page_scale_factor;
 
     set_getter_return_value(last_set_scroll_offset_);
+  }
+
+  bool GetAndResetNeedsAnimate() {
+    bool needs_animate = needs_animate_;
+    needs_animate_ = false;
+    return needs_animate;
   }
 
   gfx::ScrollOffset last_set_scroll_offset() {
@@ -4058,8 +4069,10 @@ class TestScrollOffsetDelegate : public LayerScrollOffsetDelegate {
   float page_scale_factor_;
   float min_page_scale_factor_;
   float max_page_scale_factor_;
+  bool needs_animate_;
 };
 
+// TODO(jdduke): Test root fling animation.
 TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   TestScrollOffsetDelegate scroll_delegate;
   host_impl_->SetViewportSize(gfx::Size(10, 20));

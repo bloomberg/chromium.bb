@@ -172,7 +172,7 @@ public class ContentViewClient {
      * @return Whether an externally managed (i.e., not compositor-driven) fling
      *         of this ContentView is active.
      */
-    public boolean isExternalFlingActive() {
+    public boolean isExternalScrollActive() {
         return false;
     }
 

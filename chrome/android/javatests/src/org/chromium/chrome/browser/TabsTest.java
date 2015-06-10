@@ -1092,7 +1092,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             @Override
             public void run() {
                 ContentViewCore view = getActivity().getActivityTab().getContentViewCore();
-                view.flingForTest(SystemClock.uptimeMillis(), 0, 0, 0, -2000);
+                view.fling(SystemClock.uptimeMillis(), 0, 0, 0, -2000);
             }
         });
         ChromeTabUtils.closeCurrentTab(getInstrumentation(), getActivity());

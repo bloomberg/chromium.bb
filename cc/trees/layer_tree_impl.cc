@@ -112,9 +112,9 @@ void LayerTreeImpl::GatherFrameTimingRequestIds(
       });
 }
 
-bool LayerTreeImpl::IsExternalFlingActive() const {
+bool LayerTreeImpl::IsExternalScrollActive() const {
   return root_layer_scroll_offset_delegate_ &&
-         root_layer_scroll_offset_delegate_->IsExternalFlingActive();
+         root_layer_scroll_offset_delegate_->IsExternalScrollActive();
 }
 
 void LayerTreeImpl::DidUpdateScrollOffset(int layer_id) {

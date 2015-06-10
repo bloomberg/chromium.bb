@@ -136,7 +136,7 @@ class CC_EXPORT InputHandler {
   virtual void PinchGestureEnd() = 0;
 
   // Request another callback to InputHandlerClient::Animate().
-  virtual void SetNeedsAnimate() = 0;
+  virtual void SetNeedsAnimateInput() = 0;
 
   // Whether the layer under |viewport_point| is the currently scrolling layer.
   virtual bool IsCurrentlyScrollingLayerAt(const gfx::Point& viewport_point,

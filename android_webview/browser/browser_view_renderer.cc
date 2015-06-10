@@ -414,6 +414,16 @@ void BrowserViewRenderer::OnDetachedFromWindow() {
   UpdateCompositorIsActive();
 }
 
+void BrowserViewRenderer::OnComputeScroll(base::TimeTicks animation_time) {
+  if (pending_fling_animation_.is_null())
+    return;
+  TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnComputeScroll");
+  DCHECK(!pending_fling_animation_.is_null());
+  AnimationCallback animation = pending_fling_animation_;
+  pending_fling_animation_.Reset();
+  animation.Run(animation_time);
+}
+
 void BrowserViewRenderer::ReleaseHardware() {
   DCHECK(hardware_enabled_);
   ReturnUnusedResource(shared_renderer_state_.PassUncommittedFrameOnUI());
@@ -551,8 +561,8 @@ gfx::Vector2dF BrowserViewRenderer::GetTotalRootLayerScrollOffset() {
   return scroll_offset_dip_;
 }
 
-bool BrowserViewRenderer::IsExternalFlingActive() const {
-  return client_->IsFlingActive();
+bool BrowserViewRenderer::IsExternalScrollActive() const {
+  return client_->IsSmoothScrollingActive();
 }
 
 void BrowserViewRenderer::UpdateRootLayerState(
@@ -606,6 +616,15 @@ BrowserViewRenderer::RootLayerStateAsValue(
   return state;
 }
 
+void BrowserViewRenderer::SetNeedsAnimateScroll(
+    const AnimationCallback& scroll_animation) {
+  pending_fling_animation_ = scroll_animation;
+  // No need to reschedule the fallback tick here because the compositor is
+  // fine with the animation not being ticked. The invalidate could happen some
+  // time later, or not at all.
+  client_->PostInvalidate();
+}
+
 void BrowserViewRenderer::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
                                         gfx::Vector2dF latest_overscroll_delta,
                                         gfx::Vector2dF current_fling_velocity) {
@@ -618,7 +637,10 @@ void BrowserViewRenderer::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
       scaled_overscroll_delta + overscroll_rounding_error_);
   overscroll_rounding_error_ =
       scaled_overscroll_delta - rounded_overscroll_delta;
-  client_->DidOverscroll(rounded_overscroll_delta);
+  gfx::Vector2dF fling_velocity_pixels =
+      gfx::ScaleVector2d(current_fling_velocity, physical_pixel_scale);
+
+  client_->DidOverscroll(rounded_overscroll_delta, fling_velocity_pixels);
 }
 
 void BrowserViewRenderer::PostInvalidate() {

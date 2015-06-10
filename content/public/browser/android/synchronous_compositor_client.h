@@ -6,6 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_CLIENT_H_
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
+#include "base/time/time.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -33,7 +35,10 @@ class SynchronousCompositorClient {
                                     float page_scale_factor,
                                     float min_page_scale_factor,
                                     float max_page_scale_factor) = 0;
-  virtual bool IsExternalFlingActive() const = 0;
+  virtual bool IsExternalScrollActive() const = 0;
+
+  typedef base::Callback<void(base::TimeTicks)> AnimationCallback;
+  virtual void SetNeedsAnimateScroll(const AnimationCallback& animation) = 0;
 
   virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
                              gfx::Vector2dF latest_overscroll_delta,

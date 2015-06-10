@@ -130,15 +130,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
             @Override
             public AwScrollOffsetManager createScrollOffsetManager(
                     AwScrollOffsetManager.Delegate delegate, OverScroller overScroller) {
-                return new AwScrollOffsetManager(delegate, overScroller) {
-                    @Override
-                    public void onUnhandledFlingStartEvent(int velocityX, int velocityY) {
-                        // Intentional no-op. The synthetic scroll gestures this test creates all
-                        // happen at the same time which triggers the fling detection logic.
-                        // NOTE: this simply disables handling the gesture, flinging the AwContents
-                        // via the flingScroll API is still possible.
-                    }
-                };
+                return new AwScrollOffsetManager(delegate, overScroller);
             }
             @Override
             public AwTestContainerView createAwTestContainerView(AwTestRunnerActivity activity,
@@ -742,10 +734,6 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
 
         @Override
         public void onFlingCancelGesture() {
-        }
-
-        @Override
-        public void onUnhandledFlingStartEvent(int velocityX, int velocityY) {
         }
 
         @Override
