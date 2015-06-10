@@ -4,11 +4,6 @@
 
 #include "content/test/content_test_suite.h"
 
-#if defined(OS_ANDROID)
-#include <android/native_window.h>
-#include <android/native_window_jni.h>
-#endif
-
 #include "base/base_paths.h"
 #include "base/logging.h"
 #include "content/public/common/content_client.h"
@@ -24,11 +19,8 @@
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #if !defined(OS_IOS)
-#include "base/containers/scoped_ptr_hash_map.h"
-#include "base/mac/scoped_mach_port.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/test/mock_chrome_application_mac.h"
-#include "content/common/mac/io_surface_manager.h"
+#include "content/browser/in_process_io_surface_manager_mac.h"
 #endif
 #endif
 
@@ -40,12 +32,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "base/containers/scoped_ptr_hash_map.h"
-#include "base/memory/scoped_ptr.h"
-#include "content/common/android/surface_texture_manager.h"
-#include "ui/gl/android/scoped_java_surface.h"
-#include "ui/gl/android/surface_texture.h"
+#include "content/browser/android/in_process_surface_texture_manager.h"
 #endif
 
 namespace content {
@@ -70,60 +57,6 @@ class TestInitializationListener : public testing::EmptyTestEventListener {
 
   DISALLOW_COPY_AND_ASSIGN(TestInitializationListener);
 };
-
-#if defined(OS_ANDROID)
-class TestSurfaceTextureManager : public SurfaceTextureManager {
- public:
-  // Overridden from SurfaceTextureManager:
-  void RegisterSurfaceTexture(int surface_texture_id,
-                              int client_id,
-                              gfx::SurfaceTexture* surface_texture) override {
-    surfaces_.add(surface_texture_id,
-                  make_scoped_ptr(new gfx::ScopedJavaSurface(surface_texture)));
-  }
-  void UnregisterSurfaceTexture(int surface_texture_id,
-                                int client_id) override {
-    surfaces_.erase(surface_texture_id);
-  }
-  gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
-      int surface_texture_id) override {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    return ANativeWindow_fromSurface(
-        env, surfaces_.get(surface_texture_id)->j_surface().obj());
-  }
-
- private:
-  using SurfaceMap =
-      base::ScopedPtrHashMap<int, scoped_ptr<gfx::ScopedJavaSurface>>;
-  SurfaceMap surfaces_;
-};
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-class TestIOSurfaceManager : public IOSurfaceManager {
- public:
-  // Overridden from IOSurfaceManager:
-  bool RegisterIOSurface(int io_surface_id,
-                         int client_id,
-                         IOSurfaceRef io_surface) override {
-    io_surfaces_.add(io_surface_id,
-                     make_scoped_ptr(new base::mac::ScopedMachSendRight(
-                         IOSurfaceCreateMachPort(io_surface))));
-    return true;
-  }
-  void UnregisterIOSurface(int io_surface_id, int client_id) override {
-    io_surfaces_.erase(io_surface_id);
-  }
-  IOSurfaceRef AcquireIOSurface(int io_surface_id) override {
-    return IOSurfaceLookupFromMachPort(io_surfaces_.get(io_surface_id)->get());
-  }
-
- private:
-  using IOSurfaceMap =
-      base::ScopedPtrHashMap<int, scoped_ptr<base::mac::ScopedMachSendRight>>;
-  IOSurfaceMap io_surfaces_;
-};
-#endif
 
 }  // namespace
 
@@ -166,10 +99,11 @@ void ContentTestSuite::Initialize() {
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new TestInitializationListener);
 #if defined(OS_ANDROID)
-  SurfaceTextureManager::SetInstance(new TestSurfaceTextureManager);
+  SurfaceTextureManager::SetInstance(
+      InProcessSurfaceTextureManager::GetInstance());
 #endif
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  IOSurfaceManager::SetInstance(new TestIOSurfaceManager);
+  IOSurfaceManager::SetInstance(InProcessIOSurfaceManager::GetInstance());
 #endif
 }
 
