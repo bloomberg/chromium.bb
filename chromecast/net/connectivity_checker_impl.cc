@@ -28,6 +28,9 @@ const unsigned int kConnectivityPeriodSeconds = 1;
 // to offline.
 const unsigned int kNumErrorsToNotifyOffline = 3;
 
+// Request timeout value in seconds.
+const unsigned int kRequestTimeoutInSeconds = 3;
+
 // Default url for connectivity checking.
 const char kDefaultConnectivityCheckUrl[] =
     "https://clients3.google.com/generate_204";
@@ -106,6 +109,13 @@ void ConnectivityCheckerImpl::Check() {
       *connectivity_check_url_, net::MAXIMUM_PRIORITY, this);
   url_request_->set_method("HEAD");
   url_request_->Start();
+
+  timeout_.Reset(base::Bind(&ConnectivityCheckerImpl::OnUrlRequestTimeout,
+                            this));
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      timeout_.callback(),
+      base::TimeDelta::FromSeconds(kRequestTimeoutInSeconds));
 }
 
 void ConnectivityCheckerImpl::OnNetworkChanged(
@@ -122,6 +132,7 @@ void ConnectivityCheckerImpl::OnNetworkChanged(
 }
 
 void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request) {
+  timeout_.Cancel();
   int http_response_code =
       (request->status().is_success() &&
        request->response_info().headers.get() != NULL)
@@ -141,11 +152,17 @@ void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request) {
   OnUrlRequestError();
 }
 
+void ConnectivityCheckerImpl::OnReadCompleted(net::URLRequest* request,
+                                              int bytes_read) {
+  NOTREACHED();
+}
+
 void ConnectivityCheckerImpl::OnSSLCertificateError(
     net::URLRequest* request,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   LOG(ERROR) << "OnSSLCertificateError";
+  timeout_.Cancel();
   OnUrlRequestError();
 }
 
@@ -162,16 +179,17 @@ void ConnectivityCheckerImpl::OnUrlRequestError() {
       base::TimeDelta::FromSeconds(kConnectivityPeriodSeconds));
 }
 
-void ConnectivityCheckerImpl::OnReadCompleted(net::URLRequest* request,
-                                              int bytes_read) {
-  NOTREACHED();
+void ConnectivityCheckerImpl::OnUrlRequestTimeout() {
+  LOG(ERROR) << "time out";
+  OnUrlRequestError();
 }
 
 void ConnectivityCheckerImpl::Cancel() {
-  if (url_request_.get()) {
-    VLOG(2) << "Cancel connectivity check in progress";
-    url_request_.reset(NULL);  // URLRequest::Cancel() is called in destructor.
-  }
+  if (!url_request_.get())
+    return;
+  VLOG(2) << "Cancel connectivity check in progress";
+  timeout_.Cancel();
+  url_request_.reset(NULL);  // URLRequest::Cancel() is called in destructor.
 }
 
 }  // namespace chromecast

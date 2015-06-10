@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_NET_CONNECTIVITY_CHECKER_IMPL_H_
 #define CHROMECAST_NET_CONNECTIVITY_CHECKER_IMPL_H_
 
+#include "base/cancelable_callback.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
@@ -64,6 +65,9 @@ class ConnectivityCheckerImpl
   // Called when URL request failed.
   void OnUrlRequestError();
 
+  // Called when URL request timed out.
+  void OnUrlRequestTimeout();
+
   scoped_ptr<GURL> connectivity_check_url_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
   scoped_ptr<net::URLRequest> url_request_;
@@ -71,6 +75,7 @@ class ConnectivityCheckerImpl
   bool connected_;
   // Number of connectivity check errors.
   unsigned int check_errors_;
+  base::CancelableCallback<void()> timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectivityCheckerImpl);
 };
