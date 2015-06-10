@@ -932,10 +932,10 @@ gfx::Size BridgedNativeWidget::GetClientAreaSize() const {
 void BridgedNativeWidget::CreateCompositor() {
   DCHECK(!compositor_);
   DCHECK(!compositor_widget_);
-  DCHECK(ViewsDelegate::views_delegate);
+  DCHECK(ViewsDelegate::GetInstance());
 
   ui::ContextFactory* context_factory =
-      ViewsDelegate::views_delegate->GetContextFactory();
+      ViewsDelegate::GetInstance()->GetContextFactory();
   DCHECK(context_factory);
 
   AddCompositorSuperview();

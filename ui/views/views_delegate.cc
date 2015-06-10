@@ -12,18 +12,21 @@
 #endif
 
 namespace views {
+namespace {
 
-ViewsDelegate::ViewsDelegate()
-    : views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
-  ui::TouchEditingControllerFactory::SetInstance(views_tsc_factory_.get());
+ViewsDelegate* views_delegate = nullptr;
 
-#if defined(USE_AURA)
-  touch_selection_menu_runner_.reset(new TouchSelectionMenuRunnerViews());
-#endif
 }
 
 ViewsDelegate::~ViewsDelegate() {
-  ui::TouchEditingControllerFactory::SetInstance(NULL);
+  ui::TouchEditingControllerFactory::SetInstance(nullptr);
+
+  DCHECK_EQ(this, views_delegate);
+  views_delegate = nullptr;
+}
+
+ViewsDelegate* ViewsDelegate::GetInstance() {
+  return views_delegate;
 }
 
 void ViewsDelegate::SaveWindowPlacement(const Widget* widget,
@@ -53,7 +56,7 @@ void ViewsDelegate::NotifyMenuItemFocused(const base::string16& menu_name,
 
 #if defined(OS_WIN)
 HICON ViewsDelegate::GetDefaultWindowIcon() const {
-  return NULL;
+  return nullptr;
 }
 
 bool ViewsDelegate::IsWindowInMetro(gfx::NativeWindow window) const {
@@ -61,13 +64,13 @@ bool ViewsDelegate::IsWindowInMetro(gfx::NativeWindow window) const {
 }
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
 gfx::ImageSkia* ViewsDelegate::GetDefaultWindowIcon() const {
-  return NULL;
+  return nullptr;
 }
 #endif
 
 NonClientFrameView* ViewsDelegate::CreateDefaultNonClientFrameView(
     Widget* widget) {
-  return NULL;
+  return nullptr;
 }
 
 void ViewsDelegate::AddRef() {
@@ -79,7 +82,7 @@ void ViewsDelegate::ReleaseRef() {
 content::WebContents* ViewsDelegate::CreateWebContents(
     content::BrowserContext* browser_context,
     content::SiteInstance* site_instance) {
-  return NULL;
+  return nullptr;
 }
 
 base::TimeDelta ViewsDelegate::GetDefaultTextfieldObscuredRevealDuration() {
@@ -91,7 +94,7 @@ bool ViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
 }
 
 ui::ContextFactory* ViewsDelegate::GetContextFactory() {
-  return NULL;
+  return nullptr;
 }
 
 std::string ViewsDelegate::GetApplicationName() {
@@ -108,6 +111,18 @@ int ViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
 
 scoped_refptr<base::TaskRunner> ViewsDelegate::GetBlockingPoolTaskRunner() {
   return nullptr;
+}
+
+ViewsDelegate::ViewsDelegate()
+    : views_tsc_factory_(new ViewsTouchEditingControllerFactory) {
+  DCHECK(!views_delegate);
+  views_delegate = this;
+
+  ui::TouchEditingControllerFactory::SetInstance(views_tsc_factory_.get());
+
+#if defined(USE_AURA)
+  touch_selection_menu_runner_.reset(new TouchSelectionMenuRunnerViews());
+#endif
 }
 
 }  // namespace views

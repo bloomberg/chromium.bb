@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/views/test/test_views_delegate.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
@@ -37,10 +38,10 @@ class ViewsTestBase : public PlatformTest {
   Widget::InitParams CreateParams(Widget::InitParams::Type type);
 
  protected:
-  TestViewsDelegate& views_delegate() const { return *views_delegate_.get(); }
+  TestViewsDelegate* views_delegate() const { return views_delegate_.get(); }
 
-  void set_views_delegate(TestViewsDelegate* views_delegate) {
-    views_delegate_.reset(views_delegate);
+  void set_views_delegate(scoped_ptr<TestViewsDelegate> views_delegate) {
+    views_delegate_.swap(views_delegate);
   }
 
   base::MessageLoopForUI* message_loop() { return &message_loop_; }

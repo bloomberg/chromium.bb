@@ -22,8 +22,8 @@ ChromeBrowserMainExtraPartsViews::~ChromeBrowserMainExtraPartsViews() {
 void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   // The delegate needs to be set before any UI is created so that windows
   // display the correct icon.
-  if (!views::ViewsDelegate::views_delegate)
-    views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
+  if (!views::ViewsDelegate::GetInstance())
+    views_delegate_.reset(new ChromeViewsDelegate);
 
   SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 

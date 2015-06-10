@@ -129,8 +129,7 @@ class WebViewUnitTest : public views::test::WidgetTest {
   ~WebViewUnitTest() override {}
 
   void SetUp() override {
-    // The ViewsDelegate is deleted when the ViewsTestBase class is torn down.
-    WidgetTest::set_views_delegate(new WebViewTestViewsDelegate);
+    set_views_delegate(make_scoped_ptr(new WebViewTestViewsDelegate));
     browser_context_.reset(new content::TestBrowserContext);
     WidgetTest::SetUp();
     // Set the test content browser client to avoid pulling in needless
@@ -176,7 +175,6 @@ class WebViewUnitTest : public views::test::WidgetTest {
   content::TestBrowserThread file_blocking_thread_;
   content::TestBrowserThread io_thread_;
   scoped_ptr<content::TestBrowserContext> browser_context_;
-  scoped_ptr<WebViewTestViewsDelegate> views_delegate_;
   content::TestContentBrowserClient test_browser_client_;
 
   Widget* top_level_widget_;

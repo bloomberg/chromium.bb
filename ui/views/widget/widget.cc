@@ -314,8 +314,8 @@ void Widget::Init(const InitParams& in_params) {
       params.type != views::Widget::InitParams::TYPE_PANEL)
     params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
 
-  if (ViewsDelegate::views_delegate)
-    ViewsDelegate::views_delegate->OnBeforeWidgetInit(&params, this);
+  if (ViewsDelegate::GetInstance())
+    ViewsDelegate::GetInstance()->OnBeforeWidgetInit(&params, this);
 
   if (params.opacity == views::Widget::InitParams::INFER_OPACITY)
     params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
@@ -895,9 +895,9 @@ NonClientFrameView* Widget::CreateNonClientFrameView() {
       widget_delegate_->CreateNonClientFrameView(this);
   if (!frame_view)
     frame_view = native_widget_->CreateNonClientFrameView();
-  if (!frame_view && ViewsDelegate::views_delegate) {
+  if (!frame_view && ViewsDelegate::GetInstance()) {
     frame_view =
-        ViewsDelegate::views_delegate->CreateDefaultNonClientFrameView(this);
+        ViewsDelegate::GetInstance()->CreateDefaultNonClientFrameView(this);
   }
   if (frame_view)
     return frame_view;

@@ -44,8 +44,7 @@ class WebViewInteractiveUiTest : public views::test::WidgetTest {
 
   void SetUp() override {
     gfx::GLSurface::InitializeOneOffForTests();
-    // The ViewsDelegate is deleted when the ViewsTestBase class is torn down.
-    WidgetTest::set_views_delegate(new WebViewTestViewsDelegate);
+    set_views_delegate(make_scoped_ptr(new WebViewTestViewsDelegate));
     WidgetTest::SetUp();
   }
 

@@ -135,7 +135,7 @@ ScreenOrientationControllerTest::~ScreenOrientationControllerTest() {
 }
 
 content::WebContents* ScreenOrientationControllerTest::CreateWebContents() {
-  return views::ViewsDelegate::views_delegate->CreateWebContents(
+  return views::ViewsDelegate::GetInstance()->CreateWebContents(
       ash_test_helper()->test_shell_delegate()->GetActiveBrowserContext(),
       nullptr);
 }
@@ -143,7 +143,7 @@ content::WebContents* ScreenOrientationControllerTest::CreateWebContents() {
 content::WebContents*
 ScreenOrientationControllerTest::CreateSecondaryWebContents() {
   secondary_browser_context_.reset(new content::TestBrowserContext());
-  return views::ViewsDelegate::views_delegate->CreateWebContents(
+  return views::ViewsDelegate::GetInstance()->CreateWebContents(
       secondary_browser_context_.get(), nullptr);
 }
 

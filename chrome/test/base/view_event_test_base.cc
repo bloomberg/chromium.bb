@@ -68,7 +68,6 @@ void ViewEventTestBase::SetUpTestCase() {
 }
 
 void ViewEventTestBase::SetUp() {
-  views::ViewsDelegate::views_delegate = &views_delegate_;
   ui::InitializeInputMethodForTesting();
 
   // The ContextFactory must exist before any Compositors are created.
@@ -97,7 +96,6 @@ void ViewEventTestBase::TearDown() {
   ui::TerminateContextFactoryForTests();
 
   ui::ShutdownInputMethodForTesting();
-  views::ViewsDelegate::views_delegate = NULL;
 }
 
 bool ViewEventTestBase::CanResize() const {

@@ -12,13 +12,9 @@ TestViewsDelegate::TestViewsDelegate()
     : context_factory_(nullptr),
       use_desktop_native_widgets_(false),
       use_transparent_windows_(false) {
-  DCHECK(!ViewsDelegate::views_delegate);
-  ViewsDelegate::views_delegate = this;
 }
 
 TestViewsDelegate::~TestViewsDelegate() {
-  if (ViewsDelegate::views_delegate == this)
-    ViewsDelegate::views_delegate = NULL;
 }
 
 void TestViewsDelegate::OnBeforeWidgetInit(

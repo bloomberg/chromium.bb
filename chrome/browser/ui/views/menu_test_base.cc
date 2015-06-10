@@ -10,6 +10,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/widget/widget.h"
 
 MenuTestBase::MenuTestBase()
     : ViewEventTestBase(),

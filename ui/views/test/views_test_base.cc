@@ -27,7 +27,7 @@ ViewsTestBase::~ViewsTestBase() {
 void ViewsTestBase::SetUp() {
   testing::Test::SetUp();
   setup_called_ = true;
-  if (!views_delegate_.get())
+  if (!views_delegate_)
     views_delegate_.reset(new TestViewsDelegate());
 
   // The ContextFactory must exist before any Compositors are created.
@@ -53,6 +53,8 @@ void ViewsTestBase::TearDown() {
   ui::ShutdownInputMethodForTesting();
   test_helper_->TearDown();
   ui::TerminateContextFactoryForTests();
+
+  views_delegate_.reset();
 }
 
 void ViewsTestBase::RunPendingMessages() {

@@ -407,9 +407,9 @@ void WebView::NotifyMaybeTextInputClientAndAccessibilityChanged() {
 content::WebContents* WebView::CreateWebContents(
       content::BrowserContext* browser_context) {
   content::WebContents* contents = NULL;
-  if (ViewsDelegate::views_delegate) {
-    contents = ViewsDelegate::views_delegate->CreateWebContents(
-        browser_context, NULL);
+  if (ViewsDelegate::GetInstance()) {
+    contents =
+        ViewsDelegate::GetInstance()->CreateWebContents(browser_context, NULL);
   }
 
   if (!contents) {

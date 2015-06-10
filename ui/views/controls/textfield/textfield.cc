@@ -284,9 +284,10 @@ Textfield::Textfield()
   SetBorder(scoped_ptr<Border>(new FocusableBorder()));
   SetFocusable(true);
 
-  if (ViewsDelegate::views_delegate) {
-    password_reveal_duration_ = ViewsDelegate::views_delegate->
-        GetDefaultTextfieldObscuredRevealDuration();
+  if (ViewsDelegate::GetInstance()) {
+    password_reveal_duration_ =
+        ViewsDelegate::GetInstance()
+            ->GetDefaultTextfieldObscuredRevealDuration();
   }
 }
 

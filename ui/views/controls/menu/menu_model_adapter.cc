@@ -9,7 +9,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
-#include "ui/views/views_delegate.h"
 
 namespace views {
 

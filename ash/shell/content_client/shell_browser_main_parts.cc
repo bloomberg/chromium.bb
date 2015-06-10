@@ -108,8 +108,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       false, net_log_.get()));
 
   // A ViewsDelegate is required.
-  if (!views::ViewsDelegate::views_delegate)
-    views::ViewsDelegate::views_delegate = new ShellViewsDelegate;
+  if (!views::ViewsDelegate::GetInstance())
+    views_delegate_.reset(new ShellViewsDelegate);
 
   delegate_ = new ash::shell::ShellDelegateImpl;
   // The global message center state must be initialized absent
@@ -158,6 +158,8 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 #endif
 
   aura::Env::DeleteInstance();
+
+  views_delegate_.reset();
 
   // The keyboard may have created a WebContents. The WebContents is destroyed
   // with the UI, and it needs the BrowserContext to be alive during its

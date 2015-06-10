@@ -50,7 +50,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 

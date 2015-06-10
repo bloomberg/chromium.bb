@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace views {

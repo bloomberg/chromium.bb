@@ -67,8 +67,8 @@ class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
         base::Bind(&WtsRegistrationNotificationManager::OnWndProc,
                    base::Unretained(this))));
     scoped_refptr<base::TaskRunner> task_runner;
-    if (ViewsDelegate::views_delegate) {
-      task_runner = ViewsDelegate::views_delegate->GetBlockingPoolTaskRunner();
+    if (ViewsDelegate::GetInstance()) {
+      task_runner = ViewsDelegate::GetInstance()->GetBlockingPoolTaskRunner();
     }
 
     base::Closure wts_register =

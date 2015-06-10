@@ -29,7 +29,6 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/views/view.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/widget.h"

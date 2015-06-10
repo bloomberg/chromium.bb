@@ -361,8 +361,8 @@ MenuItemView* MenuController::Run(Widget* parent,
     pressed_lock_.reset(new MenuButton::PressedLock(button));
 
   // Make sure Chrome doesn't attempt to shut down while the menu is showing.
-  if (ViewsDelegate::views_delegate)
-    ViewsDelegate::views_delegate->AddRef();
+  if (ViewsDelegate::GetInstance())
+    ViewsDelegate::GetInstance()->AddRef();
 
   // We need to turn on nestable tasks as in some situations (pressing alt-f for
   // one) the menus are run from a task. If we don't do this and are invoked
@@ -373,8 +373,8 @@ MenuItemView* MenuController::Run(Widget* parent,
   RunMessageLoop(nested_menu);
   message_loop_depth_--;
 
-  if (ViewsDelegate::views_delegate)
-    ViewsDelegate::views_delegate->ReleaseRef();
+  if (ViewsDelegate::GetInstance())
+    ViewsDelegate::GetInstance()->ReleaseRef();
 
   // Close any open menus.
   SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
@@ -2125,8 +2125,8 @@ void MenuController::RepostEvent(SubmenuView* source,
   // coordinates to be in pixels.
   // PostMessage() to metro windows isn't allowed (access will be denied). Don't
   // try to repost with Win32 if the window under the mouse press is in metro.
-  if (!ViewsDelegate::views_delegate ||
-      !ViewsDelegate::views_delegate->IsWindowInMetro(window)) {
+  if (!ViewsDelegate::GetInstance() ||
+      !ViewsDelegate::GetInstance()->IsWindowInMetro(window)) {
     gfx::Point screen_loc_pixels = gfx::win::DIPToScreenPoint(screen_loc);
     HWND target_window = window ? HWNDForNativeWindow(window) :
                                   WindowFromPoint(screen_loc_pixels.ToPOINT());

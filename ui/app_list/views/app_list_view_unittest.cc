@@ -32,6 +32,7 @@
 #include "ui/app_list/views/tile_item_view.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -705,7 +706,7 @@ class AppListViewTestDesktop : public views::ViewsTestBase,
 
   // testing::Test overrides:
   void SetUp() override {
-    set_views_delegate(new AppListViewTestViewsDelegate(this));
+    set_views_delegate(make_scoped_ptr(new AppListViewTestViewsDelegate(this)));
     views::ViewsTestBase::SetUp();
     test_context_.reset(new AppListViewTestContext(GetParam(), NULL));
   }

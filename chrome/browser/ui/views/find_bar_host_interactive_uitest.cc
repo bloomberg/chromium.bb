@@ -24,7 +24,6 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
-#include "ui/views/views_delegate.h"
 
 using base::ASCIIToUTF16;
 using content::WebContents;

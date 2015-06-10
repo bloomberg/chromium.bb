@@ -860,16 +860,16 @@ void HWNDMessageHandler::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
 HICON HWNDMessageHandler::GetDefaultWindowIcon() const {
   if (use_system_default_icon_)
     return nullptr;
-  return ViewsDelegate::views_delegate
-             ? ViewsDelegate::views_delegate->GetDefaultWindowIcon()
+  return ViewsDelegate::GetInstance()
+             ? ViewsDelegate::GetInstance()->GetDefaultWindowIcon()
              : nullptr;
 }
 
 HICON HWNDMessageHandler::GetSmallWindowIcon() const {
   if (use_system_default_icon_)
     return nullptr;
-  return ViewsDelegate::views_delegate
-             ? ViewsDelegate::views_delegate->GetSmallWindowIcon()
+  return ViewsDelegate::GetInstance()
+             ? ViewsDelegate::GetInstance()->GetSmallWindowIcon()
              : nullptr;
 }
 
@@ -1007,12 +1007,12 @@ void HWNDMessageHandler::HandleParentChanged() {
 
 int HWNDMessageHandler::GetAppbarAutohideEdges(HMONITOR monitor) {
   autohide_factory_.InvalidateWeakPtrs();
-  return ViewsDelegate::views_delegate ?
-      ViewsDelegate::views_delegate->GetAppbarAutohideEdges(
-          monitor,
-          base::Bind(&HWNDMessageHandler::OnAppbarAutohideEdgesChanged,
-                     autohide_factory_.GetWeakPtr())) :
-      ViewsDelegate::EDGE_BOTTOM;
+  return ViewsDelegate::GetInstance()
+             ? ViewsDelegate::GetInstance()->GetAppbarAutohideEdges(
+                   monitor,
+                   base::Bind(&HWNDMessageHandler::OnAppbarAutohideEdgesChanged,
+                              autohide_factory_.GetWeakPtr()))
+             : ViewsDelegate::EDGE_BOTTOM;
 }
 
 void HWNDMessageHandler::OnAppbarAutohideEdgesChanged() {

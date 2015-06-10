@@ -22,6 +22,10 @@ namespace net {
 class NetLog;
 }
 
+namespace views {
+class ViewsDelegate;
+}
+
 namespace wm {
 class WMState;
 }
@@ -53,6 +57,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
  private:
   scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<content::ShellBrowserContext> browser_context_;
+  scoped_ptr<views::ViewsDelegate> views_delegate_;
   scoped_ptr<ash::shell::WindowWatcher> window_watcher_;
   ShellDelegateImpl* delegate_;  // owned by Shell
   scoped_ptr<wm::WMState> wm_state_;

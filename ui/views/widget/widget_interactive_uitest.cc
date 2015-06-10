@@ -894,7 +894,7 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableTouchEditing);
 #if defined(OS_WIN)
-  views_delegate().set_use_desktop_native_widgets(true);
+  views_delegate()->set_use_desktop_native_widgets(true);
 #endif  // !defined(OS_WIN)
 
   Widget* widget = CreateWidget();
@@ -925,7 +925,7 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
 
 TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
 #if defined(OS_WIN)
-  views_delegate().set_use_desktop_native_widgets(true);
+  views_delegate()->set_use_desktop_native_widgets(true);
 #endif  // !defined(OS_WIN)
 
   // Create first widget and view, activate the widget, and focus the view.

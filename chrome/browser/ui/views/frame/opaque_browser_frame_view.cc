@@ -582,10 +582,10 @@ bool OpaqueBrowserFrameView::ShouldShowWindowTitleBar() const {
 
   // Do not show caption buttons if the window manager is forcefully providing a
   // title bar (e.g., in Ubuntu Unity, if the window is maximized).
-  if (!views::ViewsDelegate::views_delegate)
+  if (!views::ViewsDelegate::GetInstance())
     return true;
-  return !views::ViewsDelegate::views_delegate->WindowManagerProvidesTitleBar(
-              IsMaximized());
+  return !views::ViewsDelegate::GetInstance()->WindowManagerProvidesTitleBar(
+      IsMaximized());
 }
 
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
