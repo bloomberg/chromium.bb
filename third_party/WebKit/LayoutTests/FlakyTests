@@ -1268,7 +1268,6 @@ crbug.com/420008 [ Release Win7 ] inspector/tracing/timeline-paint-with-style-re
 crbug.com/420008 [ Release XP ] inspector/tracing/timeline-paint-with-style-recalc-invalidations.html [ Failure Pass ]
 crbug.com/420008 [ Release SnowLeopard ] inspector/tracing/timeline-paint.html [ Failure Pass ]
 crbug.com/420008 [ Release Win7 ] inspector/tracing/timeline-paint.html [ Failure Pass ]
-crbug.com/420008 [ Release Win7 ] inspector/tracing/timeline-receive-response-event.html [ Failure Pass ]
 webkit.org/b/90488 [ Debug SnowLeopard ] inspector/tracing/timeline-style-recalc-all-invalidator-types.html [ Failure Pass ]
 crbug.com/420008 [ Release Win7 ] inspector/tracing/timeline-style-recalc-all-invalidator-types.html [ Failure Pass ]
 webkit.org/b/90488 [ Debug SnowLeopard ] inspector/tracing/timeline-style-recalc-with-invalidations.html [ Failure Pass ]

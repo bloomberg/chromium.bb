@@ -10,7 +10,8 @@ function performActions(callback)
     image.onload = bar;
     image.src = "resources/anImage.png";
 
-    function bar() {
+    function bar()
+    {
         var image = new Image();
         image.onload = function(event) { callback(); }  // do not pass event argument to the callback.
         image.src = "resources/anotherImage.png";
@@ -29,19 +30,19 @@ function test()
         {
             var record = presentationRecord.record();
             prefix = prefix || "";
-            // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
+            // Ignore stray paint & rendering events for better stability.
             var categoryName = WebInspector.TimelineUIUtils.categoryForRecord(record).name;
-            if (categoryName !== "loading" && categoryName !== "scripting")
+               if (categoryName !== "loading" && categoryName !== "scripting")
                 return;
             var childPrefix = prefix;
+            // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
             // Filter out InjectedScript function call because they happen out of sync.
             if (!presentationRecord.coalesced()
                 && record.type() !== "GCEvent"
-                && (record.type() !== "FunctionCall" || record.data().scriptName !== "InjectedScript")) {
+                && (record.type() !== "FunctionCall" || record.data().scriptName)) {
                 InspectorTest.addResult(prefix + record.type());
                 childPrefix = childPrefix + "    ";
             }
-            // Ignore stray paint & rendering events for better stability.
             if (presentationRecord.presentationChildren()) {
                 for (var i = 0; i < presentationRecord.presentationChildren().length; ++i)
                     dumpFormattedRecord(presentationRecord.presentationChildren()[i], childPrefix);
