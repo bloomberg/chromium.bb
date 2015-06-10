@@ -294,11 +294,6 @@ AutocompleteMatch* AutocompleteResult::match_at(size_t index) {
   return &matches_[index];
 }
 
-bool AutocompleteResult::ShouldHideTopMatch() const {
-  return chrome::ShouldHideTopVerbatimMatch() &&
-      TopMatchIsStandaloneVerbatimMatch();
-}
-
 bool AutocompleteResult::TopMatchIsStandaloneVerbatimMatch() const {
   if (empty() || !match_at(0).IsVerbatimType())
     return false;

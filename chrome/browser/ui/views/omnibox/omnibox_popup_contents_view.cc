@@ -149,9 +149,7 @@ void OmniboxPopupContentsView::InvalidateLine(size_t line) {
 }
 
 void OmniboxPopupContentsView::UpdatePopupAppearance() {
-  const size_t hidden_matches = model_->result().ShouldHideTopMatch() ? 1 : 0;
-  if (model_->result().size() <= hidden_matches ||
-      omnibox_view_->IsImeShowingPopup()) {
+  if (model_->result().empty() || omnibox_view_->IsImeShowingPopup()) {
     // No matches or the IME is showing a popup window which may overlap
     // the omnibox popup window.  Close any existing popup.
     if (popup_ != NULL) {
@@ -175,7 +173,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     OmniboxResultView* view = result_view_at(i);
     const AutocompleteMatch& match = GetMatchAtIndex(i);
     view->SetMatch(match);
-    view->SetVisible(i >= hidden_matches);
+    view->SetVisible(true);
     if (match.answer && !model_->answer_bitmap().isNull()) {
       view->SetAnswerImage(
           gfx::ImageSkia::CreateFrom1xBitmap(model_->answer_bitmap()));
@@ -379,8 +377,7 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
 int OmniboxPopupContentsView::CalculatePopupHeight() {
   DCHECK_GE(static_cast<size_t>(child_count()), model_->result().size());
   int popup_height = 0;
-  for (size_t i = model_->result().ShouldHideTopMatch() ? 1 : 0;
-       i < model_->result().size(); ++i)
+  for (size_t i = 0; i < model_->result().size(); ++i)
     popup_height += child_at(i)->GetPreferredSize().height();
 
   // Add enough space on the top and bottom so it looks like there is the same

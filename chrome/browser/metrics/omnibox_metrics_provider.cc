@@ -144,13 +144,8 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   // (as explained in omnibox_event.proto) even if it was not, because such
   // actions ignore the contents of the popup so it doesn't matter that it was
   // open.
-  const bool consider_popup_open = log.is_popup_open && !log.is_paste_and_go;
-  omnibox_event->set_is_popup_open(consider_popup_open);
+  omnibox_event->set_is_popup_open(log.is_popup_open && !log.is_paste_and_go);
   omnibox_event->set_is_paste_and_go(log.is_paste_and_go);
-  if (consider_popup_open) {
-    omnibox_event->set_is_top_result_hidden_in_dropdown(
-        log.result.ShouldHideTopMatch());
-  }
 
   for (AutocompleteResult::const_iterator i(log.result.begin());
        i != log.result.end(); ++i) {

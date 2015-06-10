@@ -102,31 +102,6 @@ class AutocompleteResult {
 
   // Returns true if the top match is a verbatim search or URL match (see
   // IsVerbatimType() in autocomplete_match.h), and the next match is not also
-  // some kind of verbatim match.  In this case, the top match will be hidden,
-  // and nothing in the dropdown will appear selected by default; hitting enter
-  // will navigate to the (hidden) default match, while pressing the down arrow
-  // key will select the first visible match, which is actually the second match
-  // in the result set.
-  //
-  // Hiding the top match in these cases is possible because users should
-  // already know what will happen on hitting enter from the omnibox text
-  // itself, without needing to see the same text appear again, selected, just
-  // below their typing.  Instead, by hiding the verbatim match, there is one
-  // less line to skip over in order to visually scan downwards to see other
-  // suggested matches.  This makes it more likely that users will see and
-  // select useful non-verbatim matches.  (Note that hiding the verbatim match
-  // this way is similar to how most other browsers' address bars behave.)
-  //
-  // We avoid hiding when the top two matches are both verbatim in order to
-  // avoid potential confusion if a user were to see the second match just below
-  // their typing and assume it would be the default action.
-  //
-  // Note that if the top match should be hidden and it is the only match,
-  // the dropdown should be closed.
-  bool ShouldHideTopMatch() const;
-
-  // Returns true if the top match is a verbatim search or URL match (see
-  // IsVerbatimType() in autocomplete_match.h), and the next match is not also
   // some kind of verbatim match.
   bool TopMatchIsStandaloneVerbatimMatch() const;
 

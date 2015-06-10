@@ -75,8 +75,7 @@ bool OmniboxPopupViewMac::IsOpen() const {
 void OmniboxPopupViewMac::UpdatePopupAppearance() {
   DCHECK([NSThread isMainThread]);
   const AutocompleteResult& result = GetResult();
-  const size_t start_match = result.ShouldHideTopMatch() ? 1 : 0;
-  const size_t rows = result.size() - start_match;
+  const size_t rows = result.size();
   if (rows == 0) {
     [[popup_ parentWindow] removeChildWindow:popup_];
     [popup_ orderOut:nil];
@@ -107,7 +106,7 @@ void OmniboxPopupViewMac::UpdatePopupAppearance() {
   CGFloat contents_offset = -1.0f;
   for (size_t ii = 0; ii < rows; ++ii) {
     OmniboxPopupCell* cell = [matrix_ cellAtRow:ii column:0];
-    const AutocompleteMatch& match = GetResult().match_at(ii + start_match);
+    const AutocompleteMatch& match = GetResult().match_at(ii);
     [cell setImage:ImageForMatch(match)];
     [cell setMatch:match];
     // Only set the image on the one cell with match.answer.
@@ -161,19 +160,12 @@ gfx::Rect OmniboxPopupViewMac::GetTargetBounds() {
 // This is only called by model in SetSelectedLine() after updating
 // everything.  Popup should already be visible.
 void OmniboxPopupViewMac::PaintUpdatesNow() {
-  size_t start_match = model_->result().ShouldHideTopMatch() ? 1 : 0;
-  if (start_match > model_->selected_line()) {
-    [matrix_ deselectAllCells];
-  } else {
-    [matrix_ selectCellAtRow:model_->selected_line() - start_match column:0];
-  }
-
+  [matrix_ selectCellAtRow:model_->selected_line() column:0];
 }
 
 void OmniboxPopupViewMac::OnMatrixRowSelected(OmniboxPopupMatrix* matrix,
                                               size_t row) {
-  size_t start_match = model_->result().ShouldHideTopMatch() ? 1 : 0;
-  model_->SetSelectedLine(row + start_match, false, false);
+  model_->SetSelectedLine(row, false, false);
 }
 
 void OmniboxPopupViewMac::OnMatrixRowClicked(OmniboxPopupMatrix* matrix,
@@ -336,8 +328,6 @@ NSImage* OmniboxPopupViewMac::ImageForMatch(const AutocompleteMatch& match) {
 
 void OmniboxPopupViewMac::OpenURLForRow(size_t row,
                                         WindowOpenDisposition disposition) {
-  size_t start_match = model_->result().ShouldHideTopMatch() ? 1 : 0;
-  row += start_match;
   DCHECK_LT(row, GetResult().size());
   omnibox_view_->OpenMatch(GetResult().match_at(row), disposition, GURL(),
                            base::string16(), row);

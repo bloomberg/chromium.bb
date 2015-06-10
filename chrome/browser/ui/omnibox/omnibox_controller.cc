@@ -39,12 +39,10 @@ namespace {
 //
 // If the kAllowPrefetchNonDefaultMatch field trial is enabled we return the
 // prefetch suggestion even if it is not the default match. Otherwise we only
-// care about matches that are the default or the very first entry in the
-// dropdown (which can happen for non-default matches only if we're hiding a top
-// verbatim match) or the second entry in the dropdown (which can happen for
-// non-default matches when a top verbatim match is shown); for other matches,
-// we think the likelihood of the user selecting them is low enough that
-// prefetching isn't worth doing.
+// care about matches that are the default or the second entry in the dropdown
+// (which can happen for non-default matches when a top verbatim match is
+// shown); for other matches, we think the likelihood of the user selecting
+// them is low enough that prefetching isn't worth doing.
 const AutocompleteMatch* GetMatchToPrefetch(const AutocompleteResult& result) {
   if (chrome::ShouldAllowPrefetchNonDefaultMatch()) {
     const AutocompleteResult::const_iterator prefetch_match = std::find_if(
@@ -53,17 +51,14 @@ const AutocompleteMatch* GetMatchToPrefetch(const AutocompleteResult& result) {
   }
 
   // If the default match should be prefetched, do that.
-  const AutocompleteResult::const_iterator default_match(
-      result.default_match());
+  const auto default_match = result.default_match();
   if ((default_match != result.end()) &&
       SearchProvider::ShouldPrefetch(*default_match))
     return &(*default_match);
 
   // Otherwise, if the top match is a verbatim match and the very next match
   // is prefetchable, fetch that.
-  if ((result.ShouldHideTopMatch() ||
-       result.TopMatchIsStandaloneVerbatimMatch()) &&
-      (result.size() > 1) &&
+  if (result.TopMatchIsStandaloneVerbatimMatch() && (result.size() > 1) &&
       SearchProvider::ShouldPrefetch(result.match_at(1)))
     return &result.match_at(1);
 

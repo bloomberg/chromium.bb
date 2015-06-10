@@ -647,80 +647,6 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
   }
 }
 
-TEST_F(AutocompleteResultTest, ShouldHideTopMatch) {
-  base::FieldTrialList::CreateFieldTrial("InstantExtended",
-                                         "Group1 hide_verbatim:1");
-  ACMatches matches;
-
-  // Case 1: Top match is a verbatim match.
-  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
-  AutocompleteResult result;
-  result.AppendMatches(AutocompleteInput(), matches);
-  EXPECT_TRUE(result.ShouldHideTopMatch());
-  matches.clear();
-  result.Reset();
-
-  // Case 2: If the verbatim first match is followed by another verbatim match,
-  // don't hide the top verbatim match.
-  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches,
-                                          arraysize(kVerbatimMatches),
-                                          &matches);
-  result.AppendMatches(AutocompleteInput(), matches);
-  EXPECT_FALSE(result.ShouldHideTopMatch());
-  matches.clear();
-  result.Reset();
-
-  // Case 3: Top match is not a verbatim match. Do not hide the top match.
-  PopulateAutocompleteMatchesFromTestData(kNonVerbatimMatches, 1, &matches);
-  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches,
-                                          arraysize(kVerbatimMatches),
-                                          &matches);
-  result.AppendMatches(AutocompleteInput(), matches);
-  EXPECT_FALSE(result.ShouldHideTopMatch());
-}
-
-TEST_F(AutocompleteResultTest, ShouldHideTopMatchAfterCopy) {
-  base::FieldTrialList::CreateFieldTrial("InstantExtended",
-                                         "Group1 hide_verbatim:1");
-  ACMatches matches;
-
-  // Case 1: Top match is a verbatim match followed by only copied matches.
-  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches,
-                                          arraysize(kVerbatimMatches),
-                                          &matches);
-  for (size_t i = 1; i < arraysize(kVerbatimMatches); ++i)
-    matches[i].from_previous = true;
-  AutocompleteResult result;
-  result.AppendMatches(AutocompleteInput(), matches);
-  EXPECT_TRUE(result.ShouldHideTopMatch());
-  result.Reset();
-
-  // Case 2: The copied matches are then followed by a non-verbatim match.
-  PopulateAutocompleteMatchesFromTestData(kNonVerbatimMatches, 1, &matches);
-  result.AppendMatches(AutocompleteInput(), matches);
-  EXPECT_TRUE(result.ShouldHideTopMatch());
-  result.Reset();
-
-  // Case 3: The copied matches are instead followed by a verbatim match.
-  matches.back().from_previous = true;
-  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
-  result.AppendMatches(AutocompleteInput(), matches);
-  EXPECT_FALSE(result.ShouldHideTopMatch());
-}
-
-TEST_F(AutocompleteResultTest, DoNotHideTopMatch_FieldTrialFlagDisabled) {
-  // This test config is identical to ShouldHideTopMatch test ("Case 1") except
-  // that the "hide_verbatim" flag is disabled in the field trials.
-  base::FieldTrialList::CreateFieldTrial("InstantExtended",
-                                         "Group1 hide_verbatim:0");
-  ACMatches matches;
-  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches, 1, &matches);
-  AutocompleteResult result;
-  result.AppendMatches(AutocompleteInput(), matches);
-  // Field trial flag "hide_verbatim" is disabled. Do not hide top match.
-  EXPECT_FALSE(result.ShouldHideTopMatch());
-}
-
 TEST_F(AutocompleteResultTest, TopMatchIsStandaloneVerbatimMatch) {
   ACMatches matches;
   AutocompleteResult result;
@@ -750,11 +676,4 @@ TEST_F(AutocompleteResultTest, TopMatchIsStandaloneVerbatimMatch) {
   EXPECT_TRUE(result.TopMatchIsStandaloneVerbatimMatch());
   result.Reset();
   matches.clear();
-
-  // Case 5: Multiple verbatim matches found in AutocompleteResult.
-  PopulateAutocompleteMatchesFromTestData(kVerbatimMatches,
-                                          arraysize(kVerbatimMatches),
-                                          &matches);
-  result.AppendMatches(AutocompleteInput(), matches);
-  EXPECT_FALSE(result.ShouldHideTopMatch());
 }

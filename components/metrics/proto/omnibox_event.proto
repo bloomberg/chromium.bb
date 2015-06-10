@@ -39,9 +39,10 @@ message OmniboxEventProto {
   // This corresponds the index of the |suggestion| below.
   optional int32 selected_index = 5;
 
-  // Whether or not the top match was hidden in the omnibox suggestions
-  // dropdown.
-  optional bool is_top_result_hidden_in_dropdown = 14;
+  // DEPRECATED. Whether or not the top match was hidden in the omnibox
+  // suggestions dropdown.
+  optional bool DEPRECATED_is_top_result_hidden_in_dropdown = 14
+      [deprecated = true];
 
   // Whether the omnibox popup is open.  It can be closed if, for instance,
   // the user clicks in the omnibox and hits return to reload the same page.
