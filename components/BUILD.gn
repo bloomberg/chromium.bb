@@ -289,6 +289,7 @@ test("components_unittests") {
     "//components/login:unit_tests",
     "//components/metrics:unit_tests",
     "//components/mime_util:unit_tests",
+    "//components/offline_pages:unit_tests",
     "//components/omnibox:unit_tests",
     "//components/packed_ct_ev_whitelist:unit_tests",
     "//components/undo:unit_tests",

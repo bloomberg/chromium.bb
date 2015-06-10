@@ -22,6 +22,8 @@
         'offline_pages/offline_page_item.h',
         'offline_pages/offline_page_model.cc',
         'offline_pages/offline_page_model.h',
+        'offline_pages/offline_page_metadata_store.cc',
+        'offline_pages/offline_page_metadata_store.h',
       ],
     },
   ],

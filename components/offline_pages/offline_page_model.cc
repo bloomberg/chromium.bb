@@ -6,11 +6,13 @@
 
 #include "base/logging.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_metadata_store.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
 
-OfflinePageModel::OfflinePageModel() {
+OfflinePageModel::OfflinePageModel(scoped_ptr<OfflinePageMetadataStore> store)
+    : store_(store.Pass()) {
 }
 
 OfflinePageModel::~OfflinePageModel() {
@@ -27,6 +29,10 @@ void OfflinePageModel::SavePageOffline(const GURL& url) {
 std::vector<OfflinePageItem> OfflinePageModel::GetAllOfflinePages() {
   NOTIMPLEMENTED();
   return std::vector<OfflinePageItem>();
+}
+
+OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
+  return store_.get();
 }
 
 }  // namespace offline_pages

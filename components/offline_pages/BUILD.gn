@@ -2,11 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP: //components/offline_pages.gypi:offline_pages'
+# GYP: //components/offline_pages.gypi:offline_pages
 static_library("offline_pages") {
   sources = [
     "offline_page_item.cc",
     "offline_page_item.h",
+    "offline_page_metadata_store.cc",
+    "offline_page_metadata_store.h",
     "offline_page_model.cc",
     "offline_page_model.h",
   ]
@@ -16,5 +18,17 @@ static_library("offline_pages") {
     "//components/keyed_service/core",
     "//net",
     "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "offline_page_model_unittest.cc",
+  ]
+
+  deps = [
+    ":offline_pages",
+    "//testing/gtest",
   ]
 }

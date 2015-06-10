@@ -330,6 +330,9 @@
     'network_time_unittest_sources': [
       'network_time/network_time_tracker_unittest.cc',
     ],
+    'offline_page_unittest_sources': [
+      'offline_pages/offline_page_model_unittest.cc',
+    ],
     'omnibox_unittest_sources': [
       'omnibox/answers_cache_unittest.cc',
       'omnibox/autocomplete_input_unittest.cc',
@@ -694,6 +697,7 @@
         '<@(metrics_unittest_sources)',
         '<@(mime_util_unittest_sources)',
         '<@(network_time_unittest_sources)',
+        '<@(offline_page_unittest_sources)',
         '<@(omnibox_unittest_sources)',
         '<@(os_crypt_unittest_sources)',
         '<@(packed_ct_ev_whitelist_unittest_sources)',
@@ -796,6 +800,7 @@
         'components.gyp:metrics_profiler',
         'components.gyp:metrics_test_support',
         'components.gyp:network_time',
+        'components.gyp:offline_pages',
         'components.gyp:omnibox',
         'components.gyp:omnibox_test_support',
         'components.gyp:os_crypt',
