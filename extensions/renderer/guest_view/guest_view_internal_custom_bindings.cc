@@ -294,26 +294,34 @@ void GuestViewInternalCustomBindings::RegisterElementResizeCallback(
 
 void GuestViewInternalCustomBindings::RegisterView(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  // There are two parameters.
-  CHECK(args.Length() == 2);
+  // There are three parameters.
+  CHECK(args.Length() == 3);
   // View Instance ID.
   CHECK(args[0]->IsInt32());
   // View element.
   CHECK(args[1]->IsObject());
+  // View type (e.g. "webview").
+  CHECK(args[2]->IsString());
 
   // A reference to the view object is stored in |weak_view_map| using its view
   // ID as the key. The reference is made weak so that it will not extend the
   // lifetime of the object.
-  int view_id = args[0]->Int32Value();
+  int view_instance_id = args[0]->Int32Value();
   auto object =
       new v8::Global<v8::Object>(args.GetIsolate(), args[1].As<v8::Object>());
-  weak_view_map.Get().insert(std::make_pair(view_id, object));
+  weak_view_map.Get().insert(std::make_pair(view_instance_id, object));
 
-  // The view_id is given to the SetWeak callback so that that view's entry in
-  // |weak_view_map| can be cleared when the view object is garbage collected.
-  object->SetWeak(new int(view_id),
+  // The |view_instance_id| is given to the SetWeak callback so that that view's
+  // entry in |weak_view_map| can be cleared when the view object is garbage
+  // collected.
+  object->SetWeak(new int(view_instance_id),
                   &GuestViewInternalCustomBindings::ResetMapEntry,
                   v8::WeakCallbackType::kParameter);
+
+  // Let the GuestViewManager know that a GuestView has been created.
+  const std::string& view_type = *v8::String::Utf8Value(args[2]);
+  content::RenderThread::Get()->Send(
+      new GuestViewHostMsg_ViewCreated(view_instance_id, view_type));
 }
 
 void GuestViewInternalCustomBindings::RunWithGesture(

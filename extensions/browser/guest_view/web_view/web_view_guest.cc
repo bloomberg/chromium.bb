@@ -170,13 +170,11 @@ void ParsePartitionParam(const base::DictionaryValue& create_params,
 
 void RemoveWebViewEventListenersOnIOThread(
     void* profile,
-    const std::string& extension_id,
     int embedder_process_id,
     int view_instance_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
       profile,
-      extension_id,
       embedder_process_id,
       view_instance_id);
 }
@@ -189,7 +187,40 @@ double ConvertZoomLevelToZoomFactor(double zoom_level) {
   return zoom_factor;
 }
 
+using WebViewKey = std::pair<int, int>;
+using WebViewKeyToIDMap = std::map<WebViewKey, int>;
+static base::LazyInstance<WebViewKeyToIDMap> web_view_key_to_id_map =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
+
+// static
+void WebViewGuest::CleanUp(int embedder_process_id, int view_instance_id) {
+  GuestViewBase::CleanUp(embedder_process_id, view_instance_id);
+
+  auto rph = content::RenderProcessHost::FromID(embedder_process_id);
+  auto browser_context = rph->GetBrowserContext();
+
+  // Clean up rules registries for the WebView.
+  WebViewKey key(embedder_process_id, view_instance_id);
+  auto it = web_view_key_to_id_map.Get().find(key);
+  if (it != web_view_key_to_id_map.Get().end()) {
+    auto rules_registry_id = it->second;
+    web_view_key_to_id_map.Get().erase(it);
+    RulesRegistryService::Get(browser_context)
+        ->RemoveRulesRegistriesByID(rules_registry_id);
+  }
+
+  // Clean up web request event listeners for the WebView.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &RemoveWebViewEventListenersOnIOThread,
+          browser_context,
+          embedder_process_id,
+          view_instance_id));
+}
 
 // static
 GuestViewBase* WebViewGuest::Create(content::WebContents* owner_web_contents) {
@@ -221,11 +252,6 @@ bool WebViewGuest::GetGuestPartitionConfigForSite(
 
 // static
 const char WebViewGuest::Type[] = "webview";
-
-using WebViewKey = std::pair<int, int>;
-using WebViewKeyToIDMap = std::map<WebViewKey, int>;
-static base::LazyInstance<WebViewKeyToIDMap> web_view_key_to_id_map =
-    LAZY_INSTANCE_INITIALIZER;
 
 // static
 int WebViewGuest::GetOrGenerateRulesRegistryID(
@@ -388,25 +414,6 @@ void WebViewGuest::EmbedderFullscreenToggled(bool entered_fullscreen) {
   // mode as well.
   if (!entered_fullscreen)
     SetFullscreenState(false);
-}
-
-void WebViewGuest::EmbedderWillBeDestroyed() {
-  // Clean up rules registries for the webview.
-  RulesRegistryService::Get(browser_context())
-      ->RemoveRulesRegistriesByID(rules_registry_id_);
-  WebViewKey key(owner_web_contents()->GetRenderProcessHost()->GetID(),
-                 view_instance_id());
-  web_view_key_to_id_map.Get().erase(key);
-
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &RemoveWebViewEventListenersOnIOThread,
-          browser_context(),
-          owner_host(),
-          owner_web_contents()->GetRenderProcessHost()->GetID(),
-          view_instance_id()));
 }
 
 const char* WebViewGuest::GetAPINamespace() const {

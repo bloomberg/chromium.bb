@@ -1346,7 +1346,6 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
 
 void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
     void* browser_context,
-    const std::string& extension_id,
     int embedder_process_id,
     int web_view_instance_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1370,7 +1369,7 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
     for (const auto& listener : listeners_to_delete) {
       RemoveEventListenerOnIOThread(
           browser_context,
-          extension_id,
+          listener.extension_id,
           listener.sub_event_name,
           listener.embedder_process_id,
           listener.web_view_instance_id);

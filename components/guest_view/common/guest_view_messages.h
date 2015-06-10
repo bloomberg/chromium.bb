@@ -35,6 +35,12 @@ IPC_MESSAGE_CONTROL3(GuestViewHostMsg_AttachGuest,
                      base::DictionaryValue /* attach_params */)
 
 // Sent by the renderer when a GuestView (identified by |view_instance_id|) has
+// been created in JavaScript.
+IPC_MESSAGE_CONTROL2(GuestViewHostMsg_ViewCreated,
+                     int /* view_instance_id */,
+                     std::string /* view_type */)
+
+// Sent by the renderer when a GuestView (identified by |view_instance_id|) has
 // been garbage collected in JavaScript.
 IPC_MESSAGE_CONTROL1(GuestViewHostMsg_ViewGarbageCollected,
                      int /* view_instance_id */)

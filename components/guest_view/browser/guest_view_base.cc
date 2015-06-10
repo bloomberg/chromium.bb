@@ -110,15 +110,17 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
       return;
 
     destroyed_ = true;
-    guest_->EmbedderWillBeDestroyed();
+    GuestViewManager::FromBrowserContext(web_contents()->GetBrowserContext())
+        ->EmbedderWillBeDestroyed(
+            web_contents()->GetRenderProcessHost()->GetID());
     guest_->Destroy();
   }
 
   DISALLOW_COPY_AND_ASSIGN(OwnerContentsObserver);
 };
 
-// This observer ensures that the GuestViewBase destroys itself when its
-// embedder goes away.
+// This observer ensures that the GuestViewBase destroys itself if its opener
+// WebContents goes away before the GuestViewBase is attached.
 class GuestViewBase::OpenerLifetimeObserver : public WebContentsObserver {
  public:
   OpenerLifetimeObserver(GuestViewBase* guest)
@@ -315,6 +317,11 @@ void GuestViewBase::SetSize(const SetSizeParams& params) {
   }
 
   auto_size_enabled_ = enable_auto_size;
+}
+
+// static
+void GuestViewBase::CleanUp(int embedder_process_id, int view_instance_id) {
+  // TODO(paulmeyer): Add in any general GuestView cleanup work here.
 }
 
 // static

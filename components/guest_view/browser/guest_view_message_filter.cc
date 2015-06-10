@@ -74,11 +74,19 @@ bool GuestViewMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GuestViewMessageFilter, message)
     IPC_MESSAGE_HANDLER(GuestViewHostMsg_AttachGuest, OnAttachGuest)
+    IPC_MESSAGE_HANDLER(GuestViewHostMsg_ViewCreated, OnViewCreated)
     IPC_MESSAGE_HANDLER(GuestViewHostMsg_ViewGarbageCollected,
                         OnViewGarbageCollected)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void GuestViewMessageFilter::OnViewCreated(int view_instance_id,
+                                           const std::string& view_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetOrCreateGuestViewManager()->ViewCreated(render_process_id_,
+                                             view_instance_id, view_type);
 }
 
 void GuestViewMessageFilter::OnViewGarbageCollected(int view_instance_id) {

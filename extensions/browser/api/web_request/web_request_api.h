@@ -296,7 +296,6 @@ class ExtensionWebRequestEventRouter
   // Removes the listeners for a given <webview>.
   void RemoveWebViewEventListeners(
       void* browser_context,
-      const std::string& extension_id,
       int embedder_process_id,
       int web_view_instance_id);
 

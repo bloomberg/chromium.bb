@@ -245,6 +245,40 @@ void GuestViewManager::RemoveGuest(int guest_instance_id) {
   }
 }
 
+void GuestViewManager::ViewCreated(int embedder_process_id,
+                                   int view_instance_id,
+                                   const std::string& view_type) {
+  if (guest_view_registry_.empty())
+    RegisterGuestViewTypes();
+  auto view_it = guest_view_registry_.find(view_type);
+  CHECK(view_it != guest_view_registry_.end())
+      << "Invalid GuestView created of type \"" << view_type << "\"";
+
+  // Register the cleanup callback for when this view is destroyed.
+  RegisterViewDestructionCallback(embedder_process_id,
+                                  view_instance_id,
+                                  base::Bind(view_it->second.cleanup_function,
+                                             embedder_process_id,
+                                             view_instance_id));
+}
+
+void GuestViewManager::ViewGarbageCollected(int embedder_process_id,
+                                            int view_instance_id) {
+  // Find and call any callbacks associated with the view that has been garbage
+  // collected.
+  auto embedder_it = view_destruction_callback_map_.find(embedder_process_id);
+  if (embedder_it == view_destruction_callback_map_.end())
+    return;
+  CallbacksForEachViewID& callbacks_for_embedder = embedder_it->second;
+  auto view_it = callbacks_for_embedder.find(view_instance_id);
+  if (view_it == callbacks_for_embedder.end())
+    return;
+  Callbacks& callbacks_for_view = view_it->second;
+  for (auto& callback : callbacks_for_view)
+    callback.Run();
+  callbacks_for_embedder.erase(view_it);
+}
+
 GuestViewBase* GuestViewManager::CreateGuestInternal(
     content::WebContents* owner_web_contents,
     const std::string& view_type) {
@@ -257,11 +291,19 @@ GuestViewBase* GuestViewManager::CreateGuestInternal(
     return nullptr;
   }
 
-  return it->second.Run(owner_web_contents);
+  return it->second.create_function.Run(owner_web_contents);
 }
 
 void GuestViewManager::RegisterGuestViewTypes() {
   delegate_->RegisterAdditionalGuestViewTypes();
+}
+
+void GuestViewManager::RegisterViewDestructionCallback(
+    int embedder_process_id,
+    int view_instance_id,
+    const base::Closure& callback) {
+  view_destruction_callback_map_[embedder_process_id][view_instance_id]
+      .push_back(callback);
 }
 
 bool GuestViewManager::IsGuestAvailableToContext(GuestViewBase* guest) {
@@ -275,6 +317,22 @@ void GuestViewManager::DispatchEvent(const std::string& event_name,
   // TODO(fsamuel): GuestViewManager should probably do something more useful
   // here like log an error if the event could not be dispatched.
   delegate_->DispatchEvent(event_name, args.Pass(), guest, instance_id);
+}
+
+void GuestViewManager::EmbedderWillBeDestroyed(int embedder_process_id) {
+  // Find and call any callbacks associated with the embedder that is being
+  // destroyed.
+  auto embedder_it = view_destruction_callback_map_.find(embedder_process_id);
+  if (embedder_it == view_destruction_callback_map_.end())
+    return;
+  CallbacksForEachViewID& callbacks_for_embedder = embedder_it->second;
+  for (auto& view_pair : callbacks_for_embedder) {
+    Callbacks& callbacks_for_view = view_pair.second;
+    for (auto& callback : callbacks_for_view) {
+      callback.Run();
+    }
+  }
+  view_destruction_callback_map_.erase(embedder_it);
 }
 
 content::WebContents* GuestViewManager::GetGuestByInstanceID(
@@ -370,7 +428,14 @@ bool GuestViewManager::ElementInstanceKey::operator<(
 bool GuestViewManager::ElementInstanceKey::operator==(
     const GuestViewManager::ElementInstanceKey& other) const {
   return (embedder_process_id == other.embedder_process_id) &&
-    (element_instance_id == other.element_instance_id);
+         (element_instance_id == other.element_instance_id);
 }
+
+GuestViewManager::GuestViewData::GuestViewData(
+    const GuestViewCreateFunction& create_function,
+    const GuestViewCleanUpFunction& cleanup_function)
+    : create_function(create_function), cleanup_function(cleanup_function) {}
+
+GuestViewManager::GuestViewData::~GuestViewData() {}
 
 }  // namespace guest_view

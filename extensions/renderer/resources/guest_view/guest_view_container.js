@@ -28,7 +28,7 @@ function GuestViewContainer(element, viewType) {
   var shadowRoot = this.element.createShadowRoot();
   shadowRoot.appendChild(privates(this).internalElement);
 
-  GuestViewInternalNatives.RegisterView(this.viewInstanceId, this);
+  GuestViewInternalNatives.RegisterView(this.viewInstanceId, this, viewType);
 }
 
 // Forward public API methods from |proto| to their internal implementations.

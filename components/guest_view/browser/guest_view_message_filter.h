@@ -53,9 +53,6 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // Message handlers on the UI thread.
-  void OnViewGarbageCollected(int view_instance_id);
-
   const int render_process_id_;
 
   // Should only be accessed on the UI thread.
@@ -72,6 +69,8 @@ class GuestViewMessageFilter : public content::BrowserMessageFilter {
   void OnAttachGuest(int element_instance_id,
                      int guest_instance_id,
                      const base::DictionaryValue& attach_params);
+  void OnViewCreated(int view_instance_id, const std::string& view_type);
+  void OnViewGarbageCollected(int view_instance_id);
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewMessageFilter);
 };

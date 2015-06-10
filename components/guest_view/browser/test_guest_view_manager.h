@@ -36,11 +36,15 @@ class TestGuestViewManager : public GuestViewManager {
   size_t GetNumRemovedInstanceIDs() const;
 
   using GuestViewCreateFunction =
-      base::Callback<GuestViewBase*(content::WebContents*)>;;
+      base::Callback<GuestViewBase*(content::WebContents*)>;
 
   template <typename T>
-  void RegisterTestGuestViewType(GuestViewCreateFunction create_function) {
-    guest_view_registry_[T::Type] = create_function;
+  void RegisterTestGuestViewType(
+      const GuestViewCreateFunction& create_function) {
+    auto registry_entry = std::make_pair(
+        T::Type,
+        GuestViewData(create_function, base::Bind(&T::CleanUp)));
+    guest_view_registry_.insert(registry_entry);
   }
 
   // Returns the number of guests that have been created since the creation of

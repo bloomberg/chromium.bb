@@ -36,6 +36,10 @@ class WebViewInternalFindFunction;
 class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
                      public content::NotificationObserver {
  public:
+  // Clean up state when this GuestView is being destroyed. See
+  // GuestViewBase::CleanUp().
+  static void CleanUp(int embedder_process_id, int view_instance_id);
+
   static GuestViewBase* Create(content::WebContents* owner_web_contents);
 
   // For WebViewGuest, we create special guest processes, which host the
@@ -110,7 +114,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   void DidInitialize(const base::DictionaryValue& create_params) override;
   void GuestViewDidStopLoading() override;
   void EmbedderFullscreenToggled(bool entered_fullscreen) override;
-  void EmbedderWillBeDestroyed() override;
   const char* GetAPINamespace() const override;
   int GetTaskPrefix() const override;
   void GuestDestroyed() override;

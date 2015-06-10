@@ -91,6 +91,7 @@ void TestGuestViewManager::RemoveGuest(int guest_instance_id) {
 
 void TestGuestViewManager::ViewGarbageCollected(int embedder_process_id,
                                                 int view_instance_id) {
+  GuestViewManager::ViewGarbageCollected(embedder_process_id, view_instance_id);
   ++num_views_garbage_collected_;
   if (gc_message_loop_runner_.get())
     gc_message_loop_runner_->Quit();
