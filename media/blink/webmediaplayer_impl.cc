@@ -115,12 +115,11 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       pipeline_(media_task_runner_, media_log_.get()),
       load_type_(LoadTypeURL),
       opaque_(false),
+      playback_rate_(0.0),
       paused_(true),
       seeking_(false),
-      playback_rate_(0.0),
       ended_(false),
       pending_seek_(false),
-      pending_seek_seconds_(0.0f),
       should_notify_time_changed_(false),
       client_(client),
       delegate_(delegate),
@@ -291,13 +290,31 @@ void WebMediaPlayerImpl::seek(double seconds) {
   if (ready_state_ > WebMediaPlayer::ReadyStateHaveMetadata)
     SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
 
-  base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
+  base::TimeDelta new_seek_time = ConvertSecondsToTimestamp(seconds);
 
   if (seeking_) {
+    if (new_seek_time == seek_time_) {
+      if (chunk_demuxer_) {
+        if (!pending_seek_) {
+          // If using media source demuxer, only suppress redundant seeks if
+          // there is no pending seek. This enforces that any pending seek that
+          // results in a demuxer seek is preceded by matching
+          // CancelPendingSeek() and StartWaitingForSeek() calls.
+          return;
+        }
+      } else {
+        // Suppress all redundant seeks if unrestricted by media source demuxer
+        // API.
+        pending_seek_ = false;
+        pending_seek_time_ = base::TimeDelta();
+        return;
+      }
+    }
+
     pending_seek_ = true;
-    pending_seek_seconds_ = seconds;
+    pending_seek_time_ = new_seek_time;
     if (chunk_demuxer_)
-      chunk_demuxer_->CancelPendingSeek(seek_time);
+      chunk_demuxer_->CancelPendingSeek(pending_seek_time_);
     return;
   }
 
@@ -308,8 +325,8 @@ void WebMediaPlayerImpl::seek(double seconds) {
   // is completed and generate OnPipelineBufferingStateChanged event to
   // eventually fire seeking and seeked events
   if (paused_) {
-    if (paused_time_ != seek_time) {
-      paused_time_ = seek_time;
+    if (paused_time_ != new_seek_time) {
+      paused_time_ = new_seek_time;
     } else if (old_state == ReadyStateHaveEnoughData) {
       main_task_runner_->PostTask(
           FROM_HERE,
@@ -320,14 +337,14 @@ void WebMediaPlayerImpl::seek(double seconds) {
   }
 
   seeking_ = true;
+  seek_time_ = new_seek_time;
 
   if (chunk_demuxer_)
-    chunk_demuxer_->StartWaitingForSeek(seek_time);
+    chunk_demuxer_->StartWaitingForSeek(seek_time_);
 
   // Kick off the asynchronous seek!
-  pipeline_.Seek(
-      seek_time,
-      BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnPipelineSeeked, true));
+  pipeline_.Seek(seek_time_, BIND_TO_RENDER_LOOP1(
+                                 &WebMediaPlayerImpl::OnPipelineSeeked, true));
 }
 
 void WebMediaPlayerImpl::setRate(double rate) {
@@ -443,6 +460,14 @@ double WebMediaPlayerImpl::currentTime() const {
   // see http://crbug.com/409280
   if (ended_)
     return duration();
+
+  // We know the current seek time better than pipeline: pipeline may processing
+  // an earlier seek before a pending seek has been started, or it might not yet
+  // have the current seek time returnable via GetMediaTime().
+  if (seeking()) {
+    return pending_seek_ ? pending_seek_time_.InSecondsF()
+                         : seek_time_.InSecondsF();
+  }
 
   return (paused_ ? paused_time_ : pipeline_.GetMediaTime()).InSecondsF();
 }
@@ -717,9 +742,12 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_changed,
   DVLOG(1) << __FUNCTION__ << "(" << time_changed << ", " << status << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   seeking_ = false;
+  seek_time_ = base::TimeDelta();
   if (pending_seek_) {
+    double pending_seek_seconds = pending_seek_time_.InSecondsF();
     pending_seek_ = false;
-    seek(pending_seek_seconds_);
+    pending_seek_time_ = base::TimeDelta();
+    seek(pending_seek_seconds);
     return;
   }
 

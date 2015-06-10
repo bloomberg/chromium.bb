@@ -274,10 +274,11 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   // time we pause and then return that value in currentTime().  Otherwise our
   // clock can creep forward a little bit while the asynchronous
   // SetPlaybackRate(0) is being executed.
-  bool paused_;
-  bool seeking_;
   double playback_rate_;
+  bool paused_;
   base::TimeDelta paused_time_;
+  bool seeking_;
+  base::TimeDelta seek_time_;  // Meaningless when |seeking_| is false.
 
   // TODO(scherkus): Replace with an explicit ended signal to HTMLMediaElement,
   // see http://crbug.com/409280
@@ -286,7 +287,8 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   // Seek gets pending if another seek is in progress. Only last pending seek
   // will have effect.
   bool pending_seek_;
-  double pending_seek_seconds_;
+  // |pending_seek_time_| is meaningless when |pending_seek_| is false.
+  base::TimeDelta pending_seek_time_;
 
   // Tracks whether to issue time changed notifications during buffering state
   // changes.
