@@ -5069,7 +5069,8 @@ usage(int error_code)
 	fprintf(stderr,
 		"Options for fbdev-backend.so:\n\n"
 		"  --tty=TTY\t\tThe tty to use\n"
-		"  --device=DEVICE\tThe framebuffer device to use\n\n");
+		"  --device=DEVICE\tThe framebuffer device to use\n"
+		"  --use-gl\t\tUse the GL renderer\n\n");
 #endif
 
 #if defined(BUILD_X11_COMPOSITOR)
@@ -5077,6 +5078,7 @@ usage(int error_code)
 		"Options for x11-backend.so:\n\n"
 		"  --width=WIDTH\t\tWidth of X window\n"
 		"  --height=HEIGHT\tHeight of X window\n"
+		"  --scale=SCALE\t\tScale factor of output\n"
 		"  --fullscreen\t\tRun in fullscreen mode\n"
 		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
 		"  --output-count=COUNT\tCreate multiple outputs\n"
