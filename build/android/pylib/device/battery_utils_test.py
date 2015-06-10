@@ -104,13 +104,16 @@ class BatteryUtilsSetChargingTest(BatteryUtilsTest):
 
 class BatteryUtilsSetBatteryMeasurementTest(BatteryUtilsTest):
 
+  @mock.patch('time.sleep', mock.Mock())
   def testBatteryMeasurement(self):
     with self.assertCalls(
         (self.call.device.RunShellCommand(
             mock.ANY, retries=0, single_line=True,
             timeout=10, check_return=True), '22'),
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'battery', 'reset'], check_return=True), []),
+            ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'ac', '1'], check_return=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
         (self.call.device.RunShellCommand(

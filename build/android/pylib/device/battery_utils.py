@@ -289,7 +289,9 @@ class BatteryUtils(object):
       raise device_errors.DeviceVersionError('Device must be L or higher.')
 
     self._device.RunShellCommand(
-        ['dumpsys', 'battery', 'reset'], check_return=True)
+        ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True)
+    self._device.RunShellCommand(
+        ['dumpsys', 'battery', 'set', 'ac', '1'], check_return=True)
     self._device.RunShellCommand(
         ['dumpsys', 'batterystats', '--reset'], check_return=True)
     battery_data = self._device.RunShellCommand(
