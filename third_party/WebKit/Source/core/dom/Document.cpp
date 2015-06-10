@@ -2557,7 +2557,7 @@ bool Document::dispatchBeforeUnloadEvent(ChromeClient& chromeClient, bool& didAl
     m_loadEventProgress = BeforeUnloadEventCompleted;
     if (!beforeUnloadEvent->defaultPrevented())
         defaultEventHandler(beforeUnloadEvent.get());
-    if (beforeUnloadEvent->returnValue().isNull())
+    if (!frame() || beforeUnloadEvent->returnValue().isNull())
         return true;
 
     if (didAllowNavigation) {

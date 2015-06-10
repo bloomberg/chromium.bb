@@ -112,6 +112,7 @@ ReturnType openJavaScriptDialog(
 
 bool ChromeClient::openBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame)
 {
+    ASSERT(frame);
     return openJavaScriptDialog(this, &ChromeClient::openBeforeUnloadConfirmPanelDelegate, *frame, message);
 }
 
