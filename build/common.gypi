@@ -5696,8 +5696,6 @@
             ['clang==1', {
               'VCCLCompilerTool': {
                 'AdditionalOptions': [
-                  '-fmsc-version=1800',
-
                   # Many files use intrinsics without including this header.
                   # TODO(hans): Fix those files, or move this to sub-GYPs.
                   '/FIIntrin.h',
@@ -5751,6 +5749,20 @@
               'VCCLCompilerTool': {
                 'AdditionalOptions': [
                   '<@(clang_chrome_plugins_flags)',
+                ],
+              },
+            }],
+            ['clang==1 and MSVS_VERSION == "2013"', {
+              'VCCLCompilerTool': {
+                'AdditionalOptions': [
+                  '-fmsc-version=1800',
+                ],
+              },
+            }],
+            ['clang==1 and MSVS_VERSION == "2015"', {
+              'VCCLCompilerTool': {
+                'AdditionalOptions': [
+                  '-fmsc-version=1900',
                 ],
               },
             }],

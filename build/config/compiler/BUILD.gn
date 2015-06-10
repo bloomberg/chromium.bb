@@ -108,12 +108,17 @@ config("compiler") {
     # Keep this in sync with the similar block in build/common.gypi
     if (is_clang) {
       cflags += [
-        "-fmsc-version=1800",
-
         # Many files use intrinsics without including this header.
         # TODO(hans): Fix those files, or move this to sub-GYPs.
         "/FIIntrin.h",
       ]
+
+      if (visual_studio_version == "2013") {
+        cflags += [ "-fmsc-version=1800" ]
+      } else if (visual_studio_version == "2015") {
+        cflags += [ "-fmsc-version=1900" ]
+      }
+
       if (current_cpu == "x86") {
         cflags += [
           "/fallback",
