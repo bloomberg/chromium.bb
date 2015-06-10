@@ -521,13 +521,6 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
         LOG(ERROR) << "Create: Empty tag.";
         return error;
       }
-      case syncer::WriteNode::INIT_FAILED_ENTRY_ALREADY_EXISTS: {
-        syncer::SyncError error;
-        error.Reset(FROM_HERE, error_prefix + "entry already exists", type_);
-        error_handler()->OnSingleDataTypeUnrecoverableError(error);
-        LOG(ERROR) << "Create: Entry exists.";
-        return error;
-      }
       case syncer::WriteNode::INIT_FAILED_COULD_NOT_CREATE_ENTRY: {
         syncer::SyncError error;
         error.Reset(FROM_HERE, error_prefix + "failed to create entry", type_);
@@ -575,8 +568,6 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
     const syncer::WriteTransaction& trans,
     syncer::WriteNode* sync_node,
     syncer::AttachmentIdSet* new_attachments) {
-  // TODO(zea): consider having this logic for all possible changes?
-
   const syncer::SyncDataLocal sync_data_local(change.sync_data());
   syncer::BaseNode::InitByLookupResult result =
       sync_node->InitByClientTagLookup(sync_data_local.GetDataType(),

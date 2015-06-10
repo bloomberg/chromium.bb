@@ -311,8 +311,6 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreation(
 // and bind this WriteNode to it.
 // Return true on success. If the tag exists in the database, then
 // we will attempt to undelete the node.
-// TODO(chron): Code datatype into hash tag.
-// TODO(chron): Is model type ever lost?
 WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
     ModelType model_type,
     const syncable::Id& parent_id,
@@ -370,21 +368,19 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
       sync_pb::EntitySpecifics specifics;
       AddDefaultFieldValue(model_type, &specifics);
       existing_entry->PutSpecifics(specifics);
-
-      entry_ = existing_entry.release();
-    } else {
-      return INIT_FAILED_ENTRY_ALREADY_EXISTS;
-    }
+    }  // Else just reuse the existing entry.
+    entry_ = existing_entry.release();
   } else {
     entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                         syncable::CREATE,
                                         model_type, parent_id, dummy);
-    if (!entry_->good())
-      return INIT_FAILED_COULD_NOT_CREATE_ENTRY;
-
-    // Only set IS_DIR for new entries. Don't bitflip undeleted ones.
-    entry_->PutUniqueClientTag(hash);
   }
+
+  if (!entry_->good())
+    return INIT_FAILED_COULD_NOT_CREATE_ENTRY;
+
+  // Has no impact if the client tag is already set.
+  entry_->PutUniqueClientTag(hash);
 
   // We don't support directory and tag combinations.
   entry_->PutIsDir(false);

@@ -479,6 +479,41 @@ TEST_F(SyncGenericChangeProcessorTest, UploadAllAttachmentsNotOnServer) {
               testing::UnorderedElementsAre(id1));
 }
 
+// Test that attempting to add an entry that already exists still works.
+TEST_F(SyncGenericChangeProcessorTest, AddExistingEntry) {
+  InitializeForType(syncer::SESSIONS);
+  sync_pb::EntitySpecifics sessions_specifics;
+  sessions_specifics.mutable_session()->set_session_tag("session tag");
+  syncer::SyncChangeList changes;
+
+  // First add it normally.
+  changes.push_back(syncer::SyncChange(
+      FROM_HERE, syncer::SyncChange::ACTION_ADD,
+      syncer::SyncData::CreateLocalData(base::StringPrintf("tag"),
+                                        base::StringPrintf("title"),
+                                        sessions_specifics)));
+  ASSERT_FALSE(
+      change_processor()->ProcessSyncChanges(FROM_HERE, changes).IsSet());
+
+  // Now attempt to add it again, but with different specifics. Should not
+  // result in an error and should still update the specifics.
+  sessions_specifics.mutable_session()->set_session_tag("session tag 2");
+  changes[0] =
+      syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD,
+                         syncer::SyncData::CreateLocalData(
+                             base::StringPrintf("tag"),
+                             base::StringPrintf("title"), sessions_specifics));
+  ASSERT_FALSE(
+      change_processor()->ProcessSyncChanges(FROM_HERE, changes).IsSet());
+
+  // Verify the data was updated properly.
+  syncer::SyncDataList sync_data =
+      change_processor()->GetAllSyncData(syncer::SESSIONS);
+  ASSERT_EQ(sync_data.size(), 1U);
+  ASSERT_EQ("session tag 2",
+            sync_data[0].GetSpecifics().session().session_tag());
+}
+
 }  // namespace
 
 }  // namespace sync_driver

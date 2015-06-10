@@ -41,8 +41,6 @@ class SYNC_EXPORT WriteNode : public BaseNode {
     INIT_SUCCESS,
     // The tag passed into this method was empty.
     INIT_FAILED_EMPTY_TAG,
-    // An entry with this tag already exists.
-    INIT_FAILED_ENTRY_ALREADY_EXISTS,
     // The constructor for a new MutableEntry with the specified data failed.
     INIT_FAILED_COULD_NOT_CREATE_ENTRY,
     // Setting the predecessor failed
@@ -71,8 +69,8 @@ class SYNC_EXPORT WriteNode : public BaseNode {
   // Create nodes using this function if they're unique items that
   // you want to fetch using client_tag. Note that the behavior of these
   // items is slightly different than that of normal items.
-  // Most importantly, if it exists locally, this function will
-  // actually undelete it
+  // Most importantly, if it exists locally but is deleted, this function will
+  // actually undelete it. Otherwise it will reuse the existing node.
   // Client unique tagged nodes must NOT be folders.
   InitUniqueByCreationResult InitUniqueByCreation(
       ModelType model_type,
