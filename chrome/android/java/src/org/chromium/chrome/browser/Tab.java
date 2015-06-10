@@ -1382,7 +1382,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             boolean creatingWebContents = webContents == null;
             if (creatingWebContents) {
-                webContents = ContentViewUtil.createWebContents(isIncognito(), initiallyHidden);
+                webContents = WebContentsFactory.createWebContents(isIncognito(), initiallyHidden);
             }
 
             ContentViewCore contentViewCore = ContentViewCore.fromWebContents(webContents);
@@ -1871,7 +1871,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         if (mPendingLoadParams != null) {
             assert isFrozen();
-            initContentViewCore(ContentViewUtil.createWebContents(isIncognito(), isHidden()));
+            initContentViewCore(WebContentsFactory.createWebContents(isIncognito(), isHidden()));
             loadUrl(mPendingLoadParams);
             mPendingLoadParams = null;
             return true;
@@ -1943,13 +1943,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             assert getContentViewCore() == null;
 
             boolean forceNavigate = false;
-            WebContents webContents = ContentViewUtil.fromNativeWebContents(
-                    mFrozenContentsState.restoreContentsFromByteBuffer(isHidden()));
+            WebContents webContents =
+                    mFrozenContentsState.restoreContentsFromByteBuffer(isHidden());
             if (webContents == null) {
                 // State restore failed, just create a new empty web contents as that is the best
                 // that can be done at this point. TODO(jcivelli) http://b/5910521 - we should show
                 // an error page instead of a blank page in that case (and the last loaded URL).
-                webContents = ContentViewUtil.createWebContents(isIncognito(), isHidden());
+                webContents = WebContentsFactory.createWebContents(isIncognito(), isHidden());
                 forceNavigate = true;
             }
 

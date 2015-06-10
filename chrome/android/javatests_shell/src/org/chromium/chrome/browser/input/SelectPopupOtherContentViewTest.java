@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.input;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ContentViewUtil;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
@@ -73,7 +73,7 @@ public class SelectPopupOtherContentViewTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                WebContents webContents = ContentViewUtil.createWebContents(false, false);
+                WebContents webContents = WebContentsFactory.createWebContents(false, false);
                 WindowAndroid windowAndroid = new ActivityWindowAndroid(getActivity());
 
                 ContentViewCore contentViewCore = new ContentViewCore(getActivity());

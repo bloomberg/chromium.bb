@@ -21,8 +21,8 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
@@ -943,7 +943,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
         ContentView cv = new ContentView(mActivity, mSearchContentViewCore);
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
         mSearchContentViewCore.initialize(cv, cv,
-                ContentViewUtil.createWebContents(false, true), mWindowAndroid);
+                WebContentsFactory.createWebContents(false, true), mWindowAndroid);
 
         // Transfers the ownership of the WebContents to the native ContextualSearchManager.
         nativeSetWebContents(mNativeContextualSearchManagerPtr, mSearchContentViewCore,

@@ -33,6 +33,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -140,9 +142,32 @@ public class ContentShellTestBase
     }
 
     /**
+     * Creates a new {@link Shell} and waits for it to finish loading.
+     * @param url The URL to create the new {@link Shell} with.
+     * @return A new instance of a {@link Shell}.
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    protected Shell loadNewShell(final String url) throws ExecutionException, InterruptedException {
+        Shell shell = ThreadUtils.runOnUiThreadBlocking(new Callable<Shell>() {
+            @Override
+            public Shell call() {
+                getActivity().getShellManager().launchShell(url);
+                return getActivity().getActiveShell();
+            }
+        });
+
+        assertNotNull("Unable to create shell.", shell);
+        assertEquals("Active shell unexpected.", shell, getActivity().getActiveShell());
+
+        waitForActiveShellToBeDoneLoading();
+
+        return shell;
+    }
+    /**
      * Loads a URL in the specified content view.
      *
-     * @param viewCore The content view core to load the URL in.
+     * @param navigationController The navigation controller to load the URL in.
      * @param callbackHelperContainer The callback helper container used to monitor progress.
      * @param params The URL params to use.
      */

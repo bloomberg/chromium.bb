@@ -14,9 +14,9 @@ import org.chromium.base.FieldTrialList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
 import org.chromium.content.browser.ContentView;
@@ -381,7 +381,7 @@ public class BackgroundContentViewHelper extends EmptyTabObserver {
         mContentViewCore = new ContentViewCore(activity);
         ContentView cv = new ContentView(activity, mContentViewCore);
         mContentViewCore.initialize(cv, cv,
-                ContentViewUtil.createWebContents(mTab.isIncognito(), false), mWindowAndroid);
+                WebContentsFactory.createWebContents(mTab.isIncognito(), false), mWindowAndroid);
 
         // The renderer should be set with the height considering the top controls(non-fullscreen
         // mode).

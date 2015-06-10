@@ -11,8 +11,8 @@ import android.os.SystemClock;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeEventFilter.ScrollDirection;
@@ -611,7 +611,7 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
             Context context, WindowAndroid windowAndroid) {
         ContentViewCore cvc = new ContentViewCore(context);
         ContentView cv = new ContentView(context, cvc);
-        cvc.initialize(cv, cv, ContentViewUtil.createWebContents(false, true), windowAndroid);
+        cvc.initialize(cv, cv, WebContentsFactory.createWebContents(false, true), windowAndroid);
         cvc.setContentViewClient(new ContentViewClient() {
             @Override
             public void onOffsetsForFullscreenChanged(float topControlsOffsetYPix,

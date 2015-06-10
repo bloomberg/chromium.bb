@@ -5,9 +5,13 @@
 package org.chromium.content.browser.webcontents;
 
 import android.graphics.Color;
+import android.os.Parcel;
+import android.os.ParcelUuid;
+import android.os.Parcelable;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.JavaScriptCallback;
@@ -15,6 +19,8 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.accessibility.AXTextStyle;
+
+import java.util.UUID;
 
 /**
  * The WebContentsImpl Java wrapper to allow communicating with the native WebContentsImpl
@@ -24,6 +30,45 @@ import org.chromium.ui.accessibility.AXTextStyle;
 //TODO(tedchoc): Remove the package restriction once this class moves to a non-public content
 //               package whose visibility will be enforced via DEPS.
 /* package */ class WebContentsImpl implements WebContents {
+    private static final long sParcelableVersionID = 0;
+    // Non-final for testing purposes, so resetting of the UUID can happen.
+    private static UUID sParcelableUUID = UUID.randomUUID();
+
+    /**
+     * Used to reset the internal tracking for whether or not a serialized {@link WebContents}
+     * was created in this process or not.
+     */
+    @VisibleForTesting
+    public static void invalidateSerializedWebContentsForTesting() {
+        sParcelableUUID = UUID.randomUUID();
+    }
+
+    /**
+     * A {@link android.os.Parcelable.Creator} instance that is used to build
+     * {@link WebContentsImpl} objects from a {@link Parcel}.
+     */
+    public static final Parcelable.Creator<WebContents> CREATOR =
+            new Parcelable.Creator<WebContents>() {
+                @Override
+                public WebContents createFromParcel(Parcel source) {
+                    // Read version code and check for mismatch.
+                    long version = source.readLong();
+                    if (version != 0) return null;
+
+                    // Read UUID to check for application restart (in this case pointers are
+                    // invalid).
+                    ParcelUuid parcelUuid = source.readParcelable(null);
+                    if (sParcelableUUID.compareTo(parcelUuid.getUuid()) != 0) return null;
+
+                    // Grab the WebContents object from the native WebContentsAndroid pointer.
+                    return nativeFromNativePtr(source.readLong());
+                }
+
+                @Override
+                public WebContents[] newArray(int size) {
+                    return new WebContents[size];
+                }
+            };
 
     private long mNativeWebContentsAndroid;
     private NavigationController mNavigationController;
@@ -53,6 +98,18 @@ import org.chromium.ui.accessibility.AXTextStyle;
         }
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(sParcelableVersionID);
+        dest.writeParcelable(new ParcelUuid(sParcelableUUID), 0);
+        dest.writeLong(mNativeWebContentsAndroid);
+    }
+
     @CalledByNative
     private long getNativePointer() {
         return mNativeWebContentsAndroid;
@@ -61,6 +118,11 @@ import org.chromium.ui.accessibility.AXTextStyle;
     @Override
     public void destroy() {
         if (mNativeWebContentsAndroid != 0) nativeDestroyWebContents(mNativeWebContentsAndroid);
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return mNativeWebContentsAndroid == 0;
     }
 
     @Override
@@ -265,6 +327,8 @@ import org.chromium.ui.accessibility.AXTextStyle;
 
     // This is static to avoid exposing a public destroy method on the native side of this class.
     private static native void nativeDestroyWebContents(long webContentsAndroidPtr);
+
+    private static native WebContents nativeFromNativePtr(long webContentsAndroidPtr);
 
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);

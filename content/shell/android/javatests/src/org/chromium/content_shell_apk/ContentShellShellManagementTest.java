@@ -6,10 +6,11 @@ package org.chromium.content_shell_apk;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_shell.Shell;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Test suite to verify the behavior of the shell management logic.
@@ -23,7 +24,7 @@ public class ContentShellShellManagementTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"Main"})
-    public void testMultipleShellsLaunched() throws InterruptedException {
+    public void testMultipleShellsLaunched() throws InterruptedException, ExecutionException {
         final ContentShellActivity activity = launchContentShellWithUrl(TEST_PAGE_1);
         assertEquals(TEST_PAGE_1, activity.getActiveShell().getContentViewCore()
                 .getWebContents().getUrl());
@@ -31,13 +32,7 @@ public class ContentShellShellManagementTest extends ContentShellTestBase {
         Shell previousActiveShell = activity.getActiveShell();
         assertFalse(previousActiveShell.isDestroyed());
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                activity.getShellManager().launchShell(TEST_PAGE_2);
-            }
-        });
-        waitForActiveShellToBeDoneLoading();
+        loadNewShell(TEST_PAGE_2);
         assertEquals(TEST_PAGE_2, activity.getActiveShell().getContentViewCore()
                 .getWebContents().getUrl());
 

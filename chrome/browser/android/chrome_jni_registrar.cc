@@ -20,7 +20,6 @@
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
 #include "chrome/browser/android/compositor/scene_layer/static_tab_scene_layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
-#include "chrome/browser/android/content_view_util.h"
 #include "chrome/browser/android/cookies/cookies_fetcher.h"
 #include "chrome/browser/android/dev_tools_server.h"
 #include "chrome/browser/android/dom_distiller/external_feedback_reporter_android.h"
@@ -64,6 +63,7 @@
 #include "chrome/browser/android/url_utilities.h"
 #include "chrome/browser/android/voice_search_tab_helper.h"
 #include "chrome/browser/android/warmup_manager.h"
+#include "chrome/browser/android/web_contents_factory.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory_android.h"
 #include "chrome/browser/dom_distiller/tab_utils_android.h"
@@ -187,7 +187,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      ConnectionInfoPopupAndroid::RegisterConnectionInfoPopupAndroid},
     {"ConnectionSecurityHelper", RegisterConnectionSecurityHelperAndroid},
     {"ConnectivityChecker", RegisterConnectivityChecker},
-    {"ContentViewUtil", RegisterContentViewUtil},
     {"ContextMenuHelper", RegisterContextMenuHelper},
     {"CookiesFetcher", RegisterCookiesFetcher},
     {"Credential", RegisterCredential},
@@ -280,6 +279,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"Variations", variations::android::RegisterVariations},
     {"VariationsSession", chrome::android::RegisterVariationsSession},
     {"WarmupManager", RegisterWarmupManager},
+    {"WebContentsFactory", RegisterWebContentsFactory},
     {"WebsitePreferenceBridge", RegisterWebsitePreferenceBridge},
     {"WebsiteSettingsPopupAndroid",
      WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid},

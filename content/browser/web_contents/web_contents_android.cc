@@ -8,7 +8,9 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
+#include "base/containers/hash_tables.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -41,6 +43,11 @@ using base::android::ToJavaIntArray;
 namespace content {
 
 namespace {
+
+// Track all WebContentsAndroid objects here so that we don't deserialize a
+// destroyed WebContents object.
+base::LazyInstance<base::hash_set<WebContentsAndroid*> >::Leaky
+    g_allocated_web_contents_androids = LAZY_INSTANCE_INITIALIZER;
 
 void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
                               const base::Value* result) {
@@ -152,6 +159,25 @@ static void DestroyWebContents(JNIEnv* env,
 }
 
 // static
+jobject FromNativePtr(JNIEnv* env,
+                      jclass clazz,
+                      jlong web_contents_ptr) {
+  WebContentsAndroid* web_contents_android =
+      reinterpret_cast<WebContentsAndroid*>(web_contents_ptr);
+
+  if (!web_contents_android)
+    return 0;
+
+  // Check to make sure this object hasn't been destroyed.
+  if (g_allocated_web_contents_androids.Get().find(web_contents_android) ==
+      g_allocated_web_contents_androids.Get().end()) {
+    return 0;
+  }
+
+  return web_contents_android->GetJavaObject().Release();
+}
+
+// static
 bool WebContentsAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
@@ -160,6 +186,7 @@ WebContentsAndroid::WebContentsAndroid(WebContents* web_contents)
     : web_contents_(web_contents),
       navigation_controller_(&(web_contents->GetController())),
       weak_factory_(this) {
+  g_allocated_web_contents_androids.Get().insert(this);
   JNIEnv* env = AttachCurrentThread();
   obj_.Reset(env,
              Java_WebContentsImpl_create(
@@ -175,6 +202,9 @@ WebContentsAndroid::WebContentsAndroid(WebContents* web_contents)
 }
 
 WebContentsAndroid::~WebContentsAndroid() {
+  DCHECK(g_allocated_web_contents_androids.Get().find(this) !=
+      g_allocated_web_contents_androids.Get().end());
+  g_allocated_web_contents_androids.Get().erase(this);
   Java_WebContentsImpl_clearNativePtr(AttachCurrentThread(), obj_.obj());
 }
 

@@ -12,10 +12,10 @@ import android.view.Menu;
 import com.google.android.apps.chrome.R;
 
 import org.chromium.chrome.browser.CompositorChromeActivity;
-import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlUtilities;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -86,7 +86,7 @@ public class CustomTab extends ChromeTab {
                 CustomTabsConnection.getInstance(activity.getApplication());
         WebContents webContents = customTabsConnection.takePrerenderedUrl(sessionId, url, null);
         if (webContents == null) {
-            webContents = ContentViewUtil.createWebContents(isIncognito(), false);
+            webContents = WebContentsFactory.createWebContents(isIncognito(), false);
         }
         initialize(webContents, activity.getTabContentManager(), false);
         getView().requestFocus();

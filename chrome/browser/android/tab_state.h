@@ -51,7 +51,7 @@ class WebContentsState {
       bool initially_hidden);
 
   // Restores a WebContents from the passed in state.
-  static content::WebContents* RestoreContentsFromByteBuffer(
+  static jobject RestoreContentsFromByteBuffer(
       JNIEnv* env,
       jclass clazz,
       jobject state,

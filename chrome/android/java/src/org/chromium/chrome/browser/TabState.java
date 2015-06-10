@@ -11,6 +11,7 @@ import android.util.Pair;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.util.StreamUtil;
 import org.chromium.content.browser.crypto.CipherFactory;
+import org.chromium.content_public.browser.WebContents;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -80,9 +81,9 @@ public class TabState {
         /**
          * Creates a WebContents from the buffer.
          * @param isHidden Whether or not the tab initially starts hidden.
-         * @return Pointer to the native WebContents.
+         * @return Pointer A WebContents object.
          */
-        public long restoreContentsFromByteBuffer(boolean isHidden) {
+        public WebContents restoreContentsFromByteBuffer(boolean isHidden) {
             return nativeRestoreContentsFromByteBuffer(mBuffer, mVersion, isHidden);
         }
 
@@ -420,7 +421,7 @@ public class TabState {
         sChannelNameOverrideForTest = name;
     }
 
-    private static native long nativeRestoreContentsFromByteBuffer(
+    private static native WebContents nativeRestoreContentsFromByteBuffer(
             ByteBuffer buffer, int savedStateVersion, boolean initiallyHidden);
 
     private static native ByteBuffer nativeGetContentsStateAsByteBuffer(Tab tab);

@@ -12,7 +12,7 @@ import android.test.suitebuilder.annotation.Smoke;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.browser.ContentViewUtil;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.location.LocationSettingsTestUtil;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -160,7 +160,7 @@ public class InfoBarTest extends ChromeShellTestBase {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                WebContents newContents = ContentViewUtil.createWebContents(false, false);
+                WebContents newContents = WebContentsFactory.createWebContents(false, false);
                 getActivity().getActiveTab().swapWebContents(newContents, false, false);
             }
         });

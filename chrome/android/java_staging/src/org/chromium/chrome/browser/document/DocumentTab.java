@@ -6,13 +6,12 @@ package org.chromium.chrome.browser.document;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.util.LongSparseArray;
+import android.util.Pair;
 
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeMobileApplication;
-import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.Tab;
@@ -20,6 +19,7 @@ import org.chromium.chrome.browser.TabObserver;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.TabUma.TabCreationState;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -140,7 +140,7 @@ public class DocumentTab extends ChromeTab {
         if (!unfreeze && webContents == null) {
             webContents = WarmupManager.getInstance().hasPrerenderedUrl(url)
                     ? WarmupManager.getInstance().takePrerenderedWebContents()
-                    : ContentViewUtil.createWebContents(isIncognito(), false);
+                    : WebContentsFactory.createWebContents(isIncognito(), false);
         }
         initialize(webContents, tabContentManager, false);
         if (unfreeze) mDidRestoreState = unfreezeContents();
@@ -239,7 +239,7 @@ public class DocumentTab extends ChromeTab {
      */
     public class DocumentTabChromeWebContentsDelegateAndroidImpl
             extends TabChromeWebContentsDelegateAndroidImpl {
-        private final LongSparseArray<String> mContentsToUrlMapping = new LongSparseArray<String>();
+        private Pair<WebContents, String> mContentsToUrlMapping = null;
 
         @Override
         public void webContentsCreated(WebContents sourceWebContents, long openerRenderFrameId,
@@ -248,9 +248,10 @@ public class DocumentTab extends ChromeTab {
             //                    WebContentsDelegateAndroidImpl.
             super.webContentsCreated(sourceWebContents, openerRenderFrameId, frameName,
                     targetUrl, newWebContents);
-            long nativeNewWebContents =
-                    ContentViewUtil.getNativeWebContentsFromWebContents(newWebContents);
-            mContentsToUrlMapping.put(nativeNewWebContents, targetUrl);
+
+            // Save the URL for the WebContents for use in addNewContents().
+            assert mContentsToUrlMapping == null;
+            mContentsToUrlMapping = Pair.create(newWebContents, targetUrl);
             DocumentWebContentsDelegate.getInstance().attachDelegate(newWebContents);
         }
 
@@ -259,9 +260,12 @@ public class DocumentTab extends ChromeTab {
                 int disposition, Rect initialPosition, boolean userGesture) {
             // TODO(dfalcantara): Set TabCreators on DocumentActivity, replace with super method.
             if (isClosing()) return false;
-            long nativeWebContents =
-                    ContentViewUtil.getNativeWebContentsFromWebContents(webContents);
-            String url = mContentsToUrlMapping.get(nativeWebContents);
+
+            // Grab the URL from the WebContents set in webContentsCreated().
+            assert mContentsToUrlMapping != null && mContentsToUrlMapping.first == webContents;
+            String url = mContentsToUrlMapping.second;
+            mContentsToUrlMapping = null;
+
             if (url == null) url = "";
             PendingDocumentData data = new PendingDocumentData();
             data.webContents = webContents;

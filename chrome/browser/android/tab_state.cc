@@ -444,7 +444,7 @@ WebContents* WebContentsState::RestoreContentsFromByteBuffer(
   return web_contents.release();
 }
 
-WebContents* WebContentsState::RestoreContentsFromByteBuffer(
+jobject WebContentsState::RestoreContentsFromByteBuffer(
     JNIEnv* env,
     jclass clazz,
     jobject state,
@@ -453,10 +453,13 @@ WebContents* WebContentsState::RestoreContentsFromByteBuffer(
   void* data = env->GetDirectBufferAddress(state);
   int size = env->GetDirectBufferCapacity(state);
 
-  return WebContentsState::RestoreContentsFromByteBuffer(data,
-                                                         size,
-                                                         saved_state_version,
-                                                         initially_hidden);
+  WebContents* web_contents = WebContentsState::RestoreContentsFromByteBuffer(
+      data,
+      size,
+      saved_state_version,
+      initially_hidden);
+
+  return web_contents ? web_contents->GetJavaWebContents().Release() : nullptr;
 }
 
 ScopedJavaLocalRef<jobject>
@@ -497,17 +500,16 @@ static void FreeWebContentsStateBuffer(JNIEnv* env, jclass clazz, jobject obj) {
   free(data);
 }
 
-static jlong RestoreContentsFromByteBuffer(JNIEnv* env,
-                                           jclass clazz,
-                                           jobject state,
-                                           jint saved_state_version,
-                                           jboolean initially_hidden) {
-  return reinterpret_cast<intptr_t>(
-      WebContentsState::RestoreContentsFromByteBuffer(env,
-                                                      clazz,
-                                                      state,
-                                                      saved_state_version,
-                                                      initially_hidden));
+static jobject RestoreContentsFromByteBuffer(JNIEnv* env,
+                                             jclass clazz,
+                                             jobject state,
+                                             jint saved_state_version,
+                                             jboolean initially_hidden) {
+  return WebContentsState::RestoreContentsFromByteBuffer(env,
+                                                         clazz,
+                                                         state,
+                                                         saved_state_version,
+                                                         initially_hidden);
 }
 
 static jobject GetContentsStateAsByteBuffer(
@@ -560,11 +562,12 @@ static void CreateHistoricalTab(JNIEnv* env,
                                 jobject state,
                                 jint saved_state_version) {
   scoped_ptr<WebContents> web_contents(
-      WebContentsState::RestoreContentsFromByteBuffer(env,
-                                                      clazz,
-                                                      state,
-                                                      saved_state_version,
-                                                      true));
+      WebContents::FromJavaWebContents(
+          WebContentsState::RestoreContentsFromByteBuffer(env,
+                                                          clazz,
+                                                          state,
+                                                          saved_state_version,
+                                                          true)));
   if (web_contents.get())
     TabAndroid::CreateHistoricalTabFromContents(web_contents.get());
 }

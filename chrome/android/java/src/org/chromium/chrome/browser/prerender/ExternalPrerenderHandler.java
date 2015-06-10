@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.prerender;
 
 import org.chromium.base.JNINamespace;
-import org.chromium.chrome.browser.ContentViewUtil;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
 
@@ -33,7 +33,7 @@ public class ExternalPrerenderHandler {
      */
     public WebContents addPrerender(Profile profile, String url, String referrer, int width,
             int height) {
-        WebContents webContents = ContentViewUtil.createWebContents(false, false);
+        WebContents webContents = WebContentsFactory.createWebContents(false, false);
         if (nativeAddPrerender(mNativeExternalPrerenderHandler, profile, webContents,
                 url, referrer, width, height)) {
             return webContents;
