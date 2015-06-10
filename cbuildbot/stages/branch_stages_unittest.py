@@ -314,10 +314,7 @@ class BranchUtilStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._VerifyPush(self._run.options.rename_to, rename_from=self.norm_name)
 
   def testDryRun(self):
-    """Verify all pushes are done with --dryrun when --debug is set."""
-    def VerifyDryRun(cmd, *_args, **_kwargs):
-      self.assertTrue('--dry-run' in cmd)
-
+    """Verify we don't push to remote when --debug is set."""
     # Simulate branch not existing.
     self.rc_mock.AddCmdResult(
         partial_mock.ListRegex('git show-ref .*%s' % self.RELEASE_BRANCH_NAME),
@@ -326,10 +323,8 @@ class BranchUtilStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare(extra_cmd_args=['--branch-name', self.RELEASE_BRANCH_NAME,
                                   '--debug',
                                   '--version', self.DEFAULT_VERSION])
-    self.rc_mock.AddCmdResult(partial_mock.In('push'),
-                              side_effect=VerifyDryRun)
     self.RunStage()
-    self.rc_mock.assertCommandContains(['push', '--dry-run'])
+    self.rc_mock.assertCommandContains(('push',), expected=False)
 
   def _DetermineIncrForVersion(self, version):
     version_info = manifest_version.VersionInfo(version)

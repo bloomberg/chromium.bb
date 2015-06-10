@@ -306,7 +306,7 @@ class GitPushTest(cros_test_lib.MockTestCase):
     """Runs git.GitPush with some default arguments."""
     git.GitPush('some_repo_path', 'local-ref',
                 git.RemoteRef('some-remote', 'remote-ref'),
-                dryrun=True, retry=True)
+                retry=True, skip=False)
 
   def testPushSuccess(self):
     """Test handling of successful git push."""

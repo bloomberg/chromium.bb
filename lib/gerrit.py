@@ -402,18 +402,18 @@ class GerritHelper(object):
         try:
           push_to = git.RemoteRef(change.project_url,
                                   'refs/for/%s' % change.tracking_branch)
-          git.GitPush(git_repo, local_sha1, push_to, dryrun=dryrun)
+          git.GitPush(git_repo, local_sha1, push_to, skip=dryrun)
           uploaded_sha1 = local_sha1
         except cros_build_lib.RunCommandError:
           break
 
       try:
         push_to = git.RemoteRef(change.project_url, change.tracking_branch)
-        git.GitPush(git_repo, local_sha1, push_to, dryrun=dryrun)
+        git.GitPush(git_repo, local_sha1, push_to, skip=dryrun)
         return True
       except cros_build_lib.RunCommandError:
         # TODO(phobbs) this creates a lot of noise when we push individual
-        # changes from one branch to another.  Maybe remove this warningo?
+        # changes from one branch to another.  Maybe remove this warning?
         logging.warning('git push failed for %s; was a change chumped in the '
                         'middle of the CQ run?',
                         change, exc_info=True)

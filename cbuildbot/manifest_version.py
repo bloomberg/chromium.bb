@@ -92,7 +92,7 @@ def RefreshManifestCheckout(manifest_dir, manifest_repo):
     repository.CloneGitRepo(manifest_dir, manifest_repo)
 
 
-def _PushGitChanges(git_repo, message, dry_run=True, push_to=None):
+def _PushGitChanges(git_repo, message, dry_run=False, push_to=None):
   """Push the final commit into the git repo.
 
   Args:
@@ -120,7 +120,7 @@ def _PushGitChanges(git_repo, message, dry_run=True, push_to=None):
       return
     raise
 
-  git.GitPush(git_repo, PUSH_BRANCH, push_to, dryrun=dry_run, force=dry_run)
+  git.GitPush(git_repo, PUSH_BRANCH, push_to, skip=dry_run)
 
 
 def CreateSymlink(src_file, dest_file):
@@ -240,12 +240,7 @@ class VersionInfo(object):
     return match.group(1) if match else None
 
   def IncrementVersion(self):
-    """Updates the version file by incrementing the patch component.
-
-    Args:
-      message: Commit message to use when incrementing the version.
-      dry_run: Git dry_run.
-    """
+    """Updates the version file by incrementing the patch component."""
     if not self.incr_type or self.incr_type not in self.VALID_INCR_TYPES:
       raise VersionUpdateException('Need to specify the part of the version to'
                                    ' increment')
@@ -267,7 +262,13 @@ class VersionInfo(object):
     return self.VersionString()
 
   def UpdateVersionFile(self, message, dry_run, push_to=None):
-    """Update the version file with our current version."""
+    """Update the version file with our current version.
+
+    Args:
+      message: Commit message.
+      dry_run: Git dryrun.
+      push_to: A git.RemoteRef object.
+    """
 
     if not self.version_file:
       raise VersionUpdateException('Cannot call UpdateVersionFile without '

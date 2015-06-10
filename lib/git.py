@@ -1214,28 +1214,29 @@ def UploadCL(git_repo, remote, branch, local_branch='HEAD', draft=False,
   GitPush(git_repo, local_branch, remote_ref, **kwargs)
 
 
-def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True,
-            capture_output=True):
+def GitPush(git_repo, refspec, push_to, force=False, retry=True,
+            capture_output=True, skip=False):
   """Wrapper for pushing to a branch.
 
   Args:
     git_repo: Git repository to act on.
     refspec: The local ref to push to the remote.
     push_to: A RemoteRef object representing the remote ref to push to.
-    dryrun: Do not actually push anything.  Uses the --dry-run option
-      built into git.
     force: Whether to bypass non-fastforward checks.
     retry: Retry a push in case of transient errors.
     capture_output: Whether to capture output for this command.
+    skip: Do not actually push anything.
   """
   cmd = ['push', push_to.remote, '%s:%s' % (refspec, push_to.ref)]
-
-  if dryrun:
-    # The 'git push' command has --dry-run support built in, so leverage that.
-    cmd.append('--dry-run')
-
   if force:
     cmd.append('--force')
+
+  if skip:
+    # git-push has a --dry-run option but we can't use it because that still
+    # runs push-access checks, and we want the skip mode to be available to
+    # users who can't really push to remote.
+    logging.info('Would have run "%s"', cmd)
+    return
 
   RunGit(git_repo, cmd, retry=retry, capture_output=capture_output)
 
