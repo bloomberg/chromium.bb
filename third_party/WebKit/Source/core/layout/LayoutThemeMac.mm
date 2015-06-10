@@ -599,8 +599,10 @@ void LayoutThemeMac::setFontFromControlSize(ComputedStyle& style, NSControlSize 
     // Reset line height.
     style.setLineHeight(ComputedStyle::initialLineHeight());
 
+    // TODO(esprehn): The fontSelector manual management is buggy and error prone.
+    FontSelector* fontSelector = style.font().fontSelector();
     if (style.setFontDescription(fontDescription))
-        style.font().update(nullptr);
+        style.font().update(fontSelector);
 }
 
 NSControlSize LayoutThemeMac::controlSizeForSystemFont(const ComputedStyle& style) const
