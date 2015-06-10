@@ -9,6 +9,8 @@
 
 namespace {
 
+// This enum is used in building the histogram. So, this is append only,
+// any new scheme should be added at the end, before SCHEME_MAX
 enum Scheme {
   SCHEME_UNKNOWN,
   SCHEME_HTTP,
@@ -19,6 +21,7 @@ enum Scheme {
   SCHEME_JAVASCRIPT,
   SCHEME_ABOUT,
   SCHEME_CHROME,
+  SCHEME_BLOB,
   SCHEME_MAX,
 };
 
@@ -32,6 +35,7 @@ const char* const kSchemeNames[] = {
   url::kJavaScriptScheme,
   url::kAboutScheme,
   "chrome",
+  url::kBlobScheme,
   "max",
 };
 

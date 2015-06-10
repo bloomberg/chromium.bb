@@ -60217,6 +60217,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="javascript"/>
   <int value="7" label="about"/>
   <int value="8" label="chrome"/>
+  <int value="9" label="blob"/>
 </enum>
 
 <enum name="NetCacheState" type="int">
