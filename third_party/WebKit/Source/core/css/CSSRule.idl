@@ -24,8 +24,6 @@
     DependentLifetime,
     WillBeGarbageCollected,
 ] interface CSSRule {
-    // TODO(philipj): UNKNOWN_RULE has been removed from the spec.
-    const unsigned short UNKNOWN_RULE = 0;
     const unsigned short STYLE_RULE = 1;
     const unsigned short CHARSET_RULE = 2;
     const unsigned short IMPORT_RULE = 3;

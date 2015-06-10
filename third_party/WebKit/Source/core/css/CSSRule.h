@@ -41,19 +41,15 @@ public:
     virtual ~CSSRule() { }
 
     enum Type {
-        UNKNOWN_RULE,
-        STYLE_RULE,
-        CHARSET_RULE,
-        IMPORT_RULE,
-        MEDIA_RULE,
-        FONT_FACE_RULE,
-        PAGE_RULE,
-        // 7 was VARIABLES_RULE; we now match other browsers with 7 as
-        // KEYFRAMES_RULE:
-        // <https://bugs.webkit.org/show_bug.cgi?id=71293>.
-        KEYFRAMES_RULE,
+        STYLE_RULE = 1,
+        CHARSET_RULE = 2,
+        IMPORT_RULE = 3,
+        MEDIA_RULE = 4,
+        FONT_FACE_RULE = 5,
+        PAGE_RULE = 6,
+        KEYFRAMES_RULE = 7,
         WEBKIT_KEYFRAMES_RULE = KEYFRAMES_RULE,
-        KEYFRAME_RULE,
+        KEYFRAME_RULE = 8,
         WEBKIT_KEYFRAME_RULE = KEYFRAME_RULE,
         SUPPORTS_RULE = 12,
         VIEWPORT_RULE = 15,

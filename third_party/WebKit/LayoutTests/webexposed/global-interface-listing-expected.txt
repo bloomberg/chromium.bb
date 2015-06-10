@@ -388,7 +388,6 @@ interface CSSRule
     attribute PAGE_RULE
     attribute STYLE_RULE
     attribute SUPPORTS_RULE
-    attribute UNKNOWN_RULE
     attribute VIEWPORT_RULE
     attribute WEBKIT_KEYFRAMES_RULE
     attribute WEBKIT_KEYFRAME_RULE
@@ -433,8 +432,6 @@ interface CSSSupportsRule
     method constructor
     method deleteRule
     method insertRule
-interface CSSUnknownRule
-    method constructor
 interface CSSViewportRule
     getter style
     method constructor
