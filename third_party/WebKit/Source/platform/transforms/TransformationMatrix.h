@@ -111,21 +111,12 @@ public:
                m_matrix[3][0] == 0 && m_matrix[3][1] == 0 && m_matrix[3][2] == 0 && m_matrix[3][3] == 1;
     }
 
-    // This form preserves the double math from input to output
-    void map(double x, double y, double& x2, double& y2) const { multVecMatrix(x, y, x2, y2); }
-
     // Map a 3D point through the transform, returning a 3D point.
     FloatPoint3D mapPoint(const FloatPoint3D&) const;
 
     // Map a 2D point through the transform, returning a 2D point.
     // Note that this ignores the z component, effectively projecting the point into the z=0 plane.
     FloatPoint mapPoint(const FloatPoint&) const;
-
-    // Like the version above, except that it rounds the mapped point to the nearest integer value.
-    IntPoint mapPoint(const IntPoint& p) const
-    {
-        return roundedIntPoint(mapPoint(FloatPoint(p)));
-    }
 
     // If the matrix has 3D components, the z component of the result is
     // dropped, effectively projecting the rect into the z=0 plane
@@ -213,7 +204,6 @@ public:
     TransformationMatrix& scale3d(double sx, double sy, double sz);
 
     TransformationMatrix& rotate(double d) { return rotate3d(0, 0, d); }
-    TransformationMatrix& rotateFromVector(double x, double y);
     TransformationMatrix& rotate3d(double rx, double ry, double rz);
 
     // The vector (x,y,z) is normalized if it's not already. A vector of
@@ -227,14 +217,11 @@ public:
     TransformationMatrix& translateRight(double tx, double ty);
     TransformationMatrix& translateRight3d(double tx, double ty, double tz);
 
-    TransformationMatrix& flipX();
-    TransformationMatrix& flipY();
     TransformationMatrix& skew(double angleX, double angleY);
     TransformationMatrix& skewX(double angle) { return skew(angle, 0); }
     TransformationMatrix& skewY(double angle) { return skew(0, angle); }
 
     TransformationMatrix& applyPerspective(double p);
-    bool hasPerspective() const { return m_matrix[2][3] != 0.0f; }
 
     bool isInvertible() const;
 
@@ -317,9 +304,6 @@ public:
     }
 
     bool isIntegerTranslation() const;
-
-    // This method returns the matrix without 3D components.
-    TransformationMatrix to2dTransform() const;
 
     // If this transformation is identity or 2D translation, returns the
     // translation.

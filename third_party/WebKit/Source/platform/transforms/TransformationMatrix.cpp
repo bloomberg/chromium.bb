@@ -633,21 +633,6 @@ TransformationMatrix& TransformationMatrix::scale(double s)
     return scaleNonUniform(s, s);
 }
 
-TransformationMatrix& TransformationMatrix::rotateFromVector(double x, double y)
-{
-    return rotate(rad2deg(atan2(y, x)));
-}
-
-TransformationMatrix& TransformationMatrix::flipX()
-{
-    return scaleNonUniform(-1.0, 1.0);
-}
-
-TransformationMatrix& TransformationMatrix::flipY()
-{
-    return scaleNonUniform(1.0, -1.0);
-}
-
 FloatPoint TransformationMatrix::projectPoint(const FloatPoint& p, bool* clamped) const
 {
     // This is basically raytracing. We have a point in the destination
@@ -1629,14 +1614,6 @@ bool TransformationMatrix::isIntegerTranslation() const
         return false;
 
     return true;
-}
-
-TransformationMatrix TransformationMatrix::to2dTransform() const
-{
-    return TransformationMatrix(m_matrix[0][0], m_matrix[0][1], 0, m_matrix[0][3],
-                                m_matrix[1][0], m_matrix[1][1], 0, m_matrix[1][3],
-                                0, 0, 1, 0,
-                                m_matrix[3][0], m_matrix[3][1], 0, m_matrix[3][3]);
 }
 
 FloatSize TransformationMatrix::to2DTranslation() const
