@@ -270,6 +270,9 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     , m_hasBeenReset(false)
 #endif
 {
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(*this);
+#endif
 }
 
 void LocalDOMWindow::clearDocument()
@@ -417,20 +420,29 @@ LocalDOMWindow::~LocalDOMWindow()
 #if ENABLE(OILPAN)
     // Cleared when detaching document.
     ASSERT(!m_eventQueue);
-
-    // Oilpan: should the LocalDOMWindow be GCed along with its LocalFrame without the
-    // frame having first notified its observers of imminent destruction, the
-    // LocalDOMWindow will not have had an opportunity to remove event listeners.
-    //
-    // Non-Oilpan, LocalDOMWindow::reset() will always be invoked, the last opportunity
-    // being via ~LocalFrame's setDOMWindow() call. Asserted for below.
-    if (frame())
-        removeAllEventListeners();
 #else
     ASSERT(m_hasBeenReset);
     ASSERT(m_document->isStopped());
     clearDocument();
 #endif
+}
+
+void LocalDOMWindow::dispose()
+{
+    // Oilpan: should the LocalDOMWindow be GCed along with its LocalFrame without the
+    // frame having first notified its observers of imminent destruction, the
+    // LocalDOMWindow will not have had an opportunity to remove event listeners.
+    //
+    // Arrange for that removal to happen using a prefinalizer action. Making LocalDOMWindow
+    // eager finalizable is problematic as other eagerly finalized objects may well
+    // want to access their associated LocalDOMWindow from their destructors.
+    //
+    // (Non-Oilpan, LocalDOMWindow::reset() will always be invoked, the last opportunity
+    // being via ~LocalFrame's setDOMWindow() call. Asserted for in the destructor.)
+    if (!frame())
+        return;
+
+    removeAllEventListeners();
 }
 
 ExecutionContext* LocalDOMWindow::executionContext() const
