@@ -103,6 +103,45 @@ void RingBuffer::FreePendingToken(void* pointer,
   NOTREACHED() << "attempt to free non-existant block";
 }
 
+void RingBuffer::DiscardBlock(void* pointer) {
+  Offset offset = GetOffset(pointer);
+  offset -= base_offset_;
+  DCHECK(!blocks_.empty()) << "no allocations to discard";
+  for (Container::reverse_iterator it = blocks_.rbegin();
+        it != blocks_.rend();
+        ++it) {
+    Block& block = *it;
+    if (block.offset == offset) {
+      DCHECK(block.state != PADDING)
+          << "block that corresponds to offset already discarded";
+      block.state = PADDING;
+
+      // Remove block if it were in the back along with any extra padding.
+      while (!blocks_.empty() && blocks_.back().state == PADDING) {
+        free_offset_= blocks_.back().offset;
+        blocks_.pop_back();
+      }
+
+      // Remove blocks if it were in the front along with extra padding.
+      while (!blocks_.empty() && blocks_.front().state == PADDING) {
+        blocks_.pop_front();
+        if (blocks_.empty())
+          break;
+
+        in_use_offset_ = blocks_.front().offset;
+      }
+
+      // In the special case when there are no blocks, we should be reset it.
+      if (blocks_.empty()) {
+        in_use_offset_ = 0;
+        free_offset_ = 0;
+      }
+      return;
+    }
+  }
+  NOTREACHED() << "attempt to discard non-existant block";
+}
+
 unsigned int RingBuffer::GetLargestFreeSizeNoWaiting() {
   unsigned int last_token_read = helper_->last_token_read();
   while (!blocks_.empty()) {

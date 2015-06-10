@@ -54,6 +54,12 @@ class GPU_EXPORT RingBuffer {
   //   token: the token value to wait for before re-using the memory.
   void FreePendingToken(void* pointer, unsigned int token);
 
+  // Discards a block within the ring buffer.
+  //
+  // Parameters:
+  //   pointer: the pointer to the memory block to free.
+  void DiscardBlock(void* pointer);
+
   // Gets the size of the largest free block that is available without waiting.
   unsigned int GetLargestFreeSizeNoWaiting();
 

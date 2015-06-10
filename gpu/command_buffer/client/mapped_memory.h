@@ -139,6 +139,14 @@ class GPU_EXPORT MappedMemoryManager {
     chunk_size_multiple_ = multiple;
   }
 
+  size_t max_allocated_bytes() const {
+    return max_allocated_bytes_;
+  }
+
+  void set_max_allocated_bytes(size_t max_allocated_bytes) {
+    max_allocated_bytes_ = max_allocated_bytes;
+  }
+
   // Allocates a block of memory
   // Parameters:
   //   size: size of memory to allocate.
@@ -195,8 +203,69 @@ class GPU_EXPORT MappedMemoryManager {
   MemoryChunkVector chunks_;
   size_t allocated_memory_;
   size_t max_free_bytes_;
+  size_t max_allocated_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(MappedMemoryManager);
+};
+
+// A class that will manage the lifetime of a mapped memory allocation
+class GPU_EXPORT ScopedMappedMemoryPtr {
+ public:
+  ScopedMappedMemoryPtr(
+      uint32_t size,
+      CommandBufferHelper* helper,
+      MappedMemoryManager* mapped_memory_manager)
+      : buffer_(NULL),
+        size_(0),
+        shm_id_(0),
+        shm_offset_(0),
+        flush_after_release_(false),
+        helper_(helper),
+        mapped_memory_manager_(mapped_memory_manager) {
+    Reset(size);
+  }
+
+  ~ScopedMappedMemoryPtr() {
+    Release();
+  }
+
+  bool valid() const {
+    return buffer_ != NULL;
+  }
+
+  void SetFlushAfterRelease(bool flush_after_release) {
+    flush_after_release_ = flush_after_release;
+  }
+
+  uint32_t size() const {
+    return size_;
+  }
+
+  int32_t shm_id() const {
+    return shm_id_;
+  }
+
+  uint32_t offset() const {
+    return shm_offset_;
+  }
+
+  void* address() const {
+    return buffer_;
+  }
+
+  void Release();
+
+  void Reset(uint32_t new_size);
+
+ private:
+  void* buffer_;
+  uint32_t size_;
+  int32_t shm_id_;
+  uint32_t shm_offset_;
+  bool flush_after_release_;
+  CommandBufferHelper* helper_;
+  MappedMemoryManager* mapped_memory_manager_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedMappedMemoryPtr);
 };
 
 }  // namespace gpu

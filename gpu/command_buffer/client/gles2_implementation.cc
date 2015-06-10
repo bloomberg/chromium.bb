@@ -2187,18 +2187,36 @@ void GLES2Implementation::TexImage2D(
   }
 
   // Check if we can send it all at once.
-  ScopedTransferBufferPtr buffer(size, helper_, transfer_buffer_);
-  if (!buffer.valid()) {
-    return;
+  int32_t shm_id = 0;
+  uint32_t shm_offset = 0;
+  void* buffer_pointer = nullptr;
+
+  ScopedTransferBufferPtr transfer_alloc(size, helper_, transfer_buffer_);
+  ScopedMappedMemoryPtr mapped_alloc(0, helper_, mapped_memory_.get());
+
+  if (transfer_alloc.valid() && transfer_alloc.size() >= size) {
+    shm_id = transfer_alloc.shm_id();
+    shm_offset = transfer_alloc.offset();
+    buffer_pointer = transfer_alloc.address();
+  } else {
+    mapped_alloc.Reset(size);
+    if (mapped_alloc.valid()) {
+      transfer_alloc.Discard();
+
+      mapped_alloc.SetFlushAfterRelease(true);
+      shm_id = mapped_alloc.shm_id();
+      shm_offset = mapped_alloc.offset();
+      buffer_pointer = mapped_alloc.address();
+    }
   }
 
-  if (buffer.size() >= size) {
+  if (buffer_pointer) {
     CopyRectToBuffer(
         pixels, height, unpadded_row_size, src_padded_row_size, unpack_flip_y_,
-        buffer.address(), padded_row_size);
+        buffer_pointer, padded_row_size);
     helper_->TexImage2D(
         target, level, internalformat, width, height, format, type,
-        buffer.shm_id(), buffer.offset());
+        shm_id, shm_offset);
     CheckGLError();
     return;
   }
@@ -2209,7 +2227,7 @@ void GLES2Implementation::TexImage2D(
      0, 0);
   TexSubImage2DImpl(
       target, level, 0, 0, width, height, format, type, unpadded_row_size,
-      pixels, src_padded_row_size, GL_TRUE, &buffer, padded_row_size);
+      pixels, src_padded_row_size, GL_TRUE, &transfer_alloc, padded_row_size);
   CheckGLError();
 }
 
@@ -2295,13 +2313,30 @@ void GLES2Implementation::TexImage3D(
   }
 
   // Check if we can send it all at once.
-  ScopedTransferBufferPtr buffer(size, helper_, transfer_buffer_);
-  if (!buffer.valid()) {
-    return;
+  int32_t shm_id = 0;
+  uint32_t shm_offset = 0;
+  void* buffer_pointer = nullptr;
+
+  ScopedTransferBufferPtr transfer_alloc(size, helper_, transfer_buffer_);
+  ScopedMappedMemoryPtr mapped_alloc(0, helper_, mapped_memory_.get());
+
+  if (transfer_alloc.valid() && transfer_alloc.size() >= size) {
+    shm_id = transfer_alloc.shm_id();
+    shm_offset = transfer_alloc.offset();
+    buffer_pointer = transfer_alloc.address();
+  } else {
+    mapped_alloc.Reset(size);
+    if (mapped_alloc.valid()) {
+      transfer_alloc.Discard();
+
+      mapped_alloc.SetFlushAfterRelease(true);
+      shm_id = mapped_alloc.shm_id();
+      shm_offset = mapped_alloc.offset();
+      buffer_pointer = mapped_alloc.address();
+    }
   }
 
-  if (buffer.size() >= size) {
-    void* buffer_pointer = buffer.address();
+  if (buffer_pointer) {
     for (GLsizei z = 0; z < depth; ++z) {
       // Only the last row of the last image is unpadded.
       uint32 src_unpadded_row_size =
@@ -2317,7 +2352,7 @@ void GLES2Implementation::TexImage3D(
     }
     helper_->TexImage3D(
         target, level, internalformat, width, height, depth, format, type,
-        buffer.shm_id(), buffer.offset());
+        shm_id, shm_offset);
     CheckGLError();
     return;
   }
@@ -2328,7 +2363,7 @@ void GLES2Implementation::TexImage3D(
      0, 0);
   TexSubImage3DImpl(
       target, level, 0, 0, 0, width, height, depth, format, type,
-      unpadded_row_size, pixels, src_padded_row_size, GL_TRUE, &buffer,
+      unpadded_row_size, pixels, src_padded_row_size, GL_TRUE, &transfer_alloc,
       padded_row_size);
   CheckGLError();
 }

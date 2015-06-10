@@ -30,7 +30,8 @@ MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper,
       helper_(helper),
       poll_callback_(poll_callback),
       allocated_memory_(0),
-      max_free_bytes_(unused_memory_reclaim_limit) {
+      max_free_bytes_(unused_memory_reclaim_limit),
+      max_allocated_bytes_(kNoLimit) {
 }
 
 MappedMemoryManager::~MappedMemoryManager() {
@@ -79,6 +80,11 @@ void* MappedMemoryManager::Alloc(
         }
       }
     }
+  }
+
+  if (max_allocated_bytes_ != kNoLimit &&
+      (allocated_memory_ + size) > max_allocated_bytes_) {
+    return nullptr;
   }
 
   // Make a new chunk to satisfy the request.
@@ -137,6 +143,28 @@ void MappedMemoryManager::FreeUnused() {
     } else {
       ++iter;
     }
+  }
+}
+
+void ScopedMappedMemoryPtr::Release() {
+  if (buffer_) {
+    mapped_memory_manager_->FreePendingToken(buffer_, helper_->InsertToken());
+    buffer_ = nullptr;
+    size_ = 0;
+    shm_id_ = 0;
+    shm_offset_ = 0;
+
+    if (flush_after_release_)
+      helper_->CommandBufferHelper::Flush();
+  }
+}
+
+void ScopedMappedMemoryPtr::Reset(uint32_t new_size) {
+  Release();
+
+  if (new_size) {
+    buffer_ = mapped_memory_manager_->Alloc(new_size, &shm_id_, &shm_offset_);
+    size_ = buffer_ ? new_size : 0;
   }
 }
 

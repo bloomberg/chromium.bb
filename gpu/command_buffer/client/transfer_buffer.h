@@ -47,6 +47,8 @@ class GPU_EXPORT TransferBufferInterface {
 
   virtual RingBuffer::Offset GetOffset(void* pointer) const = 0;
 
+  virtual void DiscardBlock(void* p) = 0;
+
   virtual void FreePendingToken(void* p, unsigned int token) = 0;
 };
 
@@ -71,6 +73,7 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
   void* AllocUpTo(unsigned int size, unsigned int* size_allocated) override;
   void* Alloc(unsigned int size) override;
   RingBuffer::Offset GetOffset(void* pointer) const override;
+  void DiscardBlock(void* p) override;
   void FreePendingToken(void* p, unsigned int token) override;
 
   // These are for testing.
@@ -162,6 +165,8 @@ class GPU_EXPORT ScopedTransferBufferPtr {
   }
 
   void Release();
+
+  void Discard();
 
   void Reset(unsigned int new_size);
 

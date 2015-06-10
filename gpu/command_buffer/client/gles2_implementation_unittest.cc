@@ -133,6 +133,7 @@ class MockTransferBuffer : public TransferBufferInterface {
   void* AllocUpTo(unsigned int size, unsigned int* size_allocated) override;
   void* Alloc(unsigned int size) override;
   RingBuffer::Offset GetOffset(void* pointer) const override;
+  void DiscardBlock(void* p) override;
   void FreePendingToken(void* p, unsigned int /* token */) override;
 
   size_t MaxTransferBufferSize() {
@@ -294,6 +295,11 @@ void* MockTransferBuffer::Alloc(unsigned int size) {
 RingBuffer::Offset MockTransferBuffer::GetOffset(void* pointer) const {
   // Make sure each buffer has a different offset.
   return static_cast<uint8*>(pointer) - actual_buffer();
+}
+
+void MockTransferBuffer::DiscardBlock(void* p) {
+  EXPECT_EQ(last_alloc_, p);
+  last_alloc_ = NULL;
 }
 
 void MockTransferBuffer::FreePendingToken(void* p, unsigned int /* token */) {
@@ -585,12 +591,28 @@ class GLES2ImplementationTest : public testing::Test {
     return transfer_buffer_->MaxTransferBufferSize();
   }
 
+  void SetMappedMemoryLimit(size_t limit) {
+    gl_->mapped_memory_->set_max_allocated_bytes(limit);
+  }
+
   ExpectedMemoryInfo GetExpectedMemory(size_t size) {
     return transfer_buffer_->GetExpectedMemory(size);
   }
 
   ExpectedMemoryInfo GetExpectedResultMemory(size_t size) {
     return transfer_buffer_->GetExpectedResultMemory(size);
+  }
+
+  ExpectedMemoryInfo GetExpectedMappedMemory(size_t size) {
+    ExpectedMemoryInfo mem;
+
+    // Temporarily allocate memory and expect that memory block to be reused.
+    mem.ptr = static_cast<uint8*>(gl_->mapped_memory_->Alloc(size,
+                                                             &mem.id,
+                                                             &mem.offset));
+    gl_->mapped_memory_->Free(mem.ptr);
+
+    return mem;
   }
 
   // Sets the ProgramInfoManager. The manager will be owned
@@ -2301,8 +2323,57 @@ TEST_F(GLES2ImplementationTest, TexImage2D) {
       pixels, mem2.ptr));
 }
 
+TEST_F(GLES2ImplementationTest, TexImage2DViaMappedMem) {
+  struct Cmds {
+    cmds::TexImage2D tex_image_2d;
+    cmd::SetToken set_token;
+  };
+  const GLenum kTarget = GL_TEXTURE_2D;
+  const GLint kLevel = 0;
+  const GLenum kFormat = GL_RGB;
+  const GLsizei kWidth = 3;
+  const GLint kBorder = 0;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLint kPixelStoreUnpackAlignment = 4;
+
+  uint32 size = 0;
+  uint32 unpadded_row_size = 0;
+  uint32 padded_row_size = 0;
+  ASSERT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, 2, 1, kFormat, kType, kPixelStoreUnpackAlignment,
+      &size, &unpadded_row_size, &padded_row_size));
+  const GLsizei kMaxHeight = (MaxTransferBufferSize() / padded_row_size) * 2;
+  const GLsizei kHeight = kMaxHeight * 2;
+  ASSERT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, 1, kFormat, kType, kPixelStoreUnpackAlignment,
+      &size, &unpadded_row_size, &padded_row_size));
+
+  scoped_ptr<uint8[]> pixels(new uint8[size]);
+  for (uint32 ii = 0; ii < size; ++ii) {
+    pixels[ii] = static_cast<uint8>(ii);
+  }
+
+  ExpectedMemoryInfo mem1 = GetExpectedMappedMemory(size);
+
+  Cmds expected;
+  expected.tex_image_2d.Init(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kFormat, kType,
+      mem1.id, mem1.offset);
+  expected.set_token.Init(GetNextToken());
+  gl_->TexImage2D(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      pixels.get());
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(CheckRect(
+      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment, false,
+      pixels.get(), mem1.ptr));
+}
+
 // Test TexImage2D with 2 writes
-TEST_F(GLES2ImplementationTest, TexImage2D2Writes) {
+TEST_F(GLES2ImplementationTest, TexImage2DViaTexSubImage2D) {
+  // Set limit to 1 to effectively disable mapped memory.
+  SetMappedMemoryLimit(1);
+
   struct Cmds {
     cmds::TexImage2D tex_image_2d;
     cmds::TexSubImage2D tex_sub_image_2d1;
@@ -2726,7 +2797,58 @@ TEST_F(GLES2ImplementationTest, TexImage3DSingleCommand) {
       false, reinterpret_cast<uint8*>(pixels.get()), mem.ptr));
 }
 
+TEST_F(GLES2ImplementationTest, TexImage3DViaMappedMem) {
+  struct Cmds {
+    cmds::TexImage3D tex_image_3d;
+  };
+  const GLenum kTarget = GL_TEXTURE_3D;
+  const GLint kLevel = 0;
+  const GLint kBorder = 0;
+  const GLenum kFormat = GL_RGB;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLint kPixelStoreUnpackAlignment = 4;
+  const GLsizei kWidth = 3;
+  const GLsizei kDepth = 2;
+
+  uint32 size = 0;
+  uint32 unpadded_row_size = 0;
+  uint32 padded_row_size = 0;
+  ASSERT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, 2, kDepth, kFormat, kType, kPixelStoreUnpackAlignment,
+      &size, &unpadded_row_size, &padded_row_size));
+  // Makes sure we can just send over the data in one command.
+  const GLsizei kMaxHeight = MaxTransferBufferSize() / padded_row_size / kDepth;
+  const GLsizei kHeight = kMaxHeight * 2;
+  ASSERT_TRUE(GLES2Util::ComputeImageDataSizes(
+      kWidth, kHeight, kDepth, kFormat, kType, kPixelStoreUnpackAlignment,
+      &size, NULL, NULL));
+
+  scoped_ptr<uint8[]> pixels(new uint8[size]);
+  for (uint32 ii = 0; ii < size; ++ii) {
+    pixels[ii] = static_cast<uint8>(ii);
+  }
+
+  ExpectedMemoryInfo mem = GetExpectedMappedMemory(size);
+
+  Cmds expected;
+  expected.tex_image_3d.Init(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kDepth,
+      kFormat, kType, mem.id, mem.offset);
+
+  gl_->TexImage3D(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kDepth, kBorder,
+      kFormat, kType, pixels.get());
+
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(CheckRect(
+      kWidth, kHeight * kDepth, kFormat, kType, kPixelStoreUnpackAlignment,
+      false, reinterpret_cast<uint8*>(pixels.get()), mem.ptr));
+}
+
 TEST_F(GLES2ImplementationTest, TexImage3DViaTexSubImage3D) {
+  // Set limit to 1 to effectively disable mapped memory.
+  SetMappedMemoryLimit(1);
+
   struct Cmds {
     cmds::TexImage3D tex_image_3d;
     cmds::TexSubImage3D tex_sub_image_3d1;

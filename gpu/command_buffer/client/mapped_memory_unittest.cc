@@ -394,6 +394,54 @@ TEST_F(MappedMemoryManagerTest, MemoryLimitWithReuse) {
   manager_->Free(mem3);
 }
 
+TEST_F(MappedMemoryManagerTest, MaxAllocationTest) {
+  const unsigned int kSize = 1024;
+  // Reset the manager with a memory limit.
+  manager_.reset(new MappedMemoryManager(
+      helper_.get(), base::Bind(&EmptyPoll), kSize));
+
+  const size_t kLimit = 512;
+  manager_->set_chunk_size_multiple(kLimit);
+
+  // Allocate twice the limit worth of memory (currently unbounded).
+  int32 id1 = -1;
+  unsigned int offset1 = 0xFFFFFFFFU;
+  void* mem1 = manager_->Alloc(kLimit, &id1, &offset1);
+  ASSERT_TRUE(mem1);
+  EXPECT_NE(-1, id1);
+  EXPECT_EQ(0u, offset1);
+
+  int32 id2 = -1;
+  unsigned int offset2 = 0xFFFFFFFFU;
+  void* mem2 = manager_->Alloc(kLimit, &id2, &offset2);
+  ASSERT_TRUE(mem2);
+  EXPECT_NE(-1, id2);
+  EXPECT_EQ(0u, offset2);
+
+  manager_->set_max_allocated_bytes(kLimit);
+
+  // A new allocation should now fail.
+  int32 id3 = -1;
+  unsigned int offset3 = 0xFFFFFFFFU;
+  void* mem3 = manager_->Alloc(kLimit, &id3, &offset3);
+  ASSERT_FALSE(mem3);
+  EXPECT_EQ(-1, id3);
+  EXPECT_EQ(0xFFFFFFFFU, offset3);
+
+  manager_->Free(mem2);
+
+  // New allocation is over the limit but should reuse allocated space
+  int32 id4 = -1;
+  unsigned int offset4 = 0xFFFFFFFFU;
+  void* mem4 = manager_->Alloc(kLimit, &id4, &offset4);
+  ASSERT_TRUE(mem4);
+  EXPECT_EQ(id2, id4);
+  EXPECT_EQ(offset2, offset4);
+
+  manager_->Free(mem1);
+  manager_->Free(mem4);
+}
+
 namespace {
 void Poll(MappedMemoryManagerTest *test, std::list<void*>* list) {
   std::list<void*>::iterator it = list->begin();

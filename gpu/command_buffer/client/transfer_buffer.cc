@@ -73,6 +73,10 @@ RingBuffer::Offset TransferBuffer::GetOffset(void* pointer) const {
   return ring_buffer_->GetOffset(pointer);
 }
 
+void TransferBuffer::DiscardBlock(void* p) {
+  ring_buffer_->DiscardBlock(p);
+}
+
 void TransferBuffer::FreePendingToken(void* p, unsigned int token) {
   ring_buffer_->FreePendingToken(p, token);
   if (bytes_since_last_flush_ >= size_to_flush_ && size_to_flush_ > 0) {
@@ -183,6 +187,14 @@ unsigned int TransferBuffer::GetMaxAllocation() const {
 void ScopedTransferBufferPtr::Release() {
   if (buffer_) {
     transfer_buffer_->FreePendingToken(buffer_, helper_->InsertToken());
+    buffer_ = NULL;
+    size_ = 0;
+  }
+}
+
+void ScopedTransferBufferPtr::Discard() {
+  if (buffer_) {
+    transfer_buffer_->DiscardBlock(buffer_);
     buffer_ = NULL;
     size_ = 0;
   }
