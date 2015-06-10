@@ -50,8 +50,9 @@
 #include "wayland-os.h"
 
 /* This is the size of the char array in struct sock_addr_un.
-   No Wayland socket can be created with a path longer than this,
-   including the null terminator. */
+ * No Wayland socket can be created with a path longer than this,
+ * including the null terminator.
+ */
 #ifndef UNIX_PATH_MAX
 #define UNIX_PATH_MAX	108
 #endif
