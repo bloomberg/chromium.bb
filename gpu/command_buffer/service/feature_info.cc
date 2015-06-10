@@ -114,6 +114,9 @@ void StringToWorkarounds(
     workarounds->max_varying_vectors = 16;
   if (workarounds->max_vertex_uniform_vectors_256)
     workarounds->max_vertex_uniform_vectors = 256;
+
+  if (workarounds->max_copy_texture_chromium_size_262144)
+    workarounds->max_copy_texture_chromium_size = 262144;
 }
 
 }  // anonymous namespace.
@@ -175,7 +178,8 @@ FeatureInfo::Workarounds::Workarounds() :
     max_cube_map_texture_size(0),
     max_fragment_uniform_vectors(0),
     max_varying_vectors(0),
-    max_vertex_uniform_vectors(0) {
+    max_vertex_uniform_vectors(0),
+    max_copy_texture_chromium_size(0) {
 }
 
 FeatureInfo::FeatureInfo() {

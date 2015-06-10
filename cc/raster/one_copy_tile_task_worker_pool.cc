@@ -109,6 +109,10 @@ const int kCheckForCompletedCopyOperationsTickRateMs = 1;
 // wait for copy operations to complete if needed.
 const int kFailedAttemptsBeforeWaitIfNeeded = 256;
 
+// 4MiB is the size of 4 512x512 tiles, which has proven to be a good
+// default batch size for copy operations.
+const int kMaxBytesPerCopyOperation = 1024 * 1024 * 4;
+
 }  // namespace
 
 OneCopyTileTaskWorkerPool::CopyOperation::CopyOperation(
@@ -129,11 +133,11 @@ scoped_ptr<TileTaskWorkerPool> OneCopyTileTaskWorkerPool::Create(
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     ResourcePool* resource_pool,
-    int max_bytes_per_copy_operation,
+    int max_copy_texture_chromium_size,
     bool have_persistent_gpu_memory_buffers) {
   return make_scoped_ptr<TileTaskWorkerPool>(new OneCopyTileTaskWorkerPool(
       task_runner, task_graph_runner, context_provider, resource_provider,
-      resource_pool, max_bytes_per_copy_operation,
+      resource_pool, max_copy_texture_chromium_size,
       have_persistent_gpu_memory_buffers));
 }
 
@@ -143,7 +147,7 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
     ContextProvider* context_provider,
     ResourceProvider* resource_provider,
     ResourcePool* resource_pool,
-    int max_bytes_per_copy_operation,
+    int max_copy_texture_chromium_size,
     bool have_persistent_gpu_memory_buffers)
     : task_runner_(task_runner),
       task_graph_runner_(task_graph_runner),
@@ -151,7 +155,11 @@ OneCopyTileTaskWorkerPool::OneCopyTileTaskWorkerPool(
       context_provider_(context_provider),
       resource_provider_(resource_provider),
       resource_pool_(resource_pool),
-      max_bytes_per_copy_operation_(max_bytes_per_copy_operation),
+      max_bytes_per_copy_operation_(
+          max_copy_texture_chromium_size
+              ? std::min(kMaxBytesPerCopyOperation,
+                         max_copy_texture_chromium_size)
+              : kMaxBytesPerCopyOperation),
       have_persistent_gpu_memory_buffers_(have_persistent_gpu_memory_buffers),
       last_issued_copy_operation_(0),
       last_flushed_copy_operation_(0),

@@ -94,6 +94,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     GLint max_fragment_uniform_vectors;
     GLint max_varying_vectors;
     GLint max_vertex_uniform_vectors;
+    GLint max_copy_texture_chromium_size;
   };
 
   // Constructor with workarounds taken from the current process's CommandLine

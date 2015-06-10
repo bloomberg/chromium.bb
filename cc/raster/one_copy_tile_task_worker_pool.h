@@ -39,7 +39,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
       ContextProvider* context_provider,
       ResourceProvider* resource_provider,
       ResourcePool* resource_pool,
-      int max_bytes_per_copy_operation,
+      int max_copy_texture_chromium_size,
       bool have_persistent_gpu_memory_buffers);
 
   // Overridden from TileTaskWorkerPool:
@@ -87,7 +87,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool : public TileTaskWorkerPool,
                             ContextProvider* context_provider,
                             ResourceProvider* resource_provider,
                             ResourcePool* resource_pool,
-                            int max_bytes_per_copy_operation,
+                            int max_copy_texture_chromium_size,
                             bool have_persistent_gpu_memory_buffers);
 
  private:

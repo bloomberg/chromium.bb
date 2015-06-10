@@ -42,6 +42,8 @@
          disable_ext_draw_buffers)                           \
   GPU_OP(DISABLE_EXT_OCCLUSION_QUERY,                        \
          disable_ext_occlusion_query)                        \
+  GPU_OP(DISABLE_GL_RGB_FORMAT,                              \
+         disable_gl_rgb_format)                              \
   GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
          disable_multimonitor_multisampling)                 \
   GPU_OP(DISABLE_MULTISAMPLED_RENDER_TO_TEXTURE,             \
@@ -74,6 +76,8 @@
          init_varyings_without_static_use)                   \
   GPU_OP(INIT_VERTEX_ATTRIBUTES,                             \
          init_vertex_attributes)                             \
+  GPU_OP(MAX_COPY_TEXTURE_CHROMIUM_SIZE_262144,              \
+         max_copy_texture_chromium_size_262144)              \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024,               \
          max_cube_map_texture_size_limit_1024)               \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096,               \
@@ -130,8 +134,6 @@
          validate_multisample_buffer_allocation)             \
   GPU_OP(WAKE_UP_GPU_BEFORE_DRAWING,                         \
          wake_up_gpu_before_drawing)                         \
-  GPU_OP(DISABLE_GL_RGB_FORMAT,                              \
-         disable_gl_rgb_format)                              \
 
 namespace gpu {
 

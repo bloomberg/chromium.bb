@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.10",
+  "version": "8.11",
   "entries": [
     {
       "id": 1,
@@ -1423,6 +1423,23 @@ LONG_STRING_CONST(
       "gl_renderer": ".*Mali-400.*",
       "features": [
         "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 120,
+      "description": "CHROMIUM_copy_texture is slow on Mali pre-Lollipop",
+      "cr_bugs": [498443],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "5.0.0"
+        }
+      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": "Mali.*",
+      "features": [
+        "max_copy_texture_chromium_size_262144"
       ]
     }
   ]

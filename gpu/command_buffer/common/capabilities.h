@@ -87,6 +87,7 @@ struct GPU_EXPORT Capabilities {
   int64_t max_combined_fragment_uniform_components;
   int max_combined_uniform_blocks;
   int64_t max_combined_vertex_uniform_components;
+  int max_copy_texture_chromium_size;
   int max_draw_buffers;
   int64_t max_element_index;
   int max_elements_indices;

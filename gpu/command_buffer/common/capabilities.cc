@@ -29,6 +29,7 @@ Capabilities::Capabilities()
       max_combined_fragment_uniform_components(0),
       max_combined_uniform_blocks(0),
       max_combined_vertex_uniform_components(0),
+      max_copy_texture_chromium_size(0),
       max_draw_buffers(0),
       max_element_index(0),
       max_elements_indices(0),

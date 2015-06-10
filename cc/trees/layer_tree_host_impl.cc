@@ -2160,10 +2160,14 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
+    int max_copy_texture_chromium_size =
+        context_provider->ContextCapabilities()
+            .gpu.max_copy_texture_chromium_size;
+
     *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
         task_runner, task_graph_runner, context_provider,
         resource_provider_.get(), staging_resource_pool_.get(),
-        settings_.max_bytes_per_copy_operation,
+        max_copy_texture_chromium_size,
         settings_.use_persistent_map_for_gpu_memory_buffers);
     return;
   }
