@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
@@ -159,6 +160,8 @@ class WebContentsViewAura
 
   // Update the web contents visiblity.
   void UpdateWebContentsVisibility(bool visible);
+
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, EnableDisableOverscroll);
 
   scoped_ptr<aura::Window> window_;
 

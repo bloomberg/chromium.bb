@@ -582,6 +582,7 @@
       'browser/web_contents/web_contents_delegate_unittest.cc',
       'browser/web_contents/web_contents_impl_unittest.cc',
       'browser/web_contents/web_contents_user_data_unittest.cc',
+      'browser/web_contents/web_contents_view_aura_unittest.cc',
       'browser/web_contents/web_contents_view_mac_unittest.mm',
       'browser/web_contents/web_drag_dest_mac_unittest.mm',
       'browser/web_contents/web_drag_source_mac_unittest.mm',
