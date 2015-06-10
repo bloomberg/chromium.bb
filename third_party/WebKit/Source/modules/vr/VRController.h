@@ -8,8 +8,8 @@
 #include "core/frame/LocalFrameLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
-#include "public/platform/WebVR.h"
-#include "public/platform/WebVRClient.h"
+#include "public/platform/modules/vr/WebVR.h"
+#include "public/platform/modules/vr/WebVRClient.h"
 
 namespace blink {
 

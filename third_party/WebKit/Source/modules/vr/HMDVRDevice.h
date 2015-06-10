@@ -8,7 +8,7 @@
 #include "modules/vr/VRDevice.h"
 #include "modules/vr/VREyeParameters.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebVR.h"
+#include "public/platform/modules/vr/WebVR.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 

@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/vr/VRFieldOfViewInit.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebVR.h"
+#include "public/platform/modules/vr/WebVR.h"
 #include "wtf/Forward.h"
 
 

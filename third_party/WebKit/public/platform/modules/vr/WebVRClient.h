@@ -6,8 +6,8 @@
 #define WebVRClient_h
 
 #include "public/platform/WebCallbacks.h"
-#include "public/platform/WebVR.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/vr/WebVR.h"
 
 namespace blink {
 

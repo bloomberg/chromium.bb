@@ -5,7 +5,8 @@
 #ifndef WebVR_h
 #define WebVR_h
 
-#include "WebCommon.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
 
 #if BLINK_IMPLEMENTATION
 #include "wtf/Assertions.h"
@@ -87,23 +88,13 @@ typedef int WebVRDeviceTypeMask;
 
 // Describes a single VR hardware unit. May describe multiple capabilities,
 // such as position sensors or head mounted display metrics.
-class WebVRDevice {
-public:
-    static const size_t deviceNameLengthCap = 128;
-
-    WebVRDevice()
-        : flags(0)
-    {
-        deviceName[0] = 0;
-    }
-
+struct WebVRDevice {
     // Index for this hardware unit.
     unsigned index;
     // Friendly device name.
-    WebUChar deviceName[deviceNameLengthCap];
+    WebString deviceName;
     // Identifies the capabilities of this hardware unit.
     WebVRDeviceTypeMask flags;
-
     // Will only contain valid data if (flags & HasHMDDevice).
     WebVRHMDInfo hmdInfo;
 };

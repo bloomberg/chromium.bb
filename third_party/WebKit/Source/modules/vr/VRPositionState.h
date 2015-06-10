@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMPoint.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebVR.h"
+#include "public/platform/modules/vr/WebVR.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 

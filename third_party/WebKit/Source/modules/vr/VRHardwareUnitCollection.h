@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class WebVRDevice;
+struct WebVRDevice;
 
 class VRHardwareUnitCollection final : public GarbageCollected<VRHardwareUnitCollection> {
 public:
