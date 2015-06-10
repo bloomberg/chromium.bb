@@ -24,12 +24,27 @@ var hostSession_ = null;
 var lastShareWasCancelled_ = false;
 
 /**
+ * @type {remoting.LogToServer} Logging instance for IT2Me host connection
+ *     status.
+ */
+var it2meLogger = null;
+
+/**
  * Start a host session. This is the main entry point for the host screen,
  * called directly from the onclick action of a button on the home screen.
  * It first verifies that the native host components are installed and asks
  * to install them if necessary.
  */
 remoting.tryShare = function() {
+  ensureIT2MeLogger_().then(tryShareWithLogger_);
+};
+
+function tryShareWithLogger_() {
+  it2meLogger.setSessionId();
+  it2meLogger.logClientSessionStateChange(
+      remoting.ClientSession.State.INITIALIZING,
+      remoting.Error.none());
+
   /** @type {remoting.It2MeHostFacade} */
   var hostFacade = new remoting.It2MeHostFacade();
 
@@ -51,18 +66,9 @@ remoting.tryShare = function() {
     var hasHostDialog = (hostInstallDialog !== null);  /** jscompile hack */
     if (!hasHostDialog) {
       hostInstallDialog = new remoting.HostInstallDialog();
-      hostInstallDialog.show(tryInitializeFacade, onInstallError);
+      hostInstallDialog.show(tryInitializeFacade, showShareError_);
     } else {
       hostInstallDialog.tryAgain();
-    }
-  };
-
-  /** @param {!remoting.Error} error */
-  var onInstallError = function(error) {
-    if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
-      remoting.setMode(remoting.AppMode.HOME);
-    } else {
-      showShareError_(error);
     }
   };
 
@@ -74,9 +80,10 @@ remoting.tryShare = function() {
  */
 remoting.startHostUsingFacade_ = function(hostFacade) {
   console.log('Attempting to share...');
-  remoting.identity.getToken().then(
-      remoting.tryShareWithToken_.bind(null, hostFacade),
-      remoting.Error.handler(remoting.showErrorMessage));
+  setHostVersion_()
+      .then(remoting.identity.getToken.bind(remoting.identity))
+      .then(remoting.tryShareWithToken_.bind(null, hostFacade),
+            remoting.Error.handler(showShareError_));
 }
 
 /**
@@ -89,6 +96,9 @@ remoting.tryShareWithToken_ = function(hostFacade, token) {
   lastShareWasCancelled_ = false;
   onNatTraversalPolicyChanged_(true);  // Hide warning by default.
   remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_CODE);
+  it2meLogger.logClientSessionStateChange(
+      remoting.ClientSession.State.CONNECTING,
+      remoting.Error.none());
   document.getElementById('cancel-share-button').disabled = false;
   disableTimeoutCountdown_();
 
@@ -194,10 +204,21 @@ function logDebugInfo_(msg) {
  * @return {void} Nothing.
  */
 function showShareError_(error) {
-  var errorDiv = document.getElementById('host-plugin-error');
-  l10n.localizeElementFromTag(errorDiv, error.getTag());
-  console.error('Sharing error: ' + error.toString());
-  remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
+  if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
+    remoting.setMode(remoting.AppMode.HOME);
+    it2meLogger.logClientSessionStateChange(
+        remoting.ClientSession.State.CONNECTION_CANCELED,
+        remoting.Error.none());
+  } else {
+    var errorDiv = document.getElementById('host-plugin-error');
+    l10n.localizeElementFromTag(errorDiv, error.getTag());
+    console.error('Sharing error: ' + error.toString());
+    remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
+    it2meLogger.logClientSessionStateChange(
+        remoting.ClientSession.State.FAILED,
+        error);
+  }
+
   cleanUp();
 }
 
@@ -230,6 +251,9 @@ remoting.cancelShare = function() {
   remoting.lastShareWasCancelled = true;
   try {
     hostSession_.disconnect();
+    it2meLogger.logClientSessionStateChange(
+        remoting.ClientSession.State.CONNECTION_CANCELED,
+        remoting.Error.none());
   } catch (/** @type {*} */ error) {
     console.error('Error disconnecting: ' + error +
                   '. The host probably crashed.');
@@ -337,5 +361,46 @@ function onNatTraversalPolicyChanged_(enabled) {
     natBox.classList.remove('traversal-enabled');
   }
 }
+
+/**
+ * Create an IT2Me LogToServer instance if one does not already exist.
+ *
+ * @return {Promise} Promise that resolves when the host version (if available),
+ *     has been set on the logger instance.
+ */
+function ensureIT2MeLogger_() {
+  if (it2meLogger) {
+    return Promise.resolve();
+  }
+
+  var xmppConnection = new remoting.XmppConnection();
+  var tokenPromise = remoting.identity.getToken();
+  var emailPromise = remoting.identity.getEmail();
+  tokenPromise.then(function(/** string */ token) {
+    emailPromise.then(function(/** string */ email) {
+      xmppConnection.connect(remoting.settings.XMPP_SERVER, email, token);
+    });
+  });
+
+  var bufferedSignalStrategy =
+      new remoting.BufferedSignalStrategy(xmppConnection);
+  it2meLogger = new remoting.LogToServer(bufferedSignalStrategy, true);
+  it2meLogger.setLogEntryMode(remoting.ServerLogEntry.VALUE_MODE_IT2ME);
+
+  return setHostVersion_();
+};
+
+/**
+ * @return {Promise} Promise that resolves when the host version (if available),
+ *     has been set on the logger instance.
+ */
+function setHostVersion_() {
+  return remoting.hostController.getLocalHostVersion().then(
+      function(/** string */ version) {
+        it2meLogger.setHostVersion(version);
+      }).catch(
+        base.doNothing
+      );
+};
 
 })();

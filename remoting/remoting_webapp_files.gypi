@@ -251,6 +251,7 @@
     # Files for controlling the local machine as a host.
     # Includes both it2me and me2me files.
     'remoting_webapp_js_host_control_files': [
+      'webapp/crd/js/buffered_signal_strategy.js',
       'webapp/crd/js/host_controller.js',
       'webapp/crd/js/host_daemon_facade.js',
       'webapp/crd/js/host_screen.js',

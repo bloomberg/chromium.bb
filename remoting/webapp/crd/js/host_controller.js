@@ -9,7 +9,23 @@ var remoting = remoting || {};
 
 /** @constructor */
 remoting.HostController = function() {
-  this.hostDaemonFacade_ = this.createDaemonFacade_();
+  /** @type {remoting.HostDaemonFacade} @private */
+  this.hostDaemonFacade_ = new remoting.HostDaemonFacade();
+
+  /** @param {string} version */
+  var printVersion = function(version) {
+    if (version == '') {
+      console.log('Host not installed.');
+    } else {
+      console.log('Host version: ' + version);
+    }
+  };
+
+  this.getLocalHostVersion()
+      .then(printVersion)
+      .catch(function() {
+        console.log('Host version not available.');
+      });
 };
 
 // The values in the enums below are duplicated in daemon_controller.h except
@@ -54,30 +70,6 @@ remoting.HostController.AsyncResult.fromString = function(result) {
   }
   return remoting.HostController.AsyncResult[result];
 }
-
-/**
- * @return {remoting.HostDaemonFacade}
- * @private
- */
-remoting.HostController.prototype.createDaemonFacade_ = function() {
-  /** @type {remoting.HostDaemonFacade} @private */
-  var hostDaemonFacade = new remoting.HostDaemonFacade();
-
-  /** @param {string} version */
-  var printVersion = function(version) {
-    if (version == '') {
-      console.log('Host not installed.');
-    } else {
-      console.log('Host version: ' + version);
-    }
-  };
-
-  hostDaemonFacade.getDaemonVersion().then(printVersion, function() {
-    console.log('Host version not available.');
-  });
-
-  return hostDaemonFacade;
-};
 
 /**
  * Set of features for which hasFeature() can be used to test.
@@ -416,6 +408,14 @@ remoting.HostController.prototype.getLocalHostId = function(onDone) {
   this.hostDaemonFacade_.getDaemonConfig().then(onConfig, function(error) {
     onDone(null);
   });
+};
+
+/**
+ * @return {Promise<string>} Promise that resolves with the host version, if
+ *     installed, or rejects otherwise.
+ */
+remoting.HostController.prototype.getLocalHostVersion = function() {
+  return this.hostDaemonFacade_.getDaemonVersion();
 };
 
 /**

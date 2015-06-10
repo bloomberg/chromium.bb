@@ -216,13 +216,14 @@ remoting.ServerLogEntry.prototype.toDebugLog = function(indentLevel) {
  * @param {remoting.ClientSession.State} state
  * @param {!remoting.Error} connectionError
  * @param {string} mode The current app mode (It2Me, Me2Me, AppRemoting).
+ * @param {string} role 'client' if the app is acting as a Chromoting client
+ *     or 'host' if it is acting as a host (IT2Me)
  * @return {remoting.ServerLogEntry}
  */
 remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
-    connectionError, mode) {
+    connectionError, mode, role) {
   var entry = new remoting.ServerLogEntry();
-  entry.set_(remoting.ServerLogEntry.KEY_ROLE_,
-             remoting.ServerLogEntry.VALUE_ROLE_CLIENT_);
+  entry.set_(remoting.ServerLogEntry.KEY_ROLE_, role);
   entry.set_(remoting.ServerLogEntry.KEY_EVENT_NAME_,
              remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_);
   entry.set_(remoting.ServerLogEntry.KEY_SESSION_STATE_,
@@ -439,4 +440,3 @@ remoting.ServerLogEntry.prototype.addModeField = function(mode) {
 remoting.ServerLogEntry.prototype.addApplicationId = function() {
   this.set_(remoting.ServerLogEntry.KEY_APP_ID_, chrome.runtime.id);
 };
-
