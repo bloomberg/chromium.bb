@@ -368,9 +368,9 @@ class FakeAutomationInternalEnableTabFunction
     using api::automation_internal::EnableTab::Params;
     scoped_ptr<Params> params(Params::Create(*args_));
     EXTENSION_FUNCTION_VALIDATE(params.get());
-    if (!params->tab_id.get())
+    if (!params->args.tab_id.get())
       return RespondNow(Error("tab_id not specified"));
-    int tab_id = *params->tab_id;
+    int tab_id = *params->args.tab_id;
     if (tab_id == 0) {
       // tab 0 <--> tree0
       base::MessageLoop::current()->PostTask(

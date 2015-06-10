@@ -13,6 +13,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../ui/accessibility/accessibility.gyp:accessibility',
       ],
       'sources': [
         'network_hints/common/network_hints_common.cc',

@@ -134,6 +134,8 @@
       'browser/extensions/api/autofill_private/autofill_util.cc',
       'browser/extensions/api/autofill_private/autofill_util.h',
       'browser/extensions/api/automation_internal/automation_action_adapter.h',
+      'browser/extensions/api/automation_internal/automation_event_router.cc',
+      'browser/extensions/api/automation_internal/automation_event_router.h',
       'browser/extensions/api/automation_internal/automation_internal_api.cc',
       'browser/extensions/api/automation_internal/automation_internal_api.h',
       'browser/extensions/api/automation_internal/automation_util.cc',

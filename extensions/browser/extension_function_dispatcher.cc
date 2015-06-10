@@ -481,6 +481,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
   function->set_source_tab_id(params.source_tab_id);
   function->set_source_context_type(
       process_map.GetMostLikelyContextType(extension, requesting_process_id));
+  function->set_source_process_id(requesting_process_id);
 
   return function;
 }

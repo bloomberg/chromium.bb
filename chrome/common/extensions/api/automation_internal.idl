@@ -89,6 +89,12 @@ namespace automationInternal {
     DOMString selector;
   };
 
+  // Arguments for the enableTab function.
+  dictionary EnableTabParams {
+    long routingID;
+    long? tabID;
+  };
+
   // Returns the accessibility tree id of the web contents who's accessibility
   // was enabled using enableTab().
   callback EnableTabCallback = void(long tree_id);
@@ -103,13 +109,15 @@ namespace automationInternal {
     // Enable automation of the tab with the given id, or the active tab if no
     // tab id is given, and retrieves accessibility tree id for use in
     // future updates.
-    static void enableTab(optional long tabId, EnableTabCallback callback);
+    static void enableTab(EnableTabParams args,
+                          EnableTabCallback callback);
 
     // Enable automation of the frame with the given tree id.
     static void enableFrame(long tree_id);
 
     // Enables desktop automation.
-    static void enableDesktop(EnableDesktopCallback callback);
+    static void enableDesktop(long routingID,
+                              EnableDesktopCallback callback);
 
     // Performs an action on an automation node.
     static void performAction(PerformActionRequiredParams args,

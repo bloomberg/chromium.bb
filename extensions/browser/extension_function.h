@@ -278,6 +278,13 @@ class ExtensionFunction
     return source_context_type_;
   }
 
+  void set_source_process_id(int source_process_id) {
+    source_process_id_ = source_process_id;
+  }
+  int source_process_id() const {
+    return source_process_id_;
+  }
+
  protected:
   friend struct ExtensionFunctionDeleteTraits;
 
@@ -423,6 +430,10 @@ class ExtensionFunction
 
   // The type of the JavaScript context where this call originated.
   extensions::Feature::Context source_context_type_;
+
+  // The process ID of the page that triggered this function call, or -1
+  // if unknown.
+  int source_process_id_;
 
  private:
   void OnRespondingLater(ResponseValue response);

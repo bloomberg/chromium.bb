@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/accessibility/ax_tree_id_registry.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
+#include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_util.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/api/automation_internal.h"
+#include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -226,8 +228,8 @@ AutomationInternalEnableTabFunction::Run() {
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::WebContents* contents = NULL;
-  if (params->tab_id.get()) {
-    int tab_id = *params->tab_id;
+  if (params->args.tab_id.get()) {
+    int tab_id = *params->args.tab_id;
     if (!ExtensionTabUtil::GetTabById(tab_id,
                                       GetProfile(),
                                       include_incognito(),
@@ -251,10 +253,18 @@ AutomationInternalEnableTabFunction::Run() {
     return RespondNow(
         Error(kCannotRequestAutomationOnPage, contents->GetURL().spec()));
   }
+
   AutomationWebContentsObserver::CreateForWebContents(contents);
   contents->EnableTreeOnlyAccessibilityMode();
   int ax_tree_id = AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
       rfh->GetProcess()->GetID(), rfh->GetRoutingID());
+
+  // This gets removed when the extension process dies.
+  AutomationEventRouter::GetInstance()->RegisterListenerForOneTree(
+      source_process_id(),
+      params->args.routing_id,
+      ax_tree_id);
+
   return RespondNow(ArgumentList(
       api::automation_internal::EnableTab::Results::Create(ax_tree_id)));
 }
@@ -358,6 +368,15 @@ AutomationInternalEnableDesktopFunction::Run() {
   const AutomationInfo* automation_info = AutomationInfo::Get(extension());
   if (!automation_info || !automation_info->desktop)
     return RespondNow(Error("desktop permission must be requested"));
+
+  using api::automation_internal::EnableDesktop::Params;
+  scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // This gets removed when the extension process dies.
+  AutomationEventRouter::GetInstance()->RegisterListenerWithDesktopPermission(
+      source_process_id(),
+      params->routing_id);
 
   AutomationManagerAura::GetInstance()->Enable(browser_context());
   return RespondNow(NoArguments());

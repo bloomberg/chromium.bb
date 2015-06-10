@@ -15,5 +15,6 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//ui/accessibility",
   ]
 }
