@@ -92,7 +92,7 @@ public class ToolbarPhone extends ToolbarLayout
 
     private LocationBarPhone mPhoneLocationBar;
 
-    private View mToolbarButtonsContainer;
+    private ViewGroup mToolbarButtonsContainer;
     private ImageView mToggleTabStackButton;
     private NewTabButton mNewTabButton;
     private TintedImageButton mHomeButton;
@@ -231,26 +231,10 @@ public class ToolbarPhone extends ToolbarLayout
     @Override
     public void onFinishInflate() {
         super.onFinishInflate();
-        Context context = getContext();
-
         mPhoneLocationBar = (LocationBarPhone) findViewById(R.id.location_bar);
 
-        mToolbarButtonsContainer = findViewById(R.id.toolbar_buttons);
+        mToolbarButtonsContainer = (ViewGroup) findViewById(R.id.toolbar_buttons);
 
-        mToggleTabStackButton = (ImageView) findViewById(R.id.tab_switcher_button);
-        mToggleTabStackButton.setClickable(false);
-
-        Resources resources = getResources();
-        mTabSwitcherButtonDrawable =
-                TabSwitcherDrawable.createTabSwitcherDrawable(resources, false);
-        mTabSwitcherButtonDrawableLight =
-                TabSwitcherDrawable.createTabSwitcherDrawable(resources, true);
-
-        mToggleTabStackButton.setVisibility(FeatureUtilities.isDocumentMode(getContext())
-                ? GONE : VISIBLE);
-        mToggleTabStackButton.setImageDrawable(mTabSwitcherButtonDrawable);
-
-        mNewTabButton = (NewTabButton) findViewById(R.id.new_tab_button);
         mHomeButton = (TintedImageButton) findViewById(R.id.home_button);
 
         mUrlBar = (TextView) findViewById(R.id.url_bar);
@@ -258,11 +242,9 @@ public class ToolbarPhone extends ToolbarLayout
 
         mUrlActionsContainer = findViewById(R.id.url_action_container);
 
-        mTabSwitcherModeViews.add(mNewTabButton);
         mBrowsingModeViews.add(mPhoneLocationBar);
 
         mToolbarBackground = new ColorDrawable(getToolbarColorForVisualState(VisualState.NORMAL));
-
         mTabSwitcherAnimationBgOverlay =
                 new ColorDrawable(getToolbarColorForVisualState(VisualState.NORMAL));
 
@@ -277,20 +259,51 @@ public class ToolbarPhone extends ToolbarLayout
 
         mMenuButton.setVisibility(shouldShowMenuButton() ? View.VISIBLE : View.GONE);
 
-        // Ensure that the new tab button will not draw over the toolbar buttons if the translated
-        // string is long.  Set a margin to the size of the toolbar button container for the new
-        // tab button.
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Point screenSize = new Point();
-        wm.getDefaultDisplay().getSize(screenSize);
-
-        mToolbarButtonsContainer.measure(
-                MeasureSpec.makeMeasureSpec(screenSize.x, MeasureSpec.AT_MOST),
-                MeasureSpec.makeMeasureSpec(screenSize.y, MeasureSpec.AT_MOST));
-        ApiCompatibilityUtils.setMarginEnd(getFrameLayoutParams(mNewTabButton),
-                mToolbarButtonsContainer.getMeasuredWidth());
+        finishInflateForTabSwitchingResources();
 
         setWillNotDraw(false);
+    }
+
+    private boolean isTabSwitchingEnabled() {
+        return !FeatureUtilities.isDocumentMode(getContext());
+    }
+
+    private void finishInflateForTabSwitchingResources() {
+        mToggleTabStackButton = (ImageView) findViewById(R.id.tab_switcher_button);
+        mNewTabButton = (NewTabButton) findViewById(R.id.new_tab_button);
+
+        if (!isTabSwitchingEnabled()) {
+            assert mToolbarButtonsContainer.indexOfChild(mToggleTabStackButton) >= 0;
+            mToolbarButtonsContainer.removeView(mToggleTabStackButton);
+            mToggleTabStackButton = null;
+            assert indexOfChild(mNewTabButton) >= 0;
+            removeView(mNewTabButton);
+            mNewTabButton = null;
+        } else {
+            mToggleTabStackButton.setClickable(false);
+            Resources resources = getResources();
+            mTabSwitcherButtonDrawable =
+                    TabSwitcherDrawable.createTabSwitcherDrawable(resources, false);
+            mTabSwitcherButtonDrawableLight =
+                    TabSwitcherDrawable.createTabSwitcherDrawable(resources, true);
+            mToggleTabStackButton.setImageDrawable(mTabSwitcherButtonDrawable);
+            mTabSwitcherModeViews.add(mNewTabButton);
+
+            // Ensure that the new tab button will not draw over the toolbar buttons if the
+            // translated string is long.  Set a margin to the size of the toolbar button container
+            // for the new tab button.
+            WindowManager wm = (WindowManager) getContext().getSystemService(
+                    Context.WINDOW_SERVICE);
+            Point screenSize = new Point();
+            wm.getDefaultDisplay().getSize(screenSize);
+
+            mToolbarButtonsContainer.measure(
+                    MeasureSpec.makeMeasureSpec(screenSize.x, MeasureSpec.AT_MOST),
+                    MeasureSpec.makeMeasureSpec(screenSize.y, MeasureSpec.AT_MOST));
+
+            ApiCompatibilityUtils.setMarginEnd(getFrameLayoutParams(mNewTabButton),
+                    mToolbarButtonsContainer.getMeasuredWidth());
+        }
     }
 
     /**
@@ -300,24 +313,27 @@ public class ToolbarPhone extends ToolbarLayout
     public void onNativeLibraryReady() {
         super.onNativeLibraryReady();
         getLocationBar().onNativeLibraryReady();
-        mToggleTabStackButton.setOnClickListener(this);
-        mToggleTabStackButton.setOnLongClickListener(this);
-        mToggleTabStackButton.setOnKeyListener(new KeyboardNavigationListener() {
-            @Override
-            public View getNextFocusForward() {
-                if (mMenuButton != null && mMenuButton.isShown()) {
-                    return mMenuButton;
-                } else {
-                    return getCurrentTabView();
-                }
-            }
 
-            @Override
-            public View getNextFocusBackward() {
-                return findViewById(R.id.url_bar);
-            }
-        });
-        mNewTabButton.setOnClickListener(this);
+        if (isTabSwitchingEnabled()) {
+            mToggleTabStackButton.setOnClickListener(this);
+            mToggleTabStackButton.setOnLongClickListener(this);
+            mToggleTabStackButton.setOnKeyListener(new KeyboardNavigationListener() {
+                @Override
+                public View getNextFocusForward() {
+                    if (mMenuButton != null && mMenuButton.isShown()) {
+                        return mMenuButton;
+                    } else {
+                        return getCurrentTabView();
+                    }
+                }
+
+                @Override
+                public View getNextFocusBackward() {
+                    return findViewById(R.id.url_bar);
+                }
+            });
+            mNewTabButton.setOnClickListener(this);
+        }
         mHomeButton.setOnClickListener(this);
 
         mMenuButton.setOnKeyListener(new KeyboardNavigationListener() {
@@ -884,8 +900,7 @@ public class ToolbarPhone extends ToolbarLayout
         // Draw the tab stack button and associated text.
         translateCanvasToView(this, mToolbarButtonsContainer, canvas);
 
-        if (mTabSwitcherAnimationTabStackDrawable != null
-                && mToggleTabStackButton.getVisibility() != View.GONE
+        if (mTabSwitcherAnimationTabStackDrawable != null && mToggleTabStackButton != null
                 && mUrlExpansionPercent != 1f) {
             // Draw the tab stack button image.
             canvas.save();
@@ -1101,7 +1116,7 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     public void onStateRestored() {
-        mToggleTabStackButton.setClickable(true);
+        if (mToggleTabStackButton != null) mToggleTabStackButton.setClickable(true);
     }
 
     @Override
@@ -1423,7 +1438,7 @@ public class ToolbarPhone extends ToolbarLayout
         animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
         animators.add(animator);
 
-        if (mToggleTabStackButton.getVisibility() != GONE) {
+        if (mToggleTabStackButton != null) {
             animator = ObjectAnimator.ofFloat(
                     mToggleTabStackButton, TRANSLATION_X, toolbarButtonTranslationX);
             animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
@@ -1455,7 +1470,7 @@ public class ToolbarPhone extends ToolbarLayout
         animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         animators.add(animator);
 
-        if (mToggleTabStackButton.getVisibility() != GONE) {
+        if (mToggleTabStackButton != null) {
             animator = ObjectAnimator.ofFloat(mToggleTabStackButton, TRANSLATION_X, 0);
             animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
             animator.setStartDelay(URL_CLEAR_FOCUS_TABSTACK_DELAY_MS);
@@ -1582,8 +1597,9 @@ public class ToolbarPhone extends ToolbarLayout
 
     @Override
     protected void updateTabCountVisuals(int numberOfTabs) {
+        if (mHomeButton != null) mHomeButton.setEnabled(true);
+
         if (mToggleTabStackButton == null) return;
-        mHomeButton.setEnabled(true);
 
         mToggleTabStackButton.setEnabled(numberOfTabs >= 1);
         mToggleTabStackButton.setContentDescription(
@@ -1835,8 +1851,10 @@ public class ToolbarPhone extends ToolbarLayout
         getProgressBar().setProgressDrawable(
                 ApiCompatibilityUtils.getDrawable(getResources(), progressBarResource));
 
-        mToggleTabStackButton.setImageDrawable(mUseLightToolbarDrawables
-                ? mTabSwitcherButtonDrawableLight : mTabSwitcherButtonDrawable);
+        if (mToggleTabStackButton != null) {
+            mToggleTabStackButton.setImageDrawable(mUseLightToolbarDrawables
+                    ? mTabSwitcherButtonDrawableLight : mTabSwitcherButtonDrawable);
+        }
 
         ColorStateList dark = getResources().getColorStateList(R.color.dark_mode_tint);
         ColorStateList white = getResources().getColorStateList(R.color.light_mode_tint);
@@ -1861,7 +1879,8 @@ public class ToolbarPhone extends ToolbarLayout
         CharSequence newTabContentDescription = getResources().getText(
                 isIncognito ? R.string.accessibility_toolbar_btn_new_incognito_tab :
                         R.string.accessibility_toolbar_btn_new_tab);
-        if (!newTabContentDescription.equals(mNewTabButton.getContentDescription())) {
+        if (mNewTabButton != null
+                && !newTabContentDescription.equals(mNewTabButton.getContentDescription())) {
             mNewTabButton.setContentDescription(newTabContentDescription);
         }
     }
