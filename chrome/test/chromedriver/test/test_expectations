@@ -193,6 +193,10 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://code.google.com/p/chromedriver/issues/detail?id=922
     'CorrectEventFiringTest.testShouldFireClickEventWhenClicking',
+    'CorrectEventFiringTest.testShouldEmitOnChangeEventsWhenChangingTheStateOfACheckbox',
+    'CorrectEventFiringTest.testShouldIssueMouseUpEvents',
+    'CorrectEventFiringTest.testsShouldIssueMouseDownEvents',
+    'CorrectEventFiringTest.testMouseEventsShouldBubbleUpToContainingElements',
 
     # https://code.google.com/p/chromedriver/issues/detail?id=998
     'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
