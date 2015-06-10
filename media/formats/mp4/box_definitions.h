@@ -44,21 +44,11 @@ struct MEDIA_EXPORT FileType : Box {
   uint32 minor_version;
 };
 
-// If only copying the 'pssh' boxes, use ProtectionSystemSpecificHeader.
-// If access to the individual fields is needed, use
-// FullProtectionSystemSpecificHeader.
 struct MEDIA_EXPORT ProtectionSystemSpecificHeader : Box {
   DECLARE_BOX_METHODS(ProtectionSystemSpecificHeader);
 
-  std::vector<uint8> raw_box;
-};
-
-struct MEDIA_EXPORT FullProtectionSystemSpecificHeader : Box {
-  DECLARE_BOX_METHODS(FullProtectionSystemSpecificHeader);
-
   std::vector<uint8> system_id;
-  std::vector<std::vector<uint8>> key_ids;
-  std::vector<uint8> data;
+  std::vector<uint8> raw_box;
 };
 
 struct MEDIA_EXPORT SampleAuxiliaryInformationOffset : Box {
