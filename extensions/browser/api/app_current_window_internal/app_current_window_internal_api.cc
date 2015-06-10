@@ -375,11 +375,6 @@ bool AppCurrentWindowInternalSetAlwaysOnTopFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetVisibleOnAllWorkspacesFunction::RunWithWindow(
     AppWindow* window) {
-  if (AppWindowClient::Get()->IsCurrentChannelOlderThanDev()) {
-    error_ = kDevChannelOnly;
-    return false;
-  }
-
   scoped_ptr<SetVisibleOnAllWorkspaces::Params> params(
       SetVisibleOnAllWorkspaces::Params::Create(*args_));
   CHECK(params.get());
