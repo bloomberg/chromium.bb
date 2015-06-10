@@ -244,7 +244,8 @@ bool ContentBrowserClient::CanCreateWindow(
     bool opener_suppressed,
     ResourceContext* context,
     int render_process_id,
-    int opener_id,
+    int opener_render_view_id,
+    int opener_render_frame_id,
     bool* no_javascript_access) {
   *no_javascript_access = false;
   return true;

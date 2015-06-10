@@ -96,9 +96,11 @@ class WebContents : public PageNavigator,
     // privileged process.
     SiteInstance* site_instance;
 
-    // The opener WebContents is the WebContents that initiated this request,
-    // if any.
-    WebContents* opener;
+    // The process id of the frame initiating the open.
+    int opener_render_process_id;
+
+    // The routing id of the frame initiating the open.
+    int opener_render_frame_id;
 
     // If the opener is suppressed, then the new WebContents doesn't hold a
     // reference to its opener.

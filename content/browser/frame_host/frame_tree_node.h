@@ -31,6 +31,14 @@ class RenderFrameHostImpl;
 // are frame-specific (as opposed to page-specific).
 class CONTENT_EXPORT FrameTreeNode {
  public:
+  class Observer {
+   public:
+    // Invoked when a FrameTreeNode is being destroyed.
+    virtual void OnFrameTreeNodeDestroyed(FrameTreeNode* node) {}
+
+    virtual ~Observer() {}
+  };
+
   // Returns the FrameTreeNode with the given global |frame_tree_node_id|,
   // regardless of which FrameTree it is in.
   static FrameTreeNode* GloballyFindByID(int frame_tree_node_id);
@@ -46,6 +54,9 @@ class CONTENT_EXPORT FrameTreeNode {
                 blink::WebSandboxFlags sandbox_flags);
 
   ~FrameTreeNode();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   bool IsMainFrame() const;
 
@@ -82,6 +93,13 @@ class CONTENT_EXPORT FrameTreeNode {
   }
 
   FrameTreeNode* parent() const { return parent_; }
+
+  FrameTreeNode* opener() const { return opener_; }
+
+  // Assigns a new opener for this node and, if |opener| is non-null, registers
+  // an observer that will clear this node's opener if |opener| is ever
+  // destroyed.
+  void SetOpener(FrameTreeNode* opener);
 
   FrameTreeNode* child_at(size_t index) const {
     return children_[index];
@@ -172,6 +190,8 @@ class CONTENT_EXPORT FrameTreeNode {
   void DidChangeLoadProgress(double load_progress);
 
  private:
+  class OpenerDestroyedObserver;
+
   void set_parent(FrameTreeNode* parent) { parent_ = parent; }
 
   // The next available browser-global FrameTreeNode ID.
@@ -197,6 +217,18 @@ class CONTENT_EXPORT FrameTreeNode {
   // The parent node of this frame. NULL if this node is the root or if it has
   // not yet been attached to the frame tree.
   FrameTreeNode* parent_;
+
+  // The frame that opened this frame, if any.  Will be set to null if the
+  // opener is closed, or if this frame disowns its opener by setting its
+  // window.opener to null.
+  FrameTreeNode* opener_;
+
+  // An observer that clears this node's |opener_| if the opener is destroyed.
+  // This observer is added to the |opener_|'s observer list when the |opener_|
+  // is set to a non-null node, and it is removed from that list when |opener_|
+  // changes or when this node is destroyed.  It is also cleared if |opener_|
+  // is disowned.
+  scoped_ptr<OpenerDestroyedObserver> opener_observer_;
 
   // The immediate children of this specific frame.
   ScopedVector<FrameTreeNode> children_;
@@ -228,6 +260,9 @@ class CONTENT_EXPORT FrameTreeNode {
   // Owns an ongoing NavigationRequest until it is ready to commit. It will then
   // be reset and a RenderFrameHost will be responsible for the navigation.
   scoped_ptr<NavigationRequest> navigation_request_;
+
+  // List of objects observing this FrameTreeNode.
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };

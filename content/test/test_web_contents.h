@@ -79,7 +79,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
     delegate_view_override_ = view;
   }
 
-  // Allows us to simulate this tab having an opener.
+  // Allows us to simulate this tab's main frame having an opener that points
+  // to the main frame of the |opener|.
   void SetOpener(TestWebContents* opener);
 
   // Allows us to simulate that a contents was created via CreateNewWindow.

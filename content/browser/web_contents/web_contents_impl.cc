@@ -208,15 +208,20 @@ void SetAccessibilityModeOnFrame(AccessibilityMode mode,
 }  // namespace
 
 WebContents* WebContents::Create(const WebContents::CreateParams& params) {
-  return WebContentsImpl::CreateWithOpener(
-      params, static_cast<WebContentsImpl*>(params.opener));
+  FrameTreeNode* opener_node = nullptr;
+  if (params.opener_render_frame_id != MSG_ROUTING_NONE) {
+    RenderFrameHostImpl* opener_rfh = RenderFrameHostImpl::FromID(
+        params.opener_render_process_id, params.opener_render_frame_id);
+    if (opener_rfh)
+      opener_node = opener_rfh->frame_tree_node();
+  }
+  return WebContentsImpl::CreateWithOpener(params, opener_node);
 }
 
 WebContents* WebContents::CreateWithSessionStorage(
     const WebContents::CreateParams& params,
     const SessionStorageNamespaceMap& session_storage_namespace_map) {
-  WebContentsImpl* new_contents = new WebContentsImpl(
-      params.browser_context, NULL);
+  WebContentsImpl* new_contents = new WebContentsImpl(params.browser_context);
 
   for (SessionStorageNamespaceMap::const_iterator it =
            session_storage_namespace_map.begin();
@@ -292,13 +297,11 @@ WebContentsImpl::ColorChooserInfo::~ColorChooserInfo() {
 
 // WebContentsImpl -------------------------------------------------------------
 
-WebContentsImpl::WebContentsImpl(BrowserContext* browser_context,
-                                 WebContentsImpl* opener)
+WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
     : delegate_(NULL),
       controller_(this, browser_context),
       render_view_host_delegate_view_(NULL),
-      opener_(opener),
-      created_with_opener_(!!opener),
+      created_with_opener_(false),
 #if defined(OS_WIN)
       accessible_parent_(NULL),
 #endif
@@ -427,11 +430,17 @@ WebContentsImpl::~WebContentsImpl() {
 
 WebContentsImpl* WebContentsImpl::CreateWithOpener(
     const WebContents::CreateParams& params,
-    WebContentsImpl* opener) {
+    FrameTreeNode* opener) {
   TRACE_EVENT0("browser", "WebContentsImpl::CreateWithOpener");
-  WebContentsImpl* new_contents = new WebContentsImpl(
-      params.browser_context, params.opener_suppressed ? NULL : opener);
+  WebContentsImpl* new_contents = new WebContentsImpl(params.browser_context);
 
+  if (!params.opener_suppressed && opener) {
+    new_contents->GetFrameTree()->root()->SetOpener(opener);
+    new_contents->created_with_opener_ = true;
+  }
+
+  // This may be true even when opener is null, such as when opening blocked
+  // popups.
   if (params.created_with_opener)
     new_contents->created_with_opener_ = true;
 
@@ -1174,11 +1183,12 @@ void WebContentsImpl::Stop() {
 
 WebContents* WebContentsImpl::Clone() {
   // We use our current SiteInstance since the cloned entry will use it anyway.
-  // We pass our own opener so that the cloned page can access it if it was
+  // We pass our own opener so that the cloned page can access it if it was set
   // before.
   CreateParams create_params(GetBrowserContext(), GetSiteInstance());
   create_params.initial_size = GetContainerBounds().size();
-  WebContentsImpl* tc = CreateWithOpener(create_params, opener_);
+  WebContentsImpl* tc =
+      CreateWithOpener(create_params, frame_tree_.root()->opener());
   tc->GetController().CopyStateFrom(controller_);
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
@@ -1259,10 +1269,6 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   gfx::Size initial_size = params.initial_size;
   view_->CreateView(initial_size, params.context);
 
-  // Listen for whether our opener gets destroyed.
-  if (opener_)
-    AddDestructionObserver(opener_);
-
 #if defined(ENABLE_PLUGINS)
   plugin_content_origin_whitelist_.reset(
       new PluginContentOriginWhitelist(this));
@@ -1309,11 +1315,6 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
   RemoveDestructionObserver(web_contents);
 
-  // Clear the opener if it has been closed.
-  if (web_contents == opener_) {
-    opener_ = NULL;
-    return;
-  }
   // Clear a pending contents that has been closed before being shown.
   for (PendingContents::iterator iter = pending_contents_.begin();
        iter != pending_contents_.end();
@@ -1615,7 +1616,8 @@ void WebContentsImpl::CreateNewWindow(
   create_params.routing_id = route_id;
   create_params.main_frame_routing_id = main_frame_route_id;
   create_params.main_frame_name = base::UTF16ToUTF8(params.frame_name);
-  create_params.opener = this;
+  create_params.opener_render_process_id = GetRenderProcessHost()->GetID();
+  create_params.opener_render_frame_id = params.opener_render_frame_id;
   create_params.opener_suppressed = params.opener_suppressed;
   if (params.disposition == NEW_BACKGROUND_TAB)
     create_params.initially_hidden = true;
@@ -2485,11 +2487,12 @@ bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
 }
 
 bool WebContentsImpl::HasOpener() const {
-  return opener_ != NULL;
+  return GetOpener() != NULL;
 }
 
-WebContents* WebContentsImpl::GetOpener() const {
-  return static_cast<WebContents*>(opener_);
+WebContentsImpl* WebContentsImpl::GetOpener() const {
+  FrameTreeNode* opener_ftn = frame_tree_.root()->opener();
+  return opener_ftn ? FromFrameTreeNode(opener_ftn) : nullptr;
 }
 
 void WebContentsImpl::DidChooseColorInColorChooser(SkColor color) {
@@ -3848,22 +3851,6 @@ void WebContentsImpl::DidChangeName(RenderFrameHost* render_frame_host,
                     FrameNameChanged(render_frame_host, name));
 }
 
-void WebContentsImpl::DidDisownOpener(RenderFrameHost* render_frame_host) {
-  // No action is necessary if the opener has already been cleared.
-  if (!opener_)
-    return;
-
-  // Clear our opener so that future cross-process navigations don't have an
-  // opener assigned.
-  RemoveDestructionObserver(opener_);
-  opener_ = NULL;
-
-  // Notify all swapped out RenderViewHosts for this tab.  This is important
-  // in case we go back to them, or if another window in those processes tries
-  // to access window.opener.
-  GetRenderManager()->DidDisownOpener(render_frame_host);
-}
-
 void WebContentsImpl::DocumentOnLoadCompleted(
     RenderFrameHost* render_frame_host) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
@@ -4140,11 +4127,12 @@ void WebContentsImpl::NotifyMainFrameSwappedFromRenderManager(
 
 int WebContentsImpl::CreateOpenerRenderViewsForRenderManager(
     SiteInstance* instance) {
-  if (!opener_)
+  WebContentsImpl* opener = GetOpener();
+  if (!opener)
     return MSG_ROUTING_NONE;
 
   // Recursively create RenderViews for anything else in the opener chain.
-  return opener_->CreateOpenerRenderViews(instance);
+  return opener->CreateOpenerRenderViews(instance);
 }
 
 int WebContentsImpl::CreateOpenerRenderViews(SiteInstance* instance) {
@@ -4152,8 +4140,9 @@ int WebContentsImpl::CreateOpenerRenderViews(SiteInstance* instance) {
 
   // If this tab has an opener, ensure it has a RenderView in the given
   // SiteInstance as well.
-  if (opener_)
-    opener_route_id = opener_->CreateOpenerRenderViews(instance);
+  WebContentsImpl* opener = GetOpener();
+  if (opener)
+    opener_route_id = opener->CreateOpenerRenderViews(instance);
 
   // If any of the renderers (current, pending, or swapped out) for this
   // WebContents has the same SiteInstance, use it.

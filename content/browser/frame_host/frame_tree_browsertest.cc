@@ -283,6 +283,37 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
             blink::WebSandboxFlags::All);
 }
 
+// Ensure that a popup opened from a subframe sets its opener to the subframe's
+// FrameTreeNode, and that the opener is cleared if the subframe is destroyed.
+IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SubframeOpenerSetForNewWindow) {
+  GURL main_url(embedded_test_server()->GetURL("/frame_tree/top.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Open a new window from a subframe.
+  ShellAddedObserver new_shell_observer;
+  GURL popup_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+                            "window.open('" + popup_url.spec() + "');"));
+  Shell* new_shell = new_shell_observer.GetShell();
+  WebContents* new_contents = new_shell->web_contents();
+  WaitForLoadStop(new_contents);
+
+  // Check that the new window's opener points to the correct subframe on
+  // original window.
+  FrameTreeNode* popup_root =
+      static_cast<WebContentsImpl*>(new_contents)->GetFrameTree()->root();
+  EXPECT_EQ(root->child_at(0), popup_root->opener());
+
+  // Close the original window.  This should clear the new window's opener.
+  shell()->Close();
+  EXPECT_EQ(nullptr, popup_root->opener());
+}
+
 class CrossProcessFrameTreeBrowserTest : public ContentBrowserTest {
  public:
   CrossProcessFrameTreeBrowserTest() {}

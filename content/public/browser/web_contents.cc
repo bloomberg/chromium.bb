@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/child_process_host.h"
 
 #include "ipc/ipc_message.h"
 
@@ -11,7 +12,8 @@ namespace content {
 WebContents::CreateParams::CreateParams(BrowserContext* context)
     : browser_context(context),
       site_instance(nullptr),
-      opener(nullptr),
+      opener_render_process_id(content::ChildProcessHost::kInvalidUniqueID),
+      opener_render_frame_id(MSG_ROUTING_NONE),
       opener_suppressed(false),
       created_with_opener(false),
       routing_id(MSG_ROUTING_NONE),
@@ -25,7 +27,8 @@ WebContents::CreateParams::CreateParams(
     BrowserContext* context, SiteInstance* site)
     : browser_context(context),
       site_instance(site),
-      opener(nullptr),
+      opener_render_process_id(content::ChildProcessHost::kInvalidUniqueID),
+      opener_render_frame_id(MSG_ROUTING_NONE),
       opener_suppressed(false),
       created_with_opener(false),
       routing_id(MSG_ROUTING_NONE),

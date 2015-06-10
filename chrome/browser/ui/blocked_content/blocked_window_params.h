@@ -18,13 +18,13 @@ class WebContents;
 class BlockedWindowParams {
  public:
   BlockedWindowParams(const GURL& target_url,
-                     const content::Referrer& referrer,
-                     WindowOpenDisposition disposition,
-                     const blink::WebWindowFeatures& features,
-                     bool user_gesture,
-                     bool opener_suppressed,
-                     int render_process_id,
-                     int opener_id);
+                      const content::Referrer& referrer,
+                      WindowOpenDisposition disposition,
+                      const blink::WebWindowFeatures& features,
+                      bool user_gesture,
+                      bool opener_suppressed,
+                      int render_process_id,
+                      int opener_render_frame_id);
 
   chrome::NavigateParams CreateNavigateParams(
       content::WebContents* web_contents) const;
@@ -33,8 +33,8 @@ class BlockedWindowParams {
     return features_;
   }
 
-  int opener_id() const {
-    return opener_id_;
+  int opener_render_frame_id() const {
+    return opener_render_frame_id_;
   }
 
   int render_process_id() const {
@@ -53,7 +53,7 @@ class BlockedWindowParams {
   bool user_gesture_;
   bool opener_suppressed_;
   int render_process_id_;
-  int opener_id_;
+  int opener_render_frame_id_;
 };
 
 #endif  // CHROME_BROWSER_UI_BLOCKED_CONTENT_BLOCKED_WINDOW_PARAMS_H_

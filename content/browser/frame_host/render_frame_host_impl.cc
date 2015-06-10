@@ -1213,9 +1213,23 @@ void RenderFrameHostImpl::OnDidAccessInitialDocument() {
 }
 
 void RenderFrameHostImpl::OnDidDisownOpener() {
-  // This message is only sent for top-level frames. TODO(avi): when frame tree
-  // mirroring works correctly, add a check here to enforce it.
-  delegate_->DidDisownOpener(this);
+  // This message is only sent for top-level frames for now.
+  // TODO(alexmos):  This should eventually support subframe openers as well,
+  // and it should allow openers to be updated to another frame (which can
+  // happen via window.open('','framename')) in addition to being disowned.
+
+  // No action is necessary if the opener has already been cleared.
+  if (!frame_tree_node_->opener())
+    return;
+
+  // Clear our opener so that future cross-process navigations don't have an
+  // opener assigned.
+  frame_tree_node_->SetOpener(nullptr);
+
+  // Notify all other RenderFrameHosts and RenderFrameProxies for this frame.
+  // This is important in case we go back to them, or if another window in
+  // those processes tries to access window.opener.
+  frame_tree_node_->render_manager()->DidDisownOpener(this);
 }
 
 void RenderFrameHostImpl::OnDidChangeName(const std::string& name) {

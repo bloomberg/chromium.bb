@@ -105,15 +105,11 @@ class CONTENT_EXPORT WebContentsImpl
 
   static WebContentsImpl* CreateWithOpener(
       const WebContents::CreateParams& params,
-      WebContentsImpl* opener);
+      FrameTreeNode* opener);
 
   static std::vector<WebContentsImpl*> GetAllWebContents();
 
   static WebContentsImpl* FromFrameTreeNode(FrameTreeNode* frame_tree_node);
-
-  // Returns the opener WebContentsImpl, if any. This can be set to null if the
-  // opener is closed or the page clears its window.opener.
-  WebContentsImpl* opener() const { return opener_; }
 
   // Creates a swapped out RenderView. This is used by the browser plugin to
   // create a swapped out RenderView in the embedder render process for the
@@ -345,7 +341,7 @@ class CONTENT_EXPORT WebContentsImpl
   gfx::Size GetPreferredSize() const override;
   bool GotResponseToLockMouseRequest(bool allowed) override;
   bool HasOpener() const override;
-  WebContents* GetOpener() const override;
+  WebContentsImpl* GetOpener() const override;
   void DidChooseColorInColorChooser(SkColor color) override;
   void DidEndColorChooser() override;
   int DownloadImage(const GURL& url,
@@ -400,7 +396,6 @@ class CONTENT_EXPORT WebContentsImpl
   void DidAccessInitialDocument() override;
   void DidChangeName(RenderFrameHost* render_frame_host,
                      const std::string& name) override;
-  void DidDisownOpener(RenderFrameHost* render_frame_host) override;
   void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) override;
   void UpdateTitle(RenderFrameHost* render_frame_host,
                    int32 page_id,
@@ -731,8 +726,7 @@ class CONTENT_EXPORT WebContentsImpl
   class DestructionObserver;
 
   // See WebContents::Create for a description of these parameters.
-  WebContentsImpl(BrowserContext* browser_context,
-                  WebContentsImpl* opener);
+  WebContentsImpl(BrowserContext* browser_context);
 
   // Add and remove observers for page navigation notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be
@@ -740,7 +734,7 @@ class CONTENT_EXPORT WebContentsImpl
   void AddObserver(WebContentsObserver* observer);
   void RemoveObserver(WebContentsObserver* observer);
 
-  // Clears this tab's opener if it has been closed.
+  // Clears a pending contents that has been closed before being shown.
   void OnWebContentsDestroyed(WebContentsImpl* web_contents);
 
   // Creates and adds to the map a destruction observer watching |web_contents|.
@@ -1017,10 +1011,6 @@ class CONTENT_EXPORT WebContentsImpl
   // latter might cause RenderViewHost's destructor to call us and we might use
   // the observer list then.
   base::ObserverList<WebContentsObserver> observers_;
-
-  // The tab that opened this tab, if any.  Will be set to null if the opener
-  // is closed.
-  WebContentsImpl* opener_;
 
   // True if this tab was opened by another tab. This is not unset if the opener
   // is closed.

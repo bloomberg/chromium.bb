@@ -37,6 +37,24 @@ const double kLoadingProgressDone = 1.0;
 
 }  // namespace
 
+// This observer watches the opener of its owner FrameTreeNode and clears the
+// owner's opener if the opener is destroyed.
+class FrameTreeNode::OpenerDestroyedObserver : public FrameTreeNode::Observer {
+ public:
+  OpenerDestroyedObserver(FrameTreeNode* owner) : owner_(owner) {}
+
+  // FrameTreeNode::Observer
+  void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override {
+    CHECK_EQ(owner_->opener(), node);
+    owner_->SetOpener(nullptr);
+  }
+
+ private:
+  FrameTreeNode* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(OpenerDestroyedObserver);
+};
+
 int FrameTreeNode::next_frame_tree_node_id_ = 1;
 
 // static
@@ -65,6 +83,8 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
                       manager_delegate),
       frame_tree_node_id_(next_frame_tree_node_id_++),
       parent_(NULL),
+      opener_(nullptr),
+      opener_observer_(nullptr),
       replication_state_(scope, name, sandbox_flags),
       // Effective sandbox flags also need to be set, since initial sandbox
       // flags should apply to the initial empty document in the frame.
@@ -78,8 +98,20 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
 
 FrameTreeNode::~FrameTreeNode() {
   frame_tree_->FrameRemoved(this);
+  FOR_EACH_OBSERVER(Observer, observers_, OnFrameTreeNodeDestroyed(this));
+
+  if (opener_)
+    opener_->RemoveObserver(opener_observer_.get());
 
   g_frame_tree_node_id_map.Get().erase(frame_tree_node_id_);
+}
+
+void FrameTreeNode::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FrameTreeNode::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 bool FrameTreeNode::IsMainFrame() const {
@@ -137,6 +169,21 @@ void FrameTreeNode::ResetForNewProcess() {
   // nodes get deleted before swapping to a new process.
   ScopedVector<FrameTreeNode> old_children = children_.Pass();
   old_children.clear();  // May notify observers.
+}
+
+void FrameTreeNode::SetOpener(FrameTreeNode* opener) {
+  if (opener_) {
+    opener_->RemoveObserver(opener_observer_.get());
+    opener_observer_.reset();
+  }
+
+  opener_ = opener;
+
+  if (opener_) {
+    if (!opener_observer_)
+      opener_observer_ = make_scoped_ptr(new OpenerDestroyedObserver(this));
+    opener_->AddObserver(opener_observer_.get());
+  }
 }
 
 void FrameTreeNode::SetCurrentOrigin(const url::Origin& origin) {

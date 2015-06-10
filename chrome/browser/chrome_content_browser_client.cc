@@ -498,15 +498,17 @@ void SetApplicationLocaleOnIOThread(const std::string& locale) {
 }
 
 void HandleBlockedPopupOnUIThread(const BlockedWindowParams& params) {
-  // TODO(jochen): This code path should use RenderFrameHosts. See
-  // http://crbug.com/431769 for details.
-  RenderViewHost* render_view_host =
-      RenderViewHost::FromID(params.render_process_id(), params.opener_id());
-  if (!render_view_host)
+  RenderFrameHost* render_frame_host = RenderFrameHost::FromID(
+      params.render_process_id(), params.opener_render_frame_id());
+  if (!render_frame_host)
     return;
-  WebContents* tab = WebContents::FromRenderViewHost(render_view_host);
-  // The tab might already have navigated away.
-  if (!tab || tab->GetRenderViewHost() != render_view_host)
+  WebContents* tab = WebContents::FromRenderFrameHost(render_frame_host);
+  // The tab might already have navigated away.  We only need to do this check
+  // for main frames, since the RenderFrameHost for a subframe opener will have
+  // already been deleted if the main frame navigates away.
+  if (!tab ||
+      (!render_frame_host->GetParent() &&
+       tab->GetMainFrame() != render_frame_host))
     return;
 
   prerender::PrerenderContents* prerender_contents =
@@ -549,9 +551,8 @@ class SafeBrowsingSSLCertReporter : public SSLCertReporter {
 #if defined(OS_ANDROID)
 
 void HandleSingleTabModeBlockOnUIThread(const BlockedWindowParams& params) {
-  WebContents* web_contents =
-      tab_util::GetWebContentsByID(params.render_process_id(),
-                                   params.opener_id());
+  WebContents* web_contents = tab_util::GetWebContentsByFrameID(
+      params.render_process_id(), params.opener_render_frame_id());
   if (!web_contents)
     return;
 
@@ -1868,7 +1869,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     bool opener_suppressed,
     content::ResourceContext* context,
     int render_process_id,
-    int opener_id,
+    int opener_render_view_id,
+    int opener_render_frame_id,
     bool* no_javascript_access) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -1917,7 +1919,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
                                      user_gesture,
                                      opener_suppressed,
                                      render_process_id,
-                                     opener_id);
+                                     opener_render_frame_id);
 
   if (!user_gesture &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1936,7 +1938,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 
 #if defined(OS_ANDROID)
-  if (SingleTabModeTabHelper::IsRegistered(render_process_id, opener_id)) {
+  if (SingleTabModeTabHelper::IsRegistered(render_process_id,
+                                           opener_render_view_id)) {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
                             base::Bind(&HandleSingleTabModeBlockOnUIThread,

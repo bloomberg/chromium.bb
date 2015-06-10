@@ -90,10 +90,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void DidChangeName(RenderFrameHost* render_frame_host,
                              const std::string& name) {}
 
-  // The frame set its opener to null, disowning it for the lifetime of the
-  // window. Only called for the top-level frame.
-  virtual void DidDisownOpener(RenderFrameHost* render_frame_host) {}
-
   // The onload handler in the frame has completed. Only called for the top-
   // level frame.
   virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) {}

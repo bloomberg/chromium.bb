@@ -496,6 +496,7 @@ void RenderMessageFilter::OnCreateWindow(
           resource_context_,
           render_process_id_,
           params.opener_id,
+          params.opener_render_frame_id,
           &no_javascript_access);
 
   if (!can_create_window) {

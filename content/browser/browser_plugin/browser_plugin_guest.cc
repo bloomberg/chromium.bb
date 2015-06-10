@@ -320,7 +320,7 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
     WebContentsImpl* web_contents,
     BrowserPluginGuestDelegate* delegate) {
   return new BrowserPluginGuest(
-      web_contents->opener() != nullptr, web_contents, delegate);
+      web_contents->HasOpener(), web_contents, delegate);
 }
 
 // static

@@ -28,7 +28,7 @@
 namespace content {
 
 TestWebContents::TestWebContents(BrowserContext* browser_context)
-    : WebContentsImpl(browser_context, NULL),
+    : WebContentsImpl(browser_context),
       delegate_view_override_(NULL),
       expect_set_history_offset_and_length_(false),
       expect_set_history_offset_and_length_history_length_(0) {
@@ -219,10 +219,7 @@ RenderViewHostDelegateView* TestWebContents::GetDelegateView() {
 }
 
 void TestWebContents::SetOpener(TestWebContents* opener) {
-  // This is normally only set in the WebContents constructor, which also
-  // registers an observer for when the opener gets closed.
-  opener_ = opener;
-  AddDestructionObserver(opener_);
+  frame_tree_.root()->SetOpener(opener->GetFrameTree()->root());
 }
 
 void TestWebContents::AddPendingContents(TestWebContents* contents) {
