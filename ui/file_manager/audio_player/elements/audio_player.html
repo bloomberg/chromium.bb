@@ -4,22 +4,31 @@
   -- found in the LICENSE file.
   -->
 
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="track_list.html">
 <link rel="import" href="control_panel.html">
 
-<polymer-element name="audio-player"
-                 attributes="playing currenttrackurl playcount">
+<dom-module id="audio-player">
+  <link rel="import" type="css" href="audio_player.css">
   <template>
-    <link rel="stylesheet" href="audio_player.css">
-
-    <track-list id="trackList" expanded?="{{model.expanded}}"
-                on-replay="{{onReplayCurrentTrack}}"></track-list>
+    <track-list id="trackList"
+        expanded$="[[expanded]]"
+        shuffle="[[shuffle]]"
+        current-track-index="{{currentTrackIndex}}"
+        on-replay="onReplayCurrentTrack"></track-list>
     <control-panel id="audioController"
-                   on-next-clicked="{{onControllerNextClicked}}"
-                   on-previous-clicked="{{onControllerPreviousClicked}}">
-    </control-panel>
-    <audio id="audio"></audio>
+        playing="{{playing}}"
+        time="{{time}}"
+        duration="[[duration]]"
+        shuffle="{{shuffle}}"
+        repeat="{{repeat}}"
+        volume="{{volume}}"
+        expanded="{{expanded}}"
+        on-next-clicked="onControllerNextClicked"
+        on-previous-clicked="onControllerPreviousClicked"></control-panel>
+    <audio id="audio"
+        volume="[[computeAudioVolume_(volume)]]"></audio>
   </template>
-  <script src="audio_player.js"></script>
-</polymer-element>
+</dom-module>
+
+<script src="audio_player.js"></script>

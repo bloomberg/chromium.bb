@@ -4,29 +4,28 @@
   -- found in the LICENSE file.
   -->
 
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="volume_controller.html">
 
-<polymer-element name="control-panel">
+<dom-module id="control-panel">
+  <link rel="import" type="css" href="control_panel.css">
   <template>
-    <link rel="stylesheet" href="control_panel.css">
-
     <div class="controls">
       <div class="upper-controls time-controls">
         <div class="time media-control">
-          <div class="current">{{timeString_}}</div>
+          <div class="current">[[time2string_(time)]]</div>
         </div>
         <div class="progress media-control custom-slider">
           <input name="timeInput" type="range" touch-action="manipulation"
-                 min="0" max="{{duration}}" value="{{time}}">
+                 min="0" max="[[duration]]" value="{{time::input}}">
           <div class="bar">
-            <div class="filled" style="width: {{time/duration*100}}%;"></div>
+            <div class="filled" style$="[[computeProgressBarStyle_(time, duration)]]"></div>
             <div class="cap left"></div>
             <div class="cap right"></div>
           </div>
         </div>
         <div class="time media-control">
-          <div class="duration">{{durationString_}}</div>
+          <div class="duration">[[time2string_(duration)]]</div>
         </div>
       </div>
       <div class="lower-controls audio-controls">
@@ -35,7 +34,7 @@
           <label>
             <input id="shuffleCheckbox"
                    type="checkbox"
-                   checked="{{model.shuffle}}">
+                   checked="{{shuffle::change}}">
             <span class="icon"></span>
           </label>
         </button>
@@ -45,7 +44,7 @@
           <label>
             <input id="repeatCheckbox"
                    type="checkbox"
-                   checked="{{model.repeat}}">
+                   checked="{{repeat::change}}">
             <span class="icon"></span>
           </label>
         </button>
@@ -53,15 +52,15 @@
         <!-- Prev button in the bottom line. -->
         <button class="previous media-button"
                state="default"
-               on-click="{{previousClick}}">
+               on-click="previousClick">
           <div class="normal default"></div>
           <div class="disabled"></div>
         </button>
 
         <!-- Play button in the bottom line. -->
         <button class="play media-control media-button"
-                state='{{playing ? "playing" : "ended"}}'
-                on-click="{{playClick}}">
+                state$="[[computePlayState_(playing)]]"
+                on-click="playClick">
           <div class="normal playing"></div>
           <div class="normal ended"></div>
           <div class="disabled"></div>
@@ -70,7 +69,7 @@
         <!-- Next button in the bottom line. -->
         <button class="next media-button"
                 state="default"
-                on-click="{{nextClick}}">
+                on-click="nextClick">
           <div class="normal default"></div>
           <div class="disabled"></div>
         </button>
@@ -78,7 +77,7 @@
         <div id="volumeContainer"
              class="default-hidden"
              anchor-point="bottom center">
-          <volume-controller id="volumeSlider"
+          <volume-controller id="volumeSlider" value="{{volume}}"
                              width="32" height="85" value="50">
           </volume-controller>
 
@@ -89,10 +88,10 @@
         <button id="volumeButton"
                 class="volume media-button toggle"
                 state="default"
-                on-click="{{volumeButtonClick}}"
+                on-click="volumeButtonClick"
                 anchor-point="bottom center">
           <label>
-            <input type="checkbox" checked="{{volumeSliderShown}}">
+            <input type="checkbox" checked="{{volumeSliderShown::change}}">
             <span class="icon"></span>
           </label>
         </button>
@@ -102,12 +101,13 @@
                 class="playlist media-button toggle"
                 state="default">
           <label>
-            <input type="checkbox" checked="{{model.expanded}}">
+            <input type="checkbox" checked="{{expanded::change}}">
             <span class="icon"></span>
           </label>
         </button>
       </div>
     </div>
   </template>
-  <script src="control_panel.js"></script>
-</polymer-element>
+</dom-module>
+
+<script src="control_panel.js"></script>

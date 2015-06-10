@@ -4,20 +4,20 @@
   -- found in the LICENSE file.
   -->
 
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
-<polymer-element name="volume-controller" attributes="width height value">
+<dom-module id="volume-controller">
+  <link rel="import" type="css" href="volume_controller.css">
   <template>
-    <link rel="stylesheet" href="volume_controller.css">
-
     <div id="background"></div>
     <input name="rawValueInput" id="rawValueInput" touch-action="manipulation"
-           type="range" min="0" max="100" value="{{rawValue}}">
+           type="range" min="0" max="100" value="{{rawValue::input}}">
     <div id="bar">
-      <div class="filled" style="height: {{rawValue}}%;"></div>
+      <div class="filled" style$="[[computeFilledStyle_(rawValue)]]"></div>
       <div class="cap left"></div>
       <div class="cap right"></div>
     </div>
   </template>
-  <script src="volume_controller.js"></script>
-</polymer-element>
+</dom-module>
+
+<script src="volume_controller.js"></script>

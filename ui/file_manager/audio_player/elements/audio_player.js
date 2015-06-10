@@ -9,92 +9,169 @@
 var AudioPlayerElement = function() {};
 
 AudioPlayerElement.prototype = {
-  // Child Elements
-  audioController: null,
-  audioElement: null,
-  trackList: null,
+  is: 'audio-player',
 
-  // Published values
-  playing: true,
-  currenttrackurl: '',
-  playcount: 0,
-
-  // Attributes of the element (lower characters only).
-  // These values must be used only to data binding and shouldn't be assigned
-  // any value nowhere except in the handler.
-  publish: {
+  properties: {
+    /**
+     * Flag whether the audio is playing or paused. True if playing, or false
+     * paused.
+     */
     playing: {
-      value: true,
-      reflect: true
+      type: Boolean,
+      observer: 'playingChanged',
+      reflectToAttribute: true
     },
+
+    /**
+     * Current elapsed time in the current music in millisecond.
+     */
+    time: {
+      type: Number,
+      observer: 'timeChanged'
+    },
+
+    /**
+     * Whether the shuffle button is ON.
+     */
+    shuffle: {
+      type: Boolean,
+      observer: 'shuffleChanged'
+    },
+
+    /**
+     * Whether the repeat button is ON.
+     */
+    repeat: {
+      type: Boolean,
+      observer: 'repeatChanged'
+    },
+
+    /**
+     * The audio volume. 0 is silent, and 100 is maximum loud.
+     */
+    volume: {
+      type: Number,
+      observer: 'volumeChanged'
+    },
+
+    /**
+     * Whether the expanded button is ON.
+     */
+    expanded: {
+      type: Boolean,
+      observer: 'expandedChanged'
+    },
+
+    /**
+     * Track index of the current track.
+     */
+    currentTrackIndex: {
+      type: Number,
+      observer: 'currentTrackIndexChanged'
+    },
+
+    /**
+     * Model object of the Audio Player.
+     * @type {AudioPlayerModel}
+     */
+    model: {
+      type: Object,
+      value: null,
+      observer: 'modelChanged'
+    },
+
+    /**
+     * URL of the current track. (exposed publicly for tests)
+     */
     currenttrackurl: {
+      type: String,
       value: '',
-      reflect: true
+      reflectToAttribute: true
     },
+
+    /**
+     * The number of played tracks. (exposed publicly for tests)
+     */
     playcount: {
+      type: Number,
       value: 0,
-      reflect: true
+      reflectToAttribute: true
     }
   },
 
   /**
-   * Model object of the Audio Player.
-   * @type {AudioPlayerModel}
+   * Handles change event for shuffle mode.
+   * @param {boolean} shuffle
    */
-  model: null,
+  shuffleChanged: function(shuffle) {
+    if (this.model)
+      this.model.shuffle = shuffle;
+  },
+
+  /**
+   * Handles change event for repeat mode.
+   * @param {boolean} repeat
+   */
+  repeatChanged: function(repeat) {
+    if (this.model)
+      this.model.repeat = repeat;
+  },
+
+  /**
+   * Handles change event for audio volume.
+   * @param {boolean} volume
+   */
+  volumeChanged: function(volume) {
+    if (this.model)
+      this.model.volume = volume;
+  },
+
+  /**
+   * Handles change event for expanded state of track list.
+   */
+  expandedChanged: function(expanded) {
+    if (this.model)
+      this.model.expanded = expanded;
+  },
 
   /**
    * Initializes an element. This method is called automatically when the
    * element is ready.
    */
   ready: function() {
-    this.audioController = this.$.audioController;
-    this.audioElement = this.$.audio;
-    this.trackList = this.$.trackList;
-
     this.addEventListener('keydown', this.onKeyDown_.bind(this));
 
-    this.audioElement.volume = 0;  // Temporary initial volume.
-    this.audioElement.addEventListener('ended', this.onAudioEnded.bind(this));
-    this.audioElement.addEventListener('error', this.onAudioError.bind(this));
+    this.$.audio.volume = 0;  // Temporary initial volume.
+    this.$.audio.addEventListener('ended', this.onAudioEnded.bind(this));
+    this.$.audio.addEventListener('error', this.onAudioError.bind(this));
 
     var onAudioStatusUpdatedBound = this.onAudioStatusUpdate_.bind(this);
-    this.audioElement.addEventListener('timeupdate', onAudioStatusUpdatedBound);
-    this.audioElement.addEventListener('ended', onAudioStatusUpdatedBound);
-    this.audioElement.addEventListener('play', onAudioStatusUpdatedBound);
-    this.audioElement.addEventListener('pause', onAudioStatusUpdatedBound);
-    this.audioElement.addEventListener('suspend', onAudioStatusUpdatedBound);
-    this.audioElement.addEventListener('abort', onAudioStatusUpdatedBound);
-    this.audioElement.addEventListener('error', onAudioStatusUpdatedBound);
-    this.audioElement.addEventListener('emptied', onAudioStatusUpdatedBound);
-    this.audioElement.addEventListener('stalled', onAudioStatusUpdatedBound);
-  },
-
-  /**
-   * Registers handlers for changing of external variables
-   */
-  observe: {
-    'trackList.currentTrackIndex': 'onCurrentTrackIndexChanged',
-    'audioController.playing': 'onControllerPlayingChanged',
-    'audioController.time': 'onControllerTimeChanged',
-    'model.volume': 'onVolumeChanged',
+    this.$.audio.addEventListener('timeupdate', onAudioStatusUpdatedBound);
+    this.$.audio.addEventListener('ended', onAudioStatusUpdatedBound);
+    this.$.audio.addEventListener('play', onAudioStatusUpdatedBound);
+    this.$.audio.addEventListener('pause', onAudioStatusUpdatedBound);
+    this.$.audio.addEventListener('suspend', onAudioStatusUpdatedBound);
+    this.$.audio.addEventListener('abort', onAudioStatusUpdatedBound);
+    this.$.audio.addEventListener('error', onAudioStatusUpdatedBound);
+    this.$.audio.addEventListener('emptied', onAudioStatusUpdatedBound);
+    this.$.audio.addEventListener('stalled', onAudioStatusUpdatedBound);
   },
 
   /**
    * Invoked when trackList.currentTrackIndex is changed.
-   * @param {number} oldValue old value.
    * @param {number} newValue new value.
+   * @param {number} oldValue old value.
    */
-  onCurrentTrackIndexChanged: function(oldValue, newValue) {
+  currentTrackIndexChanged: function(newValue, oldValue) {
     var currentTrackUrl = '';
 
     if (oldValue != newValue) {
-      var currentTrack = this.trackList.getCurrentTrack();
-      if (currentTrack && currentTrack.url != this.audioElement.src) {
-        this.audioElement.src = currentTrack.url;
-        currentTrackUrl = this.audioElement.src;
-        if (this.audioController.playing)
-          this.audioElement.play();
+      var currentTrack = this.$.trackList.getCurrentTrack();
+      if (currentTrack && currentTrack.url != this.$.audio.src) {
+        this.$.audio.src = currentTrack.url;
+        currentTrackUrl = this.$.audio.src;
+        if (this.playing)
+          this.$.audio.play();
       }
     }
 
@@ -103,69 +180,60 @@ AudioPlayerElement.prototype = {
   },
 
   /**
-   * Invoked when audioController.playing is changed.
-   * @param {boolean} oldValue old value.
+   * Invoked when playing is changed.
    * @param {boolean} newValue new value.
+   * @param {boolean} oldValue old value.
    */
-  onControllerPlayingChanged: function(oldValue, newValue) {
-    this.playing = newValue;
-
+  playingChanged: function(newValue, oldValue) {
     if (newValue) {
-      if (!this.audioElement.src) {
-        var currentTrack = this.trackList.getCurrentTrack();
-        if (currentTrack && currentTrack.url != this.audioElement.src) {
-          this.audioElement.src = currentTrack.url;
+      if (!this.$.audio.src) {
+        var currentTrack = this.$.trackList.getCurrentTrack();
+        if (currentTrack && currentTrack.url != this.$.audio.src) {
+          this.$.audio.src = currentTrack.url;
         }
       }
 
-      if (this.audioElement.src) {
-        this.currenttrackurl = this.audioElement.src;
-        this.audioElement.play();
+      if (this.$.audio.src) {
+        this.currenttrackurl = this.$.audio.src;
+        this.$.audio.play();
         return;
       }
     }
 
     // When the new status is "stopped".
     this.cancelAutoAdvance_();
-    this.audioElement.pause();
+    this.$.audio.pause();
     this.currenttrackurl = '';
     this.lastAudioUpdateTime_ = null;
   },
 
   /**
-   * Invoked when audioController.volume is changed.
-   * @param {number} oldValue old value.
-   * @param {number} newValue new value.
-   */
-  onVolumeChanged: function(oldValue, newValue) {
-    this.audioElement.volume = newValue / 100;
-  },
-
-  /**
    * Invoked when the model changed.
-   * @param {AudioPlayerModel} oldValue Old Value.
-   * @param {AudioPlayerModel} newValue New Value.
+   * @param {AudioPlayerModel} newModel New model.
+   * @param {AudioPlayerModel} oldModel Old model.
    */
-  modelChanged: function(oldValue, newValue) {
-    this.trackList.model = newValue;
-    this.audioController.model = newValue;
-
-    // Invoke the handler manually.
-    this.onVolumeChanged(0, newValue.volume);
+  modelChanged: function(newModel, oldModel) {
+    // Setting up the UI
+    if (newModel !== oldModel && newModel) {
+      this.shuffle = newModel.shuffle;
+      this.repeat = newModel.repeat;
+      this.volume = newModel.volume;
+      this.expanded = newModel.expanded;
+    }
   },
 
   /**
-   * Invoked when audioController.time is changed.
-   * @param {number} oldValue old time (in ms).
+   * Invoked when time is changed.
    * @param {number} newValue new time (in ms).
+   * @param {number} oldValue old time (in ms).
    */
-  onControllerTimeChanged: function(oldValue, newValue) {
+  timeChanged: function(newValue, oldValue) {
     // Ignores updates from the audio element.
     if (this.lastAudioUpdateTime_ === newValue)
       return;
 
-    if (this.audioElement.readyState !== 0)
-      this.audioElement.currentTime = this.audioController.time / 1000;
+    if (this.$.audio.readyState !== 0)
+      this.$.audio.currentTime = this.time / 1000;
   },
 
   /**
@@ -190,7 +258,7 @@ AudioPlayerElement.prototype = {
    */
   onAudioEnded: function() {
     this.playcount++;
-    this.advance_(true /* forward */, this.model.repeat);
+    this.advance_(true /* forward */, this.repeat);
   },
 
   /**
@@ -198,7 +266,7 @@ AudioPlayerElement.prototype = {
    * This handler is registered in this.ready().
    */
   onAudioError: function() {
-    this.scheduleAutoAdvance_(true /* forward */, this.model.repeat);
+    this.scheduleAutoAdvance_(true /* forward */, this.repeat);
   },
 
   /**
@@ -207,10 +275,9 @@ AudioPlayerElement.prototype = {
    * @private
    */
   onAudioStatusUpdate_: function() {
-    this.audioController.time =
-        (this.lastAudioUpdateTime_ = this.audioElement.currentTime * 1000);
-    this.audioController.duration = this.audioElement.duration * 1000;
-    this.audioController.playing = !this.audioElement.paused;
+    this.time = (this.lastAudioUpdateTime_ = this.$.audio.currentTime * 1000);
+    this.duration = this.$.audio.duration * 1000;
+    this.playing = !this.$.audio.paused;
   },
 
   /**
@@ -220,8 +287,8 @@ AudioPlayerElement.prototype = {
   onReplayCurrentTrack: function() {
     // Changes the current time back to the beginning, regardless of the current
     // status (playing or paused).
-    this.audioElement.currentTime = 0;
-    this.audioController.time = 0;
+    this.$.audio.currentTime = 0;
+    this.time = 0;
   },
 
   /**
@@ -233,21 +300,21 @@ AudioPlayerElement.prototype = {
   advance_: function(forward, repeat) {
     this.cancelAutoAdvance_();
 
-    var nextTrackIndex = this.trackList.getNextTrackIndex(forward, true);
+    var nextTrackIndex = this.$.trackList.getNextTrackIndex(forward, true);
     var isNextTrackAvailable =
-        (this.trackList.getNextTrackIndex(forward, repeat) !== -1);
+        (this.$.trackList.getNextTrackIndex(forward, repeat) !== -1);
 
-    this.audioController.playing = isNextTrackAvailable;
+    this.playing = isNextTrackAvailable;
 
     // If there is only a single file in the list, 'currentTrackInde' is not
     // changed and the handler is not invoked. Instead, plays here.
     // TODO(yoshiki): clean up the code around here.
     if (isNextTrackAvailable &&
-        this.trackList.currentTrackIndex == nextTrackIndex) {
-      this.audioElement.play();
+        this.$.trackList.currentTrackIndex == nextTrackIndex) {
+      this.$.audio.play();
     }
 
-    this.trackList.currentTrackIndex = nextTrackIndex;
+    this.$.trackList.currentTrackIndex = nextTrackIndex;
   },
 
   /**
@@ -303,19 +370,6 @@ AudioPlayerElement.prototype = {
   },
 
   /**
-   * The index of the current track.
-   * If the list has no tracks, the value must be -1.
-   *
-   * @type {number}
-   */
-  get currentTrackIndex() {
-    return this.trackList.currentTrackIndex;
-  },
-  set currentTrackIndex(value) {
-    this.trackList.currentTrackIndex = value;
-  },
-
-  /**
    * The list of the tracks in the playlist.
    *
    * When it changed, current operation including playback is stopped and
@@ -324,19 +378,19 @@ AudioPlayerElement.prototype = {
    * @type {Array<AudioPlayer.TrackInfo>}
    */
   get tracks() {
-    return this.trackList ? this.trackList.tracks : null;
+    return this.$.trackList ? this.$.trackList.tracks : null;
   },
   set tracks(tracks) {
-    if (this.trackList.tracks === tracks)
+    if (this.$.trackList.tracks === tracks)
       return;
 
     this.cancelAutoAdvance_();
 
-    this.trackList.tracks = tracks;
-    var currentTrack = this.trackList.getCurrentTrack();
-    if (currentTrack && currentTrack.url != this.audioElement.src) {
-      this.audioElement.src = currentTrack.url;
-      this.audioElement.play();
+    this.$.trackList.tracks = tracks;
+    var currentTrack = this.$.trackList.getCurrentTrack();
+    if (currentTrack && currentTrack.url != this.$.audio.src) {
+      this.$.audio.src = currentTrack.url;
+      this.$.audio.play();
     }
   },
 
@@ -344,7 +398,7 @@ AudioPlayerElement.prototype = {
    * Invoked when the audio player is being unloaded.
    */
   onPageUnload: function() {
-    this.audioElement.src = '';  // Hack to prevent crashing.
+    this.$.audio.src = '';  // Hack to prevent crashing.
   },
 
   /**
@@ -354,27 +408,26 @@ AudioPlayerElement.prototype = {
   onKeyDown_: function(event) {
     switch (event.keyIdentifier) {
       case 'Up':
-        if (this.audioController.volumeSliderShown && this.model.volume < 100)
+        if (this.$.audioController.volumeSliderShown && this.model.volume < 100)
           this.model.volume += 1;
         break;
       case 'Down':
-        if (this.audioController.volumeSliderShown && this.model.volume > 0)
+        if (this.$.audioController.volumeSliderShown && this.model.volume > 0)
           this.model.volume -= 1;
         break;
       case 'PageUp':
-        if (this.audioController.volumeSliderShown && this.model.volume < 91)
+        if (this.$.audioController.volumeSliderShown && this.model.volume < 91)
           this.model.volume += 10;
         break;
       case 'PageDown':
-        if (this.audioController.volumeSliderShown && this.model.volume > 9)
+        if (this.$.audioController.volumeSliderShown && this.model.volume > 9)
           this.model.volume -= 10;
         break;
       case 'MediaNextTrack':
         this.onControllerNextClicked();
         break;
       case 'MediaPlayPause':
-        var playing = this.audioController.playing;
-        this.onControllerPlayingChanged(playing, !playing);
+        this.playing = !this.playing;
         break;
       case 'MediaPreviousTrack':
         this.onControllerPreviousClicked();
@@ -384,6 +437,15 @@ AudioPlayerElement.prototype = {
         break;
     }
   },
+
+  /**
+   * Computes volume value for audio element. (should be in [0.0, 1.0])
+   * @param {number} volume Volume which is set in the UI. ([0, 100])
+   * @return {number}
+   */
+  computeAudioVolume_: function(volume) {
+    return volume / 100;
+  }
 };
 
-Polymer('audio-player', AudioPlayerElement.prototype);
+Polymer(AudioPlayerElement.prototype);

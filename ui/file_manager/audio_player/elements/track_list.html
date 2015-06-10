@@ -4,20 +4,20 @@
   -- found in the LICENSE file.
   -->
 
-<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
-<polymer-element name="track-list" attributes="tracks">
+<dom-module id="track-list">
+  <link rel="import" type="css" href="track_list.css">
   <template>
-    <link rel="stylesheet" href="track_list.css">
-
-    <template id="tracks" repeat="{{track, index in tracks}}">
-      <div class="track" active?="{{track.active}}" index="{{index}}" on-click="{{trackClicked}}">
+    <template is="dom-repeat" id="tracks" items="[[tracks]]">
+      <div class="track" active$="[[item.active]]" index$="[[index]]" on-click="trackClicked">
         <div class="data">
-          <div class="data-title">{{track.title}}</div>
-          <div class="data-artist">{{track.artist}}</div>
+          <div class="data-title">[[item.title]]</div>
+          <div class="data-artist">[[item.artist]]</div>
         </div>
       </div>
     </template>
   </template>
-  <script src="track_list.js"></script>
-</polymer-element>
+</dom-module>
+
+<script src="track_list.js"></script>

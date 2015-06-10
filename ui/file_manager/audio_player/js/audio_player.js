@@ -24,7 +24,8 @@ function AudioPlayer(container) {
   Object.observe(this.model_, function(changes) {
     for (var i = 0; i < changes.length; i++) {
       var change = changes[i];
-      if (change.name == 'expanded' && change.type == 'update') {
+      if (change.name == 'expanded' &&
+          (change.type == 'add' || change.type == 'update')) {
         this.onModelExpandedChanged(change.oldValue, change.object.expanded);
         break;
       }
@@ -49,7 +50,9 @@ function AudioPlayer(container) {
     /** @type {AudioPlayerElement} */ (document.querySelector('audio-player'));
   // TODO(yoshiki): Move tracks into the model.
   this.player_.tracks = [];
-  this.player_.model = this.model_;
+  this.model_.initialize(function() {
+    this.player_.model = this.model_;
+  }.bind(this));
 
   // Run asynchronously after an event of model change is delivered.
   setTimeout(function() {
@@ -116,7 +119,7 @@ AudioPlayer.prototype.load = function(playlist) {
   window.appState = JSON.parse(JSON.stringify(playlist));  // cloning
   util.saveAppState();
 
-  this.isExpanded_ = this.model_.expanded;
+  this.isExpanded_ = this.player_.expanded;
 
   // Resolving entries has to be done after the volume manager is initialized.
   this.volumeManager_.ensureInitialized(function() {
@@ -218,12 +221,12 @@ AudioPlayer.prototype.select_ = function(newTrack, time) {
 
   this.currentTrackIndex_ = newTrack;
   this.player_.currentTrackIndex = this.currentTrackIndex_;
-  this.player_.audioController.time = time;
+  this.player_.time = time;
 
   // Run asynchronously after an event of current track change is delivered.
   setTimeout(function() {
     if (!window.appReopen)
-      this.player_.audioElement.play();
+      this.player_.$.audio.play();
 
     window.appState.position = this.currentTrackIndex_;
     window.appState.time = 0;
@@ -284,11 +287,11 @@ AudioPlayer.prototype.onResize_ = function(event) {
   if (!this.isExpanded_ &&
       window.innerHeight >= AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
     this.isExpanded_ = true;
-    this.model_.expanded = true;
+    this.player_.expanded = true;
   } else if (this.isExpanded_ &&
              window.innerHeight < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
     this.isExpanded_ = false;
-    this.model_.expanded = false;
+    this.player_.expanded = false;
   }
 };
 
@@ -383,7 +386,7 @@ AudioPlayer.prototype.onModelExpandedChanged = function(oldValue, newValue) {
 AudioPlayer.prototype.syncHeight_ = function() {
   var targetHeight;
 
-  if (this.model_.expanded) {
+  if (this.player_.expanded) {
     // Expanded.
     if (!this.lastExpandedHeight_ ||
         this.lastExpandedHeight_ < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
@@ -456,6 +459,6 @@ AudioPlayer.TrackInfo.prototype.setMetadata = function(
 };
 
 // Starts loading the audio player.
-window.addEventListener('polymer-ready', function(e) {
+window.addEventListener('DOMContentLoaded', function(e) {
   AudioPlayer.load();
 });

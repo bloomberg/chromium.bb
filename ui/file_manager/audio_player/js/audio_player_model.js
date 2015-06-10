@@ -6,7 +6,9 @@
  * The model class for audio player.
  * @constructor
  */
-function AudioPlayerModel() {
+function AudioPlayerModel() {}
+
+AudioPlayerModel.prototype.initialize = function(callback) {
   'use strict';
 
   /**
@@ -14,7 +16,7 @@ function AudioPlayerModel() {
    * @type {!Object<*>}
    * @const
    */
-  var VALUES = Object.freeze(
+  var VALUES =
     /**
      * They will be used as properties of AudioPlayerModel.
      * @lends {AudioPlayerModel.prototype}
@@ -24,7 +26,7 @@ function AudioPlayerModel() {
       repeat: false,
       volume: 100,
       expanded: false,
-    });
+    };
 
   /**
    * Prefix of the stored values in the storage.
@@ -48,9 +50,9 @@ function AudioPlayerModel() {
   /**
    * Load the values in the model from the storage.
    * @param {AudioPlayerModel} model The model.
-   * @param {function()} callback Called when the load is completed.
+   * @param {function()} inCallback Called when the load is completed.
    */
-  function loadModel(model, callback) {
+  function loadModel(model, inCallback) {
     // Restores the values from the storage
     var objectsToBeRead = Object.keys(VALUES).
                           map(function(a) {
@@ -62,7 +64,7 @@ function AudioPlayerModel() {
         // Strips the prefix.
         model[key.substr(STORAGE_PREFIX.length)] = result[key];
       }
-      callback();
+      inCallback();
     });
   };
 
@@ -79,5 +81,6 @@ function AudioPlayerModel() {
     Object.observe(target, function(changes) {
       saveModel(target);
     });
+    callback();
   });
 }
