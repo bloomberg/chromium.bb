@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS currentTime initial value 
-PASS setting currentTime with a media controller present 
-PASS setting currentTime when readyState is HAVE_NOTHING 
-FAIL setting currentTime when readyState is greater than HAVE_NOTHING getVideoURI is not defined
-Harness: the test ran to completion.
-

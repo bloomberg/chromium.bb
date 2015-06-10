@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL autoplay (set first) overrides preload "none" getAudioURI is not defined
-FAIL autoplay (set last) overrides preload "none" getAudioURI is not defined
-FAIL autoplay (set first) overrides preload "metadata" getAudioURI is not defined
-FAIL autoplay (set last) overrides preload "metadata" getAudioURI is not defined
-Harness: the test ran to completion.
-

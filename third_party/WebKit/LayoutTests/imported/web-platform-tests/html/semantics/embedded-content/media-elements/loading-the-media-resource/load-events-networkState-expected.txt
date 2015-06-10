@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL NETWORK_IDLE getAudioURI is not defined
-PASS NETWORK_LOADING 
-PASS NETWORK_NO_SOURCE 
-Harness: the test ran to completion.
-

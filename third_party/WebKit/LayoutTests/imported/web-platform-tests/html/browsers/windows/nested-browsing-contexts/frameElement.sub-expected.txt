@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL The window's frameElement attribute must return its container element if it is a nested browsing context Cannot read property 'frameElement' of undefined
-FAIL The SecurityError must be thrown if the container's document does not have the same effective script origin assert_throws: The SecurityError exception should be thrown. function "function () { frames[1].frameElement; }" did not throw
-PASS The window's frameElement attribute must return null if it is not a nested browsing context 
-Harness: the test ran to completion.
-
