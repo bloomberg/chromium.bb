@@ -17,6 +17,7 @@ function test()
 {
     var numberOfStepInto = 9;
 
+    InspectorTest.startDumpingProtocolMessages();
     InspectorTest.startDebuggerTest(step1, true);
 
     function step1()
