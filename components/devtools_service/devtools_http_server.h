@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/network/public/interfaces/http_connection.mojom.h"
+#include "mojo/services/network/public/interfaces/http_message.mojom.h"
 #include "mojo/services/network/public/interfaces/http_server.mojom.h"
 
 namespace devtools_service {
@@ -30,24 +31,26 @@ class DevToolsHttpServer : public mojo::HttpServerDelegate {
       mojo::HttpConnectionPtr connection,
       mojo::InterfaceRequest<mojo::HttpConnectionDelegate> delegate) override;
 
-  // The following methods are called by HttpConnectionDelegateImpl.
+  // The following three methods are called by HttpConnectionDelegateImpl.
   using OnReceivedRequestCallback =
       mojo::HttpConnectionDelegate::OnReceivedRequestCallback;
   void OnReceivedRequest(HttpConnectionDelegateImpl* connection,
                          mojo::HttpRequestPtr request,
                          const OnReceivedRequestCallback& callback);
-
   using OnReceivedWebSocketRequestCallback =
       mojo::HttpConnectionDelegate::OnReceivedWebSocketRequestCallback;
   void OnReceivedWebSocketRequest(
       HttpConnectionDelegateImpl* connection,
       mojo::HttpRequestPtr request,
       const OnReceivedWebSocketRequestCallback& callback);
-
   void OnConnectionClosed(HttpConnectionDelegateImpl* connection);
+
+  mojo::HttpResponsePtr ProcessJsonRequest(mojo::HttpRequestPtr request);
 
   // Not owned by this object.
   DevToolsService* const service_;
+
+  const uint16_t remote_debugging_port_;
 
   scoped_ptr<mojo::Binding<mojo::HttpServerDelegate>>
       http_server_delegate_binding_;

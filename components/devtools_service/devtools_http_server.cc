@@ -4,16 +4,281 @@
 
 #include "components/devtools_service/devtools_http_server.h"
 
+#include <string.h>
+
+#include <string>
+
+#include "base/bind.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
+#include "components/devtools_service/devtools_agent_host.h"
+#include "components/devtools_service/devtools_registry_impl.h"
 #include "components/devtools_service/devtools_service.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/services/network/public/interfaces/http_message.mojom.h"
+#include "mojo/services/network/public/cpp/web_socket_read_queue.h"
+#include "mojo/services/network/public/cpp/web_socket_write_queue.h"
 #include "mojo/services/network/public/interfaces/net_address.mojom.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/web_socket.mojom.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/data_pipe.h"
 
 namespace devtools_service {
+
+namespace {
+
+const char kPageUrlPrefix[] = "/devtools/page/";
+const char kBrowserUrlPrefix[] = "/devtools/browser";
+const char kJsonRequestUrlPrefix[] = "/json";
+
+const char kActivateCommand[] = "activate";
+const char kCloseCommand[] = "close";
+const char kListCommand[] = "list";
+const char kNewCommand[] = "new";
+const char kVersionCommand[] = "version";
+
+const char kTargetIdField[] = "id";
+const char kTargetTypeField[] = "type";
+const char kTargetTitleField[] = "title";
+const char kTargetDescriptionField[] = "description";
+const char kTargetUrlField[] = "url";
+const char kTargetWebSocketDebuggerUrlField[] = "webSocketDebuggerUrl";
+const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
+
+bool ParseJsonPath(const std::string& path,
+                   std::string* command,
+                   std::string* target_id) {
+  // Fall back to list in case of empty query.
+  if (path.empty()) {
+    *command = kListCommand;
+    return true;
+  }
+
+  if (path.find("/") != 0) {
+    // Malformed command.
+    return false;
+  }
+  *command = path.substr(1);
+
+  size_t separator_pos = command->find("/");
+  if (separator_pos != std::string::npos) {
+    *target_id = command->substr(separator_pos + 1);
+    *command = command->substr(0, separator_pos);
+  }
+  return true;
+}
+
+mojo::HttpResponsePtr MakeResponse(uint32_t status_code,
+                                   const std::string& content_type,
+                                   const std::string& body) {
+  mojo::HttpResponsePtr response(mojo::HttpResponse::New());
+  response->headers.resize(2);
+  response->headers[0] = mojo::HttpHeader::New();
+  response->headers[0]->name = "Content-Length";
+  response->headers[0]->value =
+      base::StringPrintf("%lu", static_cast<unsigned long>(body.size()));
+  response->headers[1] = mojo::HttpHeader::New();
+  response->headers[1]->name = "Content-Type";
+  response->headers[1]->value = content_type;
+
+  if (!body.empty()) {
+    uint32_t num_bytes = static_cast<uint32_t>(body.size());
+    MojoCreateDataPipeOptions options;
+    options.struct_size = sizeof(MojoCreateDataPipeOptions);
+    options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
+    options.element_num_bytes = 1;
+    options.capacity_num_bytes = num_bytes;
+    mojo::DataPipe data_pipe(options);
+    response->body = data_pipe.consumer_handle.Pass();
+    MojoResult result =
+        WriteDataRaw(data_pipe.producer_handle.get(), body.data(), &num_bytes,
+                     MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+    CHECK_EQ(MOJO_RESULT_OK, result);
+  }
+  return response.Pass();
+}
+
+mojo::HttpResponsePtr MakeJsonResponse(uint32_t status_code,
+                                       base::Value* value,
+                                       const std::string& message) {
+  // Serialize value and message.
+  std::string json_value;
+  if (value) {
+    base::JSONWriter::WriteWithOptions(
+        *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_value);
+  }
+
+  return MakeResponse(status_code, "application/json; charset=UTF-8",
+                      json_value + message);
+}
+
+class WebSocketRelayer : public DevToolsAgentHost::Delegate,
+                         public mojo::WebSocketClient,
+                         public mojo::ErrorHandler {
+ public:
+  // Creates a WebSocketRelayer instance and sets it as the delegate of
+  // |agent_host|.
+  //
+  // The object destroys itself when either of the following happens:
+  // - |agent_host| is dead and the object finishes all pending sends (if any)
+  //   to the Web socket; or
+  // - the underlying pipe of |web_socket| is closed and the object finishes all
+  //   pending receives (if any) from the Web socket.
+  static mojo::WebSocketClientPtr SetUp(
+      DevToolsAgentHost* agent_host,
+      mojo::WebSocketPtr web_socket,
+      mojo::ScopedDataPipeProducerHandle send_stream) {
+    DCHECK(agent_host);
+    DCHECK(web_socket);
+    DCHECK(send_stream.is_valid());
+
+    mojo::WebSocketClientPtr web_socket_client;
+    new WebSocketRelayer(agent_host, web_socket.Pass(), send_stream.Pass(),
+                         &web_socket_client);
+    return web_socket_client.Pass();
+  }
+
+ private:
+  WebSocketRelayer(DevToolsAgentHost* agent_host,
+                   mojo::WebSocketPtr web_socket,
+                   mojo::ScopedDataPipeProducerHandle send_stream,
+                   mojo::WebSocketClientPtr* web_socket_client)
+      : agent_host_(agent_host),
+        binding_(this, web_socket_client),
+        web_socket_(web_socket.Pass()),
+        send_stream_(send_stream.Pass()),
+        write_send_stream_(new mojo::WebSocketWriteQueue(send_stream_.get())),
+        pending_send_count_(0),
+        pending_receive_count_(0) {
+    web_socket_.set_error_handler(this);
+    agent_host->SetDelegate(this);
+  }
+
+  ~WebSocketRelayer() override {
+    if (agent_host_)
+      agent_host_->SetDelegate(nullptr);
+  }
+
+  // DevToolsAgentHost::Delegate implementation.
+  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
+                               const std::string& message) override {
+    if (!web_socket_)
+      return;
+
+    // TODO(yzshen): It shouldn't be an issue to pass an empty message. However,
+    // WebSocket{Read,Write}Queue doesn't handle that correctly.
+    if (message.empty())
+      return;
+
+    pending_send_count_++;
+    uint32_t size = static_cast<uint32_t>(message.size());
+    write_send_stream_->Write(
+        &message[0], size,
+        base::Bind(&WebSocketRelayer::OnFinishedWritingSendStream,
+                   base::Unretained(this), size));
+  }
+
+  void OnAgentHostClosed(DevToolsAgentHost* agent_host) override {
+    DispatchProtocolMessage(agent_host_,
+                            "{ \"method\": \"Inspector.detached\", "
+                            "\"params\": { \"reason\": \"target_closed\" } }");
+
+    // No need to call SetDelegate(nullptr) on |agent_host_| because it is going
+    // away.
+    agent_host_ = nullptr;
+
+    if (ShouldSelfDestruct())
+      delete this;
+  }
+
+  // WebSocketClient implementation.
+  void DidConnect(const mojo::String& selected_subprotocol,
+                  const mojo::String& extensions,
+                  mojo::ScopedDataPipeConsumerHandle receive_stream) override {
+    receive_stream_ = receive_stream.Pass();
+    read_receive_stream_.reset(
+        new mojo::WebSocketReadQueue(receive_stream_.get()));
+  }
+
+  void DidReceiveData(bool fin,
+                      mojo::WebSocket::MessageType type,
+                      uint32_t num_bytes) override {
+    if (!agent_host_)
+      return;
+
+    // TODO(yzshen): It shouldn't be an issue to pass an empty message. However,
+    // WebSocket{Read,Write}Queue doesn't handle that correctly.
+    if (num_bytes == 0)
+      return;
+
+    pending_receive_count_++;
+    read_receive_stream_->Read(
+        num_bytes, base::Bind(&WebSocketRelayer::OnFinishedReadingReceiveStream,
+                              base::Unretained(this), num_bytes));
+  }
+
+  void DidReceiveFlowControl(int64_t quota) override {}
+
+  void DidFail(const mojo::String& message) override {}
+
+  void DidClose(bool was_clean,
+                uint16_t code,
+                const mojo::String& reason) override {}
+
+  // mojo::ErrorHandler implementation.
+  void OnConnectionError() override {
+    web_socket_ = nullptr;
+    binding_.Close();
+
+    if (ShouldSelfDestruct())
+      delete this;
+  }
+
+  void OnFinishedWritingSendStream(uint32_t num_bytes, const char* buffer) {
+    DCHECK_GT(pending_send_count_, 0u);
+    pending_send_count_--;
+
+    if (web_socket_ && buffer)
+      web_socket_->Send(true, mojo::WebSocket::MESSAGE_TYPE_TEXT, num_bytes);
+
+    if (ShouldSelfDestruct())
+      delete this;
+  }
+
+  void OnFinishedReadingReceiveStream(uint32_t num_bytes, const char* data) {
+    DCHECK_GT(pending_receive_count_, 0u);
+    pending_receive_count_--;
+
+    if (agent_host_ && data)
+      agent_host_->SendProtocolMessageToAgent(std::string(data, num_bytes));
+
+    if (ShouldSelfDestruct())
+      delete this;
+  }
+
+  bool ShouldSelfDestruct() const {
+    return (!agent_host_ && pending_send_count_ == 0) ||
+           (!web_socket_ && pending_receive_count_ == 0);
+  }
+
+  DevToolsAgentHost* agent_host_;
+  mojo::Binding<WebSocketClient> binding_;
+  mojo::WebSocketPtr web_socket_;
+
+  mojo::ScopedDataPipeProducerHandle send_stream_;
+  scoped_ptr<mojo::WebSocketWriteQueue> write_send_stream_;
+  size_t pending_send_count_;
+
+  mojo::ScopedDataPipeConsumerHandle receive_stream_;
+  scoped_ptr<mojo::WebSocketReadQueue> read_receive_stream_;
+  size_t pending_receive_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebSocketRelayer);
+};
+
+}  // namespace
 
 class DevToolsHttpServer::HttpConnectionDelegateImpl
     : public mojo::HttpConnectionDelegate,
@@ -61,7 +326,7 @@ class DevToolsHttpServer::HttpConnectionDelegateImpl
 
 DevToolsHttpServer::DevToolsHttpServer(DevToolsService* service,
                                        uint16_t remote_debugging_port)
-    : service_(service) {
+    : service_(service), remote_debugging_port_(remote_debugging_port) {
   VLOG(1) << "Remote debugging HTTP server is started on port "
           << remote_debugging_port << ".";
   mojo::NetworkServicePtr network_service;
@@ -104,30 +369,13 @@ void DevToolsHttpServer::OnReceivedRequest(
     const OnReceivedRequestCallback& callback) {
   DCHECK(connections_.find(connection) != connections_.end());
 
-  // TODO(yzshen): Implement it.
-  static const char kNotImplemented[] = "Not implemented yet!";
-  mojo::HttpResponsePtr response(mojo::HttpResponse::New());
-  response->headers.resize(2);
-  response->headers[0] = mojo::HttpHeader::New();
-  response->headers[0]->name = "Content-Length";
-  response->headers[0]->value = base::StringPrintf(
-      "%lu", static_cast<unsigned long>(sizeof(kNotImplemented)));
-  response->headers[1] = mojo::HttpHeader::New();
-  response->headers[1]->name = "Content-Type";
-  response->headers[1]->value = "text/html";
-
-  uint32_t num_bytes = sizeof(kNotImplemented);
-  MojoCreateDataPipeOptions options;
-  options.struct_size = sizeof(MojoCreateDataPipeOptions);
-  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
-  options.element_num_bytes = 1;
-  options.capacity_num_bytes = num_bytes;
-  mojo::DataPipe data_pipe(options);
-  response->body = data_pipe.consumer_handle.Pass();
-  WriteDataRaw(data_pipe.producer_handle.get(), kNotImplemented, &num_bytes,
-               MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-
-  callback.Run(response.Pass());
+  if (request->url.get().find(kJsonRequestUrlPrefix) == 0) {
+    callback.Run(ProcessJsonRequest(request.Pass()));
+  } else {
+    // TODO(yzshen): Implement it.
+    NOTIMPLEMENTED();
+    callback.Run(MakeResponse(404, "text/html", "Not implemented yet!"));
+  }
 }
 
 void DevToolsHttpServer::OnReceivedWebSocketRequest(
@@ -136,8 +384,36 @@ void DevToolsHttpServer::OnReceivedWebSocketRequest(
     const OnReceivedWebSocketRequestCallback& callback) {
   DCHECK(connections_.find(connection) != connections_.end());
 
-  // TODO(yzshen): Implement it.
-  NOTIMPLEMENTED();
+  std::string path = request->url;
+  size_t browser_pos = path.find(kBrowserUrlPrefix);
+  if (browser_pos == 0) {
+    // TODO(yzshen): Implement it.
+    NOTIMPLEMENTED();
+    callback.Run(nullptr, mojo::ScopedDataPipeConsumerHandle(), nullptr);
+    return;
+  }
+
+  size_t pos = path.find(kPageUrlPrefix);
+  if (pos != 0) {
+    callback.Run(nullptr, mojo::ScopedDataPipeConsumerHandle(), nullptr);
+    return;
+  }
+
+  std::string target_id = path.substr(strlen(kPageUrlPrefix));
+  DevToolsAgentHost* agent = service_->registry()->GetAgentById(target_id);
+  if (!agent || agent->IsAttached()) {
+    callback.Run(nullptr, mojo::ScopedDataPipeConsumerHandle(), nullptr);
+    return;
+  }
+
+  mojo::WebSocketPtr web_socket;
+  mojo::InterfaceRequest<mojo::WebSocket> web_socket_request =
+      mojo::GetProxy(&web_socket);
+  mojo::DataPipe data_pipe;
+  mojo::WebSocketClientPtr web_socket_client = WebSocketRelayer::SetUp(
+      agent, web_socket.Pass(), data_pipe.producer_handle.Pass());
+  callback.Run(web_socket_request.Pass(), data_pipe.consumer_handle.Pass(),
+               web_socket_client.Pass());
 }
 
 void DevToolsHttpServer::OnConnectionClosed(
@@ -146,6 +422,60 @@ void DevToolsHttpServer::OnConnectionClosed(
 
   delete connection;
   connections_.erase(connection);
+}
+
+mojo::HttpResponsePtr DevToolsHttpServer::ProcessJsonRequest(
+    mojo::HttpRequestPtr request) {
+  // Trim "/json".
+  std::string path = request->url.get().substr(strlen(kJsonRequestUrlPrefix));
+
+  // Trim query.
+  size_t query_pos = path.find("?");
+  if (query_pos != std::string::npos)
+    path = path.substr(0, query_pos);
+
+  // Trim fragment.
+  size_t fragment_pos = path.find("#");
+  if (fragment_pos != std::string::npos)
+    path = path.substr(0, fragment_pos);
+
+  std::string command;
+  std::string target_id;
+  if (!ParseJsonPath(path, &command, &target_id))
+    return MakeJsonResponse(404, nullptr,
+                            "Malformed query: " + request->url.get());
+
+  if (command == kVersionCommand || command == kNewCommand ||
+      command == kActivateCommand || command == kCloseCommand) {
+    NOTIMPLEMENTED();
+    return MakeJsonResponse(404, nullptr,
+                            "Not implemented yet: " + request->url.get());
+  }
+
+  if (command == kListCommand) {
+    base::ListValue list_value;
+    for (DevToolsRegistryImpl::Iterator iter(service_->registry());
+         !iter.IsAtEnd(); iter.Advance()) {
+      scoped_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue());
+
+      // TODO(yzshen): Add more information.
+      dict_value->SetString(kTargetDescriptionField, std::string());
+      dict_value->SetString(kTargetDevtoolsFrontendUrlField, std::string());
+      dict_value->SetString(kTargetIdField, iter.value()->id());
+      dict_value->SetString(kTargetTitleField, std::string());
+      dict_value->SetString(kTargetTypeField, "page");
+      dict_value->SetString(kTargetUrlField, std::string());
+      dict_value->SetString(
+          kTargetWebSocketDebuggerUrlField,
+          base::StringPrintf("ws://127.0.0.1:%u%s%s",
+                             static_cast<unsigned>(remote_debugging_port_),
+                             kPageUrlPrefix, iter.value()->id().c_str()));
+      list_value.Append(dict_value.Pass());
+    }
+    return MakeJsonResponse(200, &list_value, std::string());
+  }
+
+  return MakeJsonResponse(404, nullptr, "Unknown command: " + command);
 }
 
 }  // namespace devtools_service

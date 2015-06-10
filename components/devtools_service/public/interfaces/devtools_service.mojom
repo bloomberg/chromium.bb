@@ -30,7 +30,7 @@ interface DevToolsAgent {
   // DispatchProtocolMessage() calls. If a client doesn't want to receive
   // messages anymore, it could simply close the underlying message pipe of
   // |client|.
-  SetClient(DevToolsAgentClient client);
+  SetClient(DevToolsAgentClient client, string client_id);
 
   // Sends a command (in remote debugging protocol JSON format) to the agent.
   DispatchProtocolMessage(string message);

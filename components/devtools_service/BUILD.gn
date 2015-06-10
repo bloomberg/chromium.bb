@@ -6,6 +6,8 @@ import("//mojo/public/mojo_application.gni")
 
 source_set("lib") {
   sources = [
+    "devtools_agent_host.cc",
+    "devtools_agent_host.h",
     "devtools_http_server.cc",
     "devtools_http_server.h",
     "devtools_registry_impl.cc",
@@ -21,6 +23,7 @@ source_set("lib") {
     "//components/devtools_service/public/interfaces",
     "//mojo/application/public/cpp",
     "//mojo/common",
+    "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//url",
