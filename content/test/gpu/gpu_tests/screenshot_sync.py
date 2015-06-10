@@ -69,6 +69,6 @@ class ScreenshotSyncProcess(benchmark.Benchmark):
     return expectations.ScreenshotSyncExpectations()
 
   def CreatePageSet(self, options):
-    ps = page_set.PageSet(file_path=data_path, serving_dirs=[''])
+    ps = page_set.PageSet(base_dir=data_path, serving_dirs=[''])
     ps.AddUserStory(ScreenshotSyncPage(ps, ps.base_dir))
     return ps

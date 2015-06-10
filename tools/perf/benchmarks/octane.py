@@ -145,7 +145,7 @@ class Octane(perf_benchmark.PerfBenchmark):
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
       archive_data_file='../page_sets/data/octane.json',
-      file_path=os.path.abspath(__file__),
+      base_dir=os.path.dirname(os.path.abspath(__file__)),
       bucket=page_set.PUBLIC_BUCKET)
     ps.AddUserStory(page_module.Page(
         'http://octane-benchmark.googlecode.com/svn/latest/index.html?auto=1',

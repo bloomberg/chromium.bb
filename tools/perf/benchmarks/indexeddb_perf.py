@@ -93,6 +93,6 @@ class IndexedDb(perf_benchmark.PerfBenchmark):
   def CreatePageSet(self, options):
     indexeddb_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
                                  'data', 'indexeddb')
-    ps = page_set.PageSet(file_path=indexeddb_dir)
+    ps = page_set.PageSet(base_dir=indexeddb_dir)
     ps.AddUserStory(page_module.Page('file://perf_test.html', ps, ps.base_dir))
     return ps

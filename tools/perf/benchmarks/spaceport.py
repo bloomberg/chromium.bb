@@ -115,6 +115,6 @@ class Spaceport(perf_benchmark.PerfBenchmark):
   def CreatePageSet(self, options):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
         'data', 'third_party', 'spaceport')
-    ps = page_set.PageSet(file_path=spaceport_dir)
+    ps = page_set.PageSet(base_dir=spaceport_dir)
     ps.AddUserStory(page_module.Page('file://index.html', ps, ps.base_dir))
     return ps

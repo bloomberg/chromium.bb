@@ -59,7 +59,7 @@ class HardwareAcceleratedFeature(benchmark.Benchmark):
   def CreatePageSet(self, options):
     features = ['WebGL', 'Canvas']
 
-    ps = page_set.PageSet(user_agent_type='desktop', file_path='')
+    ps = page_set.PageSet(user_agent_type='desktop')
 
     for feature in features:
       ps.AddUserStory(ChromeGpuPage(page_set=ps, feature=feature))

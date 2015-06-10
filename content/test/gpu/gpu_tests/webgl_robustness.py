@@ -67,7 +67,7 @@ class WebglRobustness(benchmark.Benchmark):
 
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
-      file_path=conformance_path,
+      base_dir=conformance_path,
       user_agent_type='desktop',
       serving_dirs=[''])
     ps.AddUserStory(WebglRobustnessPage(ps, ps.base_dir))

@@ -140,7 +140,7 @@ class Sunspider(perf_benchmark.PerfBenchmark):
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
         archive_data_file='../page_sets/data/sunspider.json',
-        file_path=os.path.abspath(__file__),
+        base_dir=os.path.dirname(os.path.abspath(__file__)),
         bucket=page_set.PARTNER_BUCKET)
     ps.AddUserStory(page_module.Page(
         _URL, ps, ps.base_dir, make_javascript_deterministic=False))

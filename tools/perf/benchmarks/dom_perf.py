@@ -110,7 +110,7 @@ class DomPerf(perf_benchmark.PerfBenchmark):
 
   def CreatePageSet(self, options):
     dom_perf_dir = os.path.join(util.GetChromiumSrcDir(), 'data', 'dom_perf')
-    ps = page_set.PageSet(file_path=dom_perf_dir)
+    ps = page_set.PageSet(base_dir=dom_perf_dir)
     for param in self.RUN_PARAMS:
       ps.AddUserStory(page_module.Page(
           'file://run.html?reportInJS=1&run=%s' % param, ps, ps.base_dir))

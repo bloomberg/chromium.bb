@@ -113,7 +113,8 @@ class _DromaeoBenchmark(perf_benchmark.PerfBenchmark):
     archive_data_file = '../page_sets/data/dromaeo.%s.json' % self.tag
     ps = page_set.PageSet(
         archive_data_file=archive_data_file,
-        file_path=os.path.abspath(__file__), bucket=page_set.PUBLIC_BUCKET)
+        base_dir=os.path.dirname(os.path.abspath(__file__)),
+        bucket=page_set.PUBLIC_BUCKET)
     url = 'http://dromaeo.com?%s' % self.query_param
     ps.AddUserStory(page_module.Page(
         url, ps, ps.base_dir, make_javascript_deterministic=False))

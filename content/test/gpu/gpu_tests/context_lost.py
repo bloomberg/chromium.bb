@@ -334,7 +334,7 @@ class ContextLost(benchmark_module.Benchmark):
   # options = {'page_repeat': 5}
   def CreatePageSet(self, options):
     ps = page_set.PageSet(
-      file_path=data_path,
+      base_dir=data_path,
       user_agent_type='desktop',
       serving_dirs=set(['']))
     ps.AddUserStory(GPUProcessCrashesExactlyOnce(ps, ps.base_dir))

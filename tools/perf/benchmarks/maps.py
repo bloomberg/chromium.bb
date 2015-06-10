@@ -59,7 +59,7 @@ class MapsBenchmark(perf_benchmark.PerfBenchmark):
     page_set_path = os.path.join(
         util.GetChromiumSrcDir(), 'tools', 'perf', 'page_sets')
     ps = page_set_module.PageSet(
-        archive_data_file='data/maps.json', file_path=page_set_path,
+        archive_data_file='data/maps.json', base_dir=page_set_path,
         bucket=page_set_module.PUBLIC_BUCKET)
     ps.AddUserStory(MapsPage(ps, ps.base_dir))
     return ps

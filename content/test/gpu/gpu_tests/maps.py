@@ -101,7 +101,7 @@ class Maps(cloud_storage_test_base.TestBase):
     page_set_path = os.path.join(
         util.GetChromiumSrcDir(), 'content', 'test', 'gpu', 'page_sets')
     ps = page_set.PageSet(archive_data_file='data/maps.json',
-                          file_path=page_set_path,
+                          base_dir=page_set_path,
                           bucket=page_set.PUBLIC_BUCKET)
     ps.AddUserStory(MapsPage(ps, ps.base_dir))
     return ps
