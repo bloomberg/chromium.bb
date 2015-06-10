@@ -490,6 +490,9 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   if (status != SERVICE_WORKER_OK) {
     // TODO(falken): Add UMA and the report error to the version.
     if (is_main_resource_load_) {
+      // Using the service worker failed, so fallback to network. Detach the
+      // controller so subresource requests also skip the worker.
+      provider_host_->NotifyControllerLost();
       response_type_ = FALLBACK_TO_NETWORK;
       NotifyRestartRequired();
     } else {
