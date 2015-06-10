@@ -101,8 +101,6 @@ crbug.com/328996 [ Mac Debug ] http/tests/media/video-seek-to-middle.html [ Pass
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
 
-crbug.com/496317 virtual/slimmingpaint/fast/repaint/quotes.html [ NeedsRebaseline ]
-
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 
 crbug.com/339118 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Failure Pass ]
