@@ -24,18 +24,24 @@ class SpdyAltSvcWireFormatPeer;
 
 class NET_EXPORT_PRIVATE SpdyAltSvcWireFormat {
  public:
+  struct AlternativeService {
+    std::string protocol_id;
+    std::string host;
+    uint16 port = 0;
+    uint32 max_age = 0;
+    double p = 1.0;
+
+    bool operator==(const AlternativeService& other) const {
+      return protocol_id == other.protocol_id && host == other.host &&
+             port == other.port && max_age == other.max_age && p == other.p;
+    }
+  };
+
   friend class test::SpdyAltSvcWireFormatPeer;
   static bool ParseHeaderFieldValue(StringPiece value,
-                                    std::string* protocol_id,
-                                    std::string* host,
-                                    uint16* port,
-                                    uint32* max_age,
-                                    double* p);
-  static std::string SerializeHeaderFieldValue(const std::string& protocol_id,
-                                               const std::string& host,
-                                               uint16 port,
-                                               uint32 max_age,
-                                               double p);
+                                    AlternativeService* altsvc);
+  static std::string SerializeHeaderFieldValue(
+      const AlternativeService& altsvc);
 
  private:
   static void SkipWhiteSpace(StringPiece::const_iterator* c,

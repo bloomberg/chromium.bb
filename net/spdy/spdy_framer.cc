@@ -11,7 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/third_party/valgrind/memcheck.h"
-#include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_frame_reader.h"
 #include "net/spdy/spdy_bitmasks.h"
@@ -2057,21 +2056,14 @@ size_t SpdyFramer::ProcessAltSvcFramePayload(const char* data, size_t len) {
   StringPiece value(altsvc_scratch_.buffer.get() + reader.GetBytesConsumed(),
                     altsvc_scratch_.buffer_length - reader.GetBytesConsumed());
 
-  string protocol_id;
-  string host;
-  uint16 port;
-  uint32 max_age;
-  double p;
-  bool success = SpdyAltSvcWireFormat::ParseHeaderFieldValue(
-      value, &protocol_id, &host, &port, &max_age, &p);
-  if (!success || protocol_id.length() == 0) {
+  SpdyAltSvcWireFormat::AlternativeService altsvc;
+  bool success = SpdyAltSvcWireFormat::ParseHeaderFieldValue(value, &altsvc);
+  if (!success || altsvc.protocol_id.length() == 0) {
     set_error(SPDY_INVALID_CONTROL_FRAME);
     return 0;
   }
 
-  // TODO(bnc): Pass on |p|.
-  visitor_->OnAltSvc(current_frame_stream_id_, max_age, port, protocol_id, host,
-                     origin);
+  visitor_->OnAltSvc(current_frame_stream_id_, origin, altsvc);
   CHANGE_STATE(SPDY_AUTO_RESET);
   return len;
 }
@@ -2777,10 +2769,8 @@ SpdyFrame* SpdyFramer::SerializeAltSvc(const SpdyAltSvcIR& altsvc) {
 
   size_t size = GetAltSvcMinimumSize();
   size += altsvc.origin().length();
-  // TODO(bnc): Add probability to SpdyAltSvcIR and pass it on.
-  string value = SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
-      altsvc.protocol_id(), altsvc.host(), altsvc.port(), altsvc.max_age(),
-      1.0);
+  string value =
+      SpdyAltSvcWireFormat::SerializeHeaderFieldValue(altsvc.altsvc());
   size += value.length();
 
   SpdyFrameBuilder builder(size, protocol_version());

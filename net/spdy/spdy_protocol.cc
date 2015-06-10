@@ -842,9 +842,8 @@ void SpdyContinuationIR::Visit(SpdyFrameVisitor* visitor) const {
 }
 
 SpdyAltSvcIR::SpdyAltSvcIR(SpdyStreamId stream_id)
-    : SpdyFrameWithStreamIdIR(stream_id),
-      max_age_(0),
-      port_(0) {}
+    : SpdyFrameWithStreamIdIR(stream_id) {
+}
 
 void SpdyAltSvcIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitAltSvc(*this);

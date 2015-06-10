@@ -23,6 +23,7 @@
 #include "base/strings/string_piece.h"
 #include "base/sys_byteorder.h"
 #include "net/base/net_export.h"
+#include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_bitmasks.h"
 
 namespace net {
@@ -969,30 +970,30 @@ class NET_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameWithStreamIdIR {
  public:
   explicit SpdyAltSvcIR(SpdyStreamId stream_id);
 
-  uint32 max_age() const { return max_age_; }
-  uint16 port() const { return port_; }
-  SpdyProtocolId protocol_id() const {
-    return protocol_id_;
-  }
-  std::string host() const { return host_; }
   std::string origin() const { return origin_; }
-
-  void set_max_age(uint32 max_age) { max_age_ = max_age; }
-  void set_port(uint16 port) { port_ = port; }
-  void set_protocol_id(SpdyProtocolId protocol_id) {
-    protocol_id_ = protocol_id;
+  const SpdyAltSvcWireFormat::AlternativeService& altsvc() const {
+    return altsvc_;
   }
-  void set_host(std::string host) { host_ = host; }
+  SpdyProtocolId protocol_id() const { return altsvc_.protocol_id; }
+  std::string host() const { return altsvc_.host; }
+  uint16 port() const { return altsvc_.port; }
+  uint32 max_age() const { return altsvc_.max_age; }
+  double p() const { return altsvc_.p; }
+
   void set_origin(std::string origin) { origin_ = origin; }
+  void set_protocol_id(SpdyProtocolId protocol_id) {
+    altsvc_.protocol_id = protocol_id;
+  }
+  void set_host(std::string host) { altsvc_.host = host; }
+  void set_port(uint16 port) { altsvc_.port = port; }
+  void set_max_age(uint32 max_age) { altsvc_.max_age = max_age; }
+  void set_p(double p) { altsvc_.p = p; }
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 
  private:
-  uint32 max_age_;
-  uint16 port_;
-  SpdyProtocolId protocol_id_;
-  std::string host_;
   std::string origin_;
+  SpdyAltSvcWireFormat::AlternativeService altsvc_;
   DISALLOW_COPY_AND_ASSIGN(SpdyAltSvcIR);
 };
 

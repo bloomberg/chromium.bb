@@ -427,20 +427,19 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     ++continuation_count_;
   }
 
-  void OnAltSvc(SpdyStreamId stream_id,
-                uint32 max_age,
-                uint16 port,
-                StringPiece protocol_id,
-                StringPiece host,
-                StringPiece origin) override {
+  void OnAltSvc(
+      SpdyStreamId stream_id,
+      StringPiece origin,
+      const SpdyAltSvcWireFormat::AlternativeService& altsvc) override {
     test_altsvc_ir_.set_stream_id(stream_id);
-    test_altsvc_ir_.set_max_age(max_age);
-    test_altsvc_ir_.set_port(port);
-    test_altsvc_ir_.set_protocol_id(protocol_id.as_string());
-    test_altsvc_ir_.set_host(host.as_string());
     if (origin.length() > 0) {
       test_altsvc_ir_.set_origin(origin.as_string());
     }
+    test_altsvc_ir_.set_protocol_id(altsvc.protocol_id);
+    test_altsvc_ir_.set_host(altsvc.host);
+    test_altsvc_ir_.set_port(altsvc.port);
+    test_altsvc_ir_.set_max_age(altsvc.max_age);
+    test_altsvc_ir_.set_p(altsvc.p);
     ++altsvc_count_;
   }
 
@@ -5694,19 +5693,20 @@ TEST_P(SpdyFramerTest, OnAltSvc) {
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
-  EXPECT_CALL(visitor, OnAltSvc(kStreamId,
-                                10,
-                                443,
-                                StringPiece("pid"),
-                                StringPiece("h1"),
-                                StringPiece("o1")));
+  SpdyAltSvcWireFormat::AlternativeService altsvc;
+  altsvc.protocol_id = "p\"=i:d";
+  altsvc.host = "h_\\o\"st";
+  altsvc.port = 443;
+  altsvc.max_age = 10;
+  altsvc.p = 1.0;
+  EXPECT_CALL(visitor, OnAltSvc(kStreamId, StringPiece("o_r|g!n"), altsvc));
 
   SpdyAltSvcIR altsvc_ir(1);
   altsvc_ir.set_max_age(10);
   altsvc_ir.set_port(443);
-  altsvc_ir.set_protocol_id("pid");
-  altsvc_ir.set_host("h1");
-  altsvc_ir.set_origin("o1");
+  altsvc_ir.set_protocol_id("p\"=i:d");
+  altsvc_ir.set_host("h_\\o\"st");
+  altsvc_ir.set_origin("o_r|g!n");
   scoped_ptr<SpdySerializedFrame> frame(framer.SerializeFrame(altsvc_ir));
   framer.ProcessInput(frame->data(), frame->size());
 
@@ -5726,16 +5726,19 @@ TEST_P(SpdyFramerTest, OnAltSvcNoOrigin) {
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
-  EXPECT_CALL(visitor,
-              OnAltSvc(kStreamId, 10, 443, StringPiece("p\"=i:d"),
-                       StringPiece("h_\\o\"st"), StringPiece("o_r|g!n")));
+  SpdyAltSvcWireFormat::AlternativeService altsvc;
+  altsvc.protocol_id = "p\"=i:d";
+  altsvc.host = "h_\\o\"st";
+  altsvc.port = 443;
+  altsvc.max_age = 10;
+  altsvc.p = 1.0;
+  EXPECT_CALL(visitor, OnAltSvc(kStreamId, StringPiece(""), altsvc));
 
   SpdyAltSvcIR altsvc_ir(1);
   altsvc_ir.set_max_age(10);
   altsvc_ir.set_port(443);
   altsvc_ir.set_protocol_id("p\"=i:d");
   altsvc_ir.set_host("h_\\o\"st");
-  altsvc_ir.set_origin("o_r|g!n");
   scoped_ptr<SpdySerializedFrame> frame(framer.SerializeFrame(altsvc_ir));
   framer.ProcessInput(frame->data(), frame->size());
 
@@ -5779,8 +5782,13 @@ TEST_P(SpdyFramerTest, OnAltSvcBadLengths) {
   SpdyFramer framer(spdy_version_);
   framer.set_visitor(&visitor);
 
-  EXPECT_CALL(visitor, OnAltSvc(kStreamId, 10, 443, StringPiece("pid"),
-                                StringPiece("h1"), StringPiece("")));
+  SpdyAltSvcWireFormat::AlternativeService altsvc;
+  altsvc.protocol_id = "pid";
+  altsvc.host = "h1";
+  altsvc.port = 443;
+  altsvc.max_age = 10;
+  altsvc.p = 1.0;
+  EXPECT_CALL(visitor, OnAltSvc(kStreamId, StringPiece(""), altsvc));
 
   SpdyAltSvcIR altsvc_ir(1);
   altsvc_ir.set_max_age(10);

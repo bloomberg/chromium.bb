@@ -36,19 +36,16 @@ bool ParsePositiveIntegerImpl(StringPiece::const_iterator c,
 
 // static
 bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(StringPiece value,
-                                                 std::string* protocol_id,
-                                                 std::string* host,
-                                                 uint16* port,
-                                                 uint32* max_age,
-                                                 double* p) {
-  *max_age = 86400;
-  *p = 1.0;
+                                                 AlternativeService* altsvc) {
+  altsvc->max_age = 86400;
+  altsvc->p = 1.0;
 
   StringPiece::const_iterator c = value.begin();
   StringPiece::const_iterator percent_encoded_protocol_id_end =
       std::find(c, value.end(), '=');
   if (percent_encoded_protocol_id_end == c ||
-      !PercentDecode(c, percent_encoded_protocol_id_end, protocol_id)) {
+      !PercentDecode(c, percent_encoded_protocol_id_end,
+                     &(altsvc->protocol_id))) {
     return false;
   }
   c = percent_encoded_protocol_id_end;
@@ -76,7 +73,8 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(StringPiece value,
     return false;
   }
   DCHECK_EQ('"', *c);
-  if (!ParseAltAuthority(alt_authority_begin, c, host, port)) {
+  if (!ParseAltAuthority(alt_authority_begin, c, &(altsvc->host),
+                         &(altsvc->port))) {
     return false;
   }
   ++c;
@@ -111,11 +109,12 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(StringPiece value,
       return false;
     }
     if (parameter_name.compare("ma") == 0) {
-      if (!ParsePositiveInteger32(parameter_value_begin, c, max_age)) {
+      if (!ParsePositiveInteger32(parameter_value_begin, c,
+                                  &(altsvc->max_age))) {
         return false;
       }
     } else if (parameter_name.compare("p") == 0) {
-      if (!ParseProbability(parameter_value_begin, c, p)) {
+      if (!ParseProbability(parameter_value_begin, c, &(altsvc->p))) {
         return false;
       }
     }
@@ -127,16 +126,12 @@ bool SpdyAltSvcWireFormat::ParseHeaderFieldValue(StringPiece value,
 
 // static
 std::string SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
-    const std::string& protocol_id,
-    const std::string& host,
-    uint16 port,
-    uint32 max_age,
-    double p) {
+    const AlternativeService& altsvc) {
   const char kNibbleToHex[] = "0123456789ABCDEF";
   std::string value;
   // Percent escape protocol id according to
   // http://tools.ietf.org/html/rfc7230#section-3.2.6.
-  for (char c : protocol_id) {
+  for (char c : altsvc.protocol_id) {
     if (isalnum(c)) {
       value.push_back(c);
       continue;
@@ -168,18 +163,18 @@ std::string SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
   }
   value.push_back('=');
   value.push_back('"');
-  for (char c : host) {
+  for (char c : altsvc.host) {
     if (c == '"' || c == '\\') {
       value.push_back('\\');
     }
     value.push_back(c);
   }
-  base::StringAppendF(&value, ":%d\"", port);
-  if (max_age != 86400) {
-    base::StringAppendF(&value, "; ma=%d", max_age);
+  base::StringAppendF(&value, ":%d\"", altsvc.port);
+  if (altsvc.max_age != 86400) {
+    base::StringAppendF(&value, "; ma=%d", altsvc.max_age);
   }
-  if (p != 1.0) {
-    base::StringAppendF(&value, "; p=%.2f", p);
+  if (altsvc.p != 1.0) {
+    base::StringAppendF(&value, "; p=%.2f", altsvc.p);
   }
   return value;
 }

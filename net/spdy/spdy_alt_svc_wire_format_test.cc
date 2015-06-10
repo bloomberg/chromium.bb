@@ -117,19 +117,14 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValue) {
       header_field_value.append(" ");
     }
 
-    std::string protocol_id;
-    std::string host;
-    uint16 port = 0;
-    uint32 max_age = 0;
-    double p = 0.0;
-
-    ASSERT_TRUE(SpdyAltSvcWireFormat::ParseHeaderFieldValue(
-        header_field_value, &protocol_id, &host, &port, &max_age, &p));
-    EXPECT_EQ("a=b%c", protocol_id);
-    EXPECT_EQ(expected_host, host);
-    EXPECT_EQ(42, port);
-    EXPECT_EQ(expected_max_age, max_age);
-    EXPECT_DOUBLE_EQ(expected_p, p);
+    SpdyAltSvcWireFormat::AlternativeService altsvc;
+    ASSERT_TRUE(SpdyAltSvcWireFormat::ParseHeaderFieldValue(header_field_value,
+                                                            &altsvc));
+    EXPECT_EQ("a=b%c", altsvc.protocol_id);
+    EXPECT_EQ(expected_host, altsvc.host);
+    EXPECT_EQ(42, altsvc.port);
+    EXPECT_EQ(expected_max_age, altsvc.max_age);
+    EXPECT_DOUBLE_EQ(expected_p, altsvc.p);
   }
 }
 
@@ -137,26 +132,27 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValue) {
 // parameter.
 TEST(SpdyAltSvcWireFormatTest, SerializeHeaderFieldValue) {
   for (int i = 0; i < 1 << 3; ++i) {
+    SpdyAltSvcWireFormat::AlternativeService altsvc;
+    altsvc.protocol_id = "a=b%c";
+    altsvc.port = 42;
     std::string expected_header_field_value = "a%3Db%25c=\"";
-    std::string host;
     if (i & 1 << 0) {
-      host = "foo\"bar\\baz";
+      altsvc.host = "foo\"bar\\baz";
       expected_header_field_value.append("foo\\\"bar\\\\baz");
     }
     expected_header_field_value.append(":42\"");
-    int max_age = 86400;
+    altsvc.max_age = 86400;
     if (i & 1 << 1) {
-      max_age = 1111;
+      altsvc.max_age = 1111;
       expected_header_field_value.append("; ma=1111");
     }
-    double p = 1.0;
+    altsvc.p = 1.0;
     if (i & 1 << 2) {
-      p = 0.33;
+      altsvc.p = 0.33;
       expected_header_field_value.append("; p=0.33");
     }
     EXPECT_EQ(expected_header_field_value,
-              SpdyAltSvcWireFormat::SerializeHeaderFieldValue("a=b%c", host, 42,
-                                                              max_age, p));
+              SpdyAltSvcWireFormat::SerializeHeaderFieldValue(altsvc));
   }
 }
 
@@ -164,11 +160,7 @@ TEST(SpdyAltSvcWireFormatTest, SerializeHeaderFieldValue) {
 // invalid percent encoding, unmatched quotation mark, empty port, non-numeric
 // characters in numeric fields, negative or larger than 1.0 probability.
 TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueInvalid) {
-  std::string protocol_id;
-  std::string host;
-  uint16 port;
-  uint32 max_age;
-  double p;
+  SpdyAltSvcWireFormat::AlternativeService altsvc;
   const char* invalid_field_value_array[] = {"", "a%", "a%x", "a%b", "a%9z",
       "a=", "a=\"", "a=\"b\"", "a=\":\"", "a=\"c:\"", "a=\"c:foo\"",
       "a=\"c:42foo\"", "a=\"b:42\"bar", "a=\"b:42\" ; m",
@@ -177,7 +169,7 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueInvalid) {
       "a=\"b:42\" ; p=..", "a=\"b:42\" ; p=1.05"};
   for (const char* invalid_field_value : invalid_field_value_array) {
     EXPECT_FALSE(SpdyAltSvcWireFormat::ParseHeaderFieldValue(
-        invalid_field_value, &protocol_id, &host, &port, &max_age, &p))
+        invalid_field_value, &altsvc))
         << invalid_field_value;
   }
 }
@@ -186,17 +178,13 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueInvalid) {
 // before closing quotation mark, without trying to access memory beyond the end
 // of the input.
 TEST(SpdyAltSvcWireFormatTest, ParseTruncatedHeaderFieldValue) {
-  std::string protocol_id;
-  std::string host;
-  uint16 port;
-  uint32 max_age;
-  double p;
+  SpdyAltSvcWireFormat::AlternativeService altsvc;
   const char* field_value_array[] = {
       "p=\":137\"", "p=\"foo:137\"", "p%25=\"foo\\\"bar\\\\baz:137\""};
   for (std::string field_value : field_value_array) {
     for (size_t len = 1; len < field_value.size(); ++len) {
       EXPECT_FALSE(SpdyAltSvcWireFormat::ParseHeaderFieldValue(
-          field_value.substr(0, len), &protocol_id, &host, &port, &max_age, &p))
+          field_value.substr(0, len), &altsvc))
           << len;
     }
   }

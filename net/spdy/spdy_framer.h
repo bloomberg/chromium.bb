@@ -20,6 +20,7 @@
 #include "net/base/net_export.h"
 #include "net/spdy/hpack_decoder.h"
 #include "net/spdy/hpack_encoder.h"
+#include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
 
@@ -267,12 +268,10 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual void OnContinuation(SpdyStreamId stream_id, bool end) = 0;
 
   // Called when an ALTSVC frame has been parsed.
-  virtual void OnAltSvc(SpdyStreamId stream_id,
-                        uint32 max_age,
-                        uint16 port,
-                        base::StringPiece protocol_id,
-                        base::StringPiece host,
-                        base::StringPiece origin) {}
+  virtual void OnAltSvc(
+      SpdyStreamId stream_id,
+      base::StringPiece origin,
+      const SpdyAltSvcWireFormat::AlternativeService& altsvc) {}
 
   // Called when a PRIORITY frame is received.
   virtual void OnPriority(SpdyStreamId stream_id,
