@@ -176,7 +176,7 @@ var media = (function() {
 
     if (propertyCount === 0) {
       manager.updatePlayerInfo(
-          source, event.ticksMillis, 'EVENT', event.type);
+          source, event.ticksMillis, 'event', event.type);
     }
   };
 
