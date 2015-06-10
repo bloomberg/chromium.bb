@@ -645,6 +645,10 @@ void ServiceWorkerVersion::DispatchMessageEventInternal(
     return;
   }
 
+  // TODO(kinuko): Cleanup this (and corresponding unit test) when message
+  // event becomes extendable, round-trip event. (crbug.com/498596)
+  RestartTick(&idle_time_);
+
   MessagePortMessageFilter* filter =
       embedded_worker_->message_port_message_filter();
   std::vector<int> new_routing_ids;

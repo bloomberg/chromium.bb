@@ -7,8 +7,11 @@
 #include <map>
 #include <string>
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/memory/scoped_vector.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/browser/message_port_message_filter.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -18,6 +21,24 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+
+class MockMessagePortMessageFilter : public MessagePortMessageFilter {
+ public:
+  MockMessagePortMessageFilter()
+      : MessagePortMessageFilter(
+            base::Bind(&base::AtomicSequenceNumber::GetNext,
+                       base::Unretained(&next_routing_id_))) {}
+
+  bool Send(IPC::Message* message) override {
+    message_queue_.push_back(message);
+    return true;
+  }
+
+ private:
+  ~MockMessagePortMessageFilter() override {}
+  base::AtomicSequenceNumber next_routing_id_;
+  ScopedVector<IPC::Message> message_queue_;
+};
 
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory,
@@ -35,7 +56,8 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
                          NULL,
                          NULL);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id);
-  registry()->AddChildProcessSender(mock_render_process_id, this, nullptr);
+  registry()->AddChildProcessSender(mock_render_process_id, this,
+                                    NewMessagePortMessageFilter());
 }
 
 EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
@@ -46,7 +68,8 @@ EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
 void EmbeddedWorkerTestHelper::SimulateAddProcessToPattern(
     const GURL& pattern,
     int process_id) {
-  registry()->AddChildProcessSender(process_id, this, nullptr);
+  registry()->AddChildProcessSender(process_id, this,
+                                    NewMessagePortMessageFilter());
   wrapper_->process_manager()->AddProcessReferenceToPattern(
       pattern, process_id);
 }
@@ -328,6 +351,14 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {
   DCHECK(context());
   return context()->embedded_worker_registry();
+}
+
+MessagePortMessageFilter*
+EmbeddedWorkerTestHelper::NewMessagePortMessageFilter() {
+  scoped_refptr<MessagePortMessageFilter> filter(
+      new MockMessagePortMessageFilter);
+  message_port_message_filters_.push_back(filter);
+  return filter.get();
 }
 
 }  // namespace content

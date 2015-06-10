@@ -21,6 +21,7 @@ namespace content {
 
 class EmbeddedWorkerRegistry;
 class EmbeddedWorkerTestHelper;
+class MessagePortMessageFilter;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 struct ServiceWorkerFetchRequest;
@@ -124,6 +125,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnFetchEventStub(int request_id,
                         const ServiceWorkerFetchRequest& request);
 
+  MessagePortMessageFilter* NewMessagePortMessageFilter();
+
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
 
   IPC::TestSink sink_;
@@ -136,6 +139,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   // Updated each time MessageToWorker message is received.
   int current_embedded_worker_id_;
+
+  std::vector<scoped_refptr<MessagePortMessageFilter>>
+      message_port_message_filters_;
 
   base::WeakPtrFactory<EmbeddedWorkerTestHelper> weak_factory_;
 

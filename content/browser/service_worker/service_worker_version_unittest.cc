@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/run_loop.h"
+#include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -116,6 +117,15 @@ class MessageReceiverFromWorker : public EmbeddedWorkerInstance::Listener {
   std::vector<int> received_values_;
   DISALLOW_COPY_AND_ASSIGN(MessageReceiverFromWorker);
 };
+
+void SetUpDummyMessagePort(std::vector<TransferredMessagePort>* ports) {
+  int port_id = -1;
+  MessagePortService::GetInstance()->Create(MSG_ROUTING_NONE, nullptr,
+                                            &port_id);
+  TransferredMessagePort dummy_port;
+  dummy_port.id = port_id;
+  ports->push_back(dummy_port);
+}
 
 }  // namespace
 
@@ -475,6 +485,20 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
                                base::Bind(&base::DoNothing),
                                base::Bind(&ReceiveFetchResult, &status));
   base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_LT(idle_time, version_->idle_time_);
+
+  // Dispatching a message event resets the idle time.
+  std::vector<TransferredMessagePort> ports;
+  SetUpDummyMessagePort(&ports);
+  status = SERVICE_WORKER_ERROR_FAILED;
+  version_->idle_time_ -= kOneSecond;
+  idle_time = version_->idle_time_;
+  version_->DispatchMessageEvent(base::string16(), ports,
+                                 CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  MessagePortService::GetInstance()->Destroy(ports[0].id);
 
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_LT(idle_time, version_->idle_time_);
