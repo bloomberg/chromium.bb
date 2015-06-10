@@ -147,6 +147,7 @@ importer.DefaultMediaScanner.prototype.scanFiles = function(entries) {
         this.notify_(importer.ScanEvent.INVALIDATED, scan);
       }.bind(this));
 
+  scan.setCandidateCount(entries.length);
   var scanPromises = entries.map(this.onUniqueFileFound_.bind(this, scan));
 
   Promise.all(scanPromises)
@@ -178,6 +179,7 @@ importer.DefaultMediaScanner.SCAN_BATCH_SIZE = 1;
  */
 importer.DefaultMediaScanner.prototype.scanMediaFiles_ =
     function(scan, entries) {
+  scan.setCandidateCount(entries.length);
   var handleFileEntry = this.onFileEntryFound_.bind(this, scan);
 
   /**
@@ -274,6 +276,7 @@ importer.DefaultMediaScanner.prototype.crawlDirectory_ =
  */
 importer.DefaultMediaScanner.prototype.onFileEntryFound_ =
     function(scan, entry) {
+
   return this.getDisposition_(entry, importer.Destination.GOOGLE_DRIVE)
       .then(
           /**
@@ -300,7 +303,9 @@ importer.DefaultMediaScanner.prototype.onFileEntryFound_ =
 importer.DefaultMediaScanner.prototype.onUniqueFileFound_ =
     function(scan, entry) {
 
+  scan.onCandidatesProcessed(1);
   if (!importer.isEligibleType(entry)) {
+    this.notify_(importer.ScanEvent.UPDATED, scan);
     return Promise.resolve();
   }
 
@@ -329,7 +334,9 @@ importer.DefaultMediaScanner.prototype.onUniqueFileFound_ =
  */
 importer.DefaultMediaScanner.prototype.onDuplicateFileFound_ =
     function(scan, entry, disposition) {
+  scan.onCandidatesProcessed(1);
   scan.addDuplicateEntry(entry, disposition);
+  this.notify_(importer.ScanEvent.UPDATED, scan);
   return Promise.resolve();
 };
 
@@ -356,6 +363,19 @@ importer.ScanResult.prototype.cancel;
  * work started prior to cancelation may still be ongoing.
  */
 importer.ScanResult.prototype.canceled;
+
+/**
+ * @param {number} count Sets the total number of candidate entries
+ *     that were checked while scanning. Used when determining
+ *     total progress.
+ */
+importer.ScanResult.prototype.setCandidateCount;
+
+/**
+ * Event method called when a candidate has been processed.
+ * @param {number} count
+ */
+importer.ScanResult.prototype.onCandidatesProcessed;
 
 /**
  * Returns all files entries discovered so far. The list will be
@@ -399,7 +419,13 @@ importer.ScanResult.prototype.getStatistics;
  *   scanDuration: number,
  *   newFileCount: number,
  *   duplicates: !Object<!importer.Disposition, number>,
- *   sizeBytes: number
+ *   sizeBytes: number,
+ *   candidates: {
+ *     total: number,
+ *     processed: number,
+ *   }
+ *   scannedFiles: number,
+ *   progress: number
  * }}
  */
 importer.ScanResult.Statistics;
@@ -427,6 +453,12 @@ importer.DefaultScanResult = function(hashGenerator) {
 
   /** @private {function(!FileEntry): !Promise.<string>} */
   this.createHashcode_ = hashGenerator;
+
+  /** @private {number} */
+  this.candidateCount_ = 0;
+
+  /** @private {number} */
+  this.candidatesProcessed_ = 0;
 
   /**
    * List of file entries found while scanning.
@@ -496,6 +528,16 @@ importer.DefaultScanResult.prototype = {
 /** @override */
 importer.DefaultScanResult.prototype.isFinal = function() {
   return this.resolver_.settled;
+};
+
+/** @override */
+importer.DefaultScanResult.prototype.setCandidateCount = function(count) {
+  this.candidateCount_ = count;
+};
+
+/** @override */
+importer.DefaultScanResult.prototype.onCandidatesProcessed = function(count) {
+  this.candidatesProcessed_ = this.candidatesProcessed_ + count;
 };
 
 /** @override */
@@ -595,8 +637,32 @@ importer.DefaultScanResult.prototype.getStatistics = function() {
         this.lastScanActivity_.getTime() - this.scanStarted_.getTime(),
     newFileCount: this.fileEntries_.length,
     duplicates: this.duplicateStats_,
-    sizeBytes: this.totalBytes_
+    sizeBytes: this.totalBytes_,
+    candidates: {
+      total: this.candidateCount_,
+      processed: this.candidatesProcessed_
+    },
+    progress: this.calculateProgress_()
   };
+};
+
+/**
+ * @return {number} Progress as an integer from 0-100.
+ * @private
+ */
+importer.DefaultScanResult.prototype.calculateProgress_ = function() {
+  var progress = (this.candidateCount_ > 0) ?
+      Math.floor(this.candidatesProcessed_ / this.candidateCount_ * 100) :
+      0;
+
+  // In case candate count was off, or any other mischief has happened,
+  // we want to ensure progress never exceeds 100.
+  if (progress > 100) {
+    console.warn('Progress exceeded 100.');
+    progress = 100;
+  }
+
+  return progress;
 };
 
 /**

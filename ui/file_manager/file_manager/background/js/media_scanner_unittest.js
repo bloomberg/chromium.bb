@@ -197,6 +197,39 @@ function testSingleLevel(callback) {
 }
 
 /**
+ * Verifies that scanning a simple single-level directory produces 100%
+ * progress at completion.
+ */
+function testProgress(callback) {
+  var filenames = [
+    'foo',
+    'foo.jpg',
+    'bar.gif',
+    'baz.avi',
+    'foo.mp3',
+    'bar.txt'
+  ];
+  var expectedFiles = [
+    '/testProgress/foo.jpg',
+    '/testProgress/bar.gif',
+    '/testProgress/baz.avi'
+  ];
+  reportPromise(
+      makeTestFileSystemRoot('testProgress')
+          .then(populateDir.bind(null, filenames))
+          .then(
+              /**
+               * Scans the directory.
+               * @param {!DirectoryEntry} root
+               */
+              function(root) {
+                return scanner.scanDirectory(root).whenFinal();
+              })
+          .then(assertProgress.bind(null, 100)),
+      callback);
+}
+
+/**
  * Verifies that scanning ignores previously imported entries.
  */
 function testIgnoresPreviousImports(callback) {
@@ -371,6 +404,29 @@ function testDedupesFilesInScanResult(callback) {
       callback);
 }
 
+/**
+ * Verifies that scanning a simple single-level directory structure works.
+ */
+function testDefaultScanResult() {
+  var hashGenerator = function(file) {
+    return file.toURL();
+  };
+  var scan = new importer.DefaultScanResult(hashGenerator);
+
+  // 0 before we set candidate count
+  assertProgress(0, scan);
+
+  scan.setCandidateCount(3);
+  assertProgress(0, scan);
+
+  scan.onCandidatesProcessed(1);
+  assertProgress(33, scan);
+  scan.onCandidatesProcessed(1);
+  assertProgress(66, scan);
+  scan.onCandidatesProcessed(1);
+  assertProgress(100, scan);
+}
+
 function testInvalidation(callback) {
   var invalidatePromise = new Promise(function(fulfill) {
     scanner.addObserver(fulfill);
@@ -393,22 +449,36 @@ function testInvalidation(callback) {
 
 /**
  * Verifies the results of the media scan are as expected.
- * @param {!Array<string>} expected
- * @param {!importer.ScanResults} results
+ * @param {number} expected, 0-100
+ * @param {!importer.ScanResults} scan
+ * @return {!importer.ScanResults}
  */
-function assertFilesFound(expected, results) {
-  assertFileEntryPathsEqual(expected, results.getFileEntries());
+function assertProgress(expected, scan) {
+  assertEquals(expected, scan.getStatistics().progress);
+  return scan;
+}
+
+/**
+ * Verifies the results of the media scan are as expected.
+ * @param {!Array<string>} expected
+ * @param {!importer.ScanResults} scan
+ * @return {!importer.ScanResults}
+ */
+function assertFilesFound(expected, scan) {
+  assertFileEntryPathsEqual(expected, scan.getFileEntries());
+  return scan;
   // TODO(smckay): Add coverage for getScanDurationMs && getTotalBytes.
 }
 
 /**
  * Verifies the results of the media scan are as expected.
  * @param {!Array<string>} expected
- * @param {!importer.ScanResults} results
+ * @param {!importer.ScanResults} scan
+ * @return {!importer.ScanResults}
  */
-function assertDuplicatesFound(expected, results) {
-  assertFileEntryPathsEqual(expected, results.getDuplicateFileEntries());
-  // TODO(smckay): Add coverage for getScanDurationMs && getTotalBytes.
+function assertDuplicatesFound(expected, scan) {
+  assertFileEntryPathsEqual(expected, scan.getDuplicateFileEntries());
+  return scan;
 }
 
 /**

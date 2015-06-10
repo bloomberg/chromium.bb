@@ -505,6 +505,22 @@ html[dir='rtl'] #cloud-import-details {
   cursor: pointer;
 }
 
+#cloud-import-details .progress {
+  height: 4px;
+  background-color: #E0E0E0;
+  border-radius: 2px;
+  margin-top: 14px;
+  width: 100%;
+}
+
+#cloud-import-details .progress .value {
+  background-color: #1AC222;
+  border-radius: 2px;
+  height: 4px;
+  transition: width 0.1s linear;
+  width: 0%;
+}
+
 #cloud-import-details paper-button {
   align-self: flex-end;
   color: white;

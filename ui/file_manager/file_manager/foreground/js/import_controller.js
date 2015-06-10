@@ -569,6 +569,13 @@ importer.RuntimeCommandWidget = function() {
   /** @private {Element} */
   this.detailsBanner_ = document.querySelector('#cloud-import-details .banner');
 
+  /** @private {Element} */
+  this.progressContainer_ =
+      document.querySelector('#cloud-import-details .progress');
+  /** @private {Element} */
+  this.progressBar_ =
+      document.querySelector('#cloud-import-details .progress .value');
+
   /** @private {function(!importer.ClickSource)} */
   this.clickListener_;
 
@@ -733,6 +740,7 @@ importer.RuntimeCommandWidget.prototype.update =
       this.sideButton_.hidden = false;
       this.importButton_.hidden = true;
       this.cancelButton_.hidden = false;
+      this.progressContainer_.hidden = true;
 
       this.toolbarIcon_.setAttribute('icon', 'autorenew');
       this.statusIcon_.setAttribute('icon', 'autorenew');
@@ -752,6 +760,7 @@ importer.RuntimeCommandWidget.prototype.update =
       this.sideButton_.hidden = false;
       this.importButton_.hidden = true;
       this.cancelButton_.hidden = true;
+      this.progressContainer_.hidden = true;
 
       this.toolbarIcon_.setAttribute('icon', 'cloud-off');
       this.statusIcon_.setAttribute('icon', 'image:photo');
@@ -767,6 +776,7 @@ importer.RuntimeCommandWidget.prototype.update =
       this.sideButton_.hidden = false;
       this.importButton_.hidden = true;
       this.cancelButton_.hidden = true;
+      this.progressContainer_.hidden = true;
 
       this.toolbarIcon_.setAttribute('icon', 'cloud-done');
       this.statusIcon_.setAttribute('icon', 'cloud-done');
@@ -786,6 +796,7 @@ importer.RuntimeCommandWidget.prototype.update =
       this.sideButton_.hidden = false;
       this.importButton_.hidden = false;
       this.cancelButton_.hidden = true;
+      this.progressContainer_.hidden = true;
 
       this.toolbarIcon_.setAttribute('icon', 'cloud-upload');
       this.statusIcon_.setAttribute('icon', 'image:photo');
@@ -805,6 +816,10 @@ importer.RuntimeCommandWidget.prototype.update =
       this.importButton_.hidden = true;
       // TODO(smckay): implement cancellation for scanning.
       this.cancelButton_.hidden = true;
+      this.progressContainer_.hidden = false;
+
+      var stats = opt_scan.getStatistics();
+      this.progressBar_.style.width = stats.progress + '%';
 
       this.toolbarIcon_.setAttribute('icon', 'autorenew');
       this.statusIcon_.setAttribute('icon', 'autorenew');
