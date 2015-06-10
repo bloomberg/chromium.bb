@@ -48,13 +48,27 @@ function initialize_extensionsPanelTest()
         panel._panelToolbar._contentElement.children[index].click();
     }
 
-    InspectorTest.clickOnURL = function()
+    InspectorTest.logMessageAndClickOnURL = function()
     {
         InspectorTest.disableConsoleViewport();
-        var xpathResult = document.evaluate("//a[starts-with(., 'extensions-panel.html')]", WebInspector.ConsolePanel._view()._viewport.element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
-        var click = document.createEvent("MouseEvent");
-        click.initMouseEvent("click", true, true);
-        xpathResult.singleNodeValue.dispatchEvent(click);
+        InspectorTest.evaluateInPage("logMessage()");
+        var wrappedConsoleMessageAdded = InspectorTest.safeWrap(consoleMessageAdded);
+        WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
+
+        function consoleMessageAdded()
+        {
+            WebInspector.multitargetConsoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
+            InspectorTest.runAfterPendingDispatches(clickOnMessage)
+        }
+
+        function clickOnMessage()
+        {
+            var xpathResult = document.evaluate("//a[starts-with(., 'extensions-panel.html')]", WebInspector.ConsolePanel._view()._viewport.element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
+
+            var click = document.createEvent("MouseEvent");
+            click.initMouseEvent("click", true, true);
+            xpathResult.singleNodeValue.dispatchEvent(click);
+        }
     }
 
     InspectorTest.installShowResourceLocationHooks = function()
@@ -163,10 +177,8 @@ function extension_testCreatePanel(nextTest)
         }
         webInspector.panels.setOpenResourceHandler(handleOpenResource);
         evaluateOnFrontend("WebInspector.openAnchorLocationRegistry._activeHandler = 'test extension'");
-        webInspector.inspectedWindow.eval("logMessage()", function() {
-            expectOnShown = true;
-            evaluateOnFrontend("InspectorTest.clickOnURL();");
-        });
+        evaluateOnFrontend("InspectorTest.logMessageAndClickOnURL();");
+        expectOnShown = true;
     }
     var basePath = location.pathname.replace(/\/[^/]*$/, "/");
     webInspector.panels.create("Test Panel", basePath + "extension-panel.png", basePath + "extension-panel.html", onPanelCreated);
