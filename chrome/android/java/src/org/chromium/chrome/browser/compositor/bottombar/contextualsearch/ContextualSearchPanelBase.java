@@ -33,11 +33,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private static final float EXPANDED_PANEL_HEIGHT_PERCENTAGE = .7f;
 
     /**
-     * The height of the Toolbar in dps.
-     */
-    private static final float TOOLBAR_HEIGHT_DP = 56.f;
-
-    /**
      * The height of the Contextual Search Panel's Shadow in dps.
      */
     private static final float PANEL_SHADOW_HEIGHT_DP = 16.f;
@@ -128,6 +123,11 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private static final float PROGRESS_BAR_VISIBILITY_THRESHOLD_DP = 10.f;
 
     /**
+     * The height of the Toolbar in dps.
+     */
+    private final float mToolbarHeight;
+
+    /**
      * The height of the Search Bar when the Panel is peeking, in dps.
      */
     private final float mSearchBarHeightPeeking;
@@ -191,9 +191,12 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
         mPxToDp = 1.f / context.getResources().getDisplayMetrics().density;
 
+        mToolbarHeight = context.getResources().getDimension(
+                R.dimen.control_container_height) * mPxToDp;
+
         mSearchBarHeightPeeking = context.getResources().getDimension(
                 R.dimen.contextual_search_bar_height) * mPxToDp;
-        mSearchBarHeightMaximized = TOOLBAR_HEIGHT_DP + PANEL_SHADOW_HEIGHT_DP;
+        mSearchBarHeightMaximized = mToolbarHeight + PANEL_SHADOW_HEIGHT_DP;
         mSearchBarHeightExpanded =
                 Math.round((mSearchBarHeightPeeking + mSearchBarHeightMaximized) / 2.f);
         mSearchBarHeightPromo = SEARCH_BAR_HEIGHT_STATE_PROMO + PANEL_SHADOW_HEIGHT_DP;
@@ -266,12 +269,19 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     }
 
     /**
+     * @return The height of the Chrome toolbar in dp.
+     */
+    public float getToolbarHeight() {
+        return mToolbarHeight;
+    }
+
+    /**
      * @param y The y coordinate.
      * @return The Y coordinate relative the fullscreen height.
      */
     public float getFullscreenY(float y) {
         if (mIsToolbarShowing) {
-            y += TOOLBAR_HEIGHT_DP / mPxToDp;
+            y += mToolbarHeight / mPxToDp;
         }
         return y;
     }
@@ -307,7 +317,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         // here, there will be a "jump" when swiping the Search Panel around.
         // TODO(pedrosimonetti): Find better way to get the fullscreen height.
         if (mIsToolbarShowing) {
-            height += TOOLBAR_HEIGHT_DP;
+            height += mToolbarHeight;
         }
         return height;
     }
@@ -1162,7 +1172,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         offset = Math.min(offset, 0.f);
         // If visible, the Toolbar will be hidden. Therefore, we need to adjust
         // the offset to account for this difference.
-        if (mIsToolbarShowing) offset -= TOOLBAR_HEIGHT_DP;
+        if (mIsToolbarShowing) offset -= mToolbarHeight;
         // Make sure the offset is not greater than the expanded height, because
         // there's nothing to render below the Page.
         offset = Math.max(offset, -expandedHeight);

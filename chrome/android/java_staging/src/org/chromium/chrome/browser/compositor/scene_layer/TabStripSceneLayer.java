@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -51,26 +50,25 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
      * @param layoutHelper A layout helper for the tab strip.
      * @param layerTitleCache A layer title cache.
      * @param resourceManager A resource manager.
-     * @param fullscreenManager A fullscreen manager.
      * @param stripLayoutTabsToRender Array of strip layout tabs.
+     * @param yOffset Current top controls offset in dp.
      */
     public void pushAndUpdateStrip(StripLayoutHelperManager layoutHelper,
             LayerTitleCache layerTitleCache, ResourceManager resourceManager,
-            ChromeFullscreenManager fullscreenManager, StripLayoutTab[] stripLayoutTabsToRender) {
+            StripLayoutTab[] stripLayoutTabsToRender, float yOffset) {
         if (mNativePtr == 0) return;
 
         nativeBeginBuildingFrame(mNativePtr);
-        pushButtonsAndBackground(layoutHelper, resourceManager, fullscreenManager);
+        pushButtonsAndBackground(layoutHelper, resourceManager, yOffset);
         pushStripTabs(layoutHelper, layerTitleCache, resourceManager, stripLayoutTabsToRender);
         nativeFinishBuildingFrame(mNativePtr);
     }
 
     private void pushButtonsAndBackground(StripLayoutHelperManager layoutHelper,
-            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
-        float yOffset = fullscreenManager != null ? fullscreenManager.getControlOffset() : 0.f;
-
+            ResourceManager resourceManager, float yOffset) {
         nativeUpdateTabStripLayer(mNativePtr, layoutHelper.getWidth() * mDpToPx,
-                layoutHelper.getHeight() * mDpToPx, yOffset, layoutHelper.getStripBrightness());
+                layoutHelper.getHeight() * mDpToPx, yOffset * mDpToPx,
+                layoutHelper.getStripBrightness());
 
         CompositorButton newTabButton = layoutHelper.getNewTabButton();
         CompositorButton modelSelectorButton = layoutHelper.getModelSelectorButton();

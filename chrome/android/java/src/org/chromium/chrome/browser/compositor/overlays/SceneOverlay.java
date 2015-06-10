@@ -8,7 +8,6 @@ import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -23,12 +22,12 @@ public interface SceneOverlay {
      *
      * @param layerTitleCache A layer title cache.
      * @param resourceManager A resource manager.
-     * @param fullscreenManager A fullscreen manager.
+     * @param yOffset Current top controls offset in dp.
      * @return A {@link SceneOverlayLayer} that represents an scene overlay.
      * Or {@code null} if this {@link SceneOverlay} doesn't have a tree.
      */
     SceneOverlayLayer getUpdatedSceneOverlayTree(LayerTitleCache layerTitleCache,
-            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager);
+            ResourceManager resourceManager, float yOffset);
 
     /**
      * @return The {@link EventFilter} that processes events for this {@link SceneOverlay}.

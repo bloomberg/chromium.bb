@@ -33,12 +33,6 @@ import org.chromium.ui.resources.ResourceManager;
  */
 public class ContextualSearchLayout extends ContextualSearchSupportedLayout {
     /**
-     * The height of the Toolbar in dps.
-     * TODO(pedrosimonetti): Get this value from the Toolbar code.
-     */
-    private static final float TOOLBAR_HEIGHT_DP = 56.f;
-
-    /**
      * The initial Y position of the touch event.
      */
     private float mInitialPanelTouchY;
@@ -79,7 +73,8 @@ public class ContextualSearchLayout extends ContextualSearchSupportedLayout {
 
     @Override
     public float getTopControlsOffset(float currentOffsetDp) {
-        return MathUtils.clamp(mBaseTab.getY(), -TOOLBAR_HEIGHT_DP, Math.min(currentOffsetDp, 0f));
+        return MathUtils.clamp(mBaseTab.getY(), -mSearchPanel.getToolbarHeight(),
+                Math.min(currentOffsetDp, 0f));
     }
 
     @Override

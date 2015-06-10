@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.ui.resources.ResourceManager;
@@ -118,11 +117,11 @@ public class StripLayoutHelperManager implements SceneOverlay {
 
     @Override
     public SceneOverlayLayer getUpdatedSceneOverlayTree(LayerTitleCache layerTitleCache,
-            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
+            ResourceManager resourceManager, float yOffset) {
         assert mTabStripTreeProvider != null;
 
         mTabStripTreeProvider.pushAndUpdateStrip(this, layerTitleCache, resourceManager,
-                fullscreenManager, getActiveStripLayoutHelper().getStripLayoutTabsToRender());
+                getActiveStripLayoutHelper().getStripLayoutTabsToRender(), yOffset);
         return mTabStripTreeProvider;
     }
 

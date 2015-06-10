@@ -1143,10 +1143,16 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
         updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
                 resourceManager, fullscreenManager);
 
+        float offsetPx = fullscreenManager != null ? fullscreenManager.getControlOffset() : 0.f;
+        float dpToPx = getContext().getResources().getDisplayMetrics().density;
+        float offsetDp = offsetPx / dpToPx;
+        float offsetOverride = getTopControlsOffset(offsetDp);
+        if (!Float.isNaN(offsetOverride)) offsetDp = offsetOverride;
+
         SceneLayer content = getSceneLayer();
         for (int i = 0; i < mSceneOverlays.size(); i++) {
             SceneOverlayLayer overlayLayer = mSceneOverlays.get(i).getUpdatedSceneOverlayTree(
-                    layerTitleCache, resourceManager, fullscreenManager);
+                    layerTitleCache, resourceManager, offsetDp);
 
             overlayLayer.setContentTree(content);
             content = overlayLayer;
