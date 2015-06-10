@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Settings-specific Chromium strings (included from chromium_strings.grd). -->
 <grit-part>
+  <!-- Privacy Page -->
+  <message name="IDS_SETTINGS_IMPROVE_BROWSING_EXPERIENCE" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
+    Chromium may use <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>web services<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> to improve your browsing experience. You may optionally disable these services at any time.
+  </message>
+
   <!-- Sync Page -->
   <message name="IDS_SETTINGS_SYNC_DATA_ENCRYPTED_TEXT" desc="Text alerting the user that synced data is encrypted.">
     For added security, Chromium will encrypt your data.

@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://md-settings/appearance_page/appearance_page.html">
 <link rel="import" href="chrome://md-settings/date_time_page/date_time_page.html">
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
+<link rel="import" href="chrome://md-settings/privacy_page/privacy_page.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
 <link rel="import" href="chrome://md-settings/search_page/search_page.html">
 <link rel="import" href="chrome://md-settings/sync_page/sync_page.html">
@@ -40,6 +41,8 @@
           <cr-settings-date-time-page prefs="{{prefs}}" route="dateTime">
           </cr-settings-date-time-page>
 </if>
+          <cr-settings-privacy-page prefs="{{prefs}}" route="privacy">
+          </cr-settings-privacy-page>
           <cr-settings-downloads-page prefs="{{prefs}}" route="downloads">
           </cr-settings-downloads-page>
           <cr-settings-search-page route="search"></cr-settings-search-page>

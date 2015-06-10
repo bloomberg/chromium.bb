@@ -122,6 +122,47 @@
     Network Details
   </message>
 
+  <!-- Privacy Page -->
+  <message name="IDS_SETTINGS_PRIVACY_PAGE_TITLE" desc="Name of the settings page which allows users to modify privacy and security settings.">
+    Privacy &amp; Security
+  </message>
+  <message name="IDS_SETTINGS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference to help with navigation errors.">
+    Use a web service to help resolve navigation errors
+  </message>
+  <message name="IDS_SETTINGS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
+    Use a prediction service to help complete searches and URLs typed in the address bar or the app launcher search box
+  </message>
+  <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
+    Prefetch resources to load pages more quickly
+  </message>
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
+    Enable phishing and malware protection
+  </message>
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING" desc="Checkbox label: should Chrome upload information about suspicious downloads and websites to Safe Browsing">
+    Automatically report details of possible security incidents to Google
+  </message>
+  <message name="IDS_SETTINGS_SPELLING_PREF" desc="The documentation string of the 'Use Spelling' preference">
+    Use a web service to help resolve spelling errors
+  </message>
+  <message name="IDS_SETTINGS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
+    Automatically send usage statistics and crash reports to Google
+  </message>
+  <message name="IDS_SETTINGS_ENABLE_DO_NOT_TRACK" desc="The label of the checkbox to enable/disable sending the 'Do Not track' header">
+    Send a "Do Not Track" request with your browsing traffic
+  </message>
+  <message name="IDS_SETTINGS_ENABLE_CONTENT_PROTECTION_ATTESTATION" desc="description label for verified access about premium contents">
+    Enable Verified Access
+  </message>
+  <message name="IDS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for enabling quickly reconnecting to known Wi-Fi SSIDs.">
+    Keep Wi-Fi on during sleep
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS" desc="Text for site settings button in Privacy options">
+    Site settings
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_DATA" desc="Text for clear browsing data button in Privacy options">
+    Clear browsing data
+  </message>
+
   <!-- Search Page -->
   <message name="IDS_SETTINGS_SEARCH_PAGE_TITLE" desc="Name of the settings page which displays search engine preferences.">
     Search

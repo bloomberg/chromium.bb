@@ -11,8 +11,7 @@
   background-color: white;
   display: flex;
   flex-direction: column;
-  padding-bottom: 40px;
-  padding-top: 40px;
+  padding: 40px;
 }
 
 .soft-border {

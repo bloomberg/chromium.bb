@@ -4,10 +4,14 @@
 
 #include "chrome/browser/ui/webui/settings/md_settings_localized_strings_provider.h"
 
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/google_chrome_strings.h"
 #include "chrome/grit/locale_settings.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -112,6 +116,42 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       "internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL_PAGE_TITLE);
 }
 #endif
+
+void AddPrivacyStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("privacyPageTitle",
+                                  IDS_SETTINGS_PRIVACY_PAGE_TITLE);
+  html_source->AddString("improveBrowsingExperience",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_IMPROVE_BROWSING_EXPERIENCE,
+                             base::ASCIIToUTF16(chrome::kPrivacyLearnMoreURL)));
+  html_source->AddLocalizedString("linkDoctorPref",
+                                  IDS_SETTINGS_LINKDOCTOR_PREF);
+  html_source->AddLocalizedString("searchSuggestPref",
+                                  IDS_SETTINGS_SUGGEST_PREF);
+  html_source->AddLocalizedString(
+      "networkPredictionEnabled",
+      IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESCRIPTION);
+  html_source->AddLocalizedString("safeBrowsingEnableProtection",
+                                  IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION);
+  html_source->AddLocalizedString(
+      "safeBrowsingEnableExtendedReporting",
+      IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING);
+  html_source->AddLocalizedString("spellingPref",
+                                  IDS_SETTINGS_SPELLING_PREF);
+  html_source->AddLocalizedString("enableLogging",
+                                  IDS_SETTINGS_ENABLE_LOGGING);
+  html_source->AddLocalizedString("doNotTrack",
+                                  IDS_SETTINGS_ENABLE_DO_NOT_TRACK);
+  html_source->AddLocalizedString(
+      "enableContentProtectionAttestation",
+      IDS_SETTINGS_ENABLE_CONTENT_PROTECTION_ATTESTATION);
+  html_source->AddLocalizedString("wakeOnWifi",
+                                  IDS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION);
+  html_source->AddLocalizedString("siteSettingsLabel",
+                                  IDS_SETTINGS_SITE_SETTINGS);
+  html_source->AddLocalizedString("clearBrowsingDataLabel",
+                                  IDS_SETTINGS_CLEAR_DATA);
+}
 
 void AddSearchStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("searchPageTitle",
@@ -228,6 +268,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
   AddInternetStrings(html_source);
 #endif
+  AddPrivacyStrings(html_source);
   AddSearchStrings(html_source);
   AddSearchEnginesStrings(html_source);
   AddSyncStrings(html_source);

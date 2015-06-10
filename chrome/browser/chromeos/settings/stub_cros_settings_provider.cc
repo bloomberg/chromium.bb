@@ -66,6 +66,8 @@ void StubCrosSettingsProvider::SetDefaults() {
   values_.SetBoolean(kAccountsPrefAllowNewUser, true);
   values_.SetBoolean(kAccountsPrefSupervisedUsersEnabled, true);
   values_.SetBoolean(kAccountsPrefShowUserNamesOnSignIn, true);
+  values_.SetBoolean(kAttestationForContentProtectionEnabled, true);
+  values_.SetBoolean(kStatsReportingPref, true);
   values_.SetValue(kAccountsPrefDeviceLocalAccounts, new base::ListValue);
   // |kDeviceOwner| will be set to the logged-in user by |UserManager|.
 }
