@@ -13,8 +13,7 @@ namespace {
 // Field trial strings.
 const char kSRTCanaryGroupName[] = "SRTCanary";
 const char kSRTPromptTrialName[] = "SRTPromptFieldTrial";
-const char kSRTPromptOnGroup[] = "On";
-const char kSRTPromptDefaultGroup[] = "Default";
+const char kSRTPromptOffGroup[] = "Off";
 const char kSRTPromptSeedParamName[] = "Seed";
 
 // The download links of the Software Removal Tool.
@@ -31,7 +30,7 @@ namespace safe_browsing {
 
 bool IsInSRTPromptFieldTrialGroups() {
   return base::FieldTrialList::FindFullName(kSRTPromptTrialName) !=
-         kSRTPromptDefaultGroup;
+         kSRTPromptOffGroup;
 }
 
 const char* GetSRTDownloadURL() {
