@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/startup_helper.h"
 #include "chrome/browser/extensions/webstore_installer_test.h"
@@ -57,8 +56,7 @@ class WebstoreStartupInstallerTest : public WebstoreInstallerTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, Install) {
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::ACCEPT;
+  AutoAcceptInstall();
 
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
@@ -74,8 +72,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, Install) {
 
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
     InstallNotAllowedFromNonVerifiedDomains) {
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::CANCEL;
+  AutoCancelInstall();
   ui_test_utils::NavigateToURL(
       browser(),
       GenerateTestServerUrl(kNonAppDomain, "install_non_verified_domain.html"));
@@ -94,8 +91,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, FindLink) {
 // Flakes on all platforms: http://crbug.com/95713, http://crbug.com/229947
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
                        DISABLED_ArgumentValidation) {
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::CANCEL;
+  AutoCancelInstall();
 
   // Each of these tests has to run separately, since one page/tab can
   // only have one in-progress install request. These tests don't all pass
@@ -111,8 +107,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, MultipleInstallCalls) {
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::CANCEL;
+  AutoCancelInstall();
 
   ui_test_utils::NavigateToURL(
       browser(),
@@ -121,8 +116,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, MultipleInstallCalls) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallNotSupported) {
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::CANCEL;
+  AutoCancelInstall();
   ui_test_utils::NavigateToURL(
       browser(),
       GenerateTestServerUrl(kAppDomain, "install_not_supported.html"));
@@ -141,8 +135,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallNotSupported) {
 
 // Regression test for http://crbug.com/144991.
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::ACCEPT;
+  AutoAcceptInstall();
 
   const GURL kInstallUrl = GenerateTestServerUrl(kAppDomain, "install.html");
 
@@ -195,8 +188,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerSupervisedUsersTest,
     return;
 #endif
 
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::ACCEPT;
+  AutoAcceptInstall();
 
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install_prohibited.html"));
@@ -231,8 +223,7 @@ class WebstoreStartupInstallUnpackFailureTest
 
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallUnpackFailureTest,
     WebstoreStartupInstallUnpackFailureTest) {
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::ACCEPT;
+  AutoAcceptInstall();
 
   ui_test_utils::NavigateToURL(browser(),
       GenerateTestServerUrl(kAppDomain, "install_unpack_failure.html"));
@@ -295,8 +286,7 @@ IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, CannotInstallNonEphemeral) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(
       switches::kInstallEphemeralAppFromWebstore, kTestExtensionId);
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::ACCEPT;
+  AutoAcceptInstall();
   extensions::StartupHelper helper;
   EXPECT_FALSE(helper.InstallEphemeralApp(*command_line, browser()->profile()));
   EXPECT_FALSE(saw_install());

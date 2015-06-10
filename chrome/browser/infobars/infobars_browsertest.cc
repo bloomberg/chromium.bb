@@ -18,6 +18,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -48,8 +49,8 @@ class InfoBarsTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::ACCEPT;
+  extensions::ScopedTestDialogAutoConfirm auto_confirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT);
 
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).

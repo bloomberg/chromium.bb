@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/management/management_api.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install/extension_install_ui.h"
 #include "gpu/config/gpu_feature_type.h"
@@ -117,8 +118,8 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
 
-    ExtensionInstallPrompt::g_auto_confirm_for_tests =
-        ExtensionInstallPrompt::ACCEPT;
+    auto_confirm_install_.reset(
+        new ScopedTestDialogAutoConfirm(ScopedTestDialogAutoConfirm::ACCEPT));
 
     ASSERT_TRUE(webstore_install_dir_.CreateUniqueTempDir());
     webstore_install_dir_copy_ = webstore_install_dir_.path();
@@ -148,8 +149,6 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   // Navigates to |page| and runs the Extension API test there. Any downloads
   // of extensions will return the contents of |crx_file|.
   bool RunInstallTest(const std::string& page, const std::string& crx_file) {
-    // Auto-confirm the uninstallation dialog.
-    ManagementUninstallFunction::SetAutoConfirmForTest(true);
 #if defined(OS_WIN) && !defined(NDEBUG)
     // See http://crbug.com/177163 for details.
     return true;
@@ -176,6 +175,10 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   // WebstoreInstaller needs a reference to a FilePath when setting the download
   // directory for testing.
   base::FilePath webstore_install_dir_copy_;
+
+  scoped_ptr<ScopedTestDialogAutoConfirm> auto_confirm_install_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionWebstorePrivateApiTest);
 };
 
 // Test cases for webstore origin frame blocking.
@@ -238,8 +241,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallLocalized) {
 
 // Now test the case where the user cancels the confirmation dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, InstallCancelled) {
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::CANCEL;
+  ScopedTestDialogAutoConfirm auto_cancel(ScopedTestDialogAutoConfirm::CANCEL);
   ASSERT_TRUE(RunInstallTest("cancelled.html", "extension.crx"));
 }
 

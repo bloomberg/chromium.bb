@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/image_loader.h"
@@ -47,21 +48,6 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 }
 
 }  // namespace
-
-// static
-ExtensionUninstallDialog::AutoConfirmForTests
-ExtensionUninstallDialog::g_auto_confirm_for_testing =
-    ExtensionUninstallDialog::NONE;
-
-ExtensionUninstallDialog::ScopedAutoConfirm::ScopedAutoConfirm(
-    AutoConfirmForTests new_value)
-    : original_value_(g_auto_confirm_for_testing) {
-  g_auto_confirm_for_testing = new_value;
-}
-
-ExtensionUninstallDialog::ScopedAutoConfirm::~ScopedAutoConfirm() {
-  g_auto_confirm_for_testing = original_value_;
-}
 
 ExtensionUninstallDialog::ExtensionUninstallDialog(
     Profile* profile,
@@ -137,14 +123,14 @@ void ExtensionUninstallDialog::OnImageLoaded(const std::string& extension_id,
 
   SetIcon(image);
 
-  switch (g_auto_confirm_for_testing) {
-    case NONE:
+  switch (ScopedTestDialogAutoConfirm::GetAutoConfirmValue()) {
+    case ScopedTestDialogAutoConfirm::NONE:
       Show();
       break;
-    case ACCEPT:
+    case ScopedTestDialogAutoConfirm::ACCEPT:
       OnDialogClosed(CLOSE_ACTION_UNINSTALL);
       break;
-    case CANCEL:
+    case ScopedTestDialogAutoConfirm::CANCEL:
       OnDialogClosed(CLOSE_ACTION_CANCELED);
       break;
   }

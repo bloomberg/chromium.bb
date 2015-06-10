@@ -24,6 +24,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/image_loader.h"
@@ -154,19 +155,22 @@ SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
 // If auto confirm is enabled then posts a task to proceed with or cancel the
 // install and returns true. Otherwise returns false.
 bool AutoConfirmPrompt(ExtensionInstallPrompt::Delegate* delegate) {
-  switch (ExtensionInstallPrompt::g_auto_confirm_for_tests) {
-    case ExtensionInstallPrompt::NONE:
+  switch (extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue()) {
+    case extensions::ScopedTestDialogAutoConfirm::NONE:
+      LOG(WARNING) << "None!";
       return false;
     // We use PostTask instead of calling the delegate directly here, because in
     // the real implementations it's highly likely the message loop will be
     // pumping a few times before the user clicks accept or cancel.
-    case ExtensionInstallPrompt::ACCEPT:
+    case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
+      LOG(WARNING) << "Proceeding!";
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&ExtensionInstallPrompt::Delegate::InstallUIProceed,
                      base::Unretained(delegate)));
       return true;
-    case ExtensionInstallPrompt::CANCEL:
+    case extensions::ScopedTestDialogAutoConfirm::CANCEL:
+      LOG(WARNING) << "Canceling!";
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&ExtensionInstallPrompt::Delegate::InstallUIAbort,
@@ -193,10 +197,6 @@ ExtensionInstallPrompt::Prompt::InstallPromptPermissions::
 ExtensionInstallPrompt::Prompt::InstallPromptPermissions::
     ~InstallPromptPermissions() {
 }
-
-// static
-ExtensionInstallPrompt::AutoConfirmForTests
-ExtensionInstallPrompt::g_auto_confirm_for_tests = ExtensionInstallPrompt::NONE;
 
 ExtensionInstallPrompt::PromptType
 ExtensionInstallPrompt::g_last_prompt_type_for_tests =

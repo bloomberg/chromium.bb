@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/install/extension_install_ui.h"
@@ -79,18 +80,19 @@ SimpleExtensionLoadPrompt::~SimpleExtensionLoadPrompt() {
 }
 
 void SimpleExtensionLoadPrompt::ShowPrompt() {
-  switch (ExtensionInstallPrompt::g_auto_confirm_for_tests) {
-    case ExtensionInstallPrompt::NONE:
+  switch (extensions::ScopedTestDialogAutoConfirm::GetAutoConfirmValue()) {
+    case extensions::ScopedTestDialogAutoConfirm::NONE:
       install_ui_->ConfirmInstall(
           this,
           extension_.get(),
           ExtensionInstallPrompt::GetDefaultShowDialogCallback());
       break;
-    case ExtensionInstallPrompt::ACCEPT:
+    case extensions::ScopedTestDialogAutoConfirm::ACCEPT:
       InstallUIProceed();
       break;
-    case ExtensionInstallPrompt::CANCEL:
+    case extensions::ScopedTestDialogAutoConfirm::CANCEL:
       InstallUIAbort(false);
+      break;
   }
 }
 

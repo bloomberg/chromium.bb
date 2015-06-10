@@ -8,8 +8,8 @@
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
-#include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -34,7 +34,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUnprivileged) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUninstallURL) {
   // Auto-confirm the uninstall dialog.
-  extensions::ManagementUninstallFunction::SetAutoConfirmForTest(true);
+  extensions::ScopedTestDialogAutoConfirm auto_confirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("runtime")
                                 .AppendASCII("uninstall_url")
                                 .AppendASCII("sets_uninstall_url")));

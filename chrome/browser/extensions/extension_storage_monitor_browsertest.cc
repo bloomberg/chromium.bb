@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -323,8 +324,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionStorageMonitorTest, UninstallExtension) {
 
   // Fake clicking the notification button to uninstall and accepting the
   // uninstall.
-  ExtensionUninstallDialog::ScopedAutoConfirm scoped_autoconfirm(
-      ExtensionUninstallDialog::ACCEPT);
+  ScopedTestDialogAutoConfirm scoped_autoconfirm(
+      ScopedTestDialogAutoConfirm::ACCEPT);
   TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()),
                                          extension->id());
   message_center::MessageCenter::Get()->ClickOnNotificationButton(

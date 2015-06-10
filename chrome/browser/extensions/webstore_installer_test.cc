@@ -138,11 +138,13 @@ void WebstoreInstallerTest::RunTestAsync(
 }
 
 void WebstoreInstallerTest::AutoAcceptInstall() {
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::ACCEPT;
+  install_auto_confirm_.reset();  // Destroy any old override first.
+  install_auto_confirm_.reset(new extensions::ScopedTestDialogAutoConfirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT));
 }
 
 void WebstoreInstallerTest::AutoCancelInstall() {
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::CANCEL;
+  install_auto_confirm_.reset();  // Destroy any old override first.
+  install_auto_confirm_.reset(new extensions::ScopedTestDialogAutoConfirm(
+      extensions::ScopedTestDialogAutoConfirm::CANCEL));
 }

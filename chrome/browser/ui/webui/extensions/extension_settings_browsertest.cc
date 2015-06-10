@@ -24,7 +24,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/api/management/management_api.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
@@ -87,7 +86,8 @@ void ExtensionSettingsUIBrowserTest::AddManagedPolicyProvider() {
 }
 
 void ExtensionSettingsUIBrowserTest::SetAutoConfirmUninstall() {
-  extensions::ManagementUninstallFunctionBase::SetAutoConfirmForTest(true);
+  uninstall_auto_confirm_.reset(new extensions::ScopedTestDialogAutoConfirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT));
 }
 
 void ExtensionSettingsUIBrowserTest::EnableErrorConsole() {

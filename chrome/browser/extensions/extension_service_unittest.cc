@@ -86,6 +86,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -2849,8 +2850,9 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   service()->set_show_extensions_prompts(true);
 
   // Start by canceling any install prompts.
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::CANCEL;
+  scoped_ptr<extensions::ScopedTestDialogAutoConfirm> auto_confirm(
+      new extensions::ScopedTestDialogAutoConfirm(
+          extensions::ScopedTestDialogAutoConfirm::CANCEL));
 
   // The extension that has a plugin should not install.
   extensions::UnpackedInstaller::Create(service())
@@ -2873,8 +2875,9 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(good2));
 
   // The plugin extension should install if we accept the dialog.
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::ACCEPT;
+  auto_confirm.reset();
+  auto_confirm.reset(new extensions::ScopedTestDialogAutoConfirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT));
 
   ExtensionErrorReporter::GetInstance()->ClearErrors();
   extensions::UnpackedInstaller::Create(service())
@@ -2897,8 +2900,9 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
 
   // We should be able to reload the extension without getting another prompt.
   loaded_.clear();
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::CANCEL;
+  auto_confirm.reset();
+  auto_confirm.reset(new extensions::ScopedTestDialogAutoConfirm(
+      extensions::ScopedTestDialogAutoConfirm::CANCEL));
 
   service()->ReloadExtension(good1);
   base::RunLoop().RunUntilIdle();

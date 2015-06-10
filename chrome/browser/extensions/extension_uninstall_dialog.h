@@ -34,24 +34,6 @@ class ExtensionUninstallDialog
     CLOSE_ACTION_LAST = 3,
   };
 
-  // A setting to cause extension/app installs from the webstore skip the normal
-  // confirmation dialog. This should only be used in tests.
-  enum AutoConfirmForTests {
-    NONE,    // The prompt will show normally.
-    ACCEPT,  // The prompt will always accept.
-    CANCEL,  // The prompt will always cancel.
-  };
-  class ScopedAutoConfirm {
-   public:
-    explicit ScopedAutoConfirm(AutoConfirmForTests new_value);
-    ~ScopedAutoConfirm();
-
-   private:
-    AutoConfirmForTests original_value_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedAutoConfirm);
-  };
-
   // TODO(devlin): For a single method like this, a callback is probably more
   // appropriate than a delegate.
   class Delegate {
@@ -111,8 +93,6 @@ class ExtensionUninstallDialog
   const gfx::ImageSkia& icon() const { return icon_; }
 
  private:
-  static AutoConfirmForTests g_auto_confirm_for_testing;
-
   // Handles the "report abuse" checkbox being checked at the close of the
   // dialog.
   void HandleReportAbuse();

@@ -9,6 +9,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -68,6 +69,10 @@ class WebstoreInstallerTest : public ExtensionBrowserTest {
   std::string test_gallery_url_;
 
   base::ScopedTempDir download_directory_;
+
+  scoped_ptr<extensions::ScopedTestDialogAutoConfirm> install_auto_confirm_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebstoreInstallerTest);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALLER_TEST_H_

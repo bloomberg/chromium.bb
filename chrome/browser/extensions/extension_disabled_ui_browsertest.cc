@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -147,8 +148,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, Uninstall) {
 
 // Tests uninstalling a disabled extension with an uninstall dialog.
 IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, UninstallFromDialog) {
-  extensions::ExtensionUninstallDialog::ScopedAutoConfirm auto_confirm(
-      extensions::ExtensionUninstallDialog::ACCEPT);
+  extensions::ScopedTestDialogAutoConfirm auto_confirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT);
   const Extension* extension = InstallAndUpdateIncreasingPermissionsExtension();
   ASSERT_TRUE(extension);
   std::string extension_id = extension->id();

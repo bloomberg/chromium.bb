@@ -541,39 +541,14 @@ ExtensionFunction::ResponseAction ManagementUninstallFunctionBase::Uninstall(
     return RespondNow(Error(keys::kGestureNeededForUninstallError));
 
   if (show_confirm_dialog) {
-    switch (auto_confirm_for_test) {
-      case DO_NOT_SKIP: {
-        // We show the programmatic uninstall ui for extensions uninstalling
-        // other extensions.
-        bool show_programmatic_uninstall_ui = !self_uninstall && extension();
-        AddRef();  // Balanced in OnExtensionUninstallDialogClosed.
-        // TODO(devlin): A method called "UninstallFunctionDelegate" does not in
-        // any way imply that this actually creates a dialog and runs it.
-        uninstall_dialog_ =
-            delegate->UninstallFunctionDelegate(
-                this,
-                target_extension,
-                show_programmatic_uninstall_ui);
-        break;
-      }
-      case PROCEED: {
-        // Skip the confirm dialog for testing.
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&ManagementUninstallFunctionBase::UninstallExtension,
-                       this));
-        break;
-      }
-      case ABORT: {
-        // Fake the user canceling.
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(
-                &ManagementUninstallFunctionBase::Finish, this, false,
-                ErrorUtils::FormatErrorMessage(keys::kUninstallCanceledError,
-                                               target_extension_id_)));
-      }
-    }
+    // We show the programmatic uninstall ui for extensions uninstalling
+    // other extensions.
+    bool show_programmatic_uninstall_ui = !self_uninstall && extension();
+    AddRef();  // Balanced in OnExtensionUninstallDialogClosed.
+    // TODO(devlin): A method called "UninstallFunctionDelegate" does not in
+    // any way imply that this actually creates a dialog and runs it.
+    uninstall_dialog_ = delegate->UninstallFunctionDelegate(
+        this, target_extension, show_programmatic_uninstall_ui);
   } else {  // No confirm dialog.
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -591,7 +566,9 @@ void ManagementUninstallFunctionBase::Finish(bool did_start_uninstall,
 void ManagementUninstallFunctionBase::OnExtensionUninstallDialogClosed(
     bool did_start_uninstall,
     const base::string16& error) {
-  Finish(did_start_uninstall, base::UTF16ToUTF8(error));
+  Finish(did_start_uninstall,
+         ErrorUtils::FormatErrorMessage(keys::kUninstallCanceledError,
+                                        target_extension_id_));
   Release();  // Balanced in Uninstall().
 }
 
@@ -619,12 +596,6 @@ void ManagementUninstallFunctionBase::UninstallExtension() {
                                            target_extension_id_);
   }
   Finish(success, error);
-}
-
-// static
-void ManagementUninstallFunctionBase::SetAutoConfirmForTest(
-    bool should_proceed) {
-  auto_confirm_for_test = should_proceed ? PROCEED : ABORT;
 }
 
 ManagementUninstallFunction::ManagementUninstallFunction() {

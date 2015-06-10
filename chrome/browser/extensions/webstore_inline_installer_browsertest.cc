@@ -167,8 +167,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
                        ReinstallDisabledExtension) {
   // Install an extension via inline install, and confirm it is successful.
-  ExtensionInstallPrompt::g_auto_confirm_for_tests =
-      ExtensionInstallPrompt::ACCEPT;
+  AutoAcceptInstall();
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
   RunTest("runTest");
@@ -224,8 +223,7 @@ class WebstoreInlineInstallerListenerTest : public WebstoreInlineInstallerTest {
 
  protected:
   void RunTest(const std::string& file_name) {
-    ExtensionInstallPrompt::g_auto_confirm_for_tests =
-        ExtensionInstallPrompt::ACCEPT;
+    AutoAcceptInstall();
     ui_test_utils::NavigateToURL(browser(),
                                  GenerateTestServerUrl(kAppDomain, file_name));
     WebstoreInstallerTest::RunTest("runTest");

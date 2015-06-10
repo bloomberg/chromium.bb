@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/management/management_api.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/manifest.h"
@@ -128,7 +129,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, NoPermission) {
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_Uninstall) {
   LoadExtensions();
   // Confirmation dialog will be shown for uninstallations except for self.
-  extensions::ManagementUninstallFunction::SetAutoConfirmForTest(true);
+  extensions::ScopedTestDialogAutoConfirm auto_confirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT);
   ASSERT_TRUE(RunExtensionSubtest("management/test", "uninstall.html"));
 }
 
@@ -158,7 +160,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, GenerateAppForLink) {
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest,
                        MAYBE_ManagementPolicyAllowed) {
   LoadExtensions();
-  extensions::ManagementUninstallFunction::SetAutoConfirmForTest(true);
+  extensions::ScopedTestDialogAutoConfirm auto_confirm(
+      extensions::ScopedTestDialogAutoConfirm::ACCEPT);
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   EXPECT_TRUE(service->GetExtensionById(extension_ids_["enabled_extension"],

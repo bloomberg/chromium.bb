@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
+#include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/test_extensions_browser_client.h"
@@ -160,8 +161,8 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
     EXPECT_TRUE(registry()->disabled_extensions().Contains(extension->id()));
 
     // Automatically confirm install prompts.
-    ExtensionInstallPrompt::g_auto_confirm_for_tests =
-        ExtensionInstallPrompt::ACCEPT;
+    ScopedTestDialogAutoConfirm auto_confirm(
+        ScopedTestDialogAutoConfirm::ACCEPT);
 
     // Run the ExtensionReenabler.
     scoped_ptr<ExtensionReenabler> extension_reenabler =
@@ -181,6 +182,9 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
   // Check that we don't re-enable extensions that must remain disabled, and
   // that the re-enabler reports failure correctly.
   {
+    ScopedTestDialogAutoConfirm auto_confirm(
+        ScopedTestDialogAutoConfirm::ACCEPT);
+
     ManagementPolicy* management_policy =
         ExtensionSystem::Get(browser_context())->management_policy();
     ASSERT_TRUE(management_policy);
@@ -210,8 +214,8 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
     // Disable it again, and try canceling the prompt.
     service()->DisableExtension(extension->id(),
                                 Extension::DISABLE_PERMISSIONS_INCREASE);
-    ExtensionInstallPrompt::g_auto_confirm_for_tests =
-        ExtensionInstallPrompt::CANCEL;
+    ScopedTestDialogAutoConfirm auto_confirm(
+        ScopedTestDialogAutoConfirm::CANCEL);
     scoped_ptr<ExtensionReenabler> extension_reenabler =
         ExtensionReenabler::PromptForReenable(extension,
                                               profile(),
@@ -229,9 +233,6 @@ TEST_F(ExtensionReenablerUnitTest, TestReenablingDisabledExtension) {
   // Test that if the extension is re-enabled while the prompt is active, the
   // prompt exits and reports success.
   {
-    // Don't auto-confirm, so that the prompt "stays around".
-    ExtensionInstallPrompt::g_auto_confirm_for_tests =
-        ExtensionInstallPrompt::NONE;
     base::RunLoop run_loop;
     scoped_ptr<ExtensionReenabler> extension_reenabler =
         ExtensionReenabler::PromptForReenableWithPromptForTest(

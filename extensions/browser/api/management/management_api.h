@@ -135,8 +135,6 @@ class ManagementUninstallFunctionBase : public UIThreadExtensionFunction {
  public:
   ManagementUninstallFunctionBase();
 
-  static void SetAutoConfirmForTest(bool should_proceed);
-
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
                                         const base::string16& error);
 
