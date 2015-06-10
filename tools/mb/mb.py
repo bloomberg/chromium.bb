@@ -89,6 +89,9 @@ class MetaBuildWrapper(object):
     subp = subps.add_parser('gen',
                             help='generate a new set of build files')
     AddCommonOptions(subp)
+    subp.add_argument('--swarming-targets-file',
+                      help='save runtime dependencies for targets listed '
+                           'in file.')
     subp.add_argument('path', nargs=1,
                       help='path to generate build into')
     subp.set_defaults(func=self.CmdGen)
@@ -336,7 +339,35 @@ class MetaBuildWrapper(object):
 
   def RunGNGen(self, path, vals):
     cmd = self.GNCmd('gen', path, vals['gn_args'])
+
+    swarming_targets = []
+    if self.args.swarming_targets_file:
+      # We need GN to generate the list of runtime dependencies for
+      # the compile targets listed (one per line) in the file so
+      # we can run them via swarming. We use ninja_to_gn.pyl to convert
+      # the compile targets to the matching GN labels.
+      contents = self.ReadFile(self.args.swarming_targets_file)
+      swarming_targets = contents.splitlines()
+      ninja_targets_to_labels = ast.literal_eval(self.ReadFile(os.path.join(
+          self.chromium_src_dir, 'testing', 'buildbot', 'ninja_to_gn.pyl')))
+      gn_labels = []
+      for target in swarming_targets:
+        if not target in ninja_targets_to_labels:
+          raise MBErr('test target "%s"  not found in %s' %
+                      (target, '//testing/buildbot/ninja_to_gn.pyl'))
+        gn_labels.append(ninja_targets_to_labels[target])
+
+      gn_runtime_deps_path = self.ToAbsPath(path, 'runtime_deps')
+      self.WriteFile(gn_runtime_deps_path, '\n'.join(gn_labels) + '\n')
+      cmd.append('--runtime-deps-list-file=%s' % gn_runtime_deps_path)
+
     ret, _, _ = self.Run(cmd)
+
+    for target in swarming_targets:
+      deps_path = self.ToAbsPath(path, target + '.runtime_deps')
+      if not self.Exists(deps_path):
+          raise MBErr('did not generate %s' % deps_path)
+
     return ret
 
   def GNCmd(self, subcommand, path, gn_args=''):
@@ -387,7 +418,7 @@ class MetaBuildWrapper(object):
       outp = json.loads(self.ReadFile(self.args.output_path[0]))
       self.Print()
       self.Print('analyze output:')
-      self.PrintJSON(inp)
+      self.PrintJSON(outp)
       self.Print()
 
     return ret
@@ -504,10 +535,10 @@ class MetaBuildWrapper(object):
 
     return cmdline, extra_files
 
-  def ToAbsPath(self, build_path, relpath):
+  def ToAbsPath(self, build_path, *comps):
     return os.path.join(self.chromium_src_dir,
                         self.ToSrcRelPath(build_path),
-                        relpath)
+                        *comps)
 
   def ToSrcRelPath(self, path):
     """Returns a relative path from the top of the repo."""

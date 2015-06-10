@@ -10,6 +10,7 @@ formatted.
 """
 
 import argparse
+import ast
 import collections
 import glob
 import json
@@ -48,6 +49,15 @@ SKIP = {
   'Linux ARM Cross-Compile',
   'Site Isolation Linux',
   'Site Isolation Win',
+}
+
+
+# TODO(GYP): These targets have not been ported to GN yet.
+SKIP_NINJA_TO_GN_TARGETS = {
+  'cast_media_unittests',
+  'cast_shell_browser_test',
+  'chromevox_tests',
+  'nacl_helper_nonsfi_unittests',
 }
 
 
@@ -90,7 +100,8 @@ def process_builder_remaining(data, filename, builder, tests_location):
           filename, []).append(builder)
 
 
-def process_file(mode, test_name, tests_location, filepath):
+def process_file(mode, test_name, tests_location, filepath, ninja_targets,
+                 ninja_targets_seen):
   """Processes a file.
 
   The action depends on mode. Updates tests_location.
@@ -119,6 +130,14 @@ def process_file(mode, test_name, tests_location, filepath):
     if not all(isinstance(g, dict) for g in data['gtest_tests']):
       raise Error(
           '%s: %s is broken: %s' % (filename, builder, data['gtest_tests']))
+
+    for d in data['gtest_tests']:
+      if (d['test'] not in ninja_targets and
+          d['test'] not in SKIP_NINJA_TO_GN_TARGETS):
+        raise Error('%s: %s / %s is not listed in ninja_to_gn.pyl.' %
+                    (filename, builder, d['test']))
+      elif d['test'] in ninja_targets:
+        ninja_targets_seen.add(d['test'])
 
     config[builder]['gtest_tests'] = sorted(
         data['gtest_tests'], key=lambda x: x['test'])
@@ -222,11 +241,25 @@ def main():
         'count_run_local': 0, 'count_run_on_swarming': 0, 'local_configs': {}
       })
 
+  with open(os.path.join(THIS_DIR, "ninja_to_gn.pyl")) as fp:
+    ninja_targets = ast.literal_eval(fp.read())
+
   try:
     result = 0
+    ninja_targets_seen = set()
     for filepath in glob.glob(os.path.join(THIS_DIR, '*.json')):
-      if not process_file(args.mode, args.test_name, tests_location, filepath):
+      if not process_file(args.mode, args.test_name, tests_location, filepath,
+                          ninja_targets, ninja_targets_seen):
         result = 1
+
+    extra_targets = set(ninja_targets) - ninja_targets_seen
+    if extra_targets:
+      if len(extra_targets) > 1:
+        extra_targets_str = ', '.join(extra_targets) + ' are'
+      else:
+        extra_targets_str = list(extra_targets)[0] + ' is'
+      raise Error('%s listed in ninja_to_gn.pyl but not in any .json files' %
+                  extra_targets_str)
 
     if args.mode == 'remaining':
       print_remaining(args.test_name, tests_location)
