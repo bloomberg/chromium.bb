@@ -34,9 +34,7 @@
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_update_queue.h"
-#include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_content_layer_impl.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_painted_scrollbar_layer.h"
@@ -644,10 +642,7 @@ class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
     root_layer_->SetBounds(gfx::Size(10, 20));
     root_layer_->CreateRenderSurface();
 
-    if (layer_tree_host()->settings().impl_side_painting)
-      scaled_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
-    else
-      scaled_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
+    scaled_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     scaled_layer_->SetBounds(gfx::Size(1, 1));
     root_layer_->AddChild(scaled_layer_);
 
@@ -841,8 +836,6 @@ SINGLE_AND_MULTI_THREAD_BLOCKNOTIFY_TEST_F(
 // its damage is preserved until the next time it is drawn.
 class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestUndrawnLayersDamageLater() {}
-
   void InitializeSettings(LayerTreeSettings* settings) override {
     // If we don't set the minimum contents scale, it's harder to verify whether
     // the damage we get is correct. For other scale amounts, please see
@@ -861,18 +854,12 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
 
     // The initially transparent layer has a larger child layer, which is
     // not initially drawn because of the this (parent) layer.
-    if (layer_tree_host()->settings().impl_side_painting)
-      parent_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
-    else
-      parent_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
+    parent_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     parent_layer_->SetBounds(gfx::Size(15, 15));
     parent_layer_->SetOpacity(0.0f);
     root_layer_->AddChild(parent_layer_);
 
-    if (layer_tree_host()->settings().impl_side_painting)
-      child_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
-    else
-      child_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
+    child_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     child_layer_->SetBounds(gfx::Size(25, 25));
     parent_layer_->AddChild(child_layer_);
 
@@ -1578,164 +1565,6 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers);
 
-// TODO(sohanjg) : Remove it once impl-side painting ships everywhere.
-// Verify atomicity of commits and reuse of textures.
-class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->renderer_settings.texture_id_allocation_chunk_size = 1;
-    // Make sure partial texture updates are turned off.
-    settings->max_partial_texture_updates = 0;
-    // Linear fade animator prevents scrollbars from drawing immediately.
-    settings->scrollbar_animator = LayerTreeSettings::NO_ANIMATOR;
-  }
-
-  void SetupTree() override {
-    layer_ = FakeContentLayer::Create(layer_settings(), &client_);
-    layer_->SetBounds(gfx::Size(10, 20));
-
-    bool paint_scrollbar = true;
-    bool has_thumb = false;
-    scrollbar_ = FakePaintedScrollbarLayer::Create(
-        layer_settings(), paint_scrollbar, has_thumb, layer_->id());
-    scrollbar_->SetPosition(gfx::Point(0, 10));
-    scrollbar_->SetBounds(gfx::Size(10, 10));
-
-    layer_->AddChild(scrollbar_);
-
-    layer_tree_host()->SetRootLayer(layer_);
-    LayerTreeHostTest::SetupTree();
-  }
-
-  void BeginTest() override {
-    drew_frame_ = -1;
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    ASSERT_EQ(0u, impl->settings().max_partial_texture_updates);
-
-    TestWebGraphicsContext3D* context = TestContext();
-
-    switch (impl->active_tree()->source_frame_number()) {
-      case 0:
-        // Number of textures should be one for each layer
-        ASSERT_EQ(2u, context->NumTextures());
-        // Number of textures used for commit should be one for each layer.
-        EXPECT_EQ(2u, context->NumUsedTextures());
-        // Verify that used texture is correct.
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
-
-        context->ResetUsedTextures();
-        break;
-      case 1:
-        // Number of textures should be one for scrollbar layer since it was
-        // requested and deleted on the impl-thread, and double for the content
-        // layer since its first texture is used by impl thread and cannot by
-        // used for update.
-        ASSERT_EQ(3u, context->NumTextures());
-        // Number of textures used for commit should be one for each layer.
-        EXPECT_EQ(2u, context->NumUsedTextures());
-        // First textures should not have been used.
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
-        // New textures should have been used.
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
-        context->ResetUsedTextures();
-        break;
-      case 2:
-        EndTest();
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    TestWebGraphicsContext3D* context = TestContext();
-
-    if (drew_frame_ == impl->active_tree()->source_frame_number()) {
-      EXPECT_EQ(0u, context->NumUsedTextures()) << "For frame " << drew_frame_;
-      return;
-    }
-    drew_frame_ = impl->active_tree()->source_frame_number();
-
-    // We draw/ship one texture each frame for each layer.
-    EXPECT_EQ(2u, context->NumUsedTextures());
-    context->ResetUsedTextures();
-
-    if (!TestEnded())
-      PostSetNeedsCommitToMainThread();
-  }
-
-  void Layout() override {
-    layer_->SetNeedsDisplay();
-    scrollbar_->SetNeedsDisplay();
-  }
-
-  void AfterTest() override {}
-
- protected:
-  FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> layer_;
-  scoped_refptr<FakePaintedScrollbarLayer> scrollbar_;
-  int drew_frame_;
-};
-
-MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(
-    LayerTreeHostTestDirectRendererAtomicCommit);
-
-// TODO(sohanjg) : Remove it once impl-side painting ships everywhere.
-class LayerTreeHostTestDelegatingRendererAtomicCommit
-    : public LayerTreeHostTestDirectRendererAtomicCommit {
- public:
-  void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    ASSERT_EQ(0u, impl->settings().max_partial_texture_updates);
-
-    TestWebGraphicsContext3D* context = TestContext();
-
-    switch (impl->active_tree()->source_frame_number()) {
-      case 0:
-        // Number of textures should be one for each layer
-        ASSERT_EQ(2u, context->NumTextures());
-        // Number of textures used for commit should be one for each layer.
-        EXPECT_EQ(2u, context->NumUsedTextures());
-        // Verify that used texture is correct.
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
-        break;
-      case 1:
-        // Number of textures should be doubled as the first context layer
-        // texture is being used by the impl-thread and cannot be used for
-        // update.  The scrollbar behavior is different direct renderer because
-        // UI resource deletion with delegating renderer occurs after tree
-        // activation.
-        ASSERT_EQ(4u, context->NumTextures());
-        // Number of textures used for commit should still be
-        // one for each layer.
-        EXPECT_EQ(2u, context->NumUsedTextures());
-        // First textures should not have been used.
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
-        // New textures should have been used.
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
-        break;
-      case 2:
-        EndTest();
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-};
-
-MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F(
-    LayerTreeHostTestDelegatingRendererAtomicCommit);
-
 static void SetLayerPropertiesForTesting(Layer* layer,
                                          Layer* parent,
                                          const gfx::Transform& transform,
@@ -1752,272 +1581,6 @@ static void SetLayerPropertiesForTesting(Layer* layer,
   layer->SetBounds(bounds);
   layer->SetContentsOpaque(opaque);
 }
-
-// TODO(sohanjg) : Remove it once impl-side painting ships everywhere.
-class LayerTreeHostTestAtomicCommitWithPartialUpdate
-    : public LayerTreeHostTest {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->renderer_settings.texture_id_allocation_chunk_size = 1;
-    // Allow one partial texture update.
-    settings->max_partial_texture_updates = 1;
-    // No partial updates when impl side painting is enabled.
-    settings->impl_side_painting = false;
-  }
-
-  void SetupTree() override {
-    parent_ = FakeContentLayer::Create(layer_settings(), &client_);
-    parent_->SetBounds(gfx::Size(10, 20));
-
-    child_ = FakeContentLayer::Create(layer_settings(), &client_);
-    child_->SetPosition(gfx::Point(0, 10));
-    child_->SetBounds(gfx::Size(3, 10));
-
-    parent_->AddChild(child_);
-
-    layer_tree_host()->SetRootLayer(parent_);
-    LayerTreeHostTest::SetupTree();
-  }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void DidCommitAndDrawFrame() override {
-    switch (layer_tree_host()->source_frame_number()) {
-      case 1:
-        parent_->SetNeedsDisplay();
-        child_->SetNeedsDisplay();
-        break;
-      case 2:
-        // Damage part of layers.
-        parent_->SetNeedsDisplayRect(gfx::Rect(5, 5));
-        child_->SetNeedsDisplayRect(gfx::Rect(5, 5));
-        break;
-      case 3:
-        child_->SetNeedsDisplay();
-        layer_tree_host()->SetViewportSize(gfx::Size(10, 10));
-        break;
-      case 4:
-        layer_tree_host()->SetViewportSize(gfx::Size(10, 20));
-        break;
-      case 5:
-        EndTest();
-        break;
-      default:
-        NOTREACHED() << layer_tree_host()->source_frame_number();
-        break;
-    }
-  }
-
-  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
-    ASSERT_EQ(1u, impl->settings().max_partial_texture_updates);
-
-    TestWebGraphicsContext3D* context = TestContext();
-
-    switch (impl->active_tree()->source_frame_number()) {
-      case 0:
-        // Number of textures should be one for each layer.
-        ASSERT_EQ(2u, context->NumTextures());
-        // Number of textures used for commit should be one for each layer.
-        EXPECT_EQ(2u, context->NumUsedTextures());
-        // Verify that used textures are correct.
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
-        context->ResetUsedTextures();
-        break;
-      case 1:
-        if (HasImplThread()) {
-          // Number of textures should be two for each content layer.
-          ASSERT_EQ(4u, context->NumTextures());
-        } else {
-          // In single thread we can always do partial updates, so the limit has
-          // no effect.
-          ASSERT_EQ(2u, context->NumTextures());
-        }
-        // Number of textures used for commit should be one for each content
-        // layer.
-        EXPECT_EQ(2u, context->NumUsedTextures());
-
-        if (HasImplThread()) {
-          // First content textures should not have been used.
-          EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
-          EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
-          // New textures should have been used.
-          EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
-          EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
-        } else {
-          // In single thread we can always do partial updates, so the limit has
-          // no effect.
-          EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
-          EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
-        }
-
-        context->ResetUsedTextures();
-        break;
-      case 2:
-        if (HasImplThread()) {
-          // Number of textures should be two for each content layer.
-          ASSERT_EQ(4u, context->NumTextures());
-        } else {
-          // In single thread we can always do partial updates, so the limit has
-          // no effect.
-          ASSERT_EQ(2u, context->NumTextures());
-        }
-        // Number of textures used for commit should be one for each content
-        // layer.
-        EXPECT_EQ(2u, context->NumUsedTextures());
-
-        if (HasImplThread()) {
-          // One content layer does a partial update also.
-          EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
-          EXPECT_FALSE(context->UsedTexture(context->TextureAt(3)));
-        } else {
-          // In single thread we can always do partial updates, so the limit has
-          // no effect.
-          EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
-          EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
-        }
-
-        context->ResetUsedTextures();
-        break;
-      case 3:
-        // No textures should be used for commit.
-        EXPECT_EQ(0u, context->NumUsedTextures());
-
-        context->ResetUsedTextures();
-        break;
-      case 4:
-        // Number of textures used for commit should be one, for the
-        // content layer.
-        EXPECT_EQ(1u, context->NumUsedTextures());
-
-        context->ResetUsedTextures();
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    EXPECT_LT(impl->active_tree()->source_frame_number(), 5);
-
-    TestWebGraphicsContext3D* context = TestContext();
-
-    // Number of textures used for drawing should one per layer except for
-    // frame 3 where the viewport only contains one layer.
-    if (impl->active_tree()->source_frame_number() == 3) {
-      EXPECT_EQ(1u, context->NumUsedTextures());
-    } else {
-      EXPECT_EQ(2u, context->NumUsedTextures())
-          << "For frame " << impl->active_tree()->source_frame_number();
-    }
-
-    context->ResetUsedTextures();
-  }
-
-  void AfterTest() override {}
-
- private:
-  FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> parent_;
-  scoped_refptr<FakeContentLayer> child_;
-};
-
-// Partial updates are not possible with a delegating renderer.
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
-    LayerTreeHostTestAtomicCommitWithPartialUpdate);
-
-// TODO(sohanjg) : Make it work with impl-side painting.
-class LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit
-    : public LayerTreeHostTest {
- protected:
-  void SetupTree() override {
-    root_layer_ = FakeContentLayer::Create(layer_settings(), &client_);
-    root_layer_->SetBounds(gfx::Size(100, 100));
-
-    surface_layer1_ = FakeContentLayer::Create(layer_settings(), &client_);
-    surface_layer1_->SetBounds(gfx::Size(100, 100));
-    surface_layer1_->SetForceRenderSurface(true);
-    surface_layer1_->SetOpacity(0.5f);
-    root_layer_->AddChild(surface_layer1_);
-
-    surface_layer2_ = FakeContentLayer::Create(layer_settings(), &client_);
-    surface_layer2_->SetBounds(gfx::Size(100, 100));
-    surface_layer2_->SetForceRenderSurface(true);
-    surface_layer2_->SetOpacity(0.5f);
-    surface_layer1_->AddChild(surface_layer2_);
-
-    replica_layer1_ = FakeContentLayer::Create(layer_settings(), &client_);
-    surface_layer1_->SetReplicaLayer(replica_layer1_.get());
-
-    replica_layer2_ = FakeContentLayer::Create(layer_settings(), &client_);
-    surface_layer2_->SetReplicaLayer(replica_layer2_.get());
-
-    layer_tree_host()->SetRootLayer(root_layer_);
-    LayerTreeHostTest::SetupTree();
-  }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    Renderer* renderer = host_impl->renderer();
-    RenderPassId surface1_render_pass_id = host_impl->active_tree()
-                                               ->root_layer()
-                                               ->children()[0]
-                                               ->render_surface()
-                                               ->GetRenderPassId();
-    RenderPassId surface2_render_pass_id = host_impl->active_tree()
-                                               ->root_layer()
-                                               ->children()[0]
-                                               ->children()[0]
-                                               ->render_surface()
-                                               ->GetRenderPassId();
-
-    switch (host_impl->active_tree()->source_frame_number()) {
-      case 0:
-        EXPECT_TRUE(
-            renderer->HasAllocatedResourcesForTesting(surface1_render_pass_id));
-        EXPECT_TRUE(
-            renderer->HasAllocatedResourcesForTesting(surface2_render_pass_id));
-
-        // Reduce the memory limit to only fit the root layer and one render
-        // surface. This prevents any contents drawing into surfaces
-        // from being allocated.
-        host_impl->SetMemoryPolicy(ManagedMemoryPolicy(100 * 100 * 4 * 2));
-        break;
-      case 1:
-        EXPECT_FALSE(
-            renderer->HasAllocatedResourcesForTesting(surface1_render_pass_id));
-        EXPECT_FALSE(
-            renderer->HasAllocatedResourcesForTesting(surface2_render_pass_id));
-
-        EndTest();
-        break;
-    }
-  }
-
-  void DidCommitAndDrawFrame() override {
-    if (layer_tree_host()->source_frame_number() < 2)
-      root_layer_->SetNeedsDisplay();
-  }
-
-  void AfterTest() override {
-    EXPECT_LE(2u, root_layer_->update_count());
-    EXPECT_LE(2u, surface_layer1_->update_count());
-    EXPECT_LE(2u, surface_layer2_->update_count());
-  }
-
-  FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> root_layer_;
-  scoped_refptr<FakeContentLayer> surface_layer1_;
-  scoped_refptr<FakeContentLayer> replica_layer1_;
-  scoped_refptr<FakeContentLayer> surface_layer2_;
-  scoped_refptr<FakeContentLayer> replica_layer2_;
-};
-
-// Surfaces don't exist with a delegated renderer.
-SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_NOIMPL_TEST_F(
-    LayerTreeHostTestSurfaceNotAllocatedForLayersOutsideMemoryLimit);
 
 class EvictionTestLayer : public Layer {
  public:
@@ -2248,11 +1811,7 @@ class LayerTreeHostTestContinuousInvalidate : public LayerTreeHostTest {
     layer_tree_host()->SetViewportSize(gfx::Size(10, 10));
     layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
 
-    if (layer_tree_host()->settings().impl_side_painting)
-      layer_ = FakePictureLayer::Create(layer_settings(), &client_);
-    else
-      layer_ = FakeContentLayer::Create(layer_settings(), &client_);
-
+    layer_ = FakePictureLayer::Create(layer_settings(), &client_);
     layer_->SetBounds(gfx::Size(10, 10));
     layer_->SetPosition(gfx::PointF(0.f, 0.f));
     layer_->SetIsDrawable(true);
@@ -2589,88 +2148,6 @@ TEST(LayerTreeHostTest,
 
   EXPECT_EQ(0u, host->MaxPartialTextureUpdates());
 }
-
-// TODO(sohanjg) : Remove it once impl-side painting ships everywhere.
-class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
-    : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted()
-      : root_layer_(FakeContentLayer::Create(layer_settings(), &client_)),
-        child_layer1_(FakeContentLayer::Create(layer_settings(), &client_)),
-        child_layer2_(FakeContentLayer::Create(layer_settings(), &client_)),
-        num_commits_(0) {}
-
-  void BeginTest() override {
-    layer_tree_host()->SetViewportSize(gfx::Size(100, 100));
-    root_layer_->SetBounds(gfx::Size(100, 100));
-    child_layer1_->SetBounds(gfx::Size(100, 100));
-    child_layer2_->SetBounds(gfx::Size(100, 100));
-    root_layer_->AddChild(child_layer1_);
-    root_layer_->AddChild(child_layer2_);
-    layer_tree_host()->SetRootLayer(root_layer_);
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
-                               bool visible) override {
-    if (visible) {
-      // One backing should remain unevicted.
-      EXPECT_EQ(100u * 100u * 4u * 1u,
-                contents_texture_manager_->MemoryUseBytes());
-    } else {
-      EXPECT_EQ(0u, contents_texture_manager_->MemoryUseBytes());
-    }
-
-    // Make sure that contents textures are marked as having been
-    // purged.
-    EXPECT_TRUE(host_impl->active_tree()->ContentsTexturesPurged());
-    // End the test in this state.
-    EndTest();
-  }
-
-  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    ++num_commits_;
-    switch (num_commits_) {
-      case 1:
-        // All three backings should have memory.
-        EXPECT_EQ(100u * 100u * 4u * 3u,
-                  contents_texture_manager_->MemoryUseBytes());
-
-        // Set a new policy that will kick out 1 of the 3 resources.
-        // Because a resource was evicted, a commit will be kicked off.
-        host_impl->SetMemoryPolicy(
-            ManagedMemoryPolicy(100 * 100 * 4 * 2,
-                                gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
-                                1000));
-        break;
-      case 2:
-        // Only two backings should have memory.
-        EXPECT_EQ(100u * 100u * 4u * 2u,
-                  contents_texture_manager_->MemoryUseBytes());
-        // Become backgrounded, which will cause 1 more resource to be
-        // evicted.
-        PostSetVisibleToMainThread(false);
-        break;
-      default:
-        // No further commits should happen because this is not visible
-        // anymore.
-        NOTREACHED();
-        break;
-    }
-  }
-
-  void AfterTest() override {}
-
- private:
-  FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> root_layer_;
-  scoped_refptr<FakeContentLayer> child_layer1_;
-  scoped_refptr<FakeContentLayer> child_layer2_;
-  int num_commits_;
-};
-
-SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(
-    LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted);
 
 class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
  public:
@@ -4892,10 +4369,7 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
   }
 
   void SetupTree() override {
-    if (layer_tree_host()->settings().impl_side_painting)
-      root_ = FakePictureLayer::Create(layer_settings(), &client_);
-    else
-      root_ = FakeContentLayer::Create(layer_settings(), &client_);
+    root_ = FakePictureLayer::Create(layer_settings(), &client_);
     root_->SetBounds(gfx::Size(20, 20));
     layer_tree_host()->SetRootLayer(root_);
     LayerTreeHostTest::SetupTree();
