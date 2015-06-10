@@ -29,12 +29,10 @@ namespace ui {
 
 // static
 scoped_refptr<IOSurfaceTexture> IOSurfaceTexture::Create(
-    bool needs_gl_finish_workaround) {
-  static bool use_ns_gl_surfaces =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNSGLSurfaces);
+    bool needs_gl_finish_workaround,
+    bool use_ns_apis) {
   scoped_refptr<IOSurfaceContext> offscreen_context;
-  if (!use_ns_gl_surfaces) {
+  if (!use_ns_apis) {
     offscreen_context = IOSurfaceContext::Get(
         IOSurfaceContext::kOffscreenContext);
     if (!offscreen_context.get()) {
@@ -42,18 +40,21 @@ scoped_refptr<IOSurfaceTexture> IOSurfaceTexture::Create(
       return NULL;
     }
   }
-  return new IOSurfaceTexture(offscreen_context, needs_gl_finish_workaround);
+  return new IOSurfaceTexture(
+      offscreen_context, use_ns_apis, needs_gl_finish_workaround);
 }
 
 IOSurfaceTexture::IOSurfaceTexture(
     const scoped_refptr<IOSurfaceContext>& offscreen_context,
+    bool use_ns_apis,
     bool needs_gl_finish_workaround)
     : offscreen_context_(offscreen_context),
       texture_(0),
       gl_error_(GL_NO_ERROR),
       eviction_queue_iterator_(eviction_queue_.Get().end()),
       eviction_has_been_drawn_since_updated_(false),
-      needs_gl_finish_workaround_(needs_gl_finish_workaround) {
+      needs_gl_finish_workaround_(needs_gl_finish_workaround),
+      using_ns_apis_(use_ns_apis) {
 }
 
 IOSurfaceTexture::~IOSurfaceTexture() {

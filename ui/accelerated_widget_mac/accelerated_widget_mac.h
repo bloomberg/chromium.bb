@@ -118,6 +118,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
       base::scoped_nsobject<CALayerHost> ca_context_layer);
   void DestroyIOSurfaceLayer(
       base::scoped_nsobject<IOSurfaceLayer> io_surface_layer);
+  void DestroyIOSurfaceNSGLSurface();
   void DestroySoftwareLayer();
 
   // The AcceleratedWidgetMacNSView that is using this as its internals.

@@ -174,7 +174,8 @@ void IOSurfaceLayerHelper::EndPumpingFrames() {
   if (self = [super init]) {
     helper_.reset(new ui::IOSurfaceLayerHelper(client, self));
 
-    iosurface_ = ui::IOSurfaceTexture::Create(needs_gl_finish_workaround);
+    iosurface_ = ui::IOSurfaceTexture::Create(
+        needs_gl_finish_workaround, false);
     context_ = ui::IOSurfaceContext::Get(
         ui::IOSurfaceContext::kCALayerContext);
     if (!iosurface_.get() || !context_.get()) {

@@ -14,6 +14,7 @@
 #include "ui/accelerated_widget_mac/io_surface_context.h"
 #include "ui/accelerated_widget_mac/io_surface_texture.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gl/gpu_switching_observer.h"
 
 namespace ui {
 
@@ -22,22 +23,33 @@ class IOSurfaceNSGLSurfaceClient {
   virtual void IOSurfaceNSGLSurfaceDidDrawFrame() = 0;
 };
 
-class IOSurfaceNSGLSurface {
+class IOSurfaceNSGLSurface : public ui::GpuSwitchingObserver {
  public:
   static IOSurfaceNSGLSurface* Create(
-      IOSurfaceNSGLSurfaceClient* client, NSView* view);
+      IOSurfaceNSGLSurfaceClient* client,
+      NSView* view,
+      bool needs_gl_finish_workaround);
   virtual ~IOSurfaceNSGLSurface();
 
-  // Called on the UI thread.
+  static bool CanUseNSGLSurfaceForView(NSView* view);
+
   bool GotFrame(IOSurfaceID io_surface_id,
                 gfx::Size pixel_size,
                 float scale_factor,
                 gfx::Rect pixel_damage_rect);
 
+  int GetRendererID();
+
+  bool NeedsToBeRecreated() const { return needs_to_be_recreated_; }
+
+  // ui::GpuSwitchingObserver implementation.
+  void OnGpuSwitched() override;
+
  private:
   explicit IOSurfaceNSGLSurface(
       IOSurfaceNSGLSurfaceClient* client,
       NSView* view,
+      bool needs_gl_finish_workaround,
       base::scoped_nsobject<NSOpenGLContext> ns_gl_context,
       scoped_refptr<ui::IOSurfaceTexture> iosurface);
 
@@ -56,6 +68,10 @@ class IOSurfaceNSGLSurface {
   // flushed yet.
   bool pending_draw_exists_;
   gfx::Rect pending_draw_damage_rect_;
+
+  // If the context has hit an error or has changed GPUs, then this will be
+  // set to true.
+  bool needs_to_be_recreated_;
 };
 
 }  // namespace ui

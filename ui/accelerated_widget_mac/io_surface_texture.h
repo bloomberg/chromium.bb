@@ -41,7 +41,8 @@ class IOSurfaceTexture
     : public base::RefCounted<IOSurfaceTexture> {
  public:
   static scoped_refptr<IOSurfaceTexture> Create(
-      bool needs_gl_finish_workaround);
+      bool needs_gl_finish_workaround,
+      bool use_ns_apis);
 
   // Returns true if there is no need to call SetIOSurface with the provided
   // values.
@@ -69,6 +70,7 @@ class IOSurfaceTexture
 
   IOSurfaceTexture(
       const scoped_refptr<IOSurfaceContext>& context,
+      bool use_ns_apis,
       bool needs_gl_finish_workaround);
   ~IOSurfaceTexture();
 
@@ -113,7 +115,11 @@ class IOSurfaceTexture
   void EvictionMarkEvicted();
   EvictionQueue::iterator eviction_queue_iterator_;
   bool eviction_has_been_drawn_since_updated_;
+
   const bool needs_gl_finish_workaround_;
+
+  // Set if this is for access through NS APIs.
+  const bool using_ns_apis_;
 
   static void EvictionScheduleDoEvict();
   static void EvictionDoEvict();

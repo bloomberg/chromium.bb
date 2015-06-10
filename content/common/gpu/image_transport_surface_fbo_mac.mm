@@ -180,7 +180,11 @@ bool ImageTransportSurfaceFBO::SwapBuffersInternal() {
   DCHECK(backbuffer_suggested_allocation_);
   if (!frontbuffer_suggested_allocation_)
     return true;
-  glFlush();
+
+  {
+    TRACE_EVENT0("gpu", "ImageTransportSurfaceFBO::glFlush");
+    glFlush();
+  }
 
   // It is the responsibility of the storage provider to send the swap IPC.
   is_swap_buffers_send_pending_ = true;
