@@ -63,10 +63,12 @@ static_library("apps") {
       "ui/views/app_window_frame_view.h",
     ]
     deps += [
-      "//extensions/browser",
       "//ui/strings",
       "//ui/views",
     ]
+    if (enable_extensions) {
+      deps += [ "//extensions/browser" ]
+    }
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

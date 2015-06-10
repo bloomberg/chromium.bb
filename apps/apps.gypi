@@ -75,13 +75,17 @@
         ],
         ['toolkit_views==1', {
           'dependencies': [
-            '../extensions/extensions.gyp:extensions_browser',
             '../ui/strings/ui_strings.gyp:ui_strings',
             '../ui/views/views.gyp:views',
           ],
         }, {  # toolkit_views==0
           'sources/': [
             ['exclude', 'ui/views/'],
+          ],
+        }],
+        ['toolkit_views==1 and enable_extensions==1', {
+          'dependencies': [
+            '../extensions/extensions.gyp:extensions_browser',
           ],
         }],
       ],

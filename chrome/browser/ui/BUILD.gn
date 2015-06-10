@@ -213,6 +213,13 @@ source_set("ui") {
           rebase_path(gypi_values.chrome_browser_ui_views_non_mac_sources,
                       ".",
                       "//chrome")
+      if (enable_extensions) {
+        sources += rebase_path(
+                gypi_values.chrome_browser_ui_views_extensions_non_mac_sources,
+                ".",
+                "//chrome")
+        deps += [ "//extensions/components/native_app_window" ]
+      }
       if (is_chromeos) {
         # TODO(GYP): crbug.com/481629. These files should probably not be
         # a part of ui_views_non_mac_sources at all.
@@ -313,6 +320,11 @@ source_set("ui") {
           rebase_path(gypi_values.chrome_browser_ui_views_non_mac_sources,
                       ".",
                       "//chrome")
+      sources += rebase_path(
+              gypi_values.chrome_browser_ui_views_extensions_non_mac_sources,
+              ".",
+              "//chrome")
+      deps += [ "//extensions/components/native_app_window" ]
     } else {
       sources += rebase_path(gypi_values.chrome_browser_ui_cocoa_sources,
                              ".",
