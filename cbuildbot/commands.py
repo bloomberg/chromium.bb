@@ -388,7 +388,8 @@ def VerifyBinpkg(buildroot, board, pkg, packages, extra_env=None):
     If the package is found and is built from source, raise MissingBinpkg.
     If the package is not found, or it is installed from a binpkg, do nothing.
   """
-  cmd = ['emerge-%s' % board, '-pegNvq', '--color=n'] + list(packages)
+  cmd = ['emerge-%s' % board, '-pegNvq', '--with-bdeps=y',
+         '--color=n'] + list(packages)
   result = RunBuildScript(buildroot, cmd, capture_output=True,
                           enter_chroot=True, extra_env=extra_env)
   pattern = r'^\[(ebuild|binary).*%s' % re.escape(pkg)
