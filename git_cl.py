@@ -1457,18 +1457,17 @@ def color_for_status(status):
     'error': Fore.WHITE,
   }.get(status, Fore.WHITE)
 
-def fetch_cl_status(b, auth_config=None):
-  """Fetches information for an issue and returns (branch, issue, color)."""
-  c = Changelist(branchref=b, auth_config=auth_config)
-  i = c.GetIssueURL()
-  status = c.GetStatus()
-  color = color_for_status(status)
+def fetch_cl_status(branch, auth_config=None):
+  """Fetches information for an issue and returns (branch, issue, status)."""
+  cl = Changelist(branchref=branch, auth_config=auth_config)
+  url = cl.GetIssueURL()
+  status = cl.GetStatus()
 
-  if i and (not status or status == 'error'):
+  if url and (not status or status == 'error'):
     # The issue probably doesn't exist anymore.
-    i += ' (broken)'
+    url += ' (broken)'
 
-  return (b, i, color)
+  return (branch, url, status)
 
 def get_cl_statuses(
     branches, fine_grained, max_processes=None, auth_config=None):
@@ -1501,9 +1500,9 @@ def get_cl_statuses(
   else:
     # Do not use GetApprovingReviewers(), since it requires an HTTP request.
     for b in branches:
-      c = Changelist(branchref=b, auth_config=auth_config)
-      url = c.GetIssueURL()
-      yield (b, url, Fore.BLUE if url else Fore.WHITE)
+      cl = Changelist(branchref=b, auth_config=auth_config)
+      url = cl.GetIssueURL()
+      yield (b, url, 'waiting' if url else 'error')
 
 def CMDstatus(parser, args):
   """Show status of changelists.
@@ -1570,15 +1569,18 @@ def CMDstatus(parser, args):
   alignment = max(5, max(len(ShortBranchName(b)) for b in branches))
   for branch in sorted(branches):
     while branch not in branch_statuses:
-      b, i, color = output.next()
-      branch_statuses[b] = (i, color)
-    issue, color = branch_statuses.pop(branch)
+      b, i, status = output.next()
+      branch_statuses[b] = (i, status)
+    issue_url, status = branch_statuses.pop(branch)
+    color = color_for_status(status)
     reset = Fore.RESET
     if not sys.stdout.isatty():
       color = ''
       reset = ''
-    print '  %*s : %s%s%s' % (
-          alignment, ShortBranchName(branch), color, issue, reset)
+    status_str = '(%s)' % status if status else ''
+    print '  %*s : %s%s %s%s' % (
+          alignment, ShortBranchName(branch), color, issue_url, status_str,
+          reset)
 
   cl = Changelist(auth_config=auth_config)
   print
