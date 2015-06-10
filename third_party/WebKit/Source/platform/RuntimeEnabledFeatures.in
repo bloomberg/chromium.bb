@@ -133,7 +133,7 @@ ServiceWorkerNotifications status=stable
 ServiceWorkerOnFetch status=stable
 ServiceWorkerPerformanceTimeline status=experimental
 SharedWorker status=stable
-SlimmingPaint
+SlimmingPaint status=stable
 SlimmingPaintCompositorLayerization depends_on=SlimmingPaint
 SlimmingPaintUnderInvalidationChecking depends_on=SlimmingPaint
 SlimmingPaintStrictCullRectClipping depends_on=SlimmingPaint
