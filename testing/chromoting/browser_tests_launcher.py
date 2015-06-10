@@ -25,11 +25,45 @@ CHROMOTING_HOST_PATH = '/opt/google/chrome-remote-desktop/chrome-remote-desktop'
 TEST_FAILURE = False
 FAILING_TESTS = ''
 HOST_READY_INDICATOR = 'Host ready to receive connections.'
+BROWSER_NOT_STARTED_ERROR = (
+    'Still waiting for the following processes to finish')
+TIME_OUT_INDICATOR = '(TIMED OUT)'
+MAX_RETRIES = 1
 
 
-def LaunchBTCommand(command):
+def LaunchBTCommand(args, command):
+  """Launches the specified browser-test command.
+
+      If the execution failed because a browser-instance was not launched, retry
+      once.
+  Args:
+    args: Command line args, used for test-case startup tasks.
+    command: Browser-test command line.
+  """
   global TEST_FAILURE, FAILING_TESTS
-  results = RunCommandInSubProcess(command)
+
+  retries = 0
+  while retries <= MAX_RETRIES:
+    TestCaseSetup(args)
+    results = RunCommandInSubProcess(command)
+
+    if SUCCESS_INDICATOR in results:
+      # Test passed.
+      break
+
+    # Sometimes, during execution of browser-tests, a browser instance is
+    # not started and the test times out. See http://crbug/480025.
+    # To work around it, check if this execution failed owing to that
+    # problem and retry.
+    # There are 2 things to look for in the results:
+    # A line saying "Still waiting for the following processes to finish",
+    # and, because sometimes that line gets logged even if the test
+    # eventually passes, we'll also look for "(TIMED OUT)", before retrying.
+    if not (
+        BROWSER_NOT_STARTED_ERROR in results and TIME_OUT_INDICATOR in results):
+      # Test failed for some other reason. Let's not retry.
+      break
+    retries += 1
 
   # Check that the test passed.
   if SUCCESS_INDICATOR not in results:
@@ -173,28 +207,28 @@ def PrintRunningProcesses():
     print process.name
 
 
+def TestCaseSetup(args):
+  # Stop+start me2me host process.
+  if not RestartMe2MeHost():
+    # Host restart failed. Don't run any more tests.
+    raise Exception('Host restart failed.')
+
+  # Reset the user profile directory to start each test with a clean slate.
+  SetupUserProfileDir(args.me2me_manifest_file, args.it2me_manifest_file,
+                      args.user_profile_dir)
+
+
 def main(args):
 
   InitialiseTestMachineForLinux(args.cfg_file)
 
   with open(args.commands_file) as f:
     for line in f:
-      # Reset the user profile directory to start each test with a clean slate.
-      SetupUserProfileDir(args.me2me_manifest_file, args.it2me_manifest_file,
-                          args.user_profile_dir)
-
       # Replace the PROD_DIR value in the command-line with
       # the passed in value.
       line = line.replace(PROD_DIR_ID, args.prod_dir)
       # Launch specified command line for test.
-      LaunchBTCommand(line)
-      # After each test, stop+start me2me host process.
-      if not RestartMe2MeHost():
-        # Host restart failed. Don't run any more tests.
-        raise Exception('Host restart failed.')
-
-      # Print list of currently running processes.
-      PrintRunningProcesses()
+      LaunchBTCommand(args, line)
 
   # All tests completed. Include host-logs in the test results.
   host_log_contents = ''
