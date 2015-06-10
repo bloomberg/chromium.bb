@@ -1,3 +1,4 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 
 SVG SMIL:
 PASS: spreadMethod from [pad] to [repeat] was [pad] at 0

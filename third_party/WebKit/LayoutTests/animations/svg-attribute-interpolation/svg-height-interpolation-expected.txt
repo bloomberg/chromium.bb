@@ -1,3 +1,4 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
 
 SVG SMIL:
 PASS: height from [10] to [60] was [10] at 0

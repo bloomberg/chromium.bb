@@ -314,7 +314,7 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(ContainerNode* r
     if (!rootParent->inDocument())
         return InsertionDone;
 
-    UseCounter::count(document(), UseCounter::SVGSMILElementInDocument);
+    UseCounter::countDeprecation(document(), UseCounter::SVGSMILElementInDocument);
 
     setAttributeName(constructQualifiedName(this, fastGetAttribute(SVGNames::attributeNameAttr)));
     SVGSVGElement* owner = ownerSVGElement();

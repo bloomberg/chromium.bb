@@ -403,7 +403,7 @@ void SVGImage::updateUseCounters(Document& document) const
 {
     if (SVGSVGElement* rootElement = svgRootElement(m_page.get())) {
         if (rootElement->timeContainer()->hasAnimations())
-            UseCounter::count(document, UseCounter::SVGSMILAnimationInImageRegardlessOfCache);
+            UseCounter::countDeprecation(document, UseCounter::SVGSMILAnimationInImageRegardlessOfCache);
     }
 }
 
