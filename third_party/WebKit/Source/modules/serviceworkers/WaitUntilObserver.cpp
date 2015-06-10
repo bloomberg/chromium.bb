@@ -178,6 +178,9 @@ void WaitUntilObserver::decrementPendingActivity()
     case Push:
         client->didHandlePushEvent(m_eventID, result);
         break;
+    case Sync:
+        client->didHandleSyncEvent(m_eventID, result);
+        break;
     }
     setContext(nullptr);
 }

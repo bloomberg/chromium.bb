@@ -103,9 +103,9 @@ void ServiceWorkerGlobalScopeClientImpl::didHandlePushEvent(int pushEventID, Web
     m_client.didHandlePushEvent(pushEventID, result);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::didHandleSyncEvent(int syncEventID)
+void ServiceWorkerGlobalScopeClientImpl::didHandleSyncEvent(int syncEventID, WebServiceWorkerEventResult result)
 {
-    m_client.didHandleSyncEvent(syncEventID);
+    m_client.didHandleSyncEvent(syncEventID, result);
 }
 
 void ServiceWorkerGlobalScopeClientImpl::didHandleCrossOriginConnectEvent(int connectEventID, bool acceptConnect)

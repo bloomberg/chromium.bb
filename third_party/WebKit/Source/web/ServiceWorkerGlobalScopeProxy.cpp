@@ -39,6 +39,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "modules/background_sync/SyncEvent.h"
 #include "modules/fetch/Headers.h"
 #include "modules/geofencing/CircularGeofencingRegion.h"
 #include "modules/geofencing/GeofencingEvent.h"
@@ -156,9 +157,14 @@ void ServiceWorkerGlobalScopeProxy::dispatchPushEvent(int eventID, const WebStri
 void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);
-    if (RuntimeEnabledFeatures::backgroundSyncEnabled())
-        m_workerGlobalScope->dispatchEvent(Event::create(EventTypeNames::sync));
-    ServiceWorkerGlobalScopeClient::from(m_workerGlobalScope)->didHandleSyncEvent(eventID);
+    if (!RuntimeEnabledFeatures::backgroundSyncEnabled()) {
+        ServiceWorkerGlobalScopeClient::from(m_workerGlobalScope)->didHandleSyncEvent(eventID, WebServiceWorkerEventResultCompleted);
+        return;
+    }
+    WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Sync, eventID);
+    // TODO(chasej) - Send registration as in crbug.com/482066
+    RefPtrWillBeRawPtr<Event> event(SyncEvent::create(EventTypeNames::sync, nullptr /* registration */, observer));
+    m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchCrossOriginConnectEvent(int eventID, const WebCrossOriginServiceWorkerClient& webClient)

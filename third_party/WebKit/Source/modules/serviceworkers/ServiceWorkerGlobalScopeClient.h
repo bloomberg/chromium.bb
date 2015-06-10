@@ -74,7 +74,7 @@ public:
     virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult) = 0;
-    virtual void didHandleSyncEvent(int syncEventID) = 0;
+    virtual void didHandleSyncEvent(int syncEventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandleCrossOriginConnectEvent(int connectEventID, bool acceptConnect) = 0;
     virtual void postMessageToClient(const WebString& clientUUID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;
     virtual void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;

@@ -27,7 +27,8 @@ public:
         Activate,
         Install,
         NotificationClick,
-        Push
+        Push,
+        Sync
     };
 
     static WaitUntilObserver* create(ExecutionContext*, EventType, int eventID);
