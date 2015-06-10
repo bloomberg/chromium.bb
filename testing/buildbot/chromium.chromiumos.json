@@ -220,6 +220,9 @@
         "test": "midi_unittests"
       },
       {
+        "test": "nacl_helper_nonsfi_unittests"
+      },
+      {
         "test": "nacl_loader_unittests"
       },
       {
@@ -408,6 +411,9 @@
         "test": "midi_unittests"
       },
       {
+        "test": "nacl_helper_nonsfi_unittests"
+      },
+      {
         "test": "nacl_loader_unittests"
       },
       {
@@ -590,6 +596,9 @@
       },
       {
         "test": "midi_unittests"
+      },
+      {
+        "test": "nacl_helper_nonsfi_unittests"
       },
       {
         "test": "nacl_loader_unittests"

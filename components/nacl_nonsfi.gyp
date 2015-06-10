@@ -182,12 +182,13 @@
           'type': 'none',
           'variables': {
             'nacl_untrusted_build': 1,
-            'nexe_target': 'nacl_helper_nonsfi_unittests',
-            # Rename the output binary file to nacl_helper_nonsfi_unittests
-            # and put it directly under out/{Debug,Release}/, so that this is
-            # in the standard location, for running on the buildbots.
+            'nexe_target': 'nacl_helper_nonsfi_unittests_main',
+            # Rename the output binary file to
+            # nacl_helper_nonsfi_unittests_main and put it directly under
+            # out/{Debug,Release}/, so that this is in the standard location,
+            # for running on the buildbots.
             'out_newlib32_nonsfi': '<(PRODUCT_DIR)/nacl_helper_nonsfi_unittests_main',
-            'out_newlib_arm_nonsfi': '<(PRODUCT_DIR)/nacl_helper_nonsfi_unitttests_main',
+            'out_newlib_arm_nonsfi': '<(PRODUCT_DIR)/nacl_helper_nonsfi_unittests_main',
 
             'build_glibc': 0,
             'build_newlib': 0,
@@ -268,6 +269,7 @@
           'type': 'none',
           'dependencies': [
             'nacl.gyp:nacl_helper_nonsfi_unittests',
+            'nacl_helper_nonsfi_unittests_main',
           ],
           'includes': [
             '../build/isolate.gypi',

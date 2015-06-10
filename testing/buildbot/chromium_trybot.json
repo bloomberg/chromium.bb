@@ -219,6 +219,12 @@
     "mojo_public_system_unittests",
     "mojo_public_utility_unittests",
     "mojo_system_unittests",
+    {
+      "platforms": [
+        "linux"
+      ],
+      "test": "nacl_helper_nonsfi_unittests"
+    },
     "nacl_loader_unittests",
     {
       "swarming": {
