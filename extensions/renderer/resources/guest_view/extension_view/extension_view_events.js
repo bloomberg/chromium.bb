@@ -26,7 +26,7 @@ ExtensionViewEvents.prototype.getEvents = function() {
 };
 
 ExtensionViewEvents.prototype.handleLoadCommitEvent = function(event) {
-  this.extensionViewImpl.onLoadCommit(event.url);
+  this.view.onLoadCommit(event.url);
 };
 
 exports.ExtensionViewEvents = ExtensionViewEvents;
