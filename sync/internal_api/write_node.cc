@@ -168,8 +168,8 @@ void WriteNode::SetPasswordSpecifics(
   // This will only update password_specifics if the underlying unencrypted blob
   // was different from |data| or was not encrypted with the proper passphrase.
   if (!cryptographer->Encrypt(data, password_specifics->mutable_encrypted())) {
-    NOTREACHED() << "Failed to encrypt password, possibly due to sync node "
-                 << "corruption";
+    LOG(ERROR) << "Failed to encrypt password, possibly due to sync node "
+               << "corruption";
     return;
   }
   SetEntitySpecifics(entity_specifics);

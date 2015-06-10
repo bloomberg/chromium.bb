@@ -30,6 +30,8 @@ sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
   const sync_pb::EncryptedData& encrypted = password_specifics.encrypted();
   scoped_ptr<sync_pb::PasswordSpecificsData> data(
       new sync_pb::PasswordSpecificsData);
+  if (!crypto->CanDecrypt(encrypted))
+    return NULL;
   if (!crypto->Decrypt(encrypted, data.get()))
     return NULL;
   return data.release();

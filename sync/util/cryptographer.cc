@@ -127,8 +127,10 @@ std::string Cryptographer::DecryptToString(
     const sync_pb::EncryptedData& encrypted) const {
   NigoriMap::const_iterator it = nigoris_.find(encrypted.key_name());
   if (nigoris_.end() == it) {
-    NOTREACHED() << "Cannot decrypt message";
-    return std::string();  // Caller should have called CanDecrypt(encrypt).
+    // The key used to encrypt the blob is not part of the set of installed
+    // nigoris.
+    LOG(ERROR) << "Cannot decrypt message";
+    return std::string();
   }
 
   std::string plaintext;

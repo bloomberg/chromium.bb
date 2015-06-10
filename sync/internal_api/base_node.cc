@@ -21,6 +21,7 @@
 #include "sync/protocol/typed_url_specifics.pb.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/entry.h"
+#include "sync/syncable/syncable_base_transaction.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/util/time.h"
 
@@ -56,7 +57,9 @@ bool BaseNode::DecryptIfNecessary() {
     scoped_ptr<sync_pb::PasswordSpecificsData> data(DecryptPasswordSpecifics(
         specifics, GetTransaction()->GetCryptographer()));
     if (!data) {
-      LOG(ERROR) << "Failed to decrypt password specifics.";
+      GetTransaction()->GetWrappedTrans()->OnUnrecoverableError(
+          FROM_HERE, std::string("Failed to decrypt encrypted node of type ") +
+                         ModelTypeToString(GetModelType()));
       return false;
     }
     password_data_.swap(data);
@@ -89,17 +92,14 @@ bool BaseNode::DecryptIfNecessary() {
   std::string plaintext_data = GetTransaction()->GetCryptographer()->
       DecryptToString(encrypted);
   if (plaintext_data.length() == 0) {
-    LOG(ERROR) << "Failed to decrypt encrypted node of type "
-               << ModelTypeToString(GetModelType()) << ".";
-    // Debugging for crbug.com/123223. We failed to decrypt the data, which
-    // means we applied an update without having the key or lost the key at a
-    // later point.
-    CHECK(false);
+    GetTransaction()->GetWrappedTrans()->OnUnrecoverableError(
+        FROM_HERE, std::string("Failed to decrypt encrypted node of type ") +
+                       ModelTypeToString(GetModelType()));
     return false;
   } else if (!unencrypted_data_.ParseFromString(plaintext_data)) {
-    // Debugging for crbug.com/123223. We should never succeed in decrypting
-    // but fail to parse into a protobuf.
-    CHECK(false);
+    GetTransaction()->GetWrappedTrans()->OnUnrecoverableError(
+        FROM_HERE, std::string("Failed to parse encrypted node of type ") +
+                       ModelTypeToString(GetModelType()));
     return false;
   }
   DVLOG(2) << "Decrypted specifics of type "

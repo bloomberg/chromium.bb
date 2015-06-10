@@ -833,10 +833,8 @@ void SyncEncryptionHandlerImpl::ReEncryptEverything(
     int64 child_id = passwords_root.GetFirstChildId();
     while (child_id != kInvalidId) {
       WriteNode child(trans);
-      if (child.InitByIdLookup(child_id) != BaseNode::INIT_OK) {
-        NOTREACHED();
-        return;
-      }
+      if (child.InitByIdLookup(child_id) != BaseNode::INIT_OK)
+        break;  // Possible if we failed to decrypt the data for some reason.
       child.SetPasswordSpecifics(child.GetPasswordSpecifics());
       child_id = child.GetSuccessorId();
     }
