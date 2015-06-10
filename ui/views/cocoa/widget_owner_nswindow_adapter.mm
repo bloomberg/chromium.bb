@@ -45,12 +45,19 @@ WidgetOwnerNSWindowAdapter::WidgetOwnerNSWindowAdapter(
       anchor_view_([anchor_view retain]),
       observer_bridge_(
           [[WidgetOwnerNSWindowAdapterBridge alloc] initWithAdapter:this]) {
-  DCHECK([anchor_view_ window]);
+
+  // Although the |anchor_view| must be in an NSWindow when the child dialog is
+  // created, it's permitted for the |anchor_view| to be removed from its view
+  // hierarchy before the child dialog window is fully removed from screen. When
+  // this happens, [anchor_view_ window] will become nil, so retain both.
+  anchor_window_.reset([[anchor_view_ window] retain]);
+  DCHECK(anchor_window_);
+
   [[NSNotificationCenter defaultCenter]
       addObserver:observer_bridge_
          selector:@selector(windowWillClose:)
              name:NSWindowWillCloseNotification
-           object:[anchor_view_ window]];
+           object:anchor_window_];
 }
 
 void WidgetOwnerNSWindowAdapter::OnWindowWillClose() {
@@ -59,11 +66,10 @@ void WidgetOwnerNSWindowAdapter::OnWindowWillClose() {
 }
 
 NSWindow* WidgetOwnerNSWindowAdapter::GetNSWindow() {
-  return [anchor_view_ window];
+  return anchor_window_;
 }
 
 gfx::Vector2d WidgetOwnerNSWindowAdapter::GetChildWindowOffset() const {
-  NSWindow* window = [anchor_view_ window];
   NSRect rect_in_window =
       [anchor_view_ convertRect:[anchor_view_ bounds] toView:nil];
   // Ensure we anchor off the top-left of |anchor_view_| (rect_in_window.origin
@@ -71,13 +77,13 @@ gfx::Vector2d WidgetOwnerNSWindowAdapter::GetChildWindowOffset() const {
   // TODO(tapted): Use -[NSWindow convertRectToScreen:] when we ditch 10.6.
   NSRect rect_in_screen = NSZeroRect;
   rect_in_screen.origin =
-      [window convertBaseToScreen:NSMakePoint(NSMinX(rect_in_window),
-                                              NSMaxY(rect_in_window))];
+      [anchor_window_ convertBaseToScreen:NSMakePoint(NSMinX(rect_in_window),
+                                                      NSMaxY(rect_in_window))];
   return gfx::ScreenRectFromNSRect(rect_in_screen).OffsetFromOrigin();
 }
 
 bool WidgetOwnerNSWindowAdapter::IsVisibleParent() const {
-  return [[anchor_view_ window] isVisible];
+  return [anchor_window_ isVisible];
 }
 
 void WidgetOwnerNSWindowAdapter::RemoveChildWindow(BridgedNativeWidget* child) {

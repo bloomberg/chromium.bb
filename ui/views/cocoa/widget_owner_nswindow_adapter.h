@@ -9,6 +9,7 @@
 #import "ui/views/cocoa/bridged_native_widget_owner.h"
 
 @class NSView;
+@class NSWindow;
 @class WidgetOwnerNSWindowAdapterBridge;
 
 namespace views {
@@ -37,6 +38,7 @@ class WidgetOwnerNSWindowAdapter : public BridgedNativeWidgetOwner {
 
   BridgedNativeWidget* child_;  // Weak. Owned by its NativeWidgetMac.
   base::scoped_nsobject<NSView> anchor_view_;
+  base::scoped_nsobject<NSWindow> anchor_window_;
   base::scoped_nsobject<WidgetOwnerNSWindowAdapterBridge> observer_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetOwnerNSWindowAdapter);

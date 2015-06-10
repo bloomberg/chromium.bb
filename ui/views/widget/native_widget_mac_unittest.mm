@@ -409,12 +409,16 @@ TEST_F(NativeWidgetMacTest, AccessibilityIntegration) {
 TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   NSWindow* native_parent = MakeNativeParent();
 
+  base::scoped_nsobject<NSView> anchor_view(
+      [[NSView alloc] initWithFrame:[[native_parent contentView] bounds]]);
+  [[native_parent contentView] addSubview:anchor_view];
+
   // Note: Don't use WidgetTest::CreateChildPlatformWidget because that makes
   // windows of TYPE_CONTROL which are automatically made visible. But still
   // mark it as a child to test window positioning.
   Widget* child = new Widget;
   Widget::InitParams init_params;
-  init_params.parent = [native_parent contentView];
+  init_params.parent = anchor_view;
   init_params.child = true;
   child->Init(init_params);
 
@@ -444,10 +448,16 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   EXPECT_EQ(native_parent, [child->GetNativeWindow() parentWindow]);
 
   // Child should be positioned on screen relative to the parent, but note we
-  // positioned the parent in Cooca coordinates, so we need to convert.
+  // positioned the parent in Cocoa coordinates, so we need to convert.
   gfx::Point parent_origin = gfx::ScreenRectFromNSRect(ParentRect()).origin();
   EXPECT_EQ(gfx::Rect(150, parent_origin.y() + 50, 200, 100),
             child->GetWindowBoundsInScreen());
+
+  // Removing the anchor_view from its view hierarchy is permitted. This should
+  // not break the relationship between the two windows.
+  [anchor_view removeFromSuperview];
+  anchor_view.reset();
+  EXPECT_EQ(native_parent, bridged_native_widget->parent()->GetNSWindow());
 
   // Closing the parent should close and destroy the child.
   EXPECT_FALSE(child_observer.widget_closed());
