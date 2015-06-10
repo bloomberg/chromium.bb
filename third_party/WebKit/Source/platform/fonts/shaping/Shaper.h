@@ -55,7 +55,7 @@ protected:
     void addEmphasisMark(GlyphBuffer*, float midGlyphOffset) const;
 
     const Font* m_font;
-    const TextRun& m_run;
+    const TextRun& m_textRun;
     HashSet<const SimpleFontData*>* m_fallbackFonts;
     FloatRect* m_glyphBoundingBox;
 

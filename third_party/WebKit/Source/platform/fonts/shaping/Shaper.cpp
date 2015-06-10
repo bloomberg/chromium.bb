@@ -40,7 +40,7 @@ namespace blink {
 Shaper::Shaper(const Font* font, const TextRun& run, const GlyphData* emphasisData,
     HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* bounds)
     : m_font(font)
-    , m_run(run)
+    , m_textRun(run)
     , m_fallbackFonts(fallbackFonts)
     , m_glyphBoundingBox(bounds)
     , m_expansion(0)

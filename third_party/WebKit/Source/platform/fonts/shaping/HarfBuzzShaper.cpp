@@ -378,12 +378,12 @@ HarfBuzzShaper::HarfBuzzShaper(const Font* font, const TextRun& run, const Glyph
     , m_letterSpacing(font->fontDescription().letterSpacing())
     , m_expansionOpportunityCount(0)
     , m_fromIndex(0)
-    , m_toIndex(m_run.length())
+    , m_toIndex(m_textRun.length())
     , m_totalWidth(0)
 {
-    m_normalizedBuffer = adoptArrayPtr(new UChar[m_run.length() + 1]);
-    normalizeCharacters(m_run, m_run.length(), m_normalizedBuffer.get(), &m_normalizedBufferLength);
-    setExpansion(m_run.expansion());
+    m_normalizedBuffer = adoptArrayPtr(new UChar[m_textRun.length() + 1]);
+    normalizeCharacters(m_textRun, m_textRun.length(), m_normalizedBuffer.get(), &m_normalizedBufferLength);
+    setExpansion(m_textRun.expansion());
     setFontFeatures();
 }
 
@@ -413,8 +413,8 @@ void HarfBuzzShaper::setExpansion(float padding)
     // If we have padding to distribute, then we try to give an equal
     // amount to each expansion opportunity.
     bool isAfterExpansion = m_isAfterExpansion;
-    m_expansionOpportunityCount = Character::expansionOpportunityCount(m_normalizedBuffer.get(), m_normalizedBufferLength, m_run.direction(), isAfterExpansion, m_run.textJustify());
-    if (isAfterExpansion && !m_run.allowsTrailingExpansion()) {
+    m_expansionOpportunityCount = Character::expansionOpportunityCount(m_normalizedBuffer.get(), m_normalizedBufferLength, m_textRun.direction(), isAfterExpansion, m_textRun.textJustify());
+    if (isAfterExpansion && !m_textRun.allowsTrailingExpansion()) {
         ASSERT(m_expansionOpportunityCount > 0);
         --m_expansionOpportunityCount;
     }
@@ -429,7 +429,7 @@ void HarfBuzzShaper::setExpansion(float padding)
 void HarfBuzzShaper::setDrawRange(int from, int to)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(from >= 0);
-    ASSERT_WITH_SECURITY_IMPLICATION(to <= m_run.length());
+    ASSERT_WITH_SECURITY_IMPLICATION(to <= m_textRun.length());
     m_fromIndex = from;
     m_toIndex = to;
 }
@@ -699,7 +699,7 @@ bool HarfBuzzShaper::createHarfBuzzRunsForSingleCharacter()
     UChar32 character = m_normalizedBuffer[0];
     if (!U16_IS_SINGLE(character))
         return false;
-    const SimpleFontData* fontData = m_font->glyphDataForCharacter(character, false, m_run.normalizeSpace()).fontData;
+    const SimpleFontData* fontData = m_font->glyphDataForCharacter(character, false, m_textRun.normalizeSpace()).fontData;
     UErrorCode errorCode = U_ZERO_ERROR;
     UScriptCode script = uscript_getScript(character, &errorCode);
     if (U_FAILURE(errorCode))
@@ -715,7 +715,7 @@ bool HarfBuzzShaper::createHarfBuzzRuns()
 
     Vector<CandidateRun> candidateRuns;
     if (!collectCandidateRuns(m_normalizedBuffer.get(),
-        m_normalizedBufferLength, m_font, &candidateRuns, m_run.normalizeSpace()))
+        m_normalizedBufferLength, m_font, &candidateRuns, m_textRun.normalizeSpace()))
         return false;
 
     if (!resolveCandidateRuns(candidateRuns))
@@ -762,7 +762,7 @@ void HarfBuzzShaper::addHarfBuzzRun(unsigned startCharacter,
         trackNonPrimaryFallbackFont(fontData);
     return m_harfBuzzRuns.append(HarfBuzzRun::create(fontData,
         startCharacter, endCharacter - startCharacter,
-        TextDirectionToHBDirection(m_run.direction(), m_font->fontDescription().orientation(), fontData),
+        TextDirectionToHBDirection(m_textRun.direction(), m_font->fontDescription().orientation(), fontData),
         ICUScriptToHBScript(script)));
 }
 
@@ -816,7 +816,7 @@ bool HarfBuzzShaper::shapeHarfBuzzRuns()
     const hb_language_t language = hb_language_from_string(locale.data(), locale.length());
 
     for (unsigned i = 0; i < m_harfBuzzRuns.size(); ++i) {
-        unsigned runIndex = m_run.rtl() ? m_harfBuzzRuns.size() - i - 1 : i;
+        unsigned runIndex = m_textRun.rtl() ? m_harfBuzzRuns.size() - i - 1 : i;
         HarfBuzzRun* currentRun = m_harfBuzzRuns[runIndex].get();
 
         const SimpleFontData* currentFontData = currentRun->fontData();
@@ -921,7 +921,7 @@ void HarfBuzzShaper::setGlyphPositionsForHarfBuzzRun(HarfBuzzRun* currentRun, hb
         }
 
         advance += spacing;
-        if (m_run.rtl()) {
+        if (m_textRun.rtl()) {
             // In RTL, spacing should be added to left side of glyphs.
             *directionOffset += spacing;
             if (!isClusterEnd)
@@ -951,7 +951,7 @@ float HarfBuzzShaper::adjustSpacing(HarfBuzzRun* currentRun, size_t glyphIndex, 
         spacing += m_letterSpacing;
 
     bool treatAsSpace = Character::treatAsSpace(character);
-    if (treatAsSpace && currentCharacterIndex && (character != '\t' || !m_run.allowTabs()))
+    if (treatAsSpace && currentCharacterIndex && (character != '\t' || !m_textRun.allowTabs()))
         spacing += m_wordSpacingAdjustment;
 
     if (!m_expansionOpportunityCount)
@@ -963,7 +963,7 @@ float HarfBuzzShaper::adjustSpacing(HarfBuzzRun* currentRun, size_t glyphIndex, 
         return spacing;
     }
 
-    if (m_run.textJustify() != TextJustify::TextJustifyAuto) {
+    if (m_textRun.textJustify() != TextJustify::TextJustifyAuto) {
         m_isAfterExpansion = false;
         return spacing;
     }
@@ -993,7 +993,7 @@ float HarfBuzzShaper::adjustSpacing(HarfBuzzRun* currentRun, size_t glyphIndex, 
             return spacing;
     }
 
-    // Don't need to check m_run.allowsTrailingExpansion() since it's covered by !m_expansionOpportunityCount above
+    // Don't need to check m_textRun.allowsTrailingExpansion() since it's covered by !m_expansionOpportunityCount above
     spacing += nextExpansionPerOpportunity();
     m_isAfterExpansion = true;
     return spacing;
@@ -1004,7 +1004,7 @@ float HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBuffer* glyphBuffer,
 {
     unsigned numGlyphs = currentRun->numGlyphs();
     float advanceSoFar = initialAdvance;
-    if (m_run.rtl()) {
+    if (m_textRun.rtl()) {
         for (unsigned i = 0; i < numGlyphs; ++i) {
             HarfBuzzRunGlyphData& glyphData = currentRun->glyphData(i);
             uint16_t currentCharacterIndex = currentRun->startIndex() + glyphData.characterIndex;
@@ -1050,7 +1050,7 @@ float HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, H
     // then linearly split the sum of corresponding glyph advances by the number of
     // grapheme clusters in order to find positions for emphasis mark drawing.
 
-    if (m_run.rtl())
+    if (m_textRun.rtl())
         clusterStart = currentRun->startIndex() + currentRun->numCharacters();
     else
         clusterStart = currentRun->glyphToCharacterIndex(0);
@@ -1062,9 +1062,9 @@ float HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, H
         bool isRunEnd = (i + 1 == numGlyphs);
         bool isClusterEnd =  isRunEnd || (currentRun->glyphToCharacterIndex(i + 1) != currentCharacterIndex);
 
-        if ((m_run.rtl() && currentCharacterIndex >= m_toIndex) || (!m_run.rtl() && currentCharacterIndex < m_fromIndex)) {
+        if ((m_textRun.rtl() && currentCharacterIndex >= m_toIndex) || (!m_textRun.rtl() && currentCharacterIndex < m_fromIndex)) {
             advanceSoFar += glyphData.advance;
-            m_run.rtl() ? --clusterStart : ++clusterStart;
+            m_textRun.rtl() ? --clusterStart : ++clusterStart;
             continue;
         }
 
@@ -1072,7 +1072,7 @@ float HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, H
 
         if (isClusterEnd) {
             uint16_t clusterEnd;
-            if (m_run.rtl())
+            if (m_textRun.rtl())
                 clusterEnd = currentCharacterIndex;
             else
                 clusterEnd = isRunEnd ? currentRun->startIndex() + currentRun->numCharacters() : currentRun->glyphToCharacterIndex(i + 1);
@@ -1084,7 +1084,7 @@ float HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, H
             float glyphAdvanceX = clusterAdvance / graphemesInCluster;
             for (unsigned j = 0; j < graphemesInCluster; ++j) {
                 // Do not put emphasis marks on space, separator, and control characters.
-                if (Character::canReceiveTextEmphasis(m_run[currentCharacterIndex]))
+                if (Character::canReceiveTextEmphasis(m_textRun[currentCharacterIndex]))
                     addEmphasisMark(glyphBuffer, advanceSoFar + glyphAdvanceX / 2);
 
                 advanceSoFar += glyphAdvanceX;
@@ -1104,7 +1104,7 @@ bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
     unsigned numRuns = m_harfBuzzRuns.size();
     float advanceSoFar = 0;
     for (unsigned runIndex = 0; runIndex < numRuns; ++runIndex) {
-        HarfBuzzRun* currentRun = m_harfBuzzRuns[m_run.ltr() ? runIndex : numRuns - runIndex - 1].get();
+        HarfBuzzRun* currentRun = m_harfBuzzRuns[m_textRun.ltr() ? runIndex : numRuns - runIndex - 1].get();
         // Skip runs that only contain control characters.
         if (!currentRun->numGlyphs())
             continue;
@@ -1120,7 +1120,7 @@ int HarfBuzzShaper::offsetForPosition(float targetX)
     int charactersSoFar = 0;
     float currentX = 0;
 
-    if (m_run.rtl()) {
+    if (m_textRun.rtl()) {
         charactersSoFar = m_normalizedBufferLength;
         for (int i = m_harfBuzzRuns.size() - 1; i >= 0; --i) {
             charactersSoFar -= m_harfBuzzRuns[i]->numCharacters();
@@ -1157,10 +1157,10 @@ FloatRect HarfBuzzShaper::selectionRect(const FloatPoint& point, int height, int
     bool foundFromX = false;
     bool foundToX = false;
 
-    if (m_run.rtl())
+    if (m_textRun.rtl())
         currentX = m_totalWidth;
     for (unsigned i = 0; i < m_harfBuzzRuns.size(); ++i) {
-        if (m_run.rtl())
+        if (m_textRun.rtl())
             currentX -= m_harfBuzzRuns[i]->width();
         int numCharacters = m_harfBuzzRuns[i]->numCharacters();
         if (!foundFromX && from >= 0 && from < numCharacters) {
@@ -1179,7 +1179,7 @@ FloatRect HarfBuzzShaper::selectionRect(const FloatPoint& point, int height, int
 
         if (foundFromX && foundToX)
             break;
-        if (!m_run.rtl())
+        if (!m_textRun.rtl())
             currentX += m_harfBuzzRuns[i]->width();
     }
 
@@ -1187,7 +1187,7 @@ FloatRect HarfBuzzShaper::selectionRect(const FloatPoint& point, int height, int
     if (!foundFromX)
         fromX = 0;
     if (!foundToX)
-        toX = m_run.rtl() ? 0 : m_totalWidth;
+        toX = m_textRun.rtl() ? 0 : m_totalWidth;
     // None of our HarfBuzzRuns is part of the selection,
     // possibly invalid from, to arguments.
     if (!foundToX && !foundFromX)
