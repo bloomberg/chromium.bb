@@ -553,6 +553,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool enable_connection_racing,
     bool enable_non_blocking_io,
     bool disable_disk_cache,
+    bool prefer_aes,
     int max_number_of_lossy_connections,
     float packet_loss_threshold,
     int socket_receive_buffer_size,
@@ -578,6 +579,7 @@ QuicStreamFactory::QuicStreamFactory(
       enable_connection_racing_(enable_connection_racing),
       enable_non_blocking_io_(enable_non_blocking_io),
       disable_disk_cache_(disable_disk_cache),
+      prefer_aes_(prefer_aes),
       max_number_of_lossy_connections_(max_number_of_lossy_connections),
       packet_loss_threshold_(packet_loss_threshold),
       socket_receive_buffer_size_(socket_receive_buffer_size),
@@ -602,7 +604,7 @@ QuicStreamFactory::QuicStreamFactory(
   bool has_aes_hardware_support = cpu.has_aesni() && cpu.has_avx();
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm",
                         has_aes_hardware_support);
-  if (has_aes_hardware_support)
+  if (has_aes_hardware_support || prefer_aes_)
     crypto_config_.PreferAesGcm();
   if (!IsEcdsaSupported())
     crypto_config_.DisableEcdsa();

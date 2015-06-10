@@ -189,6 +189,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> quic_enable_connection_racing;
     Optional<bool> quic_enable_non_blocking_io;
     Optional<bool> quic_disable_disk_cache;
+    Optional<bool> quic_prefer_aes;
     Optional<int> quic_max_number_of_lossy_connections;
     Optional<float> quic_packet_loss_threshold;
     Optional<int> quic_socket_receive_buffer_size;
@@ -374,6 +375,9 @@ class IOThread : public content::BrowserThreadDelegate {
   // cache.
   static bool ShouldQuicDisableDiskCache(
       const VariationParameters& quic_trial_params);
+
+  // Returns true if QUIC should prefer AES-GCN even without hardware support.
+  static bool ShouldQuicPreferAes(const VariationParameters& quic_trial_params);
 
   // Returns the maximum number of QUIC connections with high packet loss in a
   // row after which QUIC should be disabled.  Returns 0 if the default value

@@ -218,6 +218,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
                  /*enable_connection_racing=*/false,
                  /*enable_non_blocking_io=*/true,
                  /*disable_disk_cache=*/false,
+                 /*prefer_aes=*/false,
                  /*max_number_of_lossy_connections=*/0,
                  /*packet_loss_threshold=*/1.0f,
                  /*receive_buffer_size=*/0,

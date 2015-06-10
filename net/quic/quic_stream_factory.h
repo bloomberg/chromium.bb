@@ -115,6 +115,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool enable_connection_racing,
       bool enable_non_blocking_io,
       bool disable_disk_cache,
+      bool prefer_aes,
       int max_number_of_lossy_connections,
       float packet_loss_threshold,
       int socket_receive_buffer_size,
@@ -344,6 +345,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Set if we do not want to load server config from the disk cache.
   bool disable_disk_cache_;
+
+  // Set if AES-GCM should be preferred, even if there is no hardware support.
+  bool prefer_aes_;
 
   // Set if we want to disable QUIC when there is high packet loss rate.
   // Specifies the maximum number of connections with high packet loss in a row

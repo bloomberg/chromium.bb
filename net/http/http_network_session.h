@@ -115,6 +115,7 @@ class NET_EXPORT HttpNetworkSession
     bool quic_enable_connection_racing;
     bool quic_enable_non_blocking_io;
     bool quic_disable_disk_cache;
+    bool quic_prefer_aes;
     int quic_max_number_of_lossy_connections;
     float quic_packet_loss_threshold;
     int quic_socket_receive_buffer_size;

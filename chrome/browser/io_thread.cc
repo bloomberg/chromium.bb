@@ -1174,6 +1174,7 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_enable_connection_racing);
   globals.quic_enable_non_blocking_io.CopyToIfSet(
       &params->quic_enable_non_blocking_io);
+  globals.quic_prefer_aes.CopyToIfSet(&params->quic_prefer_aes);
   globals.quic_disable_disk_cache.CopyToIfSet(
       &params->quic_disable_disk_cache);
   globals.quic_max_number_of_lossy_connections.CopyToIfSet(
@@ -1321,6 +1322,8 @@ void IOThread::ConfigureQuicGlobals(
         ShouldQuicEnableNonBlockingIO(quic_trial_params));
     globals->quic_disable_disk_cache.set(
         ShouldQuicDisableDiskCache(quic_trial_params));
+    globals->quic_prefer_aes.set(
+        ShouldQuicPreferAes(quic_trial_params));
     int max_number_of_lossy_connections = GetQuicMaxNumberOfLossyConnections(
         quic_trial_params);
     if (max_number_of_lossy_connections != 0) {
@@ -1529,6 +1532,13 @@ bool IOThread::ShouldQuicDisableDiskCache(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
       GetVariationParam(quic_trial_params, "disable_disk_cache"), "true");
+}
+
+// static
+bool IOThread::ShouldQuicPreferAes(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "prefer_aes"), "true");
 }
 
 // static

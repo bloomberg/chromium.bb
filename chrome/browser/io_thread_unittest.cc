@@ -188,6 +188,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params.quic_enable_connection_racing);
   EXPECT_FALSE(params.quic_enable_non_blocking_io);
   EXPECT_FALSE(params.quic_disable_disk_cache);
+  EXPECT_FALSE(params.quic_prefer_aes);
   EXPECT_EQ(0, params.quic_max_number_of_lossy_connections);
   EXPECT_EQ(1.0f, params.quic_packet_loss_threshold);
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
@@ -361,6 +362,15 @@ TEST_F(IOThreadTest, QuicDisableDiskCache) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.quic_disable_disk_cache);
+}
+
+TEST_F(IOThreadTest, QuicPreferAes) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["prefer_aes"] = "true";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.quic_prefer_aes);
 }
 
 TEST_F(IOThreadTest, QuicMaxNumberOfLossyConnectionsFieldTrialParams) {
