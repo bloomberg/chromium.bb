@@ -422,9 +422,8 @@ importer.ScanResult.prototype.getStatistics;
  *   sizeBytes: number,
  *   candidates: {
  *     total: number,
- *     processed: number,
- *   }
- *   scannedFiles: number,
+ *     processed: number
+ *   },
  *   progress: number
  * }}
  */
