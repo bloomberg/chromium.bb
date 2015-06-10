@@ -15,15 +15,21 @@ var remoting = remoting || {};
 
 /**
  * @param {Array<string>} appCapabilities Array of application capabilities.
+ * @param {remoting.LicenseManager=} opt_licenseManager
  * @constructor
  * @implements {remoting.ApplicationInterface}
  * @extends {remoting.Application}
  */
-remoting.AppRemoting = function(appCapabilities) {
+remoting.AppRemoting = function(appCapabilities, opt_licenseManager) {
   base.inherits(this, remoting.Application);
 
   /** @private {remoting.Activity} */
   this.activity_ = null;
+
+  /** @private */
+  this.licenseManager_ = (opt_licenseManager) ?
+                             opt_licenseManager :
+                             new remoting.GaiaLicenseManager();
 
   /** @private */
   this.appCapabilities_ = appCapabilities;
@@ -55,20 +61,23 @@ remoting.AppRemoting.prototype.signInFailed_ = function(error) {
 /**
  * @override {remoting.ApplicationInterface}
  */
-remoting.AppRemoting.prototype.initApplication_ = function() {
-  var windowShape = new remoting.WindowShape();
-  windowShape.updateClientWindowShape();
-
-  this.activity_ = new remoting.AppRemotingActivity(this.appCapabilities_, this,
-                                                    windowShape);
-};
+remoting.AppRemoting.prototype.initApplication_ = function() {};
 
 /**
  * @param {string} token An OAuth access token.
  * @override {remoting.ApplicationInterface}
  */
 remoting.AppRemoting.prototype.startApplication_ = function(token) {
-  this.activity_.start();
+  var windowShape = new remoting.WindowShape();
+  windowShape.updateClientWindowShape();
+  var that = this;
+
+  this.licenseManager_.getSubscriptionToken(token).then(
+      function(/** string*/ subscriptionToken) {
+    that.activity_ = new remoting.AppRemotingActivity(
+        that.appCapabilities_, that, windowShape, subscriptionToken);
+    that.activity_.start();
+  });
 };
 
 /**
