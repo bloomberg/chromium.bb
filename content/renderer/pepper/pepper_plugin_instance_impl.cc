@@ -1742,7 +1742,7 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
   return num_pages;
 }
 
-bool PepperPluginInstanceImpl::PrintPage(int page_number,
+void PepperPluginInstanceImpl::PrintPage(int page_number,
                                          blink::WebCanvas* canvas) {
 #if defined(ENABLE_PRINTING)
   DCHECK(plugin_print_interface_);
@@ -1757,16 +1757,13 @@ bool PepperPluginInstanceImpl::PrintPage(int page_number,
   if (save_for_later) {
     ranges_.push_back(page_range);
     canvas_ = skia::SharePtr(canvas);
-    return true;
   } else {
-    return PrintPageHelper(&page_range, 1, canvas);
+    PrintPageHelper(&page_range, 1, canvas);
   }
-#else  // ENABLE_PRINTING
-  return false;
 #endif
 }
 
-bool PepperPluginInstanceImpl::PrintPageHelper(
+void PepperPluginInstanceImpl::PrintPageHelper(
     PP_PrintPageNumberRange_Dev* page_ranges,
     int num_ranges,
     blink::WebCanvas* canvas) {
@@ -1774,21 +1771,17 @@ bool PepperPluginInstanceImpl::PrintPageHelper(
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
   DCHECK(plugin_print_interface_);
   if (!plugin_print_interface_)
-    return false;
+    return;
   PP_Resource print_output = plugin_print_interface_->PrintPages(
       pp_instance(), page_ranges, num_ranges);
   if (!print_output)
-    return false;
-
-  bool ret = false;
+    return;
 
   if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_PDF)
-    ret = PrintPDFOutput(print_output, canvas);
+    PrintPDFOutput(print_output, canvas);
 
   // Now we need to release the print output resource.
   PluginModule::GetCore()->ReleaseResource(print_output);
-
-  return ret;
 }
 
 void PepperPluginInstanceImpl::PrintEnd() {

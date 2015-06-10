@@ -255,7 +255,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool SupportsPrintInterface();
   bool IsPrintScalingDisabled();
   int PrintBegin(const blink::WebPrintParams& print_params);
-  bool PrintPage(int page_number, blink::WebCanvas* canvas);
+  void PrintPage(int page_number, blink::WebCanvas* canvas);
   void PrintEnd();
   bool GetPrintPresetOptionsFromDocument(
       blink::WebPrintPresetOptions* preset_options);
@@ -644,7 +644,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void UpdateLayer(bool device_changed);
 
   // Internal helper function for PrintPage().
-  bool PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
+  void PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
                        int num_ranges,
                        blink::WebCanvas* canvas);
 

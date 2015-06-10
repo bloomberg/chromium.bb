@@ -270,8 +270,14 @@ int PepperWebPluginImpl::printBegin(const WebPrintParams& print_params) {
   return instance_->PrintBegin(print_params);
 }
 
-bool PepperWebPluginImpl::printPage(int page_number, blink::WebCanvas* canvas) {
+void PepperWebPluginImpl::printPage(int page_number, blink::WebCanvas* canvas,
+                                    bool unused) {
   return instance_->PrintPage(page_number, canvas);
+}
+
+bool PepperWebPluginImpl::printPage(int page_number, blink::WebCanvas* canvas) {
+  instance_->PrintPage(page_number, canvas);
+  return true;
 }
 
 void PepperWebPluginImpl::printEnd() { return instance_->PrintEnd(); }
