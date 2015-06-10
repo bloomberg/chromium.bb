@@ -813,6 +813,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestDeviceEmulation) {
   RunTest("testDeviceMetricsOverrides", "about:blank");
 }
 
+// Tests that settings are stored in profile correctly.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSettings) {
+  OpenDevToolsWindow("about:blank", true);
+  RunTestFunction(window_, "testSettings");
+  CloseDevToolsWindow();
+}
+
 // Tests that external navigation from inspector page is always handled by
 // DevToolsWindow and results in inspected page navigation.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
