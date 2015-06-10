@@ -3174,6 +3174,20 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
                                              const IndexedDBKey* primary_key,
                                              IteratorState next_state,
                                              leveldb::Status* s) {
+  DCHECK(!key || next_state == SEEK);
+
+  if (cursor_options_.forward)
+    return ContinueNext(key, primary_key, next_state, s);
+  else
+    return ContinuePrevious(key, primary_key, next_state, s);
+}
+
+bool IndexedDBBackingStore::Cursor::ContinueNext(
+    const IndexedDBKey* key,
+    const IndexedDBKey* primary_key,
+    IteratorState next_state,
+    leveldb::Status* s) {
+  DCHECK(cursor_options_.forward);
   DCHECK(!key || key->IsValid());
   DCHECK(!primary_key || primary_key->IsValid());
   *s = leveldb::Status::OK();
@@ -3181,62 +3195,37 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
   // TODO(alecflett): avoid a copy here?
   IndexedDBKey previous_key = current_key_ ? *current_key_ : IndexedDBKey();
 
-  // When iterating with PrevNoDuplicate, spec requires that the
-  // value we yield for each key is the first duplicate in forwards
-  // order.
-  IndexedDBKey last_duplicate_key;
-
-  bool forward = cursor_options_.forward;
-  bool first_iteration_forward = forward;
-  bool flipped = false;
+  // Optimization: if seeking to a particular key (or key and primary key),
+  // skip the cursor forward rather than iterating it.
+  if (next_state == SEEK && key) {
+    std::string leveldb_key =
+        primary_key ? EncodeKey(*key, *primary_key) : EncodeKey(*key);
+    *s = iterator_->Seek(leveldb_key);
+    if (!s->ok())
+      return false;
+    // Cursor is at the next value already; don't advance it again below.
+    next_state = READY;
+  }
 
   for (;;) {
+    // Only advance the cursor if it was not set to position already,
+    // either because it is newly opened (and positioned at start of range)
+    // or skipped forward by continue with a specific key.
     if (next_state == SEEK) {
-      // TODO(jsbell): Optimize seeking for reverse cursors as well.
-      if (first_iteration_forward && key) {
-        first_iteration_forward = false;
-        std::string leveldb_key;
-        if (primary_key) {
-          leveldb_key = EncodeKey(*key, *primary_key);
-        } else {
-          leveldb_key = EncodeKey(*key);
-        }
-        *s = iterator_->Seek(leveldb_key);
-      } else if (forward) {
-        *s = iterator_->Next();
-      } else {
-        *s = iterator_->Prev();
-      }
+      *s = iterator_->Next();
       if (!s->ok())
         return false;
     } else {
-      next_state = SEEK;  // for subsequent iterations
+      next_state = SEEK;
     }
 
-    if (!iterator_->IsValid()) {
-      if (!forward && last_duplicate_key.IsValid()) {
-        // We need to walk forward because we hit the end of
-        // the data.
-        forward = true;
-        flipped = true;
-        continue;
-      }
-
+    // TODO(jsbell): Can we DCHECK iterator_->IsValid() up top?
+    // Fail if we've run out of data or gone past the cursor's bounds.
+    if (!iterator_->IsValid() || IsPastBounds())
       return false;
-    }
 
-    if (IsPastBounds()) {
-      if (!forward && last_duplicate_key.IsValid()) {
-        // We need to walk forward because now we're beyond the
-        // bounds defined by the cursor.
-        forward = true;
-        flipped = true;
-        continue;
-      }
-
-      return false;
-    }
-
+    // TODO(jsbell): Document why this might be false. When do we ever not
+    // seek into the range before starting cursor iteration?
     if (!HaveEnteredRange())
       continue;
 
@@ -3248,52 +3237,157 @@ bool IndexedDBBackingStore::Cursor::Continue(const IndexedDBKey* key,
       continue;
     }
 
+    // If seeking to a key (or key and primary key), continue until found.
+    // TODO(jsbell): Given the Seek() optimization above, this should
+    // not be necessary. Verify and remove.
     if (key) {
-      if (forward) {
-        if (primary_key && current_key_->Equals(*key) &&
-            this->primary_key().IsLessThan(*primary_key))
-          continue;
-        if (!flipped && current_key_->IsLessThan(*key))
-          continue;
-      } else {
-        if (primary_key && key->Equals(*current_key_) &&
-            primary_key->IsLessThan(this->primary_key()))
-          continue;
-        if (key->IsLessThan(*current_key_))
-          continue;
-      }
+      if (primary_key && current_key_->Equals(*key) &&
+          this->primary_key().IsLessThan(*primary_key))
+        continue;
+      if (current_key_->IsLessThan(*key))
+        continue;
     }
 
-    if (cursor_options_.unique) {
-      if (previous_key.IsValid() && current_key_->Equals(previous_key)) {
-        // We should never be able to walk forward all the way
-        // to the previous key.
-        DCHECK(!last_duplicate_key.IsValid());
-        continue;
-      }
+    // Cursor is now positioned at a non-stale record in range.
 
-      if (!forward) {
-        if (!last_duplicate_key.IsValid()) {
-          last_duplicate_key = *current_key_;
-          continue;
-        }
-
-        // We need to walk forward because we hit the boundary
-        // between key ranges.
-        if (!last_duplicate_key.Equals(*current_key_)) {
-          forward = true;
-          flipped = true;
-          continue;
-        }
-
-        continue;
-      }
+    // "Unique" cursors should continue seeking until a new key value is seen.
+    if (cursor_options_.unique && previous_key.IsValid() &&
+        current_key_->Equals(previous_key)) {
+      continue;
     }
+
     break;
   }
 
+  return true;
+}
+
+bool IndexedDBBackingStore::Cursor::ContinuePrevious(
+    const IndexedDBKey* key,
+    const IndexedDBKey* primary_key,
+    IteratorState next_state,
+    leveldb::Status* s) {
+  DCHECK(!cursor_options_.forward);
+  DCHECK(!key || key->IsValid());
+  DCHECK(!primary_key || primary_key->IsValid());
+  *s = leveldb::Status::OK();
+
+  // TODO(alecflett): avoid a copy here?
+  IndexedDBKey previous_key = current_key_ ? *current_key_ : IndexedDBKey();
+
+  // When iterating with PrevNoDuplicate, spec requires that the value we
+  // yield for each key is the *first* duplicate in forwards order. We do this
+  // by remembering the *last* duplicate seen (implicitly, the first value
+  // seen with a new key), continuing until another new key is seen, then
+  // reversing until we find a key equal to the *last* duplicate.
+  IndexedDBKey last_duplicate_key;
+  bool find_first_duplicate = false;
+
+  // TODO(jsbell): Optimize continuing to a specific key (or key and primary
+  // key) for reverse cursors as well. See Seek() optimization at the start
+  // of ContinueNext() for an example.
+
+  for (;;) {
+    if (next_state == SEEK) {
+      *s = iterator_->Prev();
+      if (!s->ok())
+        return false;
+    } else {
+      next_state = SEEK;  // for subsequent iterations
+    }
+
+    // If we've run out of data or gone past the cursor's bounds.
+    if (!iterator_->IsValid() || IsPastBounds()) {
+      if (last_duplicate_key.IsValid()) {
+        // Walk the cursor forward to the first duplicate.
+        find_first_duplicate = true;
+        break;
+      }
+
+      return false;
+    }
+
+    // TODO(jsbell): Document why this might be false. When do we ever not
+    // seek into the range before starting cursor iteration?
+    if (!HaveEnteredRange())
+      continue;
+
+    // The row may not load because there's a stale entry in the
+    // index. If no error then not fatal.
+    if (!LoadCurrentRow(s)) {
+      if (!s->ok())
+        return false;
+      continue;
+    }
+
+    // If seeking to a key (or key and primary key), continue until found.
+    // TODO(jsbell): If Seek() optimization is added above, remove this.
+    if (key) {
+      if (primary_key && key->Equals(*current_key_) &&
+          primary_key->IsLessThan(this->primary_key()))
+        continue;
+      if (key->IsLessThan(*current_key_))
+        continue;
+    }
+
+    // Cursor is now positioned at a non-stale record in range.
+
+    if (cursor_options_.unique) {
+      // If entry is a duplicate, keep going. Although the cursor should be
+      // positioned at the first duplicate already, new duplicates may have
+      // been inserted since the cursor was last iterated, and should be
+      // skipped to maintain "unique" iteration.
+      if (previous_key.IsValid() && current_key_->Equals(previous_key))
+        continue;
+
+      // If we've found a new key, remember it and keep going.
+      if (!last_duplicate_key.IsValid()) {
+        last_duplicate_key = *current_key_;
+        continue;
+      }
+
+      // If we're still seeing duplicates, keep going.
+      if (last_duplicate_key.Equals(*current_key_))
+        continue;
+
+      // Walk the cursor forward to the first duplicate.
+      find_first_duplicate = true;
+    }
+
+    break;
+  }
+
+  // TODO(jsbell): Rather than iterating, stash the last leveldb key of the
+  // last plausible result, then Seek() the cursor directly to that and
+  // LoadCurrentRow().
+
+  if (find_first_duplicate) {
+    DCHECK_EQ(next_state, SEEK);
+    DCHECK(cursor_options_.unique);
+    for (;;) {
+      *s = iterator_->Next();
+      if (!s->ok() || !iterator_->IsValid() || IsPastBounds())
+        return false;
+
+      // TODO(jsbell): Document why this might be false. When do we ever not
+      // seek into the range before starting cursor iteration?
+      if (!HaveEnteredRange())
+        continue;
+
+      // The row may not load because there's a stale entry in the
+      // index. If no error then not fatal.
+      if (!LoadCurrentRow(s)) {
+        if (!s->ok())
+          return false;
+        continue;
+      }
+
+      break;
+    }
+  }
+
   DCHECK(!last_duplicate_key.IsValid() ||
-         (forward && last_duplicate_key.Equals(*current_key_)));
+         (find_first_duplicate && last_duplicate_key.Equals(*current_key_)));
   return true;
 }
 

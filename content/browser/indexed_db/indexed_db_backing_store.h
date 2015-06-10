@@ -338,6 +338,19 @@ class CONTENT_EXPORT IndexedDBBackingStore
     IndexedDBBackingStore::RecordIdentifier record_identifier_;
 
    private:
+    // For cursors with direction Next or NextNoDuplicate.
+    bool ContinueNext(const IndexedDBKey* key,
+                      const IndexedDBKey* primary_key,
+                      IteratorState state,
+                      leveldb::Status*);
+    // For cursors with direction Prev or PrevNoDuplicate.
+    // The PrevNoDuplicate case has additional complexity of not
+    // being symmetric with NextNoDuplicate.
+    bool ContinuePrevious(const IndexedDBKey* key,
+                          const IndexedDBKey* primary_key,
+                          IteratorState state,
+                          leveldb::Status*);
+
     DISALLOW_COPY_AND_ASSIGN(Cursor);
   };
 
