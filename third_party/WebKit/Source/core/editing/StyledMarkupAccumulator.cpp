@@ -39,13 +39,12 @@ namespace blink {
 
 using namespace HTMLNames;
 
-StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized, ConvertBlocksToInlines convertBlocksToInlines)
+StyledMarkupAccumulator::StyledMarkupAccumulator(EAbsoluteURLs shouldResolveURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document> document, EAnnotateForInterchange shouldAnnotate, Node* highestNodeToBeSerialized)
     : m_formatter(shouldResolveURLs)
     , m_start(start)
     , m_end(end)
     , m_document(document)
     , m_shouldAnnotate(shouldAnnotate)
-    , m_convertBlocksToInlines(convertBlocksToInlines)
     , m_highestNodeToBeSerialized(highestNodeToBeSerialized)
 {
 }
@@ -191,18 +190,6 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
     m_formatter.appendCloseTag(out, element);
 }
 
-void StyledMarkupAccumulator::wrapWithNode(ContainerNode& node, RangeFullySelectsNode rangeFullySelectsNode)
-{
-    StringBuilder markup;
-    if (node.isElementNode())
-        appendElement(markup, toElement(node), convertBlocksToInlines() && isBlock(&node), rangeFullySelectsNode);
-    else
-        appendStartMarkup(markup, node);
-    m_reversedPrecedingMarkup.append(markup.toString());
-    if (node.isElementNode())
-        appendEndTag(toElement(node));
-}
-
 void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style)
 {
     // wrappingStyleForSerialization should have removed -webkit-text-decorations-in-effect
@@ -266,6 +253,11 @@ bool StyledMarkupAccumulator::shouldApplyWrappingStyle(const Node& node) const
 bool StyledMarkupAccumulator::shouldAnnotate() const
 {
     return m_shouldAnnotate == AnnotateForInterchange;
+}
+
+void StyledMarkupAccumulator::pushMarkup(const String& str)
+{
+    m_reversedPrecedingMarkup.append(str);
 }
 
 } // namespace blink

@@ -46,9 +46,7 @@ class StyledMarkupAccumulator final {
 public:
     enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
 
-    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, Node*, ConvertBlocksToInlines);
-
-    bool convertBlocksToInlines() const { return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert; }
+    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, Node*);
 
     void appendString(const String&);
     void appendStartTag(Node&);
@@ -60,9 +58,12 @@ public:
     void setHighestNodeToBeSerialized(Node* highestNodeToBeSerialized) { m_highestNodeToBeSerialized = highestNodeToBeSerialized; }
     void setWrappingStyle(PassRefPtrWillBeRawPtr<EditingStyle> wrappingStyle) { m_wrappingStyle = wrappingStyle; }
 
-    void wrapWithNode(ContainerNode&, RangeFullySelectsNode = DoesFullySelectNode);
     void wrapWithStyleNode(StylePropertySet*);
     String takeResults();
+
+    void pushMarkup(const String&);
+    void appendElement(StringBuilder&, Element&, bool addDisplayInline, RangeFullySelectsNode);
+    void appendStartMarkup(StringBuilder&, Node&);
 
 private:
     void appendText(StringBuilder&, Text&);
@@ -75,8 +76,6 @@ private:
     bool shouldAnnotate() const;
 
     void appendElement(StringBuilder&, Element&);
-    void appendElement(StringBuilder&, Element&, bool, RangeFullySelectsNode);
-    void appendStartMarkup(StringBuilder&, Node&);
     void appendEndMarkup(StringBuilder&, const Element&);
 
     MarkupFormatter m_formatter;
@@ -84,7 +83,6 @@ private:
     const TextOffset m_end;
     const RefPtrWillBeMember<Document> m_document;
     const EAnnotateForInterchange m_shouldAnnotate;
-    const ConvertBlocksToInlines m_convertBlocksToInlines;
     RawPtrWillBeMember<Node> m_highestNodeToBeSerialized;
     RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
     StringBuilder m_result;

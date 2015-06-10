@@ -119,7 +119,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
 {
     DEFINE_STATIC_LOCAL(const String, interchangeNewlineString, ("<br class=\"" AppleInterchangeNewline "\">"));
 
-    StyledMarkupAccumulator markupAccumulator(m_shouldResolveURLs, toTextOffset(m_start.parentAnchoredEquivalent()), toTextOffset(m_end.parentAnchoredEquivalent()), m_start.document(), m_shouldAnnotate, m_highestNodeToBeSerialized.get(), m_convertBlocksToInlines);
+    StyledMarkupAccumulator markupAccumulator(m_shouldResolveURLs, toTextOffset(m_start.parentAnchoredEquivalent()), toTextOffset(m_end.parentAnchoredEquivalent()), m_start.document(), m_shouldAnnotate, m_highestNodeToBeSerialized.get());
 
     Node* pastEnd = m_end.nodeAsRangePastLastNode();
 
@@ -154,7 +154,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
         // Also include all of the ancestors of lastClosed up to this special ancestor.
         // FIXME: What is ancestor?
         for (ContainerNode* ancestor = Strategy::parent(*lastClosed); ancestor; ancestor = Strategy::parent(*ancestor)) {
-            if (ancestor == fullySelectedRoot && !markupAccumulator.convertBlocksToInlines()) {
+            if (ancestor == fullySelectedRoot && !convertBlocksToInlines()) {
                 RefPtrWillBeRawPtr<EditingStyle> fullySelectedRootStyle = styleFromMatchedRulesAndInlineDecl(fullySelectedRoot);
 
                 // Bring the background attribute over, but not as an attribute because a background attribute on a div
@@ -176,7 +176,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
             } else {
                 // Since this node and all the other ancestors are not in the selection we want to set RangeFullySelectsNode to DoesNotFullySelectNode
                 // so that styles that affect the exterior of the node are not included.
-                markupAccumulator.wrapWithNode(*ancestor, StyledMarkupAccumulator::DoesNotFullySelectNode);
+                wrapWithNode(markupAccumulator, *ancestor, StyledMarkupAccumulator::DoesNotFullySelectNode);
             }
 
             if (ancestor == m_highestNodeToBeSerialized)
@@ -283,12 +283,26 @@ Node* StyledMarkupSerializer<Strategy>::traverseNodesForSerialization(Node* star
             ASSERT(startNode);
             ASSERT(Strategy::isDescendantOf(*startNode, *parent));
             if (markupAccumulator)
-                markupAccumulator->wrapWithNode(*parent);
+                wrapWithNode(*markupAccumulator, *parent, StyledMarkupAccumulator::DoesFullySelectNode);
             lastClosed = parent;
         }
     }
 
     return lastClosed;
+}
+
+template<typename Strategy>
+void StyledMarkupSerializer<Strategy>::wrapWithNode(StyledMarkupAccumulator& accumulator, ContainerNode& node, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
+{
+    StringBuilder markup;
+    if (node.isElementNode())
+        accumulator.appendElement(markup, toElement(node), convertBlocksToInlines() && isBlock(&node), rangeFullySelectsNode);
+    else
+        accumulator.appendStartMarkup(markup, node);
+    accumulator.pushMarkup(markup.toString());
+    if (!node.isElementNode())
+        return;
+    accumulator.appendEndTag(toElement(node));
 }
 
 template class StyledMarkupSerializer<EditingStrategy>;

@@ -50,9 +50,11 @@ public:
     String createMarkup();
 
 private:
-    Node* serializeNodes(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
+    bool convertBlocksToInlines() const { return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert; }
 
+    Node* serializeNodes(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, StyledMarkupAccumulator*);
+    void wrapWithNode(StyledMarkupAccumulator&, ContainerNode&, StyledMarkupAccumulator::RangeFullySelectsNode);
 
     const PositionType m_start;
     const PositionType m_end;
