@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/dom_distiller/content/web_contents_main_frame_observer.h"
 #include "components/dom_distiller/core/distiller_page.h"
@@ -164,7 +165,7 @@ void DistillerPageWebContents::DidFailLoad(
     DCHECK(state_ == LOADING_PAGE || state_ == EXECUTING_JAVASCRIPT);
     state_ = PAGELOAD_FAILED;
     scoped_ptr<base::Value> empty = base::Value::CreateNullValue();
-    OnWebContentsDistillationDone(GURL(), empty.get());
+    OnWebContentsDistillationDone(GURL(), base::TimeTicks(), empty.get());
   }
 }
 
@@ -183,15 +184,24 @@ void DistillerPageWebContents::ExecuteJavaScript() {
       base::UTF8ToUTF16(script_),
       base::Bind(&DistillerPageWebContents::OnWebContentsDistillationDone,
                  base::Unretained(this),
-                 source_page_handle_->web_contents()->GetLastCommittedURL()));
+                 source_page_handle_->web_contents()->GetLastCommittedURL(),
+                 base::TimeTicks::Now()));
 }
 
 void DistillerPageWebContents::OnWebContentsDistillationDone(
     const GURL& page_url,
+    const base::TimeTicks& javascript_start,
     const base::Value* value) {
   DCHECK(state_ == IDLE || state_ == LOADING_PAGE ||  // TODO(nyquist): 493795.
          state_ == PAGELOAD_FAILED || state_ == EXECUTING_JAVASCRIPT);
   state_ = IDLE;
+
+  if (!javascript_start.is_null()) {
+    base::TimeDelta javascript_time = base::TimeTicks::Now() - javascript_start;
+    UMA_HISTOGRAM_TIMES("DomDistiller.Time.RunJavaScript", javascript_time);
+    DVLOG(1) << "DomDistiller.Time.RunJavaScript = " << javascript_time;
+  }
+
   DistillerPage::OnDistillationDone(page_url, value);
 }
 

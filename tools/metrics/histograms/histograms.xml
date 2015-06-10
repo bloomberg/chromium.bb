@@ -6507,6 +6507,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DomDistiller.Time.RunJavaScript" units="milliseconds">
+  <owner>wychen@chromium.org</owner>
+  <summary>
+    Time spent in ExecuteJavaScript() in DomDistiller. It includes JavaScript
+    code transmission through IPC, parsing, compilation, execution, and
+    returning the JSON back through IPC.
+  </summary>
+</histogram>
+
 <histogram name="DomDistiller.Time.SwipeToPaint" units="milliseconds">
   <owner>wychen@chromium.org</owner>
   <summary>
