@@ -146,8 +146,8 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 }
 
-// http://crbug.com/253537
-#if defined(OS_ANDROID)
+// http://crbug.com/253537, http://crbug.com/498407
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_AccessibilityMessagesQueueWhileSwappedOut \
         DISABLED_AccessibilityMessagesQueueWhileSwappedOut
 #else
