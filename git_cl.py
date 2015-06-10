@@ -44,6 +44,7 @@ import dart_format
 import fix_encoding
 import gclient_utils
 import git_common
+from git_footers import get_footer_svn_id
 import owners
 import owners_finder
 import presubmit_support
@@ -2645,13 +2646,20 @@ def IsFatalPushFailure(push_stdout):
 def CMDdcommit(parser, args):
   """Commits the current changelist via git-svn."""
   if not settings.GetIsGitSvn():
-    message = """This doesn't appear to be an SVN repository.
-If your project has a git mirror with an upstream SVN master, you probably need
-to run 'git svn init', see your project's git mirror documentation.
-If your project has a true writeable upstream repository, you probably want
-to run 'git cl land' instead.
-Choose wisely, if you get this wrong, your commit might appear to succeed but
-will instead be silently ignored."""
+    if get_footer_svn_id():
+      # If it looks like previous commits were mirrored with git-svn.
+      message = """This repository appears to be a git-svn mirror, but no
+upstream SVN master is set. You probably need to run 'git auto-svn' once."""
+    else:
+      message = """This doesn't appear to be an SVN repository.
+If your project has a true, writeable git repository, you probably want to run
+'git cl land' instead.
+If your project has a git mirror of an upstream SVN master, you probably need
+to run 'git svn init'.
+
+Using the wrong command might cause your commit to appear to succeed, and the
+review to be closed, without actually landing upstream. If you choose to
+proceed, please verify that the commit lands upstream as expected."""
     print(message)
     ask_for_data('[Press enter to dcommit or ctrl-C to quit]')
   return SendUpstream(parser, args, 'dcommit')
@@ -2660,9 +2668,10 @@ will instead be silently ignored."""
 @subcommand.usage('[upstream branch to apply against]')
 def CMDland(parser, args):
   """Commits the current changelist via git."""
-  if settings.GetIsGitSvn():
+  if settings.GetIsGitSvn() or get_footer_svn_id():
     print('This appears to be an SVN repository.')
     print('Are you sure you didn\'t mean \'git cl dcommit\'?')
+    print('(Ignore if this is the first commit after migrating from svn->git)')
     ask_for_data('[Press enter to push or ctrl-C to quit]')
   return SendUpstream(parser, args, 'land')
 

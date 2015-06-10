@@ -48,6 +48,20 @@ def parse_footers(message):
   return footer_map
 
 
+def get_footer_svn_id(branch=None):
+  if not branch:
+    branch = git.root()
+  svn_id = None
+  message = git.run('log', '-1', '--format=%B', branch)
+  footers = parse_footers(message)
+  git_svn_id = get_unique(footers, 'git-svn-id')
+  if git_svn_id:
+    match = GIT_SVN_ID_PATTERN.match(git_svn_id)
+    if match:
+      svn_id = match.group(1)
+  return svn_id
+
+
 def get_unique(footers, key):
   key = normalize_name(key)
   values = footers[key]

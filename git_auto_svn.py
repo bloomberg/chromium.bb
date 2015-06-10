@@ -23,7 +23,7 @@ import subprocess2
 from git_common import run as run_git
 from git_common import run_stream as run_git_stream
 from git_common import set_config, root, ROOT
-from git_footers import parse_footers, get_unique, GIT_SVN_ID_PATTERN
+from git_footers import get_footer_svn_id
 
 
 SVN_EXE = ROOT+'\\svn.bat' if sys.platform.startswith('win') else 'svn'
@@ -58,14 +58,11 @@ def main(argv):
   parser.parse_args(argv)
 
   upstream = root()
-  message = run_git('log', '-1', '--format=%B', upstream)
-  footers = parse_footers(message)
-  git_svn_id = get_unique(footers, 'git-svn-id')
-  match = GIT_SVN_ID_PATTERN.match(git_svn_id)
-  assert match, 'No valid git-svn-id footer found on %s.' % upstream
-  print 'Found git-svn-id footer %s on %s' % (match.group(1), upstream)
+  svn_id = get_footer_svn_id(upstream)
+  assert svn_id, 'No valid git-svn-id footer found on %s.' % upstream
+  print 'Found git-svn-id footer %s on %s' % (svn_id, upstream)
 
-  parsed_svn = urlparse.urlparse(match.group(1))
+  parsed_svn = urlparse.urlparse(svn_id)
   path_components = parsed_svn.path.split('/')
   svn_repo = None
   svn_path = None
@@ -86,7 +83,7 @@ def main(argv):
                ' from https://chromium-access.appspot.com' % maybe_repo)
         print
       continue
-  assert svn_repo is not None, 'Unable to find svn repo for %s' % match.group(1)
+  assert svn_repo is not None, 'Unable to find svn repo for %s' % svn_id
   print 'Found upstream svn repo %s and path %s' % (svn_repo, svn_path)
 
   set_config('svn-remote.svn.url', svn_repo)
