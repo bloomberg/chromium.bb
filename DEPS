@@ -34,7 +34,7 @@ vars = {
   'chromium_git': 'https://chromium.googlesource.com',
   'libvpx_revision': 'a43631169b4200f2000c8cfa82404ce507e31486',
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
-  'skia_revision': 'c15d9579d654f14cb16a3ced7158cd93950d48c8',
+  'skia_revision': 'b23e6aa6767816ac4bc6c191e78ef62d6e765671',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
