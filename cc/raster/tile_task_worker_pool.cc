@@ -109,7 +109,7 @@ void TileTaskWorkerPool::InsertNodesForRasterTask(
     TaskGraph* graph,
     RasterTask* raster_task,
     const ImageDecodeTask::Vector& decode_tasks,
-    unsigned priority) {
+    size_t priority) {
   size_t dependencies = 0u;
 
   // Insert image decode tasks.

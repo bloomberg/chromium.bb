@@ -51,7 +51,7 @@ class CC_EXPORT TileTaskWorkerPool {
       TaskGraph* graph,
       RasterTask* task,
       const ImageDecodeTask::Vector& decode_tasks,
-      unsigned priority);
+      size_t priority);
 
   // Utility function that will create a temporary bitmap and copy pixels to
   // |memory| when necessary. The |canvas_bitmap_rect| is the rect of the bitmap

@@ -269,7 +269,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
            draw_properties_.render_target->render_surface());
     return draw_properties_.render_target;
   }
-  int num_unclipped_descendants() const {
+  size_t num_unclipped_descendants() const {
     return draw_properties_.num_unclipped_descendants;
   }
 

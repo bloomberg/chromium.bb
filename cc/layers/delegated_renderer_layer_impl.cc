@@ -348,7 +348,7 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
   const int kStripeWidth = 300;
   const int kStripeHeight = 300;
 
-  for (size_t i = 0; ; ++i) {
+  for (int i = 0;; ++i) {
     // For horizontal lines.
     int x =  kStripeWidth * i;
     int width = std::min(kStripeWidth, content_bounds().width() - x - 1);
@@ -441,7 +441,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
         if (render_target() == this) {
           DCHECK(!is_clipped());
           DCHECK(render_surface());
-          DCHECK_EQ(0, num_unclipped_descendants());
+          DCHECK_EQ(0u, num_unclipped_descendants());
           output_shared_quad_state->clip_rect =
               MathUtil::MapEnclosingClippedRect(
                   delegated_frame_to_target_transform,

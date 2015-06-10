@@ -503,7 +503,7 @@ void PixelBufferTileTaskWorkerPool::ScheduleMoreTasks() {
 
   RasterTaskVector tasks[kNumberOfTaskSets];
 
-  unsigned priority = kTileTaskPriorityBase;
+  size_t priority = kTileTaskPriorityBase;
 
   graph_.Reset();
 

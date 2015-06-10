@@ -188,7 +188,7 @@ template <typename LayerType>
 void TreeSynchronizer::PushPropertiesInternal(
     LayerType* layer,
     LayerImpl* layer_impl,
-    size_t* num_dependents_need_push_properties_for_parent) {
+    int* num_dependents_need_push_properties_for_parent) {
   if (!layer) {
     DCHECK(!layer_impl);
     return;
@@ -205,7 +205,7 @@ void TreeSynchronizer::PushPropertiesInternal(
   else if (layer->ToScrollbarLayer())
     layer->ToScrollbarLayer()->PushScrollClipPropertiesTo(layer_impl);
 
-  size_t num_dependents_need_push_properties = 0;
+  int num_dependents_need_push_properties = 0;
   if (recurse_on_children_and_dependents) {
     PushPropertiesInternal(layer->mask_layer(),
                            layer_impl->mask_layer(),
@@ -295,7 +295,7 @@ static void CheckScrollAndClipPointersRecursive(Layer* layer,
 
 void TreeSynchronizer::PushProperties(Layer* layer,
                                       LayerImpl* layer_impl) {
-  size_t num_dependents_need_push_properties = 0;
+  int num_dependents_need_push_properties = 0;
   PushPropertiesInternal(
       layer, layer_impl, &num_dependents_need_push_properties);
 #if DCHECK_IS_ON()
@@ -304,7 +304,7 @@ void TreeSynchronizer::PushProperties(Layer* layer,
 }
 
 void TreeSynchronizer::PushProperties(LayerImpl* layer, LayerImpl* layer_impl) {
-  size_t num_dependents_need_push_properties = 0;
+  int num_dependents_need_push_properties = 0;
   PushPropertiesInternal(
       layer, layer_impl, &num_dependents_need_push_properties);
 }

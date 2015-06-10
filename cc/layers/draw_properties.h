@@ -104,7 +104,7 @@ struct CC_EXPORT DrawProperties {
 
   // Number of descendants with a clip parent that is our ancestor. NB - this
   // does not include our clip children because they are clipped by us.
-  int num_unclipped_descendants;
+  size_t num_unclipped_descendants;
 
   // If true, the layer or some layer in its sub-tree has a CopyOutputRequest
   // present on it.

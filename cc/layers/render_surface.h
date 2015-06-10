@@ -146,7 +146,7 @@ class CC_EXPORT RenderSurface {
 
   // For LayerIteratorActions
   int target_render_surface_layer_index_history_;
-  int current_layer_index_history_;
+  size_t current_layer_index_history_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderSurface);
 };

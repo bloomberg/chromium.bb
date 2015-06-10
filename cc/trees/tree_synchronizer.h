@@ -42,7 +42,7 @@ class CC_EXPORT TreeSynchronizer {
   static void PushPropertiesInternal(
       LayerType* layer,
       LayerImpl* layer_impl,
-      size_t* num_dependents_need_push_properties_for_parent);
+      int* num_dependents_need_push_properties_for_parent);
 
   DISALLOW_COPY_AND_ASSIGN(TreeSynchronizer);
 };

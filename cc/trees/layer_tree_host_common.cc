@@ -302,8 +302,8 @@ void UpdateAccumulatedSurfaceState(
          current_target->render_surface()->draw_transform();
 
     // If we have unclipped descendants, the draw transform is a translation.
-    DCHECK(current_target->num_unclipped_descendants() == 0 ||
-           current_draw_transform.IsIdentityOrTranslation());
+    DCHECK_IMPLIES(current_target->num_unclipped_descendants(),
+                   current_draw_transform.IsIdentityOrTranslation());
 
     target_rect = gfx::ToEnclosingRect(
         MathUtil::MapClippedRect(current_draw_transform, target_rect));
@@ -1184,7 +1184,7 @@ static inline void RemoveSurfaceForEarlyExit(
 }
 
 struct PreCalculateMetaInformationRecursiveData {
-  int num_unclipped_descendants;
+  size_t num_unclipped_descendants;
   int num_layer_or_descendants_with_copy_request;
   int num_layer_or_descendants_with_input_handler;
 
@@ -1273,7 +1273,7 @@ static void PreCalculateMetaInformationInternal(
   }
 
   if (layer->clip_children()) {
-    int num_clip_children = layer->clip_children()->size();
+    size_t num_clip_children = layer->clip_children()->size();
     DCHECK_GE(recursive_data->num_unclipped_descendants, num_clip_children);
     recursive_data->num_unclipped_descendants -= num_clip_children;
   }
@@ -1331,7 +1331,7 @@ static void PreCalculateMetaInformationInternal(
   }
 
   if (layer->clip_children()) {
-    int num_clip_children = layer->clip_children()->size();
+    size_t num_clip_children = layer->clip_children()->size();
     DCHECK_GE(recursive_data->num_unclipped_descendants, num_clip_children);
     recursive_data->num_unclipped_descendants -= num_clip_children;
   }
@@ -2078,7 +2078,7 @@ static void CalculateDrawPropertiesInternal(
       gfx::Rect projected_surface_rect = MathUtil::ProjectEnclosingClippedRect(
           inverse_surface_draw_transform, surface_clip_rect_in_target_space);
 
-      if (layer_draw_properties.num_unclipped_descendants > 0) {
+      if (layer_draw_properties.num_unclipped_descendants > 0u) {
         // If we have unclipped descendants, we cannot count on the render
         // surface's bounds clipping our subtree: the unclipped descendants
         // could cause us to expand our bounds. In this case, we must rely on

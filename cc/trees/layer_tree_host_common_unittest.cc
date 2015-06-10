@@ -7108,8 +7108,8 @@ TEST_F(LayerTreeHostCommonTest,
             render_surface2->render_surface()->content_rect().ToString());
 
   // Sanity check our num_unclipped_descendants values.
-  EXPECT_EQ(1, render_surface1->num_unclipped_descendants());
-  EXPECT_EQ(0, render_surface2->num_unclipped_descendants());
+  EXPECT_EQ(1u, render_surface1->num_unclipped_descendants());
+  EXPECT_EQ(0u, render_surface2->num_unclipped_descendants());
 }
 
 TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
@@ -9599,7 +9599,7 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
   host->SetRootLayer(root);
 
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_EQ(parent->draw_properties().num_unclipped_descendants, 1);
+  EXPECT_EQ(parent->draw_properties().num_unclipped_descendants, 1u);
 
   // Ensure the dynamic update to input handlers happens.
   child->SetHaveWheelEventHandlers(true);
