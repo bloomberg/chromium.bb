@@ -706,7 +706,6 @@ def GetConfig():
       # so use settings to build from scratch, and archive the results.
       usepkg_build_packages=False,
       chrome_sdk=True,
-      chroot_replace=True,
 
       build_type=constants.BUILD_FROM_SOURCE_TYPE,
       archive_build_debug=True,
@@ -737,6 +736,7 @@ def GetConfig():
 
   paladin = site_config.AddTemplate(
       'paladin',
+      chroot_replace=False,
       important=True,
       build_type=constants.PALADIN_TYPE,
       overlays=constants.PUBLIC_OVERLAYS,
@@ -760,6 +760,7 @@ def GetConfig():
   incremental = site_config.AddTemplate(
       'incremental',
       build_type=constants.INCREMENTAL_TYPE,
+      chroot_replace=False,
       uprev=False,
       overlays=constants.PUBLIC_OVERLAYS,
       description='Incremental Builds',
@@ -851,7 +852,6 @@ def GetConfig():
 
   asan = site_config.AddTemplate(
       'asan',
-      chroot_replace=True,
       profile='asan',
       disk_layout='2gb-rootfs',
       # TODO(deymo): ASan builders generate bigger files, in particular a bigger
@@ -866,7 +866,6 @@ def GetConfig():
 
   llvm = site_config.AddTemplate(
       'llvm',
-      chroot_replace=True,
       profile='llvm',
       description='Build with LLVM',
   )
@@ -890,7 +889,6 @@ def GetConfig():
       manifest_version=True,
       chrome_rev=constants.CHROME_REV_LATEST,
       chrome_sdk=True,
-      chroot_replace=True,
       description='Preflight Chromium Uprev & Build (public)',
   )
 
@@ -1182,6 +1180,7 @@ def GetConfig():
       'amd64-generic-llvm',
       incremental,
       boards=['amd64-generic'],
+      chroot_replace=True,
       description='Build with LLVM',
       trybot_list=True,
   )
@@ -1191,6 +1190,7 @@ def GetConfig():
       'x86-generic-asan',
       incremental,
       boards=['x86-generic'],
+      chroot_replace=True,
       description='Build with Address Sanitizer (Clang)',
       trybot_list=True,
   )
@@ -1290,6 +1290,7 @@ def GetConfig():
   _CreateConfigsForBoards(chrome_perf, _chrome_perf_boards, 'chrome-perf',
                           trybot_list=True)
 
+
   _CreateConfigsForBoards(chromium_info,
                           ['x86-generic', 'amd64-generic'],
                           'telem-chromium-pfq-informational',
@@ -1312,7 +1313,6 @@ def GetConfig():
       'pre-flight-branch',
       internal_pfq,
       branch=True,
-      chroot_replace=True,
       trybot_list=False,
       sync_chrome=True,
       active_waterfall=constants.WATERFALL_RELEASE)
@@ -1666,7 +1666,6 @@ def GetConfig():
       internal_paladin, 'lumpy-incremental-paladin',
       boards=['lumpy'],
       build_before_patching=True,
-      chroot_replace=False,
       prebuilts=False,
       compilecheck=True,
       unittests=False,

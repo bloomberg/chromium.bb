@@ -390,7 +390,7 @@ def DefaultSettings():
       board_replace=False,
 
       # Wipe and replace chroot, but not source.
-      chroot_replace=False,
+      chroot_replace=True,
 
       # Uprevs the local ebuilds to build new changes since last stable.
       # build.  If master then also pushes these changes on success. Note that
