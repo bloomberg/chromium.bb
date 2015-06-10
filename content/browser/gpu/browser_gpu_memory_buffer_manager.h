@@ -89,6 +89,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
                               int client_id,
                               uint32 sync_point);
   void GpuMemoryBufferAllocatedForChildProcess(
+      gfx::GpuMemoryBufferId id,
       int child_client_id,
       const AllocationCallback& callback,
       const gfx::GpuMemoryBufferHandle& handle);
