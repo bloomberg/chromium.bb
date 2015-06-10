@@ -46,7 +46,8 @@ function showImages(callback)
     function addImages()
     {
         if (nextImageIndex >= images.length) {
-            testRunner.layoutAndPaintAsyncThen(callback);
+            // Allow several frames for image decoding to complete on rasterizer threads.
+            generateFrames(3, callback);
             return;
         }
 
