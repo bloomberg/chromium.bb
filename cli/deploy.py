@@ -721,55 +721,21 @@ print(json.dumps(pkg_info))
     return sorted_installs, listed_installs, num_updates
 
 
-def _GetPackageByCPV(cpv, strip, sysroot):
-  """Returns the path to a binary package corresponding to |cpv|.
-
-  Args:
-    cpv: CPV components given by portage_util.SplitCPV().
-    strip: True to run strip_package.
-    sysroot: Sysroot path.
-  """
-  packages_dir = None
-  if strip:
-    try:
-      cros_build_lib.RunCommand(
-          ['strip_package', '--sysroot', sysroot,
-           os.path.join(cpv.category, '%s' % (cpv.pv))])
-      packages_dir = _STRIPPED_PACKAGES_DIR
-    except cros_build_lib.RunCommandError:
-      logging.error('Cannot strip package %s', cpv)
-      raise
-
-  return portage_util.GetBinaryPackagePath(
-      cpv.category, cpv.package, cpv.version, sysroot=sysroot,
-      packages_dir=packages_dir)
-
-
-def _Emerge(device, pkg, strip, sysroot, root, extra_args=None):
+def _Emerge(device, pkg_path, root, extra_args=None):
   """Copies |pkg| to |device| and emerges it.
 
   Args:
     device: A ChromiumOSDevice object.
-    pkg: A package CPV or a binary package file.
-    strip: True to run strip_package.
-    sysroot: Sysroot path.
+    pkg_path: A path to a binary package.
     root: Package installation root path.
     extra_args: Extra arguments to pass to emerge.
 
   Raises:
     DeployError: Unrecoverable error during emerge.
   """
-  if os.path.isfile(pkg):
-    latest_pkg = pkg
-  else:
-    latest_pkg = _GetPackageByCPV(portage_util.SplitCPV(pkg), strip, sysroot)
-
-  if not latest_pkg:
-    raise DeployError('Missing package %s.' % pkg)
-
   pkgroot = os.path.join(device.work_dir, 'packages')
-  pkg_name = os.path.basename(latest_pkg)
-  pkg_dirname = os.path.basename(os.path.dirname(latest_pkg))
+  pkg_name = os.path.basename(pkg_path)
+  pkg_dirname = os.path.basename(os.path.dirname(pkg_path))
   pkg_dir = os.path.join(pkgroot, pkg_dirname)
   portage_tmpdir = os.path.join(device.work_dir, 'portage-tmp')
   # Clean out the dirs first if we had a previous emerge on the device so as to
@@ -781,7 +747,7 @@ def _Emerge(device, pkg, strip, sysroot, root, extra_args=None):
 
   # This message is read by BrilloDeployOperation.
   logging.notice('Copying %s to device.', pkg_name)
-  device.CopyToDevice(latest_pkg, pkg_dir, remote_sudo=True)
+  device.CopyToDevice(pkg_path, pkg_dir, remote_sudo=True)
 
   logging.info('Use portage temp dir %s', portage_tmpdir)
 
@@ -815,6 +781,73 @@ def _Emerge(device, pkg, strip, sysroot, root, extra_args=None):
     raise
   else:
     logging.notice('%s has been installed.', pkg_name)
+
+
+def _GetPackagesByCPV(cpvs, strip, sysroot):
+  """Returns paths to binary packages corresponding to |cpvs|.
+
+  Args:
+    cpvs: List of CPV components given by portage_util.SplitCPV().
+    strip: True to run strip_package.
+    sysroot: Sysroot path.
+
+  Returns:
+    List of paths corresponding to |cpvs|.
+
+  Raises:
+    DeployError: If a package is missing.
+  """
+  packages_dir = None
+  if strip:
+    try:
+      cros_build_lib.RunCommand(
+          ['strip_package', '--sysroot', sysroot] +
+          [os.path.join(cpv.category, str(cpv.pv)) for cpv in cpvs])
+      packages_dir = _STRIPPED_PACKAGES_DIR
+    except cros_build_lib.RunCommandError:
+      logging.error('Cannot strip packages %s',
+                    ' '.join([str(cpv) for cpv in cpvs]))
+      raise
+
+  paths = []
+  for cpv in cpvs:
+    path = portage_util.GetBinaryPackagePath(
+        cpv.category, cpv.package, cpv.version, sysroot=sysroot,
+        packages_dir=packages_dir)
+    if not path:
+      raise DeployError('Missing package %s.' % cpv)
+    paths.append(path)
+
+  return paths
+
+
+def _GetPackagesPaths(pkgs, strip, sysroot):
+  """Returns paths to binary |pkgs|.
+
+  Each package argument may be specified as a filename, in which case it is
+  returned as-is, or it may be a CPV value, in which case it is stripped (if
+  instructed) and a path to it is returned.
+
+  Args:
+    pkgs: List of package arguments.
+    strip: Whether or not to run strip_package for CPV packages.
+    sysroot: The sysroot path.
+
+  Returns:
+    List of paths corresponding to |pkgs|.
+  """
+  indexes = []
+  cpvs = []
+  for i, pkg in enumerate(pkgs):
+    if not os.path.isfile(pkg):
+      indexes.append(i)
+      cpvs.append(portage_util.SplitCPV(pkg))
+
+  cpv_paths = cpvs and _GetPackagesByCPV(cpvs, strip, sysroot)
+  paths = list(pkgs)
+  for i, cpv_path in zip(indexes, cpv_paths):
+    paths[i] = cpv_path
+  return paths
 
 
 def _Unmerge(device, pkg, root):
@@ -857,8 +890,8 @@ def _ConfirmDeploy(num_updates):
 
 def _EmergePackages(pkgs, device, strip, sysroot, root, emerge_args):
   """Call _Emerge for each packge in pkgs."""
-  for pkg in pkgs:
-    _Emerge(device, pkg, strip, sysroot, root, extra_args=emerge_args)
+  for pkg_path in _GetPackagesPaths(pkgs, strip, sysroot):
+    _Emerge(device, pkg_path, root, extra_args=emerge_args)
 
 
 def _UnmergePackages(pkgs, device, root):
