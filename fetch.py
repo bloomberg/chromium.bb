@@ -63,7 +63,7 @@ class Checkout(object):
     print 'Running: %s' % (' '.join(pipes.quote(x) for x in cmd))
     if self.options.dry_run:
       return 0
-    return subprocess.check_call(cmd, **kwargs)
+    return subprocess.check_output(cmd, **kwargs)
 
 
 class GclientCheckout(Checkout):
@@ -74,6 +74,15 @@ class GclientCheckout(Checkout):
     else:
       cmd_prefix = ('gclient',)
     return self.run(cmd_prefix + cmd, **kwargs)
+
+  def exists(self):
+    try:
+      gclient_root = self.run_gclient('root').strip()
+      return (os.path.exists(os.path.join(gclient_root, '.gclient')) or
+              os.path.exists(os.path.join(os.getcwd(), self.root)))
+    except subprocess.CalledProcessError:
+      pass
+    return os.path.exists(os.path.join(os.getcwd(), self.root))
 
 
 class GitCheckout(Checkout):
@@ -119,9 +128,6 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
     gclient_spec += ''.join('%s = %s\n' % (key, _format_literal(self.spec[key]))
                              for key in extra_keys if key in self.spec)
     return gclient_spec
-
-  def exists(self):
-    return os.path.exists(os.path.join(os.getcwd(), self.root))
 
   def init(self):
     # Configure and do the gclient checkout.
@@ -315,8 +321,9 @@ def run(options, spec, root):
   except KeyError:
     return 1
   if checkout.exists():
-    print 'You appear to already have a checkout. "fetch" is used only'
-    print 'to get new checkouts. Use "gclient sync" to update the checkout.'
+    print 'Your current directory appears to already contain, or be part of, '
+    print 'a checkout. "fetch" is used only to get new checkouts. Use '
+    print '"gclient sync" to update existing checkouts.'
     print
     print 'Fetch also does not yet deal with partial checkouts, so if fetch'
     print 'failed, delete the checkout and start over (crbug.com/230691).'
