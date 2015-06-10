@@ -5,6 +5,7 @@
 #ifndef InspectorTaskRunner_h
 #define InspectorTaskRunner_h
 
+#include "core/CoreExport.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -13,7 +14,7 @@
 
 namespace blink {
 
-class InspectorTaskRunner final {
+class CORE_EXPORT InspectorTaskRunner final {
     WTF_MAKE_NONCOPYABLE(InspectorTaskRunner);
 public:
     explicit InspectorTaskRunner(v8::Isolate*);
