@@ -23,8 +23,10 @@ public class MojoShellActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         String[] parameters = getIntent().getStringArrayExtra(EXTRAS);
-        for (String s : parameters) {
-            s = s.replace("\\,", ",");
+        if (parameters != null) {
+            for (String s : parameters) {
+                s = s.replace("\\,", ",");
+            }
         }
         if (Intent.ACTION_VIEW.equals(getIntent().getAction())) {
             Uri uri = getIntent().getData();

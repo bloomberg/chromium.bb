@@ -88,6 +88,11 @@ generate_mojo_shell_assets_list("build_mandoline_assets") {
   dir = mandoline_assets_dir
 }
 
+android_resources("mandoline_apk_resources") {
+  custom_package = "org.chromium.mandoline"
+  resource_dirs = [ "apk/res" ]
+}
+
 android_apk("mandoline_apk") {
   apk_name = "Mandoline"
 
@@ -100,6 +105,7 @@ android_apk("mandoline_apk") {
   deps = [
     ":build_mandoline_assets",
     ":copy_mandoline_runner",
+    ":mandoline_apk_resources",
     "//mojo/runner:java",
     "//mojo/runner:resources",
     "//base:base_java",

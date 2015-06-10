@@ -183,9 +183,6 @@ static void Init(JNIEnv* env,
 }
 
 static jboolean Start(JNIEnv* env, jclass clazz) {
-  if (!base::CommandLine::ForCurrentProcess()->GetArgs().size())
-    return false;
-
 #if defined(MOJO_SHELL_DEBUG_URL)
   base::CommandLine::ForCurrentProcess()->AppendArg(MOJO_SHELL_DEBUG_URL);
   // Sleep for 5 seconds to give the debugger a chance to attach.
