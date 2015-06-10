@@ -76,7 +76,7 @@ GuestViewContainer* GuestViewContainer::FromID(int element_instance_id) {
 //   <webview> element's GC will destroy it.
 // 3. If GuestViewContainer's embedder frame is destroyed, we'd also destroy
 //   GuestViewContainer.
-void GuestViewContainer::Destroy() {
+void GuestViewContainer::Destroy(bool embedder_frame_destroyed) {
   if (in_destruction_)
     return;
 
@@ -84,7 +84,7 @@ void GuestViewContainer::Destroy() {
 
   // Give our derived class an opportunity to perform some cleanup prior to
   // destruction.
-  OnDestroy();
+  OnDestroy(embedder_frame_destroyed);
 
   if (element_instance_id() != guest_view::kInstanceIDNone)
     g_guest_view_container_map.Get().erase(element_instance_id());
@@ -105,7 +105,7 @@ void GuestViewContainer::Destroy() {
 void GuestViewContainer::RenderFrameDestroyed() {
   OnRenderFrameDestroyed();
   render_frame_ = nullptr;
-  Destroy();
+  Destroy(true /* embedder_frame_destroyed */);
 }
 
 void GuestViewContainer::IssueRequest(linked_ptr<GuestViewRequest> request) {
@@ -173,7 +173,7 @@ void GuestViewContainer::SetElementInstanceID(int element_instance_id) {
 }
 
 void GuestViewContainer::DidDestroyElement() {
-  Destroy();
+  Destroy(false);
 }
 
 }  // namespace guest_view

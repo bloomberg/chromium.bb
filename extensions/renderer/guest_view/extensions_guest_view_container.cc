@@ -21,7 +21,13 @@ ExtensionsGuestViewContainer::ExtensionsGuestViewContainer(
 ExtensionsGuestViewContainer::~ExtensionsGuestViewContainer() {
 }
 
-void ExtensionsGuestViewContainer::OnDestroy() {
+void ExtensionsGuestViewContainer::OnDestroy(bool embedder_frame_destroyed) {
+  // Do not attempt to run |destruction_callback_| if the embedder frame was
+  // destroyed. Trying to invoke callback on RenderFrame destruction results in
+  // assertion failure when calling WebScopedMicrotaskSuppression.
+  if (embedder_frame_destroyed)
+    return;
+
   // Call the destruction callback, if one is registered.
   if (!destruction_callback_.IsEmpty()) {
     v8::HandleScope handle_scope(destruction_isolate_);

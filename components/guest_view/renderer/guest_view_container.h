@@ -33,7 +33,9 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   bool OnMessageReceived(const IPC::Message& message);
 
   // Destroys this GuestViewContainer after performing necessary cleanup.
-  void Destroy();
+  // |embedder_frame_destroyed| is true if this destruction is due to the
+  // embedding frame of the container being destroyed.
+  void Destroy(bool embedder_frame_destroyed);
 
   // Called when the embedding RenderFrame is destroyed.
   virtual void OnRenderFrameDestroyed() {}
@@ -48,7 +50,7 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
   // Called to perform actions when a GuestViewContainer is about to be
   // destroyed.
   // Note that this should be called exactly once.
-  virtual void OnDestroy() {}
+  virtual void OnDestroy(bool embedder_frame_destroyed) {}
 
  protected:
   ~GuestViewContainer() override;

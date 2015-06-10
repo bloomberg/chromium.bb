@@ -198,7 +198,7 @@ void GuestViewInternalCustomBindings::DestroyContainer(
   // GuestViewContainer::DidDestroyElement() currently also destroys
   // a GuestViewContainer. That won't be necessary once GuestViewContainer
   // always runs w/o plugin.
-  guest_view_container->Destroy();
+  guest_view_container->Destroy(false /* embedder_frame_destroyed */);
 }
 
 void GuestViewInternalCustomBindings::GetContentWindow(

@@ -35,7 +35,7 @@ class ExtensionsGuestViewContainer : public guest_view::GuestViewContainer {
   void CallElementResizeCallback(const gfx::Size& new_size);
 
   // GuestViewContainer implementation.
-  void OnDestroy() override;
+  void OnDestroy(bool embedder_frame_destroyed) override;
 
   v8::Global<v8::Function> destruction_callback_;
   v8::Isolate* destruction_isolate_;
