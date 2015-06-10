@@ -1002,7 +1002,6 @@ void ExtensionService::GrantPermissionsAndEnableExtension(
     const Extension* extension) {
   GrantPermissions(extension);
   RecordPermissionMessagesHistogram(extension, "ReEnable");
-  extension_prefs_->SetDidExtensionEscalatePermissions(extension, false);
   EnableExtension(extension->id());
 }
 
@@ -1682,17 +1681,14 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   // Extension has changed permissions significantly. Disable it. A
   // notification should be sent by the caller. If the extension is already
   // disabled because it was installed remotely, don't add another disable
-  // reason, but instead always set the "did escalate permissions" flag, to
-  // ensure enabling it will always show a warning.
-  if (disable_reasons == Extension::DISABLE_REMOTE_INSTALL) {
-    extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
-  } else if (is_privilege_increase) {
+  // reason.
+  if (is_privilege_increase &&
+      disable_reasons != Extension::DISABLE_REMOTE_INSTALL) {
     disable_reasons |= Extension::DISABLE_PERMISSIONS_INCREASE;
     if (!extension_prefs_->DidExtensionEscalatePermissions(extension->id())) {
       RecordPermissionMessagesHistogram(extension, "AutoDisable");
     }
     extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
-    extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
 
 #if defined(ENABLE_SUPERVISED_USERS)
     // If a custodian-installed extension is disabled for a supervised user due
@@ -1799,7 +1795,7 @@ void ExtensionService::OnExtensionInstalled(
     // Installation of a blacklisted extension can happen from sync, policy,
     // etc, where to maintain consistency we need to install it, just never
     // load it (see AddExtension). Usually it should be the job of callers to
-    // incercept blacklisted extension earlier (e.g. CrxInstaller, before even
+    // intercept blacklisted extensions earlier (e.g. CrxInstaller, before even
     // showing the install dialogue).
     extension_prefs_->AcknowledgeBlacklistedExtension(id);
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.SilentInstall",
@@ -1827,8 +1823,7 @@ void ExtensionService::OnExtensionInstalled(
   }
 
   if (disable_reasons)
-    extension_prefs_->AddDisableReason(id,
-        static_cast<Extension::DisableReason>(disable_reasons));
+    extension_prefs_->AddDisableReasons(id, disable_reasons);
 
   const Extension::State initial_state =
       disable_reasons == Extension::DISABLE_NONE ? Extension::ENABLED

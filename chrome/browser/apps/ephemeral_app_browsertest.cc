@@ -293,13 +293,6 @@ void EphemeralAppTestBase::PromoteEphemeralApp(
 void EphemeralAppTestBase::DisableEphemeralApp(
     const Extension* app,
     Extension::DisableReason disable_reason) {
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-
-  // Disabling due to a permissions increase also involves setting the
-  // DidExtensionEscalatePermissions flag.
-  if (disable_reason == Extension::DISABLE_PERMISSIONS_INCREASE)
-    prefs->SetDidExtensionEscalatePermissions(app, true);
-
   ExtensionSystem::Get(profile())->extension_service()->DisableExtension(
       app->id(), disable_reason);
 

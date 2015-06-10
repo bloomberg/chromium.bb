@@ -251,12 +251,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Did the extension ask to escalate its permission during an upgrade?
   bool DidExtensionEscalatePermissions(const std::string& id) const;
 
-  // If |did_escalate| is true, the preferences for |extension| will be set to
-  // require the install warning when the user tries to enable.
-  void SetDidExtensionEscalatePermissions(
-      const Extension* extension,
-      bool did_escalate);
-
   // Getters and setters for disabled reason.
   int GetDisableReasons(const std::string& extension_id) const;
   bool HasDisableReason(const std::string& extension_id,

@@ -287,13 +287,6 @@ class EphemeralAppLauncherTest : public WebstoreInstallerTest {
         ExtensionSystem::Get(profile())->extension_service();
     service->DisableExtension(app->id(), disable_reason);
 
-    if (disable_reason == Extension::DISABLE_PERMISSIONS_INCREASE) {
-      // When an extension is disabled due to a permissions increase, this
-      // flag needs to be set too, for some reason.
-      ExtensionPrefs::Get(profile())
-          ->SetDidExtensionEscalatePermissions(app, true);
-    }
-
     EXPECT_TRUE(
         ExtensionRegistry::Get(profile())->disabled_extensions().Contains(
             app->id()));

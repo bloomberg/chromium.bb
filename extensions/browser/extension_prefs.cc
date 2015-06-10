@@ -83,9 +83,6 @@ const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
 // run of this profile.
 const char kPrefExternalInstallFirstRun[] = "external_first_run";
 
-// Indicates whether to show an install warning when the user enables.
-const char kExtensionDidEscalatePermissions[] = "install_warning_on_enable";
-
 // DO NOT USE, use kPrefDisableReasons instead.
 // Indicates whether the extension was updated while it was disabled.
 const char kDeprecatedPrefDisableReason[] = "disable_reason";
@@ -729,14 +726,9 @@ bool ExtensionPrefs::SetAlertSystemFirstRun() {
 
 bool ExtensionPrefs::DidExtensionEscalatePermissions(
     const std::string& extension_id) const {
-  return ReadPrefAsBooleanAndReturn(extension_id,
-                                    kExtensionDidEscalatePermissions);
-}
-
-void ExtensionPrefs::SetDidExtensionEscalatePermissions(
-    const Extension* extension, bool did_escalate) {
-  UpdateExtensionPref(extension->id(), kExtensionDidEscalatePermissions,
-                      new base::FundamentalValue(did_escalate));
+  return HasDisableReason(extension_id,
+                          Extension::DISABLE_PERMISSIONS_INCREASE) ||
+         HasDisableReason(extension_id, Extension::DISABLE_REMOTE_INSTALL);
 }
 
 int ExtensionPrefs::GetDisableReasons(const std::string& extension_id) const {

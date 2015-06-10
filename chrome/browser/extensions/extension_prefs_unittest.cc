@@ -142,7 +142,8 @@ class ExtensionPrefsEscalatePermissions : public ExtensionPrefsTest {
  public:
   void Initialize() override {
     extension = prefs_.AddExtension("test");
-    prefs()->SetDidExtensionEscalatePermissions(extension.get(), true);
+    prefs()->AddDisableReason(extension->id(),
+                              Extension::DISABLE_PERMISSIONS_INCREASE);
   }
 
   void Verify() override {
