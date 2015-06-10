@@ -2430,6 +2430,14 @@ const Experiment kExperiments[] = {
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppInfoDialogMac,
                               switches::kDisableAppInfoDialogMac)
   },
+  {
+    "mac-views-native-app-windows",
+    IDS_FLAGS_MAC_VIEWS_NATIVE_APP_WINDOWS_NAME,
+    IDS_FLAGS_MAC_VIEWS_NATIVE_APP_WINDOWS_DESCRIPTION,
+    kOsMac,
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableMacViewsNativeAppWindows,
+                              switches::kDisableMacViewsNativeAppWindows)
+  },
 #endif
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

@@ -1221,6 +1221,10 @@ const char kDisableAppInfoDialogMac[] = "disable-app-info-dialog-mac";
 // Disables app shim creation for hosted apps on Mac.
 const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
 
+// Disables use of toolkit-views based native app windows.
+const char kDisableMacViewsNativeAppWindows[] =
+    "disable-mac-views-native-app-windows";
+
 // Forcibly disables Lion-style on newer OSes, to allow developers to test the
 // older, SnowLeopard-style fullscreen.
 const char kDisableSystemFullscreenForTesting[] =
@@ -1229,6 +1233,10 @@ const char kDisableSystemFullscreenForTesting[] =
 // Enable the toolkit-views App Info dialog for Mac. This is accessible from
 // chrome://apps and chrome://extensions and is already enabled on non-mac.
 const char kEnableAppInfoDialogMac[] = "enable-app-info-dialog-mac";
+
+// Enables use of toolkit-views based native app windows.
+const char kEnableMacViewsNativeAppWindows[] =
+    "enable-mac-views-native-app-windows";
 
 // Enables Translate experimental new UX which replaces the infobar.
 const char kEnableTranslateNewUX[]         = "enable-translate-new-ux";

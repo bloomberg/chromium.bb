@@ -6918,6 +6918,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_APP_INFO_DIALOG_DESCRIPTION" desc="Description of flag to enable or disable the toolkit-views App Info dialog on Mac.">
           Makes the Toolkit-Views based App Info dialog accessible from chrome://apps or chrome://extensions in place of the native extension permissions dialog, or the details link (which is a link to the Web Store).
         </message>
+        <message name="IDS_FLAGS_MAC_VIEWS_NATIVE_APP_WINDOWS_NAME" desc="Name of the flag to enable or disable toolkit-views Chrome App windows on Mac.">
+          Toolkit-Views App Windows.
+        </message>
+        <message name="IDS_FLAGS_MAC_VIEWS_NATIVE_APP_WINDOWS_DESCRIPTION" desc="Description of flag to enable or disable toolkit-views Chrome App windows on Mac.">
+          Controls whether to use Toolkit-Views based Chrome App windows.
+        </message>
       </if>
 
       <!-- Crashes -->

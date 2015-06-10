@@ -198,7 +198,10 @@ source_set("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_views_sources,
                            ".",
                            "//chrome")
-    deps += [ "//components/constrained_window" ]
+    deps += [
+      "//components/constrained_window",
+      "//extensions/components/native_app_window",
+    ]
     if (!is_chromeos) {
       sources +=
           rebase_path(gypi_values.chrome_browser_ui_views_non_chromeos_sources,
@@ -210,7 +213,6 @@ source_set("ui") {
           rebase_path(gypi_values.chrome_browser_ui_views_non_mac_sources,
                       ".",
                       "//chrome")
-      deps += [ "//extensions/components/native_app_window" ]
       if (is_chromeos) {
         # TODO(GYP): crbug.com/481629. These files should probably not be
         # a part of ui_views_non_mac_sources at all.
@@ -311,7 +313,6 @@ source_set("ui") {
           rebase_path(gypi_values.chrome_browser_ui_views_non_mac_sources,
                       ".",
                       "//chrome")
-      deps += [ "//extensions/components/native_app_window" ]
     } else {
       sources += rebase_path(gypi_values.chrome_browser_ui_cocoa_sources,
                              ".",

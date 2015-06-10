@@ -760,7 +760,7 @@
       'browser/ui/cocoa/applescript/tab_applescript.mm',
       'browser/ui/cocoa/applescript/window_applescript.h',
       'browser/ui/cocoa/applescript/window_applescript.mm',
-      'browser/ui/cocoa/apps/chrome_app_window_client_cocoa.mm',
+      'browser/ui/cocoa/apps/chrome_app_window_client_views_cocoa.mm',
       'browser/ui/cocoa/apps/native_app_window_cocoa.h',
       'browser/ui/cocoa/apps/native_app_window_cocoa.mm',
       'browser/ui/cocoa/autofill/autofill_account_chooser.h',
@@ -1971,18 +1971,28 @@
       'browser/ui/views/apps/app_info_dialog/app_info_permissions_panel.h',
       'browser/ui/views/apps/app_info_dialog/app_info_summary_panel.cc',
       'browser/ui/views/apps/app_info_dialog/app_info_summary_panel.h',
+      'browser/ui/views/apps/app_window_native_widget_mac.h',
+      'browser/ui/views/apps/app_window_native_widget_mac.mm',
       'browser/ui/views/apps/chrome_native_app_window_views.cc',
       'browser/ui/views/apps/chrome_native_app_window_views.h',
+      'browser/ui/views/apps/chrome_native_app_window_views_mac.h',
+      'browser/ui/views/apps/chrome_native_app_window_views_mac.mm',
       'browser/ui/views/apps/desktop_keyboard_capture.cc',
       'browser/ui/views/apps/desktop_keyboard_capture.h',
       'browser/ui/views/apps/keyboard_hook_handler.cc',
       'browser/ui/views/apps/keyboard_hook_handler.h',
+      'browser/ui/views/apps/native_app_window_frame_view_mac.h',
+      'browser/ui/views/apps/native_app_window_frame_view_mac.mm',
       'browser/ui/views/chrome_browser_main_extra_parts_views.cc',
       'browser/ui/views/chrome_browser_main_extra_parts_views.h',
       'browser/ui/views/chrome_constrained_window_views_client.cc',
       'browser/ui/views/chrome_constrained_window_views_client.h',
       'browser/ui/views/chrome_views_delegate.cc',
       'browser/ui/views/chrome_views_delegate.h',
+      'browser/ui/views/extensions/extension_keybinding_registry_views.cc',
+      'browser/ui/views/extensions/extension_keybinding_registry_views.h',
+      'browser/ui/views/frame/native_widget_mac_frameless_nswindow.h',
+      'browser/ui/views/frame/native_widget_mac_frameless_nswindow.mm',
     ],
     # Views files for everywhere but ChromeOS.
     'chrome_browser_ui_views_non_chromeos_sources': [
@@ -2125,8 +2135,6 @@
       'browser/ui/views/extensions/extension_install_dialog_view.cc',
       'browser/ui/views/extensions/extension_installed_bubble_view.cc',
       'browser/ui/views/extensions/extension_installed_bubble_view.h',
-      'browser/ui/views/extensions/extension_keybinding_registry_views.cc',
-      'browser/ui/views/extensions/extension_keybinding_registry_views.h',
       'browser/ui/views/extensions/extension_message_bubble_view.cc',
       'browser/ui/views/extensions/extension_message_bubble_view.h',
       'browser/ui/views/extensions/extension_popup.cc',
@@ -2191,8 +2199,6 @@
       'browser/ui/views/frame/native_browser_frame_factory.h',
       'browser/ui/views/frame/native_browser_frame_factory_chromeos.cc',
       'browser/ui/views/frame/native_browser_frame_factory_mac.cc',
-      'browser/ui/views/frame/native_widget_mac_frameless_nswindow.h',
-      'browser/ui/views/frame/native_widget_mac_frameless_nswindow.mm',
       'browser/ui/views/frame/opaque_browser_frame_view.cc',
       'browser/ui/views/frame/opaque_browser_frame_view.h',
       'browser/ui/views/frame/opaque_browser_frame_view_layout.cc',
@@ -2420,13 +2426,7 @@
     # TODO(jackhou): Move items to chrome_browser_ui_views_sources when they
     # migrate from mac_views_browser to a chrome://flag.
     'chrome_browser_ui_views_mac_experimental_sources': [
-      'browser/ui/views/apps/app_window_native_widget_mac.h',
-      'browser/ui/views/apps/app_window_native_widget_mac.mm',
       'browser/ui/views/apps/chrome_app_window_client_views_mac.mm',
-      'browser/ui/views/apps/chrome_native_app_window_views_mac.h',
-      'browser/ui/views/apps/chrome_native_app_window_views_mac.mm',
-      'browser/ui/views/apps/native_app_window_frame_view_mac.h',
-      'browser/ui/views/apps/native_app_window_frame_view_mac.mm',
     ],
     # Windows-only. Assume ash/aura/views.
     'chrome_browser_ui_win_sources': [
@@ -2904,6 +2904,7 @@
           'sources': [ '<@(chrome_browser_ui_views_sources)' ],
           'dependencies': [
             '<(DEPTH)/components/components.gyp:constrained_window',
+            '<(DEPTH)/extensions/components/extensions_components.gyp:native_app_window',
           ],
           'conditions': [
             ['chromeos == 0 and (OS!="mac" or mac_views_browser==1)', {
@@ -2914,9 +2915,6 @@
             }],
             ['OS!="mac"', {
               'sources': [ '<@(chrome_browser_ui_views_non_mac_sources)' ],
-              'dependencies': [
-                '<(DEPTH)/extensions/components/extensions_components.gyp:native_app_window',
-              ],
             }],
           ],
         }],
@@ -2988,9 +2986,6 @@
               'sources': [
                 '<@(chrome_browser_ui_views_mac_experimental_sources)',
                 '<@(chrome_browser_ui_views_non_mac_sources)',
-              ],
-              'dependencies': [
-                '<(DEPTH)/extensions/components/extensions_components.gyp:native_app_window',
               ],
             }, {
               'sources': [ '<@(chrome_browser_ui_cocoa_sources)' ],

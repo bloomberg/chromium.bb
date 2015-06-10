@@ -58509,12 +58509,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1433719718" label="enable-webrtc-stun-origin"/>
   <int value="-1433087548" label="enable-app-install-alerts"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
+  <int value="-1416754663" label="enable-mac-views-native-app-windows"/>
   <int value="-1411003295" label="disable-encrypted-media"/>
   <int value="-1409643943" label="enable-child-account-detection"/>
   <int value="-1408288176" label="enable-account-consistency"/>
   <int value="-1399753480" label="disable-harfbuzz-rendertext"/>
   <int value="-1399419572" label="enable-app-list"/>
   <int value="-1392562498" label="disable-origin-chip"/>
+  <int value="-1386966873" label="disable-mac-views-native-app-windows"/>
   <int value="-1375111024" label="enable-fixed-position-compositing"/>
   <int value="-1358669137" label="enable-supervised-user-blacklist"/>
   <int value="-1357655121" label="enable-iframe-based-signin"/>
