@@ -56,13 +56,16 @@ message PowerSupplyProperties {
     optional string manufacturer_id = 4;
     optional string model_id = 5;
 
+    // Maximum power this source is capable of delivering, in watts.
+    optional double max_power = 6;
+
     // True if the power source will automatically deliver charge to the system
     // when connected (assuming there isn't another |active_by_default| source
     // doing so). If false, the source will not deliver charge unless requested
     // to do so by the user.
     optional bool active_by_default = 3;
 
-    // Next ID to use: 6
+    // Next ID to use: 7
   }
 
   // Current state of the external power source.
