@@ -5,7 +5,6 @@
 #include "remoting/codec/video_encoder_vpx.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "remoting/base/util.h"
@@ -24,9 +23,6 @@ extern "C" {
 namespace remoting {
 
 namespace {
-
-// Name of command-line flag to enable VP9 to use I444 by default.
-const char kEnableI444SwitchName[] = "enable-i444";
 
 // Number of bytes in an RGBx pixel.
 const int kBytesPerRgbPixel = 4;
@@ -103,7 +99,9 @@ void SetVp9CodecParameters(vpx_codec_enc_cfg_t* config,
     config->rc_max_quantizer = 0;
     config->rc_end_usage = VPX_VBR;
   } else {
-    config->rc_min_quantizer = 4;
+    // TODO(wez): Set quantization range to 4-40, once the libvpx encoder is
+    // updated not to output any bits if nothing needs topping-off.
+    config->rc_min_quantizer = 20;
     config->rc_max_quantizer = 30;
     config->rc_end_usage = VPX_CBR;
     // In the absence of a good bandwidth estimator set the target bitrate to a
@@ -268,6 +266,22 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
   DCHECK_LE(32, frame.size().width());
   DCHECK_LE(32, frame.size().height());
 
+  if (!use_vp9_ || lossless_encode_) {
+    // Neither VP8 nor VP9-lossless support top-off, so ignore unchanged frames.
+    if (frame.updated_region().is_empty())
+      return nullptr;
+  } else {
+    // Let VP9-lossy mode top-off, by continuing to pass it unchanged frames
+    // for a short while.
+    if (frame.updated_region().is_empty()) {
+      if (topoff_frame_count_ == 0)
+        return nullptr;
+      topoff_frame_count_--;
+    } else {
+      topoff_frame_count_ = 2;
+    }
+  }
+
   base::TimeTicks encode_start_time = base::TimeTicks::Now();
 
   // Create or reconfigure the codec to match the size of |frame|.
@@ -343,19 +357,7 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
   return packet.Pass();
 }
 
-VideoEncoderVpx::VideoEncoderVpx(bool use_vp9)
-    : use_vp9_(use_vp9),
-      lossless_encode_(false),
-      lossless_color_(false),
-      active_map_width_(0),
-      active_map_height_(0) {
-  if (use_vp9_) {
-    // Use I444 colour space, by default, if specified on the command-line.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            kEnableI444SwitchName)) {
-      SetLosslessColor(true);
-    }
-  }
+VideoEncoderVpx::VideoEncoderVpx(bool use_vp9) : use_vp9_(use_vp9) {
 }
 
 void VideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {

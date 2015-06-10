@@ -58,8 +58,8 @@ class VideoEncoderVpx : public VideoEncoder {
 
   // Options controlling VP9 encode quantization and color space.
   // These are always off (false) for VP8.
-  bool lossless_encode_;
-  bool lossless_color_;
+  bool lossless_encode_ = false;
+  bool lossless_color_ = false;
 
   // Holds the initialized & configured codec.
   ScopedVpxCodec codec_;
@@ -73,8 +73,12 @@ class VideoEncoderVpx : public VideoEncoder {
 
   // Active map used to optimize out processing of un-changed macroblocks.
   scoped_ptr<uint8[]> active_map_;
-  int active_map_width_;
-  int active_map_height_;
+  int active_map_width_ = 0;
+  int active_map_height_ = 0;
+
+  // Number of "top-off" frames we've encoded since we were last passed a
+  // frame containing an actual change. Used only when encoding with top-off.
+  int topoff_frame_count_ = 0;
 
   // Used to help initialize VideoPackets from DesktopFrames.
   VideoEncoderHelper helper_;

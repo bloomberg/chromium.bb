@@ -247,7 +247,7 @@ scoped_ptr<DesktopFrame> PrepareFrame(const DesktopSize& size) {
 
 static void TestEncodingRects(VideoEncoder* encoder,
                               VideoEncoderTester* tester,
-                              webrtc::DesktopFrame* frame,
+                              DesktopFrame* frame,
                               const DesktopRect* rects,
                               int count) {
   frame->mutable_updated_region()->Clear();
@@ -267,7 +267,7 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
   for (size_t xi = 0; xi < arraysize(kSizes); ++xi) {
     for (size_t yi = 0; yi < arraysize(kSizes); ++yi) {
       DesktopSize size = DesktopSize(kSizes[xi], kSizes[yi]);
-      scoped_ptr<webrtc::DesktopFrame> frame = PrepareFrame(size);
+      scoped_ptr<DesktopFrame> frame = PrepareFrame(size);
       std::vector<std::vector<DesktopRect> > test_rect_lists =
           MakeTestRectLists(size);
       for (size_t i = 0; i < test_rect_lists.size(); ++i) {
@@ -275,8 +275,29 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
         TestEncodingRects(encoder, &tester, frame.get(),
                           &test_rects[0], test_rects.size());
       }
+
+      // Pass some empty frames through the encoder.
+      for (int i = 0; i < 10; ++i) {
+        TestEncodingRects(encoder, &tester, frame.get(), nullptr, 0);
+      }
     }
   }
+}
+
+void TestVideoEncoderEmptyFrames(VideoEncoder* encoder, int topoff_frames) {
+  const DesktopSize kSize(640, 480);
+  scoped_ptr<DesktopFrame> frame(PrepareFrame(kSize));
+
+  frame->mutable_updated_region()->SetRect(
+      webrtc::DesktopRect::MakeSize(kSize));
+  EXPECT_TRUE(encoder->Encode(*frame));
+
+  frame->mutable_updated_region()->Clear();
+  for (int i=0; i < topoff_frames; ++i) {
+    EXPECT_TRUE(encoder->Encode(*frame));
+  }
+
+  EXPECT_FALSE(encoder->Encode(*frame));
 }
 
 static void TestEncodeDecodeRects(VideoEncoder* encoder,

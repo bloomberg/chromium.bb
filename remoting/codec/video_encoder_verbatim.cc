@@ -25,7 +25,12 @@ VideoEncoderVerbatim::~VideoEncoderVerbatim() {}
 
 scoped_ptr<VideoPacket> VideoEncoderVerbatim::Encode(
     const webrtc::DesktopFrame& frame) {
-  CHECK(frame.data());
+  DCHECK(frame.data());
+
+  // If nothing has changed in the frame then return NULL to indicate that
+  // we don't need to actually send anything (e.g. nothing to top-off).
+  if (frame.updated_region().is_empty())
+    return nullptr;
 
   base::Time encode_start_time = base::Time::Now();
 

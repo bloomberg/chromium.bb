@@ -132,11 +132,11 @@ scoped_ptr<webrtc::DesktopFrame> VideoFrameRecorderTest::CreateNextFrame() {
 
   // Fill content, DPI and updated-region based on |frame_count_| so that each
   // generated frame is different.
+  ++frame_count_;
   memset(frame->data(), frame_count_, frame->stride() * kFrameHeight);
   frame->set_dpi(webrtc::DesktopVector(frame_count_, frame_count_));
   frame->mutable_updated_region()->SetRect(
       webrtc::DesktopRect::MakeWH(frame_count_, frame_count_));
-  ++frame_count_;
 
   return frame.Pass();
 }
@@ -160,6 +160,8 @@ void VideoFrameRecorderTest::EncodeTestFrames() {
 void VideoFrameRecorderTest::EncodeDummyFrame() {
   webrtc::BasicDesktopFrame dummy_frame(
       webrtc::DesktopSize(kFrameWidth, kFrameHeight));
+  dummy_frame.mutable_updated_region()->SetRect(
+      webrtc::DesktopRect::MakeWH(kFrameWidth, kFrameHeight));
   ASSERT_TRUE(encoder_->Encode(dummy_frame));
   base::RunLoop().RunUntilIdle();
 }

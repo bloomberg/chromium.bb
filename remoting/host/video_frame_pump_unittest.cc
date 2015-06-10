@@ -26,9 +26,11 @@
 using ::remoting::protocol::MockVideoStub;
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::DoAll;
 using ::testing::Expectation;
 using ::testing::InvokeWithoutArgs;
+using ::testing::Return;
 
 namespace remoting {
 
@@ -36,6 +38,18 @@ namespace {
 
 ACTION(FinishSend) {
   arg1.Run();
+}
+
+scoped_ptr<webrtc::DesktopFrame> CreateNullFrame(
+    webrtc::DesktopCapturer::Callback*) {
+  return nullptr;
+}
+
+scoped_ptr<webrtc::DesktopFrame> CreateUnchangedFrame(
+    webrtc::DesktopCapturer::Callback*) {
+  const webrtc::DesktopSize kSize(800, 640);
+  // updated_region() is already empty by default in new BasicDesktopFrames.
+  return make_scoped_ptr(new webrtc::BasicDesktopFrame(kSize));
 }
 
 }  // namespace
@@ -151,6 +165,65 @@ TEST_F(VideoFramePumpTest, StartAndStop) {
       .WillOnce(DoAll(
           FinishSend(),
           InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit)))
+      .RetiresOnSaturation();
+
+  // Start video frame capture.
+  pump_.reset(new VideoFramePump(encode_task_runner_,
+                                 make_scoped_ptr(new DesktopCapturerProxy(
+                                     capture_task_runner_, capturer.Pass())),
+                                 encoder.Pass(), &video_stub_));
+
+  // Run MessageLoop until the first frame is received.
+  run_loop.Run();
+}
+
+// Tests that the pump handles null frames returned by the capturer.
+TEST_F(VideoFramePumpTest, NullFrame) {
+  scoped_ptr<FakeDesktopCapturer> capturer(new FakeDesktopCapturer);
+  scoped_ptr<MockVideoEncoder> encoder(new MockVideoEncoder);
+
+  base::RunLoop run_loop;
+
+  // Set up the capturer to return null frames.
+  capturer->set_frame_generator(base::Bind(&CreateNullFrame));
+
+  // Expect that the VideoEncoder::Encode() method is never called.
+  EXPECT_CALL(*encoder, EncodePtr(_)).Times(0);
+
+  // When the first ProcessVideoPacket is received we stop the VideoFramePump.
+  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
+      .WillOnce(DoAll(FinishSend(),
+                      InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit)))
+      .RetiresOnSaturation();
+
+  // Start video frame capture.
+  pump_.reset(new VideoFramePump(encode_task_runner_,
+                                 make_scoped_ptr(new DesktopCapturerProxy(
+                                     capture_task_runner_, capturer.Pass())),
+                                 encoder.Pass(), &video_stub_));
+
+  // Run MessageLoop until the first frame is received..
+  run_loop.Run();
+}
+
+// Tests how the pump handles unchanged frames returned by the capturer.
+TEST_F(VideoFramePumpTest, UnchangedFrame) {
+  scoped_ptr<FakeDesktopCapturer> capturer(new FakeDesktopCapturer);
+  scoped_ptr<MockVideoEncoder> encoder(new MockVideoEncoder);
+
+  base::RunLoop run_loop;
+
+  // Set up the capturer to return unchanged frames.
+  capturer->set_frame_generator(base::Bind(&CreateUnchangedFrame));
+
+  // Expect that the VideoEncoder::Encode() method is called.
+  EXPECT_CALL(*encoder, EncodePtr(_)).WillRepeatedly(Return(nullptr));
+
+  // When the first ProcessVideoPacket is received we stop the VideoFramePump.
+  // TODO(wez): Verify that the generated packet has no content here.
+  EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
+      .WillOnce(DoAll(FinishSend(),
+                      InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit)))
       .RetiresOnSaturation();
 
   // Start video frame capture.

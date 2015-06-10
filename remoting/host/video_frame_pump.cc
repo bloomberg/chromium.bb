@@ -22,18 +22,22 @@ namespace remoting {
 
 namespace {
 
-// Helper used to encode frames on the encode thread.
-//
-// TODO(sergeyu): This functions doesn't do much beside calling
-// VideoEncoder::Encode(). It's only needed to handle empty frames properly and
-// that logic can be moved to VideoEncoder implementations.
 scoped_ptr<VideoPacket> EncodeFrame(VideoEncoder* encoder,
                                     scoped_ptr<webrtc::DesktopFrame> frame) {
-  // If there is nothing to encode then send an empty packet.
-  if (!frame || frame->updated_region().is_empty())
-    return make_scoped_ptr(new VideoPacket());
+  scoped_ptr<VideoPacket> packet;
 
-  return encoder->Encode(*frame);
+  // If |frame| is non-NULL then let the encoder process it.
+  if (frame) {
+    packet = encoder->Encode(*frame);
+  }
+
+  // If |frame| is NULL, or the encoder returned nothing, return an empty
+  // packet.
+  if (!packet) {
+    packet.reset(new VideoPacket());
+  }
+
+  return packet.Pass();
 }
 
 }  // namespace

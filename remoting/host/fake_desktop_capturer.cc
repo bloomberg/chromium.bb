@@ -143,8 +143,10 @@ void FakeDesktopCapturer::Start(Callback* callback) {
 void FakeDesktopCapturer::Capture(const webrtc::DesktopRegion& region) {
   base::Time capture_start_time = base::Time::Now();
   scoped_ptr<webrtc::DesktopFrame> frame = frame_generator_.Run(callback_);
-  frame->set_capture_time_ms(
-      (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());
+  if (frame) {
+    frame->set_capture_time_ms(
+        (base::Time::Now() - capture_start_time).InMillisecondsRoundedUp());
+  }
   callback_->OnCaptureCompleted(frame.release());
 }
 

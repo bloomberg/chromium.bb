@@ -21,4 +21,9 @@ TEST(VideoEncoderVerbatimTest, EncodeAndDecode) {
   TestVideoEncoderDecoder(encoder.get(), decoder.get(), true);
 }
 
+TEST(VideoEncoderVerbatimTest, EncodeUnchangedFrame) {
+  scoped_ptr<VideoEncoderVerbatim> encoder(new VideoEncoderVerbatim());
+  TestVideoEncoderEmptyFrames(encoder.get(), 0);
+}
+
 }  // namespace remoting

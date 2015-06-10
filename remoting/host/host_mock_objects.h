@@ -8,6 +8,7 @@
 #include <string>
 
 #include "net/base/ip_endpoint.h"
+#include "remoting/codec/video_encoder.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/client_session_control.h"
@@ -19,6 +20,7 @@
 #include "remoting/host/screen_resolution.h"
 #include "remoting/proto/control.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 
 namespace base {
@@ -162,6 +164,18 @@ class MockMouseCursorMonitor : public webrtc::MouseCursorMonitor {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMouseCursorMonitor);
+};
+
+class MockVideoEncoder : public VideoEncoder {
+ public:
+  MockVideoEncoder();
+  ~MockVideoEncoder() override;
+
+  MOCK_METHOD1(SetLosslessEncode, void(bool));
+  MOCK_METHOD1(SetLosslessColor, void(bool));
+  MOCK_METHOD1(EncodePtr, VideoPacket*(const webrtc::DesktopFrame&));
+
+  scoped_ptr<VideoPacket> Encode(const webrtc::DesktopFrame& frame) override;
 };
 
 }  // namespace remoting
