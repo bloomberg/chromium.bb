@@ -48530,6 +48530,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="websql.Async.OpenTime.Error" units="milliseconds">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The time required to try (and fail) to open a Web SQL database.
+  </summary>
+</histogram>
+
+<histogram name="websql.Async.OpenTime.Success" units="milliseconds">
+  <owner>cmumford@chromium.org</owner>
+  <summary>The time required to successfully open a Web SQL database.</summary>
+</histogram>
+
 <histogram name="Webstore.ExtensionInstallResult" enum="BooleanSuccess">
   <owner>jackhou@chromium.org</owner>
   <summary>

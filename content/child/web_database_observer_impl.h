@@ -32,6 +32,13 @@ class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
       const blink::WebString& origin_identifier,
       const blink::WebString& database_name,
       int callsite, int websql_error, int sqlite_error);
+  virtual void reportOpenDatabaseResult(
+      const blink::WebString& origin_identifier,
+      const blink::WebString& database_name,
+      int callsite,
+      int websql_error,
+      int sqlite_error,
+      double call_time);
   virtual void reportChangeVersionResult(
       const blink::WebString& origin_identifier,
       const blink::WebString& database_name,

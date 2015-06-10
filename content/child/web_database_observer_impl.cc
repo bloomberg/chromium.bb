@@ -19,6 +19,7 @@ namespace {
 
 const int kResultHistogramSize = 50;
 const int kCallsiteHistogramSize = 10;
+const int kWebSQLSuccess = -1;
 
 int DetermineHistogramResult(int websql_error, int sqlite_error) {
   // If we have a sqlite error, log it after trimming the extended bits.
@@ -28,7 +29,7 @@ int DetermineHistogramResult(int websql_error, int sqlite_error) {
 
   // Otherwise, websql_error may be an SQLExceptionCode, SQLErrorCode
   // or a DOMExceptionCode, or -1 for success.
-  if (websql_error == -1)
+  if (websql_error == kWebSQLSuccess)
     return 0;  // no error
 
   // SQLExceptionCode starts at 1000
@@ -95,6 +96,24 @@ void WebDatabaseObserverImpl::reportOpenDatabaseResult(
   UMA_HISTOGRAM_WEBSQL_RESULT("OpenResult", callsite,
                               websql_error, sqlite_error);
   HandleSqliteError(origin_identifier, database_name, sqlite_error);
+}
+
+void WebDatabaseObserverImpl::reportOpenDatabaseResult(
+    const WebString& origin_identifier,
+    const WebString& database_name,
+    int callsite,
+    int websql_error,
+    int sqlite_error,
+    double call_time) {
+  reportOpenDatabaseResult(origin_identifier, database_name, callsite,
+                           websql_error, sqlite_error);
+  if (websql_error == kWebSQLSuccess && sqlite_error == SQLITE_OK) {
+    UMA_HISTOGRAM_TIMES("websql.Async.OpenTime.Success",
+                        base::TimeDelta::FromSecondsD(call_time));
+  } else {
+    UMA_HISTOGRAM_TIMES("websql.Async.OpenTime.Error",
+                        base::TimeDelta::FromSecondsD(call_time));
+  }
 }
 
 void WebDatabaseObserverImpl::reportChangeVersionResult(
