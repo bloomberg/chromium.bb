@@ -152,17 +152,14 @@ input[type='checkbox']:checked {
 
 /* Toolbar */
 
+.gallery > .header,
 .gallery > .toolbar {
   -webkit-box-align: stretch;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: start;
-  background-color: rgba(40, 42, 45, 0.9);
-  border-top: 1px solid rgba(50, 50, 50, 0.8);
   display: flex;
-  height: 55px;
   left: 0;
   opacity: 0;
-  overflow: hidden;
   padding: 0 10px;
   pointer-events: none;
   position: absolute;
@@ -170,8 +167,33 @@ input[type='checkbox']:checked {
   transition: opacity 300ms ease;
 }
 
-.gallery > .toolbar.top {
+.gallery > .header {
+  -webkit-app-region: drag;
+  -webkit-box-align: center;
+  -webkit-box-pack: end;
+  background-color: rgba(30, 30, 30, 0.8);
+  border-bottom: 1px solid rgba(50, 50, 50, 0.8);
+  display: -webkit-box;
+  height: 45px;
   top: 0;
+}
+
+.gallery > .toolbar {
+  background-color: rgba(40, 42, 45, 0.9);
+}
+
+.gallery .header button {
+  -webkit-app-region: no-drag;
+}
+
+.gallery > .toolbar {
+  border-top: 1px solid rgba(50, 50, 50, 0.8);
+  height: 55px;
+  overflow: hidden;
+}
+
+.gallery > .toolbar.top {
+  top: 45px; /* Header height. */
 }
 
 .gallery > .toolbar.bottom {
@@ -204,6 +226,7 @@ input[type='checkbox']:checked {
   visibility: visible;
 }
 
+.gallery[tools]:not([slideshow]) > .header,
 .gallery[tools]:not([slideshow]) > .toolbar {
   opacity: 1;
   pointer-events: auto;
@@ -566,7 +589,9 @@ input[type='checkbox']:checked {
   visibility: visible;
 }
 
+.gallery .header button,
 .gallery .toolbar button,
+.gallery .header button[disabled],
 .gallery .toolbar button[disabled] {
   background-color: rgba(0, 0, 0, 0);
   background-position: center;
@@ -583,10 +608,15 @@ input[type='checkbox']:checked {
   z-index: 10;
 }
 
+.gallery .header button,
 .gallery .toolbar button {
   height: 40px;
   min-width: 40px;  /* Reset. */
   width: 40px;
+}
+
+.gallery .header button {
+  margin: 6px 0;
 }
 
 .gallery .toolbar button:focus {
@@ -617,13 +647,17 @@ input[type='checkbox']:checked {
 
 }
 
+.gallery .header button:hover,
 .gallery .toolbar button:hover {
   background-color: rgba(31, 31, 31, 1);
   color: white;
 }
 
+.gallery .header button:active,
 .gallery .toolbar button:active,
+.gallery .header button[pressed],
 .gallery .toolbar button[pressed],
+.gallery .header button[pressed]:hover,
 .gallery .toolbar button[pressed]:hover {
   background-color: rgba(240, 240, 240, 1);
   color: black;
@@ -1169,7 +1203,7 @@ input[type='checkbox']:checked {
   overflow-y: hidden;
   position: absolute;
   right: 0;
-  top: 55px; /* Toolbar height. */
+  top: 100px; /* Header + Toolbar height. */
 
   /* transition-duration is set in Javascript. */
   transition-property: transform;
@@ -1327,6 +1361,35 @@ input[type='checkbox']:checked {
       url(../images/100/slideshow-end.png) 1x,
       url(../images/200/slideshow-end.png) 2x);
   margin-left: -2px;
+}
+
+.gallery > .header > button {
+  -webkit-margin-start: 10px;
+  cursor: default;
+  height: 32px;
+  min-width: 32px;
+  width: 32px;
+}
+
+.gallery > .header > .minimize-button {
+  background: -webkit-image-set(
+      url(chrome://resources/images/apps/topbar_button_minimize.png) 1x,
+      url(chrome://resources/images/2x/apps/topbar_button_minimize.png) 2x)
+      center;
+}
+
+.gallery > .header > .maximize-button {
+  background: -webkit-image-set(
+      url(chrome://resources/images/apps/topbar_button_maximize.png) 1x,
+      url(chrome://resources/images/2x/apps/topbar_button_maximize.png) 2x)
+      center;
+}
+
+.gallery > .header > .close-button {
+  background: -webkit-image-set(
+      url(chrome://resources/images/apps/topbar_button_close.png) 1x,
+      url(chrome://resources/images/2x/apps/topbar_button_close.png) 2x)
+      center;
 }
 
 .debug-me .load-target-content-metadata::before,

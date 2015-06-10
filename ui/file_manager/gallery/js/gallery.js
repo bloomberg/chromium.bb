@@ -29,6 +29,15 @@ function Gallery(volumeManager) {
    */
   this.context_ = {
     appWindow: chrome.app.window.current(),
+    onClose: function() { window.close(); },
+    onMaximize: function() {
+      var appWindow = chrome.app.window.current();
+      if (appWindow.isMaximized())
+        appWindow.restore();
+      else
+        appWindow.maximize();
+    },
+    onMinimize: function() { chrome.app.window.current().minimize(); },
     onAppRegionChanged: function() {},
     readonlyDirName: '',
     displayStringFunction: function() { return ''; },
@@ -89,6 +98,29 @@ function Gallery(volumeManager) {
   this.header_ = queryRequiredElement(document, '#header');
   this.topToolbar_ = queryRequiredElement(document, '#top-toolbar');
   this.bottomToolbar_ = queryRequiredElement(document, '#bottom-toolbar');
+
+  var preventDefault = function(event) { event.preventDefault(); };
+
+  var minimizeButton = util.createChild(this.header_,
+                                        'minimize-button tool dimmable',
+                                        'button');
+  minimizeButton.tabIndex = -1;
+  minimizeButton.addEventListener('click', this.onMinimize_.bind(this));
+  minimizeButton.addEventListener('mousedown', preventDefault);
+
+  var maximizeButton = util.createChild(this.header_,
+                                        'maximize-button tool dimmable',
+                                        'button');
+  maximizeButton.tabIndex = -1;
+  maximizeButton.addEventListener('click', this.onMaximize_.bind(this));
+  maximizeButton.addEventListener('mousedown', preventDefault);
+
+  var closeButton = util.createChild(this.header_,
+                                     'close-button tool dimmable',
+                                     'button');
+  closeButton.tabIndex = -1;
+  closeButton.addEventListener('click', this.onClose_.bind(this));
+  closeButton.addEventListener('mousedown', preventDefault);
 
   this.filenameSpacer_ = queryRequiredElement(this.topToolbar_,
       '.filename-spacer');
@@ -385,6 +417,45 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
   loadChunk(/* firstChunk */ true).catch(function(error) {
     console.error(error.stack || error);
   });
+};
+
+/**
+ * Handles user's 'Close' action.
+ * @private
+ */
+Gallery.prototype.onClose_ = function() {
+  this.executeWhenReady(this.context_.onClose);
+};
+
+/**
+ * Handles user's 'Maximize' action (Escape or a click on the X icon).
+ * @private
+ */
+Gallery.prototype.onMaximize_ = function() {
+  this.executeWhenReady(this.context_.onMaximize);
+};
+
+/**
+ * Handles user's 'Maximize' action (Escape or a click on the X icon).
+ * @private
+ */
+Gallery.prototype.onMinimize_ = function() {
+  this.executeWhenReady(this.context_.onMinimize);
+};
+
+/**
+ * Executes a function when the editor is done with the modifications.
+ * @param {function()} callback Function to execute.
+ */
+Gallery.prototype.executeWhenReady = function(callback) {
+  this.currentMode_.executeWhenReady(callback);
+};
+
+/**
+ * @return {!Object} File manager private API.
+ */
+Gallery.getFileManagerPrivate = function() {
+  return chrome.fileManagerPrivate || window.top.chrome.fileManagerPrivate;
 };
 
 /**
