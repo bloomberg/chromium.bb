@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_H_
 #define CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_H_
 
+#include <list>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -15,6 +17,8 @@
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "media/audio/audio_logging.h"
 #include "media/base/media_log.h"
 #include "media/video/capture/video_capture_device_info.h"
@@ -28,7 +32,8 @@ namespace content {
 
 // This class stores information about currently active media.
 class CONTENT_EXPORT MediaInternals
-    : NON_EXPORTED_BASE(public media::AudioLogFactory) {
+    : NON_EXPORTED_BASE(public media::AudioLogFactory),
+      public NotificationObserver {
  public:
   // Called with the update string.
   typedef base::Callback<void(const base::string16&)> UpdateCallback;
@@ -36,6 +41,11 @@ class CONTENT_EXPORT MediaInternals
   static MediaInternals* GetInstance();
 
   ~MediaInternals() override;
+
+  // NotificationObserver implementation.
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
 
   // Called when a MediaEvent occurs.
   void OnMediaEvents(int render_process_id,
@@ -49,6 +59,9 @@ class CONTENT_EXPORT MediaInternals
   // Whether there are any update callbacks available. Can be called on any
   // thread.
   bool CanUpdate();
+
+  // Replay all saved media events.
+  void SendHistoricalMediaEvents();
 
   // Sends all audio cached data to each registered UpdateCallback.
   void SendAudioStreamData();
@@ -80,11 +93,20 @@ class CONTENT_EXPORT MediaInternals
   friend class MediaInternalsTest;
   friend struct base::DefaultLazyInstanceTraits<MediaInternals>;
 
+  // Pending events for a particular process.
+  using PendingEvents = std::list<media::MediaLogEvent>;
+
+  // The maps between process ID and PendingEvents.
+  using PendingEventsMap = std::map<int, PendingEvents>;
+
   MediaInternals();
 
   // Sends |update| to each registered UpdateCallback.  Safe to call from any
   // thread, but will forward to the IO thread.
   void SendUpdate(const base::string16& update);
+
+  // Saves |event| so that it can be sent later in SendHistoricalMediaEvents().
+  void SaveEvent(int process_id, const media::MediaLogEvent& event);
 
   // Caches |value| under |cache_key| so that future SendAudioLogUpdate() calls
   // will include the current data.  Calls JavaScript |function|(|value|) for
@@ -106,9 +128,12 @@ class CONTENT_EXPORT MediaInternals
   // Must only be accessed on the IO thread.
   base::ListValue video_capture_capabilities_cached_data_;
 
+  NotificationRegistrar registrar_;
+
   // All variables below must be accessed under |lock_|.
   base::Lock lock_;
   bool can_update_;
+  PendingEventsMap pending_events_map_;
   base::DictionaryValue audio_streams_cached_data_;
   int owner_ids_[AUDIO_COMPONENT_MAX];
   scoped_ptr<MediaInternalsUMAHandler> uma_handler_;

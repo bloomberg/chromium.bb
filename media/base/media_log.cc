@@ -4,7 +4,6 @@
 
 #include "media/base/media_log.h"
 
-
 #include "base/atomic_sequence_num.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"

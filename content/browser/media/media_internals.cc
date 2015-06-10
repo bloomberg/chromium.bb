@@ -9,8 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -249,22 +247,18 @@ void AudioLogImpl::StoreComponentMetadata(int component_id,
   dict->SetInteger("component_type", component_);
 }
 
-class MediaInternals::MediaInternalsUMAHandler : public NotificationObserver {
+class MediaInternals::MediaInternalsUMAHandler {
  public:
   MediaInternalsUMAHandler();
 
-  // NotificationObserver implementation.
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) override;
-
-  // Reports the pipeline status to UMA for every player
-  // associated with the renderer process and then deletes the player state.
-  void LogAndClearPlayersInRenderer(int render_process_id);
+  // Called when a render process is terminated. Reports the pipeline status to
+  // UMA for every player associated with the renderer process and then deletes
+  // the player state.
+  void OnProcessTerminated(int render_process_id);
 
   // Helper function to save the event payload to RendererPlayerMap.
-  void SavePlayerState(const media::MediaLogEvent& event,
-                       int render_process_id);
+  void SavePlayerState(int render_process_id,
+                       const media::MediaLogEvent& event);
 
  private:
   struct PipelineInfo {
@@ -299,38 +293,15 @@ class MediaInternals::MediaInternalsUMAHandler : public NotificationObserver {
   // Stores player information per renderer
   RendererPlayerMap renderer_info_;
 
-  NotificationRegistrar registrar_;
-
   DISALLOW_COPY_AND_ASSIGN(MediaInternalsUMAHandler);
 };
 
 MediaInternals::MediaInternalsUMAHandler::MediaInternalsUMAHandler() {
-  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 NotificationService::AllBrowserContextsAndSources());
-}
-
-void MediaInternals::MediaInternalsUMAHandler::Observe(
-    int type,
-    const NotificationSource& source,
-    const NotificationDetails& details) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
-
-  // Post the task to the IO thread to avoid race in updating renderer_info_ map
-  // by both SavePlayerState & LogAndClearPlayersInRenderer from different
-  // threads.
-  // Using base::Unretained() on MediaInternalsUMAHandler is safe since
-  // it is owned by MediaInternals and share the same lifetime
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaInternalsUMAHandler::LogAndClearPlayersInRenderer,
-                 base::Unretained(this), process->GetID()));
 }
 
 void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
-    const media::MediaLogEvent& event,
-    int render_process_id) {
+    int render_process_id,
+    const media::MediaLogEvent& event) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PlayerInfoMap& player_info = renderer_info_[render_process_id];
   switch (event.type) {
@@ -439,9 +410,20 @@ void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
   }
 }
 
-void MediaInternals::MediaInternalsUMAHandler::LogAndClearPlayersInRenderer(
+void MediaInternals::MediaInternalsUMAHandler::OnProcessTerminated(
     int render_process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Ensures to run on the IO thread to avoid race in |updating renderer_info_|
+  // by both SavePlayerState and OnProcessTerminated.
+  // Using base::Unretained() on MediaInternalsUMAHandler is safe since
+  // it is owned by MediaInternals and shares the same lifetime.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&MediaInternalsUMAHandler::OnProcessTerminated,
+                   base::Unretained(this), render_process_id));
+    return;
+  }
+
   auto players_it = renderer_info_.find(render_process_id);
   if (players_it == renderer_info_.end())
     return;
@@ -450,6 +432,7 @@ void MediaInternals::MediaInternalsUMAHandler::LogAndClearPlayersInRenderer(
     ReportUMAForPipelineStatus(it->second);
     players_it->second.erase(it++);
   }
+  renderer_info_.erase(players_it);
 }
 
 MediaInternals* MediaInternals::GetInstance() {
@@ -460,44 +443,74 @@ MediaInternals::MediaInternals()
     : can_update_(false),
       owner_ids_(),
       uma_handler_(new MediaInternalsUMAHandler()) {
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 NotificationService::AllBrowserContextsAndSources());
 }
 
 MediaInternals::~MediaInternals() {}
+
+void MediaInternals::Observe(int type,
+                             const NotificationSource& source,
+                             const NotificationDetails& details) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
+  RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+
+  uma_handler_->OnProcessTerminated(process->GetID());
+
+  base::AutoLock auto_lock(lock_);
+  pending_events_map_.erase(process->GetID());
+}
+
+// Converts the |event| to a |update|. Returns whether the conversion succeeded.
+static bool ConvertEventToUpdate(int render_process_id,
+                                 const media::MediaLogEvent& event,
+                                 base::string16* update) {
+  DCHECK(update);
+
+  base::DictionaryValue dict;
+  dict.SetInteger("renderer", render_process_id);
+  dict.SetInteger("player", event.id);
+  dict.SetString("type", media::MediaLog::EventTypeToString(event.type));
+
+  // TODO(dalecurtis): This is technically not correct.  TimeTicks "can't" be
+  // converted to to a human readable time format.  See base/time/time.h.
+  const double ticks = event.time.ToInternalValue();
+  const double ticks_millis = ticks / base::Time::kMicrosecondsPerMillisecond;
+  dict.SetDouble("ticksMillis", ticks_millis);
+
+  // Convert PipelineStatus to human readable string
+  if (event.type == media::MediaLogEvent::PIPELINE_ERROR) {
+    int status;
+    if (!event.params.GetInteger("pipeline_error", &status) ||
+        status < static_cast<int>(media::PIPELINE_OK) ||
+        status > static_cast<int>(media::PIPELINE_STATUS_MAX)) {
+      return false;
+    }
+    media::PipelineStatus error = static_cast<media::PipelineStatus>(status);
+    dict.SetString("params.pipeline_error",
+                   media::MediaLog::PipelineStatusToString(error));
+  } else {
+    dict.Set("params", event.params.DeepCopy());
+  }
+
+  *update = SerializeUpdate("media.onMediaEvent", &dict);
+  return true;
+}
 
 void MediaInternals::OnMediaEvents(
     int render_process_id, const std::vector<media::MediaLogEvent>& events) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Notify observers that |event| has occurred.
-  for (auto event = events.begin(); event != events.end(); ++event) {
-    base::DictionaryValue dict;
-    dict.SetInteger("renderer", render_process_id);
-    dict.SetInteger("player", event->id);
-    dict.SetString("type", media::MediaLog::EventTypeToString(event->type));
-
-    // TODO(dalecurtis): This is technically not correct.  TimeTicks "can't" be
-    // converted to to a human readable time format.  See base/time/time.h.
-    const double ticks = event->time.ToInternalValue();
-    const double ticks_millis = ticks / base::Time::kMicrosecondsPerMillisecond;
-    dict.SetDouble("ticksMillis", ticks_millis);
-
-    // Convert PipelineStatus to human readable string
-    if (event->type == media::MediaLogEvent::PIPELINE_ERROR) {
-      int status;
-      if (!event->params.GetInteger("pipeline_error", &status) ||
-          status < static_cast<int>(media::PIPELINE_OK) ||
-          status > static_cast<int>(media::PIPELINE_STATUS_MAX)) {
-        continue;
-      }
-      media::PipelineStatus error = static_cast<media::PipelineStatus>(status);
-      dict.SetString("params.pipeline_error",
-                     media::MediaLog::PipelineStatusToString(error));
-    } else {
-      dict.Set("params", event->params.DeepCopy());
+  for (const auto& event : events) {
+    if (CanUpdate()) {
+      base::string16 update;
+      if (ConvertEventToUpdate(render_process_id, event, &update))
+        SendUpdate(update);
     }
 
-    if (CanUpdate())
-      SendUpdate(SerializeUpdate("media.onMediaEvent", &dict));
-    uma_handler_->SavePlayerState(*event, render_process_id);
+    SaveEvent(render_process_id, event);
+    uma_handler_->SavePlayerState(render_process_id, event);
   }
 }
 
@@ -525,6 +538,20 @@ void MediaInternals::RemoveUpdateCallback(const UpdateCallback& callback) {
 bool MediaInternals::CanUpdate() {
   base::AutoLock auto_lock(lock_);
   return can_update_;
+}
+
+void MediaInternals::SendHistoricalMediaEvents() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::AutoLock auto_lock(lock_);
+  for (const auto& pending_events : pending_events_map_) {
+    for (const auto& event : pending_events.second) {
+      base::string16 update;
+      if (ConvertEventToUpdate(pending_events.first, event, &update))
+        SendUpdate(update);
+    }
+  }
+  // Do not clear the map/list here so that refreshing the UI or opening a
+  // second UI still works nicely!
 }
 
 void MediaInternals::SendAudioStreamData() {
@@ -599,6 +626,29 @@ void MediaInternals::SendUpdate(const base::string16& update) {
 
   for (size_t i = 0; i < update_callbacks_.size(); i++)
     update_callbacks_[i].Run(update);
+}
+
+void MediaInternals::SaveEvent(int process_id,
+                               const media::MediaLogEvent& event) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Max number of saved updates allowed for one process.
+  const size_t kMaxNumEvents = 128;
+
+  // Do not save instantaneous events that happen frequently and have little
+  // value in the future.
+  if (event.type == media::MediaLogEvent::NETWORK_ACTIVITY_SET ||
+      event.type == media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED) {
+    return;
+  }
+
+  base::AutoLock auto_lock(lock_);
+  auto& pending_events = pending_events_map_[process_id];
+  // TODO(xhwang): Notify user that some old logs could have been truncated.
+  // See http://crbug.com/498520
+  if (pending_events.size() >= kMaxNumEvents)
+    pending_events.pop_front();
+  pending_events.push_back(event);
 }
 
 void MediaInternals::SendAudioLogUpdate(AudioLogUpdateType type,

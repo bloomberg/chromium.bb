@@ -69,7 +69,9 @@ void MediaInternalsProxy::Detach() {
 void MediaInternalsProxy::GetEverything() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Ask MediaInternals for all its data.
+  MediaInternals::GetInstance()->SendHistoricalMediaEvents();
+
+  // Ask MediaInternals for its data on IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&MediaInternalsProxy::GetEverythingOnIOThread, this));
@@ -136,6 +138,7 @@ void MediaInternalsProxy::StopObservingMediaInternalsOnIOThread() {
 
 void MediaInternalsProxy::GetEverythingOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(xhwang): Investigate whether we can update on UI thread directly.
   MediaInternals::GetInstance()->SendAudioStreamData();
   MediaInternals::GetInstance()->SendVideoCaptureDeviceCapabilities();
 }
