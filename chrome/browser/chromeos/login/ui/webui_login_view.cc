@@ -26,6 +26,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -131,9 +132,6 @@ WebUILoginView::WebUILoginView()
   accel_map_[ui::Accelerator(ui::VKEY_X,
       ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
       kAccelNameEnableDebugging;
-  accel_map_[ui::Accelerator(ui::VKEY_W,
-      ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameToggleWebviewSignin;
   accel_map_[ui::Accelerator(
       ui::VKEY_L, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
       kAccelNameToggleNewLoginUI;
@@ -145,6 +143,16 @@ WebUILoginView::WebUILoginView()
       kAccelFocusPrev;
   accel_map_[ui::Accelerator(ui::VKEY_RIGHT, ui::EF_NONE)] =
       kAccelFocusNext;
+
+  // Ctrl-Alt-Shift-W for canary/dev builds only.
+  const chrome::VersionInfo::Channel channel =
+      chrome::VersionInfo::GetChannel();
+  if (channel != chrome::VersionInfo::CHANNEL_STABLE &&
+      channel != chrome::VersionInfo::CHANNEL_BETA) {
+    accel_map_[ui::Accelerator(
+        ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN |
+                        ui::EF_SHIFT_DOWN)] = kAccelNameToggleWebviewSignin;
+  }
 
   // Use KEY_RELEASED because Gaia consumes KEY_PRESSED for up/down key.
   ui::Accelerator key_up(ui::VKEY_UP, ui::EF_NONE);
