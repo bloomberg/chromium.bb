@@ -302,7 +302,7 @@ class AutoRoller(object):
     self._UpdateDep(deps_filename, LIBJINGLE_PATH, libjingle_latest)
 
     if self._IsTreeClean():
-      logging.debug('Tree is clean - no changes detected.')
+      print 'The latest revision is already rolled for WebRTC and libjingle.'
       self._DeleteRollBranch()
     else:
       self._UpdateReadmeFile(LIBJINGLE_README, libjingle_latest.commit_position)
