@@ -18,14 +18,14 @@ var remoting = remoting || {};
  * @constructor
  * @implements {remoting.HostListApi}
  */
-remoting.HostListApiGcdImpl = function() {
+remoting.GcdHostListApi = function() {
   this.gcd_ = new remoting.gcd.Client({
     apiKey: remoting.settings.GOOGLE_API_KEY
   });
 };
 
 /** @override */
-remoting.HostListApiGcdImpl.prototype.register = function(
+remoting.GcdHostListApi.prototype.register = function(
     hostName, publicKey, hostClientId) {
   var self = this;
   var deviceDraft = {
@@ -72,7 +72,7 @@ remoting.HostListApiGcdImpl.prototype.register = function(
 };
 
 /** @override */
-remoting.HostListApiGcdImpl.prototype.get = function() {
+remoting.GcdHostListApi.prototype.get = function() {
   return this.gcd_.listDevices().
       then(function(devices) {
         var hosts = [];
@@ -90,7 +90,7 @@ remoting.HostListApiGcdImpl.prototype.get = function() {
 };
 
 /** @override */
-remoting.HostListApiGcdImpl.prototype.put =
+remoting.GcdHostListApi.prototype.put =
     function(hostId, hostName, hostPublicKey) {
   return this.gcd_.patchDevice(hostId, {
     'name': hostName
@@ -110,7 +110,7 @@ remoting.HostListApiGcdImpl.prototype.put =
 };
 
 /** @override */
-remoting.HostListApiGcdImpl.prototype.remove = function(hostId) {
+remoting.GcdHostListApi.prototype.remove = function(hostId) {
   return this.gcd_.deleteDevice(hostId).then(function(deleted) {
     if (!deleted) {
       console.error('error deleting host from GCD');
@@ -121,7 +121,7 @@ remoting.HostListApiGcdImpl.prototype.remove = function(hostId) {
 };
 
 /** @override */
-remoting.HostListApiGcdImpl.prototype.getSupportHost = function(supportId) {
+remoting.GcdHostListApi.prototype.getSupportHost = function(supportId) {
   console.error('getSupportHost not supported by HostListApiGclImpl');
   return Promise.reject(remoting.Error.unexpected());
 };

@@ -81,8 +81,8 @@ var instance = null;
 remoting.HostListApi.getInstance = function() {
   if (instance == null) {
     instance = remoting.settings.USE_GCD ?
-        new remoting.HostListApiGcdImpl() :
-        new remoting.HostListApiImpl();
+        new remoting.GcdHostListApi() :
+        new remoting.LegacyHostListApi();
   }
   return instance;
 };

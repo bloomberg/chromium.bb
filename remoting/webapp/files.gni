@@ -267,10 +267,15 @@ remoting_webapp_js_host_control_files = [
 remoting_webapp_js_host_display_files = [
   "crd/js/host_list.js",
   "crd/js/host_list_api.js",
-  "crd/js/host_list_api_gcd_impl.js",
-  "crd/js/host_list_api_impl.js",
   "crd/js/host_table_entry.js",
   "crd/js/local_host_section.js",
+
+  # Must come after host_list_api.js because of an issue with
+  # JSCompiler.  If an implementation of an interface occurs in a
+  # file processed before the interface itself, the @override tag
+  # doesn't always work correctly.
+  "crd/js/gcd_host_list_api.js",
+  "crd/js/legacy_host_list_api.js",
 ]
 
 # The CRD-specific JavaScript files required by main.html.

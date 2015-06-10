@@ -60,7 +60,7 @@ function queueRegistryResponse(assert) {
 }
 
 QUnit.test('register', function(assert) {
-  var impl = new remoting.HostListApiImpl();
+  var impl = new remoting.LegacyHostListApi();
   queueRegistryResponse(assert);
   return impl.register(
       FAKE_HOST_NAME,
@@ -73,7 +73,7 @@ QUnit.test('register', function(assert) {
 });
 
 QUnit.test('register failure', function(assert) {
-  var impl = new remoting.HostListApiImpl();
+  var impl = new remoting.LegacyHostListApi();
   remoting.MockXhr.setEmptyResponseFor(
       'POST', 'DIRECTORY_API_BASE_URL/@me/hosts', 500);
   return impl.register(

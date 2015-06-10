@@ -103,8 +103,8 @@
       'webapp/crd/js/gcd_client_with_mock_xhr_unittest.js',
       'webapp/crd/js/host_controller_unittest.js',
       'webapp/crd/js/host_daemon_facade_unittest.js',
-      'webapp/crd/js/host_list_api_impl_unittest.js',
       'webapp/crd/js/host_table_entry_unittest.js',
+      'webapp/crd/js/legacy_host_list_api_unittest.js',
       'webapp/crd/js/menu_button_unittest.js',
       'webapp/crd/js/mock_xhr_unittest.js',
     ],
@@ -266,10 +266,15 @@
     'remoting_webapp_js_host_display_files': [
       'webapp/crd/js/host_list.js',
       'webapp/crd/js/host_list_api.js',
-      'webapp/crd/js/host_list_api_gcd_impl.js',
-      'webapp/crd/js/host_list_api_impl.js',
       'webapp/crd/js/host_table_entry.js',
       'webapp/crd/js/local_host_section.js',
+
+      # Must come after host_list_api.js because of an issue with
+      # JSCompiler.  If an implementation of an interface occurs in a
+      # file processed before the interface itself, the @override tag
+      # doesn't always work correctly.
+      'webapp/crd/js/gcd_host_list_api.js',
+      'webapp/crd/js/legacy_host_list_api.js',
     ],
     # The CRD-specific JavaScript files required by main.html.
     'remoting_webapp_crd_js_ui_files': [

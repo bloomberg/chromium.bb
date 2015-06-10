@@ -18,11 +18,11 @@ var remoting = remoting || {};
  * @constructor
  * @implements {remoting.HostListApi}
  */
-remoting.HostListApiImpl = function() {
+remoting.LegacyHostListApi = function() {
 };
 
 /** @override */
-remoting.HostListApiImpl.prototype.register = function(
+remoting.LegacyHostListApi.prototype.register = function(
     hostName, publicKey, hostClientId) {
   var newHostId = base.generateUuid();
   var newHostDetails = { data: {
@@ -61,7 +61,7 @@ remoting.HostListApiImpl.prototype.register = function(
 };
 
 /** @override */
-remoting.HostListApiImpl.prototype.get = function() {
+remoting.LegacyHostListApi.prototype.get = function() {
   var that = this;
   return new remoting.Xhr({
     method: 'GET',
@@ -73,7 +73,7 @@ remoting.HostListApiImpl.prototype.get = function() {
 };
 
 /** @override */
-remoting.HostListApiImpl.prototype.put =
+remoting.LegacyHostListApi.prototype.put =
     function(hostId, hostName, hostPublicKey) {
   return new remoting.Xhr({
     method: 'PUT',
@@ -86,16 +86,16 @@ remoting.HostListApiImpl.prototype.put =
       }
     },
     useIdentity: true
-  }).start().then(remoting.HostListApiImpl.defaultResponse_());
+  }).start().then(remoting.LegacyHostListApi.defaultResponse_());
 };
 
 /** @override */
-remoting.HostListApiImpl.prototype.remove = function(hostId) {
+remoting.LegacyHostListApi.prototype.remove = function(hostId) {
   return new remoting.Xhr({
     method: 'DELETE',
     url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
     useIdentity: true
-  }).start().then(remoting.HostListApiImpl.defaultResponse_(
+  }).start().then(remoting.LegacyHostListApi.defaultResponse_(
       [remoting.Error.Tag.NOT_FOUND]));
 };
 
@@ -108,7 +108,8 @@ remoting.HostListApiImpl.prototype.remove = function(hostId) {
  * @return {!Array<!remoting.Host>}
  * @private
  */
-remoting.HostListApiImpl.prototype.parseHostListResponse_ = function(response) {
+remoting.LegacyHostListApi.prototype.parseHostListResponse_ =
+    function(response) {
   if (response.status == 200) {
     var obj = /** @type {{data: {items: Array}}} */
         (base.jsonParseSafe(response.getText()));
@@ -146,7 +147,7 @@ remoting.HostListApiImpl.prototype.parseHostListResponse_ = function(response) {
  * @return {function(!remoting.Xhr.Response):void}
  * @private
  */
-remoting.HostListApiImpl.defaultResponse_ = function(opt_ignoreErrors) {
+remoting.LegacyHostListApi.defaultResponse_ = function(opt_ignoreErrors) {
   /** @param {!remoting.Xhr.Response} response */
   var result = function(response) {
     var error = remoting.Error.fromHttpStatus(response.status);
@@ -164,7 +165,7 @@ remoting.HostListApiImpl.defaultResponse_ = function(opt_ignoreErrors) {
 };
 
 /** @override */
-remoting.HostListApiImpl.prototype.getSupportHost = function(supportId) {
+remoting.LegacyHostListApi.prototype.getSupportHost = function(supportId) {
   return new remoting.Xhr({
     method: 'GET',
     url: remoting.settings.DIRECTORY_API_BASE_URL + '/support-hosts/' +
