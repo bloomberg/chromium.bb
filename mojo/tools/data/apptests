@@ -46,6 +46,10 @@ tests = [
 if config.target_os != config.OS_ANDROID:
   tests += [
     {
+      "test": "mojo:filesystem_apptests",
+      "type": "gtest_isolated",
+    },
+    {
       "test": "mojo:html_viewer_apptests",
       "type": "gtest_isolated",
       "args": ["--is-headless"]
