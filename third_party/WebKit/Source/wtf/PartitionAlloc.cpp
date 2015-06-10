@@ -490,6 +490,11 @@ static ALWAYS_INLINE void partitionPageSetup(PartitionPage* page, PartitionBucke
     }
 }
 
+static ALWAYS_INLINE size_t partitionRoundUpToSystemPage(size_t size)
+{
+    return (size + kSystemPageOffsetMask) & kSystemPageBaseMask;
+}
+
 static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(PartitionPage* page)
 {
     ASSERT(page != &PartitionRootGeneric::gSeedPage);
@@ -511,7 +516,7 @@ static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(PartitionPage* page
     // Our goal is to fault as few system pages as possible. We calculate the
     // page containing the "end" of the returned slot, and then allow freelist
     // pointers to be written up to the end of that page.
-    char* subPageLimit = reinterpret_cast<char*>((reinterpret_cast<uintptr_t>(firstFreelistPointer) + kSystemPageOffsetMask) & kSystemPageBaseMask);
+    char* subPageLimit = reinterpret_cast<char*>(partitionRoundUpToSystemPage(reinterpret_cast<size_t>(firstFreelistPointer)));
     char* slotsLimit = returnObject + (size * numSlots);
     char* freelistLimit = subPageLimit;
     if (UNLIKELY(slotsLimit < freelistLimit))
@@ -600,7 +605,7 @@ static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionPage* page)
             ++bucket->numFullPages;
             // numFullPages is a uint16_t for efficient packing so guard against
             // overflow to be safe.
-            if (!bucket->numFullPages)
+            if (UNLIKELY(!bucket->numFullPages))
                 partitionBucketFull();
             // Not necessary but might help stop accidents.
             page->nextPage = 0;
@@ -728,6 +733,35 @@ static ALWAYS_INLINE void partitionDirectUnmap(PartitionPage* page)
     freePages(ptr, unmapSize);
 }
 
+static ALWAYS_INLINE size_t* partitionPageGetRawSizePtr(PartitionPage* page)
+{
+    // For single-slot buckets which span more than one partition page, we
+    // have some spare metadata space to store the raw allocation size. We
+    // can use this to report better statistics.
+    PartitionBucket* bucket = page->bucket;
+    if (bucket->slotSize <= kMaxSystemPagesPerSlotSpan * kSystemPageSize)
+        return nullptr;
+
+    ASSERT(partitionBucketSlots(bucket) == 1);
+    page++;
+    return reinterpret_cast<size_t*>(&page->freelistHead);
+}
+
+static ALWAYS_INLINE void partitionPageSetRawSize(PartitionPage* page, size_t size)
+{
+    size_t* rawSizePtr = partitionPageGetRawSizePtr(page);
+    if (UNLIKELY(rawSizePtr != nullptr))
+        *rawSizePtr = size;
+}
+
+static size_t partitionPageGetRawSize(PartitionPage* page)
+{
+    size_t* rawSizePtr = partitionPageGetRawSizePtr(page);
+    if (UNLIKELY(rawSizePtr != nullptr))
+        return *rawSizePtr;
+    return 0;
+}
+
 void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, PartitionBucket* bucket)
 {
     // The slow path is called when the freelist is empty.
@@ -748,29 +782,26 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
                 return 0;
             partitionExcessiveAllocationSize();
         }
-        void* ptr = partitionDirectMap(root, flags, size);
-        if (ptr)
-            return ptr;
+        void* ret = partitionDirectMap(root, flags, size);
+        if (ret)
+            return ret;
         goto partitionAllocSlowPathFailed;
     }
 
-    // First, look for a usable page in the existing active pages list.
-    // Change active page, accepting the current page as a candidate.
     if (LIKELY(partitionSetNewActivePage(bucket->activePagesHead))) {
+        // First, look for a usable page in the existing active pages list.
+        // Change active page, accepting the current page as a candidate.
         newPage = bucket->activePagesHead;
         if (LIKELY(newPage->freelistHead != 0)) {
-            PartitionFreelistEntry* ret = newPage->freelistHead;
-            newPage->freelistHead = partitionFreelistMask(ret->next);
+            PartitionFreelistEntry* entry = newPage->freelistHead;
+            newPage->freelistHead = partitionFreelistMask(entry->next);
             newPage->numAllocatedSlots++;
-            return ret;
+            partitionPageSetRawSize(newPage, size);
+            return entry;
         }
-        ASSERT(newPage->numUnprovisionedSlots);
-        return partitionPageAllocAndFillFreelist(newPage);
-    }
-
-    // Second, look in our list of freed but reserved pages.
-    newPage = bucket->emptyPagesHead;
-    if (LIKELY(newPage != 0)) {
+    } else if (LIKELY(bucket->emptyPagesHead != nullptr)) {
+        // Second, look in our list of freed but reserved pages.
+        newPage = bucket->emptyPagesHead;
         bucket->emptyPagesHead = newPage->nextPage;
         void* addr = partitionPageToPointer(newPage);
         partitionRecommitSystemPages(root, addr, partitionBucketBytes(newPage->bucket));
@@ -787,6 +818,8 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
     }
 
     bucket->activePagesHead = newPage;
+    partitionPageSetRawSize(newPage, size);
+
     return partitionPageAllocAndFillFreelist(newPage);
 
 partitionAllocSlowPathFailed:
@@ -1057,10 +1090,14 @@ static void partitionDumpPageStats(PartitionBucketMemoryStats* statsOut, const P
         ASSERT(!page->numUnprovisionedSlots);
         ++statsOut->numDecommittedPages;
     } else {
-        statsOut->activeBytes += (page->numAllocatedSlots * statsOut->bucketSlotSize);
+        size_t rawSize = partitionPageGetRawSize(const_cast<PartitionPage*>(page));
+        if (rawSize)
+            statsOut->activeBytes += static_cast<uint32_t>(partitionRoundUpToSystemPage(rawSize));
+        else
+            statsOut->activeBytes += (page->numAllocatedSlots * statsOut->bucketSlotSize);
         size_t pageBytesResident = (bucketNumSlots - page->numUnprovisionedSlots) * statsOut->bucketSlotSize;
         // Round up to system page size.
-        size_t pageBytesResidentRounded = (pageBytesResident + kSystemPageOffsetMask) & kSystemPageBaseMask;
+        size_t pageBytesResidentRounded = partitionRoundUpToSystemPage(pageBytesResident);
         statsOut->residentBytes += pageBytesResidentRounded;
         if (!page->numAllocatedSlots) {
             statsOut->freeableBytes += pageBytesResidentRounded;

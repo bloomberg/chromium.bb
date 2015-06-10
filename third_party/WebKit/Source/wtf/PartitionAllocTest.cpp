@@ -1473,6 +1473,33 @@ TEST(PartitionAllocTest, DumpMemoryStats)
         partitionFreeGeneric(genericAllocator.root(), ptr2);
     }
 
+    // This test checks large-but-not-quite-direct allocations.
+    {
+        void* ptr = partitionAllocGeneric(genericAllocator.root(), 65537);
+
+        {
+            MockPartitionStatsDumper mockStatsDumperGeneric;
+            partitionDumpStatsGeneric(genericAllocator.root(), "mock_generic_allocator", &mockStatsDumperGeneric);
+            EXPECT_TRUE(mockStatsDumperGeneric.IsMemoryAllocationRecorded());
+
+            size_t slotSize = 65536 + (65536 / WTF::kGenericNumBucketsPerOrder);
+            const WTF::PartitionBucketMemoryStats* stats = mockStatsDumperGeneric.GetBucketStats(slotSize);
+            EXPECT_TRUE(stats);
+            EXPECT_TRUE(stats->isValid);
+            EXPECT_FALSE(stats->isDirectMap);
+            EXPECT_EQ(slotSize, stats->bucketSlotSize);
+            EXPECT_EQ(65536 + WTF::kSystemPageSize, stats->activeBytes);
+            EXPECT_EQ(slotSize, stats->residentBytes);
+            EXPECT_EQ(0u, stats->freeableBytes);
+            EXPECT_EQ(1u, stats->numFullPages);
+            EXPECT_EQ(0u, stats->numActivePages);
+            EXPECT_EQ(0u, stats->numEmptyPages);
+            EXPECT_EQ(0u, stats->numDecommittedPages);
+        }
+
+        partitionFreeGeneric(genericAllocator.root(), ptr);
+    }
+
     TestShutdown();
 }
 
