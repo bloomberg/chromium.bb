@@ -124,7 +124,6 @@ DEFINE_TRACE(ServiceWorkerContainer)
 
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const RegistrationOptions& options)
 {
-    ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
@@ -187,7 +186,6 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
 
 ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, const String& documentURL)
 {
-    ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
@@ -222,6 +220,35 @@ ScriptPromise ServiceWorkerContainer::getRegistration(ScriptState* scriptState, 
         return promise;
     }
     m_provider->getRegistration(completedURL, new GetRegistrationCallback(resolver));
+
+    return promise;
+}
+
+ScriptPromise ServiceWorkerContainer::getRegistrations(ScriptState* scriptState)
+{
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    if (!m_provider) {
+        resolver->reject(DOMException::create(InvalidStateError, "Failed to get ServiceWorkerRegistration objects: The document is in an invalid state."));
+        return promise;
+    }
+
+    ExecutionContext* executionContext = scriptState->executionContext();
+    RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
+    String errorMessage;
+    if (!executionContext->isPrivilegedContext(errorMessage)) {
+        resolver->reject(DOMException::create(NotSupportedError, errorMessage));
+        return promise;
+    }
+
+    KURL pageURL = KURL(KURL(), documentOrigin->toString());
+    if (!pageURL.protocolIsInHTTPFamily()) {
+        resolver->reject(DOMException::create(SecurityError, "Failed to get ServiceWorkerRegistration objects: The URL protocol of the current origin ('" + documentOrigin->toString() + "') is not supported."));
+        return promise;
+    }
+
+    m_provider->getRegistrations(new CallbackPromiseAdapter<ServiceWorkerRegistrationArray, ServiceWorkerError>(resolver));
 
     return promise;
 }

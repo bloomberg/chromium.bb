@@ -74,6 +74,7 @@ public:
 
     ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const RegistrationOptions&);
     ScriptPromise getRegistration(ScriptState*, const String& documentURL);
+    ScriptPromise getRegistrations(ScriptState*);
 
     // WebServiceWorkerProviderClient overrides.
     virtual void setController(WebServiceWorker*, bool shouldNotifyControllerChange) override;

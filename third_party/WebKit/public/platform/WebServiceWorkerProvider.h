@@ -32,13 +32,14 @@
 #define WebServiceWorkerProvider_h
 
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/WebServiceWorkerRegistration.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
 class WebURL;
 class WebServiceWorker;
 class WebServiceWorkerProviderClient;
-class WebServiceWorkerRegistration;
 struct WebServiceWorkerError;
 
 // Created on the main thread, and may be passed to another script context
@@ -55,12 +56,14 @@ public:
     typedef WebCallbacks<WebServiceWorkerRegistration, WebServiceWorkerError> WebServiceWorkerRegistrationCallbacks;
     typedef WebCallbacks<bool, WebServiceWorkerError> WebServiceWorkerUnregistrationCallbacks;
     typedef WebCallbacks<WebServiceWorkerRegistration, WebServiceWorkerError> WebServiceWorkerGetRegistrationCallbacks;
+    typedef WebCallbacks<WebVector<WebServiceWorkerRegistration*>, WebServiceWorkerError> WebServiceWorkerGetRegistrationsCallbacks;
     typedef WebCallbacks<WebServiceWorkerRegistration, void> WebServiceWorkerGetRegistrationForReadyCallbacks;
 
     virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerRegistrationCallbacks*) { }
     virtual void updateServiceWorker(const WebURL& pattern) { }
     virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerUnregistrationCallbacks*) { }
     virtual void getRegistration(const WebURL& documentURL, WebServiceWorkerGetRegistrationCallbacks*) { }
+    virtual void getRegistrations(WebServiceWorkerGetRegistrationsCallbacks*) { }
     virtual void getRegistrationForReady(WebServiceWorkerGetRegistrationForReadyCallbacks*) { }
 
     virtual ~WebServiceWorkerProvider() { }

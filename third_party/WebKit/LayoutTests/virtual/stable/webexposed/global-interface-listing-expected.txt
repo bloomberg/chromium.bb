@@ -4735,6 +4735,7 @@ interface ServiceWorkerContainer
     getter ready
     method constructor
     method getRegistration
+    method getRegistrations
     method register
     setter oncontrollerchange
 interface ServiceWorkerRegistration

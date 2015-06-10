@@ -8,6 +8,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "modules/serviceworkers/ServiceWorker.h"
+#include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/Supplementable.h"
 #include "public/platform/WebServiceWorkerRegistration.h"
 #include "public/platform/WebServiceWorkerRegistrationProxy.h"
@@ -82,6 +83,28 @@ private:
     RefPtrWillBeMember<ServiceWorker> m_active;
 
     bool m_stopped;
+};
+
+class ServiceWorkerRegistrationArray {
+public:
+    typedef WebVector<WebServiceWorkerRegistration*> WebType;
+    static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, WebType* webServiceWorkerRegistrationsRaw)
+    {
+        OwnPtr<WebType> webServiceWorkerRegistrations = adoptPtr(webServiceWorkerRegistrationsRaw);
+        HeapVector<Member<ServiceWorkerRegistration>> registrations;
+        for (size_t i = 0; i < webServiceWorkerRegistrations->size(); ++i) {
+            registrations.append(ServiceWorkerRegistration::take(resolver, (*webServiceWorkerRegistrations)[i]));
+        }
+        return registrations;
+    }
+    static void dispose(WebType* webServiceWorkerRegistrationsRaw)
+    {
+        delete webServiceWorkerRegistrationsRaw;
+    }
+
+private:
+    WTF_MAKE_NONCOPYABLE(ServiceWorkerRegistrationArray);
+    ServiceWorkerRegistrationArray() = delete;
 };
 
 } // namespace blink
