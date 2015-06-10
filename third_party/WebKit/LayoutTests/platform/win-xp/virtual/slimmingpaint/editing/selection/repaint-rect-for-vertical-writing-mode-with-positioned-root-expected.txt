@@ -1,0 +1,20 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [184, 201, 19, 160]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='test'",
+        "LayoutBlockFlow DIV",
+        "LayoutText #text",
+        "InlineTextBox 'Some text in vertical mode'"
+      ]
+    }
+  ]
+}
+
