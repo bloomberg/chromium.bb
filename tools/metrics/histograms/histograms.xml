@@ -860,6 +860,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.TimeBetweenTaskSwitches" units="seconds">
+  <owner>bruthig@google.com</owner>
+  <owner>tdanderson@google.com</owner>
+  <summary>
+    The number of seconds between contiguous task switch user actions triggered
+    by any of the other task switch actions that are tracked. (e.g.,
+    Ash.Shelf.TimeBetweenNavigateToTaskSwitches,
+    Ash.Tab.TimeBetweenSwitchToExistingTabUserActions,
+    Ash.WindowCycleController.TimeBetweenTaskSwitches,
+    Ash.AppList.TimeBetweenTaskSwitches,
+    Ash.WindowSelector.TimeBetweenActiveWindowChanges, etc).
+  </summary>
+</histogram>
+
 <histogram name="Ash.TouchDuration" units="milliseconds">
   <obsolete>
     Deprecated 12/2013 in r239809, and replaced by Ash.TouchDuration2.

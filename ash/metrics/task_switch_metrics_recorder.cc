@@ -10,6 +10,8 @@ namespace ash {
 
 namespace {
 
+const char kAshTaskSwitchHistogramName[] = "Ash.TimeBetweenTaskSwitches";
+
 const char kDesktopHistogramName[] =
     "Ash.Desktop.TimeBetweenNavigateToTaskSwitches";
 
@@ -31,6 +33,8 @@ const char kOverviewModeHistogramName[] =
 const char* GetHistogramName(
     TaskSwitchMetricsRecorder::TaskSwitchSource task_switch_source) {
   switch (task_switch_source) {
+    case TaskSwitchMetricsRecorder::kAny:
+      return kAshTaskSwitchHistogramName;
     case TaskSwitchMetricsRecorder::kAppList:
       return kAppListHistogramName;
     case TaskSwitchMetricsRecorder::kDesktop:
@@ -57,6 +61,15 @@ TaskSwitchMetricsRecorder::~TaskSwitchMetricsRecorder() {
 }
 
 void TaskSwitchMetricsRecorder::OnTaskSwitch(
+    TaskSwitchSource task_switch_source) {
+  DCHECK_NE(task_switch_source, kAny);
+  if (task_switch_source != kAny) {
+    OnTaskSwitchInternal(task_switch_source);
+    OnTaskSwitchInternal(kAny);
+  }
+}
+
+void TaskSwitchMetricsRecorder::OnTaskSwitchInternal(
     TaskSwitchSource task_switch_source) {
   TaskSwitchTimeTracker* task_switch_time_tracker =
       FindTaskSwitchTimeTracker(task_switch_source);
