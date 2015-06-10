@@ -924,7 +924,6 @@
     'chromeos_net' : ['stevenjb+watch@chromium.org'],
     'chromeos_power' : ['derat+watch@chromium.org'],
     'chromeos_login' : ['dzhioev+watch@chromium.org'],
-    'chromeos_webui': ['nkostylev+watch@chromium.org'],
     'clang_update': ['ukai+watch@chromium.org',
                      'dmikurube+clang@chromium.org',
                      'eugenis+clang@chromium.org',
