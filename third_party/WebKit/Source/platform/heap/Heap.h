@@ -1183,7 +1183,6 @@ public:                                           \
     {                                             \
         return allocateObject(size, true);        \
     }
-#define EAGERLY_FINALIZE_WILL_BE_REMOVED()
 #if ENABLE(ASSERT) && ENABLE(OILPAN)
 class VerifyEagerFinalization {
 public:
@@ -1207,6 +1206,12 @@ public:                                                \
     typedef int IsEagerlyFinalizedMarker
 #else
 #define EAGERLY_FINALIZE() typedef int IsEagerlyFinalizedMarker
+#endif
+
+#if !ENABLE(OILPAN) && ENABLE(LAZY_SWEEPING)
+#define EAGERLY_FINALIZE_WILL_BE_REMOVED() EAGERLY_FINALIZE()
+#else
+#define EAGERLY_FINALIZE_WILL_BE_REMOVED()
 #endif
 
 NO_SANITIZE_ADDRESS inline
