@@ -737,6 +737,8 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
 void View::Paint(const ui::PaintContext& parent_context) {
   if (!visible_)
     return;
+  if (size().IsEmpty())
+    return;
 
   gfx::Vector2d offset_to_parent;
   if (!layer()) {

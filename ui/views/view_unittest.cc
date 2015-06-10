@@ -432,6 +432,41 @@ void TestView::OnPaint(gfx::Canvas* canvas) {
   did_paint_ = true;
 }
 
+TEST_F(ViewTest, PaintEmptyView) {
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+  View* root_view = widget->GetRootView();
+  root_view->SetBounds(0, 0, 25, 26);
+
+  // |v1| is empty.
+  TestView* v1 = new TestView;
+  v1->SetBounds(10, 11, 0, 1);
+  root_view->AddChildView(v1);
+
+  // |v11| is a child of an empty |v1|.
+  TestView* v11 = new TestView;
+  v11->SetBounds(3, 4, 6, 5);
+  v1->AddChildView(v11);
+
+  // |v2| is not.
+  TestView* v2 = new TestView;
+  v2->SetBounds(3, 4, 6, 5);
+  root_view->AddChildView(v2);
+
+  // Paint "everything".
+  gfx::Rect first_paint(1, 1);
+  scoped_refptr<cc::DisplayItemList> list =
+      cc::DisplayItemList::Create(first_paint, cc::DisplayItemListSettings());
+  root_view->Paint(ui::PaintContext(list.get(), 1.f, first_paint, first_paint));
+
+  // The empty view has nothing to paint so it doesn't try build a cache, nor do
+  // its children which would be clipped by its (empty) self.
+  EXPECT_FALSE(v1->did_paint_);
+  EXPECT_FALSE(v11->did_paint_);
+  EXPECT_TRUE(v2->did_paint_);
+}
+
 TEST_F(ViewTest, PaintWithUnknownInvalidation) {
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
