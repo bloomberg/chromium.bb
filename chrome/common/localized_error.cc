@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -56,6 +57,11 @@ static const char kAppWarningLearnMoreUrl[] =
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"
     "?answer=1721911";
 #endif  // defined(OS_CHROMEOS)
+static const char kCachedCopyButtonFieldTrial[] =
+    "EnableGoogleCachedCopyTextExperiment";
+static const char kCachedCopyButtonExpTypeControl[] = "control";
+static const char kCachedCopyButtonExpTypeCopy[] = "copy";
+static const int kGoogleCachedCopySuggestionType = 0;
 
 enum NAV_SUGGESTIONS {
   SUGGEST_NONE                  = 0,
@@ -664,6 +670,7 @@ void LocalizedError::GetStrings(int error_code,
   } else {
     suggestions = params->override_suggestions.release();
     use_default_suggestions = false;
+    EnableGoogleCachedCopyButtonExperiment(suggestions, error_strings);
   }
 
   error_strings->Set("suggestions", suggestions);
@@ -920,3 +927,47 @@ void LocalizedError::GetAppErrorStrings(
 #endif  // defined(OS_CHROMEOS)
 }
 #endif
+
+void LocalizedError::EnableGoogleCachedCopyButtonExperiment(
+    base::ListValue* suggestions,
+    base::DictionaryValue* error_strings) {
+  std::string field_trial_exp_type_ =
+      base::FieldTrialList::FindFullName(kCachedCopyButtonFieldTrial);
+
+  // If the first suggestion is for a Google cache copy. Promote the
+  // suggestion to a separate set of strings for displaying as a button.
+  if (!suggestions->empty() && !field_trial_exp_type_.empty() &&
+      field_trial_exp_type_ != kCachedCopyButtonExpTypeControl) {
+    base::DictionaryValue* suggestion;
+    suggestions->GetDictionary(0, &suggestion);
+    int type = -1;
+    suggestion->GetInteger("type", &type);
+
+    if (type == kGoogleCachedCopySuggestionType) {
+      base::string16 cache_url;
+      suggestion->GetString("urlCorrection", &cache_url);
+      int cache_tracking_id = -1;
+      suggestion->GetInteger("trackingId", &cache_tracking_id);
+
+      scoped_ptr<base::DictionaryValue> cache_button(new base::DictionaryValue);
+
+      if (field_trial_exp_type_ == kCachedCopyButtonExpTypeCopy) {
+        cache_button->SetString(
+            "msg",
+            l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_CACHED_COPY));
+      } else {
+        // Default to "Show cached page" button label.
+        cache_button->SetString(
+            "msg",
+            l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_CACHED_PAGE));
+      }
+      cache_button->SetString("cacheUrl", cache_url);
+      cache_button->SetInteger("trackingId", cache_tracking_id);
+      error_strings->Set("cacheButton", cache_button.release());
+
+      // Remove the item from suggestions dictionary so that it does not get
+      // displayed by the template in the details section.
+      suggestions->Remove(0, nullptr);
+    }
+  }
+}

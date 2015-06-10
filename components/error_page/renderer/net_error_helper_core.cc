@@ -334,6 +334,8 @@ scoped_ptr<ErrorPageParams> CreateErrorPageParams(
                               accept_languages));
       suggest->SetString("originalUrlForDisplay", original_url_for_display);
       suggest->SetInteger("trackingId", tracking_id);
+      suggest->SetInteger("type", static_cast<int>(correction_index));
+
       params->override_suggestions->Append(suggest);
       break;
     }

@@ -48,7 +48,6 @@ a {
   content: -webkit-image-set(
       url(default_100_percent/common/error_network_generic.png) 1x,
       url(default_200_percent/common/error_network_generic.png) 2x);
-  padding-top: 20px;
 }
 
 .icon-offline {

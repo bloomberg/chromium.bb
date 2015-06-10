@@ -9036,6 +9036,12 @@ I don't think this site should be blocked!
       <message name="IDS_ERRORPAGES_BUTTON_RELOAD" desc="Label for the button on an error page to reload the page">
         Reload
       </message>
+      <message name="IDS_ERRORPAGES_BUTTON_SHOW_CACHED_COPY" desc="Label for the button on an error page to show Google cached copy">
+        Show cached copy
+      </message>
+      <message name="IDS_ERRORPAGES_BUTTON_SHOW_CACHED_PAGE" desc="Label for the button on an error page to show Google cached page for ">
+        Show cached page
+      </message>
       <message name="IDS_ERRORPAGES_BUTTON_SHOW_SAVED_COPY" desc="Label for the button on an error page to show a saved entry from the cache">
         Show saved copy
       </message>
@@ -15625,7 +15631,6 @@ After you create a new supervised user, you can manage their settings at any tim
           Your printer is ready.
         </message>
       </if>
-
     </messages>
   </release>
 </grit>
