@@ -699,7 +699,7 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
 
   // The service for retrieving Channel ID keys.  May be NULL.
   ChannelIDService* channel_id_service_;
-  ChannelIDService::RequestHandle channel_id_request_handle_;
+  ChannelIDService::Request channel_id_request_;
 
   // The information about NSS task runner.
   int unhandled_buffer_size_;
@@ -954,7 +954,7 @@ void SSLClientSocketNSS::Core::Detach() {
 
   network_handshake_state_.Reset();
 
-  channel_id_request_handle_.Cancel();
+  channel_id_request_.Cancel();
 }
 
 int SSLClientSocketNSS::Core::Read(IOBuffer* buf, int buf_len,
@@ -2213,7 +2213,7 @@ int SSLClientSocketNSS::Core::DoGetChannelID(const std::string& host) {
   int rv = channel_id_service_->GetOrCreateChannelID(
       host, &channel_id_key_,
       base::Bind(&Core::OnGetChannelIDComplete, base::Unretained(this)),
-      &channel_id_request_handle_);
+      &channel_id_request_);
 
   if (rv != ERR_IO_PENDING && !OnNSSTaskRunner()) {
     nss_task_runner_->PostTask(

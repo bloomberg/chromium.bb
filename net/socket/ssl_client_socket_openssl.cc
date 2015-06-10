@@ -513,7 +513,7 @@ void SSLClientSocketOpenSSL::Disconnect() {
   channel_id_sent_ = false;
   handshake_completed_ = false;
   certificate_verified_ = false;
-  channel_id_request_handle_.Cancel();
+  channel_id_request_.Cancel();
   ssl_failure_state_ = SSL_FAILURE_NONE;
 }
 
@@ -1031,7 +1031,7 @@ int SSLClientSocketOpenSSL::DoChannelIDLookup() {
       host_and_port_.host(), &channel_id_key_,
       base::Bind(&SSLClientSocketOpenSSL::OnHandshakeIOComplete,
                  base::Unretained(this)),
-      &channel_id_request_handle_);
+      &channel_id_request_);
 }
 
 int SSLClientSocketOpenSSL::DoChannelIDLookupComplete(int result) {

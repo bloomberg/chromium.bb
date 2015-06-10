@@ -303,7 +303,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // True if the initial handshake's certificate has been verified.
   bool certificate_verified_;
   // The request handle for |channel_id_service_|.
-  ChannelIDService::RequestHandle channel_id_request_handle_;
+  ChannelIDService::Request channel_id_request_;
   SSLFailureState ssl_failure_state_;
 
   TransportSecurityState* transport_security_state_;

@@ -89,7 +89,7 @@ class ChannelIDSourceChromium::Job {
   ChannelIDService* const channel_id_service_;
 
   scoped_ptr<crypto::ECPrivateKey> channel_id_crypto_key_;
-  ChannelIDService::RequestHandle channel_id_request_handle_;
+  ChannelIDService::Request channel_id_request_;
 
   // |hostname| specifies the hostname for which we need a channel ID.
   std::string hostname_;
@@ -181,7 +181,7 @@ int ChannelIDSourceChromium::Job::DoGetChannelIDKey(int result) {
       hostname_, &channel_id_crypto_key_,
       base::Bind(&ChannelIDSourceChromium::Job::OnIOComplete,
                  base::Unretained(this)),
-      &channel_id_request_handle_);
+      &channel_id_request_);
 }
 
 int ChannelIDSourceChromium::Job::DoGetChannelIDKeyComplete(int result) {

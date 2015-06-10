@@ -137,15 +137,14 @@ TEST_F(ChannelIDServiceTest, GetCacheMiss) {
 
   int error;
   TestCompletionCallback callback;
-  ChannelIDService::RequestHandle request_handle;
+  ChannelIDService::Request request;
 
   // Synchronous completion, because the store is initialized.
   scoped_ptr<crypto::ECPrivateKey> key;
   EXPECT_EQ(0, service_->channel_id_count());
-  error =
-      service_->GetChannelID(host, &key, callback.callback(), &request_handle);
+  error = service_->GetChannelID(host, &key, callback.callback(), &request);
   EXPECT_EQ(ERR_FILE_NOT_FOUND, error);
-  EXPECT_FALSE(request_handle.is_active());
+  EXPECT_FALSE(request.is_active());
   EXPECT_EQ(0, service_->channel_id_count());
   EXPECT_FALSE(key);
 }
@@ -155,35 +154,34 @@ TEST_F(ChannelIDServiceTest, CacheHit) {
 
   int error;
   TestCompletionCallback callback;
-  ChannelIDService::RequestHandle request_handle;
+  ChannelIDService::Request request;
 
   // Asynchronous completion.
   scoped_ptr<crypto::ECPrivateKey> key1;
   EXPECT_EQ(0, service_->channel_id_count());
   error = service_->GetOrCreateChannelID(host, &key1, callback.callback(),
-                                         &request_handle);
+                                         &request);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle.is_active());
+  EXPECT_TRUE(request.is_active());
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
   EXPECT_EQ(1, service_->channel_id_count());
   EXPECT_TRUE(key1);
-  EXPECT_FALSE(request_handle.is_active());
+  EXPECT_FALSE(request.is_active());
 
   // Synchronous completion.
   scoped_ptr<crypto::ECPrivateKey> key2;
   error = service_->GetOrCreateChannelID(host, &key2, callback.callback(),
-                                         &request_handle);
-  EXPECT_FALSE(request_handle.is_active());
+                                         &request);
+  EXPECT_FALSE(request.is_active());
   EXPECT_EQ(OK, error);
   EXPECT_EQ(1, service_->channel_id_count());
   EXPECT_TRUE(KeysEqual(key1.get(), key2.get()));
 
   // Synchronous get.
   scoped_ptr<crypto::ECPrivateKey> key3;
-  error =
-      service_->GetChannelID(host, &key3, callback.callback(), &request_handle);
-  EXPECT_FALSE(request_handle.is_active());
+  error = service_->GetChannelID(host, &key3, callback.callback(), &request);
+  EXPECT_FALSE(request.is_active());
   EXPECT_EQ(OK, error);
   EXPECT_EQ(1, service_->channel_id_count());
   EXPECT_TRUE(KeysEqual(key1.get(), key3.get()));
@@ -196,15 +194,15 @@ TEST_F(ChannelIDServiceTest, CacheHit) {
 TEST_F(ChannelIDServiceTest, StoreChannelIDs) {
   int error;
   TestCompletionCallback callback;
-  ChannelIDService::RequestHandle request_handle;
+  ChannelIDService::Request request;
 
   std::string host1("encrypted.google.com");
   scoped_ptr<crypto::ECPrivateKey> key1;
   EXPECT_EQ(0, service_->channel_id_count());
   error = service_->GetOrCreateChannelID(host1, &key1, callback.callback(),
-                                         &request_handle);
+                                         &request);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle.is_active());
+  EXPECT_TRUE(request.is_active());
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
   EXPECT_EQ(1, service_->channel_id_count());
@@ -212,9 +210,9 @@ TEST_F(ChannelIDServiceTest, StoreChannelIDs) {
   std::string host2("www.verisign.com");
   scoped_ptr<crypto::ECPrivateKey> key2;
   error = service_->GetOrCreateChannelID(host2, &key2, callback.callback(),
-                                         &request_handle);
+                                         &request);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle.is_active());
+  EXPECT_TRUE(request.is_active());
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
   EXPECT_EQ(2, service_->channel_id_count());
@@ -222,9 +220,9 @@ TEST_F(ChannelIDServiceTest, StoreChannelIDs) {
   std::string host3("www.twitter.com");
   scoped_ptr<crypto::ECPrivateKey> key3;
   error = service_->GetOrCreateChannelID(host3, &key3, callback.callback(),
-                                         &request_handle);
+                                         &request);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle.is_active());
+  EXPECT_TRUE(request.is_active());
   error = callback.WaitForResult();
   EXPECT_EQ(OK, error);
   EXPECT_EQ(3, service_->channel_id_count());
@@ -241,21 +239,21 @@ TEST_F(ChannelIDServiceTest, InflightJoin) {
 
   scoped_ptr<crypto::ECPrivateKey> key1;
   TestCompletionCallback callback1;
-  ChannelIDService::RequestHandle request_handle1;
+  ChannelIDService::Request request1;
 
   scoped_ptr<crypto::ECPrivateKey> key2;
   TestCompletionCallback callback2;
-  ChannelIDService::RequestHandle request_handle2;
+  ChannelIDService::Request request2;
 
   error = service_->GetOrCreateChannelID(host, &key1, callback1.callback(),
-                                         &request_handle1);
+                                         &request1);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle1.is_active());
+  EXPECT_TRUE(request1.is_active());
   // Should join with the original request.
   error = service_->GetOrCreateChannelID(host, &key2, callback2.callback(),
-                                         &request_handle2);
+                                         &request2);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle2.is_active());
+  EXPECT_TRUE(request2.is_active());
 
   error = callback1.WaitForResult();
   EXPECT_EQ(OK, error);
@@ -275,21 +273,20 @@ TEST_F(ChannelIDServiceTest, InflightJoinGetOrCreateAndGet) {
 
   scoped_ptr<crypto::ECPrivateKey> key1;
   TestCompletionCallback callback1;
-  ChannelIDService::RequestHandle request_handle1;
+  ChannelIDService::Request request1;
 
   scoped_ptr<crypto::ECPrivateKey> key2;
   TestCompletionCallback callback2;
-  ChannelIDService::RequestHandle request_handle2;
+  ChannelIDService::Request request2;
 
   error = service_->GetOrCreateChannelID(host, &key1, callback1.callback(),
-                                         &request_handle1);
+                                         &request1);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle1.is_active());
+  EXPECT_TRUE(request1.is_active());
   // Should join with the original request.
-  error = service_->GetChannelID(host, &key2, callback2.callback(),
-                                 &request_handle2);
+  error = service_->GetChannelID(host, &key2, callback2.callback(), &request2);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle2.is_active());
+  EXPECT_TRUE(request2.is_active());
 
   error = callback1.WaitForResult();
   EXPECT_EQ(OK, error);
@@ -308,14 +305,14 @@ TEST_F(ChannelIDServiceTest, CancelRequest) {
   std::string host("encrypted.google.com");
   scoped_ptr<crypto::ECPrivateKey> key;
   int error;
-  ChannelIDService::RequestHandle request_handle;
+  ChannelIDService::Request request;
 
   error = service_->GetOrCreateChannelID(host, &key, base::Bind(&FailTest),
-                                         &request_handle);
+                                         &request);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle.is_active());
-  request_handle.Cancel();
-  EXPECT_FALSE(request_handle.is_active());
+  EXPECT_TRUE(request.is_active());
+  request.Cancel();
+  EXPECT_FALSE(request.is_active());
 
   // Wait for reply from ChannelIDServiceWorker to be posted back to the
   // ChannelIDService.
@@ -326,19 +323,21 @@ TEST_F(ChannelIDServiceTest, CancelRequest) {
   EXPECT_EQ(1, service_->channel_id_count());
 }
 
-// Tests that destructing the RequestHandle cancels the request.
+// Tests that destructing the Request cancels the request.
 TEST_F(ChannelIDServiceTest, CancelRequestByHandleDestruction) {
   std::string host("encrypted.google.com");
   scoped_ptr<crypto::ECPrivateKey> key;
   int error;
-  {
-    ChannelIDService::RequestHandle request_handle;
+  scoped_ptr<ChannelIDService::Request> request(
+      new ChannelIDService::Request());
 
-    error = service_->GetOrCreateChannelID(host, &key, base::Bind(&FailTest),
-                                           &request_handle);
-    EXPECT_EQ(ERR_IO_PENDING, error);
-    EXPECT_TRUE(request_handle.is_active());
-  }
+  error = service_->GetOrCreateChannelID(host, &key, base::Bind(&FailTest),
+                                         request.get());
+  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_TRUE(request->is_active());
+
+  // Delete the Request object.
+  request.reset();
 
   // Wait for reply from ChannelIDServiceWorker to be posted back to the
   // ChannelIDService.
@@ -353,15 +352,15 @@ TEST_F(ChannelIDServiceTest, DestructionWithPendingRequest) {
   std::string host("encrypted.google.com");
   scoped_ptr<crypto::ECPrivateKey> key;
   int error;
-  ChannelIDService::RequestHandle request_handle;
+  ChannelIDService::Request request;
 
   error = service_->GetOrCreateChannelID(host, &key, base::Bind(&FailTest),
-                                         &request_handle);
+                                         &request);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle.is_active());
+  EXPECT_TRUE(request.is_active());
 
   // Cancel request and destroy the ChannelIDService.
-  request_handle.Cancel();
+  request.Cancel();
   service_.reset();
 
   // ChannelIDServiceWorker should not post anything back to the
@@ -384,13 +383,13 @@ TEST_F(ChannelIDServiceTest, RequestAfterPoolShutdown) {
   std::string host("encrypted.google.com");
   scoped_ptr<crypto::ECPrivateKey> key;
   int error;
-  ChannelIDService::RequestHandle request_handle;
+  ChannelIDService::Request request;
 
   error = service_->GetOrCreateChannelID(host, &key, base::Bind(&FailTest),
-                                         &request_handle);
+                                         &request);
   // If we got here without crashing or a valgrind error, it worked.
   ASSERT_EQ(ERR_INSUFFICIENT_RESOURCES, error);
-  EXPECT_FALSE(request_handle.is_active());
+  EXPECT_FALSE(request.is_active());
 }
 
 // Tests that simultaneous creation of different certs works.
@@ -400,32 +399,32 @@ TEST_F(ChannelIDServiceTest, SimultaneousCreation) {
   std::string host1("encrypted.google.com");
   scoped_ptr<crypto::ECPrivateKey> key1;
   TestCompletionCallback callback1;
-  ChannelIDService::RequestHandle request_handle1;
+  ChannelIDService::Request request1;
 
   std::string host2("foo.com");
   scoped_ptr<crypto::ECPrivateKey> key2;
   TestCompletionCallback callback2;
-  ChannelIDService::RequestHandle request_handle2;
+  ChannelIDService::Request request2;
 
   std::string host3("bar.com");
   scoped_ptr<crypto::ECPrivateKey> key3;
   TestCompletionCallback callback3;
-  ChannelIDService::RequestHandle request_handle3;
+  ChannelIDService::Request request3;
 
   error = service_->GetOrCreateChannelID(host1, &key1, callback1.callback(),
-                                         &request_handle1);
+                                         &request1);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle1.is_active());
+  EXPECT_TRUE(request1.is_active());
 
   error = service_->GetOrCreateChannelID(host2, &key2, callback2.callback(),
-                                         &request_handle2);
+                                         &request2);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle2.is_active());
+  EXPECT_TRUE(request2.is_active());
 
   error = service_->GetOrCreateChannelID(host3, &key3, callback3.callback(),
-                                         &request_handle3);
+                                         &request3);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle3.is_active());
+  EXPECT_TRUE(request3.is_active());
 
   error = callback1.WaitForResult();
   EXPECT_EQ(OK, error);
@@ -456,15 +455,15 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateNoChannelIDsInStore) {
 
   int error;
   TestCompletionCallback callback;
-  ChannelIDService::RequestHandle request_handle;
+  ChannelIDService::Request request;
 
   // Asynchronous completion with no certs in the store.
   scoped_ptr<crypto::ECPrivateKey> key;
   EXPECT_EQ(0, service_->channel_id_count());
-  error = service_->GetOrCreateChannelID(host, &key, callback.callback(),
-                                         &request_handle);
+  error =
+      service_->GetOrCreateChannelID(host, &key, callback.callback(), &request);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle.is_active());
+  EXPECT_TRUE(request.is_active());
 
   mock_store->CallGetChannelIDCallbackWithResult(ERR_FILE_NOT_FOUND, nullptr);
 
@@ -472,7 +471,7 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateNoChannelIDsInStore) {
   EXPECT_EQ(OK, error);
   EXPECT_EQ(1, service_->channel_id_count());
   EXPECT_TRUE(key);
-  EXPECT_FALSE(request_handle.is_active());
+  EXPECT_FALSE(request.is_active());
 }
 
 TEST_F(ChannelIDServiceTest, AsyncStoreGetNoChannelIDsInStore) {
@@ -485,15 +484,14 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetNoChannelIDsInStore) {
 
   int error;
   TestCompletionCallback callback;
-  ChannelIDService::RequestHandle request_handle;
+  ChannelIDService::Request request;
 
   // Asynchronous completion with no certs in the store.
   scoped_ptr<crypto::ECPrivateKey> key;
   EXPECT_EQ(0, service_->channel_id_count());
-  error =
-      service_->GetChannelID(host, &key, callback.callback(), &request_handle);
+  error = service_->GetChannelID(host, &key, callback.callback(), &request);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle.is_active());
+  EXPECT_TRUE(request.is_active());
 
   mock_store->CallGetChannelIDCallbackWithResult(ERR_FILE_NOT_FOUND, nullptr);
 
@@ -502,7 +500,7 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetNoChannelIDsInStore) {
   EXPECT_EQ(0, service_->channel_id_count());
   EXPECT_EQ(0u, service_->workers_created());
   EXPECT_FALSE(key);
-  EXPECT_FALSE(request_handle.is_active());
+  EXPECT_FALSE(request.is_active());
 }
 
 TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateOneCertInStore) {
@@ -515,15 +513,15 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateOneCertInStore) {
 
   int error;
   TestCompletionCallback callback;
-  ChannelIDService::RequestHandle request_handle;
+  ChannelIDService::Request request;
 
   // Asynchronous completion with a cert in the store.
   scoped_ptr<crypto::ECPrivateKey> key;
   EXPECT_EQ(0, service_->channel_id_count());
-  error = service_->GetOrCreateChannelID(host, &key, callback.callback(),
-                                         &request_handle);
+  error =
+      service_->GetOrCreateChannelID(host, &key, callback.callback(), &request);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle.is_active());
+  EXPECT_TRUE(request.is_active());
 
   scoped_ptr<crypto::ECPrivateKey> expected_key(crypto::ECPrivateKey::Create());
   mock_store->CallGetChannelIDCallbackWithResult(OK, expected_key.get());
@@ -538,7 +536,7 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOrCreateOneCertInStore) {
   EXPECT_EQ(0u, service_->workers_created());
   EXPECT_TRUE(key);
   EXPECT_TRUE(KeysEqual(expected_key.get(), key.get()));
-  EXPECT_FALSE(request_handle.is_active());
+  EXPECT_FALSE(request.is_active());
 }
 
 TEST_F(ChannelIDServiceTest, AsyncStoreGetOneCertInStore) {
@@ -551,16 +549,15 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOneCertInStore) {
 
   int error;
   TestCompletionCallback callback;
-  ChannelIDService::RequestHandle request_handle;
+  ChannelIDService::Request request;
 
   // Asynchronous completion with a cert in the store.
   scoped_ptr<crypto::ECPrivateKey> key;
   std::string private_key, spki;
   EXPECT_EQ(0, service_->channel_id_count());
-  error =
-      service_->GetChannelID(host, &key, callback.callback(), &request_handle);
+  error = service_->GetChannelID(host, &key, callback.callback(), &request);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle.is_active());
+  EXPECT_TRUE(request.is_active());
 
   scoped_ptr<crypto::ECPrivateKey> expected_key(crypto::ECPrivateKey::Create());
   mock_store->CallGetChannelIDCallbackWithResult(OK, expected_key.get());
@@ -574,7 +571,7 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetOneCertInStore) {
   // created.
   EXPECT_EQ(0u, service_->workers_created());
   EXPECT_TRUE(KeysEqual(expected_key.get(), key.get()));
-  EXPECT_FALSE(request_handle.is_active());
+  EXPECT_FALSE(request.is_active());
 }
 
 TEST_F(ChannelIDServiceTest, AsyncStoreGetThenCreateNoCertsInStore) {
@@ -589,23 +586,22 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetThenCreateNoCertsInStore) {
 
   // Asynchronous get with no certs in the store.
   TestCompletionCallback callback1;
-  ChannelIDService::RequestHandle request_handle1;
+  ChannelIDService::Request request1;
   scoped_ptr<crypto::ECPrivateKey> key1;
   EXPECT_EQ(0, service_->channel_id_count());
-  error = service_->GetChannelID(host, &key1, callback1.callback(),
-                                 &request_handle1);
+  error = service_->GetChannelID(host, &key1, callback1.callback(), &request1);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle1.is_active());
+  EXPECT_TRUE(request1.is_active());
 
   // Asynchronous get/create with no certs in the store.
   TestCompletionCallback callback2;
-  ChannelIDService::RequestHandle request_handle2;
+  ChannelIDService::Request request2;
   scoped_ptr<crypto::ECPrivateKey> key2;
   EXPECT_EQ(0, service_->channel_id_count());
   error = service_->GetOrCreateChannelID(host, &key2, callback2.callback(),
-                                         &request_handle2);
+                                         &request2);
   EXPECT_EQ(ERR_IO_PENDING, error);
-  EXPECT_TRUE(request_handle2.is_active());
+  EXPECT_TRUE(request2.is_active());
 
   mock_store->CallGetChannelIDCallbackWithResult(ERR_FILE_NOT_FOUND, nullptr);
 
@@ -623,8 +619,8 @@ TEST_F(ChannelIDServiceTest, AsyncStoreGetThenCreateNoCertsInStore) {
   EXPECT_EQ(1u, service_->inflight_joins());
   EXPECT_TRUE(key1);
   EXPECT_TRUE(KeysEqual(key1.get(), key2.get()));
-  EXPECT_FALSE(request_handle1.is_active());
-  EXPECT_FALSE(request_handle2.is_active());
+  EXPECT_FALSE(request1.is_active());
+  EXPECT_FALSE(request2.is_active());
 }
 
 }  // namespace

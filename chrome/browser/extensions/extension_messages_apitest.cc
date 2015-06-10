@@ -974,13 +974,13 @@ class ExternallyConnectableMessagingWithTlsChannelIdTest :
     scoped_refptr<net::URLRequestContextGetter> request_context_getter(
         profile()->GetRequestContext());
     scoped_ptr<crypto::ECPrivateKey> channel_id_key;
-    net::ChannelIDService::RequestHandle request_handle;
+    net::ChannelIDService::Request request;
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&ExternallyConnectableMessagingWithTlsChannelIdTest::
                        CreateDomainBoundCertOnIOThread,
                    base::Unretained(this), base::Unretained(&channel_id_key),
-                   base::Unretained(&request_handle), request_context_getter));
+                   base::Unretained(&request), request_context_getter));
     tls_channel_id_created_.Wait();
     // Create the expected value.
     std::vector<uint8> spki_vector;
@@ -998,7 +998,7 @@ class ExternallyConnectableMessagingWithTlsChannelIdTest :
  private:
   void CreateDomainBoundCertOnIOThread(
       scoped_ptr<crypto::ECPrivateKey>* channel_id_key,
-      net::ChannelIDService::RequestHandle* request_handle,
+      net::ChannelIDService::Request* request,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     net::ChannelIDService* channel_id_service =
@@ -1009,7 +1009,7 @@ class ExternallyConnectableMessagingWithTlsChannelIdTest :
         base::Bind(&ExternallyConnectableMessagingWithTlsChannelIdTest::
                        GotDomainBoundCert,
                    base::Unretained(this)),
-        request_handle);
+        request);
     if (status == net::ERR_IO_PENDING)
       return;
     GotDomainBoundCert(status);

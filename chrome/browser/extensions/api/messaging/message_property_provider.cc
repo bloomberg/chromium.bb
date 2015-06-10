@@ -48,7 +48,7 @@ void MessagePropertyProvider::GetChannelID(Profile* profile,
 // MessagePropertyProvider::GetChannelID.
 struct MessagePropertyProvider::GetChannelIDOutput {
   scoped_ptr<crypto::ECPrivateKey> channel_id_key;
-  net::ChannelIDService::RequestHandle request_handle;
+  net::ChannelIDService::Request request;
 };
 
 // static
@@ -67,9 +67,8 @@ void MessagePropertyProvider::GetChannelIDOnIOThread(
                  original_task_runner,
                  base::Owned(output),
                  reply);
-  int status = channel_id_service->GetChannelID(host, &output->channel_id_key,
-                                                net_completion_callback,
-                                                &output->request_handle);
+  int status = channel_id_service->GetChannelID(
+      host, &output->channel_id_key, net_completion_callback, &output->request);
   if (status == net::ERR_IO_PENDING)
     return;
   GotChannelID(original_task_runner, output, reply, status);

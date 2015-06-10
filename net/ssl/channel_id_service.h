@@ -29,7 +29,6 @@ class ECPrivateKey;
 namespace net {
 
 class ChannelIDServiceJob;
-class ChannelIDServiceRequest;
 class ChannelIDServiceWorker;
 
 // A class for creating and fetching Channel IDs.
@@ -39,29 +38,34 @@ class ChannelIDServiceWorker;
 class NET_EXPORT ChannelIDService
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  class NET_EXPORT RequestHandle {
+  class NET_EXPORT Request {
    public:
-    RequestHandle();
-    ~RequestHandle();
+    Request();
+    ~Request();
 
     // Cancel the request.  Does nothing if the request finished or was already
     // cancelled.
     void Cancel();
 
-    bool is_active() const { return request_ != NULL; }
+    bool is_active() const { return !callback_.is_null(); }
 
    private:
     friend class ChannelIDService;
+    friend class ChannelIDServiceJob;
 
     void RequestStarted(ChannelIDService* service,
-                        ChannelIDServiceRequest* request,
-                        const CompletionCallback& callback);
+                        base::TimeTicks request_start,
+                        const CompletionCallback& callback,
+                        scoped_ptr<crypto::ECPrivateKey>* key,
+                        ChannelIDServiceJob* job);
 
-    void OnRequestComplete(int result);
+    void Post(int error, scoped_ptr<crypto::ECPrivateKey> key);
 
     ChannelIDService* service_;
-    ChannelIDServiceRequest* request_;
+    base::TimeTicks request_start_;
     CompletionCallback callback_;
+    scoped_ptr<crypto::ECPrivateKey>* key_;
+    ChannelIDServiceJob* job_;
   };
 
   // Password used on EncryptedPrivateKeyInfo data stored in EC private_key
@@ -94,13 +98,11 @@ class NET_EXPORT ChannelIDService
   // could not be completed immediately, in which case the result code will
   // be passed to the callback when available.
   //
-  // |*out_req| will be initialized with a handle to the async request. This
-  // RequestHandle object must be cancelled or destroyed before the
-  // ChannelIDService is destroyed.
+  // |*out_req| will be initialized with a handle to the async request.
   int GetOrCreateChannelID(const std::string& host,
                            scoped_ptr<crypto::ECPrivateKey>* key,
                            const CompletionCallback& callback,
-                           RequestHandle* out_req);
+                           Request* out_req);
 
   // Fetches the channel ID for the specified host if one exists.
   // Returns OK if successful, ERR_FILE_NOT_FOUND if none exists, or an error
@@ -116,13 +118,11 @@ class NET_EXPORT ChannelIDService
   // request arrives for the same domain, the GetChannelID request will
   // not complete until a new channel ID is created.
   //
-  // |*out_req| will be initialized with a handle to the async request. This
-  // RequestHandle object must be cancelled or destroyed before the
-  // ChannelIDService is destroyed.
+  // |*out_req| will be initialized with a handle to the async request.
   int GetChannelID(const std::string& host,
                    scoped_ptr<crypto::ECPrivateKey>* key,
                    const CompletionCallback& callback,
-                   RequestHandle* out_req);
+                   Request* out_req);
 
   // Returns the backing ChannelIDStore.
   ChannelIDStore* GetChannelIDStore();
@@ -135,11 +135,6 @@ class NET_EXPORT ChannelIDService
   uint64 workers_created() const { return workers_created_; }
 
  private:
-  // Cancels the specified request. |req| is the handle stored by
-  // GetChannelID(). After a request is canceled, its completion
-  // callback will not be called.
-  void CancelRequest(ChannelIDServiceRequest* req);
-
   void GotChannelID(int err,
                     const std::string& server_identifier,
                     scoped_ptr<crypto::ECPrivateKey> key);
@@ -159,7 +154,7 @@ class NET_EXPORT ChannelIDService
                              scoped_ptr<crypto::ECPrivateKey>* key,
                              bool create_if_missing,
                              const CompletionCallback& callback,
-                             RequestHandle* out_req);
+                             Request* out_req);
 
   // Looks for the channel ID for |domain| in this service's store.
   // Returns OK if it can be found synchronously, ERR_IO_PENDING if the
@@ -170,7 +165,7 @@ class NET_EXPORT ChannelIDService
                       scoped_ptr<crypto::ECPrivateKey>* key,
                       bool create_if_missing,
                       const CompletionCallback& callback,
-                      RequestHandle* out_req);
+                      Request* out_req);
 
   scoped_ptr<ChannelIDStore> channel_id_store_;
   scoped_refptr<base::TaskRunner> task_runner_;
