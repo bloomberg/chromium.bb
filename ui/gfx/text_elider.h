@@ -51,10 +51,6 @@ class GFX_EXPORT StringSlicer {
   base::string16 CutString(size_t length, bool insert_ellipsis) const;
 
  private:
-  // Returns a valid cut boundary at or before/after |index|.
-  size_t FindValidBoundaryBefore(size_t index) const;
-  size_t FindValidBoundaryAfter(size_t index) const;
-
   // The text to be sliced.
   const base::string16& text_;
 

@@ -19,16 +19,13 @@
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/icu/source/common/unicode/rbbi.h"
-#include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
-#include "third_party/icu/source/common/unicode/utf16.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/render_text.h"
@@ -104,22 +101,6 @@ base::string16 ElideEmail(const base::string16& email,
 }
 #endif
 
-// Returns true if the code point |c| is a combining mark character in Unicode.
-bool CharIsMark(UChar32 c) {
-  int8_t char_type = u_charType(c);
-  return char_type == U_NON_SPACING_MARK || char_type == U_ENCLOSING_MARK ||
-         char_type == U_COMBINING_SPACING_MARK;
-}
-
-// Gets the code point of |str| at the given code unit position |index|. If
-// |index| is a surrogate code unit, returns the whole code point (unless the
-// code unit is unpaired, in which case it just returns the surrogate value).
-UChar32 GetCodePointAt(const base::string16& str, size_t index) {
-  UChar32 c;
-  U16_GET(str.data(), 0, index, str.size(), c);
-  return c;
-}
-
 }  // namespace
 
 // U+2026 in utf8
@@ -144,54 +125,21 @@ base::string16 StringSlicer::CutString(size_t length,
 
   if (elide_at_beginning_)
     return ellipsis_text +
-           text_.substr(FindValidBoundaryBefore(text_.length() - length));
+           text_.substr(
+               FindValidBoundaryBefore(text_, text_.length() - length));
 
   if (!elide_in_middle_)
-    return text_.substr(0, FindValidBoundaryBefore(length)) + ellipsis_text;
+    return text_.substr(0, FindValidBoundaryBefore(text_, length)) +
+           ellipsis_text;
 
   // We put the extra character, if any, before the cut.
   const size_t half_length = length / 2;
-  const size_t prefix_length = FindValidBoundaryBefore(length - half_length);
+  const size_t prefix_length =
+      FindValidBoundaryBefore(text_, length - half_length);
   const size_t suffix_start =
-      FindValidBoundaryAfter(text_.length() - half_length);
+      FindValidBoundaryAfter(text_, text_.length() - half_length);
   return text_.substr(0, prefix_length) + ellipsis_text +
          text_.substr(suffix_start);
-}
-
-size_t StringSlicer::FindValidBoundaryBefore(size_t index) const {
-  size_t length = text_.length();
-  DCHECK_LE(index, length);
-  if (index == length)
-    return index;
-
-  // If |index| straddles a combining character sequence, go back until we find
-  // a base character.
-  while (index > 0 && CharIsMark(GetCodePointAt(text_, index)))
-    --index;
-
-  // If |index| straddles a UTF-16 surrogate pair, go back.
-  U16_SET_CP_START(text_.data(), 0, index);
-  return index;
-}
-
-size_t StringSlicer::FindValidBoundaryAfter(size_t index) const {
-  DCHECK_LE(index, text_.length());
-  if (index == text_.length())
-    return index;
-
-  int32_t text_index = base::checked_cast<int32_t>(index);
-  int32_t text_length = base::checked_cast<int32_t>(text_.length());
-
-  // If |index| straddles a combining character sequence, go forward until we
-  // find a base character.
-  while (text_index < text_length &&
-         CharIsMark(GetCodePointAt(text_, text_index))) {
-    ++text_index;
-  }
-
-  // If |index| straddles a UTF-16 surrogate pair, go forward.
-  U16_SET_CP_LIMIT(text_.data(), 0, text_index, text_length);
-  return static_cast<size_t>(text_index);
 }
 
 base::string16 ElideFilename(const base::FilePath& filename,

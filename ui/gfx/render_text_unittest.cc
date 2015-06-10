@@ -22,6 +22,7 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/range/range_f.h"
 #include "ui/gfx/render_text_harfbuzz.h"
+#include "ui/gfx/text_utils.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -89,16 +90,6 @@ void RunMoveCursorLeftRightTest(RenderText* render_text,
   EXPECT_EQ(expected.back(), render_text->selection_model());
 }
 #endif  // !defined(OS_MACOSX)
-
-// Test utility for Multiline_Newline test case. Empty |expected_range| means
-// the blank line which has no segments. Otherwise |segments| should contain
-// exactly one line segment whose range equals to |expected_range|.
-void VerifyLineSegments(const Range& expected_range,
-                        const std::vector<internal::LineSegment>& segments) {
-  EXPECT_EQ(expected_range.is_empty() ? 0ul : 1ul, segments.size());
-  if (!expected_range.is_empty())
-    EXPECT_EQ(expected_range, segments[0].char_range);
-}
 
 // The class which records the drawing operations so that the test case can
 // verify where exactly the glyphs are drawn.
@@ -2128,8 +2119,8 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
     { L"\x0627\x0644\x0644\x063A\x0629 "
       L"\x0627\x0644\x0639\x0631\x0628\x064A\x0629",
       Range(0, 6), Range(6, 13), false },
-    { L"\x062A\x0641\x0627\x062D\x05EA\x05E4\x05D5\x05D6\x05D9"
-      L"\x05DA\x05DB\x05DD", Range(0, 4), Range(4, 12), false }
+    { L"\x062A\x0641\x0627\x062D \x05EA\x05E4\x05D5\x05D6\x05D9"
+      L"\x05DA\x05DB\x05DD", Range(0, 5), Range(5, 13), false }
   };
 
   RenderTextHarfBuzz render_text;
@@ -2229,8 +2220,15 @@ TEST_F(RenderTextTest, Multiline_Newline) {
 
     for (size_t j = 0; j < kTestStrings[i].lines_count; ++j) {
       SCOPED_TRACE(base::StringPrintf("Line %" PRIuS "", j));
-      VerifyLineSegments(kTestStrings[i].line_char_ranges[j],
-                         render_text.lines_[j].segments);
+      // There might be multiple segments in one line. Merge all the segments
+      // ranges in the same line.
+      const size_t segment_size = render_text.lines()[j].segments.size();
+      Range line_range;
+      if (segment_size > 0)
+        line_range = Range(
+            render_text.lines()[j].segments[0].char_range.start(),
+            render_text.lines()[j].segments[segment_size - 1].char_range.end());
+      EXPECT_EQ(kTestStrings[i].line_char_ranges[j], line_range);
     }
   }
 }
@@ -2362,6 +2360,154 @@ TEST_F(RenderTextTest, Multiline_WordWrapBehavior) {
       EXPECT_EQ(kTestScenarios[i].char_ranges[j].length() * kGlyphSize,
                 render_text.lines()[j].size.width());
     }
+  }
+}
+
+TEST_F(RenderTextTest, Multiline_LineBreakerBehavior) {
+  const int kGlyphSize = 5;
+  const struct {
+    const wchar_t* const text;
+    const WordWrapBehavior behavior;
+    const Range char_ranges[3];
+  } kTestScenarios[] = {
+      { L"a single run", IGNORE_LONG_WORDS,
+        {Range(0, 2), Range(2, 9), Range(9, 12) } },
+      // 3 words: "That's ", ""good". ", "aaa" and 7 runs: "That", "'", "s ",
+      // """, "good", "". ", "aaa". They all mixed together.
+      { L"That's \"good\". aaa", IGNORE_LONG_WORDS,
+        {Range(0, 7), Range(7, 15), Range(15, 18) } },
+      // Test "\"" should be put into a new line correctly.
+      { L"a \"good\" one.", IGNORE_LONG_WORDS,
+        {Range(0, 2), Range(2, 9), Range(9, 13) } },
+      // Test for full-width space.
+      { L"That's\x3000good.\x3000yyy", IGNORE_LONG_WORDS,
+        {Range(0, 7), Range(7, 13), Range(13, 16) } },
+      { L"a single run", TRUNCATE_LONG_WORDS,
+        {Range(0, 2), Range(2, 6), Range(9, 12) } },
+      { L"That's \"good\". aaa", TRUNCATE_LONG_WORDS,
+        {Range(0, 4), Range(7, 11), Range(15, 18) } },
+      { L"That's good. aaa", TRUNCATE_LONG_WORDS,
+        {Range(0, 4), Range(7, 11), Range(13, 16) } },
+      { L"a \"good\" one.", TRUNCATE_LONG_WORDS,
+        {Range(0, 2), Range(2, 6), Range(9, 13) } },
+      { L"asingleword", WRAP_LONG_WORDS,
+        {Range(0, 4), Range(4, 8), Range(8, 11) } },
+      { L"That's good", WRAP_LONG_WORDS,
+        {Range(0, 4), Range(4, 7), Range(7, 11) } },
+      { L"That's \"g\".", WRAP_LONG_WORDS,
+        {Range(0, 4), Range(4, 7), Range(7, 11) } },
+  };
+
+  RenderTextHarfBuzz render_text;
+  render_text.SetMultiline(true);
+  render_text.set_glyph_width_for_test(kGlyphSize);
+  render_text.SetDisplayRect(Rect(0, 0, kGlyphSize * 4, 0));
+
+  Canvas canvas;
+
+  for (size_t i = 0; i < arraysize(kTestScenarios); ++i) {
+    SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
+    render_text.SetText(WideToUTF16(kTestScenarios[i].text));
+    render_text.SetWordWrapBehavior(kTestScenarios[i].behavior);
+    render_text.Draw(&canvas);
+
+    ASSERT_EQ(3u, render_text.lines().size());
+    for (size_t j = 0; j < render_text.lines().size(); ++j) {
+      SCOPED_TRACE(base::StringPrintf("%" PRIuS "-th line", j));
+      // Merge all the segments ranges in the same line.
+      size_t segment_size = render_text.lines()[j].segments.size();
+      Range line_range;
+      if (segment_size > 0)
+        line_range = Range(
+            render_text.lines()[j].segments[0].char_range.start(),
+            render_text.lines()[j].segments[segment_size - 1].char_range.end());
+      EXPECT_EQ(kTestScenarios[i].char_ranges[j], line_range);
+      EXPECT_EQ(kTestScenarios[i].char_ranges[j].length() * kGlyphSize,
+                render_text.lines()[j].size.width());
+    }
+  }
+}
+
+// Test that Surrogate pairs or combining character sequences do not get
+// separated by line breaking.
+TEST_F(RenderTextTest, Multiline_SurrogatePairsOrCombiningChars) {
+  RenderTextHarfBuzz render_text;
+  render_text.SetMultiline(true);
+  render_text.SetWordWrapBehavior(WRAP_LONG_WORDS);
+
+  // Below is 'MUSICAL SYMBOL G CLEF' (U+1D11E), which is represented in UTF-16
+  // as two code units forming a surrogate pair: 0xD834 0xDD1E.
+  const base::char16 kSurrogate[] = {0xD834, 0xDD1E, 0};
+  const base::string16 text_surrogate(kSurrogate);
+  const int kSurrogateWidth =
+      GetStringWidth(kSurrogate, render_text.font_list());
+
+  // Below is a Devanagari two-character combining sequence U+0921 U+093F. The
+  // sequence forms a single display character and should not be separated.
+  const base::char16 kCombiningChars[] = {0x921, 0x93F, 0};
+  const base::string16 text_combining(kCombiningChars);
+  const int kCombiningCharsWidth =
+      GetStringWidth(kCombiningChars, render_text.font_list());
+
+  const struct {
+    const base::string16 text;
+    const int display_width;
+    const Range char_ranges[3];
+  } kTestScenarios[] = {
+      { text_surrogate + text_surrogate + text_surrogate,
+        kSurrogateWidth / 2 * 3,
+        { Range(0, 2), Range(2, 4),  Range(4, 6) } },
+      { text_surrogate + UTF8ToUTF16(" ") + kCombiningChars,
+        std::min(kSurrogateWidth, kCombiningCharsWidth) / 2,
+        { Range(0, 2), Range(2, 3), Range(3, 5) } },
+  };
+
+  Canvas canvas;
+
+  for (size_t i = 0; i < arraysize(kTestScenarios); ++i) {
+    SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
+    render_text.SetText(kTestScenarios[i].text);
+    render_text.SetDisplayRect(Rect(0, 0, kTestScenarios[i].display_width, 0));
+    render_text.Draw(&canvas);
+
+    ASSERT_EQ(3u, render_text.lines().size());
+    for (size_t j = 0; j < render_text.lines().size(); ++j) {
+      SCOPED_TRACE(base::StringPrintf("%" PRIuS "-th line", j));
+      // There is only one segment in each line.
+      EXPECT_EQ(kTestScenarios[i].char_ranges[j],
+                render_text.lines()[j].segments[0].char_range);
+    }
+  }
+}
+
+// Test that Zero width characters have the correct line breaking behavior.
+TEST_F(RenderTextTest, Multiline_ZeroWidthChars) {
+  RenderTextHarfBuzz render_text;
+  render_text.SetMultiline(true);
+  render_text.SetWordWrapBehavior(WRAP_LONG_WORDS);
+
+  const base::char16 kZeroWidthSpace = {0x200B};
+  const base::string16 text(UTF8ToUTF16("test") + kZeroWidthSpace +
+                            UTF8ToUTF16("\n") + kZeroWidthSpace +
+                            UTF8ToUTF16("test."));
+  const int kTestWidth =
+      GetStringWidth(UTF8ToUTF16("test"), render_text.font_list());
+  const Range char_ranges[3] = {Range(0, 5), Range(6, 11), Range(11, 12)};
+
+  Canvas canvas;
+  render_text.SetText(text);
+  render_text.SetDisplayRect(Rect(0, 0, kTestWidth, 0));
+  render_text.Draw(&canvas);
+
+  ASSERT_EQ(3u, render_text.lines().size());
+  for (size_t j = 0; j < render_text.lines().size(); ++j) {
+    SCOPED_TRACE(base::StringPrintf("%" PRIuS "-th line", j));
+    int segment_size = render_text.lines()[j].segments.size();
+    ASSERT_GT(segment_size, 0);
+    Range line_range(
+        render_text.lines()[j].segments[0].char_range.start(),
+        render_text.lines()[j].segments[segment_size - 1].char_range.end());
+    EXPECT_EQ(char_ranges[j], line_range);
   }
 }
 
@@ -2610,10 +2756,11 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByUnicodeBlocks) {
   render_text.SetText(WideToUTF16(L"x \x25B6 y"));
   render_text.EnsureLayout();
   run_list = render_text.GetRunList();
-  ASSERT_EQ(3U, run_list->size());
+  ASSERT_EQ(4U, run_list->size());
   EXPECT_EQ(Range(0, 2), run_list->runs()[0]->range);
   EXPECT_EQ(Range(2, 3), run_list->runs()[1]->range);
-  EXPECT_EQ(Range(3, 5), run_list->runs()[2]->range);
+  EXPECT_EQ(Range(3, 4), run_list->runs()[2]->range);
+  EXPECT_EQ(Range(4, 5), run_list->runs()[3]->range);
 }
 
 TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmoji) {

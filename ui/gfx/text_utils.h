@@ -31,6 +31,16 @@ GFX_EXPORT int GetStringWidth(const base::string16& text,
 GFX_EXPORT float GetStringWidthF(const base::string16& text,
                                  const FontList& font_list);
 
+// Returns a valid cut boundary at or before |index|. The surrogate pair and
+// combining characters should not be separated.
+GFX_EXPORT size_t
+FindValidBoundaryBefore(const base::string16& text, size_t index);
+
+// Returns a valid cut boundary at or after |index|. The surrogate pair and
+// combining characters should not be separated.
+GFX_EXPORT size_t
+FindValidBoundaryAfter(const base::string16& text, size_t index);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_TEXT_UTILS_H_

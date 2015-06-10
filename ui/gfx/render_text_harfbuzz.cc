@@ -16,6 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/icu/source/common/unicode/ubidi.h"
+#include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/canvas.h"
@@ -24,6 +25,7 @@
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/harfbuzz_font_skia.h"
 #include "ui/gfx/range/range_f.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
 
 #if defined(OS_WIN)
@@ -49,9 +51,7 @@ const size_t kMaxScripts = 5;
 // therefore it needs to be trigerred as fallbacks. See crbug.com/448909
 bool IsUnusualBlockCode(UBlockCode block_code) {
   return block_code == UBLOCK_GEOMETRIC_SHAPES ||
-         block_code == UBLOCK_MISCELLANEOUS_SYMBOLS ||
-         block_code == UBLOCK_DINGBATS ||
-         block_code == UBLOCK_EMOTICONS;
+         block_code == UBLOCK_MISCELLANEOUS_SYMBOLS;
 }
 
 bool IsBracket(UChar32 character) {
@@ -90,15 +90,12 @@ size_t FindRunBreakingCharacter(const base::string16& text,
   return run_break;
 }
 
-// If the given scripts match, returns the one that isn't USCRIPT_COMMON or
-// USCRIPT_INHERITED, i.e. the more specific one. Otherwise returns
-// USCRIPT_INVALID_CODE.
+// If the given scripts match, returns the one that isn't USCRIPT_INHERITED,
+// i.e. the more specific one. Otherwise returns USCRIPT_INVALID_CODE.
 UScriptCode ScriptIntersect(UScriptCode first, UScriptCode second) {
-  if (first == second ||
-      (second > USCRIPT_INVALID_CODE && second <= USCRIPT_INHERITED)) {
+  if (first == second || second == USCRIPT_INHERITED)
     return first;
-  }
-  if (first > USCRIPT_INVALID_CODE && first <= USCRIPT_INHERITED)
+  if (first == USCRIPT_INHERITED)
     return second;
   return USCRIPT_INVALID_CODE;
 }
@@ -166,6 +163,9 @@ int ScriptInterval(const base::string16& text,
   *script = scripts[0];
 
   while (char_iterator.Advance()) {
+    // Special handling to merge white space into the previous run.
+    if (u_isUWhiteSpace(char_iterator.get()))
+      continue;
     ScriptSetIntersect(char_iterator.get(), scripts, &scripts_size);
     if (scripts_size == 0U)
       return char_iterator.array_pos();
@@ -223,7 +223,6 @@ class HarfBuzzLineBreaker {
   HarfBuzzLineBreaker(size_t max_width,
                       int min_baseline,
                       float min_height,
-                      bool multiline,
                       WordWrapBehavior word_wrap_behavior,
                       const base::string16& text,
                       const BreakList<size_t>* words,
@@ -231,35 +230,63 @@ class HarfBuzzLineBreaker {
       : max_width_((max_width == 0) ? SK_ScalarMax : SkIntToScalar(max_width)),
         min_baseline_(min_baseline),
         min_height_(min_height),
-        multiline_(multiline),
         word_wrap_behavior_(word_wrap_behavior),
         text_(text),
         words_(words),
         run_list_(run_list),
-        text_x_(0),
-        line_x_(0),
         max_descent_(0),
-        max_ascent_(0) {
-    DCHECK_EQ(multiline_, (words_ != nullptr));
+        max_ascent_(0),
+        text_x_(0),
+        available_width_(max_width_) {
     AdvanceLine();
   }
 
-  // Breaks the run at given |run_index| into Line structs.
-  void AddRun(int run_index) {
-    const internal::TextRunHarfBuzz* run = run_list_.runs()[run_index];
-    base::char16 first_char = text_[run->range.start()];
-    if (multiline_ && first_char == '\n') {
-      AdvanceLine();
-    } else if (multiline_ && (line_x_ + SkFloatToScalar(run->width)) >
-               max_width_) {
-      BreakRun(run_index);
-    } else {
-      AddSegment(run_index, run->range, run->width);
+  // Constructs a single line for |text_| using |run_list_|.
+  void ConstructSingleLine() {
+    for (size_t i = 0; i < run_list_.size(); i++) {
+      const internal::TextRunHarfBuzz& run = *(run_list_.runs()[i]);
+      internal::LineSegment segment;
+      segment.run = i;
+      segment.char_range = run.range;
+      segment.x_range = Range(SkScalarCeilToInt(text_x_),
+                              SkScalarCeilToInt(text_x_ + run.width));
+      segment.width = run.width;
+      AddLineSegment(segment);
+    }
+  }
+
+  // Constructs multiple lines for |text_| based on words iteration approach.
+  void ConstructMultiLines() {
+    DCHECK(words_);
+    for (auto iter = words_->breaks().begin(); iter != words_->breaks().end();
+         iter++) {
+      const Range word_range = words_->GetRange(iter);
+      std::vector<internal::LineSegment> word_segments;
+      SkScalar word_width = GetWordWidth(word_range, &word_segments);
+
+      // If the last word is '\n', we should advance a new line after adding
+      // the word to the current line.
+      bool new_line = false;
+      if (!word_segments.empty() &&
+          text_[word_segments.back().char_range.start()] == '\n') {
+        new_line = true;
+        word_width -= word_segments.back().width;
+        word_segments.pop_back();
+      }
+
+      // If the word is not the first word in the line and it can't fit into
+      // the current line, advance a new line.
+      if (word_width > available_width_ && available_width_ != max_width_)
+        AdvanceLine();
+      if (!word_segments.empty())
+        AddWordToLine(word_segments);
+      if (new_line)
+        AdvanceLine();
     }
   }
 
   // Finishes line breaking and outputs the results. Can be called at most once.
-  void Finalize(std::vector<internal::Line>* lines, SizeF* size) {
+  void FinalizeLines(std::vector<internal::Line>* lines, SizeF* size) {
     DCHECK(!lines_.empty());
     // Add an empty line to finish the line size calculation and remove it.
     AdvanceLine();
@@ -276,113 +303,188 @@ class HarfBuzzLineBreaker {
     return &lines_[handle.first].segments[handle.second];
   }
 
-  // Breaks a run into segments that fit in the last line in |lines_| and adds
-  // them. Adds a new Line to the back of |lines_| whenever a new segment can't
-  // be added without the Line's width exceeding |max_width_|.
-  void BreakRun(int run_index) {
-    const internal::TextRunHarfBuzz& run = *(run_list_.runs()[run_index]);
-    SkScalar width = 0;
-    size_t next_char = run.range.start();
+  // Finishes the size calculations of the last Line in |lines_|. Adds a new
+  // Line to the back of |lines_|.
+  void AdvanceLine() {
+    if (!lines_.empty()) {
+      internal::Line* line = &lines_.back();
+      std::sort(line->segments.begin(), line->segments.end(),
+                [this](const internal::LineSegment& s1,
+                       const internal::LineSegment& s2) -> bool {
+                  return run_list_.logical_to_visual(s1.run) <
+                         run_list_.logical_to_visual(s2.run);
+                });
+      line->size.set_height(std::max(min_height_, max_descent_ + max_ascent_));
+      line->baseline = std::max(min_baseline_, SkScalarRoundToInt(max_ascent_));
+      line->preceding_heights = std::ceil(total_size_.height());
+      total_size_.set_height(total_size_.height() + line->size.height());
+      total_size_.set_width(std::max(total_size_.width(), line->size.width()));
+    }
+    max_descent_ = 0;
+    max_ascent_ = 0;
+    available_width_ = max_width_;
+    lines_.push_back(internal::Line());
+  }
 
-    // Break the run until it fits the current line.
-    while (next_char < run.range.end()) {
-      const size_t current_char = next_char;
-      size_t end_char = next_char;
-      const bool skip_line =
-          BreakRunAtWidth(run, current_char, &width, &end_char, &next_char);
-      AddSegment(run_index, Range(current_char, end_char),
-                 SkScalarToFloat(width));
-      if (skip_line)
-        AdvanceLine();
+  // Adds word to the current line. A word may contain multiple segments. If the
+  // word is the first word in line and its width exceeds |available_width_|,
+  // ignore/truncate/wrap it according to |word_wrap_behavior_|.
+  void AddWordToLine(const std::vector<internal::LineSegment>& word_segments) {
+    DCHECK(!lines_.empty());
+    DCHECK(!word_segments.empty());
+
+    bool has_truncated = false;
+    for (const internal::LineSegment& segment : word_segments) {
+      if (has_truncated)
+        break;
+      if (segment.width <= available_width_ ||
+          word_wrap_behavior_ == IGNORE_LONG_WORDS) {
+        AddLineSegment(segment);
+      } else {
+        DCHECK(word_wrap_behavior_ == TRUNCATE_LONG_WORDS ||
+               word_wrap_behavior_ == WRAP_LONG_WORDS);
+        has_truncated = (word_wrap_behavior_ == TRUNCATE_LONG_WORDS);
+
+        const internal::TextRunHarfBuzz& run = *(run_list_.runs()[segment.run]);
+        internal::LineSegment remaining_segment = segment;
+        while (!remaining_segment.char_range.is_empty()) {
+          size_t cutoff_pos = GetCutoffPos(remaining_segment);
+          SkScalar width = run.GetGlyphWidthForCharRange(
+              Range(remaining_segment.char_range.start(), cutoff_pos));
+          if (width > 0) {
+            internal::LineSegment cut_segment;
+            cut_segment.run = remaining_segment.run;
+            cut_segment.char_range =
+                Range(remaining_segment.char_range.start(), cutoff_pos);
+            cut_segment.width = width;
+            cut_segment.x_range = Range(remaining_segment.x_range.start(),
+                                        SkScalarCeilToInt(text_x_ + width));
+            AddLineSegment(cut_segment);
+            // Updates old segment range.
+            remaining_segment.char_range.set_start(cutoff_pos);
+            remaining_segment.x_range.set_start(SkScalarCeilToInt(text_x_));
+            remaining_segment.width -= width;
+          }
+          if (has_truncated)
+            break;
+          if (!remaining_segment.char_range.is_empty())
+            AdvanceLine();
+        }
+      }
     }
   }
 
-  // Starting from |start_char|, finds a suitable line break position at or
-  // before available width using word break. If the current position is at the
-  // beginning of a line, this function will not roll back to |start_char| and
-  // |*next_char| will be greater than |start_char| (to avoid constructing empty
-  // lines). It stores the end of the segment range to |end_char|, which can be
-  // smaller than |*next_char| for certain word wrapping behavior.
-  // Returns whether to skip the line before |*next_char|.
-  // TODO(ckocagil): We might have to reshape after breaking at ligatures.
-  //                 See whether resolving the TODO above resolves this too.
-  // TODO(ckocagil): Do not reserve width for whitespace at the end of lines.
-  bool BreakRunAtWidth(const internal::TextRunHarfBuzz& run,
-                       size_t start_char,
-                       SkScalar* width,
-                       size_t* end_char,
-                       size_t* next_char) {
-    DCHECK(words_);
-    DCHECK(run.range.Contains(Range(start_char, start_char + 1)));
-    SkScalar available_width = max_width_ - line_x_;
-    BreakList<size_t>::const_iterator word = words_->GetBreak(start_char);
-    BreakList<size_t>::const_iterator next_word = word + 1;
-    // Width from |std::max(word->first, start_char)| to the current character.
-    SkScalar word_width = 0;
-    *width = 0;
-
-    Range char_range;
-    SkScalar truncated_width = 0;
-    for (size_t i = start_char; i < run.range.end(); i += char_range.length()) {
-      // |word| holds the word boundary at or before |i|, and |next_word| holds
-      // the word boundary right after |i|. Advance both |word| and |next_word|
-      // when |i| reaches |next_word|.
-      if (next_word != words_->breaks().end() && i >= next_word->first) {
-        if (*width > available_width) {
-          DCHECK_NE(WRAP_LONG_WORDS, word_wrap_behavior_);
-          *next_char = i;
-          if (word_wrap_behavior_ != TRUNCATE_LONG_WORDS)
-            *end_char = *next_char;
-          else
-            *width = truncated_width;
-          return true;
-        }
-        word = next_word++;
-        word_width = 0;
-      }
-
-      Range glyph_range;
-      run.GetClusterAt(i, &char_range, &glyph_range);
-      DCHECK_LT(0U, char_range.length());
-
-      SkScalar char_width = ((glyph_range.end() >= run.glyph_count)
-                                 ? SkFloatToScalar(run.width)
-                                 : run.positions[glyph_range.end()].x()) -
-                            run.positions[glyph_range.start()].x();
-
-      *width += char_width;
-      word_width += char_width;
-
-      // TODO(mukai): implement ELIDE_LONG_WORDS.
-      if (*width > available_width) {
-        if (line_x_ != 0 || word_width < *width) {
-          // Roll back one word.
-          *width -= word_width;
-          *next_char = std::max(word->first, start_char);
-          *end_char = *next_char;
-          return true;
-        } else if (word_wrap_behavior_ == WRAP_LONG_WORDS) {
-          if (char_width < *width) {
-            // Roll back one character.
-            *width -= char_width;
-            *next_char = i;
-          } else {
-            // Continue from the next character.
-            *next_char = i + char_range.length();
-          }
-          *end_char = *next_char;
-          return true;
-        }
-      } else {
-        *end_char = char_range.end();
-        truncated_width = *width;
+  // Add a line segment to the current line. Note that, in order to keep the
+  // visual order correct for ltr and rtl language, we need to merge segments
+  // that belong to the same run.
+  void AddLineSegment(const internal::LineSegment& segment) {
+    DCHECK(!lines_.empty());
+    internal::Line* line = &lines_.back();
+    const internal::TextRunHarfBuzz& run = *(run_list_.runs()[segment.run]);
+    if (!line->segments.empty()) {
+      internal::LineSegment& last_segment = line->segments.back();
+      // Merge segments that belong to the same run.
+      if (last_segment.run == segment.run) {
+        DCHECK_EQ(last_segment.char_range.end(), segment.char_range.start());
+        DCHECK_EQ(last_segment.x_range.end(), segment.x_range.start());
+        last_segment.char_range.set_end(segment.char_range.end());
+        last_segment.width += segment.width;
+        last_segment.x_range.set_end(
+            SkScalarCeilToInt(text_x_ + segment.width));
+        if (run.is_rtl && last_segment.char_range.end() == run.range.end())
+          UpdateRTLSegmentRanges();
+        line->size.set_width(line->size.width() + segment.width);
+        text_x_ += segment.width;
+        available_width_ -= segment.width;
+        return;
       }
     }
+    line->segments.push_back(segment);
 
-    if (word_wrap_behavior_ == TRUNCATE_LONG_WORDS)
-      *width = truncated_width;
-    *end_char = *next_char = run.range.end();
-    return false;
+    SkPaint paint;
+    paint.setTypeface(run.skia_face.get());
+    paint.setTextSize(SkIntToScalar(run.font_size));
+    paint.setAntiAlias(run.render_params.antialiasing);
+    SkPaint::FontMetrics metrics;
+    paint.getFontMetrics(&metrics);
+
+    line->size.set_width(line->size.width() + segment.width);
+    // TODO(dschuyler): Account for stylized baselines in string sizing.
+    max_descent_ = std::max(max_descent_, metrics.fDescent);
+    // fAscent is always negative.
+    max_ascent_ = std::max(max_ascent_, -metrics.fAscent);
+
+    if (run.is_rtl) {
+      rtl_segments_.push_back(
+          SegmentHandle(lines_.size() - 1, line->segments.size() - 1));
+      // If this is the last segment of an RTL run, reprocess the text-space x
+      // ranges of all segments from the run.
+      if (segment.char_range.end() == run.range.end())
+        UpdateRTLSegmentRanges();
+    }
+    text_x_ += segment.width;
+    available_width_ -= segment.width;
+  }
+
+  // Finds the end position |end_pos| in |segment| where the preceding width is
+  // no larger than |available_width_|.
+  size_t GetCutoffPos(const internal::LineSegment& segment) const {
+    DCHECK(!segment.char_range.is_empty());
+    const internal::TextRunHarfBuzz& run = *(run_list_.runs()[segment.run]);
+    size_t end_pos = segment.char_range.start();
+    SkScalar width = 0;
+    while (end_pos < segment.char_range.end()) {
+      const SkScalar char_width =
+          run.GetGlyphWidthForCharRange(Range(end_pos, end_pos + 1));
+      if (width + char_width > available_width_)
+        break;
+      width += char_width;
+      end_pos++;
+    }
+
+    const size_t valid_end_pos = FindValidBoundaryBefore(text_, end_pos);
+    if (end_pos != valid_end_pos) {
+      end_pos = valid_end_pos;
+      width = run.GetGlyphWidthForCharRange(
+          Range(segment.char_range.start(), end_pos));
+    }
+
+    // |max_width_| might be smaller than a single character. In this case we
+    // need to put at least one character in the line. Note that, we should
+    // not separate surrogate pair or combining characters.
+    // See RenderTextTest.Multiline_MinWidth for an example.
+    if (width == 0 && available_width_ == max_width_)
+      end_pos = FindValidBoundaryAfter(text_, end_pos + 1);
+
+    return end_pos;
+  }
+
+  // Gets the glyph width for |word_range|, and splits the |word| into different
+  // segments based on its runs.
+  SkScalar GetWordWidth(const Range& word_range,
+                        std::vector<internal::LineSegment>* segments) const {
+    DCHECK(words_);
+    if (word_range.is_empty() || segments == nullptr)
+      return 0;
+    size_t run_start_index = run_list_.GetRunIndexAt(word_range.start());
+    size_t run_end_index = run_list_.GetRunIndexAt(word_range.end() - 1);
+    SkScalar width = 0;
+    for (size_t i = run_start_index; i <= run_end_index; i++) {
+      const internal::TextRunHarfBuzz& run = *(run_list_.runs()[i]);
+      const Range char_range = run.range.Intersect(word_range);
+      DCHECK(!char_range.is_empty());
+      const SkScalar char_width = run.GetGlyphWidthForCharRange(char_range);
+      width += char_width;
+
+      internal::LineSegment segment;
+      segment.run = i;
+      segment.char_range = char_range;
+      segment.width = char_width;
+      segment.x_range = Range(SkScalarCeilToInt(text_x_ + width - char_width),
+                              SkScalarCeilToInt(text_x_ + width));
+      segments->push_back(segment);
+    }
+    return width;
   }
 
   // RTL runs are broken in logical order but displayed in visual order. To find
@@ -402,78 +504,9 @@ class HarfBuzzLineBreaker {
     rtl_segments_.clear();
   }
 
-  // Finishes the size calculations of the last Line in |lines_|. Adds a new
-  // Line to the back of |lines_|.
-  void AdvanceLine() {
-    if (!lines_.empty()) {
-      internal::Line* line = &lines_.back();
-      std::sort(line->segments.begin(), line->segments.end(),
-                [this](const internal::LineSegment& s1,
-                       const internal::LineSegment& s2) -> bool {
-                  return run_list_.logical_to_visual(s1.run) <
-                         run_list_.logical_to_visual(s2.run);
-                });
-      line->size.set_height(std::max(min_height_, max_descent_ + max_ascent_));
-      line->baseline =
-          std::max(min_baseline_, SkScalarRoundToInt(max_ascent_));
-      line->preceding_heights = std::ceil(total_size_.height());
-      total_size_.set_height(total_size_.height() + line->size.height());
-      total_size_.set_width(std::max(total_size_.width(), line->size.width()));
-    }
-    max_descent_ = 0;
-    max_ascent_ = 0;
-    line_x_ = 0;
-    lines_.push_back(internal::Line());
-  }
-
-  // Adds a new segment with the given properties to |lines_.back()|.
-  void AddSegment(int run_index, Range char_range, float width) {
-    if (char_range.is_empty()) {
-      DCHECK_EQ(0, width);
-      return;
-    }
-    const internal::TextRunHarfBuzz& run = *(run_list_.runs()[run_index]);
-
-    internal::LineSegment segment;
-    segment.run = run_index;
-    segment.char_range = char_range;
-    segment.x_range = Range(
-        SkScalarCeilToInt(text_x_),
-        SkScalarCeilToInt(text_x_ + SkFloatToScalar(width)));
-    segment.width = width;
-
-    internal::Line* line = &lines_.back();
-    line->segments.push_back(segment);
-
-    SkPaint paint;
-    paint.setTypeface(run.skia_face.get());
-    paint.setTextSize(SkIntToScalar(run.font_size));
-    paint.setAntiAlias(run.render_params.antialiasing);
-    SkPaint::FontMetrics metrics;
-    paint.getFontMetrics(&metrics);
-
-    line->size.set_width(line->size.width() + width);
-    // TODO(dschuyler): Account for stylized baselines in string sizing.
-    max_descent_ = std::max(max_descent_, metrics.fDescent);
-    // fAscent is always negative.
-    max_ascent_ = std::max(max_ascent_, -metrics.fAscent);
-
-    if (run.is_rtl) {
-      rtl_segments_.push_back(
-          SegmentHandle(lines_.size() - 1, line->segments.size() - 1));
-      // If this is the last segment of an RTL run, reprocess the text-space x
-      // ranges of all segments from the run.
-      if (char_range.end() == run.range.end())
-        UpdateRTLSegmentRanges();
-    }
-    text_x_ += SkFloatToScalar(width);
-    line_x_ += SkFloatToScalar(width);
-  }
-
   const SkScalar max_width_;
   const int min_baseline_;
   const float min_height_;
-  const bool multiline_;
   const WordWrapBehavior word_wrap_behavior_;
   const base::string16& text_;
   const BreakList<size_t>* const words_;
@@ -482,12 +515,13 @@ class HarfBuzzLineBreaker {
   // Stores the resulting lines.
   std::vector<internal::Line> lines_;
 
-  // Text space and line space x coordinates of the next segment to be added.
-  SkScalar text_x_;
-  SkScalar line_x_;
-
   float max_descent_;
   float max_ascent_;
+
+  // Text space x coordinates of the next segment to be added.
+  SkScalar text_x_;
+  // Stores available width in the current line.
+  SkScalar available_width_;
 
   // Size of the multiline text, not including the currently processed line.
   SizeF total_size_;
@@ -532,29 +566,6 @@ TextRunHarfBuzz::TextRunHarfBuzz()
 
 TextRunHarfBuzz::~TextRunHarfBuzz() {}
 
-void TextRunHarfBuzz::GetClusterAt(size_t pos,
-                                   Range* chars,
-                                   Range* glyphs) const {
-  DCHECK(range.Contains(Range(pos, pos + 1)));
-  DCHECK(chars);
-  DCHECK(glyphs);
-
-  if (glyph_count == 0) {
-    *chars = range;
-    *glyphs = Range();
-    return;
-  }
-
-  if (is_rtl) {
-    GetClusterAtImpl(pos, range, glyph_to_char.rbegin(), glyph_to_char.rend(),
-        true, chars, glyphs);
-    return;
-  }
-
-  GetClusterAtImpl(pos, range, glyph_to_char.begin(), glyph_to_char.end(),
-      false, chars, glyphs);
-}
-
 Range TextRunHarfBuzz::CharRangeToGlyphRange(const Range& char_range) const {
   DCHECK(range.Contains(char_range));
   DCHECK(!char_range.is_reversed());
@@ -576,6 +587,29 @@ size_t TextRunHarfBuzz::CountMissingGlyphs() const {
   for (size_t i = 0; i < glyph_count; ++i)
     missing += (glyphs[i] == kMissingGlyphId) ? 1 : 0;
   return missing;
+}
+
+void TextRunHarfBuzz::GetClusterAt(size_t pos,
+                                   Range* chars,
+                                   Range* glyphs) const {
+  DCHECK(range.Contains(Range(pos, pos + 1)));
+  DCHECK(chars);
+  DCHECK(glyphs);
+
+  if (glyph_count == 0) {
+    *chars = range;
+    *glyphs = Range();
+    return;
+  }
+
+  if (is_rtl) {
+    GetClusterAtImpl(pos, range, glyph_to_char.rbegin(), glyph_to_char.rend(),
+                     true, chars, glyphs);
+    return;
+  }
+
+  GetClusterAtImpl(pos, range, glyph_to_char.begin(), glyph_to_char.end(),
+                   false, chars, glyphs);
 }
 
 RangeF TextRunHarfBuzz::GetGraphemeBounds(
@@ -626,6 +660,19 @@ RangeF TextRunHarfBuzz::GetGraphemeBounds(
                 preceding_run_widths + cluster_end_x);
 }
 
+SkScalar TextRunHarfBuzz::GetGlyphWidthForCharRange(
+    const Range& char_range) const {
+  if (char_range.is_empty())
+    return 0;
+
+  DCHECK(range.Contains(char_range));
+  Range glyph_range = CharRangeToGlyphRange(char_range);
+  return ((glyph_range.end() == glyph_count)
+              ? SkFloatToScalar(width)
+              : positions[glyph_range.end()].x()) -
+         positions[glyph_range.start()].x();
+}
+
 TextRunList::TextRunList() : width_(0.0f) {}
 
 TextRunList::~TextRunList() {}
@@ -658,6 +705,14 @@ void TextRunList::ComputePrecedingRunWidths() {
     run->preceding_run_widths = width_;
     width_ += run->width;
   }
+}
+
+size_t TextRunList::GetRunIndexAt(size_t position) const {
+  for (size_t i = 0; i < runs_.size(); ++i) {
+    if (runs_[i]->range.start() <= position && runs_[i]->range.end() > position)
+      return i;
+  }
+  return runs_.size();
 }
 
 }  // namespace internal
@@ -1008,16 +1063,18 @@ void RenderTextHarfBuzz::EnsureLayout() {
     internal::TextRunList* run_list = GetRunList();
     HarfBuzzLineBreaker line_breaker(
         display_rect().width(), font_list().GetBaseline(),
-        std::max(font_list().GetHeight(), min_line_height()), multiline(),
+        std::max(font_list().GetHeight(), min_line_height()),
         word_wrap_behavior(), GetDisplayText(),
         multiline() ? &GetLineBreaks() : nullptr, *run_list);
 
     tracking_profile.reset();
 
-    for (size_t i = 0; i < run_list->size(); ++i)
-      line_breaker.AddRun(i);
+    if (multiline())
+      line_breaker.ConstructMultiLines();
+    else
+      line_breaker.ConstructSingleLine();
     std::vector<internal::Line> lines;
-    line_breaker.Finalize(&lines, &total_size_);
+    line_breaker.FinalizeLines(&lines, &total_size_);
     set_lines(&lines);
   }
 }

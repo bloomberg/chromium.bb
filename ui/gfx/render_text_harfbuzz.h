@@ -54,6 +54,10 @@ struct GFX_EXPORT TextRunHarfBuzz {
   // Returns whether the given shaped run contains any missing glyphs.
   bool HasMissingGlyphs() const;
 
+  // Returns the glyph width for the given character range. |char_range| is in
+  // text-space (0 corresponds to |GetDisplayText()[0]|).
+  SkScalar GetGlyphWidthForCharRange(const Range& char_range) const;
+
   float width;
   float preceding_run_widths;
   Range range;
@@ -114,6 +118,9 @@ class TextRunList {
   // Get the total width of runs, as if they were shown on one line.
   // Do not use this when multiline is enabled.
   float width() const { return width_; }
+
+  // Get the run index applicable to |position| (at or preceeding |position|).
+  size_t GetRunIndexAt(size_t position) const;
 
  private:
   // Text runs in logical order.
@@ -179,6 +186,10 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_NonExistentFont);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UnicodeFallback);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_LineBreakerBehavior);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest,
+                           Multiline_SurrogatePairsOrCombiningChars);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_ZeroWidthChars);
 
   // Specify the width of a glyph for test. The width of glyphs is very
   // platform-dependent and environment-dependent. Otherwise multiline test

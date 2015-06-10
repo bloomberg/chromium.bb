@@ -637,6 +637,10 @@ class GFX_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_SufficientWidth);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_Newline);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_WordWrapBehavior);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_LineBreakerBehavior);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest,
+                           Multiline_SurrogatePairsOrCombiningChars);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_ZeroWidthChars);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, NewlineWithoutMultilineFlag);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, GlyphBounds);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_GlyphBounds);
