@@ -19,16 +19,12 @@ BiDiLineIterator::~BiDiLineIterator() {
   }
 }
 
-bool BiDiLineIterator::Open(const string16& text,
-                            bool right_to_left,
-                            bool url) {
+bool BiDiLineIterator::Open(const string16& text, bool right_to_left) {
   DCHECK(!bidi_);
   UErrorCode error = U_ZERO_ERROR;
   bidi_ = ubidi_openSized(static_cast<int>(text.length()), 0, &error);
   if (U_FAILURE(error))
     return false;
-  if (right_to_left && url)
-    ubidi_setReorderingMode(bidi_, UBIDI_REORDER_RUNS_ONLY);
   ubidi_setPara(bidi_, text.data(), static_cast<int>(text.length()),
                 right_to_left ? UBIDI_DEFAULT_RTL : UBIDI_DEFAULT_LTR,
                 NULL, &error);

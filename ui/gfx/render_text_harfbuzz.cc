@@ -1159,7 +1159,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   // text. This is needed because leaving the runs set empty causes some clients
   // to misbehave since they expect non-zero text metrics from a non-empty text.
   base::i18n::BiDiLineIterator bidi_iterator;
-  if (!bidi_iterator.Open(text, is_text_rtl, false)) {
+  if (!bidi_iterator.Open(text, is_text_rtl)) {
     internal::TextRunHarfBuzz* run = new internal::TextRunHarfBuzz;
     run->range = Range(0, text.length());
     run_list_out->add(run);

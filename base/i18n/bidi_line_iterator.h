@@ -23,7 +23,7 @@ class BASE_I18N_EXPORT BiDiLineIterator {
 
   // Initializes the bidirectional iterator with the specified text.  Returns
   // whether initialization succeeded.
-  bool Open(const string16& text, bool right_to_left, bool url);
+  bool Open(const string16& text, bool right_to_left);
 
   // Returns the number of visual runs in the text, or zero on error.
   int CountRuns();
