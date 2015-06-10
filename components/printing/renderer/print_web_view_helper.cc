@@ -327,6 +327,12 @@ bool PDFShouldDisableScalingBasedOnPreset(
     return false;
 
   int dpi = GetDPI(&params);
+  if (!dpi) {
+    // Likely |params| is invalid, in which case the return result does not
+    // matter. Check for this so ConvertUnit() does not divide by zero.
+    return true;
+  }
+
   blink::WebSize page_size(
       ConvertUnit(params.page_size.width(), dpi, kPointsPerInch),
       ConvertUnit(params.page_size.height(), dpi, kPointsPerInch));
