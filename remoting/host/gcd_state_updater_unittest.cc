@@ -33,12 +33,13 @@ class GcdStateUpdaterTest : public testing::Test {
         token_getter_(OAuthTokenGetter::SUCCESS,
                       "<fake_user_email>",
                       "<fake_access_token>"),
-        rest_client_("http://gcd_base_url",
-                     "<gcd_device_id>",
-                     nullptr,
-                     &token_getter_),
+        rest_client_(new GcdRestClient(
+            "http://gcd_base_url",
+            "<gcd_device_id>",
+            nullptr,
+            &token_getter_)),
         signal_strategy_("local_jid") {
-    rest_client_.SetClockForTest(make_scoped_ptr(new base::SimpleTestClock));
+    rest_client_->SetClockForTest(make_scoped_ptr(new base::SimpleTestClock));
   }
 
   void OnSuccess() { on_success_count_++; }
@@ -51,7 +52,7 @@ class GcdStateUpdaterTest : public testing::Test {
   scoped_ptr<base::Clock> clock_;
   net::TestURLFetcherFactory url_fetcher_factory_;
   FakeOAuthTokenGetter token_getter_;
-  GcdRestClient rest_client_;
+  scoped_ptr<GcdRestClient> rest_client_;
   FakeSignalStrategy signal_strategy_;
   int on_success_count_ = 0;
   int on_host_id_error_count_ = 0;
@@ -61,7 +62,7 @@ TEST_F(GcdStateUpdaterTest, Success) {
   scoped_ptr<GcdStateUpdater> updater(new GcdStateUpdater(
       base::Bind(&GcdStateUpdaterTest::OnSuccess, base::Unretained(this)),
       base::Bind(&GcdStateUpdaterTest::OnHostIdError, base::Unretained(this)),
-      &signal_strategy_, &rest_client_));
+      &signal_strategy_, rest_client_.Pass()));
 
   signal_strategy_.Connect();
   task_runner_->RunUntilIdle();
@@ -85,7 +86,7 @@ TEST_F(GcdStateUpdaterTest, QueuedRequests) {
   scoped_ptr<GcdStateUpdater> updater(new GcdStateUpdater(
       base::Bind(&GcdStateUpdaterTest::OnSuccess, base::Unretained(this)),
       base::Bind(&GcdStateUpdaterTest::OnHostIdError, base::Unretained(this)),
-      &signal_strategy_, &rest_client_));
+      &signal_strategy_, rest_client_.Pass()));
 
   // Connect, then re-connect with a different JID while the status
   // update for the first connection is pending.
@@ -129,7 +130,7 @@ TEST_F(GcdStateUpdaterTest, Retry) {
   scoped_ptr<GcdStateUpdater> updater(new GcdStateUpdater(
       base::Bind(&GcdStateUpdaterTest::OnSuccess, base::Unretained(this)),
       base::Bind(&GcdStateUpdaterTest::OnHostIdError, base::Unretained(this)),
-      &signal_strategy_, &rest_client_));
+      &signal_strategy_, rest_client_.Pass()));
 
   signal_strategy_.Connect();
   task_runner_->RunUntilIdle();
@@ -154,7 +155,7 @@ TEST_F(GcdStateUpdaterTest, UnknownHost) {
   scoped_ptr<GcdStateUpdater> updater(new GcdStateUpdater(
       base::Bind(&GcdStateUpdaterTest::OnSuccess, base::Unretained(this)),
       base::Bind(&GcdStateUpdaterTest::OnHostIdError, base::Unretained(this)),
-      &signal_strategy_, &rest_client_));
+      &signal_strategy_, rest_client_.Pass()));
 
   signal_strategy_.Connect();
   task_runner_->RunUntilIdle();

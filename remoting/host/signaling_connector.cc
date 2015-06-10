@@ -26,12 +26,12 @@ const int kMaxReconnectDelaySeconds = 10 * 60;
 SignalingConnector::SignalingConnector(
     XmppSignalStrategy* signal_strategy,
     scoped_ptr<DnsBlackholeChecker> dns_blackhole_checker,
-    scoped_ptr<OAuthTokenGetter> oauth_token_getter,
+    OAuthTokenGetter* oauth_token_getter,
     const base::Closure& auth_failed_callback)
     : signal_strategy_(signal_strategy),
       auth_failed_callback_(auth_failed_callback),
       dns_blackhole_checker_(dns_blackhole_checker.Pass()),
-      oauth_token_getter_(oauth_token_getter.Pass()),
+      oauth_token_getter_(oauth_token_getter),
       reconnect_attempts_(0) {
   DCHECK(!auth_failed_callback_.is_null());
   DCHECK(dns_blackhole_checker_.get());

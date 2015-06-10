@@ -36,7 +36,7 @@ class GcdStateUpdater : public SignalStrategy::Listener {
   GcdStateUpdater(const base::Closure& on_update_successful_callback,
                   const base::Closure& on_unknown_host_id_error,
                   SignalStrategy* signal_strategy,
-                  GcdRestClient* gcd_client);
+                  scoped_ptr<GcdRestClient> gcd_client);
   ~GcdStateUpdater() override;
 
   // See HeartbeatSender::SetHostOfflineReason.
@@ -56,7 +56,7 @@ class GcdStateUpdater : public SignalStrategy::Listener {
   base::Closure on_update_successful_callback_;
   base::Closure on_unknown_host_id_error_;
   SignalStrategy* signal_strategy_;
-  GcdRestClient* gcd_rest_client_;
+  scoped_ptr<GcdRestClient> gcd_rest_client_;
   BackoffTimer timer_;
   base::ThreadChecker thread_checker_;
   bool has_pending_state_request_ = false;

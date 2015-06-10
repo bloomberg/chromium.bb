@@ -24,11 +24,11 @@ GcdStateUpdater::GcdStateUpdater(
     const base::Closure& on_update_successful_callback,
     const base::Closure& on_unknown_host_id_error,
     SignalStrategy* signal_strategy,
-    GcdRestClient* gcd_rest_client)
+    scoped_ptr<GcdRestClient> gcd_rest_client)
     : on_update_successful_callback_(on_update_successful_callback),
       on_unknown_host_id_error_(on_unknown_host_id_error),
       signal_strategy_(signal_strategy),
-      gcd_rest_client_(gcd_rest_client) {
+      gcd_rest_client_(gcd_rest_client.Pass()) {
   DCHECK(signal_strategy_);
   DCHECK(thread_checker_.CalledOnValidThread());
 
