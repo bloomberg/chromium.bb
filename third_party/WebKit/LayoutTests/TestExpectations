@@ -90,11 +90,6 @@ crbug.com/421283 virtual/slimmingpaint/fast/html/marquee-scrollamount.html [ Ski
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 crbug.com/470482 virtual/slimmingpaint/fast/cookies/local-file-can-set-cookies.html [ Skip ]
 
-Bug(esprehn) fast/repaint/select-option-background-color.html [ NeedsRebaseline ]
-Bug(esprehn) fast/repaint/control-clip.html [ NeedsRebaseline ]
-Bug(esprehn) virtual/slimmingpaint/fast/repaint/select-option-background-color.html [ NeedsRebaseline ]
-Bug(esprehn) virtual/slimmingpaint/fast/repaint/control-clip.html [ NeedsRebaseline ]
-
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
