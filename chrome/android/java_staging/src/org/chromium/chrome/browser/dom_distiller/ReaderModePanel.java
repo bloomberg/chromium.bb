@@ -640,6 +640,10 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         mDistilledContentViewCore = createDistillerContentViewCore(
                 mReaderModeHost.getTab().getContentViewCore().getContext(),
                 mReaderModeHost.getTab().getWindowAndroid());
+
+        mergeNavigationHistory(mDistilledContentViewCore.getWebContents(),
+                mReaderModeHost.getTab().getWebContents());
+
         mDistilledContentObserver = new WebContentsObserver(
                 mDistilledContentViewCore.getWebContents()) {
             @Override
@@ -702,8 +706,6 @@ public class ReaderModePanel implements ChromeAnimation.Animatable<ReaderModePan
         mDistilledContentObserver = null;
 
         mDistilledContentViewCore.setContentViewClient(new ContentViewClient());
-        mergeNavigationHistory(mDistilledContentViewCore.getWebContents(),
-                mReaderModeHost.getTab().getWebContents());
         mReaderModeHost.getTab().swapContentViewCore(mDistilledContentViewCore, true,
                 mDidStartLoad, mDidFinishLoad);
         mDistilledContentViewCore.getContentViewClient().onOffsetsForFullscreenChanged(
