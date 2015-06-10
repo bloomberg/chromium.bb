@@ -1439,7 +1439,6 @@
       'browser/ui/cocoa/notifications/message_center_tray_bridge.h',
       'browser/ui/cocoa/notifications/message_center_tray_bridge.mm',
       'browser/ui/cocoa/panels/display_settings_provider_cocoa.mm',
-      'browser/ui/cocoa/panels/display_settings_provider_cocoa.mm',
       'browser/ui/cocoa/profiles/profile_menu_controller.h',
       'browser/ui/cocoa/profiles/profile_menu_controller.mm',
       'browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac.h',
