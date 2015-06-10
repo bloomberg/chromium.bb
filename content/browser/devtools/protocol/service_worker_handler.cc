@@ -397,6 +397,20 @@ Response ServiceWorkerHandler::DeliverPushMessage(
   return Response::OK();
 }
 
+Response ServiceWorkerHandler::GetTargetInfo(DevToolsCommandId command_id,
+                                             const std::string& target_id) {
+  return Response::InternalError("Not implemented yet");
+}
+
+Response ServiceWorkerHandler::ActivateTarget(const std::string& target_id) {
+  scoped_refptr<DevToolsAgentHost> agent_host(
+      DevToolsAgentHost::GetForId(target_id));
+  if (!agent_host)
+    return Response::InvalidParams("targetId");
+  agent_host->Activate();
+  return Response::OK();
+}
+
 void ServiceWorkerHandler::OpenNewDevToolsWindow(int process_id,
                                                  int devtools_agent_route_id) {
   scoped_refptr<DevToolsAgentHostImpl> agent_host(

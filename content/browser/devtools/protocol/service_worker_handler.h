@@ -59,6 +59,9 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   Response DeliverPushMessage(const std::string& origin,
                               const std::string& registration_id,
                               const std::string& data);
+  Response GetTargetInfo(DevToolsCommandId command_id,
+                         const std::string& target_id);
+  Response ActivateTarget(const std::string& target_id);
 
   // WorkerDevToolsManager::Observer implementation.
   void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) override;
