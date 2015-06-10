@@ -43,10 +43,25 @@ TraceCrashServiceUploader::TraceCrashServiceUploader(
     net::URLRequestContextGetter* request_context)
     : request_context_(request_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string upload_url = kUploadURL;
+  if (command_line.HasSwitch(switches::kTraceUploadURL)) {
+    upload_url = command_line.GetSwitchValueASCII(switches::kTraceUploadURL);
+  }
+  SetUploadURL(upload_url);
 }
 
 TraceCrashServiceUploader::~TraceCrashServiceUploader() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+}
+
+void TraceCrashServiceUploader::SetUploadURL(const std::string& url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  upload_url_ = url;
+
+  if (!GURL(upload_url_).is_valid())
+    upload_url_.clear();
 }
 
 void TraceCrashServiceUploader::OnURLFetchComplete(
@@ -89,12 +104,13 @@ void TraceCrashServiceUploader::DoUpload(
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&TraceCrashServiceUploader::DoUploadOnFileThread,
-                 base::Unretained(this), file_contents, progress_callback,
-                 done_callback));
+                 base::Unretained(this), file_contents, upload_url_,
+                 progress_callback, done_callback));
 }
 
 void TraceCrashServiceUploader::DoUploadOnFileThread(
     const std::string& file_contents,
+    const std::string& upload_url,
     const UploadProgressCallback& progress_callback,
     const UploadDoneCallback& done_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
@@ -102,15 +118,6 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
 
   progress_callback_ = progress_callback;
   done_callback_ = done_callback;
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string upload_url = kUploadURL;
-  if (command_line.HasSwitch(switches::kTraceUploadURL)) {
-    upload_url = command_line.GetSwitchValueASCII(switches::kTraceUploadURL);
-  }
-  if (!GURL(upload_url).is_valid())
-    upload_url.clear();
 
   if (upload_url.empty()) {
     OnUploadError("Upload URL empty or invalid");

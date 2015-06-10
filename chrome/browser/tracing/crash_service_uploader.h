@@ -38,6 +38,8 @@ class TraceCrashServiceUploader : public content::TraceUploader,
       net::URLRequestContextGetter* request_context);
   ~TraceCrashServiceUploader() override;
 
+  void SetUploadURL(const std::string& url);
+
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
   void OnURLFetchUploadProgress(const net::URLFetcher* source,
@@ -51,6 +53,7 @@ class TraceCrashServiceUploader : public content::TraceUploader,
 
  private:
   void DoUploadOnFileThread(const std::string& file_contents,
+                            const std::string& upload_url,
                             const UploadProgressCallback& progress_callback,
                             const UploadDoneCallback& done_callback);
   // Sets up a multipart body to be uploaded. The body is produced according
@@ -77,6 +80,8 @@ class TraceCrashServiceUploader : public content::TraceUploader,
   UploadDoneCallback done_callback_;
 
   net::URLRequestContextGetter* request_context_;
+
+  std::string upload_url_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceCrashServiceUploader);
 };
