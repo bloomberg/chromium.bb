@@ -815,6 +815,67 @@ TEST_F(RenderWidgetHostViewAuraTest, PositionChildPopup) {
   aura::client::SetScreenPositionClient(root, NULL);
 }
 
+// Checks that moving parent sends new screen bounds.
+TEST_F(RenderWidgetHostViewAuraTest, ParentMovementUpdatesScreenRect) {
+  view_->InitAsChild(NULL);
+
+  aura::Window* root = parent_view_->GetNativeView()->GetRootWindow();
+
+  aura::test::TestWindowDelegate delegate1, delegate2;
+  scoped_ptr<aura::Window> parent1(new aura::Window(&delegate1));
+  parent1->Init(ui::LAYER_TEXTURED);
+  parent1->Show();
+  scoped_ptr<aura::Window> parent2(new aura::Window(&delegate2));
+  parent2->Init(ui::LAYER_TEXTURED);
+  parent2->Show();
+
+  root->AddChild(parent1.get());
+  parent1->AddChild(parent2.get());
+  parent2->AddChild(view_->GetNativeView());
+
+  root->SetBounds(gfx::Rect(0, 0, 400, 400));
+  parent1->SetBounds(gfx::Rect(1, 1, 300, 300));
+  parent2->SetBounds(gfx::Rect(2, 2, 200, 200));
+  view_->SetBounds(gfx::Rect(3, 3, 100, 100));
+  // view_ will be destroyed when parent is destroyed.
+  view_ = NULL;
+
+  // Flush the state after initial setup is done.
+  widget_host_->OnMessageReceived(
+      ViewHostMsg_UpdateScreenRects_ACK(widget_host_->GetRoutingID()));
+  widget_host_->OnMessageReceived(
+      ViewHostMsg_UpdateScreenRects_ACK(widget_host_->GetRoutingID()));
+  sink_->ClearMessages();
+
+  // Move parents.
+  parent2->SetBounds(gfx::Rect(20, 20, 200, 200));
+  ASSERT_EQ(1U, sink_->message_count());
+  const IPC::Message* msg = sink_->GetMessageAt(0);
+  ASSERT_EQ(ViewMsg_UpdateScreenRects::ID, msg->type());
+  ViewMsg_UpdateScreenRects::Param params;
+  ViewMsg_UpdateScreenRects::Read(msg, &params);
+  EXPECT_EQ(gfx::Rect(24, 24, 100, 100), base::get<0>(params));
+  EXPECT_EQ(gfx::Rect(1, 1, 300, 300), base::get<1>(params));
+  sink_->ClearMessages();
+  widget_host_->OnMessageReceived(
+      ViewHostMsg_UpdateScreenRects_ACK(widget_host_->GetRoutingID()));
+  // There should not be any pending update.
+  EXPECT_EQ(0U, sink_->message_count());
+
+  parent1->SetBounds(gfx::Rect(10, 10, 300, 300));
+  ASSERT_EQ(1U, sink_->message_count());
+  msg = sink_->GetMessageAt(0);
+  ASSERT_EQ(ViewMsg_UpdateScreenRects::ID, msg->type());
+  ViewMsg_UpdateScreenRects::Read(msg, &params);
+  EXPECT_EQ(gfx::Rect(33, 33, 100, 100), base::get<0>(params));
+  EXPECT_EQ(gfx::Rect(10, 10, 300, 300), base::get<1>(params));
+  sink_->ClearMessages();
+  widget_host_->OnMessageReceived(
+      ViewHostMsg_UpdateScreenRects_ACK(widget_host_->GetRoutingID()));
+  // There should not be any pending update.
+  EXPECT_EQ(0U, sink_->message_count());
+}
+
 // Checks that a fullscreen view is destroyed when it loses the focus.
 TEST_F(RenderWidgetHostViewAuraTest, DestroyFullscreenOnBlur) {
   view_->InitAsFullscreen(parent_view_);

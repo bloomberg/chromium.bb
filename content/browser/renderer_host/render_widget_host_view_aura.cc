@@ -829,6 +829,8 @@ void RenderWidgetHostViewAura::HandleParentBoundsChanged() {
         window_->GetBoundsInRootWindow());
   }
 #endif
+  if (!in_shutdown_)
+    host_->SendScreenRects();
 }
 
 void RenderWidgetHostViewAura::ParentHierarchyChanged() {
