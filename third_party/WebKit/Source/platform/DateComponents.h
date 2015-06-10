@@ -113,8 +113,6 @@ public:
     bool parseTime(const String&, unsigned start, unsigned& end);
     // Sets year, month, monthDay, hour, minute, second and millisecond.
     bool parseDateTimeLocal(const String&, unsigned start, unsigned& end);
-    // Sets year, month, monthDay, hour, minute, second and millisecond, and adjusts timezone.
-    bool parseDateTime(const String&, unsigned start, unsigned& end);
 
     // The following setMillisecondsSinceEpochFor*() functions take
     // the number of milliseconds since 1970-01-01 00:00:00.000 UTC as

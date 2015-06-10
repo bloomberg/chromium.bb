@@ -466,26 +466,6 @@ bool DateComponents::parseDateTimeLocal(const String& src, unsigned start, unsig
     return true;
 }
 
-bool DateComponents::parseDateTime(const String& src, unsigned start, unsigned& end)
-{
-    unsigned index;
-    if (!parseDate(src, start, index))
-        return false;
-    if (index >= src.length())
-        return false;
-    if (src[index] != 'T')
-        return false;
-    ++index;
-    if (!parseTime(src, index, index))
-        return false;
-    if (!parseTimeZone(src, index, end))
-        return false;
-    if (!withinHTMLDateLimits(m_year, m_month, m_monthDay, m_hour, m_minute, m_second, m_millisecond))
-        return false;
-    m_type = DateTime;
-    return true;
-}
-
 static inline double positiveFmod(double value, double divider)
 {
     double remainder = fmod(value, divider);
