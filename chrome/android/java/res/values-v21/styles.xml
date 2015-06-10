@@ -8,8 +8,6 @@
     <style name="PreferencesTheme" parent="ThemeWithActionBar">
         <item name="android:textColorLink">@color/pref_accent_color</item>
         <item name="android:alertDialogTheme">@style/PreferencesDialogTheme</item>
-        <item name="android:editTextBackground">@drawable/abc_edit_text_material</item>
-        <item name="android:editTextStyle">@style/PreferenceEditTextStyle</item>
         <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
         <item name="floatLabelTextAppearance">@style/PreferenceFloatLabelTextAppearance</item>
         <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
@@ -27,9 +25,6 @@
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textColor">@color/pref_accent_color</item>
         <item name="android:textSize">14sp</item>
-    </style>
-    <style name="PreferenceEditTextStyle" parent="Widget.AppCompat.EditText">
-        <item name="android:backgroundTint">@color/edit_text_tint</item>
     </style>
     <style name="PreferenceTitle">
         <item name="android:ellipsize">end</item>
