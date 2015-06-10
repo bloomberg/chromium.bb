@@ -5,6 +5,7 @@
 import logging
 import os
 import re
+import tempfile
 
 from pylib import pexpect
 from pylib import ports
@@ -79,6 +80,17 @@ class TestRunner(base_test_runner.BaseTestRunner):
               ports.AllocateTestServerPort(), self.device, self.tool)]
     else:
       self._servers = []
+
+    if test_options.app_data_files:
+      self._app_data_files = test_options.app_data_files
+      if test_options.app_data_file_dir:
+        self._app_data_file_dir = test_options.app_data_file_dir
+      else:
+        self._app_data_file_dir = tempfile.mkdtemp()
+        logging.critical('Saving app files to %s', self._app_data_file_dir)
+    else:
+      self._app_data_files = None
+      self._app_data_file_dir = None
 
   #override
   def InstallTestPackage(self):
@@ -167,6 +179,9 @@ class TestRunner(base_test_runner.BaseTestRunner):
           self.device, test, self._test_arguments)
       test_results = self._ParseTestOutput(
           self.test_package.SpawnTestProcess(self.device))
+      if self._app_data_files:
+        self.test_package.PullAppFiles(self.device, self._app_data_files,
+                                       self._app_data_file_dir)
     finally:
       for s in self._servers:
         s.Reset()

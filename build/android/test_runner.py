@@ -215,6 +215,12 @@ def AddGTestOptions(parser):
                      dest='isolate_file_path',
                      help='.isolate file path to override the default '
                           'path')
+  group.add_argument('--app-data-file', action='append', dest='app_data_files',
+                     help='A file path relative to the app data directory '
+                          'that should be saved to the host.')
+  group.add_argument('--app-data-file-dir',
+                     help='Host directory to which app data files will be'
+                          ' saved. Used with --app-data-file.')
 
   filter_group = group.add_mutually_exclusive_group()
   filter_group.add_argument('-f', '--gtest_filter', '--gtest-filter',
@@ -640,7 +646,9 @@ def _RunGTests(args, devices):
         args.test_arguments,
         args.timeout,
         args.isolate_file_path,
-        suite_name)
+        suite_name,
+        args.app_data_files,
+        args.app_data_file_dir)
     runner_factory, tests = gtest_setup.Setup(gtest_options, devices)
 
     results, test_exit_code = test_dispatcher.RunTests(

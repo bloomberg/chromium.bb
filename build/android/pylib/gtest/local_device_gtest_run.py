@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
+import itertools
 import logging
 import os
+import posixpath
 
 from pylib import constants
 from pylib import ports
@@ -37,6 +38,20 @@ _SUITE_REQUIRES_TEST_SERVER_SPAWNER = [
   'net_unittests', 'unit_tests'
 ]
 
+# TODO(jbudorick): Move this inside _ApkDelegate once TestPackageApk is gone.
+def PullAppFilesImpl(device, package, files, directory):
+  device_dir = device.GetApplicationDataDirectory(package)
+  host_dir = os.path.join(directory, str(device))
+  for f in files:
+    device_file = posixpath.join(device_dir, f)
+    host_file = os.path.join(host_dir, *f.split(posixpath.sep))
+    host_file_base, ext = os.path.splitext(host_file)
+    for i in itertools.count():
+      host_file = '%s_%d%s' % (host_file_base, i, ext)
+      if not os.path.exists(host_file):
+        break
+    device.PullFile(device_file, host_file)
+
 class _ApkDelegate(object):
   def __init__(self, apk):
     self._apk = apk
@@ -62,6 +77,9 @@ class _ApkDelegate(object):
 
       return device.StartInstrumentation(
           self._component, extras=extras, raw=False, **kwargs)
+
+  def PullAppFiles(self, device, files, directory):
+    PullAppFilesImpl(device, self._package, files, directory)
 
   def Clear(self, device):
     device.ClearApplicationState(self._package)
@@ -118,6 +136,9 @@ class _ExeDelegate(object):
       output = device.RunShellCommand(['sh', script_file.name], cwd=cwd,
                                       env=env, **kwargs)
     return output
+
+  def PullAppFiles(self, device, files, directory):
+    pass
 
   def Clear(self, device):
     device.KillAll(self._exe_file_name, blocking=True, timeout=30, quiet=True)
@@ -199,6 +220,9 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
         device, '--gtest_filter=%s' % test, timeout=900, retries=0)
     for s in self._servers[str(device)]:
       s.Reset()
+    if self._test_instance.app_files:
+      self._delegate.PullAppFiles(device, self._test_instance.app_files,
+                                  self._test_instance.app_file_dir)
     self._delegate.Clear(device)
 
     # Parse the output.

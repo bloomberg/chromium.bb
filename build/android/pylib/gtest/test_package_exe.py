@@ -157,3 +157,7 @@ class TestPackageExecutable(TestPackage):
     deps_path = self.suite_path + '_deps'
     if os.path.isdir(deps_path):
       device.PushChangedFiles([(deps_path, test_binary_path + '_deps')])
+
+  #override
+  def PullAppFiles(self, device, files, directory):
+    pass

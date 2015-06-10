@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import sys
+import tempfile
 
 from pylib import constants
 from pylib.base import base_test_result
@@ -127,6 +128,17 @@ class GtestTestInstance(test_instance.TestInstance):
       logging.warning('No isolate file provided. No data deps will be pushed.');
       self._isolate_delegate = None
 
+    if args.app_data_files:
+      self._app_data_files = args.app_data_files
+      if args.app_data_file_dir:
+        self._app_data_file_dir = args.app_data_file_dir
+      else:
+        self._app_data_file_dir = tempfile.mkdtemp()
+        logging.critical('Saving app files to %s', self._app_data_file_dir)
+    else:
+      self._app_data_files = None
+      self._app_data_file_dir = None
+
   #override
   def TestType(self):
     return 'gtest'
@@ -230,6 +242,14 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def apk(self):
     return self._apk_path
+
+  @property
+  def app_file_dir(self):
+    return self._app_data_file_dir
+
+  @property
+  def app_files(self):
+    return self._app_data_files
 
   @property
   def exe(self):

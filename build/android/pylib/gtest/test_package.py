@@ -22,7 +22,7 @@ class TestPackage(object):
     Args:
       device: Instance of DeviceUtils.
     """
-    raise NotImplementedError('Method must be overriden.')
+    raise NotImplementedError('Method must be overridden.')
 
   def CreateCommandLineFileOnDevice(self, device, test_filter, test_arguments):
     """Creates a test runner script and pushes to the device.
@@ -32,7 +32,7 @@ class TestPackage(object):
       test_filter: A test_filter flag.
       test_arguments: Additional arguments to pass to the test binary.
     """
-    raise NotImplementedError('Method must be overriden.')
+    raise NotImplementedError('Method must be overridden.')
 
   def GetAllTests(self, device):
     """Returns a list of all tests available in the test suite.
@@ -40,7 +40,7 @@ class TestPackage(object):
     Args:
       device: Instance of DeviceUtils.
     """
-    raise NotImplementedError('Method must be overriden.')
+    raise NotImplementedError('Method must be overridden.')
 
   def GetGTestReturnCode(self, _device):
     return None
@@ -54,7 +54,7 @@ class TestPackage(object):
     Returns:
       An instance of pexpect spawn class.
     """
-    raise NotImplementedError('Method must be overriden.')
+    raise NotImplementedError('Method must be overridden.')
 
   def Install(self, device):
     """Install the test package to the device.
@@ -62,5 +62,15 @@ class TestPackage(object):
     Args:
       device: Instance of DeviceUtils.
     """
-    raise NotImplementedError('Method must be overriden.')
+    raise NotImplementedError('Method must be overridden.')
 
+  def PullAppFiles(self, device, files, directory):
+    """Pull application data from the device.
+
+    Args:
+      device: Instance of DeviceUtils.
+      files: A list of paths relative to the application data directory to
+        retrieve from the device.
+      directory: The host directory to which files should be pulled.
+    """
+    raise NotImplementedError('Method must be overridden.')
