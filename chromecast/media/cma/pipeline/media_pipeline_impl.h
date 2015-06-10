@@ -83,7 +83,7 @@ class MediaPipelineImpl : public MediaPipeline {
   bool has_video_;
   scoped_ptr<AudioPipelineImpl> audio_pipeline_;
   scoped_ptr<VideoPipelineImpl> video_pipeline_;
-  scoped_ptr<::media::SerialRunner> pending_callbacks_;
+  scoped_ptr< ::media::SerialRunner> pending_flush_callbacks_;
 
   // Playback rate set by the upper layer.
   float target_playback_rate_;

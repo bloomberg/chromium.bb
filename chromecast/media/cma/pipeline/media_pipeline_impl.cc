@@ -162,7 +162,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
   CMALOG(kLogControl) << __FUNCTION__ << " t0=" << time.InMilliseconds();
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_audio_ || has_video_);
-  DCHECK(!pending_callbacks_);
+  DCHECK(!pending_flush_callbacks_);
 
   // Reset the start of the timeline.
   DCHECK_EQ(clock_device_->GetState(), MediaClockDevice::kStateIdle);
@@ -209,7 +209,7 @@ void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_audio_ || has_video_);
-  DCHECK(!pending_callbacks_);
+  DCHECK(!pending_flush_callbacks_);
 
   // No need to update media time anymore.
   enable_time_update_ = false;
@@ -236,7 +236,7 @@ void MediaPipelineImpl::Flush(const ::media::PipelineStatusCB& status_cb) {
   }
   ::media::PipelineStatusCB transition_cb =
       base::Bind(&MediaPipelineImpl::StateTransition, weak_this_, status_cb);
-  pending_callbacks_ =
+  pending_flush_callbacks_ =
       ::media::SerialRunner::Run(bound_fns, transition_cb);
 }
 
@@ -244,7 +244,11 @@ void MediaPipelineImpl::Stop() {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_audio_ || has_video_);
-  DCHECK(!pending_callbacks_);
+
+  // Cancel pending flush callbacks since we are about to stop/shutdown
+  // audio/video pipelines. This will ensure A/V Flush won't happen in
+  // stopped state.
+  pending_flush_callbacks_.reset();
 
   // No need to update media time anymore.
   enable_time_update_ = false;
@@ -282,7 +286,7 @@ VideoPipelineImpl* MediaPipelineImpl::GetVideoPipelineImpl() const {
 void MediaPipelineImpl::StateTransition(
     const ::media::PipelineStatusCB& status_cb,
     ::media::PipelineStatus status) {
-  pending_callbacks_.reset();
+  pending_flush_callbacks_.reset();
   status_cb.Run(status);
 }
 

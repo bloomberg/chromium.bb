@@ -70,7 +70,7 @@ class MediaPipelineProxy : public MediaPipeline {
   bool has_video_;
   scoped_ptr<AudioPipelineProxy> audio_pipeline_;
   scoped_ptr<VideoPipelineProxy> video_pipeline_;
-  scoped_ptr<::media::SerialRunner> pending_callbacks_;
+  scoped_ptr< ::media::SerialRunner> pending_flush_callbacks_;
 
   base::WeakPtr<MediaPipelineProxy> weak_this_;
   base::WeakPtrFactory<MediaPipelineProxy> weak_factory_;

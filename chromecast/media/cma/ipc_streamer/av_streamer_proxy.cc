@@ -56,15 +56,22 @@ void AvStreamerProxy::Start() {
 }
 
 void AvStreamerProxy::StopAndFlush(const base::Closure& done_cb) {
-  is_running_ = false;
-
   pending_av_data_ = false;
   pending_audio_config_ = ::media::AudioDecoderConfig();
   pending_video_config_ = ::media::VideoDecoderConfig();
   pending_buffer_ = scoped_refptr<DecoderBufferBase>();
 
   pending_read_ = false;
-  frame_provider_->Flush(done_cb);
+
+  // StopAndFlush may happen twice in a row when Stop happens while a previous
+  // pending Seek (which requires Flush). We only need to perform Flush once
+  // when entering stopped state. Chromium pipeline will call Start eventually
+  // to set is_running_, after Seek (next state of Seek is Play), which
+  // guarantees Flush be called when there is no pending tasks.
+  if (is_running_) {
+    frame_provider_->Flush(done_cb);
+  }
+  is_running_ = false;
 }
 
 void AvStreamerProxy::OnFifoReadEvent() {

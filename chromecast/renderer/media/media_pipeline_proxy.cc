@@ -246,7 +246,7 @@ void MediaPipelineProxy::Flush(const ::media::PipelineStatusCB& status_cb) {
   }
   ::media::PipelineStatusCB cb =
       base::Bind(&MediaPipelineProxy::OnProxyFlushDone, weak_this_, status_cb);
-  pending_callbacks_ = ::media::SerialRunner::Run(bound_fns, cb);
+  pending_flush_callbacks_ = ::media::SerialRunner::Run(bound_fns, cb);
 }
 
 void MediaPipelineProxy::OnProxyFlushDone(
@@ -254,13 +254,18 @@ void MediaPipelineProxy::OnProxyFlushDone(
     ::media::PipelineStatus status) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(status, ::media::PIPELINE_OK);
-  pending_callbacks_.reset();
+  pending_flush_callbacks_.reset();
   FORWARD_ON_IO_THREAD(Flush, status_cb);
 }
 
 void MediaPipelineProxy::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(has_audio_ || has_video_);
+
+  // Cancel pending flush callbacks since we are about to stop/shutdown
+  // audio/video pipelines. This will ensure A/V Flush won't happen in
+  // stopped state.
+  pending_flush_callbacks_.reset();
 
   if (has_audio_)
     audio_pipeline_->Stop();
