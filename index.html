@@ -240,6 +240,16 @@ the caret inside an empty table cell.  The caret's <code>y-position</code> is
 outside the <code>table-cell</code>.</p>
 
 <h3>
+    <a name="bugfix-frameInvalidation">bugfix/frameInvalidation</a>
+    (Imran Haider)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FframeInvalidation">view changes</a>]</span>
+</h3>
+<p>Open <a href="repros/frameInvalidation.html">this link</a> in Chrome.  The
+whole square should be blinking red, but due to an invalidation bug in Chrome,
+only part of the square blinks.  Resizing the window will refresh the whole
+square.</p>
+
+<h3>
     <a name="bugfix-iframeZoom">bugfix/iframeZoom</a>
     (Shezan Baig; D34484409)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FiframeZoom">view changes</a>]</span>
@@ -268,18 +278,6 @@ this doesn't happen if the first and second items are selected instead.</p>
 contents of the table will be selected on load.  Hit the "List" button multiple
 times.  Each click executes the <code>insertOrderedList</code> command.</p>
 <p>On every second click, the table will move down.</p>
-
-<h3>
-    <a name="bugfix-nonWindowContexts">bugfix/nonWindowContexts</a>
-    (Shezan Baig)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FnonWindowContexts">view changes</a>]</span>
-</h3>
-<p>Note: This branch has been miscategorized as a bugfix, it is actually a feature
-that we wanted specifically for our product, so it is unlikely that we will
-send this upstream.</p>
-<p>This branch removes the assumption that every V8 context has a <code>DOMWindow</code>
-associated with it.  This is necessary for our product because we have multiple
-V8 contexts living in the same process that need to share data with each other.</p>
 
 <h3>
     <a name="bugfix-removeSpellingMarker">bugfix/removeSpellingMarker</a>
