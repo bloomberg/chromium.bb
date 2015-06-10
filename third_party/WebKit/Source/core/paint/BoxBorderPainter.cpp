@@ -257,17 +257,16 @@ void drawSolidBorderRect(GraphicsContext* context, const FloatRect& borderRect,
     FloatRect strokeRect(borderRect);
     strokeRect.inflate(-borderWidth / 2);
 
-    bool antialias = BoxPainter::shouldAntialiasLines(context);
     bool wasAntialias = context->shouldAntialias();
-    if (antialias != wasAntialias)
-        context->setShouldAntialias(antialias);
+    if (!wasAntialias)
+        context->setShouldAntialias(true);
 
     context->setStrokeStyle(SolidStroke);
     context->setStrokeColor(color);
     context->strokeRect(strokeRect, borderWidth);
 
-    if (antialias != wasAntialias)
-        context->setShouldAntialias(wasAntialias);
+    if (!wasAntialias)
+        context->setShouldAntialias(false);
 }
 
 void drawBleedAdjustedDRRect(GraphicsContext* context, BackgroundBleedAvoidance bleedAvoidance,
