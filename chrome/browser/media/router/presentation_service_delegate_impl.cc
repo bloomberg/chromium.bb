@@ -19,6 +19,7 @@
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/presentation_media_sinks_observer.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
 #include "content/public/browser/presentation_session.h"
 #include "content/public/browser/render_frame_host.h"
@@ -43,13 +44,12 @@ RenderFrameHostId GetRenderFrameHostId(RenderFrameHost* render_view_host) {
   return RenderFrameHostId(render_process_id, render_frame_id);
 }
 
-std::string GetDisplayNameForFrame(RenderFrameHostId render_frame_host_id) {
-  RenderFrameHost* render_view_host = RenderFrameHost::FromID(
+// Gets the last committed URL for the render frame specified by
+// |render_frame_host_id|.
+GURL GetLastCommittedURLForFrame(RenderFrameHostId render_frame_host_id) {
+  RenderFrameHost* render_frame_host = RenderFrameHost::FromID(
       render_frame_host_id.first, render_frame_host_id.second);
-  std::string host = render_view_host->GetLastCommittedURL().host();
-  if (StartsWithASCII(host, "www.", false))
-    host = host.substr(4);
-  return host;
+  return render_frame_host->GetLastCommittedURL();
 }
 
 }  // namespace
@@ -387,7 +387,7 @@ void PresentationServiceDelegateImpl::Reset(int render_process_id,
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
   frame_manager_->Reset(render_frame_host_id);
   if (IsMainFrame(render_process_id, render_frame_id))
-    UpdateDefaultMediaSourceAndNotifyObservers(MediaSource(), std::string());
+    UpdateDefaultMediaSourceAndNotifyObservers(MediaSource(), GURL());
 }
 
 void PresentationServiceDelegateImpl::SetDefaultPresentationUrl(
@@ -405,10 +405,9 @@ void PresentationServiceDelegateImpl::SetDefaultPresentationUrl(
     if (!default_presentation_url.empty())
       default_source = MediaSourceForPresentationUrl(default_presentation_url);
 
-    std::string default_frame_display_name(
-        GetDisplayNameForFrame(render_frame_host_id));
+    GURL default_frame_url = GetLastCommittedURLForFrame(render_frame_host_id);
     UpdateDefaultMediaSourceAndNotifyObservers(default_source,
-                                               default_frame_display_name);
+                                               default_frame_url);
   }
 }
 
@@ -423,15 +422,14 @@ bool PresentationServiceDelegateImpl::IsMainFrame(int render_process_id,
 void PresentationServiceDelegateImpl::
     UpdateDefaultMediaSourceAndNotifyObservers(
         const MediaSource& default_source,
-        const std::string& default_frame_display_name) {
+        const GURL& default_frame_url) {
   if (!default_source.Equals(default_source_) ||
-      default_frame_display_name != default_frame_display_name_) {
+      default_frame_url != default_frame_url_) {
     default_source_ = default_source;
-    default_frame_display_name_ = default_frame_display_name;
-    FOR_EACH_OBSERVER(DefaultMediaSourceObserver,
-                      default_media_source_observers_,
-                      OnDefaultMediaSourceChanged(default_source_,
-                                                  default_frame_display_name_));
+    default_frame_url_ = default_frame_url;
+    FOR_EACH_OBSERVER(
+        DefaultMediaSourceObserver, default_media_source_observers_,
+        OnDefaultMediaSourceChanged(default_source_, default_frame_url_));
   }
 }
 
@@ -442,8 +440,36 @@ void PresentationServiceDelegateImpl::StartSession(
     const std::string& presentation_id,
     const PresentationSessionSuccessCallback& success_cb,
     const PresentationSessionErrorCallback& error_cb) {
-  // BUG=464205
-  NOTIMPLEMENTED();
+  if (presentation_url.empty() || !IsValidPresentationUrl(presentation_url)) {
+    error_cb.Run(content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN,
+                                            "Invalid presentation arguments."));
+    return;
+  }
+  RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
+  std::string final_presentation_id =
+      presentation_id.empty()
+          ? frame_manager_->GetDefaultPresentationId(render_frame_host_id)
+          : presentation_id;
+  if (final_presentation_id.empty())
+    // TODO(imcheng): Remove presentation_id argument entirely if required
+    // by Presentation API spec.
+    final_presentation_id = base::GenerateGUID();
+  scoped_ptr<CreateSessionRequest> context(new CreateSessionRequest(
+      presentation_url, final_presentation_id,
+      GetLastCommittedURLForFrame(render_frame_host_id), success_cb, error_cb));
+  // NOTE: Currently this request is ignored if a dialog is already open, e.g.
+  // via browser action. In practice, this should rarely happen, but log
+  // an error message in case it does.
+  MediaRouterDialogController::CreateForWebContents(web_contents_);
+  MediaRouterDialogController* controller =
+      MediaRouterDialogController::FromWebContents(web_contents_);
+
+  if (!controller->ShowMediaRouterDialogForPresentation(context.Pass())) {
+    LOG(ERROR) << "Media router dialog already exists. Ignoring StartSession.";
+    error_cb.Run(content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN,
+                                            "Unable to create dialog."));
+    return;
+  }
 }
 
 void PresentationServiceDelegateImpl::JoinSession(

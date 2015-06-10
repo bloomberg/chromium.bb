@@ -40,7 +40,7 @@ class MockDefaultMediaSourceObserver
     : public PresentationServiceDelegateImpl::DefaultMediaSourceObserver {
  public:
   MOCK_METHOD2(OnDefaultMediaSourceChanged,
-               void(const MediaSource&, const std::string&));
+               void(const MediaSource&, const GURL&));
 };
 
 class PresentationServiceDelegateImplTest
@@ -158,10 +158,10 @@ TEST_F(PresentationServiceDelegateImplTest, DefaultMediaSourceObserver) {
   std::string url1("http://foo");
   EXPECT_CALL(observer1, OnDefaultMediaSourceChanged(
                              Equals(MediaSourceForPresentationUrl(url1)),
-                             "google.com")).Times(1);
+                             GURL("http://www.google.com"))).Times(1);
   EXPECT_CALL(observer2, OnDefaultMediaSourceChanged(
                              Equals(MediaSourceForPresentationUrl(url1)),
-                             "google.com")).Times(1);
+                             GURL("http://www.google.com"))).Times(1);
   delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, url1,
                                             "defaultPresentationId");
 
@@ -172,14 +172,15 @@ TEST_F(PresentationServiceDelegateImplTest, DefaultMediaSourceObserver) {
   std::string url2("http://youtube.com");
   EXPECT_CALL(observer1, OnDefaultMediaSourceChanged(
                              Equals(MediaSourceForPresentationUrl(url2)),
-                             "google.com")).Times(1);
+                             GURL("http://www.google.com"))).Times(1);
   delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, url2,
                                             "defaultPresentationId");
 
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer1));
   // Remove default presentation URL.
-  EXPECT_CALL(observer1, OnDefaultMediaSourceChanged(Equals(MediaSource()),
-                                                     "google.com")).Times(1);
+  EXPECT_CALL(observer1, OnDefaultMediaSourceChanged(
+                             Equals(MediaSource()),
+                             GURL("http://www.google.com"))).Times(1);
   delegate_impl_->SetDefaultPresentationUrl(render_process_id, routing_id, "",
                                             "");
 }

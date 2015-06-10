@@ -123,8 +123,8 @@ class MediaRouterDialogController::DialogWebContentsObserver
  private:
   void WebContentsDestroyed() override {
     // The dialog is already closed. No need to call Close() again.
-    // NOTE: |this| is deleted after RemoveObservers() returns.
-    dialog_controller_->RemoveObservers();
+    // NOTE: |this| is deleted after Reset() returns.
+    dialog_controller_->Reset();
   }
 
   void NavigationEntryCommitted(const LoadCommittedDetails& load_details)
@@ -188,12 +188,33 @@ WebContents* MediaRouterDialogController::ShowMediaRouterDialog() {
   // Get the media router dialog for |initiator|, or create a new dialog
   // if not found.
   WebContents* media_router_dialog = GetMediaRouterDialog();
-  if (!media_router_dialog)
-    return CreateMediaRouterDialog();
+  if (!media_router_dialog) {
+    CreateMediaRouterDialog();
+    return GetMediaRouterDialog();
+  }
 
   // Show the initiator holding the existing media router dialog.
   initiator_->GetDelegate()->ActivateContents(initiator_);
   return media_router_dialog;
+}
+
+WebContents* MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
+    scoped_ptr<CreateSessionRequest> request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Get the media router dialog for |initiator|, or create a new dialog
+  // if not found.
+  WebContents* media_router_dialog = GetMediaRouterDialog();
+  if (!media_router_dialog) {
+    CreateMediaRouterDialog();
+    media_router_dialog = GetMediaRouterDialog();
+    presentation_request_ = request.Pass();
+    return media_router_dialog;
+  }
+
+  // Show the initiator holding the existing media router dialog.
+  initiator_->GetDelegate()->ActivateContents(initiator_);
+  return nullptr;
 }
 
 WebContents* MediaRouterDialogController::GetMediaRouterDialog() const {
@@ -206,7 +227,7 @@ void MediaRouterDialogController::CloseMediaRouterDialog() {
   DCHECK(initiator_observer_.get());
   WebContents* media_router_dialog = GetMediaRouterDialog();
   CHECK(media_router_dialog);
-  RemoveObservers();
+  Reset();
 
   content::WebUI* web_ui = media_router_dialog->GetWebUI();
   if (web_ui) {
@@ -217,7 +238,7 @@ void MediaRouterDialogController::CloseMediaRouterDialog() {
   }
 }
 
-WebContents* MediaRouterDialogController::CreateMediaRouterDialog() {
+void MediaRouterDialogController::CreateMediaRouterDialog() {
   DCHECK(!initiator_observer_.get());
   DCHECK(!dialog_observer_.get());
 
@@ -256,15 +277,15 @@ WebContents* MediaRouterDialogController::CreateMediaRouterDialog() {
       initiator_, this));
   dialog_observer_.reset(new DialogWebContentsObserver(
       media_router_dialog, this));
-  return media_router_dialog;
 }
 
-void MediaRouterDialogController::RemoveObservers() {
+void MediaRouterDialogController::Reset() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(initiator_observer_.get());
   DCHECK(dialog_observer_.get());
   initiator_observer_.reset();
   dialog_observer_.reset();
+  presentation_request_.reset();
 }
 
 void MediaRouterDialogController::OnDialogNavigated(
@@ -284,7 +305,42 @@ void MediaRouterDialogController::OnDialogNavigated(
 
   media_router_dialog_pending_ = false;
 
-  // TODO(imcheng): Initialize dialog.
+  PopulateDialog(media_router_dialog);
+}
+
+void MediaRouterDialogController::PopulateDialog(
+    content::WebContents* media_router_dialog) {
+  DCHECK(media_router_dialog);
+  DCHECK(initiator_observer_);
+  if (!initiator_observer_) {
+    Reset();
+    return;
+  }
+  content::WebContents* initiator = initiator_observer_->web_contents();
+  DCHECK(initiator);
+  if (!initiator || !media_router_dialog->GetWebUI()) {
+    Reset();
+    return;
+  }
+
+  MediaRouterUI* media_router_ui = static_cast<MediaRouterUI*>(
+      media_router_dialog->GetWebUI()->GetController());
+  DCHECK(media_router_ui);
+  if (!media_router_ui) {
+    Reset();
+    return;
+  }
+
+  if (!presentation_request_.get()) {
+    PresentationServiceDelegateImpl::CreateForWebContents(initiator);
+    PresentationServiceDelegateImpl* delegate =
+        PresentationServiceDelegateImpl::FromWebContents(initiator);
+    CHECK(delegate);
+    media_router_ui->InitWithDefaultMediaSource(delegate);
+  } else {
+    media_router_ui->InitWithPresentationSessionRequest(
+        initiator, presentation_request_.Pass());
+  }
 }
 
 }  // namespace media_router

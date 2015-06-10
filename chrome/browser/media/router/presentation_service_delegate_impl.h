@@ -106,6 +106,9 @@ class PresentationServiceDelegateImpl
   // Returns an empty MediaSource otherwise.
   MediaSource default_source() const { return default_source_; }
 
+  content::WebContents* web_contents() const { return web_contents_; }
+  const GURL& default_frame_url() const { return default_frame_url_; }
+
   // Observer interface for listening to default MediaSource changes for the
   // WebContents.
   class DefaultMediaSourceObserver {
@@ -115,11 +118,11 @@ class PresentationServiceDelegateImpl
     // Called when default media source for the corresponding WebContents has
     // changed.
     // |source|: New default MediaSource, or empty if default was removed.
-    // |frame_display_name|: Display Name of the frame that contains the default
-    // media source, or empty if there is no default media source.
+    // |frame_url|: URL of the frame that contains the default
+    //     media source, or empty if there is no default media source.
     virtual void OnDefaultMediaSourceChanged(
         const MediaSource& source,
-        const std::string& frame_display_name) = 0;
+        const GURL& frame_url) = 0;
   };
 
   // Adds / removes an observer for listening to default MediaSource changes.
@@ -153,10 +156,10 @@ class PresentationServiceDelegateImpl
   // changed, notify the observers.
   void UpdateDefaultMediaSourceAndNotifyObservers(
       const MediaSource& new_default_source,
-      const std::string& new_default_source_host);
+      const GURL& new_default_frame_url);
 
   MediaSource default_source_;
-  std::string default_frame_display_name_;
+  GURL default_frame_url_;
 
   // References to the observers listening for changes to default media source.
   base::ObserverList<

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "chrome/browser/media/router/create_session_request.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -33,6 +34,14 @@ class MediaRouterDialogController
   // Returns WebContents for the media router dialog.
   content::WebContents* ShowMediaRouterDialog();
 
+  // Creates a Media Router modal dialog using the initiator and parameters
+  // specified in |request|. If the dialog already exists, brings the dialog
+  // to the front, but does not change the dialog with |request|.
+  // Returns WebContents for the media router dialog if a dialog was created.
+  // Otherwise returns nullptr and |request| is deleted.
+  content::WebContents* ShowMediaRouterDialogForPresentation(
+      scoped_ptr<CreateSessionRequest> request);
+
   // Returns the media router dialog WebContents.
   // Returns nullptr if there is no dialog.
   content::WebContents* GetMediaRouterDialog() const;
@@ -51,14 +60,15 @@ class MediaRouterDialogController
   explicit MediaRouterDialogController(content::WebContents* web_contents);
 
   // Creates a new media router dialog modal to |initiator_|.
-  // Returns the WebContents of the newly created dialog.
-  content::WebContents* CreateMediaRouterDialog();
+  void CreateMediaRouterDialog();
 
-  // Removes WebContentsObservers for the initiator and dialog WebContents.
-  void RemoveObservers();
+  // Resets this dialog controller to an empty state.
+  void Reset();
 
   // Invoked when the dialog WebContents has navigated.
   void OnDialogNavigated(const content::LoadCommittedDetails& details);
+
+  void PopulateDialog(content::WebContents* media_router_dialog);
 
   scoped_ptr<InitiatorWebContentsObserver> initiator_observer_;
   scoped_ptr<DialogWebContentsObserver> dialog_observer_;
@@ -68,6 +78,11 @@ class MediaRouterDialogController
   // True if the controller is waiting for a new media router dialog to be
   // created.
   bool media_router_dialog_pending_;
+
+  // Data for dialogs created under a Presentation API context.
+  // Passed from the caller of ShowMediaRouterDialogForPresentation(), and
+  // passed to the MediaRouterUI when it is initialized.
+  scoped_ptr<CreateSessionRequest> presentation_request_;
 
   base::ThreadChecker thread_checker_;
 
