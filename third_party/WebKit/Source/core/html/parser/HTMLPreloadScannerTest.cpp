@@ -56,13 +56,12 @@ public:
     }
 
 protected:
-    virtual void preload(PassOwnPtr<PreloadRequest> preloadRequest)
+    void preload(PassOwnPtr<PreloadRequest> preloadRequest) override
     {
         m_preloadRequest = preloadRequest;
     }
 
 private:
-
     OwnPtr<PreloadRequest> m_preloadRequest;
 };
 
@@ -101,7 +100,7 @@ protected:
         m_scanner = HTMLPreloadScanner::create(options, documentURL, CachedDocumentParameters::create(&m_dummyPageHolder->document(), createMediaValues()));
     }
 
-    virtual void SetUp()
+    void SetUp() override
     {
         runSetUp(true);
     }
@@ -246,4 +245,4 @@ TEST_F(HTMLPreloadScannerTest, testPreconnect)
         test(testCase);
 }
 
-}
+} // namespace blink

@@ -7,11 +7,9 @@
 
 #include <gtest/gtest.h>
 
-namespace {
+namespace blink {
 
-using namespace blink;
-
-TEST(HTMLParserThread, Init)
+TEST(HTMLParserThreadTest, Init)
 {
     // The harness has already run init() for us, so tear down the parser first.
     ASSERT_TRUE(HTMLParserThread::shared());
@@ -23,4 +21,4 @@ TEST(HTMLParserThread, Init)
     ASSERT_TRUE(HTMLParserThread::shared());
 }
 
-} // namespace
+} // namespace blink

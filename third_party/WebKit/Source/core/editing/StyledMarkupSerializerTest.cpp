@@ -32,7 +32,7 @@ namespace blink {
 // in layout tests.
 class StyledMarkupSerializerTest : public ::testing::Test {
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     HTMLDocument& document() const { return *m_document; }
 
@@ -63,7 +63,7 @@ std::string StyledMarkupSerializerTest::serialize()
     return CreateMarkupAlgorithm<Tree>::createMarkup(start, end).utf8().data();
 }
 
-PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
+static PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
 {
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = scope.getElementById(AtomicString::fromUTF8(hostElementID))->createShadowRoot(ASSERT_NO_EXCEPTION);
     shadowRoot->setInnerHTML(String::fromUTF8(shadowRootContent), ASSERT_NO_EXCEPTION);
@@ -179,4 +179,4 @@ TEST_F(StyledMarkupSerializerTest, StyleDisplayNone)
     EXPECT_EQ(expectedResult, serialize<EditingStrategy>());
 }
 
-} // namespace
+} // namespace blink

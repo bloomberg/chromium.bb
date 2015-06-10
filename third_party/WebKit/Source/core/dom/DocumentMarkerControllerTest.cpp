@@ -43,13 +43,11 @@
 #include "wtf/testing/WTFTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class DocumentMarkerControllerTest : public ::testing::Test {
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     Document& document() const { return *m_document; }
     DocumentMarkerController& markerController() const { return m_document->markers(); }
@@ -219,4 +217,4 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects)
     EXPECT_NE(renderedRects[0], newRenderedRects[0]);
 }
 
-}
+} // namespace blink

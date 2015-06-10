@@ -33,9 +33,7 @@
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(DOMImplementationTest, TextMIMEType)
 {
@@ -95,4 +93,4 @@ TEST(DOMImplementationTest, TextXMLType)
     EXPECT_FALSE(DOMImplementation::isXMLMIMEType("application/+xml"));
 }
 
-}
+} // namespace blink

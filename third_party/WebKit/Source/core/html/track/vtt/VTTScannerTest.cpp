@@ -31,14 +31,11 @@
 #include "core/html/track/vtt/VTTScanner.h"
 
 #include "wtf/text/WTFString.h"
-
 #include <gtest/gtest.h>
 
-using blink::VTTScanner;
+namespace blink {
 
-namespace {
-
-TEST(VTTScanner, Constructor)
+TEST(VTTScannerTest, Constructor)
 {
     String data8("foo");
     EXPECT_TRUE(data8.is8Bit());
@@ -89,7 +86,7 @@ void scanSequenceHelper1(const String& input)
 
 
 // Exercises match(c) and scan(c).
-TEST(VTTScanner, BasicOperations1)
+TEST(VTTScannerTest, BasicOperations1)
 {
     TEST_WITH(scanSequenceHelper1, "foe");
 }
@@ -110,7 +107,7 @@ void scanSequenceHelper2(const String& input)
 }
 
 // Exercises scan(<literal>[, length]).
-TEST(VTTScanner, BasicOperations2)
+TEST(VTTScannerTest, BasicOperations2)
 {
     TEST_WITH(scanSequenceHelper2, "foe");
 }
@@ -147,7 +144,7 @@ void scanWithPredicate(const String& input)
 }
 
 // Tests skipWhile() and collectWhile().
-TEST(VTTScanner, PredicateScanning)
+TEST(VTTScannerTest, PredicateScanning)
 {
     TEST_WITH(scanWithPredicate, "badAbing");
 }
@@ -179,7 +176,7 @@ void scanWithInvPredicate(const String& input)
 }
 
 // Tests skipUntil() and collectUntil().
-TEST(VTTScanner, InversePredicateScanning)
+TEST(VTTScannerTest, InversePredicateScanning)
 {
     TEST_WITH(scanWithInvPredicate, "BADaBING");
 }
@@ -210,7 +207,7 @@ void scanRuns(const String& input)
 }
 
 // Tests scanRun/skipRun.
-TEST(VTTScanner, RunScanning)
+TEST(VTTScannerTest, RunScanning)
 {
     TEST_WITH(scanRuns, "foo:baz:bar");
 }
@@ -235,7 +232,7 @@ void scanRunsToStrings(const String& input)
 }
 
 // Tests extractString.
-TEST(VTTScanner, ExtractString)
+TEST(VTTScannerTest, ExtractString)
 {
     TEST_WITH(scanRunsToStrings, "foo:bar");
 }
@@ -252,7 +249,7 @@ void tailStringExtract(const String& input)
 }
 
 // Tests restOfInputAsString().
-TEST(VTTScanner, ExtractRestAsString)
+TEST(VTTScannerTest, ExtractRestAsString)
 {
     TEST_WITH(tailStringExtract, "foo:bar");
 }
@@ -298,7 +295,7 @@ void scanDigits2(const String& input)
 }
 
 // Tests scanDigits().
-TEST(VTTScanner, ScanDigits)
+TEST(VTTScannerTest, ScanDigits)
 {
     TEST_WITH(scanDigits1, "foo 123 bar 45678");
     TEST_WITH(scanDigits2, "-654 1000000000000000000");
@@ -342,11 +339,11 @@ void scanFloatValue(const String& input)
 }
 
 // Tests scanFloat().
-TEST(VTTScanner, ScanFloat)
+TEST(VTTScannerTest, ScanFloat)
 {
     TEST_WITH(scanFloatValue, "1. 1.0 .0 . 1.0000 01.000");
 }
 
 #undef TEST_WITH
 
-} // namespace
+} // namespace blink

@@ -11,7 +11,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/page/DragData.h"
 #include "wtf/DateMath.h"
-
 #include <gtest/gtest.h>
 
 namespace blink {

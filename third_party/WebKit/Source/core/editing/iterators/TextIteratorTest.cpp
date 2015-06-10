@@ -51,9 +51,7 @@
 #include <gtest/gtest.h>
 #include <string>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 struct DOMTree : NodeTraversal {
     using PositionType = Position;
@@ -67,7 +65,7 @@ struct ComposedTree : ComposedTreeTraversal {
 
 class TextIteratorTest : public ::testing::Test {
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     HTMLDocument& document() const { return *m_document; }
 
@@ -139,7 +137,7 @@ PassRefPtrWillBeRawPtr<Range> TextIteratorTest::getBodyRange() const
     return range.release();
 }
 
-PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
+static PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope& scope, const char* hostElementID, const char* shadowRootContent)
 {
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = scope.getElementById(AtomicString::fromUTF8(hostElementID))->createShadowRoot(ASSERT_NO_EXCEPTION);
     shadowRoot->setInnerHTML(String::fromUTF8(shadowRootContent), ASSERT_NO_EXCEPTION);
@@ -484,4 +482,4 @@ TEST_F(TextIteratorTest, SubrangeWithReplacedElements)
     EXPECT_EQ(3, subrange->endOffset());
 }
 
-}
+} // namespace blink

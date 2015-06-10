@@ -7,9 +7,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class HTMLLinkElementSizesAttributeTest : public testing::Test {
 };
@@ -74,4 +72,4 @@ TEST(HTMLLinkElementSizesAttributeTest, parseSizes)
     ASSERT_EQ(0U, sizes.size());
 }
 
-} //  namespace
+} // namespace blink

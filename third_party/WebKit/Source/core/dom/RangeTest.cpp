@@ -19,13 +19,11 @@
 #include "wtf/text/AtomicString.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class RangeTest : public ::testing::Test {
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     HTMLDocument& document() const;
 
@@ -141,4 +139,4 @@ TEST_F(RangeTest, SplitTextNodeRangeOutsideText)
     EXPECT_EQ(4, rangeFromTextToMiddleOfElement->endOffset());
 }
 
-}
+} // namespace blink

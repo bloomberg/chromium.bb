@@ -25,9 +25,7 @@
 #include "wtf/testing/WTFTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class ComposedTreeTraversalTest : public ::testing::Test {
 protected:
@@ -39,7 +37,7 @@ protected:
     void setupSampleHTML(const char* mainHTML, const char* shadowHTML, unsigned);
 
 private:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     HTMLDocument* m_document;
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
@@ -327,4 +325,4 @@ TEST_F(ComposedTreeTraversalTest, lastWithin)
     EXPECT_EQ(*m10->firstChild(), ComposedTreeTraversal::lastWithinOrSelf(*s12));
 }
 
-} // namespace
+} // namespace blink

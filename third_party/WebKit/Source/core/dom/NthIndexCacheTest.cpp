@@ -10,14 +10,11 @@
 #include "core/testing/DummyPageHolder.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class NthIndexCacheTest : public ::testing::Test {
-
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     Document& document() const { return m_dummyPageHolder->document(); }
     void setHtmlInnerHTML(const char* htmlContent);
@@ -49,4 +46,4 @@ TEST_F(NthIndexCacheTest, NthIndex)
     EXPECT_EQ(nthIndexCache.nthLastChildIndex(*document().getElementById("nth-last-child")), 12U);
 }
 
-} // namespace
+} // namespace blink

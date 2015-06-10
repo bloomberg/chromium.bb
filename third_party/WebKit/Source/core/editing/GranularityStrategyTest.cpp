@@ -22,9 +22,7 @@
 #include "wtf/testing/WTFTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 #define EXPECT_EQ_SELECTED_TEXT(text) \
     EXPECT_EQ(text, WebString(selection().selectedText()).utf8())
@@ -40,7 +38,7 @@ IntPoint visiblePositionToContentsPoint(const VisiblePosition& pos)
 
 class GranularityStrategyTest : public ::testing::Test {
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
     HTMLDocument& document() const;
@@ -660,4 +658,5 @@ TEST_F(GranularityStrategyTest, DirectionSwitchStartOnBoundary)
     selection().moveRangeSelectionExtent(m_wordMiddles[4]);
     EXPECT_EQ_SELECTED_TEXT("mnopqr iiin");
 }
-}
+
+} // namespace blink

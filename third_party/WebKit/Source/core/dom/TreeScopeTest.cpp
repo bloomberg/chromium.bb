@@ -10,9 +10,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 TEST(TreeScopeTest, CommonAncestorOfSameTrees)
 {
@@ -96,4 +94,4 @@ TEST(TreeScopeTest, CommonAncestorOfTreesInDifferentDocuments)
     EXPECT_EQ(0, document2->commonAncestorTreeScope(*document1));
 }
 
-} // namespace
+} // namespace blink

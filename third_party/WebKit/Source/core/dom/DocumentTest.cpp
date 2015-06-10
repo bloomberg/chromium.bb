@@ -40,16 +40,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class DocumentTest : public ::testing::Test {
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
 
 #if ENABLE(OILPAN)
-    virtual void TearDown() override
+    void TearDown() override
     {
         Heap::collectAllGarbage();
     }
@@ -85,7 +83,10 @@ public:
         return adoptPtrWillBeNoop(new MockDocumentVisibilityObserver(document));
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        DocumentVisibilityObserver::trace(visitor);
+    }
 
     MOCK_METHOD1(didChangeVisibilityState, void(PageVisibilityState));
 
@@ -354,4 +355,4 @@ TEST_F(DocumentTest, referrerPolicyParsing)
     }
 }
 
-} // unnamed namespace
+} // namespace blink

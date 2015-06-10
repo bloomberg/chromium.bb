@@ -36,46 +36,40 @@
 
 namespace blink {
 
-// This assertion-prettify function needs to be in the WebCore namespace.
+// This assertion-prettify function needs to be in the blink namespace.
 void PrintTo(const HTMLDimension& dimension, ::std::ostream* os)
 {
     *os << "HTMLDimension => type: " << dimension.type() << ", value=" << dimension.value();
 }
 
-}
-
-using namespace blink;
-
-namespace {
-
-TEST(WebCoreHTMLDimension, parseListOfDimensionsEmptyString)
+TEST(HTMLDimensionTest, parseListOfDimensionsEmptyString)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String(""));
     ASSERT_EQ(Vector<HTMLDimension>(), result);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsNoNumberAbsolute)
+TEST(HTMLDimensionTest, parseListOfDimensionsNoNumberAbsolute)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String(" \t"));
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(HTMLDimension(0, HTMLDimension::Relative), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsNoNumberPercent)
+TEST(HTMLDimensionTest, parseListOfDimensionsNoNumberPercent)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String(" \t%"));
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(HTMLDimension(0, HTMLDimension::Percentage), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsNoNumberRelative)
+TEST(HTMLDimensionTest, parseListOfDimensionsNoNumberRelative)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("\t *"));
     ASSERT_EQ(1U, result.size());
     ASSERT_EQ(HTMLDimension(0, HTMLDimension::Relative), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSingleAbsolute)
+TEST(HTMLDimensionTest, parseListOfDimensionsSingleAbsolute)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("10"));
 
@@ -83,7 +77,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsSingleAbsolute)
     ASSERT_EQ(HTMLDimension(10, HTMLDimension::Absolute), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSinglePercentageWithSpaces)
+TEST(HTMLDimensionTest, parseListOfDimensionsSinglePercentageWithSpaces)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("50  %"));
 
@@ -91,7 +85,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsSinglePercentageWithSpaces)
     ASSERT_EQ(HTMLDimension(50, HTMLDimension::Percentage), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSingleRelative)
+TEST(HTMLDimensionTest, parseListOfDimensionsSingleRelative)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("25*"));
 
@@ -99,7 +93,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsSingleRelative)
     ASSERT_EQ(HTMLDimension(25, HTMLDimension::Relative), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsDoubleAbsolute)
+TEST(HTMLDimensionTest, parseListOfDimensionsDoubleAbsolute)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("10.054"));
 
@@ -107,7 +101,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsDoubleAbsolute)
     ASSERT_EQ(HTMLDimension(10.054, HTMLDimension::Absolute), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsLeadingSpaceAbsolute)
+TEST(HTMLDimensionTest, parseListOfDimensionsLeadingSpaceAbsolute)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("\t \t 10"));
 
@@ -115,7 +109,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsLeadingSpaceAbsolute)
     ASSERT_EQ(HTMLDimension(10, HTMLDimension::Absolute), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsLeadingSpaceRelative)
+TEST(HTMLDimensionTest, parseListOfDimensionsLeadingSpaceRelative)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String(" \r25*"));
 
@@ -123,7 +117,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsLeadingSpaceRelative)
     ASSERT_EQ(HTMLDimension(25, HTMLDimension::Relative), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsLeadingSpacePercentage)
+TEST(HTMLDimensionTest, parseListOfDimensionsLeadingSpacePercentage)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("\n 25%"));
 
@@ -131,7 +125,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsLeadingSpacePercentage)
     ASSERT_EQ(HTMLDimension(25, HTMLDimension::Percentage), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsDoublePercentage)
+TEST(HTMLDimensionTest, parseListOfDimensionsDoublePercentage)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("10.054%"));
 
@@ -139,7 +133,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsDoublePercentage)
     ASSERT_EQ(HTMLDimension(10.054, HTMLDimension::Percentage), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsDoubleRelative)
+TEST(HTMLDimensionTest, parseListOfDimensionsDoubleRelative)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("10.054*"));
 
@@ -147,7 +141,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsDoubleRelative)
     ASSERT_EQ(HTMLDimension(10.054, HTMLDimension::Relative), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInIntegerDoubleAbsolute)
+TEST(HTMLDimensionTest, parseListOfDimensionsSpacesInIntegerDoubleAbsolute)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("1\n0 .025%"));
 
@@ -155,7 +149,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInIntegerDoubleAbsolute)
     ASSERT_EQ(HTMLDimension(1, HTMLDimension::Absolute), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInIntegerDoublePercent)
+TEST(HTMLDimensionTest, parseListOfDimensionsSpacesInIntegerDoublePercent)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("1\n0 .025%"));
 
@@ -163,7 +157,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInIntegerDoublePercent)
     ASSERT_EQ(HTMLDimension(1, HTMLDimension::Absolute), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInIntegerDoubleRelative)
+TEST(HTMLDimensionTest, parseListOfDimensionsSpacesInIntegerDoubleRelative)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("1\n0 .025*"));
 
@@ -171,7 +165,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInIntegerDoubleRelative)
     ASSERT_EQ(HTMLDimension(1, HTMLDimension::Absolute), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInFractionAfterDotDoublePercent)
+TEST(HTMLDimensionTest, parseListOfDimensionsSpacesInFractionAfterDotDoublePercent)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("10.  0 25%"));
 
@@ -179,7 +173,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInFractionAfterDotDoublePe
     ASSERT_EQ(HTMLDimension(10.025, HTMLDimension::Percentage), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInFractionAfterDigitDoublePercent)
+TEST(HTMLDimensionTest, parseListOfDimensionsSpacesInFractionAfterDigitDoublePercent)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("10.05\r25%"));
 
@@ -187,7 +181,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsSpacesInFractionAfterDigitDouble
     ASSERT_EQ(HTMLDimension(10.0525, HTMLDimension::Percentage), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsTrailingComma)
+TEST(HTMLDimensionTest, parseListOfDimensionsTrailingComma)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("10,"));
 
@@ -195,7 +189,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsTrailingComma)
     ASSERT_EQ(HTMLDimension(10, HTMLDimension::Absolute), result[0]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsTwoDimensions)
+TEST(HTMLDimensionTest, parseListOfDimensionsTwoDimensions)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("10*,25 %"));
 
@@ -204,7 +198,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsTwoDimensions)
     ASSERT_EQ(HTMLDimension(25, HTMLDimension::Percentage), result[1]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsMultipleDimensionsWithSpaces)
+TEST(HTMLDimensionTest, parseListOfDimensionsMultipleDimensionsWithSpaces)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("10   *   ,\t25 , 10.05\n5%"));
 
@@ -214,7 +208,7 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsMultipleDimensionsWithSpaces)
     ASSERT_EQ(HTMLDimension(10.055, HTMLDimension::Percentage), result[2]);
 }
 
-TEST(WebCoreHTMLDimension, parseListOfDimensionsMultipleDimensionsWithOneEmpty)
+TEST(HTMLDimensionTest, parseListOfDimensionsMultipleDimensionsWithOneEmpty)
 {
     Vector<HTMLDimension> result = parseListOfDimensions(String("2*,,8.%"));
 
@@ -224,4 +218,4 @@ TEST(WebCoreHTMLDimension, parseListOfDimensionsMultipleDimensionsWithOneEmpty)
     ASSERT_EQ(HTMLDimension(8., HTMLDimension::Percentage), result[2]);
 }
 
-}
+} // namespace blink

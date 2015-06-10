@@ -30,24 +30,22 @@
 
 #include "config.h"
 #include "core/html/LinkRelAttribute.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/text/CString.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class LinkRelAttributeTest : public testing::Test {
 protected:
-    virtual void SetUp()
+    void SetUp() override
     {
         m_touchIconLoadingEnabled = RuntimeEnabledFeatures::touchIconLoadingEnabled();
         m_presentationEnabled = RuntimeEnabledFeatures::presentationEnabled();
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         RuntimeEnabledFeatures::setTouchIconLoadingEnabled(m_touchIconLoadingEnabled);
         RuntimeEnabledFeatures::setPresentationEnabled(m_presentationEnabled);
@@ -155,4 +153,4 @@ TEST_F(LinkRelAttributeTest, ConstructorDefaultPresentation)
     EXPECT_TRUE(LinkRelAttribute("default-presentation").isDefaultPresentation());
 }
 
-} // namespace
+} // namespace blink

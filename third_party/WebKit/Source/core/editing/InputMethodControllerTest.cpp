@@ -13,9 +13,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class InputMethodControllerTest : public ::testing::Test {
 protected:
@@ -25,7 +23,7 @@ protected:
     Element* insertHTMLElement(const char* elementCode, const char* elementId);
 
 private:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
     HTMLDocument* m_document;
@@ -139,4 +137,4 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingTextWithInvalidOffse
     EXPECT_FALSE(controller().compositionRange());
 }
 
-} // namespace
+} // namespace blink

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 
 #include "core/frame/FrameView.h"
@@ -23,10 +22,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
 using ::testing::Mock;
 
-namespace {
+namespace blink {
 
 enum BitmapOpacity {
     OpaqueBitmap,
@@ -73,7 +71,7 @@ PassRefPtr<Image> FakeImageSource::getSourceImageForCanvas(SourceImageMode, Sour
 class CanvasRenderingContext2DTest : public ::testing::Test {
 protected:
     CanvasRenderingContext2DTest();
-    virtual void SetUp() override;
+    void SetUp() override;
 
     DummyPageHolder& page() const { return *m_dummyPageHolder; }
     HTMLDocument& document() const { return *m_document; }
@@ -604,4 +602,4 @@ TEST_F(CanvasRenderingContext2DTest, CanvasObserver)
     canvasElement().removeObserver(observer.get());
 }
 
-} // unnamed namespace
+} // namespace blink

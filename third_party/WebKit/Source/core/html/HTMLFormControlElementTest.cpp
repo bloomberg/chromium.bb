@@ -17,7 +17,7 @@ namespace blink {
 
 class HTMLFormControlElementTest : public ::testing::Test {
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     DummyPageHolder& page() const { return *m_dummyPageHolder; }
     HTMLDocument& document() const { return *m_document; }
@@ -67,4 +67,4 @@ TEST_F(HTMLFormControlElementTest, customValidationMessageTextDirection)
     EXPECT_EQ(RTL, subMessageDir);
 }
 
-}
+} // namespace blink

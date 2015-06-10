@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 
 #include "core/frame/FrameView.h"
@@ -18,15 +17,14 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
 using ::testing::Mock;
 
-namespace {
+namespace blink {
 
 class CanvasRenderingContext2DAPITest : public ::testing::Test {
 protected:
     CanvasRenderingContext2DAPITest();
-    virtual void SetUp() override;
+    void SetUp() override;
 
     DummyPageHolder& page() const { return *m_dummyPageHolder; }
     HTMLDocument& document() const { return *m_document; }
@@ -219,4 +217,4 @@ TEST_F(CanvasRenderingContext2DAPITest, CreateImageData)
     EXPECT_EQ((unsigned)800, imgdata4->data()->length());
 }
 
-} // unnamed namespace
+} // namespace blink

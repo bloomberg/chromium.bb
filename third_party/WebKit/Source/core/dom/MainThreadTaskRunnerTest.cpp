@@ -37,9 +37,7 @@
 #include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class MarkingBooleanTask final : public ExecutionContextTask {
 public:
@@ -105,4 +103,4 @@ TEST(MainThreadTaskRunnerTest, RemoveRunner)
     EXPECT_FALSE(isMarked);
 }
 
-}
+} // namespace blink

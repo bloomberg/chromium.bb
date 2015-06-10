@@ -20,13 +20,11 @@
 #include "wtf/testing/WTFTestHelpers.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class FrameSelectionTest : public ::testing::Test {
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     DummyPageHolder& dummyPageHolder() const { return *m_dummyPageHolder; }
     HTMLDocument& document() const;
@@ -187,4 +185,5 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionTest)
     selection().moveRangeSelection(VisiblePosition(Position(text, 5)), VisiblePosition(Position(text, 2)), WordGranularity);
     EXPECT_EQ_SELECTED_TEXT("Foo Bar");
 }
-}
+
+} // namespace blink

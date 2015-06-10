@@ -12,9 +12,7 @@
 #include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 // Parses test case string and populate |underlines|.
 void initUnderlines(const String& testCase, Vector<CompositionUnderline>* underlines)
@@ -87,4 +85,4 @@ TEST(CompositionUnderlineRangeFilterTest, Multi)
     EXPECT_EQ("DFG", filterUnderlines(underlines, 7, 7));
 }
 
-} // namespace
+} // namespace blink

@@ -35,9 +35,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class MockActiveDOMObject final : public GarbageCollectedFinalized<MockActiveDOMObject>, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(MockActiveDOMObject);
@@ -110,4 +108,4 @@ TEST_F(ActiveDOMObjectTest, MoveToStoppedDocument)
     activeDOMObject().didMoveToNewExecutionContext(&destDocument());
 }
 
-} // unnamed namespace
+} // namespace blink

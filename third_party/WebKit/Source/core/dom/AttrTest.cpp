@@ -9,13 +9,11 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-using namespace blink;
-
-namespace {
+namespace blink {
 
 class AttrTest : public ::testing::Test {
 protected:
-    virtual void SetUp() override;
+    void SetUp() override;
 
     PassRefPtrWillBeRawPtr<Attr> createAttribute();
     const AtomicString& value() const { return m_value; }
@@ -82,4 +80,4 @@ TEST_F(AttrTest, LengthOfContents)
     EXPECT_EQ(0u, attr->lengthOfContents());
 }
 
-} // unnamed namespace
+} // namespace blink
