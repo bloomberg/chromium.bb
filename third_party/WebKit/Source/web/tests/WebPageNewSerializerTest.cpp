@@ -205,39 +205,6 @@ private:
     WebString m_svgMimeType;
 };
 
-// Test that when serializing a page, all CSS resources are reported, including url()'s
-// and imports and links. Note that we don't test the resources contents, we only make sure
-// they are all reported with the right mime type and that they contain some data.
-TEST_F(WebPageNewSerializeTest, FAILS_CSSResources)
-{
-    // Register the mocked frame and load it.
-    WebURL topFrameURL = setUpCSSTestPage();
-    loadURLInTopFrame(topFrameURL);
-
-    WebVector<WebPageSerializer::Resource> resources;
-    WebPageSerializer::serialize(webView(), &resources);
-    ASSERT_FALSE(resources.isEmpty());
-
-    // The first resource should be the main-frame.
-    const WebPageSerializer::Resource& resource = resources[0];
-    EXPECT_TRUE(resource.url == WebURL(toKURL(m_baseURL)));
-    EXPECT_EQ(0, resource.mimeType.compare(WebCString("text/html")));
-    EXPECT_FALSE(resource.data.isEmpty());
-
-    EXPECT_EQ(12U, resources.size()); // There should be no duplicates.
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "link_styles.css", "text/css"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "import_styles.css", "text/css"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "import_style_from_link.css", "text/css"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "red_background.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "orange_background.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "yellow_background.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "green_background.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "blue_background.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "purple_background.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "ul-dot.png", "image/png"));
-    EXPECT_TRUE(resourceVectorContains(resources, m_baseURL + "ol-dot.png", "image/png"));
-}
-
 TEST_F(WebPageNewSerializeTest, FAILS_TestMHTMLEncoding)
 {
     // Load a page with some CSS and some images.

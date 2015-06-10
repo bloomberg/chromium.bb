@@ -253,6 +253,41 @@ TEST_F(PageSerializerTest, BlankFrames)
     EXPECT_TRUE(isSerialized("wyciwyg://frame/2", "text/html"));
 }
 
+TEST_F(PageSerializerTest, CSS)
+{
+    setBaseFolder("pageserializer/css/");
+
+    registerURL("css_test_page.html", "text/html");
+    registerURL("link_styles.css", "text/css");
+    registerURL("import_style_from_link.css", "text/css");
+    registerURL("import_styles.css", "text/css");
+    registerURL("red_background.png", "image.png", "image/png");
+    registerURL("orange_background.png", "image.png", "image/png");
+    registerURL("yellow_background.png", "image.png", "image/png");
+    registerURL("green_background.png", "image.png", "image/png");
+    registerURL("blue_background.png", "image.png", "image/png");
+    registerURL("purple_background.png", "image.png", "image/png");
+    registerURL("ul-dot.png", "image.png", "image/png");
+    registerURL("ol-dot.png", "image.png", "image/png");
+
+    serialize("css_test_page.html");
+
+    EXPECT_EQ(12U, getResources().size());
+
+    EXPECT_TRUE(isSerialized("css_test_page.html", "text/html"));
+    EXPECT_TRUE(isSerialized("link_styles.css", "text/css"));
+    EXPECT_TRUE(isSerialized("import_styles.css", "text/css"));
+    EXPECT_TRUE(isSerialized("import_style_from_link.css", "text/css"));
+    EXPECT_TRUE(isSerialized("red_background.png", "image/png"));
+    EXPECT_TRUE(isSerialized("orange_background.png", "image/png"));
+    EXPECT_TRUE(isSerialized("yellow_background.png", "image/png"));
+    EXPECT_TRUE(isSerialized("green_background.png", "image/png"));
+    EXPECT_TRUE(isSerialized("blue_background.png", "image/png"));
+    EXPECT_TRUE(isSerialized("purple_background.png", "image/png"));
+    EXPECT_TRUE(isSerialized("ul-dot.png", "image/png"));
+    EXPECT_TRUE(isSerialized("ol-dot.png", "image/png"));
+}
+
 TEST_F(PageSerializerTest, CSSImport)
 {
     setBaseFolder("pageserializer/css/");
