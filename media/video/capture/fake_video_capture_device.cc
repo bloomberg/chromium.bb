@@ -4,6 +4,7 @@
 
 #include "media/video/capture/fake_video_capture_device.h"
 
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
@@ -104,6 +105,7 @@ void FakeVideoCaptureDevice::AllocateAndStart(
     fake_frame_.reset(new uint8[VideoFrame::AllocationSize(
         VideoFrame::I420, capture_format_.frame_size)]);
     BeepAndScheduleNextCapture(
+        base::TimeTicks::Now(),
         base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
                    weak_factory_.GetWeakPtr()));
   } else if (device_type_ == USING_CLIENT_BUFFERS_I420 ||
@@ -111,11 +113,13 @@ void FakeVideoCaptureDevice::AllocateAndStart(
     DVLOG(1) << "starting with " << (device_type_ == USING_CLIENT_BUFFERS_I420
                                          ? "Client buffers"
                                          : "GpuMemoryBuffers");
-    BeepAndScheduleNextCapture(base::Bind(
-        &FakeVideoCaptureDevice::CaptureUsingClientBuffers,
-        weak_factory_.GetWeakPtr(), (device_type_ == USING_CLIENT_BUFFERS_I420
-                                         ? PIXEL_FORMAT_I420
-                                         : PIXEL_FORMAT_GPUMEMORYBUFFER)));
+    BeepAndScheduleNextCapture(
+        base::TimeTicks::Now(),
+        base::Bind(&FakeVideoCaptureDevice::CaptureUsingClientBuffers,
+                   weak_factory_.GetWeakPtr(),
+                   (device_type_ == USING_CLIENT_BUFFERS_I420
+                        ? PIXEL_FORMAT_I420
+                        : PIXEL_FORMAT_GPUMEMORYBUFFER)));
   } else {
     client_->OnError("Unknown Fake Video Capture Device type.");
   }
@@ -126,7 +130,8 @@ void FakeVideoCaptureDevice::StopAndDeAllocate() {
   client_.reset();
 }
 
-void FakeVideoCaptureDevice::CaptureUsingOwnBuffers() {
+void FakeVideoCaptureDevice::CaptureUsingOwnBuffers(
+    base::TimeTicks expected_execution_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const size_t frame_size = capture_format_.ImageAllocationSize();
   memset(fake_frame_.get(), 0, frame_size);
@@ -157,12 +162,14 @@ void FakeVideoCaptureDevice::CaptureUsingOwnBuffers() {
         base::TimeTicks::Now());
   }
   BeepAndScheduleNextCapture(
+      expected_execution_time,
       base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
                  weak_factory_.GetWeakPtr()));
 }
 
 void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
-    VideoPixelFormat pixel_format) {
+    VideoPixelFormat pixel_format,
+    base::TimeTicks expected_execution_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_ptr<VideoCaptureDevice::Client::Buffer> capture_buffer(
@@ -191,19 +198,29 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
   }
 
   BeepAndScheduleNextCapture(
+      expected_execution_time,
       base::Bind(&FakeVideoCaptureDevice::CaptureUsingClientBuffers,
                  weak_factory_.GetWeakPtr(), pixel_format));
 }
 
 void FakeVideoCaptureDevice::BeepAndScheduleNextCapture(
-    const base::Closure& next_capture) {
+    base::TimeTicks expected_execution_time,
+    const base::Callback<void(base::TimeTicks)>& next_capture) {
   // Generate a synchronized beep sound every so many frames.
   if (frame_count_++ % kFakeCaptureBeepCycle == 0)
     FakeAudioInputStream::BeepOnce();
 
   // Reschedule next CaptureTask.
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE, next_capture,
-      base::TimeDelta::FromMilliseconds(kFakeCapturePeriodMs));
+  const base::TimeTicks current_time = base::TimeTicks::Now();
+  const base::TimeDelta frame_interval =
+      base::TimeDelta::FromMilliseconds(kFakeCapturePeriodMs);
+  // Don't accumulate any debt if we are lagging behind - just post the next
+  // frame immediately and continue as normal.
+  const base::TimeTicks next_execution_time =
+      std::max(current_time, expected_execution_time + frame_interval);
+  const base::TimeDelta delay = next_execution_time - current_time;
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(next_capture, next_execution_time), delay);
 }
 
 }  // namespace media
