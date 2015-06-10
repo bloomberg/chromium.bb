@@ -137,13 +137,45 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
     appendElement(out, element, false, DoesFullySelectNode);
 }
 
+RefPtrWillBeRawPtr<EditingStyle> StyledMarkupAccumulator::createInlineStyle(Element& element, bool addDisplayInline, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
+{
+    const bool shouldAnnotateOrForceInline = element.isHTMLElement() && (shouldAnnotate() || addDisplayInline);
+
+    RefPtrWillBeRawPtr<EditingStyle> inlineStyle = nullptr;
+
+    if (shouldApplyWrappingStyle(element)) {
+        inlineStyle = m_wrappingStyle->copy();
+        inlineStyle->removePropertiesInElementDefaultStyle(&element);
+        inlineStyle->removeStyleConflictingWithStyleOfElement(&element);
+    } else {
+        inlineStyle = EditingStyle::create();
+    }
+
+    if (element.isStyledElement() && element.inlineStyle())
+        inlineStyle->overrideWithStyle(element.inlineStyle());
+
+    if (!shouldAnnotateOrForceInline)
+        return inlineStyle;
+
+    if (shouldAnnotate())
+        inlineStyle->mergeStyleFromRulesForSerialization(&toHTMLElement(element));
+
+    if (addDisplayInline)
+        inlineStyle->forceInline();
+
+    // If the node is not fully selected by the range, then we don't want to keep styles that affect its relationship to the nodes around it
+    // only the ones that affect it and the nodes within it.
+    if (rangeFullySelectsNode == DoesNotFullySelectNode && inlineStyle->style())
+        inlineStyle->style()->removeProperty(CSSPropertyFloat);
+    return inlineStyle;
+}
+
 void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element, bool addDisplayInline, StyledMarkupAccumulator::RangeFullySelectsNode rangeFullySelectsNode)
 {
     const bool documentIsHTML = element.document().isHTMLDocument();
     m_formatter.appendOpenTag(out, element, 0);
 
-    const bool shouldAnnotateOrForceInline = element.isHTMLElement() && (shouldAnnotate() || addDisplayInline);
-    const bool shouldOverrideStyleAttr = shouldAnnotateOrForceInline || shouldApplyWrappingStyle(element);
+    const bool shouldOverrideStyleAttr = (element.isHTMLElement() && (shouldAnnotate() || addDisplayInline)) || shouldApplyWrappingStyle(element);
 
     AttributeCollection attributes = element.attributes();
     for (const auto& attribute : attributes) {
@@ -154,35 +186,10 @@ void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element
     }
 
     if (shouldOverrideStyleAttr) {
-        RefPtrWillBeRawPtr<EditingStyle> newInlineStyle = nullptr;
-
-        if (shouldApplyWrappingStyle(element)) {
-            newInlineStyle = m_wrappingStyle->copy();
-            newInlineStyle->removePropertiesInElementDefaultStyle(&element);
-            newInlineStyle->removeStyleConflictingWithStyleOfElement(&element);
-        } else {
-            newInlineStyle = EditingStyle::create();
-        }
-
-        if (element.isStyledElement() && element.inlineStyle())
-            newInlineStyle->overrideWithStyle(element.inlineStyle());
-
-        if (shouldAnnotateOrForceInline) {
-            if (shouldAnnotate())
-                newInlineStyle->mergeStyleFromRulesForSerialization(&toHTMLElement(element));
-
-            if (addDisplayInline)
-                newInlineStyle->forceInline();
-
-            // If the node is not fully selected by the range, then we don't want to keep styles that affect its relationship to the nodes around it
-            // only the ones that affect it and the nodes within it.
-            if (rangeFullySelectsNode == DoesNotFullySelectNode && newInlineStyle->style())
-                newInlineStyle->style()->removeProperty(CSSPropertyFloat);
-        }
-
-        if (!newInlineStyle->isEmpty()) {
+        RefPtrWillBeRawPtr<EditingStyle> inlineStyle = createInlineStyle(element, addDisplayInline, rangeFullySelectsNode);
+        if (!inlineStyle->isEmpty()) {
             out.appendLiteral(" style=\"");
-            MarkupFormatter::appendAttributeValue(out, newInlineStyle->style()->asText(), documentIsHTML);
+            MarkupFormatter::appendAttributeValue(out, inlineStyle->style()->asText(), documentIsHTML);
             out.append('\"');
         }
     }

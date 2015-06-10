@@ -78,6 +78,8 @@ private:
     void appendElement(StringBuilder&, Element&);
     void appendEndMarkup(StringBuilder&, const Element&);
 
+    RefPtrWillBeRawPtr<EditingStyle> createInlineStyle(Element&, bool addDisplayInline, RangeFullySelectsNode);
+
     MarkupFormatter m_formatter;
     const TextOffset m_start;
     const TextOffset m_end;
