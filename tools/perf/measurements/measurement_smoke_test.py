@@ -12,7 +12,6 @@ from telemetry.core import browser_options
 from telemetry.core import discover
 from telemetry.page import page_test
 from telemetry.unittest_util import options_for_unittests
-from telemetry.util import classes
 from telemetry.web_perf import timeline_based_measurement
 
 
@@ -26,10 +25,9 @@ def _GetAllPossiblePageTestInstances():
   # constructable
   all_measurement_classes = discover.DiscoverClasses(
       measurements_dir, top_level_dir, page_test.PageTest,
-      index_by_class_name=True).values()
+      index_by_class_name=True, directly_constructable=True).values()
   for measurement_class in all_measurement_classes:
-    if classes.IsDirectlyConstructable(measurement_class):
-      page_test_instances.append(measurement_class())
+    page_test_instances.append(measurement_class())
 
   all_benchmarks_classes = discover.DiscoverClasses(
       benchmarks_dir, top_level_dir, benchmark_module.Benchmark).values()
