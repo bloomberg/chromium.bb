@@ -170,18 +170,18 @@ public class OmniboxUrlEmphasizer {
         if (emphasizeResponse.hasScheme()) {
             int colorId = nonEmphasizedColorId;
             if (!isInternalPage && emphasizeHttpsScheme) {
+                boolean strikeThroughScheme = false;
                 switch (securityLevel) {
                     case ConnectionSecurityHelperSecurityLevel.NONE:
                         colorId = nonEmphasizedColorId;
                         break;
                     case ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING:
                         colorId = R.color.url_emphasis_start_scheme_security_warning;
+                        strikeThroughScheme = true;
                         break;
                     case ConnectionSecurityHelperSecurityLevel.SECURITY_ERROR:
                         colorId = R.color.url_emphasis_start_scheme_security_error;
-                        UrlEmphasisSecurityErrorSpan ss = new UrlEmphasisSecurityErrorSpan();
-                        url.setSpan(ss, startSchemeIndex, endSchemeIndex,
-                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        strikeThroughScheme = true;
                         break;
                     case ConnectionSecurityHelperSecurityLevel.EV_SECURE:
                         colorId = R.color.url_emphasis_start_scheme_ev_secure;
@@ -191,6 +191,12 @@ public class OmniboxUrlEmphasizer {
                         break;
                     default:
                         assert false;
+                }
+
+                if (strikeThroughScheme) {
+                    UrlEmphasisSecurityErrorSpan ss = new UrlEmphasisSecurityErrorSpan();
+                    url.setSpan(ss, startSchemeIndex, endSchemeIndex,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
             }
             span = new UrlEmphasisColorSpan(resources.getColor(colorId));

@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -18,30 +19,27 @@ import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSecur
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSpan;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityHelperSecurityLevel;
-import org.chromium.chrome.shell.ChromeShellActivity;
-import org.chromium.chrome.shell.ChromeShellTab;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestBase;
 
 /**
  * Unit tests for OmniboxUrlEmphasizer that ensure various types of URLs are
  * emphasized and colored correctly.
  */
-public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
-    private ChromeShellActivity mActivity;
+public class OmniboxUrlEmphasizerTest extends NativeLibraryTestBase {
     private Profile mProfile;
     private Resources mResources;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        mActivity = launchChromeShellWithBlankPage();
-        assertTrue(waitForActiveShellToBeDoneLoading());
+        CommandLine.init(null);
+        loadNativeLibraryAndInitBrowserProcess();
+
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ChromeShellTab tab = mActivity.getActiveTab();
-                mProfile = tab.getProfile();
-                mResources = mActivity.getResources();
+                mProfile = Profile.getLastUsedProfile().getOriginalProfile();
+                mResources = getInstrumentation().getTargetContext().getResources();
             }
         });
     }
@@ -203,12 +201,13 @@ public class OmniboxUrlEmphasizerTest extends ChromeShellTestBase {
                 ConnectionSecurityHelperSecurityLevel.SECURITY_WARNING, false, true, true);
         EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
 
-        assertEquals("Unexpected number of spans:", 3, spans.length);
-        spans[0].assertIsColoredSpan("https", 0,
+        assertEquals("Unexpected number of spans:", 4, spans.length);
+        spans[0].assertIsStrikethroughSpan("https", 0);
+        spans[1].assertIsColoredSpan("https", 0,
                 mResources.getColor(R.color.url_emphasis_start_scheme_security_warning));
-        spans[1].assertIsColoredSpan("://", 5,
+        spans[2].assertIsColoredSpan("://", 5,
                 mResources.getColor(R.color.url_emphasis_non_emphasized_text));
-        spans[2].assertIsColoredSpan("www.dodgysite.com", 8,
+        spans[3].assertIsColoredSpan("www.dodgysite.com", 8,
                 mResources.getColor(R.color.url_emphasis_domain_and_registry));
     }
 
