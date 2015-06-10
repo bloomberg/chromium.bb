@@ -14,7 +14,7 @@ COMPOSITOR_EXPORT extern const char kEnablePixelOutputInTests[];
 COMPOSITOR_EXPORT extern const char kUIDisableSlimmingPaint[];
 COMPOSITOR_EXPORT extern const char kUIDisableThreadedCompositing[];
 COMPOSITOR_EXPORT extern const char kUIEnableCompositorAnimationTimelines[];
-COMPOSITOR_EXPORT extern const char kUIEnableImplSidePainting[];
+COMPOSITOR_EXPORT extern const char kUIDisableImplSidePainting[];
 COMPOSITOR_EXPORT extern const char kUIEnableZeroCopy[];
 COMPOSITOR_EXPORT extern const char kUIShowPaintRects[];
 
