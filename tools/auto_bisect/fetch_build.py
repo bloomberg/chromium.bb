@@ -23,7 +23,7 @@ import sys
 import zipfile
 
 # Telemetry (src/tools/telemetry) is expected to be in the PYTHONPATH.
-from telemetry.util import cloud_storage
+from catapult_base import cloud_storage
 
 import bisect_utils
 
