@@ -474,16 +474,15 @@ LDFLAGS=""
 # needed, on OS X it requires libc++. clang only automatically links to libc++
 # when targeting OS X 10.9+, so add stdlib=libc++ explicitly so clang can run on
 # OS X versions as old as 10.7.
-# TODO(thakis): Some bots are still on 10.6, so for now bundle libc++.dylib.
-# Remove this once all bots are on 10.7+, then use --enable-libcpp=yes and
-# change deployment_target to 10.7.
+# TODO(thakis): Some bots are still on 10.6 (nacl...), so for now bundle
+# libc++.dylib.  Remove this once all bots are on 10.7+, then use
+# -DLLVM_ENABLE_LIBCXX=ON and change deployment_target to 10.7.
 deployment_target=""
 
 if [ "${OS}" = "Darwin" ]; then
   # When building on 10.9, /usr/include usually doesn't exist, and while
   # Xcode's clang automatically sets a sysroot, self-built clangs don't.
   CFLAGS="-isysroot $(xcrun --show-sdk-path)"
-  CPPFLAGS="${CFLAGS}"
   CXXFLAGS="-stdlib=libc++ -nostdinc++ -I${ABS_LIBCXX_DIR}/include ${CFLAGS}"
 
   if [[ -n "${bootstrap}" ]]; then
