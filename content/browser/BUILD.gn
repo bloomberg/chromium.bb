@@ -266,6 +266,7 @@ source_set("browser") {
                            ".",
                            "//content")
     deps += [
+      "//ppapi/host",
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
     ]
