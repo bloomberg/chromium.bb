@@ -8046,7 +8046,8 @@
         "boards": [
             "x86-alex",
             "stumpy",
-            "daisy"
+            "daisy",
+            "lakitu"
         ],
         "build_type": "chroot",
         "builder_class_name": "sdk_builders.ChrootSdkBuilder",
@@ -8081,7 +8082,8 @@
         "boards": [
             "x86-alex",
             "stumpy",
-            "daisy"
+            "daisy",
+            "lakitu"
         ],
         "build_type": "chroot",
         "builder_class_name": "sdk_builders.ChrootSdkBuilder",

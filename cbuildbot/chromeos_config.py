@@ -1806,7 +1806,7 @@ def GetConfig():
   site_config.AddConfigWithoutTemplate(
       'internal-toolchain-major',
       _toolchain_major, internal, official,
-      boards=['x86-alex', 'stumpy', 'daisy'],
+      boards=['x86-alex', 'stumpy', 'daisy', 'lakitu'],
       build_tests=True,
       description=_toolchain_major['description'] + ' (internal)',
   )
@@ -1814,7 +1814,7 @@ def GetConfig():
   site_config.AddConfigWithoutTemplate(
       'internal-toolchain-minor',
       _toolchain_minor, internal, official,
-      boards=['x86-alex', 'stumpy', 'daisy'],
+      boards=['x86-alex', 'stumpy', 'daisy', 'lakitu'],
       build_tests=True,
       description=_toolchain_minor['description'] + ' (internal)',
   )
