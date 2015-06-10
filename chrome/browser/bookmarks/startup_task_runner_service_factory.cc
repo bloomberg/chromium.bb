@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiles/startup_task_runner_service_factory.h"
+#include "chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/startup_task_runner_service.h"
+#include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 StartupTaskRunnerServiceFactory::StartupTaskRunnerServiceFactory()
@@ -30,6 +30,7 @@ StartupTaskRunnerServiceFactory*
 }
 
 KeyedService* StartupTaskRunnerServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new StartupTaskRunnerService(static_cast<Profile*>(profile));
+    content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return new StartupTaskRunnerService(profile->GetIOTaskRunner());
 }

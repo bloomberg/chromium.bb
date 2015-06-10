@@ -59,6 +59,8 @@
         'bookmarks/browser/bookmark_utils.h',
         'bookmarks/browser/scoped_group_bookmark_actions.cc',
         'bookmarks/browser/scoped_group_bookmark_actions.h',
+        'bookmarks/browser/startup_task_runner_service.cc',
+        'bookmarks/browser/startup_task_runner_service.h',
       ],
       'conditions': [
         ['OS == "android"', {

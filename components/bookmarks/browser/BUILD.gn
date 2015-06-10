@@ -35,6 +35,8 @@ source_set("browser") {
     "bookmark_utils.h",
     "scoped_group_bookmark_actions.cc",
     "scoped_group_bookmark_actions.h",
+    "startup_task_runner_service.cc",
+    "startup_task_runner_service.h",
   ]
 
   deps = [

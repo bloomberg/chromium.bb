@@ -2,25 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PROFILES_STARTUP_TASK_RUNNER_SERVICE_H_
-#define CHROME_BROWSER_PROFILES_STARTUP_TASK_RUNNER_SERVICE_H_
+#ifndef COMPONENTS_BOOKMARKS_BROWSER_STARTUP_TASK_RUNNER_SERVICE_H_
+#define COMPONENTS_BOOKMARKS_BROWSER_STARTUP_TASK_RUNNER_SERVICE_H_
 
 #include "base/basictypes.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class Profile;
-
 namespace base {
 class DeferredSequencedTaskRunner;
+class SequencedTaskRunner;
 }  // namespace base
 
 // This service manages the startup task runners.
 class StartupTaskRunnerService : public base::NonThreadSafe,
                                  public KeyedService {
  public:
-  explicit StartupTaskRunnerService(Profile* profile);
+  explicit StartupTaskRunnerService(
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   ~StartupTaskRunnerService() override;
 
   // Returns sequenced task runner where all bookmarks I/O operations are
@@ -36,10 +37,10 @@ class StartupTaskRunnerService : public base::NonThreadSafe,
   void StartDeferredTaskRunners();
 
  private:
-  Profile* profile_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   scoped_refptr<base::DeferredSequencedTaskRunner> bookmark_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupTaskRunnerService);
 };
 
-#endif  // CHROME_BROWSER_PROFILES_STARTUP_TASK_RUNNER_SERVICE_H_
+#endif  // COMPONENTS_BOOKMARKS_BROWSER_STARTUP_TASK_RUNNER_SERVICE_H_
