@@ -4,6 +4,8 @@
 
 #include "ui/touch_selection/touch_selection_menu_runner.h"
 
+#include "base/logging.h"
+
 namespace ui {
 namespace {
 
@@ -12,6 +14,7 @@ TouchSelectionMenuRunner* g_touch_selection_menu_runner = nullptr;
 }  // namespace
 
 TouchSelectionMenuRunner::~TouchSelectionMenuRunner() {
+  DCHECK_EQ(this, g_touch_selection_menu_runner);
   g_touch_selection_menu_runner = nullptr;
 }
 
@@ -20,11 +23,7 @@ TouchSelectionMenuRunner* TouchSelectionMenuRunner::GetInstance() {
 }
 
 TouchSelectionMenuRunner::TouchSelectionMenuRunner() {
-  // TODO(mohsen): Ideally we should DCHECK that |g_touch_selection_menu_runner|
-  // is not set here, in order to make sure we don't create multiple menu
-  // runners accidentally. Currently, this is not possible because we can have
-  // multiple ViewsDelegate's at the same time which should not happen. See
-  // crbug.com/492991.
+  DCHECK(!g_touch_selection_menu_runner);
   g_touch_selection_menu_runner = this;
 }
 
