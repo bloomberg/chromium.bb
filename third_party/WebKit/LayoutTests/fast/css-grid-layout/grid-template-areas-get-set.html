@@ -75,6 +75,10 @@
                          ". footer ......";
 }
 
+#gridWithDotsNoSpace {
+    grid-template-areas: ".title...nav. ..main test";
+}
+
 #gridWithHorizontalRectangle {
     grid-template-areas: "a a a"
                          "a a a";
@@ -104,6 +108,7 @@
 <div class="grid" id="gridWithComplexDotAreas"></div>
 <div class="grid" id="gridWithComplexDotsAreas"></div>
 <div class="grid" id="gridWithMixedDotAndDotsAreas"></div>
+<div class="grid" id="gridWithDotsNoSpace"></div>
 <div class="grid" id="gridWithHorizontalRectangle"></div>
 <div class="grid" id="gridWithVerticalRectangle"></div>
 <script>
@@ -128,6 +133,7 @@
     testGridTemplateAreas("gridWithComplexDotAreas", '". header header ." ". . . ." "nav main main aside" "nav main main aside" ". . . aside" ". footer footer aside"');
     testGridTemplateAreas("gridWithComplexDotsAreas", '". header header ." ". . . ." "nav main main aside" "nav main main aside" ". . . aside" ". footer footer aside"');
     testGridTemplateAreas("gridWithMixedDotAndDotsAreas", '". title ." ". main main" "nav . aside" ". footer ."');
+    testGridTemplateAreas("gridWithDotsNoSpace", '". title . nav . . main test"');
     testGridTemplateAreas("gridWithHorizontalRectangle", '"a a a" "a a a"');
     testGridTemplateAreas("gridWithVerticalRectangle", '"a a" "a a" "a a"');
 

@@ -18,6 +18,7 @@ PASS window.getComputedStyle(gridWithDotsCells).getPropertyValue('grid-template-
 PASS window.getComputedStyle(gridWithComplexDotAreas).getPropertyValue('grid-template-areas') is "\". header header .\" \". . . .\" \"nav main main aside\" \"nav main main aside\" \". . . aside\" \". footer footer aside\""
 PASS window.getComputedStyle(gridWithComplexDotsAreas).getPropertyValue('grid-template-areas') is "\". header header .\" \". . . .\" \"nav main main aside\" \"nav main main aside\" \". . . aside\" \". footer footer aside\""
 PASS window.getComputedStyle(gridWithMixedDotAndDotsAreas).getPropertyValue('grid-template-areas') is "\". title .\" \". main main\" \"nav . aside\" \". footer .\""
+PASS window.getComputedStyle(gridWithDotsNoSpace).getPropertyValue('grid-template-areas') is "\". title . nav . . main test\""
 PASS window.getComputedStyle(gridWithHorizontalRectangle).getPropertyValue('grid-template-areas') is "\"a a a\" \"a a a\""
 PASS window.getComputedStyle(gridWithVerticalRectangle).getPropertyValue('grid-template-areas') is "\"a a\" \"a a\" \"a a\""
 Test grid-template-areas: initial

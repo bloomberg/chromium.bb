@@ -3671,15 +3671,43 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseGridBreadth(CS
     return createPrimitiveNumericValue(currentValue);
 }
 
-static bool containsOnlyDots(const String& string)
+static Vector<String> parseGridTemplateAreasColumnNames(const String& gridRowNames)
 {
-    ASSERT(!string.isEmpty());
-    StringImpl& text = *string.impl();
+    ASSERT(!gridRowNames.isEmpty());
+    Vector<String> columnNames;
+    // Using StringImpl to avoid checks and indirection in every call to String::operator[].
+    StringImpl& text = *gridRowNames.impl();
+
+    StringBuilder areaName;
     for (unsigned i = 0; i < text.length(); ++i) {
-        if (text[i] != '.')
-            return false;
+        if (text[i] == ' ') {
+            if (!areaName.isEmpty()) {
+                columnNames.append(areaName.toString());
+                areaName.clear();
+            }
+            continue;
+        }
+        if (text[i] == '.') {
+            if (areaName == ".")
+                continue;
+            if (!areaName.isEmpty()) {
+                columnNames.append(areaName.toString());
+                areaName.clear();
+            }
+        } else {
+            if (areaName == ".") {
+                columnNames.append(areaName.toString());
+                areaName.clear();
+            }
+        }
+
+        areaName.append(text[i]);
     }
-    return true;
+
+    if (!areaName.isEmpty())
+        columnNames.append(areaName.toString());
+
+    return columnNames;
 }
 
 bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap, const size_t rowCount, size_t& columnCount)
@@ -3692,9 +3720,7 @@ bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap,
     if (gridRowNames.isEmpty() || gridRowNames.containsOnlyWhitespace())
         return false;
 
-    Vector<String> columnNames;
-    gridRowNames.split(' ', columnNames);
-
+    Vector<String> columnNames = parseGridTemplateAreasColumnNames(gridRowNames);
     if (!columnCount) {
         columnCount = columnNames.size();
         ASSERT(columnCount);
@@ -3707,7 +3733,7 @@ bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap,
         const String& gridAreaName = columnNames[currentCol];
 
         // Unamed areas are always valid (we consider them to be 1x1).
-        if (containsOnlyDots(gridAreaName))
+        if (gridAreaName == ".")
             continue;
 
         // We handle several grid areas with the same name at once to simplify the validation code.
