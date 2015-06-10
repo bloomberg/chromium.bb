@@ -413,7 +413,7 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
   // practice, other browsers seem to use a "" or " " password (and a special
   // user name) to indicated blacklist entries.
   if (extract_password_data && (form->password_value.empty() ||
-                                EqualsASCII(form->password_value, " "))) {
+                                base::EqualsASCII(form->password_value, " "))) {
     form->blacklisted_by_user = true;
   }
 

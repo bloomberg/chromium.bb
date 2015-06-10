@@ -476,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, UseCredentialsSendCookies) {
 
   // The custom embedded test server will fill the name field with the cookie
   // content.
-  EXPECT_TRUE(EqualsASCII(manifest().name.string(), "foobar"));
+  EXPECT_TRUE(base::EqualsASCII(manifest().name.string(), "foobar"));
 }
 
 namespace {
@@ -532,7 +532,7 @@ IN_PROC_BROWSER_TEST_F(ManifestBrowserTest, NoUseCredentialsNoCookies) {
 
   // The custom embedded test server will fill set the name to 'no cookies' if
   // it did not find cookies.
-  EXPECT_TRUE(EqualsASCII(manifest().name.string(), "no cookies"));
+  EXPECT_TRUE(base::EqualsASCII(manifest().name.string(), "no cookies"));
 }
 
 } // namespace content

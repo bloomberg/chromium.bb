@@ -35,7 +35,7 @@ int gCurrentRequestID = -1;
 const int kIconMinimumSize = 144;
 bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
   for (const auto& icon : manifest.icons) {
-    if (!EqualsASCII(icon.type.string(), "image/png"))
+    if (!base::EqualsASCII(icon.type.string(), "image/png"))
       continue;
 
     for (const auto& size : icon.sizes) {

@@ -580,16 +580,16 @@ bool BrowserAccessibility::GetAriaTristate(
   base::string16 value;
   if (!GetHtmlAttribute(html_attr, &value) ||
       value.empty() ||
-      EqualsASCII(value, "undefined")) {
+      base::EqualsASCII(value, "undefined")) {
     return false;  // Not set (and *is_defined is also false)
   }
 
   *is_defined = true;
 
-  if (EqualsASCII(value, "true"))
+  if (base::EqualsASCII(value, "true"))
     return true;
 
-  if (EqualsASCII(value, "mixed"))
+  if (base::EqualsASCII(value, "mixed"))
     *is_mixed = true;
 
   return false;  // Not set

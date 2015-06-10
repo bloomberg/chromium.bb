@@ -176,11 +176,11 @@ void MockWebClipboardImpl::writeDataObject(const WebDragData& data) {
     switch (item.storageType) {
       case WebDragData::Item::StorageTypeString: {
         ++m_sequenceNumber;
-        if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeText)) {
+        if (base::EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeText)) {
           m_plainText = item.stringData;
           continue;
         }
-        if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeHTML)) {
+        if (base::EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeHTML)) {
           m_htmlText = item.stringData;
           continue;
         }

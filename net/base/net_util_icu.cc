@@ -704,8 +704,8 @@ base::string16 FormatUrlWithAdjustments(
   // formatted URL is directly pre-filled into an input field.)  For this reason
   // we avoid stripping "http://" in this case.
   bool omit_http = (format_types & kFormatUrlOmitHTTP) &&
-      EqualsASCII(url_string, kHTTP) &&
-      !StartsWithASCII(url.host(), kFTP, true);
+                   base::EqualsASCII(url_string, kHTTP) &&
+                   !StartsWithASCII(url.host(), kFTP, true);
   new_parsed->scheme = parsed.scheme;
 
   // Username & password.

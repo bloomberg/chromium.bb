@@ -94,7 +94,8 @@ void FtpDirectoryListingResponseDelegate::OnCompletedRequest() {
 
     // Skip the current and parent directory entries in the listing. Our header
     // always includes them.
-    if (EqualsASCII(entry.name, ".") || EqualsASCII(entry.name, ".."))
+    if (base::EqualsASCII(entry.name, ".") ||
+        base::EqualsASCII(entry.name, ".."))
       continue;
 
     bool is_directory = (entry.type == FtpDirectoryListingEntry::DIRECTORY);

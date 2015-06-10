@@ -43,7 +43,7 @@ bool ParseVmsFilename(const base::string16& raw_filename,
   base::SplitString(listing_parts[0], '.', &filename_parts);
   if (filename_parts.size() != 2)
     return false;
-  if (EqualsASCII(filename_parts[1], "DIR")) {
+  if (base::EqualsASCII(filename_parts[1], "DIR")) {
     *parsed_filename = base::StringToLowerASCII(filename_parts[0]);
     *type = FtpDirectoryListingEntry::DIRECTORY;
   } else {

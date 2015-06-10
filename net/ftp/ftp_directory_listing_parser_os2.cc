@@ -40,12 +40,12 @@ bool ParseFtpDirectoryListingOS2(
     FtpDirectoryListingEntry entry;
     if (!base::StringToInt64(columns[0], &entry.size))
       return false;
-    if (EqualsASCII(columns[1], "DIR")) {
+    if (base::EqualsASCII(columns[1], "DIR")) {
       if (entry.size != 0)
         return false;
       entry.type = FtpDirectoryListingEntry::DIRECTORY;
       entry.size = -1;
-    } else if (EqualsASCII(columns[1], "A")) {
+    } else if (base::EqualsASCII(columns[1], "A")) {
       entry.type = FtpDirectoryListingEntry::FILE;
       if (entry.size < 0)
         return false;

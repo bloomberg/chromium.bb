@@ -476,13 +476,13 @@ bool LowerCaseEqualsASCII(const char16* a_begin,
   return DoLowerCaseEqualsASCII(a_begin, a_end, b);
 }
 
-}  // namespace base
-
-bool EqualsASCII(const string16& a, const base::StringPiece& b) {
+bool EqualsASCII(const string16& a, const StringPiece& b) {
   if (a.length() != b.length())
     return false;
   return std::equal(b.begin(), b.end(), a.begin());
 }
+
+}  // namespace base
 
 bool StartsWithASCII(const std::string& str,
                      const std::string& search,

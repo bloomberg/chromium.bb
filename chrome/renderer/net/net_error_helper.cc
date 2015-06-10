@@ -304,7 +304,8 @@ void NetErrorHelper::ReloadPage() {
 
 void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
   blink::WebFrame* web_frame = render_frame()->GetWebFrame();
-  DCHECK(!EqualsASCII(web_frame->dataSource()->request().httpMethod(), "POST"));
+  DCHECK(!base::EqualsASCII(web_frame->dataSource()->request().httpMethod(),
+                            "POST"));
 
   blink::WebURLRequest request(page_url);
   request.setCachePolicy(blink::WebURLRequest::ReturnCacheDataDontLoad);

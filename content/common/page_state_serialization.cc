@@ -120,7 +120,7 @@ bool AppendReferencedFilesFromDocumentState(
         index + value_size < index)  // Check for overflow.
       return false;
 
-    if (EqualsASCII(type.string(), "file")) {
+    if (base::EqualsASCII(type.string(), "file")) {
       if (value_size != 2)
         return false;
 

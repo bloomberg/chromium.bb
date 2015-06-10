@@ -859,8 +859,8 @@ void BrowserAccessibilityAndroid::OnDataChanged() {
 
 void BrowserAccessibilityAndroid::NotifyLiveRegionUpdate(
     base::string16& aria_live) {
-  if (!EqualsASCII(aria_live, aria_strings::kAriaLivePolite) &&
-      !EqualsASCII(aria_live, aria_strings::kAriaLiveAssertive))
+  if (!base::EqualsASCII(aria_live, aria_strings::kAriaLivePolite) &&
+      !base::EqualsASCII(aria_live, aria_strings::kAriaLiveAssertive))
     return;
 
   base::string16 text = GetText();

@@ -26,20 +26,23 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
     const WebDragData::Item& item = item_list[i];
     switch (item.storageType) {
       case WebDragData::Item::StorageTypeString: {
-        if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeText)) {
+        if (base::EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeText)) {
           result.text = base::NullableString16(item.stringData, false);
           break;
         }
-        if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeURIList)) {
+        if (base::EqualsASCII(item.stringType,
+                              ui::Clipboard::kMimeTypeURIList)) {
           result.url = GURL(item.stringData);
           result.url_title = item.title;
           break;
         }
-        if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeDownloadURL)) {
+        if (base::EqualsASCII(item.stringType,
+                              ui::Clipboard::kMimeTypeDownloadURL)) {
           result.download_metadata = item.stringData;
           break;
         }
-        if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeHTML)) {
+        if (base::EqualsASCII(item.stringType,
+                              ui::Clipboard::kMimeTypeHTML)) {
           result.html = base::NullableString16(item.stringData, false);
           result.html_base_url = item.baseURL;
           break;

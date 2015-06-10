@@ -102,7 +102,7 @@ bool ParseIconSizes(const base::string16& text,
   std::vector<base::string16> size_strings;
   base::SplitStringAlongWhitespace(text, &size_strings);
   for (size_t i = 0; i < size_strings.size(); ++i) {
-    if (EqualsASCII(size_strings[i], "any")) {
+    if (base::EqualsASCII(size_strings[i], "any")) {
       *is_any = true;
     } else {
       gfx::Size size = ParseIconSize(size_strings[i]);

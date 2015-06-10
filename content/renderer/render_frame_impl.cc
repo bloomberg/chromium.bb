@@ -3935,7 +3935,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     }
 
     base::string16 method = request.httpMethod();
-    if (EqualsASCII(method, "POST")) {
+    if (base::EqualsASCII(method, "POST")) {
       params.is_post = true;
       params.post_id = ExtractPostId(entry);
     }
@@ -4164,7 +4164,7 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
     bool is_form_post =
         ((info.navigationType == blink::WebNavigationTypeFormSubmitted) ||
             (info.navigationType == blink::WebNavigationTypeFormResubmitted)) &&
-        EqualsASCII(info.urlRequest.httpMethod(), "POST");
+        base::EqualsASCII(info.urlRequest.httpMethod(), "POST");
     bool browser_handles_request =
         render_view_->renderer_preferences_
             .browser_handles_non_local_top_level_requests
@@ -4730,8 +4730,9 @@ void RenderFrameImpl::SendFailedProvisionalLoad(
     const blink::WebURLRequest& request,
     const blink::WebURLError& error,
     blink::WebLocalFrame* frame) {
-  bool show_repost_interstitial = (error.reason == net::ERR_CACHE_MISS &&
-                                   EqualsASCII(request.httpMethod(), "POST"));
+  bool show_repost_interstitial =
+      (error.reason == net::ERR_CACHE_MISS &&
+       base::EqualsASCII(request.httpMethod(), "POST"));
 
   FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
   params.error_code = error.reason;

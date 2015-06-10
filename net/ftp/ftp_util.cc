@@ -333,10 +333,10 @@ bool FtpUtil::WindowsDateListingToTime(const base::string16& date,
     if (time.length() != 7)
       return false;
     base::string16 am_or_pm(time.substr(5, 2));
-    if (EqualsASCII(am_or_pm, "PM")) {
+    if (base::EqualsASCII(am_or_pm, "PM")) {
       if (time_exploded.hour < 12)
         time_exploded.hour += 12;
-    } else if (EqualsASCII(am_or_pm, "AM")) {
+    } else if (base::EqualsASCII(am_or_pm, "AM")) {
       if (time_exploded.hour == 12)
         time_exploded.hour = 0;
     } else {

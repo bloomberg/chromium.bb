@@ -126,7 +126,7 @@ void PhishingClassifier::BeginFeatureExtraction() {
   }
 
   blink::WebDataSource* ds = frame->dataSource();
-  if (!ds || !EqualsASCII(ds->request().httpMethod(), "GET")) {
+  if (!ds || !base::EqualsASCII(ds->request().httpMethod(), "GET")) {
     RunFailureCallback();
     return;
   }

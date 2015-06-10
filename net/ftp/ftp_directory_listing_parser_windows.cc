@@ -37,7 +37,7 @@ bool ParseFtpDirectoryListingWindows(
       return false;
 
     FtpDirectoryListingEntry entry;
-    if (EqualsASCII(columns[2], "<DIR>")) {
+    if (base::EqualsASCII(columns[2], "<DIR>")) {
       entry.type = FtpDirectoryListingEntry::DIRECTORY;
       entry.size = -1;
     } else {

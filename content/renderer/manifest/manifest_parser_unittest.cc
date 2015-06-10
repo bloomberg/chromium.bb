@@ -127,7 +127,7 @@ TEST_F(ManifestParserTest, NameParseRules) {
   // Smoke test.
   {
     Manifest manifest = ParseManifest("{ \"name\": \"foo\" }");
-    ASSERT_TRUE(EqualsASCII(manifest.name.string(), "foo"));
+    ASSERT_TRUE(base::EqualsASCII(manifest.name.string(), "foo"));
     ASSERT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -135,7 +135,7 @@ TEST_F(ManifestParserTest, NameParseRules) {
   // Trim whitespaces.
   {
     Manifest manifest = ParseManifest("{ \"name\": \"  foo  \" }");
-    ASSERT_TRUE(EqualsASCII(manifest.name.string(), "foo"));
+    ASSERT_TRUE(base::EqualsASCII(manifest.name.string(), "foo"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -164,7 +164,7 @@ TEST_F(ManifestParserTest, ShortNameParseRules) {
   // Smoke test.
   {
     Manifest manifest = ParseManifest("{ \"short_name\": \"foo\" }");
-    ASSERT_TRUE(EqualsASCII(manifest.short_name.string(), "foo"));
+    ASSERT_TRUE(base::EqualsASCII(manifest.short_name.string(), "foo"));
     ASSERT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -172,7 +172,7 @@ TEST_F(ManifestParserTest, ShortNameParseRules) {
   // Trim whitespaces.
   {
     Manifest manifest = ParseManifest("{ \"short_name\": \"  foo  \" }");
-    ASSERT_TRUE(EqualsASCII(manifest.short_name.string(), "foo"));
+    ASSERT_TRUE(base::EqualsASCII(manifest.short_name.string(), "foo"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -568,7 +568,7 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   {
     Manifest manifest =
         ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": \"foo\" } ] }");
-    EXPECT_TRUE(EqualsASCII(manifest.icons[0].type.string(), "foo"));
+    EXPECT_TRUE(base::EqualsASCII(manifest.icons[0].type.string(), "foo"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -576,7 +576,7 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
                                       " \"type\": \"  foo  \" } ] }");
-    EXPECT_TRUE(EqualsASCII(manifest.icons[0].type.string(), "foo"));
+    EXPECT_TRUE(base::EqualsASCII(manifest.icons[0].type.string(), "foo"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -860,8 +860,9 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
         "{ \"related_applications\": ["
         "{\"platform\": \"play\", \"url\": \"http://www.foo.com\"}]}");
     EXPECT_EQ(manifest.related_applications.size(), 1u);
-    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].platform.string(),
-                            "play"));
+    EXPECT_TRUE(base::EqualsASCII(
+        manifest.related_applications[0].platform.string(),
+        "play"));
     EXPECT_EQ(manifest.related_applications[0].url.spec(),
               "http://www.foo.com/");
     EXPECT_FALSE(manifest.IsEmpty());
@@ -874,10 +875,11 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
         "{ \"related_applications\": ["
         "{\"platform\": \"itunes\", \"id\": \"foo\"}]}");
     EXPECT_EQ(manifest.related_applications.size(), 1u);
-    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].platform.string(),
-                            "itunes"));
-    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].id.string(),
-                            "foo"));
+    EXPECT_TRUE(base::EqualsASCII(
+        manifest.related_applications[0].platform.string(),
+        "itunes"));
+    EXPECT_TRUE(base::EqualsASCII(manifest.related_applications[0].id.string(),
+                                  "foo"));
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -889,14 +891,16 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
         "{\"platform\": \"play\", \"id\": \"foo\"},"
         "{\"platform\": \"itunes\", \"id\": \"bar\"}]}");
     EXPECT_EQ(manifest.related_applications.size(), 2u);
-    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].platform.string(),
-                            "play"));
-    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].id.string(),
-                            "foo"));
-    EXPECT_TRUE(EqualsASCII(manifest.related_applications[1].platform.string(),
-                            "itunes"));
-    EXPECT_TRUE(EqualsASCII(manifest.related_applications[1].id.string(),
-                            "bar"));
+    EXPECT_TRUE(base::EqualsASCII(
+        manifest.related_applications[0].platform.string(),
+        "play"));
+    EXPECT_TRUE(base::EqualsASCII(manifest.related_applications[0].id.string(),
+                                  "foo"));
+    EXPECT_TRUE(base::EqualsASCII(
+        manifest.related_applications[1].platform.string(),
+        "itunes"));
+    EXPECT_TRUE(base::EqualsASCII(manifest.related_applications[1].id.string(),
+                                  "bar"));
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -910,10 +914,11 @@ TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
         "{\"platform\": \"play\", \"id\": \"foo\"},"
         "{}]}");
     EXPECT_EQ(manifest.related_applications.size(), 1u);
-    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].platform.string(),
-                            "play"));
-    EXPECT_TRUE(EqualsASCII(manifest.related_applications[0].id.string(),
-                            "foo"));
+    EXPECT_TRUE(base::EqualsASCII(
+        manifest.related_applications[0].platform.string(),
+        "play"));
+    EXPECT_TRUE(base::EqualsASCII(manifest.related_applications[0].id.string(),
+                                  "foo"));
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(2u, GetErrorCount());
     EXPECT_EQ("Manifest parsing error: one of 'url' or 'id' is required, "
@@ -978,14 +983,14 @@ TEST_F(ManifestParserTest, GCMSenderIDParseRules) {
   // Smoke test.
   {
     Manifest manifest = ParseManifest("{ \"gcm_sender_id\": \"foo\" }");
-    EXPECT_TRUE(EqualsASCII(manifest.gcm_sender_id.string(), "foo"));
+    EXPECT_TRUE(base::EqualsASCII(manifest.gcm_sender_id.string(), "foo"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Trim whitespaces.
   {
     Manifest manifest = ParseManifest("{ \"gcm_sender_id\": \"  foo  \" }");
-    EXPECT_TRUE(EqualsASCII(manifest.gcm_sender_id.string(), "foo"));
+    EXPECT_TRUE(base::EqualsASCII(manifest.gcm_sender_id.string(), "foo"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 

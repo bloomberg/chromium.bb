@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SendCloseFrameWhenTabIsClosed) {
     connected_title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("CLOSED"));
     NavigateToHTTP("counted_connection.html");
     const base::string16 result = connected_title_watcher.WaitAndGetTitle();
-    EXPECT_TRUE(EqualsASCII(result, "CONNECTED"));
+    EXPECT_TRUE(base::EqualsASCII(result, "CONNECTED"));
 
     content::WebContentsDestroyedWatcher destroyed_watcher(new_tab);
     browser()->tab_strip_model()->CloseWebContentsAt(1, 0);
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketAppliesHSTS) {
   ui_test_utils::NavigateToURL(
       browser(), https_server.GetURL("files/websocket/set-hsts.html"));
   const base::string16 result = title_watcher.WaitAndGetTitle();
-  EXPECT_TRUE(EqualsASCII(result, "SET"));
+  EXPECT_TRUE(base::EqualsASCII(result, "SET"));
 
   // Verify that it applies to WebSockets.
   ASSERT_TRUE(wss_server.BlockUntilStarted());

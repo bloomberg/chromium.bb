@@ -615,7 +615,7 @@ SkBitmap* ChromeContentRendererClient::GetSadWebViewBitmap() {
 #if defined(ENABLE_EXTENSIONS)
 const Extension* ChromeContentRendererClient::GetExtensionByOrigin(
     const WebSecurityOrigin& origin) const {
-  if (!EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
+  if (!base::EqualsASCII(origin.protocol(), extensions::kExtensionScheme))
     return NULL;
 
   const std::string extension_id = origin.host().utf8().data();
@@ -1155,7 +1155,7 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
   }
 #endif
 
-  bool is_post = EqualsASCII(failed_request.httpMethod(), "POST");
+  bool is_post = base::EqualsASCII(failed_request.httpMethod(), "POST");
 
   if (error_html) {
     bool extension_but_not_bookmark_app = false;
