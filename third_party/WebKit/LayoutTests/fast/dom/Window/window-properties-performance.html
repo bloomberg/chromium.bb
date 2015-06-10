@@ -91,6 +91,9 @@ function logProperties(object, objectName)
 logValue('window.performance');
 window.performance.timing = 'timing is not replaceable';
 logValue('window.performance.timing');
+// PerformanceTiming supports a serializer.
+var jsonizedTiming = JSON.parse(JSON.stringify(window.performance.timing));
+logValue('jsonizedTiming');
 window.performance.navigation = 'navigation is not replaceable';
 logValue('window.performance.navigation');
 window.performance = 'performance is replaceable';

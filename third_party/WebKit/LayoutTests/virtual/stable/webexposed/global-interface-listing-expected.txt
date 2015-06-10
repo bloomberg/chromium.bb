@@ -3292,6 +3292,7 @@ interface PerformanceTiming
     getter unloadEventEnd
     getter unloadEventStart
     method constructor
+    method toJSON
 interface PeriodicWave
     method constructor
 interface PermissionStatus

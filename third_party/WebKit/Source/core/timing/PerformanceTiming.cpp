@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/timing/PerformanceTiming.h"
 
+#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/frame/LocalFrame.h"
@@ -347,6 +349,33 @@ ResourceLoadTiming* PerformanceTiming::resourceLoadTiming() const
         return nullptr;
 
     return loader->response().resourceLoadTiming();
+}
+
+ScriptValue PerformanceTiming::toJSONForBinding(ScriptState* scriptState)
+{
+    V8ObjectBuilder result(scriptState);
+    result.addNumber("navigationStart", navigationStart());
+    result.addNumber("unloadEventStart", unloadEventStart());
+    result.addNumber("unloadEventEnd", unloadEventEnd());
+    result.addNumber("redirectStart", redirectStart());
+    result.addNumber("redirectEnd", redirectEnd());
+    result.addNumber("fetchStart", fetchStart());
+    result.addNumber("domainLookupStart", domainLookupStart());
+    result.addNumber("domainLookupEnd", domainLookupEnd());
+    result.addNumber("connectStart", connectStart());
+    result.addNumber("connectEnd", connectEnd());
+    result.addNumber("secureConnectionStart", secureConnectionStart());
+    result.addNumber("requestStart", requestStart());
+    result.addNumber("responseStart", responseStart());
+    result.addNumber("responseEnd", responseEnd());
+    result.addNumber("domLoading", domLoading());
+    result.addNumber("domInteractive", domInteractive());
+    result.addNumber("domContentLoadedEventStart", domContentLoadedEventStart());
+    result.addNumber("domContentLoadedEventEnd", domContentLoadedEventEnd());
+    result.addNumber("domComplete", domComplete());
+    result.addNumber("loadEventStart", loadEventStart());
+    result.addNumber("loadEventEnd", loadEventEnd());
+    return result.scriptValue();
 }
 
 unsigned long long PerformanceTiming::monotonicTimeToIntegerMilliseconds(double monotonicSeconds) const

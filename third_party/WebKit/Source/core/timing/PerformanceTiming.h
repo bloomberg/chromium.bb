@@ -43,6 +43,8 @@ class DocumentLoader;
 class DocumentTiming;
 class LocalFrame;
 class ResourceLoadTiming;
+class ScriptState;
+class ScriptValue;
 
 class CORE_EXPORT PerformanceTiming final : public GarbageCollectedFinalized<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
@@ -74,6 +76,8 @@ public:
     unsigned long long domComplete() const;
     unsigned long long loadEventStart() const;
     unsigned long long loadEventEnd() const;
+
+    ScriptValue toJSONForBinding(ScriptState*);
 
     DECLARE_VIRTUAL_TRACE();
 
