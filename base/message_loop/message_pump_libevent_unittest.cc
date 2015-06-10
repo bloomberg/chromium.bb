@@ -77,7 +77,13 @@ class StupidWatcher : public MessagePumpLibevent::Watcher {
 
 // Test to make sure that we catch calling WatchFileDescriptor off of the
 // wrong thread.
-TEST_F(MessagePumpLibeventTest, TestWatchingFromBadThread) {
+#if defined(OS_CHROMEOS)
+// Flaky on Chrome OS: crbug.com/138845.
+#define MAYBE_TestWatchingFromBadThread DISABLED_TestWatchingFromBadThread
+#else
+#define MAYBE_TestWatchingFromBadThread TestWatchingFromBadThread
+#endif
+TEST_F(MessagePumpLibeventTest, MAYBE_TestWatchingFromBadThread) {
   MessagePumpLibevent::FileDescriptorWatcher watcher;
   StupidWatcher delegate;
 
