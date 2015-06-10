@@ -14,6 +14,7 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -47,6 +48,7 @@ void ClearDamageForAllSurfaces(LayerImpl* layer) {
 }
 
 void EmulateDrawingOneFrame(LayerImpl* root) {
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   // This emulates only steps that are relevant to testing the damage tracker:
   //   1. computing the render passes and layerlists
   //   2. updating all damage trackers in the correct order
