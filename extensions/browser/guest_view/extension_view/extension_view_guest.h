@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "components/guest_view/browser/guest_view.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-#include "extensions/browser/guest_view/extension_view/extension_view_guest_delegate.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -18,8 +17,7 @@ class BrowserContext;
 namespace extensions {
 
 class ExtensionViewGuest
-    : public guest_view::GuestView<ExtensionViewGuest>,
-      public ExtensionFunctionDispatcher::Delegate {
+    : public guest_view::GuestView<ExtensionViewGuest> {
  public:
   static const char Type[];
   static guest_view::GuestViewBase* Create(
@@ -45,20 +43,14 @@ class ExtensionViewGuest
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   ExtensionViewGuest(content::WebContents* owner_web_contents);
   ~ExtensionViewGuest() override;
-  void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // Applies attributes to the extensionview.
   void ApplyAttributes(const base::DictionaryValue& params);
 
-  scoped_ptr<extensions::ExtensionFunctionDispatcher>
-      extension_function_dispatcher_;
-  scoped_ptr<extensions::ExtensionViewGuestDelegate>
-      extension_view_guest_delegate_;
   GURL view_page_;
   GURL extension_url_;
 

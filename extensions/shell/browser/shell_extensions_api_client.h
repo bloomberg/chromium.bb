@@ -14,6 +14,8 @@ class ShellExtensionsAPIClient : public ExtensionsAPIClient {
   ShellExtensionsAPIClient();
 
   // ExtensionsAPIClient implementation.
+  void AttachWebContentsHelpers(content::WebContents* web_contents) const
+      override;
   AppViewGuestDelegate* CreateAppViewGuestDelegate() const override;
 };
 

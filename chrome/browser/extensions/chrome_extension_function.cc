@@ -48,7 +48,7 @@ Browser* ChromeUIThreadExtensionFunction::GetCurrentBrowser() {
   // If the delegate has an associated browser, return it.
   if (dispatcher()) {
     extensions::WindowController* window_controller =
-        dispatcher()->delegate()->GetExtensionWindowController();
+        dispatcher()->GetExtensionWindowController();
     if (window_controller) {
       Browser* browser = window_controller->GetBrowser();
       if (browser)
@@ -87,7 +87,7 @@ ChromeUIThreadExtensionFunction::GetExtensionWindowController() {
   // If the delegate has an associated window controller, return it.
   if (dispatcher()) {
     extensions::WindowController* window_controller =
-        dispatcher()->delegate()->GetExtensionWindowController();
+        dispatcher()->GetExtensionWindowController();
     if (window_controller)
       return window_controller;
   }

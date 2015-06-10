@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "extensions/browser/extension_function_dispatcher.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 
 namespace content {
@@ -34,15 +33,12 @@ class InputMethod;
 // access to the virtual keyboard window and setup Chrome extension functions.
 class AshKeyboardControllerProxy
     : public keyboard::KeyboardControllerProxy,
-      public content::WebContentsObserver,
-      public extensions::ExtensionFunctionDispatcher::Delegate {
+      public content::WebContentsObserver {
  public:
   explicit AshKeyboardControllerProxy(content::BrowserContext* context);
   ~AshKeyboardControllerProxy() override;
 
  private:
-  void OnRequest(const ExtensionHostMsg_Request_Params& params);
-
   // keyboard::KeyboardControllerProxy overrides
   ui::InputMethod* GetInputMethod() override;
   void RequestAudioInput(
@@ -62,18 +58,11 @@ class AshKeyboardControllerProxy
   // that case.
   void SetUpdateInputType(ui::TextInputType type) override;
 
-  // extensions::ExtensionFunctionDispatcher::Delegate overrides
-  extensions::WindowController* GetExtensionWindowController() const override;
-  content::WebContents* GetAssociatedWebContents() const override;
-
   // content::WebContentsObserver overrides
-  bool OnMessageReceived(const IPC::Message& message) override;
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   keyboard::KeyboardController* keyboard_controller_;
 
-  scoped_ptr<extensions::ExtensionFunctionDispatcher>
-      extension_function_dispatcher_;
   scoped_ptr<keyboard::KeyboardControllerObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AshKeyboardControllerProxy);

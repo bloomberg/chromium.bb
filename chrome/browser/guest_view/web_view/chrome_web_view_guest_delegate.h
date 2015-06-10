@@ -28,7 +28,6 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
 
   // WebViewGuestDelegate implementation.
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
-  void OnAttachWebViewHelpers(content::WebContents* contents) override;
   void OnDidInitialize() override;
   void OnGuestDestroyed() override;
   void OnShowContextMenu(int request_id, const MenuItemVector* items) override;

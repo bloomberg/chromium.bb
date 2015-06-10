@@ -28,10 +28,7 @@ const char ExtensionViewGuest::Type[] = "extensionview";
 
 ExtensionViewGuest::ExtensionViewGuest(
     content::WebContents* owner_web_contents)
-    : GuestView<ExtensionViewGuest>(owner_web_contents),
-      extension_view_guest_delegate_(
-          extensions::ExtensionsAPIClient::Get()
-              ->CreateExtensionViewGuestDelegate(this)) {
+    : GuestView<ExtensionViewGuest>(owner_web_contents) {
 }
 
 ExtensionViewGuest::~ExtensionViewGuest() {
@@ -104,11 +101,7 @@ void ExtensionViewGuest::CreateWebContents(
 
 void ExtensionViewGuest::DidInitialize(
     const base::DictionaryValue& create_params) {
-  extension_function_dispatcher_.reset(
-      new extensions::ExtensionFunctionDispatcher(browser_context(), this));
-
-  if (extension_view_guest_delegate_)
-    extension_view_guest_delegate_->DidInitialize();
+  ExtensionsAPIClient::Get()->AttachWebContentsHelpers(web_contents());
 
   ApplyAttributes(create_params);
 }
@@ -155,22 +148,6 @@ void ExtensionViewGuest::DidNavigateMainFrame(
     bad_message::ReceivedBadMessage(web_contents()->GetRenderProcessHost(),
                                     bad_message::EVG_BAD_ORIGIN);
   }
-}
-
-bool ExtensionViewGuest::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ExtensionViewGuest, message)
-  IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
-  IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-// Private
-void ExtensionViewGuest::OnRequest(
-    const ExtensionHostMsg_Request_Params& params) {
-  extension_function_dispatcher_->Dispatch(params,
-                                           web_contents()->GetRenderViewHost());
 }
 
 void ExtensionViewGuest::ApplyAttributes(const base::DictionaryValue& params) {

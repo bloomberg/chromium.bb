@@ -464,7 +464,7 @@ void UIThreadExtensionFunction::SetRenderFrameHost(
 content::WebContents* UIThreadExtensionFunction::GetAssociatedWebContents() {
   content::WebContents* web_contents = NULL;
   if (dispatcher())
-    web_contents = dispatcher()->delegate()->GetAssociatedWebContents();
+    web_contents = dispatcher()->GetAssociatedWebContents();
 
   return web_contents;
 }

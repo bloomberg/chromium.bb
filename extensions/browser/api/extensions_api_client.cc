@@ -33,6 +33,10 @@ void ExtensionsAPIClient::AddAdditionalValueStoreCaches(
     std::map<settings_namespace::Namespace, ValueStoreCache*>* caches) {
 }
 
+void ExtensionsAPIClient::AttachWebContentsHelpers(
+    content::WebContents* web_contents) const {
+}
+
 AppViewGuestDelegate* ExtensionsAPIClient::CreateAppViewGuestDelegate() const {
   return NULL;
 }
@@ -40,12 +44,6 @@ AppViewGuestDelegate* ExtensionsAPIClient::CreateAppViewGuestDelegate() const {
 ExtensionOptionsGuestDelegate*
 ExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
     ExtensionOptionsGuest* guest) const {
-  return NULL;
-}
-
-ExtensionViewGuestDelegate*
-ExtensionsAPIClient::CreateExtensionViewGuestDelegate(
-    ExtensionViewGuest* guest) const {
   return NULL;
 }
 

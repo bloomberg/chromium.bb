@@ -82,14 +82,6 @@ MimeHandlerViewGuest::MimeHandlerViewGuest(
 MimeHandlerViewGuest::~MimeHandlerViewGuest() {
 }
 
-WindowController* MimeHandlerViewGuest::GetExtensionWindowController() const {
-  return nullptr;
-}
-
-WebContents* MimeHandlerViewGuest::GetAssociatedWebContents() const {
-  return web_contents();
-}
-
 const char* MimeHandlerViewGuest::GetAPINamespace() const {
   return "mimeHandlerViewGuestInternal";
 }
@@ -155,10 +147,7 @@ void MimeHandlerViewGuest::DidAttachToEmbedder() {
 
 void MimeHandlerViewGuest::DidInitialize(
     const base::DictionaryValue& create_params) {
-  extension_function_dispatcher_.reset(
-      new ExtensionFunctionDispatcher(browser_context(), this));
-  if (delegate_)
-    delegate_->AttachHelpers();
+  ExtensionsAPIClient::Get()->AttachWebContentsHelpers(web_contents());
 }
 
 bool MimeHandlerViewGuest::ZoomPropagatesFromEmbedderToGuest() const {
@@ -251,27 +240,10 @@ void MimeHandlerViewGuest::DocumentOnLoadCompletedInMainFrame() {
           element_instance_id()));
 }
 
-bool MimeHandlerViewGuest::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MimeHandlerViewGuest, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 base::WeakPtr<StreamContainer> MimeHandlerViewGuest::GetStream() const {
   if (!stream_)
     return base::WeakPtr<StreamContainer>();
   return stream_->GetWeakPtr();
-}
-
-void MimeHandlerViewGuest::OnRequest(
-    const ExtensionHostMsg_Request_Params& params) {
-  if (extension_function_dispatcher_) {
-    extension_function_dispatcher_->Dispatch(
-        params, web_contents()->GetRenderViewHost());
-  }
 }
 
 }  // namespace extensions

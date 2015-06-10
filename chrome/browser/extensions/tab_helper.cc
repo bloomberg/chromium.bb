@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/webstore/webstore_api.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -50,6 +51,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_web_contents_observer.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -76,7 +78,6 @@ TabHelper::TabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       extension_app_(NULL),
-      extension_function_dispatcher_(profile_, this),
       pending_web_app_action_(NONE),
       last_committed_nav_entry_unique_id_(0),
       update_shortcut_on_load_complete_(false),
@@ -103,6 +104,12 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   InvokeForContentRulesRegistries([this](ContentRulesRegistry* registry) {
     registry->MonitorWebContentsForRuleEvaluation(this->web_contents());
   });
+
+  // We need an ExtensionWebContentsObserver, so make sure one exists (this is
+  // a no-op if one already does).
+  ChromeExtensionWebContentsObserver::CreateForWebContents(web_contents);
+  ExtensionWebContentsObserver::GetForWebContents(web_contents)->dispatcher()->
+      set_delegate(this);
 
   registrar_.Add(this,
                  content::NOTIFICATION_LOAD_STOP,
@@ -267,7 +274,6 @@ bool TabHelper::OnMessageReceived(const IPC::Message& message) {
                         OnInlineWebstoreInstall)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GetAppInstallState,
                         OnGetAppInstallState);
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -418,11 +424,6 @@ void TabHelper::OnGetAppInstallState(const GURL& requestor_url,
 
   Send(new ExtensionMsg_GetAppInstallStateResponse(
       return_route_id, state, callback_id));
-}
-
-void TabHelper::OnRequest(const ExtensionHostMsg_Request_Params& request) {
-  extension_function_dispatcher_.Dispatch(request,
-                                          web_contents()->GetRenderViewHost());
 }
 
 void TabHelper::OnContentScriptsExecuting(

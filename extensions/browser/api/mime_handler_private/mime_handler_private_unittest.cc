@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
 #include "extensions/browser/api/mime_handler_private/mime_handler_private.h"

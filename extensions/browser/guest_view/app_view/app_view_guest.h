@@ -7,7 +7,6 @@
 
 #include "base/id_map.h"
 #include "components/guest_view/browser/guest_view.h"
-#include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/guest_view/app_view/app_view_guest_delegate.h"
 
 namespace extensions {
@@ -18,8 +17,7 @@ class ExtensionHost;
 // AppViewGuest is created on attachment. That is, when a guest WebContents is
 // associated with a particular embedder WebContents. This happens on calls to
 // the connect API.
-class AppViewGuest : public guest_view::GuestView<AppViewGuest>,
-                     public ExtensionFunctionDispatcher::Delegate {
+class AppViewGuest : public guest_view::GuestView<AppViewGuest> {
  public:
   static const char Type[];
 
@@ -32,13 +30,6 @@ class AppViewGuest : public guest_view::GuestView<AppViewGuest>,
       const std::string& guest_extension_id);
 
   static GuestViewBase* Create(content::WebContents* owner_web_contents);
-
-  // ExtensionFunctionDispatcher::Delegate implementation.
-  WindowController* GetExtensionWindowController() const override;
-  content::WebContents* GetAssociatedWebContents() const override;
-
-  // content::WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
 
   // content::WebContentsDelegate implementation.
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
@@ -66,8 +57,6 @@ class AppViewGuest : public guest_view::GuestView<AppViewGuest>,
 
   ~AppViewGuest() override;
 
-  void OnRequest(const ExtensionHostMsg_Request_Params& params);
-
   void CompleteCreateWebContents(const GURL& url,
                                  const Extension* guest_extension,
                                  const WebContentsCreatedCallback& callback);
@@ -78,7 +67,6 @@ class AppViewGuest : public guest_view::GuestView<AppViewGuest>,
 
   GURL url_;
   std::string guest_extension_id_;
-  scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
   scoped_ptr<AppViewGuestDelegate> app_view_guest_delegate_;
   scoped_ptr<AppDelegate> app_delegate_;
 

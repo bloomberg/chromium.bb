@@ -54,7 +54,7 @@ Browser* ChromeExtensionFunctionDetails::GetCurrentBrowser() const {
   // If the delegate has an associated browser, return it.
   if (function_->dispatcher()) {
     extensions::WindowController* window_controller =
-        function_->dispatcher()->delegate()->GetExtensionWindowController();
+        function_->dispatcher()->GetExtensionWindowController();
     if (window_controller) {
       Browser* browser = window_controller->GetBrowser();
       if (browser)
@@ -93,7 +93,7 @@ ChromeExtensionFunctionDetails::GetExtensionWindowController() const {
   // If the delegate has an associated window controller, return it.
   if (function_->dispatcher()) {
     extensions::WindowController* window_controller =
-        function_->dispatcher()->delegate()->GetExtensionWindowController();
+        function_->dispatcher()->GetExtensionWindowController();
     if (window_controller)
       return window_controller;
   }

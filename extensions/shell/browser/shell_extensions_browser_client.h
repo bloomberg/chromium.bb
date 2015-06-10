@@ -85,6 +85,8 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   ExtensionCache* GetExtensionCache() override;
   bool IsBackgroundUpdateAllowed() override;
   bool IsMinBrowserVersionSupported(const std::string& min_version) override;
+  ExtensionWebContentsObserver* GetExtensionWebContentsObserver(
+      content::WebContents* web_contents) override;
 
   // Sets the API client.
   void SetAPIClientForTest(ExtensionsAPIClient* api_client);

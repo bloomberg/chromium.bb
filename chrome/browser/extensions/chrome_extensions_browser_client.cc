@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_mojo_service_registration.h"
 #include "chrome/browser/extensions/chrome_process_manager_delegate.h"
 #include "chrome/browser/extensions/chrome_url_request_util.h"
@@ -315,6 +316,12 @@ bool ChromeExtensionsBrowserClient::IsMinBrowserVersionSupported(
     return false;
   }
   return true;
+}
+
+ExtensionWebContentsObserver*
+ChromeExtensionsBrowserClient::GetExtensionWebContentsObserver(
+    content::WebContents* web_contents) {
+  return ChromeExtensionWebContentsObserver::FromWebContents(web_contents);
 }
 
 }  // namespace extensions

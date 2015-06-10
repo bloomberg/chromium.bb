@@ -13,20 +13,10 @@
 #include "chrome/common/chrome_version_info.h"
 #include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "components/guest_view/browser/guest_view_event.h"
-#include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/renderer_context_menu/context_menu_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
-
-#if defined(ENABLE_PRINTING)
-#if defined(ENABLE_PRINT_PREVIEW)
-#include "chrome/browser/printing/print_preview_message_handler.h"
-#include "chrome/browser/printing/print_view_manager.h"
-#else
-#include "chrome/browser/printing/print_view_manager_basic.h"
-#endif  // defined(ENABLE_PRINT_PREVIEW)
-#endif  // defined(ENABLE_PRINTING)
 
 using guest_view::GuestViewEvent;
 
@@ -66,26 +56,6 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
   web_view_guest()->DispatchEventToView(
       new GuestViewEvent(webview::kEventContextMenuShow, args.Pass()));
   return true;
-}
-
-// TODO(hanxi) Investigate which of these observers should move to the
-// extension module in the future.
-void ChromeWebViewGuestDelegate::OnAttachWebViewHelpers(
-    content::WebContents* contents) {
-  favicon::CreateContentFaviconDriverForWebContents(contents);
-  ChromeExtensionWebContentsObserver::CreateForWebContents(contents);
-#if defined(ENABLE_PRINTING)
-#if defined(ENABLE_PRINT_PREVIEW)
-  printing::PrintViewManager::CreateForWebContents(contents);
-  printing::PrintPreviewMessageHandler::CreateForWebContents(contents);
-#else
-  printing::PrintViewManagerBasic::CreateForWebContents(contents);
-#endif  // defined(ENABLE_PRINT_PREVIEW)
-#endif  // defined(ENABLE_PRINTING)
-  pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
-      contents,
-      scoped_ptr<pdf::PDFWebContentsHelperClient>(
-          new ChromePDFWebContentsHelperClient()));
 }
 
 void ChromeWebViewGuestDelegate::OnDidInitialize() {

@@ -104,23 +104,6 @@ AppViewGuest::AppViewGuest(content::WebContents* owner_web_contents)
 AppViewGuest::~AppViewGuest() {
 }
 
-WindowController* AppViewGuest::GetExtensionWindowController() const {
-  return nullptr;
-}
-
-content::WebContents* AppViewGuest::GetAssociatedWebContents() const {
-  return web_contents();
-}
-
-bool AppViewGuest::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AppViewGuest, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 bool AppViewGuest::HandleContextMenu(const content::ContextMenuParams& params) {
   if (app_view_guest_delegate_) {
     return app_view_guest_delegate_->HandleContextMenu(web_contents(), params);
@@ -226,8 +209,7 @@ void AppViewGuest::CreateWebContents(
 }
 
 void AppViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
-  extension_function_dispatcher_.reset(
-      new ExtensionFunctionDispatcher(browser_context(), this));
+  ExtensionsAPIClient::Get()->AttachWebContentsHelpers(web_contents());
 
   if (!url_.is_valid())
     return;
@@ -242,11 +224,6 @@ const char* AppViewGuest::GetAPINamespace() const {
 
 int AppViewGuest::GetTaskPrefix() const {
   return IDS_EXTENSION_TASK_MANAGER_APPVIEW_TAG_PREFIX;
-}
-
-void AppViewGuest::OnRequest(const ExtensionHostMsg_Request_Params& params) {
-  extension_function_dispatcher_->Dispatch(params,
-                                           web_contents()->GetRenderViewHost());
 }
 
 void AppViewGuest::CompleteCreateWebContents(

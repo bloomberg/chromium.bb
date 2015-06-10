@@ -1244,8 +1244,7 @@ bool DownloadsAcceptDangerFunction::RunAsync() {
 void DownloadsAcceptDangerFunction::PromptOrWait(int download_id, int retries) {
   DownloadItem* download_item =
       GetDownload(GetProfile(), include_incognito(), download_id);
-  content::WebContents* web_contents =
-      dispatcher()->delegate()->GetVisibleWebContents();
+  content::WebContents* web_contents = dispatcher()->GetVisibleWebContents();
   if (InvalidId(download_item, &error_) ||
       Fault(download_item->GetState() != DownloadItem::IN_PROGRESS,
             errors::kNotInProgress, &error_) ||
@@ -1373,7 +1372,7 @@ bool DownloadsDragFunction::RunAsync() {
   DownloadItem* download_item =
       GetDownload(GetProfile(), include_incognito(), params->download_id);
   content::WebContents* web_contents =
-      dispatcher()->delegate()->GetVisibleWebContents();
+      dispatcher()->GetVisibleWebContents();
   if (InvalidId(download_item, &error_) ||
       Fault(!web_contents, errors::kInvisibleContext, &error_))
     return false;
@@ -1482,7 +1481,7 @@ bool DownloadsGetFileIconFunction::RunAsync() {
   DCHECK(icon_size == 16 || icon_size == 32);
   float scale = 1.0;
   content::WebContents* web_contents =
-      dispatcher()->delegate()->GetVisibleWebContents();
+      dispatcher()->GetVisibleWebContents();
   if (web_contents) {
     scale = ui::GetScaleFactorForNativeView(
         web_contents->GetRenderWidgetHostView()->GetNativeView());

@@ -19,8 +19,6 @@ class ChromeExtensionOptionsGuestDelegate
   explicit ChromeExtensionOptionsGuestDelegate(ExtensionOptionsGuest* guest);
   ~ChromeExtensionOptionsGuestDelegate() override;
 
-  void DidInitialize() override;
-
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
   content::WebContents* OpenURLInNewTab(

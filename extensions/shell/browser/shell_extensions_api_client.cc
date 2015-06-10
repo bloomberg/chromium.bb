@@ -5,10 +5,16 @@
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 
 #include "extensions/shell/browser/shell_app_view_guest_delegate.h"
+#include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 
 namespace extensions {
 
 ShellExtensionsAPIClient::ShellExtensionsAPIClient() {
+}
+
+void ShellExtensionsAPIClient::AttachWebContentsHelpers(
+    content::WebContents* web_contents) const {
+  ShellExtensionWebContentsObserver::CreateForWebContents(web_contents);
 }
 
 AppViewGuestDelegate* ShellExtensionsAPIClient::CreateAppViewGuestDelegate()

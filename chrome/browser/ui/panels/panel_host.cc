@@ -40,7 +40,6 @@ using base::UserMetricsAction;
 PanelHost::PanelHost(Panel* panel, Profile* profile)
     : panel_(panel),
       profile_(profile),
-      extension_function_dispatcher_(profile, this),
       weak_factory_(this) {
 }
 
@@ -71,6 +70,8 @@ void PanelHost::Init(const GURL& url) {
   PrefsTabHelper::CreateForWebContents(web_contents_.get());
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents_.get());
+  extensions::ExtensionWebContentsObserver::GetForWebContents(
+      web_contents_.get())->dispatcher()->set_delegate(this);
 
   web_contents_->GetController().LoadURL(
       url, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
@@ -223,23 +224,6 @@ void PanelHost::WebContentsDestroyed() {
 
 void PanelHost::ClosePanel() {
   panel_->Close();
-}
-
-bool PanelHost::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PanelHost, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void PanelHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
-  if (!web_contents_.get())
-    return;
-
-  extension_function_dispatcher_.Dispatch(params,
-                                          web_contents_->GetRenderViewHost());
 }
 
 extensions::WindowController* PanelHost::GetExtensionWindowController() const {

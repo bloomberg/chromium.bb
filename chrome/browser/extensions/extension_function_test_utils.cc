@@ -176,8 +176,8 @@ bool RunFunction(UIThreadExtensionFunction* function,
                  RunFunctionFlags flags) {
   TestFunctionDispatcherDelegate dispatcher_delegate(browser);
   scoped_ptr<extensions::ExtensionFunctionDispatcher> dispatcher(
-      new extensions::ExtensionFunctionDispatcher(browser->profile(),
-                                                  &dispatcher_delegate));
+      new extensions::ExtensionFunctionDispatcher(browser->profile()));
+  dispatcher->set_delegate(&dispatcher_delegate);
   // TODO(yoz): The cast is a hack; these flags should be defined in
   // only one place.  See crbug.com/394840.
   return extensions::api_test_utils::RunFunction(

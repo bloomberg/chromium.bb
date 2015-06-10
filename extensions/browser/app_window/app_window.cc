@@ -30,6 +30,7 @@
 #include "extensions/browser/app_window/size_constraints.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_web_contents_observer.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
@@ -257,6 +258,9 @@ void AppWindow::Init(const GURL& url,
   content::WebContentsObserver::Observe(web_contents());
   SetViewType(web_contents(), VIEW_TYPE_APP_WINDOW);
   app_delegate_->InitWebContents(web_contents());
+
+  ExtensionWebContentsObserver::GetForWebContents(web_contents())->
+      dispatcher()->set_delegate(this);
 
   WebContentsModalDialogManager::CreateForWebContents(web_contents());
 
@@ -920,6 +924,14 @@ blink::WebDisplayMode AppWindow::GetDisplayMode(
     const content::WebContents* source) const {
   return IsFullscreen() ? blink::WebDisplayModeFullscreen
                         : blink::WebDisplayModeStandalone;
+}
+
+WindowController* AppWindow::GetExtensionWindowController() const {
+  return app_window_contents_->GetWindowController();
+}
+
+content::WebContents* AppWindow::GetAssociatedWebContents() const {
+  return web_contents();
 }
 
 void AppWindow::OnExtensionUnloaded(BrowserContext* browser_context,

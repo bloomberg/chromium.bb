@@ -77,7 +77,6 @@ class PanelHost : public content::WebContentsDelegate,
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
-  bool OnMessageReceived(const IPC::Message& message) override;
 
   // extensions::ExtensionFunctionDispatcher::Delegate overrides.
   extensions::WindowController* GetExtensionWindowController() const override;
@@ -93,12 +92,8 @@ class PanelHost : public content::WebContentsDelegate,
   // Helper to close panel via the message loop.
   void ClosePanel();
 
-  // Message handlers.
-  void OnRequest(const ExtensionHostMsg_Request_Params& params);
-
   Panel* panel_;  // Weak, owns us.
   Profile* profile_;
-  extensions::ExtensionFunctionDispatcher extension_function_dispatcher_;
 
   scoped_ptr<content::WebContents> web_contents_;
 

@@ -24,11 +24,11 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
           observers,
       std::map<settings_namespace::Namespace, ValueStoreCache*>* caches)
       override;
+  void AttachWebContentsHelpers(content::WebContents* web_contents) const
+      override;
   AppViewGuestDelegate* CreateAppViewGuestDelegate() const override;
   ExtensionOptionsGuestDelegate* CreateExtensionOptionsGuestDelegate(
       ExtensionOptionsGuest* guest) const override;
-  ExtensionViewGuestDelegate* CreateExtensionViewGuestDelegate(
-      ExtensionViewGuest* guest) const override;
   scoped_ptr<MimeHandlerViewGuestDelegate> CreateMimeHandlerViewGuestDelegate(
       MimeHandlerViewGuest* guest) const override;
   WebViewGuestDelegate* CreateWebViewGuestDelegate(

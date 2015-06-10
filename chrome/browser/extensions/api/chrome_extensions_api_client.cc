@@ -10,12 +10,15 @@
 #include "chrome/browser/extensions/api/management/chrome_management_api_delegate.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
+#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/favicon/favicon_helper.h"
 #include "chrome/browser/guest_view/app_view/chrome_app_view_guest_delegate.h"
 #include "chrome/browser/guest_view/extension_options/chrome_extension_options_guest_delegate.h"
-#include "chrome/browser/guest_view/extension_view/chrome_extension_view_guest_delegate.h"
 #include "chrome/browser/guest_view/mime_handler_view/chrome_mime_handler_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
+#include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
+#include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
@@ -29,6 +32,15 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/api/virtual_keyboard_private/chrome_virtual_keyboard_delegate.h"
 #endif
+
+#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
+#include "chrome/browser/printing/print_preview_message_handler.h"
+#include "chrome/browser/printing/print_view_manager.h"
+#else
+#include "chrome/browser/printing/print_view_manager_basic.h"
+#endif  // defined(ENABLE_PRINT_PREVIEW)
+#endif  // defined(ENABLE_PRINTING)
 
 namespace extensions {
 
@@ -53,6 +65,26 @@ void ChromeExtensionsAPIClient::AddAdditionalValueStoreCaches(
 #endif
 }
 
+void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
+    content::WebContents* web_contents) const {
+  favicon::CreateContentFaviconDriverForWebContents(web_contents);
+#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_PRINT_PREVIEW)
+  printing::PrintViewManager::CreateForWebContents(web_contents);
+  printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
+#else
+  printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
+#endif  // defined(ENABLE_PRINT_PREVIEW)
+#endif  // defined(ENABLE_PRINTING)
+  pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
+      web_contents,
+      scoped_ptr<pdf::PDFWebContentsHelperClient>(
+          new ChromePDFWebContentsHelperClient()));
+
+  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
+      web_contents);
+}
+
 AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()
     const {
   return new ChromeAppViewGuestDelegate();
@@ -64,16 +96,10 @@ ChromeExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
   return new ChromeExtensionOptionsGuestDelegate(guest);
 }
 
-ExtensionViewGuestDelegate*
-ChromeExtensionsAPIClient::CreateExtensionViewGuestDelegate(
-    ExtensionViewGuest* guest) const {
-  return new ChromeExtensionViewGuestDelegate(guest);
-}
-
 scoped_ptr<MimeHandlerViewGuestDelegate>
 ChromeExtensionsAPIClient::CreateMimeHandlerViewGuestDelegate(
     MimeHandlerViewGuest* guest) const {
-  return make_scoped_ptr(new ChromeMimeHandlerViewGuestDelegate(guest));
+  return make_scoped_ptr(new ChromeMimeHandlerViewGuestDelegate());
 }
 
 WebViewGuestDelegate* ChromeExtensionsAPIClient::CreateWebViewGuestDelegate(

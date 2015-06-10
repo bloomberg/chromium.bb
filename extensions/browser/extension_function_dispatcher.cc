@@ -205,12 +205,12 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
 
 WindowController*
 ExtensionFunctionDispatcher::Delegate::GetExtensionWindowController() const {
-  return NULL;
+  return nullptr;
 }
 
 content::WebContents*
 ExtensionFunctionDispatcher::Delegate::GetAssociatedWebContents() const {
-  return NULL;
+  return nullptr;
 }
 
 content::WebContents*
@@ -301,10 +301,8 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
 }
 
 ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
-    content::BrowserContext* browser_context,
-    Delegate* delegate)
-    : browser_context_(browser_context),
-      delegate_(delegate) {
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context) {
 }
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
@@ -438,6 +436,22 @@ void ExtensionFunctionDispatcher::OnExtensionFunctionCompleted(
     ProcessManager::Get(browser_context_)
         ->DecrementLazyKeepaliveCount(extension);
   }
+}
+
+WindowController*
+ExtensionFunctionDispatcher::GetExtensionWindowController() const {
+  return delegate_ ? delegate_->GetExtensionWindowController() : nullptr;
+}
+
+content::WebContents*
+ExtensionFunctionDispatcher::GetAssociatedWebContents() const {
+  return delegate_ ? delegate_->GetAssociatedWebContents() : nullptr;
+}
+
+content::WebContents*
+ExtensionFunctionDispatcher::GetVisibleWebContents() const {
+  return delegate_ ? delegate_->GetVisibleWebContents() :
+      GetAssociatedWebContents();
 }
 
 // static

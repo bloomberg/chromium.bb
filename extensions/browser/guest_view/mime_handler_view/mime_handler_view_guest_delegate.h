@@ -19,11 +19,8 @@ class MimeHandlerViewGuest;
 // A delegate class of MimeHandlerViewGuest that are not a part of chrome.
 class MimeHandlerViewGuestDelegate {
  public:
-  explicit MimeHandlerViewGuestDelegate(MimeHandlerViewGuest* guest) {}
+  MimeHandlerViewGuestDelegate() {}
   virtual ~MimeHandlerViewGuestDelegate() {}
-
-  // Attaches helpers upon initializing the WebContents.
-  virtual void AttachHelpers() {}
 
   // Handles context menu, or returns false if unhandled.
   virtual bool HandleContextMenu(content::WebContents* web_contents,

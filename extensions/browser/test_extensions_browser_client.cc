@@ -198,4 +198,10 @@ bool TestExtensionsBrowserClient::IsMinBrowserVersionSupported(
   return true;
 }
 
+ExtensionWebContentsObserver*
+TestExtensionsBrowserClient::GetExtensionWebContentsObserver(
+    content::WebContents* web_contents) {
+  return nullptr;
+}
+
 }  // namespace extensions

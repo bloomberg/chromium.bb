@@ -35,9 +35,6 @@ class WebViewGuestDelegate {
   // Called when context menu operation was handled.
   virtual bool HandleContextMenu(const content::ContextMenuParams& params) = 0;
 
-  // Called to attach helpers just after additional initialization is performed.
-  virtual void OnAttachWebViewHelpers(content::WebContents* contents) = 0;
-
   // Called just after additional initialization is performed.
   virtual void OnDidInitialize() = 0;
 

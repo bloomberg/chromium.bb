@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/extension_function_dispatcher.h"
 
 namespace content {
 class BrowserContext;
@@ -28,12 +29,24 @@ class Extension;
 // WebContents. It must be a subclass so that creating an instance via
 // content::WebContentsUserData::CreateForWebContents() provides an object of
 // the correct type. For an example, see ChromeExtensionWebContentsObserver.
-class ExtensionWebContentsObserver : public content::WebContentsObserver {
+class ExtensionWebContentsObserver
+    : public content::WebContentsObserver,
+      public ExtensionFunctionDispatcher::Delegate {
+ public:
+  // Returns the ExtensionWebContentsObserver for the given |web_contents|.
+  static ExtensionWebContentsObserver* GetForWebContents(
+      content::WebContents* web_contents);
+
+  ExtensionFunctionDispatcher* dispatcher() { return &dispatcher_; }
+
  protected:
   explicit ExtensionWebContentsObserver(content::WebContents* web_contents);
   ~ExtensionWebContentsObserver() override;
 
   content::BrowserContext* browser_context() { return browser_context_; }
+
+  // ExtensionFunctionDispatcher::Delegate overrides.
+  content::WebContents* GetAssociatedWebContents() const override;
 
   // content::WebContentsObserver overrides.
 
@@ -41,6 +54,9 @@ class ExtensionWebContentsObserver : public content::WebContentsObserver {
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+
+  // Subclasses should call this first before doing their own message handling.
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // Per the documentation in WebContentsObserver, these two methods are
   // appropriate to track the set of current RenderFrameHosts.
@@ -66,8 +82,12 @@ class ExtensionWebContentsObserver : public content::WebContentsObserver {
   static std::string GetExtensionId(content::RenderViewHost* render_view_host);
 
  private:
+  void OnRequest(const ExtensionHostMsg_Request_Params& params);
+
   // The BrowserContext associated with the WebContents being observed.
   content::BrowserContext* browser_context_;
+
+  ExtensionFunctionDispatcher dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebContentsObserver);
 };

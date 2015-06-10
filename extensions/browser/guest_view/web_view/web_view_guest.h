@@ -268,8 +268,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
 
   ~WebViewGuest() override;
 
-  void AttachWebViewHelpers(content::WebContents* contents);
-
   void ClearDataInternal(const base::Time remove_since,
                          uint32 removal_mask,
                          const base::Closure& callback);

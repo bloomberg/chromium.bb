@@ -19,17 +19,6 @@ using extensions::ExtensionFunctionDispatcher;
 
 namespace {
 
-class TestFunctionDispatcherDelegate
-    : public ExtensionFunctionDispatcher::Delegate {
- public:
-  TestFunctionDispatcherDelegate() {}
-  ~TestFunctionDispatcherDelegate() override {}
-
-  // NULL implementation.
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestFunctionDispatcherDelegate);
-};
-
 scoped_ptr<base::Value> ParseJSON(const std::string& data) {
   return base::JSONReader::Read(data);
 }
@@ -185,9 +174,8 @@ base::Value* RunFunctionAndReturnSingleResult(
     const std::string& args,
     content::BrowserContext* context,
     RunFunctionFlags flags) {
-  TestFunctionDispatcherDelegate delegate;
   scoped_ptr<ExtensionFunctionDispatcher> dispatcher(
-      new ExtensionFunctionDispatcher(context, &delegate));
+      new ExtensionFunctionDispatcher(context));
 
   return RunFunctionWithDelegateAndReturnSingleResult(
       function, args, context, dispatcher.Pass(), flags);
@@ -203,9 +191,8 @@ std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                       const std::string& args,
                                       content::BrowserContext* context,
                                       RunFunctionFlags flags) {
-  TestFunctionDispatcherDelegate delegate;
   scoped_ptr<ExtensionFunctionDispatcher> dispatcher(
-      new ExtensionFunctionDispatcher(context, &delegate));
+      new ExtensionFunctionDispatcher(context));
   scoped_refptr<ExtensionFunction> function_owner(function);
   // Without a callback the function will not generate a result.
   function->set_has_callback(true);
@@ -217,9 +204,8 @@ std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
 bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
                  content::BrowserContext* context) {
-  TestFunctionDispatcherDelegate delegate;
   scoped_ptr<ExtensionFunctionDispatcher> dispatcher(
-      new ExtensionFunctionDispatcher(context, &delegate));
+      new ExtensionFunctionDispatcher(context));
   return RunFunction(function, args, context, dispatcher.Pass(), NONE);
 }
 

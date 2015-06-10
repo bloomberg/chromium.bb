@@ -28,6 +28,7 @@ class TestAppWindowContents : public AppWindowContents {
   void NativeWindowClosed() override;
   void DispatchWindowShownForTests() const override;
   content::WebContents* GetWebContents() const override;
+  WindowController* GetWindowController() const override;
 
  private:
   scoped_ptr<content::WebContents> web_contents_;

@@ -362,7 +362,8 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
 
   if (web_view_guest_delegate_)
     web_view_guest_delegate_->OnDidInitialize();
-  AttachWebViewHelpers(web_contents());
+  ExtensionsAPIClient::Get()->AttachWebContentsHelpers(web_contents());
+  web_view_permission_helper_.reset(new WebViewPermissionHelper(this));
 
   rules_registry_id_ = GetOrGenerateRulesRegistryID(
       owner_web_contents()->GetRenderProcessHost()->GetID(),
@@ -374,12 +375,6 @@ void WebViewGuest::DidInitialize(const base::DictionaryValue& create_params) {
   PushWebViewStateToIOThread();
 
   ApplyAttributes(create_params);
-}
-
-void WebViewGuest::AttachWebViewHelpers(WebContents* contents) {
-  if (web_view_guest_delegate_)
-    web_view_guest_delegate_->OnAttachWebViewHelpers(contents);
-  web_view_permission_helper_.reset(new WebViewPermissionHelper(this));
 }
 
 void WebViewGuest::ClearDataInternal(base::Time remove_since,

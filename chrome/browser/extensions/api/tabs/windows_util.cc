@@ -22,7 +22,7 @@ bool GetWindowFromWindowID(ChromeUIThreadExtensionFunction* function,
   ChromeExtensionFunctionDetails function_details(function);
   if (window_id == extension_misc::kCurrentWindowId) {
     extensions::WindowController* extension_window_controller =
-        function->dispatcher()->delegate()->GetExtensionWindowController();
+        function->dispatcher()->GetExtensionWindowController();
     // If there is a window controller associated with this extension, use that.
     if (extension_window_controller) {
       *controller = extension_window_controller;

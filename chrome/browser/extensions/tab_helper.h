@@ -169,7 +169,6 @@ class TabHelper : public content::WebContentsObserver,
   void OnGetAppInstallState(const GURL& requestor_url,
                             int return_route_id,
                             int callback_id);
-  void OnRequest(const ExtensionHostMsg_Request_Params& params);
   void OnContentScriptsExecuting(
       const ScriptExecutionObserver::ExecutingScriptsMap& extension_ids,
       const GURL& on_url);
@@ -226,9 +225,6 @@ class TabHelper : public content::WebContentsObserver,
   // Icon for extension_app_ (if non-null) or a manually-set icon for
   // non-extension apps.
   SkBitmap extension_app_icon_;
-
-  // Process any extension messages coming from the tab.
-  extensions::ExtensionFunctionDispatcher extension_function_dispatcher_;
 
   // Cached web app info data.
   WebApplicationInfo web_app_info_;

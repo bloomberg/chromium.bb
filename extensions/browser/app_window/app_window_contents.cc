@@ -28,9 +28,6 @@ void AppWindowContentsImpl::Initialize(content::BrowserContext* context,
                                        const GURL& url) {
   url_ = url;
 
-  extension_function_dispatcher_.reset(
-      new ExtensionFunctionDispatcher(context, this));
-
   web_contents_.reset(
       content::WebContents::Create(content::WebContents::CreateParams(
           context, content::SiteInstance::CreateForURL(context, url_))));
@@ -96,29 +93,18 @@ content::WebContents* AppWindowContentsImpl::GetWebContents() const {
   return web_contents_.get();
 }
 
+WindowController* AppWindowContentsImpl::GetWindowController() const {
+  return nullptr;
+}
+
 bool AppWindowContentsImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AppWindowContentsImpl, message)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_UpdateDraggableRegions,
                         UpdateDraggableRegions)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-WindowController* AppWindowContentsImpl::GetExtensionWindowController() const {
-  return NULL;
-}
-
-content::WebContents* AppWindowContentsImpl::GetAssociatedWebContents() const {
-  return web_contents_.get();
-}
-
-void AppWindowContentsImpl::OnRequest(
-    const ExtensionHostMsg_Request_Params& params) {
-  extension_function_dispatcher_->Dispatch(
-      params, web_contents_->GetRenderViewHost());
 }
 
 void AppWindowContentsImpl::UpdateDraggableRegions(

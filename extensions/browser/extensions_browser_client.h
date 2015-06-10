@@ -44,6 +44,7 @@ class ExtensionHostDelegate;
 class ExtensionPrefsObserver;
 class ExtensionSystem;
 class ExtensionSystemProvider;
+class ExtensionWebContentsObserver;
 class InfoMap;
 class ProcessManagerDelegate;
 class RuntimeAPIDelegate;
@@ -211,6 +212,10 @@ class ExtensionsBrowserClient {
   // embedders share the same versioning model, so interpretation of the string
   // is left up to the embedder.
   virtual bool IsMinBrowserVersionSupported(const std::string& min_version) = 0;
+
+  // Returns the ExtensionWebContentsObserver for the given |web_contents|.
+  virtual ExtensionWebContentsObserver* GetExtensionWebContentsObserver(
+      content::WebContents* web_contents) = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

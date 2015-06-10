@@ -545,8 +545,7 @@ bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {
   WebContents* web_contents =
       WebContents::FromRenderViewHost(render_view_host_);
   if (GetViewType(web_contents) == VIEW_TYPE_TAB_CONTENTS) {
-    WebContents* web_contents =
-        dispatcher()->delegate()->GetAssociatedWebContents();
+    WebContents* web_contents = GetAssociatedWebContents();
     CHECK(web_contents);
 
     ui::DragDropTypes::DragEventSource source =
@@ -586,8 +585,7 @@ bool BookmarkManagerPrivateDropFunction::RunOnReady() {
   WebContents* web_contents =
       WebContents::FromRenderViewHost(render_view_host_);
   if (GetViewType(web_contents) == VIEW_TYPE_TAB_CONTENTS) {
-    WebContents* web_contents =
-        dispatcher()->delegate()->GetAssociatedWebContents();
+    WebContents* web_contents = GetAssociatedWebContents();
     CHECK(web_contents);
     ExtensionWebUI* web_ui =
         static_cast<ExtensionWebUI*>(web_contents->GetWebUI()->GetController());

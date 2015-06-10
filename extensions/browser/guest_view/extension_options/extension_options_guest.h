@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "components/guest_view/browser/guest_view.h"
-#include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest_delegate.h"
 #include "url/gurl.h"
 
@@ -18,8 +17,7 @@ class BrowserContext;
 namespace extensions {
 
 class ExtensionOptionsGuest
-    : public guest_view::GuestView<ExtensionOptionsGuest>,
-      public extensions::ExtensionFunctionDispatcher::Delegate {
+    : public guest_view::GuestView<ExtensionOptionsGuest> {
  public:
   static const char Type[];
   static guest_view::GuestViewBase* Create(
@@ -36,9 +34,6 @@ class ExtensionOptionsGuest
   bool IsPreferredSizeModeEnabled() const override;
   bool IsDragAndDropEnabled() const override;
   void OnPreferredSizeChanged(const gfx::Size& pref_size) override;
-
-  // ExtensionFunctionDispatcher::Delegate implementation.
-  content::WebContents* GetAssociatedWebContents() const override;
 
   // content::WebContentsDelegate implementation.
   content::WebContents* OpenURLFromTab(
@@ -60,15 +55,11 @@ class ExtensionOptionsGuest
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   explicit ExtensionOptionsGuest(content::WebContents* owner_web_contents);
   ~ExtensionOptionsGuest() override;
-  void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
-  scoped_ptr<extensions::ExtensionFunctionDispatcher>
-      extension_function_dispatcher_;
   scoped_ptr<extensions::ExtensionOptionsGuestDelegate>
       extension_options_guest_delegate_;
   GURL options_page_;

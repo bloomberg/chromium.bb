@@ -4,7 +4,6 @@
 
 #include "chrome/browser/guest_view/extension_options/chrome_extension_options_guest_delegate.h"
 
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -19,11 +18,6 @@ ChromeExtensionOptionsGuestDelegate::ChromeExtensionOptionsGuestDelegate(
 }
 
 ChromeExtensionOptionsGuestDelegate::~ChromeExtensionOptionsGuestDelegate() {
-}
-
-void ChromeExtensionOptionsGuestDelegate::DidInitialize() {
-  ChromeExtensionWebContentsObserver::CreateForWebContents(
-      extension_options_guest()->web_contents());
 }
 
 bool ChromeExtensionOptionsGuestDelegate::HandleContextMenu(

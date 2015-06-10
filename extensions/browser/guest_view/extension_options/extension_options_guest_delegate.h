@@ -24,9 +24,6 @@ class ExtensionOptionsGuestDelegate {
   explicit ExtensionOptionsGuestDelegate(ExtensionOptionsGuest* guest);
   virtual ~ExtensionOptionsGuestDelegate();
 
-  // Called from ExtensionOptionsGuest::DidInitialize().
-  virtual void DidInitialize() = 0;
-
   // Shows the context menu for the guest.
   // Returns true if the context menu was handled.
   virtual bool HandleContextMenu(const content::ContextMenuParams& params) = 0;

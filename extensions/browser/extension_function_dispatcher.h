@@ -90,15 +90,11 @@ class ExtensionFunctionDispatcher
       const ExtensionHostMsg_Request_Params& params);
 
   // Public constructor. Callers must ensure that:
-  // - |delegate| outlives this object.
   // - This object outlives any RenderViewHost's passed to created
   //   ExtensionFunctions.
-  ExtensionFunctionDispatcher(content::BrowserContext* browser_context,
-                              Delegate* delegate);
-
+  explicit ExtensionFunctionDispatcher(
+      content::BrowserContext* browser_context);
   ~ExtensionFunctionDispatcher();
-
-  Delegate* delegate() { return delegate_; }
 
   // Message handlers.
   // The response is sent to the corresponding render view in an
@@ -111,8 +107,17 @@ class ExtensionFunctionDispatcher
   // a response (if any) to the extension.
   void OnExtensionFunctionCompleted(const Extension* extension);
 
+  // See the Delegate class for documentation on these methods.
+  // TODO(devlin): None of these belong here. We should kill
+  // ExtensionFunctionDispatcher::Delegate.
+  WindowController* GetExtensionWindowController() const;
+  content::WebContents* GetAssociatedWebContents() const;
+  content::WebContents* GetVisibleWebContents() const;
+
   // The BrowserContext that this dispatcher is associated with.
   content::BrowserContext* browser_context() { return browser_context_; }
+
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  private:
   // For a given RenderViewHost instance, UIThreadResponseCallbackWrapper

@@ -45,17 +45,31 @@ const Extension* GetExtensionForRenderFrame(
 
 }  // namespace
 
+// static
+ExtensionWebContentsObserver* ExtensionWebContentsObserver::GetForWebContents(
+    content::WebContents* web_contents) {
+  return ExtensionsBrowserClient::Get()->GetExtensionWebContentsObserver(
+      web_contents);
+}
+
 ExtensionWebContentsObserver::ExtensionWebContentsObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      browser_context_(web_contents->GetBrowserContext()) {
+      browser_context_(web_contents->GetBrowserContext()),
+      dispatcher_(browser_context_) {
   NotifyRenderViewType(web_contents->GetRenderViewHost());
   content::RenderFrameHost* host = web_contents->GetMainFrame();
   if (host)
     RenderFrameHostChanged(nullptr, host);
+  dispatcher_.set_delegate(this);
 }
 
 ExtensionWebContentsObserver::~ExtensionWebContentsObserver() {
+}
+
+content::WebContents* ExtensionWebContentsObserver::GetAssociatedWebContents()
+    const {
+  return web_contents();
 }
 
 void ExtensionWebContentsObserver::RenderViewCreated(
@@ -108,6 +122,16 @@ void ExtensionWebContentsObserver::RenderFrameCreated(
     ExtensionsBrowserClient::Get()->RegisterMojoServices(render_frame_host,
                                                          extension);
   }
+}
+
+bool ExtensionWebContentsObserver::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ExtensionWebContentsObserver, message)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void ExtensionWebContentsObserver::FrameDeleted(
@@ -187,6 +211,11 @@ std::string ExtensionWebContentsObserver::GetExtensionId(
     return std::string();
 
   return site.host();
+}
+
+void ExtensionWebContentsObserver::OnRequest(
+    const ExtensionHostMsg_Request_Params& params) {
+  dispatcher_.Dispatch(params, web_contents()->GetRenderViewHost());
 }
 
 }  // namespace extensions

@@ -774,8 +774,7 @@ void BookmarksIOFunction::ShowSelectFileDialog(
   // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
   AddRef();
 
-  WebContents* web_contents = dispatcher()->delegate()->
-      GetAssociatedWebContents();
+  WebContents* web_contents = GetAssociatedWebContents();
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_contents));
