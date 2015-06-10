@@ -37,18 +37,19 @@ TracedLayoutObject::TracedLayoutObject(const LayoutObject& object)
     , m_childNeeds(object.normalChildNeedsLayout())
     , m_posChildNeeds(object.posChildNeedsLayout())
     , m_isTableCell(object.isTableCell())
-    , m_name(object.name())
+    , m_name(String(object.name()).isolatedCopy())
     , m_absRect(object.absoluteBoundingBoxRect())
 {
     if (Node* node = object.node()) {
-        m_tag = node->nodeName();
+        m_tag = String(node->nodeName()).isolatedCopy();
         if (node->isElementNode()) {
             Element& element = toElement(*node);
             if (element.hasID())
-                m_id = element.getIdAttribute();
+                m_id = String(element.getIdAttribute()).isolatedCopy();
             if (element.hasClass()) {
                 for (size_t i = 0; i < element.classNames().size(); ++i) {
-                    m_classNames.append(element.classNames()[i]);
+                    m_classNames.append(
+                        String(element.classNames()[i]).isolatedCopy());
                 }
             }
         }
