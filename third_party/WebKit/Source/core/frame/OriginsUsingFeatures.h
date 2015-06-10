@@ -37,7 +37,7 @@ public:
     void documentDetached(Document&);
     void updateMeasurementsAndClear();
 
-    class Value {
+    class CORE_EXPORT Value {
     public:
         Value();
 
