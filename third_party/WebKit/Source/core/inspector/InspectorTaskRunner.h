@@ -30,7 +30,7 @@ public:
     void interruptAndRun(PassOwnPtr<Task>);
     void runPendingTasks();
 
-    class IgnoreInterruptsScope final {
+    class CORE_EXPORT IgnoreInterruptsScope final {
     public:
         explicit IgnoreInterruptsScope(InspectorTaskRunner*);
         ~IgnoreInterruptsScope();
