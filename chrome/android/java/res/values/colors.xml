@@ -83,6 +83,10 @@
     <color name="fre_light_text_color">#494949</color>
     <color name="fre_title_color">#161616</color>
 
+    <!-- Sad Tab colors -->
+    <color name="sad_tab_header_text_color">#333333</color>
+    <color name="sad_tab_body_text_color">#646464</color>
+    
     <!-- NTP Colors. Used on the bookmarks and recent tabs pages. -->
     <color name="ntp_bg">#fff</color>
     <color name="ntp_bg_incognito">#222</color>
