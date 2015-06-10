@@ -91,6 +91,94 @@
         }],
       ],
     },
+    {
+      'target_name': 'remoting_test_driver_common',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../google_apis/google_apis.gyp:google_apis',
+        '../net/net.gyp:net',
+        '../remoting/remoting.gyp:remoting_base',
+        '../remoting/remoting.gyp:remoting_client',
+        '../remoting/remoting.gyp:remoting_protocol',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'defines': [
+        'VERSION=<(version_full)',
+      ],
+      'sources': [
+        'test/access_token_fetcher.cc',
+        'test/access_token_fetcher.h',
+        'test/refresh_token_store.cc',
+        'test/refresh_token_store.h',
+        'test/remote_connection_observer.h',
+        'test/test_chromoting_client.cc',
+        'test/test_chromoting_client.h',
+        'test/test_video_renderer.cc',
+        'test/test_video_renderer.h',
+      ],
+    }, # end of target 'remoting_test_driver_common'
+    {
+      # A chromoting version of remoting_test_driver_common
+      'target_name': 'chromoting_test_driver',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'remoting_test_driver_common',
+      ],
+      'defines': [
+        'VERSION=<(version_full)',
+      ],
+      'sources': [
+        'test/chromoting_test_driver.cc',
+      ],
+      'include_dirs': [
+        '../testing/gtest/include',
+      ],
+    }, # end of target 'chromoting_test_driver'
+    {
+      'target_name': 'ar_test_driver_common',
+      'type': 'static_library',
+      'dependencies': [
+        '../remoting/proto/chromotocol.gyp:chromotocol_proto_lib',
+        'remoting_test_driver_common',
+      ],
+      'defines': [
+        'VERSION=<(version_full)',
+      ],
+      'sources': [
+        'test/app_remoting_connected_client_fixture.cc',
+        'test/app_remoting_connected_client_fixture.h',
+        'test/app_remoting_test_driver_environment.cc',
+        'test/app_remoting_test_driver_environment.h',
+        'test/remote_application_details.h',
+        'test/remote_host_info.cc',
+        'test/remote_host_info.h',
+        'test/remote_host_info_fetcher.cc',
+        'test/remote_host_info_fetcher.h',
+      ],
+      'include_dirs': [
+        '../testing/gtest/include',
+      ],
+    },  # end of target 'ar_test_driver_common'
+    {
+      # An external version of the test driver tool which includes minimal tests
+      'target_name': 'ar_sample_test_driver',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        'ar_test_driver_common',
+      ],
+      'defines': [
+        'VERSION=<(version_full)',
+      ],
+      'sources': [
+        'test/app_remoting_test_driver.cc',
+        'test/app_remoting_test_driver_environment_app_details.cc',
+      ],
+      'include_dirs': [
+        '../testing/gtest/include',
+      ],
+    },  # end of target 'ar_sample_test_driver'
 
     # Remoting unit tests
     {

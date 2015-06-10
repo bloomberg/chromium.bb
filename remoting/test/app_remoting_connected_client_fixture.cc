@@ -56,7 +56,7 @@ void AppRemotingConnectedClientFixture::SetUp() {
   StartConnection();
 
   if (!connection_is_ready_for_tests_) {
-    FAIL() << "Remote host connection could not be established.";
+    ADD_FAILURE() << "Remote host connection could not be established.";
     client_->EndConnection();
   }
 }

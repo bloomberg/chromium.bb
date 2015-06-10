@@ -606,7 +606,7 @@
           'dependencies': [
             # TODO(GYP): Figure out which of these run on android/mac/win/ios/etc.
             '../net/net.gyp:net_docs',
-            '../remoting/app_remoting_test.gyp:ar_sample_test_driver',
+            '../remoting/remoting.gyp:ar_sample_test_driver',
 
             # TODO(GYP): in progress - see tfarina.
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
@@ -640,7 +640,7 @@
             '../gpu/gpu.gyp:angle_perftests',
             '../net/net.gyp:net_docs',
             '../ppapi/ppapi_internal.gyp:ppapi_perftests',
-            '../remoting/app_remoting_test.gyp:ar_sample_test_driver',
+            '../remoting/remoting.gyp:ar_sample_test_driver',
             '../remoting/remoting.gyp:remoting_breakpad_tester',
             '../remoting/remoting.gyp:remoting_console',
             '../remoting/remoting.gyp:remoting_desktop',
