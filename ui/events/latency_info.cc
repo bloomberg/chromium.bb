@@ -338,7 +338,7 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
                                   "data", AsTraceableData(*this));
     }
 
-    TRACE_EVENT_FLOW_END0(
+    TRACE_EVENT_FLOW_END_BIND_TO_ENCLOSING0(
         "input,benchmark", "LatencyInfo.Flow", TRACE_ID_DONT_MANGLE(trace_id));
   }
 }
