@@ -9,7 +9,7 @@ or off for individual groups.
 
 Usage:
 
-    private static final String TAG = Log.makeTag("YourModuleTag");
+    private static final String TAG = "cr.YourModuleTag";
     ...
     Log.i(TAG, "Logged INFO message.");
     Log.d(TAG, "Some DEBUG info: %s", data);
