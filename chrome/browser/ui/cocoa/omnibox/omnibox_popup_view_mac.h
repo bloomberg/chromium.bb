@@ -66,7 +66,7 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
   void PositionPopup(const CGFloat matrixHeight);
 
   // Returns the NSImage that should be used as an icon for the given match.
-  NSImage* ImageForMatch(const AutocompleteMatch& match);
+  NSImage* ImageForMatch(const AutocompleteMatch& match) const;
 
   // Opens the URL at the given row.
   void OpenURLForRow(size_t row, WindowOpenDisposition disposition);

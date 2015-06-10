@@ -316,7 +316,8 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
     [[field_ window] addChildWindow:popup_ ordered:NSWindowAbove];
 }
 
-NSImage* OmniboxPopupViewMac::ImageForMatch(const AutocompleteMatch& match) {
+NSImage* OmniboxPopupViewMac::ImageForMatch(
+    const AutocompleteMatch& match) const {
   gfx::Image image = model_->GetIconIfExtensionMatch(match);
   if (!image.IsEmpty())
     return image.AsNSImage();
