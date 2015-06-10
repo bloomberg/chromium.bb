@@ -1082,7 +1082,6 @@ webkit.org/b/90488 [ Debug Linux ] inspector-protocol/debugger/debugger-pause-in
 webkit.org/b/90488 [ Debug SnowLeopard ] inspector-protocol/debugger/debugger-pause-in-tight-loop.html [ Crash Pass ]
 webkit.org/b/90488 [ Debug Lion ] inspector-protocol/debugger/debugger-pause-in-tight-loop.html [ Crash Pass ]
 webkit.org/b/90488 [ Debug Win7 ] inspector-protocol/debugger/debugger-pause-in-tight-loop.html [ Crash Pass ]
-webkit.org/b/90488 crbug.com/471381 [ Debug Win7 ] inspector-protocol/debugger/suspend-setTimeout-on-pause-in-dedicated-worker.html [ Crash Pass ]
 webkit.org/b/90488 [ Debug Linux ] inspector-protocol/debugger/updateCallFrameScopes.html [ Crash Pass ]
 webkit.org/b/90488 [ Debug SnowLeopard ] inspector-protocol/debugger/updateCallFrameScopes.html [ Crash Pass ]
 webkit.org/b/90488 [ Debug Lion ] inspector-protocol/debugger/updateCallFrameScopes.html [ Crash Pass ]
