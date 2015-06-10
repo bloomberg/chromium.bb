@@ -7309,9 +7309,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ADD_TO_SHELF_INFOBAR_ADD_BUTTON" desc="Text displayed on the button to allow users to add to the site to their shelf">
         Add
       </message>
-      <message name="IDS_ADD_TO_SHELF_INFOBAR_NEVER_BUTTON" desc="Text displayed on the button to prevent the add to shelf infobar from ever being displayed for this site">
-        Never for this site
-      </message>
 
       <!-- about:system strings -->
       <if expr="not is_android">

@@ -61,11 +61,13 @@ base::string16 AppBannerInfoBarDelegateDesktop::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_ADD_TO_SHELF_INFOBAR_TITLE);
 }
 
+int AppBannerInfoBarDelegateDesktop::GetButtons() const {
+  return BUTTON_OK;
+}
+
 base::string16 AppBannerInfoBarDelegateDesktop::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK)
-                                       ? IDS_ADD_TO_SHELF_INFOBAR_ADD_BUTTON
-                                       : IDS_ADD_TO_SHELF_INFOBAR_NEVER_BUTTON);
+  return l10n_util::GetStringUTF16(IDS_ADD_TO_SHELF_INFOBAR_ADD_BUTTON);
 }
 
 bool AppBannerInfoBarDelegateDesktop::Accept() {
@@ -76,7 +78,7 @@ bool AppBannerInfoBarDelegateDesktop::Accept() {
   return true;
 }
 
-bool AppBannerInfoBarDelegateDesktop::Cancel() {
+void AppBannerInfoBarDelegateDesktop::InfoBarDismissed() {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   if (web_contents) {
@@ -91,11 +93,6 @@ bool AppBannerInfoBarDelegateDesktop::Cancel() {
         web_contents, web_manifest_.start_url.spec(),
         AppBannerSettingsHelper::WEB);
   }
-  return true;
-}
-
-void AppBannerInfoBarDelegateDesktop::InfoBarDismissed() {
-  Cancel();
 }
 
 }  // namespace banners
