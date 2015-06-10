@@ -77,18 +77,6 @@ crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pas
 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Pass Failure ]
 
 crbug.com/489546 virtual/slimmingpaint/compositing/fixed-body-background-positioned.html [ Pass Failure ]
-crbug.com/498103 css3/filters/effect-reference-composite-hw.html [ NeedsRebaseline ]
-crbug.com/498103 css3/filters/effect-reference-composite.html [ NeedsRebaseline ]
-crbug.com/498103 fast/svg/whitespace-angle.html [ NeedsRebaseline ]
-crbug.com/498103 fast/svg/whitespace-integer.html [ NeedsRebaseline ]
-crbug.com/498103 fast/svg/whitespace-length.html [ NeedsRebaseline ]
-crbug.com/498103 fast/svg/whitespace-number.html [ NeedsRebaseline ]
-crbug.com/498103 svg/dom/fuzz-path-parser.html [ NeedsRebaseline ]
-crbug.com/498103 svg/dom/length-list-parser.html [ NeedsRebaseline ]
-crbug.com/498103 svg/parser/whitespace-length-invalid-1.html [ NeedsRebaseline ]
-crbug.com/498103 svg/parser/whitespace-length-invalid-2.html [ NeedsRebaseline ]
-crbug.com/498103 virtual/slimmingpaint/css3/filters/effect-reference-composite-hw.html [ NeedsRebaseline ]
-crbug.com/498103 virtual/slimmingpaint/css3/filters/effect-reference-composite.html [ NeedsRebaseline ]
 
 # It is not possible to capture a marquee at exactly the same state 100% of the runs.
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Pass Failure ]
