@@ -605,6 +605,8 @@ TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
   IPAddressNumber actual_address;
   CHECK(ParseIPLiteralToNumber("127.0.0.1", &actual_address));
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
+  // ExpectScheduleUpdatePrefsOnNetworkThread() should be called only once.
+  http_server_props_manager_->SetSupportsQuic(true, actual_address);
 
   // Run the task.
   base::RunLoop().RunUntilIdle();

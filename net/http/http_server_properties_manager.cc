@@ -337,8 +337,13 @@ void HttpServerPropertiesManager::SetSupportsQuic(
     bool used_quic,
     const IPAddressNumber& address) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  IPAddressNumber old_last_quic_addr;
+  http_server_properties_impl_->GetSupportsQuic(&old_last_quic_addr);
   http_server_properties_impl_->SetSupportsQuic(used_quic, address);
-  ScheduleUpdatePrefsOnNetworkThread(SET_SUPPORTS_QUIC);
+  IPAddressNumber new_last_quic_addr;
+  http_server_properties_impl_->GetSupportsQuic(&new_last_quic_addr);
+  if (old_last_quic_addr != new_last_quic_addr)
+    ScheduleUpdatePrefsOnNetworkThread(SET_SUPPORTS_QUIC);
 }
 
 void HttpServerPropertiesManager::SetServerNetworkStats(
