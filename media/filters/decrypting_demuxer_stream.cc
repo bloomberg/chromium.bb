@@ -139,7 +139,7 @@ bool DecryptingDemuxerStream::SupportsConfigChanges() {
 }
 
 VideoRotation DecryptingDemuxerStream::video_rotation() {
-  return VIDEO_ROTATION_0;
+  return demuxer_stream_->video_rotation();
 }
 
 DecryptingDemuxerStream::~DecryptingDemuxerStream() {
