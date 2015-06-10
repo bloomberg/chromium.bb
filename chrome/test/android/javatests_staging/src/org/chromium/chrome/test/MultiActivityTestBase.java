@@ -63,6 +63,13 @@ public abstract class MultiActivityTestBase extends RestrictedInstrumentationTes
     /** Finishes all tasks Chrome has listed in Android's Overview. */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static void finishAllChromeTasks(final Context context) throws Exception {
+        // Go to the Home screen so that Android has no good reason to keep Chrome Activities alive.
+        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+        homeIntent.addCategory(Intent.CATEGORY_HOME);
+        homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(homeIntent);
+
+        // Close all of the tasks one by one.
         ActivityManager activityManager =
                 (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
