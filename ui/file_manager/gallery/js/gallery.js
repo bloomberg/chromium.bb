@@ -96,8 +96,7 @@ function Gallery(volumeManager) {
   content.addEventListener('click', this.onContentClick_.bind(this));
 
   this.header_ = queryRequiredElement(document, '#header');
-  this.topToolbar_ = queryRequiredElement(document, '#top-toolbar');
-  this.bottomToolbar_ = queryRequiredElement(document, '#bottom-toolbar');
+  this.toolbar_ = queryRequiredElement(document, '#toolbar');
 
   var preventDefault = function(event) { event.preventDefault(); };
 
@@ -122,7 +121,7 @@ function Gallery(volumeManager) {
   closeButton.addEventListener('click', this.onClose_.bind(this));
   closeButton.addEventListener('mousedown', preventDefault);
 
-  this.filenameSpacer_ = queryRequiredElement(this.topToolbar_,
+  this.filenameSpacer_ = queryRequiredElement(this.toolbar_,
       '.filename-spacer');
   this.filenameEdit_ = util.createChild(this.filenameSpacer_,
                                         'namebox', 'input');
@@ -137,15 +136,14 @@ function Gallery(volumeManager) {
   this.filenameEdit_.addEventListener('keydown',
       this.onFilenameEditKeydown_.bind(this));
 
-  var middleSpacer = queryRequiredElement(this.bottomToolbar_,
-      '.middle-spacer');
-  var buttonSpacer = queryRequiredElement(this.topToolbar_, '.button-spacer');
+  var middleSpacer = queryRequiredElement(this.toolbar_, '.middle-spacer');
+  var buttonSpacer = queryRequiredElement(this.toolbar_, '.button-spacer');
 
   this.prompt_ = new ImageEditor.Prompt(this.container_, strf);
 
   this.errorBanner_ = new ErrorBanner(this.container_);
 
-  this.modeButton_ = queryRequiredElement(this.topToolbar_, 'button.mode');
+  this.modeButton_ = queryRequiredElement(this.toolbar_, 'button.mode');
   this.modeButton_.addEventListener('click',
       this.toggleMode_.bind(this, undefined));
 
@@ -158,8 +156,7 @@ function Gallery(volumeManager) {
 
   this.slideMode_ = new SlideMode(this.container_,
                                   content,
-                                  this.topToolbar_,
-                                  this.bottomToolbar_,
+                                  this.toolbar_,
                                   this.prompt_,
                                   this.errorBanner_,
                                   this.dataModel_,
@@ -275,7 +272,7 @@ Gallery.prototype.onPageHide_ = function() {
  * @private
  */
 Gallery.prototype.initToolbarButton_ = function(className, title) {
-  var button = queryRequiredElement(this.topToolbar_, 'button.' + className);
+  var button = queryRequiredElement(this.toolbar_, 'button.' + className);
   button.title = str(title);
   return button;
 };
@@ -532,7 +529,6 @@ Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
           mosaic.show();
           onModeChanged();
         }.bind(this));
-    this.bottomToolbar_.hidden = true;
   } else {
     this.setCurrentMode_(this.slideMode_);
     this.slideMode_.enter(
@@ -543,7 +539,6 @@ Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
           mosaic.hide();
         }.bind(this),
         onModeChanged);
-    this.bottomToolbar_.hidden = false;
   }
 };
 

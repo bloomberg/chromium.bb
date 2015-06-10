@@ -184,16 +184,9 @@ input[type='checkbox']:checked {
 
 .gallery > .toolbar {
   border-top: 1px solid rgba(50, 50, 50, 0.8);
+  bottom: 0;
   height: 55px;
   overflow: hidden;
-}
-
-.gallery > .toolbar.top {
-  top: 45px; /* Header height. */
-}
-
-.gallery > .toolbar.bottom {
-  bottom: 0;
 }
 
 .gallery[tools]:not([slideshow]) > .header,
@@ -296,11 +289,12 @@ input[type='checkbox']:checked {
 /* Filename */
 
 .gallery .filename-spacer {
-  flex: 1 0 auto;
+  flex: 0 1 auto;
   height: 100%;
   min-width: 140px;
   overflow: hidden;
   position: relative;
+  width: 252px;
 }
 
 .gallery .filename-spacer > * {
@@ -1156,13 +1150,13 @@ input[type='checkbox']:checked {
 
 /* Mosaic view. */
 .mosaic {
-  bottom: 0;
+  bottom: 55px;  /* Toolbar height. */
   left: 0;
   overflow-x: scroll;
   overflow-y: hidden;
   position: absolute;
   right: 0;
-  top: 100px; /* Header + Toolbar height. */
+  top: 0;
 
   /* transition-duration is set in Javascript. */
   transition-property: transform;
