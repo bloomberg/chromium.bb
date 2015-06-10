@@ -27,8 +27,6 @@ public class ContextualSearchFieldTrial {
     private static final String CONTEXTUAL_SEARCH_DISABLE_FOR_CJK = "disable_for_cjk";
     private static final String CONTEXTUAL_SEARCH_DISABLE_FOR_NON_ENGLISH =
             "disable_for_non_english";
-    private static final String CONTEXTUAL_SEARCH_DISABLE_SURROUNDINGS_OBSERVERS =
-            "disable_surroundings_observers";
     private static final String CONTEXTUAL_SEARCH_PROMO_ON_LONGPRESS_ONLY =
             "promo_on_longpress_only";
     static final String CONTEXTUAL_SEARCH_PROMO_ON_LIMITED_TAPS =

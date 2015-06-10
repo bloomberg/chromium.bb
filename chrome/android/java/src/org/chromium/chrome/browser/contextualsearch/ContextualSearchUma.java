@@ -20,9 +20,6 @@ import java.util.concurrent.TimeUnit;
  * Centralizes UMA data collection for Contextual Search. All calls must be made from the UI thread.
  */
 public class ContextualSearchUma {
-    // An invalid value for the number of taps remaining for the promo.  Must be negative.
-    private static final int PROMO_TAPS_REMAINING_INVALID = -1;
-
     // Constants to use for the original selection gesture
     private static final boolean LONG_PRESS = false;
     private static final boolean TAP = true;
