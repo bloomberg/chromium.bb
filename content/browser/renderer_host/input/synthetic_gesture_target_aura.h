@@ -47,6 +47,13 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
  private:
   aura::Window* GetWindow() const;
 
+  // Synthetic located event's location and touch event's radius are in DIP and
+  // aura event dispatcher assumes input event is in device pixel and will apply
+  // device scale factor to convert the input to DIP. So we need to use
+  // device_scale_factor to convert the input event from DIP to device pixel
+  // before dispatching it into platform.
+  float device_scale_factor_;
+
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetAura);
 };
 

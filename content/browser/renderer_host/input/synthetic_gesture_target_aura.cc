@@ -7,6 +7,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
+#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_processor.h"
@@ -21,12 +22,21 @@ namespace content {
 SyntheticGestureTargetAura::SyntheticGestureTargetAura(
     RenderWidgetHostImpl* host)
     : SyntheticGestureTargetBase(host) {
+  blink::WebScreenInfo screenInfo;
+  host->GetWebScreenInfo(&screenInfo);
+  device_scale_factor_ = screenInfo.deviceScaleFactor;
 }
 
 void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
     const WebTouchEvent& web_touch,
     const ui::LatencyInfo& latency_info) {
   TouchEventWithLatencyInfo touch_with_latency(web_touch, latency_info);
+  for (size_t i = 0; i < touch_with_latency.event.touchesLength; i++) {
+    touch_with_latency.event.touches[i].position.x *= device_scale_factor_;
+    touch_with_latency.event.touches[i].position.y *= device_scale_factor_;
+    touch_with_latency.event.touches[i].radiusX *= device_scale_factor_;
+    touch_with_latency.event.touches[i].radiusY *= device_scale_factor_;
+  }
   ScopedVector<ui::TouchEvent> events;
   bool conversion_success = MakeUITouchEventsFromWebTouchEvents(
       touch_with_latency, &events, LOCAL_COORDINATES);
@@ -47,7 +57,8 @@ void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
 void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo&) {
-  gfx::Point location(web_wheel.x, web_wheel.y);
+  gfx::PointF location(web_wheel.x * device_scale_factor_,
+                       web_wheel.y * device_scale_factor_);
   ui::MouseEvent mouse_event(ui::ET_MOUSEWHEEL, location, location,
                              ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
   ui::MouseWheelEvent wheel_event(
@@ -115,7 +126,8 @@ int WebMouseEventButtonToFlags(blink::WebMouseEvent::Button button) {
 void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
       const blink::WebMouseEvent& web_mouse,
       const ui::LatencyInfo& latency_info) {
-  gfx::Point location(web_mouse.x, web_mouse.y);
+  gfx::PointF location(web_mouse.x * device_scale_factor_,
+                       web_mouse.y * device_scale_factor_);
   ui::EventType event_type = WebMouseEventTypeToEventType(web_mouse.type);
   int flags = WebMouseEventButtonToFlags(web_mouse.button);
   ui::MouseEvent mouse_event(event_type, location, location,
