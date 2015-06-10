@@ -39,13 +39,13 @@ layer at (0,0) size 800x466
             LayoutTableCell {DIV} at (0,0) size 50x0 [bgcolor=#0000FF] [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {DIV} at (50,0) size 50x0 [bgcolor=#0000FF] [r=0 c=1 rs=1 cs=1]
         LayoutTableCol {DIV} at (0,0) size 0x0
-      LayoutTable {DIV} at (0,300) size 100x50
-        LayoutTableSection (anonymous) at (0,0) size 100x50
-          LayoutTableRow (anonymous) at (0,0) size 100x50
+      LayoutTable {DIV} at (0,300) size 101x50
+        LayoutTableSection (anonymous) at (0,0) size 101x50
+          LayoutTableRow (anonymous) at (0,0) size 101x50
             LayoutTableCell {DIV} at (0,0) size 50x0 [bgcolor=#0000FF] [r=0 c=0 rs=1 cs=1]
             LayoutTableCell {DIV} at (50,0) size 50x0 [bgcolor=#0000FF] [r=0 c=1 rs=1 cs=1]
-            LayoutTableCell (anonymous) at (100,0) size 0x0 [r=0 c=2 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (0,0) size 0x0
+            LayoutTableCell (anonymous) at (100,0) size 1x0 [r=0 c=2 rs=1 cs=1]
+              LayoutBlockFlow {DIV} at (0,0) size 1x0
       LayoutTable {DIV} at (0,350) size 100x100
         LayoutTableSection (anonymous) at (0,0) size 100x100
           LayoutTableRow (anonymous) at (0,0) size 100x100

@@ -33,8 +33,7 @@ class LayoutTableCell;
 
 enum CellsToProcess {
     AllCells,
-    NonEmptyCells,
-    EmptyCells
+    NonEmptyCells
 };
 
 enum DistributionMode {
@@ -76,7 +75,6 @@ private:
             , effectiveMaxLogicalWidth(0)
             , computedLogicalWidth(0)
             , emptyCellsOnly(true)
-            , columnHasNoCells(true)
         {
         }
 
@@ -88,8 +86,6 @@ private:
         int effectiveMaxLogicalWidth;
         int computedLogicalWidth;
         bool emptyCellsOnly;
-        bool columnHasNoCells;
-        int clampedEffectiveMaxLogicalWidth() { return std::max<int>(1, effectiveMaxLogicalWidth); }
     };
 
     Vector<Layout, 4> m_layoutStruct;
