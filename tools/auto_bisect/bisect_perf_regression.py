@@ -2706,9 +2706,10 @@ class BisectOptions(object):
     group.add_argument('--output_buildbot_annotations', action='store_true',
                        help='Add extra annotation output for buildbot.')
     group.add_argument('--target_arch', default='ia32',
-                       dest='target_arch', choices=['ia32', 'x64', 'arm'],
+                       dest='target_arch',
+                       choices=['ia32', 'x64', 'arm', 'arm64'],
                        help='The target build architecture. Choices are "ia32" '
-                            '(default), "x64" or "arm".')
+                            '(default), "x64", "arm" or "arm64".')
     group.add_argument('--target_build_type', default='Release',
                        choices=['Release', 'Debug', 'Release_x64'],
                        help='The target build type. Choices are "Release" '
