@@ -51,6 +51,15 @@ class RendererAccessibilityTest : public RenderViewTest {
     sink_ = &render_thread_->sink();
   }
 
+  void TearDown() override {
+#if defined(LEAK_SANITIZER)
+     // Do this before shutting down V8 in RenderViewTest::TearDown().
+     // http://crbug.com/328552
+     __lsan_do_leak_check();
+#endif
+     RenderViewTest::TearDown();
+  }
+
   void SetMode(AccessibilityMode mode) {
     frame()->OnSetAccessibilityMode(mode);
   }
@@ -146,8 +155,8 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
 }
 
-// http://crbug.com/253537, http://crbug.com/498407
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+// http://crbug.com/253537
+#if defined(OS_ANDROID)
 #define MAYBE_AccessibilityMessagesQueueWhileSwappedOut \
         DISABLED_AccessibilityMessagesQueueWhileSwappedOut
 #else
