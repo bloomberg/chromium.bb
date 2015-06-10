@@ -9,7 +9,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "base/strings/stringprintf.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/window_tree_host.h"
@@ -150,10 +149,7 @@ class MagnificationControllerTest: public test::AshTestBase {
 
   ui::InputMethod* GetInputMethod() {
     DCHECK(text_input_view_);
-    return text_input_view_->GetWidget()
-        ->GetNativeWindow()
-        ->GetRootWindow()
-        ->GetProperty(aura::client::kRootWindowInputMethodKey);
+    return text_input_view_->GetWidget()->GetHostInputMethod();
   }
 
   DISALLOW_COPY_AND_ASSIGN(MagnificationControllerTest);

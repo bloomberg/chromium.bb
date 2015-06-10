@@ -92,13 +92,6 @@ void WindowTreeHostMojo::OnCursorVisibilityChangedNative(bool show) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WindowTreeHostMojo, ui::EventSource implementation:
-
-ui::EventProcessor* WindowTreeHostMojo::GetEventProcessor() {
-  return dispatcher();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMojo, ViewObserver implementation:
 
 void WindowTreeHostMojo::OnViewBoundsChanged(

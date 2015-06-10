@@ -41,7 +41,6 @@ class ShellPlatformDataAura {
   scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
-  scoped_ptr<ui::EventHandler> ime_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellPlatformDataAura);
 };

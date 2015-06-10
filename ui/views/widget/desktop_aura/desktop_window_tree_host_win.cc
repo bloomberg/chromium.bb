@@ -38,7 +38,6 @@
 #include "ui/views/win/hwnd_message_handler.h"
 #include "ui/views/win/hwnd_util.h"
 #include "ui/wm/core/compound_event_filter.h"
-#include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
 
@@ -567,13 +566,6 @@ void DesktopWindowTreeHostWin::MoveCursorToNative(const gfx::Point& location) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostWin, ui::EventSource implementation:
-
-ui::EventProcessor* DesktopWindowTreeHostWin::GetEventProcessor() {
-  return dispatcher();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, aura::AnimationHost implementation:
 
 void DesktopWindowTreeHostWin::SetHostTransitionOffsets(
@@ -687,10 +679,6 @@ void DesktopWindowTreeHostWin::ResetWindowControls() {
 
 gfx::NativeViewAccessible DesktopWindowTreeHostWin::GetNativeViewAccessible() {
   return GetWidget()->GetRootView()->GetNativeViewAccessible();
-}
-
-InputMethod* DesktopWindowTreeHostWin::GetInputMethod() {
-  return GetWidget()->GetInputMethodDirect();
 }
 
 bool DesktopWindowTreeHostWin::ShouldHandleSystemCommands() const {
@@ -866,15 +854,13 @@ bool DesktopWindowTreeHostWin::HandleIMEMessage(UINT message,
   msg.message = message;
   msg.wParam = w_param;
   msg.lParam = l_param;
-  return desktop_native_widget_aura_->input_method_event_filter()->
-      input_method()->OnUntranslatedIMEMessage(msg, result);
+  return GetInputMethod()->OnUntranslatedIMEMessage(msg, result);
 }
 
 void DesktopWindowTreeHostWin::HandleInputLanguageChange(
     DWORD character_set,
     HKL input_language_id) {
-  desktop_native_widget_aura_->input_method_event_filter()->
-      input_method()->OnInputLocaleChanged();
+  GetInputMethod()->OnInputLocaleChanged();
 }
 
 void DesktopWindowTreeHostWin::HandlePaintAccelerated(

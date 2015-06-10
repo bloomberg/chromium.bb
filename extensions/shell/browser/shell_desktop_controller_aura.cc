@@ -32,7 +32,6 @@
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/focus_controller.h"
-#include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/core/native_cursor_manager.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 
@@ -259,11 +258,6 @@ void ShellDesktopControllerAura::InitWindowManager() {
   aura::client::SetActivationClient(host_->window(), focus_controller);
   focus_client_.reset(focus_controller);
 
-  input_method_filter_.reset(
-      new wm::InputMethodEventFilter(host_->GetAcceleratedWidget()));
-  input_method_filter_->SetInputMethodPropertyInRootWindow(host_->window());
-  root_window_event_filter_->AddHandler(input_method_filter_.get());
-
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(host_->window()));
 
@@ -319,8 +313,6 @@ void ShellDesktopControllerAura::CreateRootWindow() {
 
 void ShellDesktopControllerAura::DestroyRootWindow() {
   host_->RemoveObserver(this);
-  if (input_method_filter_)
-    root_window_event_filter_->RemoveHandler(input_method_filter_.get());
   wm::FocusController* focus_controller =
       static_cast<wm::FocusController*>(focus_client_.get());
   if (focus_controller) {
@@ -329,7 +321,6 @@ void ShellDesktopControllerAura::DestroyRootWindow() {
   }
   root_window_event_filter_.reset();
   capture_client_.reset();
-  input_method_filter_.reset();
   focus_client_.reset();
   cursor_manager_.reset();
 #if defined(OS_CHROMEOS)

@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
@@ -18,7 +17,6 @@ class PlatformWindow;
 namespace aura {
 
 class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
-                                        public ui::EventSource,
                                         public ui::PlatformWindowDelegate {
  public:
   explicit WindowTreeHostOzone(const gfx::Rect& bounds);
@@ -52,9 +50,6 @@ class AURA_EXPORT WindowTreeHostOzone : public WindowTreeHost,
   void OnLostCapture() override;
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
   void OnActivationChanged(bool active) override;
-
-  // ui::EventSource overrides.
-  ui::EventProcessor* GetEventProcessor() override;
 
   // Platform-specific part of this WindowTreeHost.
   scoped_ptr<ui::PlatformWindow> platform_window_;

@@ -5,7 +5,6 @@
 #include "content/shell/browser/shell_platform_data_aura.h"
 
 #include "content/shell/browser/shell.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -56,54 +55,6 @@ class FillLayout : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(FillLayout);
 };
 
-class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
-                                public ui::EventHandler {
- public:
-  explicit MinimalInputEventFilter(aura::WindowTreeHost* host)
-      : host_(host),
-        input_method_(ui::CreateInputMethod(this,
-                                            gfx::kNullAcceleratedWidget)) {
-    input_method_->OnFocus();
-    host_->window()->AddPreTargetHandler(this);
-    host_->window()->SetProperty(aura::client::kRootWindowInputMethodKey,
-                                 input_method_.get());
-  }
-
-  ~MinimalInputEventFilter() override {
-    host_->window()->RemovePreTargetHandler(this);
-    host_->window()->SetProperty(aura::client::kRootWindowInputMethodKey,
-                                 static_cast<ui::InputMethod*>(NULL));
-  }
-
- private:
-  // ui::EventHandler:
-  void OnKeyEvent(ui::KeyEvent* event) override {
-    // See the comment in InputMethodEventFilter::OnKeyEvent() for details.
-    if (event->IsTranslated()) {
-      event->SetTranslated(false);
-    } else {
-      if (input_method_->DispatchKeyEvent(*event))
-        event->StopPropagation();
-    }
-  }
-
-  // ui::internal::InputMethodDelegate:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
-    // See the comment in InputMethodEventFilter::DispatchKeyEventPostIME() for
-    // details.
-    ui::KeyEvent aura_event(event);
-    aura_event.SetTranslated(true);
-    ui::EventDispatchDetails details =
-        host_->dispatcher()->OnEventFromSource(&aura_event);
-    return aura_event.handled() || details.dispatcher_destroyed;
-  }
-
-  aura::WindowTreeHost* host_;
-  scoped_ptr<ui::InputMethod> input_method_;
-
-  DISALLOW_COPY_AND_ASSIGN(MinimalInputEventFilter);
-};
-
 }
 
 ShellPlatformDataAura* Shell::platform_ = NULL;
@@ -122,7 +73,6 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
       new aura::client::DefaultCaptureClient(host_->window()));
   window_tree_client_.reset(
       new aura::test::TestWindowTreeClient(host_->window()));
-  ime_filter_.reset(new MinimalInputEventFilter(host_.get()));
 }
 
 ShellPlatformDataAura::~ShellPlatformDataAura() {

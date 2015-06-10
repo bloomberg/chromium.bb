@@ -6,7 +6,6 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
@@ -16,8 +15,9 @@
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_tree_client.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/ime/dummy_input_method.h"
+#include "ui/base/ime/input_method_factory.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
@@ -62,6 +62,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   // from RootWindow.
   EnvTestHelper(Env::GetInstance()).SetInputStateLookup(nullptr);
 
+  ui::SetUpInputMethodFactoryForTesting();
   ui::InitializeInputMethodForTesting();
 
   gfx::Size host_size(800, 600);
@@ -73,10 +74,6 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   client::SetFocusClient(root_window(), focus_client_.get());
   stacking_client_.reset(new TestWindowTreeClient(root_window()));
   capture_client_.reset(new client::DefaultCaptureClient(root_window()));
-  test_input_method_.reset(new ui::DummyInputMethod);
-  root_window()->SetProperty(
-      client::kRootWindowInputMethodKey,
-      test_input_method_.get());
 
   root_window()->Show();
   // Ensure width != height so tests won't confuse them.
@@ -85,7 +82,6 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
 
 void AuraTestHelper::TearDown() {
   teardown_called_ = true;
-  test_input_method_.reset();
   stacking_client_.reset();
   capture_client_.reset();
   focus_client_.reset();

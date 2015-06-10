@@ -1020,8 +1020,7 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
     } else {
       aura::Window* root_window =
           ash::Shell::GetInstance()->GetPrimaryRootWindow();
-      ui::InputMethod* input_method =
-          root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
+      ui::InputMethod* input_method = root_window->GetHost()->GetInputMethod();
       input_method->SetFocusedTextInputClient(text_input_client);
     }
   }
@@ -1033,8 +1032,7 @@ class WorkspaceLayoutManagerKeyboardTest : public test::AshTestBase {
     } else {
       aura::Window* root_window =
           ash::Shell::GetInstance()->GetPrimaryRootWindow();
-      ui::InputMethod* input_method =
-          root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
+      ui::InputMethod* input_method = root_window->GetHost()->GetInputMethod();
       input_method->SetFocusedTextInputClient(NULL);
     }
   }

@@ -65,7 +65,6 @@ class TooltipController;
 namespace wm {
 class AcceleratorFilter;
 class CompoundEventFilter;
-class InputMethodEventFilter;
 class NestedAcceleratorController;
 class ShadowController;
 class VisibilityController;
@@ -346,9 +345,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
 
   DisplayManager* display_manager() { return display_manager_.get(); }
-  ::wm::InputMethodEventFilter* input_method_filter() {
-    return input_method_filter_.get();
-  }
   ::wm::CompoundEventFilter* env_filter() {
     return env_filter_.get();
   }
@@ -705,9 +701,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // An event filter that pre-handles global accelerators.
   scoped_ptr< ::wm::AcceleratorFilter> accelerator_filter_;
-
-  // An event filter that pre-handles all key events to send them to an IME.
-  scoped_ptr< ::wm::InputMethodEventFilter> input_method_filter_;
 
   scoped_ptr<DisplayManager> display_manager_;
 

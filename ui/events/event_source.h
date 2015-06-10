@@ -34,12 +34,12 @@ class EVENTS_EXPORT EventSource {
 
  protected:
   EventDispatchDetails SendEventToProcessor(Event* event);
+  virtual EventDispatchDetails DeliverEventToProcessor(Event* event);
 
  private:
   friend class EventSourceTestApi;
 
   typedef std::vector<EventRewriter*> EventRewriterList;
-  EventDispatchDetails DeliverEventToProcessor(Event* event);
   EventRewriterList rewriter_list_;
   DISALLOW_COPY_AND_ASSIGN(EventSource);
 };

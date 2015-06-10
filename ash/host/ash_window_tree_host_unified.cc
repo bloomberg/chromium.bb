@@ -181,8 +181,4 @@ void AshWindowTreeHostUnified::OnWindowDestroying(aura::Window* window) {
   mirroring_hosts_.erase(iter);
 }
 
-ui::EventProcessor* AshWindowTreeHostUnified::GetEventProcessor() {
-  return dispatcher();
-}
-
 }  // namespace ash

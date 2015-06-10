@@ -1065,13 +1065,6 @@ void DesktopWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostX11, ui::EventSource implementation:
-
-ui::EventProcessor* DesktopWindowTreeHostX11::GetEventProcessor() {
-  return dispatcher();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, private:
 
 void DesktopWindowTreeHostX11::InitX11Window(

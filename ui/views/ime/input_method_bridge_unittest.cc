@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/dummy_input_method_delegate.h"
 #include "ui/base/ime/input_method_minimal.h"
@@ -20,9 +19,6 @@ typedef ViewsTestBase InputMethodBridgeTest;
 TEST_F(InputMethodBridgeTest, DestructTest) {
   ui::internal::DummyInputMethodDelegate input_method_delegate;
   ui::InputMethodMinimal input_method(&input_method_delegate);
-
-  GetContext()->SetProperty(aura::client::kRootWindowInputMethodKey,
-                            static_cast<ui::InputMethod*>(&input_method));
 
   Widget* toplevel = new Widget;
   Widget::InitParams toplevel_params =
@@ -42,9 +38,6 @@ TEST_F(InputMethodBridgeTest, DestructTest) {
   child->GetInputMethod()->OnFocus();
 
   toplevel->CloseNow();
-
-  GetContext()->SetProperty(aura::client::kRootWindowInputMethodKey,
-                            static_cast<ui::InputMethod*>(NULL));
 }
 
 }  // namespace views

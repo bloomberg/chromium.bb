@@ -19,6 +19,8 @@
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host_observer.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/input_method_delegate.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -51,7 +53,8 @@ class RootWindowController;
 // display, keeping them in sync with display configuration changes.
 class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
                                      public aura::WindowTreeHostObserver,
-                                     public DisplayManager::Delegate {
+                                     public DisplayManager::Delegate,
+                                     public ui::internal::InputMethodDelegate {
  public:
   class ASH_EXPORT Observer {
    public:
@@ -163,6 +166,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   void PreDisplayConfigurationChange(bool clear_focus) override;
   void PostDisplayConfigurationChange() override;
 
+  // ui::internal::InputMethodDelegate overrides:
+  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DisplayControllerTest, BoundsUpdated);
   FRIEND_TEST_ALL_PREFIXES(DisplayControllerTest, SecondaryDisplayLayout);
@@ -217,6 +223,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   scoped_ptr<CursorWindowController> cursor_window_controller_;
   scoped_ptr<MirrorWindowController> mirror_window_controller_;
+
+  scoped_ptr<ui::InputMethod> input_method_;
 
   // Stores the current cursor location (in native coordinates and screen
   // coordinates respectively). The locations are used to restore the cursor

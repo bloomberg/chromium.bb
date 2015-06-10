@@ -56,10 +56,6 @@ AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const kRestoreBoundsKey;
 AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
     kRestoreShowStateKey;
 
-// A property key to store an input method object that handles a key event.
-AURA_EXPORT extern const WindowProperty<ui::InputMethod*>* const
-    kRootWindowInputMethodKey;
-
 // A property key to store ui::WindowShowState for a window.
 // See ui/base/ui_base_types.h for its definition.
 AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const

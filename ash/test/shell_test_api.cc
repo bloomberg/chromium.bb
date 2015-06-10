@@ -23,11 +23,6 @@ RootWindowLayoutManager* ShellTestApi::root_window_layout() {
   return shell_->GetPrimaryRootWindowController()->root_window_layout();
 }
 
-wm::InputMethodEventFilter*
-ShellTestApi::input_method_event_filter() {
-  return shell_->input_method_filter_.get();
-}
-
 SystemGestureEventFilter* ShellTestApi::system_gesture_event_filter() {
   return shell_->system_gesture_filter_.get();
 }

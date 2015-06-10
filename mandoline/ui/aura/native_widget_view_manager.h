@@ -56,8 +56,6 @@ class NativeWidgetViewManager : public views::NativeWidgetAura,
 
   scoped_ptr<wm::FocusController> focus_client_;
 
-  scoped_ptr<ui::internal::InputMethodDelegate> ime_filter_;
-
   mojo::View* view_;
 
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;

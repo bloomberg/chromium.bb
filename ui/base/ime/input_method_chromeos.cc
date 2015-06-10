@@ -50,7 +50,8 @@ InputMethodChromeOS::~InputMethodChromeOS() {
   // We are dead, so we need to ask the client to stop relying on us.
   OnInputMethodChanged();
 
-  chromeos::IMEBridge::Get()->SetInputContextHandler(NULL);
+  if (chromeos::IMEBridge::Get())
+    chromeos::IMEBridge::Get()->SetInputContextHandler(NULL);
 }
 
 void InputMethodChromeOS::OnFocus() {
@@ -92,7 +93,7 @@ void InputMethodChromeOS::ProcessKeyEventDone(const ui::KeyEvent* event,
 }
 
 bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
-  DCHECK(event.type() == ET_KEY_PRESSED || event.type() == ET_KEY_RELEASED);
+  DCHECK(event.IsKeyEvent());
   DCHECK(system_toplevel_window_focused());
 
   // For linux_chromeos, the ime keyboard cannot track the caps lock state by

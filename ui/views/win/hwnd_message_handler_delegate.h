@@ -74,8 +74,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
 
   virtual void ResetWindowControls() = 0;
 
-  virtual InputMethod* GetInputMethod() = 0;
-
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
 
   // Returns true if the window should handle standard system commands, such as

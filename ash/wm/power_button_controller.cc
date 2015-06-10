@@ -134,10 +134,8 @@ void PowerButtonController::OnLockButtonEvent(
 }
 
 void PowerButtonController::OnKeyEvent(ui::KeyEvent* event) {
-  if (event->key_code() == ui::VKEY_VOLUME_DOWN) {
-    volume_down_pressed_ = event->type() == ui::ET_KEY_PRESSED ||
-                           event->type() == ui::ET_TRANSLATED_KEY_PRESS;
-  }
+  if (event->key_code() == ui::VKEY_VOLUME_DOWN)
+    volume_down_pressed_ = event->type() == ui::ET_KEY_PRESSED;
 }
 
 #if defined(OS_CHROMEOS)

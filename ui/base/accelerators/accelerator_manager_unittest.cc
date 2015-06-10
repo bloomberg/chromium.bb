@@ -151,11 +151,7 @@ TEST_F(AcceleratorManagerTest, Process) {
     // The non-registered accelerators are not processed.
     accelerator.set_type(ET_UNKNOWN);
     EXPECT_FALSE(manager_.Process(accelerator)) << text;  // different type
-    accelerator.set_type(ET_TRANSLATED_KEY_PRESS);
-    EXPECT_FALSE(manager_.Process(accelerator)) << text;  // different type
     accelerator.set_type(ET_KEY_RELEASED);
-    EXPECT_FALSE(manager_.Process(accelerator)) << text;  // different type
-    accelerator.set_type(ET_TRANSLATED_KEY_RELEASE);
     EXPECT_FALSE(manager_.Process(accelerator)) << text;  // different type
 
     EXPECT_FALSE(manager_.Process(GetAccelerator(VKEY_UNKNOWN, mask)))

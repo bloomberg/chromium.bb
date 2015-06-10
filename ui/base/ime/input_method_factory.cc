@@ -14,7 +14,8 @@
 #include "ui/base/ime/remote_input_method_win.h"
 #elif defined(OS_MACOSX)
 #include "ui/base/ime/input_method_mac.h"
-#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#elif defined(USE_AURA) && defined(OS_LINUX) && defined(USE_X11) && \
+      !defined(OS_CHROMEOS)
 #include "ui/base/ime/input_method_auralinux.h"
 #else
 #include "ui/base/ime/input_method_minimal.h"
@@ -47,7 +48,8 @@ scoped_ptr<InputMethod> CreateInputMethod(
   return make_scoped_ptr(new InputMethodWin(delegate, widget));
 #elif defined(OS_MACOSX)
   return make_scoped_ptr(new InputMethodMac(delegate));
-#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#elif defined(USE_AURA) && defined(OS_LINUX) && defined(USE_X11) && \
+      !defined(OS_CHROMEOS)
   return make_scoped_ptr(new InputMethodAuraLinux(delegate));
 #else
   return make_scoped_ptr(new InputMethodMinimal(delegate));

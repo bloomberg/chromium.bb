@@ -17,7 +17,6 @@
 #include "base/command_line.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/timer/timer.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -73,6 +72,12 @@ void MoveCursorTo(aura::WindowTreeHost* host, const gfx::Point& root_location) {
   host->GetRootTransform().TransformPoint(&host_location_3f);
   host->MoveCursorToHostLocation(
       gfx::ToCeiledPoint(host_location_3f.AsPointF()));
+}
+
+ui::InputMethod* GetInputMethod(aura::Window* root_window) {
+  if (root_window->GetHost())
+    return root_window->GetHost()->GetInputMethod();
+  return nullptr;
 }
 
 }  // namespace
@@ -242,8 +247,6 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   ScrollDirection scroll_direction_;
 
-  ui::InputMethod* input_method_;  // Not owned.
-
   // Timer for moving magnifier window when it fires.
   base::OneShotTimer<MagnificationControllerImpl> move_magnifier_timer_;
 
@@ -268,7 +271,6 @@ MagnificationControllerImpl::MagnificationControllerImpl()
       move_cursor_after_animation_(false),
       scale_(kNonMagnifiedScale),
       scroll_direction_(SCROLL_NONE),
-      input_method_(NULL),
       disable_move_magnifier_delay_(false) {
   Shell::GetInstance()->AddPreTargetHandler(this);
   root_window_->AddObserver(this);
@@ -276,8 +278,9 @@ MagnificationControllerImpl::MagnificationControllerImpl()
 }
 
 MagnificationControllerImpl::~MagnificationControllerImpl() {
-  if (input_method_)
-    input_method_->RemoveObserver(this);
+  ui::InputMethod* input_method = GetInputMethod(root_window_);
+  if (input_method)
+    input_method->RemoveObserver(this);
 
   root_window_->RemoveObserver(this);
 
@@ -584,13 +587,10 @@ void MagnificationControllerImpl::SetScrollDirection(
 
 void MagnificationControllerImpl::SetEnabled(bool enabled) {
   Shell* shell = Shell::GetInstance();
+  ui::InputMethod* input_method = GetInputMethod(root_window_);
   if (enabled) {
-    if (!input_method_) {
-      input_method_ =
-          root_window_->GetProperty(aura::client::kRootWindowInputMethodKey);
-      if (input_method_)
-        input_method_->AddObserver(this);
-    }
+    if (!is_enabled_ && input_method)
+      input_method->AddObserver(this);
 
     float scale =
         Shell::GetInstance()->accessibility_delegate()->
@@ -611,10 +611,8 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
     if (!is_enabled_)
       return;
 
-    if (input_method_) {
-      input_method_->RemoveObserver(this);
-      input_method_ = NULL;
-    }
+    if (input_method)
+      input_method->RemoveObserver(this);
 
     RedrawKeepingMousePosition(kNonMagnifiedScale, true);
     is_enabled_ = enabled;

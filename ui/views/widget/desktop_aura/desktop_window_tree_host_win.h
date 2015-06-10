@@ -32,7 +32,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
     : public DesktopWindowTreeHost,
       public aura::client::AnimationHost,
       public aura::WindowTreeHost,
-      public ui::EventSource,
       public HWNDMessageHandlerDelegate {
  public:
   DesktopWindowTreeHostWin(
@@ -119,9 +118,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void OnCursorVisibilityChangedNative(bool show) override;
   void MoveCursorToNative(const gfx::Point& location) override;
 
-  // Overridden frm ui::EventSource
-  ui::EventProcessor* GetEventProcessor() override;
-
   // Overridden from aura::client::AnimationHost
   void SetHostTransitionOffsets(
       const gfx::Vector2d& top_left_delta,
@@ -150,7 +146,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void ResetWindowControls() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   bool ShouldHandleSystemCommands() const override;
-  InputMethod* GetInputMethod() override;
   void HandleAppDeactivated() override;
   void HandleActivationChanged(bool active) override;
   bool HandleAppCommand(short command) override;

@@ -16,6 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/base/ui_base_types.h"
@@ -273,10 +274,7 @@ InputMethod* NativeWidgetAura::CreateInputMethod() {
   if (switches::IsTextInputFocusManagerEnabled())
     return new NullInputMethod();
 
-  aura::Window* root_window = window_->GetRootWindow();
-  ui::InputMethod* host =
-      root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
-  return new InputMethodBridge(this, host, true);
+  return new InputMethodBridge(this, GetHostInputMethod(), true);
 }
 
 internal::InputMethodDelegate* NativeWidgetAura::GetInputMethodDelegate() {
@@ -285,7 +283,7 @@ internal::InputMethodDelegate* NativeWidgetAura::GetInputMethodDelegate() {
 
 ui::InputMethod* NativeWidgetAura::GetHostInputMethod() {
   aura::Window* root_window = window_->GetRootWindow();
-  return root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
+  return root_window->GetHost()->GetInputMethod();
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {

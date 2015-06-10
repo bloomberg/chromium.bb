@@ -51,7 +51,6 @@
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/focus_controller.h"
-#include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/core/native_cursor_manager.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
@@ -310,8 +309,6 @@ void DesktopNativeWidgetAura::OnHostClosed() {
     tooltip_controller_.reset();
   }
 
-  root_window_event_filter_->RemoveHandler(input_method_event_filter_.get());
-
   window_tree_client_.reset();  // Uses host_->dispatcher() at destruction.
 
   capture_client_.reset();  // Uses host_->dispatcher() at destruction.
@@ -326,7 +323,7 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   focus_client_.reset();
 
   host_->RemoveObserver(this);
-  host_.reset();  // Uses input_method_event_filter_ at destruction.
+  host_.reset();
   // WindowEventDispatcher owns |desktop_window_tree_host_|.
   desktop_window_tree_host_ = NULL;
   content_window_ = NULL;
@@ -486,8 +483,6 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   position_client_.reset(new DesktopScreenPositionClient(host_->window()));
 
-  InstallInputMethodEventFilter();
-
   drag_drop_client_ = desktop_window_tree_host_->CreateDragDropClient(
       native_cursor_manager_);
   aura::client::SetDragDropClient(host_->window(),
@@ -637,8 +632,7 @@ InputMethod* DesktopNativeWidgetAura::CreateInputMethod() {
   if (switches::IsTextInputFocusManagerEnabled())
     return new NullInputMethod();
 
-  ui::InputMethod* host = input_method_event_filter_->input_method();
-  return new InputMethodBridge(this, host, false);
+  return new InputMethodBridge(this, GetHostInputMethod(), false);
 }
 
 internal::InputMethodDelegate*
@@ -647,7 +641,7 @@ internal::InputMethodDelegate*
 }
 
 ui::InputMethod* DesktopNativeWidgetAura::GetHostInputMethod() {
-  return input_method_event_filter_->input_method();
+  return host()->GetInputMethod();
 }
 
 void DesktopNativeWidgetAura::CenterWindow(const gfx::Size& size) {
@@ -1224,16 +1218,6 @@ void DesktopNativeWidgetAura::OnHostMoved(const aura::WindowTreeHost* host,
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, private:
-
-void DesktopNativeWidgetAura::InstallInputMethodEventFilter() {
-  DCHECK(!input_method_event_filter_.get());
-
-  input_method_event_filter_.reset(new wm::InputMethodEventFilter(
-      host_->GetAcceleratedWidget()));
-  input_method_event_filter_->SetInputMethodPropertyInRootWindow(
-      host_->window());
-  root_window_event_filter_->AddHandler(input_method_event_filter_.get());
-}
 
 void DesktopNativeWidgetAura::UpdateWindowTransparency() {
   content_window_->SetTransparent(

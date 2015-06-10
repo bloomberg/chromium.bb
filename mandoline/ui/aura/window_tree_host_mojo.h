@@ -26,7 +26,6 @@ namespace mandoline {
 class SurfaceContextFactory;
 
 class WindowTreeHostMojo : public aura::WindowTreeHost,
-                           public ui::EventSource,
                            public mojo::ViewObserver {
  public:
   WindowTreeHostMojo(mojo::Shell* shell, mojo::View* view);
@@ -52,9 +51,6 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   void SetCursorNative(gfx::NativeCursor cursor) override;
   void MoveCursorToNative(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;
-
-  // ui::EventSource:
-  ui::EventProcessor* GetEventProcessor() override;
 
   // mojo::ViewObserver:
   void OnViewBoundsChanged(mojo::View* view,

@@ -14,6 +14,8 @@ MockInputMethod::MockInputMethod(internal::InputMethodDelegate* delegate)
 }
 
 MockInputMethod::~MockInputMethod() {
+  FOR_EACH_OBSERVER(InputMethodObserver, observer_list_,
+                    OnInputMethodDestroyed(this));
 }
 
 void MockInputMethod::SetDelegate(internal::InputMethodDelegate* delegate) {

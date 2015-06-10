@@ -56,8 +56,6 @@ std::string EventTypeName(ui::EventType type) {
     CASE_TYPE(ET_TOUCH_MOVED);
     CASE_TYPE(ET_TOUCH_CANCELLED);
     CASE_TYPE(ET_DROP_TARGET_EVENT);
-    CASE_TYPE(ET_TRANSLATED_KEY_PRESS);
-    CASE_TYPE(ET_TRANSLATED_KEY_RELEASE);
     CASE_TYPE(ET_GESTURE_SCROLL_BEGIN);
     CASE_TYPE(ET_GESTURE_SCROLL_END);
     CASE_TYPE(ET_GESTURE_SCROLL_UPDATE);
@@ -899,35 +897,6 @@ void KeyEvent::NormalizeFlags() {
     set_flags(flags() | mask);
   else
     set_flags(flags() & ~mask);
-}
-
-bool KeyEvent::IsTranslated() const {
-  switch (type()) {
-    case ET_KEY_PRESSED:
-    case ET_KEY_RELEASED:
-      return false;
-    case ET_TRANSLATED_KEY_PRESS:
-    case ET_TRANSLATED_KEY_RELEASE:
-      return true;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-void KeyEvent::SetTranslated(bool translated) {
-  switch (type()) {
-    case ET_KEY_PRESSED:
-    case ET_TRANSLATED_KEY_PRESS:
-      SetType(translated ? ET_TRANSLATED_KEY_PRESS : ET_KEY_PRESSED);
-      break;
-    case ET_KEY_RELEASED:
-    case ET_TRANSLATED_KEY_RELEASE:
-      SetType(translated ? ET_TRANSLATED_KEY_RELEASE : ET_KEY_RELEASED);
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 KeyboardCode KeyEvent::GetLocatedWindowsKeyboardCode() const {

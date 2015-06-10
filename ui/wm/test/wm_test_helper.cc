@@ -10,7 +10,6 @@
 #include "ui/aura/window.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/default_activation_client.h"
-#include "ui/wm/core/input_method_event_filter.h"
 
 namespace wm {
 
@@ -28,11 +27,6 @@ WMTestHelper::WMTestHelper(const gfx::Size& default_window_size,
   root_window_event_filter_.reset(new wm::CompoundEventFilter);
   host_->window()->AddPreTargetHandler(root_window_event_filter_.get());
 
-  input_method_filter_.reset(new wm::InputMethodEventFilter(
-      host_->GetAcceleratedWidget()));
-  input_method_filter_->SetInputMethodPropertyInRootWindow(host_->window());
-  root_window_event_filter_->AddHandler(input_method_filter_.get());
-
   new wm::DefaultActivationClient(host_->window());
 
   capture_client_.reset(
@@ -40,7 +34,6 @@ WMTestHelper::WMTestHelper(const gfx::Size& default_window_size,
 }
 
 WMTestHelper::~WMTestHelper() {
-  root_window_event_filter_->RemoveHandler(input_method_filter_.get());
 }
 
 aura::Window* WMTestHelper::GetDefaultParent(aura::Window* context,

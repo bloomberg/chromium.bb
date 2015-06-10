@@ -21,9 +21,9 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message_macros.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -125,9 +125,9 @@ void AshKeyboardControllerProxy::OnRequest(
 }
 
 ui::InputMethod* AshKeyboardControllerProxy::GetInputMethod() {
-  aura::Window* root_window = ash::Shell::GetInstance()->GetPrimaryRootWindow();
+  aura::Window* root_window = ash::Shell::GetTargetRootWindow();
   DCHECK(root_window);
-  return root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
+  return root_window->GetHost()->GetInputMethod();
 }
 
 void AshKeyboardControllerProxy::RequestAudioInput(

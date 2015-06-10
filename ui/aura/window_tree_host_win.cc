@@ -112,10 +112,6 @@ void WindowTreeHostWin::OnCursorVisibilityChangedNative(bool show) {
   NOTIMPLEMENTED();
 }
 
-ui::EventProcessor* WindowTreeHostWin::GetEventProcessor() {
-  return dispatcher();
-}
-
 void WindowTreeHostWin::OnBoundsChanged(const gfx::Rect& new_bounds) {
   gfx::Rect old_bounds = bounds_;
   bounds_ = new_bounds;

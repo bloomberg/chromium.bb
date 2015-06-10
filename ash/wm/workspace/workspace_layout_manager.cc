@@ -134,8 +134,7 @@ void WorkspaceLayoutManager::SetChildBounds(
 
 void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
-  ui::InputMethod* input_method =
-      root_window_->GetProperty(aura::client::kRootWindowInputMethodKey);
+  ui::InputMethod* input_method = root_window_->GetHost()->GetInputMethod();
   ui::TextInputClient* text_input_client = input_method->GetTextInputClient();
   if (!text_input_client)
     return;

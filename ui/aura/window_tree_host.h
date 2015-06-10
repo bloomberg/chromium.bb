@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/ime/input_method_delegate.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -25,6 +26,7 @@ class Transform;
 namespace ui {
 class Compositor;
 class EventProcessor;
+class InputMethod;
 class ViewProp;
 }
 
@@ -39,9 +41,10 @@ class WindowTreeHostObserver;
 // WindowTreeHost bridges between a native window and the embedded RootWindow.
 // It provides the accelerated widget and maps events from the native os to
 // aura.
-class AURA_EXPORT WindowTreeHost {
+class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
+                                   public ui::EventSource {
  public:
-  virtual ~WindowTreeHost();
+  ~WindowTreeHost() override;
 
   // Creates a new WindowTreeHost. The caller owns the returned value.
   static WindowTreeHost* Create(const gfx::Rect& bounds);
@@ -116,6 +119,33 @@ class AURA_EXPORT WindowTreeHost {
 
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
 
+  // Gets the InputMethod instance, if NULL, creates & owns it.
+  ui::InputMethod* GetInputMethod();
+
+  // Sets a shared unowned InputMethod. This is used when there is a singleton
+  // InputMethod shared between multiple WindowTreeHost instances.
+  //
+  // This is used for Ash only. There are 2 reasons:
+  // 1) ChromeOS virtual keyboard needs to receive ShowImeIfNeeded notification
+  // from InputMethod. Multiple InputMethod instances makes it hard to
+  // register/unregister the observer for that notification.
+  // 2) For Ozone, there is no native focus state for the root window and
+  // WindowTreeHost. See DrmWindowHost::CanDispatchEvent, the key events always
+  // goes to the primary WindowTreeHost. And after InputMethod processed the key
+  // event and continue dispatching it, WindowTargeter::FindTargetForEvent may
+  // re-dispatch it to a different WindowTreeHost. So the singleton InputMethod
+  // can make sure the correct InputMethod instance processes the key event no
+  // matter which WindowTreeHost is the target for event. Please refer to the
+  // test: ExtendedDesktopTest.KeyEventsOnLockScreen.
+  //
+  // TODO(shuchen): remove this method after above reasons become invalid.
+  // A possible solution is to make sure DrmWindowHost can find the correct
+  // WindowTreeHost to dispatch events.
+  void SetSharedInputMethod(ui::InputMethod* input_method);
+
+  // Overridden from ui::internal::InputMethodDelegate:
+  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override;
+
   // Returns the EventSource responsible for dispatching events to the window
   // tree.
   virtual ui::EventSource* GetEventSource() = 0;
@@ -172,6 +202,10 @@ class AURA_EXPORT WindowTreeHost {
   // Hides the WindowTreeHost.
   virtual void HideImpl() = 0;
 
+  // Overridden from ui::EventSource:
+  ui::EventProcessor* GetEventProcessor() override;
+  ui::EventDispatchDetails DeliverEventToProcessor(ui::Event* event) override;
+
  private:
   friend class test::WindowTreeHostTestApi;
 
@@ -197,6 +231,14 @@ class AURA_EXPORT WindowTreeHost {
   gfx::Point last_cursor_request_position_in_host_;
 
   scoped_ptr<ui::ViewProp> prop_;
+
+  // The InputMethod instance used to process key events.
+  // If owned it, it is created in GetInputMethod() method;
+  // If not owned it, it is passed in through SetSharedInputMethod() method.
+  ui::InputMethod* input_method_;
+
+  // Whether the InputMethod instance is owned by this WindowTreeHost.
+  bool owned_input_method_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHost);
 };

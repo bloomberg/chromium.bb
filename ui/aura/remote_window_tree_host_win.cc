@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
@@ -271,10 +270,6 @@ void RemoteWindowTreeHostWin::OnCursorVisibilityChangedNative(bool show) {
   NOTIMPLEMENTED();
 }
 
-ui::EventProcessor* RemoteWindowTreeHostWin::GetEventProcessor() {
-  return dispatcher();
-}
-
 void RemoteWindowTreeHostWin::CancelComposition() {
   if (!host_)
     return;
@@ -433,9 +428,7 @@ void RemoteWindowTreeHostWin::OnSetCursorPosAck() {
 
 ui::RemoteInputMethodPrivateWin*
 RemoteWindowTreeHostWin::GetRemoteInputMethodPrivate() {
-  ui::InputMethod* input_method = GetAshWindow()->GetProperty(
-      aura::client::kRootWindowInputMethodKey);
-  return ui::RemoteInputMethodPrivateWin::Get(input_method);
+  return ui::RemoteInputMethodPrivateWin::Get(GetInputMethod());
 }
 
 void RemoteWindowTreeHostWin::OnImeCandidatePopupChanged(bool visible) {

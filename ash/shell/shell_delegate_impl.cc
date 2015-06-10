@@ -24,7 +24,6 @@
 #include "components/user_manager/user_info_impl.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/aura/window.h"
-#include "ui/wm/core/input_method_event_filter.h"
 
 namespace ash {
 namespace shell {

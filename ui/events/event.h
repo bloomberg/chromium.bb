@@ -94,10 +94,7 @@ class EVENTS_EXPORT Event {
   bool IsRepeat() const { return (flags_ & EF_IS_REPEAT) != 0; }
 
   bool IsKeyEvent() const {
-    return type_ == ET_KEY_PRESSED ||
-           type_ == ET_KEY_RELEASED ||
-           type_ == ET_TRANSLATED_KEY_PRESS ||
-           type_ == ET_TRANSLATED_KEY_RELEASE;
+    return type_ == ET_KEY_PRESSED || type_ == ET_KEY_RELEASED;
   }
 
   bool IsMouseEvent() const {
@@ -602,8 +599,7 @@ class EVENTS_EXPORT ExtendedKeyEventData {
 //
 // For a keystroke event,
 // -- is_char_ is false.
-// -- Event::type() can be any one of ET_KEY_PRESSED, ET_KEY_RELEASED,
-//    ET_TRANSLATED_KEY_PRESS, or ET_TRANSLATED_KEY_RELEASE.
+// -- Event::type() can be any one of ET_KEY_PRESSED, ET_KEY_RELEASED.
 // -- code_ and Event::flags() represent the physical key event.
 //    - code_ is a platform-independent representation of the physical key,
 //      based on DOM KeyboardEvent |code| values. It does not vary depending
@@ -743,12 +739,6 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // Normalizes flags_ so that it describes the state after the event.
   // (Native X11 event flags describe the state before the event.)
   void NormalizeFlags();
-
-  // Returns true if the key event has already been processed by an input method
-  // and there is no need to pass the key event to the input method again.
-  bool IsTranslated() const;
-  // Marks this key event as translated or not translated.
-  void SetTranslated(bool translated);
 
  protected:
   friend class KeyEventTestApi;

@@ -564,10 +564,6 @@ void WindowTreeHostX11::MoveCursorToNative(const gfx::Point& location) {
 void WindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
 }
 
-ui::EventProcessor* WindowTreeHostX11::GetEventProcessor() {
-  return dispatcher();
-}
-
 void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
   ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
   XEvent* xev = event;

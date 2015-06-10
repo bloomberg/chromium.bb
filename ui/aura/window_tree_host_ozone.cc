@@ -109,10 +109,6 @@ void WindowTreeHostOzone::OnAcceleratedWidgetAvailable(
 void WindowTreeHostOzone::OnActivationChanged(bool active) {
 }
 
-ui::EventProcessor* WindowTreeHostOzone::GetEventProcessor() {
-  return dispatcher();
-}
-
 // static
 WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
   return new WindowTreeHostOzone(bounds);

@@ -26,6 +26,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm/coordinate_conversion.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -38,6 +39,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/input_method_factory.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -867,6 +869,16 @@ void DisplayController::PostDisplayConfigurationChange() {
   UpdateMouseLocationAfterDisplayChange();
 }
 
+bool DisplayController::DispatchKeyEventPostIME(const ui::KeyEvent& event) {
+  // Getting the active root window to dispatch the event. This isn't
+  // significant as the event will be sent to the window resolved by
+  // aura::client::FocusClient which is FocusController in ash.
+  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* root_window = active_window ? active_window->GetRootWindow()
+                                            : Shell::GetPrimaryRootWindow();
+  return root_window->GetHost()->DispatchKeyEventPostIME(event);
+}
+
 AshWindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
     const gfx::Display& display,
     const AshWindowTreeHostInitParams& init_params) {
@@ -879,6 +891,11 @@ AshWindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
       display.id() == DisplayManager::kUnifiedDisplayId;
   AshWindowTreeHost* ash_host = AshWindowTreeHost::Create(params_with_bounds);
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
+  if (!input_method_) {  // Singleton input method instance for Ash.
+    input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());
+    input_method_->OnFocus();
+  }
+  host->SetSharedInputMethod(input_method_.get());
 
   host->window()->SetName(base::StringPrintf(
       "%sRootWindow-%d", params_with_bounds.offscreen ? "Offscreen" : "",

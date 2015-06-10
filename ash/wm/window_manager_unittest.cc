@@ -5,7 +5,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/shell_test_api.h"
 #include "ash/test/test_activation_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/cursor_client_observer.h"
@@ -23,7 +22,6 @@
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/compound_event_filter.h"
-#include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/activation_delegate.h"
 
@@ -134,12 +132,6 @@ class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
 };
 
 TEST_F(WindowManagerTest, Focus) {
-  // The IME event filter interferes with the basic key event propagation we
-  // attempt to do here, so we remove it.
-  test::ShellTestApi shell_test(Shell::GetInstance());
-  Shell::GetInstance()->RemovePreTargetHandler(
-      shell_test.input_method_event_filter());
-
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   root_window->SetBounds(gfx::Rect(0, 0, 510, 510));
 
@@ -651,12 +643,6 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
 }
 
 TEST_F(WindowManagerTest, AdditionalFilters) {
-  // The IME event filter interferes with the basic key event propagation we
-  // attempt to do here, so we remove it.
-  test::ShellTestApi shell_test(Shell::GetInstance());
-  Shell::GetInstance()->RemovePreTargetHandler(
-      shell_test.input_method_event_filter());
-
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
   // Creates a window and make it active

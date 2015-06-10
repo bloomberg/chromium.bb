@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/events/event_source.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -30,7 +29,6 @@ class TouchEventCalibrate;
 }
 
 class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
-                                      public ui::EventSource,
                                       public ui::PlatformEventDispatcher {
 
  public:
@@ -54,9 +52,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   void SetCursorNative(gfx::NativeCursor cursor_type) override;
   void MoveCursorToNative(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;
-
-  // ui::EventSource overrides.
-  ui::EventProcessor* GetEventProcessor() override;
 
  protected:
   // Called when X Configure Notify event is recevied.

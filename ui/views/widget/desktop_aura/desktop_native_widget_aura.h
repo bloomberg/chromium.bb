@@ -79,9 +79,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // as by the time we get here |dispatcher_| is NULL.
   virtual void OnDesktopWindowTreeHostDestroyed(aura::WindowTreeHost* host);
 
-  wm::InputMethodEventFilter* input_method_event_filter() {
-    return input_method_event_filter_.get();
-  }
   wm::CompoundEventFilter* root_window_event_filter() {
     return root_window_event_filter_.get();
   }
@@ -241,9 +238,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   friend class FocusManagerEventHandler;
   friend class RootWindowDestructionObserver;
 
-  // Installs the input method filter.
-  void InstallInputMethodEventFilter();
-
   // To save a clear on platforms where the window is never transparent, the
   // window is only set as transparent when the glass frame is in use.
   void UpdateWindowTransparency();
@@ -278,8 +272,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // Toplevel event filter which dispatches to other event filters.
   scoped_ptr<wm::CompoundEventFilter> root_window_event_filter_;
-
-  scoped_ptr<wm::InputMethodEventFilter> input_method_event_filter_;
 
   scoped_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;

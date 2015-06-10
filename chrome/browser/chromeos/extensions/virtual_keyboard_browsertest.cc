@@ -19,7 +19,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/extension.h"
-#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -86,8 +86,7 @@ void VirtualKeyboardBrowserTest::RunTest(
 
 void VirtualKeyboardBrowserTest::ShowVirtualKeyboard() {
   aura::Window* window = ash::Shell::GetPrimaryRootWindow();
-  ui::InputMethod* input_method =
-      window->GetProperty(aura::client::kRootWindowInputMethodKey);
+  ui::InputMethod* input_method = window->GetHost()->GetInputMethod();
   ASSERT_TRUE(input_method);
   input_method->ShowImeIfNeeded();
 }

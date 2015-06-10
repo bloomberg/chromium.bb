@@ -15,7 +15,6 @@
 #include "base/observer_list.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
-#include "ui/events/event_source.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -43,7 +42,6 @@ class X11WindowEventFilter;
 class VIEWS_EXPORT DesktopWindowTreeHostX11
     : public DesktopWindowTreeHost,
       public aura::WindowTreeHost,
-      public ui::EventSource,
       public ui::PlatformEventDispatcher {
  public:
   DesktopWindowTreeHostX11(
@@ -162,9 +160,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void SetCursorNative(gfx::NativeCursor cursor) override;
   void MoveCursorToNative(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;
-
-  // Overridden frm ui::EventSource
-  ui::EventProcessor* GetEventProcessor() override;
 
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;

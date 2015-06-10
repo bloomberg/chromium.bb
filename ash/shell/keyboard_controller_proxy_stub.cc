@@ -6,9 +6,10 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/mock_input_method.h"
-#include "ui/wm/core/input_method_event_filter.h"
 
 using namespace content;
 
@@ -36,7 +37,10 @@ aura::Window* KeyboardControllerProxyStub::GetKeyboardWindow() {
 }
 
 ui::InputMethod* KeyboardControllerProxyStub::GetInputMethod() {
-  return Shell::GetInstance()->input_method_filter()->input_method();
+  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* root_window = active_window ? active_window->GetRootWindow()
+                                            : Shell::GetPrimaryRootWindow();
+  return root_window->GetHost()->GetInputMethod();
 }
 
 void KeyboardControllerProxyStub::RequestAudioInput(

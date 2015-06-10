@@ -8,7 +8,6 @@
 #include "mandoline/ui/aura/window_tree_host_mojo.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -34,53 +33,6 @@ class FocusRulesImpl : public wm::BaseFocusRules {
   DISALLOW_COPY_AND_ASSIGN(FocusRulesImpl);
 };
 
-class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
-                                public ui::EventHandler {
- public:
-  explicit MinimalInputEventFilter(aura::Window* root)
-      : root_(root) {
-    input_method_.reset(new InputMethodMandoline(this));
-    input_method_->OnFocus();
-    root_->AddPreTargetHandler(this);
-    root_->SetProperty(aura::client::kRootWindowInputMethodKey,
-                       input_method_.get());
-  }
-
-  ~MinimalInputEventFilter() override {
-    root_->RemovePreTargetHandler(this);
-    root_->SetProperty(aura::client::kRootWindowInputMethodKey,
-                       static_cast<ui::InputMethod*>(NULL));
-  }
-
- private:
-  // ui::EventHandler:
-  void OnKeyEvent(ui::KeyEvent* event) override {
-    // See the comment in InputMethodEventFilter::OnKeyEvent() for details.
-    if (event->IsTranslated()) {
-      event->SetTranslated(false);
-    } else {
-      if (input_method_->DispatchKeyEvent(*event))
-        event->StopPropagation();
-    }
-  }
-
-  // ui::internal::InputMethodDelegate:
-  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) override {
-    // See the comment in InputMethodEventFilter::DispatchKeyEventPostIME() for
-    // details.
-    ui::KeyEvent aura_event(event);
-    aura_event.SetTranslated(true);
-    ui::EventDispatchDetails details =
-        root_->GetHost()->dispatcher()->OnEventFromSource(&aura_event);
-    return aura_event.handled() || details.dispatcher_destroyed;
-  }
-
-  aura::Window* root_;
-  scoped_ptr<ui::InputMethod> input_method_;
-
-  DISALLOW_COPY_AND_ASSIGN(MinimalInputEventFilter);
-};
-
 }  // namespace
 
 NativeWidgetViewManager::NativeWidgetViewManager(
@@ -91,9 +43,6 @@ NativeWidgetViewManager::NativeWidgetViewManager(
   view_->AddObserver(this);
   window_tree_host_.reset(new WindowTreeHostMojo(shell, view_));
   window_tree_host_->InitHost();
-
-  ime_filter_.reset(
-      new MinimalInputEventFilter(window_tree_host_->window()));
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
 

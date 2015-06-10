@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/events/event_source.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
@@ -17,7 +16,6 @@ namespace aura {
 
 class AURA_EXPORT WindowTreeHostWin
     : public WindowTreeHost,
-      public ui::EventSource,
       public NON_EXPORTED_BASE(ui::PlatformWindowDelegate) {
  public:
   explicit WindowTreeHostWin(const gfx::Rect& bounds);
@@ -36,9 +34,6 @@ class AURA_EXPORT WindowTreeHostWin
   void SetCursorNative(gfx::NativeCursor cursor) override;
   void MoveCursorToNative(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;
-
-  // ui::EventSource:
-  ui::EventProcessor* GetEventProcessor() override;
 
  protected:
   gfx::AcceleratedWidget hwnd() const { return widget_; }

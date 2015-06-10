@@ -46,7 +46,6 @@ class UserActivityPowerManagerNotifier;
 namespace wm {
 class CompoundEventFilter;
 class CursorManager;
-class InputMethodEventFilter;
 }
 
 namespace extensions {
@@ -120,8 +119,6 @@ class ShellDesktopControllerAura
   scoped_ptr<wm::CompoundEventFilter> root_window_event_filter_;
 
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
-
-  scoped_ptr<wm::InputMethodEventFilter> input_method_filter_;
 
   scoped_ptr<aura::client::FocusClient> focus_client_;
 
