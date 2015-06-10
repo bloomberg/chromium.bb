@@ -19,3 +19,7 @@ class ContextLostExpectations(GpuTestExpectations):
     # Mac 10.8 (ideally should restrict this to Debug, too)
     self.Fail('ContextLost.WebGLContextLostFromSelectElement',
               ['mountainlion'], bug=497411)
+
+    # Flaky on Mac 10.7 (ideally should restrict this to Debug, too)
+    self.Fail('ContextLost.WebGLContextLostFromSelectElement',
+              ['lion'], bug=498149)
