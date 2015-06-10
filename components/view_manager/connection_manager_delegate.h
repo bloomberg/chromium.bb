@@ -31,14 +31,12 @@ class ConnectionManagerDelegate {
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
       mojo::ConnectionSpecificId creator_id,
-      const std::string& creator_url,
       mojo::URLRequestPtr request,
       const ViewId& root_id) = 0;
   virtual ClientConnection* CreateClientConnectionForEmbedAtView(
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
       mojo::ConnectionSpecificId creator_id,
-      const std::string& creator_url,
       const ViewId& root_id,
       mojo::ViewManagerClientPtr view_manager_client) = 0;
 

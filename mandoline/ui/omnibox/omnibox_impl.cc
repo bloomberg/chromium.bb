@@ -51,9 +51,7 @@ bool OmniboxImpl::ConfigureOutgoingConnection(
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxImpl, mojo::ViewManagerDelegate implementation:
 
-void OmniboxImpl::OnEmbed(mojo::View* root,
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
+void OmniboxImpl::OnEmbed(mojo::View* root) {
   if (!aura_init_.get()) {
     aura_init_.reset(new AuraInit(app_impl_->shell()));
     edit_ = new views::Textfield;
@@ -138,7 +136,7 @@ void OmniboxImpl::ShowForURL(const mojo::String& url) {
   url_ = url;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:omnibox");
-  view_embedder_->Embed(request.Pass(), nullptr, nullptr);
+  view_embedder_->Embed(request.Pass());
 }
 
 }  // namespace mandoline

@@ -31,10 +31,11 @@ mojo_sdk_source_set("cpp") {
 
   public_deps = [
     ":common",
+    "../interfaces",
+    "//mojo/services/network/public/interfaces",
   ]
 
   deps = [
-    "../interfaces",
     "//mojo/application/public/cpp",
     "//mojo/application/public/interfaces",
     "//ui/mojo/events:interfaces",

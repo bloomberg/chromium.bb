@@ -81,15 +81,13 @@ ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(
     ConnectionManager* connection_manager,
     mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
     mojo::ConnectionSpecificId creator_id,
-    const std::string& creator_url,
     mojo::URLRequestPtr request,
     const ViewId& root_id) {
   mojo::ViewManagerClientPtr client;
-  std::string url = request->url.To<std::string>();
   app_impl_->ConnectToService(request.Pass(), &client);
 
-  scoped_ptr<ViewManagerServiceImpl> service(new ViewManagerServiceImpl(
-      connection_manager, creator_id, creator_url, url, root_id));
+  scoped_ptr<ViewManagerServiceImpl> service(
+      new ViewManagerServiceImpl(connection_manager, creator_id, root_id));
   return new DefaultClientConnection(service.Pass(), connection_manager,
                                      service_request.Pass(), client.Pass());
 }
@@ -98,11 +96,10 @@ ClientConnection* ViewManagerApp::CreateClientConnectionForEmbedAtView(
     ConnectionManager* connection_manager,
     mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
     mojo::ConnectionSpecificId creator_id,
-    const std::string& creator_url,
     const ViewId& root_id,
     mojo::ViewManagerClientPtr view_manager_client) {
-  scoped_ptr<ViewManagerServiceImpl> service(new ViewManagerServiceImpl(
-      connection_manager, creator_id, creator_url, std::string(), root_id));
+  scoped_ptr<ViewManagerServiceImpl> service(
+      new ViewManagerServiceImpl(connection_manager, creator_id, root_id));
   return new DefaultClientConnection(service.Pass(), connection_manager,
                                      service_request.Pass(),
                                      view_manager_client.Pass());
@@ -116,8 +113,7 @@ void ViewManagerApp::Create(ApplicationConnection* connection,
   }
 
   scoped_ptr<ViewManagerServiceImpl> service(new ViewManagerServiceImpl(
-      connection_manager_.get(), kInvalidConnectionId, std::string(),
-      connection->GetRemoteApplicationURL(), RootViewId()));
+      connection_manager_.get(), kInvalidConnectionId, RootViewId()));
   mojo::ViewManagerClientPtr client;
   connection->ConnectToService(&client);
   scoped_ptr<ClientConnection> client_connection(

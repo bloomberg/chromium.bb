@@ -8,8 +8,8 @@ source_set("tab") {
   sources = [
     "frame.cc",
     "frame.h",
-    "frame_services.cc",
-    "frame_services.h",
+    "frame_connection.cc",
+    "frame_connection.h",
     "frame_tree.cc",
     "frame_tree.h",
     "frame_tree_delegate.h",
@@ -20,8 +20,9 @@ source_set("tab") {
     "//base",
     "//components/view_manager/public/cpp",
     "//mandoline/tab/public/interfaces",
-    "//mojo/application/public/cpp",
+    "//mojo/application/public/cpp:sources",
     "//mojo/application/public/interfaces",
+    "//mojo/services/network/public/interfaces",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 }

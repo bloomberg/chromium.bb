@@ -90,9 +90,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   ApplicationDelegate* GetApplicationDelegate() override { return this; }
 
   // Overridden from ViewManagerDelegate:
-  void OnEmbed(View* root,
-               mojo::InterfaceRequest<mojo::ServiceProvider> services,
-               mojo::ServiceProviderPtr exposed_services) override {
+  void OnEmbed(View* root) override {
     most_recent_view_manager_ = root->view_manager();
     QuitRunLoop();
   }

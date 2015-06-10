@@ -35,7 +35,6 @@ struct ViewManagerServiceImpl::PendingEmbed
   PendingEmbed() : embed_root(nullptr) {}
 
   ViewManagerServiceImpl* embed_root;
-  mojo::URLRequestPtr url_request;
   ViewId view_id;
   mojo::Callback<void(bool)> callback;
 
@@ -48,14 +47,10 @@ struct ViewManagerServiceImpl::PendingEmbed
 ViewManagerServiceImpl::ViewManagerServiceImpl(
     ConnectionManager* connection_manager,
     mojo::ConnectionSpecificId creator_id,
-    const std::string& creator_url,
-    const std::string& url,
     const ViewId& root_id)
     : connection_manager_(connection_manager),
       id_(connection_manager_->GetAndAdvanceNextConnectionId()),
-      url_(url),
       creator_id_(creator_id),
-      creator_url_(creator_url),
       client_(nullptr),
       is_embed_root_(false) {
   CHECK(GetView(root_id));
@@ -71,9 +66,7 @@ ViewManagerServiceImpl::~ViewManagerServiceImpl() {
 }
 
 void ViewManagerServiceImpl::Init(mojo::ViewManagerClient* client,
-                                  mojo::ViewManagerServicePtr service_ptr,
-                                  InterfaceRequest<ServiceProvider> services,
-                                  ServiceProviderPtr exposed_services) {
+                                  mojo::ViewManagerServicePtr service_ptr) {
   DCHECK(!client_);
   client_ = client;
   std::vector<const ServerView*> to_send;
@@ -86,8 +79,7 @@ void ViewManagerServiceImpl::Init(mojo::ViewManagerClient* client,
   const mojo::Id focused_view_transport_id(
       ViewIdToTransportId(focused_view ? focused_view->id() : ViewId()));
 
-  client->OnEmbed(id_, creator_url_, ViewToViewData(to_send.front()),
-                  service_ptr.Pass(), services.Pass(), exposed_services.Pass(),
+  client->OnEmbed(id_, ViewToViewData(to_send.front()), service_ptr.Pass(),
                   focused_view_transport_id);
 }
 
@@ -161,16 +153,10 @@ bool ViewManagerServiceImpl::SetViewVisibility(const ViewId& view_id,
   return true;
 }
 
-void ViewManagerServiceImpl::SetEmbedRoot() {
-  is_embed_root_ = true;
-}
-
-void ViewManagerServiceImpl::Embed(mojo::URLRequestPtr request,
-                                   const ViewId& view_id,
-                                   EmbedType type,
-                                   InterfaceRequest<ServiceProvider> services,
-                                   ServiceProviderPtr exposed_services,
-                                   const mojo::Callback<void(bool)>& callback) {
+void ViewManagerServiceImpl::EmbedAllowingReembed(
+    const ViewId& view_id,
+    mojo::URLRequestPtr request,
+    const mojo::Callback<void(bool)>& callback) {
   if (!CanEmbed(view_id)) {
     callback.Run(false);
     return;
@@ -178,11 +164,10 @@ void ViewManagerServiceImpl::Embed(mojo::URLRequestPtr request,
 
   ViewManagerServiceImpl* embed_root = nullptr;
 
-  // Only the creator is allowed to reset reembed.
   ServerView* view = GetView(view_id);
   DCHECK(view);  // CanEmbed() returns true only if |view_id| is valid.
   if (view->id().connection_id == id_) {
-    view->set_allows_reembed(type == EmbedType::ALLOW_REEMBED);
+    view->set_allows_reembed(true);
 
     // Only consult the embed root if the creator is doing the embed. If someone
     // other than the creator is doing the embed they were granted embed access.
@@ -191,8 +176,7 @@ void ViewManagerServiceImpl::Embed(mojo::URLRequestPtr request,
 
   if (!embed_root) {
     PrepareForEmbed(view_id);
-    connection_manager_->EmbedAtView(id_, request.Pass(), view_id,
-                                     services.Pass(), exposed_services.Pass());
+    connection_manager_->EmbedAtView(id_, view_id, request.Pass());
     callback.Run(true);
     return;
   }
@@ -202,18 +186,16 @@ void ViewManagerServiceImpl::Embed(mojo::URLRequestPtr request,
   pending_embeds_.insert(pending_embed);
   pending_embed->embed_root = embed_root;
   pending_embed->view_id = view_id;
-  pending_embed->url_request = request.Pass();
   pending_embed->callback = callback;
   pending_embeds_.insert(pending_embed);
-  embed_root->client()->OnWillEmbed(
-      ViewIdToTransportId(view_id), services.Pass(), exposed_services.Pass(),
-      base::Bind(&ViewManagerServiceImpl::OnWillEmbedDone,
+  embed_root->client()->OnEmbedForDescendant(
+      ViewIdToTransportId(view_id), request.Pass(),
+      base::Bind(&ViewManagerServiceImpl::OnEmbedForDescendantDone,
                  base::Unretained(this), pending_embed));
 }
 
 bool ViewManagerServiceImpl::Embed(const ViewId& view_id,
                                    mojo::ViewManagerClientPtr client) {
-  // TODO(sky): wire up embed root.
   if (!client.get() || !CanEmbed(view_id))
     return false;
   PrepareForEmbed(view_id);
@@ -567,20 +549,17 @@ void ViewManagerServiceImpl::RemoveChildrenAsPartOfEmbed(
     view->Remove(children[i]);
 }
 
-void ViewManagerServiceImpl::OnWillEmbedDone(
+void ViewManagerServiceImpl::OnEmbedForDescendantDone(
     scoped_refptr<PendingEmbed> pending_embed,
-    bool allow_embed,
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
+    mojo::ViewManagerClientPtr client) {
   if (!pending_embeds_.count(pending_embed.get()))
     return;
 
-  allow_embed = allow_embed && CanEmbed(pending_embed->view_id);
+  const bool allow_embed = client.get() && CanEmbed(pending_embed->view_id);
   if (allow_embed) {
     PrepareForEmbed(pending_embed->view_id);
-    connection_manager_->EmbedAtView(id_, pending_embed->url_request.Pass(),
-                                     pending_embed->view_id, services.Pass(),
-                                     exposed_services.Pass());
+    connection_manager_->EmbedAtView(id_, pending_embed->view_id,
+                                     client.Pass());
   }
   RemovePendingEmbedAndNotifyCallback(pending_embed.get(), allow_embed);
 }
@@ -733,29 +712,22 @@ void ViewManagerServiceImpl::SetViewProperty(
   callback.Run(success);
 }
 
-void ViewManagerServiceImpl::EmbedRequest(
-    mojo::URLRequestPtr request,
-    Id transport_view_id,
-    InterfaceRequest<ServiceProvider> services,
-    ServiceProviderPtr exposed_services,
-    const Callback<void(bool)>& callback) {
-  Embed(request.Pass(), ViewIdFromTransportId(transport_view_id),
-        EmbedType::NO_REEMBED, services.Pass(), exposed_services.Pass(),
-        callback);
-}
-
-void ViewManagerServiceImpl::EmbedAllowingReembed(
-    mojo::URLRequestPtr request,
-    mojo::Id transport_view_id,
-    const mojo::Callback<void(bool)>& callback) {
-  Embed(request.Pass(), ViewIdFromTransportId(transport_view_id),
-        EmbedType::ALLOW_REEMBED, nullptr, nullptr, callback);
+void ViewManagerServiceImpl::SetEmbedRoot() {
+  is_embed_root_ = true;
 }
 
 void ViewManagerServiceImpl::Embed(mojo::Id transport_view_id,
                                    mojo::ViewManagerClientPtr client,
                                    const mojo::Callback<void(bool)>& callback) {
   callback.Run(Embed(ViewIdFromTransportId(transport_view_id), client.Pass()));
+}
+
+void ViewManagerServiceImpl::EmbedAllowingReembed(
+    mojo::Id transport_view_id,
+    mojo::URLRequestPtr request,
+    const mojo::Callback<void(bool)>& callback) {
+  EmbedAllowingReembed(ViewIdFromTransportId(transport_view_id), request.Pass(),
+                       callback);
 }
 
 void ViewManagerServiceImpl::SetFocus(uint32_t view_id,

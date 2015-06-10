@@ -48,6 +48,7 @@ if config.target_os != config.OS_ANDROID:
     {
       "test": "mojo:html_viewer_apptests",
       "type": "gtest_isolated",
+      "args": ["--is-headless"]
     },
     {
       "test": "mojo:resource_provider_apptests",

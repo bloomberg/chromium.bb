@@ -176,45 +176,29 @@ void ConnectionManager::OnConnectionError(ClientConnection* connection) {
   }
 }
 
-void ConnectionManager::EmbedAtView(
-    ConnectionSpecificId creator_id,
-    mojo::URLRequestPtr request,
-    const ViewId& view_id,
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
-  std::string creator_url;
-  ConnectionMap::const_iterator it = connection_map_.find(creator_id);
-  if (it != connection_map_.end())
-    creator_url = it->second->service()->url();
-
+void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
+                                    const ViewId& view_id,
+                                    mojo::URLRequestPtr request) {
   mojo::ViewManagerServicePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtView(
-          this, GetProxy(&service_ptr), creator_id, creator_url, request.Pass(),
-          view_id);
+          this, GetProxy(&service_ptr), creator_id, request.Pass(), view_id);
   AddConnection(client_connection);
   client_connection->service()->Init(client_connection->client(),
-                                     service_ptr.Pass(), services.Pass(),
-                                     exposed_services.Pass());
+                                     service_ptr.Pass());
   OnConnectionMessagedClient(client_connection->service()->id());
 }
 
 void ConnectionManager::EmbedAtView(mojo::ConnectionSpecificId creator_id,
                                     const ViewId& view_id,
                                     mojo::ViewManagerClientPtr client) {
-  std::string creator_url;
-  ConnectionMap::const_iterator it = connection_map_.find(creator_id);
-  if (it != connection_map_.end())
-    creator_url = it->second->service()->url();
-
   mojo::ViewManagerServicePtr service_ptr;
   ClientConnection* client_connection =
       delegate_->CreateClientConnectionForEmbedAtView(
-          this, GetProxy(&service_ptr), creator_id, creator_url, view_id,
-          client.Pass());
+          this, GetProxy(&service_ptr), creator_id, view_id, client.Pass());
   AddConnection(client_connection);
   client_connection->service()->Init(client_connection->client(),
-                                     service_ptr.Pass(), nullptr, nullptr);
+                                     service_ptr.Pass());
   OnConnectionMessagedClient(client_connection->service()->id());
 }
 
@@ -284,7 +268,7 @@ void ConnectionManager::SetWindowManagerClientConnection(
   window_manager_client_connection_ = connection.release();
   AddConnection(window_manager_client_connection_);
   window_manager_client_connection_->service()->Init(
-      window_manager_client_connection_->client(), nullptr, nullptr, nullptr);
+      window_manager_client_connection_->client(), nullptr);
 }
 
 mojo::ViewManagerClient*

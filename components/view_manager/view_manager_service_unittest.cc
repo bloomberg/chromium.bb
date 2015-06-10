@@ -47,19 +47,16 @@ class TestViewManagerClient : public mojo::ViewManagerClient {
  private:
   // ViewManagerClient:
   void OnEmbed(uint16_t connection_id,
-               const String& embedder_url,
                ViewDataPtr root,
                mojo::ViewManagerServicePtr view_manager_service,
-               InterfaceRequest<ServiceProvider> services,
-               ServiceProviderPtr exposed_services,
                mojo::Id focused_view_id) override {
     // TODO(sky): add test coverage of |focused_view_id|.
-    tracker_.OnEmbed(connection_id, embedder_url, root.Pass());
+    tracker_.OnEmbed(connection_id, root.Pass());
   }
-  void OnWillEmbed(uint32_t view,
-                   mojo::InterfaceRequest<mojo::ServiceProvider> services,
-                   mojo::ServiceProviderPtr exposed_services,
-                   const OnWillEmbedCallback& callback) override {}
+  void OnEmbedForDescendant(
+      uint32_t view,
+      mojo::URLRequestPtr request,
+      const OnEmbedForDescendantCallback& callback) override {}
   void OnEmbeddedAppDisconnected(uint32_t view) override {
     tracker_.OnEmbeddedAppDisconnected(view);
   }
@@ -150,11 +147,10 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
       mojo::ConnectionSpecificId creator_id,
-      const std::string& creator_url,
       mojo::URLRequestPtr request,
       const ViewId& root_id) override {
-    scoped_ptr<ViewManagerServiceImpl> service(new ViewManagerServiceImpl(
-        connection_manager, creator_id, creator_url, request->url, root_id));
+    scoped_ptr<ViewManagerServiceImpl> service(
+        new ViewManagerServiceImpl(connection_manager, creator_id, root_id));
     last_connection_ = new TestClientConnection(service.Pass());
     return last_connection_;
   }
@@ -162,7 +158,6 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
       ConnectionManager* connection_manager,
       mojo::InterfaceRequest<mojo::ViewManagerService> service_request,
       mojo::ConnectionSpecificId creator_id,
-      const std::string& creator_url,
       const ViewId& root_id,
       mojo::ViewManagerClientPtr client) override {
     NOTIMPLEMENTED();
@@ -250,8 +245,7 @@ class ViewManagerServiceTest : public testing::Test {
     connection_manager_.reset(new ConnectionManager(
         &delegate_, scoped_ptr<DisplayManager>(new TestDisplayManager)));
     scoped_ptr<ViewManagerServiceImpl> service(new ViewManagerServiceImpl(
-        connection_manager_.get(), kInvalidConnectionId, std::string(),
-        std::string("mojo:window_manager"), RootViewId()));
+        connection_manager_.get(), kInvalidConnectionId, RootViewId()));
     scoped_ptr<TestClientConnection> client_connection(
         new TestClientConnection(service.Pass()));
     wm_client_ = client_connection->client();
@@ -297,9 +291,8 @@ void SetUpAnimate1(ViewManagerServiceTest* test, ViewId* embed_view_id) {
   EXPECT_TRUE(test->wm_connection()->AddView(*(test->wm_connection()->root()),
                                              *embed_view_id));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  test->wm_connection()->Embed(request.Pass(), *embed_view_id,
-                               ViewManagerServiceImpl::EmbedType::NO_REEMBED,
-                               nullptr, nullptr, mojo::Callback<void(bool)>());
+  test->wm_connection()->EmbedAllowingReembed(*embed_view_id, request.Pass(),
+                                              mojo::Callback<void(bool)>());
   ViewManagerServiceImpl* connection1 =
       test->connection_manager()->GetConnectionWithRoot(*embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
@@ -436,9 +429,8 @@ TEST_F(ViewManagerServiceTest, CloneAndAnimateLargerDepth) {
   EXPECT_TRUE(
       wm_connection()->AddView(*(wm_connection()->root()), embed_view_id));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  wm_connection()->Embed(request.Pass(), embed_view_id,
-                         ViewManagerServiceImpl::EmbedType::NO_REEMBED, nullptr,
-                         nullptr, mojo::Callback<void(bool)>());
+  wm_connection()->EmbedAllowingReembed(embed_view_id, request.Pass(),
+                                        mojo::Callback<void(bool)>());
   ViewManagerServiceImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);
@@ -486,9 +478,8 @@ TEST_F(ViewManagerServiceTest, FocusOnPointer) {
       wm_connection()->AddView(*(wm_connection()->root()), embed_view_id));
   connection_manager()->root()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  wm_connection()->Embed(request.Pass(), embed_view_id,
-                         ViewManagerServiceImpl::EmbedType::NO_REEMBED, nullptr,
-                         nullptr, mojo::Callback<void(bool)>());
+  wm_connection()->EmbedAllowingReembed(embed_view_id, request.Pass(),
+                                        mojo::Callback<void(bool)>());
   ViewManagerServiceImpl* connection1 =
       connection_manager()->GetConnectionWithRoot(embed_view_id);
   ASSERT_TRUE(connection1 != nullptr);

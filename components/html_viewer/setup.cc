@@ -75,7 +75,7 @@ Setup::Setup(mojo::ApplicationImpl* app)
       discardable_memory_allocator_(kDesiredMaxMemory),
       compositor_thread_("compositor thread") {
   if (is_headless_)
-    InitHeadless();
+    InitIfNecessary(gfx::Size(1024, 1024), 1.f);
 }
 
 Setup::~Setup() {
@@ -83,12 +83,6 @@ Setup::~Setup() {
     renderer_scheduler_->Shutdown();
     blink::shutdown();
   }
-}
-
-void Setup::InitHeadless() {
-  DCHECK(!did_init_);
-  is_headless_ = true;
-  InitIfNecessary(gfx::Size(1024, 1024), 1.f);
 }
 
 void Setup::InitIfNecessary(const gfx::Size& screen_size_in_pixels,

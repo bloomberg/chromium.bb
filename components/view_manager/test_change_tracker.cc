@@ -35,15 +35,14 @@ std::string DirectionToString(mojo::OrderDirection direction) {
 std::string ChangeToDescription1(const Change& change) {
   switch (change.type) {
     case CHANGE_TYPE_EMBED:
-      return base::StringPrintf("OnEmbed creator=%s",
-                                change.creator_url.data());
+      return "OnEmbed";
 
     case CHANGE_TYPE_EMBEDDED_APP_DISCONNECTED:
       return base::StringPrintf("OnEmbeddedAppDisconnected view=%s",
                                 ViewIdToString(change.view_id).c_str());
 
-    case CHANGE_TYPE_WILL_EMBED:
-      return base::StringPrintf("OnWillEmbed view=%s",
+    case CHANGE_TYPE_EMBED_FOR_DESCENDANT:
+      return base::StringPrintf("OnEmbedForDescendant view=%s",
                                 ViewIdToString(change.view_id).c_str());
 
     case CHANGE_TYPE_NODE_BOUNDS_CHANGED:
@@ -176,19 +175,17 @@ TestChangeTracker::~TestChangeTracker() {
 }
 
 void TestChangeTracker::OnEmbed(mojo::ConnectionSpecificId connection_id,
-                                const String& creator_url,
                                 ViewDataPtr root) {
   Change change;
   change.type = CHANGE_TYPE_EMBED;
   change.connection_id = connection_id;
-  change.creator_url = creator_url;
   change.views.push_back(ViewDataToTestView(root));
   AddChange(change);
 }
 
-void TestChangeTracker::OnWillEmbed(mojo::Id view_id) {
+void TestChangeTracker::OnEmbedForDescendant(mojo::Id view_id) {
   Change change;
-  change.type = CHANGE_TYPE_WILL_EMBED;
+  change.type = CHANGE_TYPE_EMBED_FOR_DESCENDANT;
   change.view_id = view_id;
   AddChange(change);
 }

@@ -9,10 +9,9 @@
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "mandoline/tab/frame.h"
-#include "mandoline/tab/frame_services.h"
+#include "mandoline/tab/frame_connection.h"
 #include "mandoline/tab/frame_tree.h"
 #include "mandoline/ui/browser/browser_ui.h"
-#include "mandoline/ui/browser/merged_service_provider.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -39,7 +38,6 @@ Browser::Browser()
       omnibox_(nullptr),
       navigator_host_(this),
       app_(nullptr) {
-  exposed_services_impl_.AddService<mojo::NavigatorHost>(this);
 }
 
 Browser::~Browser() {
@@ -50,7 +48,7 @@ Browser::~Browser() {
 }
 
 void Browser::ReplaceContentWithRequest(mojo::URLRequestPtr request) {
-  Embed(request.Pass(), nullptr, nullptr);
+  Embed(request.Pass());
 }
 
 void Browser::Initialize(mojo::ApplicationImpl* app) {
@@ -84,10 +82,7 @@ bool Browser::ConfigureOutgoingConnection(
   return true;
 }
 
-void Browser::OnEmbed(
-    mojo::View* root,
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
+void Browser::OnEmbed(mojo::View* root) {
   // Browser does not support being embedded more than once.
   CHECK(!root_);
 
@@ -113,24 +108,26 @@ void Browser::OnEmbed(
 
   // Now that we're ready, either load a pending url or the default url.
   if (pending_request_) {
-    Embed(pending_request_.Pass(), services.Pass(), exposed_services.Pass());
+    Embed(pending_request_.Pass());
   } else if (!default_url_.empty()) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(default_url_);
-    Embed(request.Pass(), services.Pass(), exposed_services.Pass());
+    Embed(request.Pass());
   }
 }
 
-bool Browser::OnWillEmbed(
-    mojo::View* view,
-    mojo::InterfaceRequest<mojo::ServiceProvider>* services,
-    mojo::ServiceProviderPtr* exposed_services) {
+void Browser::OnEmbedForDescendant(mojo::View* view,
+                                   mojo::URLRequestPtr request,
+                                   mojo::ViewManagerClientPtr* client) {
   // TODO(sky): move this to Frame/FrameTree.
   Frame* frame = Frame::FindFirstFrameAncestor(view);
   if (!frame) {
     // TODO(sky): add requestor url so that we can return false if it's not
     // an app we expect.
-    return true;
+    mojo::ApplicationConnection* connection =
+        app_->ConnectToApplication(request.Pass());
+    connection->ConnectToService(client);
+    return;
   }
 
   Frame* parent = frame;
@@ -141,12 +138,11 @@ bool Browser::OnWillEmbed(
     frame = nullptr;
   }
 
-  scoped_ptr<FrameServices> frame_services(new FrameServices);
-  frame_services->Init(services, exposed_services);
-  FrameTreeClient* frame_tree_client = frame_services->frame_tree_client();
-  frame_tree_->CreateAndAddFrame(view, parent, frame_tree_client,
-                                 frame_services.Pass());
-  return true;
+  scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
+  frame_connection->Init(app_, request.Pass(), client);
+  frame_tree_->CreateAndAddFrame(view, parent,
+                                 frame_connection->frame_tree_client(),
+                                 frame_connection.Pass());
 }
 
 void Browser::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
@@ -168,12 +164,10 @@ void Browser::OpenURL(const mojo::String& url) {
   ReplaceContentWithRequest(request.Pass());
 }
 
-void Browser::Embed(mojo::URLRequestPtr request,
-                    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-                    mojo::ServiceProviderPtr exposed_services) {
-  std::string string_url = request->url.To<std::string>();
+void Browser::Embed(mojo::URLRequestPtr request) {
+  const std::string string_url = request->url.To<std::string>();
   if (string_url == "mojo:omnibox") {
-    ShowOmnibox(request.Pass(), services.Pass(), exposed_services.Pass());
+    ShowOmnibox(request.Pass());
     return;
   }
 
@@ -191,17 +185,15 @@ void Browser::Embed(mojo::URLRequestPtr request,
   if (changed)
     ui_->OnURLChanged();
 
-  merged_service_provider_.reset(
-      new MergedServiceProvider(exposed_services.Pass(), this));
-  scoped_ptr<FrameServices> frame_services(new FrameServices);
-  // TODO(sky): FrameServices and MergedServiceProvider need to be combined.
-  // TODO(sky): FrameServices needs to man in the middle services.
-  frame_services->Init(&services, nullptr);
-  FrameTreeClient* frame_tree_client = frame_services->frame_tree_client();
-  frame_tree_.reset(new FrameTree(content_, nullptr, frame_tree_client,
-                                  frame_services.Pass()));
-  content_->Embed(request.Pass(), services.Pass(),
-                  merged_service_provider_->GetServiceProviderPtr().Pass());
+  scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
+  mojo::ViewManagerClientPtr view_manager_client;
+  frame_connection->Init(app_, request.Pass(), &view_manager_client);
+  frame_connection->application_connection()->AddService<mojo::NavigatorHost>(
+      this);
+  frame_tree_.reset(new FrameTree(content_, nullptr,
+                                  frame_connection->frame_tree_client(),
+                                  frame_connection.Pass()));
+  content_->Embed(view_manager_client.Pass());
 
   navigator_host_.RecordNavigation(gurl.spec());
 }
@@ -216,17 +208,18 @@ void Browser::Create(mojo::ApplicationConnection* connection,
   view_embedder_bindings_.AddBinding(this, request.Pass());
 }
 
-void Browser::ShowOmnibox(
-    mojo::URLRequestPtr request,
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
+void Browser::ShowOmnibox(mojo::URLRequestPtr request) {
   if (!omnibox_) {
     omnibox_ = root_->view_manager()->CreateView();
     root_->AddChild(omnibox_);
     omnibox_->SetVisible(true);
     omnibox_->SetBounds(root_->bounds());
   }
-  omnibox_->Embed(request.Pass(), services.Pass(), exposed_services.Pass());
+  mojo::ViewManagerClientPtr view_manager_client;
+  mojo::ApplicationConnection* connection =
+      app_->ConnectToApplication(request.Pass());
+  connection->ConnectToService(&view_manager_client);
+  omnibox_->Embed(view_manager_client.Pass());
 }
 
 }  // namespace mandoline

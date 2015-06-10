@@ -18,9 +18,6 @@ class ViewManager {
  public:
   virtual ~ViewManager() {}
 
-  // Returns the URL of the application that embedded this application.
-  virtual const std::string& GetEmbedderURL() const = 0;
-
   // Returns the root of this connection.
   virtual View* GetRoot() = 0;
 

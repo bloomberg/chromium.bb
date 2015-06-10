@@ -1,5 +1,6 @@
 include_rules = [
   "+components/view_manager/public",
   "+mojo/application/public",
+  "+mojo/services/network/public/interfaces",
   "+third_party/mojo/src/mojo/public",
 ]

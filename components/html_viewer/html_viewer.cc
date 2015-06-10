@@ -162,13 +162,6 @@ class HTMLViewer : public mojo::ApplicationDelegate,
   }
 
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
-    // If we're not being connected to from the view manager assume we're being
-    // run in tests, or a headless environment, in which case we'll never get a
-    // ui and there is no point in waiting for it.
-    if (connection->GetRemoteApplicationURL() != "mojo://view_manager/" &&
-        !setup_->did_init()) {
-      setup_->InitHeadless();
-    }
     connection->AddService(this);
     return true;
   }

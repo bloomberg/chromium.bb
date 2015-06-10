@@ -151,14 +151,14 @@ HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
           html_document_app->app_lifetime_helper()->CreateAppRefCount()),
       html_document_app_(html_document_app),
       response_(response.Pass()),
+      navigator_host_(connection->GetServiceProvider()),
       web_view_(nullptr),
       root_(nullptr),
       view_manager_client_factory_(html_document_app->shell(), this),
       setup_(setup),
       frame_tree_manager_binding_(&frame_tree_manager_) {
-  embedder_exported_services_.AddService(
+  connection->AddService(
       static_cast<mojo::InterfaceFactory<mandoline::FrameTreeClient>*>(this));
-
   connection->AddService(
       static_cast<InterfaceFactory<mojo::AxProvider>*>(this));
   connection->AddService(&view_manager_client_factory_);
@@ -177,17 +177,10 @@ HTMLDocument::~HTMLDocument() {
     root_->RemoveObserver(this);
 }
 
-void HTMLDocument::OnEmbed(
-    View* root,
-    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-    mojo::ServiceProviderPtr exposed_services) {
+void HTMLDocument::OnEmbed(View* root) {
   DCHECK(!setup_->is_headless());
   root_ = root;
   root_->AddObserver(this);
-  embedder_service_provider_ = exposed_services.Pass();
-  navigator_host_.set_service_provider(embedder_service_provider_.get());
-
-  embedder_exported_services_.Bind(services.Pass());
 
   InitSetupAndLoadIfNecessary();
 }
@@ -352,7 +345,7 @@ blink::WebNavigationPolicy HTMLDocument::decidePolicyForNavigation(
   if (info.frame->parent() && EnableOOPIFs()) {
     mojo::View* view = frame_to_view_[info.frame].view;
     mojo::URLRequestPtr url_request = mojo::URLRequest::From(info.urlRequest);
-    view->Embed(url_request.Pass(), nullptr, nullptr);
+    view->EmbedAllowingReembed(url_request.Pass());
     // TODO(sky): I tried swapping the frame types here, but that resulted in
     // the view never getting sized. Figure out why.
     // TODO(sky): there are timing conditions here, and we should only do this

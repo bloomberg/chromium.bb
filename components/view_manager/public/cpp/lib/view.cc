@@ -366,20 +366,6 @@ void View::SetFocus() {
     static_cast<ViewManagerClientImpl*>(manager_)->SetFocus(id_);
 }
 
-void View::Embed(const String& url) {
-  if (PrepareForEmbed())
-    static_cast<ViewManagerClientImpl*>(manager_)->Embed(url, id_);
-}
-
-void View::Embed(mojo::URLRequestPtr request,
-                 InterfaceRequest<ServiceProvider> services,
-                 ServiceProviderPtr exposed_services) {
-  if (PrepareForEmbed()) {
-    static_cast<ViewManagerClientImpl*>(manager_)
-        ->Embed(request.Pass(), id_, services.Pass(), exposed_services.Pass());
-  }
-}
-
 void View::Embed(ViewManagerClientPtr client) {
   if (PrepareForEmbed())
     static_cast<ViewManagerClientImpl*>(manager_)->Embed(id_, client.Pass());

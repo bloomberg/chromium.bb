@@ -19,7 +19,7 @@ namespace view_manager {
 enum ChangeType {
   CHANGE_TYPE_EMBED,
   CHANGE_TYPE_EMBEDDED_APP_DISCONNECTED,
-  CHANGE_TYPE_WILL_EMBED,
+  CHANGE_TYPE_EMBED_FOR_DESCENDANT,
   // TODO(sky): nuke NODE.
   CHANGE_TYPE_NODE_BOUNDS_CHANGED,
   CHANGE_TYPE_NODE_VIEWPORT_METRICS_CHANGED,
@@ -67,7 +67,6 @@ struct Change {
   mojo::Rect bounds;
   mojo::Rect bounds2;
   int32_t event_action;
-  mojo::String creator_url;
   mojo::String embed_url;
   mojo::OrderDirection direction;
   bool bool_value;
@@ -121,9 +120,8 @@ class TestChangeTracker {
   // Each of these functions generate a Change. There is one per
   // ViewManagerClient function.
   void OnEmbed(mojo::ConnectionSpecificId connection_id,
-               const mojo::String& creator_url,
                mojo::ViewDataPtr root);
-  void OnWillEmbed(mojo::Id view_id);
+  void OnEmbedForDescendant(mojo::Id view_id);
   void OnEmbeddedAppDisconnected(mojo::Id view_id);
   void OnViewBoundsChanged(mojo::Id view_id,
                            mojo::RectPtr old_bounds,

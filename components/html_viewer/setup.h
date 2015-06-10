@@ -39,10 +39,6 @@ class Setup {
   explicit Setup(mojo::ApplicationImpl* app);
   ~Setup();
 
-  // Use to explicitly create headless regardless of command line switches.
-  // This must be invoked before InitIfNecessary().
-  void InitHeadless();
-
   // Inits with the specified screen size and device pixel ratio.
   // NOTE: we wait to complete setup until the device pixel ratio is available
   // as ResourceBundle uses the device pixel ratio during initialization.
@@ -72,7 +68,7 @@ class Setup {
 
   resource_provider::ResourceLoader resource_loader_;
 
-  bool is_headless_;
+  const bool is_headless_;
 
   // True once we've completed init.
   bool did_init_;

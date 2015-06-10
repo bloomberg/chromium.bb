@@ -69,7 +69,7 @@ void ViewTreeResultCallback(base::RunLoop* run_loop,
 // -----------------------------------------------------------------------------
 
 // The following functions call through to the supplied ViewManagerService. They
-// block until call completes and return the result.
+// block until the call completes and return the result.
 bool CreateView(ViewManagerService* vm, Id view_id) {
   ErrorCode result = ERROR_CODE_NONE;
   base::RunLoop run_loop;
@@ -79,14 +79,38 @@ bool CreateView(ViewManagerService* vm, Id view_id) {
   return result == ERROR_CODE_NONE;
 }
 
-bool EmbedUrl(ViewManagerService* vm, const String& url, Id root_id) {
+bool EmbedUrl(mojo::ApplicationImpl* app,
+              ViewManagerService* vm,
+              const String& url,
+              Id root_id) {
   bool result = false;
   base::RunLoop run_loop;
   {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(url);
-    vm->EmbedRequest(request.Pass(), root_id, nullptr, nullptr,
-                     base::Bind(&BoolResultCallback, &run_loop, &result));
+    ApplicationConnection* connection =
+        app->ConnectToApplication(request.Pass());
+    mojo::ViewManagerClientPtr client;
+    connection->ConnectToService(&client);
+    vm->Embed(root_id, client.Pass(),
+              base::Bind(&BoolResultCallback, &run_loop, &result));
+  }
+  run_loop.Run();
+  return result;
+}
+
+bool EmbedAllowingReembed(mojo::ApplicationImpl* app,
+                          ViewManagerService* vm,
+                          const String& url,
+                          Id root_id) {
+  bool result = false;
+  base::RunLoop run_loop;
+  {
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From(url);
+    vm->EmbedAllowingReembed(
+        root_id, request.Pass(),
+        base::Bind(&BoolResultCallback, &run_loop, &result));
   }
   run_loop.Run();
   return result;
@@ -231,7 +255,10 @@ bool HasClonedView(const std::vector<TestView>& views) {
 class ViewManagerClientImpl : public mojo::ViewManagerClient,
                               public TestChangeTracker::Delegate {
  public:
-  ViewManagerClientImpl() : binding_(this) { tracker_.set_delegate(this); }
+  explicit ViewManagerClientImpl(mojo::ApplicationImpl* app)
+      : binding_(this), app_(app) {
+    tracker_.set_delegate(this);
+  }
 
   void Bind(mojo::InterfaceRequest<mojo::ViewManagerClient> request) {
     binding_.Bind(request.Pass());
@@ -286,24 +313,25 @@ class ViewManagerClientImpl : public mojo::ViewManagerClient,
 
   // ViewManagerClient:
   void OnEmbed(ConnectionSpecificId connection_id,
-               const String& creator_url,
                ViewDataPtr root,
                mojo::ViewManagerServicePtr view_manager_service,
-               InterfaceRequest<ServiceProvider> services,
-               ServiceProviderPtr exposed_services,
                mojo::Id focused_view_id) override {
     // TODO(sky): add coverage of |focused_view_id|.
     service_ = view_manager_service.Pass();
-    tracker()->OnEmbed(connection_id, creator_url, root.Pass());
+    tracker()->OnEmbed(connection_id, root.Pass());
     if (embed_run_loop_)
       embed_run_loop_->Quit();
   }
-  void OnWillEmbed(uint32_t view,
-                   mojo::InterfaceRequest<mojo::ServiceProvider> services,
-                   mojo::ServiceProviderPtr exposed_services,
-                   const OnWillEmbedCallback& callback) override {
-    tracker()->OnWillEmbed(view);
-    callback.Run(true, services.Pass(), exposed_services.Pass());
+  void OnEmbedForDescendant(
+      uint32_t view,
+      mojo::URLRequestPtr request,
+      const OnEmbedForDescendantCallback& callback) override {
+    tracker()->OnEmbedForDescendant(view);
+    mojo::ViewManagerClientPtr client;
+    ApplicationConnection* connection =
+        app_->ConnectToApplication(request.Pass());
+    connection->ConnectToService(&client);
+    callback.Run(client.Pass());
   }
   void OnEmbeddedAppDisconnected(Id view_id) override {
     tracker()->OnEmbeddedAppDisconnected(view_id);
@@ -364,6 +392,8 @@ class ViewManagerClientImpl : public mojo::ViewManagerClient,
   scoped_ptr<WaitState> wait_state_;
 
   mojo::Binding<ViewManagerClient> binding_;
+  mojo::ApplicationImpl* app_;
+
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };
 
@@ -373,7 +403,7 @@ class ViewManagerClientImpl : public mojo::ViewManagerClient,
 class ViewManagerClientFactory
     : public mojo::InterfaceFactory<ViewManagerClient> {
  public:
-  ViewManagerClientFactory() {}
+  explicit ViewManagerClientFactory(mojo::ApplicationImpl* app) : app_(app) {}
   ~ViewManagerClientFactory() override {}
 
   // Runs a nested MessageLoop until a new instance has been created.
@@ -391,12 +421,13 @@ class ViewManagerClientFactory
   // InterfaceFactory<ViewManagerClient>:
   void Create(ApplicationConnection* connection,
               InterfaceRequest<ViewManagerClient> request) override {
-    client_impl_.reset(new ViewManagerClientImpl);
+    client_impl_.reset(new ViewManagerClientImpl(app_));
     client_impl_->Bind(request.Pass());
     if (run_loop_.get())
       run_loop_->Quit();
   }
 
+  mojo::ApplicationImpl* app_;
   scoped_ptr<ViewManagerClientImpl> client_impl_;
   scoped_ptr<base::RunLoop> run_loop_;
 
@@ -410,6 +441,11 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
   ~ViewManagerServiceAppTest() override {}
 
  protected:
+  enum class EmbedType {
+    ALLOW_REEMBED,
+    NO_REEMBED,
+  };
+
   // Returns the changes from the various connections.
   std::vector<Change>* changes1() { return vm_client1_->tracker()->changes(); }
   std::vector<Change>* changes2() { return vm_client2_->tracker()->changes(); }
@@ -423,7 +459,8 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
 
   void EstablishSecondConnectionWithRoot(Id root_id) {
     ASSERT_TRUE(vm_client2_.get() == nullptr);
-    vm_client2_ = EstablishConnectionViaEmbed(vm1(), root_id);
+    vm_client2_ =
+        EstablishConnectionViaEmbed(vm1(), root_id, EmbedType::NO_REEMBED);
     ASSERT_TRUE(vm_client2_.get() != nullptr);
   }
 
@@ -439,7 +476,8 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
 
   void EstablishThirdConnection(ViewManagerService* owner, Id root_id) {
     ASSERT_TRUE(vm_client3_.get() == nullptr);
-    vm_client3_ = EstablishConnectionViaEmbed(owner, root_id);
+    vm_client3_ =
+        EstablishConnectionViaEmbed(owner, root_id, EmbedType::NO_REEMBED);
     ASSERT_TRUE(vm_client3_.get() != nullptr);
   }
 
@@ -447,20 +485,28 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
   // ViewManagerService.
   scoped_ptr<ViewManagerClientImpl> EstablishConnectionViaEmbed(
       ViewManagerService* owner,
-      Id root_id) {
-    if (!EmbedUrl(owner, application_impl()->url(), root_id)) {
+      Id root_id,
+      EmbedType embed_type) {
+    if (embed_type == EmbedType::NO_REEMBED &&
+        !EmbedUrl(application_impl(), owner, application_impl()->url(),
+                  root_id)) {
+      ADD_FAILURE() << "Embed() failed";
+      return nullptr;
+    } else if (embed_type == EmbedType::ALLOW_REEMBED &&
+               !EmbedAllowingReembed(application_impl(), owner,
+                                     application_impl()->url(), root_id)) {
       ADD_FAILURE() << "Embed() failed";
       return nullptr;
     }
     scoped_ptr<ViewManagerClientImpl> client =
-        client_factory_.WaitForInstance();
+        client_factory_->WaitForInstance();
     if (!client.get()) {
       ADD_FAILURE() << "WaitForInstance failed";
       return nullptr;
     }
     client->WaitForOnEmbed();
 
-    EXPECT_EQ("OnEmbed creator=" + application_impl()->url(),
+    EXPECT_EQ("OnEmbed",
               SingleChangeToDescription(*client->tracker()->changes()));
     return client.Pass();
   }
@@ -469,14 +515,15 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
   ApplicationDelegate* GetApplicationDelegate() override { return this; }
   void SetUp() override {
     ApplicationTestBase::SetUp();
+    client_factory_.reset(new ViewManagerClientFactory(application_impl()));
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From("mojo:view_manager");
     ApplicationConnection* vm_connection =
         application_impl()->ConnectToApplication(request.Pass());
     vm_connection->ConnectToService(&vm1_);
     vm_connection->ConnectToService(&view_manager_root_);
-    vm_connection->AddService(&client_factory_);
-    vm_client1_ = client_factory_.WaitForInstance();
+    vm_connection->AddService(client_factory_.get());
+    vm_client1_ = client_factory_->WaitForInstance();
     ASSERT_TRUE(vm_client1_);
     // Next we should get an embed call on the "window manager" client.
     vm_client1_->WaitForIncomingMethodCall();
@@ -491,7 +538,7 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
 
   // ApplicationDelegate implementation.
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
-    connection->AddService(&client_factory_);
+    connection->AddService(client_factory_.get());
     return true;
   }
 
@@ -503,7 +550,7 @@ class ViewManagerServiceAppTest : public mojo::test::ApplicationTestBase,
 
  private:
   mojo::ViewManagerServicePtr vm1_;
-  ViewManagerClientFactory client_factory_;
+  scoped_ptr<ViewManagerClientFactory> client_factory_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ViewManagerServiceAppTest);
 };
@@ -1203,8 +1250,8 @@ TEST_F(ViewManagerServiceAppTest, MAYBE_EmbedWithSameViewId2) {
     changes3()->clear();
 
     // We should get a new connection for the new embedding.
-    scoped_ptr<ViewManagerClientImpl> connection4(
-        EstablishConnectionViaEmbed(vm1(), BuildViewId(1, 1)));
+    scoped_ptr<ViewManagerClientImpl> connection4(EstablishConnectionViaEmbed(
+        vm1(), BuildViewId(1, 1), EmbedType::NO_REEMBED));
     ASSERT_TRUE(connection4.get());
     EXPECT_EQ("[view=1,1 parent=null]",
               ChangeViewDescription(*connection4->tracker()->changes()));
@@ -1557,12 +1604,12 @@ TEST_F(ViewManagerServiceAppTest, MAYBE_CloneAndAnimate) {
 TEST_F(ViewManagerServiceAppTest, EmbedSupplyingViewManagerClient) {
   ASSERT_TRUE(CreateView(vm1(), BuildViewId(1, 1)));
 
-  ViewManagerClientImpl client2;
+  ViewManagerClientImpl client2(application_impl());
   mojo::ViewManagerClientPtr client2_ptr;
   mojo::Binding<ViewManagerClient> client2_binding(&client2, &client2_ptr);
   ASSERT_TRUE(Embed(vm1(), BuildViewId(1, 1), client2_ptr.Pass()));
   client2.WaitForOnEmbed();
-  EXPECT_EQ("OnEmbed creator=" + application_impl()->url(),
+  EXPECT_EQ("OnEmbed",
             SingleChangeToDescription(*client2.tracker()->changes()));
 }
 
@@ -1587,10 +1634,11 @@ TEST_F(ViewManagerServiceAppTest, MAYBE_OnWillEmbed) {
   changes2()->clear();
 
   // Embed 4 into 3, connection 2 should get the OnWillEmbed.
-  scoped_ptr<ViewManagerClientImpl> connection4(
-      EstablishConnectionViaEmbed(vm3(), BuildViewId(3, 3)));
+  scoped_ptr<ViewManagerClientImpl> connection4(EstablishConnectionViaEmbed(
+      vm3(), BuildViewId(3, 3), EmbedType::ALLOW_REEMBED));
   ASSERT_TRUE(connection4.get());
-  EXPECT_EQ("OnWillEmbed view=3,3", SingleChangeToDescription(*changes2()));
+  EXPECT_EQ("OnEmbedForDescendant view=3,3",
+            SingleChangeToDescription(*changes2()));
 
   // Mark 3 as an embed root.
   vm3()->SetEmbedRoot();
@@ -1603,10 +1651,11 @@ TEST_F(ViewManagerServiceAppTest, MAYBE_OnWillEmbed) {
   ASSERT_TRUE(CreateView(connection4->service(), BuildViewId(4, 4)));
   ASSERT_TRUE(
       AddView(connection4->service(), BuildViewId(3, 3), BuildViewId(4, 4)));
-  scoped_ptr<ViewManagerClientImpl> connection5(
-      EstablishConnectionViaEmbed(connection4->service(), BuildViewId(4, 4)));
+  scoped_ptr<ViewManagerClientImpl> connection5(EstablishConnectionViaEmbed(
+      connection4->service(), BuildViewId(4, 4), EmbedType::ALLOW_REEMBED));
   ASSERT_TRUE(connection5.get());
-  EXPECT_EQ("OnWillEmbed view=4,4", SingleChangeToDescription(*changes3()));
+  EXPECT_EQ("OnEmbedForDescendant view=4,4",
+            SingleChangeToDescription(*changes3()));
   ASSERT_TRUE(changes2()->empty());
 }
 

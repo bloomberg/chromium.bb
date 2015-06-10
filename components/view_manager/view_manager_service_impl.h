@@ -35,28 +35,18 @@ class ServerView;
 class ViewManagerServiceImpl : public mojo::ViewManagerService,
                                public AccessPolicyDelegate {
  public:
-  enum class EmbedType {
-    ALLOW_REEMBED,
-    NO_REEMBED,
-  };
-
   ViewManagerServiceImpl(ConnectionManager* connection_manager,
                          mojo::ConnectionSpecificId creator_id,
-                         const std::string& creator_url,
-                         const std::string& url,
                          const ViewId& root_id);
   ~ViewManagerServiceImpl() override;
 
   // |services| and |exposed_services| are the ServiceProviders to pass to the
   // client via OnEmbed().
   void Init(mojo::ViewManagerClient* client,
-            mojo::ViewManagerServicePtr service_ptr,
-            mojo::InterfaceRequest<mojo::ServiceProvider> services,
-            mojo::ServiceProviderPtr exposed_services);
+            mojo::ViewManagerServicePtr service_ptr);
 
   mojo::ConnectionSpecificId id() const { return id_; }
   mojo::ConnectionSpecificId creator_id() const { return creator_id_; }
-  const std::string& url() const { return url_; }
 
   mojo::ViewManagerClient* client() { return client_; }
 
@@ -86,12 +76,9 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   bool AddView(const ViewId& parent_id, const ViewId& child_id);
   std::vector<const ServerView*> GetViewTree(const ViewId& view_id) const;
   bool SetViewVisibility(const ViewId& view_id, bool visible);
-  void Embed(mojo::URLRequestPtr request,
-             const ViewId& view_id,
-             EmbedType type,
-             mojo::InterfaceRequest<mojo::ServiceProvider> services,
-             mojo::ServiceProviderPtr exposed_services,
-             const mojo::Callback<void(bool)>& callback);
+  void EmbedAllowingReembed(const ViewId& view_id,
+                            mojo::URLRequestPtr request,
+                            const mojo::Callback<void(bool)>& callback);
   bool Embed(const ViewId& view_id, mojo::ViewManagerClientPtr client);
 
   // The following methods are invoked after the corresponding change has been
@@ -180,10 +167,8 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   bool CanEmbed(const ViewId& view_id) const;
   void PrepareForEmbed(const ViewId& view_id);
   void RemoveChildrenAsPartOfEmbed(const ViewId& view_id);
-  void OnWillEmbedDone(scoped_refptr<PendingEmbed> pending_embed,
-                       bool allow_embed,
-                       mojo::InterfaceRequest<mojo::ServiceProvider> services,
-                       mojo::ServiceProviderPtr exposed_services);
+  void OnEmbedForDescendantDone(scoped_refptr<PendingEmbed> pending_embed,
+                                mojo::ViewManagerClientPtr client);
 
   // Invalidates any PendingEmbeds with |connection| as the embed root.
   void InvalidatePendingEmbedForConnection(ViewManagerServiceImpl* connection);
@@ -228,17 +213,12 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
                        mojo::Array<uint8_t> value,
                        const mojo::Callback<void(bool)>& callback) override;
   void SetEmbedRoot() override;
-  void EmbedRequest(mojo::URLRequestPtr request,
-                    mojo::Id transport_view_id,
-                    mojo::InterfaceRequest<mojo::ServiceProvider> services,
-                    mojo::ServiceProviderPtr exposed_services,
-                    const mojo::Callback<void(bool)>& callback) override;
   void Embed(mojo::Id transport_view_id,
              mojo::ViewManagerClientPtr client,
              const mojo::Callback<void(bool)>& callback) override;
   void EmbedAllowingReembed(
-      mojo::URLRequestPtr request,
       mojo::Id transport_view_id,
+      mojo::URLRequestPtr request,
       const mojo::Callback<void(bool)>& callback) override;
   void SetFocus(uint32_t view_id, const SetFocusCallback& callback) override;
 
@@ -254,17 +234,9 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   // Id of this connection as assigned by ConnectionManager.
   const mojo::ConnectionSpecificId id_;
 
-  // URL this connection was created for.
-  const std::string url_;
-
   // ID of the connection that created us. If 0 it indicates either we were
   // created by the root, or the connection that created us has been destroyed.
   mojo::ConnectionSpecificId creator_id_;
-
-  // The URL of the app that embedded the app this connection was created for.
-  // NOTE: this is empty if the connection was created by way of directly
-  // supplying the ViewManagerClient.
-  const std::string creator_url_;
 
   mojo::ViewManagerClient* client_;
 

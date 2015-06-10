@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 
 namespace mojo {
 
@@ -41,9 +43,7 @@ class ViewManagerDelegate {
   // the pipes connecting |services| and |exposed_services| to the embedder and
   // any services obtained from them are not broken and will continue to be
   // valid.
-  virtual void OnEmbed(View* root,
-                       InterfaceRequest<ServiceProvider> services,
-                       ServiceProviderPtr exposed_services) = 0;
+  virtual void OnEmbed(View* root) = 0;
 
   // Only invoked if the connection has been marked as an embed root. This
   // allows the delegate to disallow the embed (return false), or change
@@ -53,9 +53,9 @@ class ViewManagerDelegate {
   // the supplied ServiceProviders.
   //
   // See the mojom for more details.
-  virtual bool OnWillEmbed(View* view,
-                           InterfaceRequest<ServiceProvider>* services,
-                           ServiceProviderPtr* exposed_services);
+  virtual void OnEmbedForDescendant(View* view,
+                                    URLRequestPtr request,
+                                    ViewManagerClientPtr* client);
 
   // Called from the destructor of ViewManager after all the Views have been
   // destroyed. |view_manager| is no longer valid after this call.

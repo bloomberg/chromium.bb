@@ -6,11 +6,10 @@
 
 namespace mojo {
 
-bool ViewManagerDelegate::OnWillEmbed(
+void ViewManagerDelegate::OnEmbedForDescendant(
     View* view,
-    InterfaceRequest<ServiceProvider>* services,
-    ServiceProviderPtr* exposed_services) {
-  return true;
+    mojo::URLRequestPtr request,
+    mojo::ViewManagerClientPtr* client) {
 }
 
 }  // namespace mojo

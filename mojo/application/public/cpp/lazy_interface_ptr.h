@@ -17,7 +17,7 @@ class LazyInterfacePtr : public InterfacePtr<Interface> {
  public:
   LazyInterfacePtr() : service_provider_(nullptr) {}
 
-  LazyInterfacePtr(ServiceProvider* service_provider)
+  explicit LazyInterfacePtr(ServiceProvider* service_provider)
       : service_provider_(service_provider) {}
 
   void set_service_provider(ServiceProvider* service_provider) {

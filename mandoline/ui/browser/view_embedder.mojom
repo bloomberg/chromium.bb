@@ -4,11 +4,8 @@
 
 module mandoline;
 
-import "mojo/application/public/interfaces/service_provider.mojom";
 import "network/public/interfaces/url_loader.mojom";
 
 interface ViewEmbedder {
-  Embed(mojo.URLRequest request,
-        mojo.ServiceProvider&? services,
-        mojo.ServiceProvider? exposed_services);
+  Embed(mojo.URLRequest request);
 };
